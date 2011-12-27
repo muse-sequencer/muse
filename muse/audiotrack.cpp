@@ -154,7 +154,16 @@ AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
       _controller     = t._controller;
       _prefader       = t._prefader;
       _auxSend        = t._auxSend;
-      _efxPipe        = new Pipeline(*(t._efxPipe));
+      
+      //_efxPipe        = new Pipeline(*(t._efxPipe));   
+      // Changed by Tim to stop crashes after renaming tracks.
+      // NOTE: If we ever want to add undo/redo for effect rack operations (insert/remove),
+      //        then this MUST be changed to a system of reference counting for the rack items.
+      //       In other words, with this fix, all undo/redo version of a track will have the same 
+      //        shared _efxPipe, regardless of what actions are done to the rack. 
+      //_efxPipe  = new Pipeline();
+      _efxPipe        = t._efxPipe->clone();
+      
       _automationType = t._automationType;
       _inRoutes       = t._inRoutes;
       _outRoutes      = t._outRoutes;
@@ -180,7 +189,13 @@ AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
 
 AudioTrack::~AudioTrack()
 {
-      delete _efxPipe;
+      // Be sure to zero this because it is shared among cloned tracks, and they will want to delete it as well !
+      if(_efxPipe && _efxPipe->release() == 0)
+      {  
+        delete _efxPipe;
+        _efxPipe = 0;
+      }
+      
       //for (int i = 0; i < MAX_CHANNELS; ++i)
       //      delete[] outBuffers[i];
       //delete[] outBuffers;

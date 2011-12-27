@@ -28,7 +28,9 @@
 #include "undo.h"
 #include "song.h"
 #include "globals.h"
+#include "audio.h"  // p4.0.46
 
+#include <string.h>
 #include <QAction>
 #include <set>
 
@@ -53,7 +55,9 @@ const char* UndoOp::typeName()
             "AddTempo", "DeleteTempo",
             "AddSig", "DeleteSig",
             "AddKey", "DeleteKey",
-            "SwapTrack", "ModifyClip", "ModifyMarker",
+            "ModifyTrackName", "ModifyTrackChannel",
+            "SwapTrack", 
+            "ModifyClip", "ModifyMarker",
             "ModifySongLen", "DoNothing"
             };
       return name[type];
@@ -88,6 +92,12 @@ void UndoOp::dump()
                   if (part)
                         part->dump(5);
                   break;
+            case ModifyTrackName:
+                  printf("<%s>-<%s>\n", _oldName, _newName);
+                  break;
+            case ModifyTrackChannel:
+                  printf("<%d>-<%d>\n", a, b);
+                  break;
             case ModifyEvent:
             case AddTempo:
             case DeleteTempo:
@@ -100,6 +110,8 @@ void UndoOp::dump()
             case DeleteKey:
             case ModifySongLen:
             case DoNothing:
+                  break;
+            default:      
                   break;
             }
       }
@@ -192,6 +204,14 @@ void UndoList::clearDelete()
             case UndoOp::ModifyMarker:
                 if (i->copyMarker)
                   delete i->copyMarker;
+                break;
+          case UndoOp::ModifyTrackName:
+                printf("UndoList::clearDelete ModifyTrackName old:%s new:%s\n", i->_oldName, i->_newName);  // REMOVE Tim.
+                if (i->_oldName)
+                  delete i->_oldName;
+                if (i->_newName)
+                  delete i->_newName;
+                break;
           default:
                 break;
         }
@@ -209,8 +229,9 @@ void UndoList::clearDelete()
 
 void Song::startUndo()
       {
-      redoList->clear(); // added by flo93: redo must be invalidated when
-			MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
+      //redoList->clear(); // added by flo93: redo must be invalidated when a new undo is started
+      redoList->clearDelete(); // p4.0.46 Tim
+			MusEGlobal::redoAction->setEnabled(false);     // 
 			
       undoList->push_back(Undo());
       updateFlags = 0;
@@ -277,8 +298,9 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
             }
             else
             {
-                  redoList->clear(); // added by flo93: redo must be invalidated when
-                  MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
+                  //redoList->clear(); // added by flo93: redo must be invalidated when a new undo is started
+                  redoList->clearDelete(); // p4.0.46 Tim.
+                  MusEGlobal::redoAction->setEnabled(false);     // 
 						}
             
             return doUndo;
@@ -542,6 +564,8 @@ void Song::doUndo2()
                   case UndoOp::ModifyMarker:
                   case UndoOp::DoNothing:
                         break;
+                  default:      
+                        break;
                   }
             }
       }
@@ -783,6 +807,8 @@ void Song::doRedo2()
                   case UndoOp::ModifyMarker:
                   case UndoOp::DoNothing:
                         break;
+                  default:      
+                        break;
                   }
             }
       }
@@ -885,6 +911,24 @@ UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, 
       endframe   = endframe_;
       }
 
+UndoOp::UndoOp(UndoOp::UndoType type_, Track* track, const char* old_name, const char* new_name)
+{
+  type = type_;
+  _track = track;
+  _oldName = new char[strlen(old_name) + 1];
+  _newName = new char[strlen(new_name) + 1];
+  strcpy(_oldName, old_name);
+  strcpy(_newName, new_name);
+}
+
+UndoOp::UndoOp(UndoOp::UndoType type_, Track* track, int old_chan, int new_chan)
+{
+  type = type_;
+  _track = track;
+  a = old_chan;
+  b = new_chan;
+}
+
 void Song::undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe)
       {
       addUndo(UndoOp(type,changedFile,changeData,startframe,endframe));
@@ -944,8 +988,51 @@ bool Song::doUndo1()
                         }
 
                         break;
+                  case UndoOp::ModifyTrackName:
+                          i->_track->setName(i->_oldName);
+                          updateFlags |= SC_TRACK_MODIFIED;
+                        break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
+                        break;
+                  case UndoOp::ModifyTrackChannel:
+                        if (i->_track->isMidiTrack()) 
+                        {
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_track);
+                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
+                          //if (mt == 0 || mt->isDrumTrack())  // For Flo later with new drum tracks.  p4.0.46 Tim
+                            break;
+                          if (i->a != mt->outChannel()) 
+                          {
+                                //mt->setOutChannel(i->a);
+                                MusEGlobal::audio->msgIdle(true);
+                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->a);
+                                mt->setOutChanAndUpdate(i->a);
+                                MusEGlobal::audio->msgIdle(false);
+                                /* --- I really don't like this, you can mess up the whole map "as easy as dell" Taken from tlist.cpp
+                                if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
+                                      for (int i=0; i<DRUM_MAPSIZE; i++)
+                                            MusEGlobal::drumMap[i].channel = i->a;
+                                      }*/
+                                //updateFlags |= SC_CHANNELS;
+                                MusEGlobal::audio->msgUpdateSoloStates();                   
+                                //updateFlags |= SC_MIDI_TRACK_PROP | SC_ROUTE;  
+                                updateFlags |= SC_MIDI_TRACK_PROP;               
+                          }
+                        }
+                        else
+                        {
+                            if(i->_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            {
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_track);
+                              if (at == 0)
+                                break;
+                              if (i->a != at->channels()) {
+                                    MusEGlobal::audio->msgSetChannels(at, i->a);
+                                    updateFlags |= SC_CHANNELS;
+                                    }
+                            }         
+                        }      
                         break;
 
                   default:
@@ -1035,9 +1122,53 @@ bool Song::doRedo1()
                   case UndoOp::DeleteTrack:
                         removeTrack1(i->oTrack);
                         break;
+                  case UndoOp::ModifyTrackName:
+                          i->_track->setName(i->_newName);
+                          updateFlags |= SC_TRACK_MODIFIED;
+                        break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
+                  case UndoOp::ModifyTrackChannel:
+                        if (i->_track->isMidiTrack()) 
+                        {
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_track);
+                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
+                          //if (mt == 0 || mt->isDrumTrack())  // For Flo later with new drum tracks.  p4.0.46 Tim
+                            break;
+                          if (i->b != mt->outChannel()) 
+                          {
+                                //mt->setOutChannel(i->b);
+                                MusEGlobal::audio->msgIdle(true);
+                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->b);
+                                mt->setOutChanAndUpdate(i->b);
+                                MusEGlobal::audio->msgIdle(false);
+                                /* --- I really don't like this, you can mess up the whole map "as easy as dell" Taken from tlist.cpp
+                                if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
+                                      for (int i=0; i<DRUM_MAPSIZE; i++)
+                                            MusEGlobal::drumMap[i].channel = i->b;
+                                      }*/
+                                //updateFlags |= SC_CHANNELS;
+                                MusEGlobal::audio->msgUpdateSoloStates();                   
+                                //updateFlags |= SC_MIDI_TRACK_PROP | SC_ROUTE;  
+                                updateFlags |= SC_MIDI_TRACK_PROP;               
+                          }
+                        }
+                        else
+                        {
+                            if(i->_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            {
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_track);
+                              if (at == 0)
+                                break;
+                              if (i->b != at->channels()) {
+                                    MusEGlobal::audio->msgSetChannels(at, i->b);
+                                    updateFlags |= SC_CHANNELS;
+                                    }
+                            }         
+                        }      
+                        break;
+                        
                   default:
                         break;
                   }

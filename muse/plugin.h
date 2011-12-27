@@ -439,11 +439,16 @@ class PluginI : public PluginIBase {
 
 class Pipeline : public std::vector<PluginI*> {
       float* buffer[MAX_CHANNELS];
-   
+      int _refCount;
+      
    public:
       Pipeline();
+      Pipeline* clone();    // Increases current ref count.
+      int release();        // Decreases and returns current ref count.
       ~Pipeline();
       
+      int refCount() const { return _refCount; }
+      int incRefCount(int inc);
       void insert(PluginI* p, int index);
       void remove(int index);
       void removeAll();

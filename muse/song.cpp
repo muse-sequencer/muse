@@ -1692,7 +1692,8 @@ void Song::rescanAlsaPorts()
 void Song::endMsgCmd()
       {
       if (updateFlags) {
-            redoList->clear();            // TODO: delete elements in list
+            //redoList->clear();            // TODO: delete elements in list
+            redoList->clearDelete();        // p4.0.46 Tim.   NOTE Hm, shouldn't this be above?
             MusEGlobal::undoAction->setEnabled(true);
             MusEGlobal::redoAction->setEnabled(false);
             emit songChanged(updateFlags);
@@ -2029,8 +2030,15 @@ void Song::clear(bool signal, bool clear_all)
       MusEGlobal::tempomap.clear();
       AL::sigmap.clear();
       MusEGlobal::keymap.clear();
+      
       undoList->clearDelete();
-      redoList->clear();
+      //redoList->clear();  // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists. 
+      redoList->clearDelete();                   // p4.0.46 Tim
+      if(MusEGlobal::undoAction)
+        MusEGlobal::undoAction->setEnabled(false); //
+      if(MusEGlobal::redoAction)
+        MusEGlobal::redoAction->setEnabled(false); //
+      
       _markerList->clear();
       pos[0].setTick(0);
       pos[1].setTick(0);
@@ -2120,7 +2128,8 @@ void Song::cleanupForQuit()
       if(MusEGlobal::debugMsg)
         printf("deleting undoList, clearing redoList\n");
       undoList->clearDelete();
-      redoList->clear();    // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists.
+      //redoList->clear(); // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists.
+      redoList->clearDelete(); // p4.0.46 Tim
       
       _markerList->clear();
       

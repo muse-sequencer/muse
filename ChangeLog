@@ -1,3 +1,11 @@
+27.12.2011:
+        - Fixed some undo/redo/close crashes. TODO Global cut crashes from null Marker. (Tim. All marked p4.0.46 Clean later!)
+          Fixed some issues with track list and popup 'name edit' and 'channel spinbox'. Added to audio tracks. 
+          REPLACED Undo type ModifyTrack: Two simpler 'ModifyTrackName', 'ModifyTrackChannels' type/struct/functions.
+          *WORK IN PROGRESS: AudioTrack::operator= will disappear. For the moment, essentially AudioTrack::clone() is 
+           temporarily abandoned. Nothing uses it ATM. AudioTrack's copy constructor will change so that it can be 
+           told exactly what we want to copy: Include plugins and controller data? So far...  
+          Some work was/is being done in undo/redo and a couple of slight apparent leaks were fixed in evdata.h
 21.12.2011:
         - Fixed some mixer issues: Very slow updating with large mixer when setting visible tracks for example: Set and check 
            Style() object name in MusE::loadTheme() so that slow mixer ScrollArea::viewportEvent() is not called every time.  (Tim...)

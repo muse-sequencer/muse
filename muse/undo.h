@@ -51,6 +51,7 @@ struct UndoOp {
             AddTempo, DeleteTempo,
             AddSig,   DeleteSig,
             AddKey,   DeleteKey,
+            ModifyTrackName, ModifyTrackChannel,
             SwapTrack,
             ModifyClip,
             ModifyMarker,
@@ -97,7 +98,12 @@ struct UndoOp {
                   Marker* realMarker;
                   Marker* copyMarker;
                 };
+            struct {
+                  char* _oldName;
+                  char* _newName;
+                };
             };
+      Track* _track;
       Event oEvent;
       Event nEvent;
       bool doCtrls;
@@ -118,6 +124,8 @@ struct UndoOp {
       UndoOp(UndoType type, SigEvent* oevent, SigEvent* nevent);
       UndoOp(UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker);
+      UndoOp(UndoType type, Track* track, const char* old_name, const char* new_name);
+      UndoOp(UndoType type, Track* track, int old_chan, int new_chan);
       UndoOp(UndoType type);
       };
 
