@@ -297,6 +297,7 @@ Track::~Track()
   _parts.clearDelete();
 }
 
+/*
 //---------------------------------------------------------
 //   operator =
 //   Added by Tim. Parts' track members MUST point to this track, 
@@ -340,6 +341,7 @@ Track& Track::operator=(const Track& t)
             }
      return *this;       
 }
+*/
 
 //---------------------------------------------------------
 //   setDefaultName

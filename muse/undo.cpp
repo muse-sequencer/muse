@@ -332,6 +332,7 @@ void Song::doUndo2()
                         
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
+/*                        
                   case UndoOp::ModifyTrack:
                         {
                         // Added by Tim. p3.3.6
@@ -406,6 +407,7 @@ void Song::doUndo2()
                         updateFlags |= SC_TRACK_MODIFIED;
                         }
                         break;
+*/
                         
                         /*
                         switch(i->nTrack->type())
@@ -590,6 +592,8 @@ void Song::doRedo2()
                         removeTrack2(i->oTrack);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
+                        
+/*                        
                   case UndoOp::ModifyTrack:
                         {
                         // Unchain the track parts, but don't touch the ref counts.
@@ -654,7 +658,8 @@ void Song::doRedo2()
                         updateFlags |= SC_TRACK_MODIFIED;
                         }
                         break;
-                  
+*/  
+                        
                         /*
                         // Prevent delete i->oTrack from crashing.
                         switch(i->oTrack->type())

@@ -1300,8 +1300,6 @@ Plugin* PluginList::find(const QString& file, const QString& name)
 Pipeline::Pipeline()
    : std::vector<PluginI*>()
       {
-      _refCount = 1;
-      
       for (int i = 0; i < MAX_CHANNELS; ++i)
             posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
       
@@ -1309,18 +1307,20 @@ Pipeline::Pipeline()
             push_back(0);
       }
 
-Pipeline* Pipeline::clone()
-      {
-        ++_refCount;
-        return this;
-      }
+//---------------------------------------------------------
+//   Pipeline copy constructor
+//---------------------------------------------------------
 
-int Pipeline::release()
-{
-  if(_refCount > 0)
-    --_refCount;
-  return _refCount;
-}
+Pipeline::Pipeline(const Pipeline& /*p*/)
+   : std::vector<PluginI*>()
+      {
+      for (int i = 0; i < MAX_CHANNELS; ++i)
+            posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+      
+      // TODO: Copy plug-ins !
+      for (int i = 0; i < PipelineDepth; ++i)
+            push_back(0);
+      }
 
 //---------------------------------------------------------
 //   ~Pipeline
