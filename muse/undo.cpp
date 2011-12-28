@@ -96,7 +96,7 @@ void UndoOp::dump()
                   printf("<%s>-<%s>\n", _oldName, _newName);
                   break;
             case ModifyTrackChannel:
-                  printf("<%d>-<%d>\n", a, b);
+                  printf("<%d>-<%d>\n", _oldPropValue, _newPropValue);
                   break;
             case ModifyEvent:
             case AddTempo:
@@ -151,7 +151,7 @@ void UndoList::clearDelete()
                   }
                 }
                 break;
-          case UndoOp::ModifyTrack:
+          /* case UndoOp::ModifyTrack:
                 if(i->oTrack)
                 {
                   // Prevent delete i->oTrack from crashing.
@@ -193,7 +193,8 @@ void UndoList::clearDelete()
                     }
                   }
                 }
-                break;
+                break;      */
+                
           //case UndoOp::DeletePart:
                 //delete i->oPart;
           //      break;
@@ -919,7 +920,7 @@ UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, 
 UndoOp::UndoOp(UndoOp::UndoType type_, Track* track, const char* old_name, const char* new_name)
 {
   type = type_;
-  _track = track;
+  _renamedTrack = track;
   _oldName = new char[strlen(old_name) + 1];
   _newName = new char[strlen(new_name) + 1];
   strcpy(_oldName, old_name);
@@ -929,9 +930,9 @@ UndoOp::UndoOp(UndoOp::UndoType type_, Track* track, const char* old_name, const
 UndoOp::UndoOp(UndoOp::UndoType type_, Track* track, int old_chan, int new_chan)
 {
   type = type_;
-  _track = track;
-  a = old_chan;
-  b = new_chan;
+  _propertyTrack = track;
+  _oldPropValue = old_chan;
+  _newPropValue = new_chan;
 }
 
 void Song::undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe)
@@ -994,31 +995,30 @@ bool Song::doUndo1()
 
                         break;
                   case UndoOp::ModifyTrackName:
-                          i->_track->setName(i->_oldName);
+                          i->_renamedTrack->setName(i->_oldName);
                           updateFlags |= SC_TRACK_MODIFIED;
                         break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
                   case UndoOp::ModifyTrackChannel:
-                        if (i->_track->isMidiTrack()) 
+                        if (i->_propertyTrack->isMidiTrack()) 
                         {
-                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_track);
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
                           if (mt == 0 || mt->type() == MusECore::Track::DRUM)
                           //if (mt == 0 || mt->isDrumTrack())  // For Flo later with new drum tracks.  p4.0.46 Tim
                             break;
-                          if (i->a != mt->outChannel()) 
+                          if (i->_oldPropValue != mt->outChannel()) 
                           {
-                                //mt->setOutChannel(i->a);
+                                //mt->setOutChannel(i->_oldPropValue);
                                 MusEGlobal::audio->msgIdle(true);
-                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->a);
-                                mt->setOutChanAndUpdate(i->a);
+                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->_oldPropValue);
+                                mt->setOutChanAndUpdate(i->_oldPropValue);
                                 MusEGlobal::audio->msgIdle(false);
-                                /* --- I really don't like this, you can mess up the whole map "as easy as dell" Taken from tlist.cpp
-                                if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
-                                      for (int i=0; i<DRUM_MAPSIZE; i++)
-                                            MusEGlobal::drumMap[i].channel = i->a;
-                                      }*/
+                                //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
+                                //      for (int i=0; i<DRUM_MAPSIZE; i++)
+                                //            MusEGlobal::drumMap[i].channel = i->_oldPropValue;
+                                //      }
                                 //updateFlags |= SC_CHANNELS;
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
                                 //updateFlags |= SC_MIDI_TRACK_PROP | SC_ROUTE;  
@@ -1027,13 +1027,13 @@ bool Song::doUndo1()
                         }
                         else
                         {
-                            if(i->_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            if(i->_propertyTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_track);
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_propertyTrack);
                               if (at == 0)
                                 break;
-                              if (i->a != at->channels()) {
-                                    MusEGlobal::audio->msgSetChannels(at, i->a);
+                              if (i->_oldPropValue != at->channels()) {
+                                    MusEGlobal::audio->msgSetChannels(at, i->_oldPropValue);
                                     updateFlags |= SC_CHANNELS;
                                     }
                             }         
@@ -1128,31 +1128,30 @@ bool Song::doRedo1()
                         removeTrack1(i->oTrack);
                         break;
                   case UndoOp::ModifyTrackName:
-                          i->_track->setName(i->_newName);
+                          i->_renamedTrack->setName(i->_newName);
                           updateFlags |= SC_TRACK_MODIFIED;
                         break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
                   case UndoOp::ModifyTrackChannel:
-                        if (i->_track->isMidiTrack()) 
+                        if (i->_propertyTrack->isMidiTrack()) 
                         {
-                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_track);
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
                           if (mt == 0 || mt->type() == MusECore::Track::DRUM)
                           //if (mt == 0 || mt->isDrumTrack())  // For Flo later with new drum tracks.  p4.0.46 Tim
                             break;
-                          if (i->b != mt->outChannel()) 
+                          if (i->_newPropValue != mt->outChannel()) 
                           {
-                                //mt->setOutChannel(i->b);
+                                //mt->setOutChannel(i->_newPropValue);
                                 MusEGlobal::audio->msgIdle(true);
-                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->b);
-                                mt->setOutChanAndUpdate(i->b);
+                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->_newPropValue);
+                                mt->setOutChanAndUpdate(i->_newPropValue);
                                 MusEGlobal::audio->msgIdle(false);
-                                /* --- I really don't like this, you can mess up the whole map "as easy as dell" Taken from tlist.cpp
-                                if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
-                                      for (int i=0; i<DRUM_MAPSIZE; i++)
-                                            MusEGlobal::drumMap[i].channel = i->b;
-                                      }*/
+                                //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
+                                //      for (int i=0; i<DRUM_MAPSIZE; i++)
+                                //            MusEGlobal::drumMap[i].channel = i->_newPropValue;
+                                //      }
                                 //updateFlags |= SC_CHANNELS;
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
                                 //updateFlags |= SC_MIDI_TRACK_PROP | SC_ROUTE;  
@@ -1161,13 +1160,13 @@ bool Song::doRedo1()
                         }
                         else
                         {
-                            if(i->_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            if(i->_propertyTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_track);
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_propertyTrack);
                               if (at == 0)
                                 break;
-                              if (i->b != at->channels()) {
-                                    MusEGlobal::audio->msgSetChannels(at, i->b);
+                              if (i->_newPropValue != at->channels()) {
+                                    MusEGlobal::audio->msgSetChannels(at, i->_newPropValue);
                                     updateFlags |= SC_CHANNELS;
                                     }
                             }         

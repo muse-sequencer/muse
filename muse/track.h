@@ -199,7 +199,7 @@ class Track {
       void resetMeter();
 
       bool readProperty(Xml& xml, const QString& tag);
-      void setDefaultName();
+      void setDefaultName(QString base = QString());
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
       bool isMidiTrack() const       { return type() == MIDI || type() == DRUM; }

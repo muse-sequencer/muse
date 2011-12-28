@@ -99,11 +99,16 @@ struct UndoOp {
                   Marker* copyMarker;
                 };
             struct {
+                  Track* _renamedTrack;
                   char* _oldName;
                   char* _newName;
                 };
+            struct {
+                  Track* _propertyTrack;
+                  int _oldPropValue;
+                  int _newPropValue;
+                };
             };
-      Track* _track;
       Event oEvent;
       Event nEvent;
       bool doCtrls;

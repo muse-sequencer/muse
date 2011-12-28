@@ -879,13 +879,14 @@ void Audio::msgRemoveTracks()
             
 }
 
+/*   // Removed p4.0.47  REMOVE Tim.
 //---------------------------------------------------------
 //   msgChangeTrack
 //    oldTrack - copy of the original track befor modification
 //    newTrack - modified original track
 //---------------------------------------------------------
 
-void Audio::msgChangeTrack(Track* oldTrack, Track* newTrack, bool doUndoFlag)
+void Audio::msgChangeTrack(Track* oldTrack, Track* newTrack, bool doUndoFlag)   
       {
       AudioMsg msg;
       msg.id = SEQM_CHANGE_TRACK;
@@ -893,7 +894,8 @@ void Audio::msgChangeTrack(Track* oldTrack, Track* newTrack, bool doUndoFlag)
       msg.p2 = newTrack;
       sendMessage(&msg, doUndoFlag);
       }
-
+*/
+     
 //---------------------------------------------------------
 //   msgMoveTrack
 //    move track idx1 to slot idx2

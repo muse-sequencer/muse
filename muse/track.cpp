@@ -271,9 +271,9 @@ Track::Track(const Track& t, bool cloneParts)
               _parts.add(newPart);
               }
       }
-      else
+      /*else   // Removed p4.0.47 
       {
-        _parts = *(t.cparts());
+        _parts = *(t.cparts());  
         // NOTE: We can't do this because of the way clipboard, cloneList, and undoOp::ModifyTrack, work.
         // A couple of schemes were conceived to deal with cloneList being invalid, but the best way is
         //  to not alter the part list here. It's a big headache because: Either the parts in the cloneList
@@ -282,8 +282,8 @@ Track::Track(const Track& t, bool cloneParts)
         // So we can get away with leaving this out: 
         //for (iPart ip = _parts.begin(); ip != _parts.end(); ++ip) 
         //      ip->second->setTrack(this);
-      }
-              
+      } */
+      
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             //_meter[i] = 0;
             //_peak[i]  = 0;
@@ -348,31 +348,32 @@ Track& Track::operator=(const Track& t)
 //    generate unique name for track
 //---------------------------------------------------------
 
-void Track::setDefaultName()
+void Track::setDefaultName(QString base)
       {
-      QString base;
-      switch(_type) {
-            case MIDI:
-            case DRUM:
-            case WAVE:
-                  base = QString("Track");
-                  break;
-            case AUDIO_OUTPUT:
-                  base = QString("Out");
-                  break;
-            case AUDIO_GROUP:
-                  base = QString("Group");
-                  break;
-            case AUDIO_AUX:
-                  base = QString("Aux");
-                  break;
-            case AUDIO_INPUT:
-                  base = QString("Input");
-                  break;
-            case AUDIO_SOFTSYNTH:
-                  base = QString("Synth");
-                  break;
-            };
+      //QString base;
+      if(base.isEmpty())
+        switch(_type) {
+              case MIDI:
+              case DRUM:
+              case WAVE:
+                    base = QString("Track");
+                    break;
+              case AUDIO_OUTPUT:
+                    base = QString("Out");
+                    break;
+              case AUDIO_GROUP:
+                    base = QString("Group");
+                    break;
+              case AUDIO_AUX:
+                    base = QString("Aux");
+                    break;
+              case AUDIO_INPUT:
+                    base = QString("Input");
+                    break;
+              case AUDIO_SOFTSYNTH:
+                    base = QString("Synth");
+                    break;
+              };
       base += " ";
       for (int i = 1; true; ++i) {
             QString n;

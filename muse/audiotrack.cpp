@@ -151,13 +151,16 @@ AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
       _processed      = false;
       _haveData       = false;
       _sendMetronome  = t._sendMetronome;
-      _controller     = t._controller;
+      ///_controller     = t._controller;
       _prefader       = t._prefader;
       _auxSend        = t._auxSend;
-      _efxPipe        = new Pipeline(*(t._efxPipe));   
+      ///_efxPipe        = new Pipeline(*(t._efxPipe));   
+      _efxPipe        = new Pipeline();
       _automationType = t._automationType;
-      _inRoutes       = t._inRoutes;
-      _outRoutes      = t._outRoutes;
+      
+      ///_inRoutes       = t._inRoutes;   
+      ///_outRoutes      = t._outRoutes;
+      
       // Changed by Tim. p3.3.15
       //outBuffers = new float*[MAX_CHANNELS];
       //for (int i = 0; i < MAX_CHANNELS; ++i)
@@ -165,7 +168,6 @@ AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
       //for (int i = 0; i < MAX_CHANNELS; ++i)
       //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * MusEGlobal::segmentSize);
       
-      // p3.3.38
       int chans = _totalOutChannels;
       // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
       if(chans < MAX_CHANNELS)

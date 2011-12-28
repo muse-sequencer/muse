@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QPoint>
 #include <QSignalMapper>
+#include <QString>
 #include <QTextStream>
 #include <QProcess>
 #include <QByteArray>
@@ -375,6 +376,58 @@ Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
       }
 
 //---------------------------------------------------------
+//    duplicateTracks
+//    Called from GUI context
+//---------------------------------------------------------
+
+void Song::duplicateTracks()
+{
+  // Make a temporary copy.  
+  // TODO: FIXME: Not good enough if we want multiple tracks - the indexes will change.   p4.0.47
+  TrackList tl = _tracks;  
+  QString track_name;
+
+  int trackno = 0;
+  MusEGlobal::song->startUndo();
+  for(iTrack it = tl.begin(); it != tl.end(); ++it) 
+  {
+    Track* track = *it;
+    if(track->selected()) 
+    {
+      track_name = track->name();
+      switch(track->type()) 
+      {
+        case Track::AUDIO_SOFTSYNTH:
+          // TODO: Handle synths.   p4.0.47
+          break;
+        
+        default:
+          {
+            Track* new_track = track->clone(false);  // Don't clone parts.
+            new_track->setDefaultName(track_name);
+            
+            insertTrack1(new_track, trackno + 1);         
+            addUndo(MusECore::UndoOp(MusECore::UndoOp::AddTrack, trackno + 1, new_track));
+            msgInsertTrack(new_track, trackno + 1, false); // No undo.
+            insertTrack3(new_track, trackno + 1); 
+          }  
+          break;
+      }
+          
+    }
+    ++trackno;
+  }
+  MusEGlobal::song->endUndo(SC_TRACK_INSERTED);
+  MusEGlobal::audio->msgUpdateSoloStates();
+  //if (t->isVisible()) 
+  {
+    ////deselectTracks();
+    //t->setSelected(true);
+    ////update(SC_SELECTION);
+  }
+}          
+      
+//---------------------------------------------------------
 //   cmdRemoveTrack
 //---------------------------------------------------------
 
@@ -415,6 +468,7 @@ void Song::deselectTracks()
             (*t)->setSelected(false);
       }
 
+/*      // Removed p4.0.47  REMOVE Tim
 //---------------------------------------------------------
 //   changeTrack
 //    oldTrack - copy of the original track befor modification
@@ -430,7 +484,8 @@ void Song::changeTrack(Track* oldTrack, Track* newTrack)
       addUndo(UndoOp(UndoOp::ModifyTrack, idx, oldTrack, newTrack));
       updateFlags |= SC_TRACK_MODIFIED;
       }
-
+*/
+      
 //---------------------------------------------------------
 //  addEvent
 //    return true if event was added
@@ -1814,9 +1869,9 @@ void Song::processMsg(AudioMsg* msg)
                   //removeTrack2(msg->track);
                   cmdRemoveTrack(msg->track);
                   break;
-            case SEQM_CHANGE_TRACK:
-                  changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
-                  break;
+            //case SEQM_CHANGE_TRACK:    // Removed p4.0.47  REMOVE Tim.
+            //      changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
+            //      break;
             case SEQM_ADD_PART:
                   cmdAddPart((Part*)msg->p1);
                   break;

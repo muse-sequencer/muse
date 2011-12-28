@@ -69,7 +69,7 @@ class ArrangerView : public TopWin
 			CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_DELETE,
 			CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
 			CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
-			CMD_DELETE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
+			CMD_DELETE_TRACK, CMD_DUPLICATE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
 			CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
 			CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO     };
 
@@ -95,6 +95,7 @@ class ArrangerView : public TopWin
 		QAction *editCutAction, *editCopyAction, *editCopyRangeAction;
 		QAction *editPasteAction, *editPasteCloneAction, *editPasteDialogAction, *editPasteCloneDialogAction;
 		QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
+    QAction *editDuplicateSelTrackAction;
 		QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
 		QAction *masterGraphicAction, *masterListAction;
 		QAction *midiTransformerAction;

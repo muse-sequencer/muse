@@ -55,7 +55,8 @@ class Track;
 //---------------------------------------------------------
 
 enum {
-      SEQM_ADD_TRACK, SEQM_REMOVE_TRACK, SEQM_CHANGE_TRACK, SEQM_MOVE_TRACK,
+      SEQM_ADD_TRACK, SEQM_REMOVE_TRACK,   //SEQM_CHANGE_TRACK,  // Removed p4.0.47 REMOVE Tim.
+      SEQM_MOVE_TRACK,
       SEQM_ADD_PART, SEQM_REMOVE_PART, SEQM_CHANGE_PART,
       SEQM_ADD_EVENT, SEQM_REMOVE_EVENT, SEQM_CHANGE_EVENT,
       SEQM_ADD_TEMPO, SEQM_SET_TEMPO, SEQM_REMOVE_TEMPO, SEQM_ADD_SIG, SEQM_REMOVE_SIG,
@@ -221,7 +222,7 @@ class Audio {
 
       void msgRemoveTrack(Track*, bool u = true);
       void msgRemoveTracks();
-      void msgChangeTrack(Track* oldTrack, Track* newTrack, bool u = true);
+      //void msgChangeTrack(Track* oldTrack, Track* newTrack, bool u = true);
       void msgMoveTrack(int idx1, int dx2, bool u = true);
       void msgAddPart(Part*, bool u = true);
       void msgRemovePart(Part*, bool u = true);
