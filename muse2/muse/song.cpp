@@ -2074,6 +2074,7 @@ void Song::clear(bool signal, bool clear_all)
       // _tempo      = 500000;      // default tempo 120
       dirty          = false;
       initDrumMap();
+      initNewDrumMap();
       if (signal) {
             emit loopChanged(false);
             recordChanged(false);

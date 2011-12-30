@@ -4686,8 +4686,8 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     ("BUGGY! problem is: while changing entries, ourDrumMap
  *      may be reallocated which causes abort()s and/or bugs.")
  *      [ seems to work now, needs further testing! ]
- * > o my record flag handling
- *   o once, using super glue while a score editor displaying the glued 
+ *   x my record flag handling
+ *   * once, using super glue while a score editor displaying the glued 
  *     parts is open let muse segfault. this may or may not be fixed
  *     now. check!
  *     state of revision #1337: no segfaults, but the score editors

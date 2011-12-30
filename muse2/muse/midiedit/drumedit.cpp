@@ -644,7 +644,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
 void DrumEdit::songChanged1(int bits)
       {
-        if(_isDeleting)  // Ignore while while deleting to prevent crash.
+        if(_isDeleting)  // Ignore while deleting to prevent crash.
           return;
         
         if (bits & SC_SOLO)

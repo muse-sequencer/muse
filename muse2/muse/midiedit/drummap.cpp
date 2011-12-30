@@ -43,15 +43,13 @@ namespace MusECore {
 
 const DrumMap blankdm = { QString(""), 100, 16, 32, 9, 0, 70, 90, 127, 110, 127, 127, false };
 
-// this map must have 128 entries, as it's used for initalising new-style-drummaps as well.
-// new-style-drummaps only have 128 entries. also, the every "out-note" ("anote") must be
-// represented exactly once in that map, and there may be no duplicate or unused "out-notes".
-// reason: the track's drummap are inited as follows: iterate through the full idrumMap[],
-//         tracks_drummap[ idrumMap[i].anote ] = idrumMap[i]
-// if you ever want to change this, you will need to go through track.cpp/.h and 
-// {dlist,dcanvas,drumedit,drummap}{.cpp,.h} (and possibly some more) and find every usage
-// of idrumMap by new style drummaps, and fix the problem. a possible fix would be duplicating
-// idrumMap, change idrumMap, and use the duplicate for the new style stuff instead.
+// this map should have 128 entries, as it's used for initalising iNewDrumMap as well.
+// iNewDrumMap only has 128 entries. also, the every "out-note" ("anote") should be
+// represented exactly once in idrumMap, and there shall be no duplicate or unused
+// "out-notes".
+// reason: iNewDrumMap is inited as follows: iterate through the full idrumMap[],
+//         iNewDrumMap[ idrumMap[i].anote ] = idrumMap[i]
+// if you ever want to change this, you will need to fix the initNewDrumMap() function.
 const DrumMap idrumMap[DRUM_MAPSIZE] = {
       { QString("Acoustic Bass Drum"), 100, 16, 32, 9, 0, 70, 90, 127, 110, 35, 35, false },
       { QString("Bass Drum 1"),        100, 16, 32, 9, 0, 70, 90, 127, 110, 36, 36, false },
@@ -261,6 +259,55 @@ const DrumMap idrumMap[DRUM_MAPSIZE] = {
       { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 34, 34, false }
       };
       
+DrumMap iNewDrumMap[128];
+
+void initNewDrumMap()
+{
+  bool done[128];
+  for (int i=0;i<128;i++) done[i]=false;
+  
+  for (int i=0;i<DRUM_MAPSIZE;i++)
+  {
+    int idx=idrumMap[i].anote;
+    if (idx < 0 || idx >= 128)
+      printf("ERROR: THIS SHOULD NEVER HAPPEN: idrumMap[%i].anote is not within 0..127!\n", idx);
+    else
+    {
+      if (done[idx]==true)
+      {
+        printf("ERROR: iNewDrumMap[%i] is already initalized!\n"
+               "       this will be probably not a problem, but some programmer didn't read\n"
+               "       flo's comment at drummap.cpp, above idrumMap[].\n", idx);
+      }
+      else
+      {
+        iNewDrumMap[idx]=idrumMap[i];
+        done[idx]=true;
+      }
+    }
+  }
+  
+  for (int i=0;i<128;i++)
+  {
+    if (done[i]==false)
+    {
+      printf("ERROR: iNewDrumMap[%i] is uninitalized!\n"
+             "       this will be probably not a problem, but some programmer didn't read\n"
+             "       flo's comment at drummap.cpp, above idrumMap[].\n", i);
+      iNewDrumMap[i].name="";
+      iNewDrumMap[i].vol=100;
+      iNewDrumMap[i].quant=16;
+      iNewDrumMap[i].len=32;
+      iNewDrumMap[i].lv1=70;
+      iNewDrumMap[i].lv2=90;
+      iNewDrumMap[i].lv3=127;
+      iNewDrumMap[i].lv4=110;
+      iNewDrumMap[i].enote=i;
+      iNewDrumMap[i].anote=i;
+    }
+  }
+}
+
 
 //---------------------------------------------------------
 //   initDrumMap
@@ -331,6 +378,14 @@ bool DrumMap::operator==(const DrumMap& map) const
          && anote == map.anote
          && mute == map.mute;
       }
+
+bool DrumMap::almost_equals(const DrumMap& map) const
+{
+  DrumMap tmp=map;
+  tmp.mute=this->mute;
+  return tmp==*this;
+}
+
 
 //---------------------------------------------------------
 //   writeDrumMap

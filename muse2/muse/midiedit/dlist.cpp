@@ -401,6 +401,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       {
                         MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(*it);
                         mt->drummap()[mt->map_drum_in(val)].enote=dm->enote;
+                        mt->set_drummap_tied_to_patch(false);
                       }
                       // propagating this is unneccessary as it's already done.
                       // updating the drumInmap is unneccessary, as the propagate call below
@@ -900,6 +901,7 @@ void DList::pitchEdited()
                       {
                         MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(*it);
                         mt->drummap()[mt->map_drum_in(val)].enote=editEntry->enote;
+                        mt->set_drummap_tied_to_patch(false);
                       }
                       // propagating this is unneccessary as it's already done.
                       // updating the drumInmap is unneccessary, as the propagate call below

@@ -236,11 +236,13 @@ class MidiTrack : public Track {
       DrumMap* _drummap; // _drummap[foo].anote is always equal to foo
       bool* _drummap_hidden; // _drummap und _drummap_hidden will be an array[128]
       bool _drummap_tied_to_patch; //if true, changing patch also changes drummap
+      bool _drummap_ordering_tied_to_patch; //if true, changing patch also changes drummap-ordering
       int drum_in_map[128];
       
       void init();
       void init_drummap(bool write_ordering); // function without argument in public
       void remove_ourselves_from_drum_ordering();
+      void init_drum_ordering();
       
       void writeOurDrumSettings(int level, Xml& xml) const;
       void readOurDrumSettings(Xml& xml);
@@ -310,6 +312,8 @@ class MidiTrack : public Track {
       virtual bool canRecord() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       static bool visible() { return _isVisible; }
+      
+      int getFirstControllerValue(int ctrl, int def=-1);
 
       void setClef(clefTypes i) { clefType = i; }
       clefTypes getClef() { return clefType; }
@@ -320,6 +324,12 @@ class MidiTrack : public Track {
       void update_drum_in_map();
 
       void init_drummap() { init_drummap(false); } // function with argument in private
+      
+      bool auto_update_drummap();
+      void set_drummap_tied_to_patch(bool);
+      bool drummap_tied_to_patch() { return _drummap_tied_to_patch; }
+      void set_drummap_ordering_tied_to_patch(bool);
+      bool drummap_ordering_tied_to_patch() { return _drummap_ordering_tied_to_patch; }
 
       //void writeOurDrumSettings(int level, Xml& xml) const; // above in private:
       //void readOurDrumSettings(Xml& xml); // above in private:

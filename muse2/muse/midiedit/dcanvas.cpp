@@ -1008,6 +1008,19 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
         using MusEGlobal::global_drum_ordering_t;
         using MusEGlobal::global_drum_ordering;
         
+        for (QSet<MusECore::Track*>::iterator it=instrument_map[spitch].tracks.begin();
+                                             it!=instrument_map[spitch].tracks.end(); it++)
+        {
+          if (dynamic_cast<MusECore::MidiTrack*>(*it))
+          dynamic_cast<MusECore::MidiTrack*>(*it)->set_drummap_ordering_tied_to_patch(false);
+        }
+        for (QSet<MusECore::Track*>::iterator it=instrument_map[dpitch].tracks.begin();
+                                             it!=instrument_map[dpitch].tracks.end(); it++)
+        {
+          if (dynamic_cast<MusECore::MidiTrack*>(*it))
+          dynamic_cast<MusECore::MidiTrack*>(*it)->set_drummap_ordering_tied_to_patch(false);
+        }
+        
         MusECore::DrumMap dm_temp = ourDrumMap[spitch];
         instrument_number_mapping_t im_temp = instrument_map[spitch];
 
@@ -1450,9 +1463,13 @@ void DrumCanvas::propagate_drummap_change(int instr, bool update_druminmap)
   
   for (QSet<MusECore::Track*>::const_iterator it = tracks.begin(); it != tracks.end(); it++)
   {
-    dynamic_cast<MusECore::MidiTrack*>(*it)->drummap()[index] = ourDrumMap[instr];
+    MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(*it);
+    // if we're not only changing "mute" state...
+    if (!mt->drummap()[index].almost_equals(ourDrumMap[instr]))
+      mt->set_drummap_tied_to_patch(false);
+    mt->drummap()[index] = ourDrumMap[instr];
     if (update_druminmap)
-      dynamic_cast<MusECore::MidiTrack*>(*it)->update_drum_in_map();
+      mt->update_drum_in_map();
   }
 }
 

@@ -49,12 +49,15 @@ struct DrumMap {
 
       bool operator==(const DrumMap& map) const;
       bool operator!=(const DrumMap& map) const { return !operator==(map); }
+      bool almost_equals(const DrumMap& map) const;
       };
 
-// please let this at "128". idrumMap must have length 128 (see drummap.cpp for details)
+// please let this at "128". idrumMap should have length 128 (see drummap.cpp for details)
 #define DRUM_MAPSIZE  128
 
-extern const DrumMap idrumMap[DRUM_MAPSIZE]; //FINDMICH dummy!
+extern DrumMap iNewDrumMap[128];
+extern void initNewDrumMap();
+
 extern void initDrumMap();
 extern void writeDrumMap(int level, Xml& xml, bool external);
 extern void readDrumMap(Xml& xml, bool external);

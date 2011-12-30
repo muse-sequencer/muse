@@ -40,6 +40,7 @@ class MidiControllerList;
 class MidiPort;
 class MidiPlayEvent;
 class Xml;
+class DrumMap;
 
 
 //---------------------------------------------------------
@@ -80,6 +81,43 @@ struct SysEx {
       unsigned char* data;
       };
 
+
+
+struct patch_collection_t
+{
+  int first_program;
+  int last_program;
+  int first_hbank;
+  int last_hbank;
+  int first_lbank;
+  int last_lbank;
+  
+  patch_collection_t(int p1=0, int p2=127, int l1=0, int l2=127, int h1=0, int h2=127)
+  {
+    first_program=p1;
+    last_program=p2;
+    first_lbank=l1;
+    last_lbank=l2;
+    first_hbank=h1;
+    last_hbank=h2;
+  }
+
+};
+
+struct patch_drummap_mapping_t
+{
+  std::list<patch_collection_t> affected_patches;
+  DrumMap* drummap;
+  
+  patch_drummap_mapping_t(const std::list<patch_collection_t>& a, DrumMap* d)
+  {
+    affected_patches=a;
+    drummap=d;
+  }
+  
+  patch_drummap_mapping_t();
+};
+
 //---------------------------------------------------------
 //   MidiInstrument
 //---------------------------------------------------------
@@ -88,6 +126,7 @@ class MidiInstrument {
       PatchGroupList pg;
       MidiControllerList* _controller;
       QList<SysEx*> _sysex;
+      std::list<patch_drummap_mapping_t> patch_drummap_mapping;
       bool _dirty;
       int _nullvalue;
 
@@ -103,6 +142,12 @@ class MidiInstrument {
       char* _initScript;
       QString _name;
       QString _filePath;
+      
+      void clear_delete_patch_drummap_mapping();
+      
+      void readDrummaps(Xml& xml);
+      patch_drummap_mapping_t readDrummapsEntry(Xml& xml);
+      patch_collection_t readDrummapsEntryPatchCollection(Xml& xml);
 
    public:
       MidiInstrument();
@@ -122,6 +167,8 @@ class MidiInstrument {
       const QList<SysEx*>& sysex() const     { return _sysex; }
       void removeSysex(SysEx* sysex)         { _sysex.removeAll(sysex); }
       void addSysex(SysEx* sysex)            { _sysex.append(sysex); }
+      
+      const DrumMap* drummap_for_patch(int patch) const;
       
       EventList* midiInit() const            { return _midiInit; }
       EventList* midiReset() const           { return _midiReset; }
