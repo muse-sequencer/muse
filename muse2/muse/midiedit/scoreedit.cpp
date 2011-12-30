@@ -4679,7 +4679,9 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  *
  * CURRENT TODO
- *   o drum controllers
+ *   o write instrument drummaps
+ *   o GUI for editing instrument drummaps
+ *   * drum controllers
  *       update ctrlcanvas/panel
  *       test!
  *   * drum editor is buggy. propagate_drum_map may operate on old values
