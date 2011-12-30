@@ -49,8 +49,6 @@ namespace MusECore {
 MidiInstrumentList midiInstruments;
 MidiInstrument* genericMidiInstrument;
 
-static const char* gmdrumname = "GM-drums";
-
 //---------------------------------------------------------
 //   string2sysex
 //---------------------------------------------------------
@@ -1054,8 +1052,6 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
                   tmask = 4;
                   break;
             case MT_GM:
-                  if(drumchan)
-                        return gmdrumname;
                   tmask = 1;
                   break;
             default:
@@ -1067,10 +1063,8 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
             const PatchList& pl = (*i)->patches;
             for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                   const Patch* mp = *ipl;
-                  if ((mp->typ & tmask)
-                    && (pr == mp->prog)
-                    && ((drum && mode != MT_GM) || 
-                       (mp->drum == drumchan))   
+                  if ( (pr == mp->prog)
+                    && (mp->drum == drum)
                     
                     && (hbank == mp->hbank || !hb || mp->hbank == -1)
                     && (lbank == mp->lbank || !lb || mp->lbank == -1))
@@ -1084,49 +1078,35 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MType songType, bool drum)
+void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int, MType, bool drum)
       {
       menu->clear();
-      int mask = 0;
-      bool drumchan = chan == 9;
-      switch (songType) {
-            case MT_XG: mask = 4; break;
-            case MT_GS: mask = 2; break;
-            case MT_GM: 
-              if(drumchan)
-              {
-                int id = (0xff << 16) + (0xff << 8) + 0x00;  // First patch
-                QAction* act = menu->addAction(gmdrumname);
-                //act->setCheckable(true);
-                act->setData(id);
-                return;
-              }  
-              mask = 1; 
-              break;
-            case MT_UNKNOWN:  mask = 7; break;
-            }
+
       if (pg.size() > 1) {
             for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
                   PatchGroup* pgp = *i;
-                  //QMenu* pm = menu->addMenu(pgp->name);
                   MusEGui::PopupMenu* pm = new MusEGui::PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
-                  menu->addMenu(pm);
-                  pm->setFont(MusEGlobal::config.fonts[0]);
                   const PatchList& pl = pgp->patches;
+                  bool added=false;
                   for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                         const Patch* mp = *ipl;
-                        if ((mp->typ & mask) && 
-                            ((drum && songType != MT_GM) || 
-                            (mp->drum == drumchan)) )  
+                        if (mp->drum == drum)
                             {
                               int id = ((mp->hbank & 0xff) << 16)
                                          + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
                               QAction* act = pm->addAction(mp->name);
-                              //act->setCheckable(true);
                               act->setData(id);
+                              added=true;
                             }
-                              
                         }
+                  if (added)
+                  {
+                    menu->addMenu(pm);
+                    pm->setFont(MusEGlobal::config.fonts[0]);
+                  }
+                  else
+                    delete pm;
+                  
                   }
             }
       else if (pg.size() == 1 ){
@@ -1134,11 +1114,10 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MTyp
             const PatchList& pl = pg.front()->patches;
             for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                   const Patch* mp = *ipl;
-                  if (mp->typ & mask) {
+                  if (mp->drum == drum) {
                         int id = ((mp->hbank & 0xff) << 16)
                                  + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
                         QAction* act = menu->addAction(mp->name);
-                        //act->setCheckable(true);
                         act->setData(id);
                         }
                   }
