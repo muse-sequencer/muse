@@ -879,7 +879,7 @@ void Audio::msgRemoveTracks()
             
 }
 
-/*   // Removed p4.0.47  REMOVE Tim.
+/*   
 //---------------------------------------------------------
 //   msgChangeTrack
 //    oldTrack - copy of the original track befor modification

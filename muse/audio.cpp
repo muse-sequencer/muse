@@ -67,7 +67,7 @@ extern double curTime();
 //static const unsigned char mmcStopMsg[] =         { 0x7f, 0x7f, 0x06, 0x01 };
 
 const char* seqMsgList[] = {
-      "SEQM_ADD_TRACK", "SEQM_REMOVE_TRACK", //"SEQM_CHANGE_TRACK",  // Removed p4.0.47  REMOVE Tim.
+      "SEQM_ADD_TRACK", "SEQM_REMOVE_TRACK", //"SEQM_CHANGE_TRACK",  
       "SEQM_MOVE_TRACK",
       "SEQM_ADD_PART", "SEQM_REMOVE_PART", "SEQM_CHANGE_PART",
       "SEQM_ADD_EVENT", "SEQM_REMOVE_EVENT", "SEQM_CHANGE_EVENT",

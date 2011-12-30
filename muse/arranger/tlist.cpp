@@ -463,17 +463,17 @@ void TList::returnPressed()
                               Qt::NoButton,
                               Qt::NoButton);
                             editTrack = 0;
-                            editor->blockSignals(true);  // p4.0.46 Tim.
+                            editor->blockSignals(true);  
                             editor->hide();
-                            editor->blockSignals(false); // p4.0.46 Tim.
+                            editor->blockSignals(false); 
                             setFocus();
                             return;
                             }
                       }
                       
-                ///MusECore::Track* track = editTrack->clone(false);
-                ///editTrack->setName(editor->text());
-                ///MusEGlobal::audio->msgChangeTrack(track, editTrack);
+                //MusECore::Track* track = editTrack->clone(false);
+                //editTrack->setName(editor->text());
+                //MusEGlobal::audio->msgChangeTrack(track, editTrack);
                 // p4.0.46 Tim...
                 MusEGlobal::song->startUndo();
                 MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackName, 
@@ -486,91 +486,21 @@ void TList::returnPressed()
                 }
         }    
         
-        /*
-        // p4.0.46 Tim...
-        if(chan_edit && chan_edit->isVisible())
-        {    
-          chan_edit->hide();
-          if(editTrack->isMidiTrack()) 
-          {
-            MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editTrack);
-            if (mt && mt->type() != MusECore::Track::DRUM)
-            //if (mt && !mt->isDrumTrack())  // For Flo later with new drum tracks.  p4.0.46 Tim
-            {
-              
-              int channel = chan_edit->value() - 1;
-              if(channel >= MIDI_CHANNELS)
-                channel = MIDI_CHANNELS - 1;
-              if(channel < 0)
-                channel = 0;
-              if (channel != mt->outChannel()) 
-              {
-                    MusEGlobal::song->startUndo();
-                    MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, 
-                                                              editTrack, 
-                                                              mt->outChannel(), 
-                                                              channel));
-                    //mt->setOutChannel(channel);
-                    MusEGlobal::audio->msgIdle(true);
-                    //MusEGlobal::audio->msgSetTrackOutChannel(mt, channel);
-                    mt->setOutChanAndUpdate(channel);
-                    MusEGlobal::audio->msgIdle(false);
-                    //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
-                    //      for (int i=0; i<DRUM_MAPSIZE; i++)
-                    //            MusEGlobal::drumMap[i].channel = channel;
-                    //      }
-                    //MusEGlobal::song->update(SC_CHANNELS);
-                    //MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
-                    MusEGlobal::audio->msgUpdateSoloStates();                   
-                    //MusEGlobal::song->update(SC_TRACK_MODIFIED);   
-                    MusEGlobal::song->endUndo(SC_MIDI_TRACK_PROP);
-              }
-            }  
-          }
-          else
-          {
-              if(editTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
-              {
-                MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(editTrack);
-                if(at)
-                {  
-                  int n = chan_edit->value();
-                  if (n > MAX_CHANNELS)
-                        n = MAX_CHANNELS;
-                  else if (n < 1)
-                        n = 1;
-                  if (n != at->channels()) 
-                  {
-                        MusEGlobal::song->startUndo();
-                        MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, 
-                                                                editTrack, 
-                                                                at->channels(), 
-                                                                n));
-                        MusEGlobal::audio->msgSetChannels(at, n);
-                        MusEGlobal::song->endUndo(SC_CHANNELS);
-                  }
-                }     
-              }         
-          }      
-        }  
-        */
-        
         editTrack = 0;
       }  
       
       editMode = false;
       if(editor->isVisible())
       {  
-        editor->blockSignals(true);  // p4.0.46 Tim.
+        editor->blockSignals(true);  
         editor->hide();
-        editor->blockSignals(false); // p4.0.46 Tim. 
+        editor->blockSignals(false); 
       }  
       setFocus();
 }
 
 void TList::chanValueChanged(int /*val*/)
 {
-  // Removed p4.0.46 Tim...
   //MusECore::Track* track = editTrack->clone(false);
   //((MusECore::MidiTrack*)editTrack)->setOutChannel(val-1);
   //MusEGlobal::audio->msgChangeTrack(track, editTrack);
@@ -578,7 +508,6 @@ void TList::chanValueChanged(int /*val*/)
 
 void TList::chanValueFinished()
 {
-  // p4.0.46 Tim...
   if(editTrack)
   { 
     if(editTrack->isMidiTrack()) 
@@ -693,7 +622,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       {
       int button  = ev->button();
       //bool ctrl  = ((QInputEvent*)ev)->modifiers() & Qt::ControlModifier;
-      if(button != Qt::LeftButton) {   // p4.0.46 Tim.
+      if(button != Qt::LeftButton) {   
         mousePressEvent(ev);
         return;
       }  
@@ -702,7 +631,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       int section = header->logicalIndexAt(x);
       if (section == -1)
       {  
-        mousePressEvent(ev);  // p4.0.46 Tim.
+        mousePressEvent(ev);  
         return;
       }
       
@@ -721,11 +650,11 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                         /*connect(editor, SIGNAL(returnPressed()),
                            SLOT(returnPressed()));*/
                         editor->setFrame(true);
-                        connect(editor, SIGNAL(editingFinished()), SLOT(returnPressed()));   // p4.0.46 Tim.
+                        connect(editor, SIGNAL(editingFinished()), SLOT(returnPressed()));   
                         }
-                  //editor->blockSignals(true);      // p4.0.46 Tim.
+                  //editor->blockSignals(true);      
                   editor->setText(editTrack->name());
-                  //editor->blockSignals(false);     // p4.0.46 Tim. 
+                  //editor->blockSignals(false);     
                   editor->end(false);
                   editor->setGeometry(colx, coly, colw, colh);
                   editMode = true;
@@ -733,7 +662,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   }
             else if (section == COL_OCHANNEL) {
                   //if (t->isMidiTrack() && t->type() != MusECore::Track::DRUM)
-                  // Enabled for audio tracks. And synth channels cannot be changed ATM.   p4.0.46 Tim.
+                  // Enabled for audio tracks. And synth channels cannot be changed ATM.   
                   if(t->type() == MusECore::Track::DRUM || t->type() == MusECore::Track::AUDIO_SOFTSYNTH)   
                   {
                     mousePressEvent(ev);
@@ -749,7 +678,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                             //connect(chan_edit, SIGNAL(valueChanged(int)), SLOT(chanValueChanged(int)));
                             connect(chan_edit, SIGNAL(editingFinished()), SLOT(chanValueFinished()));
                             }
-                      //chan_edit->blockSignals(true);      // p4.0.46 Tim.
+                      //chan_edit->blockSignals(true);      
                       if (t->isMidiTrack())
                       {  
                         chan_edit->setMaximum(MIDI_CHANNELS);
@@ -760,14 +689,14 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                         chan_edit->setMaximum(MAX_CHANNELS);
                         chan_edit->setValue(((MusECore::AudioTrack*)editTrack)->channels());
                       }  
-                      //chan_edit->blockSignals(false);     // p4.0.46 Tim. 
+                      //chan_edit->blockSignals(false);     
                       int w=colw;
                       if (w < chan_edit->sizeHint().width()) w=chan_edit->sizeHint().width();
                       chan_edit->setGeometry(colx, coly, w, colh);
-                      editMode = true;     // p4.0.46 Tim.
+                      editMode = true;     
                       chan_edit->show();
                       chan_edit->setFocus();
-                      ev->accept();    // p4.0.46 Tim.
+                      ev->accept();    
                       }
                   }
             else
@@ -1165,11 +1094,11 @@ void TList::keyPressEvent(QKeyEvent* e)
                   {
                   if(editor && editor->isVisible())         
                   {  
-                    editor->blockSignals(true);  // p4.0.46 Tim.
+                    editor->blockSignals(true);  
                     editor->hide();
-                    editor->blockSignals(false); // p4.0.46 Tim.
+                    editor->blockSignals(false); 
                   }  
-                  if(chan_edit && chan_edit->isVisible())  // p4.0.46 Tim.       
+                  if(chan_edit && chan_edit->isVisible())  
                   {  
                     chan_edit->blockSignals(true);
                     chan_edit->hide();    

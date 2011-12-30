@@ -97,7 +97,7 @@ typedef std::map<int, CtrlVal, std::less<int> >::const_iterator ciCtrl;
 class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
    public:
       enum Mode { INTERPOLATE, DISCRETE};
-      
+      enum AssignFlags { ASSIGN_PROPERTIES=1, ASSIGN_VALUES=2 };  // Can be or'd together.
    private:
       Mode _mode;
       int _id;
@@ -116,6 +116,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       CtrlList();
       CtrlList(int id);
       CtrlList(int id, QString name, double min, double max, CtrlValueType v, bool dontShow=false);
+      void assign(const CtrlList& l, int flags); 
 
       Mode mode() const          { return _mode; }
       void setMode(Mode m)       { _mode = m; }
@@ -162,6 +163,12 @@ typedef std::map<int, CtrlList*, std::less<int> >::const_iterator ciCtrlList;
 class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
    public:
       void add(CtrlList* vl);
+      void clearDelete() {
+            for(iCtrlList i = begin(); i != end(); ++i)
+              delete i->second;
+            clear();
+           }     
+
       iCtrlList find(int id) {
             return std::map<int, CtrlList*, std::less<int> >::find(id);
             }

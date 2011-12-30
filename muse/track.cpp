@@ -230,39 +230,66 @@ void Track::init()
       }
 
 Track::Track(Track::TrackType t)
-      {
+{
       init();
       _type = t;
+}
+
+Track::Track(const Track& t, int flags)
+{
+      internal_assign(t, flags | ASSIGN_PROPERTIES);  
+      for (int i = 0; i < MAX_CHANNELS; ++i) {
+            //_meter[i] = 0;
+            //_peak[i]  = 0;
+            _meter[i] = 0.0;
+            _peak[i]  = 0.0;
+            }
+}
+
+Track::~Track()
+{
+  _parts.clearDelete();
+}
+
+//---------------------------------------------------------
+//   assign 
+//---------------------------------------------------------
+
+void Track::assign(const Track& t, int flags) 
+{
+  internal_assign(t, flags);
+}
+
+void Track::internal_assign(const Track& t, int flags)
+{
+      if(flags & ASSIGN_PROPERTIES)
+      {
+        _auxRouteCount = t._auxRouteCount;
+        _nodeTraversed = t._nodeTraversed;
+        _activity     = t._activity;
+        _lastActivity = t._lastActivity;
+        _recordFlag   = t._recordFlag;
+        _mute         = t._mute;
+        _solo         = t._solo;
+        _internalSolo = t._internalSolo;
+        _off          = t._off;
+        _channels     = t._channels;
+        
+        _volumeEnCtrl  = t._volumeEnCtrl;
+        _volumeEn2Ctrl = t._volumeEn2Ctrl;
+        _panEnCtrl     = t._panEnCtrl;
+        _panEn2Ctrl    = t._panEn2Ctrl;
+        
+        _selected     = t.selected();
+        _y            = t._y;
+        _height       = t._height;
+        _comment      = t.comment();
+        _name         = t.name();
+        _type         = t.type();
+        _locked       = t.locked();
       }
 
-//Track::Track(const Track& t)
-Track::Track(const Track& t, bool cloneParts)
-      {
-      _auxRouteCount = t._auxRouteCount;
-      _nodeTraversed = t._nodeTraversed;
-      _activity     = t._activity;
-      _lastActivity = t._lastActivity;
-      _recordFlag   = t._recordFlag;
-      _mute         = t._mute;
-      _solo         = t._solo;
-      _internalSolo = t._internalSolo;
-      _off          = t._off;
-      _channels     = t._channels;
-      
-      _volumeEnCtrl  = t._volumeEnCtrl;
-      _volumeEn2Ctrl = t._volumeEn2Ctrl;
-      _panEnCtrl     = t._panEnCtrl;
-      _panEn2Ctrl    = t._panEn2Ctrl;
-      
-      _selected     = t.selected();
-      _y            = t._y;
-      _height       = t._height;
-      _comment      = t.comment();
-      _name         = t.name();
-      _type         = t.type();
-      _locked       = t.locked();
-
-      if(cloneParts)
+      if(flags & ASSIGN_PARTS)
       {
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
@@ -271,77 +298,15 @@ Track::Track(const Track& t, bool cloneParts)
               _parts.add(newPart);
               }
       }
-      /*else   // Removed p4.0.47 
+
+      if(flags & ASSIGN_ROUTES)
       {
-        _parts = *(t.cparts());  
-        // NOTE: We can't do this because of the way clipboard, cloneList, and undoOp::ModifyTrack, work.
-        // A couple of schemes were conceived to deal with cloneList being invalid, but the best way is
-        //  to not alter the part list here. It's a big headache because: Either the parts in the cloneList
-        //  need to be reliably looked up replaced with the new ones, or the clipboard and cloneList must be cleared.
-        // Fortunately the ONLY part of muse using this function is track rename (in TrackList and TrackInfo).
-        // So we can get away with leaving this out: 
-        //for (iPart ip = _parts.begin(); ip != _parts.end(); ++ip) 
-        //      ip->second->setTrack(this);
-      } */
-      
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
-            //_meter[i] = 0;
-            //_peak[i]  = 0;
-            _meter[i] = 0.0;
-            _peak[i]  = 0.0;
-            }
       }
-
-Track::~Track()
-{
-  _parts.clearDelete();
+      else
+      if(flags & ASSIGN_DEFAULT_ROUTES)
+      {
+      }
 }
-
-/*
-//---------------------------------------------------------
-//   operator =
-//   Added by Tim. Parts' track members MUST point to this track, 
-//    not some other track, so simple assignment operator won't do!
-//---------------------------------------------------------
-
-Track& Track::operator=(const Track& t) 
-{
-      _auxRouteCount = t._auxRouteCount;
-      _nodeTraversed = t._nodeTraversed;
-      _activity     = t._activity;
-      _lastActivity = t._lastActivity;
-      _recordFlag   = t._recordFlag;
-      _mute         = t._mute;
-      _solo         = t._solo;
-      _internalSolo = t._internalSolo;
-      _off          = t._off;
-      _channels     = t._channels;
-      
-      _volumeEnCtrl  = t._volumeEnCtrl;
-      _volumeEn2Ctrl = t._volumeEn2Ctrl;
-      _panEnCtrl     = t._panEnCtrl;
-      _panEn2Ctrl    = t._panEn2Ctrl;
-      
-      _selected     = t.selected();
-      _y            = t._y;
-      _height       = t._height;
-      _comment      = t.comment();
-      _name         = t.name();
-      _type         = t.type();
-      _locked       = t.locked();
-
-      _parts = *(t.cparts());
-      // NOTE: Can't do this. See comments in copy constructor.
-      //for (iPart ip = _parts.begin(); ip != _parts.end(); ++ip) 
-      //      ip->second->setTrack(this);
-      
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
-            _meter[i] = t._meter[i];
-            _peak[i]  = t._peak[i];
-            }
-     return *this;       
-}
-*/
 
 //---------------------------------------------------------
 //   setDefaultName
@@ -350,8 +315,9 @@ Track& Track::operator=(const Track& t)
 
 void Track::setDefaultName(QString base)
       {
-      //QString base;
+      int num_base = 1;  
       if(base.isEmpty())
+      {  
         switch(_type) {
               case MIDI:
               case DRUM:
@@ -374,8 +340,15 @@ void Track::setDefaultName(QString base)
                     base = QString("Synth");
                     break;
               };
-      base += " ";
-      for (int i = 1; true; ++i) {
+        base += " ";
+      }        
+      else 
+      {
+        num_base = 2;  
+        base += " #";
+      }
+      
+      for (int i = num_base; true; ++i) {
             QString n;
             n.setNum(i);
             QString s = base + n;
@@ -541,25 +514,40 @@ MidiTrack::MidiTrack()
       clefType=trebleClef;
       }
 
-//MidiTrack::MidiTrack(const MidiTrack& mt)
-//   : Track(mt)
-MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
-   : Track(mt, cloneParts)
+MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
+  : Track(mt, flags)
+{
+      _events   = new EventList;
+      _mpevents = new MPEventList;
+      internal_assign(mt, flags | Track::ASSIGN_PROPERTIES);  
+}
+
+void MidiTrack::internal_assign(const Track& t, int flags)
+{
+      if(!t.isMidiTrack())
+        return;
+      
+      const MidiTrack& mt = (const MidiTrack&)t; 
+      
+      if(flags & ASSIGN_PROPERTIES)
       {
-      _outPort       = mt.outPort();
-      _outChannel    = mt.outChannel();
-      ///_inPortMask    = mt.inPortMask();
-      ///_inChannelMask = mt.inChannelMask();
-      _events        = new EventList;
-      _mpevents      = new MPEventList;
-      transposition  = mt.transposition;
-      velocity       = mt.velocity;
-      delay          = mt.delay;
-      len            = mt.len;
-      compression    = mt.compression;
-      _recEcho       = mt.recEcho();
-      clefType=trebleClef;
-      }
+        _outPort       = mt.outPort();
+        _outChannel    = mt.outChannel();
+        transposition  = mt.transposition;
+        velocity       = mt.velocity;
+        delay          = mt.delay;
+        len            = mt.len;
+        compression    = mt.compression;
+        _recEcho       = mt.recEcho();
+        clefType       = mt.clefType;
+      }  
+}
+
+void MidiTrack::assign(const Track& t, int flags)
+{
+      Track::assign(t, flags);
+      internal_assign(t, flags);
+}
 
 MidiTrack::~MidiTrack()
       {

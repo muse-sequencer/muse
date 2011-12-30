@@ -1851,12 +1851,15 @@ void AudioTrack::setTotalOutChannels(int num)
         // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
         if(chans < MAX_CHANNELS)
           chans = MAX_CHANNELS;
-        for(int i = 0; i < chans; ++i) 
-        {
-          if(outBuffers[i])
-            free(outBuffers[i]);
-        }
-        delete[] outBuffers;
+        if(outBuffers)
+        {  
+          for(int i = 0; i < chans; ++i) 
+          {
+            if(outBuffers[i])
+              free(outBuffers[i]);
+          }
+          delete[] outBuffers;
+        }  
         
         _totalOutChannels = num;
         chans = num;

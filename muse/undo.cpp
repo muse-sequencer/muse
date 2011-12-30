@@ -21,14 +21,14 @@
 //
 //=========================================================
 
-///#include "sig.h"
-#include "al/sig.h"  // Tim.
+//#include "sig.h"
+#include "al/sig.h"  
 #include "keyevent.h"
 
 #include "undo.h"
 #include "song.h"
 #include "globals.h"
-#include "audio.h"  // p4.0.46
+#include "audio.h"  
 
 #include <string.h>
 #include <QAction>
@@ -207,7 +207,7 @@ void UndoList::clearDelete()
                   delete i->copyMarker;
                 break;
           case UndoOp::ModifyTrackName:
-                printf("UndoList::clearDelete ModifyTrackName old:%s new:%s\n", i->_oldName, i->_newName);  // REMOVE Tim.
+                //printf("UndoList::clearDelete ModifyTrackName old:%s new:%s\n", i->_oldName, i->_newName);  
                 if (i->_oldName)
                   delete i->_oldName;
                 if (i->_newName)
@@ -336,7 +336,6 @@ void Song::doUndo2()
 /*                        
                   case UndoOp::ModifyTrack:
                         {
-                        // Added by Tim. p3.3.6
                         //printf("Song::doUndo2 ModifyTrack #1 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
                         
                         // Unchain the track parts, but don't touch the ref counts.
@@ -348,7 +347,6 @@ void Song::doUndo2()
                         // A Track custom assignment operator was added by Tim. 
                         *(i->nTrack) = *(i->oTrack);
                         
-                        // Added by Tim. p3.3.6
                         //printf("Song::doUndo2 ModifyTrack #2 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
                         
                         // Prevent delete i->oTrack from crashing.
@@ -380,7 +378,6 @@ void Song::doUndo2()
                         // Chain the track parts, but don't touch the ref counts.
                         chainTrackParts(i->nTrack, false);
 
-                        // Added by Tim. p3.3.6
                         //printf("Song::doUndo2 ModifyTrack #3 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
                         
                         // Connect and register ports.

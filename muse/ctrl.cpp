@@ -56,6 +56,17 @@ void CtrlList::initColor(int i)
 //   CtrlList
 //---------------------------------------------------------
 
+CtrlList::CtrlList()
+      {
+      _id      = 0;
+      _default = 0.0;
+      _curVal  = 0.0;
+      _mode    = INTERPOLATE;
+      _dontShow = false;
+      _visible = false;
+      initColor(0);
+      }
+
 CtrlList::CtrlList(int id)
       {
       _id      = id;
@@ -63,11 +74,10 @@ CtrlList::CtrlList(int id)
       _curVal  = 0.0;
       _mode    = INTERPOLATE;
       _dontShow = false;
+      _visible = false;
       initColor(id);
       }
-//---------------------------------------------------------
-//   CtrlList
-//---------------------------------------------------------
+
 CtrlList::CtrlList(int id, QString name, double min, double max, CtrlValueType v, bool dontShow)
 {
       _id      = id;
@@ -79,21 +89,36 @@ CtrlList::CtrlList(int id, QString name, double min, double max, CtrlValueType v
       _max     = max;
       _valueType = v;
       _dontShow = dontShow;
+      _visible = false;
       initColor(id);
 }
+
 //---------------------------------------------------------
-//   CtrlList
+//   assign
 //---------------------------------------------------------
 
-CtrlList::CtrlList()
-      {
-      _id      = 0;
-      _default = 0.0;
-      _curVal  = 0.0;
-      _mode    = INTERPOLATE;
-      _dontShow = false;
-      initColor(0);
-      }
+void CtrlList::assign(const CtrlList& l, int flags)
+{
+  if(flags & ASSIGN_PROPERTIES)
+  {
+    _id            = l._id;
+    _default       = l._default;
+    _curVal        = l._curVal;
+    _mode          = l._mode;
+    _name          = l._name;
+    _min           = l._min;
+    _max           = l._max;
+    _valueType     = l._valueType;
+    _dontShow      = l._dontShow;
+    _displayColor  = l._displayColor;
+    _visible       = l._visible;
+  }
+  
+  if(flags & ASSIGN_VALUES)
+  {
+    *this = l; // Let the vector assign values.
+  }
+}
 
 //---------------------------------------------------------
 //   value
@@ -396,5 +421,5 @@ void CtrlListList::add(CtrlList* vl)
 //      printf("CtrlListList(%p)::add(id=%d) size %d\n", this, vl->id(), size());
       insert(std::pair<const int, CtrlList*>(vl->id(), vl));
       }
-
+      
 } // namespace MusECore

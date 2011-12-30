@@ -93,7 +93,6 @@ void cacheJackRouteNames()
 //---------------------------------------------------------
 
 AudioTrack::AudioTrack(TrackType t)
-//AudioTrack::AudioTrack(TrackType t, int num_out_bufs)
    : Track(t)
       {
       //_totalOutChannels = num_out_bufs; // Is either parameter-default MAX_CHANNELS, or custom value passed (used by syntis).
@@ -111,7 +110,6 @@ AudioTrack::AudioTrack(TrackType t)
       addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
       addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*dont show in arranger */));
       
-      // Changed by Tim. p3.3.15
       //outBuffers = new float*[MAX_CHANNELS];
       //for (int i = 0; i < MAX_CHANNELS; ++i)
       //      outBuffers[i] = new float[MusEGlobal::segmentSize];
@@ -125,7 +123,6 @@ AudioTrack::AudioTrack(TrackType t)
       //for (int i = 0; i < MAX_CHANNELS; ++i)
       //  *(outBuffers + i) = sizeof(float) * MusEGlobal::segmentSize * i;
             
-      // p3.3.38
       // Easy way, less desirable... Start out with enough for MAX_CHANNELS. Then multi-channel syntis can re-allocate, 
       //  via a call to (a modified!) setChannels().
       // Hard way, more desirable... Creating a synti instance passes the total channels to this constructor, overriding MAX_CHANNELS.
@@ -142,74 +139,124 @@ AudioTrack::AudioTrack(TrackType t)
       setVolume(1.0);
       }
 
-//AudioTrack::AudioTrack(const AudioTrack& t)
-//  : Track(t)
-AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
-  : Track(t, cloneParts)
+AudioTrack::AudioTrack(const AudioTrack& t, int flags)
+  :  Track(t, flags)  
       {
-      _totalOutChannels = t._totalOutChannels; // Is either MAX_CHANNELS, or custom value (used by syntis).
       _processed      = false;
       _haveData       = false;
-      _sendMetronome  = t._sendMetronome;
-      ///_controller     = t._controller;
-      _prefader       = t._prefader;
-      _auxSend        = t._auxSend;
-      ///_efxPipe        = new Pipeline(*(t._efxPipe));   
-      _efxPipe        = new Pipeline();
-      _automationType = t._automationType;
+      _efxPipe        = new Pipeline();                 // Start off with a new pipeline.
       
-      ///_inRoutes       = t._inRoutes;   
-      ///_outRoutes      = t._outRoutes;
-      
-      // Changed by Tim. p3.3.15
-      //outBuffers = new float*[MAX_CHANNELS];
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      outBuffers[i] = new float[MusEGlobal::segmentSize];
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * MusEGlobal::segmentSize);
-      
-      int chans = _totalOutChannels;
-      // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
-      if(chans < MAX_CHANNELS)
-        chans = MAX_CHANNELS;
-      outBuffers = new float*[chans];
-      for (int i = 0; i < chans; ++i)
-            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
+      // Don't allocate outBuffers here. Let internal_assign() call setTotalOutChannels to set them up.
+      outBuffers = 0;
+      _totalOutChannels = 0;
+      // This is only set by multi-channel syntis...
+      _totalInChannels = 0;
       
       bufferPos = MAXINT;
-      _recFile  = t._recFile;
+      
+      //_recFile  = t._recFile;
+      _recFile = NULL;
+      
+      internal_assign(t, flags | ASSIGN_PROPERTIES);  
       }
+
+void AudioTrack::internal_assign(const Track& t, int flags)
+{
+      if(t.isMidiTrack())
+        return;
+      
+      const AudioTrack& at = (const AudioTrack&)t;
+      
+      if(flags & ASSIGN_PROPERTIES)
+      {
+        _sendMetronome  = at._sendMetronome;
+        _prefader       = at._prefader;
+        _auxSend        = at._auxSend;
+        _automationType = at._automationType;
+        
+        if(!(flags & ASSIGN_STD_CTRLS))
+        {
+          _controller.clearDelete();
+          for(ciCtrlList icl = at._controller.begin(); icl != at._controller.end(); ++icl)
+          {
+            CtrlList* cl = icl->second;
+            // Copy all built-in controllers (id below AC_PLUGIN_CTL_BASE), but not plugin controllers.
+            if(cl->id() >= AC_PLUGIN_CTL_BASE)
+              continue;
+            CtrlList* new_cl = new CtrlList();
+            new_cl->assign(*cl, CtrlList::ASSIGN_PROPERTIES);  // Don't copy values.
+            addController(new_cl);
+          }
+        }
+        
+        // This will set up or reallocate the outBuffers.
+        setTotalOutChannels(at._totalOutChannels);
+        
+        // This is only set by multi-channel syntis...
+        //_totalInChannels = 0;
+        //_totalInChannels = t._totalInChannels;
+        setTotalInChannels(at._totalInChannels);
+       
+        setChannels(at.channels()); // Set track channels (max 2).
+        
+        //bufferPos = MAXINT;
+        
+        //_recFile  = at._recFile;
+        //_recFile  = NULL;
+      }    
+      
+      if(flags & ASSIGN_PLUGINS)
+      {
+        delete _efxPipe;
+        _efxPipe = new Pipeline(*(at._efxPipe));  // Make copies of the plugins. 
+      }  
+      
+      if(flags & (ASSIGN_STD_CTRLS | ASSIGN_PLUGIN_CTRLS))
+      {
+        _controller.clearDelete();
+        for(ciCtrlList icl = at._controller.begin(); icl != at._controller.end(); ++icl)
+        {
+          CtrlList* cl = icl->second;
+          // Discern between built-in controllers (id below AC_PLUGIN_CTL_BASE), and plugin controllers.
+          if(cl->id() >= AC_PLUGIN_CTL_BASE)
+          {
+            if(!(flags & ASSIGN_PLUGIN_CTRLS))
+              continue;
+          }
+          else if(!(flags & ASSIGN_STD_CTRLS))
+              continue;
+          
+          CtrlList* new_cl = new CtrlList(*cl);  // Let copy constructor handle the rest. Copy values.
+          addController(new_cl);
+        }
+      }
+}  
+
+void AudioTrack::assign(const Track& t, int flags)
+{
+      Track::assign(t, flags);
+      internal_assign(t, flags);
+}
 
 AudioTrack::~AudioTrack()
 {
       delete _efxPipe;
       
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      delete[] outBuffers[i];
-      //delete[] outBuffers;
-      
-      // p3.3.15
-      //for(int i = 0; i < MAX_CHANNELS; ++i) 
-      //{
-      //  if(outBuffers[i])
-      //    free(outBuffers[i]);
-      //}
-      
-      // p3.3.38
       int chans = _totalOutChannels;
       // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
       if(chans < MAX_CHANNELS)
         chans = MAX_CHANNELS;
-      for(int i = 0; i < chans; ++i) 
+      if(outBuffers)
       {
-        if(outBuffers[i])
-          free(outBuffers[i]);
+        for(int i = 0; i < chans; ++i) 
+        {
+          if(outBuffers[i])
+            free(outBuffers[i]);
+        }
+        delete[] outBuffers;
       }
-      delete[] outBuffers;
       
-      for(iCtrlList i = _controller.begin(); i != _controller.end(); ++i)
-        delete i->second;
-      
+      _controller.clearDelete();
 }
 
 //---------------------------------------------------------
@@ -1031,8 +1078,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             //PluginI* p = 0;
             PluginIBase* p = 0;     
             bool ctlfound = false;
-            //int m = l->id() & AC_PLUGIN_CTL_ID_MASK;
-            unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;       // p4.0.21
+            unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;       
             int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
             if(n >= 0 && n < PipelineDepth)
             {
@@ -1198,8 +1244,7 @@ void AudioTrack::mapRackPluginsToControllers()
       // Ignore volume, pan, mute etc.
       if(id < AC_PLUGIN_CTL_BASE)
         continue;
-      //int param = id & AC_PLUGIN_CTL_ID_MASK;
-      unsigned param = id & AC_PLUGIN_CTL_ID_MASK;    // p4.0.21
+      unsigned param = id & AC_PLUGIN_CTL_ID_MASK;    
       int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
       //PluginI* p = (*_efxPipe)[idx];
       
@@ -1349,13 +1394,12 @@ AudioInput::AudioInput()
       //setChannels(2);
       }
 
-//AudioInput::AudioInput(const AudioInput& t)
-//  : AudioTrack(t)
-AudioInput::AudioInput(const AudioInput& t, bool cloneParts)
-  : AudioTrack(t, cloneParts)
+AudioInput::AudioInput(const AudioInput& t, int flags)
+  : AudioTrack(t, flags)
       {
       for (int i = 0; i < MAX_CHANNELS; ++i)
-            jackPorts[i] = t.jackPorts[i];
+            //jackPorts[i] = t.jackPorts[i];
+            jackPorts[i] = 0;
       }
 
 //---------------------------------------------------------
@@ -1425,14 +1469,14 @@ AudioOutput::AudioOutput()
       //setChannels(2);
       }
 
-//AudioOutput::AudioOutput(const AudioOutput& t)
-//  : AudioTrack(t)
-AudioOutput::AudioOutput(const AudioOutput& t, bool cloneParts)
-  : AudioTrack(t, cloneParts)
+AudioOutput::AudioOutput(const AudioOutput& t, int flags)
+  : AudioTrack(t, flags)
       {
       for (int i = 0; i < MAX_CHANNELS; ++i)
-            jackPorts[i] = t.jackPorts[i];
-      _nframes = t._nframes;
+            //jackPorts[i] = t.jackPorts[i];
+            jackPorts[i] = 0;
+      //_nframes = t._nframes;
+      _nframes = 0;
       }
 
 //---------------------------------------------------------
@@ -1551,7 +1595,6 @@ AudioAux::AudioAux()
 {
       //_channels = 0;
       //setChannels(2);
-      // Changed by Tim. p3.3.15
       //for (int i = 0; i < MAX_CHANNELS; ++i)
       //      buffer[i] = (i < channels()) ? new float[MusEGlobal::segmentSize] : 0;
       for(int i = 0; i < MAX_CHANNELS; ++i)
@@ -1563,13 +1606,27 @@ AudioAux::AudioAux()
       }  
 }
 
+AudioAux::AudioAux(const AudioAux& t, int flags)
+   : AudioTrack(t, flags)
+{
+      //_channels = 0;
+      //setChannels(2);
+      //for (int i = 0; i < MAX_CHANNELS; ++i)
+      //      buffer[i] = (i < channels()) ? new float[MusEGlobal::segmentSize] : 0;
+      for(int i = 0; i < MAX_CHANNELS; ++i)
+      {
+        if(i < channels())
+          posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+        else
+          buffer[i] = 0;
+      }  
+}
 //---------------------------------------------------------
 //   AudioAux
 //---------------------------------------------------------
 
 AudioAux::~AudioAux()
       {
-      // Changed by Tim. p3.3.15
       //for (int i = 0; i < channels(); ++i)
       //      delete[] buffer[i];
       for (int i = 0; i < MAX_CHANNELS; ++i) {
@@ -1660,7 +1717,6 @@ void AudioAux::setChannels(int n)
 {
   if(n > channels()) 
   {
-    // Changed by Tim. p3.3.15
     //for (int i = channels(); i < n; ++i)
     //      buffer[i] = new float[MusEGlobal::segmentSize];
     for(int i = channels(); i < n; ++i)
@@ -1668,7 +1724,6 @@ void AudioAux::setChannels(int n)
   }
   else if(n < channels()) 
   {
-    // Changed by Tim. p3.3.15
     //for (int i = n; i < channels(); ++i)
     //      delete[] buffer[i];
     for(int i = n; i < channels(); ++i) 
@@ -1707,7 +1762,6 @@ bool AudioTrack::setRecordFlag1(bool f)
               //  recording, the _recFile pointer is made into an event, 
               //  then _recFile is made zero before this function is called.
               QString s = _recFile->path();
-              // Added by Tim. p3.3.8
               delete _recFile;
               setRecFile(0);
               

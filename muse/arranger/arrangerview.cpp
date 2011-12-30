@@ -520,9 +520,7 @@ void ArrangerView::cmd(int cmd)
                   break;
 
             case CMD_DUPLICATE_TRACK:
-                  MusEGlobal::song->duplicateTracks(); // p4.0.47
-                  //MusEGlobal::song->startUndo();
-                  //MusEGlobal::song->endUndo(SC_TRACK_INSERTED);
+                  MusEGlobal::song->duplicateTracks(); 
                   break;
 
             case CMD_SELECT_ALL:
