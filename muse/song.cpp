@@ -508,8 +508,8 @@ void Song::duplicateTracks()
           Track* new_track = track->clone(flags);  
   #endif
           
-          new_track->setDefaultName(track_name);
-          
+          //new_track->setDefaultName(track_name);  // Handled in class now.
+
           idx = trackno + cp;
           insertTrack1(new_track, idx);         
           addUndo(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
@@ -521,14 +521,18 @@ void Song::duplicateTracks()
     --trackno;
   }
   
-  MusEGlobal::song->endUndo(SC_TRACK_INSERTED);
+  int update_flags = SC_TRACK_INSERTED;
+  if(flags & (Track::ASSIGN_ROUTES | Track::ASSIGN_DEFAULT_ROUTES))
+    update_flags |= SC_ROUTE;
+  MusEGlobal::song->endUndo(update_flags);
   MusEGlobal::audio->msgUpdateSoloStates();
+
   //if (t->isVisible()) 
-  {
+  //{
     ////deselectTracks();
     //t->setSelected(true);
     ////update(SC_SELECTION);
-  }
+  //}
 }          
       
 //---------------------------------------------------------

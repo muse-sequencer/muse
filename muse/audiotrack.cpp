@@ -230,6 +230,63 @@ void AudioTrack::internal_assign(const Track& t, int flags)
           addController(new_cl);
         }
       }
+      
+      // FIXME: May get "addRoute: src track route already exists" when say, 
+      //         an audio output and wave track are selected just because
+      //         of the redundancy (wave track wants to connect to output by default).
+      if(flags & ASSIGN_ROUTES)
+      {
+        for(ciRoute ir = at._inRoutes.begin(); ir != at._inRoutes.end(); ++ir)
+        {
+          // Defer all Jack routes to Audio Input and Output copy constructors or assign !
+          if(ir->type == Route::JACK_ROUTE)
+            continue;
+          // Amazingly, this single line seems to work.
+          MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));
+        }
+        
+        for(ciRoute ir = at._outRoutes.begin(); ir != at._outRoutes.end(); ++ir)
+        {
+          // Defer all Jack routes to Audio Input and Output copy constructors or assign !
+          if(ir->type == Route::JACK_ROUTE)
+            continue;
+          // Amazingly, this single line seems to work.
+          MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir);
+        }
+      } 
+      else if(flags & ASSIGN_DEFAULT_ROUTES)
+      {
+        //
+        //  add default route to master
+        //
+        OutputList* ol = MusEGlobal::song->outputs();
+        if (!ol->empty()) {
+              AudioOutput* ao = ol->front();
+              switch(type()) {
+                    //case Track::MIDI:
+                    //case Track::DRUM:
+                    //case Track::AUDIO_OUTPUT:
+                    //      break;
+                    
+                    case Track::WAVE:
+                    //case Track::AUDIO_GROUP:  
+                    case Track::AUDIO_AUX:
+                    //case Track::AUDIO_INPUT:  
+                    //case Track::AUDIO_SOFTSYNTH:
+                          MusEGlobal::audio->msgAddRoute(Route(this, -1), Route(ao, -1));
+                          //updateFlags |= SC_ROUTE;
+                          break;
+                    // It should actually never get here now, but just in case.
+                    case Track::AUDIO_SOFTSYNTH:
+                          MusEGlobal::audio->msgAddRoute(Route(this, 0, channels()), Route(ao, 0, channels()));
+                          //updateFlags |= SC_ROUTE;
+                          break;
+                    default:
+                          break;
+                    }
+              }
+      }  
+      
 }  
 
 void AudioTrack::assign(const Track& t, int flags)
@@ -1396,11 +1453,48 @@ AudioInput::AudioInput()
 
 AudioInput::AudioInput(const AudioInput& t, int flags)
   : AudioTrack(t, flags)
-      {
-      for (int i = 0; i < MAX_CHANNELS; ++i)
-            //jackPorts[i] = t.jackPorts[i];
-            jackPorts[i] = 0;
-      }
+{
+  for (int i = 0; i < MAX_CHANNELS; ++i)
+        //jackPorts[i] = t.jackPorts[i];
+        jackPorts[i] = 0;
+
+  // Register ports.
+  if(MusEGlobal::checkAudioDevice()) 
+  {  
+    for (int i = 0; i < channels(); ++i) 
+    {
+      char buffer[128];
+      snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
+      jackPorts[i] = MusEGlobal::audioDevice->registerInPort(buffer, false);
+    }
+  }
+  internal_assign(t, flags);
+}
+
+void AudioInput::assign(const Track& t, int flags)
+{
+  AudioTrack::assign(t, flags);
+  internal_assign(t, flags);
+} 
+
+void AudioInput::internal_assign(const Track& t, int flags)
+{
+  if(t.type() != AUDIO_INPUT)
+    return;
+  
+  const AudioInput& at = (const AudioInput&)t;
+      
+  if(flags & ASSIGN_ROUTES)
+  {
+    for(ciRoute ir = at._inRoutes.begin(); ir != at._inRoutes.end(); ++ir)
+    {
+      // Defer all Jack routes to these copy constructors or assign !
+      if(ir->type != Route::JACK_ROUTE)
+        continue;
+      MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));
+    }
+  } 
+}
 
 //---------------------------------------------------------
 //   ~AudioInput
@@ -1471,14 +1565,51 @@ AudioOutput::AudioOutput()
 
 AudioOutput::AudioOutput(const AudioOutput& t, int flags)
   : AudioTrack(t, flags)
-      {
-      for (int i = 0; i < MAX_CHANNELS; ++i)
-            //jackPorts[i] = t.jackPorts[i];
-            jackPorts[i] = 0;
-      //_nframes = t._nframes;
-      _nframes = 0;
-      }
+{
+  for (int i = 0; i < MAX_CHANNELS; ++i)
+        //jackPorts[i] = t.jackPorts[i];
+        jackPorts[i] = 0;
+  //_nframes = t._nframes;
+  _nframes = 0;
+  
+  // Register ports. 
+  if(MusEGlobal::checkAudioDevice()) 
+  {
+    for (int i = 0; i < channels(); ++i) 
+    {
+      char buffer[128];
+      snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
+      jackPorts[i] = MusEGlobal::audioDevice->registerOutPort(buffer, false);
+    }
+  }
+  internal_assign(t, flags);
+}
 
+void AudioOutput::assign(const Track& t, int flags)
+{
+  AudioTrack::assign(t, flags);
+  internal_assign(t, flags);
+} 
+
+void AudioOutput::internal_assign(const Track& t, int flags)
+{
+  if(t.type() != AUDIO_OUTPUT)
+    return;
+  
+  const AudioOutput& at = (const AudioOutput&)t;
+      
+  if(flags & ASSIGN_ROUTES)
+  {
+    for(ciRoute ir = at._outRoutes.begin(); ir != at._outRoutes.end(); ++ir)
+    {
+      // Defer all Jack routes to these copy constructors or assign !
+      if(ir->type != Route::JACK_ROUTE)
+        continue;
+      MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir);
+    }
+  } 
+}
+    
 //---------------------------------------------------------
 //   ~AudioOutput
 //---------------------------------------------------------

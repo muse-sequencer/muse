@@ -452,11 +452,14 @@ class AudioInput : public AudioTrack {
       void* jackPorts[MAX_CHANNELS];
       virtual bool getData(unsigned, int, unsigned, float**);
       static bool _isVisible;
-
+      void internal_assign(const Track& t, int flags);
+      
    public:
       AudioInput();
       AudioInput(const AudioInput&, int flags);
       virtual ~AudioInput();
+
+      virtual void assign(const Track&, int flags);
       AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
       virtual AudioInput* newTrack() const { return new AudioInput(); }
       virtual void read(Xml&);
@@ -481,13 +484,15 @@ class AudioOutput : public AudioTrack {
       float* buffer1[MAX_CHANNELS];
       unsigned long _nframes;
       static bool _isVisible;
-
       float* _monitorBuffer[MAX_CHANNELS];
+      void internal_assign(const Track& t, int flags);
 
    public:
       AudioOutput();
       AudioOutput(const AudioOutput&, int flags);
       virtual ~AudioOutput();
+
+      virtual void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
       virtual AudioOutput* newTrack() const { return new AudioOutput(); }
       virtual void read(Xml&);

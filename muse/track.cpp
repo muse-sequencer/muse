@@ -284,9 +284,27 @@ void Track::internal_assign(const Track& t, int flags)
         _y            = t._y;
         _height       = t._height;
         _comment      = t.comment();
-        _name         = t.name();
         _type         = t.type();
         _locked       = t.locked();
+
+        //_name         = t.name();
+        _name =  t.name() + " #";
+        for(int i = 2; true; ++i) 
+        {
+          QString n;
+          n.setNum(i);
+          QString s = _name + n;
+          Track* track = MusEGlobal::song->findTrack(s);
+          if(track == 0) 
+          {
+            // Do not call setName here. Audio Input and Output override it and try to set 
+            //  Jack ports, which have not been initialized yet here. Must wait until 
+            // .Audio Input and Output copy constructors or assign are called.
+            //setName(s);
+            _name = s;
+            break;
+          }
+        }
       }
 
       if(flags & ASSIGN_PARTS)
@@ -297,14 +315,6 @@ void Track::internal_assign(const Track& t, int flags)
               newPart->setTrack(this);
               _parts.add(newPart);
               }
-      }
-
-      if(flags & ASSIGN_ROUTES)
-      {
-      }
-      else
-      if(flags & ASSIGN_DEFAULT_ROUTES)
-      {
       }
 }
 
@@ -541,6 +551,69 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         _recEcho       = mt.recEcho();
         clefType       = mt.clefType;
       }  
+      
+      // FIXME: May get "addRoute: src track route already exists" when say, 
+      //         an audio output and wave track are selected just because
+      //         of the redundancy (wave track wants to connect to output by default).
+      if(flags & ASSIGN_ROUTES)
+      {
+        for(ciRoute ir = mt._inRoutes.begin(); ir != mt._inRoutes.end(); ++ir)
+          // Amazingly, this single line seems to work.
+          MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel));
+        
+        for(ciRoute ir = mt._outRoutes.begin(); ir != mt._outRoutes.end(); ++ir)
+          // Amazingly, this single line seems to work.
+          MusEGlobal::audio->msgAddRoute(Route(this, ir->channel), *ir);
+      }
+      else if(flags & ASSIGN_DEFAULT_ROUTES)
+      {
+        // Add default track <-> midiport routes. 
+        int c, cbi, ch;
+        bool defOutFound = false;                /// TODO: Remove this if and when multiple output routes supported.
+        for(int i = 0; i < MIDI_PORTS; ++i)
+        {
+          MidiPort* mp = &MusEGlobal::midiPorts[i];
+          
+          if(mp->device())  // Only if device is valid. 
+          {
+            c = mp->defaultInChannels();
+            if(c)
+            {
+              MusEGlobal::audio->msgAddRoute(Route(i, c), Route(this, c));
+              //updateFlags |= SC_ROUTE;
+            }
+          }  
+          
+          if(!defOutFound)                       ///
+          {
+            c = mp->defaultOutChannels();
+            if(c)
+            {
+              
+        /// TODO: Switch if and when multiple output routes supported.
+        #if 0
+              MusEGlobal::audio->msgAddRoute(Route(this, c), Route(i, c));
+              //updateFlags |= SC_ROUTE;
+        #else 
+              for(ch = 0; ch < MIDI_CHANNELS; ++ch)   
+              {
+                cbi = 1 << ch;
+                if(c & cbi)
+                {
+                  defOutFound = true;
+                  _outPort = i;
+                  if(type() != Track::DRUM)  // Leave drum tracks at channel 10.
+                    _outChannel = ch;
+                  //updateFlags |= SC_ROUTE;
+                  break;               
+                }
+              }
+        #endif
+            }
+          }  
+        }
+      }
+      
 }
 
 void MidiTrack::assign(const Track& t, int flags)
