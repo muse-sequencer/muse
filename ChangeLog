@@ -2,6 +2,7 @@
         - Added 'Duplicate tracks' Edit action, and dialog. Post-cleanups. TODO: Copy routes, and fix copying parts. (Tim)
           Class Track, and some of it descendants, have fixed copy constructors, and a new assign() method.
           Tested copy constructors and the new assign() method using the new duplicate tracks feature: Good so far, + undo/redo.
+        - Fixed compile errors when configured without OSC. Tested OK. Reported by Philippe Macaire. (Tim)
 27.12.2011:
         - Fixed some undo/redo/close crashes. TODO Global cut crashes from null Marker. (Tim. All marked p4.0.46)
           Fixed some issues with track list and popup 'name edit' and 'channel spinbox'. Added to audio tracks. 

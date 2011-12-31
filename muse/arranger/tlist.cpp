@@ -986,7 +986,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         // If it has a gui but we don't have OSC, disable the action.
         #ifndef OSC_SUPPORT
         #ifdef DSSI_SUPPORT
-        if(dynamic_cast<DssiMusECore::SynthIF*>(synth->sif()))
+        if(dynamic_cast<MusECore::DssiSynthIF*>(synth->sif()))
         {
           //act->setChecked(false);
           //act->setEnabled(false);
@@ -1039,7 +1039,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       #ifndef OSC_SUPPORT
       #ifdef DSSI_SUPPORT
       MusECore::MidiDevice* dev = port->device();
-      if(dev && dev->isSynti() && (dynamic_cast<DssiMusECore::SynthIF*>(((MusECore::SynthI*)dev)->sif())))
+      if(dev && dev->isSynti() && (dynamic_cast<MusECore::DssiSynthIF*>(((MusECore::SynthI*)dev)->sif())))
       {
         //act->setChecked(false);
         //act->setEnabled(false);
