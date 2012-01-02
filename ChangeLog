@@ -1,5 +1,6 @@
 02.01.2012:
         - Fixed drag and drop cloning parts - bad reference count in PartCanvas::moveItem(). (Tim) 
+        - File Open dialog: Start with song data and configuration.
 31.12.2011:
         - 'Duplicate tracks' route copying now works, including Audio Input/Output Jack routes. (Tim)
 30.12.2011:

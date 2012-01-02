@@ -135,6 +135,9 @@
          <string>Songdata +
 Configuration</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -142,9 +145,6 @@ Configuration</string>
         <property name="text">
          <string>only
 Songdata</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
         </property>
        </widget>
       </item>
