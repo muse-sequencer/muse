@@ -120,6 +120,8 @@ class DList : public View {
       int x2col(int x) const;
       void devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll);
       
+      void init(QHeaderView*, QWidget*);
+      
       //void setCurDrumInstrument(int n);
 
    private slots:
@@ -144,7 +146,8 @@ class DList : public View {
       void lineEdit(int line, int section);
       void pitchEdit(int line, int section);
       void setCurDrumInstrument(int n);
-      DList(QHeaderView*, QWidget* parent, int ymag, MusEGui::DrumCanvas* dcanvas, bool oldstyle);
+      DList(QHeaderView*, QWidget* parent, int ymag, DrumCanvas* dcanvas, bool oldstyle);
+      DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, int dmSize=128);
       ~DList();
       int getSelectedInstrument();
 

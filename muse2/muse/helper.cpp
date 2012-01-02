@@ -250,7 +250,7 @@ void write_new_style_drummap(int level, Xml& xml, const char* tagname,
       // channel and port are ignored as well, as they're not used
       // in new-style-drum-mode
       
-      xml.tag(level--, "/entry");
+      xml.tag(--level, "/entry");
     }
   }
 

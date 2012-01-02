@@ -27,8 +27,7 @@
 #include "globaldefs.h"
 #include <list>
 #include <vector>
-
-class QString;
+#include <QString>
 
 namespace MusEGui {
 class PopupMenu;
@@ -101,21 +100,26 @@ struct patch_collection_t
     first_hbank=h1;
     last_hbank=h2;
   }
-
+  
+  QString to_string();
 };
 
 struct patch_drummap_mapping_t
 {
-  std::list<patch_collection_t> affected_patches;
+  patch_collection_t affected_patches;
   DrumMap* drummap;
   
-  patch_drummap_mapping_t(const std::list<patch_collection_t>& a, DrumMap* d)
+  patch_drummap_mapping_t(const patch_collection_t& a, DrumMap* d)
   {
     affected_patches=a;
     drummap=d;
   }
   
+  patch_drummap_mapping_t(const patch_drummap_mapping_t& that);
   patch_drummap_mapping_t();
+  ~patch_drummap_mapping_t();
+  
+  patch_drummap_mapping_t& operator=(const patch_drummap_mapping_t& that);
 };
 
 //---------------------------------------------------------
@@ -143,8 +147,7 @@ class MidiInstrument {
       QString _name;
       QString _filePath;
       
-      void clear_delete_patch_drummap_mapping();
-      
+      void writeDrummaps(int level, Xml& xml) const;
       void readDrummaps(Xml& xml);
       patch_drummap_mapping_t readDrummapsEntry(Xml& xml);
       patch_collection_t readDrummapsEntryPatchCollection(Xml& xml);
@@ -195,6 +198,7 @@ class MidiInstrument {
       void write(int level, Xml&);
       
       PatchGroupList* groups()        { return &pg; }
+      std::list<patch_drummap_mapping_t>* get_patch_drummap_mapping() { return &patch_drummap_mapping; }
       };
 
 //---------------------------------------------------------

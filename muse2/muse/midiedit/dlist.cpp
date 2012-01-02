@@ -395,6 +395,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   }
                   else
                   {
+                    if (dcanvas)
+                    {
                       //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
                       //If so, switch the inmap between the instruments
                       for (QSet<MusECore::Track*>::iterator it = dcanvas->get_instrument_map()[instrument].tracks.begin(); it!=dcanvas->get_instrument_map()[instrument].tracks.end(); it++)
@@ -408,6 +410,16 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       // does this for us.
                       // updating ourDrumMap is unneccessary because the song->update(SC_DRUMMAP)
                       // does this for us.
+                    }
+                    else
+                    {
+                      for (int i=0;i<128;i++)
+                        if (ourDrumMap[i].enote==val)
+                        {
+                          ourDrumMap[i].enote=dm->enote;
+                          break;
+                        }
+                    }
                   }
                   
                   dm->enote = val;
@@ -510,14 +522,14 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       if (velo > 127 ) velo = 127;
                       emit keyPressed(instrument, velo); //Mapping done on other side, send index
                   }
-                  else if (button == Qt::MidButton) // hide that instrument
+                  else if (button == Qt::MidButton && dcanvas) // hide that instrument
                   {
                     QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
                     int pitch = dcanvas->get_instrument_map()[instrument].pitch;
                     for (QSet<MusECore::Track*>::iterator track=group->begin(); track!=group->end(); track++)
                       dynamic_cast<MusECore::MidiTrack*>(*track)->drummap_hidden()[pitch] = true;                    
                   }
-                  else if (button == Qt::RightButton)
+                  else if (button == Qt::RightButton && dcanvas)
                   {
                     bool hidden=false;
                     bool shown=false;
@@ -555,7 +567,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   break;
             }
       
-      if (!old_style_drummap_mode && dm_old != *dm) //something changed and we're in new style mode?
+      if (!old_style_drummap_mode && dm_old != *dm && dcanvas) //something changed and we're in new style mode?
         dcanvas->propagate_drummap_change(instrument, (dm_old.enote != dm->enote));
       
       MusEGlobal::song->update(SC_DRUMMAP);
@@ -834,7 +846,7 @@ void DList::returnPressed()
                   break;
             }
       
-      if (editEntryOld != *editEntry)
+      if (editEntryOld != *editEntry && dcanvas)
         dcanvas->propagate_drummap_change(editEntry-ourDrumMap, false);
       
       selectedColumn = -1;
@@ -895,6 +907,8 @@ void DList::pitchEdited()
                }
                else
                {
+                  if (dcanvas)
+                  {
                       //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
                       //If so, switch the inmap between the instruments
                       for (QSet<MusECore::Track*>::iterator it = dcanvas->get_instrument_map()[instrument].tracks.begin(); it!=dcanvas->get_instrument_map()[instrument].tracks.end(); it++)
@@ -908,6 +922,16 @@ void DList::pitchEdited()
                       // does this for us.
                       // updating ourDrumMap is unneccessary because the song->update(SC_DRUMMAP)
                       // does this for us.
+                  }
+                  else
+                  {
+                      for (int i=0;i<128;i++)
+                        if (ourDrumMap[i].enote==val)
+                        {
+                          ourDrumMap[i].enote=editEntry->enote;
+                          break;
+                        }
+                  }
                } 
                editEntry->enote = val;
                break;
@@ -917,7 +941,7 @@ void DList::pitchEdited()
                   break;
             }
       
-      if (editEntryOld != *editEntry)
+      if (editEntryOld != *editEntry && dcanvas)
         dcanvas->propagate_drummap_change(editEntry-ourDrumMap, (editEntryOld.enote!=editEntry->enote));
       
       selectedColumn = -1;
@@ -960,19 +984,12 @@ void DList::songChanged(int flags)
 //   DList
 //---------------------------------------------------------
 
-DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bool oldstyle)
-   : MusEGui::View(parent, 1, ymag)
-      {
+void DList::init(QHeaderView* h, QWidget* parent)
+{
       setBg(Qt::white);
-      
-      dcanvas=dcanvas_;
-      ourDrumMap=dcanvas->getOurDrumMap();
-      ourDrumMapSize=dcanvas->getOurDrumMapSize();
-      old_style_drummap_mode=oldstyle;
-      connect(dcanvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
-      
-      if (!h){
-      h = new QHeaderView(Qt::Horizontal, parent);}
+      if (!h)
+        h = new QHeaderView(Qt::Horizontal, parent);
+
       header = h;
       //ORCAN- CHECK if really needed: header->setTracking(true);
       connect(header, SIGNAL(sectionResized(int,int,int)),
@@ -983,6 +1000,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bo
       editor = 0;
       pitch_editor = 0;
       editEntry = 0;
+
       if (ourDrumMapSize!=0)
       {
         // always select a drum instrument
@@ -994,6 +1012,30 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bo
       }
       
       selectedColumn = -1;
+
+}
+
+DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bool oldstyle)
+   : MusEGui::View(parent, 1, ymag)
+      {
+      dcanvas=dcanvas_;
+      ourDrumMap=dcanvas->getOurDrumMap();
+      ourDrumMapSize=dcanvas->getOurDrumMapSize();
+      old_style_drummap_mode=oldstyle;
+      connect(dcanvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
+      
+      init(h, parent);
+      }
+
+DList::DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, int dmSize)
+   : MusEGui::View(parent, 1, ymag)
+      {
+      dcanvas=NULL;
+      ourDrumMap=dm;
+      ourDrumMapSize=dmSize;
+      old_style_drummap_mode=false;
+      
+      init(h, parent);
       }
 
 //---------------------------------------------------------

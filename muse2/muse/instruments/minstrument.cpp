@@ -410,17 +410,9 @@ MidiInstrument::~MidiInstrument()
       if (_initScript)
             delete _initScript;
       
-      clear_delete_patch_drummap_mapping();
+      patch_drummap_mapping.clear();
       }
 
-void MidiInstrument::clear_delete_patch_drummap_mapping()
-{
-  for (std::list<patch_drummap_mapping_t>::iterator it = patch_drummap_mapping.begin();
-       it!=patch_drummap_mapping.end(); it++)
-    delete[] it->drummap;
-  
-  patch_drummap_mapping.clear();
-}
 
 
 /*
@@ -529,16 +521,7 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   _name = ins._name;
   _filePath = ins._filePath;
   
-  clear_delete_patch_drummap_mapping();
-  // do a deep copy
-  for (std::list<patch_drummap_mapping_t>::const_iterator it = ins.patch_drummap_mapping.begin();
-       it!=ins.patch_drummap_mapping.end(); it++)
-  {
-    patch_drummap_mapping_t temp = *it;
-    temp.drummap=new DrumMap[128];
-    for (int i=0;i<128;i++)
-      temp.drummap[i]=it->drummap[i];
-  }
+  patch_drummap_mapping=ins.patch_drummap_mapping;
   
   
   
@@ -761,7 +744,7 @@ void MidiInstrument::readMidiState(Xml& xml)
 
 void MidiInstrument::readDrummaps(Xml& xml)
 {
-  clear_delete_patch_drummap_mapping();
+  patch_drummap_mapping.clear();
   
   for (;;)
   {
@@ -796,7 +779,7 @@ patch_drummap_mapping_t MidiInstrument::readDrummapsEntry(Xml& xml)
 {
   using std::list;
   
-  list<patch_collection_t> collection;
+  patch_collection_t collection;
   DrumMap* drummap=new DrumMap[128];
   for (int i=0;i<128;i++)
     drummap[i]=iNewDrumMap[i];
@@ -813,7 +796,7 @@ patch_drummap_mapping_t MidiInstrument::readDrummapsEntry(Xml& xml)
         
       case Xml::TagStart:
         if (tag == "patch_collection")
-          collection.push_back(readDrummapsEntryPatchCollection(xml));
+          collection=readDrummapsEntryPatchCollection(xml);
         else if (tag == "drummap")
           read_new_style_drummap(xml, "drummap", drummap);
         else
@@ -875,6 +858,43 @@ patch_collection_t MidiInstrument::readDrummapsEntryPatchCollection(Xml& xml)
          "                           not returning anything. expect undefined behaviour or even crashes.\n");
 }
 
+void MidiInstrument::writeDrummaps(int level, Xml& xml) const
+{
+  xml.tag(level++, "Drummaps");
+  
+  for (std::list<patch_drummap_mapping_t>::const_iterator it=patch_drummap_mapping.begin();
+       it!=patch_drummap_mapping.end(); it++)
+  {
+    xml.tag(level++, "entry");
+    
+    const patch_collection_t* ap = &it->affected_patches;
+    QString tmp="<patch_collection ";
+    if (ap->first_program==ap->last_program)
+      tmp+="prog=\""+QString::number(ap->first_program)+"\" ";
+    else if (! (ap->first_program==0 && ap->last_program>=127))
+      tmp+="prog=\""+QString::number(ap->first_program)+"-"+QString::number(ap->last_program)+"\" ";
+  
+    if (ap->first_lbank==ap->last_lbank)
+      tmp+="lbank=\""+QString::number(ap->first_lbank)+"\" ";
+    else if (! (ap->first_lbank==0 && ap->last_lbank>=127))
+      tmp+="lbank=\""+QString::number(ap->first_lbank)+"-"+QString::number(ap->last_lbank)+"\" ";
+  
+    if (ap->first_hbank==ap->last_hbank)
+      tmp+="hbank=\""+QString::number(ap->first_hbank)+"\" ";
+    else if (! (ap->first_hbank==0 && ap->last_hbank>=127))
+      tmp+="hbank=\""+QString::number(ap->first_hbank)+"-"+QString::number(ap->last_hbank)+"\" ";
+    
+    tmp+="/>\n";
+    
+    xml.nput(level, tmp.toAscii().data());
+    
+    write_new_style_drummap(level, xml, "drummap", it->drummap);
+    
+    xml.etag(--level, "entry");
+  }
+  
+  xml.etag(--level, "Drummaps");
+}
 
 //---------------------------------------------------------
 //   read
@@ -1018,6 +1038,9 @@ void MidiInstrument::write(int level, Xml& xml)
             //(*ic)->write(xml);
             ic->second->write(level, xml);
       //xml.etag("MidiInstrument");
+      
+      writeDrummaps(level, xml);
+      
       level--;
       xml.etag(level, "MidiInstrument");
       //xml.etag("muse");
@@ -1136,16 +1159,13 @@ const DrumMap* MidiInstrument::drummap_for_patch(int patch) const
   for (list<patch_drummap_mapping_t>::const_iterator it=patch_drummap_mapping.begin();
        it!=patch_drummap_mapping.end(); it++)
   {
-    for (list<patch_collection_t>::const_iterator it2=it->affected_patches.begin();
-         it2!=it->affected_patches.end(); it2++)
+    const patch_collection_t* ap = &it->affected_patches;
+    // if the entry matches our patch
+    if ( (program >= ap->first_program && program <= ap->last_program) &&
+         (hbank >= ap->first_hbank && hbank <= ap->last_hbank) &&
+         (lbank >= ap->first_lbank && lbank <= ap->last_lbank) )
     {
-      // if the entry matches our patch
-      if ( (program >= it2->first_program && program <= it2->last_program) &&
-           (hbank >= it2->first_hbank && hbank <= it2->last_hbank) &&
-           (lbank >= it2->first_lbank && lbank <= it2->last_lbank) )
-      {
-        return it->drummap;
-      }
+      return it->drummap;
     }
   }
   
@@ -1160,5 +1180,70 @@ patch_drummap_mapping_t::patch_drummap_mapping_t()
     drummap[i]=iNewDrumMap[i];
 }
 
+patch_drummap_mapping_t::patch_drummap_mapping_t(const patch_drummap_mapping_t& that)
+{
+  drummap=new DrumMap[128];
+  for (int i=0;i<128;i++)
+    drummap[i]=that.drummap[i];
+  
+  affected_patches=that.affected_patches;
+}
+
+patch_drummap_mapping_t& patch_drummap_mapping_t::operator=(const patch_drummap_mapping_t& that)
+{
+  if (drummap)
+    delete [] drummap;
+  
+  drummap=new DrumMap[128];
+  for (int i=0;i<128;i++)
+    drummap[i]=that.drummap[i];
+  
+  affected_patches=that.affected_patches;
+  
+  return *this;
+}
+
+patch_drummap_mapping_t::~patch_drummap_mapping_t()
+{
+  delete [] drummap;
+}
+
+QString patch_collection_t::to_string()
+{
+  QString tmp;
+  
+  if (first_program==0 && last_program>=127 &&
+      first_lbank==0 && last_lbank>=127 &&
+      first_hbank==0 && last_hbank>=127)
+    tmp="default";
+  else
+  {
+    tmp+="prog: ";
+    if (first_program==last_program)
+      tmp+=QString::number(first_program+1);
+    else if (! (first_program==0 && last_program>=127))
+      tmp+=QString::number(first_program+1)+"-"+QString::number(last_program+1);
+    else
+      tmp+="*";
+    
+    tmp+=" bank=";
+    if (first_lbank==last_lbank)
+      tmp+=QString::number(first_lbank+1);
+    else if (! (first_lbank==0 && last_lbank>=127))
+      tmp+=QString::number(first_lbank+1)+"-"+QString::number(last_lbank+1);
+    else
+      tmp+="*";
+
+    tmp+="/";
+    if (first_hbank==last_hbank)
+      tmp+=QString::number(first_hbank+1);
+    else if (! (first_hbank==0 && last_hbank>=127))
+      tmp+=QString::number(first_hbank+1)+"-"+QString::number(last_hbank+1);
+    else
+      tmp+="*";
+    
+  }
+  return tmp;
+}
 
 } // namespace MusECore
