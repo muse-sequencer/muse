@@ -21,14 +21,16 @@
 //
 //=========================================================
 
-///#include "sig.h"
-#include "al/sig.h"  // Tim.
+//#include "sig.h"
+#include "al/sig.h"  
 #include "keyevent.h"
 
 #include "undo.h"
 #include "song.h"
 #include "globals.h"
+#include "audio.h"  
 
+#include <string.h>
 #include <QAction>
 #include <set>
 
@@ -53,7 +55,9 @@ const char* UndoOp::typeName()
             "AddTempo", "DeleteTempo",
             "AddSig", "DeleteSig",
             "AddKey", "DeleteKey",
-            "SwapTrack", "ModifyClip", "ModifyMarker",
+            "ModifyTrackName", "ModifyTrackChannel",
+            "SwapTrack", 
+            "ModifyClip", "ModifyMarker",
             "ModifySongLen", "DoNothing"
             };
       return name[type];
@@ -88,6 +92,12 @@ void UndoOp::dump()
                   if (part)
                         part->dump(5);
                   break;
+            case ModifyTrackName:
+                  printf("<%s>-<%s>\n", _oldName, _newName);
+                  break;
+            case ModifyTrackChannel:
+                  printf("<%d>-<%d>\n", _oldPropValue, _newPropValue);
+                  break;
             case ModifyEvent:
             case AddTempo:
             case DeleteTempo:
@@ -100,6 +110,8 @@ void UndoOp::dump()
             case DeleteKey:
             case ModifySongLen:
             case DoNothing:
+                  break;
+            default:      
                   break;
             }
       }
@@ -139,7 +151,7 @@ void UndoList::clearDelete()
                   }
                 }
                 break;
-          case UndoOp::ModifyTrack:
+          /* case UndoOp::ModifyTrack:
                 if(i->oTrack)
                 {
                   // Prevent delete i->oTrack from crashing.
@@ -181,7 +193,8 @@ void UndoList::clearDelete()
                     }
                   }
                 }
-                break;
+                break;      */
+                
           //case UndoOp::DeletePart:
                 //delete i->oPart;
           //      break;
@@ -192,6 +205,14 @@ void UndoList::clearDelete()
             case UndoOp::ModifyMarker:
                 if (i->copyMarker)
                   delete i->copyMarker;
+                break;
+          case UndoOp::ModifyTrackName:
+                //printf("UndoList::clearDelete ModifyTrackName old:%s new:%s\n", i->_oldName, i->_newName);  
+                if (i->_oldName)
+                  delete i->_oldName;
+                if (i->_newName)
+                  delete i->_newName;
+                break;
           default:
                 break;
         }
@@ -209,8 +230,9 @@ void UndoList::clearDelete()
 
 void Song::startUndo()
       {
-      redoList->clear(); // added by flo93: redo must be invalidated when
-			MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
+      //redoList->clear(); // added by flo93: redo must be invalidated when a new undo is started
+      redoList->clearDelete(); // p4.0.46 Tim
+			MusEGlobal::redoAction->setEnabled(false);     // 
 			
       undoList->push_back(Undo());
       updateFlags = 0;
@@ -277,8 +299,9 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
             }
             else
             {
-                  redoList->clear(); // added by flo93: redo must be invalidated when
-                  MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
+                  //redoList->clear(); // added by flo93: redo must be invalidated when a new undo is started
+                  redoList->clearDelete(); // p4.0.46 Tim.
+                  MusEGlobal::redoAction->setEnabled(false);     // 
 						}
             
             return doUndo;
@@ -310,9 +333,9 @@ void Song::doUndo2()
                         
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
+/*                        
                   case UndoOp::ModifyTrack:
                         {
-                        // Added by Tim. p3.3.6
                         //printf("Song::doUndo2 ModifyTrack #1 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
                         
                         // Unchain the track parts, but don't touch the ref counts.
@@ -324,7 +347,6 @@ void Song::doUndo2()
                         // A Track custom assignment operator was added by Tim. 
                         *(i->nTrack) = *(i->oTrack);
                         
-                        // Added by Tim. p3.3.6
                         //printf("Song::doUndo2 ModifyTrack #2 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
                         
                         // Prevent delete i->oTrack from crashing.
@@ -356,7 +378,6 @@ void Song::doUndo2()
                         // Chain the track parts, but don't touch the ref counts.
                         chainTrackParts(i->nTrack, false);
 
-                        // Added by Tim. p3.3.6
                         //printf("Song::doUndo2 ModifyTrack #3 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
                         
                         // Connect and register ports.
@@ -384,6 +405,7 @@ void Song::doUndo2()
                         updateFlags |= SC_TRACK_MODIFIED;
                         }
                         break;
+*/
                         
                         /*
                         switch(i->nTrack->type())
@@ -542,6 +564,8 @@ void Song::doUndo2()
                   case UndoOp::ModifyMarker:
                   case UndoOp::DoNothing:
                         break;
+                  default:      
+                        break;
                   }
             }
       }
@@ -566,6 +590,8 @@ void Song::doRedo2()
                         removeTrack2(i->oTrack);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
+                        
+/*                        
                   case UndoOp::ModifyTrack:
                         {
                         // Unchain the track parts, but don't touch the ref counts.
@@ -630,7 +656,8 @@ void Song::doRedo2()
                         updateFlags |= SC_TRACK_MODIFIED;
                         }
                         break;
-                  
+*/  
+                        
                         /*
                         // Prevent delete i->oTrack from crashing.
                         switch(i->oTrack->type())
@@ -783,6 +810,8 @@ void Song::doRedo2()
                   case UndoOp::ModifyMarker:
                   case UndoOp::DoNothing:
                         break;
+                  default:      
+                        break;
                   }
             }
       }
@@ -885,6 +914,24 @@ UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, 
       endframe   = endframe_;
       }
 
+UndoOp::UndoOp(UndoOp::UndoType type_, Track* track, const char* old_name, const char* new_name)
+{
+  type = type_;
+  _renamedTrack = track;
+  _oldName = new char[strlen(old_name) + 1];
+  _newName = new char[strlen(new_name) + 1];
+  strcpy(_oldName, old_name);
+  strcpy(_newName, new_name);
+}
+
+UndoOp::UndoOp(UndoOp::UndoType type_, Track* track, int old_chan, int new_chan)
+{
+  type = type_;
+  _propertyTrack = track;
+  _oldPropValue = old_chan;
+  _newPropValue = new_chan;
+}
+
 void Song::undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe)
       {
       addUndo(UndoOp(type,changedFile,changeData,startframe,endframe));
@@ -944,8 +991,50 @@ bool Song::doUndo1()
                         }
 
                         break;
+                  case UndoOp::ModifyTrackName:
+                          i->_renamedTrack->setName(i->_oldName);
+                          updateFlags |= SC_TRACK_MODIFIED;
+                        break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
+                        break;
+                  case UndoOp::ModifyTrackChannel:
+                        if (i->_propertyTrack->isMidiTrack()) 
+                        {
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
+                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
+                          //if (mt == 0 || mt->isDrumTrack())  // For Flo later with new drum tracks.  p4.0.46 Tim
+                            break;
+                          if (i->_oldPropValue != mt->outChannel()) 
+                          {
+                                //mt->setOutChannel(i->_oldPropValue);
+                                MusEGlobal::audio->msgIdle(true);
+                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->_oldPropValue);
+                                mt->setOutChanAndUpdate(i->_oldPropValue);
+                                MusEGlobal::audio->msgIdle(false);
+                                //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
+                                //      for (int i=0; i<DRUM_MAPSIZE; i++)
+                                //            MusEGlobal::drumMap[i].channel = i->_oldPropValue;
+                                //      }
+                                //updateFlags |= SC_CHANNELS;
+                                MusEGlobal::audio->msgUpdateSoloStates();                   
+                                //updateFlags |= SC_MIDI_TRACK_PROP | SC_ROUTE;  
+                                updateFlags |= SC_MIDI_TRACK_PROP;               
+                          }
+                        }
+                        else
+                        {
+                            if(i->_propertyTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            {
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_propertyTrack);
+                              if (at == 0)
+                                break;
+                              if (i->_oldPropValue != at->channels()) {
+                                    MusEGlobal::audio->msgSetChannels(at, i->_oldPropValue);
+                                    updateFlags |= SC_CHANNELS;
+                                    }
+                            }         
+                        }      
                         break;
 
                   default:
@@ -1035,9 +1124,52 @@ bool Song::doRedo1()
                   case UndoOp::DeleteTrack:
                         removeTrack1(i->oTrack);
                         break;
+                  case UndoOp::ModifyTrackName:
+                          i->_renamedTrack->setName(i->_newName);
+                          updateFlags |= SC_TRACK_MODIFIED;
+                        break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
+                  case UndoOp::ModifyTrackChannel:
+                        if (i->_propertyTrack->isMidiTrack()) 
+                        {
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
+                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
+                          //if (mt == 0 || mt->isDrumTrack())  // For Flo later with new drum tracks.  p4.0.46 Tim
+                            break;
+                          if (i->_newPropValue != mt->outChannel()) 
+                          {
+                                //mt->setOutChannel(i->_newPropValue);
+                                MusEGlobal::audio->msgIdle(true);
+                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->_newPropValue);
+                                mt->setOutChanAndUpdate(i->_newPropValue);
+                                MusEGlobal::audio->msgIdle(false);
+                                //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
+                                //      for (int i=0; i<DRUM_MAPSIZE; i++)
+                                //            MusEGlobal::drumMap[i].channel = i->_newPropValue;
+                                //      }
+                                //updateFlags |= SC_CHANNELS;
+                                MusEGlobal::audio->msgUpdateSoloStates();                   
+                                //updateFlags |= SC_MIDI_TRACK_PROP | SC_ROUTE;  
+                                updateFlags |= SC_MIDI_TRACK_PROP;               
+                          }
+                        }
+                        else
+                        {
+                            if(i->_propertyTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            {
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_propertyTrack);
+                              if (at == 0)
+                                break;
+                              if (i->_newPropValue != at->channels()) {
+                                    MusEGlobal::audio->msgSetChannels(at, i->_newPropValue);
+                                    updateFlags |= SC_CHANNELS;
+                                    }
+                            }         
+                        }      
+                        break;
+                        
                   default:
                         break;
                   }

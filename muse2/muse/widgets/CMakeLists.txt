@@ -89,6 +89,7 @@ QT4_WRAP_CPP (widget_mocs
       tb1.h  
       tempolabel.h  
       tools.h  
+      tracks_duplicate.h
       # ttoolbar.h  
       ttoolbutton.h  
       unusedwavefiles.h
@@ -126,6 +127,7 @@ file (GLOB widgets_ui_files
       shortcutconfigbase.ui  
       songinfo.ui  
       synthconfigbase.ui  
+      tracks_duplicate_base.ui
       transformbase.ui  
       unusedwavefiles.ui
       )
@@ -197,6 +199,7 @@ file (GLOB widgets_source_files
       tb1.cpp   
       tempolabel.cpp 
       tools.cpp 
+      tracks_duplicate.cpp
       # ttoolbar.cpp 
       ttoolbutton.cpp 
       unusedwavefiles.cpp

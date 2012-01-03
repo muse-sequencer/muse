@@ -146,6 +146,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editPasteCloneDialogAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste clone (show dialog)"), this);
   editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
   editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
+  editDuplicateSelTrackAction = new QAction(QIcon(*edit_track_addIcon), tr("Duplicate Selected Tracks"), this);
 
   editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this); //FINDMICH TODO tooltips!
   editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
@@ -224,6 +225,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addAction(editDeleteSelectedAction);
 
   menuEdit->addMenu(addTrack);
+  menuEdit->addAction(editDuplicateSelTrackAction);
   menuEdit->addMenu(select);
     select->addAction(editSelectAllAction);
     select->addAction(editDeselectAllAction);
@@ -298,6 +300,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(editPasteCloneDialogAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editDuplicateSelTrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
 
   connect(editShrinkPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editExpandPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -319,6 +322,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editSignalMapper->setMapping(editPasteCloneDialogAction, CMD_PASTE_CLONE_DIALOG);
   editSignalMapper->setMapping(editInsertEMAction, CMD_INSERTMEAS);
   editSignalMapper->setMapping(editDeleteSelectedAction, CMD_DELETE_TRACK);
+  editSignalMapper->setMapping(editDuplicateSelTrackAction, CMD_DUPLICATE_TRACK);
   editSignalMapper->setMapping(editShrinkPartsAction, CMD_SHRINK_PART);
   editSignalMapper->setMapping(editExpandPartsAction, CMD_EXPAND_PART);
   editSignalMapper->setMapping(editCleanPartsAction, CMD_CLEAN_PART);
@@ -513,6 +517,10 @@ void ArrangerView::cmd(int cmd)
                   MusEGlobal::audio->msgRemoveTracks();
                   MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
                   MusEGlobal::audio->msgUpdateSoloStates();
+                  break;
+
+            case CMD_DUPLICATE_TRACK:
+                  MusEGlobal::song->duplicateTracks(); 
                   break;
 
             case CMD_SELECT_ALL:

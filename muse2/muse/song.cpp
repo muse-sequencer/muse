@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QPoint>
 #include <QSignalMapper>
+#include <QString>
 #include <QTextStream>
 #include <QProcess>
 #include <QByteArray>
@@ -56,6 +57,7 @@
 #include "sync.h"
 #include "midictrl.h"
 #include "menutitleitem.h"
+#include "tracks_duplicate.h"
 #include "midi.h"
 ///#include "sig.h"
 #include "al/sig.h"
@@ -375,6 +377,165 @@ Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
       }
 
 //---------------------------------------------------------
+//    duplicateTracks
+//    Called from GUI context
+//---------------------------------------------------------
+
+void Song::duplicateTracks()
+{
+  // Make a temporary copy.  
+  TrackList tl = _tracks;  
+
+  int audio_found = 0;
+  int midi_found = 0;
+  int drum_found = 0;
+  for(iTrack it = tl.begin(); it != tl.end(); ++it) 
+    if((*it)->selected()) 
+    {
+      Track::TrackType type = (*it)->type(); 
+      // TODO: Handle synths.   p4.0.47
+      if(type == Track::AUDIO_SOFTSYNTH)
+        continue;
+      
+      if(type == Track::DRUM)
+      //if(track->isDrumTrack())   // For Flo later with new drum tracks. 
+        ++drum_found;
+      else
+      if(type == Track::MIDI)
+        ++midi_found;
+      else
+        ++audio_found;
+    }
+ 
+  if(audio_found == 0 && midi_found == 0 && drum_found == 0)
+    return;
+  
+  
+  MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(audio_found, midi_found, drum_found);
+  
+  int rv = dlg->exec();
+  if(rv == QDialog::Rejected)
+  {
+    delete dlg;
+    return;
+  }
+        
+  int copies = dlg->copies();
+
+  int flags = Track::ASSIGN_PROPERTIES;
+  if(dlg->copyStdCtrls())
+    flags |= Track::ASSIGN_STD_CTRLS;
+  if(dlg->copyPlugins())
+    flags |= Track::ASSIGN_PLUGINS;
+  if(dlg->copyPluginCtrls())
+    flags |= Track::ASSIGN_PLUGIN_CTRLS;
+  if(dlg->allRoutes())
+    flags |= Track::ASSIGN_ROUTES;
+  if(dlg->defaultRoutes())
+    flags |= Track::ASSIGN_DEFAULT_ROUTES;
+  if(dlg->copyParts())
+    flags |= Track::ASSIGN_PARTS;     
+  
+  delete dlg;
+  
+  QString track_name;
+  int idx;
+  int trackno = tl.size();
+  MusEGlobal::song->startUndo();
+  for(TrackList::reverse_iterator it = tl.rbegin(); it != tl.rend(); ++it) 
+  {
+    Track* track = *it;
+    if(track->selected()) 
+    {
+      track_name = track->name();
+      
+      for(int cp = 0; cp < copies; ++cp)
+      {
+        // There are two ways to copy a track now. Using the copy constructor or using new + assign(). 
+        // Tested: Both ways seem OK. Prefer copy constructors for simplicity. But new + assign() may be 
+        //  required for fine-grained control over initializing various track types.
+        //
+        
+        //  Set to 0 to use the copy constructor. Set to 1 to use new + assign().     
+  #if 0      
+        
+        Track* new_track = 0;
+        int lastAuxIdx = _auxs.size();
+        switch(track->type()) 
+        {
+          case Track::AUDIO_SOFTSYNTH:  // TODO: Handle synths.   p4.0.47
+                // ((AudioTrack*)new_track)->addAuxSend(lastAuxIdx);
+                break;
+            
+          case Track::MIDI:
+                new_track = new MidiTrack();
+                new_track->setType(Track::MIDI);
+                break;
+          case Track::DRUM:
+                new_track = new MidiTrack();
+                new_track->setType(Track::DRUM);
+                //((MidiTrack*)new_track)->setOutChannel(9);
+                break;
+          case Track::WAVE:
+                new_track = new MusECore::WaveTrack();
+                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx);
+                break;
+          case Track::AUDIO_OUTPUT:
+                new_track = new AudioOutput();
+                break;
+          case Track::AUDIO_GROUP:
+                new_track = new AudioGroup();
+                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx);
+                break;
+          case Track::AUDIO_AUX:
+                new_track = new AudioAux();
+                break;
+          case Track::AUDIO_INPUT:
+                new_track = new AudioInput();
+                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx);
+                break;
+          default:
+                printf("Song::duplicateTracks: Illegal type %d\n", track->type());
+                break;
+        }
+            
+        if(new_track)   
+        {
+          new_track->assign(*track, flags);
+  #else      
+        if(track->type() != Track::AUDIO_SOFTSYNTH)  // TODO: Handle synths.   p4.0.47
+        {
+          Track* new_track = track->clone(flags);  
+  #endif
+          
+          //new_track->setDefaultName(track_name);  // Handled in class now.
+
+          idx = trackno + cp;
+          insertTrack1(new_track, idx);         
+          addUndo(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
+          msgInsertTrack(new_track, idx, false); // No undo.
+          insertTrack3(new_track, idx); 
+        }  
+      }  
+    }
+    --trackno;
+  }
+  
+  int update_flags = SC_TRACK_INSERTED;
+  if(flags & (Track::ASSIGN_ROUTES | Track::ASSIGN_DEFAULT_ROUTES))
+    update_flags |= SC_ROUTE;
+  MusEGlobal::song->endUndo(update_flags);
+  MusEGlobal::audio->msgUpdateSoloStates();
+
+  //if (t->isVisible()) 
+  //{
+    ////deselectTracks();
+    //t->setSelected(true);
+    ////update(SC_SELECTION);
+  //}
+}          
+      
+//---------------------------------------------------------
 //   cmdRemoveTrack
 //---------------------------------------------------------
 
@@ -415,6 +576,7 @@ void Song::deselectTracks()
             (*t)->setSelected(false);
       }
 
+/*      
 //---------------------------------------------------------
 //   changeTrack
 //    oldTrack - copy of the original track befor modification
@@ -430,7 +592,8 @@ void Song::changeTrack(Track* oldTrack, Track* newTrack)
       addUndo(UndoOp(UndoOp::ModifyTrack, idx, oldTrack, newTrack));
       updateFlags |= SC_TRACK_MODIFIED;
       }
-
+*/
+      
 //---------------------------------------------------------
 //  addEvent
 //    return true if event was added
@@ -1692,7 +1855,8 @@ void Song::rescanAlsaPorts()
 void Song::endMsgCmd()
       {
       if (updateFlags) {
-            redoList->clear();            // TODO: delete elements in list
+            //redoList->clear();            // TODO: delete elements in list
+            redoList->clearDelete();        // p4.0.46 Tim.   NOTE Hm, shouldn't this be above?
             MusEGlobal::undoAction->setEnabled(true);
             MusEGlobal::redoAction->setEnabled(false);
             emit songChanged(updateFlags);
@@ -1813,9 +1977,9 @@ void Song::processMsg(AudioMsg* msg)
                   //removeTrack2(msg->track);
                   cmdRemoveTrack(msg->track);
                   break;
-            case SEQM_CHANGE_TRACK:
-                  changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
-                  break;
+            //case SEQM_CHANGE_TRACK:    
+            //      changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
+            //      break;
             case SEQM_ADD_PART:
                   cmdAddPart((Part*)msg->p1);
                   break;
@@ -2029,8 +2193,15 @@ void Song::clear(bool signal, bool clear_all)
       MusEGlobal::tempomap.clear();
       AL::sigmap.clear();
       MusEGlobal::keymap.clear();
+      
       undoList->clearDelete();
-      redoList->clear();
+      //redoList->clear();  // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists. 
+      redoList->clearDelete();                   // p4.0.46 Tim
+      if(MusEGlobal::undoAction)
+        MusEGlobal::undoAction->setEnabled(false); //
+      if(MusEGlobal::redoAction)
+        MusEGlobal::redoAction->setEnabled(false); //
+      
       _markerList->clear();
       pos[0].setTick(0);
       pos[1].setTick(0);
@@ -2120,7 +2291,8 @@ void Song::cleanupForQuit()
       if(MusEGlobal::debugMsg)
         printf("deleting undoList, clearing redoList\n");
       undoList->clearDelete();
-      redoList->clear();    // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists.
+      //redoList->clear(); // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists.
+      redoList->clearDelete(); // p4.0.46 Tim
       
       _markerList->clear();
       

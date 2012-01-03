@@ -230,39 +230,84 @@ void Track::init()
       }
 
 Track::Track(Track::TrackType t)
-      {
+{
       init();
       _type = t;
+}
+
+Track::Track(const Track& t, int flags)
+{
+      internal_assign(t, flags | ASSIGN_PROPERTIES);  
+      for (int i = 0; i < MAX_CHANNELS; ++i) {
+            //_meter[i] = 0;
+            //_peak[i]  = 0;
+            _meter[i] = 0.0;
+            _peak[i]  = 0.0;
+            }
+}
+
+Track::~Track()
+{
+  _parts.clearDelete();
+}
+
+//---------------------------------------------------------
+//   assign 
+//---------------------------------------------------------
+
+void Track::assign(const Track& t, int flags) 
+{
+  internal_assign(t, flags);
+}
+
+void Track::internal_assign(const Track& t, int flags)
+{
+      if(flags & ASSIGN_PROPERTIES)
+      {
+        _auxRouteCount = t._auxRouteCount;
+        _nodeTraversed = t._nodeTraversed;
+        _activity     = t._activity;
+        _lastActivity = t._lastActivity;
+        _recordFlag   = t._recordFlag;
+        _mute         = t._mute;
+        _solo         = t._solo;
+        _internalSolo = t._internalSolo;
+        _off          = t._off;
+        _channels     = t._channels;
+        
+        _volumeEnCtrl  = t._volumeEnCtrl;
+        _volumeEn2Ctrl = t._volumeEn2Ctrl;
+        _panEnCtrl     = t._panEnCtrl;
+        _panEn2Ctrl    = t._panEn2Ctrl;
+        
+        _selected     = t.selected();
+        _y            = t._y;
+        _height       = t._height;
+        _comment      = t.comment();
+        _type         = t.type();
+        _locked       = t.locked();
+
+        //_name         = t.name();
+        _name =  t.name() + " #";
+        for(int i = 2; true; ++i) 
+        {
+          QString n;
+          n.setNum(i);
+          QString s = _name + n;
+          Track* track = MusEGlobal::song->findTrack(s);
+          if(track == 0) 
+          {
+            // Do not call setName here. Audio Input and Output override it and try to set 
+            //  Jack ports, which have not been initialized yet here. Must wait until 
+            // .Audio Input and Output copy constructors or assign are called.
+            //setName(s);
+            _name = s;
+            break;
+          }
+        }
       }
 
-//Track::Track(const Track& t)
-Track::Track(const Track& t, bool cloneParts)
-      {
-      _auxRouteCount = t._auxRouteCount;
-      _nodeTraversed = t._nodeTraversed;
-      _activity     = t._activity;
-      _lastActivity = t._lastActivity;
-      _recordFlag   = t._recordFlag;
-      _mute         = t._mute;
-      _solo         = t._solo;
-      _internalSolo = t._internalSolo;
-      _off          = t._off;
-      _channels     = t._channels;
-      
-      _volumeEnCtrl  = t._volumeEnCtrl;
-      _volumeEn2Ctrl = t._volumeEn2Ctrl;
-      _panEnCtrl     = t._panEnCtrl;
-      _panEn2Ctrl    = t._panEn2Ctrl;
-      
-      _selected     = t.selected();
-      _y            = t._y;
-      _height       = t._height;
-      _comment      = t.comment();
-      _name         = t.name();
-      _type         = t.type();
-      _locked       = t.locked();
-
-      if(cloneParts)
+      if(flags & ASSIGN_PARTS)
       {
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
@@ -271,74 +316,6 @@ Track::Track(const Track& t, bool cloneParts)
               _parts.add(newPart);
               }
       }
-      else
-      {
-        _parts = *(t.cparts());
-        // NOTE: We can't do this because of the way clipboard, cloneList, and undoOp::ModifyTrack, work.
-        // A couple of schemes were conceived to deal with cloneList being invalid, but the best way is
-        //  to not alter the part list here. It's a big headache because: Either the parts in the cloneList
-        //  need to be reliably looked up replaced with the new ones, or the clipboard and cloneList must be cleared.
-        // Fortunately the ONLY part of muse using this function is track rename (in TrackList and TrackInfo).
-        // So we can get away with leaving this out: 
-        //for (iPart ip = _parts.begin(); ip != _parts.end(); ++ip) 
-        //      ip->second->setTrack(this);
-      }
-              
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
-            //_meter[i] = 0;
-            //_peak[i]  = 0;
-            _meter[i] = 0.0;
-            _peak[i]  = 0.0;
-            }
-      }
-
-Track::~Track()
-{
-  _parts.clearDelete();
-}
-
-//---------------------------------------------------------
-//   operator =
-//   Added by Tim. Parts' track members MUST point to this track, 
-//    not some other track, so simple assignment operator won't do!
-//---------------------------------------------------------
-
-Track& Track::operator=(const Track& t) 
-{
-      _auxRouteCount = t._auxRouteCount;
-      _nodeTraversed = t._nodeTraversed;
-      _activity     = t._activity;
-      _lastActivity = t._lastActivity;
-      _recordFlag   = t._recordFlag;
-      _mute         = t._mute;
-      _solo         = t._solo;
-      _internalSolo = t._internalSolo;
-      _off          = t._off;
-      _channels     = t._channels;
-      
-      _volumeEnCtrl  = t._volumeEnCtrl;
-      _volumeEn2Ctrl = t._volumeEn2Ctrl;
-      _panEnCtrl     = t._panEnCtrl;
-      _panEn2Ctrl    = t._panEn2Ctrl;
-      
-      _selected     = t.selected();
-      _y            = t._y;
-      _height       = t._height;
-      _comment      = t.comment();
-      _name         = t.name();
-      _type         = t.type();
-      _locked       = t.locked();
-
-      _parts = *(t.cparts());
-      // NOTE: Can't do this. See comments in copy constructor.
-      //for (iPart ip = _parts.begin(); ip != _parts.end(); ++ip) 
-      //      ip->second->setTrack(this);
-      
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
-            _meter[i] = t._meter[i];
-            _peak[i]  = t._peak[i];
-            }
-     return *this;       
 }
 
 //---------------------------------------------------------
@@ -346,33 +323,42 @@ Track& Track::operator=(const Track& t)
 //    generate unique name for track
 //---------------------------------------------------------
 
-void Track::setDefaultName()
+void Track::setDefaultName(QString base)
       {
-      QString base;
-      switch(_type) {
-            case MIDI:
-            case DRUM:
-            case WAVE:
-                  base = QString("Track");
-                  break;
-            case AUDIO_OUTPUT:
-                  base = QString("Out");
-                  break;
-            case AUDIO_GROUP:
-                  base = QString("Group");
-                  break;
-            case AUDIO_AUX:
-                  base = QString("Aux");
-                  break;
-            case AUDIO_INPUT:
-                  base = QString("Input");
-                  break;
-            case AUDIO_SOFTSYNTH:
-                  base = QString("Synth");
-                  break;
-            };
-      base += " ";
-      for (int i = 1; true; ++i) {
+      int num_base = 1;  
+      if(base.isEmpty())
+      {  
+        switch(_type) {
+              case MIDI:
+              case DRUM:
+              case WAVE:
+                    base = QString("Track");
+                    break;
+              case AUDIO_OUTPUT:
+                    base = QString("Out");
+                    break;
+              case AUDIO_GROUP:
+                    base = QString("Group");
+                    break;
+              case AUDIO_AUX:
+                    base = QString("Aux");
+                    break;
+              case AUDIO_INPUT:
+                    base = QString("Input");
+                    break;
+              case AUDIO_SOFTSYNTH:
+                    base = QString("Synth");
+                    break;
+              };
+        base += " ";
+      }        
+      else 
+      {
+        num_base = 2;  
+        base += " #";
+      }
+      
+      for (int i = num_base; true; ++i) {
             QString n;
             n.setNum(i);
             QString s = base + n;
@@ -538,25 +524,103 @@ MidiTrack::MidiTrack()
       clefType=trebleClef;
       }
 
-//MidiTrack::MidiTrack(const MidiTrack& mt)
-//   : Track(mt)
-MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
-   : Track(mt, cloneParts)
+MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
+  : Track(mt, flags)
+{
+      _events   = new EventList;
+      _mpevents = new MPEventList;
+      internal_assign(mt, flags | Track::ASSIGN_PROPERTIES);  
+}
+
+void MidiTrack::internal_assign(const Track& t, int flags)
+{
+      if(!t.isMidiTrack())
+        return;
+      
+      const MidiTrack& mt = (const MidiTrack&)t; 
+      
+      if(flags & ASSIGN_PROPERTIES)
       {
-      _outPort       = mt.outPort();
-      _outChannel    = mt.outChannel();
-      ///_inPortMask    = mt.inPortMask();
-      ///_inChannelMask = mt.inChannelMask();
-      _events        = new EventList;
-      _mpevents      = new MPEventList;
-      transposition  = mt.transposition;
-      velocity       = mt.velocity;
-      delay          = mt.delay;
-      len            = mt.len;
-      compression    = mt.compression;
-      _recEcho       = mt.recEcho();
-      clefType=trebleClef;
+        _outPort       = mt.outPort();
+        _outChannel    = mt.outChannel();
+        transposition  = mt.transposition;
+        velocity       = mt.velocity;
+        delay          = mt.delay;
+        len            = mt.len;
+        compression    = mt.compression;
+        _recEcho       = mt.recEcho();
+        clefType       = mt.clefType;
+      }  
+      
+      // FIXME: May get "addRoute: src track route already exists" when say, 
+      //         an audio output and wave track are selected just because
+      //         of the redundancy (wave track wants to connect to output by default).
+      if(flags & ASSIGN_ROUTES)
+      {
+        for(ciRoute ir = mt._inRoutes.begin(); ir != mt._inRoutes.end(); ++ir)
+          // Amazingly, this single line seems to work.
+          MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel));
+        
+        for(ciRoute ir = mt._outRoutes.begin(); ir != mt._outRoutes.end(); ++ir)
+          // Amazingly, this single line seems to work.
+          MusEGlobal::audio->msgAddRoute(Route(this, ir->channel), *ir);
       }
+      else if(flags & ASSIGN_DEFAULT_ROUTES)
+      {
+        // Add default track <-> midiport routes. 
+        int c, cbi, ch;
+        bool defOutFound = false;                /// TODO: Remove this if and when multiple output routes supported.
+        for(int i = 0; i < MIDI_PORTS; ++i)
+        {
+          MidiPort* mp = &MusEGlobal::midiPorts[i];
+          
+          if(mp->device())  // Only if device is valid. 
+          {
+            c = mp->defaultInChannels();
+            if(c)
+            {
+              MusEGlobal::audio->msgAddRoute(Route(i, c), Route(this, c));
+              //updateFlags |= SC_ROUTE;
+            }
+          }  
+          
+          if(!defOutFound)                       ///
+          {
+            c = mp->defaultOutChannels();
+            if(c)
+            {
+              
+        /// TODO: Switch if and when multiple output routes supported.
+        #if 0
+              MusEGlobal::audio->msgAddRoute(Route(this, c), Route(i, c));
+              //updateFlags |= SC_ROUTE;
+        #else 
+              for(ch = 0; ch < MIDI_CHANNELS; ++ch)   
+              {
+                cbi = 1 << ch;
+                if(c & cbi)
+                {
+                  defOutFound = true;
+                  _outPort = i;
+                  if(type() != Track::DRUM)  // Leave drum tracks at channel 10.
+                    _outChannel = ch;
+                  //updateFlags |= SC_ROUTE;
+                  break;               
+                }
+              }
+        #endif
+            }
+          }  
+        }
+      }
+      
+}
+
+void MidiTrack::assign(const Track& t, int flags)
+{
+      Track::assign(t, flags);
+      internal_assign(t, flags);
+}
 
 MidiTrack::~MidiTrack()
       {

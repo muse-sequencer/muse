@@ -1,3 +1,22 @@
+03.01.2012:
+        - Global Cut: Fixed crashes with markers. Re-did marker section in structure.cpp:adjustGlobalLists(). (Tim)
+          TODO: Still get tempo, key, and sig not found warnings.
+02.01.2012:
+        - Fixed drag and drop cloning parts - bad reference count in PartCanvas::moveItem(). (Tim) 
+        - File Open dialog: Start with song data and configuration.
+        - Don't auto-open ALSA Midi Through device. Fixes "midi write error: Resource temporarily unavailable".
+31.12.2011:
+        - 'Duplicate tracks' route copying now works, including Audio Input/Output Jack routes. (Tim)
+30.12.2011:
+        - Added 'Duplicate tracks' Edit action, and dialog. Post-cleanups. TODO: Copy plugins, fix copying parts. (Tim)
+          Class Track, and some of it descendants, have fixed copy constructors, and a new assign() method.
+          Tested copy constructors and the new assign() method using the new duplicate tracks feature: Good so far, + undo/redo.
+        - Fixed compile errors when configured without OSC. Tested OK. Reported by Philippe Macaire. (Tim)
+27.12.2011:
+        - Fixed some undo/redo/close crashes. TODO Global cut crashes from null Marker. (Tim. All marked p4.0.46)
+          Fixed some issues with track list and popup 'name edit' and 'channel spinbox'. Added to audio tracks. 
+          REPLACED Undo type ModifyTrack: Two simpler 'ModifyTrackName', 'ModifyTrackChannels' type/struct/functions.
+          Some work was done in undo/redo and a couple of slight apparent leaks were fixed in evdata.h
 21.12.2011:
         - Fixed some mixer issues: Very slow updating with large mixer when setting visible tracks for example: Set and check 
            Style() object name in MusE::loadTheme() so that slow mixer ScrollArea::viewportEvent() is not called every time.  (Tim...)

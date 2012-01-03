@@ -58,8 +58,9 @@ class EvData {
                   return *this;
             if (--(*refCount) == 0) {
                   delete refCount;
-                  delete[] data;
-                  }
+                  if(data)
+                    delete[] data;
+                }
             data     = ed.data;
             dataLen  = ed.dataLen;
             refCount = ed.refCount;
@@ -69,9 +70,17 @@ class EvData {
 
       ~EvData() {
             if (--(*refCount) == 0) {
-                  delete[] data;
-                  delete refCount;
-                  }
+                  if(data)
+                  {  
+                    delete[] data;
+                    data = 0;
+                  }  
+                  if(refCount)
+                  {  
+                    delete refCount;
+                    refCount = 0;
+                  } 
+                }
             }
       void setData(const unsigned char* p, int l) {
             if(data)

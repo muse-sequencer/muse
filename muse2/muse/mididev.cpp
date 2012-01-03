@@ -92,8 +92,8 @@ void initMidiDevices()
 
 void MidiDevice::init()
       {
-      _readEnable = false;
-      _writeEnable = false;
+      _readEnable    = false;
+      _writeEnable   = false;
       _rwFlags       = 3;
       _openFlags     = 3;
       _port          = -1;

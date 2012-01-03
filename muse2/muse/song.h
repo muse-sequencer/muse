@@ -319,7 +319,7 @@ class Song : public QObject {
       void removeTrack2(Track* track);
       void removeTrack3(Track* track);
       void removeMarkedTracks();
-      void changeTrack(Track* oldTrack, Track* newTrack);
+      //void changeTrack(Track* oldTrack, Track* newTrack);
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
       void swapTracks(int i1, int i2);
@@ -413,6 +413,7 @@ class Song : public QObject {
       void seqSignal(int fd);
       Track* addTrack(Undo& operations, Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
+      void duplicateTracks();
       QString getScriptPath(int id, bool delivered);
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
 

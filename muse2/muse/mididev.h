@@ -56,6 +56,7 @@ class MidiDevice {
       int _openFlags;    // configured open flags
       bool _readEnable;  // set when opened/closed.
       bool _writeEnable; //
+      
       //int _sysexWriteChunk;
       //int _sysexReadChunk;
       //bool _sysexWritingChunks;
