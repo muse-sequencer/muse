@@ -1576,12 +1576,19 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         
                         if (t->type()==MusECore::Track::NEW_DRUM)
                         {
+                          QAction* tmp;
                           p->addAction(tr("Save track's drumlist"))->setData(1010);
                           p->addAction(tr("Save track's drumlist differences to initial state"))->setData(1011);
                           p->addAction(tr("Load track's drumlist"))->setData(1012);
-                          p->addAction(tr("Reset track's drumlist"))->setData(1013);
+                          tmp=p->addAction(tr("Reset track's drumlist"));
+                          tmp->setData(1013);
+                          tmp->setEnabled(!((MusECore::MidiTrack*)t)->drummap_tied_to_patch());
+                          tmp=p->addAction(tr("Reset track's drumlist-ordering"));
+                          tmp->setData(1016);
+                          tmp->setEnabled(!((MusECore::MidiTrack*)t)->drummap_ordering_tied_to_patch());
                           p->addAction(tr("Copy track's drumlist to all selected tracks"))->setData(1014);
                           p->addAction(tr("Copy track's drumlist's differences to all selected tracks"))->setData(1015);
+                          // 1016 is occupied.
                           p->addSeparator();
                         }
                         
@@ -1623,10 +1630,20 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                       
                                     case 1013:
                                       if (QMessageBox::warning(this, tr("Drum map"),
-                                          tr("Reset the track's drum map with GM defaults?"),
+                                          tr("Reset the track's drum map with instrument defaults?"),
                                           QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
                                       {
-                                        ((MusECore::MidiTrack*)t)->init_drummap();
+                                        ((MusECore::MidiTrack*)t)->set_drummap_tied_to_patch(true);
+                                        MusEGlobal::song->update(SC_DRUMMAP);
+                                      }
+                                      break;
+                                    
+                                    case 1016:
+                                      if (QMessageBox::warning(this, tr("Drum map"),
+                                          tr("Reset the track's drum map ordering?"),
+                                          QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
+                                      {
+                                        ((MusECore::MidiTrack*)t)->set_drummap_ordering_tied_to_patch(true);
                                         MusEGlobal::song->update(SC_DRUMMAP);
                                       }
                                       break;
