@@ -439,11 +439,11 @@ class PluginI : public PluginIBase {
 
 class Pipeline : public std::vector<PluginI*> {
       float* buffer[MAX_CHANNELS];
-   
+      
    public:
       Pipeline();
+      Pipeline(const Pipeline&);
       ~Pipeline();
-      
       void insert(PluginI* p, int index);
       void remove(int index);
       void removeAll();

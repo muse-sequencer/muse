@@ -61,8 +61,12 @@
 #include "globals.h"
 #include "globaldefs.h"
 
+#endif   // OSC_SUPPORT
+
 namespace MusECore {
 
+#ifdef OSC_SUPPORT
+  
 static lo_server_thread serverThread = 0;
 static char* url = 0;
 static bool oscServerRunning = false;

@@ -380,7 +380,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       if(t == MOVE_MOVE) 
         item->setPart(dpart);
       if (t == MOVE_COPY && !clone) {
-            dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
+            //dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
                                           // so we must decrement it first :/
 
             //
@@ -397,11 +397,19 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
 
 
       if (t == MOVE_COPY || t == MOVE_CLONE) {
+            dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
+                                          // so we must decrement it first :/
             // These will not increment ref count, and will not chain clones... 
             // TODO: is this comment still correct (by flo93)? i doubt it!
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
             }
       else if (t == MOVE_MOVE) {
+            // In all cases found ev lists were same. So this is redundant - Redo incs then decs the same list.
+            // But just in case we ever have two different lists...
+            dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
+                                          // so we must decrement it first :/
+            spart->events()->incARef(1); // the later MusEGlobal::song->applyOperationGroup() will decrement it
+                                          // so we must increment it first :/
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
             // TODO: is this comment still correct (by flo93)? i doubt it!

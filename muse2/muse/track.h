@@ -58,6 +58,8 @@ class Track {
          MIDI=0, DRUM, NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
          AUDIO_AUX, AUDIO_SOFTSYNTH
          };
+      enum AssignFlags {
+         ASSIGN_PROPERTIES=1, ASSIGN_PARTS=2, ASSIGN_PLUGINS=4, ASSIGN_STD_CTRLS=8, ASSIGN_PLUGIN_CTRLS=16, ASSIGN_ROUTES=32, ASSIGN_DEFAULT_ROUTES=64, ASSIGN_DRUMLIST=128 };
    private:
       TrackType _type;
       QString _comment;
@@ -65,6 +67,7 @@ class Track {
       PartList _parts;
 
       void init();
+      void internal_assign(const Track&, int flags);
 
    protected:
       static unsigned int _soloRefCnt;
@@ -105,10 +108,10 @@ class Track {
 
    public:
       Track(TrackType);
-      //Track(const Track&);
-      Track(const Track&, bool cloneParts);
+      Track(const Track&, int flags);
       virtual ~Track();
-      virtual Track& operator=(const Track& t);
+      //virtual Track& operator=(const Track& t);
+      virtual void assign(const Track&, int flags);
       
       static const char* _cname[];
       
@@ -160,8 +163,7 @@ class Track {
       virtual void write(int, Xml&) const = 0;
 
       virtual Track* newTrack() const = 0;
-      //virtual Track* clone() const    = 0;
-      virtual Track* clone(bool CloneParts) const    = 0;
+      virtual Track* clone(int flags) const    = 0;
 
       virtual bool setRecordFlag1(bool f) = 0;
       virtual void setRecordFlag2(bool f) = 0;
@@ -200,7 +202,7 @@ class Track {
       void resetMeter();
 
       bool readProperty(Xml& xml, const QString& tag);
-      void setDefaultName();
+      void setDefaultName(QString base = QString());
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
       bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
@@ -232,6 +234,7 @@ class MidiTrack : public Track {
       MPEventList* _mpevents; // tmp Events druring recording
       static bool _isVisible;
       clefTypes clefType;
+
       
       DrumMap* _drummap; // _drummap[foo].anote is always equal to foo
       bool* _drummap_hidden; // _drummap und _drummap_hidden will be an array[128]
@@ -240,6 +243,7 @@ class MidiTrack : public Track {
       int drum_in_map[128];
       
       void init();
+      void internal_assign(const Track&, int flags);
       void init_drummap(bool write_ordering); // function without argument in public
       void remove_ourselves_from_drum_ordering();
       void init_drum_ordering();
@@ -251,9 +255,10 @@ class MidiTrack : public Track {
 
    public:
       MidiTrack();
-      //MidiTrack(const MidiTrack&);
-      MidiTrack(const MidiTrack&, bool cloneParts);
+      MidiTrack(const MidiTrack&, int flags);
       virtual ~MidiTrack();
+
+      virtual void assign(const Track&, int flags);
 
       virtual AutomationType automationType() const;
       virtual void setAutomationType(AutomationType);
@@ -275,9 +280,9 @@ class MidiTrack : public Track {
       virtual void write(int, Xml&) const;
 
       virtual int height() const;
+      
       virtual MidiTrack* newTrack() const { return new MidiTrack(); }
-      //virtual MidiTrack* clone() const { return new MidiTrack(*this); }
-      virtual MidiTrack* clone(bool cloneParts) const { return new MidiTrack(*this, cloneParts); }
+      virtual MidiTrack* clone(int flags) const { return new MidiTrack(*this, flags); }
       virtual Part* newPart(Part*p=0, bool clone=false);
 
       void setOutChannel(int i)       { _outChannel = i; }
@@ -361,6 +366,7 @@ class AudioTrack : public Track {
       bool _sendMetronome;
       AutomationType _automationType;
       Pipeline* _efxPipe;
+      void internal_assign(const Track&, int flags);
 
    protected:
       float** outBuffers;
@@ -378,9 +384,13 @@ class AudioTrack : public Track {
       AudioTrack(TrackType t);
       //AudioTrack(TrackType t, int num_out_bufs = MAX_CHANNELS); 
       
-      //AudioTrack(const AudioTrack&);
-      AudioTrack(const AudioTrack&, bool cloneParts);
+      AudioTrack(const AudioTrack&, int flags);
       virtual ~AudioTrack();
+
+      virtual void assign(const Track&, int flags);
+      
+      virtual AudioTrack* clone(int flags) const = 0;
+      virtual Part* newPart(Part*p=0, bool clone=false);
 
       virtual bool setRecordFlag1(bool f);
       virtual void setRecordFlag2(bool f);
@@ -398,10 +408,6 @@ class AudioTrack : public Track {
 
       void mapRackPluginsToControllers();
       void showPendingPluginNativeGuis();
-
-      //virtual AudioTrack* clone() const = 0;
-      virtual AudioTrack* clone(bool cloneParts) const = 0;
-      virtual Part* newPart(Part*p=0, bool clone=false);
 
       SndFile* recFile() const           { return _recFile; }
       void setRecFile(SndFile* sf)       { _recFile = sf;   }
@@ -484,14 +490,15 @@ class AudioInput : public AudioTrack {
       void* jackPorts[MAX_CHANNELS];
       virtual bool getData(unsigned, int, unsigned, float**);
       static bool _isVisible;
-
+      void internal_assign(const Track& t, int flags);
+      
    public:
       AudioInput();
-      //AudioInput(const AudioInput&);
-      AudioInput(const AudioInput&, bool cloneParts);
+      AudioInput(const AudioInput&, int flags);
       virtual ~AudioInput();
-      //AudioInput* clone() const { return new AudioInput(*this); }
-      AudioInput* clone(bool cloneParts) const { return new AudioInput(*this, cloneParts); }
+
+      virtual void assign(const Track&, int flags);
+      AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
       virtual AudioInput* newTrack() const { return new AudioInput(); }
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
@@ -515,16 +522,16 @@ class AudioOutput : public AudioTrack {
       float* buffer1[MAX_CHANNELS];
       unsigned long _nframes;
       static bool _isVisible;
-
       float* _monitorBuffer[MAX_CHANNELS];
+      void internal_assign(const Track& t, int flags);
 
    public:
       AudioOutput();
-      //AudioOutput(const AudioOutput&);
-      AudioOutput(const AudioOutput&, bool cloneParts);
+      AudioOutput(const AudioOutput&, int flags);
       virtual ~AudioOutput();
-      //AudioOutput* clone() const { return new AudioOutput(*this); }
-      AudioOutput* clone(bool cloneParts) const { return new AudioOutput(*this, cloneParts); }
+
+      virtual void assign(const Track&, int flags);
+      AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
       virtual AudioOutput* newTrack() const { return new AudioOutput(); }
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
@@ -553,8 +560,9 @@ class AudioGroup : public AudioTrack {
       static bool _isVisible;
    public:
       AudioGroup() : AudioTrack(AUDIO_GROUP) {  }
-      //AudioGroup* clone() const { return new AudioGroup(*this); }
-      AudioGroup* clone(bool /*cloneParts*/) const { return new AudioGroup(*this); }
+      AudioGroup(const AudioGroup& t, int flags) : AudioTrack(t, flags) { }
+      
+      AudioGroup* clone(int flags) const { return new AudioGroup(*this, flags); }
       virtual AudioGroup* newTrack() const { return new AudioGroup(); }
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
@@ -573,8 +581,9 @@ class AudioAux : public AudioTrack {
       static bool _isVisible;
    public:
       AudioAux();
-      //AudioAux* clone() const { return new AudioAux(*this); }
-      AudioAux* clone(bool /*cloneParts*/) const { return new AudioAux(*this); }
+      AudioAux(const AudioAux& t, int flags);
+      
+      AudioAux* clone(int flags) const { return new AudioAux(*this, flags); }
       ~AudioAux();
       virtual AudioAux* newTrack() const { return new AudioAux(); }
       virtual void read(Xml&);
@@ -599,11 +608,9 @@ class WaveTrack : public AudioTrack {
    public:
 
       WaveTrack() : AudioTrack(Track::WAVE) {  }
-      //WaveTrack(const WaveTrack& wt) : AudioTrack(wt) {}
-      WaveTrack(const WaveTrack& wt, bool cloneParts) : AudioTrack(wt, cloneParts) {}
+      WaveTrack(const WaveTrack& wt, int flags) : AudioTrack(wt, flags) {}
 
-      //virtual WaveTrack* clone() const    { return new WaveTrack(*this); }
-      virtual WaveTrack* clone(bool cloneParts) const    { return new WaveTrack(*this, cloneParts); }
+      virtual WaveTrack* clone(int flags) const    { return new WaveTrack(*this, flags); }
       virtual WaveTrack* newTrack() const { return new WaveTrack(); }
       virtual Part* newPart(Part*p=0, bool clone=false);
 

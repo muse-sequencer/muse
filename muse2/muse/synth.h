@@ -246,8 +246,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       
       SynthI();
       virtual ~SynthI();
-      //SynthI* clone() const { return new SynthI(*this); }
-      SynthI* clone(bool /*cloneParts*/) const { return new SynthI(*this); }
+      SynthI* clone(int /*flags*/) const { return new SynthI(*this/*, flags*/); }
 
       virtual inline int deviceType() const { return SYNTH_MIDI; } 
       

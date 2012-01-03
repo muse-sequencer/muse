@@ -320,11 +320,15 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     if (!act)
     {
       delete menu;
+      QFrame::mousePressEvent(ev);
       return;
     }
     MusEGlobal::song->removeTrack0(track);
     MusEGlobal::audio->msgUpdateSoloStates();
+    ev->accept();
+    return;
   }
+  QFrame::mousePressEvent(ev);
 }
 
 
