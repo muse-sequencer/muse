@@ -1,4 +1,20 @@
 03.01.2012:
+        - ADDED NEW STYLE DRUM TRACKS: (flo93)
+          
+          multiple tracks can be displayed in one editor
+          their drum sound columns can be reordered, mixed up, hidden.
+          drumtracks can be grouped by channel, not at all, or maximally
+          each track owns its own drummap
+          added drummap-definitions to instrument files (gs and xg.idf)
+          drumtracks' drummap can be automatically set according to
+          the currently used patch/program/bank
+          new-style-drumtracks can ignore muted, hidden or both sounds when
+          recording
+
+          KNOWN ISSUES: when having multiple drumeditors open, the mute-column
+                        may not work, because another editor is overriding this.
+                        this is not a bug.
+        
         - Global Cut: Fixed crashes with markers. Re-did marker section in structure.cpp:adjustGlobalLists(). (Tim)
           TODO: Still get tempo, key, and sig not found warnings.
 02.01.2012:

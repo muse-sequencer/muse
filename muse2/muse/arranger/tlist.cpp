@@ -718,10 +718,6 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
             case MusECore::Track::MIDI:
             case MusECore::Track::DRUM:
             case MusECore::Track::NEW_DRUM:
-            // FINDMICHJETZT: this is a notice for flo's experimental
-            //                branch! don't forget NEW_DRUM here!
-            //                please don't remove this. i'll do it when
-            //                the time is there.
             case MusECore::Track::AUDIO_SOFTSYNTH: 
             {
                   MusECore::MidiTrack* track = (MusECore::MidiTrack*)t;
@@ -742,7 +738,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                     
                   QMenu* p = MusECore::midiPortsPopup(this, port);     // 0, port);
                   
-                  if (t->type()==MusECore::Track::MIDI || t->type()==MusECore::Track::DRUM) //FINDMICHJETZT
+                  if (t->isMidiTrack())
                   {
                     // extend that menu a bit
 

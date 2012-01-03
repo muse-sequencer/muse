@@ -162,11 +162,13 @@ class DrumCanvas : public EventCanvas {
       virtual void keyPress(QKeyEvent* event);
       MusECore::Event *getEventAtCursorPos();
       void selectCursorEvent(MusECore::Event *ev);
+
       int pitch_and_track_to_instrument(int pitch, MusECore::Track* track);
-      MusECore::DrumMap* getOurDrumMap() { return ourDrumMap; } //FINDMICH UGLY
-      int getOurDrumMapSize() { return instrument_map.size(); } //FINDMICH UGLY
-      QVector<instrument_number_mapping_t>& get_instrument_map() { return instrument_map; } //FINDMICH UGLY
-      void propagate_drummap_change(int instrument, bool update_druminmap); //FINDMICH move to drumedit
+
+      MusECore::DrumMap* getOurDrumMap() { return ourDrumMap; }
+      int getOurDrumMapSize() { return instrument_map.size(); }
+      QVector<instrument_number_mapping_t>& get_instrument_map() { return instrument_map; }
+      void propagate_drummap_change(int instrument, bool update_druminmap);
       void rebuildOurDrumMap();
       };
 

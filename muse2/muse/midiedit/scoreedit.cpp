@@ -4655,20 +4655,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
 //      every time something changes.
 
 
-/* STUFF I WANT TO WORK
- * 
- * x multiple new drum tracks can be displayed seperately in ONE drum 
- *   editor
- * x reorder drummap
- * ? support and correctly map e-note on record and steprec
- * ? only record nonmuted/whatever notes
- * ? support drum controllers
- * x refuse to mix up old-style and new-style drum tracks in ONE editor
- * o drummap saving and loading (per-track)
- * o drummap import/export
- * o drummap automatically adapting to the chosen midi synth / patch
- */
-
 /* BUGS and potential bugs
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
@@ -4679,46 +4665,15 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  *
  * CURRENT TODO
- *   o write instrument drummaps
- *   o GUI for editing instrument drummaps
- *   * drum controllers
- *       update ctrlcanvas/panel
- *       test!
- *   * drum editor is buggy. propagate_drum_map may operate on old values
- *     ("BUGGY! problem is: while changing entries, ourDrumMap
- *      may be reallocated which causes abort()s and/or bugs.")
- *      [ seems to work now, needs further testing! ]
- *   x my record flag handling
- *   * once, using super glue while a score editor displaying the glued 
- *     parts is open let muse segfault. this may or may not be fixed
- *     now. check!
- *     state of revision #1337: no segfaults, but the score editors
- *     close and lots of "ERROR" messages.
- * 
- *   o drum editor: channel-stuff
- *        o clearly state in the changelog: when having multiple drumeditors open,
- *          the mute-column may not work, because another editor is overriding this.
- * >      o respect "_drummap_tied_to_patch": IMPLEMENT
- *        o whenever changing the patch and maintained_automatically==true,
- *          the drumlist is replaced by the according one (for example, "jazz" drum kit's list)
- *        o whenever changing the drumlist and maintained_automatically==true,
- *          ask the user if he wants to proceed, and then set maintained_automatically to false
- *        o offer some way to set maintained_automatically to true again
- *        o move generation and deletion of ourDrumMap from DCanvas to DrumEditor and remove ugly wrapper functions
+ *   o test drum controllers
+ *   o test old- and new drumtrack recording, steprecording
+ *
  * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
  * > o add a songposition scrollbar-toolbar (in different sizes)
  *     this might be equivalent to "redo transport menu" (below).
  * > o add toolbar(s) for tempo- etc spinboxes from the transport window 
  *
- *
  *   o find and fix FINDMICHJETZT
- *   o fix all segfaults and non-working stuff!
- *        - creating, changing types to and from, erasing NEW_DRUM tracks
- *        - move parts around
- *        - playing them. mute?
- *        - recording/echoing/steprec them
- *        - load, save them
- *   o fix valgrind problems
  * 
  * IMPORTANT TODO
  *   o allow steprec-insert-rest-note to be set to "off" / "unused"

@@ -169,7 +169,7 @@ class DrumEdit : public MidiEditor {
       group_mode_t group_mode() { return _group_mode; }
       bool ignore_hide() { return _ignore_hide; }
       
-      QVector<instrument_number_mapping_t>& get_instrument_map() { return static_cast<DrumCanvas*>(canvas)->get_instrument_map(); } //FINDMICH UGLY
+      QVector<instrument_number_mapping_t>& get_instrument_map() { return static_cast<DrumCanvas*>(canvas)->get_instrument_map(); }
       };
 
 } // namespace MusEGui
