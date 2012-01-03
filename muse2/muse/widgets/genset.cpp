@@ -65,6 +65,13 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       startSongGroup->addButton(startLastButton, 0);
       startSongGroup->addButton(startEmptyButton, 1);
       startSongGroup->addButton(startSongButton, 2);
+      
+      recDrumGroup = new QButtonGroup(this);
+      recDrumGroup->addButton(recordAllButton, MusECore::REC_ALL);
+      recDrumGroup->addButton(dontRecHiddenButton, MusECore::DONT_REC_HIDDEN);
+      recDrumGroup->addButton(dontRecMutedButton, MusECore::DONT_REC_MUTED);
+      recDrumGroup->addButton(dontRecBothButton, MusECore::DONT_REC_MUTED_OR_HIDDEN);
+      
       for (unsigned i = 0; i < sizeof(rtcResolutions)/sizeof(*rtcResolutions); ++i) {
             if (rtcResolutions[i] == MusEGlobal::config.rtcTicks) {
                   rtcResolutionSelect->setCurrentIndex(i);
@@ -124,6 +131,8 @@ Shorter periods are desirable.</string>
       startSongEntry->setText(MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
 
+      recDrumGroup->button(MusEGlobal::config.newDrumRecordCondition)->setChecked(true);
+
       showTransport->setChecked(MusEGlobal::config.transportVisible);
       showBigtime->setChecked(MusEGlobal::config.bigTimeVisible);
       //showMixer->setChecked(MusEGlobal::config.mixerVisible);
@@ -175,6 +184,14 @@ Shorter periods are desirable.</string>
 
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
+      
+      switch (MusEGlobal::config.drumTrackPreference)
+      {
+        case MusEGlobal::ONLY_NEW: onlyNewDrumBtn->setChecked(true); break;
+        case MusEGlobal::ONLY_OLD: onlyOldDrumBtn->setChecked(true); break;
+        case MusEGlobal::PREFER_NEW: preferNewDrumBtn->setChecked(true); break;
+        case MusEGlobal::PREFER_OLD: preferOldDrumBtn->setChecked(true); break;
+      }
 
       //updateSettings();    // TESTING
       
@@ -269,6 +286,8 @@ void GlobalSettingsConfig::updateSettings()
       startSongEntry->setText(MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
 
+      recDrumGroup->button(MusEGlobal::config.newDrumRecordCondition)->setChecked(true);
+
       showTransport->setChecked(MusEGlobal::config.transportVisible);
       showBigtime->setChecked(MusEGlobal::config.bigTimeVisible);
       //showMixer->setChecked(MusEGlobal::config.mixerVisible);
@@ -321,6 +340,14 @@ void GlobalSettingsConfig::updateSettings()
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
 
+      switch (MusEGlobal::config.drumTrackPreference)
+      {
+        case MusEGlobal::ONLY_NEW: onlyNewDrumBtn->setChecked(true); break;
+        case MusEGlobal::ONLY_OLD: onlyOldDrumBtn->setChecked(true); break;
+        case MusEGlobal::PREFER_NEW: preferNewDrumBtn->setChecked(true); break;
+        case MusEGlobal::PREFER_OLD: preferOldDrumBtn->setChecked(true); break;
+      }
+
       updateMdiSettings();
 }
 
@@ -366,6 +393,8 @@ void GlobalSettingsConfig::apply()
       
       MusEGlobal::config.startSong   = startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();
+      MusEGlobal::config.newDrumRecordCondition = MusECore::newDrumRecordCondition_t(recDrumGroup->checkedId());
+
       int das = dummyAudioSize->currentIndex();
       MusEGlobal::config.dummyAudioBufSize = dummyAudioBufSizes[das];
       MusEGlobal::config.dummyAudioSampleRate = dummyAudioRate->value();
@@ -460,6 +489,16 @@ void GlobalSettingsConfig::apply()
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
       MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
+      
+      if (onlyNewDrumBtn->isChecked())
+        MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_NEW;
+      else if (onlyOldDrumBtn->isChecked())
+        MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_OLD;
+      else if (preferOldDrumBtn->isChecked())
+        MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_OLD;
+      else if (preferNewDrumBtn->isChecked())
+        MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_NEW;
+
       
       applyMdiSettings();
       

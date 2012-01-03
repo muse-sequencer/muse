@@ -148,9 +148,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
   editDuplicateSelTrackAction = new QAction(QIcon(*edit_track_addIcon), tr("Duplicate Selected Tracks"), this);
 
-  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this); //FINDMICH TODO tooltips!
+  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this);
   editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
-  editCleanPartsAction = new QAction(tr("Clean selected parts"), this);
+  editCleanPartsAction = new QAction(tr("Purge hidden events from selected parts"), this);
 
 
   addTrack = new QMenu(tr("Add Track"), this);
@@ -649,16 +649,17 @@ void ArrangerView::clearScoreMenuMappers()
 
 void ArrangerView::populateAddTrack()
 {
-      QActionGroup *grp = MusEGui::populateAddTrack(addTrack, true);
+      QActionGroup *grp = MusEGui::populateAddTrack(addTrack, true, true);
       connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
       
       trackMidiAction = grp->actions()[0];
       trackDrumAction = grp->actions()[1];
-      trackWaveAction = grp->actions()[2];
-      trackAOutputAction = grp->actions()[3];
-      trackAGroupAction = grp->actions()[4];
-      trackAInputAction = grp->actions()[5];
-      trackAAuxAction = grp->actions()[6];
+      trackNewStyleDrumAction = grp->actions()[2];
+      trackWaveAction = grp->actions()[3];
+      trackAOutputAction = grp->actions()[4];
+      trackAGroupAction = grp->actions()[5];
+      trackAInputAction = grp->actions()[6];
+      trackAAuxAction = grp->actions()[7];
 }
 
 void ArrangerView::addNewTrack(QAction* action)
@@ -682,6 +683,7 @@ void ArrangerView::updateShortcuts()
       
       trackMidiAction->setShortcut(shortcuts[SHRT_ADD_MIDI_TRACK].key);
       trackDrumAction->setShortcut(shortcuts[SHRT_ADD_DRUM_TRACK].key);
+      trackNewStyleDrumAction->setShortcut(shortcuts[SHRT_ADD_NEW_STYLE_DRUM_TRACK].key);
       trackWaveAction->setShortcut(shortcuts[SHRT_ADD_WAVE_TRACK].key);
       trackAOutputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key);
       trackAGroupAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_GROUP].key);

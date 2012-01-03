@@ -243,6 +243,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   switch(track->type()) {
                         case MusECore::Track::MIDI:
                         case MusECore::Track::DRUM:
+                        case MusECore::Track::NEW_DRUM:
                               {
                               MusECore::MidiPart* part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                               part->setTick(pos[1]);
@@ -399,7 +400,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
             dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
                                           // so we must decrement it first :/
             // These will not increment ref count, and will not chain clones... 
-            // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
+            // TODO: is this comment still correct (by flo93)? i doubt it!
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
             }
       else if (t == MOVE_MOVE) {
@@ -411,7 +412,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
                                           // so we must increment it first :/
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
-            // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
+            // TODO: is this comment still correct (by flo93)? i doubt it!
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPart,spart, dpart, true, false));
             
             spart->setSelected(false);
@@ -552,6 +553,7 @@ CItem* PartCanvas::newItem(const QPoint& pos, int)
       switch(track->type()) {
             case MusECore::Track::MIDI:
             case MusECore::Track::DRUM:
+            case MusECore::Track::NEW_DRUM:
                   pa = new MusECore::MidiPart((MusECore::MidiTrack*)track);
                   pa->setTick(x);
                   pa->setLenTick(0);
@@ -692,6 +694,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   act_mexport->setData(16);
                   }
                   break;
+            case MusECore::Track::NEW_DRUM:
             case MusECore::Track::DRUM: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
@@ -886,9 +889,6 @@ void PartCanvas::mousePress(QMouseEvent* event)
             }
       QPoint pt = event->pos();
       CItem* item = items.find(pt);
-
-      //if (item == 0 && _tool!=AutomationTool) // FINDMICHJETZT. neccessary? (flo93)
-      //      return;
 
       switch (_tool) {
             default:
@@ -1303,6 +1303,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             //  else track is midi
 
             switch (track->type()) {
+                  case MusECore::Track::NEW_DRUM:
                   case MusECore::Track::DRUM:
                         type = 3;
                         break;
@@ -2354,7 +2355,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
       using std::pair;
       
       MusECore::iEvent ito(events->lower_bound(to));
-      bool isdrum = (mt->type() == MusECore::Track::DRUM);
+      bool isdrum = (mt->type() == MusECore::Track::DRUM  ||  mt->type() == MusECore::Track::NEW_DRUM);
 
       // draw controllers ------------------------------------------
       p.setPen(QColor(192,192,color_brightness/2));

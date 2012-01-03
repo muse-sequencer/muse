@@ -62,6 +62,7 @@
 #include "synth.h"
 #include "config.h"
 #include "popupmenu.h"
+#include "filedialog.h"
 #include "menutitleitem.h"
 
 #ifdef DSSI_SUPPORT
@@ -227,6 +228,9 @@ void TList::paint(const QRect& r)
                         case MusECore::Track::DRUM:
                               bg = MusEGlobal::config.drumTrackBg;
                               break;
+                        case MusECore::Track::NEW_DRUM:
+                              bg = MusEGlobal::config.newDrumTrackBg;
+                              break;
                         case MusECore::Track::WAVE:
                               bg = MusEGlobal::config.waveTrackBg;
                               break;
@@ -282,6 +286,7 @@ void TList::paint(const QRect& r)
                                     case MusECore::Track::MIDI:
                                           pm = addtrack_addmiditrackIcon;
                                           break;
+                                    case MusECore::Track::NEW_DRUM:
                                     case MusECore::Track::DRUM:
                                           pm = addtrack_drumtrackIcon;
                                           break;
@@ -712,6 +717,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
       switch(t->type()) {
             case MusECore::Track::MIDI:
             case MusECore::Track::DRUM:
+            case MusECore::Track::NEW_DRUM:
             case MusECore::Track::AUDIO_SOFTSYNTH: 
             {
                   MusECore::MidiTrack* track = (MusECore::MidiTrack*)t;
@@ -732,7 +738,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                     
                   QMenu* p = MusECore::midiPortsPopup(this, port);     // 0, port);
                   
-                  if (t->type()==MusECore::Track::MIDI || t->type()==MusECore::Track::DRUM) //FINDMICHJETZT
+                  if (t->isMidiTrack())
                   {
                     // extend that menu a bit
 
@@ -1013,7 +1019,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       }
       
       
-      if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM)
+      if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM && t->type() != MusECore::Track::NEW_DRUM)
             return;
       int oPort      = ((MusECore::MidiTrack*)t)->outPort();
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
@@ -1218,9 +1224,7 @@ MusECore::TrackList TList::getRecEnabledTracks()
 void TList::changeAutomation(QAction* act)
 {
   //printf("changeAutomation %d\n", act->data().toInt());
-  
-  //if (editAutomation->type() == MusECore::Track::MIDI) {  // commented out by flo93
-  if ( (editAutomation->type() == MusECore::Track::MIDI) || (editAutomation->type() == MusECore::Track::DRUM) ) {
+  if ( (editAutomation->type() == MusECore::Track::MIDI) || (editAutomation->type() == MusECore::Track::DRUM) || (editAutomation->type() == MusECore::Track::NEW_DRUM) ) {
     printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
     return;
   }
@@ -1246,7 +1250,7 @@ void TList::changeAutomation(QAction* act)
 //---------------------------------------------------------
 void TList::changeAutomationColor(QAction* act)
 {
-  if (editAutomation->type() == MusECore::Track::MIDI) {
+  if ( (editAutomation->type() == MusECore::Track::MIDI) || (editAutomation->type() == MusECore::Track::DRUM) || (editAutomation->type() == MusECore::Track::NEW_DRUM) ) {
     printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
     return;
   }
@@ -1562,9 +1566,28 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         QMenu* p = new QMenu;
                         //p->clear();
                         // Leave room for normal track IDs - base these at AUDIO_SOFTSYNTH.
-                        p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(MusECore::Track::AUDIO_SOFTSYNTH + 1);
-                        p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(MusECore::Track::AUDIO_SOFTSYNTH + 2);
+                        p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(1001);
+                        p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(1002);
                         p->addSeparator();
+                        
+                        if (t->type()==MusECore::Track::NEW_DRUM)
+                        {
+                          QAction* tmp;
+                          p->addAction(tr("Save track's drumlist"))->setData(1010);
+                          p->addAction(tr("Save track's drumlist differences to initial state"))->setData(1011);
+                          p->addAction(tr("Load track's drumlist"))->setData(1012);
+                          tmp=p->addAction(tr("Reset track's drumlist"));
+                          tmp->setData(1013);
+                          tmp->setEnabled(!((MusECore::MidiTrack*)t)->drummap_tied_to_patch());
+                          tmp=p->addAction(tr("Reset track's drumlist-ordering"));
+                          tmp->setData(1016);
+                          tmp->setEnabled(!((MusECore::MidiTrack*)t)->drummap_ordering_tied_to_patch());
+                          p->addAction(tr("Copy track's drumlist to all selected tracks"))->setData(1014);
+                          p->addAction(tr("Copy track's drumlist's differences to all selected tracks"))->setData(1015);
+                          // 1016 is occupied.
+                          p->addSeparator();
+                        }
+                        
                         QMenu* pnew = new QMenu(p);
                         pnew->setTitle(tr("Insert Track"));
                         pnew->setIcon(QIcon(*edit_track_addIcon));
@@ -1573,23 +1596,62 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         QAction* act = p->exec(ev->globalPos(), 0);
                         if (act) {
                               int n = act->data().toInt();
-                              if(n >= MusECore::Track::AUDIO_SOFTSYNTH && n < MENU_ADD_SYNTH_ID_BASE)
+                              if(n >= 1000)
                               {
-                                n -= MusECore::Track::AUDIO_SOFTSYNTH;
                                 switch (n) {
-                                    case 1:     // delete track
+                                    case 1001:     // delete track
                                           MusEGlobal::song->removeTrack0(t);
                                           MusEGlobal::audio->msgUpdateSoloStates();
                                           break;
 
-                                    case 2:     // show track comment
+                                    case 1002:     // show track comment
                                           {
                                           TrackComment* tc = new TrackComment(t, 0);
                                           tc->show();
                                           //QToolTip::add( this, "FOOOOOOOOOOOOO" );
                                           }
                                           break;
-
+                                    
+                                    case 1010:
+                                      saveTrackDrummap((MusECore::MidiTrack*)t, true);
+                                      break;
+                                      
+                                    case 1011:
+                                      saveTrackDrummap((MusECore::MidiTrack*)t, false);
+                                      break;
+                                      
+                                    case 1012:
+                                      loadTrackDrummap((MusECore::MidiTrack*)t);
+                                      break;
+                                      
+                                    case 1013:
+                                      if (QMessageBox::warning(this, tr("Drum map"),
+                                          tr("Reset the track's drum map with instrument defaults?"),
+                                          QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
+                                      {
+                                        ((MusECore::MidiTrack*)t)->set_drummap_tied_to_patch(true);
+                                        MusEGlobal::song->update(SC_DRUMMAP);
+                                      }
+                                      break;
+                                    
+                                    case 1016:
+                                      if (QMessageBox::warning(this, tr("Drum map"),
+                                          tr("Reset the track's drum map ordering?"),
+                                          QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
+                                      {
+                                        ((MusECore::MidiTrack*)t)->set_drummap_ordering_tied_to_patch(true);
+                                        MusEGlobal::song->update(SC_DRUMMAP);
+                                      }
+                                      break;
+                                    
+                                    case 1014:
+                                      copyTrackDrummap((MusECore::MidiTrack*)t, true);
+                                      break;
+                                    
+                                    case 1015:
+                                      copyTrackDrummap((MusECore::MidiTrack*)t, false);
+                                      break;
+                                    
                                     default:
                                           printf("action %d\n", n);
                                           break;
@@ -1690,6 +1752,119 @@ void TList::mousePressEvent(QMouseEvent* ev)
           }        
       redraw();
       }
+
+void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
+{
+  QString fn;
+  
+  if (fn_==NULL)
+    fn=MusEGui::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
+       this, tr("Muse: Load Track's Drum Map"), 0);
+  else
+    fn=QString(fn_);
+  
+  if (fn.isEmpty())
+  {
+        printf("ERROR: TList::loadTrackDrummap(): empty filename\n");
+        return;
+  }
+        
+  bool popenFlag;
+  FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
+  if (f == 0)
+  {
+        printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toAscii().data());
+        return;
+  }
+
+  MusECore::Xml xml(f);
+  int mode = 0;
+  for (;;) {
+        MusECore::Xml::Token token = xml.parse();
+        const QString& tag = xml.s1();
+        switch (token) {
+              case MusECore::Xml::Error:
+              case MusECore::Xml::End:
+                    return;
+              case MusECore::Xml::TagStart:
+                    if (mode == 0 && tag == "muse")
+                          mode = 1;
+                    else if (mode == 1 && tag == "our_drummap") {
+                          t->readOurDrumMap(xml, true);
+                          mode = 0;
+                          }
+                    else
+                          xml.unknown("TList::loadTrackDrummap");
+                    break;
+              case MusECore::Xml::Attribut:
+                    break;
+              case MusECore::Xml::TagEnd:
+                    if (!mode && tag == "muse")
+                          goto ende;
+              default:
+                    break;
+              }
+        }
+  ende:
+  if (popenFlag)
+        pclose(f);
+  else
+        fclose(f);
+  
+  MusEGlobal::song->update(SC_DRUMMAP);
+}
+
+void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool full, const char* fn_)
+{
+  QString fn;
+  if (fn_==NULL)
+    fn = MusEGui::getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
+                                         this, tr("MusE: Store Track's Drum Map"));
+  else
+    fn = QString(fn_);
+  
+  if (fn.isEmpty())
+    return;
+    
+  bool popenFlag;
+  FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
+  if (f == 0)
+    return;
+    
+  MusECore::Xml xml(f);
+  xml.header();
+  xml.tag(0, "muse version=\"1.0\"");
+  t->writeOurDrumMap(1, xml, full);
+  xml.tag(0, "/muse");
+
+  if (popenFlag)
+    pclose(f);
+  else
+    fclose(f);  
+}
+
+void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool full)
+{
+  char* tmp1 = tmpnam(NULL);
+  char tmp2[1000];
+  strcpy(tmp2, tmp1);
+  strcat(tmp2, ".map");
+  if (MusEGlobal::debugMsg)
+    printf("in TList::copyTrackDrummap(); filename is %s\n",tmp2);
+  
+  saveTrackDrummap(t, full, tmp2);
+  
+  for (MusECore::iTrack it = MusEGlobal::song->tracks()->begin(); it!=MusEGlobal::song->tracks()->end(); it++)
+    if ((*it)->selected() && (*it)->type()==MusECore::Track::NEW_DRUM)
+    {
+      if (MusEGlobal::debugMsg)
+        printf("  processing track...\n");
+
+      loadTrackDrummap((MusECore::MidiTrack*)(*it), tmp2);
+    }
+  
+  remove(tmp2);
+}
 
 //---------------------------------------------------------
 //   selectTrack
@@ -2021,13 +2196,14 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
       p.clear();
       p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
       p.addAction(QIcon(*addtrack_drumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
+      p.addAction(QIcon(*addtrack_drumtrackIcon), tr("New style drum"))->setData(MusECore::Track::NEW_DRUM);
       QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
 
       if (!act)
             return;
 
       int n = act->data().toInt();
-      if (MusECore::Track::TrackType(n) == MusECore::Track::MIDI && t->type() == MusECore::Track::DRUM) {
+      if ((MusECore::Track::TrackType(n) == MusECore::Track::MIDI  ||  MusECore::Track::TrackType(n) == MusECore::Track::NEW_DRUM) && t->type() == MusECore::Track::DRUM) {
             //
             //    Drum -> Midi
             //
@@ -2061,11 +2237,11 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
                           
                       }
                   }
-            t->setType(MusECore::Track::MIDI);
+            t->setType(MusECore::Track::TrackType(n));
             MusEGlobal::audio->msgIdle(false);
             MusEGlobal::song->update(SC_EVENT_MODIFIED);
             }
-      else if (MusECore::Track::TrackType(n) == MusECore::Track::DRUM && t->type() == MusECore::Track::MIDI) {
+      else if (MusECore::Track::TrackType(n) == MusECore::Track::DRUM && (t->type() == MusECore::Track::MIDI  ||  t->type() == MusECore::Track::NEW_DRUM)) {
             //
             //    Midi -> Drum
             //
@@ -2122,6 +2298,13 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
             MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
             MusEGlobal::audio->msgIdle(false);
             MusEGlobal::song->update(SC_EVENT_MODIFIED);
+            }
+      else // MIDI -> NEW_DRUM or vice versa. added by flo.
+      {
+            MusEGlobal::audio->msgIdle(true);
+            t->setType(MusECore::Track::TrackType(n));
+            MusEGlobal::audio->msgIdle(false);
+            MusEGlobal::song->update(SC_TRACK_MODIFIED);
             }
       }
 

@@ -161,6 +161,9 @@
       <Patch name="Applaus" prog="126" />
       <Patch name="Gunshot" prog="127" />
     </PatchGroup>
+    <PatchGroup name="Drums">
+      <Patch name="Drums" prog="0" drum="1" />
+    </PatchGroup>
     <Controller name="Modulation" l="1" />
     <Controller name="PortamentoTime" l="5" />
     <Controller name="MainVolume" l="7" init="100" />

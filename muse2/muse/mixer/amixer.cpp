@@ -184,6 +184,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       showMidiTracksId = new QAction(tr("Show Midi Tracks"), actionItems);
       showDrumTracksId = new QAction(tr("Show Drum Tracks"), actionItems);
+      showNewDrumTracksId = new QAction(tr("Show New Style Drum Tracks"), actionItems);
       showWaveTracksId = new QAction(tr("Show Wave Tracks"), actionItems);
 
       QAction *separator = new QAction(this);
@@ -198,6 +199,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
 
       showMidiTracksId->setCheckable(true);
       showDrumTracksId->setCheckable(true);
+      showNewDrumTracksId->setCheckable(true);
       showWaveTracksId->setCheckable(true);
       showInputTracksId->setCheckable(true);
       showOutputTracksId->setCheckable(true);
@@ -209,6 +211,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       //connect(actionItems, SIGNAL(selected(QAction*)), this, SLOT(showTracksChanged(QAction*)));
       connect(showMidiTracksId, SIGNAL(triggered(bool)), SLOT(showMidiTracksChanged(bool)));
       connect(showDrumTracksId, SIGNAL(triggered(bool)), SLOT(showDrumTracksChanged(bool)));      
+      connect(showNewDrumTracksId, SIGNAL(triggered(bool)), SLOT(showNewDrumTracksChanged(bool)));      
       connect(showWaveTracksId, SIGNAL(triggered(bool)), SLOT(showWaveTracksChanged(bool)));      
       connect(showInputTracksId, SIGNAL(triggered(bool)), SLOT(showInputTracksChanged(bool)));      
       connect(showOutputTracksId, SIGNAL(triggered(bool)), SLOT(showOutputTracksChanged(bool)));      
@@ -352,6 +355,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       
       showMidiTracksId->setChecked(cfg->showMidiTracks);
       showDrumTracksId->setChecked(cfg->showDrumTracks);
+      showNewDrumTracksId->setChecked(cfg->showNewDrumTracks);
       showInputTracksId->setChecked(cfg->showInputTracks);
       showOutputTracksId->setChecked(cfg->showOutputTracks);
       showWaveTracksId->setChecked(cfg->showWaveTracks);
@@ -430,7 +434,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             for (MusECore::iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
             {
               MusECore::MidiTrack* mt = *i;
-              if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks)) 
+              if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks) || (mt->type() == MusECore::Track::NEW_DRUM && cfg->showNewDrumTracks)) 
                 addStrip(*i, idx++);
             }
       
@@ -487,7 +491,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       for (MusECore::iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
       {
         MusECore::MidiTrack* mt = *i;
-        if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks)) 
+        if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks) || (mt->type() == MusECore::Track::NEW_DRUM && cfg->showNewDrumTracks)) 
           addStrip(*i, idx++);
       }
 
@@ -636,6 +640,8 @@ void AudioMixerApp::showTracksChanged(QAction* id)
             cfg->showMidiTracks = val;
       else if (id == showDrumTracksId)
             cfg->showDrumTracks = val;
+      else if (id == showNewDrumTracksId)
+            cfg->showNewDrumTracks = val;
       else if (id == showInputTracksId)
             cfg->showInputTracks = val;
       else if (id == showOutputTracksId)
@@ -661,6 +667,12 @@ void AudioMixerApp::showMidiTracksChanged(bool v)
 void AudioMixerApp::showDrumTracksChanged(bool v)
 {
       cfg->showDrumTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+void AudioMixerApp::showNewDrumTracksChanged(bool v)
+{
+      cfg->showNewDrumTracks = v;
       updateMixer(UPDATE_ALL);
 }
 
@@ -719,6 +731,7 @@ void AudioMixerApp::write(int level, MusECore::Xml& xml)
       
       xml.intTag(level, "showMidiTracks",   cfg->showMidiTracks);
       xml.intTag(level, "showDrumTracks",   cfg->showDrumTracks);
+      xml.intTag(level, "showNewDrumTracks",   cfg->showNewDrumTracks);
       xml.intTag(level, "showInputTracks",  cfg->showInputTracks);
       xml.intTag(level, "showOutputTracks", cfg->showOutputTracks);
       xml.intTag(level, "showWaveTracks",   cfg->showWaveTracks);

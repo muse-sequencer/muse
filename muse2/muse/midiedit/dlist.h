@@ -35,6 +35,8 @@ class QHeaderView;
 class QLineEdit;
 class QMouseEvent;
 class QPainter;
+class Device;
+class QLineEdit;
 
 namespace MusECore {
 class DrumMap;
@@ -43,6 +45,27 @@ class DrumMap;
 namespace MusEGui {
 
 class ScrollScale;
+class DrumCanvas;
+
+
+enum DrumColumn {
+  COL_HIDE = 0,
+  COL_MUTE,
+  COL_NAME,
+  COL_VOLUME,
+  COL_QUANT,
+  COL_INPUTTRIGGER,
+  COL_NOTELENGTH,
+  COL_NOTE,
+  COL_OUTCHANNEL,
+  COL_OUTPORT,
+  COL_LEVEL1,
+  COL_LEVEL2,
+  COL_LEVEL3,
+  COL_LEVEL4,
+  COL_NONE = -1
+};
+
 
 //---------------------------------------------------------
 //   DLineEdit
@@ -89,9 +112,13 @@ class DPitchEdit: public Awl::PitchEdit
 
 class DList : public View {
       Q_OBJECT
-    
+      
+      MusEGui::DrumCanvas* dcanvas;
+      MusECore::DrumMap* ourDrumMap;
+      int ourDrumMapSize;
+      bool old_style_drummap_mode;
+      
       QHeaderView* header;
-      ScrollScale* scroll;
       QLineEdit* editor;
       DPitchEdit* pitch_editor;
       MusECore::DrumMap* editEntry;
@@ -101,7 +128,7 @@ class DList : public View {
       
       int startY;
       int curY;
-      int sPitch;
+      int sInstrument;
       enum { NORMAL, START_DRAG, DRAG } drag;
 
       virtual void draw(QPainter& p, const QRect&);
@@ -112,6 +139,8 @@ class DList : public View {
 
       int x2col(int x) const;
       void devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll);
+      
+      void init(QHeaderView*, QWidget*);
       
       //void setCurDrumInstrument(int n);
 
@@ -131,18 +160,17 @@ class DList : public View {
    public slots:
       void tracklistChanged();
       void songChanged(int);
+      void ourDrumMapChanged(bool);
+   
    public:
       void lineEdit(int line, int section);
       void pitchEdit(int line, int section);
       void setCurDrumInstrument(int n);
-      DList(QHeaderView*, QWidget* parent, int ymag);
+      DList(QHeaderView*, QWidget* parent, int ymag, DrumCanvas* dcanvas, bool oldstyle);
+      DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, int dmSize=128);
       ~DList();
-      void setScroll(ScrollScale* s) { scroll = s; }
       int getSelectedInstrument();
 
-enum DCols { COL_MUTE=0, COL_NAME, COL_VOL, COL_QNT, COL_ENOTE, COL_LEN,
-         COL_ANOTE, COL_CHANNEL, COL_PORT,
-         COL_LV1, COL_LV2, COL_LV3, COL_LV4, COL_NONE=-1};
       };
 
 } // namespace MusEGui

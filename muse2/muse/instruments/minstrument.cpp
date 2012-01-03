@@ -41,6 +41,8 @@
 #include "midictrl.h"
 #include "gconfig.h"
 #include "popupmenu.h"
+#include "drummap.h"
+#include "helper.h"
 
 namespace MusECore {
 
@@ -364,6 +366,7 @@ void MidiInstrument::init()
       MidiController* prog = new MidiController("Program", CTRL_PROGRAM, 0, 0xffffff, 0);
       _controller->add(prog);
       _dirty = false;
+      
       }
 
 MidiInstrument::MidiInstrument()
@@ -408,7 +411,11 @@ MidiInstrument::~MidiInstrument()
       
       if (_initScript)
             delete _initScript;
+      
+      patch_drummap_mapping.clear();
       }
+
+
 
 /*
 //---------------------------------------------------------
@@ -515,7 +522,11 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   
   _name = ins._name;
   _filePath = ins._filePath;
-    
+  
+  patch_drummap_mapping=ins.patch_drummap_mapping;
+  
+  
+  
   // Hmm, dirty, yes? But init sets it to false...
   //_dirty = ins._dirty;
   //_dirty = false;
@@ -733,6 +744,160 @@ void MidiInstrument::readMidiState(Xml& xml)
   }
 }
 
+void MidiInstrument::readDrummaps(Xml& xml)
+{
+  patch_drummap_mapping.clear();
+  
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::Error:
+      case Xml::End:
+        return;
+        
+      case Xml::TagStart:
+        if (tag == "entry")
+          patch_drummap_mapping.push_back(readDrummapsEntry(xml));
+        else
+          xml.unknown("MidiInstrument::readDrummaps");
+        break;
+
+      case Xml::TagEnd:
+        if (tag == "Drummaps")
+          return;
+
+      default:
+        break;
+    }
+  }
+  printf("ERROR: THIS CANNOT HAPPEN: exited infinite loop in MidiInstrument::readDrummaps()!\n"
+         "                           not returning anything. expect undefined behaviour or even crashes.\n");
+}
+
+patch_drummap_mapping_t MidiInstrument::readDrummapsEntry(Xml& xml)
+{
+  using std::list;
+  
+  patch_collection_t collection;
+  DrumMap* drummap=new DrumMap[128];
+  for (int i=0;i<128;i++)
+    drummap[i]=iNewDrumMap[i];
+  
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::Error:
+      case Xml::End:
+        return patch_drummap_mapping_t(collection, drummap);
+        
+      case Xml::TagStart:
+        if (tag == "patch_collection")
+          collection=readDrummapsEntryPatchCollection(xml);
+        else if (tag == "drummap")
+          read_new_style_drummap(xml, "drummap", drummap);
+        else
+          xml.unknown("MidiInstrument::readDrummapsEntry");
+        break;
+
+      case Xml::TagEnd:
+        if (tag == "entry")
+          return patch_drummap_mapping_t(collection, drummap);
+
+      default:
+        break;
+    }
+  }
+  printf("ERROR: THIS CANNOT HAPPEN: exited infinite loop in MidiInstrument::readDrummapsEntry()!\n"
+         "                           not returning anything. expect undefined behaviour or even crashes.\n");
+  return patch_drummap_mapping_t();
+}
+
+patch_collection_t MidiInstrument::readDrummapsEntryPatchCollection(Xml& xml)
+{
+  int first_prog=0, last_prog=256;   // this means:
+  int first_lbank=0, last_lbank=256; // "does not matter"
+  int first_hbank=0, last_hbank=256;
+  
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::Error:
+      case Xml::End:
+        return patch_collection_t(-1,-1,-1,-1,-1,-1); // an invalid collection
+        
+      case Xml::TagStart:
+        xml.unknown("MidiInstrument::readDrummapsEntryPatchCollection");
+        break;
+
+      case Xml::Attribut:
+        if (tag == "prog")
+          parse_range(xml.s2(), &first_prog, &last_prog);
+        else if (tag == "lbank")
+          parse_range(xml.s2(), &first_lbank, &last_lbank);
+        else if (tag == "hbank")
+          parse_range(xml.s2(), &first_hbank, &last_hbank);
+        break;
+
+      case Xml::TagEnd:
+        if (tag == "patch_collection")
+          return patch_collection_t(first_prog, last_prog, first_lbank, last_lbank, first_hbank, last_hbank);
+
+      default:
+        break;
+    }
+  }
+
+  printf("ERROR: THIS CANNOT HAPPEN: exited infinite loop in MidiInstrument::readDrummapsEntryPatchCollection()!\n"
+         "                           not returning anything. expect undefined behaviour or even crashes.\n");
+}
+
+void MidiInstrument::writeDrummaps(int level, Xml& xml) const
+{
+  xml.tag(level++, "Drummaps");
+  
+  for (std::list<patch_drummap_mapping_t>::const_iterator it=patch_drummap_mapping.begin();
+       it!=patch_drummap_mapping.end(); it++)
+  {
+    xml.tag(level++, "entry");
+    
+    const patch_collection_t* ap = &it->affected_patches;
+    QString tmp="<patch_collection ";
+    if (ap->first_program==ap->last_program)
+      tmp+="prog=\""+QString::number(ap->first_program)+"\" ";
+    else if (! (ap->first_program==0 && ap->last_program>=127))
+      tmp+="prog=\""+QString::number(ap->first_program)+"-"+QString::number(ap->last_program)+"\" ";
+  
+    if (ap->first_lbank==ap->last_lbank)
+      tmp+="lbank=\""+QString::number(ap->first_lbank)+"\" ";
+    else if (! (ap->first_lbank==0 && ap->last_lbank>=127))
+      tmp+="lbank=\""+QString::number(ap->first_lbank)+"-"+QString::number(ap->last_lbank)+"\" ";
+  
+    if (ap->first_hbank==ap->last_hbank)
+      tmp+="hbank=\""+QString::number(ap->first_hbank)+"\" ";
+    else if (! (ap->first_hbank==0 && ap->last_hbank>=127))
+      tmp+="hbank=\""+QString::number(ap->first_hbank)+"-"+QString::number(ap->last_hbank)+"\" ";
+    
+    tmp+="/>\n";
+    
+    xml.nput(level, tmp.toAscii().data());
+    
+    write_new_style_drummap(level, xml, "drummap", it->drummap);
+    
+    xml.etag(--level, "entry");
+  }
+  
+  xml.etag(--level, "Drummaps");
+}
+
 //---------------------------------------------------------
 //   read
 //---------------------------------------------------------
@@ -785,6 +950,9 @@ void MidiInstrument::read(Xml& xml)
                                     
                               _controller->add(mc);
                               }
+                        else if (tag == "Drummaps") {
+                              readDrummaps(xml);
+                              }
                         else if (tag == "Init")
                               readEventList(xml, _midiInit, "Init");
                         else if (tag == "Reset")
@@ -794,7 +962,7 @@ void MidiInstrument::read(Xml& xml)
                         else if (tag == "InitScript") {
                               if (_initScript)
                                     delete _initScript;
-			      QByteArray ba = xml.parse1().toLatin1();
+                              QByteArray ba = xml.parse1().toLatin1();
                               const char* istr = ba.constData();
                               int len = strlen(istr) +1;
                               if (len > 1) {
@@ -872,6 +1040,9 @@ void MidiInstrument::write(int level, Xml& xml)
             //(*ic)->write(xml);
             ic->second->write(level, xml);
       //xml.etag("MidiInstrument");
+      
+      writeDrummaps(level, xml);
+      
       level--;
       xml.etag(level, "MidiInstrument");
       //xml.etag("muse");
@@ -996,71 +1167,104 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MTyp
                   }
             }
 
+    }
+
+const DrumMap* MidiInstrument::drummap_for_patch(int patch) const
+{
+  using std::list;
+  
+  int program = (patch & 0x0000FF);
+  int lbank =   (patch & 0x00FF00) >> 8;
+  int hbank =   (patch & 0xFF0000) >> 16;
+  
+  for (list<patch_drummap_mapping_t>::const_iterator it=patch_drummap_mapping.begin();
+       it!=patch_drummap_mapping.end(); it++)
+  {
+    const patch_collection_t* ap = &it->affected_patches;
+    // if the entry matches our patch
+    if ( (program >= ap->first_program && program <= ap->last_program) &&
+         (hbank >= ap->first_hbank && hbank <= ap->last_hbank) &&
+         (lbank >= ap->first_lbank && lbank <= ap->last_lbank) )
+    {
+      return it->drummap;
+    }
+  }
+  
+  // if nothing was found
+  return iNewDrumMap;
+}
+
+patch_drummap_mapping_t::patch_drummap_mapping_t()
+{
+  drummap=new DrumMap[128];
+  for (int i=0;i<128;i++)
+    drummap[i]=iNewDrumMap[i];
+}
+
+patch_drummap_mapping_t::patch_drummap_mapping_t(const patch_drummap_mapping_t& that)
+{
+  drummap=new DrumMap[128];
+  for (int i=0;i<128;i++)
+    drummap[i]=that.drummap[i];
+  
+  affected_patches=that.affected_patches;
+}
+
+patch_drummap_mapping_t& patch_drummap_mapping_t::operator=(const patch_drummap_mapping_t& that)
+{
+  if (drummap)
+    delete [] drummap;
+  
+  drummap=new DrumMap[128];
+  for (int i=0;i<128;i++)
+    drummap[i]=that.drummap[i];
+  
+  affected_patches=that.affected_patches;
+  
+  return *this;
+}
+
+patch_drummap_mapping_t::~patch_drummap_mapping_t()
+{
+  delete [] drummap;
+}
+
+QString patch_collection_t::to_string()
+{
+  QString tmp;
+  
+  if (first_program==0 && last_program>=127 &&
+      first_lbank==0 && last_lbank>=127 &&
+      first_hbank==0 && last_hbank>=127)
+    tmp="default";
+  else
+  {
+    tmp+="prog: ";
+    if (first_program==last_program)
+      tmp+=QString::number(first_program+1);
+    else if (! (first_program==0 && last_program>=127))
+      tmp+=QString::number(first_program+1)+"-"+QString::number(last_program+1);
+    else
+      tmp+="*";
+    
+    tmp+=" bank=";
+    if (first_lbank==last_lbank)
+      tmp+=QString::number(first_lbank+1);
+    else if (! (first_lbank==0 && last_lbank>=127))
+      tmp+=QString::number(first_lbank+1)+"-"+QString::number(last_lbank+1);
+    else
+      tmp+="*";
+
+    tmp+="/";
+    if (first_hbank==last_hbank)
+      tmp+=QString::number(first_hbank+1);
+    else if (! (first_hbank==0 && last_hbank>=127))
+      tmp+=QString::number(first_hbank+1)+"-"+QString::number(last_hbank+1);
+    else
+      tmp+="*";
+    
+  }
+  return tmp;
+}
+
 } // namespace MusECore
-
-/*
-namespace MusEGui {
-
-void populatePatchPopup(MusECore::MidiInstrument* midiInstrument, PopupMenu* menu, int chan, MType songType, bool drum)
-      {
-      menu->clear();
-      int mask = 0;
-      bool drumchan = chan == 9;
-      switch (songType) {
-            case MT_XG: mask = 4; break;
-            case MT_GS: mask = 2; break;
-            case MT_GM: 
-              if(drumchan)
-              {
-                int id = (0xff << 16) + (0xff << 8) + 0x00;  // First patch
-                QAction* act = menu->addAction(MusECore::gmdrumname);
-                //act->setCheckable(true);
-                act->setData(id);
-                return;
-              }  
-              mask = 1; 
-              break;
-            case MT_UNKNOWN:  mask = 7; break;
-            }
-      if (midiInstrument->groups()->size() > 1) {
-            for (MusECore::ciPatchGroup i = midiInstrument->groups()->begin(); i != midiInstrument->groups()->end(); ++i) {
-                  MusECore::PatchGroup* pgp = *i;
-                  //QMenu* pm = menu->addMenu(pgp->name);
-                  PopupMenu* pm = new PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
-                  menu->addMenu(pm);
-                  pm->setFont(MusEGlobal::config.fonts[0]);
-                  const MusECore::PatchList& pl = pgp->patches;
-                  for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
-                        const MusECore::Patch* mp = *ipl;
-                        if ((mp->typ & mask) && 
-                            ((drum && songType != MT_GM) || 
-                            (mp->drum == drumchan)) )  
-                            {
-                              int id = ((mp->hbank & 0xff) << 16)
-                                         + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
-                              QAction* act = pm->addAction(mp->name);
-                              //act->setCheckable(true);
-                              act->setData(id);
-                            }
-                              
-                        }
-                  }
-            }
-      else if (midiInstrument->groups()->size() == 1 ){
-            // no groups
-            const MusECore::PatchList& pl = midiInstrument->groups()->front()->patches;
-            for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
-                  const MusECore::Patch* mp = *ipl;
-                  if (mp->typ & mask) {
-                        int id = ((mp->hbank & 0xff) << 16)
-                                 + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
-                        QAction* act = menu->addAction(mp->name);
-                        //act->setCheckable(true);
-                        act->setData(id);
-                        }
-                  }
-            }
-      }
-*/      
-
-} // namespace MusEGui

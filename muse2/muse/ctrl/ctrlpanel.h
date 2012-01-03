@@ -37,6 +37,7 @@ namespace MusEGui {
 class DoubleLabel;
 class Knob;
 class MidiEditor;
+class CtrlCanvas;
 
 //---------------------------------------------------------
 //   CtrlPanel
@@ -48,6 +49,7 @@ class CtrlPanel: public QWidget {
       //QMenu* pop;
       QPushButton* selCtrl;
       MidiEditor* editor;
+      CtrlCanvas* ctrlcanvas;
       
       MusECore::MidiTrack* _track;
       MusECore::MidiController* _ctrl;
@@ -77,7 +79,7 @@ class CtrlPanel: public QWidget {
       void ctrlPopup();
 
    public:
-      CtrlPanel(QWidget*, MidiEditor*, const char* name = 0);
+      CtrlPanel(QWidget*, MidiEditor*, CtrlCanvas*, const char* name = 0);
       void setHWController(MusECore::MidiTrack* t, MusECore::MidiController* ctrl);
       };
 

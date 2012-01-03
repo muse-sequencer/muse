@@ -261,9 +261,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                               e.setPitch(instr);
                               }
                         else
-                        {
                               e.setPitch(ev.dataA());
-                        }
                         
                         e.setVelo(ev.dataB());
                         e.setLenTick(0);
@@ -276,6 +274,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                               }
                         else
                               e.setPitch(ev.dataA());
+                        
                         e.setVelo(0);
                         e.setVeloOff(ev.dataB());
                         e.setLenTick(0);
@@ -372,7 +371,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     int ctl = ev.dataA();
                                     e.setA(ctl);
                                     
-                                    if(track->type() == Track::DRUM) 
+                                    if(track->type() == Track::DRUM)
                                     {
                                       // Is it a drum controller event, according to the track port's instrument?
                                       MidiController *mc = MusEGlobal::midiPorts[track->outPort()].drumController(ctl);
@@ -735,6 +734,12 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                         if (ev.isNote() && MusEGlobal::drumMap[instr].mute)
                               continue;
                         }
+                  else if (track->type() == Track::NEW_DRUM) {
+                        int instr = ev.pitch();
+                        // ignore muted drums
+                        if (ev.isNote() && track->drummap()[instr].mute)
+                              continue;
+                        }
                   unsigned tick  = ev.tick() + offset;
                   unsigned frame = MusEGlobal::tempomap.tick2frame(tick) + frameOffset;
                   switch (ev.type()) {
@@ -744,19 +749,15 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                               int pitch = ev.pitch();
                               int velo  = ev.velo();
                               if (track->type() == Track::DRUM)  {
-                                    //
                                     // Map drum-notes to the drum-map values
-                                    //
                                    int instr = ev.pitch();
                                    pitch     = MusEGlobal::drumMap[instr].anote;
                                    port      = MusEGlobal::drumMap[instr].port; //This changes to non-default port
                                    channel   = MusEGlobal::drumMap[instr].channel;
                                    velo      = int(double(velo) * (double(MusEGlobal::drumMap[instr].vol) / 100.0)) ;
                                    }
-                              else {
-                                    //
+                              else if (track->type() != Track::NEW_DRUM) {
                                     // transpose non drum notes
-                                    //
                                     pitch += (track->transposition + MusEGlobal::song->globalPitchShift());
                                     }
 
@@ -806,7 +807,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 
                         case Controller:
                               {
-                                if (track->type() == Track::DRUM)  
+                                if (track->type() == Track::DRUM)
                                 {
                                   int ctl   = ev.dataA();
                                   // Is it a drum controller event, according to the track port's instrument?
@@ -978,7 +979,7 @@ void Audio::processMidi()
                                       //
   
                                       //Apply drum inkey:
-                                      if (track->type() == Track::DRUM) 
+                                      if (track->type() == Track::DRUM)
                                       {
                                             int pitch = event.dataA();
                                             //Map note that is played according to MusEGlobal::drumInmap
@@ -989,7 +990,19 @@ void Audio::processMidi()
                                             event.setA(MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].anote);
                                             event.setChannel(channel);
                                       }
-                                      else 
+                                      else if (track->type() == Track::NEW_DRUM)
+                                      {
+                                        event.setA(track->map_drum_in(event.dataA()));
+
+                                        if (MusEGlobal::config.newDrumRecordCondition & MusECore::DONT_REC_HIDDEN &&
+                                            track->drummap_hidden()[event.dataA()] )
+                                          continue; // skip that event, proceed with the next
+
+                                        if (MusEGlobal::config.newDrumRecordCondition & MusECore::DONT_REC_MUTED &&
+                                            track->drummap()[event.dataA()].mute )
+                                          continue; // skip that event, proceed with the next
+                                      }
+                                      else
                                       { //Track transpose if non-drum
                                             prePitch = event.dataA();
                                             int pitch = prePitch + track->transposition;
@@ -1012,10 +1025,9 @@ void Audio::processMidi()
                                             event.setB(velo);
                                       }
                                 }
-                                else
-                                if(event.type() == MusECore::ME_CONTROLLER)
+                                else if(event.type() == MusECore::ME_CONTROLLER)
                                 {
-                                  if(track->type() == Track::DRUM) 
+                                  if(track->type() == Track::DRUM)
                                   {
                                     ctl = event.dataA();
                                     // Regardless of what port the event came from, is it a drum controller event 
@@ -1034,6 +1046,24 @@ void Audio::processMidi()
                                       event.setA(ctl | MusEGlobal::drumMap[dmindex].anote);
                                       event.setChannel(channel);
                                     }  
+                                  }
+                                  else if (track->type() == Track::NEW_DRUM) //FINDMICHJETZT TEST
+                                  {
+                                    ctl = event.dataA();
+                                    if (tport->drumController(ctl)) // is it a drum controller?
+                                    {
+                                      int pitch = ctl & 0x7f;            // pitch is now the incoming pitch
+                                      pitch = track->map_drum_in(pitch); // pitch is now the mapped (recorded) pitch
+                                      event.setA((ctl & ~0xff)  |  pitch); // map the drum ctrl's value accordingly
+
+                                      if (MusEGlobal::config.newDrumRecordCondition & MusECore::DONT_REC_HIDDEN &&
+                                          track->drummap_hidden()[pitch] )
+                                        continue; // skip that event, proceed with the next
+
+                                      if (MusEGlobal::config.newDrumRecordCondition & MusECore::DONT_REC_MUTED &&
+                                          track->drummap()[pitch].mute )
+                                        continue; // skip that event, proceed with the next
+                                    }
                                   }
                                 }
                                 
@@ -1078,7 +1108,7 @@ void Audio::processMidi()
                                       //  to the track port so buildMidiEventList will accept it. Even though 
                                       //  the port may have no device "<none>".
                                       //
-                                      if (track->type() == Track::DRUM) 
+                                      if (track->type() == Track::DRUM)  //FINDMICHJETZT no changes. TEST
                                       {
                                         // Is it a drum controller event?
                                         if(mc)

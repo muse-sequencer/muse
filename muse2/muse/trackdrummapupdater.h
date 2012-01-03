@@ -1,8 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//    tracks_duplicate.cpp
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge.net)
+//  $Id: trackdrummapupdater.h,v 1.59.2.52 2011/12/27 20:25:58 flo93 Exp $
+//
+//  (C) Copyright 2011 Florian Jung (florian.a.jung (at) web.de)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,23 +21,23 @@
 //
 //=========================================================
 
-#include "tracks_duplicate.h"
+#ifndef __TRACKDRUMMAPUPDATER_H__
+#define __TRACKDRUMMAPUPDATER_H__
 
-namespace MusEGui {
-  
-DuplicateTracksDialog::DuplicateTracksDialog(bool audio, bool /*midi*/, bool /*drum*/, bool newdrum, QWidget* parent)
-  : QDialog(parent)
+#include <QObject>
+
+namespace MusECore {
+
+class TrackDrummapUpdater : public QObject
 {
-  setupUi(this);
-  
-  standardCtrlsCheckBox->setVisible(audio);
-  pluginsCheckBox->setVisible(audio);
-  pluginCtrlsCheckBox->setVisible(audio);
-  copyDrumlistCheckBox->setVisible(newdrum);
-  
+  Q_OBJECT
 
-  connect(okPushButton, SIGNAL(clicked()), this, SLOT(accept()));
-  connect(cancelPushButton, SIGNAL(clicked()), this, SLOT(reject()));
-}
+  public:
+    TrackDrummapUpdater();
+    
+  private slots:
+    void songChanged(int flags);
+};
 
-} // namespace MusEGui
+} //namespace MusECore
+#endif

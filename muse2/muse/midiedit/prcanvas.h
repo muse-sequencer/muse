@@ -73,7 +73,7 @@ class PianoCanvas : public EventCanvas {
       void drawTopItem(QPainter &p, const QRect &rect);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType);
-      virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType);
+      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool noSnap, bool);
       virtual void newItem(CItem*, bool noSnap);
@@ -120,6 +120,7 @@ class PianoCanvas : public EventCanvas {
          };
 
       PianoCanvas(MidiEditor*, QWidget*, int, int);
+      virtual ~PianoCanvas();
       void cmd(int cmd);
       void setColorMode(int mode) {
             colorMode = mode;

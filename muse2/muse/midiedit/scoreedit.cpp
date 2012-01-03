@@ -1325,6 +1325,11 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	unsetCursor();
 }
 
+ScoreCanvas::~ScoreCanvas()
+{
+	delete steprec;
+}
+
 void ScoreCanvas::staffmode_treble_slot()
 {
 	set_staffmode(current_staff, MODE_TREBLE);
@@ -4658,17 +4663,23 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     (could be solved by storing the current window when quitting/saving whatever)
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
- * ! o using super glue while a score editor displaying the glued parts
- *     is open lets muse segfault. this may or may not be fixed in
- *     the release branch :/
- * 
+ *
  * CURRENT TODO
+ *   o test drum controllers
+ *   o test old- and new drumtrack recording, steprecording
+ *
  * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
  * > o add a songposition scrollbar-toolbar (in different sizes)
  *     this might be equivalent to "redo transport menu" (below).
  * > o add toolbar(s) for tempo- etc spinboxes from the transport window 
  *
+ *   o find and fix FINDMICHJETZT
+ * 
  * IMPORTANT TODO
+ *   o allow steprec-insert-rest-note to be set to "off" / "unused"
+ *   o all places where i added doubleclick-edits: only react on left-click double clicks!
+ *   o support "new style" reordering with old style drum tracks as well
+ *     (not swapping but inserting!)
  *   o support edge-scrolling when opening a lasso
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes

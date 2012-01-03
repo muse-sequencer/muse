@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>231</width>
-    <height>261</height>
+    <width>269</width>
+    <height>319</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,6 +90,13 @@
     <widget class="QCheckBox" name="copyPartsCheckBox">
      <property name="text">
       <string>Copy parts</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="copyDrumlistCheckBox">
+     <property name="text">
+      <string>Copy drumlist</string>
      </property>
     </widget>
    </item>

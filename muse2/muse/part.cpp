@@ -38,7 +38,7 @@
 
 namespace MusECore {
 
-int Part::snGen;
+int Part::snGen=0;
 
 //---------------------------------------------------------
 //   unchainClone
@@ -929,6 +929,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                   break;
             case Track::MIDI:
             case Track::DRUM:
+            case Track::NEW_DRUM:
                   {
                   Undo operations;
 									
@@ -975,6 +976,7 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
                   break;
             case MIDI:
             case DRUM:
+            case NEW_DRUM:
                   l1 = tickpos - part->tick();
                   l2 = part->lenTick() - l1;
                   break;
@@ -998,6 +1000,7 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
                   break;
             case MIDI:
             case DRUM:
+            case NEW_DRUM:
                   p1->setLenTick(l1);
                   p2->setTick(tickpos);
                   p2->setLenTick(l2);

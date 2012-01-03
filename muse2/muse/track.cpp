@@ -33,6 +33,9 @@
 #include "audio.h"
 #include "globaldefs.h"
 #include "route.h"
+#include "drummap.h"
+#include "midictrl.h"
+#include "helper.h"
 
 namespace MusECore {
 
@@ -45,8 +48,8 @@ bool Track::_tmpSoloChainNoDec   = false;
 //int Track::_tmpIsAuxProcRefCount = 0; 
 
 const char* Track::_cname[] = {
-      "Midi", "Drum", "Wave", "AudioOut", "AudioIn", "AudioGroup", 
-      "AudioAux", "AudioSynth"
+      "Midi", "Drum", "NewStyleDrum", "Wave",
+      "AudioOut", "AudioIn", "AudioGroup", "AudioAux", "AudioSynth"
       };
 
 
@@ -331,6 +334,7 @@ void Track::setDefaultName(QString base)
         switch(_type) {
               case MIDI:
               case DRUM:
+              case NEW_DRUM:
               case WAVE:
                     base = QString("Track");
                     break;
@@ -522,6 +526,11 @@ MidiTrack::MidiTrack()
       _events = new EventList;
       _mpevents = new MPEventList;
       clefType=trebleClef;
+      
+      _drummap=new DrumMap[128];
+      _drummap_hidden=new bool[128];
+      
+      init_drummap(true /* write drummap ordering information as well */);
       }
 
 MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
@@ -529,6 +538,12 @@ MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
 {
       _events   = new EventList;
       _mpevents = new MPEventList;
+
+      _drummap=new DrumMap[128];
+      _drummap_hidden=new bool[128];
+      
+      init_drummap(true /* write drummap ordering information as well */);
+
       internal_assign(mt, flags | Track::ASSIGN_PROPERTIES);  
 }
 
@@ -564,6 +579,14 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         for(ciRoute ir = mt._outRoutes.begin(); ir != mt._outRoutes.end(); ++ir)
           // Amazingly, this single line seems to work.
           MusEGlobal::audio->msgAddRoute(Route(this, ir->channel), *ir);
+
+      for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end(); it++)
+        if (it->first == &mt)
+        {
+          it=MusEGlobal::global_drum_ordering.insert(it, *it); // duplicates the entry at it, set it to the first entry of both
+          it++;                                                // make it point to the second entry
+          it->first=this;
+        }
       }
       else if(flags & ASSIGN_DEFAULT_ROUTES)
       {
@@ -614,6 +637,16 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         }
       }
       
+      if (flags & ASSIGN_DRUMLIST)
+      {
+        for (int i=0;i<128;i++) // no memcpy allowed here. dunno exactly why,
+          _drummap[i]=mt._drummap[i]; // seems QString-related.
+        memcpy(_drummap_hidden, mt._drummap_hidden, 128*sizeof(bool));
+        update_drum_in_map();
+        _drummap_tied_to_patch=mt._drummap_tied_to_patch;
+        _drummap_ordering_tied_to_patch=mt._drummap_ordering_tied_to_patch;
+        // TODO FINDMICH "assign" ordering as well
+      }
 }
 
 void MidiTrack::assign(const Track& t, int flags)
@@ -626,7 +659,20 @@ MidiTrack::~MidiTrack()
       {
       delete _events;
       delete _mpevents;
+      delete [] _drummap;
+      delete [] _drummap_hidden;
+      
+      remove_ourselves_from_drum_ordering();
       }
+
+void MidiTrack::remove_ourselves_from_drum_ordering()
+{
+  for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end();)
+    if (it->first == this)
+      it=MusEGlobal::global_drum_ordering.erase(it);
+    else
+      it++;
+}
 
 //---------------------------------------------------------
 //   init
@@ -635,7 +681,7 @@ MidiTrack::~MidiTrack()
 void MidiTrack::init()
       {
       _outPort       = 0;
-      _outChannel    = 0;
+      _outChannel    = (type()==NEW_DRUM) ? 9 : 0;
       //_inPortMask    = 0xffff;
       ///_inPortMask    = 0xffffffff;
       
@@ -647,6 +693,44 @@ void MidiTrack::init()
       compression    = 100;          // percent
       _recEcho       = true;
       }
+
+void MidiTrack::init_drum_ordering()
+{
+  // first display entries with non-empty names, then with empty names.
+
+  remove_ourselves_from_drum_ordering();
+
+  for (int i=0;i<128;i++)
+    if (_drummap[i].name!="" && _drummap[i].name!="?") // non-empty name?
+      MusEGlobal::global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,i));
+
+  for (int i=0;i<128;i++)
+    if (!(_drummap[i].name!="" && _drummap[i].name!="?")) // empty name?
+      MusEGlobal::global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,i));
+}
+
+void MidiTrack::init_drummap(bool write_ordering)
+{
+  for (int i=0;i<128;i++)
+    _drummap[i]=iNewDrumMap[i];
+
+  if (write_ordering)
+    init_drum_ordering();
+  
+  update_drum_in_map();
+  
+  for (int i=0;i<128;i++)
+    _drummap_hidden[i]=false;
+
+  _drummap_tied_to_patch=true;
+  _drummap_ordering_tied_to_patch=true;
+}
+
+void MidiTrack::update_drum_in_map()
+{
+  for (int i=0;i<127;i++)
+    drum_in_map[(int)_drummap[i].enote]=i;
+}
 
 //---------------------------------------------------------
 //   height
@@ -905,8 +989,13 @@ void MidiTrack::write(int level, Xml& xml) const
 
       if (type() == DRUM)
             tag = "drumtrack";
-      else
+      else if (type() == MIDI)
             tag = "miditrack";
+      else if (type() == NEW_DRUM)
+            tag = "newdrumtrack";
+      else
+            printf("THIS SHOULD NEVER HAPPEN: non-midi-type in MidiTrack::write()\n");
+      
       xml.tag(level++, tag);
       Track::writeProperties(level, xml);
 
@@ -929,8 +1018,28 @@ void MidiTrack::write(int level, Xml& xml) const
       const PartList* pl = cparts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
             p->second->write(level, xml);
+      
+      writeOurDrumSettings(level, xml);
+      
       xml.etag(level, tag);
       }
+
+void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
+{
+  xml.tag(level++, "our_drum_settings");
+  
+  writeOurDrumMap(level, xml, false);
+  
+  xml.intTag(level, "tied", _drummap_tied_to_patch);
+  xml.intTag(level, "ordering_tied", _drummap_ordering_tied_to_patch);
+  
+  xml.etag(level, "our_drum_settings");
+}
+
+void MidiTrack::writeOurDrumMap(int level, Xml& xml, bool full) const
+{
+  write_new_style_drummap(level, xml, "our_drummap", _drummap, _drummap_hidden, full);
+}
 
 //---------------------------------------------------------
 //   MidiTrack::read
@@ -988,6 +1097,8 @@ void MidiTrack::read(Xml& xml)
                               setAutomationType(AutomationType(xml.parseInt()));
                         else if (tag == "clef")
                               clefType = (clefTypes)xml.parseInt();
+                        else if (tag == "our_drum_settings")
+                              readOurDrumSettings(xml);
                         else if (Track::readProperties(xml, tag)) {
                               // version 1.0 compatibility:
                               if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
@@ -998,7 +1109,7 @@ void MidiTrack::read(Xml& xml)
                   case Xml::Attribut:
                         break;
                   case Xml::TagEnd:
-                        if (tag == "miditrack" || tag == "drumtrack") 
+                        if (tag == "miditrack" || tag == "drumtrack" || tag == "newdrumtrack") 
                         {
                           setInPortAndChannelMask(portmask, chanmask); // Support old files.
                           return;
@@ -1008,6 +1119,46 @@ void MidiTrack::read(Xml& xml)
                   }
             }
       }
+
+void MidiTrack::readOurDrumSettings(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "tied") 
+					_drummap_tied_to_patch = xml.parseInt();
+				else if (tag == "ordering_tied") 
+					_drummap_ordering_tied_to_patch = xml.parseInt();
+				else if (tag == "our_drummap")
+					readOurDrumMap(xml);
+				else
+					xml.unknown("MidiTrack::readOurDrumSettings");
+				break;
+
+			case Xml::TagEnd:
+				if (tag == "our_drum_settings")
+					return;
+
+			default:
+				break;
+		}
+	}
+}
+
+void MidiTrack::readOurDrumMap(Xml& xml, bool dont_init)
+{
+  if (!dont_init) init_drummap(false);
+  _drummap_tied_to_patch=false;
+  _drummap_ordering_tied_to_patch=false;
+  read_new_style_drummap(xml, "our_drummap", _drummap, _drummap_hidden);
+  update_drum_in_map();
+}
 
 
 //---------------------------------------------------------
@@ -1193,6 +1344,71 @@ void Track::writeRouting(int level, Xml& xml) const
           xml.etag(level--, "Route");
         }
       }
+}
+
+int MidiTrack::getFirstControllerValue(int ctrl, int def)
+{
+  int val=def;
+  unsigned tick=-1; // maximum integer
+  
+  for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
+  {
+    Part* part=pit->second;
+    if (part->tick() > tick) break; // ignore this and the rest. we won't find anything new.
+    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    {
+      if (eit->first+part->tick() >= tick) break;
+      // else if (eit->first+part->tick() < tick) and
+      if (eit->second.type()==Controller && eit->second.dataA()==ctrl)
+      {
+        val = eit->second.dataB();
+        tick = eit->first+part->tick();
+        break;
+      }
+    }
+  }
+
+  return val;
+}
+
+
+// returns true if the autoupdate changed something
+bool MidiTrack::auto_update_drummap()
+{
+  if (_drummap_tied_to_patch)
+  {
+    int patch = getFirstControllerValue(CTRL_PROGRAM,0);
+    const DrumMap* new_drummap = MusEGlobal::midiPorts[_outPort].instrument()->drummap_for_patch(patch);
+    
+    if (!drummaps_almost_equal(new_drummap, this->drummap(), 128))
+    {
+      for (int i=0;i<128;i++)
+      {
+        bool temp_mute=_drummap[i].mute;
+        _drummap[i]=new_drummap[i];
+        _drummap[i].mute=temp_mute;
+      }
+      
+      if (_drummap_ordering_tied_to_patch)
+        init_drum_ordering();
+      
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+void MidiTrack::set_drummap_tied_to_patch(bool val)
+{
+  _drummap_tied_to_patch=val;
+  if (val) auto_update_drummap();
+}
+
+void MidiTrack::set_drummap_ordering_tied_to_patch(bool val)
+{
+  _drummap_ordering_tied_to_patch=val;
+  if (val && _drummap_tied_to_patch) init_drum_ordering();
 }
 
 } // namespace MusECore

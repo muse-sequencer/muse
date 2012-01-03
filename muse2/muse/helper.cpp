@@ -116,6 +116,242 @@ bool any_event_selected(const set<Part*>& parts, bool in_range)
   return !get_events(parts, in_range ? 3 : 1).empty();
 }
 
+bool drummaps_almost_equal(const DrumMap* one, const DrumMap* two, int len)
+{
+  for (int i=0; i<len; i++)
+    if (!one[i].almost_equals(two[i]))
+      return false;
+
+  return true;
+}
+
+
+QSet<Part*> parts_at_tick(unsigned tick)
+{
+  using MusEGlobal::song;
+  
+  QSet<Track*> tmp;
+  for (iTrack it=song->tracks()->begin(); it!=song->tracks()->end(); it++)
+    tmp.insert(*it);
+  
+  return parts_at_tick(tick, tmp);
+}
+
+QSet<Part*> parts_at_tick(unsigned tick, Track* track)
+{
+  QSet<Track*> tmp;
+  tmp.insert(track);
+  
+  return parts_at_tick(tick, tmp);
+}
+
+QSet<Part*> parts_at_tick(unsigned tick, const QSet<Track*>& tracks)
+{
+  QSet<Part*> result;
+  
+  for (QSet<Track*>::const_iterator it=tracks.begin(); it!=tracks.end(); it++)
+  {
+    Track* track=*it;
+    
+    for (iPart p_it=track->parts()->begin(); p_it!=track->parts()->end(); p_it++)
+      if (tick >= p_it->second->tick() && tick <= p_it->second->endTick())
+        result.insert(p_it->second);
+  }
+  
+  return result;
+}
+
+bool parse_range(const QString& str, int* from, int* to)
+{
+  int idx = str.indexOf("-");
+  if (idx<0) // no "-" in str
+  {
+    bool ok;
+    int i = str.toInt(&ok);
+    if (!ok)
+    {
+      *from=-1; *to=-1;
+      return false;
+    }
+    else
+    {
+      *from=i; *to=i;
+      return true;
+    }
+  }
+  else // there is a "-" in str
+  {
+    QString str1=str.mid(0,idx);
+    QString str2=str.mid(idx+1);
+    
+    bool ok;
+    int i = str1.toInt(&ok);
+    if (!ok)
+    {
+      *from=-1; *to=-1;
+      return false;
+    }
+    else
+    {
+      *from=i;
+      
+      i = str2.toInt(&ok);
+      if (!ok)
+      {
+        *from=-1; *to=-1;
+        return false;
+      }
+      else
+      {
+        *to=i;
+        return true;
+      }
+    }
+  }
+}
+
+void write_new_style_drummap(int level, Xml& xml, const char* tagname,
+                             DrumMap* drummap, bool* drummap_hidden, bool full)
+{
+  xml.tag(level++, tagname);
+  
+  for (int i=0;i<128;i++)
+  {
+    DrumMap* dm = &drummap[i];
+    const DrumMap* idm = &iNewDrumMap[i];
+  
+    if ( (dm->name != idm->name) || (dm->vol != idm->vol) ||
+         (dm->quant != idm->quant) || (dm->len != idm->len) ||
+         (dm->lv1 != idm->lv1) || (dm->lv2 != idm->lv2) ||
+         (dm->lv3 != idm->lv3) || (dm->lv4 != idm->lv4) ||
+         (dm->enote != idm->enote) || (dm->mute != idm->mute) ||
+         (drummap_hidden && drummap_hidden[i]) || full)
+    {
+      xml.tag(level++, "entry pitch=\"%d\"", i);
+      
+      // when any of these "if"s changes, also update the large "if"
+      // above (this scope's parent)
+      if (full || dm->name != idm->name)   xml.strTag(level, "name", dm->name);
+      if (full || dm->vol != idm->vol)     xml.intTag(level, "vol", dm->vol);
+      if (full || dm->quant != idm->quant) xml.intTag(level, "quant", dm->quant);
+      if (full || dm->len != idm->len)     xml.intTag(level, "len", dm->len);
+      if (full || dm->lv1 != idm->lv1)     xml.intTag(level, "lv1", dm->lv1);
+      if (full || dm->lv2 != idm->lv2)     xml.intTag(level, "lv2", dm->lv2);
+      if (full || dm->lv3 != idm->lv3)     xml.intTag(level, "lv3", dm->lv3);
+      if (full || dm->lv4 != idm->lv4)     xml.intTag(level, "lv4", dm->lv4);
+      if (full || dm->enote != idm->enote) xml.intTag(level, "enote", dm->enote);
+      if (full || dm->mute != idm->mute)   xml.intTag(level, "mute", dm->mute);
+      if (drummap_hidden && 
+             (full || drummap_hidden[i]))  xml.intTag(level, "hide", drummap_hidden[i]);
+      
+      // anote is ignored anyway, as dm->anote == i, and this is
+      // already stored in the begin tag (pitch=...)
+      
+      // channel and port are ignored as well, as they're not used
+      // in new-style-drum-mode
+      
+      xml.tag(--level, "/entry");
+    }
+  }
+
+  xml.etag(level, tagname);
+}
+
+void read_new_style_drummap(Xml& xml, const char* tagname,
+                            DrumMap* drummap, bool* drummap_hidden)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "entry")  // then read that entry with a nested loop
+        {
+					DrumMap* dm=NULL;
+          bool* hidden=NULL;
+          for (;;) // nested loop
+          {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token)
+            {
+              case Xml::Error:
+              case Xml::End:
+                goto end_of_nested_for;
+              
+              case Xml::Attribut:
+                if (tag == "pitch")
+                {
+                  int pitch = xml.s2().toInt() & 0x7f;
+                  if (pitch < 0 || pitch > 127)
+                    printf("ERROR: THIS SHOULD NEVER HAPPEN: invalid pitch in read_new_style_drummap()!\n");
+                  else
+                  {
+                    dm = &drummap[pitch];
+                    hidden = drummap_hidden ? &drummap_hidden[pitch] : NULL;
+                  }
+                }
+                break;
+              
+              case Xml::TagStart:
+                if (dm==NULL)
+                  printf("ERROR: THIS SHOULD NEVER HAPPEN: no valid 'pitch' attribute in <entry> tag, but sub-tags follow in read_new_style_drummap()!\n");
+                else if (tag == "name")
+                  dm->name = xml.parse(QString("name"));
+                else if (tag == "vol")
+                  dm->vol = (unsigned char)xml.parseInt();
+                else if (tag == "quant")
+                  dm->quant = xml.parseInt();
+                else if (tag == "len")
+                  dm->len = xml.parseInt();
+                else if (tag == "lv1")
+                  dm->lv1 = xml.parseInt();
+                else if (tag == "lv2")
+                  dm->lv2 = xml.parseInt();
+                else if (tag == "lv3")
+                  dm->lv3 = xml.parseInt();
+                else if (tag == "lv4")
+                  dm->lv4 = xml.parseInt();
+                else if (tag == "enote")
+                  dm->enote = xml.parseInt();
+                else if (tag == "mute")
+                  dm->mute = xml.parseInt();
+                else if (tag == "hide")
+                {
+                  if (hidden) *hidden = xml.parseInt();
+                }
+                else
+                  xml.unknown("read_new_style_drummap");
+                break;
+              
+              case Xml::TagEnd:
+                if (tag == "entry")
+                  goto end_of_nested_for;
+              
+              default:
+                break;
+            }
+          } // end of nested loop
+          end_of_nested_for: ;
+        } // end of 'if (tag == "entry")'
+				else
+					xml.unknown("read_new_style_drummap");
+				break;
+
+			case Xml::TagEnd:
+				if (tag == tagname)
+					return;
+
+			default:
+				break;
+		}
+	}  
+}
+
 } // namespace MusECore
 
 namespace MusEGui {
@@ -189,7 +425,7 @@ QMenu* populateAddSynth(QWidget* parent)
 //    this is also used in "mixer"
 //---------------------------------------------------------
 
-QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll)
+QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool evenIgnoreDrumPreference)
       {
       QActionGroup* grp = new QActionGroup(addTrack);
       if (MusEGlobal::config.addHiddenTracks)
@@ -200,12 +436,38 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll)
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Midi Track")));
         midi->setData(MusECore::Track::MIDI);
         grp->addAction(midi);
-      }
-      if (populateAll || MusECore::MidiTrack::visible()) {
-        QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
-                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
-        drum->setData(MusECore::Track::DRUM);
-        grp->addAction(drum);
+
+
+        if (!evenIgnoreDrumPreference && (MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_OLD || MusEGlobal::config.drumTrackPreference==MusEGlobal::ONLY_OLD))
+        {
+          QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
+          drum->setData(MusECore::Track::DRUM);
+          grp->addAction(drum);
+        }
+
+        if (!evenIgnoreDrumPreference && (MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_NEW || MusEGlobal::config.drumTrackPreference==MusEGlobal::ONLY_NEW))
+        {
+          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
+          newdrum->setData(MusECore::Track::NEW_DRUM);
+          grp->addAction(newdrum);
+        }
+        
+        if (evenIgnoreDrumPreference || MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_NEW)
+        {
+          QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Old Style Drum Track")));
+          drum->setData(MusECore::Track::DRUM);
+          grp->addAction(drum);
+        }
+        if (evenIgnoreDrumPreference || MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_OLD)
+        {
+          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add New Style Drum Track")));
+          newdrum->setData(MusECore::Track::NEW_DRUM);
+          grp->addAction(newdrum);
+        }
       }
       if (populateAll || MusECore::WaveTrack::visible()) {
         QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
@@ -498,7 +760,13 @@ void populateMidiPorts()
   
 }
 
-#else
+#else // this code is disabled
+
+DISABLED AND MAYBE OUT-OF-DATE CODE!
+the code below is disabled for a longer period of time,
+there were certain changes and merges. dunno if that code
+works at all. before activating it again, intensively
+verify whether its still okay!
 
 // -------------------------------------------------------------------------------------------------------
 // populateMidiPorts()

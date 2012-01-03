@@ -39,7 +39,7 @@ class DuplicateTracksDialog : public QDialog, public Ui::DuplicateTracksBase
     //int exec();
 
   public:
-    DuplicateTracksDialog(bool audio, bool midi, bool drum, QWidget* parent = 0);
+    DuplicateTracksDialog(bool audio, bool midi, bool drum, bool newdrum, QWidget* parent = 0);
 
     int copies() const { return copiesSpinBox->value(); }
     bool copyStdCtrls() const { return standardCtrlsCheckBox->isChecked(); }
@@ -50,6 +50,7 @@ class DuplicateTracksDialog : public QDialog, public Ui::DuplicateTracksBase
     bool defaultRoutes() const { return defaultRoutesRadioButton->isChecked(); }
     
     bool copyParts() const { return copyPartsCheckBox->isChecked(); }
+    bool copyDrumlist() const { return copyDrumlistCheckBox->isChecked(); }
 };
   
 } // namespace MusEGui

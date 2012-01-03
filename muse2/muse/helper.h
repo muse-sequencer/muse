@@ -24,7 +24,10 @@
 #define __HELPER_H__
 
 #include <set>
+#include <QSet>
 #include <QStringList>
+
+#include "drummap.h"
 
 class QActionGroup;
 class QString;
@@ -34,14 +37,33 @@ class QWidget;
 
 namespace MusECore {
 class Part;
+class Track;
+
+
 QString pitch2string(int v);
 Part* partFromSerialNumber(int serial);
 bool any_event_selected(const std::set<Part*>&, bool in_range=false);
+
+bool drummaps_almost_equal(const DrumMap* one, const DrumMap* two, int drummap_size=128);
+
+// drummap_hidden may be NULL.
+void write_new_style_drummap(int level, Xml& xml, const char* tagname,
+                             DrumMap* drummap, bool* drummap_hidden=NULL, bool full=false);
+void read_new_style_drummap(Xml& xml, const char* tagname,
+                            DrumMap* drummap, bool* drummap_hidden=NULL);
+                            
+
+QSet<Part*> parts_at_tick(unsigned tick);
+QSet<Part*> parts_at_tick(unsigned tick, const Track* track);
+QSet<Part*> parts_at_tick(unsigned tick, const QSet<Track*>& tracks);
+
+bool parse_range(const QString& str, int* from, int* to); // returns true if successful, false on error
+
 }
 
 namespace MusEGui {
 QMenu* populateAddSynth(QWidget* parent);
-QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false);
+QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false, bool evenIgnoreDrumPreference=false);
 QStringList localizedStringListFromCharArray(const char** array, const char* context);
 QString getFilterExtension(const QString &filter);
 QString browseProjectFolder(QWidget* parent = 0);

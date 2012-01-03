@@ -813,6 +813,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.midiTrackLabelBg = readColor(xml);
                         else if (tag == "drumTrackLabelBg")
                               MusEGlobal::config.drumTrackLabelBg = readColor(xml);
+                        else if (tag == "newDrumTrackLabelBg")
+                              MusEGlobal::config.newDrumTrackLabelBg = readColor(xml);
                         else if (tag == "waveTrackLabelBg")
                               MusEGlobal::config.waveTrackLabelBg = readColor(xml);
                         else if (tag == "outputTrackLabelBg")
@@ -832,6 +834,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.ctrlGraphFg = readColor(xml);
                         else if (tag == "drumTrackBg")
                               MusEGlobal::config.drumTrackBg = readColor(xml);
+                        else if (tag == "newDrumTrackBg")
+                              MusEGlobal::config.newDrumTrackBg = readColor(xml);
                         else if (tag == "waveTrackBg")
                               MusEGlobal::config.waveTrackBg = readColor(xml);
                         else if (tag == "outputTrackBg")
@@ -949,6 +953,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.startMode = xml.parseInt();
                         else if (tag == "startSong")
                               MusEGlobal::config.startSong = xml.parse1();
+                        else if (tag == "newDrumRecordCondition")
+                              MusEGlobal::config.newDrumRecordCondition = MusECore::newDrumRecordCondition_t(xml.parseInt());
                         else if (tag == "projectBaseFolder")
                               MusEGlobal::config.projectBaseFolder = xml.parse1();
                         else if (tag == "projectStoreInFolder")
@@ -963,6 +969,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.rangeMarkerWithoutMMB = xml.parseInt();
                         else if (tag == "addHiddenTracks")
                               MusEGlobal::config.addHiddenTracks = xml.parseInt();
+                        else if (tag == "drumTrackPreference")
+                              MusEGlobal::config.drumTrackPreference = (MusEGlobal::drumTrackPreference_t) xml.parseInt();
                         else if (tag == "unhideTracks")
                               MusEGlobal::config.unhideTracks = xml.parseInt();
 
@@ -1280,6 +1288,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "importMidiSplitParts", MusEGlobal::config.importMidiSplitParts);
       xml.intTag(level, "startMode", MusEGlobal::config.startMode);
       xml.strTag(level, "startSong", MusEGlobal::config.startSong);
+      xml.intTag(level, "newDrumRecordCondition", MusEGlobal::config.newDrumRecordCondition);
       xml.strTag(level, "projectBaseFolder", MusEGlobal::config.projectBaseFolder);
       xml.intTag(level, "projectStoreInFolder", MusEGlobal::config.projectStoreInFolder);
       xml.intTag(level, "useProjectSaveDialog", MusEGlobal::config.useProjectSaveDialog);
@@ -1305,6 +1314,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "unhideTracks", MusEGlobal::config.unhideTracks);
       xml.intTag(level, "addHiddenTracks", MusEGlobal::config.addHiddenTracks);
+      xml.intTag(level, "drumTrackPreference", MusEGlobal::config.drumTrackPreference);
 
       xml.intTag(level, "waveTracksVisible",  MusECore::WaveTrack::visible());
       xml.intTag(level, "auxTracksVisible",  MusECore::AudioAux::visible());
@@ -1349,6 +1359,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
       xml.colorTag(level, "midiTrackLabelBg",   MusEGlobal::config.midiTrackLabelBg);
       xml.colorTag(level, "drumTrackLabelBg",   MusEGlobal::config.drumTrackLabelBg);
+      xml.colorTag(level, "newDrumTrackLabelBg",MusEGlobal::config.newDrumTrackLabelBg);
       xml.colorTag(level, "waveTrackLabelBg",   MusEGlobal::config.waveTrackLabelBg);
       xml.colorTag(level, "outputTrackLabelBg", MusEGlobal::config.outputTrackLabelBg);
       xml.colorTag(level, "inputTrackLabelBg",  MusEGlobal::config.inputTrackLabelBg);
@@ -1359,6 +1370,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "midiTrackBg",   MusEGlobal::config.midiTrackBg);
       xml.colorTag(level, "ctrlGraphFg",   MusEGlobal::config.ctrlGraphFg);
       xml.colorTag(level, "drumTrackBg",   MusEGlobal::config.drumTrackBg);
+      xml.colorTag(level, "newDrumTrackBg",MusEGlobal::config.newDrumTrackBg);
       xml.colorTag(level, "waveTrackBg",   MusEGlobal::config.waveTrackBg);
       xml.colorTag(level, "outputTrackBg", MusEGlobal::config.outputTrackBg);
       xml.colorTag(level, "inputTrackBg",  MusEGlobal::config.inputTrackBg);
@@ -1607,6 +1619,8 @@ void MidiFileConfig::updateValues()
       optNoteOffs->setChecked(MusEGlobal::config.expOptimNoteOffs);
       twoByteTimeSigs->setChecked(MusEGlobal::config.exp2ByteTimeSigs);
       splitPartsCheckBox->setChecked(MusEGlobal::config.importMidiSplitParts);
+      newDrumsCheckbox->setChecked(MusEGlobal::config.importMidiNewStyleDrum);
+      oldDrumsCheckbox->setChecked(!MusEGlobal::config.importMidiNewStyleDrum);
       }
 
 //---------------------------------------------------------
@@ -1626,6 +1640,7 @@ void MidiFileConfig::okClicked()
       MusEGlobal::config.expOptimNoteOffs = optNoteOffs->isChecked();
       MusEGlobal::config.exp2ByteTimeSigs = twoByteTimeSigs->isChecked();
       MusEGlobal::config.importMidiSplitParts = splitPartsCheckBox->isChecked();
+      MusEGlobal::config.importMidiNewStyleDrum = newDrumsCheckbox->isChecked();
 
       MusEGlobal::muse->changeConfig(true);  // write config file
       close();
@@ -1659,6 +1674,7 @@ void MixerConfig::write(int level, MusECore::Xml& xml)
       
       xml.intTag(level, "showMidiTracks",   showMidiTracks);
       xml.intTag(level, "showDrumTracks",   showDrumTracks);
+      xml.intTag(level, "showNewDrumTracks",   showNewDrumTracks);
       xml.intTag(level, "showInputTracks",  showInputTracks);
       xml.intTag(level, "showOutputTracks", showOutputTracks);
       xml.intTag(level, "showWaveTracks",   showWaveTracks);
@@ -1691,6 +1707,8 @@ void MixerConfig::read(MusECore::Xml& xml)
                               showMidiTracks = xml.parseInt();
                         else if (tag == "showDrumTracks")
                               showDrumTracks = xml.parseInt();
+                        else if (tag == "showNewDrumTracks")
+                              showNewDrumTracks = xml.parseInt();
                         else if (tag == "showInputTracks")
                               showInputTracks = xml.parseInt();
                         else if (tag == "showOutputTracks")

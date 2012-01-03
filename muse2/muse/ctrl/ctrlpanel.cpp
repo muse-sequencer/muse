@@ -64,7 +64,7 @@ namespace MusEGui {
 //   CtrlPanel
 //---------------------------------------------------------
 
-CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
+CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* name)
    : QWidget(parent)
       {
       setObjectName(name);
@@ -72,6 +72,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       //ctrlMainPop = 0;
       //ctrlSubPop = 0;
       editor = e;
+      ctrlcanvas = c;
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       QVBoxLayout* vbox = new QVBoxLayout;
       QHBoxLayout* bbox = new QHBoxLayout;
@@ -173,11 +174,11 @@ void CtrlPanel::heartBeat()
     {
       int outport;
       int chan;
-      int cdi = editor->curDrumInstrument();
-      if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1)
+      int cdp = ctrlcanvas->getCurDrumPitch();
+      if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdp != -1)
       {
-        outport = MusEGlobal::drumMap[cdi].port;
-        chan = MusEGlobal::drumMap[cdi].channel;
+        outport = MusEGlobal::drumMap[cdp].port;
+        chan = MusEGlobal::drumMap[cdp].channel;
       }  
       else  
       {
@@ -251,11 +252,11 @@ void CtrlPanel::labelDoubleClicked()
   
   int outport;
   int chan;
-  int cdi = editor->curDrumInstrument();
-  if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1)
+  int cdp = ctrlcanvas->getCurDrumPitch();
+  if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdp != -1)
   {
-    outport = MusEGlobal::drumMap[cdi].port;
-    chan = MusEGlobal::drumMap[cdi].channel;
+    outport = MusEGlobal::drumMap[cdp].port;
+    chan = MusEGlobal::drumMap[cdp].channel;
   }  
   else  
   {
@@ -355,11 +356,11 @@ void CtrlPanel::ctrlChanged(double val)
       
       int outport;
       int chan;
-      int cdi = editor->curDrumInstrument();
-      if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1)
+      int cdp = ctrlcanvas->getCurDrumPitch();
+      if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdp != -1)
       {
-        outport = MusEGlobal::drumMap[cdi].port;
-        chan = MusEGlobal::drumMap[cdi].channel;
+        outport = MusEGlobal::drumMap[cdp].port;
+        chan = MusEGlobal::drumMap[cdp].channel;
       }  
       else  
       {
@@ -424,13 +425,19 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
   
   MusECore::MidiPort* mp;
   int ch;
-  int cdi = editor->curDrumInstrument();
+  int cdp = ctrlcanvas->getCurDrumPitch();
   _dnum = _ctrl->num();
-  if(_track->type() == MusECore::Track::DRUM && ((_dnum & 0xff) == 0xff) && cdi != -1)
+  if(_track->type() == MusECore::Track::DRUM && ((_dnum & 0xff) == 0xff) && cdp != -1)
   {
-    _dnum = (_dnum & ~0xff) | MusEGlobal::drumMap[cdi].anote;
-    mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[cdi].port];          
-    ch = MusEGlobal::drumMap[cdi].channel;
+    _dnum = (_dnum & ~0xff) | MusEGlobal::drumMap[cdp].anote;
+    mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[cdp].port];          
+    ch = MusEGlobal::drumMap[cdp].channel;
+  }  
+  else if(_track->type() == MusECore::Track::NEW_DRUM && ((_dnum & 0xff) == 0xff) && cdp != -1)
+  {
+    _dnum = (_dnum & ~0xff) | cdp; //FINDMICHJETZT does that work?
+    mp = &MusEGlobal::midiPorts[_track->outPort()];
+    ch = _track->outChannel();
   }  
   else  
   {
@@ -542,6 +549,21 @@ void CtrlPanel::setHeight(int h)
       }
 
 #if 0
+/* WARNING: INVALID CODE!                                           *\
+ * the code which has been disabled by the above #if 0 is partly    *
+ * OBSOLETE! it lacks support for new-style drum tracks, especially *
+ * the drum-controller-handling for these!                          *
+ *                                                                  *
+ * when you ever enable that code again, first check the changes    *
+ * flo93 did somewhere between revision 1188 and 1188+something     *
+ * (let's say, 1195; it's NOT the revision in which this comment    *
+ * has been introduced) in experimental to the currently enabled    *
+ * code below. then apply similar changes to the currently disabled *
+\* code here!                                                       */
+#error "INVALID CODE. please check the comment in ctrlpanel.cpp which starts with 'WARNING: INVALID CODE'"
+just to be sure: dear compiler, please refuse to compile.
+dear user: read the comment above!
+
 struct CI {
             QString s;
             bool used;
@@ -564,8 +586,9 @@ void CtrlPanel::ctrlPopup()
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)(part->track());
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      int curDrumInstrument = editor->curDrumInstrument();
+      int curDrumPitch = ctrlcanvas->getCurDrumPitch();
       bool isDrum      = track->type() == MusECore::Track::DRUM;
+      bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
 
       QMenu* pop = new QMenu;
       //pop->clear();
@@ -583,12 +606,20 @@ void CtrlPanel::ctrlPopup()
             MusECore::MidiController* c   = port->midiController(cl->num());
             // dont show drum specific controller if not a drum track
             if ((c->num() & 0xff) == 0xff) {
-                  if (!isDrum)
-                        continue;
-                  // only show controller for curDrumInstrument:
-                  if ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumInstrument].anote) {
-                        continue;
-                        }
+                  if (isDrum)
+                  {
+                    // only show controller for curDrumPitch:
+                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
+                          continue;
+                  }
+                  else if (isNewDrum)
+                  {
+                    // only show controller for curDrumPitch: FINDMICH does this work?
+                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != curDrumPitch))
+                          continue;
+                  }
+                  else
+                    continue;
                   }
             isList i = sList.begin();
             for (; i != sList.end(); ++i) {
@@ -651,8 +682,10 @@ void CtrlPanel::ctrlPopup()
             for (iMusECore::MidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
             {
                 int num = ci->second->num();
-                if (isDrum && ((num & 0xff) == 0xff))
-                  num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
+                if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                  num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+                if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1) //FINDMICHJETZT does this work?
+                  num = (num & ~0xff) + curDrumPitch;
                 
                 if(cll->find(channel, num) == cll->end())
                   pop1->addAction(ci->second->name());
@@ -665,8 +698,10 @@ void CtrlPanel::ctrlPopup()
                         c = ci->second;
                         if (c->name() == s) {
                               int num = c->num();
-                              if (isDrum && ((num & 0xff) == 0xff))
-                                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
+                              if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+                              if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1) //FINDMICHJETZT does this work?
+                                num = (num & ~0xff) + curDrumPitch;
                               
                               if(cll->find(channel, num) == cll->end())
                               {
@@ -722,8 +757,9 @@ void CtrlPanel::ctrlPopup()
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)(part->track());
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      int curDrumInstrument = editor->curDrumInstrument();
+      int curDrumPitch = ctrlcanvas->getCurDrumPitch();
       bool isDrum      = track->type() == MusECore::Track::DRUM;
+      bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
       MusECore::MidiInstrument* instr = port->instrument();
       MusECore::MidiControllerList* mcl = instr->controller();
 
@@ -739,12 +775,20 @@ void CtrlPanel::ctrlPopup()
             MusECore::MidiController* c   = port->midiController(cl->num());
             // dont show drum specific controller if not a drum track
             if ((c->num() & 0xff) == 0xff) {
-                  if (!isDrum)
-                        continue;
-                  // only show controller for curDrumInstrument:
-                  if ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumInstrument].anote) {
-                        continue;
-                        }
+                  if (isDrum)
+                  {
+                    // only show controller for curDrumPitch:
+                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
+                          continue;
+                  }
+                  else if (isNewDrum)
+                  {
+                    // only show controller for curDrumPitch: FINDMICH does this work?
+                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != curDrumPitch))
+                          continue;
+                  }
+                  else
+                    continue;
                   }
             isList i = sList.begin();
             for (; i != sList.end(); ++i) {
@@ -854,10 +898,12 @@ void CtrlPanel::ctrlPopup()
                 int num = ci->second->num();
                 if((num & 0xff) == 0xff)
                 {
-                  // dont show drum specific controller if not a drum track
-                  if(!isDrum)
+                  if (isDrum && curDrumPitch!=-1)
+                    num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+                  else if (isNewDrum && curDrumPitch!=-1)
+                    num = (num & ~0xff) + curDrumPitch; //FINDMICH does this work?
+                  else // dont show drum specific controller if not a drum track
                     continue;
-                  num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
                 }    
 
                 if(cll->find(channel, num) == cll->end())
@@ -884,8 +930,10 @@ void CtrlPanel::ctrlPopup()
                 {
                       c = ci->second;
                       int num = c->num();
-                      if (isDrum && ((num & 0xff) == 0xff))
-                        num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
+                      if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                        num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+                      else if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                        num = (num & ~0xff) + curDrumPitch; //FINDMICHJETZT does this work?
                       
                       if(num != rv2)
                         continue;
@@ -921,8 +969,11 @@ void CtrlPanel::ctrlPopup()
             if (act2) {
                   int rv2 = act2->data().toInt();
                   int num = rv2;
-                  if (isDrum && ((num & 0xff) == 0xff))
-                    num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
+                  if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                    num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+                  if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                    num = (num & ~0xff) + curDrumPitch; //FINDMICHJETZT does this work?
+
                   if(cll->find(channel, num) == cll->end())
                   {
                     MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(num);
@@ -969,11 +1020,11 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
   if(!editor->curCanvasPart() || !_ctrl)
     return;  
     
-  int cdi = editor->curDrumInstrument();
+  int cdp = ctrlcanvas->getCurDrumPitch();
   int ctlnum = _ctrl->num();
-  if(_track->type() == MusECore::Track::DRUM && ((ctlnum & 0xff) == 0xff) && cdi != -1)
-    //ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[cdi].enote;
-    ctlnum = (ctlnum & ~0xff) | cdi;
+  if(_track->type() == MusECore::Track::DRUM && ((ctlnum & 0xff) == 0xff) && cdp != -1)
+    //ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[cdp].enote;
+    ctlnum = (ctlnum & ~0xff) | cdp;
   
   MusECore::MidiPart* part = dynamic_cast<MusECore::MidiPart*>(editor->curCanvasPart());
   MusEGlobal::song->execMidiAutomationCtlPopup(0, part, p, ctlnum);

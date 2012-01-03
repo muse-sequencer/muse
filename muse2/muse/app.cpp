@@ -81,6 +81,7 @@
 #include "tools.h"
 #include "widgets/unusedwavefiles.h"
 #include "functions.h"
+#include "trackdrummapupdater.h"
 
 namespace MusECore {
 extern void initMidiSynth();
@@ -346,6 +347,7 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       MusEGlobal::heartBeatTimer->setObjectName("timer");
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), MusEGlobal::song, SLOT(beat()));
       connect(this, SIGNAL(activeTopWinChanged(MusEGui::TopWin*)), SLOT(activeTopWinChangedSlot(MusEGui::TopWin*)));
+      new MusECore::TrackDrummapUpdater(); // no need for keeping the reference, the thing autoconnects on its own.
       
 #ifdef ENABLE_PYTHON
       //---------------------------------------------------
@@ -1880,6 +1882,7 @@ void MusE::startEditor(MusECore::Track* t)
       switch (t->type()) {
             case MusECore::Track::MIDI: startPianoroll(); break;  
             case MusECore::Track::DRUM: startDrumEditor(); break;
+            case MusECore::Track::NEW_DRUM: startDrumEditor(); break;
             case MusECore::Track::WAVE: startWaveEditor(); break;
             default:
                   break;

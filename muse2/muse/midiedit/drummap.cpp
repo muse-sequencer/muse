@@ -26,10 +26,13 @@
 #include "xml.h"
 #include "song.h"
 
+#include <QSet>
+
 namespace MusEGlobal {
 char drumOutmap[DRUM_MAPSIZE];
 char drumInmap[128];
 MusECore::DrumMap drumMap[DRUM_MAPSIZE];
+global_drum_ordering_t global_drum_ordering;
 }
 
 namespace MusECore {
@@ -40,6 +43,13 @@ namespace MusECore {
 
 const DrumMap blankdm = { QString(""), 100, 16, 32, 9, 0, 70, 90, 127, 110, 127, 127, false };
 
+// this map should have 128 entries, as it's used for initalising iNewDrumMap as well.
+// iNewDrumMap only has 128 entries. also, the every "out-note" ("anote") should be
+// represented exactly once in idrumMap, and there shall be no duplicate or unused
+// "out-notes".
+// reason: iNewDrumMap is inited as follows: iterate through the full idrumMap[],
+//         iNewDrumMap[ idrumMap[i].anote ] = idrumMap[i]
+// if you ever want to change this, you will need to fix the initNewDrumMap() function.
 const DrumMap idrumMap[DRUM_MAPSIZE] = {
       { QString("Acoustic Bass Drum"), 100, 16, 32, 9, 0, 70, 90, 127, 110, 35, 35, false },
       { QString("Bass Drum 1"),        100, 16, 32, 9, 0, 70, 90, 127, 110, 36, 36, false },
@@ -249,6 +259,55 @@ const DrumMap idrumMap[DRUM_MAPSIZE] = {
       { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 34, 34, false }
       };
       
+DrumMap iNewDrumMap[128];
+
+void initNewDrumMap()
+{
+  bool done[128];
+  for (int i=0;i<128;i++) done[i]=false;
+  
+  for (int i=0;i<DRUM_MAPSIZE;i++)
+  {
+    int idx=idrumMap[i].anote;
+    if (idx < 0 || idx >= 128)
+      printf("ERROR: THIS SHOULD NEVER HAPPEN: idrumMap[%i].anote is not within 0..127!\n", idx);
+    else
+    {
+      if (done[idx]==true)
+      {
+        printf("ERROR: iNewDrumMap[%i] is already initalized!\n"
+               "       this will be probably not a problem, but some programmer didn't read\n"
+               "       flo's comment at drummap.cpp, above idrumMap[].\n", idx);
+      }
+      else
+      {
+        iNewDrumMap[idx]=idrumMap[i];
+        done[idx]=true;
+      }
+    }
+  }
+  
+  for (int i=0;i<128;i++)
+  {
+    if (done[i]==false)
+    {
+      printf("ERROR: iNewDrumMap[%i] is uninitalized!\n"
+             "       this will be probably not a problem, but some programmer didn't read\n"
+             "       flo's comment at drummap.cpp, above idrumMap[].\n", i);
+      iNewDrumMap[i].name="";
+      iNewDrumMap[i].vol=100;
+      iNewDrumMap[i].quant=16;
+      iNewDrumMap[i].len=32;
+      iNewDrumMap[i].lv1=70;
+      iNewDrumMap[i].lv2=90;
+      iNewDrumMap[i].lv3=127;
+      iNewDrumMap[i].lv4=110;
+      iNewDrumMap[i].enote=i;
+      iNewDrumMap[i].anote=i;
+    }
+  }
+}
+
 
 //---------------------------------------------------------
 //   initDrumMap
@@ -302,11 +361,10 @@ void resetGMDrumMap()
 //   operator ==
 //---------------------------------------------------------
 
-//bool const DrumMap::operator==(const DrumMap& map) const
 bool DrumMap::operator==(const DrumMap& map) const
       {
       return
-         (name == map.name)
+         name == map.name
          && vol == map.vol
          && quant == map.quant
          && len == map.len
@@ -320,6 +378,14 @@ bool DrumMap::operator==(const DrumMap& map) const
          && anote == map.anote
          && mute == map.mute;
       }
+
+bool DrumMap::almost_equals(const DrumMap& map) const
+{
+  DrumMap tmp=map;
+  tmp.mute=this->mute;
+  return tmp==*this;
+}
+
 
 //---------------------------------------------------------
 //   writeDrumMap
@@ -520,3 +586,137 @@ void readDrumMap(Xml& xml, bool external)
       }
 
 } // namespace MusECore
+
+
+namespace MusEGlobal {
+
+void global_drum_ordering_t::cleanup()
+{
+  using MusEGlobal::song;
+  using MusECore::MidiTrack;
+  using MusECore::ciTrack;
+  
+  QSet<MidiTrack*> tracks;
+  for (ciTrack it = song->tracks()->begin(); it != song->tracks()->end(); it++)
+    tracks.insert( dynamic_cast<MidiTrack*>(*it) );
+  
+  for (iterator it = begin(); it != end();)
+  {
+    if (!tracks.contains(it->first))
+      it=erase(it);
+    else
+      it++;
+  }
+}
+
+void global_drum_ordering_t::write(int level, MusECore::Xml& xml)
+{
+  cleanup();
+  
+  xml.tag(level++, "drum_ordering");
+
+  for (iterator it = begin(); it != end(); it++)
+    write_single(level, xml, *it);
+
+  xml.etag(level, "drum_ordering");
+}
+
+void global_drum_ordering_t::write_single(int level, MusECore::Xml& xml, const entry_t& entry)
+{
+  xml.tag(level++, "entry");
+  xml.strTag(level, "track", entry.first->name());
+  xml.intTag(level, "instrument", entry.second);
+  xml.etag(level, "entry");
+}
+
+void global_drum_ordering_t::read(MusECore::Xml& xml)
+{
+  using MusECore::Xml;
+  
+  clear();
+  
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "entry")
+					append(read_single(xml));
+				else
+					xml.unknown("global_drum_ordering_t");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "drum_ordering")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+  
+global_drum_ordering_t::entry_t global_drum_ordering_t::read_single(MusECore::Xml& xml)
+{
+  using MusECore::Xml;
+  using MusEGlobal::song;
+  using MusECore::ciTrack;
+  
+  entry_t entry;
+  entry.first=NULL;
+  entry.second=-1;
+  
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "track")
+        {
+					QString track_name=xml.parse1();
+          
+          ciTrack it;
+          for (it = song->tracks()->begin(); it != song->tracks()->end(); it++)
+            if (track_name == (*it)->name())
+              break;
+          
+          if (it != song->tracks()->end())
+            entry.first=dynamic_cast<MusECore::MidiTrack*>(*it);
+        }
+				else if (tag == "instrument")
+					entry.second=xml.parseInt();
+				else
+					xml.unknown("global_drum_ordering_t (single entry)");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "entry")
+					goto end_of_read_single;
+				
+			default:
+				break;
+		}
+	}
+
+  end_of_read_single:
+  
+  if (entry.first == NULL)
+    printf("ERROR: global_drum_ordering_t::read_single() couldn't find the specified track!\n");
+  
+  if (entry.second < 0 || entry.second > 127)
+    printf("ERROR: global_drum_ordering_t::read_single(): instrument number is out of bounds (%i)!\n", entry.second);
+  
+  return entry;
+}
+  
+} // namespace MusEGlobal

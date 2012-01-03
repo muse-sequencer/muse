@@ -137,7 +137,7 @@ struct UndoOp {
 class Undo : public std::list<UndoOp> {
    public:
       bool empty() const;
-};
+      };
 
 typedef Undo::iterator iUndoOp;
 typedef Undo::reverse_iterator riUndoOp;

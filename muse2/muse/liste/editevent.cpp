@@ -614,12 +614,12 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
             }
 
       ///pop = new QMenu(this);
-      //pop->setCheckable(false);//not necessary in Qt4
+      //pop->setCheckable(false); //not necessary in Qt4
 
       MusECore::MidiTrack* track   = part->track();
       int portn          = track->outPort();
       MusECore::MidiPort* port     = &MusEGlobal::midiPorts[portn];
-      bool isDrum        = track->type() == MusECore::Track::DRUM;
+      bool isDrum        = track->isDrumTrack();
       MusECore::MidiCtrlValListList* cll = port->controller();
 
       ctrlList->clear();
@@ -835,7 +835,7 @@ void EditCtrlDialog::updatePatch()
       int port              = track->outPort();
       int channel           = track->outChannel();
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
-      patchName->setText(instr->getPatchName(channel, val, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM));
+      patchName->setText(instr->getPatchName(channel, val, MusEGlobal::song->mtype(), track->isDrumTrack()));
 
       int hb = ((val >> 16) & 0xff) + 1;
       if (hb == 0x100)
@@ -873,8 +873,8 @@ void EditCtrlDialog::instrPopup()
       
       //QMenu* pup = new QMenu(this);
       MusEGui::PopupMenu* pup = new MusEGui::PopupMenu(this);
-      //populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
-      instr->populatePatchPopup(pup, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
+      //populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
+      instr->populatePatchPopup(pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
 
       if(pup->actions().count() == 0)
       {

@@ -34,10 +34,26 @@
 
 namespace MusECore {
 class Xml;
+
+enum newDrumRecordCondition_t
+{
+  REC_ALL = 0,
+  DONT_REC_HIDDEN = 1,
+  DONT_REC_MUTED = 2,
+  DONT_REC_MUTED_OR_HIDDEN = 3
+};
+
 }
 
 namespace MusEGlobal {
 
+enum drumTrackPreference_t
+{
+  PREFER_OLD = 0,
+  PREFER_NEW = 1,
+  ONLY_OLD = 2,
+  ONLY_NEW = 3
+};
 //---------------------------------------------------------
 //   MixerConfig
 //---------------------------------------------------------
@@ -47,6 +63,7 @@ struct MixerConfig {
       QRect geometry;
       bool showMidiTracks;
       bool showDrumTracks;
+      bool showNewDrumTracks;
       bool showInputTracks;
       bool showOutputTracks;
       bool showWaveTracks;
@@ -83,6 +100,7 @@ struct GlobalConfigValues {
       
       QColor midiTrackLabelBg;
       QColor drumTrackLabelBg;
+      QColor newDrumTrackLabelBg;
       QColor waveTrackLabelBg;
       QColor outputTrackLabelBg;
       QColor inputTrackLabelBg;
@@ -92,6 +110,7 @@ struct GlobalConfigValues {
 
       QColor midiTrackBg;
       QColor drumTrackBg;
+      QColor newDrumTrackBg;
       QColor waveTrackBg;
       QColor outputTrackBg;
       QColor inputTrackBg;
@@ -118,6 +137,7 @@ struct GlobalConfigValues {
       bool exp2ByteTimeSigs;  // Export 2 byte time sigs instead of 4 bytes
       bool expOptimNoteOffs;  // Save space by replacing note offs with note on velocity 0
       bool importMidiSplitParts; // Split imported tracks into multiple parts.
+      bool importMidiNewStyleDrum; // Use new style drum tracks
       
       int startMode;          // 0 - start with last song
                               // 1 - start with default template
@@ -164,9 +184,10 @@ struct GlobalConfigValues {
       bool popupsDefaultStayOpen;
       bool leftMouseButtonCanDecrease;
       bool rangeMarkerWithoutMMB;
+      MusECore::newDrumRecordCondition_t newDrumRecordCondition;
       bool addHiddenTracks;
       bool unhideTracks;
-
+      drumTrackPreference_t drumTrackPreference;
       };
 
 

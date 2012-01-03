@@ -131,6 +131,7 @@ MusEGlobal::GlobalConfigValues config = {
       
       QColor(0, 160, 255),          // midiTrackLabelBg;   // Med blue
       QColor(0, 160, 255),          // drumTrackLabelBg;   // Med blue
+      QColor(0, 160, 255),          // newDrumTrackLabelBg;   // Med blue
       Qt::magenta,                  // waveTrackLabelBg;
       Qt::green,                    // outputTrackLabelBg;
       Qt::red,                      // inputTrackLabelBg;
@@ -140,6 +141,7 @@ MusEGlobal::GlobalConfigValues config = {
       
       QColor(220, 220, 220),     // midiTrackBg;
       QColor(220, 220, 220),     // drumTrackBg;
+      QColor(220, 220, 220),     // newDrumTrackBg;
       QColor(220, 220, 220),     // waveTrackBg;
       QColor(189, 220, 193),     // outputTrackBg;
       QColor(189, 220, 193),     // inputTrackBg;
@@ -166,6 +168,7 @@ MusEGlobal::GlobalConfigValues config = {
       false,                        // midi export file 2 byte timesigs instead of 4
       true,                         // optimize midi export file note offs
       true,                         // Split imported tracks into multiple parts.
+      true,                         // importMidiNewStyleDrum
       1,                            // startMode
       QString(""),                  // start song path
       384,                          // gui division
@@ -177,13 +180,13 @@ MusEGlobal::GlobalConfigValues config = {
          QString("Mixer A"),
          QRect(0, 0, 300, 500),        // Mixer1
          true, true, true, true,
-         true, true, true, true
+         true, true, true, true, true
          },
       {
          QString("Mixer B"),
          QRect(200, 200, 300, 500),    // Mixer2
          true, true, true, true,
-         true, true, true, true
+         true, true, true, true, true
          },
       true,                         // TransportVisible;
       false,                        // BigTimeVisible;
@@ -207,17 +210,18 @@ MusEGlobal::GlobalConfigValues config = {
       true,                         // showDidYouKnow
       false,                        // vstInPlace  Enable VST in-place processing
       44100,                        // Dummy audio preferred sample rate
-      512                           // Dummy audio buffer size
+      512,                          // Dummy audio buffer size
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
       true,                         // useProjectSaveDialog
       64,                           // minControlProcessPeriod
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
-      false,                         // rangeMarkerWithoutMMBCheckBox
+      false,                        // rangeMarkerWithoutMMB
+      MusECore::DONT_REC_MUTED_OR_HIDDEN,
       true,                         // addHiddenTracks
-      true                          // unhideTracks
-      
+      true,                         // unhideTracks
+      MusEGlobal::PREFER_NEW        // drumTrackPreference
       };
 
 //---------------------------------------------------------

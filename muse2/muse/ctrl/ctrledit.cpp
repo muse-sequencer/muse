@@ -55,8 +55,10 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       setObjectName(name);
       setAttribute(Qt::WA_DeleteOnClose);
       QHBoxLayout* hbox = new QHBoxLayout;
-      panel             = new CtrlPanel(0, e, "panel");
-      canvas            = new CtrlCanvas(e, 0, xmag, "ctrlcanvas", panel);
+      canvas            = new CtrlCanvas(e, 0, xmag, "ctrlcanvas");
+      panel             = new CtrlPanel(0, e, canvas, "panel");
+      canvas->setPanel(panel);
+      
       QWidget* vscale   = new MusEGui::VScale;
 
       hbox->setContentsMargins(0, 0, 0, 0);
@@ -178,6 +180,11 @@ void CtrlEdit::setController(const QString& name)
       break;
     }
   }
+}
+
+void CtrlEdit::curPartHasChanged(MusECore::Part* p)
+{
+  canvas->curPartHasChanged(p);
 }
 
 } // namespace MusEGui

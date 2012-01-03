@@ -62,6 +62,7 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
     protected:
       void showEvent(QShowEvent*);
       QButtonGroup *startSongGroup;
+      QButtonGroup *recDrumGroup;
       std::list<MdiSettings*> mdisettings;
       
    public:

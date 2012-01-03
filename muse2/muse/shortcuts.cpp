@@ -99,6 +99,7 @@ void initShortCuts()
       defShrt(SHRT_OPEN_MIDI_TRANSFORM,   Qt::CTRL + Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Open midi transformer"), ARRANG_SHRT, "open_midi_transform");
       defShrt(SHRT_ADD_MIDI_TRACK,        Qt::CTRL + Qt::Key_J, QT_TRANSLATE_NOOP("shortcuts", "Add midi track"), ARRANG_SHRT, "add_midi_track");
       defShrt(SHRT_ADD_DRUM_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Add drum track"), ARRANG_SHRT, "add_drum_track");
+      defShrt(SHRT_ADD_NEW_STYLE_DRUM_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Add new style drum track"), ARRANG_SHRT, "add_new_style_drum_track");
       defShrt(SHRT_ADD_WAVE_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Add wave track"), ARRANG_SHRT, "add_wave_track");
       defShrt(SHRT_ADD_AUDIO_OUTPUT,      0, QT_TRANSLATE_NOOP("shortcuts", "Add audio output"), ARRANG_SHRT, "add_audio_output");
       defShrt(SHRT_ADD_AUDIO_GROUP,       0, QT_TRANSLATE_NOOP("shortcuts", "Add audio group"), ARRANG_SHRT, "add_audio_group");

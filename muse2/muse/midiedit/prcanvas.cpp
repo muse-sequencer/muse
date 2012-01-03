@@ -116,6 +116,10 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
 
+PianoCanvas::~PianoCanvas()
+{
+  delete steprec;
+}
 //---------------------------------------------------------
 //   pitch2y
 //---------------------------------------------------------
@@ -423,7 +427,7 @@ MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, i
 			// Do not process if the event has already been processed (meaning it's an event in a clone part)...
 			if (idl == doneList.end())
 			{
-				operations.push_back(moveItem(ci, newpos, dtype));
+				moveItem(operations, ci, newpos, dtype); // always returns true. if not, change is necessary here!
 				doneList.push_back(ci);
 			}
 			ci->move(newpos);
@@ -456,7 +460,7 @@ MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, i
 //    called after moving an object
 //---------------------------------------------------------
 
-MusECore::UndoOp PianoCanvas::moveItem(MusEGui::CItem* item, const QPoint& pos, DragType dtype)
+bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, const QPoint& pos, DragType dtype)
       {
       NEvent* nevent = (NEvent*) item;
       MusECore::Event event    = nevent->event();
@@ -492,10 +496,12 @@ MusECore::UndoOp PianoCanvas::moveItem(MusEGui::CItem* item, const QPoint& pos, 
       //  printf("PianoCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
       
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
-            return MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, part, false, false);
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, part, false, false));
       else
-            return MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false);
-      }
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
+      
+      return true;
+}
 
 //---------------------------------------------------------
 //   newItem(p, state)
@@ -734,8 +740,8 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       MusEGlobal::audio->msgPlayMidiEvent(&e);
       
-      if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && curPart)
-				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift);
+      if (_steprec && curPart /* && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */)
+				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift, -1 /* anything which is != rcSteprecNote */);
       }
 
 //---------------------------------------------------------
@@ -1075,6 +1081,7 @@ void PianoCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
 
 void PianoCanvas::curPartChanged()
       {
+      EventCanvas::curPartChanged();
       editor->setWindowTitle(getCaption());
       }
 

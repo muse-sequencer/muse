@@ -245,6 +245,11 @@ Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
                   track->setType(Track::MIDI);
                   if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
+            case Track::NEW_DRUM:
+                  track = new MidiTrack();
+                  track->setType(Track::NEW_DRUM);
+                  ((MidiTrack*)track)->setOutChannel(9);
+                  break;
             case Track::DRUM:
                   track = new MidiTrack();
                   track->setType(Track::DRUM);
@@ -330,7 +335,7 @@ Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
                 {
                   defOutFound = true;
                   mt->setOutPort(i);
-                  if(type != Track::DRUM)  // p4.0.17 Leave drum tracks at channel 10.
+                  if(type != Track::DRUM  &&  type != Track::NEW_DRUM)  // p4.0.17 Leave drum tracks at channel 10.
                     mt->setOutChannel(ch);
                   updateFlags |= SC_ROUTE;
                   break;               
@@ -351,6 +356,7 @@ Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
             switch(type) {
                   //case Track::MIDI:
                   //case Track::DRUM:
+                  //case Track::NEW_DRUM:
                   //case Track::AUDIO_OUTPUT:
                   //      break;
                   
@@ -389,6 +395,7 @@ void Song::duplicateTracks()
   int audio_found = 0;
   int midi_found = 0;
   int drum_found = 0;
+  int new_drum_found = 0;
   for(iTrack it = tl.begin(); it != tl.end(); ++it) 
     if((*it)->selected()) 
     {
@@ -398,20 +405,20 @@ void Song::duplicateTracks()
         continue;
       
       if(type == Track::DRUM)
-      //if(track->isDrumTrack())   // For Flo later with new drum tracks. 
         ++drum_found;
-      else
-      if(type == Track::MIDI)
+      else if(type == Track::NEW_DRUM)
+        ++new_drum_found;
+      else if(type == Track::MIDI)
         ++midi_found;
       else
         ++audio_found;
     }
  
-  if(audio_found == 0 && midi_found == 0 && drum_found == 0)
+  if(audio_found == 0 && midi_found == 0 && drum_found == 0 && new_drum_found==0)
     return;
   
   
-  MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(audio_found, midi_found, drum_found);
+  MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(audio_found, midi_found, drum_found, new_drum_found);
   
   int rv = dlg->exec();
   if(rv == QDialog::Rejected)
@@ -435,6 +442,8 @@ void Song::duplicateTracks()
     flags |= Track::ASSIGN_DEFAULT_ROUTES;
   if(dlg->copyParts())
     flags |= Track::ASSIGN_PARTS;     
+  if(dlg->copyDrumlist())
+    flags |= Track::ASSIGN_DRUMLIST;     
   
   delete dlg;
   
@@ -675,7 +684,7 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
     {
       MidiPart* part = (MidiPart*)(ip->second);
       const EventList* el = part->cevents();
-      // unsigned len = part->lenTick(); // unneeded, see below.
+      // unsigned len = part->lenTick(); // Commented out by flo, see below
       for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
       {
         const Event& ev = ie->second;
@@ -748,13 +757,15 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
     {
       MidiPart* part = (MidiPart*)(ip->second);
       const EventList* el = part->cevents();
-      unsigned len = part->lenTick();
+      // unsigned len = part->lenTick(); // Commented out by flo, see below
       for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
       {
         const Event& ev = ie->second;
         // Added by T356. Do not handle events which are past the end of the part.
-        if(ev.tick() >= len)
-          break;
+        // Commented out by flo: yes, DO handle them! these are "hidden events"
+        //                       which may be revealed later again!
+        // if(ev.tick() >= len)
+        //   break;
                     
         if(ev.type() != Controller)
           continue;
@@ -1435,11 +1446,13 @@ void Song::rewindStart()
 //   update
 //---------------------------------------------------------
 
-void Song::update(int flags)
+void Song::update(int flags, bool allowRecursion)
       {
       static int level = 0;         // DEBUG
-      if (level) {
-            printf("Song::update %08x, level %d\n", flags, level);
+      if (level && !allowRecursion) {
+            printf("THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08x), level %d!\n"
+                   "                          the songChanged() signal is NOT emitted. this will\n"
+                   "                          probably cause windows being not up-to-date.\n", flags, level);
             return;
             }
       ++level;
@@ -2235,6 +2248,7 @@ void Song::clear(bool signal, bool clear_all)
       // _tempo      = 500000;      // default tempo 120
       dirty          = false;
       initDrumMap();
+      initNewDrumMap();
       if (signal) {
             emit loopChanged(false);
             recordChanged(false);
@@ -3083,6 +3097,7 @@ void Song::insertTrack2(Track* track, int idx)
       switch(track->type()) {
             case Track::MIDI:
             case Track::DRUM:
+            case Track::NEW_DRUM:
                   _midis.push_back((MidiTrack*)track);
                   // Added by T356.
                   //((MidiTrack*)track)->addPortCtrlEvents();
@@ -3320,6 +3335,7 @@ void Song::removeTrack2(Track* track)
       switch(track->type()) {
             case Track::MIDI:
             case Track::DRUM:
+            case Track::NEW_DRUM:
                   // Added by T356.
                   //((MidiTrack*)track)->removePortCtrlEvents();
                   removePortCtrlEvents(((MidiTrack*)track));

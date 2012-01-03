@@ -103,6 +103,7 @@ GlobalConfigValues config = {
       
       QColor(74, 150, 194),         // midiTrackLabelBg;   // Med blue
       QColor(74, 150, 194),         // drumTrackLabelBg;   // Med blue
+      QColor(74, 150, 194),         // newDrumTrackLabelBg;   // Med blue
       QColor(213, 128, 202),        // waveTrackLabelBg;   // magenta
       QColor(84, 185, 58),          // outputTrackLabelBg; // green
       QColor(199, 75, 64),          // inputTrackLabelBg;  // red
@@ -112,6 +113,7 @@ GlobalConfigValues config = {
       
       QColor(215, 220, 230),     // midiTrackBg;
       QColor(215, 220, 230),     // drumTrackBg;
+      QColor(215, 220, 230),     // newDrumTrackBg;
       QColor(220, 209, 217),     // waveTrackBg;
       QColor(197, 220, 206),     // outputTrackBg;
       QColor(220, 214, 206),     // inputTrackBg;
@@ -138,6 +140,7 @@ GlobalConfigValues config = {
       false,                        // midi export file 2 byte timesigs instead of 4
       true,                         // optimize midi export file note offs
       true,                         // Split imported tracks into multiple parts.
+      true,                         // importMidiNewStyleDrum
       1,                            // startMode
       QString(""),                  // start song path
       384,                          // gui division
@@ -149,13 +152,13 @@ GlobalConfigValues config = {
          QString("Mixer A"),
          QRect(0, 0, 300, 500),        // Mixer1
          true, true, true, true,
-         true, true, true, true
+         true, true, true, true, true
          },
       {
          QString("Mixer B"),
          QRect(200, 200, 300, 500),    // Mixer2
          true, true, true, true,
-         true, true, true, true
+         true, true, true, true, true
          },
       true,                         // TransportVisible;
       false,                        // BigTimeVisible;
@@ -187,9 +190,10 @@ GlobalConfigValues config = {
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
       false,                        // rangeMarkerWithoutMMB
+      MusECore::DONT_REC_MUTED_OR_HIDDEN,
       true,                         // addHiddenTracks
-      true                          // unhideTracks
-
+      true,                         // unhideTracks
+      MusEGlobal::PREFER_NEW        // drumTrackPreference
     };
 
 //GlobalConfigValues globalConfig = config;

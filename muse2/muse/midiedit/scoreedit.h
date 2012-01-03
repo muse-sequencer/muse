@@ -832,7 +832,7 @@ class ScoreCanvas : public MusEGui::View
 		
 	public:
 		ScoreCanvas(ScoreEdit*, QWidget*);
-		~ScoreCanvas(){};
+		~ScoreCanvas();
 
 		void add_staves(MusECore::PartList* pl, bool all_in_one);
 		void push_back_staff(staff_t& staff) { staves.push_back(staff); } //FINDMICH dirty. very dirty.

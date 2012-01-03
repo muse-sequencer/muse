@@ -45,6 +45,7 @@ class PluginI;
 class SndFile;
 class SynthI;
 class Xml;
+class DrumMap;
 
 
 //---------------------------------------------------------
@@ -54,11 +55,11 @@ class Xml;
 class Track {
    public:
       enum TrackType {
-         MIDI=0, DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
+         MIDI=0, DRUM, NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
          AUDIO_AUX, AUDIO_SOFTSYNTH
          };
       enum AssignFlags {
-         ASSIGN_PROPERTIES=1, ASSIGN_PARTS=2, ASSIGN_PLUGINS=4, ASSIGN_STD_CTRLS=8, ASSIGN_PLUGIN_CTRLS=16, ASSIGN_ROUTES=32, ASSIGN_DEFAULT_ROUTES=64 };
+         ASSIGN_PROPERTIES=1, ASSIGN_PARTS=2, ASSIGN_PLUGINS=4, ASSIGN_STD_CTRLS=8, ASSIGN_PLUGIN_CTRLS=16, ASSIGN_ROUTES=32, ASSIGN_DEFAULT_ROUTES=64, ASSIGN_DRUMLIST=128 };
    private:
       TrackType _type;
       QString _comment;
@@ -204,11 +205,12 @@ class Track {
       void setDefaultName(QString base = QString());
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
-      bool isMidiTrack() const       { return type() == MIDI || type() == DRUM; }
+      bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
+      bool isDrumTrack() const       { return type() == DRUM || type() == NEW_DRUM; }
       virtual bool canRecord() const { return false; }
       virtual AutomationType automationType() const    = 0;
       virtual void setAutomationType(AutomationType t) = 0;
-      static void setVisible(bool ) { }
+      static void setVisible(bool) { }
       bool isVisible();
 
       };
@@ -232,7 +234,24 @@ class MidiTrack : public Track {
       MPEventList* _mpevents; // tmp Events druring recording
       static bool _isVisible;
       clefTypes clefType;
+
+      
+      DrumMap* _drummap; // _drummap[foo].anote is always equal to foo
+      bool* _drummap_hidden; // _drummap und _drummap_hidden will be an array[128]
+      bool _drummap_tied_to_patch; //if true, changing patch also changes drummap
+      bool _drummap_ordering_tied_to_patch; //if true, changing patch also changes drummap-ordering
+      int drum_in_map[128];
+      
+      void init();
       void internal_assign(const Track&, int flags);
+      void init_drummap(bool write_ordering); // function without argument in public
+      void remove_ourselves_from_drum_ordering();
+      void init_drum_ordering();
+      
+      void writeOurDrumSettings(int level, Xml& xml) const;
+      void readOurDrumSettings(Xml& xml);
+      //void writeOurDrumMap(int level, Xml& xml, bool full) const; //below in public:
+      //void readOurDrumMap(Xml& xml, bool dont_init=false); //below in public:
 
    public:
       MidiTrack();
@@ -241,7 +260,6 @@ class MidiTrack : public Track {
 
       virtual void assign(const Track&, int flags);
 
-      void init();
       virtual AutomationType automationType() const;
       virtual void setAutomationType(AutomationType);
 
@@ -299,9 +317,29 @@ class MidiTrack : public Track {
       virtual bool canRecord() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       static bool visible() { return _isVisible; }
+      
+      int getFirstControllerValue(int ctrl, int def=-1);
 
       void setClef(clefTypes i) { clefType = i; }
       clefTypes getClef() { return clefType; }
+      
+      DrumMap* drummap() { return _drummap; }
+      bool* drummap_hidden() { return _drummap_hidden; }
+      int map_drum_in(int enote) { return drum_in_map[enote]; }
+      void update_drum_in_map();
+
+      void init_drummap() { init_drummap(false); } // function with argument in private
+      
+      bool auto_update_drummap();
+      void set_drummap_tied_to_patch(bool);
+      bool drummap_tied_to_patch() { return _drummap_tied_to_patch; }
+      void set_drummap_ordering_tied_to_patch(bool);
+      bool drummap_ordering_tied_to_patch() { return _drummap_ordering_tied_to_patch; }
+
+      //void writeOurDrumSettings(int level, Xml& xml) const; // above in private:
+      //void readOurDrumSettings(Xml& xml); // above in private:
+      void writeOurDrumMap(int level, Xml& xml, bool full) const;
+      void readOurDrumMap(Xml& xml, bool dont_init=false);
       };
 
 //---------------------------------------------------------

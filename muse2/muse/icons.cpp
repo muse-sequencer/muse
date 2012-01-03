@@ -124,6 +124,10 @@
 #include "xpm/routing_midi_input_button_slim.xpm"
 #include "xpm/routing_midi_output_button_slim.xpm"
 
+#include "xpm/eye.xpm"
+#include "xpm/eye_gray.xpm"
+#include "xpm/eye_crossed.xpm"
+
 #include "xpm/up.xpm"
 #include "xpm/down.xpm"
 #include "xpm/bold.xpm"
@@ -344,6 +348,9 @@ QPixmap* homeIcon;
 QPixmap* backIcon;
 QPixmap* forwardIcon;
 QPixmap* muteIcon;
+QPixmap* eyeIcon;
+QPixmap* eyeCrossedIcon;
+QPixmap* eyeGrayIcon;
 QPixmap* upIcon;
 QPixmap* downIcon;
 QPixmap* boldIcon;
@@ -548,6 +555,9 @@ void initIcons()
       backIcon     = new MPIXMAP(back_xpm, "go-previous");
       forwardIcon  = new MPIXMAP(forward_xpm, "go-next");
       muteIcon     = new MPIXMAP(editmuteS_xpm, "audio-volume-muted");
+      eyeIcon      = new MPIXMAP(eye_xpm, NULL);
+      eyeCrossedIcon  = new MPIXMAP(eye_crossed_xpm, NULL);
+      eyeGrayIcon  = new MPIXMAP(eye_gray_xpm, NULL);
       upIcon       = new MPIXMAP(up_xpm, "go-up");
       downIcon     = new MPIXMAP(down_xpm, "go-down");
       boldIcon     = new MPIXMAP(bold_xpm, "format-text-bold");

@@ -32,6 +32,9 @@
 #include <QMessageBox>
 #include <QLineEdit>
 #include <QWhatsThis>
+#include <QStringListModel>
+#include <QScrollBar>
+#include <list>
 
 #include "editinstrument.h"
 #include "minstrument.h"
@@ -42,10 +45,14 @@
 #include "gconfig.h"
 #include "icons.h"
 
+#include "dlist.h"
+#include "drummap.h"
+#include "header.h"
+
 namespace MusEGui {
 
 enum {
-      COL_NAME = 0, COL_TYPE,
+      COL_CNAME = 0, COL_TYPE,
       COL_HNUM, COL_LNUM, COL_MIN, COL_MAX, COL_DEF
       };
 
@@ -72,10 +79,10 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       // populate instrument list
       // Populate common controller list.
       for(int i = 0; i < 128; ++i)
-	{
-	  QListWidgetItem *lci = new QListWidgetItem(MusECore::midiCtrlName(i));
-	  listController->addItem(lci);
-	}
+      {
+        QListWidgetItem *lci = new QListWidgetItem(MusECore::midiCtrlName(i));
+        listController->addItem(lci);
+      }
       oldMidiInstrument = 0;
       oldPatchItem = 0;
       for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) {
@@ -105,8 +112,66 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
 //        workingInstrument.assign( *wip );
       
       
+      dlist_header = new Header(dlistContainer, "header");
+      dlist_header->setFixedHeight(31);
+      dlist_header->setColumnLabel(tr("Name"), COL_NAME, 120);
+      dlist_header->setColumnLabel(tr("Vol"), COL_VOLUME);
+      dlist_header->setColumnLabel(tr("Quant"), COL_QUANT, 30);
+      dlist_header->setColumnLabel(tr("E-Note"), COL_INPUTTRIGGER, 50);
+      dlist_header->setColumnLabel(tr("Len"), COL_NOTELENGTH);
+      dlist_header->setColumnLabel(tr("A-Note"), COL_NOTE, 50);
+      dlist_header->setColumnLabel(tr("LV1"), COL_LEVEL1);
+      dlist_header->setColumnLabel(tr("LV2"), COL_LEVEL2);
+      dlist_header->setColumnLabel(tr("LV3"), COL_LEVEL3);
+      dlist_header->setColumnLabel(tr("LV4"), COL_LEVEL4);
+      dlist_header->hideSection(COL_OUTPORT);
+      dlist_header->hideSection(COL_OUTCHANNEL);
+      dlist_header->hideSection(COL_HIDE);
+      dlist_header->hideSection(COL_MUTE);
+      dlist_header->hide();
+      
+      
+      connect(patchFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
+      connect(patchToBox,   SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
+      connect(lbankFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
+      connect(lbankToBox,   SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
+      connect(hbankFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
+      connect(hbankToBox,   SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
+      connect(patchCheckbox, SIGNAL(toggled(bool)), this, SLOT(patchCollectionCheckboxChanged(bool)));
+      connect(lbankCheckbox, SIGNAL(toggled(bool)), this, SLOT(patchCollectionCheckboxChanged(bool)));
+      connect(hbankCheckbox, SIGNAL(toggled(bool)), this, SLOT(patchCollectionCheckboxChanged(bool)));
+      
+      connect(addCollBtn, SIGNAL(clicked()), this, SLOT(addPatchCollection()));
+      connect(rmCollBtn, SIGNAL(clicked()), this, SLOT(delPatchCollection()));
+      connect(copyCollBtn, SIGNAL(clicked()), this, SLOT(copyPatchCollection()));
+      connect(collUpBtn, SIGNAL(clicked()), this, SLOT(patchCollectionUp()));
+      connect(collDownBtn, SIGNAL(clicked()), this, SLOT(patchCollectionDown()));
+      
+      connect(patchCollections, SIGNAL(activated(const QModelIndex&)), this, SLOT(patchActivated(const QModelIndex&)));
+      connect(patchCollections, SIGNAL(clicked  (const QModelIndex&)), this, SLOT(patchActivated(const QModelIndex&)));
+      
+      patch_coll_model=new QStringListModel();
+      patchCollections->setModel(patch_coll_model);
+      patchCollections->setEditTriggers(QAbstractItemView::NoEditTriggers);
+      
       connect(instrumentList, SIGNAL(itemSelectionChanged()), SLOT(instrumentChanged()));
       connect(patchView, SIGNAL(itemSelectionChanged()), SLOT(patchChanged()));
+
+      dlist_vscroll = new QScrollBar(Qt::Vertical, this);
+      dlist_vscroll->setMaximum(128*TH);
+      dlist_vscroll->hide();
+      
+      dlist_grid = new QGridLayout(dlistContainer);
+      dlist_grid->setContentsMargins(0, 0, 0, 0);
+      dlist_grid->setSpacing(0);  
+      dlist_grid->setRowStretch(1, 100);
+      dlist_grid->setColumnStretch(0, 100);
+      dlist_grid->addWidget(dlist_header, 0, 0);
+      dlist_grid->addWidget(dlist_vscroll, 1,1);
+      
+      dlist=NULL;
+
+
       
       //instrumentChanged();
       changeInstrument();
@@ -150,6 +215,306 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       //connect(deleteSysex, SIGNAL(clicked()), SLOT(deleteSysexClicked()));
       //connect(newSysex, SIGNAL(clicked()), SLOT(newSysexClicked()));
       }
+
+
+void EditInstrument::patchCollectionSpinboxChanged(int)
+{
+  if (patchFromBox->value() > patchToBox->value())
+    patchToBox->setValue(patchFromBox->value());
+
+  if (lbankFromBox->value() > lbankToBox->value())
+    lbankToBox->setValue(lbankFromBox->value());
+
+  if (hbankFromBox->value() > hbankToBox->value())
+    hbankToBox->setValue(hbankFromBox->value());
+  
+  storePatchCollection();
+}
+
+void EditInstrument::patchCollectionCheckboxChanged(bool)
+{
+  storePatchCollection();
+}
+
+void EditInstrument::storePatchCollection()
+{
+  using MusECore::patch_drummap_mapping_t;
+  
+  int idx=patchCollections->currentIndex().row();
+  std::list<patch_drummap_mapping_t>* pdm = workingInstrument.get_patch_drummap_mapping();
+  if (idx>=0 && (unsigned)idx<pdm->size())
+  {
+    std::list<patch_drummap_mapping_t>::iterator it=pdm->begin();
+    advance(it,idx);
+    
+    if (patchCheckbox->isChecked())
+    {
+      it->affected_patches.first_program=patchFromBox->value()-1;
+      it->affected_patches.last_program=patchToBox->value()-1;
+    }
+    else
+    {
+      it->affected_patches.first_program=0;
+      it->affected_patches.last_program=127;
+    }
+
+    if (lbankCheckbox->isChecked())
+    {
+      it->affected_patches.first_lbank=lbankFromBox->value()-1;
+      it->affected_patches.last_lbank=lbankToBox->value()-1;
+    }
+    else
+    {
+      it->affected_patches.first_lbank=0;
+      it->affected_patches.last_lbank=127;
+    }
+
+    if (hbankCheckbox->isChecked())
+    {
+      it->affected_patches.first_hbank=hbankFromBox->value()-1;
+      it->affected_patches.last_hbank=hbankToBox->value()-1;
+    }
+    else
+    {
+      it->affected_patches.first_hbank=0;
+      it->affected_patches.last_hbank=127;
+    }
+    
+    workingInstrument.setDirty(true);
+    repopulatePatchCollections();
+  }
+}
+
+void EditInstrument::fetchPatchCollection()
+{
+  using MusECore::patch_drummap_mapping_t;
+  
+  int idx=patchCollections->currentIndex().row();
+  std::list<patch_drummap_mapping_t>* pdm = workingInstrument.get_patch_drummap_mapping();
+  if (idx>=0 && (unsigned)idx<pdm->size())
+  {
+    std::list<patch_drummap_mapping_t>::iterator it=pdm->begin();
+    advance(it,idx);
+    
+    patchFromBox->blockSignals(true);
+    patchToBox->blockSignals(true);
+    lbankFromBox->blockSignals(true);
+    lbankToBox->blockSignals(true);
+    hbankFromBox->blockSignals(true);
+    hbankToBox->blockSignals(true);
+    
+    patchFromBox->setValue(it->affected_patches.first_program+1);
+    patchToBox->setValue(it->affected_patches.last_program+1);
+    
+    lbankFromBox->setValue(it->affected_patches.first_lbank+1);
+    lbankToBox->setValue(it->affected_patches.last_lbank+1);
+    
+    hbankFromBox->setValue(it->affected_patches.first_hbank+1);
+    hbankToBox->setValue(it->affected_patches.last_hbank+1);
+
+    patchFromBox->blockSignals(false);
+    patchToBox->blockSignals(false);
+    lbankFromBox->blockSignals(false);
+    lbankToBox->blockSignals(false);
+    hbankFromBox->blockSignals(false);
+    hbankToBox->blockSignals(false);
+
+
+    patchCheckbox->setChecked(it->affected_patches.first_program>0 || it->affected_patches.last_program < 127);
+    lbankCheckbox->setChecked(it->affected_patches.first_lbank>0 || it->affected_patches.last_lbank < 127);
+    hbankCheckbox->setChecked(it->affected_patches.first_hbank>0 || it->affected_patches.last_hbank < 127);
+  }
+}
+
+void EditInstrument::patchActivated(const QModelIndex& idx)
+{
+  using MusECore::patch_drummap_mapping_t;
+  
+  if (idx.row()>=0)
+  {
+    using MusECore::DrumMap;
+    
+    std::list<patch_drummap_mapping_t>* tmp = workingInstrument.get_patch_drummap_mapping();
+    std::list<patch_drummap_mapping_t>::iterator it=tmp->begin();
+    if ((unsigned)idx.row()>=tmp->size())
+      printf("THIS SHOULD NEVER HAPPEN: idx.row()>=tmp->size() in EditInstrument::patchActivated()\n");
+    
+    advance(it, idx.row());
+    DrumMap* dm=it->drummap;
+    
+    
+    if (dlist)
+    {
+      dlist->hide();
+      delete dlist;
+      dlist=NULL;
+    }
+    
+    dlist=new DList(dlist_header,dlistContainer,1,dm);
+    
+    dlist->setYPos(dlist_vscroll->value());
+    
+    connect(dlist_vscroll, SIGNAL(valueChanged(int)), dlist, SLOT(setYPos(int)));
+    dlist_grid->addWidget(dlist, 1, 0);
+
+
+    dlist_header->show();
+    dlist->show();
+    dlist_vscroll->show();
+    
+    collUpBtn->setEnabled(idx.row()>0);
+    collDownBtn->setEnabled(idx.row()<patch_coll_model->rowCount()-1);
+    rmCollBtn->setEnabled(true);
+    copyCollBtn->setEnabled(true);
+    patchCollectionContainer->setEnabled(true);
+
+    fetchPatchCollection();
+  }
+}
+
+void EditInstrument::addPatchCollection()
+{
+  using MusECore::patch_drummap_mapping_t;
+  
+  int idx=patchCollections->currentIndex().row();
+  
+  std::list<patch_drummap_mapping_t>* tmp = workingInstrument.get_patch_drummap_mapping();
+  std::list<patch_drummap_mapping_t>::iterator it=tmp->begin();
+  advance(it,idx+1);
+  tmp->insert(it,patch_drummap_mapping_t());
+
+  repopulatePatchCollections();
+  patchCollections->setCurrentIndex(patch_coll_model->index(idx+1));
+  patchActivated(patchCollections->currentIndex());
+  
+  workingInstrument.setDirty(true);
+}
+
+void EditInstrument::delPatchCollection()
+{
+  using MusECore::patch_drummap_mapping_t;
+  
+  int idx=patchCollections->currentIndex().row();
+  if (idx>=0)
+  {
+    if (dlist)
+    {
+      dlist->hide();
+      delete dlist;
+      dlist=NULL;
+    }
+    
+    dlist_header->hide();
+    dlist_vscroll->hide();
+
+    rmCollBtn->setEnabled(false);
+    copyCollBtn->setEnabled(false);
+    patchCollectionContainer->setEnabled(false);
+    collUpBtn->setEnabled(false);
+    collDownBtn->setEnabled(false);
+
+    std::list<patch_drummap_mapping_t>* tmp = workingInstrument.get_patch_drummap_mapping();
+    std::list<patch_drummap_mapping_t>::iterator it=tmp->begin();
+    advance(it,idx);
+    tmp->erase(it);
+
+    repopulatePatchCollections();
+    
+    patchActivated(patchCollections->currentIndex());
+    workingInstrument.setDirty(true);
+  }
+}
+
+void EditInstrument::copyPatchCollection()
+{
+  using MusECore::patch_drummap_mapping_t;
+  
+  int idx=patchCollections->currentIndex().row();
+  
+  std::list<patch_drummap_mapping_t>* tmp = workingInstrument.get_patch_drummap_mapping();
+  std::list<patch_drummap_mapping_t>::iterator it=tmp->begin();
+  advance(it,idx);
+  patch_drummap_mapping_t tmp2(*it);
+  it++;
+  tmp->insert(it,tmp2);
+  
+  patch_coll_model->insertRow(idx+1);
+  patch_coll_model->setData(patch_coll_model->index(idx+1), patch_coll_model->index(idx).data());
+  patchCollections->setCurrentIndex(patch_coll_model->index(idx+1));
+  patchActivated(patchCollections->currentIndex());
+  workingInstrument.setDirty(true);
+}
+
+void EditInstrument::patchCollectionUp()
+{
+  using MusECore::patch_drummap_mapping_t;
+  
+  std::list<patch_drummap_mapping_t>* pdm = workingInstrument.get_patch_drummap_mapping();
+  int idx=patchCollections->currentIndex().row();
+  
+  if (idx>=1)
+  {
+    std::list<patch_drummap_mapping_t>::iterator it=pdm->begin();
+    advance(it,idx-1);
+    std::list<patch_drummap_mapping_t>::iterator it2=it;
+    it2++;
+    
+    //it2 is the element to move, it is the element to put before.
+    
+    pdm->insert(it,*it2);
+    pdm->erase(it2);
+    
+    repopulatePatchCollections();
+
+    patchCollections->setCurrentIndex(patch_coll_model->index(idx-1));
+    patchActivated(patchCollections->currentIndex());
+
+    workingInstrument.setDirty(true);
+  }
+}
+
+void EditInstrument::patchCollectionDown()
+{
+  using MusECore::patch_drummap_mapping_t;
+  
+  std::list<patch_drummap_mapping_t>* pdm = workingInstrument.get_patch_drummap_mapping();
+  int idx=patchCollections->currentIndex().row();
+  
+  if ((unsigned)idx<pdm->size()-1)
+  {
+    std::list<patch_drummap_mapping_t>::iterator it=pdm->begin();
+    advance(it,idx);
+    std::list<patch_drummap_mapping_t>::iterator it2=it;
+    it2++; it2++;
+    
+    //it is the element to move, it2 is the element to put before (might be end())
+    
+    pdm->insert(it2,*it);
+    pdm->erase(it);
+    
+    repopulatePatchCollections();
+
+    patchCollections->setCurrentIndex(patch_coll_model->index(idx+1));
+    patchActivated(patchCollections->currentIndex());
+
+    workingInstrument.setDirty(true);
+  }
+}
+
+void EditInstrument::repopulatePatchCollections()
+{
+  using MusECore::patch_drummap_mapping_t;
+  
+  int idx=patchCollections->currentIndex().row();
+  QStringList strlist;
+  
+  std::list<patch_drummap_mapping_t>* pdm = workingInstrument.get_patch_drummap_mapping();
+  for (std::list<patch_drummap_mapping_t>::iterator it=pdm->begin(); it!=pdm->end(); it++)
+    strlist << it->affected_patches.to_string();
+  
+  patch_coll_model->setStringList(strlist);
+  patchCollections->setCurrentIndex(patch_coll_model->index(idx));
+}
 
 //---------------------------------------------------------
 //   helpWhatsThis
@@ -1014,6 +1379,25 @@ void EditInstrument::changeInstrument()
 */
 
 
+
+  repopulatePatchCollections();
+  if (dlist)
+  {
+    dlist->hide();
+    delete dlist;
+    dlist=NULL;
+  }
+  
+  dlist_header->hide();
+  dlist_vscroll->hide();
+
+  rmCollBtn->setEnabled(false);
+  copyCollBtn->setEnabled(false);
+  patchCollectionContainer->setEnabled(false);
+  collUpBtn->setEnabled(false);
+  collDownBtn->setEnabled(false);
+
+
 }
 
 //---------------------------------------------------------
@@ -1801,9 +2185,9 @@ void EditInstrument::ctrlNameReturn()
       }
       
       c->setName(ctrlName->text());
-      item->setText(COL_NAME, ctrlName->text());
+      item->setText(COL_CNAME, ctrlName->text());
       //c->setName(s);
-      //item->setText(COL_NAME, s);
+      //item->setText(COL_CNAME, s);
       workingInstrument.setDirty(true);
 }
 
