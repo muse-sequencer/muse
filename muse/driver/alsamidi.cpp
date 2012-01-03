@@ -792,8 +792,9 @@ bool initMidiAlsa()
             const char* cname = snd_seq_client_info_get_name(cinfo);
             //printf( "ALSA client name: %s\n", cname);  
             
-            // Put Midi Through and user clients after others. Insert other unwanted clients here:          // p4.0.41
-            if( !(snd_seq_client_info_get_type(cinfo) == SND_SEQ_USER_CLIENT || strcmp("Midi Through", cname) == 0) )                   
+            bool is_thru = (strcmp("Midi Through", cname) == 0);
+            // Put Midi Through and user clients after others. Insert other unwanted clients here: // p4.0.41
+            if( !(snd_seq_client_info_get_type(cinfo) == SND_SEQ_USER_CLIENT || is_thru) )
               continue;
             
             snd_seq_port_info_t *pinfo;
@@ -820,6 +821,8 @@ bool initMidiAlsa()
                   if (capability & inCap)
                         flags |= 2;
                   dev->setrwFlags(flags);
+                  if(is_thru)             // Don't auto-open Midi Through.
+                    dev->setOpenFlags(0); 
                   if (MusEGlobal::debugMsg)
                         printf("ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
                            snd_seq_port_info_get_name(pinfo),
