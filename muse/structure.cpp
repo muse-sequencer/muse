@@ -116,15 +116,12 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
       if (tick > startPos)
       {
         if (tick + diff < startPos ) { // these ticks should be removed
-          Marker *oldMarker = new Marker();
-          *oldMarker = *m;
-          markerlist->remove(m);
-          operations.push_back(UndoOp(UndoOp::ModifyMarker,oldMarker, 0));
+          operations.push_back(UndoOp(UndoOp::ModifyMarker, 0, m));    
         } else {
-          Marker *oldMarker = new Marker();
-          *oldMarker = *m;
-          m->setTick(tick + diff);
-          operations.push_back(UndoOp(UndoOp::ModifyMarker,oldMarker, m));
+          Marker *newMarker = new Marker();
+          *newMarker = *m;
+          newMarker->setTick(tick + diff);  
+          operations.push_back(UndoOp(UndoOp::ModifyMarker, newMarker, m));
         }
       }
   }

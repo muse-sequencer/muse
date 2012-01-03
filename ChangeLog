@@ -1,3 +1,6 @@
+03.01.2012:
+        - Global Cut: Fixed crashes with markers. Re-did marker section in structure.cpp:adjustGlobalLists(). (Tim)
+          TODO: Still get tempo, key, and sig not found warnings.
 02.01.2012:
         - Fixed drag and drop cloning parts - bad reference count in PartCanvas::moveItem(). (Tim) 
         - File Open dialog: Start with song data and configuration.

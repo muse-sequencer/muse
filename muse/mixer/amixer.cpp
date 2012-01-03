@@ -149,7 +149,8 @@ bool ScrollArea::viewportEvent(QEvent* event)
   if(event->type() == QEvent::LayoutRequest)       
     emit layoutRequest();
          
-  return false;       
+  //return false;       
+  return true;       
 }
 
 //---------------------------------------------------------
@@ -219,7 +220,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       ///view = new QScrollArea();
       view = new ScrollArea();
-      view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//      view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(view);
       
       central = new QWidget(view);

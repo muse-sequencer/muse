@@ -3143,7 +3143,7 @@ void MusE::focusInEvent(QFocusEvent* ev)
       //      mixer1->raise();
       //if (mixer2)
       //      mixer2->raise();
-      raise();
+      //raise();
       QMainWindow::focusInEvent(ev);
       }
 
