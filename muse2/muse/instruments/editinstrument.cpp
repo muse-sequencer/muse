@@ -48,7 +48,6 @@
 #include "dlist.h"
 #include "drummap.h"
 #include "header.h"
-#include "drumedit.h" // FINDMICHJETZT only needed for COL_FOO. fix that!
 
 namespace MusEGui {
 

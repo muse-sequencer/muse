@@ -47,6 +47,26 @@ namespace MusEGui {
 class ScrollScale;
 class DrumCanvas;
 
+
+enum DrumColumn {
+  COL_HIDE = 0,
+  COL_MUTE,
+  COL_NAME,
+  COL_VOLUME,
+  COL_QUANT,
+  COL_INPUTTRIGGER,
+  COL_NOTELENGTH,
+  COL_NOTE,
+  COL_OUTCHANNEL,
+  COL_OUTPORT,
+  COL_LEVEL1,
+  COL_LEVEL2,
+  COL_LEVEL3,
+  COL_LEVEL4,
+  COL_NONE = -1
+};
+
+
 //---------------------------------------------------------
 //   DLineEdit
 //---------------------------------------------------------

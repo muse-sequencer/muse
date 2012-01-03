@@ -33,7 +33,7 @@
 #include "header.h"
 #include "shortcuts.h"
 #include "event.h"
-#include "dcanvas.h" //FINDMICH UGLY. remove!
+#include "dcanvas.h"
 
 class QCloseEvent;
 class QLabel;
@@ -64,24 +64,6 @@ class ScoreConfig;
 class ScrollScale;
 class Splitter;
 class Toolbar1;
-
-enum DrumColumn {
-  COL_HIDE = 0,
-  COL_MUTE,
-  COL_NAME,
-  COL_VOLUME,
-  COL_QUANT,
-  COL_INPUTTRIGGER,
-  COL_NOTELENGTH,
-  COL_NOTE,
-  COL_OUTCHANNEL,
-  COL_OUTPORT,
-  COL_LEVEL1,
-  COL_LEVEL2,
-  COL_LEVEL3,
-  COL_LEVEL4,
-  COL_NONE = -1
-};
 
 //---------------------------------------------------------
 //   DrumEdit
