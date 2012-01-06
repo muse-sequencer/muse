@@ -732,7 +732,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                     
                   QMenu* p = MusECore::midiPortsPopup(this, port);     // 0, port);
                   
-                  if (t->type()==MusECore::Track::MIDI || t->type()==MusECore::Track::DRUM) //FINDMICHJETZT
+                  if (t->isMidiTrack())
                   {
                     // extend that menu a bit
 
