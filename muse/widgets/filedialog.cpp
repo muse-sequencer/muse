@@ -239,7 +239,7 @@ MFileDialog::MFileDialog(const QString& dir,
                         }
 
 	          }
-            buttons.loadAllGroup->setVisible(false);
+            buttons.readMidiPortsGroup->setVisible(false);
             }
       }
 
@@ -276,7 +276,7 @@ void MFileDialog::directoryChanged(const QString&)
 //   getOpenFileName
 //---------------------------------------------------------
 QString getOpenFileName(const QString &startWith, const char** filters_chararray,
-            QWidget* parent, const QString& name, bool* all, MFileDialog::ViewType viewType)
+            QWidget* parent, const QString& name, bool* doReadMidiPorts, MFileDialog::ViewType viewType)
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
       
@@ -290,26 +290,24 @@ QString getOpenFileName(const QString &startWith, const char** filters_chararray
         dlg->projectToggled(true);
       else if (viewType == MFileDialog::USER_VIEW)
         dlg->userToggled(true);
-      if (all) {
-            dlg->buttons.loadAllGroup->setVisible(true);
-            //dlg->buttons.globalButton->setVisible(false);
-      }
+      if (doReadMidiPorts)
+            dlg->buttons.readMidiPortsGroup->setVisible(true);
+
       if (!initialSelection.isEmpty())
             dlg->selectFile(initialSelection);
       dlg->setFileMode(QFileDialog::ExistingFile);
       QStringList files;
       QString result;
       if (dlg->exec() == QDialog::Accepted) {
-            files = dlg->selectedFiles();
-	    if (!files.isEmpty())
-                  result = files[0];
-            if (all) {
-                  *all = dlg->buttons.loadAllButton->isChecked();
-                  }
-            }
+          files = dlg->selectedFiles();
+          if (!files.isEmpty())
+              result = files[0];
+          if (doReadMidiPorts)
+              *doReadMidiPorts = dlg->buttons.readMidiPortsButton->isChecked();
+      }
       delete dlg;
       return result;
-      }
+}
 
 //---------------------------------------------------------
 //   getSaveFileName

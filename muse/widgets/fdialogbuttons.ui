@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>145</width>
+    <width>150</width>
     <height>438</height>
    </rect>
   </property>
@@ -121,7 +121,7 @@
     </spacer>
    </item>
    <item>
-    <widget class="QFrame" name="loadAllGroup">
+    <widget class="QFrame" name="readMidiPortsGroup">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -130,21 +130,16 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QRadioButton" name="loadAllButton">
+       <widget class="QCheckBox" name="readMidiPortsButton">
         <property name="text">
-         <string>Songdata +
+         <string>read Midi Port
 Configuration</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
         <property name="checked">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="loadSongButton">
-        <property name="text">
-         <string>only
-Songdata</string>
         </property>
        </widget>
       </item>

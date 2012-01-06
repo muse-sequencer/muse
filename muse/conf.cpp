@@ -220,7 +220,7 @@ static void readPortChannel(Xml& xml, int midiPort)
 //   readConfigMidiPort
 //---------------------------------------------------------
 
-static void readConfigMidiPort(Xml& xml, bool skipConfig)
+static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
       {
       int idx = 0;
       QString device;
@@ -250,14 +250,14 @@ static void readConfigMidiPort(Xml& xml, bool skipConfig)
             switch (token) {
                   case Xml::TagStart:
                         
-                        // skipConfig added so it doesn't overwrite midi ports.   p4.0.41 Tim.
+                        // onlyReadChannelState added so it doesn't overwrite midi ports.   p4.0.41 Tim.
                         // Try to keep the controller information. But, this may need to be moved below.  
                         // Also may want to try to keep sync info, but that's a bit risky, so let's not for now.
                         if (tag == "channel") {
                               readPortChannel(xml, idx);
                               break;
                               }
-                        else if (skipConfig){
+                        else if (onlyReadChannelState){
                               xml.skip(tag);
                               break;
                               }
@@ -303,7 +303,7 @@ static void readConfigMidiPort(Xml& xml, bool skipConfig)
                   case Xml::TagEnd:
                         if (tag == "midiport") {
                               
-                              if(skipConfig)      // p4.0.41
+                              if(onlyReadChannelState)      // p4.0.41
                                 return;
                               
                               //if (idx > MIDI_PORTS) {
@@ -495,7 +495,7 @@ static void loadConfigMetronom(Xml& xml)
 //   readSeqConfiguration
 //---------------------------------------------------------
 
-static void readSeqConfiguration(Xml& xml, bool skipConfig)
+static void readSeqConfiguration(Xml& xml, bool skipMidiPorts)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -507,7 +507,7 @@ static void readSeqConfiguration(Xml& xml, bool skipConfig)
                         if (tag == "metronom")
                               loadConfigMetronom(xml);
                         else if (tag == "midiport")
-                              readConfigMidiPort(xml, skipConfig);
+                              readConfigMidiPort(xml, skipMidiPorts);
                         else if (tag == "rcStop")
                               MusEGlobal::rcStopNote = xml.parseInt();
                         else if (tag == "rcEnable")
@@ -537,8 +537,10 @@ static void readSeqConfiguration(Xml& xml, bool skipConfig)
 //   readConfiguration
 //---------------------------------------------------------
 
-void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig)
+void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalConfig)
       {
+      if (doReadGlobalConfig) doReadMidiPortConfig=true;
+      
       int mixers = 0;
       for (;;) {
             Xml::Token token = xml.parse();
@@ -557,10 +559,47 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                            midiport configuration and VOLUME.
                         */
                         if (tag == "sequencer") {
-                              readSeqConfiguration(xml, readOnlySequencer);
+                              readSeqConfiguration(xml, !doReadMidiPortConfig);
                               break;
                               }
-                        else if (readOnlySequencer) {
+                        else if (tag == "waveTracksVisible")
+                                 WaveTrack::setVisible((bool)xml.parseInt());
+                        else if (tag == "auxTracksVisible")
+                                 AudioAux::setVisible((bool)xml.parseInt());
+                        else if (tag == "groupTracksVisible")
+                                 AudioGroup::setVisible((bool)xml.parseInt());
+                        else if (tag == "midiTracksVisible")
+                                 MidiTrack::setVisible((bool)xml.parseInt());
+                        else if (tag == "inputTracksVisible")
+                                 AudioInput::setVisible((bool)xml.parseInt());
+                        else if (tag == "outputTracksVisible")
+                                 AudioOutput::setVisible((bool)xml.parseInt());
+                        else if (tag == "synthTracksVisible")
+                                 SynthI::setVisible((bool)xml.parseInt());
+                        else if (tag == "bigtimeVisible")
+                              MusEGlobal::config.bigTimeVisible = xml.parseInt();
+                        else if (tag == "transportVisible")
+                              MusEGlobal::config.transportVisible = xml.parseInt();
+                        else if (tag == "mixer1Visible")
+                              MusEGlobal::config.mixer1Visible = xml.parseInt();
+                        else if (tag == "mixer2Visible")
+                              MusEGlobal::config.mixer2Visible = xml.parseInt();
+                        else if (tag == "geometryTransport")
+                              MusEGlobal::config.geometryTransport = readGeometry(xml, tag);
+                        else if (tag == "geometryBigTime")
+                              MusEGlobal::config.geometryBigTime = readGeometry(xml, tag);
+                        else if (tag == "Mixer") {
+                              if(mixers == 0)
+                                MusEGlobal::config.mixer1.read(xml);
+                              else  
+                                MusEGlobal::config.mixer2.read(xml);
+                              ++mixers;
+                              }
+                        else if (tag == "geometryMain")
+                              MusEGlobal::config.geometryMain = readGeometry(xml, tag);
+
+
+                        else if (doReadMidiPortConfig==false) {
                               xml.skip(tag);
                               break;
                               }
@@ -585,30 +624,6 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::midiFilterCtrl3 = xml.parseInt();
                         else if (tag == "midiFilterCtrl4")
                               MusEGlobal::midiFilterCtrl4 = xml.parseInt();
-                        else if (tag == "waveTracksVisible")
-                                 WaveTrack::setVisible((bool)xml.parseInt());
-                        else if (tag == "auxTracksVisible")
-                                 AudioAux::setVisible((bool)xml.parseInt());
-                        else if (tag == "groupTracksVisible")
-                                 AudioGroup::setVisible((bool)xml.parseInt());
-                        else if (tag == "midiTracksVisible")
-                                 MidiTrack::setVisible((bool)xml.parseInt());
-                        else if (tag == "inputTracksVisible")
-                                 AudioInput::setVisible((bool)xml.parseInt());
-                        else if (tag == "outputTracksVisible") {
-                                 printf("output track set from config!\n");
-                                 AudioOutput::setVisible((bool)xml.parseInt());
-                        }
-                        else if (tag == "synthTracksVisible")
-                                 SynthI::setVisible((bool)xml.parseInt());
-                        else if (tag == "bigtimeVisible")
-                              MusEGlobal::config.bigTimeVisible = xml.parseInt();
-                        else if (tag == "transportVisible")
-                              MusEGlobal::config.transportVisible = xml.parseInt();
-                        else if (tag == "mixer1Visible")
-                              MusEGlobal::config.mixer1Visible = xml.parseInt();
-                        else if (tag == "mixer2Visible")
-                              MusEGlobal::config.mixer2Visible = xml.parseInt();
                         else if (tag == "mtctype")
                               MusEGlobal::mtcType= xml.parseInt();
                         else if (tag == "sendClockDelay")
@@ -637,19 +652,6 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               readMidiTransform(xml);
                         else if (tag == "midiInputTransform")
                               readMidiInputTransform(xml);
-                        else if (tag == "geometryTransport")
-                              MusEGlobal::config.geometryTransport = readGeometry(xml, tag);
-                        else if (tag == "geometryBigTime")
-                              MusEGlobal::config.geometryBigTime = readGeometry(xml, tag);
-                        else if (tag == "Mixer") {
-                              if(mixers == 0)
-                                MusEGlobal::config.mixer1.read(xml);
-                              else  
-                                MusEGlobal::config.mixer2.read(xml);
-                              ++mixers;
-                              }
-                        else if (tag == "geometryMain")
-                              MusEGlobal::config.geometryMain = readGeometry(xml, tag);
                               
                         // don't insert else if(...) clauses between
                         // this line and "Global config stuff begins here".
@@ -1024,9 +1026,9 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                         printf("text <%s>\n", xml.s1().toLatin1().constData());
                         break;
                   case Xml::Attribut:
-                        if (readOnlySequencer)
+                        if (doReadMidiPortConfig==false)
                               break;
-                        if (tag == "version") {
+                        else if (tag == "version") {
                               int major = xml.s2().section('.', 0, 0).toInt();
                               int minor = xml.s2().section('.', 1, 1).toInt();
                               xml.setVersion(major, minor);
@@ -1075,7 +1077,7 @@ bool readConfiguration()
                         else if (skipmode)
                               break;
                         else if (tag == "configuration")
-                              readConfiguration(xml,false, true /* read global config as well */);
+                              readConfiguration(xml,true, true /* read global config as well */);
                         else
                               xml.unknown("muse config");
                         break;

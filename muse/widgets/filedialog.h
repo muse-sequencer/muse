@@ -93,7 +93,7 @@ class ContentsPreview : public QWidget, public Q3FilePreview {
 QString getSaveFileName(const QString& startWidth, const char** filters,
          QWidget* parent, const QString& name);
 QString getOpenFileName(const QString& startWidth, const char** filters,
-                        QWidget* parent, const QString& name, bool* openAll, MFileDialog::ViewType viewType = MFileDialog::PROJECT_VIEW);
+                        QWidget* parent, const QString& name, bool* doReadMidiPorts, MFileDialog::ViewType viewType = MFileDialog::PROJECT_VIEW);
 QString getImageFileName(const QString& startWith, const char** filters, 
          QWidget* parent, const QString& name);
 
