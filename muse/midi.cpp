@@ -637,12 +637,10 @@ void Audio::initDevices()
                   }
             }
       //
-      // damit Midi-Devices, die mehrere Ports besitzen, wie z.B.
-      // das Korg NS5R, nicht mehrmals zwischen GM und XG/GS hin und
-      // hergeschaltet werden, wird zunÃÂ¯ÃÂ¿ÃÂ½hst auf allen Ports GM
-      // initialisiert, und dann erst XG/GS
+      // First all ports are initialized to GM and then are changed
+      // to XG/GS in order to prevent that devices with more than one
+      // port, e.g. Korg NS5R, toggle between GM and XG/GS several times.
       //
-      
       // Standard initialization...
       for (int i = 0; i < MIDI_PORTS; ++i) {
             if (!activePorts[i])
