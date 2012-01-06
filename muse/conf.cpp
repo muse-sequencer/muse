@@ -584,6 +584,13 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.mixer1Visible = xml.parseInt();
                         else if (tag == "mixer2Visible")
                               MusEGlobal::config.mixer2Visible = xml.parseInt();
+                        else if (tag == "markerVisible")
+                              // I thought this was obsolete (done by song's toplevel list), but
+                              // it's obviously needed. (flo)
+                              MusEGlobal::config.markerVisible = xml.parseInt();
+                        else if (tag == "arrangerVisible")
+                              // same here.
+                              MusEGlobal::config.arrangerVisible = xml.parseInt();
                         else if (tag == "geometryTransport")
                               MusEGlobal::config.geometryTransport = readGeometry(xml, tag);
                         else if (tag == "geometryBigTime")
@@ -970,9 +977,6 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 
                         // ---- the following only skips obsolete entries ----
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
-                              xml.skip(tag);
-                        else if (tag == "markerVisible")
-                              //MusEGlobal::config.markerVisible = xml.parseInt(); //Obsolete (done by song's toplevel list)
                               xml.skip(tag);
                         else if (tag == "mixerVisible")
                               // MusEGlobal::config.mixerVisible = xml.parseInt();  // Obsolete
@@ -1507,6 +1511,12 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
       if (bigtime)
             xml.geometryTag(level, "geometryBigTime", bigtime);
       
+      // i thought this was obsolete, but it seems to be necessary (flo)
+      xml.intTag(level, "arrangerVisible", viewArrangerAction->isChecked());
+      xml.intTag(level, "markerVisible", viewMarkerAction->isChecked());
+      // but storing the geometry IS obsolete. this is really
+      // done by TopLevel::writeConfiguration
+
       xml.intTag(level, "mixer1Visible",    viewMixerAAction->isChecked());
       xml.intTag(level, "mixer2Visible",    viewMixerBAction->isChecked());
       if (mixer1)
