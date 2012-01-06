@@ -853,28 +853,4 @@
     <drummap>
       </drummap>
     </song>
-  <toplevels>
-    <arrangerview>
-      <topwin>
-        <is_subwin>1</is_subwin>
-        <x>0</x>
-        <y>0</y>
-        <width>850</width>
-        <height>382</height>
-        <shares_menu>1</shares_menu>
-        <toolbars>000000ff00000000fd00000000000000000000000000000004000000040000000800000008fc00000000</toolbars>
-        </topwin>
-      <tool>1</tool>
-      <arranger>
-        <info>1</info>
-        <split>557 290 </split>
-        <list>
-          <header> 7 9 8 6 5 4 3 2 1 0 </header>
-          </list>
-        <xpos>0</xpos>
-        <xmag>266</xmag>
-        <ypos>0</ypos>
-        </arranger>
-      </arrangerview>
-    </toplevels>
   </muse>

@@ -964,77 +964,17 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       MusEGlobal::song->blockSignals(false);
       
       // Load start song moved to main.cpp     p4.0.41 REMOVE Tim.
-      /*
-      
-      //---------------------------------------------------
-      //  load project
-      //    if no songname entered on command line:
-      //    startMode: 0  - load last song
-      //               1  - load default template
-      //               2  - load configured start song
-      //---------------------------------------------------
-
-      QString name;
-      bool useTemplate = false;
-      if (argc >= 2)
-            name = argv[0];
-      else if (MusEGlobal::config.startMode == 0) {
-            if (argc < 2)
-                  //name = projectList[0] ? *projectList[0] : QString("untitled");
-                  name = projectList[0] ? *projectList[0] : MusEGui::getUniqueUntitledName();  // p4.0.40
-            else
-                  name = argv[0];
-            printf("starting with selected song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
-            }
-      else if (MusEGlobal::config.startMode == 1) {
-            printf("starting with default template\n");
-            name = MusEGlobal::museGlobalShare + QString("/templates/default.med");
-            useTemplate = true;
-            }
-      else if (MusEGlobal::config.startMode == 2) {
-            printf("starting with pre configured song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
-            name = MusEGlobal::config.startSong;
-      }
-      
-      // loadProjectFile(name, useTemplate, true);  //commented out by flo: see below (*)
-      */
       
       changeConfig(false);
       QSettings settings("MusE", "MusE-qt");
       restoreGeometry(settings.value("MusE/geometry").toByteArray());
-      //restoreState(settings.value("MusE/windowState").toByteArray());
 
-      MusEGlobal::song->update(); // commented out by flo: will be done by the below (*)
-      updateWindowMenu();         // same here
+      MusEGlobal::song->update();
+      updateWindowMenu();
 
       // Load start song moved to main.cpp     p4.0.41 REMOVE Tim.
-      /*
-
-      // this is (*).
-      // this is a really hackish workaround for the loading-on-startup problem.
-      // i have absolutely no idea WHY it breaks when using loadProjectFile()
-      // above, but it does on my machine (it doesn't on others!).
-      // the problem can be worked around by delaying loading the song file.
-      // i use hackishSongOpenTimer for this, which calls after 10ms a slot
-      // which then does the actual loadProjectFile() call.
-      // FIXME: please, if anyone finds the real problem, FIX it and
-      //        remove that dirty, dirty workaround!
-      hackishSongOpenFilename=name;
-      hackishSongOpenUseTemplate=useTemplate;
-      hackishSongOpenTimer=new QTimer(this);
-      hackishSongOpenTimer->setInterval(10);
-      hackishSongOpenTimer->setSingleShot(true);
-      connect(hackishSongOpenTimer, SIGNAL(timeout()), this, SLOT(hackishSongOpenTimerTimeout()));
-      hackishSongOpenTimer->start();
-      */
       }
 
-// Load start song moved to main.cpp     p4.0.41 REMOVE Tim.
-//void MusE::hackishSongOpenTimerTimeout()
-//{
-  ///loadProjectFile(hackishSongOpenFilename, hackishSongOpenUseTemplate, true);   
-  //loadProjectFile(hackishSongOpenFilename, hackishSongOpenUseTemplate, !hackishSongOpenUseTemplate);   
-//}
 
 MusE::~MusE()
 {
@@ -1133,7 +1073,7 @@ void MusE::loadProjectFile(const QString& name)
       loadProjectFile(name, false, false);
       }
 
-void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
+void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
       QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
@@ -1179,7 +1119,7 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
             }
       microSleep(100000);
       progress->setValue(10);
-      loadProjectFile1(name, songTemplate, loadAll);
+      loadProjectFile1(name, songTemplate, doReadMidiPorts);
       microSleep(100000);
       progress->setValue(90);
       if (restartSequencer)
@@ -1203,10 +1143,10 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
 //
 //    template - if true, load file but do not change
 //                project name
-//    loadAll  - load song data + configuration data
+//    doReadMidiPorts  - also read midi port configuration
 //---------------------------------------------------------
 
-void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll)
+void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
       //if (audioMixer)
       //      audioMixer->clear();
@@ -1216,7 +1156,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             mixer2->clear();
       _arranger->clear();      // clear track info
       //if (clearSong())
-      if (clearSong(loadAll))  // Allow not touching things like midi ports. p4.0.17 TESTING: Maybe some problems...
+      if (clearSong(doReadMidiPorts))  // Allow not touching things like midi ports. p4.0.17 TESTING: Maybe some problems...
             return;
       progress->setValue(20);
 
@@ -1264,7 +1204,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                   }
             else {
                   MusECore::Xml xml(f);
-                  read(xml, !loadAll, songTemplate);
+                  read(xml, doReadMidiPorts, songTemplate);
                   bool fileError = ferror(f);
                   popenFlag ? pclose(f) : fclose(f);
                   if (fileError) {
@@ -1274,7 +1214,6 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                         }
                   }
             }
-      //else if (ex == "mid." || ex == "kar.") {
       else if (mex == "mid" || mex == "kar") {
             setConfigDefaults();
             if (!importMidi(name, false))
@@ -1300,7 +1239,8 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
 
       autoMixerAction->setChecked(MusEGlobal::automation);
 
-      if (loadAll) {
+      //FINDMICHJETZT does this work?
+      {
             showBigtime(MusEGlobal::config.bigTimeVisible);
             //showMixer(MusEGlobal::config.mixerVisible);
             showMixer1(MusEGlobal::config.mixer1Visible);
@@ -1333,7 +1273,8 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                   transport->show();
             transport->move(MusEGlobal::config.geometryTransport.topLeft());
             showTransport(MusEGlobal::config.transportVisible);
-            }
+      }
+      
       progress->setValue(40);
 
       transport->setMasterFlag(MusEGlobal::song->masterFlag());
@@ -1348,7 +1289,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       progress->setValue(50);
 
       // Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
-      if (loadAll) 
+      //FINDMICHJETZT does this work?
       {
         if(mixer1)
         {
@@ -1382,7 +1323,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       
       if (songTemplate)
       {
-        // maximize the arranger in traditional SDI mode
+        // maximize the arranger when in traditional SDI mode
         if (MusEGui::TopWin::_defaultSubwin[MusEGui::TopWin::ARRANGER])
         {
           bool maximizeArranger=true;
@@ -1448,12 +1389,12 @@ void MusE::setFollow()
 
 void MusE::loadProject()
       {
-      bool loadAll;
+      bool doReadMidiPorts;
       QString fn = MusEGui::getOpenFileName(QString(""), MusEGlobal::med_file_pattern, this,
-         tr("MusE: load project"), &loadAll);
+         tr("MusE: load project"), &doReadMidiPorts);
       if (!fn.isEmpty()) {
             MusEGlobal::museProject = QFileInfo(fn).absolutePath();
-            loadProjectFile(fn, false, loadAll);
+            loadProjectFile(fn, false, doReadMidiPorts);
             }
       }
 
@@ -2757,11 +2698,11 @@ MusE::lash_idle_cb ()
     return;
 
   while ( (event = lash_get_event (lash_client)) )
-    {
+  {
       switch (lash_event_get_type (event))
-        {
+      {
         case LASH_Save_File:
-    {
+        {
           /* save file */
           QString ss = QString(lash_event_get_string(event)) + QString("/lash-project-muse.med");
           int ok = save (ss.toAscii(), false);
@@ -2773,37 +2714,37 @@ MusE::lash_idle_cb ()
             MusEGlobal::museProject = QFileInfo(ss.toAscii()).absolutePath();
           }
           lash_send_event (lash_client, event);
-    }
-    break;
+        }
+        break;
 
         case LASH_Restore_File:
-    {
+        {
           /* load file */
           QString sr = QString(lash_event_get_string(event)) + QString("/lash-project-muse.med");
           loadProjectFile(sr.toAscii(), false, true);
           lash_send_event (lash_client, event);
-    }
-          break;
+        }
+        break;
 
         case LASH_Quit:
-    {
+        {
           /* quit muse */
           std::cout << "MusE::lash_idle_cb Received LASH_Quit"
                     << std::endl;
           lash_event_destroy (event);
-    }
-    break;
+        }
+        break;
 
         default:
-    {
+        {
           std::cout << "MusE::lash_idle_cb Received unknown LASH event of type "
                     << lash_event_get_type (event)
                     << std::endl;
           lash_event_destroy (event);
-    }
-    break;
         }
-    }
+        break;
+      }
+  }
 }
 #endif /* HAVE_LASH */
 

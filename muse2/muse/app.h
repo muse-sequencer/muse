@@ -211,12 +211,8 @@ class MusE : public QMainWindow
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
       
-      //QTimer* hackishSongOpenTimer;
-      //QString hackishSongOpenFilename;
-      //bool hackishSongOpenUseTemplate;
-
       bool readMidi(FILE*);
-      void read(MusECore::Xml& xml, bool skipConfig, bool isTemplate);
+      void read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate);
       void processTrack(MusECore::MidiTrack* track);
 
       void write(MusECore::Xml& xml) const;
@@ -235,7 +231,7 @@ class MusE : public QMainWindow
       MusECore::PartList* getMidiPartsToEdit();
       MusECore::Part* readPart(MusECore::Xml& xml);
       bool checkRegionNotNull();
-      void loadProjectFile1(const QString&, bool songTemplate, bool loadAll);
+      void loadProjectFile1(const QString&, bool songTemplate, bool doReadMidiPorts);
       void writeGlobalConfiguration(int level, MusECore::Xml&) const;
       void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
@@ -336,7 +332,7 @@ class MusE : public QMainWindow
       void bounceToFile(MusECore::AudioOutput* ao = 0);
       void closeEvent(QCloseEvent*e);
       void loadProjectFile(const QString&);
-      void loadProjectFile(const QString&, bool songTemplate, bool loadAll);
+      void loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
       void toplevelDeleting(MusEGui::TopWin* tl);
       void loadTheme(const QString&);
       void loadStyleSheetFile(const QString&);

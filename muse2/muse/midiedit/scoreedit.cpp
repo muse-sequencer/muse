@@ -4668,12 +4668,33 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o test drum controllers
  *   o test old- and new drumtrack recording, steprecording
  *
- * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
  * > o add a songposition scrollbar-toolbar (in different sizes)
  *     this might be equivalent to "redo transport menu" (below).
  * > o add toolbar(s) for tempo- etc spinboxes from the transport window 
+ *   o add controller editor "like search-and-replace":
+ *     acts on all specified type's events, and edits the value:
+ *      - apply some MIN or MAX on it
+ *      - scale it
+ *      - offset it
+ *      - only act on values in a certain value range
+ *      - maybe do curve-mapping
+ *   o add "volume", "pan", "prog" etc columns to the arranger.
+ *     ideally make them fully configurable: let the user add any
+ *     controller together with any column label to the list.
+ *     these will just set the controller at the very first tick.
+ *   o remove the silly song type!
+ *   o remove the song length spinbox
+ *   o logical/physical device mapping:
+ *     song only contains logical information: not some "synth port",
+ *       but a "synth name", like "Yamaha DX7" or "TR-808".
+ *     the global config contains physical information, like
+ *       "'Yamaha DX7' is on 'USB Midi Bridge, Output two'", 
+ *       "'TR-808' is on 'jack-midi port foo, connected to bar'"
+ *     if loading a song with unknown synth name, ask the user.
+ *   o prerecord feature.
  *
  *   o find and fix FINDMICHJETZT
+ *   o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
  * 
  * IMPORTANT TODO
  *   o allow steprec-insert-rest-note to be set to "off" / "unused"

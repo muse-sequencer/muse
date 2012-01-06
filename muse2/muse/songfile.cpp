@@ -1504,7 +1504,7 @@ void MusE::readMidiport(MusECore::Xml& xml)
 //    read song
 //---------------------------------------------------------
 
-void MusE::read(MusECore::Xml& xml, bool skipConfig, bool isTemplate)
+void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
       {
       bool skipmode = true;
       for (;;) {
@@ -1522,12 +1522,7 @@ void MusE::read(MusECore::Xml& xml, bool skipConfig, bool isTemplate)
                         else if (skipmode)
                               break;
                         else if (tag == "configuration")
-                              if (skipConfig)
-                                    //xml.skip(tag);
-                                    readConfiguration(xml,true /* only read sequencer settings */, false /* do NOT read global settings, see below */);
-                                    // see even more below!
-                              else
-                                    readConfiguration(xml, false, false /* do NOT read global settings, see below */);
+                              readConfiguration(xml, doReadMidiPorts, false /* do NOT read global settings, see below */);
                         /* Explanation for why "do NOT read global settings":
                          * if you would use true here, then muse would overwrite certain global config stuff
                          * by the settings stored in the song. but you don't want this. imagine that you

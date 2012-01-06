@@ -770,8 +770,8 @@ void CtrlPanel::ctrlPopup()
       std::list<CI> sList;
       typedef std::list<CI>::iterator isList;
 
-      for (MusECore::iMidiCtrlValList i = cll->lower_bound(min); i != cll->lower_bound(max); ++i) {
-            MusECore::MidiCtrlValList* cl = i->second;
+      for (MusECore::iMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it) {
+            MusECore::MidiCtrlValList* cl = it->second;
             MusECore::MidiController* c   = port->midiController(cl->num());
             // dont show drum specific controller if not a drum track
             if ((c->num() & 0xff) == 0xff) {
