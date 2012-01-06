@@ -1383,4 +1383,81 @@ void clean_parts()
 	MusEGlobal::song->applyOperationGroup(operations);
 }
 
+bool merge_selected_parts()
+{
+	set<Part*> temp = get_all_selected_parts();
+	return merge_parts(temp);
+}
+
+bool merge_parts(const set<Part*>& parts)
+{
+	set<Track*> tracks;
+	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+		tracks.insert( (*it)->track() );
+
+	Undo operations;
+	
+	// process tracks separately
+	for (set<Track*>::iterator t_it=tracks.begin(); t_it!=tracks.end(); t_it++)
+	{
+		Track* track=*t_it;
+
+		unsigned begin=MAXINT, end=0;
+		Part* first_part=NULL;
+		
+		// find begin of the first and end of the last part
+		for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+			if ((*it)->track()==track)
+			{
+				Part* p=*it;
+				if (p->tick() < begin)
+				{
+					begin=p->tick();
+					first_part=p;
+				}
+				
+				if (p->endTick() > end)
+					end=p->endTick();
+			}
+		
+		if (begin==MAXINT || end==0)
+		{
+			printf("THIS SHOULD NEVER HAPPEN: begin==MAXINT || end==0 in merge_parts()\n");
+			continue; // skip the actual work, as we cannot work under errornous conditions.
+		}
+		
+		// create and prepare the new part
+		Part* new_part = track->newPart(first_part); 
+		new_part->setTick(begin);
+		new_part->setLenTick(end-begin);
+		
+		EventList* new_el = new_part->events();
+		new_el->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
+		                     // so we must decrement it first :/
+		new_el->clear();
+		
+		// copy all events from the source parts into the new part
+		for (set<Part*>::iterator p_it=parts.begin(); p_it!=parts.end(); p_it++)
+			if ((*p_it)->track()==track)
+			{
+				EventList* old_el= (*p_it)->events();
+				for (iEvent ev_it=old_el->begin(); ev_it!=old_el->end(); ev_it++)
+				{
+					Event new_event=ev_it->second;
+					new_event.setTick( new_event.tick() + (*p_it)->tick() - new_part->tick() );
+					new_el->add(new_event);
+				}
+			}
+		
+		// delete all the source parts
+		for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+			if ((*it)->track()==track)
+				operations.push_back( UndoOp(UndoOp::DeletePart, *it) );
+		// and add the new one
+		operations.push_back( UndoOp(UndoOp::AddPart, new_part) );
+	}
+	
+	return MusEGlobal::song->applyOperationGroup(operations);
+}
+
 } // namespace MusECore

@@ -1,3 +1,5 @@
+06.01.2012:
+        - added super-glue feature (flo)
 03.01.2012:
         - Global Cut: Fixed crashes with markers. Re-did marker section in structure.cpp:adjustGlobalLists(). (Tim)
           TODO: Still get tempo, key, and sig not found warnings.
