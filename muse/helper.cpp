@@ -302,11 +302,11 @@ QString browseProjectFolder(QWidget* parent)
     path = d.absolutePath();
   }
   
-  QString dir = QFileDialog::getExistingDirectory(parent, qApp->tr("Select project directory"), path);
+  QString dir = QFileDialog::getExistingDirectory(parent, qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Select project directory")), path);
   if(dir.isEmpty())
     dir = MusEGlobal::config.projectBaseFolder;
   //  projDirLineEdit->setText(dir);
-  //return QFileDialog::getExistingDirectory(this, qApp.tr("Select project directory"), path);
+  //return QFileDialog::getExistingDirectory(this, qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Select project directory")), path);
   return dir;
 }
 
