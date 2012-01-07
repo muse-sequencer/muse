@@ -632,8 +632,8 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
       std::list<QString> sList;
       typedef std::list<QString>::iterator isList;
 
-      for (MusECore::iMidiCtrlValList i = cll->begin(); i != cll->end(); ++i) {
-            MusECore::MidiCtrlValList* cl = i->second;
+      for (MusECore::iMidiCtrlValList it = cll->begin(); it != cll->end(); ++it) {
+            MusECore::MidiCtrlValList* cl = it->second;
             int num             = cl->num();
 
             // dont show drum specific controller if not a drum track
