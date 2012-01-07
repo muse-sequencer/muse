@@ -1,4 +1,6 @@
 07.01.2012:
+        - Added choice to keep system GUI style (rj)
+07.01.2012:
         - Fixed compile errors if not configured for OSC or DSSI. (Tim)
 07.01.2012:
         - MusE 2.0 release candidate 2 released (rj)

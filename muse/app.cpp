@@ -36,6 +36,7 @@
 #include <QMdiSubWindow>
 #include <QSocketNotifier>  
 #include <QString>
+#include <QStyleFactory>
 
 #include <iostream>
 
@@ -2381,7 +2382,12 @@ void MusE::configAppearance()
 
 void MusE::loadTheme(const QString& s)
       {
-      if (style()->objectName() != s)
+      QStringList sl = QStyleFactory::keys();
+      if (sl.indexOf(s) == -1) {
+        if(MusEGlobal::debugMsg)
+          printf("Set style does not exist, won't try to change.");
+      }
+      else if (style()->objectName() != s)
       {
             QApplication::setStyle(s);
             style()->setObjectName(s);   // p4.0.45
@@ -2423,7 +2429,6 @@ void MusE::changeConfig(bool writeFlag)
       if (writeFlag)
             writeGlobalConfiguration();
       
-      //loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
       loadTheme(MusEGlobal::config.style);
       QApplication::setFont(MusEGlobal::config.fonts[0]);
       if(!MusEGlobal::config.styleSheetFile.isEmpty())

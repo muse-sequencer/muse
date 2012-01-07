@@ -146,25 +146,9 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       global_bg->setFlags(Qt::ItemIsEnabled);
       user_bg = new QTreeWidgetItem(backgroundTree, QStringList(tr("Custom")), 0);
       user_bg->setFlags(Qt::ItemIsEnabled);
-      /*
-      partShownames->setChecked(config->canvasShowPartType & 1);
-      partShowevents->setChecked(config->canvasShowPartType & 2);
-      partShowCakes->setChecked(!(config->canvasShowPartType & 2));
-
-      eventNoteon->setChecked(config->canvasShowPartEvent & (1 << 0));
-      eventPolypressure->setChecked(config->canvasShowPartEvent & (1 << 1));
-      eventController->setChecked(config->canvasShowPartEvent & (1 << 2));
-      eventProgramchange->setChecked(config->canvasShowPartEvent & (1 << 3));
-      eventAftertouch->setChecked(config->canvasShowPartEvent & (1 << 4));
-      eventPitchbend->setChecked(config->canvasShowPartEvent & (1 << 5));
-      eventSpecial->setChecked(config->canvasShowPartEvent & (1 << 6));
-      eventButtonGroup->setEnabled(config->canvasShowPartType == 2);
-      arrGrid->setChecked(config->canvasShowGrid);
-      */
       colorframe->setAutoFillBackground(true);
       aPalette = new QButtonGroup(aPaletteBox);
 
-      // There must be an easier way to do this by a for loop. No? :
       aPalette->addButton(palette0, 0);
       aPalette->addButton(palette1, 1);
       aPalette->addButton(palette2, 2);
@@ -189,26 +173,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       itemList->clear();
       aid = new IdListViewItem(0, itemList, "Arranger");
       id = new IdListViewItem(0, aid, "PartColors");
-           // Names moved into global config by Tim.
-           /*
-           new IdListViewItem(0x400, id, "Default");
-           new IdListViewItem(0x401, id, "Refrain");
-           new IdListViewItem(0x402, id, "Bridge");
-           new IdListViewItem(0x403, id, "Intro");
-           new IdListViewItem(0x404, id, "Coda");
-           new IdListViewItem(0x405, id, "Chorus");
-           new IdListViewItem(0x406, id, "Solo");
-           new IdListViewItem(0x407, id, "Brass");
-           new IdListViewItem(0x408, id, "Percussion");
-           new IdListViewItem(0x409, id, "Drums");
-           new IdListViewItem(0x40a, id, "Guitar");
-           new IdListViewItem(0x40b, id, "Bass");
-           new IdListViewItem(0x40c, id, "Flute");
-           new IdListViewItem(0x40d, id, "Strings");
-           new IdListViewItem(0x40e, id, "Keyboard");
-           new IdListViewItem(0x40f, id, "Piano");
-           new IdListViewItem(0x410, id, "Saxophon");
-           */
+
            for(int i = 0; i < NUM_PARTCOLORS; ++i)
              new IdListViewItem(0x400 + i, id, MusEGlobal::config.partColorNames[i]);
            
@@ -271,20 +236,6 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       //---------------------------------------------------
 	//    STYLE
       //---------------------------------------------------
-
-      /*
-      themeComboBox->clear();
-      QString cs = MusEGlobal::muse->style().name();
-      cs = cs.lower();
-
-      themeComboBox->insertStringList(QStyleFactory::keys());
-      for (int i = 0; i < themeComboBox->count(); ++i) {
-            if (themeComboBox->text(i).lower() == cs) {
-                  themeComboBox->setCurrentItem(i);
-                  }
-            }
-      */
-
       openStyleSheet->setIcon(*openIcon);
       connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
       defaultStyleSheet->setIcon(*undoIcon);
@@ -330,111 +281,6 @@ void Appearance::resetValues()
       updateFonts();
 
       QPalette pal;
-      
-      /*
-      pal.setColor(palette0->backgroundRole(), config->palette[0]);
-      palette0->setPalette(pal);
-      pal.setColor(palette1->backgroundRole(), config->palette[1]);
-      palette1->setPalette(pal);
-      pal.setColor(palette2->backgroundRole(), config->palette[2]);
-      palette2->setPalette(pal);
-      pal.setColor(palette3->backgroundRole(), config->palette[3]);
-      palette3->setPalette(pal);
-      pal.setColor(palette4->backgroundRole(), config->palette[4]);
-      palette4->setPalette(pal);
-      pal.setColor(palette5->backgroundRole(), config->palette[5]);
-      palette5->setPalette(pal);
-      pal.setColor(palette6->backgroundRole(), config->palette[6]);
-      palette6->setPalette(pal);
-      pal.setColor(palette7->backgroundRole(), config->palette[7]);
-      palette7->setPalette(pal);
-      pal.setColor(palette8->backgroundRole(), config->palette[8]);
-      palette8->setPalette(pal);
-      pal.setColor(palette9->backgroundRole(), config->palette[9]);
-      palette9->setPalette(pal);
-      pal.setColor(palette10->backgroundRole(), config->palette[10]);
-      palette10->setPalette(pal);
-      pal.setColor(palette11->backgroundRole(), config->palette[11]);
-      palette11->setPalette(pal);
-      pal.setColor(palette12->backgroundRole(), config->palette[12]);
-      palette12->setPalette(pal);
-      pal.setColor(palette13->backgroundRole(), config->palette[13]);
-      palette13->setPalette(pal);
-      pal.setColor(palette14->backgroundRole(), config->palette[14]);
-      palette14->setPalette(pal);
-      pal.setColor(palette15->backgroundRole(), config->palette[15]);
-      palette15->setPalette(pal);
-      */
-
-      /*
-      pal.setColor(QPalette::Window, config->palette[0]);
-      palette0->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[1]);
-      palette1->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[2]);
-      palette2->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[3]);
-      palette3->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[4]);
-      palette4->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[5]);
-      palette5->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[6]);
-      palette6->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[7]);
-      palette7->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[8]);
-      palette8->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[9]);
-      palette9->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[10]);
-      palette10->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[11]);
-      palette11->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[12]);
-      palette12->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[13]);
-      palette13->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[14]);
-      palette14->setPalette(pal);
-      pal.setColor(QPalette::Window, config->palette[15]);
-      palette15->setPalette(pal);
-      */
-      
-      /*
-      pal.setColor(QPalette::Button, config->palette[0]);
-      palette0->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[1]);
-      palette1->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[2]);
-      palette2->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[3]);
-      palette3->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[4]);
-      palette4->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[5]);
-      palette5->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[6]);
-      palette6->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[7]);
-      palette7->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[8]);
-      palette8->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[9]);
-      palette9->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[10]);
-      palette10->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[11]);
-      palette11->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[12]);
-      palette12->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[13]);
-      palette13->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[14]);
-      palette14->setPalette(pal);
-      pal.setColor(QPalette::Button, config->palette[15]);
-      palette15->setPalette(pal);
-      */
       
       palette0->setStyleSheet(QString("background-color: ") + config->palette[0].name());
       palette1->setStyleSheet(QString("background-color: ") + config->palette[1].name());
@@ -503,23 +349,25 @@ void Appearance::resetValues()
       eventAftertouch->setChecked(config->canvasShowPartEvent & (1 << 4));
       eventPitchbend->setChecked(config->canvasShowPartEvent & (1 << 5));
       eventSpecial->setChecked(config->canvasShowPartEvent & (1 << 6));
-      //eventButtonGroup->setEnabled(config->canvasShowPartType == 2);
       eventButtonGroup->setEnabled(config->canvasShowPartType & 2);
       arrGrid->setChecked(config->canvasShowGrid);
 
       themeComboBox->clear();
       QString cs = MusEGlobal::muse->style()->objectName();
-      //printf("Appearance::resetValues style:%s\n", cs.toAscii().data());  
-      //printf("Appearance::resetValues App styleSheet:%s\n", qApp->styleSheet().toAscii().data());  
       cs = cs.toLower();
 
-      themeComboBox->insertItems(0, QStyleFactory::keys());
-      for (int i = 0; i < themeComboBox->count(); ++i) {
-            if (themeComboBox->itemText(i).toLower() == cs) {
-                  themeComboBox->setCurrentIndex(i);
-                  }
-            }
+      themeComboBox->insertItem(0,tr("Keep Qt system style"));
+      themeComboBox->insertItems(1, QStyleFactory::keys());
 
+      if (QStyleFactory::keys().indexOf(config->style) == -1)
+        themeComboBox->setCurrentIndex(0); // if none is found use the default
+      else {
+          for (int i = 0; i < themeComboBox->count(); ++i) {
+              if (themeComboBox->itemText(i).toLower() == cs) {
+                  themeComboBox->setCurrentIndex(i);
+              }
+          }
+      }
       globalAlphaSlider->blockSignals(true);
       globalAlphaVal->blockSignals(true);
       globalAlphaSlider->setValue(config->globalAlphaBlend);
