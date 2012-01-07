@@ -26,14 +26,20 @@
 
 #include "config.h"
 
-#include <vector>
-#include <map>
-#include <string>
-
 // Make sure this number is unique among all the MESS synths and DSSI host synth.
 #define DSSI_SYNTH_UNIQUE_ID 8
 // Midistate sysex initialization command.
 #define DSSI_INIT_DATA_CMD 1
+
+#define DSSI_PARAMSAVE_VERSION_MAJOR  0
+#define DSSI_PARAMSAVE_VERSION_MINOR  1
+
+
+#ifdef DSSI_SUPPORT
+
+#include <vector>
+#include <map>
+#include <string>
 
 #ifdef OSC_SUPPORT
 #include <lo/lo.h>
@@ -42,6 +48,7 @@
 
 #include "ladspa.h"
 #include <dssi.h>
+
 #include <alsa/asoundlib.h>
 
 #include "midictrl.h"
@@ -53,11 +60,12 @@
 //#include <QMenu>
 #include "popupmenu.h"
 
-#define DSSI_PARAMSAVE_VERSION_MAJOR  0
-#define DSSI_PARAMSAVE_VERSION_MINOR  1
+#endif // DSSI_SUPPORT
 
 namespace MusECore {
  
+#ifdef DSSI_SUPPORT
+
 struct _DSSI;
 class DssiPluginIF;
 
@@ -223,6 +231,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       friend class DssiSynth;
       };
 
+#endif // DSSI_SUPPORT
+      
 extern void initDSSI();
 
 } // namespace MusECore

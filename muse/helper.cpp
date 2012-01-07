@@ -40,6 +40,7 @@
 #include "audiodev.h"
 #include "midiseq.h"
 
+#include <QMenu>
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>

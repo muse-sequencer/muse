@@ -43,6 +43,7 @@
 #include "app.h"
 #include "audio.h"
 #include "audiodev.h"
+#include "config.h"
 #include "gconfig.h"
 #include "globals.h"
 #include "helper.h"

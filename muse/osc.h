@@ -24,14 +24,19 @@
 #ifndef __OSC_H__
 #define __OSC_H__
 
-#include <lo/lo.h>
-
 #include "config.h"
+
+#ifdef OSC_SUPPORT
+#include <lo/lo.h>
 
 class QProcess;
 class QString;
 
+#endif // OSC_SUPPORT
+
 namespace MusECore { 
+#ifdef OSC_SUPPORT
+  
 #ifdef DSSI_SUPPORT
 class DssiSynthIF;
 #endif
@@ -125,6 +130,8 @@ class OscDssiIF : public OscIF
       virtual QString titlePrefix() const; 
 };
 #endif // DSSI_SUPPORT
+
+#endif // OSC_SUPPORT
  
 extern void initOSC();
 

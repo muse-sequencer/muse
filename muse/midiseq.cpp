@@ -44,7 +44,6 @@
 #include "synth.h"
 #include "song.h"
 #include "gconfig.h"
-#include <lo/lo_osc_types.h>
 
 namespace MusEGlobal {
 MusECore::MidiSeq* midiSeq;

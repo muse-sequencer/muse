@@ -52,6 +52,7 @@
 #include "bigtime.h"
 #include "cliplist/cliplist.h"
 #include "conf.h"
+#include "config.h"
 #include "debug.h"
 #include "didyouknow.h"
 #include "drumedit.h"
@@ -106,9 +107,7 @@ static QString* projectList[PROJECT_LIST_LEN];
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
-#include <lo/lo_osc_types.h>
 lash_client_t * lash_client = 0;
-extern snd_seq_t * alsaSeq;
 #endif /* HAVE_LASH */
 
 int watchAudio, watchAudioPrefetch, watchMidi;

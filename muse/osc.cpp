@@ -33,6 +33,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include <QFileInfo>
 #include <QString>
@@ -43,7 +44,6 @@
 #else
   #include <unistd.h> 
   #include <signal.h>
-  #include <errno.h>
 #endif
 
 #include <lo/lo.h>

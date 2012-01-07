@@ -1152,6 +1152,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                 SynthIF* sif = synti->sif();
                 if(sif)
                 {
+#ifdef DSSI_SUPPORT
                   DssiSynthIF* dsif = dynamic_cast < DssiSynthIF* > (sif);
                   if(dsif)
                   {
@@ -1159,6 +1160,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                     if(p && m < p->parameters())
                         ctlfound = true;
                   }
+#endif
                 }
               }
             }
@@ -1318,9 +1320,11 @@ void AudioTrack::mapRackPluginsToControllers()
           SynthIF* sif = synti->sif();
           if(sif)
           {
+#ifdef DSSI_SUPPORT
             DssiSynthIF* dsif = dynamic_cast < DssiSynthIF* > (sif);
             if(dsif)
               p = dsif;
+#endif
           }
         }
       }
