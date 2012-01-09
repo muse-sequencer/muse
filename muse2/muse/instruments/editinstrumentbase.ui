@@ -1545,6 +1545,9 @@ Typically, set to 127/127, or an unused
                       <verstretch>0</verstretch>
                      </sizepolicy>
                     </property>
+                    <property name="keyboardTracking">
+                     <bool>false</bool>
+                    </property>
                     <property name="minimum">
                      <number>1</number>
                     </property>
@@ -1579,6 +1582,9 @@ Typically, set to 127/127, or an unused
                       <horstretch>0</horstretch>
                       <verstretch>0</verstretch>
                      </sizepolicy>
+                    </property>
+                    <property name="keyboardTracking">
+                     <bool>false</bool>
                     </property>
                     <property name="minimum">
                      <number>1</number>
@@ -1628,6 +1634,9 @@ Typically, set to 127/127, or an unused
                       <verstretch>0</verstretch>
                      </sizepolicy>
                     </property>
+                    <property name="keyboardTracking">
+                     <bool>false</bool>
+                    </property>
                     <property name="minimum">
                      <number>1</number>
                     </property>
@@ -1662,6 +1671,9 @@ Typically, set to 127/127, or an unused
                       <horstretch>0</horstretch>
                       <verstretch>0</verstretch>
                      </sizepolicy>
+                    </property>
+                    <property name="keyboardTracking">
+                     <bool>false</bool>
                     </property>
                     <property name="minimum">
                      <number>1</number>
@@ -1711,6 +1723,9 @@ Typically, set to 127/127, or an unused
                       <verstretch>0</verstretch>
                      </sizepolicy>
                     </property>
+                    <property name="keyboardTracking">
+                     <bool>false</bool>
+                    </property>
                     <property name="minimum">
                      <number>1</number>
                     </property>
@@ -1745,6 +1760,9 @@ Typically, set to 127/127, or an unused
                       <horstretch>0</horstretch>
                       <verstretch>0</verstretch>
                      </sizepolicy>
+                    </property>
+                    <property name="keyboardTracking">
+                     <bool>false</bool>
                     </property>
                     <property name="minimum">
                      <number>1</number>
