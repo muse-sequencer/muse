@@ -1,3 +1,5 @@
+10.01.2012:
+        - Store default style so we can do an immediate recall when setting 'keep system style' (rj)
 07.01.2012:
         - Added choice to keep system GUI style (rj)
 07.01.2012:

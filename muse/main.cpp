@@ -35,6 +35,8 @@
 #include <QIcon>
 #include <QString>
 #include <QStringList>
+#include <QStyle>
+
 
 #include <sys/mman.h>
 #include <alsa/asoundlib.h>
@@ -50,6 +52,7 @@
 #include "icons.h"
 #include "sync.h"
 #include "functions.h"
+#include "appearance.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -335,6 +338,7 @@ int main(int argc, char* argv[])
       MusECore::initMidiController();
       QApplication::setColorSpec(QApplication::ManyColor);
       MuseApplication app(argc, argv);
+      MusEGui::Appearance::defaultStyle = MuseApplication::style()->objectName();
 
       MusEGui::init_function_dialogs(MusEGlobal::muse);
       MusEGui::initShortCuts();

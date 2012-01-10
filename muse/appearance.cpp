@@ -50,6 +50,7 @@
 
 namespace MusEGui {
 
+QString Appearance::defaultStyle="";
 int BG_ITEM_HEIGHT = 30;
 
 class BgPreviewWidget : public QWidget {

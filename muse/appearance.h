@@ -93,6 +93,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       Appearance(Arranger*, QWidget* parent=0);
       ~Appearance();
       void resetValues();
+      static QString defaultStyle;
       };
 
 } // namespace MusEGui

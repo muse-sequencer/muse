@@ -2385,7 +2385,10 @@ void MusE::loadTheme(const QString& s)
       QStringList sl = QStyleFactory::keys();
       if (sl.indexOf(s) == -1) {
         if(MusEGlobal::debugMsg)
-          printf("Set style does not exist, won't try to change.");
+          printf("Set style does not exist, setting default.");
+        QApplication::setStyle(Appearance::defaultStyle);
+        style()->setObjectName(Appearance::defaultStyle);
+
       }
       else if (style()->objectName() != s)
       {
