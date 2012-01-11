@@ -1,3 +1,5 @@
+11.01.2012:
+        - Complain more if timing source isn't good enough (rj)
 10.01.2012:
         - Store default style so we can do an immediate recall when setting 'keep system style' (rj)
 07.01.2012:

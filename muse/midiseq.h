@@ -42,7 +42,7 @@ class SynthI;
 //---------------------------------------------------------
 
 class MidiSeq : public Thread {
-      int realRtcTicks;
+      //int realRtcTicks;
       int timerFd;
       int idle;
       int prio;   // realtime priority
@@ -68,7 +68,7 @@ class MidiSeq : public Thread {
       Timer *timer;
 
       signed int selectTimer();
-      bool setRtcTicks();
+      int setRtcTicks();
       static void midiTick(void* p, void*);
       void processTimerTick();
       void processSeek();

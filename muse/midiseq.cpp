@@ -31,6 +31,7 @@
 #include <poll.h>
 #include <math.h>
 
+#include "app.h"
 #include "globals.h"
 #include "midi.h"
 #include "midiseq.h"
@@ -484,18 +485,16 @@ void MidiSeq::threadStop()
 
 //---------------------------------------------------------
 //   setRtcTicks
-//    return true on success
+//    returns actual tick frequency
 //---------------------------------------------------------
 
-bool MidiSeq::setRtcTicks()
+int MidiSeq::setRtcTicks()
       {
+      int gotTicks = timer->setTimerFreq(MusEGlobal::config.rtcTicks);
 
-      //timer.setTimerFreq(MusEGlobal::config.rtcTicks);
-      //timer.startTimer();
-      timer->setTimerFreq(MusEGlobal::config.rtcTicks);
       timer->startTimer();
-      realRtcTicks = MusEGlobal::config.rtcTicks;
-      return true;
+      //realRtcTicks = MusEGlobal::config.rtcTicks;
+      return gotTicks;
       }
 
 //---------------------------------------------------------
@@ -516,11 +515,16 @@ void MidiSeq::start(int priority)
       //timerFd = selectTimer(); 
       //timerFd = timer.initTimer();
       //printf("timerFd=%d\n",timerFd);
-      setRtcTicks();
+      int gotTicks = setRtcTicks();
       MusEGlobal::undoSetuid();
       //Thread::start();
       Thread::start(priority);
-      //return false;
+
+      if (gotTicks < 500) {
+          QMessageBox::warning( MusEGlobal::muse, QString("Bad timing"), QString("Timing source has a frequency below 500hz!\n" \
+                                          "This could lead to audible timing problems.\n" \
+                                          "Please see console output for any further error messages\n "));
+          }
       }
 
 //---------------------------------------------------------
