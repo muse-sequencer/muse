@@ -281,15 +281,15 @@ class MusE : public QMainWindow
       void startSongInfo(bool editable=true);
 
       void writeGlobalConfiguration() const;
-      //void startEditInstrument();
+      //void startEditInstrument(); DELETETHIS
       void startClipList(bool);
       
       void openRecentMenu();
       void selectProject(QAction* act);
       void cmd(int);
-/*    void copyMeasure();  // commented out by flo: these are not implemented,
-      void eraseMeasure(); // but maybe will be in future (state: revision 988)
-      void deleteMeasure();
+/*    void copyMeasure();  // commented out by flo: these are not implemented,  DELETETHIS? nobody implemented
+      void eraseMeasure(); // but maybe will be in future (state: revision 988)     them, but there are other
+      void deleteMeasure();                                                           ways to do it (structure...)
       void createMeasure();
       void mixTrack();
 */
@@ -327,8 +327,6 @@ class MusE : public QMainWindow
       void arrangeSubWindowsColumns();
       void tileSubWindows();
 
-      //void hackishSongOpenTimerTimeout();
-      
    public slots:
       bool saveAs();
       void bounceToFile(MusECore::AudioOutput* ao = 0);
@@ -353,7 +351,7 @@ class MusE : public QMainWindow
       void startEditor(MusECore::PartList*, int);
       void startScoreQuickly();
       void startPianoroll();
-      void startPianoroll(MusECore::PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
+      void startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls = false);
       void startWaveEditor();
       void startWaveEditor(MusECore::PartList*);
       void openInScoreEdit(ScoreEdit* destination, MusECore::PartList* pl, bool allInOne=false);
@@ -365,7 +363,7 @@ class MusE : public QMainWindow
       void startListEditor();
       void startListEditor(MusECore::PartList*);
       void startDrumEditor();
-      void startDrumEditor(MusECore::PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
+      void startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls = false);
       void startEditor(MusECore::Track*);
       void startMidiTransformer();
       
