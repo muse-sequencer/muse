@@ -1237,41 +1237,37 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 
       autoMixerAction->setChecked(MusEGlobal::automation);
 
-      //FINDMICHJETZT does this work?
+      showBigtime(MusEGlobal::config.bigTimeVisible);
+      showMixer1(MusEGlobal::config.mixer1Visible);
+      showMixer2(MusEGlobal::config.mixer2Visible);
+      
+      // Added p3.3.43 Make sure the geometry is correct because showMixerX() will NOT 
+      //  set the geometry if the mixer has already been created.
+      if(mixer1)
       {
-            showBigtime(MusEGlobal::config.bigTimeVisible);
-            //showMixer(MusEGlobal::config.mixerVisible);
-            showMixer1(MusEGlobal::config.mixer1Visible);
-            showMixer2(MusEGlobal::config.mixer2Visible);
-            
-            // Added p3.3.43 Make sure the geometry is correct because showMixerX() will NOT 
-            //  set the geometry if the mixer has already been created.
-            if(mixer1)
-            {
-              //if(mixer1->geometry().size() != MusEGlobal::config.mixer1.geometry.size())   // Moved below
-              //  mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
-              
-              if(mixer1->geometry().topLeft() != MusEGlobal::config.mixer1.geometry.topLeft())
-                mixer1->move(MusEGlobal::config.mixer1.geometry.topLeft());
-            }
-            if(mixer2)
-            {
-              //if(mixer2->geometry().size() != MusEGlobal::config.mixer2.geometry.size())   // Moved below
-              //  mixer2->resize(MusEGlobal::config.mixer2.geometry.size());
-              
-              if(mixer2->geometry().topLeft() != MusEGlobal::config.mixer2.geometry.topLeft())
-                mixer2->move(MusEGlobal::config.mixer2.geometry.topLeft());
-            }
-            
-            //showMarker(MusEGlobal::config.markerVisible);  // Moved below. Tim.
-            resize(MusEGlobal::config.geometryMain.size());
-            move(MusEGlobal::config.geometryMain.topLeft());
-
-            if (MusEGlobal::config.transportVisible)
-                  transport->show();
-            transport->move(MusEGlobal::config.geometryTransport.topLeft());
-            showTransport(MusEGlobal::config.transportVisible);
+        //if(mixer1->geometry().size() != MusEGlobal::config.mixer1.geometry.size())   // Moved below
+        //  mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
+        
+        if(mixer1->geometry().topLeft() != MusEGlobal::config.mixer1.geometry.topLeft())
+          mixer1->move(MusEGlobal::config.mixer1.geometry.topLeft());
       }
+      if(mixer2)
+      {
+        //if(mixer2->geometry().size() != MusEGlobal::config.mixer2.geometry.size())   // Moved below
+        //  mixer2->resize(MusEGlobal::config.mixer2.geometry.size());
+        
+        if(mixer2->geometry().topLeft() != MusEGlobal::config.mixer2.geometry.topLeft())
+          mixer2->move(MusEGlobal::config.mixer2.geometry.topLeft());
+      }
+      
+      //showMarker(MusEGlobal::config.markerVisible);  // Moved below. Tim.
+      resize(MusEGlobal::config.geometryMain.size());
+      move(MusEGlobal::config.geometryMain.topLeft());
+
+      if (MusEGlobal::config.transportVisible)
+            transport->show();
+      transport->move(MusEGlobal::config.geometryTransport.topLeft());
+      showTransport(MusEGlobal::config.transportVisible);
       
       progress->setValue(40);
 
@@ -1287,37 +1283,34 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       progress->setValue(50);
 
       // Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
-      //FINDMICHJETZT does this work?
+      if(mixer1)
       {
-        if(mixer1)
+        if(mixer1->geometry().size() != MusEGlobal::config.mixer1.geometry.size())
         {
-          if(mixer1->geometry().size() != MusEGlobal::config.mixer1.geometry.size())
-          {
-            //printf("MusE::loadProjectFile1 resizing mixer1 x:%d y:%d w:%d h:%d\n", MusEGlobal::config.mixer1.geometry.x(), 
-            //                                                                       MusEGlobal::config.mixer1.geometry.y(), 
-            //                                                                       MusEGlobal::config.mixer1.geometry.width(), 
-            //                                                                       MusEGlobal::config.mixer1.geometry.height()
-            //                                                                       );  
-            mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
-          }
-        }  
-        if(mixer2)
+          //printf("MusE::loadProjectFile1 resizing mixer1 x:%d y:%d w:%d h:%d\n", MusEGlobal::config.mixer1.geometry.x(), 
+          //                                                                       MusEGlobal::config.mixer1.geometry.y(), 
+          //                                                                       MusEGlobal::config.mixer1.geometry.width(), 
+          //                                                                       MusEGlobal::config.mixer1.geometry.height()
+          //                                                                       );  
+          mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
+        }
+      }  
+      if(mixer2)
+      {
+        if(mixer2->geometry().size() != MusEGlobal::config.mixer2.geometry.size())
         {
-          if(mixer2->geometry().size() != MusEGlobal::config.mixer2.geometry.size())
-          {
-            //printf("MusE::loadProjectFile1 resizing mixer2 x:%d y:%d w:%d h:%d\n", MusEGlobal::config.mixer2.geometry.x(), 
-            //                                                                       MusEGlobal::config.mixer2.geometry.y(), 
-            //                                                                       MusEGlobal::config.mixer2.geometry.width(), 
-            //                                                                       MusEGlobal::config.mixer2.geometry.height()
-            //                                                                       );  
-            mixer2->resize(MusEGlobal::config.mixer2.geometry.size());
-          }
-        }  
-        
-        // Moved here from above due to crash with a song loaded and then File->New.
-        // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
-        showMarker(MusEGlobal::config.markerVisible); 
-      }
+          //printf("MusE::loadProjectFile1 resizing mixer2 x:%d y:%d w:%d h:%d\n", MusEGlobal::config.mixer2.geometry.x(), 
+          //                                                                       MusEGlobal::config.mixer2.geometry.y(), 
+          //                                                                       MusEGlobal::config.mixer2.geometry.width(), 
+          //                                                                       MusEGlobal::config.mixer2.geometry.height()
+          //                                                                       );  
+          mixer2->resize(MusEGlobal::config.mixer2.geometry.size());
+        }
+      }  
+      
+      // Moved here from above due to crash with a song loaded and then File->New.
+      // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
+      showMarker(MusEGlobal::config.markerVisible); 
       
       if (songTemplate)
       {
@@ -1356,6 +1349,8 @@ void MusE::setUntitledProject()
       project.setFile(name);
       //setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
       setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
+      
+      writeTopwinState=true;
       }
 
 //---------------------------------------------------------
@@ -1433,14 +1428,14 @@ bool MusE::save()
       if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath )  
             return saveAs();
       else
-            return save(project.filePath(), false);
+            return save(project.filePath(), false, writeTopwinState);
       }
 
 //---------------------------------------------------------
 //   save
 //---------------------------------------------------------
 
-bool MusE::save(const QString& name, bool overwriteWarn)
+bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
       {
       QString backupCommand;
 
@@ -1463,7 +1458,7 @@ bool MusE::save(const QString& name, bool overwriteWarn)
       if (f == 0)
             return false;
       MusECore::Xml xml(f);
-      write(xml);
+      write(xml, writeTopwins);
       if (ferror(f)) {
             QString s = "Write File\n" + name + "\nfailed: "
                //+ strerror(errno);
@@ -1753,17 +1748,18 @@ MusEGui::RoutePopupMenu* MusE::()
 bool MusE::saveAs()
       {
       QString name;
-      //if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath )  // Use project dialog always now.
         if (MusEGlobal::config.useProjectSaveDialog) {
             MusEGui::ProjectCreateImpl pci(MusEGlobal::muse);
+            pci.setWriteTopwins(writeTopwinState);
             if (pci.exec() == QDialog::Rejected) {
               return false;
             }
 
             MusEGlobal::song->setSongInfo(pci.getSongInfo(), true);
             name = pci.getProjectPath();
+            writeTopwinState=pci.getWriteTopwins();
           } else {
-            name = MusEGui::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
+            name = MusEGui::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"), &writeTopwinState);
             if (name.isEmpty())
               return false;
           }
@@ -1774,16 +1770,12 @@ bool MusE::saveAs()
           QMessageBox::warning(this,"Path error","Can't create project path", QMessageBox::Ok);
           return false;
         }
-      //}
-      //else {
-      //  name = MusEGui::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
-      //}
       
       bool ok = false;
       if (!name.isEmpty()) {
             QString tempOldProj = MusEGlobal::museProject;
             MusEGlobal::museProject = QFileInfo(name).absolutePath();
-            ok = save(name, true);
+            ok = save(name, true, writeTopwinState);
             if (ok) {
                   project.setFile(name);
                   //setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
@@ -2709,7 +2701,7 @@ MusE::lash_idle_cb ()
         {
           /* save file */
           QString ss = QString(lash_event_get_string(event)) + QString("/lash-project-muse.med");
-          int ok = save (ss.toAscii(), false);
+          int ok = save (ss.toAscii(), false, true);
           if (ok) {
             project.setFile(ss.toAscii());
             //setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));

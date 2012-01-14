@@ -219,7 +219,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+200"/>
+        <location filename="../../muse/helper.cpp" line="+201"/>
         <source>Add Midi Track</source>
         <translation>Midispur hinzufügen</translation>
     </message>
@@ -5017,6 +5017,13 @@ Configuration</source>
 Konfiguration</translation>
     </message>
     <message>
+        <location line="+26"/>
+        <source>write window
+states</source>
+        <translation>schreibe
+Fenster</translation>
+    </message>
+    <message>
         <source>Load:</source>
         <translation type="obsolete">Laden:</translation>
     </message>
@@ -5032,7 +5039,7 @@ Songdata</source>
         <translation type="obsolete">Nur Lieddaten</translation>
     </message>
     <message>
-        <location line="-121"/>
+        <location line="-147"/>
         <source>fdialogbuttons</source>
         <translation>fdialogbuttons</translation>
     </message>
@@ -10178,7 +10185,7 @@ Knopf.</translation>
 <context>
     <name>MusEGui::Appearance</name>
     <message>
-        <location filename="../../muse/appearance.cpp" line="+132"/>
+        <location filename="../../muse/appearance.cpp" line="+133"/>
         <source>Main application font, and default font for any
  controls not defined here.</source>
         <translation>Hauptschriftart, und Standard für alles, was
@@ -10274,7 +10281,12 @@ Zeilenumbruch aber nur bei Leerzeichen.</translation>
         <translation>Benutzerdefiniert</translation>
     </message>
     <message>
-        <location line="+624"/>
+        <location line="+212"/>
+        <source>Keep Qt system style</source>
+        <translation>Beim Qt-Systemstil belassen</translation>
+    </message>
+    <message>
+        <location line="+260"/>
         <source>MusE: load image</source>
         <translation>MusE: Bild laden</translation>
     </message>
@@ -13401,13 +13413,13 @@ Sync-Einstellungen anwenden?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1032"/>
-        <location line="+1251"/>
+        <location line="+1027"/>
+        <location line="+1255"/>
         <source>&amp;Save</source>
         <translation>&amp;Speichern</translation>
     </message>
     <message>
-        <location line="-2281"/>
+        <location line="-2280"/>
         <location line="+3"/>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
@@ -13751,14 +13763,14 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation>Unbekanntes Dateiformat: %1</translation>
     </message>
     <message>
-        <location line="+136"/>
-        <location line="+432"/>
-        <location line="+919"/>
+        <location line="+129"/>
+        <location line="+431"/>
+        <location line="+926"/>
         <source>MusE: Song: %1</source>
         <translation>MusE: Lied: %1</translation>
     </message>
     <message>
-        <location line="-1317"/>
+        <location line="-1321"/>
         <source>MusE: load project</source>
         <translation>Muse: Projekt laden</translation>
     </message>
@@ -13781,28 +13793,28 @@ Aktuelles Projekt sichern?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1251"/>
+        <location line="+1255"/>
         <source>S&amp;kip</source>
         <translation>&amp;Überspringen</translation>
     </message>
     <message>
-        <location line="-1251"/>
+        <location line="-1255"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Abbrechen</translation>
     </message>
     <message>
-        <location line="+254"/>
+        <location line="+255"/>
         <source>MusE: Save As</source>
         <translation>MusE: Speichern unter</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+68"/>
         <location line="+160"/>
         <source>Nothing to edit</source>
         <translation>Es gibt nichts zu editieren</translation>
     </message>
     <message>
-        <location line="+498"/>
+        <location line="+505"/>
         <location line="+10"/>
         <location line="+31"/>
         <location line="+34"/>
@@ -14129,7 +14141,7 @@ Files:</source>
 Dateien:</translation>
     </message>
     <message numerus="yes">
-        <location line="+2136"/>
+        <location line="+2133"/>
         <source>%n part(s) out of %1 could not be pasted.
 Likely the selected track is the wrong type.</source>
         <translation>
@@ -16840,29 +16852,34 @@ erweitert werden muss um nicht mehr als</translation>
         <translation>Projekt erzeugen</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+8"/>
         <source>Projects folder:</source>
         <translation>Projektverzeichnis:</translation>
     </message>
     <message>
         <location line="+14"/>
-        <location line="+120"/>
+        <location line="+136"/>
         <location line="+7"/>
         <source>...</source>
         <translation>......</translation>
     </message>
     <message>
-        <location line="-109"/>
+        <location line="-126"/>
         <source>Project Name:</source>
         <translation>Projekt-Name:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+7"/>
         <source>Project is a Template</source>
         <translation>Projekt ist eine Vorlage</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+23"/>
+        <source>Write window state</source>
+        <translation>Fenster schreiben</translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <source>Project song file type:</source>
         <translation>Projekt-Lieddatei-Typ:</translation>
     </message>
@@ -17109,7 +17126,7 @@ Erzeugen?</translation>
         <translation>Verzeichnis erzeugen schlug fehl</translation>
     </message>
     <message>
-        <location line="+371"/>
+        <location line="+380"/>
         <source>File
 %1
 exists. Overwrite?</source>

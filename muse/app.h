@@ -211,14 +211,16 @@ class MusE : public QMainWindow
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
       
+      bool writeTopwinState;
+      
       bool readMidi(FILE*);
       void read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate);
       void processTrack(MusECore::MidiTrack* track);
 
-      void write(MusECore::Xml& xml) const;
+      void write(MusECore::Xml& xml, bool writeTopwins) const;
       // If clear_all is false, it will not touch things like midi ports.
       bool clearSong(bool clear_all = true);
-      bool save(const QString&, bool);
+      bool save(const QString&, bool overwriteWarn, bool writeTopwins);
       void setUntitledProject();
       void setConfigDefaults();
 

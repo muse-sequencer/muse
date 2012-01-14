@@ -399,7 +399,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
             dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
                                           // so we must decrement it first :/
             // These will not increment ref count, and will not chain clones... 
-            // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
+            // TODO: is this still correct (by flo93)? i doubt it!
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
             }
       else if (t == MOVE_MOVE) {
@@ -411,7 +411,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
                                           // so we must increment it first :/
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
-            // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
+            // TODO: is this still correct (by flo93)? i doubt it!
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPart,spart, dpart, true, false));
             
             spart->setSelected(false);
@@ -886,9 +886,6 @@ void PartCanvas::mousePress(QMouseEvent* event)
             }
       QPoint pt = event->pos();
       CItem* item = items.find(pt);
-
-      //if (item == 0 && _tool!=AutomationTool) // FINDMICHJETZT. neccessary? (flo93)
-      //      return;
 
       switch (_tool) {
             default:

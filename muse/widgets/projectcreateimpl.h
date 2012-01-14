@@ -42,7 +42,8 @@ public:
     explicit ProjectCreateImpl(QWidget *parent = 0);
     QString getProjectPath() const;
     QString getSongInfo() const;
-    //bool getProjectIsTemplate() const;
+    bool getWriteTopwins() const;
+    void setWriteTopwins(bool);
     //QString getTemplatePath() const;
 
 signals:
@@ -54,7 +55,7 @@ protected slots:
     void ok();
     void createProjFolderChanged();
     void browseProjDir();
-    void templateButtonChanged();
+    void templateButtonChanged(bool);
     void restorePath();
 };
 

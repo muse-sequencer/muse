@@ -1498,6 +1498,9 @@ void MusE::readMidiport(MusECore::Xml& xml)
 void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
       {
       bool skipmode = true;
+      
+      writeTopwinState=true;
+      
       for (;;) {
             if (progress)
                 progress->setValue(progress->value()+1);
@@ -1554,6 +1557,15 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               readStatusMidiInputTransformPlugin(xml);
                         else if (tag == "toplevels")
                               readToplevels(xml);
+                        else if (tag == "no_toplevels")
+                        {     
+                              printf("FOOOOOOBAR\n");
+                              if (!isTemplate)
+                                writeTopwinState=false;
+                              
+                              xml.skip("no_toplevels");
+                        }
+                              
                         else
                               xml.unknown("muse");
                         break;
@@ -1579,7 +1591,7 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
 //    write song
 //---------------------------------------------------------
 
-void MusE::write(MusECore::Xml& xml) const
+void MusE::write(MusECore::Xml& xml, bool writeTopwins) const
       {
       xml.header();
 
@@ -1591,7 +1603,7 @@ void MusE::write(MusECore::Xml& xml) const
 
       MusEGlobal::song->write(level, xml);
 
-      if (!toplevels.empty()) {
+      if (writeTopwins && !toplevels.empty()) {
             xml.tag(level++, "toplevels");
             for (MusEGui::ciToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
                   if ((*i)->isVisible())
@@ -1599,6 +1611,11 @@ void MusE::write(MusECore::Xml& xml) const
                   }
             xml.tag(level--, "/toplevels");
             }
+      else if (!writeTopwins)
+      {
+            xml.tag(level, "no_toplevels");
+            xml.etag(level, "no_toplevels");
+      }
 
       xml.tag(level, "/muse");
       }

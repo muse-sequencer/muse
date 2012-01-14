@@ -148,7 +148,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
   editDuplicateSelTrackAction = new QAction(QIcon(*edit_track_addIcon), tr("Duplicate Selected Tracks"), this);
 
-  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this); //FINDMICH TODO tooltips!
+  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this);
   editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
   editCleanPartsAction = new QAction(tr("Clean selected parts"), this);
 
