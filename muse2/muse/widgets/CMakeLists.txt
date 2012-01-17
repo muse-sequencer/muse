@@ -82,6 +82,7 @@ QT4_WRAP_CPP (widget_mocs
       slider.h  
       sliderbase.h  
       songinfo.h
+      songpos_toolbar.h
       spinbox.h  
       spinboxFP.h  
       splitter.h  
@@ -192,6 +193,7 @@ file (GLOB widgets_source_files
       sigscale.cpp 
       slider.cpp 
       sliderbase.cpp 
+      songpos_toolbar.cpp 
       spinbox.cpp 
       spinboxFP.cpp 
       splitter.cpp  

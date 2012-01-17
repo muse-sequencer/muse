@@ -82,6 +82,7 @@
 #include "widgets/unusedwavefiles.h"
 #include "functions.h"
 #include "trackdrummapupdater.h"
+#include "songpos_toolbar.h"
 
 namespace MusECore {
 extern void initMidiSynth();
@@ -677,6 +678,13 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       // when adding a toolbar to the main window, remember adding it to
       // either the requiredToolbars or optionalToolbars list!
 
+      QToolBar* songpos_tb;
+      songpos_tb = addToolBar(tr("Song Position"));
+      songpos_tb->setObjectName("Song Position");
+      songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
+      songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+      songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+      
       tools = addToolBar(tr("File Buttons"));
       tools->setObjectName("File Buttons");
       tools->addAction(fileNewAction);
@@ -697,6 +705,7 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       panicToolbar->addAction(MusEGlobal::panicAction);
 
       requiredToolbars.push_back(tools);
+      requiredToolbars.push_back(songpos_tb);
       optionalToolbars.push_back(undoToolbar);
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);
