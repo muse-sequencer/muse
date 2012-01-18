@@ -54,7 +54,6 @@ SigEdit::SigEdit(QWidget* parent)
       layout->addWidget(zSpin);
       layout->addWidget(slash);
       layout->addWidget(nSpin);
-      layout->addSpacing(30);
       connect(zSpin, SIGNAL(valueChanged(int)), SLOT(setZ(int)));
       connect(nSpin, SIGNAL(valueChanged(int)), SLOT(setN(int)));
       connect(nSpin, SIGNAL(returnPressed()), SIGNAL(returnPressed()));

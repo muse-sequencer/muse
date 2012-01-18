@@ -83,6 +83,7 @@
 #include "functions.h"
 #include "trackdrummapupdater.h"
 #include "songpos_toolbar.h"
+#include "sig_tempo_toolbar.h"
 
 namespace MusECore {
 extern void initMidiSynth();
@@ -685,6 +686,16 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
       songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
       
+      QToolBar* tempo_tb;
+      tempo_tb = addToolBar(tr("Tempo"));
+      tempo_tb->setObjectName("Tempo");
+      tempo_tb->addWidget(new MusEGui::TempoToolbarWidget(tempo_tb));
+      
+      QToolBar* sig_tb;
+      sig_tb = addToolBar(tr("Signature"));
+      sig_tb->setObjectName("Signature");
+      sig_tb->addWidget(new MusEGui::SigToolbarWidget(tempo_tb));
+      
       tools = addToolBar(tr("File Buttons"));
       tools->setObjectName("File Buttons");
       tools->addAction(fileNewAction);
@@ -706,6 +717,8 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
 
       requiredToolbars.push_back(tools);
       requiredToolbars.push_back(songpos_tb);
+      requiredToolbars.push_back(sig_tb);
+      requiredToolbars.push_back(tempo_tb);
       optionalToolbars.push_back(undoToolbar);
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);

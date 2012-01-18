@@ -79,6 +79,7 @@ QT4_WRAP_CPP (widget_mocs
       # sigedit.h  
       siglabel.h  
       sigscale.h  
+      sig_tempo_toolbar.h 
       slider.h  
       sliderbase.h  
       songinfo.h
@@ -191,6 +192,7 @@ file (GLOB widgets_source_files
       # sigedit.cpp 
       siglabel.cpp 
       sigscale.cpp 
+      sig_tempo_toolbar.cpp 
       slider.cpp 
       sliderbase.cpp 
       songpos_toolbar.cpp 

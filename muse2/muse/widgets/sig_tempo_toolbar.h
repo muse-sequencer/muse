@@ -1,7 +1,7 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  songpos_toolbar.h
+//  sig_tempo_toolbar.h
 //  (C) Copyright 2012 Florian Jung (flo93@users.sourceforge.net)
 //
 //  This program is free software; you can redistribute it and/or
@@ -20,29 +20,55 @@
 //
 //=========================================================
 
-#ifndef __SONGPOS_TOOLBAR_H__
-#define __SONGPOS_TOOLBAR_H__
+#ifndef __SIG_TEMPO_TOOLBAR_H__
+#define __SIG_TEMPO_TOOLBAR_H__
 
-#include "mtscale.h"
+#include <QWidget>
+
+namespace Awl
+{
+	class SigEdit;
+}
+
+class QHBoxLayout;
+class QLabel;
 
 namespace MusEGui
 {
-	class SongPosToolbarWidget : public MTScale
+	class TempoEdit;
+	
+	class SigToolbarWidget : public QWidget
 	{
 		Q_OBJECT
 		
 		private:
-			int _raster;
+			QHBoxLayout* layout;
+			QLabel* label;
+			Awl::SigEdit* sig_edit;
 		
 		public:
-			SongPosToolbarWidget(QWidget* parent);
-			
-			virtual QSize	sizeHint() const;
-			virtual void resizeEvent(QResizeEvent*);
+			SigToolbarWidget(QWidget* parent);
 		
 		private slots:
+			void pos_changed(int,unsigned,bool);
 			void song_changed(int);
+	};
+
+	class TempoToolbarWidget : public QWidget
+	{
+		Q_OBJECT
 		
+		private:
+			QHBoxLayout* layout;
+			QLabel* label;
+			MusEGui::TempoEdit* tempo_edit;
+		
+		public:
+			TempoToolbarWidget(QWidget* parent);
+		
+		private slots:
+			void pos_changed(int,unsigned,bool);
+			void song_changed(int);
 	};
 }
 
