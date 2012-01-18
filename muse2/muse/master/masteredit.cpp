@@ -117,19 +117,6 @@ MasterEdit::MasterEdit()
       settingsMenu->addAction(fullscreenAction);
 
       // Toolbars ---------------------------------------------------------
-      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-      undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(MusEGlobal::undoRedo->actions());
-
-
-      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
-      panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(MusEGlobal::panicAction);
-
-      QToolBar* transport_toolbar = addToolBar(tr("transport"));
-      transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-
       MusEGui::EditToolBar* tools2 = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool);
       addToolBar(tools2);
 

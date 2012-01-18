@@ -134,20 +134,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
 
       //editor->view->setColumnAlignment(COL_REFS, Qt::AlignRight);
       
-      // Toolbars ---------------------------------------------------------
-      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-      undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(MusEGlobal::undoRedo->actions());
-
-
-      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
-      panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(MusEGlobal::panicAction);
-
-      QToolBar* transport_toolbar = addToolBar(tr("transport"));
-      transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-
+            
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);      
       settingsMenu->addAction(shareAction);      

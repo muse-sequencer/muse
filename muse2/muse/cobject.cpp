@@ -27,6 +27,8 @@
 #include "globals.h"
 #include "app.h"
 #include "shortcuts.h"
+#include "songpos_toolbar.h"
+#include "sig_tempo_toolbar.h"
 
 #include <QMdiSubWindow>
 #include <QToolBar>
@@ -94,6 +96,37 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 		mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
 	else
 		resize(_widthInit[_type], _heightInit[_type]);
+	
+	 
+	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+	undo_tools->setObjectName("Undo/Redo tools");
+	undo_tools->addActions(MusEGlobal::undoRedo->actions());
+
+	QToolBar* panic_toolbar = addToolBar(tr("Panic"));         
+	panic_toolbar->setObjectName("panic");
+	panic_toolbar->addAction(MusEGlobal::panicAction);
+
+	QToolBar* transport_toolbar = addToolBar(tr("Transport"));
+	transport_toolbar->setObjectName("transport");
+	transport_toolbar->addActions(MusEGlobal::transportAction->actions());
+
+	QToolBar* songpos_tb;
+	songpos_tb = addToolBar(tr("Song Position"));
+	songpos_tb->setObjectName("Song Position");
+	songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
+	songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+
+	QToolBar* tempo_tb;
+	tempo_tb = addToolBar(tr("Tempo"));
+	tempo_tb->setObjectName("Tempo");
+	tempo_tb->addWidget(new MusEGui::TempoToolbarWidget(tempo_tb));
+
+	QToolBar* sig_tb;
+	sig_tb = addToolBar(tr("Signature"));
+	sig_tb->setObjectName("Signature");
+	sig_tb->addWidget(new MusEGui::SigToolbarWidget(tempo_tb));
+
 }
 
 

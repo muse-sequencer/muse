@@ -237,11 +237,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 
 	// Toolbars ---------------------------------------------------------
-	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-	undo_tools->setObjectName("Undo/Redo tools");
-	undo_tools->addActions(MusEGlobal::undoRedo->actions());
-	addToolBar(undo_tools);
-
 	QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
 	steprec_tools->setObjectName("Step recording tools");
 	srec  = new QToolButton();
@@ -257,14 +252,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	edit_tools->set(MusEGui::PointerTool);
 	score_canvas->set_tool(MusEGui::PointerTool);
 	connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
-
-	QToolBar* panic_toolbar = addToolBar(tr("panic"));         
-	panic_toolbar->setObjectName("panic");
-	panic_toolbar->addAction(MusEGlobal::panicAction);
-
-	QToolBar* transport_toolbar = addToolBar(tr("transport"));
-	transport_toolbar->setObjectName("transport");
-	transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
 	addToolBarBreak();
 
@@ -4668,8 +4655,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o test drum controllers
  *   o test old- and new drumtrack recording, steprecording
  *
- * > o add a songposition scrollbar-toolbar (in different sizes)
- *     this might be equivalent to "redo transport menu" (below).
  * > o add toolbar(s) for tempo- etc spinboxes from the transport window 
  *   o add controller editor "like search-and-replace":
  *     acts on all specified type's events, and edits the value:
@@ -4711,8 +4696,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     "range" setting, or they've been modified), default to "in range" or "selected in range"
  * 
  *   o rename stuff with F2 key
- *   o redo transport menu: offer "one beat" and "one bar" steps
- *                          maybe also offer scrollbar
  *
  *   o shrink a part from its beginning as well! watch out for clones!
  *

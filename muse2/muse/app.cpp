@@ -716,9 +716,9 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       panicToolbar->addAction(MusEGlobal::panicAction);
 
       requiredToolbars.push_back(tools);
-      requiredToolbars.push_back(songpos_tb);
-      requiredToolbars.push_back(sig_tb);
-      requiredToolbars.push_back(tempo_tb);
+      optionalToolbars.push_back(songpos_tb);
+      optionalToolbars.push_back(sig_tb);
+      optionalToolbars.push_back(tempo_tb);
       optionalToolbars.push_back(undoToolbar);
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);
