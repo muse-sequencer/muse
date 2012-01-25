@@ -130,6 +130,7 @@ void Toolbar1::_rasterChanged(int /*i*/)
 //void Toolbar1::_rasterChanged(int r, int c)
       {
       emit rasterChanged(rasterTable[rlist->currentRow() + rlist->currentColumn() * 10]);
+      parentWidget()->setFocus();
       //emit rasterChanged(rasterTable[r + c * 10]);
       }
 

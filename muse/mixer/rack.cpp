@@ -182,6 +182,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       setSpacing(0);
 
       setAcceptDrops(true);
+      setFocusPolicy(Qt::NoFocus);
       }
 
 void EffectRack::updateContents()

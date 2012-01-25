@@ -353,6 +353,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       stepLenWidget->addItem("8");
       stepLenWidget->addItem("16");
       stepLenWidget->setCurrentIndex(0);
+      stepLenWidget->setFocusPolicy(Qt::NoFocus);
       connect(stepLenWidget, SIGNAL(currentIndexChanged(QString)), SLOT(setStep(QString)));
       cursorToolbar->addWidget(stepLenWidget);
 
