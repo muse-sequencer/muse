@@ -158,7 +158,6 @@ void Song::setSig(const AL::TimeSignature& sig)
 
 Track* Song::addNewTrack(QAction* action, Track* insertAt)
 {
-printf("Song::addNewTrack\n");
     int n = action->data().toInt();
     // Ignore negative numbers since this slot could be called by a menu or list etc. passing -1.
     if(n < 0)
@@ -236,7 +235,6 @@ printf("Song::addNewTrack\n");
 
 Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
       {
-  printf("Song::addTrack\n");
       Track* track = 0;
       int lastAuxIdx = _auxs.size();
       switch(type) {

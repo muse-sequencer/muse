@@ -1559,7 +1559,6 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                               readToplevels(xml);
                         else if (tag == "no_toplevels")
                         {     
-                              printf("FOOOOOOBAR\n");
                               if (!isTemplate)
                                 writeTopwinState=false;
                               

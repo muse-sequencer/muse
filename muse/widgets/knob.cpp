@@ -340,6 +340,7 @@ void Knob::mousePressEvent(QMouseEvent *e)
     }
     setValue(v * halfRange + midValue);
     SliderBase::valueChange();
+    emit sliderMoved(value(),id()); // sliderMoved is used by auxChanged
     
     // fake a left-click to make the knob still "stick" to
     // the mouse.

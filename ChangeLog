@@ -1,5 +1,6 @@
 26.01.2012:
         - Fixed crash with drag/drop copying plugins when their gui was open (rj)
+        - Fixed mid clicking to change aux value (rj)
 25.01.2012:
         - Fixed some focus stealing that prevented shortcuts from working for Snap dialog and Plugin rack (rj)
 24.01.2012:
