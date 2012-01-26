@@ -2578,7 +2578,9 @@ void PluginI::enable2AllControllers(bool v)
 
 QString PluginI::titlePrefix() const    
 { 
-  return _track->name() + QString(": "); 
+  if (_track)
+    return _track->name() + QString(": ");
+  else return ":";
 }
 
 //---------------------------------------------------------
@@ -3512,7 +3514,6 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       params = 0;
       paramsOut = 0;
       plugin = p;
-      //setWindowTitle(plugin->name());
       setWindowTitle(plugin->titlePrefix() + plugin->name());
 
       QToolBar* tools = addToolBar(tr("File Buttons"));

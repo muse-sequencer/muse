@@ -684,6 +684,7 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
                                   //printf("instantiated!\n");
                                   MusEGlobal::audio->msgAddPlugin(track, idx, plugi);
                                   MusEGlobal::song->update(SC_RACK);
+                                  plugi->gui()->setWindowTitle(plugi->titlePrefix() + plugi->name());
                                   return;
                                   }
                               }
