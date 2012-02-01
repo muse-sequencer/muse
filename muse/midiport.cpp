@@ -822,57 +822,21 @@ int MidiPort::limitValToInstrCtlRange(int ctl, int val)
 }
             
 //---------------------------------------------------------
-//   sendEvent
-//    return true, if event cannot be delivered
+//   sendHwCtrlState
+//   Return true if it is OK to go ahead and deliver the event.
 //---------------------------------------------------------
 
-bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
+bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
       {
       if (ev.type() == ME_CONTROLLER) {
       
-//      printf("current sustain %d %d %d\n", hwCtrlState(ev.channel(),CTRL_SUSTAIN), CTRL_SUSTAIN, ev.dataA());
-
-            // Added by T356.
             int da = ev.dataA();
             int db = ev.dataB();
-            /*
-            // Is it a drum controller?
-            MidiController* mc = drumController(da);
-            if(mc)
-            {
-              DrumMap* dm = &drumMap[da & 0x7f];
-              int port = dm->port;
-              MidiPort* mp = &MusEGlobal::midiPorts[port];
-              // Is it NOT for this MidiPort?
-              if(mp && (mp != this))
-              {
-                // Redirect the event to the mapped port and channel...
-                da = (da & ~0xff) | (dm->anote & 0x7f);
-                db = mp->limitValToInstrCtlRange(da, db);
-                MidiPlayEvent nev(ev.time(), port, dm->channel, ME_CONTROLLER, da, db);
-                if(!mp->setHwCtrlState(ev.channel(), da, db))
-                  return false;
-                if(!mp->device())
-                  return true;
-                return mp->device()->putEvent(nev);
-              }
-            }
-            */
             db = limitValToInstrCtlRange(da, db);
-            
 
-            // Removed by T356.
-            //
-            //  optimize controller settings
-            //
-            //if (hwCtrlState(ev.channel(), ev.dataA()) == ev.dataB()) {
-// printf("optimize ctrl %d %x val %d\n", ev.dataA(), ev.dataA(), ev.dataB());
-            //      return false;
-            //      }
-// printf("set HW Ctrl State ch:%d 0x%x 0x%x\n", ev.channel(), ev.dataA(), ev.dataB());
             if(!setHwCtrlState(ev.channel(), da, db)) {
                 if (MusEGlobal::debugMsg && forceSend)
-                  printf("sendEvent: State already set. Forcing anyway...\n");
+                  printf("sendHwCtrlState: State already set. Forcing anyway...\n");
                 if (!forceSend)
                   return false;
               }
@@ -881,10 +845,6 @@ bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
       if (ev.type() == ME_PITCHBEND) 
       {
             int da = limitValToInstrCtlRange(CTRL_PITCH, ev.dataA());
-            // Removed by T356.
-            //if (hwCtrlState(ev.channel(), CTRL_PITCH) == ev.dataA()) 
-            //  return false;
-            
             if(!setHwCtrlState(ev.channel(), CTRL_PITCH, da)) {
               if (!forceSend)
                 return false;
@@ -899,7 +859,19 @@ bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
         }
       }
       
-      
+      return true;
+      }
+
+//---------------------------------------------------------
+//   sendEvent
+//    return true, if event cannot be delivered
+//---------------------------------------------------------
+
+bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
+      {
+      if(!sendHwCtrlState(ev, forceSend))
+        return false;
+
       if (!_device) {
           if (MusEGlobal::debugMsg)
             printf("no device for this midi port\n");

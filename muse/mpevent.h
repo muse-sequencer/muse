@@ -30,13 +30,10 @@
 #include "memory.h"
 
 // Play events ring buffer size
-//#define MIDI_FIFO_SIZE    512  
-// Increased. FE/6/11 p4.0.15 Tim.
-#define MIDI_FIFO_SIZE    2100         
+#define MIDI_FIFO_SIZE    4096         
 
 // Record events ring buffer size
-//#define MIDI_REC_FIFO_SIZE  512
-#define MIDI_REC_FIFO_SIZE  160
+#define MIDI_REC_FIFO_SIZE  256
 
 namespace MusECore {
 

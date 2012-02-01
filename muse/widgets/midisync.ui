@@ -391,7 +391,7 @@ Enabled inputs in the list will
       <item row="5" column="0">
         <widget class="QLabel" name="toBeDoneLabel">
         <property name="text">
-          <string>Note: Sync delay and MTC sync currently not fully implemeted</string>
+          <string>Note: Sync delay and MTC sync currently not fully implemented</string>
         </property>
         <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

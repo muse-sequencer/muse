@@ -86,13 +86,12 @@ void MidiSeq::processMsg(const ThreadMsg* m)
             //      audio->processMidi();
             //      break;
             
-            // Removed p4.0.34
-            //case MusECore::SEQM_SEEK:
-            //      processSeek();
-            //      break;
-            //case MusECore::MS_STOP:
-            //      processStop();
-            //      break;
+            case MusECore::SEQM_SEEK:
+                  processSeek();
+                  break;
+            case MusECore::MS_STOP:
+                  processStop();
+                  break;
             
             case MusECore::MS_SET_RTC:
                   MusEGlobal::doSetuid();
@@ -102,8 +101,9 @@ void MidiSeq::processMsg(const ThreadMsg* m)
             case MusECore::MS_UPDATE_POLL_FD:
                   updatePollFd();
                   break;
-            // Moved into Song::processMsg p4.0.34
-            /*
+                  
+                  
+            // Moved into Song::processMsg p4.0.34  ...
             case MusECore::SEQM_ADD_TRACK:
                   MusEGlobal::song->insertTrack2(msg->track, msg->ival);
                   updatePollFd();
@@ -112,10 +112,10 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   MusEGlobal::song->cmdRemoveTrack(msg->track);
                   updatePollFd();
                   break;
-            case MusECore::SEQM_CHANGE_TRACK:
-                  MusEGlobal::song->changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
-                  updatePollFd();
-                  break;
+            //case MusECore::SEQM_CHANGE_TRACK:
+            //      MusEGlobal::song->changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
+            //      updatePollFd();
+            //      break;
             case MusECore::SEQM_ADD_PART:
                   MusEGlobal::song->cmdAddPart((Part*)msg->p1);
                   break;
@@ -126,7 +126,8 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   //MusEGlobal::song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
                   MusEGlobal::song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2, msg->a, msg->b);
                   break;
-            */
+                  
+                  
             case MusECore::SEQM_SET_TRACK_OUT_CHAN:
                   {
                   MidiTrack* track = (MidiTrack*)(msg->p1);
@@ -158,28 +159,25 @@ void MidiSeq::processMsg(const ThreadMsg* m)
             }
       }
 
-#if 0   
-// Removed p4.0.34
+#if 1   
 //---------------------------------------------------------
 //   processStop
 //---------------------------------------------------------
 
 void MidiSeq::processStop()
 {
-  // p3.3.28
-  // TODO Try to move this into Audio::stopRolling(). p4.0.22   // Done p4.0.34
-  //playStateExt = false; // not playing
+  // TODO Try to move this into Audio::stopRolling(). 
+  playStateExt = false; // not playing
   
   //
   //    clear Alsa midi device notes and stop stuck notes
-  //    Jack midi devices are handled in Audio::stopRolling()
   //
   for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
   {
     //MidiDevice* md = *id;
     // Only ALSA devices are handled by this thread.
-    if((*id)->deviceType() == MidiDevice::ALSA_MIDI)      // p4.0.22
-      (*id)->handleStop();  // p4.0.22
+    //if((*id)->deviceType() == MidiDevice::ALSA_MIDI)      
+      (*id)->handleStop();  
     /*
     if (md->midiPort() == -1)
           continue;
@@ -199,18 +197,17 @@ void MidiSeq::processStop()
 }
 #endif
 
-#if 0   
-// Removed p4.0.34
+#if 1   
 //---------------------------------------------------------
 //   processSeek
 //---------------------------------------------------------
 
 void MidiSeq::processSeek()
 {
-  //int pos = MusEGlobal::audio->tickPos();
-  // TODO Try to move this into MusEGlobal::audio::seek().   p4.0.22  Done p4.0.34
-  //if (pos == 0 && !MusEGlobal::song->record())
-  //      MusEGlobal::audio->initDevices();
+  int pos = MusEGlobal::audio->tickPos();
+  // TODO Try to move this into MusEGlobal::audio::seek().   
+  if (pos == 0 && !MusEGlobal::song->record())
+        MusEGlobal::audio->initDevices();
 
   //---------------------------------------------------
   //    set all controller
@@ -220,8 +217,8 @@ void MidiSeq::processSeek()
   {
     //MidiDevice* md = *i;
     // Only ALSA devices are handled by this thread.
-    if((*i)->deviceType() == MidiDevice::ALSA_MIDI)      // p4.0.22
-      (*i)->handleSeek();  // p4.0.22
+    //if((*i)->deviceType() == MidiDevice::ALSA_MIDI)      
+      (*i)->handleSeek();  
     /*
     int port = md->midiPort();
     if (port == -1)
@@ -843,8 +840,8 @@ void MidiSeq::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
 
 // This does not appear to be used anymore. Was called in Audio::process1, now Audio::processMidi is called directly. p4.0.15 Tim.
 //void MidiSeq::msgProcess()      { msgMsg(MusECore::MS_PROCESS); }
-//void MidiSeq::msgSeek()         { msgMsg(MusECore::SEQM_SEEK); }   // Removed p4.0.34
-//void MidiSeq::msgStop()         { msgMsg(MusECore::MS_STOP); }     //
+void MidiSeq::msgSeek()         { msgMsg(MusECore::SEQM_SEEK); }   
+void MidiSeq::msgStop()         { msgMsg(MusECore::MS_STOP); }     
 void MidiSeq::msgSetRtc()       { msgMsg(MusECore::MS_SET_RTC); }
 void MidiSeq::msgUpdatePollFd() { msgMsg(MusECore::MS_UPDATE_POLL_FD); }
 

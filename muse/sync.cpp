@@ -515,7 +515,7 @@ void MidiSyncInfo::write(int level, Xml& xml)
     xml.intTag(level, "sendMC", true);
   if(_sendMRT)
     xml.intTag(level, "sendMRT", true);
-  if(_sendMRT)
+  if(_sendMMC)
     xml.intTag(level, "sendMMC", true);
   if(_sendMTC)
     xml.intTag(level, "sendMTC", true);

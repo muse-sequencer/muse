@@ -69,6 +69,9 @@ class MidiDevice {
       MidiFifo eventFifo;  
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
       MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   
+
+      volatile bool stopPending;         
+      volatile bool seekPending;
       
       RouteList _inRoutes, _outRoutes;
       

@@ -671,7 +671,7 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
     
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
 
-    PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + md->name(), 
+    PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + (md ? md->name() : tr("<none>")), 
                                                                   redLedIcon, darkRedLedIcon,MIDI_CHANNELS, chanmask, pup);
     MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
     //wa->setData(id++);   
@@ -1331,7 +1331,7 @@ void RoutePopupMenu::prepare()
         
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
 
-        PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + md->name(), 
+        PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + (md ? md->name() : tr("<none>")), 
                                                                       redLedIcon, darkRedLedIcon, MIDI_CHANNELS, chanmask, this);
         MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
         //wa->setData(id++);   

@@ -567,7 +567,7 @@ void Audio::sendLocalOff()
       {
       for (int k = 0; k < MIDI_PORTS; ++k) {
             for (int i = 0; i < MIDI_CHANNELS; ++i)
-                  MusEGlobal::midiPorts[k].sendEvent(MusECore::MidiPlayEvent(0, k, i, MusECore::ME_CONTROLLER, MusECore::CTRL_LOCAL_OFF, 0));
+                  MusEGlobal::midiPorts[k].sendEvent(MusECore::MidiPlayEvent(0, k, i, MusECore::ME_CONTROLLER, MusECore::CTRL_LOCAL_OFF, 0), true);
             }
       }
 

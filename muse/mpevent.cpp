@@ -116,7 +116,8 @@ bool MEvent::operator<(const MEvent& e) const
 
       if (channel() == e.channel())
             return type() == ME_NOTEOFF
-               || (type() == ME_NOTEON && dataB() == 0);
+               || (type() == ME_NOTEON && dataB() == 0)
+               || type() != ME_NOTEON;  // Make note-ons last so that controllers such as program come before notes played. 1/31/2012 Tim.
 
       int map[16] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15 };
       return map[channel()] < map[e.channel()];

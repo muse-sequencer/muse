@@ -106,8 +106,8 @@ class MidiSeq : public Thread {
 
       void msgMsg(int id);
       //void msgProcess();
-      //void msgSeek();
-      //void msgStop();
+      void msgSeek();
+      void msgStop();
       void msgSetRtc();
       void msgUpdatePollFd();
       void msgAddSynthI(SynthI* synth);

@@ -260,6 +260,8 @@ void Audio::stop(bool)
 
 bool Audio::sync(int jackState, unsigned frame)
       {
+      //printf("Audio::sync: state:%d jackState:%d\n", state, jackState);  
+        
       bool done = true;
       if (state == LOOP1)
             state = LOOP2;
@@ -273,10 +275,10 @@ bool Audio::sync(int jackState, unsigned frame)
             if (state != START_PLAY) {
                 Pos p(frame, false);
                 seek(p);
-              if (!_freewheel)
+                if (!_freewheel)
                       done = MusEGlobal::audioPrefetch->seekDone();
                 if (s == START_PLAY)
-                        state = START_PLAY;
+                      state = START_PLAY;
                 }
             else {
                 if (frame != _pos.frame()) {
@@ -286,6 +288,7 @@ bool Audio::sync(int jackState, unsigned frame)
                 done = MusEGlobal::audioPrefetch->seekDone();
                   }
             }
+      //printf("Audio::sync: done:%d\n", done);  
       return done;
       
       }
@@ -787,11 +790,15 @@ void Audio::seek(const Pos& p)
       frameOffset = syncFrame - _pos.frame();
       curTickPos  = _pos.tick();
 
-      if (curTickPos == 0 && !MusEGlobal::song->record())     
+// ALSA support       
+#if 1 
+      MusEGlobal::midiSeq->msgSeek();     // handle stuck notes and set controller for new position
+#else      
+      if (curTickPos == 0 && !MusEGlobal::song->record())     // Moved here from MidiSeq::processStop()
             MusEGlobal::audio->initDevices();
-
       for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
           (*i)->handleSeek();  
+#endif
       
       //loopPassed = true;   // for record loop mode
       if (state != LOOP2 && !freewheel())
@@ -919,9 +926,8 @@ void Audio::startRolling()
           for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
               if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
                   if(mp->device() != NULL) {
-                        //printf("send enable sustain!!!!!!!! port %d ch %d\n", i,ch);
                         MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
-                        mp->device()->addScheduledEvent(ev);    // TODO: Not working? Try putEvent
+                        mp->device()->putEvent(ev);    
                         }
                   }
               }
@@ -941,14 +947,18 @@ void Audio::stopRolling()
       
       state = STOP;
       
-      MusEGlobal::midiSeq->setExternalPlayState(false); // not playing   Moved here from MidiSeq::processStop()   p4.0.34
-      
+// ALSA support      
+#if 1        
+      MusEGlobal::midiSeq->msgStop();
+#else      
+      MusEGlobal::midiSeq->setExternalPlayState(false); // not playing   Moved here from MidiSeq::processStop()   
       for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
       {
         MidiDevice* md = *id;
         md->handleStop();
       }
-
+#endif
+      
       WaveTrackList* tracks = MusEGlobal::song->waves();
       for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {
             WaveTrack* track = *i;

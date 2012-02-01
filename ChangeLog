@@ -1,3 +1,21 @@
+31.01.2012:
+        - Jack Midi: Added missing midi sync output functions start/stop/SPP etc.  (By Tim...) 
+           TODO: Give its own clock, currently it's driven by ALSA clock.  TODO: ALSA clock out seems badly broken.
+        - Jack Midi: Fixed Song Position Pointer sync input larger than 10 bars.  
+        - ALSA: Seek sends wrong CCs. putMidiEvent() not respecting CTRL_PROGRAM and CTRL_PITCH. (Thanks to Dennis Schulmeister).
+        - Routing popup: Fixed crash with empty ports.
+        - Jack Midi: Fixed crashes/lockups when 'Use Jack Transport' off. Completely re-wrote Jack dummy tranport sync to behave like Jack.
+        - Midi:Increased MIDI_FIFO_SIZE to 4096 and MIDI_REC_FIFO_SIZE to 256.
+        - Midi: Sustain: Fixed inhibit/re-enable on stop/play. Also added during seek to quiet things down.
+        - Midi: Don't send controllers during seek if part or track muted or off.
+        - Midi: Send controllers during seek only if a change occurred - but force sending if at position 0, or value exists at current position.
+        - ALSA Revert: Removed recent MidiAlsaDevice::playEventFifo. Hm, too cautious? 
+        - Midi sync: Removed redundant and too-early 'continue' commands. Audio::startRolling already properly does this when sync 'ready to roll'.
+        - Midi: Fixed timing error. MEvent::operator<()  Put same-time note-ons after controllers so that program comes before notes! (For example).
+        - Jack Midi: Fixed timing error: Reserve multi-events at same frame-time, NOT at successive frames. (Otherwise nightmare to sort stuff.)
+        - Midi Revert: Re-installed ALSA sequencer thread SEQM_SEEK and SEQM_STOP, and revert code to call them from audio thread. 
+          TODO: Option "Don't use ALSA midi". Midi thread gets in the way of Jack. But ironically ALSA + long-period Audio timing currently best!
+        - Midi sync: Song saving: Fixed slight typo saving MMC sync: Was using MRT not MMC.
 26.01.2012:
         - Fixed crash with drag/drop copying plugins when their gui was open (rj)
         - Fixed mid clicking to change aux value (rj)

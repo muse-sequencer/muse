@@ -208,6 +208,7 @@ class Audio {
       void stop(bool);
       void seek(const Pos& pos);
 
+      bool isStarting() const   { return state == START_PLAY; }
       bool isPlaying() const    { return state == PLAY || state == LOOP1 || state == LOOP2; }
       bool isRecording() const  { return state == PLAY && recording; }
       void setRunning(bool val) { _running = val; }
