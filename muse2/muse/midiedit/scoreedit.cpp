@@ -4655,7 +4655,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o test drum controllers
  *   o test old- and new drumtrack recording, steprecording
  *
- * > o add toolbar(s) for tempo- etc spinboxes from the transport window 
  *   o add controller editor "like search-and-replace":
  *     acts on all specified type's events, and edits the value:
  *      - apply some MIN or MAX on it
