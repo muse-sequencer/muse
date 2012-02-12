@@ -4,6 +4,7 @@
         - Fluid: Fixed pitch input: Add 8192.
         - Fluid + Fluidsynth + SimpleDrums: ::processEvent(): Don't return true for controllers (why?). Was causing multiple send attempts.
         - SimpleDrums: Fixed too-short plugin chooser: In ctor SS_PluginGui rem'd a couple of height-fixing lines. Hm, FIXME - was OK before.
+        - Midi ports config window: Allow default output channel column to unselect all channels ie. no default output channels at all.
 31.01.2012:
         - Jack Midi: Added missing midi sync output functions start/stop/SPP etc.  (By Tim...) 
            TODO: Give its own clock, currently it's driven by ALSA clock.  TODO: ALSA clock out seems badly broken.

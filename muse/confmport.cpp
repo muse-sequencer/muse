@@ -164,6 +164,12 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
     // Tested: Hmm, allow ports with no device since that is a valid situation.
     if(!MusEGlobal::song->midis()->empty()) // && MusEGlobal::midiPorts[no].device())
     {
+      // Turn off if and when multiple output routes are supported.
+      #if 1
+      if(!defch) // No channels selected? Just return.
+        return;
+      #endif
+        
       int ret = QMessageBox::question(this, tr("Default output connections"),
                                     tr("Are you sure you want to apply to all existing midi tracks now?"),
                                     QMessageBox::Ok | QMessageBox::Cancel,
@@ -229,21 +235,31 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
     if(actid < MIDI_CHANNELS)
     {
       int chbits = 1 << actid;
-      // Multiple out routes not supported. Make the setting exclusive to this port - exclude all other ports.
-      MusECore::setPortExclusiveDefOutChan(no, chbits);
-      int j = mdevView->rowCount();
-      for(int i = 0; i < j; ++i)
-        mdevView->item(i, DEVCOL_DEF_OUT_CHANS)->setText(MusECore::bitmap2String(i == no ? chbits : 0));
-      if(defpup)
+      // Are we toggling off?
+      if(chbits & defch)
       {
-        QAction* a;
-        for(int i = 0; i < MIDI_CHANNELS; ++i)
+        // Just clear this port's default channels.
+        MusEGlobal::midiPorts[no].setDefaultOutChannels(0);
+        mdevView->item(item->row(), DEVCOL_DEF_OUT_CHANS)->setText(MusECore::bitmap2String(0));
+      }
+      else
+      {
+        // Multiple out routes not supported. Make the setting exclusive to this port - exclude all other ports.
+        MusECore::setPortExclusiveDefOutChan(no, chbits);
+        int j = mdevView->rowCount();
+        for(int i = 0; i < j; ++i)
+          mdevView->item(i, DEVCOL_DEF_OUT_CHANS)->setText(MusECore::bitmap2String(i == no ? chbits : 0));
+        if(defpup)
         {
-          a = defpup->findActionFromData(i);  
-          if(a)
-            a->setChecked(i == actid);
+          QAction* a;
+          for(int i = 0; i < MIDI_CHANNELS; ++i)
+          {
+            a = defpup->findActionFromData(i);  
+            if(a)
+              a->setChecked(i == actid);
+          }  
         }  
-      }  
+      }
     }    
     #endif
   }  
