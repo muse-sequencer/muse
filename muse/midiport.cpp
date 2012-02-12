@@ -182,14 +182,13 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             //  but if the instrument has an available initial value of say '0', it will be used instead.
             //
             //if(_instrument)
-            // p3.3.39 NOT for syntis! Use midiState an/or initParams for that.
+            // NOT for syntis. Use midiState and/or initParams for that. 
             if(_instrument && !_device->isSynti())
             {
               MidiControllerList* cl = _instrument->controller();
               MidiController* mc;
               for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc) 
               {
-                //mc = *imc;
                 mc = imc->second;
                 for(int chan = 0; chan < MIDI_CHANNELS; ++chan)
                 {
@@ -210,38 +209,12 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                     if(mc->initVal() != CTRL_VAL_UNKNOWN)
                     {
                       int ctl = mc->num();
-                      
-///#ifdef DSSI_SUPPORT
-                      // Exclude dssi synths from this, as some of them have hundreds of controls.
-                      // Another difference is dssi synth devices (usually) have readable default port values,
-                      //  unlike a midi output port, which cannot be queried for a current or default value,
-                      //  so we blindly send values here. Also some dssi have a different default mechanism or
-                      //  storage systems for parameters, with complex GUIs with their own manipulation schemes.   
-                      // Another difference is dssi controls are best manipulated as ladspa controls -
-                      //  (they ARE ladspa controls). This is stuff I mainly put for midi ports and MESS...
-                      // I DO allow midi control of those ladspa controls, so our midi controls shall be updated here...
-                      // p3.3.39 Only non-syntis! Use midiState an/or initParams for that.
-                      ///if(!_device->isSynti() || (dynamic_cast<DssiSynthIF*>(((SynthI*)_device)->sif()) == 0))
-                      ///{  
-///#endif
-                        // Note the addition of bias!
-                        //_device->putEvent(MidiPlayEvent(0, portno(), chan,
-                        //  ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
-                        // Retry added. Use default attempts and delay. p4.0.15
-                        _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,  
-                          ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
-                        //if(_device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,  
-                        //  ME_CONTROLLER, ctl, mc->initVal() + mc->bias())))
-                        //  return;  
-                        
-///#ifdef DSSI_SUPPORT
-                      ///}
-///#endif
-                        
+                      // Note the addition of bias!
+                      // Retry added. Use default attempts and delay. 
+                      _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,  
+                        ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
                       // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
-                      //setHwCtrlState(chan, ctl, mc->initVal() + mc->bias());
                       // Set it again so that control labels show 'off'...
-                      //setHwCtrlState(chan, ctl, CTRL_VAL_UNKNOWN);
                       setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, mc->initVal() + mc->bias());
                     }    
                   }    
@@ -250,42 +223,21 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             }
 
             // init HW controller state
-            // p3.3.39 NOT for syntis! Use midiState an/or initParams for that.
-            if(!_device->isSynti())
-            {
-              for (iMidiCtrlValList i = _controller->begin(); i != _controller->end(); ++i) {
-                  int channel = i->first >> 24;
-                  int cntrl   = i->first & 0xffffff;
-                  int val     = i->second->hwVal();
-                  if (val != CTRL_VAL_UNKNOWN) {
-                        
-                        
-///#ifdef DSSI_SUPPORT
-                      // Not for dssi synths...
-                      ///if(!_device->isSynti() || (dynamic_cast<DssiSynthIF*>(((SynthI*)_device)->sif()) == 0))
-                      ///{  
-///#endif
-                        //_device->putEvent(MidiPlayEvent(0, portno(), channel,
-                        //  ME_CONTROLLER, cntrl, val));
-                        // Retry added. Use default attempts and delay. p4.0.15
-                        _device->putEventWithRetry(MidiPlayEvent(0, portno(), channel,
-                          ME_CONTROLLER, cntrl, val));                          
-                        //if(_device->putEventWithRetry(MidiPlayEvent(0, portno(), channel,
-                        //  ME_CONTROLLER, cntrl, val)))
-                        //  return;                          
-                          
-///#ifdef DSSI_SUPPORT
-                      ///}
-///#endif
-                        
-                        // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
-                        setHwCtrlState(channel, cntrl, val);
-                        // Set it again so that control labels show 'off'...
-                        //setHwCtrlState(channel, cntrl, CTRL_VAL_UNKNOWN);
-                        //setHwCtrlStates(channel, cntrl, CTRL_VAL_UNKNOWN, val);
-                        }
+            for (iMidiCtrlValList i = _controller->begin(); i != _controller->end(); ++i) {
+                int channel = i->first >> 24;
+                int cntrl   = i->first & 0xffffff;
+                int val     = i->second->hwVal();
+                if (val != CTRL_VAL_UNKNOWN) {
+                  // Retry added. Use default attempts and delay. 
+                  _device->putEventWithRetry(MidiPlayEvent(0, portno(), channel,
+                    ME_CONTROLLER, cntrl, val));                          
+                  // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
+                  setHwCtrlState(channel, cntrl, val);
+                  // Set it again so that control labels show 'off'...
+                  //setHwCtrlState(channel, cntrl, CTRL_VAL_UNKNOWN);
+                  //setHwCtrlStates(channel, cntrl, CTRL_VAL_UNKNOWN, val);
                   }
-              }
+                }
             }  
 
       else

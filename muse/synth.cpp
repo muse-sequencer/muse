@@ -329,8 +329,14 @@ bool SynthI::putEvent(const MidiPlayEvent& ev)
 //bool SynthI::putMidiEvent(const MidiPlayEvent& ev) 
 {
   if(_writeEnable)
+  {
+    if (MusEGlobal::midiOutputTrace)
+    {
+          printf("MidiOut: Synth: <%s>: ", name().toLatin1().constData());
+          ev.dump();
+    }
     return _sif->putEvent(ev);
-  
+  }
   // Hmm, act as if the event went through? 
   //return true;  
   return false;  
@@ -1112,8 +1118,11 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
 
 bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
       {
-      if (MusEGlobal::midiOutputTrace)
-            ev.dump();
+      //if (MusEGlobal::midiOutputTrace)
+      //{
+      //      printf("MidiOut: MESS: <%s>: ", synti->name().toLatin1().constData());
+      //      ev.dump();
+      //}
       if (_mess)
             return _mess->processEvent(ev);
       return true;

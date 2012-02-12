@@ -1206,7 +1206,7 @@ void MidiJackDevice::processMidi()
   {
     //printf("MidiJackDevice::processMidi playEvent time:%d type:%d ch:%d A:%d B:%d\n", i->time(), i->type(), i->channel(), i->dataA(), i->dataB()); 
     // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.   
-    if(mp && !mp->sendHwCtrlState(*i, false)) // Don't force sending.
+    if(mp && !mp->sendHwCtrlState(*i, true)) // Force the event to be sent.
       continue;
   
     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 

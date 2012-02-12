@@ -536,8 +536,10 @@ SS_PluginGui::SS_PluginGui(QWidget* parent)
             connect(pluginFronts[i], SIGNAL(sizeChanged(int, int)), SLOT(pluginFrontSizeChanged(int, int)));
             connect(pluginFronts[i], SIGNAL(effectParameterChanged(int, int, int)), simplesynthgui_ptr, SLOT(effectParameterChanged(int, int, int)));
             }
-      setMinimumSize(QSize(SS_PLUGINGUI_WIDTH, geometry().height()));
-      setMaximumSize(QSize(SS_PLUGINGUI_MAX_WIDTH, geometry().height()));
+            
+      // FIXME: These are causing window height to be fixed way too small - can't see anything. Why? It was working before. Tim p4.0.49
+      //setMinimumSize(QSize(SS_PLUGINGUI_WIDTH, geometry().height()));
+      //setMaximumSize(QSize(SS_PLUGINGUI_MAX_WIDTH, geometry().height()));
       }
 
 

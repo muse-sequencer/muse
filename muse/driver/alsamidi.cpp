@@ -651,7 +651,7 @@ void MidiAlsaDevice::processMidi()
         if (i->time() > (ext_sync ? pos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
           break; 
         if(mp){
-          if (mp->sendEvent(*i))
+          if (mp->sendEvent(*i, true))  // Force the event to be sent.
             break;
               }
         else 

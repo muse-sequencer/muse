@@ -750,7 +750,8 @@ void MidiDevice::handleSeek()
       if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
         //_playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
         // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
-        mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val), pos == 0 || imcv->first == pos);
+        mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val), imcv->first == pos);
+        //mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val), pos == 0 || imcv->first == pos);
     }
   }
   

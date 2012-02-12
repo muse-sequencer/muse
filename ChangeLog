@@ -1,3 +1,9 @@
+12.02.2012:
+        - Midi: Force events in play event list to be sent when playing, even if redundant. TODO: Fix sending controllers during seek. (By Tim...)
+        - Midi revert: MidiPort::setMidiDevice(): Send controllers in song to synths. Synths were not restoring vol for ex. My old bad.
+        - Fluid: Fixed pitch input: Add 8192.
+        - Fluid + Fluidsynth + SimpleDrums: ::processEvent(): Don't return true for controllers (why?). Was causing multiple send attempts.
+        - SimpleDrums: Fixed too-short plugin chooser: In ctor SS_PluginGui rem'd a couple of height-fixing lines. Hm, FIXME - was OK before.
 31.01.2012:
         - Jack Midi: Added missing midi sync output functions start/stop/SPP etc.  (By Tim...) 
            TODO: Give its own clock, currently it's driven by ALSA clock.  TODO: ALSA clock out seems badly broken.

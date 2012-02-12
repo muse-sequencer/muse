@@ -154,6 +154,8 @@ bool ISynth::setController(int ch, int ctrl, int val)
                   break;
 
             case MusECore::CTRL_PITCH:
+                  // MusE's range is from -8192 to +8191, fluidsynth seems to be [0, 16384]
+                  val +=8192;
                   fluid_synth_pitch_bend (_fluidsynth, ch, val);
                   break;
 
@@ -378,8 +380,9 @@ bool ISynth::processEvent(const MusECore::MidiPlayEvent& ev)
       {
       switch(ev.type()) {
             case MusECore::ME_CONTROLLER:
-                  setController(ev.channel(), ev.dataA(), ev.dataB());
-                  return true;
+                setController(ev.channel(), ev.dataA(), ev.dataB());
+                //return true;  // ??
+                break;            
             case MusECore::ME_NOTEON:
                   return playNote(ev.channel(), ev.dataA(), ev.dataB());
             case MusECore::ME_NOTEOFF:
