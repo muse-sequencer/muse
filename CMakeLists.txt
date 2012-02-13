@@ -31,10 +31,18 @@ if (COMMAND cmake_policy)
       cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
+if (NOT LIB_PATH_SUFFIX)
+        SET(LIB_PATH_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
+endif (NOT LIB_PATH_SUFFIX)
+
 # set libdir if not use -DCMAKE_INSTALL_LIBDIR
 if (NOT CMAKE_INSTALL_LIBDIR)
-	SET(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib")
+        SET(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_PATH_SUFFIX}")
 endif (NOT CMAKE_INSTALL_LIBDIR)
+
+if (LIB_PATH_SUFFIX)
+        message(" Install libraries to: " ${CMAKE_INSTALL_LIBDIR} )          
+endif (LIB_PATH_SUFFIX)
 
 IF(NOT DEFINED SHARE_INSTALL_PREFIX)
         SET(SHARE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share")
