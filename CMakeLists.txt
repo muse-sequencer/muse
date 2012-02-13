@@ -31,9 +31,9 @@ if (COMMAND cmake_policy)
       cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-if (NOT LIB_PATH_SUFFIX)
+if (NOT DEFINED LIB_PATH_SUFFIX)
         SET(LIB_PATH_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
-endif (NOT LIB_PATH_SUFFIX)
+endif (NOT DEFINED LIB_PATH_SUFFIX)
 
 # set libdir if not use -DCMAKE_INSTALL_LIBDIR
 if (NOT CMAKE_INSTALL_LIBDIR)
