@@ -46,6 +46,7 @@
 #include "xml.h"
 #include "mididev.h"
 #include "midiport.h"
+#include "midictrl.h"
 #include "midiseq.h"
 #include "comment.h"
 #include "track.h"
@@ -64,6 +65,8 @@
 #include "popupmenu.h"
 #include "filedialog.h"
 #include "menutitleitem.h"
+#include "arranger.h"
+#include "undo.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -92,6 +95,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       setObjectName(name);
       ypos = 0;
       editMode = false;
+      editJustFinished=false;
       setFocusPolicy(Qt::StrongFocus);
       setMouseTracking(true);
       header    = hdr;
@@ -100,6 +104,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       editTrack = 0;
       editor    = 0;
       chan_edit = NULL;
+      ctrl_edit = NULL;
       mode      = NORMAL;
 
       //setBackgroundMode(Qt::NoBackground); // ORCAN - FIXME
@@ -117,7 +122,9 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 void TList::songChanged(int flags)
       {
       if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_INSERTED
-         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_ROUTE | SC_CHANNELS | SC_MIDI_TRACK_PROP))
+         | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_ROUTE | SC_CHANNELS | SC_MIDI_TRACK_PROP
+         | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
+         | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ))
             redraw();
       if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
             adjustScrollbar();
@@ -416,6 +423,22 @@ void TList::paint(const QRect& r)
                               }
                               break;
                         default:
+                              if (section>=COL_CUSTOM_MIDICTRL_OFFSET)
+                              {
+                                if (track->isMidiTrack())
+                                {
+                                  int col_ctrl_no=Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
+                                  MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(track);
+                                  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
+                                  MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
+                                  int val=mt->getFirstControllerValue(col_ctrl_no,MusECore::CTRL_VAL_UNKNOWN);
+                                  if (val!=MusECore::CTRL_VAL_UNKNOWN)
+                                    val-=mctl->bias();
+                                    
+                                  p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, 
+                                    (val!=MusECore::CTRL_VAL_UNKNOWN)?QString::number(val):tr("off"));
+                                }
+                              }
                               break;
                         }
                   x += header->sectionSize(section);
@@ -495,6 +518,7 @@ void TList::returnPressed()
       }  
       
       editMode = false;
+      editJustFinished = true;
       if(editor->isVisible())
       {  
         editor->blockSignals(true);  
@@ -519,7 +543,6 @@ void TList::chanValueFinished()
     {
       MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editTrack);
       if (mt && mt->type() != MusECore::Track::DRUM)
-      //if (mt && !mt->isDrumTrack())  // For Flo later with new drum tracks.  
       {
         int channel = chan_edit->value() - 1;
         if(channel >= MIDI_CHANNELS)
@@ -579,11 +602,73 @@ void TList::chanValueFinished()
   }
 
   editMode = false;
+  editJustFinished=true;
   if(chan_edit->isVisible())
   {  
     chan_edit->blockSignals(true);  
     chan_edit->hide();
     chan_edit->blockSignals(false);
+  }  
+  setFocus();
+}
+
+void TList::ctrlValueFinished()
+{
+  if(editTrack && editTrack->isMidiTrack())
+  { 
+    MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editTrack);
+    if (mt && mt->type() != MusECore::Track::DRUM)
+    {
+      int val = ctrl_edit->value();
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
+      MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+
+      if (val==ctrl_edit->minimum())
+        val=MusECore::CTRL_VAL_UNKNOWN;
+      else
+        val+=mctl->bias();
+        
+      if (val!=MusECore::CTRL_VAL_UNKNOWN)
+      {
+        MusECore::Event a(MusECore::Controller);
+        a.setTick(0);
+        a.setA(ctrl_num);
+        a.setB(val);
+        MusEGlobal::song->recordEvent(mt, a);
+      }
+      else
+      {
+        MusECore::Undo operations;
+        for (MusECore::iPart p = mt->parts()->begin(); p!=mt->parts()->end(); p++)
+        {
+          if (p->second->tick()==0)
+          {
+            for (MusECore::iEvent ev=p->second->events()->begin(); ev!=p->second->events()->end(); ev++)
+            {
+              if (ev->second.tick()!=0) break;
+              else if (ev->second.type()==MusECore::Controller && ev->second.dataA()==ctrl_num)
+              {
+                using MusECore::UndoOp;
+                operations.push_back(UndoOp(UndoOp::DeleteEvent, ev->second, p->second, false, false));
+                break;
+              }
+            }
+          }
+        }
+        MusEGlobal::song->applyOperationGroup(operations);
+      }
+    }
+
+    editTrack = 0;
+  }
+
+  editMode = false;
+  editJustFinished=true;
+  if(ctrl_edit->isVisible())
+  {  
+    ctrl_edit->blockSignals(true);  
+    ctrl_edit->hide();
+    ctrl_edit->blockSignals(false);
   }  
   setFocus();
 }
@@ -704,6 +789,34 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                       ev->accept();    
                       }
                   }
+            else if (section >= COL_CUSTOM_MIDICTRL_OFFSET)
+            {
+              if (t->isMidiTrack())
+              {
+                editTrack=t;
+                if (ctrl_edit==0) {
+                      ctrl_edit=new QSpinBox(this);
+                      ctrl_edit->setSpecialValueText(tr("off"));
+                      connect(ctrl_edit, SIGNAL(editingFinished()), SLOT(ctrlValueFinished()));
+                      }
+                
+                ctrl_num=Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
+                
+                MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
+                MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
+                MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+                ctrl_edit->setMinimum(mctl->minVal()-1); // -1 because of the specialValueText
+                ctrl_edit->setMaximum(mctl->maxVal());
+                ctrl_edit->setValue(((MusECore::MidiTrack*)editTrack)->getFirstControllerValue(ctrl_num)-mctl->bias());
+                int w=colw;
+                if (w < ctrl_edit->sizeHint().width()) w=ctrl_edit->sizeHint().width();
+                ctrl_edit->setGeometry(colx, coly, w, colh);
+                editMode = true;     
+                ctrl_edit->show();
+                ctrl_edit->setFocus();
+                ev->accept();
+              }
+            }
             else
                   mousePressEvent(ev);
             }
@@ -1110,14 +1223,26 @@ void TList::keyPressEvent(QKeyEvent* e)
                     chan_edit->hide();    
                     chan_edit->blockSignals(false);
                   }  
+                  if(ctrl_edit && ctrl_edit->isVisible())  
+                  {  
+                    ctrl_edit->blockSignals(true);
+                    ctrl_edit->hide();    
+                    ctrl_edit->blockSignals(false);
+                  }  
                   editTrack = 0;
                   editMode = false;
                   setFocus();
                   return;           
                   }
             }
-      emit keyPressExt(e); //redirect keypress events to main app
-      
+      else if (!editJustFinished)
+      {
+          emit keyPressExt(e); //redirect keypress events to main app. don't call this when confirming an editor
+      }
+      else
+        editJustFinished=false;
+
+            
       // p4.0.10 Removed by Tim. keyPressExt are sent to part canvas, where they are 
       //  ignored *only* if necessary.
       //e->ignore();  
@@ -1748,7 +1873,74 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
             
             default:
-                  mode = START_DRAG;
+                  if (col>=COL_CUSTOM_MIDICTRL_OFFSET)
+                  {
+                    mode = START_DRAG;
+
+                    int delta = 0;
+                    if (button == Qt::RightButton) 
+                      delta = 1;
+                    else if (button == Qt::MidButton) 
+                      delta = -1;
+
+                    if (delta!=0 && t->isMidiTrack()) 
+                    {
+                      MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(t);
+                      if (mt == 0)
+                        break;
+                      
+                      int ctrl_num = Arranger::custom_columns[col-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
+                      
+                      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
+                      MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+                      
+                      int minval=mctl->minVal()+mctl->bias();
+                      int maxval=mctl->maxVal()+mctl->bias();
+
+                      int val = mt->getFirstControllerValue(ctrl_num);
+                      int oldval=val;
+                      val += delta;
+                      if(val > maxval)
+                        val = maxval;
+                      if(val < minval-1) // "-1" because of "off"
+                        val = minval-1;
+
+                      if (val != oldval)
+                      {
+                        if (val!=minval-1)
+                        {
+                          MusECore::Event a(MusECore::Controller);
+                          a.setTick(0);
+                          a.setA(ctrl_num);
+                          a.setB(val);
+                          MusEGlobal::song->recordEvent(mt, a);
+                        }
+                        else
+                        {
+                          MusECore::Undo operations;
+                          for (MusECore::iPart p = mt->parts()->begin(); p!=mt->parts()->end(); p++)
+                          {
+                            if (p->second->tick()==0)
+                            {
+                              for (MusECore::iEvent ev=p->second->events()->begin(); ev!=p->second->events()->end(); ev++)
+                              {
+                                if (ev->second.tick()!=0) break;
+                                else if (ev->second.type()==MusECore::Controller && ev->second.dataA()==ctrl_num)
+                                {
+                                  using MusECore::UndoOp;
+                                  operations.push_back(UndoOp(UndoOp::DeleteEvent, ev->second, p->second, false, false));
+                                  break;
+                                }
+                              }
+                            }
+                          }
+                          MusEGlobal::song->applyOperationGroup(operations);
+                        }
+                      }
+                    }
+                  }
+                  else
+                      mode = START_DRAG;
           }        
       redraw();
       }
@@ -2006,7 +2198,7 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
             }
       if (editTrack && editor && editor->isVisible())
             editor->setFocus();
-      //else
+      //else // DELETETHIS or add the same for ctrl_edit!
       //if (editTrack && chan_edit && chan_edit->isVisible())  // p4.0.46
       //      chan_edit->setFocus();
       adjustScrollbar();
@@ -2122,48 +2314,73 @@ void TList::wheelEvent(QWheelEvent* ev)
                         }
                   break;
             default:
+                  if (col>=COL_CUSTOM_MIDICTRL_OFFSET)
+                  {
+                    mode = START_DRAG;
+
+                    if (t->isMidiTrack()) 
+                    {
+                      MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(t);
+                      if (mt == 0)
+                        break;
+                      
+                      int ctrl_num = Arranger::custom_columns[col-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
+                      
+                      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
+                      MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+                      
+                      int minval=mctl->minVal()+mctl->bias();
+                      int maxval=mctl->maxVal()+mctl->bias();
+
+                      int val = mt->getFirstControllerValue(ctrl_num);
+                      int oldval=val;
+                      val += delta;
+                      if(val > maxval)
+                        val = maxval;
+                      if(val < minval-1) // "-1" because of "off"
+                        val = minval-1;
+
+                      if (val != oldval)
+                      {
+                        if (val!=minval-1)
+                        {
+                          MusECore::Event a(MusECore::Controller);
+                          a.setTick(0);
+                          a.setA(ctrl_num);
+                          a.setB(val);
+                          MusEGlobal::song->recordEvent(mt, a);
+                        }
+                        else
+                        {
+                          MusECore::Undo operations;
+                          for (MusECore::iPart p = mt->parts()->begin(); p!=mt->parts()->end(); p++)
+                          {
+                            if (p->second->tick()==0)
+                            {
+                              for (MusECore::iEvent ev=p->second->events()->begin(); ev!=p->second->events()->end(); ev++)
+                              {
+                                if (ev->second.tick()!=0) break;
+                                else if (ev->second.type()==MusECore::Controller && ev->second.dataA()==ctrl_num)
+                                {
+                                  using MusECore::UndoOp;
+                                  operations.push_back(UndoOp(UndoOp::DeleteEvent, ev->second, p->second, false, false));
+                                  break;
+                                }
+                              }
+                            }
+                          }
+                          MusEGlobal::song->applyOperationGroup(operations);
+                        }
+                      }
+                    }
+                  }
+                  else
+                      mode = START_DRAG;
+
                   break;
             }
       }
 
-//---------------------------------------------------------
-//   writeStatus
-//---------------------------------------------------------
-
-void TList::writeStatus(int level, MusECore::Xml& xml, const char* name) const
-      {
-      xml.tag(level++, name);
-      header->writeStatus(level, xml);
-      xml.etag(level, name);
-      }
-
-//---------------------------------------------------------
-//   readStatus
-//---------------------------------------------------------
-
-void TList::readStatus(MusECore::Xml& xml, const char* name)
-      {
-      for (;;) {
-            MusECore::Xml::Token token(xml.parse());
-            const QString& tag(xml.s1());
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == header->objectName())
-                              header->readStatus(xml);
-                        else
-                              xml.unknown("Tlist");
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == name)
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
 
 //---------------------------------------------------------
 //   setYPos
@@ -2307,5 +2524,11 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
             MusEGlobal::song->update(SC_TRACK_MODIFIED);
             }
       }
+
+void TList::setHeader(Header* h)
+{
+  header=h;
+  redraw();
+}
 
 } // namespace MusEGui

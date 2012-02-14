@@ -435,6 +435,8 @@ void ArrangerView::readConfiguration(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "topwin")
                               TopWin::readConfiguration(ARRANGER, xml);
+                        else if (tag == "arranger")
+                              Arranger::readConfiguration(xml);
                         else
                               xml.unknown("ArrangerView");
                         break;
@@ -455,6 +457,7 @@ void ArrangerView::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arrangerview");
       TopWin::writeConfiguration(ARRANGER, level, xml);
+      arranger->writeConfiguration(level,xml);
       xml.tag(level, "/arrangerview");
       }
 

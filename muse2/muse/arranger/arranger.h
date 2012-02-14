@@ -24,6 +24,7 @@
 #define __ARRANGER_H__
 
 #include <vector>
+#include <QString>
 
 #include "midieditor.h"
 #include "pcanvas.h"
@@ -87,6 +88,8 @@ class WidgetStack : public QWidget {
 class Arranger : public QWidget {
       Q_OBJECT
 
+      static QString header_state;
+
       int _quant, _raster;
       PartCanvas* canvas;
       ScrollScale* hscroll;
@@ -103,6 +106,7 @@ class Arranger : public QWidget {
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
+      QWidget* tracklist;
       TLLayout* tgrid;
 
       MusECore::Track* selected;
@@ -167,10 +171,24 @@ class Arranger : public QWidget {
       void updateTrackInfo(int flags);
       void configChanged();
       void controllerChanged(MusECore::Track *t);
+      void updateTListHeader();
 
    public:
       enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
              CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_INSERT_EMPTYMEAS };
+      
+      struct custom_col_t
+      {
+        int ctrl;
+        QString name;
+        
+        custom_col_t(int c, QString n)
+        {
+          ctrl=c;
+          name=n;
+        }
+      };
+      static std::vector<custom_col_t> custom_columns;
 
       Arranger(ArrangerView* parent, const char* name = 0);
 
@@ -180,6 +198,11 @@ class Arranger : public QWidget {
       
       void writeStatus(int level, MusECore::Xml&);
       void readStatus(MusECore::Xml&);
+      void writeConfiguration(int level, MusECore::Xml&);
+      static void readConfiguration(MusECore::Xml&);
+      static void writeCustomColumns(int level, MusECore::Xml&);
+      static void readCustomColumns(MusECore::Xml&);
+      static custom_col_t readOneCustomColumn(MusECore::Xml&);
 
       MusECore::Track* curTrack() const { return selected; }
       void cmd(int);

@@ -59,6 +59,7 @@ enum TrackColumn {
       COL_TIMELOCK,
       COL_AUTOMATION,
       COL_CLEF,
+      COL_CUSTOM_MIDICTRL_OFFSET,
       COL_NONE = -1
       };
 
@@ -71,6 +72,7 @@ class TList : public QWidget {
 
       int ypos;
       bool editMode;
+      bool editJustFinished;
 
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
@@ -79,6 +81,8 @@ class TList : public QWidget {
       QScrollBar* _scroll;
       QLineEdit* editor;
       QSpinBox* chan_edit;
+      QSpinBox* ctrl_edit;
+      int ctrl_num;
       MusECore::Track* editTrack;
       MusECore::Track* editAutomation;
 
@@ -116,6 +120,7 @@ class TList : public QWidget {
       void returnPressed();
       void chanValueChanged(int);
       void chanValueFinished();
+      void ctrlValueFinished();
       void songChanged(int flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);
@@ -136,13 +141,12 @@ class TList : public QWidget {
       void selectTrack(MusECore::Track*);
       void selectTrackAbove();
       void selectTrackBelow();
+      void setHeader(Header*);
 
    public:
       TList(Header*, QWidget* parent, const char* name);
       void setScroll(QScrollBar* s) { _scroll = s; }
       MusECore::Track* track() const { return editTrack; }
-      void writeStatus(int level, MusECore::Xml&, const char* name) const;
-      void readStatus(MusECore::Xml&, const char* name);
       };
 
 } // namespace MusEGui

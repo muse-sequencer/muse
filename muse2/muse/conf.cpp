@@ -1438,7 +1438,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       MusEGui::ClipListEdit::writeConfiguration(level, xml);
       MusEGui::LMaster::writeConfiguration(level, xml);
       MusEGui::MarkerView::writeConfiguration(level, xml);
-      MusEGui::ArrangerView::writeConfiguration(level, xml);
+      arrangerView->writeConfiguration(level, xml);
       
       MusEGui::write_function_dialog_config(level, xml);
 

@@ -380,6 +380,7 @@ class MusE : public QMainWindow
       ~MusE();
       void loadDefaultSong(int argc, char** argv);
       Arranger* arranger() const { return _arranger; }
+      ArrangerView* getArrangerView() const { return arrangerView; }
       QRect configGeometryMain;
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);

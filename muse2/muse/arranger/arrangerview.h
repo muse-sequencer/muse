@@ -153,7 +153,7 @@ class ArrangerView : public TopWin
 		void writeStatus(int level, MusECore::Xml& xml) const;
 		void readStatus(MusECore::Xml& xml);
 		static void readConfiguration(MusECore::Xml&);
-		static void writeConfiguration(int, MusECore::Xml&);
+		void writeConfiguration(int, MusECore::Xml&);
 };
 
 }  // namespace MusEGui
