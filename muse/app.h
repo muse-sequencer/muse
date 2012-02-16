@@ -281,7 +281,6 @@ class MusE : public QMainWindow
       void startSongInfo(bool editable=true);
 
       void writeGlobalConfiguration() const;
-      //void startEditInstrument(); DELETETHIS
       void startClipList(bool);
       
       void openRecentMenu();
