@@ -1,3 +1,5 @@
+23.02.2012:
+        - Compile fix in pyapi.cpp (Orcan)
 13.02.2012:
         - CMake build system: Added cached variable LIB_PATH_SUFFIX, may be set to 64 so that installed library path is lib64 or whatever. (Tim)
 12.02.2012:
