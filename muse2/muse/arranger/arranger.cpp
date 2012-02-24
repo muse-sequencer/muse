@@ -72,18 +72,19 @@
 
 namespace MusEGui {
 
-std::vector<Arranger::custom_col_t> Arranger::custom_columns;
+std::vector<Arranger::custom_col_t> Arranger::custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns
+std::vector<Arranger::custom_col_t> Arranger::new_custom_columns; //and instead let the arranger update without restarting muse!
 QString Arranger::header_state;
 
 void Arranger::writeCustomColumns(int level, MusECore::Xml& xml)
 {
   xml.tag(level++, "custom_columns");
   
-  for (unsigned i=0;i<custom_columns.size();i++)
+  for (unsigned i=0;i<new_custom_columns.size();i++)
   {
     xml.tag(level++, "column");
-    xml.strTag(level, "name", custom_columns[i].name);
-    xml.intTag(level, "ctrl", custom_columns[i].ctrl);
+    xml.strTag(level, "name", new_custom_columns[i].name);
+    xml.intTag(level, "ctrl", new_custom_columns[i].ctrl);
     xml.etag(--level, "column");
   }
   
@@ -100,6 +101,7 @@ void Arranger::readCustomColumns(MusECore::Xml& xml)
             switch (token) {
                   case MusECore::Xml::Error:
                   case MusECore::Xml::End:
+                        new_custom_columns=custom_columns;
                         return;
                   case MusECore::Xml::TagStart:
                         if (tag == "column")
@@ -109,7 +111,10 @@ void Arranger::readCustomColumns(MusECore::Xml& xml)
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "custom_columns")
+                        {
+                              new_custom_columns=custom_columns;
                               return;
+                        }
                   default:
                         break;
                   }

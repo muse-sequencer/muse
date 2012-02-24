@@ -32,6 +32,7 @@ subdirs (${SubDirs})
 ##
 QT4_WRAP_CPP (widget_mocs
       aboutbox_impl.h 
+      arrangercolumns.h 
       action.h
       bigtime.h  
       canvas.h  
@@ -106,6 +107,7 @@ QT4_WRAP_CPP (widget_mocs
 ##
 file (GLOB widgets_ui_files
       aboutbox.ui  
+      arrangercolumnsbase.ui 
       appearancebase.ui 
       cliplisteditorbase.ui  
       commentbase.ui  
@@ -140,6 +142,7 @@ QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 ##
 file (GLOB widgets_source_files
       aboutbox_impl.cpp 
+      arrangercolumns.cpp 
       bigtime.cpp 
       canvas.cpp 
       checkbox.cpp 

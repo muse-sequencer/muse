@@ -67,6 +67,7 @@
 #include "ttoolbar.h"
 #include "visibletracks.h"
 #include "xml.h"
+#include "arrangercolumns.h"
 
 namespace MusEGui {
 
@@ -272,6 +273,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   
   
   QMenu* menuSettings = menuBar()->addMenu(tr("Window &Config"));
+  menuSettings->addAction(tr("Configure &custom columns"), this, SLOT(configCustomColumns()));
+  menuSettings->addSeparator();
   menuSettings->addAction(subwinAction);
   menuSettings->addAction(shareAction);
   menuSettings->addAction(fullscreenAction);
@@ -745,5 +748,14 @@ void ArrangerView::globalSplit() { MusECore::globalSplit(); }
 void ArrangerView::globalCutSel() { MusECore::globalCut(true); }
 void ArrangerView::globalInsertSel() { MusECore::globalInsert(true); }
 void ArrangerView::globalSplitSel() { MusECore::globalSplit(true); }
+
+void ArrangerView::configCustomColumns()
+{
+  ArrangerColumns* dialog = new ArrangerColumns(this);
+  dialog->exec();
+  delete dialog;
+  
+  QMessageBox::information(this, tr("Changed Settings"), tr("Unfortunately, the changed arranger column settings\ncannot be applied while MusE is running.\nTo apply the changes, please restart MusE. Sorry.\n(we'll try to fix that)"));
+}
 
 } // namespace MusEGui
