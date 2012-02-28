@@ -939,13 +939,10 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
 
 
       arrangerView = new MusEGui::ArrangerView(this);
-      arrangerView->shareToolsAndMenu(true);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(arrangerView);
       arrangerView->hide();
       _arranger=arrangerView->getArranger();
-      
-      arrangerView->setIsMdiWin(true);
       
       
       //---------------------------------------------------
