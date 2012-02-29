@@ -62,7 +62,6 @@
 #include "midiedit/drummap.h"
 #include "synth.h"
 #include "config.h"
-#include "popupmenu.h"
 #include "filedialog.h"
 #include "menutitleitem.h"
 #include "arranger.h"
@@ -434,9 +433,23 @@ void TList::paint(const QRect& r)
                                   int val=mt->getFirstControllerValue(col_ctrl_no,MusECore::CTRL_VAL_UNKNOWN);
                                   if (val!=MusECore::CTRL_VAL_UNKNOWN)
                                     val-=mctl->bias();
-                                    
-                                  p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, 
-                                    (val!=MusECore::CTRL_VAL_UNKNOWN)?QString::number(val):tr("off"));
+                                  
+                                  if (col_ctrl_no!=MusECore::CTRL_PROGRAM)
+                                  {
+                                    p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, 
+                                      (val!=MusECore::CTRL_VAL_UNKNOWN)?QString::number(val):tr("off"));
+                                  }
+                                  else
+                                  {
+                                    MusECore::MidiInstrument* instr = mp->instrument();
+                                    QString name;
+                                    if (val!=MusECore::CTRL_VAL_UNKNOWN)
+                                      name = instr->getPatchName(mt->outChannel(), val, MusEGlobal::song->mtype(), mt->isDrumTrack());
+                                    else
+                                      name = tr("<unknown>");
+                                      
+                                    p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, name);
+                                  }
                                 }
                               }
                               break;
@@ -794,26 +807,63 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
               if (t->isMidiTrack())
               {
                 editTrack=t;
-                if (ctrl_edit==0) {
-                      ctrl_edit=new QSpinBox(this);
-                      ctrl_edit->setSpecialValueText(tr("off"));
-                      connect(ctrl_edit, SIGNAL(editingFinished()), SLOT(ctrlValueFinished()));
-                      }
-                
+
                 ctrl_num=Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
                 
                 MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
                 MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
                 MusECore::MidiController* mctl = mp->midiController(ctrl_num);
-                ctrl_edit->setMinimum(mctl->minVal()-1); // -1 because of the specialValueText
-                ctrl_edit->setMaximum(mctl->maxVal());
-                ctrl_edit->setValue(((MusECore::MidiTrack*)editTrack)->getFirstControllerValue(ctrl_num)-mctl->bias());
-                int w=colw;
-                if (w < ctrl_edit->sizeHint().width()) w=ctrl_edit->sizeHint().width();
-                ctrl_edit->setGeometry(colx, coly, w, colh);
-                editMode = true;     
-                ctrl_edit->show();
-                ctrl_edit->setFocus();
+
+                if (ctrl_num!=MusECore::CTRL_PROGRAM)
+                {
+                  if (ctrl_edit==0)
+                  {
+                    ctrl_edit=new QSpinBox(this);
+                    ctrl_edit->setSpecialValueText(tr("off"));
+                    connect(ctrl_edit, SIGNAL(editingFinished()), SLOT(ctrlValueFinished()));
+                  }
+                  
+                  ctrl_edit->setMinimum(mctl->minVal()-1); // -1 because of the specialValueText
+                  ctrl_edit->setMaximum(mctl->maxVal());
+                  ctrl_edit->setValue(((MusECore::MidiTrack*)editTrack)->getFirstControllerValue(ctrl_num)-mctl->bias());
+                  int w=colw;
+                  if (w < ctrl_edit->sizeHint().width()) w=ctrl_edit->sizeHint().width();
+                  ctrl_edit->setGeometry(colx, coly, w, colh);
+                  editMode = true;     
+                  ctrl_edit->show();
+                  ctrl_edit->setFocus();
+                }
+                else
+                {
+                  MusECore::MidiInstrument* instr = mp->instrument();
+                  
+                  PopupMenu* pup = new PopupMenu(true);
+                  instr->populatePatchPopup(pup, mt->outChannel(), MusEGlobal::song->mtype(), mt->isDrumTrack());
+                  
+                  if(pup->actions().count() == 0)
+                  {
+                    delete pup;
+                    return;
+                  }
+                  
+                  connect(pup, SIGNAL(triggered(QAction*)), SLOT(instrPopupActivated(QAction*)));
+                  
+                  QAction *act = pup->exec(ev->globalPos());
+                  if(act)
+                  {
+                    int val = act->data().toInt();
+                    if(val != -1)
+                    {
+                      MusECore::Event a(MusECore::Controller);
+                      a.setTick(0);
+                      a.setA(MusECore::CTRL_PROGRAM);
+                      a.setB(val);
+                      MusEGlobal::song->recordEvent(mt, a);
+                    }
+                  }
+                        
+                  delete pup;      
+                }
                 ev->accept();
               }
             }
@@ -1899,11 +1949,21 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                       int val = mt->getFirstControllerValue(ctrl_num);
                       int oldval=val;
-                      val += delta;
-                      if(val > maxval)
-                        val = maxval;
-                      if(val < minval-1) // "-1" because of "off"
-                        val = minval-1;
+                      
+                      if (ctrl_num!=MusECore::CTRL_PROGRAM)
+                      {
+                        val += delta;
+                        if(val > maxval)
+                          val = maxval;
+                        if(val < minval-1) // "-1" because of "off"
+                          val = minval-1;
+                      }
+                      else
+                      {
+                        MusECore::MidiInstrument* instr = mp->instrument();
+                        if (delta>0) val=instr->getNextPatch(mt->outChannel(), val, MusEGlobal::song->mtype(), false);
+                        else if (delta<0) val=instr->getPrevPatch(mt->outChannel(), val, MusEGlobal::song->mtype(), false);
+                      }
 
                       if (val != oldval)
                       {
@@ -2334,11 +2394,21 @@ void TList::wheelEvent(QWheelEvent* ev)
 
                       int val = mt->getFirstControllerValue(ctrl_num);
                       int oldval=val;
-                      val += delta;
-                      if(val > maxval)
-                        val = maxval;
-                      if(val < minval-1) // "-1" because of "off"
-                        val = minval-1;
+
+                      if (ctrl_num!=MusECore::CTRL_PROGRAM)
+                      {
+                        val += delta;
+                        if(val > maxval)
+                          val = maxval;
+                        if(val < minval-1) // "-1" because of "off"
+                          val = minval-1;
+                      }
+                      else
+                      {
+                        MusECore::MidiInstrument* instr = mp->instrument();
+                        if (delta>0) val=instr->getNextPatch(mt->outChannel(), val, MusEGlobal::song->mtype(), false);
+                        else if (delta<0) val=instr->getPrevPatch(mt->outChannel(), val, MusEGlobal::song->mtype(), false);
+                      }
 
                       if (val != oldval)
                       {
@@ -2524,6 +2594,24 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
             MusEGlobal::song->update(SC_TRACK_MODIFIED);
             }
       }
+
+void TList::instrPopupActivated(QAction* act)
+{
+  MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editTrack);
+  if(act && mt) 
+  {
+    int val = act->data().toInt();
+    if(val != -1)
+    {
+      MusECore::Event a(MusECore::Controller);
+      a.setTick(0);
+      a.setA(MusECore::CTRL_PROGRAM);
+      a.setB(val);
+      MusEGlobal::song->recordEvent(mt, a);
+    }  
+  }
+}
+
 
 void TList::setHeader(Header* h)
 {

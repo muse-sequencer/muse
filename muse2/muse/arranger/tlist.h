@@ -121,6 +121,7 @@ class TList : public QWidget {
       void chanValueChanged(int);
       void chanValueFinished();
       void ctrlValueFinished();
+      void instrPopupActivated(QAction*);
       void songChanged(int flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);

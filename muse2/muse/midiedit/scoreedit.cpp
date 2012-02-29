@@ -4650,11 +4650,19 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     (could be solved by storing the current window when quitting/saving whatever)
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
- *
- * CURRENT TODO
  *   o test drum controllers
  *   o test old- and new drumtrack recording, steprecording
  *
+ * CURRENT TODO
+ *   o column's widths aren't stored into configuration. fix that.
+ *   o automatically send controller changes by the arranger columns
+ *     if necessary (i.e., if no later controller overrides this)
+ *   o make custom columns only look at CCs at tick0, not at "the firstCC"
+ *     beacuse this probably causes confusion.
+ *   o custom columns should also be able to store at cpos, not only at tick0
+ *   o storing <no_toplevels /> into a template file seems to ignore
+ *     the arranger's "MDI-ness", sets is at subwin all the time!
+ * 
  *   o add controller editor "like search-and-replace":
  *     acts on all specified type's events, and edits the value:
  *      - apply some MIN or MAX on it
@@ -4662,10 +4670,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *      - offset it
  *      - only act on values in a certain value range
  *      - maybe do curve-mapping
- *   o add "volume", "pan", "prog" etc columns to the arranger.
- *     ideally make them fully configurable: let the user add any
- *     controller together with any column label to the list.
- *     these will just set the controller at the very first tick.
  *   o remove the silly song type!
  *   o remove the song length spinbox
  *   o logical/physical device mapping:

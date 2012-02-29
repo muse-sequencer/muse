@@ -33,7 +33,7 @@ ArrangerColumns::ArrangerColumns(QWidget* parent) : QDialog(parent)
 	
 	initList();
 	
-	connect(ctrlType,SIGNAL(activated(int)), SLOT(ctrlTypeChanged(int)));
+	connect(ctrlType,SIGNAL(currentIndexChanged(int)), SLOT(ctrlTypeChanged(int)));
 	// connect(ctrlType,SIGNAL(activated(int)), SLOT(somethingChanged())); // called by ctrlTypeChanged
 	connect(nameEdit,SIGNAL(textEdited(const QString&)), SLOT(somethingChanged()));
 	connect(spinBoxHCtrlNo,SIGNAL(valueChanged(int)), SLOT(somethingChanged()));
@@ -42,7 +42,11 @@ ArrangerColumns::ArrangerColumns(QWidget* parent) : QDialog(parent)
 	connect(addBtn,SIGNAL(clicked()), SLOT(addEntry()));
 	connect(delBtn,SIGNAL(clicked()), SLOT(delEntry()));
 	
-	somethingChanged();
+	if (listWidget->count()!=0)
+		listWidget->setCurrentRow(0);
+	else
+		itemSelected(-1);
+	
 	ctrlTypeChanged(ctrlType->currentIndex());
 }
 

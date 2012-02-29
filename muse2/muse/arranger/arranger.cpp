@@ -559,7 +559,7 @@ void Arranger::updateTListHeader()
   header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
   header->setResizeMode(COL_CLEF, QHeaderView::Interactive);
   for (unsigned i=0;i<custom_columns.size();i++)
-    header->setResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Fixed);
+    header->setResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
 
   setHeaderToolTips();
   setHeaderWhatsThis();

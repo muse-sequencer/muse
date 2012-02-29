@@ -342,15 +342,9 @@ void MidiTrackInfo::heartBeat()
         nprogram = mp->lastValidHWCtrlState(outChannel, MusECore::CTRL_PROGRAM);
         if(nprogram == MusECore::CTRL_VAL_UNKNOWN) 
         {
-          //const char* n = "<unknown>";
           const QString n(tr("<unknown>"));
-          //if(strcmp(iPatch->text().toLatin1().constData(), n) != 0)
           if(iPatch->text() != n)
-          {
-            //printf("Arranger::midiTrackInfoHeartBeat setting patch <unknown>\n");
-          
             iPatch->setText(n);
-          }  
         }
         else
         {
@@ -362,13 +356,8 @@ void MidiTrackInfo::heartBeat()
             if(iPatch->text() != n)
               iPatch->setText(n);
           }
-          else
-          if(iPatch->text() != name)
-          {
-            //printf("Arranger::midiTrackInfoHeartBeat setting patch name\n");
-          
+          else if(iPatch->text() != name)
             iPatch->setText(name);
-          }  
         }         
       }
       else
@@ -1101,11 +1090,9 @@ void MidiTrackInfo::instrPopup()
       int channel = track->outChannel();
       int port    = track->outPort();
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
-      //QMenu* pup = new QMenu;
       PopupMenu* pup = new PopupMenu(true);
       
       instr->populatePatchPopup(pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
-      //populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
 
       if(pup->actions().count() == 0)
       {
