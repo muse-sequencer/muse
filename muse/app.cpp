@@ -111,7 +111,7 @@ static QString* projectList[PROJECT_LIST_LEN];
 lash_client_t * lash_client = 0;
 #endif /* HAVE_LASH */
 
-int watchAudio, watchAudioPrefetch, watchMidi;
+int watchAudioPrefetch, watchMidi;
 pthread_t splashThread;
 
 
@@ -941,8 +941,6 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
 
       MusEGlobal::song->blockSignals(false);
       
-      // Load start song moved to main.cpp     p4.0.41 REMOVE Tim.
-      
       changeConfig(false);
       QSettings settings("MusE", "MusE-qt");
       restoreGeometry(settings.value("MusE/geometry").toByteArray());
@@ -950,7 +948,7 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       MusEGlobal::song->update();
       updateWindowMenu();
 
-      // Load start song moved to main.cpp     p4.0.41 REMOVE Tim.
+      // Load start song now in main.cpp
       }
 
 
@@ -998,9 +996,6 @@ void MusE::loadDefaultSong(int argc, char** argv)
         name = MusEGlobal::config.startSong;
   }
   loadProjectFile(name, useTemplate, !useTemplate);  
-  
-  //MusEGlobal::song->update(); DELETETHIS 2 or add comment why this is NOT executed?
-  //updateWindowMenu();         
 }
       
 //---------------------------------------------------------
@@ -1076,7 +1071,7 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       progress->setCancelButton(0);
       if (!songTemplate)
         progress->setMinimumDuration(0); // if we are loading a template it will probably be fast and we can wait before showing the dialog
-      //progress->show(); DELETETHIS
+      
       //
       // stop audio threads if running
       //
@@ -2202,14 +2197,14 @@ void MusE::kbAccel(int key)
             }
       }
 
+#if 0 
 //---------------------------------------------------------
 //   catchSignal
 //    only for debugging
 //---------------------------------------------------------
 
-#if 0 
-// DELETETHIS or make it accessible via muse2 -D or muse2 -DD, or
-// some #define DEBUG or similar.
+// if enabling this code, also enable the line containing
+// "catchSignal" in main.cpp
 static void catchSignal(int sig)
       {
       if (MusEGlobal::debugMsg)
@@ -2778,14 +2773,14 @@ void MusE::updateConfiguration()
       fileSaveAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE].key);
       fileSaveAsAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_AS].key);
 
-      //menu_file->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_RECENT].key, menu_ids[CMD_OPEN_RECENT]);    // Not used. DELETETHIS??? see below
+      //menu_file->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_RECENT].key, menu_ids[CMD_OPEN_RECENT]);    // Not used.
       fileImportMidiAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_IMPORT_MIDI].key);
       fileExportMidiAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_EXPORT_MIDI].key);
       fileImportPartAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_IMPORT_PART].key);
       fileImportWaveAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_IMPORT_AUDIO].key);
       quitAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_QUIT].key);
       
-      //menu_file->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_LOAD_TEMPLATE].key, menu_ids[CMD_LOAD_TEMPLATE]);  // Not used. DELETETHIS??? or replace by comment similar to below?
+      //menu_file->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_LOAD_TEMPLATE].key, menu_ids[CMD_LOAD_TEMPLATE]);  // Not used.
 
       MusEGlobal::undoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_UNDO].key);  
       MusEGlobal::redoAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_REDO].key);
@@ -2970,7 +2965,6 @@ void MusE::focusInEvent(QFocusEvent* ev)
 //---------------------------------------------------------
 void MusE::execDeliveredScript(int id)
 {
-      //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id]; DELETETHIS
       MusEGlobal::song->executeScript(MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(), MusEGlobal::song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 

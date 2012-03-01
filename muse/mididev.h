@@ -28,7 +28,6 @@
 #include <list>
 
 #include "mpevent.h"
-//#include "sync.h"
 #include "route.h"
 #include "globaldefs.h"
 
@@ -37,7 +36,6 @@
 
 namespace MusECore {
 
-//class RouteList;
 class Xml;
 
 //---------------------------------------------------------
@@ -57,9 +55,6 @@ class MidiDevice {
       bool _readEnable;  // set when opened/closed.
       bool _writeEnable; //
       
-      //int _sysexWriteChunk;
-      //int _sysexReadChunk;
-      //bool _sysexWritingChunks;
       bool _sysexReadingChunks;
       
       MPEventList _stuckNotes;
@@ -129,7 +124,7 @@ class MidiDevice {
       virtual bool putEvent(const MidiPlayEvent&);
       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
       // Since it waits, it should not be used in RT or other time-sensitive threads. p4.0.15
-      bool putEventWithRetry(const MidiPlayEvent&, int /*tries*/ = 2, long /*delayUs*/ = 50000);  // 2 tries, 50 mS by default.
+      bool putEventWithRetry(const MidiPlayEvent&, int tries = 2, long delayUs = 50000);  // 2 tries, 50 mS by default.
       
       virtual void handleStop();  
       virtual void handleSeek();
@@ -143,11 +138,8 @@ class MidiDevice {
       MidiRecFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
       bool sysexFIFOProcessed()                     { return _sysexFIFOProcessed; }
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
-      //bool sysexWritingChunks() { return _sysexWritingChunks; }
-      //void setSysexWritingChunks(bool v) { _sysexWritingChunks = v; }
       bool sysexReadingChunks() { return _sysexReadingChunks; }
       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
-      //virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MPEventList* /*dst*/);
       bool sendNullRPNParams(int, bool);
       };
 

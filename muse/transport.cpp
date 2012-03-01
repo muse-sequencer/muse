@@ -37,7 +37,6 @@
 #include "siglabel.h"
 #include "globals.h"
 #include "icons.h"
-///#include "posedit.h"
 #include "sync.h"
 #include "shortcuts.h"
 #include "gconfig.h"
@@ -76,8 +75,7 @@ static QToolButton* newButton(const QPixmap* pm, const QString& tt,
 
 //---------------------------------------------------------
 //    Handle
-//    erlaubt das Verschieben eines Root-Windows mit der
-//    Maus
+//    allows moving a root-window with the mouse
 //---------------------------------------------------------
 
 Handle::Handle(QWidget* r, QWidget* parent)
@@ -114,7 +112,7 @@ void Handle::mousePressEvent(QMouseEvent* ev)
 
 //---------------------------------------------------------
 //   TempoSig
-//    Widget fï¿½r Tempo + Signature
+//    Widget for Tempo + Signature
 //---------------------------------------------------------
 
 TempoSig::TempoSig(QWidget* parent)
@@ -228,10 +226,6 @@ void Transport::setRecord(bool flag)
 //---------------------------------------------------------
 
 Transport::Transport(QWidget* parent, const char* name)
-  // : QWidget(0, name, WStyle_Customize | WType_TopLevel | WStyle_Tool
-  //| WStyle_NoBorder | WStyle_StaysOnTop)
-   //: QWidget(0, name, Qt::WStyle_Customize | Qt::Window | Qt::WStyle_NoBorder | Qt::WStyle_StaysOnTop)
-  //: QWidget(0, name, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
   : QWidget(parent, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
       {
       setObjectName(name);
@@ -326,7 +320,6 @@ Transport::Transport(QWidget* parent, const char* name)
       marken->setSpacing(0);
       marken->setContentsMargins(0, 0, 0, 0);
 
-      ///tl1 = new PosEdit(0);
       tl1 = new Awl::PosEdit(0);
       tl1->setMinimumSize(105,0);
       tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -339,7 +332,6 @@ Transport::Transport(QWidget* parent, const char* name)
       l5->setAlignment(Qt::AlignCenter);
       marken->addWidget(l5);
 
-      ///tl2 = new PosEdit(0);
       tl2 = new Awl::PosEdit(0);
       tl2->setMinimumSize(105,0);
       tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -364,9 +356,7 @@ Transport::Transport(QWidget* parent, const char* name)
       QHBoxLayout *hbox1 = new QHBoxLayout;
       hbox1->setContentsMargins(0, 0, 0, 0);
       
-      ///time1 = new PosEdit(0);
       time1 = new Awl::PosEdit(0);
-      ///time2 = new PosEdit(0);
       time2 = new Awl::PosEdit(0);
       time2->setSmpte(true);
       time1->setMinimumSize(105,0);
@@ -508,7 +498,6 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(slider,SIGNAL(valueChanged(int)),  SLOT(cposChanged(int)));
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
       connect(tempo, SIGNAL(tempoChanged(int)), MusEGlobal::song, SLOT(setTempo(int)));
-      ///connect(tempo, SIGNAL(sigChanged(int, int)), MusEGlobal::song, SLOT(setSig(int, int)));
       connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
       connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));

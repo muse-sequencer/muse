@@ -24,13 +24,11 @@
 #ifndef __EVENTBASE_H__
 #define __EVENTBASE_H__
 
-//#include <samplerate.h>
 #include <sys/types.h>
 
 #include "pos.h"
 #include "event.h"
 
-//class AudioConverter;
 namespace MusECore {
 class WavePart;
 
@@ -60,7 +58,6 @@ class EventBase : public PosLen {
       void move(int offset);
 
       virtual void read(Xml&) = 0;
-      //virtual void write(int, Xml&, const Pos& offset) const = 0;
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const = 0;
       virtual void dump(int n = 0) const;
       virtual EventBase* mid(unsigned, unsigned) = 0;
@@ -100,12 +97,6 @@ class EventBase : public PosLen {
       virtual void setSndFile(SndFileR&)            { }
       virtual EventBase* clone() = 0;
       
-      //virtual void read(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool overwrite = true) {}
-      //virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) {}
-      //virtual off_t readAudio(SRC_STATE* /*src_state*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
-      //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { return 0; }
-      //virtual off_t readAudio(AudioConverter* /*audConv*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
-      //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { return 0; }
       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
                              float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }
       };

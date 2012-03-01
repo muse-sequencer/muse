@@ -24,7 +24,6 @@
 #include "ticksynth.h"
 #include "default_click.h"
 
-//#include <QMenu>
 #include "popupmenu.h"
 
 // If sysex support is ever added, make sure this number is unique among all the MESS synths.
@@ -45,15 +44,12 @@ static MetronomeSynth* metronomeSynth = 0;
 
 class MetronomeSynth : public Synth {
    public:
-      //MetronomeSynth(const QFileInfo& fi) : Synth(fi) {}
-      //MetronomeSynth(const QFileInfo& fi) : Synth(fi, QString("Metronome")) {}
       MetronomeSynth(const QFileInfo& fi) : Synth(fi, QString("Metronome"), QString("Metronome"), QString(), QString()) {}
       virtual ~MetronomeSynth() {}
       virtual Type synthType() const { return METRO_SYNTH; }
       virtual void incInstances(int) {}
       virtual void* instantiate();
       
-      //virtual SynthIF* createSIF() const;
       virtual SynthIF* createSIF(SynthI*);
       };
 
@@ -78,9 +74,6 @@ class MetronomeSynthIF : public SynthIF
       void process(float** buffer, int offset, int n);
 
    public:
-      //MetronomeSynthIF() {
-      //      data = 0;
-      //      }
       MetronomeSynthIF(SynthI* s) : SynthIF(s) {
             data = 0;
             }
@@ -103,15 +96,12 @@ class MetronomeSynthIF : public SynthIF
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
       virtual int eventsPending() const { return 0; }
       
-      //virtual bool init(Synth*) { return true; }
-      
       virtual int channels() const { return 1; }
       virtual int totalOutChannels() const { return 1; }
       virtual int totalInChannels() const { return 0; }
       virtual void deactivate3() {}
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
-      //virtual void populatePatchPopup(QMenu*, int, MType, bool) {};
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool) {};
       virtual void write(int, Xml&) const {}
       virtual float getParameter(unsigned long) const  { return 0.0; }
@@ -130,7 +120,7 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsig
       printf("MusE: MetronomeSynthIF::getData\n");
       #endif
 
-	//set type to unsigned , due to compiler warning: comparison signed/unsigned
+      //set type to unsigned , due to compiler warning: comparison signed/unsigned
       unsigned int curPos      = pos;             //prevent compiler warning: comparison signed/unsigned
       unsigned int endPos      = pos + n;         //prevent compiler warning: comparison signed/unsigned
       unsigned int off         = pos;             //prevent compiler warning: comparison signed/unsigned
@@ -172,6 +162,7 @@ bool MetronomeSynthIF::putEvent(const MidiPlayEvent& ev)
       return false;
       }
 
+// DELETETHIS 9
 //---------------------------------------------------------
 //   createSIF
 //---------------------------------------------------------

@@ -75,7 +75,6 @@ class MidiPort {
       int getCtrl(int ch, int tick, int ctrl) const;
       int getCtrl(int ch, int tick, int ctrl, Part* part) const;
       // Removed by T356.
-      //bool setCtrl(int ch, int tick, int ctrl, int val);
       bool setControllerVal(int ch, int tick, int ctrl, int val, Part* part);
       // Can be CTRL_VAL_UNKNOWN until a valid state is set
       int lastValidHWCtrlState(int ch, int ctrl) const;
@@ -154,7 +153,6 @@ extern void initMidiPorts();
 extern void setPortExclusiveDefOutChan(int /*port*/, int /*chan*/);
 #endif
 
-//extern QPopupMenu* midiPortsPopup(QWidget*);
 extern QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1);
 
 } // namespace MusECore

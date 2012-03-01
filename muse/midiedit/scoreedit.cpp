@@ -69,7 +69,6 @@ using namespace std;
 #include "functions.h"
 #include "helper.h"
 #include "cmd.h"
-#include "sig.h"
 #include "song.h"
 #include "shortcuts.h"
 

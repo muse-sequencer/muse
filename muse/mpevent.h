@@ -152,13 +152,12 @@ typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioRTalloc<Midi
 
 struct MPEventList : public MPEL {
       void add(const MidiPlayEvent& ev) { MPEL::insert(ev); }
-      //iterator add(const MidiPlayEvent& ev) { return MPEL::insert(ev); }  // p4.0.15 We need the iterator.
 };
 
 typedef MPEventList::iterator iMPEvent;
 typedef MPEventList::const_iterator ciMPEvent;
 
-/*
+/* DELETETHIS 20 ??
 //---------------------------------------------------------
 //   MREventList
 //    memory allocation in midi thread domain
@@ -190,7 +189,7 @@ class MidiFifo {
 
    public:
       MidiFifo()  { clear(); }
-      bool put(const MidiPlayEvent& /*event*/);   // returns true on fifo overflow
+      bool put(const MidiPlayEvent& event);   // returns true on fifo overflow
       MidiPlayEvent get();
       const MidiPlayEvent& peek(int = 0);
       void remove();
@@ -212,7 +211,7 @@ class MidiRecFifo {
 
    public:
       MidiRecFifo()  { clear(); }
-      bool put(const MidiPlayEvent& /*event*/);   // returns true on fifo overflow
+      bool put(const MidiPlayEvent& event);   // returns true on fifo overflow
       MidiPlayEvent get();
       const MidiPlayEvent& peek(int = 0);
       void remove();

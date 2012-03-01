@@ -21,8 +21,6 @@
 //
 //=========================================================
 
-//#include "config.h"
-
 #include <QMenu>
 #include <QApplication>
 
@@ -31,7 +29,6 @@
 #include "midictrl.h"
 #include "midi.h"
 #include "minstrument.h"
-//#include "instruments/minstrument.h"   // p4.0.2
 #include "xml.h"
 #include "globals.h"
 #include "mpevent.h"
@@ -40,10 +37,6 @@
 #include "song.h"
 #include "menutitleitem.h"
 #include "icons.h"
-
-//#ifdef DSSI_SUPPORT
-//#include "dssihost.h"
-//#endif
 
 namespace MusEGlobal {
 MusECore::MidiPort midiPorts[MIDI_PORTS];
@@ -75,7 +68,6 @@ void initMidiPorts()
 MidiPort::MidiPort()
    : _state("not configured")
       {
-      //_defaultInChannels  = 0;
       _defaultInChannels  = (1 << MIDI_CHANNELS) -1;  // p4.0.17 Default is now to connect to all channels.
       _defaultOutChannels = 0;
       _device     = 0;
@@ -181,7 +173,7 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             // The 'reverb level' controller would still be at '100', and could adversely affect the song,
             //  but if the instrument has an available initial value of say '0', it will be used instead.
             //
-            //if(_instrument)
+
             // NOT for syntis. Use midiState and/or initParams for that. 
             if(_instrument && !_device->isSynti())
             {
@@ -233,9 +225,6 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                     ME_CONTROLLER, cntrl, val));                          
                   // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
                   setHwCtrlState(channel, cntrl, val);
-                  // Set it again so that control labels show 'off'...
-                  //setHwCtrlState(channel, cntrl, CTRL_VAL_UNKNOWN);
-                  //setHwCtrlStates(channel, cntrl, CTRL_VAL_UNKNOWN, val);
                   }
                 }
             }  
@@ -283,9 +272,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       for( ; pi < MIDI_PORTS; ++pi)
       {
         MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
-        //if(md && !md->isSynti() && (md->rwFlags() & 1))
         if(md && (md->rwFlags() & 1))   
-        //if(md && (md->rwFlags() & 1 || md->isSynti()) )  // Revert. Hm, why synths? Only writeable ports.  p4.0.41
           break;
       }
       if(pi == MIDI_PORTS)
@@ -305,7 +292,6 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* md = port->device();
-            //if(md && !(md->rwFlags() & 1 || md->isSynti()) && (i != checkPort))  
             if(md && !(md->rwFlags() & 1) && (i != checkPort))                     // Only writeable ports, or current one.
               continue;
             name.sprintf("%d:%s", port->portno()+1, port->portname().toLatin1().constData());
@@ -323,9 +309,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
               {
                 subp = new QMenu(p);
                 subp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Empty ports")));
-                //subp->addAction(new MusEGui::MenuTitleItem("Empty Ports", subp));
               }  
-              //act = subp->addAction(name);               // No need for all those "<None>" names. 
               act = subp->addAction(QString().setNum(i+1));
               act->setData(i);
               act->setCheckable(true);
@@ -343,7 +327,6 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
 
 const QString& MidiPort::portname() const
       {
-      //static const QString none("<none>");
       static const QString none(QT_TRANSLATE_NOOP("@default", "<none>"));
       if (_device)
             return _device->name();
@@ -357,50 +340,18 @@ const QString& MidiPort::portname() const
 
 void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
 {
-  // p4.0.27 
-  // Look for an initial value in the song for this midi controller, on this midi channel...
-  //for(iMidiCtrlValList i = _controller->begin(); i != _controller->end(); ++i) 
+  // Look for an initial value in the song for this midi controller, on this midi channel... (p4.0.27)
   iMidiCtrlValList i = _controller->find(chan, ctl);
   if(i != _controller->end()) 
   {
-    //int channel = i->first >> 24;
-    //int cntrl   = i->first & 0xffffff;
-    //if(channel == chan && cntrl == ctl) 
     int v = i->second->value(0);   // Value at tick 0.
     if(v != CTRL_VAL_UNKNOWN)
     {
       if(_device)
-      {
-      ///#ifdef DSSI_SUPPORT
-      
-      // Not for dssi synths...
-      ///if(!_device->isSynti() || (dynamic_cast<DssiSynthIF*>(((SynthI*)_device)->sif()) == 0))
-      ///{  
-      
-      ///#endif
-      
-        //_device->putEvent(MidiPlayEvent(0, portno(), channel,
-        //  ME_CONTROLLER, cntrl, v));
-        // Retry added. Use default attempts and delay. p4.0.15
-        _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,
-          ME_CONTROLLER, ctl, v));                          
-        //if(_device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,
-        //  ME_CONTROLLER, ctl, v)))
-        //  return;                          
-          
-      ///#ifdef DSSI_SUPPORT
-      
-      ///}
-      
-      ///#endif
-      
-      }
+        _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v));                          
         
       // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
       setHwCtrlState(chan, ctl, v);
-      // Set it again so that control labels show 'off'...
-      //setHwCtrlState(chan, ctl, CTRL_VAL_UNKNOWN);
-      //setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, v);
       
       return;
     }  
@@ -410,52 +361,35 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
   if(_instrument)
   {
     MidiControllerList* cl = _instrument->controller();
-    //for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc)
     ciMidiController imc = cl->find(ctl);  
     if(imc != cl->end())
     {
-      //MidiController* mc = *imc;
       MidiController* mc = imc->second;
-      //int cnum = mc->num();
-      //if(cnum == ctl)
-      //{
-        int initval = mc->initVal();
-        
-        // Initialize from either the instrument controller's initial value, or the supplied value.
-        if(initval != CTRL_VAL_UNKNOWN)
+      int initval = mc->initVal();
+      
+      // Initialize from either the instrument controller's initial value, or the supplied value.
+      if(initval != CTRL_VAL_UNKNOWN)
+      {
+        if(_device)
         {
-          if(_device)
-          {
-            //MidiPlayEvent ev(song->cpos(), portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
-            MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
-            _device->putEvent(ev);
-            // Retry added. Use default attempts and delay. p4.0.15
-            //_device->putEventWithRetry(ev);
-          }  
-          // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
-          //setHwCtrlState(chan, ctl, initval + mc->bias());
-          // Set it again so that control labels show 'off'...
-          //setHwCtrlState(chan, ctl, CTRL_VAL_UNKNOWN);
-          setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, initval + mc->bias());
-          
-          return;
-        }
+          MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
+          _device->putEvent(ev);
+          // Retry added. Use default attempts and delay. p4.0.15
+          //_device->putEventWithRetry(ev);
+        }  
+        setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, initval + mc->bias());
+        
+        return;
+      }
     }  
   }
   
   // No initial value was found in the song or instrument for this midi controller. Just send the given value.
   if(_device)
   {
-    //MidiPlayEvent ev(song->cpos(), portno(), chan, ME_CONTROLLER, ctl, val);
     MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, val);
     _device->putEvent(ev);
-    // Retry added. Use default attempts and delay. p4.0.15
-    //_device->putEventWithRetry(ev);
   }  
-  // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
-  //setHwCtrlState(chan, ctl, val);
-  // Set it again so that control labels show 'off'...
-  //setHwCtrlState(chan, ctl, CTRL_VAL_UNKNOWN);
   setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, val);
 }      
       
@@ -466,14 +400,6 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
 void MidiPort::sendGmInitValues()
 {
   for (int i = 0; i < MIDI_CHANNELS; ++i) {
-        // Changed by T356. 
-        //setHwCtrlState(i, CTRL_PROGRAM,      0);
-        //setHwCtrlState(i, CTRL_PITCH,        0);
-        //setHwCtrlState(i, CTRL_VOLUME,     100);
-        //setHwCtrlState(i, CTRL_PANPOT,      64);
-        //setHwCtrlState(i, CTRL_REVERB_SEND, 40);
-        //setHwCtrlState(i, CTRL_CHORUS_SEND,  0);
-        
         // By T356. Initialize from instrument controller if it has an initial value, otherwise use the specified value.
         // Tested: Ultimately, a track's controller stored values take priority by sending any 'zero time' value 
         //  AFTER these GM/GS/XG init routines are called via initDevices().
@@ -502,25 +428,6 @@ void MidiPort::sendGsInitValues()
 void MidiPort::sendXgInitValues()
 {
   for (int i = 0; i < MIDI_CHANNELS; ++i) {
-        // Changed by T356. 
-        //setHwCtrlState(i, CTRL_PROGRAM, 0);
-        //setHwCtrlState(i, CTRL_MODULATION, 0);
-        //setHwCtrlState(i, CTRL_PORTAMENTO_TIME, 0);
-        //setHwCtrlState(i, CTRL_VOLUME, 0x64);
-        //setHwCtrlState(i, CTRL_PANPOT, 0x40);
-        //setHwCtrlState(i, CTRL_EXPRESSION, 0x7f);
-        //setHwCtrlState(i, CTRL_SUSTAIN, 0x0);
-        //setHwCtrlState(i, CTRL_PORTAMENTO, 0x0);
-        //setHwCtrlState(i, CTRL_SOSTENUTO, 0x0);
-        //setHwCtrlState(i, CTRL_SOFT_PEDAL, 0x0);
-        //setHwCtrlState(i, CTRL_HARMONIC_CONTENT, 0x40);
-        //setHwCtrlState(i, CTRL_RELEASE_TIME, 0x40);
-        //setHwCtrlState(i, CTRL_ATTACK_TIME, 0x40);
-        //setHwCtrlState(i, CTRL_BRIGHTNESS, 0x40);
-        //setHwCtrlState(i, CTRL_REVERB_SEND, 0x28);
-        //setHwCtrlState(i, CTRL_CHORUS_SEND, 0x0);
-        //setHwCtrlState(i, CTRL_VARIATION_SEND, 0x0);
-        
         // By T356. Initialize from instrument controller if it has an initial value, otherwise use the specified value.
         tryCtrlInitVal(i, CTRL_PROGRAM, 0);
         tryCtrlInitVal(i, CTRL_MODULATION, 0);
@@ -561,10 +468,6 @@ void MidiPort::sendGmOn()
 
 void MidiPort::sendGsOn()
       {
-      //static unsigned char data2[] = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x33, 0x50, 0x3c };
-      //static unsigned char data3[] = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x34, 0x50, 0x3b };
-      //sendSysex(data2, sizeof(data2));
-      //sendSysex(data3, sizeof(data3));
       sendSysex(gsOnMsg2, gsOnMsg2Len);
       sendSysex(gsOnMsg3, gsOnMsg3Len);
       }
@@ -855,11 +758,8 @@ int MidiPort::hwCtrlState(int ch, int ctrl) const
       {
       ch &= 0xff;
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
-      if (cl == _controller->end()) {
-            //if (MusEGlobal::debugMsg)
-            //      printf("hwCtrlState: chan %d ctrl 0x%x not found\n", ch, ctrl);
+      if (cl == _controller->end())
             return CTRL_VAL_UNKNOWN;
-            }
       MidiCtrlValList* vl = cl->second;
       return vl->hwVal();
       }
@@ -871,22 +771,6 @@ int MidiPort::hwCtrlState(int ch, int ctrl) const
 
 bool MidiPort::setHwCtrlState(int ch, int ctrl, int val)
       {
-      // Changed by T356.
-      //iMidiCtrlValList cl = _controller->find(ch, ctrl);
-      //if (cl == _controller->end()) {
-            // try to add new controller
-      //      addManagedController(ch, ctrl);
-//            muse->importController(ch, this, ctrl);
-      //      cl = _controller->find(ch, ctrl);
-      //      if (cl == _controller->end()) {
-      //            if (MusEGlobal::debugMsg)
-      //                  printf("setHwCtrlState(%d,0x%x,0x%x): not found\n", ch, ctrl, val);
-      //            return;
-      //            }
-      //      }
-      //MidiCtrlValList* vl = cl->second;
-// printf("setHwCtrlState ch %d  ctrl %x  val %x\n", ch, ctrl, val);
-      
       // By T356. This will create a new value list if necessary, otherwise it returns the existing list. 
       MidiCtrlValList* vl = addManagedController(ch, ctrl);
 
@@ -909,24 +793,6 @@ bool MidiPort::setHwCtrlStates(int ch, int ctrl, int val, int lastval)
       return vl->setHwVals(val, lastval);
       }
 
-// Removed by T356.
-//---------------------------------------------------------
-//   setCtrl
-//    return true if new controller value added
-//---------------------------------------------------------
-
-//bool MidiPort::setCtrl(int ch, int tick, int ctrl, int val)
-//      {
-//      if (MusEGlobal::debugMsg)
-//            printf("setCtrl(tick=%d val=%d)\n",tick,val);
-//      iMidiCtrlValList cl = _controller->find(ch, ctrl);
-//      if (cl == _controller->end()) {
-//            if (MusEGlobal::debugMsg)
-//                  printf("setCtrl: controller 0x%x for channel %d not found\n", ctrl, ch);
-//            return false;
-//            }
-//      return cl->second->add(tick, val);
-//      }
 
 //---------------------------------------------------------
 //   setControllerVal
@@ -957,24 +823,18 @@ bool MidiPort::setControllerVal(int ch, int tick, int ctrl, int val, Part* part)
 int MidiPort::getCtrl(int ch, int tick, int ctrl) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
-      if (cl == _controller->end()) {
-            //if (MusEGlobal::debugMsg)
-            //      printf("getCtrl: controller %d(0x%x) for channel %d not found size %zd\n",
-            //         ctrl, ctrl, ch, _controller->size());
+      if (cl == _controller->end())
             return CTRL_VAL_UNKNOWN;
-            }
+
       return cl->second->value(tick);
       }
 
 int MidiPort::getCtrl(int ch, int tick, int ctrl, Part* part) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
-      if (cl == _controller->end()) {
-            //if (MusEGlobal::debugMsg)
-            //      printf("getCtrl: controller %d(0x%x) for channel %d not found size %zd\n",
-            //         ctrl, ctrl, ch, _controller->size());
+      if (cl == _controller->end())
             return CTRL_VAL_UNKNOWN;
-            }
+
       return cl->second->value(tick, part);
       }
 //---------------------------------------------------------

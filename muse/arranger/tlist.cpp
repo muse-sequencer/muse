@@ -514,7 +514,6 @@ void TList::chanValueFinished()
     {
       MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editTrack);
       if (mt && mt->type() != MusECore::Track::DRUM)
-      //if (mt && !mt->isDrumTrack())  // For Flo later with new drum tracks.  
       {
         int channel = chan_edit->value() - 1;
         if(channel >= MIDI_CHANNELS)

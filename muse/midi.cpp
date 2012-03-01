@@ -168,7 +168,6 @@ QString nameSysex(unsigned int len, const unsigned char* buf)
             case 0x43:  s = "Yamaha: "; break;
             case 0x44:  s = "Casio"; break;
             case 0x45:  s = "Akai"; break;
-            //case 0x7c:  s = "MusE Soft Synth"; break;
             case MUSE_SYNTH_SYSEX_MFG_ID:  s = "MusE Soft Synth"; break;     // p4.0.27
             case 0x7d:  s = "Educational Use"; break;
             case 0x7e:  s = "Universal: Non Real Time"; break;
@@ -424,7 +423,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     break;
                               case 0x6:   // Marker
                                     {
-                                    unsigned ltick  = CALC_TICK(tick);//(tick * MusEGlobal::config.division + div/2) / div;
+                                    unsigned ltick  = CALC_TICK(tick);
                                     MusEGlobal::song->addMarker(QString((const char*)(data)), ltick, false);
                                     }
                                     break;
@@ -440,8 +439,8 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                               case 0x51:        // Tempo
                                     {
                                     unsigned tempo = data[2] + (data[1] << 8) + (data[0] <<16);
-                                    unsigned ltick  = CALC_TICK(tick);// (unsigned(tick) * unsigned(MusEGlobal::config.division) + unsigned(div/2)) / unsigned(div); 
-                                    // After ca 10 mins 32 bits will not be enough... This expression has to be changed/factorized or so in some "sane" way...
+                                    unsigned ltick  = CALC_TICK(tick);
+                                    // FIXME: After ca 10 mins 32 bits will not be enough... This expression has to be changed/factorized or so in some "sane" way...
                                     MusEGlobal::tempomap.addTempo(ltick, tempo);
                                     }
                                     break;
@@ -452,8 +451,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     int timesig_n = 1;
                                     for (int i = 0; i < n; i++)
                                           timesig_n *= 2;
-                                    int ltick  = CALC_TICK(tick);//(tick * MusEGlobal::config.division + div/2) / div;
-                                    ///sigmap.add(ltick, timesig_z, timesig_n);
+                                    int ltick  = CALC_TICK(tick);
                                     AL::sigmap.add(ltick, AL::TimeSignature(timesig_z, timesig_n));
                                     }
                                     break;
@@ -536,9 +534,9 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                            i->first, ev.pitch(), ev.velo());
                   continue;
                   }
-            int tick  = CALC_TICK(ev.tick()); //(ev.tick() * MusEGlobal::config.division + div/2) / div;
+            int tick  = CALC_TICK(ev.tick());
             if (ev.isNote()) {
-                  int lenTick = CALC_TICK(ev.lenTick()); //(ev.lenTick() * MusEGlobal::config.division + div/2) / div;
+                  int lenTick = CALC_TICK(ev.lenTick());
                   ev.setLenTick(lenTick);
                   }
             ev.setTick(tick);
@@ -1050,14 +1048,12 @@ void Audio::processMidi()
                                   if (devport == defaultPort) {
                                         event.setPort(port);
                                         if(md && track->recEcho())
-                                          //playEvents->add(event);
                                           md->addScheduledEvent(event);
                                         }
                                   else {
                                         // Hmm, this appears to work, but... Will this induce trouble with md->setNextPlayEvent??
                                         MidiDevice* mdAlt = MusEGlobal::midiPorts[devport].device();
                                         if(mdAlt && track->recEcho())
-                                          //mdAlt->playEvents()->add(event);
                                           mdAlt->addScheduledEvent(event);
                                         }
                                   // Shall we activate meters even while rec echo is off? Sure, why not...
@@ -1096,7 +1092,6 @@ void Audio::processMidi()
                                             drumRecEvent.setB(preVelo);
                                             // Tested: Events were not being recorded for a drum map entry pointing to a 
                                             //  different port. This must have been wrong - buildMidiEventList would ignore this. Tim.
-                                            //drumRecEvent.setPort(devport);
                                             drumRecEvent.setPort(port);  //rec-event to current port
                                             
                                             drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
@@ -1142,11 +1137,9 @@ void Audio::processMidi()
                   else if (state == PRECOUNT) {
                         isMeasure = (clickno % clicksMeasure) == 0;
                         }
-                  //int frame = MusEGlobal::tempomap.tick2frame(midiClick) + frameOffset;
                   int evtime = extsync ? midiClick : MusEGlobal::tempomap.tick2frame(midiClick) + frameOffset;  // p3.3.25
                   
                   if (md) {
-                        //MusECore::MidiPlayEvent ev(frame, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON,
                         MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON,
                            MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
                         
@@ -1161,7 +1154,6 @@ void Audio::processMidi()
                         md->addStuckNote(ev);
                         }
                   if (MusEGlobal::audioClickFlag) {
-                        //MusECore::MidiPlayEvent ev1(frame, 0, 0, MusECore::ME_NOTEON, 0, 0);
                         MusECore::MidiPlayEvent ev(evtime, 0, 0, MusECore::ME_NOTEON, 0, 0);
                         ev.setA(isMeasure ? 0 : 1);
                         metronome->addScheduledEvent(ev);
@@ -1189,7 +1181,6 @@ void Audio::processMidi()
         
         // ALSA devices handled by another thread.
         if((*id)->deviceType() != MidiDevice::ALSA_MIDI)
-        //if((*id)->deviceType() == MidiDevice::JACK_MIDI)
           (*id)->processMidi();
       }
       MusEGlobal::midiBusy=false;

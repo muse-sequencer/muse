@@ -145,7 +145,6 @@ void globalCut(bool onlySelectedTracks)
       TrackList* tracks = MusEGlobal::song->tracks();
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
-            //MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
             Track* track = *it;
             if (track == 0 || (onlySelectedTracks && !track->selected()))
                   continue;
@@ -169,7 +168,6 @@ void globalCut(bool onlySelectedTracks)
                         nPart = new WavePart(*(WavePart*)part);
 
                       nPart->setLenTick(len);
-                      //
                       // cut Events in nPart
                       EventList* el = nPart->events();
                       for (iEvent ie = el->lower_bound(len); ie != el->end(); ++ie)
@@ -214,7 +212,6 @@ void globalCut(bool onlySelectedTracks)
                           nPart = new MidiPart(*(MidiPart*)part);
                         else
                           nPart = new WavePart(*(WavePart*)part);
-                        //MidiPart* nPart = new MidiPart(*(MidiPart*)part);
                         int nt = part->tick();
                         nPart->setTick(nt - (rpos -lpos));
                         // Indicate no undo, and do port controller values but not clone parts.

@@ -41,12 +41,12 @@ void TLLayout::wadd(int idx, QWidget* w)
       addItem(li[idx]);
       }
 
-#if 0
+#if 0 // DELETETHIS 36
 //---------------------------------------------------------
 //   TLLayoutIterator
 //---------------------------------------------------------
 
-class TLLayoutIterator // : public QGLayoutIterator ddskrjo
+class TLLayoutIterator
       {
       int idx;
       QList<QLayoutItem*> list;
@@ -64,7 +64,7 @@ class TLLayoutIterator // : public QGLayoutIterator ddskrjo
 
 QLayoutIterator TLLayout::iterator()
       {
-      return QLayoutIterator(0); //new TLLayoutIterator(&ilist)); ddskrjo
+      return QLayoutIterator(0);
       }
 
 void TLLayout::addItem(QLayoutItem *item)
@@ -99,10 +99,6 @@ TLLayout::~TLLayout()
 
 void TLLayout::setGeometry(const QRect &rect)
       {
-      //if(_inSetGeometry)  // p4.0.11 Tim
-      //  return;
-      //_inSetGeometry = true;
-      
       int w = rect.width();
       int h = rect.height();
 
@@ -117,7 +113,7 @@ void TLLayout::setGeometry(const QRect &rect)
 
       QSize s1 = li[1]->sizeHint();
       QSize s2 = li[2]->sizeHint();
-      //QSize s3 = li[3]->sizeHint();
+      //QSize s3 = li[3]->sizeHint(); DELETETHIS huh?
       QSize s4 = li[4]->sizeHint();
       QSize s5 = li[5]->sizeHint();
 
@@ -136,15 +132,11 @@ void TLLayout::setGeometry(const QRect &rect)
       int range = s0.height() - y2;
       if (range < 0)
             range = 0;
-      // Note this appears to cause a single recursive call to this function - jumps to beginning,
-      //  because now the scroll bar wants to be put in the layout.
-      // Moved below.   p4.0.44      
-      ///sb->setVisible(range != 0);
+
       if (range)
             sb->setMaximum(range);
 
       if (widget) {
-            //QSize r(s0.width(), y2);
             QSize r(s0.width(), y2 < s0.height() ? s0.height() : y2);   // p4.0.11 Tim
             widget->setGeometry(0, 0, r.width(), r.height()); 
             }
@@ -155,10 +147,8 @@ void TLLayout::setGeometry(const QRect &rect)
       li[4]->setGeometry(QRect(0,  y2,  w,        s4.height()));
       li[5]->setGeometry(QRect(3,  y3,  s5.width(), s5.height()));
       
-      /// Fix for non-appearing scrollbar. Yes, we must allow the recursive call, but try it here, not above.    p4.0.44 Tim
+      // Fix for non-appearing scrollbar. Yes, we must allow the recursive call, but try it here, not above.    p4.0.44 Tim
       sb->setVisible(range != 0);
-      
-      //_inSetGeometry = false;
       }
 
 //---------------------------------------------------------
@@ -168,8 +158,6 @@ void TLLayout::setGeometry(const QRect &rect)
 QSize TLLayout::sizeHint() const
       {
       return QSize(150, 100);
-      // p4.0.11 Tim. 100 was allowing vertically shrunk trackinfo widgets. Nope, no help.
-      //return minimumSize();
       }
 
 //---------------------------------------------------------
@@ -182,8 +170,6 @@ QSize TLLayout::minimumSize() const
       w += li[1]->sizeHint().width();
       
       return QSize(w, 50);
-      // p4.0.11 Tim. 50 was allowing vertically shrunk trackinfo widgets. Nope, no help.
-      //return QSize(w, stack->minimumSizeHint().height());  
       }
 
 //---------------------------------------------------------

@@ -340,8 +340,8 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                         return -2;
                         }
                   if (buffer[len-1] != 0xf7) {
-                        printf("SYSEX endet nicht mit 0xf7!\n");
-                        // Fortsetzung folgt?
+                        printf("SYSEX doesn't end with 0xf7!\n");
+                        // to be continued?
                         }
                   else
                         --len;      // don't count 0xf7
@@ -566,7 +566,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
       int c     = event->channel();
       int nstat = event->type();
 
-      // we dont save meta data into smf type 0 files:
+      // we dont save meta data into smf type 0 files: DELETETHIS 4 ???
       // Oct 16, 2011: Apparently it is legal to do that. Part of fix for bug tracker 3293339.
       //if (MusEGlobal::config.smfFormat == 0 && nstat == ME_META)
       //      return;
@@ -620,6 +620,7 @@ bool MidiFile::write()
       writeLong(6);                 // header len
       writeShort(MusEGlobal::config.smfFormat);
       if (MusEGlobal::config.smfFormat == 0) {
+            // DELETETHIS 30
             /*
             //writeShort(1);    // Removed. Bug tracker 3293339
             MidiFileTrack dst;
@@ -645,7 +646,7 @@ bool MidiFile::write()
             */
             
             writeShort(1);
-            //writeShort(_division);
+            //writeShort(_division); DELETETHIS 3
             //if(!_tracks->empty())
             //  writeTrack(*(_tracks->begin()));
             
@@ -658,7 +659,7 @@ bool MidiFile::write()
             writeShort(_division);
             for (ciMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i)
                   writeTrack(*i);
-///      }
+
       return (ferror(fp) != 0);
       }
 

@@ -83,7 +83,7 @@ bool Audio::sendMessage(AudioMsg* m, bool doUndo)
            MusEGlobal::song->startUndo();
       sendMsg(m);
       if (doUndo)
-            MusEGlobal::song->endUndo(0);       // MusEGlobal::song->endMsgCmd();
+            MusEGlobal::song->endUndo(0);
       return false;
       }
 
@@ -94,22 +94,17 @@ bool Audio::sendMessage(AudioMsg* m, bool doUndo)
 void Audio::msgRemoveRoute(Route src, Route dst)
 {
       msgRemoveRoute1(src, dst);
-      //if (!MusEGlobal::checkAudioDevice()) return;
       if (src.type == Route::JACK_ROUTE)
       {
           if (!MusEGlobal::checkAudioDevice()) return;
           
-          //if(dst.type == Route::JACK_MIDI_ROUTE)  
           if(dst.type == Route::MIDI_DEVICE_ROUTE)  
           {
-            //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(dst.device);
-            //if(jmd)
             if(dst.device)
             {
               if(dst.device->deviceType() == MidiDevice::JACK_MIDI)
-                //MusEGlobal::audioDevice->disconnect(src.jackPort, dst.device->clientPort());                                           
                 MusEGlobal::audioDevice->disconnect(src.jackPort, dst.device->inClientPort());     // p3.3.55
-              //else
+              //else DELETETHIS
               //{
                 // TODO...
                 //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(dst.device);
@@ -124,17 +119,16 @@ void Audio::msgRemoveRoute(Route src, Route dst)
       {
           if (!MusEGlobal::checkAudioDevice()) return;
           
-          //if(src.type == Route::JACK_MIDI_ROUTE)  
+          //if(src.type == Route::JACK_MIDI_ROUTE)   DELETETHIS
           if(src.type == Route::MIDI_DEVICE_ROUTE)  
           {
-            //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(src.device);
+            //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(src.device); DELETETHIS
             //if(jmd)
             if(src.device)
             {
               if(src.device->deviceType() == MidiDevice::JACK_MIDI)
-                //MusEGlobal::audioDevice->disconnect(src.device->clientPort(), dst.jackPort);
                 MusEGlobal::audioDevice->disconnect(src.device->outClientPort(), dst.jackPort);     // p3.3.55
-              //else
+              //else DELETETHIS
               //{
                 // TODO...
                 //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(src.device);
@@ -169,7 +163,7 @@ void Audio::msgRemoveRoutes(Route src, Route dst)
 {
       msgRemoveRoutes1(src, dst);
       
-      // TODO
+      // TODO or DELETETHIS? looks old.
       /*
       //if (!MusEGlobal::checkAudioDevice()) return;
       if (src.type == Route::JACK_ROUTE)
@@ -230,7 +224,6 @@ void Audio::msgRemoveRoutes(Route src, Route dst)
 //   msgRemoveRoutes1
 //---------------------------------------------------------
 
-// p3.3.55
 void Audio::msgRemoveRoutes1(Route src, Route dst)
       {
       AudioMsg msg;
@@ -251,19 +244,18 @@ void Audio::msgAddRoute(Route src, Route dst)
             if (!MusEGlobal::checkAudioDevice()) return;
             if (isRunning())
             {
-                //if(dst.type == Route::JACK_MIDI_ROUTE)  
+                //if(dst.type == Route::JACK_MIDI_ROUTE)   DELETETHIS
                 if(dst.type == Route::MIDI_DEVICE_ROUTE)  
                 {
-                  //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(dst.device);
+                  //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(dst.device); DELETETHIS
                   //if(jmd)
                   if(dst.device)
                   {
                     if(dst.device->deviceType() == MidiDevice::JACK_MIDI)  
-                      //MusEGlobal::audioDevice->connect(src.jackPort, dst.device->clientPort());
                       MusEGlobal::audioDevice->connect(src.jackPort, dst.device->inClientPort());    // p3.3.55
                     //else
                     //{
-                      // TODO...
+                      // TODO... or DELETETHIS
                       //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(dst.device);
                       //if(amd)
                     //}
@@ -278,19 +270,19 @@ void Audio::msgAddRoute(Route src, Route dst)
             if (!MusEGlobal::checkAudioDevice()) return;
             if (MusEGlobal::audio->isRunning())
             {
-                //if(src.type == Route::JACK_MIDI_ROUTE)  
+                //if(src.type == Route::JACK_MIDI_ROUTE)   DELETETHIS
                 if(src.type == Route::MIDI_DEVICE_ROUTE)  
                 {
-                  //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(src.device);
+                  //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(src.device); DELETETHIS
                   //if(jmd)
                   if(src.device)
                   {
                     if(src.device->deviceType() == MidiDevice::JACK_MIDI)  
-                      //MusEGlobal::audioDevice->connect(src.device->clientPort(), dst.jackPort);
+                      //MusEGlobal::audioDevice->connect(src.device->clientPort(), dst.jackPort); DELETETHIS
                       MusEGlobal::audioDevice->connect(src.device->outClientPort(), dst.jackPort);      // p3.3.55
                     //else
                     //{
-                      // TODO...
+                      // TODO... or DELETETHIS
                       //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(src.device);
                       //if(amd)
                     //}
@@ -343,7 +335,7 @@ void Audio::msgSetRecord(AudioTrack* node, bool val)
       sendMsg(&msg);
       }
 
-/*
+/* DELETETHIS 34
 //---------------------------------------------------------
 //   msgSetVolume
 //---------------------------------------------------------
@@ -411,7 +403,6 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                 {
                   char buffer[128];
                   snprintf(buffer, 128, "%s-%d", name.toLatin1().constData(), i);
-                  //ai->setJackPort(i, MusEGlobal::audioDevice->registerInPort(buffer));
                   ai->setJackPort(i, MusEGlobal::audioDevice->registerInPort(buffer, false));
                 }
                 else if ((i >= n) && ai->jackPort(i)) 
@@ -442,7 +433,6 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                         {
                               char buffer[128];
                               snprintf(buffer, 128, "%s-%d", name.toLatin1().constData(), i);
-                              //ao->setJackPort(i, MusEGlobal::audioDevice->registerOutPort(buffer));
                               ao->setJackPort(i, MusEGlobal::audioDevice->registerOutPort(buffer, false));
                         }
                         else if (i >= n && jp) 
@@ -464,6 +454,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
             }
       }      
       
+      // DELETETHIS 47
       /* TODO TODO: Change all stereo routes to mono. 
       // If we are going from stereo to mono we need to disconnect any stray synti 'mono last channel'...
       if(n == 1 && node->channels() > 1)
@@ -517,13 +508,11 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
       sendMsg(&msg);
       }
 
-/*
+/* DELETETHIS 20
 //---------------------------------------------------------
 //   msgSetPluginCtrlVal
 //---------------------------------------------------------
 
-//void Audio::msgSetPluginCtrlVal(PluginI* plugin, int param, double val)
-// p3.3.43
 void Audio::msgSetPluginCtrlVal(AudioTrack* track, int param, double val)
 {
       AudioMsg msg;
@@ -552,7 +541,6 @@ void Audio::msgSwapControllerIDX(AudioTrack* node, int idx1, int idx2)
       msg.a      = idx1;
       msg.b      = idx2;
       sendMsg(&msg);
-      //muse->arranger->controllerChanged(node);
       MusEGlobal::song->controllerChange(node);
 }
 
@@ -568,7 +556,6 @@ void Audio::msgClearControllerEvents(AudioTrack* node, int acid)
       msg.snode  = node;
       msg.ival   = acid;
       sendMsg(&msg);
-      //muse->arranger->controllerChanged(node);
       MusEGlobal::song->controllerChange(node);
 }
 
@@ -613,7 +600,6 @@ void Audio::msgEraseACEvent(AudioTrack* node, int acid, int frame)
       msg.ival   = acid;
       msg.a      = frame; 
       sendMsg(&msg);
-      //muse->arranger->controllerChanged(node);
       MusEGlobal::song->controllerChange(node);
 }
 
@@ -631,7 +617,6 @@ void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int fr
       msg.a      = frame1; 
       msg.b      = frame2; 
       sendMsg(&msg);
-      //muse->arranger->controllerChanged(node);
       MusEGlobal::song->controllerChange(node);
 }
 
@@ -649,7 +634,6 @@ void Audio::msgAddACEvent(AudioTrack* node, int acid, int frame, double val)
       msg.a      = frame; 
       msg.dval   = val;
       sendMsg(&msg);
-      //muse->arranger->controllerChanged(node);
       MusEGlobal::song->controllerChange(node);
 }
 
@@ -668,7 +652,6 @@ void Audio::msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame
       msg.b      = newFrame; 
       msg.dval   = val;
       sendMsg(&msg);
-      //muse->arranger->controllerChanged(node);
       MusEGlobal::song->controllerChange(node);
 }
 
@@ -705,12 +688,7 @@ void Audio::msgSetSegSize(int bs, int sr)
 void Audio::msgSeek(const Pos& pos)
       {
       if (!MusEGlobal::checkAudioDevice()) return;
-      //MusEGlobal::audioDevice->seekTransport(pos.frame());
-            // p3.3.23
-            //printf("Audio::msgSeek before MusEGlobal::audioDevice->seekTransport frame:%d\n", pos.frame());
       MusEGlobal::audioDevice->seekTransport(pos);
-            // p3.3.23
-            //printf("Audio::msgSeek after MusEGlobal::audioDevice->seekTransport frame:%d\n", pos.frame());
       }
 
 //---------------------------------------------------------
@@ -747,7 +725,6 @@ void Audio::msgPlay(bool val)
                 unsigned sfr = MusEGlobal::song->cPos().frame();
                 unsigned dcfr = MusEGlobal::audioDevice->getCurFrame();
                 if(dcfr != sfr)
-                  //MusEGlobal::audioDevice->seekTransport(sfr);
                   MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());
                 MusEGlobal::audioDevice->startTransport();
             }
@@ -759,7 +736,7 @@ void Audio::msgPlay(bool val)
             }
       }
 
-/*
+/* DELETETHIS 31
 //---------------------------------------------------------
 //   msgShowInstrumentGui
 //---------------------------------------------------------
@@ -849,7 +826,7 @@ void Audio::msgRemoveTracks()
       } 
       while (loop);
             
-     /*       
+     /*    DELETETHIS 28    
             // TESTED: DIDN'T WORK: It still skipped some selected tracks !
             // Quote from SGI STL: "Erasing an element from a map also does not invalidate any iterators, 
             //                      except, of course, for iterators that actually point to the element 
@@ -879,7 +856,7 @@ void Audio::msgRemoveTracks()
             
 }
 
-/*   
+/*    DELETETHIS 18
 //---------------------------------------------------------
 //   msgChangeTrack
 //    oldTrack - copy of the original track befor modification
@@ -971,7 +948,6 @@ bool Song::msgRemoveParts()
 //   msgChangePart
 //---------------------------------------------------------
 
-//void Audio::msgChangePart(Part* oldPart, Part* newPart, bool doUndoFlag)
 void Audio::msgChangePart(Part* oldPart, Part* newPart, bool doUndoFlag, bool doCtrls, bool doClones)
       {
       AudioMsg msg;
@@ -987,7 +963,6 @@ void Audio::msgChangePart(Part* oldPart, Part* newPart, bool doUndoFlag, bool do
 //   msgAddEvent
 //---------------------------------------------------------
 
-//void Audio::msgAddEvent(Event& event, Part* part, bool doUndoFlag)
 void Audio::msgAddEvent(Event& event, Part* part, bool doUndoFlag, bool doCtrls, bool doClones)
       {
       AudioMsg msg;
@@ -1003,7 +978,6 @@ void Audio::msgAddEvent(Event& event, Part* part, bool doUndoFlag, bool doCtrls,
 //   msgDeleteEvent
 //---------------------------------------------------------
 
-//void Audio::msgDeleteEvent(Event& event, Part* part, bool doUndoFlag)
 void Audio::msgDeleteEvent(Event& event, Part* part, bool doUndoFlag, bool doCtrls, bool doClones)
       {
       AudioMsg msg;
@@ -1019,7 +993,6 @@ void Audio::msgDeleteEvent(Event& event, Part* part, bool doUndoFlag, bool doCtr
 //   msgChangeEvent
 //---------------------------------------------------------
 
-//void Audio::msgChangeEvent(Event& oe, Event& ne, Part* part, bool doUndoFlag)
 void Audio::msgChangeEvent(Event& oe, Event& ne, Part* part, bool doUndoFlag, bool doCtrls, bool doClones)
       {
       AudioMsg msg;
@@ -1338,7 +1311,6 @@ void Audio::msgBounce()
       {
       _bounce = true;
       if (!MusEGlobal::checkAudioDevice()) return;
-      //MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->lPos().frame());
       MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->lPos());
       }
 

@@ -144,7 +144,6 @@ GlobalConfigValues config = {
       QRect(0, 0, 400, 300),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
-      //QRect(0, 0, 300, 500),        // GeometryMixer;  // Obsolete
       {
          QString("Mixer A"),
          QRect(0, 0, 300, 500),        // Mixer1
@@ -192,6 +191,4 @@ GlobalConfigValues config = {
 
     };
 
-//GlobalConfigValues globalConfig = config;
-    
 } // namespace MusEGlobal

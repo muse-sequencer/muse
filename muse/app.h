@@ -286,12 +286,7 @@ class MusE : public QMainWindow
       void openRecentMenu();
       void selectProject(QAction* act);
       void cmd(int);
-/*    void copyMeasure();  // commented out by flo: these are not implemented,  DELETETHIS? nobody implemented
-      void eraseMeasure(); // but maybe will be in future (state: revision 988)     them, but there are other
-      void deleteMeasure();                                                           ways to do it (structure...)
-      void createMeasure();
-      void mixTrack();
-*/
+
       void startMidiInputPlugin(int);
       void hideMitPluginTranspose();
       void hideMidiInputTransform();

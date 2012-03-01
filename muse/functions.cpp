@@ -177,7 +177,7 @@ bool quantize_notes(const set<Part*>& parts)
 {
 	if (!MusEGui::quantize_dialog->exec())
 		return false;
-//  (1<<MusEGui::quantize_dialog->raster_power2)
+
   int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
   quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/raster,
 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
@@ -1181,7 +1181,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
 	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
-	                                         // pointer changes (by resize) screw it up
+	                                                     // pointer changes (by resize) screw it up
 	MusEGlobal::song->applyOperationGroup(operations);
 	MusEGlobal::song->update(SC_SELECTION);
 }

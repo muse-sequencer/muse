@@ -112,19 +112,12 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
             for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
             {
               Synth* s = *is;
-              //#ifdef DSSI_DEBUG 
-              //  fprintf(stderr, "scanDSSILib: name:%s listname:%s lib:%s listlib:%s\n", 
-              //          label.toLatin1().constData(), s->name().toLatin1().constData(), fi.baseName(true).toLatin1().constData(), s->baseName().toLatin1().constData());
-              //#endif
-
               if(s->name() == label && s->baseName() == fi.completeBaseName())
                 break;
             }
             if(is != MusEGlobal::synthis.end())
-            {  
-              //delete descr;
               continue;
-            }
+
             DssiSynth* s = new DssiSynth(fi, descr);
             
             if(MusEGlobal::debugMsg)
@@ -152,9 +145,6 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
             
             MusEGlobal::synthis.push_back(s);
           }
-          //else
-          //  delete descr;
-
         }
       }  
       dlclose(handle);
@@ -331,12 +321,8 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
           iUsedIdx.clear();
           midiCtl2PortMap.clear();
           port2MidiCtlMap.clear();
-          //synti->_guiUpdateControls.clear();
           
           const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
-          //#ifdef DSSI_DEBUG 
-          //  printf("DssiSynth::createSIF ladspa plugin PortCount:%lu\n", d->PortCount);
-          //#endif
           
           _portCount = descr->PortCount;
           
@@ -370,8 +356,6 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
               {
                 rpIdx.push_back(_controlInPorts);
                 ++_controlInPorts;
-                // Set to false at first.
-                //synti->_guiUpdateControls.push_back(false);
               }
               else if (LADSPA_IS_PORT_OUTPUT(pd))
               {
@@ -403,13 +387,9 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
       ++_instances;
       sif->init(this);
 
-      //_plugin->incInstances(1);
-
       QString guiPath(info.path() + "/" + info.baseName());
       QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
       _hasGui = guiDir.exists();
-      
-      //sif->initGui();
       
       return sif;
 }
@@ -418,7 +398,6 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
 //   guiVisible
 //---------------------------------------------------------
 
-//bool DssiSynthIF::guiVisible() const
 bool DssiSynthIF::nativeGuiVisible() const
       {
       #ifdef OSC_SUPPORT
@@ -571,7 +550,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             #endif
             
             // This code is duplicated in ::getControllerInfo()
-            //
+            
             
             int ctlnum = DSSI_NONE;
             if(dssi->get_midi_controller_for_port)
@@ -890,11 +869,8 @@ void DssiSynthIF::setParameter(unsigned long n, float v)
 //   write
 //---------------------------------------------------------
 
-//void DssiSynthIF::write(Xml&) const
 void DssiSynthIF::write(int level, Xml& xml) const
 {
-      //bool vstsaved = false;
-
 #ifdef DSSI_VST_CHUNK_SUPPORT
       if(synth->dssi->getCustomData)
       {
@@ -913,16 +889,13 @@ void DssiSynthIF::write(int level, Xml& xml) const
           void* p = 0;
           synth->dssi->getCustomData(handle,&p, &len);
           if (len) {
-                //xml.tag(level++, "midistate");
                 xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);         
                 xml.nput(level++, "<event type=\"%d\"", Sysex);
-                //xml.nput(" datalen=\"%d\">\n", len+7 /*VSTSAVE*/);
-                xml.nput(" datalen=\"%d\">\n", len+9 /* 2 bytes header + "VSTSAVE" */);
+                xml.nput(" datalen=\"%d\">\n", len+9 /* 9 = 2 bytes header + "VSTSAVE"*/);
                 xml.nput(level, "");
                 xml.nput("%02x %02x ", (char)MUSE_SYNTH_SYSEX_MFG_ID, (char)DSSI_SYNTH_UNIQUE_ID);   // Wrap in a proper header
                 xml.nput("56 53 54 53 41 56 45 "); // embed a save marker "string 'VSTSAVE'
                 for (long unsigned int i = 0; i < len; ++i) {
-                      //if (i && (((i+7) % 16) == 0)) {
                       if (i && (((i+9) % 16) == 0)) {
                             xml.nput("\n");
                             xml.nput(level, "");
@@ -932,14 +905,14 @@ void DssiSynthIF::write(int level, Xml& xml) const
                 xml.nput("\n");
                 xml.tag(level--, "/event");
                 xml.etag(level--, "midistate");
-                //vstsaved = true;
                 }
         }        
       }
 #else
       printf("support for vst chunks not compiled in!\n");
 #endif
-
+      
+      // DELETETHIS 97 ???
       /*
       // p3.3.39 Store the state of current program and bank and all input control values, but only if VSTSAVE above didn't do it already! 
       // TODO: Not quite good enough, we would want to store all controls for EACH program, not just the current one. 
@@ -1040,7 +1013,6 @@ void DssiSynthIF::write(int level, Xml& xml) const
       {
         float f = controls[c].val;
         xml.floatTag(level, "param", f);
-        //xml.tag(level, "param name=\"%s\" val=\"%s\"/", name, r->first.c_str(), r->second.c_str());
       }  
 }
 
@@ -1065,17 +1037,6 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
   int chn = e.channel();
   int a   = e.dataA();
   int b   = e.dataB();
-  //for sysex
-  //QByteArray ba = QByteArray((const char*)e.data(), e.len());
-  //we must had 0xF0 at the beginning and 0xF7 at the end of e.data()
-  //ba.push_front(0xF0);
-  //ba.push_back(0xF7);
-  
-  //QByteArray ba();
-  ////ba.assign((const char*)e.data(), e.len());
-  ////ba.duplicate((const char*)e.data(), e.len());
-  ////ba.setRawData((const char*)e.data(), e.len());
-  //int len = e.len() + 2;
   
   int len = e.len();
   char ca[len + 2];
@@ -1117,8 +1078,6 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
       
       int bank = (a >> 8) & 0xff;
       int prog = a & 0xff;
-      //_curBank = bank;
-      //_curProgram = prog;
       synti->_curBankH = 0;
       synti->_curBankL = bank;
       synti->_curProgram = prog;
@@ -1187,29 +1146,12 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
       // For example sustain footpedal or pitch bend may be supported, but not mapped to any LADSPA port.
       if(ip == synth->midiCtl2PortMap.end())
       {
-        // p3.3.39 Changed to return false because of crashes with unknown controllers when switching a midi track 
-        //  among different dssi synths and regular synths etc. For example high RPN offset numbers (set by another 
-        //  device selected into the midi port before selecting this synth) were passing through here when in fact 
-        //  the particular synth had no such midi controllers. 
-        // No, that leaves out regular controllers like footpedal
-        //#ifdef DSSI_DEBUG 
-        //fprintf(stderr, "DssiSynthIF::processEvent dataA:%d not found in map (not a ladspa controller). Ignoring.\n", a);
-        //#endif
-        //return false;
-        
-        //#ifdef DSSI_DEBUG 
-        //fprintf(stderr, "DssiSynthIF::processEvent dataA:%d not found in map (not a ladspa controller). Filling event as regular controller.\n", a);
-        //#endif
-        //snd_seq_ev_set_controller(event, chn, a, b);
-        //return true;
-        
         int ctlnum = a;
         if(MusECore::midiControllerType(a) != MusECore::MidiController::Controller7)
           return false;   // Event pointer not filled. Return false.
         else  
         {
                 #ifdef DSSI_DEBUG 
-                //fprintf(stderr, "DssiSynthIF::processEvent midi event is Controller7. Changing to DSSI_CC type. Current dataA:%d\n", a);
                 fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event is Controller7. Current dataA:%d\n", a);
                 #endif  
                 a &= 0x7f;
@@ -1239,12 +1181,6 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
         if(k > synth->_controlInPorts)
           return false;
           
-        // TODO: If necessary... choose non-existing numbers...
-        //for(int k = 0; k < controlPorts; ++k) 
-        //{
-        //  int i = synth->pIdx[k];
-        //}
-        
         // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
         ctlnum = k + (MusECore::CTRL_NRPN14_OFFSET + 0x2000);
       }  
@@ -1284,14 +1220,13 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
       float val = midi2LadspaValue(ld, i, ctlnum, b); 
       
       #ifdef DSSI_DEBUG 
-      //fprintf(stderr, "DssiSynthIF::processEvent No midi controller for control port:%d port:%d dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
       fprintf(stderr, "DssiSynthIF::processEvent control port:%lu port:%lu dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
       #endif
       
       // Set the ladspa port value.
       controls[k].val = val;
       // FIXME: Testing - Works but is this safe in a RT process callback? Try hooking into gui heartbeat timer instead...
-      //lo_send(uiTarget, uiOscControlPath, "if", i, val);
+      // lo_send(uiTarget, uiOscControlPath, "if", i, val);
       // Notify that changes are to be sent upon heartbeat.
       synti->_guiUpdateControls[k] = true;
       
@@ -1324,14 +1259,11 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
             {
               if(e.len() >= 9)
               {
-                //if (QString((const char*)e.data()).startsWith("VSTSAVE")) {
                 if (QString((const char*)(data + 2)).startsWith("VSTSAVE")) {
 #ifdef DSSI_VST_CHUNK_SUPPORT
                   if(dssi->setCustomData)
                   {
-                    //printf("loading chunk from sysex %s!\n", e.data()+7);
                     printf("loading chunk from sysex %s!\n", data+9);
-                    //dssi->setCustomData(handle, e.data()+7 /* len of str*/,e.len()-7);
                     dssi->setCustomData(handle, (unsigned char*)(data+9) /* len of str*/,e.len()-9);
                   } 
 #else
@@ -1344,6 +1276,8 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
             }  
           }  
         }
+        
+        // DELETETHIS, 50 clean it up or fix it?
         /*
         // p3.3.39 Read the state of current bank and program and all input control values.
         // TODO: Needs to be better. See write().
@@ -1408,7 +1342,6 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
           snd_seq_ev_clear(event); 
           event->queue = SND_SEQ_QUEUE_DIRECT;
           snd_seq_ev_set_sysex(event, len,
-            //(unsigned char*)ba.data());
             (unsigned char*)ca);
         }
       }  
@@ -1430,18 +1363,9 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
 
 MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MPEventList* el, MusECore::iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
 {
-  //#ifdef DSSI_DEBUG 
-  //  fprintf(stderr, "DssiSynthIF::getData elsize:%d pos:%d ports:%d samples:%d processed already?:%d\n", el->size(), pos, ports, n, synti->processed());
-  //#endif
-  
-  // Grab the control ring buffer size now.
-  //const int cbsz = _controlFifo.getSize(); 
-  
   // We may not be using nevents all at once - this will be just the maximum. 
   unsigned long nevents = el->size() + synti->eventFifo.getSize(); 
   snd_seq_event_t events[nevents];
-  // No, do this in processEvent.
-  //memset(events, 0, sizeof(events)); 
   
   int frameOffset = MusEGlobal::audio->getFrameOffset();
   unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();  
@@ -1449,15 +1373,11 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
   // All ports must be connected to something!
   unsigned long nop, k;
   
-  // Watch our limits.
-  //willyfoobar-2011-02-13
-  //old code//np = ports > synth->_outports ? synth->_outports : ports;
   nop = ((unsigned long) ports) > synth->_outports ? synth->_outports : ((unsigned long) ports);
   
   const DSSI_Descriptor* dssi = synth->dssi;
   const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
   unsigned long sample = 0;
-  int loopcount = 0;      // REMOVE Tim.
   
   // To remember the last retrieved value of each AudioTrack controller. 
   //float prev_ctrl_values[synth->_controlInPorts];
@@ -1503,12 +1423,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
   {
     RouteList* irl = ((MusECore::AudioTrack*)synti)->inRoutes();
     iRoute i = irl->begin();
-    if(i->track->isMidiTrack())
-    {
-      //if(MusEGlobal::debugMsg)
-        //printf("DssiSynthIF::getData: Error: First route is a midi track route!\n");   
-    }
-    else
+    if(!i->track->isMidiTrack())
     {
       int ch     = i->channel       == -1 ? 0 : i->channel;
       int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
@@ -1516,14 +1431,9 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       
       if((unsigned)ch < synth->_inports && (unsigned)(ch + chs) <= synth->_inports)
       {  
-        //printf("DssiSynthIF::getData calling copyData on %s ch:%d remch:%d chs:%d\n", i->track->name().toLatin1().constData(), ch, remch, chs);  
-        
         int h = remch + chs;
         for(int j = remch; j < h; ++j)
-        {
-          //printf(" setting used idx:%d\n", j);  
           synth->iUsedIdx[j] = true;
-        }
         
         ((MusECore::AudioTrack*)i->track)->copyData(pos, chs, ch, -1, nframes, &audioInBuffers[remch]);
       }
@@ -1533,11 +1443,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     for(; i != irl->end(); ++i)
     {
       if(i->track->isMidiTrack())
-      {
-        //if(MusEGlobal::debugMsg)
-        //  printf("DssiSynthIF::getData: Error: Route is a midi track route!\n");     
         continue;
-      }
 
       int ch     = i->channel       == -1 ? 0 : i->channel;
       int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
@@ -1545,8 +1451,6 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       
       if((unsigned)ch < synth->_inports && (unsigned)(ch + chs) <= synth->_inports)
       {  
-        //printf("DssiSynthIF::getData calling addData on %s ch:%d remch:%d chs:%d\n", i->track->name().toLatin1().constData(), ch, remch, chs);  
-
         bool u1 = synth->iUsedIdx[remch];
         if(chs >= 2) 
         {
@@ -1579,10 +1483,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
           
         int h = remch + chs;
         for(int j = remch; j < h; ++j)
-        {
-          //printf(" setting used idx:%d\n", j);  
           synth->iUsedIdx[j] = true;
-        }
       }
     }
   }  
@@ -1600,22 +1501,17 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
         
   while(sample < nframes)
   {
-    //unsigned long nsamp = n;
-    //unsigned long nsamp = n - sample;
     unsigned long nsamp = usefixedrate ? fixedsize : nframes - sample;
     bool found = false;
     unsigned long frame = 0; 
     unsigned long index = 0;
     unsigned long evframe; 
     // Get all control ring buffer items valid for this time period...
-    //for(int m = 0; m < cbsz; ++m)   // Doesn't like this. Why?
     while(!_controlFifo.isEmpty())
     {
-      //ControlValue v = _controlFifo.get(); 
       ControlEvent v = _controlFifo.peek(); 
       // The events happened in the last period or even before that. Shift into this period with + n. This will sync with MusEGlobal::audio. 
       // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
-      //evframe = (pos + frameOffset > v.frame + n) ? 0 : v.frame - pos - frameOffset + n; 
       evframe = (syncFrame > v.frame + nframes) ? 0 : v.frame - syncFrame + nframes; 
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
@@ -1626,34 +1522,14 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
         evframe = frame;  
       }    
       
-      //printf("DssiSynthIF::getData ctrl dssi:%d idx:%lu frame:%lu val:%f unique:%d evframe:%lu\n", 
-      //        synth->_isDssiVst, v.idx, v.frame, v.value, v.unique, evframe);   // REMOVE Tim.
-      // Process only items in this time period. Make sure to process all
-      //  subsequent items which have the same frame. 
-      //if(v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
-      //if(v.frame < sample || v.frame >= (sample + nsamp) || (found && v.frame != frame))  
-      //if(v.frame < sample || v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
-      //if(v.frame < startPos || v.frame >= (endPos + frameOffset)  
-      //if(evframe < sample || evframe >= n  
-      //if(evframe < sample || evframe >= (n + frameOffset)
       if(evframe >= nframes
-         //|| (found && v.frame != frame)  
-         //|| (!usefixedrate && found && !v.unique && v.frame != frame)  
-         //|| (found && !v.unique && evframe != frame)  
-         // Not enough requested samples to satisfy minimum setting? Keep going.
          || (found && !v.unique && (evframe - sample >= min_per))  
-         // dssi-vst needs them serialized and accounted for, no matter what. This works with fixed rate 
-         //  because nsamp is constant. But with packets, we need to guarantee at least one-frame spacing. 
-         // Although we likely won't be using packets with dssi-vst, so it's OK for now.
-         //|| (found && v.idx == index))  
-         //|| (usefixedrate && found && v.idx == index))  // Try this.
-         || (usefixedrate && found && v.unique && v.idx == index))  // 
+         || (usefixedrate && found && v.unique && v.idx == index))
         break;
       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
       if(v.idx >= synth->_controlInPorts) // Sanity check.
         break;
       found = true;
-      //frame = v.frame;
       frame = evframe;
       index = v.idx;
       // Set the ladspa control port value.
@@ -1664,9 +1540,9 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       {
         // Since we are now in the audio thread context, there's no need to send a message,
         //  just modify directly.
-        //MusEGlobal::audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
         synti->setPluginCtrlVal(genACnum(id(), v.idx), v.value);
         
+        // DELETETHIS 15, cleanup, fix, maybe just keep it? dunno.
         // Record automation.
         // NO! Take care of this immediately in the OSC control handler, because we don't want 
         //  any delay.
@@ -1685,6 +1561,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       
     }
     
+    // DELETETHIS 10 ?
     // Process automation control values now.
     //if(MusEGlobal::automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
     //{
@@ -1695,15 +1572,10 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     //  }      
     //}
     
-    //if(found)
     if(found && !usefixedrate)
-      //nsamp = frame - sample + 1;
       nsamp = frame - sample;
     if(sample + nsamp >= nframes)         // Safety check.
       nsamp = nframes - sample; 
-    
-    //printf("DssiSynthIF::getData n:%d frame:%lu sample:%lu nsamp:%lu pos:%d fOffset:%d syncFrame:%lu loopcount:%d\n", 
-    //       n, frame, sample, nsamp, pos, frameOffset, syncFrame, loopcount);   // REMOVE Tim.
     
     // TODO: TESTING: Don't allow zero-length runs. This could/should be checked in the control loop instead.
     // Note this means it is still possible to get stuck in the top loop (at least for a while).
@@ -1714,7 +1586,6 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     // Process event list events...
     for(; start_event != el->end(); ++start_event) 
     {
-      //if(i->time() >= (endPos + frameOffset))  // NOTE: frameOffset? Tested, examined printouts of times: Seems OK for playback.
       if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
         break;
         
@@ -1757,12 +1628,10 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
         int ft = start_event->time() - frameOffset - pos;
         if(ft < 0)
           ft = 0;
-        //if (ft >= (int)MusEGlobal::segmentSize) 
+
         if (ft >= int(sample + nsamp)) 
         {
-          printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
-          ///if (ft > (int)MusEGlobal::segmentSize)
-            //ft = MusEGlobal::segmentSize - 1;
+            printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
             ft = sample + nsamp - 1;
         }
         // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
@@ -1776,14 +1645,12 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     // Now process putEvent events...
     while(!synti->eventFifo.isEmpty()) 
     {
-      //MusECore::MidiPlayEvent e = synti->eventFifo.get();  
       MusECore::MidiPlayEvent e = synti->eventFifo.peek();  
       
       #ifdef DSSI_DEBUG 
       fprintf(stderr, "DssiSynthIF::getData eventFifo event time:%d\n", e.time());
       #endif
       
-      //if(e.time() >= (endPos + frameOffset))  
       if(e.time() >= (pos + sample + nsamp + frameOffset))  
         break;
       
@@ -1795,13 +1662,9 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
         int ft = e.time() - frameOffset - pos;
         if(ft < 0)
           ft = 0;
-        //if (ft >= (int)MusEGlobal::segmentSize) 
         if (ft >= int(sample + nsamp)) 
         {
-          //printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", e.time(), pos, frameOffset, ft, MusEGlobal::segmentSize);
-          printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
-          ///if (ft > (int)MusEGlobal::segmentSize)
-            //ft = MusEGlobal::segmentSize - 1;
+            printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
             ft = sample + nsamp - 1;
         }
         // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
@@ -1822,7 +1685,6 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     // Connect all inputs either to some local buffers, or a silence buffer. 
     for(k = 0; k < synth->_inports; ++k)
     {  
-      //printf(" k:%d synth->iIdx[k]:%d\n", k, synth->iIdx[k]);  
       if(synth->iUsedIdx[k])
       {
         synth->iUsedIdx[k] = false; // Reset
@@ -1830,7 +1692,6 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       }
       else
       {
-        //printf(" input used size:%ld idx:%ld = %d silencing...\n", synth->iUsedIdx.size(), k, synth->iUsedIdx[k]);  
         descr->connect_port(handle, synth->iIdx[k], audioInSilenceBuf + sample);
       }  
     }
@@ -1853,7 +1714,6 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     //}
     
     sample += nsamp;
-    loopcount++;       // REMOVE Tim.
   }
   
   return start_event;
@@ -1871,7 +1731,6 @@ bool DssiSynthIF::putEvent(const MusECore::MidiPlayEvent& ev)
       if (MusEGlobal::midiOutputTrace)
             ev.dump();
       return synti->eventFifo.put(ev);
-      //return false;
       }
 
 //---------------------------------------------------------
@@ -1900,7 +1759,6 @@ void DssiSynth::incInstances(int val)
             iUsedIdx.clear();
             midiCtl2PortMap.clear();
             port2MidiCtlMap.clear();
-            //synti->_guiUpdateControls.clear();
       }
 }
 
@@ -1991,8 +1849,6 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
       int ch      = 0;        // TODO: ??
       int port    = synti->midiPort();        
       
-      //_curBank = bank;
-      //_curProgram = program;
       synti->_curBankH = 0;
       synti->_curBankL = bank;
       synti->_curProgram = program;
@@ -2000,11 +1856,8 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
       bank    &= 0xff;
       program &= 0xff;
       
-      //MidiEvent event(0, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, (bank << 8) + program);
-      
       if(port != -1)
       {
-        //MusECore::MidiPlayEvent event(0, port, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, (bank << 8) + program);
         MusECore::MidiPlayEvent event(0, port, ch, MusECore::ME_PROGRAM, (bank << 8) + program, 0);
       
         #ifdef DSSI_DEBUG 
@@ -2014,7 +1867,7 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
         MusEGlobal::midiPorts[port].sendEvent(event);
       }
       
-      //synti->playMidiEvent(&event); // TODO
+      //synti->playMidiEvent(&event); // TODO DELETETHIS 7 hasn't changed since r462
       //
       //MidiDevice* md = dynamic_cast<MidiDevice*>(synti);
       //if(md)
@@ -2050,11 +1903,12 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
     return 0;
   }
   
+  // DELETETHIS????: is the below still correct? of so, then keep it of course!
   // p3.3.39 Set the DSSI control input port's value.
   // Observations: With a native DSSI synth like LessTrivialSynth, the native GUI's controls do not change the sound at all
   //  ie. they don't update the DSSI control port values themselves. 
   // Hence in response to the call to this oscControl, sent by the native GUI, it is required to that here.
-///  controls[cport].val = value;
+///  controls[cport].val = value; DELETETHIS
   // DSSI-VST synths however, unlike DSSI synths, DO change their OWN sound in response to their gui controls.
   // AND this function is called. 
   // Despite the descrepency we are STILL required to update the DSSI control port values here 
@@ -2071,6 +1925,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   // (Because the server simply ignores the 'expected' messages.)
   //
   // Well, at least here are the fifos. Try this ...
+  // DELETETHIS 20 pretty old as well
   /*
   OscControlFifo* cfifo = _oscif.oscFifo(cport); 
   if(cfifo)
@@ -2093,13 +1948,12 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   ce.unique = synth->_isDssiVst;    // Special for messages from vst gui to host - requires processing every message.
   ce.idx = cport;
   ce.value = value;
-  // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
-  //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
-  //  are treated when they arrive in our ALSA driver.) 
-  //ce.frame = MusEGlobal::audio->timestamp();  
-  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
-  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
-  ce.frame = MusEGlobal::audio->curFrame();  
+
+  ce.frame = MusEGlobal::audio->curFrame();
+  // don't use timestamp(), because it's circular, which is making it impossible to deal
+  // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
+
+  
   if(_controlFifo.put(ce))
   {
     fprintf(stderr, "DssiSynthIF::oscControl: fifo overflow: in control number:%lu\n", cport);
@@ -2113,7 +1967,6 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   // That makes this pretty useless... But what the heck...
   if(id() != -1)
   {
-    //int id = genACnum(_id, cport);
     unsigned long pid = genACnum(id(), cport);
     AutomationType at = synti->automationType();
   
@@ -2126,17 +1979,6 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
     synti->recordAutomation(pid, value);
   } 
    
-  //MusECore::ciMidiCtl2LadspaPort ip = synth->port2MidiCtlMap.find(cport);
-  //if(ip != synth->port2MidiCtlMap.end())
-  //{
-    // TODO: TODO: Update midi MusE's midi controller knobs, sliders, boxes etc with a call to the midi port's setHwCtrlState() etc.
-    // But first we need a ladspa2MidiValue() function!  ... 
-    //
-    //
-    //float val = ladspa2MidiValue(ld, i, ?, ?); 
-  
-  //}
-
   return 0;
 }
 
@@ -2163,15 +2005,6 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
         
         MusEGlobal::midiPorts[port].sendEvent(event);
       }
-      
-      //synti->playMidiEvent(&event); // TODO
-      //
-      //MidiDevice* md = dynamic_cast<MidiDevice*>(synti);
-      //if(md)
-      //  md->putEvent(event);
-      //
-      //synti->putEvent(event); 
-      //
       
       return 0;
       }
@@ -2217,6 +2050,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
             free(message);
             }
 
+      // DELETETHIS 6 ???
       // "also call back on UIs for plugins other than the one
       //  that requested this:"
       // if (n != instance->number && instances[n].uiTarget) {
@@ -2262,7 +2096,6 @@ void DssiSynthIF::queryPrograms()
 //   getPatchName
 //---------------------------------------------------------
 
-//QString DssiSynthIF::getPatchName(int, int prog)
 const char* DssiSynthIF::getPatchName(int /*chan*/, int prog, MType /*type*/, bool /*drum*/)
       {
       unsigned program = prog & 0x7f;
@@ -2315,12 +2148,6 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
   const DSSI_Descriptor* dssi = synth->dssi;
   const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
   
-  // Hmm, <map> has a weird [] operator. Would it work?
-  // For now just use duplicate code found in ::init()
-  //iMidiCtl2LadspaPort ip = midiCtl2PortMap[id];
-  //int ctlnum = ip->first;
-  //int k = ip->second;
-  
   unsigned long i = controls[id].idx;   
   
   #ifdef DSSI_DEBUG 
@@ -2335,12 +2162,6 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
   // No controller number? Give it one.
   if(ctlnum == DSSI_NONE)
   {
-    // TODO: If neccesary... choose non-existing numbers...
-    //for(int k = 0; k < controlPorts; ++k) 
-    //{
-    //  int i = synth->pIdx[k];
-    //}
-    
     // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
     ctlnum = MusECore::CTRL_NRPN14_OFFSET + 0x2000 + id;
   }
@@ -2393,9 +2214,6 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
 
 int DssiSynthIF::channels() const 
 { 
-    //willyfoobar-2011-02-13
-    //!! either change return type to unsigend long or do this change
-    //old code //return synth->_outports > MAX_CHANNELS ? MAX_CHANNELS : synth->_outports; 
     return ((int)synth->_outports) > MAX_CHANNELS ? MAX_CHANNELS : ((int)synth->_outports) ;
 }
 

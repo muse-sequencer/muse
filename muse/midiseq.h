@@ -42,7 +42,6 @@ class SynthI;
 //---------------------------------------------------------
 
 class MidiSeq : public Thread {
-      //int realRtcTicks;
       int timerFd;
       int idle;
       int prio;   // realtime priority
@@ -52,9 +51,6 @@ class MidiSeq : public Thread {
 /* Testing */
       bool playStateExt;       // used for keeping play state in sync functions
       int recTick;            // ext sync tick position
-//      int lastTickPos;        // position of last sync tick
-      // run values:
-//      unsigned _midiTick;
       double mclock1, mclock2;
       double songtick1, songtick2;
       int recTick1, recTick2;
@@ -78,16 +74,12 @@ class MidiSeq : public Thread {
       void updatePollFd();
 
       void mtcSyncMsg(const MTC&, int, bool);
-      //void mtcInputFull(const unsigned char* p, int n);
-      //void nonRealtimeSystemSysex(const unsigned char* p, int n);
 
    public:
-      //MidiSeq(int prio, const char* name);
       MidiSeq(const char* name);
       
       ~MidiSeq();
       
-      //bool start();
       virtual void start(int);
       
       virtual void threadStop();
@@ -98,14 +90,11 @@ class MidiSeq : public Thread {
       void realtimeSystemInput(int, int);
       void mtcInputQuarter(int, unsigned char);
       void setSongPosition(int, int);
-      // void eventReceived(MidiRecordEvent& event);
-      //void mmcInput(const unsigned char* p, int n);
       void mmcInput(int, const unsigned char*, int);
       void mtcInputFull(int, const unsigned char*, int);
       void nonRealtimeSystemSysex(int, const unsigned char*, int);
 
       void msgMsg(int id);
-      //void msgProcess();
       void msgSeek();
       void msgStop();
       void msgSetRtc();

@@ -1,12 +1,12 @@
-  //=========================================================
-  //  MusE
-  //  Linux Music Editor
-  //  $Id: rtctimer.h,v 1.1.2.3 2005/08/21 18:11:28 spamatica Exp $
-  //
-  //  Most code moved from midiseq.cpp
-  //
-  //  (C) Copyright -2004 Werner Schweer (werner@seh.de)
-  //  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: rtctimer.h,v 1.1.2.3 2005/08/21 18:11:28 spamatica Exp $
+//
+//  Most code moved from midiseq.cpp
+//
+//  (C) Copyright -2004 Werner Schweer (werner@seh.de)
+//  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-  //=========================================================
+//=========================================================
 
 #ifndef __RTCTIMER_H__
 #define __RTCTIMER_H__
@@ -59,4 +59,4 @@ class RtcTimer : public Timer{
 
 } // namespace MusECore
 
-#endif //__ALSATIMER_H__
+#endif //__RTCTIMER_H__

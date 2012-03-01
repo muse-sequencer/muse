@@ -40,12 +40,9 @@
 #include "ctrl.h"
 #include "controlfifo.h"
 
-//#include "stringparam.h"
-
 #include "config.h"
  
 #ifdef OSC_SUPPORT
-//class OscIF;
 #include "osc.h"
 #endif
 
@@ -103,7 +100,6 @@ class Plugin {
       const DSSI_Descriptor* dssi_descr;
       #endif
       
-      //LADSPA_PortDescriptor* _portDescriptors;
       unsigned long _portCount;
       unsigned long _inports;
       unsigned long _outports;
@@ -122,7 +118,7 @@ class Plugin {
       unsigned long id() const                     { return _uniqueID; }
       QString maker() const                        { return _maker; }
       QString copyright() const                    { return _copyright; }
-      QString lib(bool complete = true) /*const*/  { return complete ? fi.completeBaseName() : fi.baseName(); } // ddskrjo const
+      QString lib(bool complete = true)            { return complete ? fi.completeBaseName() : fi.baseName(); } // ddskrjo const
       QString dirPath(bool complete = true) const  { return complete ? fi.absolutePath() : fi.path(); }
       QString filePath() const                     { return fi.filePath(); }
       QString fileName() const                     { return fi.fileName(); }
@@ -155,7 +151,7 @@ class Plugin {
             }
       
       #ifdef OSC_SUPPORT
-      int oscConfigure(LADSPA_Handle /*handle*/, const char* /*key*/, const char* /*value*/);
+      int oscConfigure(LADSPA_Handle handle, const char* key, const char* value);
       #endif
       
       unsigned long ports() { return _portCount; }
@@ -166,22 +162,19 @@ class Plugin {
       
       LADSPA_PortRangeHint range(unsigned long i) {
             // FIXME:
-            //return plugin ? plugin->PortRangeHints[i] : 0;
+            //return plugin ? plugin->PortRangeHints[i] : 0; DELETETHIS
             return plugin->PortRangeHints[i];
             }
 
       float defaultValue(unsigned long port) const; 
       void range(unsigned long i, float*, float*) const;
-      CtrlValueType ctrlValueType(unsigned long /*i*/) const;
-      CtrlList::Mode ctrlMode(unsigned long /*i*/) const;
+      CtrlValueType ctrlValueType(unsigned long i) const;
+      CtrlList::Mode ctrlMode(unsigned long i) const;
       
       const char* portName(unsigned long i) {
             return plugin ? plugin->PortNames[i] : 0;
             }
             
-      // Returns (int)-1 if not an input control.   
-      //unsigned long port2InCtrl(unsigned long p) { return p >= rpIdx.size() ? (unsigned long)-1 : rpIdx[p]; }   
-      
       unsigned long inports() const         { return _inports; }
       unsigned long outports() const        { return _outports; }
       unsigned long controlInPorts() const  { return _controlInPorts; }
@@ -211,7 +204,6 @@ class PluginList : public std::list<Plugin> {
 //---------------------------------------------------------
 
 struct Port {
-      //int idx;
       unsigned long idx;
       float val;
       float tmpVal;
@@ -236,7 +228,7 @@ class PluginIBase
       PluginIBase(); 
       ~PluginIBase(); 
       virtual bool on() const = 0;       
-      virtual void setOn(bool /*val*/) = 0;   
+      virtual void setOn(bool val) = 0;   
       virtual unsigned long pluginID() = 0;        
       virtual int id() = 0;
       virtual QString pluginLabel() const = 0;  
@@ -248,33 +240,33 @@ class PluginIBase
       
       virtual AudioTrack* track() = 0;          
       
-      virtual void enableController(unsigned long /*i*/, bool /*v*/ = true) = 0;   
-      virtual bool controllerEnabled(unsigned long /*i*/) const = 0;          
-      virtual bool controllerEnabled2(unsigned long /*i*/) const = 0;          
+      virtual void enableController(unsigned long i, bool v = true) = 0;   
+      virtual bool controllerEnabled(unsigned long i) const = 0;          
+      virtual bool controllerEnabled2(unsigned long i) const = 0;          
       virtual void updateControllers() = 0;
       
-      virtual void writeConfiguration(int /*level*/, Xml& /*xml*/) = 0;
-      virtual bool readConfiguration(Xml& /*xml*/, bool /*readPreset*/=false) = 0;
+      virtual void writeConfiguration(int level, Xml& xml) = 0;
+      virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
       
       virtual unsigned long parameters() const = 0;                  
       virtual unsigned long parametersOut() const = 0;
-      virtual void setParam(unsigned long /*i*/, float /*val*/) = 0;
-      virtual float param(unsigned long /*i*/) const = 0;            
-      virtual float paramOut(unsigned long /*i*/) const = 0;
-      virtual const char* paramName(unsigned long /*i*/) = 0;
-      virtual const char* paramOutName(unsigned long /*i*/) = 0;
-      virtual LADSPA_PortRangeHint range(unsigned long /*i*/) = 0;
-      virtual LADSPA_PortRangeHint rangeOut(unsigned long /*i*/) = 0;
+      virtual void setParam(unsigned long i, float val) = 0;
+      virtual float param(unsigned long i) const = 0;            
+      virtual float paramOut(unsigned long i) const = 0;
+      virtual const char* paramName(unsigned long i) = 0;
+      virtual const char* paramOutName(unsigned long i) = 0;
+      virtual LADSPA_PortRangeHint range(unsigned long i) = 0;
+      virtual LADSPA_PortRangeHint rangeOut(unsigned long i) = 0;
       
-      virtual CtrlValueType ctrlValueType(unsigned long /*i*/) const = 0;
-      virtual CtrlList::Mode ctrlMode(unsigned long /*i*/) const = 0;
+      virtual CtrlValueType ctrlValueType(unsigned long i) const = 0;
+      virtual CtrlList::Mode ctrlMode(unsigned long i) const = 0;
       QString dssi_ui_filename() const;
       
       MusEGui::PluginGui* gui() const { return _gui; }
       void deleteGui();
 };
 
-/*
+/* DELETETHIS 30
 class PluginBase 
 {
    public:
@@ -328,23 +320,17 @@ class PluginI : public PluginIBase {
       unsigned long controlPorts;      
       unsigned long controlOutPorts;    
       
-      ///PluginGui* _gui;
       bool _on;
       bool initControlValues;
       QString _name;
       QString _label;
 
-      //#ifdef DSSI_SUPPORT
-      //StringParamMap _stringParamMap;
-      //#endif
-      
       #ifdef OSC_SUPPORT
       OscEffectIF _oscif;
       #endif
       bool _showNativeGuiPending;
 
       void init();
-      ///void makeGui();
       
    public:
       PluginI();
@@ -353,8 +339,6 @@ class PluginI : public PluginIBase {
       Plugin* plugin() const { return _plugin; }
       bool on() const        { return _on; }
       void setOn(bool val)   { _on = val; }
-      ///PluginGui* gui() const { return _gui; }
-      ///void deleteGui();
       
       void setTrack(AudioTrack* t)  { _track = t; }
       AudioTrack* track()           { return _track; }
@@ -387,17 +371,10 @@ class PluginI : public PluginIBase {
 
       #ifdef OSC_SUPPORT
       OscEffectIF& oscIF() { return _oscif; }
-      /*
-      int oscConfigure(lo_arg**);
-      int oscControl(lo_arg**);
-      //int oscUpdate(lo_arg**);
-      //int oscExiting(lo_arg**);
-      */
       
-      int oscControl(unsigned long /*dssiPort*/, float /*val*/);
-      int oscConfigure(const char */*key*/, const char */*val*/);
+      int oscControl(unsigned long dssiPort, float val);
+      int oscConfigure(const char *key, const char *val);
       int oscUpdate();
-      //int oscExiting();
       #endif
       
       void writeConfiguration(int level, Xml& xml);
@@ -453,7 +430,6 @@ class Pipeline : public std::vector<PluginI*> {
       QString name(int idx) const;
       void showGui(int, bool);
       bool isDssiPlugin(int) const; 
-      //QString dssi_ui_filename(int) const;
       bool has_dssi_ui(int idx) const;
       void showNativeGui(int, bool);
       void deleteGui(int idx);
@@ -477,7 +453,6 @@ extern bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned l
 extern float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int val);
 extern CtrlValueType ladspaCtrlValueType(const LADSPA_Descriptor* plugin, int port);
 extern CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port);
-//extern MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum);
 
 } // namespace MusECore
 
@@ -599,8 +574,6 @@ class PluginDialog : public QDialog {
       void accept();
       void reject();
       void fillPlugs(QAbstractButton*);
-      //void fillPlugs(int i);
-      //void fillPlugs(const QString& sortValue);
       void fillPlugs();
 
    private slots:
@@ -610,8 +583,6 @@ class PluginDialog : public QDialog {
       QComboBox *sortBox;
       static int selectedPlugType;
       static QStringList sortItems;
-      //static int sortColumn;
-      //static Qt::SortOrder sortOrder;
       static QRect geometrySave;
       static QByteArray listSave;
       };

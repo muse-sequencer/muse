@@ -25,7 +25,6 @@
 #define __EVDATA_H__
 
 #include <string.h>
-// #include <memory.h>
 
 namespace MusECore {
 

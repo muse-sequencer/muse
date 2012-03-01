@@ -1,5 +1,4 @@
 //=========================================================
-//=========================================================
 //  MusE
 //  Linux Music Editor
 //  $Id: appearance.cpp,v 1.11.2.5 2009/11/14 03:37:48 terminator356 Exp $
@@ -729,14 +728,12 @@ void Appearance::colorItemSelectionChanged()
 void Appearance::updateColor()
       {
       int r, g, b, h, s, v;
-      //globalAlphaSlider->setEnabled(color);
       rslider->setEnabled(color);
       gslider->setEnabled(color);
       bslider->setEnabled(color);
       hslider->setEnabled(color);
       sslider->setEnabled(color);
       vslider->setEnabled(color);
-      //globalAlphaVal->setEnabled(color);
       rval->setEnabled(color);
       gval->setEnabled(color);
       bval->setEnabled(color);
@@ -748,15 +745,10 @@ void Appearance::updateColor()
       QPalette pal;
       QColor cfc(*color);
       
-      // Oops can't do this - affects all colour items. Need to filter.
-      ///cfc.setAlpha(globalAlphaVal->value());  
-      
       pal.setColor(colorframe->backgroundRole(), cfc);
       colorframe->setPalette(pal);
       color->getRgb(&r, &g, &b);
       color->getHsv(&h, &s, &v);
-      //a = color->alpha();
-      //a = config->globalAlphaBlend;
 
       rslider->blockSignals(true);
       gslider->blockSignals(true);
@@ -898,7 +890,6 @@ void Appearance::addToPaletteClicked()
                   if (r == 0xff && g == 0xff && b == 0xff) {
                         // found empty slot
 		    aPalette->button(i)->toggle();
-                        //aPalette->moveFocus(i); ddskrjo
                         button = (QAbstractButton*)aPalette->button(i); // ddskrjo
                         break;
                         }
@@ -907,11 +898,6 @@ void Appearance::addToPaletteClicked()
       if (button) {
             int id = aPalette->id(button);
             config->palette[id] = *color;
-	    //QPalette pal;
-	    //pal.setColor(button->backgroundRole(), *color);
-            //pal.setColor(QPalette::Window, *color);
-            //pal.setColor(QPalette::Button, *color);
-	    //button->setPalette(pal);
             button->setStyleSheet(QString("background-color: ") + color->name());
             button->update();   //??
             }
@@ -927,8 +913,7 @@ void Appearance::paletteClicked(int id)
             return;
       QAbstractButton* button = (QAbstractButton*)aPalette->button(id); // ddskrjo
       if (button) {
-	QColor c = button->palette().color(QPalette::Window);
-        //QColor c = button->palette().color(button->backgroundRole());
+        QColor c = button->palette().color(QPalette::Window);
             int r, g, b;
             c.getRgb(&r, &g, &b);
             if (r == 0xff && g == 0xff && b == 0xff)

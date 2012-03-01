@@ -239,11 +239,6 @@ void Event::setSndFile(MusECore::SndFileR& sf)
   #ifdef USE_SAMPLERATE
   if(_audConv)
   { 
-    // Do we release? Or keep the converter around, while gaining speed since no rapid creation/destruction. 
-    //if(sf.isNull())
-    //  _audConv = AudioConverter::release(_audConv);
-    //else
-    //  _audConv->setChannels(sf.channels());
     if(!sf.isNull())
       _audConv->setChannels(sf.channels());
   }

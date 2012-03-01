@@ -61,8 +61,6 @@ Pool::~Pool()
 
 void Pool::grow(int idx)
       {
-//      printf("grow memory idx %d\n", idx);
-
       int esize = (idx+1) * sizeof(unsigned long);
 
       Chunk* n    = new Chunk;
@@ -93,14 +91,13 @@ struct mops {
       };
 
 typedef std::list<struct mops, RTalloc<struct mops> > List;
-// typedef std::vector<struct mops> List;
 typedef List::iterator iList;
 
 //---------------------------------------------------------
 //   main
 //    2.8 s  normal                     0.7 vector
 //    2.5 s  RTalloc
-//    1.18    alle optimierungen (0.97)
+//    1.18    all optimisations (0.97)
 //---------------------------------------------------------
 
 int main()

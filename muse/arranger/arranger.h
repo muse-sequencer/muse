@@ -134,7 +134,6 @@ class Arranger : public QWidget {
       void songChanged(int);
       void modeChange(int);
       void setTime(unsigned);
-      void headerMoved();
       void globalPitchChanged(int);
       void globalTempoChanged(int);
       void setTempo50();

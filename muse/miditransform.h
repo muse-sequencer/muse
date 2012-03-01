@@ -68,7 +68,6 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
       MusECore::MidiTransformPrivate* data;
 
       virtual void accept();
-//      virtual void reject();
       void setValOp(QWidget* a, QWidget* b, MusECore::ValOp op);
       void processEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*);
       bool isSelected(MusECore::Event&, MusECore::MidiPart*);

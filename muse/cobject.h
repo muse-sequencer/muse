@@ -146,10 +146,6 @@ class TopWin : public QMainWindow
 //   ToplevelList
 //---------------------------------------------------------
 
-//typedef std::list <TopWin*> ToplevelList;
-//typedef ToplevelList::iterator iToplevel;
-//typedef ToplevelList::const_iterator ciToplevel;
-
 typedef std::list<TopWin*>::iterator iToplevel;
 typedef std::list<TopWin*>::const_iterator ciToplevel;
 

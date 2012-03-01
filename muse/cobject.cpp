@@ -57,8 +57,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	_type=t;
 
 	setObjectName(QString(name));
-	// Allow multiple rows.	Tim.
-	//setDockNestingEnabled(true);
+	//setDockNestingEnabled(true); // Allow multiple rows.	Tim.
 	setIconSize(ICON_SIZE);
 
 	subwinAction=new QAction(tr("As subwindow"), this);
@@ -76,7 +75,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
 	mdisubwin=NULL;
-	_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
+	if (!MusEGlobal::dontShareMenu)
+		_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
+	else
+		_sharesToolsAndMenu=false;
+	
 	if (_defaultSubwin[_type])
 	{
 		setIsMdiWin(true);
@@ -88,6 +91,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 	subwinAction->setChecked(isMdiWin());
 	shareAction->setChecked(_sharesToolsAndMenu);
+	if (MusEGlobal::dontShareMenu)
+		shareAction->setEnabled(false);
 	fullscreenAction->setEnabled(!isMdiWin());
 	
 	if (mdisubwin)
@@ -330,7 +335,7 @@ void TopWin::addToolBar(QToolBar* toolbar)
 {
 	_toolbars.push_back(toolbar);
 	
-	if (!_sharesToolsAndMenu)
+	if (!_sharesToolsAndMenu || MusEGlobal::dontShareMenu)
 		QMainWindow::addToolBar(toolbar);
 	else
 		toolbar->hide();
@@ -348,6 +353,9 @@ QToolBar* TopWin::addToolBar(const QString& title)
 
 void TopWin::shareToolsAndMenu(bool val)
 {
+	if (MusEGlobal::dontShareMenu)
+		return;
+	
 	if (_sharesToolsAndMenu == val)
 	{
 		if (MusEGlobal::debugMsg) printf("TopWin::shareToolsAndMenu() called but has no effect\n");

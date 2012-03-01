@@ -57,16 +57,13 @@ static void* loop(void* mops)
 //   start
 //---------------------------------------------------------
 
-//void Thread::start(void* ptr)
 void Thread::start(int prio, void* ptr)
       {
-      // Changed by Tim. p3.3.17
-      
       userPtr = ptr;
       pthread_attr_t* attributes = 0;
       _realTimePriority = prio;
     
-      /*
+      /* DELETETHIS 14
       attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
       pthread_attr_init(attributes);
       */
@@ -105,7 +102,7 @@ void Thread::start(int prio, void* ptr)
             }
 
 
-      /*
+      /* DELETETHIS 8
       if (pthread_create(&thread, attributes, MusECore::loop, this))
             perror("creating thread failed:");
 //      else
@@ -136,7 +133,6 @@ void Thread::start(int prio, void* ptr)
         free(attributes);
       }
       
-      //undoSetuid();
       }
 
 //---------------------------------------------------------
@@ -145,11 +141,8 @@ void Thread::start(int prio, void* ptr)
 
 void Thread::stop(bool force)
       {
-      // Changed by Tim. p3.3.17
-      
       if (thread == 0)
             return;
-      //if (force && thread > 0) {
       if (force) {
             pthread_cancel(thread);
             threadStop();
@@ -157,7 +150,7 @@ void Thread::stop(bool force)
       _running = false;
       if (thread) {
           if (pthread_join(thread, 0)) {
-                // perror("Failed to join sequencer thread");
+                // perror("Failed to join sequencer thread"); DELETETHIS and the if around?
                 }
           }
       }
@@ -166,14 +159,10 @@ void Thread::stop(bool force)
 //    prio = 0    no realtime scheduling
 //---------------------------------------------------------
 
-//Thread::Thread(int prio, const char* s)
 Thread::Thread(const char* s)
       {
-      // Changed by Tim. p3.3.17
-      
       userPtr          = 0;
       _name            = s;
-      //realTimePriority = prio;
       _realTimePriority = 0;
       
       pfd              = 0;
@@ -182,9 +171,6 @@ Thread::Thread(const char* s)
       _running         = false;
       _pollWait        = -1;
       thread           = 0;
-
-      //if (MusEGlobal::debugMsg)
-      //      printf("Start thread %s with priority %d\n", s, prio);
 
       // create message channels
       int filedes[2];         // 0 - reading   1 - writing
@@ -202,7 +188,7 @@ Thread::Thread(const char* s)
       fromThreadFdr = filedes[0];
       fromThreadFdw = filedes[1];
 
-//      pthread_mutexattr_t mutexattr;
+//      pthread_mutexattr_t mutexattr; DELETETHIS 5
 //      pthread_mutexattr_init(&mutexattr);
 //      pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_TIMED_NP);
 //      pthread_mutex_init(&lock, &mutexattr);
@@ -271,7 +257,7 @@ void Thread::loop()
                   perror("WARNING: Cannot lock memory:");
             }
       
-/*      
+/*      DELETETHIS 46 
       pthread_attr_t* attributes = 0;
       attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
       pthread_attr_init(attributes);
@@ -337,19 +323,13 @@ void Thread::loop()
             printf("Thread: Cannot get current client scheduler: %s\n", strerror(errno));
             }
 
-      /*
-      if (MusEGlobal::debugMsg)
-            printf("Thread <%s> set to %s priority %d\n",
-               _name, policy == SCHED_FIFO ? "SCHED_FIFO" : "SCHED_OTHER",
-                realTimePriority);
-      */          
       if (MusEGlobal::debugMsg)
             printf("Thread <%s, id %p> has %s priority %d\n",
                _name, (void *)pthread_self(), policy == SCHED_FIFO ? "SCHED_FIFO" : "SCHED_OTHER",
                 policy == SCHED_FIFO ? _realTimePriority : 0);
 
 
-//      pthread_mutex_lock(&lock);
+//      pthread_mutex_lock(&lock); DELETETHIS and below
       _running = true;
 //      pthread_cond_signal(&ready);
 //      pthread_mutex_unlock(&lock);
@@ -394,8 +374,6 @@ void Thread::loop()
 
 bool Thread::sendMsg(const ThreadMsg* m)
 {
-      // Changed by Tim. p3.3.17
-
       if (_running) 
       {
             int rv = write(toThreadFdw, &m, sizeof(ThreadMsg*));
@@ -412,7 +390,7 @@ bool Thread::sendMsg(const ThreadMsg* m)
                   perror("Thread::sendMessage(): read pipe failed");
                   return true;
             }
-            //int c;
+            //int c; DELETETHIS 6
             //rv = read(fromThreadFdr, &c, sizeof(c));
             //if (rv != sizeof(c)) {
             //      perror("Thread::sendMessage(): read pipe failed");
@@ -460,7 +438,7 @@ void Thread::readMsg()
       int rv = write(fromThreadFdw, &c, 1);
       if (rv != 1)
             perror("Thread::readMessage(): write pipe failed");
-      //int c = p->serialNo;
+      //int c = p->serialNo; DELETETHIS 4
       //int rv = write(fromThreadFdw, &c, sizeof(c));
       //if (rv != sizeof(c))
       //      perror("Thread::readMsg(): write pipe failed");

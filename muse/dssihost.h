@@ -69,7 +69,6 @@ namespace MusECore {
 struct _DSSI;
 class DssiPluginIF;
 
-//class LadspaPort;
 class Port;
 
 //---------------------------------------------------------
@@ -84,7 +83,6 @@ class DssiSynth : public Synth {
       unsigned long _portCount, _inports, _outports, _controlInPorts, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
-      //std::vector<bool> iUsedIdx;       // During process, tells whether an audio input port was used by any input routes.
       std::vector<int> iUsedIdx;       // During process, tells whether an audio input port was used by any input routes.
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
       MusECore::MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to DSSI port numbers.
@@ -103,7 +101,6 @@ class DssiSynth : public Synth {
       virtual SynthIF* createSIF(SynthI*);
       
       friend class DssiSynthIF;
-      //float defaultValue(int); // Not required
       unsigned long inPorts()     const { return _inports; }
       unsigned long outPorts()    const { return _outports; }
       unsigned long inControls()  const { return _controlInPorts; }
@@ -187,19 +184,18 @@ class DssiSynthIF : public SynthIF, public PluginIBase
 
       #ifdef OSC_SUPPORT
       OscDssiIF& oscIF() { return _oscif; }
-      int oscProgram(unsigned long /*prog*/, unsigned long /*bank*/);
-      int oscControl(unsigned long /*dssiPort*/, float /*val*/);
-      int oscMidi(int /*a*/, int /*b*/, int /*c*/);
-      int oscConfigure(const char */*key*/, const char */*val*/);
+      int oscProgram(unsigned long prog, unsigned long bank);
+      int oscControl(unsigned long dssiPort, float val);
+      int oscMidi(int a, int b, int c);
+      int oscConfigure(const char *key, const char *val);
       int oscUpdate();
-      //int oscExiting();
       #endif
 
       //-------------------------
       // Methods for PluginIBase:
       //-------------------------
       bool on() const;       
-      void setOn(bool /*val*/);   
+      void setOn(bool val);   
       unsigned long pluginID();        
       int id();
       QString pluginLabel() const;  
@@ -209,24 +205,24 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       QString fileName() const;
       QString titlePrefix() const;
       MusECore::AudioTrack* track();          
-      void enableController(unsigned long /*i*/, bool v = true);      
-      bool controllerEnabled(unsigned long /*i*/) const;          
-      bool controllerEnabled2(unsigned long /*i*/) const;          
+      void enableController(unsigned long i, bool v = true);      
+      bool controllerEnabled(unsigned long i) const;          
+      bool controllerEnabled2(unsigned long i) const;          
       void updateControllers();
-      void writeConfiguration(int /*level*/, Xml& /*xml*/);
-      bool readConfiguration(Xml& /*xml*/, bool readPreset=false);
+      void writeConfiguration(int level, Xml& xml);
+      bool readConfiguration(Xml& xml, bool readPreset=false);
 
       unsigned long parameters() const;                            
       unsigned long parametersOut() const;
-      void setParam(unsigned long /*i*/, float /*val*/); 
-      float param(unsigned long /*i*/) const;        
-      float paramOut(unsigned long /*i*/) const;        
-      const char* paramName(unsigned long /*i*/);     
-      const char* paramOutName(unsigned long /*i*/);
-      LADSPA_PortRangeHint range(unsigned long /*i*/);
-      LADSPA_PortRangeHint rangeOut(unsigned long /*i*/);
-      CtrlValueType ctrlValueType(unsigned long /*i*/) const; 
-      CtrlList::Mode ctrlMode(unsigned long /*i*/) const; 
+      void setParam(unsigned long i, float val); 
+      float param(unsigned long i) const;        
+      float paramOut(unsigned long i) const;        
+      const char* paramName(unsigned long i);     
+      const char* paramOutName(unsigned long i);
+      LADSPA_PortRangeHint range(unsigned long i);
+      LADSPA_PortRangeHint rangeOut(unsigned long i);
+      CtrlValueType ctrlValueType(unsigned long i) const; 
+      CtrlList::Mode ctrlMode(unsigned long i) const; 
 
       friend class DssiSynth;
       };

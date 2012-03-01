@@ -23,7 +23,6 @@
 #ifndef __MIDIEDITOR_H__
 #define __MIDIEDITOR_H__
 
-///#include "sig.h"
 #include "al/sig.h"
 #include "cobject.h"
 
@@ -93,10 +92,6 @@ class MidiEditor : public TopWin  {
          QWidget* parent = 0, const char* name = 0);
       ~MidiEditor();
 
-      ///int rasterStep(unsigned tick) const   { return sigmap.rasterStep(tick, _raster); }
-      ///unsigned rasterVal(unsigned v)  const { return sigmap.raster(v, _raster);  }
-      ///unsigned rasterVal1(unsigned v) const { return sigmap.raster1(v, _raster); }
-      ///unsigned rasterVal2(unsigned v) const { return sigmap.raster2(v, _raster); }
       int rasterStep(unsigned tick) const   { return AL::sigmap.rasterStep(tick, _raster); }
       unsigned rasterVal(unsigned v)  const { return AL::sigmap.raster(v, _raster);  }
       unsigned rasterVal1(unsigned v) const { return AL::sigmap.raster1(v, _raster); }

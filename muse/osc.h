@@ -58,8 +58,8 @@ class OscIF
       char* _uiOscShowPath;
       bool _oscGuiVisible;
    
-      virtual bool oscInitGui(const QString& /*typ*/, const QString& /*baseName*/, const QString& /*name*/, 
-                       const QString& /*label*/, const QString& /*filePath*/, const QString& /*guiPath*/);
+      virtual bool oscInitGui(const QString& typ, const QString& baseName, const QString& name, 
+                       const QString& label, const QString& filePath, const QString& guiPath);
                        
    public:
       OscIF();
@@ -72,9 +72,9 @@ class OscIF
       virtual int oscMidi(lo_arg**)      { return 0; }      
       virtual int oscConfigure(lo_arg**) { return 0; } 
    
-      virtual void oscSendProgram(unsigned long /*prog*/, unsigned long /*bank*/);    
-      virtual void oscSendControl(unsigned long /*dssiPort*/, float /*val*/);    
-      virtual void oscSendConfigure(const char */*key*/, const char */*val*/); 
+      virtual void oscSendProgram(unsigned long prog, unsigned long bank);    
+      virtual void oscSendControl(unsigned long dssiPort, float val);    
+      virtual void oscSendConfigure(const char *key, const char *val); 
       
       virtual bool oscInitGui() { return false; }
       virtual void oscShowGui(bool);
@@ -90,15 +90,11 @@ class OscEffectIF : public OscIF
    
    public:
       OscEffectIF() {}
-      //~OscEffectIF();
 
       void oscSetPluginI(PluginI*);
       
       virtual int oscUpdate(lo_arg**);
-      //virtual int oscProgram(lo_arg**);
       virtual int oscControl(lo_arg**);
-      //virtual int oscExiting(lo_arg**);
-      //virtual int oscMidi(lo_arg**);
       virtual int oscConfigure(lo_arg**);
       
       virtual bool oscInitGui();
@@ -114,14 +110,12 @@ class OscDssiIF : public OscIF
       
    public:
       OscDssiIF() {}
-      //~OscDssiIF();
       
       void oscSetSynthIF(DssiSynthIF*);
       
       virtual int oscUpdate(lo_arg**);
       virtual int oscProgram(lo_arg**);
       virtual int oscControl(lo_arg**);
-      //virtual int oscExiting(lo_arg**);
       virtual int oscMidi(lo_arg**);
       virtual int oscConfigure(lo_arg**);
       

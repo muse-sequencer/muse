@@ -59,11 +59,9 @@
 #include "menutitleitem.h"
 #include "tracks_duplicate.h"
 #include "midi.h"
-///#include "sig.h"
 #include "al/sig.h"
 #include "keyevent.h"
 #include <sys/wait.h>
-//#include "utils.h"  
 
 namespace MusEGlobal {
 MusECore::Song* song = 0;
@@ -175,7 +173,9 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       if(n >= (int)MusEGlobal::synthis.size())
         return 0;
         
-      //printf("Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());  
+      if (MusEGlobal::debugMsg)
+        printf("Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());  
+        
       SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
       if(!si)
         return 0;
@@ -347,17 +347,8 @@ Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
       if (!ol->empty()) {
             AudioOutput* ao = ol->front();
             switch(type) {
-                  //case Track::MIDI:
-                  //case Track::DRUM:
-                  //case Track::AUDIO_OUTPUT:
-                  //      break;
-                  
                   case Track::WAVE:
-                  //case Track::AUDIO_GROUP:  // Removed by Tim.
                   case Track::AUDIO_AUX:
-                  //case Track::AUDIO_INPUT:  // Removed by Tim.
-                  // p3.3.38
-                  //case Track::AUDIO_SOFTSYNTH:
                         MusEGlobal::audio->msgAddRoute(Route((AudioTrack*)track, -1), Route(ao, -1));
                         updateFlags |= SC_ROUTE;
                         break;
@@ -396,7 +387,6 @@ void Song::duplicateTracks()
         continue;
       
       if(type == Track::DRUM)
-      //if(track->isDrumTrack())   // For Flo later with new drum tracks. 
         ++drum_found;
       else
       if(type == Track::MIDI)
@@ -454,7 +444,9 @@ void Song::duplicateTracks()
         //  required for fine-grained control over initializing various track types.
         //
         
-        //  Set to 0 to use the copy constructor. Set to 1 to use new + assign().     
+        //  Set to 0 to use the copy constructor. Set to 1 to use new + assign().
+        // DELETETHIS is this still necessary to keep around?
+        //            also consider removing and adding a hint to a revision number instead
   #if 0      
         
         Track* new_track = 0;
@@ -462,7 +454,7 @@ void Song::duplicateTracks()
         switch(track->type()) 
         {
           case Track::AUDIO_SOFTSYNTH:  // TODO: Handle synths.   p4.0.47
-                // ((AudioTrack*)new_track)->addAuxSend(lastAuxIdx);
+                // ((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
                 break;
             
           case Track::MIDI:
@@ -472,25 +464,25 @@ void Song::duplicateTracks()
           case Track::DRUM:
                 new_track = new MidiTrack();
                 new_track->setType(Track::DRUM);
-                //((MidiTrack*)new_track)->setOutChannel(9);
+                //((MidiTrack*)new_track)->setOutChannel(9); DELETETHIS?
                 break;
           case Track::WAVE:
                 new_track = new MusECore::WaveTrack();
-                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx);
+                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
                 break;
           case Track::AUDIO_OUTPUT:
                 new_track = new AudioOutput();
                 break;
           case Track::AUDIO_GROUP:
                 new_track = new AudioGroup();
-                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx);
+                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
                 break;
           case Track::AUDIO_AUX:
                 new_track = new AudioAux();
                 break;
           case Track::AUDIO_INPUT:
                 new_track = new AudioInput();
-                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx);
+                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
                 break;
           default:
                 printf("Song::duplicateTracks: Illegal type %d\n", track->type());
@@ -524,13 +516,6 @@ void Song::duplicateTracks()
     update_flags |= SC_ROUTE;
   MusEGlobal::song->endUndo(update_flags);
   MusEGlobal::audio->msgUpdateSoloStates();
-
-  //if (t->isVisible()) 
-  //{
-    ////deselectTracks();
-    //t->setSelected(true);
-    ////update(SC_SELECTION);
-  //}
 }          
       
 //---------------------------------------------------------
@@ -574,7 +559,7 @@ void Song::deselectTracks()
             (*t)->setSelected(false);
       }
 
-/*      
+/*    DELETETHIS 17   
 //---------------------------------------------------------
 //   changeTrack
 //    oldTrack - copy of the original track befor modification
@@ -625,9 +610,7 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
             // This can be normal for some (redundant) operations.
             if(MusEGlobal::debugMsg)
               printf("Song::changeEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
-            // Removed by T356. Allow it to add the new event. 
-            // (And remove the old one from the midi port controller!)
-            //return;
+            // no "return;" because: Allow it to add the new event.  (And remove the old one from the midi port controller!) (tim)
             }
       else
         part->events()->erase(i);
@@ -673,16 +656,9 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
     {
       MidiPart* part = (MidiPart*)(ip->second);
       const EventList* el = part->cevents();
-      // unsigned len = part->lenTick(); // unneeded, see below.
       for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
       {
         const Event& ev = ie->second;
-        // Added by T356. Do not handle events which are past the end of the part.
-        // Commented out by flo: yes, DO handle them! these are "hidden events"
-        //                       which may be revealed later again!
-        // if(ev.tick() >= len)
-        //   break;
-                    
         if(ev.type() != Controller)
           continue;
           
@@ -821,9 +797,6 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
       iEvent e;
       unsigned endTick;
 
-      // Changed by Tim. p3.3.8
-      
-      //if (punchin()) 
       if((MusEGlobal::audio->loopCount() > 0 && startTick > lPos().tick()) || (punchin() && startTick < lPos().tick()))
       {
             startTick = lpos();
@@ -832,28 +805,17 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
       else 
       {
             s = events->begin();
-//            startTick = s->first;
       }
       
-      // Changed by Tim. p3.3.8
-      
-      //if (punchout()) 
-      //{
-      //      endTick = rpos();
-      //      e = events->lower_bound(endTick);
-      //}
-      //else 
-      //{
-            // search for last noteOff:
-            endTick = 0;
-            for (iEvent i = events->begin(); i != events->end(); ++i) {
-                  Event ev   = i->second;
-                  unsigned l = ev.endTick();
-                  if (l > endTick)
-                        endTick = l;
-                  }
-      //      e = events->end();
-      //}
+      // search for last noteOff:
+      endTick = 0;
+      for (iEvent i = events->begin(); i != events->end(); ++i) {
+            Event ev   = i->second;
+            unsigned l = ev.endTick();
+            if (l > endTick)
+                  endTick = l;
+            }
+
       if((MusEGlobal::audio->loopCount() > 0) || (punchout() && endTick > rPos().tick()) )
       {
             endTick = rpos();
@@ -891,11 +853,6 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             // create new part
             part      = new MidiPart(mt);
             
-            // Changed by Tim. p3.3.8
-            
-            // Honour the Arranger snap settings. (Set to bar by default).
-            //startTick = roundDownBar(startTick);
-            //endTick   = roundUpBar(endTick);
             // Round the start down using the Arranger part snap raster value. 
             startTick = AL::sigmap.raster1(startTick, arrangerRaster());
             // Round the end up using the Arranger part snap raster value. 
@@ -936,23 +893,25 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             // Round the end up (again) using the Arranger part snap raster value. 
             endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
             
-            // Remove all of the part's port controller values. Indicate do not do clone parts.
-            removePortCtrlEvents(part, false);
+            
+            removePortCtrlEvents(part, false); // Remove all of the part's port controller values. Don't do clone parts.
+
             // Clone the part. This doesn't increment aref count, and doesn't chain clones.
             // It also gives the new part a new serial number, but it is 
             //  overwritten with the old one by Song::changePart(), below. 
             Part* newPart = part->clone();
-            // Set the new part's length.
-            newPart->setLenTick(endTick);
-            // Change the part.
-            changePart(part, newPart);
-            // Manually adjust reference counts.
-            part->events()->incARef(-1);
+            
+            newPart->setLenTick(endTick);  // Set the new part's length.
+            changePart(part, newPart);     // Change the part.
+            
+            part->events()->incARef(-1);   // Manually adjust reference counts. HACK!
             newPart->events()->incARef(1);
-            // Replace the part in the clone chain with the new part.
-            replaceClone(part, newPart);
+            
+            replaceClone(part, newPart);   // Replace the part in the clone chain with the new part.
+            
             // Now add all of the new part's port controller values. Indicate do not do clone parts.
             addPortCtrlEvents(newPart, false);
+            
             // Create an undo op. Indicate do port controller values but not clone parts. 
             addUndo(UndoOp(UndoOp::ModifyPart, part, newPart, true, false));
             updateFlags |= SC_PART_MODIFIED;
@@ -964,7 +923,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   for (iEvent i = si; i != ei; ++i) 
                   {
                     Event event = i->second;
-                    // Create an undo op. Indicate do port controller values and clone parts. 
+                    // Indicate do port controller values and clone parts. 
                     addUndo(UndoOp(UndoOp::DeleteEvent, event, newPart, true, true));
                     // Remove the event from the new part's port controller values, and do all clone parts.
                     removePortCtrlEvents(event, newPart, true);
@@ -993,8 +952,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
 
                   for (iEvent i = si; i != ei; ++i) {
                         Event event = i->second;
-                        // Create an undo op. Indicate that controller values and clone parts were handled.
-                        //addUndo(UndoOp(UndoOp::DeleteEvent, event, part));
+                        // Indicate that controller values and clone parts were handled.
                         addUndo(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
                         // Remove the event from the part's port controller values, and do all clone parts.
                         removePortCtrlEvents(event, part, true);
@@ -1006,11 +964,9 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   int tick = event.tick() - partTick;
                   event.setTick(tick);
                   
-                  // Create an undo op. Indicate that controller values and clone parts were handled.
-                  //addUndo(UndoOp(UndoOp::AddEvent, event, part));
+                  // Indicate that controller values and clone parts were handled.
                   addUndo(UndoOp(UndoOp::AddEvent, event, part, true, true));
                   
-                  //addEvent(event, part);
                   if(part->events()->find(event) == part->events()->end())
                     part->events()->add(event);
                   
@@ -1095,7 +1051,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
                 Track *selectedTrack = 0;
                 // loop through list and check if any track is rec enabled
                 // if not then rec enable the selected track
-		MusECore::WaveTrackList* wtl = waves();
+                MusECore::WaveTrackList* wtl = waves();
                 for (MusECore::iWaveTrack i = wtl->begin(); i != wtl->end(); ++i) {
                       if((*i)->recordFlag())
                           {
@@ -1139,6 +1095,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
                       }
                 }
 
+// DELETETHIS? 14
 #if 0
                   // check for midi devices suitable for recording
                   bool portFound = false;
@@ -1226,11 +1183,8 @@ void Song::setMasterFlag(bool val)
       _masterFlag = val;
       if (MusEGlobal::tempomap.setMasterFlag(cpos(), val))
       {
-        //MusEGlobal::audioDevice->setMaster(val);      
         emit songChanged(SC_MASTER);
       }      
-      // Removed. p3.3.26
-      //MusEGlobal::audioDevice->setMaster(val);      
     }
 
 //---------------------------------------------------------
@@ -1311,31 +1265,31 @@ void Song::seekTo(int tick)
 void Song::setPos(int idx, const Pos& val, bool sig,
    bool isSeek, bool adjustScrollbar)
       {
-//      printf("setPos %d sig=%d,seek=%d,scroll=%d  ",
-//         idx, sig, isSeek, adjustScrollbar);
-//      val.dump(0);
-//      printf("\n");
-      //printf("Song::setPos before MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+      if (MusEGlobal::heavyDebugMsg)
+      {
+        printf("setPos %d sig=%d,seek=%d,scroll=%d  ",
+           idx, sig, isSeek, adjustScrollbar);
+        val.dump(0);
+        printf("\n");
+        printf("Song::setPos before MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+      }
       
-      // If seeking audio, ensure frame resolution CAN be kept throughout. This compares apples and oranges. Moved below. p4.0.33   
-      //if (pos[idx] == val)    
-      //     return;
       if (idx == CPOS) {
             _vcpos = val;
             if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
                   if (val == MusEGlobal::audio->pos())  
                   {
-                      //printf("Song::setPos seek MusEGlobal::audio->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
+                      if (MusEGlobal::heavyDebugMsg) printf("Song::setPos seek MusEGlobal::audio->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
                       return;
                   }     
                   MusEGlobal::audio->msgSeek(val);
-                  //printf("Song::setPos after MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+                  if (MusEGlobal::heavyDebugMsg) printf("Song::setPos after MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
                   return;
                   }
             }
       if (val == pos[idx])
       {
-           //printf("Song::setPos MusEGlobal::song->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
+           if (MusEGlobal::heavyDebugMsg) printf("Song::setPos MusEGlobal::song->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
            return;
       }     
       pos[idx] = val;
@@ -1420,13 +1374,7 @@ void Song::rewind()
 
 void Song::rewindStart()
       {
-      // Added by T356
-      //MusEGlobal::audio->msgIdle(true);
-      
       MusEGlobal::audio->msgSeek(Pos(0, true));
-      
-      // Added by T356
-      //MusEGlobal::audio->msgIdle(false);
       }
 
 //---------------------------------------------------------
@@ -1561,15 +1509,6 @@ PartList* Song::getSelectedMidiParts() const
       {
       PartList* parts = new PartList();
 
-      //------------------------------------------------------
-      //    wenn ein Part selektiert ist, diesen editieren
-      //    wenn ein Track selektiert ist, den Ersten
-      //       Part des Tracks editieren, die restlichen sind
-      //       'ghostparts'
-      //    wenn mehrere Parts selektiert sind, dann Ersten
-      //       editieren, die restlichen sind 'ghostparts'
-      //
-      // Rough translation:
       /*
             If a part is selected, edit that. 
             If a track is selected, edit the first 
@@ -1613,16 +1552,16 @@ PartList* Song::getSelectedWaveParts() const
       {
       PartList* parts = new PartList();
 
-      //------------------------------------------------------
-      //    wenn ein Part selektiert ist, diesen editieren
-      //    wenn ein Track selektiert ist, den Ersten
-      //       Part des Tracks editieren, die restlichen sind
-      //       'ghostparts'
-      //    wenn mehrere Parts selektiert sind, dann Ersten
-      //       editieren, die restlichen sind 'ghostparts'
-      //
+      /*
+            If a part is selected, edit that. 
+            If a track is selected, edit the first 
+             part of the track, the rest are 
+             'ghost parts' 
+            When multiple parts are selected, then edit the first,
+              the rest are 'ghost parts'
+      */      
 
-      // markierte Parts sammeln
+      // collect selected parts
       for (ciTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
             MusECore::WaveTrack* track = dynamic_cast<MusECore::WaveTrack*>(*t);
             if (track == 0)
@@ -1634,8 +1573,8 @@ PartList* Song::getSelectedWaveParts() const
                         }
                   }
             }
-      // wenn keine Parts selektiert, dann markierten Track suchen
-      // und alle Parts dieses Tracks zusammensuchen
+      // if no parts are selected, then search the selected track
+      // and collect all parts in this track
 
       if (parts->empty()) {
             for (ciTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
@@ -1655,9 +1594,8 @@ PartList* Song::getSelectedWaveParts() const
 
 void Song::setMType(MType t)
       {
-//   printf("set MType %d\n", t);
       _mtype = t;
-      MusEGlobal::song->update(SC_SONG_TYPE);  // p4.0.7 Tim.
+      MusEGlobal::song->update(SC_SONG_TYPE);
       }
 
 //---------------------------------------------------------
@@ -1666,6 +1604,7 @@ void Song::setMType(MType t)
 
 void Song::beat()
       {
+      // DELETETHIS 15
       #if 0
       // Just a rate test...
       static double _heartbeatRateTimer = 0.0;
@@ -1684,21 +1623,13 @@ void Song::beat()
       
       // Keep the sync detectors running... 
       for(int port = 0; port < MIDI_PORTS; ++port)
-      {
-        // Must keep them running even if there's no device...
-        //if(MusEGlobal::midiPorts[port].device())
           MusEGlobal::midiPorts[port].syncInfo().setTime();
-      }  
       
       
-      //int tick = MusEGlobal::audio->tickPos();
       if (MusEGlobal::audio->isPlaying())
-      {
-        //Pos tick(MusEGlobal::audio->tickPos());
-        //setPos(0, tick, true, false, true);
         setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
-      }
-      // p3.3.40 Update synth native guis at the heartbeat rate.
+
+      // Update synth native guis at the heartbeat rate.
       for(ciSynthI is = _synthIs.begin(); is != _synthIs.end(); ++is)
         (*is)->guiHeartBeat();
       
@@ -1756,11 +1687,9 @@ Marker* Song::getMarkerAt(int t)
       {
       iMarker markerI;
       for (markerI=_markerList->begin(); markerI != _markerList->end(); ++markerI) {
-//                        if (i1->second.current())
-          if (unsigned(t) == markerI->second.tick())//prevent of copmiler warning: comparison signed/unsigned
+          if (unsigned(t) == markerI->second.tick()) //prevent of compiler warning: comparison signed/unsigned
             return &markerI->second;
           }
-      //Marker* marker = _markerList->add(s, t, lck);
       return NULL;
       }
 
@@ -1798,9 +1727,9 @@ Marker* Song::setMarkerLock(Marker* m, bool f)
       return m;
       }
 
-// kommer inte att gå göra undo på, kanske skulle fixa det.
+// kommer inte att gå göra undo på, kanske skulle fixa det. SWEDISH_COMMENT
 
-//void Song::moveMarkers(int startOffset, int ticks)
+//void Song::moveMarkers(int startOffset, int ticks) DELETETHIS 14
 //{
 //  iMarker markerI;
 //  for (markerI=_markerList->rbegin(); markerI != _markerList->rend(); ++markerI) {
@@ -1832,7 +1761,6 @@ void Song::setRecordFlag(Track* track, bool val)
             track->setRecordFlag1(val);
             track->setRecordFlag2(val);
             }
-//      updateFlags |= SC_RECFLAG;
       update(SC_RECFLAG);
 
       }
@@ -1853,8 +1781,7 @@ void Song::rescanAlsaPorts()
 void Song::endMsgCmd()
       {
       if (updateFlags) {
-            //redoList->clear();            // TODO: delete elements in list
-            redoList->clearDelete();        // p4.0.46 Tim.   NOTE Hm, shouldn't this be above?
+            redoList->clearDelete();
             MusEGlobal::undoAction->setEnabled(true);
             MusEGlobal::redoAction->setEnabled(false);
             emit songChanged(updateFlags);
@@ -1935,7 +1862,6 @@ void Song::processMsg(AudioMsg* msg)
                   updateFlags = SC_EVENT_INSERTED;
                   if (addEvent(msg->ev1, (MidiPart*)msg->p2)) {
                         Event ev;
-                        //addUndo(UndoOp(UndoOp::AddEvent, ev, msg->ev1, (Part*)msg->p2));
                         addUndo(UndoOp(UndoOp::AddEvent, ev, msg->ev1, (Part*)msg->p2, msg->a, msg->b));
                         }
                   else
@@ -1950,7 +1876,6 @@ void Song::processMsg(AudioMsg* msg)
                   if(msg->a)
                     removePortCtrlEvents(event, part, msg->b);
                   Event e;
-                  //addUndo(UndoOp(UndoOp::DeleteEvent, e, event, (Part*)part));
                   addUndo(UndoOp(UndoOp::DeleteEvent, e, event, (Part*)part, msg->a, msg->b));
                   deleteEvent(event, part);
                   updateFlags = SC_EVENT_REMOVED;
@@ -1962,7 +1887,6 @@ void Song::processMsg(AudioMsg* msg)
                   changeEvent(msg->ev1, msg->ev2, (MidiPart*)msg->p3);
                   if(msg->a)
                     addPortCtrlEvents(msg->ev2, (Part*)msg->p3, msg->b);
-                  //addUndo(UndoOp(UndoOp::ModifyEvent, msg->ev2, msg->ev1, (Part*)msg->p3));
                   addUndo(UndoOp(UndoOp::ModifyEvent, msg->ev2, msg->ev1, (Part*)msg->p3, msg->a, msg->b));
                   updateFlags = SC_EVENT_MODIFIED;
                   break;
@@ -1972,10 +1896,9 @@ void Song::processMsg(AudioMsg* msg)
                   insertTrack2(msg->track, msg->ival);
                   break;
             case SEQM_REMOVE_TRACK:
-                  //removeTrack2(msg->track);
                   cmdRemoveTrack(msg->track);
                   break;
-            //case SEQM_CHANGE_TRACK:    
+            //case SEQM_CHANGE_TRACK:     DELETETHIS 3
             //      changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
             //      break;
             case SEQM_ADD_PART:
@@ -1985,7 +1908,6 @@ void Song::processMsg(AudioMsg* msg)
                   cmdRemovePart((Part*)msg->p1);
                   break;
             case SEQM_CHANGE_PART:
-                  //cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
                   cmdChangePart((Part*)msg->p1, (Part*)msg->p2, msg->a, msg->b);
                   break;
             
@@ -2061,7 +1983,6 @@ void Song::cmdRemovePart(Part* part)
       removePart(part);
       addUndo(UndoOp(UndoOp::DeletePart, part));
       part->events()->incARef(-1);
-      //part->unchainClone();
       unchainClone(part);
       updateFlags = SC_PART_REMOVED;
       }
@@ -2072,14 +1993,11 @@ void Song::cmdRemovePart(Part* part)
 
 void Song::cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones)
       {
-      //printf("Song::cmdChangePart before changePart oldPart:%p events:%p refs:%d Arefs:%d sn:%d newPart:%p events:%p refs:%d Arefs:%d sn:%d\n", oldPart, oldPart->events(), oldPart->events()->refCount(), oldPart->events()->arefCount(), oldPart->sn(), newPart, newPart->events(), newPart->events()->refCount(), newPart->events()->arefCount(), newPart->sn());
-      
       if(doCtrls)
         removePortCtrlEvents(oldPart, doClones);
       
       changePart(oldPart, newPart);
       
-      //addUndo(UndoOp(UndoOp::ModifyPart, oldPart, newPart));
       addUndo(UndoOp(UndoOp::ModifyPart, oldPart, newPart, doCtrls, doClones));
       
       // Changed by T356. Do not decrement ref count if the new part is a clone of the old part, since the event list
@@ -2087,16 +2005,10 @@ void Song::cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClon
       if(oldPart->cevents() != newPart->cevents())
         oldPart->events()->incARef(-1);
       
-      //oldPart->replaceClone(newPart);
-      
-      //printf("Song::cmdChangePart before repl/unchClone oldPart:%p events:%p refs:%d Arefs:%d sn:%d newPart:%p events:%p refs:%d Arefs:%d sn:%d\n", oldPart, oldPart->events(), oldPart->events()->refCount(), oldPart->events()->arefCount(), oldPart->sn(), newPart, newPart->events(), newPart->events()->refCount(), newPart->events()->arefCount(), newPart->sn());
-      
       replaceClone(oldPart, newPart);
 
       if(doCtrls)
         addPortCtrlEvents(newPart, doClones);
-      
-      //printf("Song::cmdChangePart after repl/unchClone oldPart:%p events:%p refs:%d Arefs:%d sn:%d newPart:%p events:%p refs:%d Arefs:%d sn:%d\n", oldPart, oldPart->events(), oldPart->events()->refCount(), oldPart->events()->arefCount(), oldPart->sn(), newPart, newPart->events(), newPart->events()->refCount(), newPart->events()->arefCount(), newPart->sn());
       
       updateFlags = SC_PART_MODIFIED;
       }
@@ -2159,7 +2071,6 @@ void Song::clear(bool signal, bool clear_all)
         loop = false;
         for(iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
         {
-          //if((*imd)->deviceType() == MidiDevice::JACK_MIDI)
           if(dynamic_cast< MidiJackDevice* >(*imd))
           {
             if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
@@ -2175,9 +2086,7 @@ void Song::clear(bool signal, bool clear_all)
               break;
             }  
           }  
-          else
-          //if((*imd)->deviceType() == MidiDevice::ALSA_MIDI)
-          if(dynamic_cast< MidiAlsaDevice* >(*imd))
+          else if(dynamic_cast< MidiAlsaDevice* >(*imd))
           {
             // With alsa devices, we must not delete them (they're always in the list). But we must 
             //  clear all routes. They point to non-existant midi tracks, which were all deleted above.
@@ -2193,6 +2102,7 @@ void Song::clear(bool signal, bool clear_all)
       MusEGlobal::keymap.clear();
       
       undoList->clearDelete();
+      // DELETETHIS
       //redoList->clear();  // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists. 
       redoList->clearDelete();                   // p4.0.46 Tim
       if(MusEGlobal::undoAction)
@@ -2230,7 +2140,6 @@ void Song::clear(bool signal, bool clear_all)
       _quantize      = false;
       _len           = 0;           // song len in ticks
       _follow        = JUMP;
-      // _tempo      = 500000;      // default tempo 120
       dirty          = false;
       initDrumMap();
       if (signal) {
@@ -2289,6 +2198,7 @@ void Song::cleanupForQuit()
       if(MusEGlobal::debugMsg)
         printf("deleting undoList, clearing redoList\n");
       undoList->clearDelete();
+      //DELETETHIS
       //redoList->clear(); // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists.
       redoList->clearDelete(); // p4.0.46 Tim
       
@@ -2301,12 +2211,12 @@ void Song::cleanupForQuit()
 
       if(MusEGlobal::debugMsg)
         printf("deleting midiport controllers\n");
+      
       // Clear all midi port controllers and values.
       for(int i = 0; i < MIDI_PORTS; ++i)
-        // Remove the controllers and the values.
-        MusEGlobal::midiPorts[i].controller()->clearDelete(true);
+        MusEGlobal::midiPorts[i].controller()->clearDelete(true); // Remove the controllers and the values.
         
-      // Can't do this here. Jack isn't running. Fixed. Test OK so far.
+      // Can't do this here. Jack isn't running. Fixed. Test OK so far. DELETETHIS (the comment and #if/#endif)
       #if 1
       if(MusEGlobal::debugMsg)
         printf("deleting midi devices except synths\n");
@@ -2324,6 +2234,7 @@ void Song::cleanupForQuit()
       
       if(MusEGlobal::debugMsg)
         printf("deleting global available synths\n");
+
       // Delete all synths.
       std::vector<Synth*>::iterator is;
       for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
@@ -2376,7 +2287,6 @@ void Song::seqSignal(int fd)
             return;
             }
       for (int i = 0; i < n; ++i) {
-// printf("seqSignal to gui:<%c>\n", buffer[i]);
             switch(buffer[i]) {
                   case '0':         // STOP
                         stopRolling();
@@ -2420,7 +2330,7 @@ void Song::seqSignal(int fd)
                             "click on the Restart button."), "restart", "cancel");
                         if (btn == 0) {
                               printf("restarting!\n");
-			      MusEGlobal::muse->seqRestart();
+                              MusEGlobal::muse->seqRestart();
                               }
                         }
 
@@ -2442,7 +2352,7 @@ void Song::seqSignal(int fd)
                           MusEGlobal::audioDevice->setFreewheel(false);
                         
                         MusEGlobal::audio->msgPlay(false);
-#if 0
+#if 0 // DELETETHIS
                         if (record())
                               MusEGlobal::audio->recordStop();
                         setStopPlay(false);
@@ -2495,7 +2405,6 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
             // create new part
             part          = new MidiPart(mt);
             int startTick = roundDownBar(tick);
-            //int endTick   = roundUpBar(tick);
             int endTick   = roundUpBar(tick + 1);
             part->setTick(startTick);
             part->setLenTick(endTick - startTick);
@@ -2516,15 +2425,9 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
         for(iEvent i = range.first; i != range.second; ++i) 
         {
           ev = i->second;
-          // At the moment, Song::recordEvent() is only called by the 'Rec' buttons in the 
-          //  midi track info panel. So only controller types are fed to it. If other event types
-          //  are to be passed, we will have to expand on this to check if equal. Instead, maybe add an isEqual() to Event class.
-          //if((ev.type() == Controller && event.type() == Controller || ev.type() == Controller && event.type() == Controller)
-          //   && ev.dataA() == event.dataA() && ev.dataB() == event.dataB())
           if(ev.type() == Controller && ev.dataA() == event.dataA())
           {
-            // Don't bother if already set.
-            if(ev.dataB() == event.dataB())
+            if(ev.dataB() == event.dataB()) // Don't bother if already set.
               return;
             // Indicate do undo, and do port controller values and clone parts. 
             MusEGlobal::audio->msgChangeEvent(ev, event, part, true, true, true);
@@ -2534,7 +2437,6 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
       }  
       
       // Indicate do undo, and do port controller values and clone parts. 
-      //MusEGlobal::audio->msgAddEvent(event, part);
       MusEGlobal::audio->msgAddEvent(event, part, true, true, true);
       }
 
@@ -2559,17 +2461,11 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
       CtrlList *cl = icl->second;
       canAdd = true;
       
-      //int frame = pos[0].frame();
-      int frame = MusEGlobal::audio->pos().frame();       // Try this. p4.0.33
+      //int frame = pos[0].frame(); DELETETHIS
+      int frame = MusEGlobal::audio->pos().frame();       // Try this. p4.0.33 DELETETHIS
       
-      //printf("pos[0]:%d f:%d tickPos:%d f:%d\n", pos[0].tick(), pos[0].frame(), MusEGlobal::audio->tickPos(), Pos(MusEGlobal::audio->tickPos(), true).frame()); 
-      
-      //ctlval = cl->curVal();
-      //AutomationType at = track->MusEGlobal::automationType();
-      //if(!MusEGlobal::automation || track->MusEGlobal::automationType() == AUTO_OFF)
-        ctlval = cl->curVal();
-      //else
-      //  ctlval = cl->value(frame);
+      ctlval = cl->curVal();
+
       count = cl->size();
       if(count)
       {
@@ -2623,16 +2519,12 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   clearAction->setEnabled((bool)count);
 
   QAction* act = menu->exec(menupos);
-  //delete menu;
   if (!act || !track)
   {
     delete menu;
     return -1;
   }
   
-  //if(!track)
-  //  return -1;
-
   int sel = act->data().toInt();
   delete menu;
   
@@ -2681,15 +2573,10 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   if(!track && !part)
     return -1;
     
-  //enum { PREV_EVENT, NEXT_EVENT, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
   enum { ADD_EVENT, CLEAR_EVENT };
   QMenu* menu = new QMenu;
 
-  //int count = 0;
   bool isEvent = false;
-  //bool canSeekPrev = false, canSeekNext = false, canEraseRange = false;
-  //bool canAdd = false;
-  //double ctlval = 0.0;
   
   MidiTrack* mt;
   if(track)
@@ -2713,8 +2600,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     dctl |= MusEGlobal::drumMap[note].anote;
   }
     
-  //printf("Song::execMidiAutomationCtlPopup ctlnum:%d dctl:%d anote:%d\n", ctlnum, dctl, MusEGlobal::drumMap[ctlnum & 0x7f].anote);
-  
   unsigned tick = cpos();
   
   if(!part)
@@ -2755,9 +2640,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
         ev = i->second;
         if(ev.type() == Controller)
         {
-          //printf("Song::execMidiAutomationCtlPopup ev.dataA:%d\n", ev.dataA());
-  
-          //if(ev.dataA() == dctl)
           if(ev.dataA() == ctlnum)
           {
             isEvent = true;
@@ -2777,30 +2659,18 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   else
     addEvent->setText(tr("add event"));
   addEvent->setData(ADD_EVENT);
-  //addEvent->setEnabled(canAdd);
   addEvent->setEnabled(true);
 
   QAction* eraseEventAction = menu->addAction(tr("erase event"));
   eraseEventAction->setData(CLEAR_EVENT);
   eraseEventAction->setEnabled(isEvent);
 
-//  menu->insertItem(tr("erase range"), CLEAR_RANGE, CLEAR_RANGE);
-//  menu->setItemEnabled(CLEAR_RANGE, canEraseRange);
-
-//  menu->insertItem(tr("clear automation"), CLEAR_ALL_EVENTS, CLEAR_ALL_EVENTS);
-//  menu->setItemEnabled(CLEAR_ALL_EVENTS, (bool)count);
-
-
   QAction* act = menu->exec(menupos);
-  //delete menu;
   if (!act)
   {
     delete menu;
     return -1;
   }
-  
-  //if(!part)
-  //  return -1;
   
   int sel = act->data().toInt();
   delete menu;
@@ -2809,19 +2679,16 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   {
     case ADD_EVENT:
     {
-          //int val = mp->hwCtrlState(channel, ctlnum);
           int val = mp->hwCtrlState(channel, dctl);
           if(val == CTRL_VAL_UNKNOWN) 
             return -1;
           Event e(Controller);
-          //e.setA(dctl);
           e.setA(ctlnum);
           e.setB(val);
           // Do we replace an old event?
           if(isEvent)
           {
-            // Don't bother if already set.
-            if(ev.dataB() == val)
+            if(ev.dataB() == val) // Don't bother if already set.
               return -1;
               
             e.setTick(tick - part->tick());
@@ -2859,25 +2726,6 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
           MusEGlobal::audio->msgDeleteEvent(ev, part, true, true, true);
     break;
 
-    //case CLEAR_RANGE:
-          //MusEGlobal::audio->msgEraseRangeACEvents(track, acid, pos[1].frame(), pos[2].frame());
-    //break;
-
-    //case CLEAR_ALL_EVENTS:
-          //if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
-          //    tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-          //    QString::null, 0, 1 ) == 0)
-            //MusEGlobal::audio->msgClearControllerEvents(track, acid);
-    //break;
-
-    //case PREV_EVENT:
-          //MusEGlobal::audio->msgSeekPrevACEvent(track, acid);
-    //break;
-
-    //case NEXT_EVENT:
-          //MusEGlobal::audio->msgSeekNextACEvent(track, acid);
-    //break;
-    
     default:
           return -1;
     break;      
@@ -3037,7 +2885,7 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
 void Song::insertTrack0(Track* track, int idx)
       {
       insertTrack1(track, idx);
-      insertTrack2(track, idx);  // MusEGlobal::audio->msgInsertTrack(track, idx, false);
+      insertTrack2(track, idx);  // MusEGlobal::audio->msgInsertTrack(track, idx, false); DELETETHIS or is this somehow explanatory?
       insertTrack3(track, idx);
       }
 
@@ -3048,8 +2896,6 @@ void Song::insertTrack0(Track* track, int idx)
 
 void Song::insertTrack1(Track* track, int /*idx*/)
       {
-      //printf("Song::insertTrack1 track:%lx\n", track);
-      
       switch(track->type()) {
             case Track::AUDIO_SOFTSYNTH:
                   {
@@ -3063,9 +2909,6 @@ void Song::insertTrack1(Track* track, int /*idx*/)
             default:
                   break;
             }
-      
-      //printf("Song::insertTrack1 end of function\n");
-      
       }
 
 //---------------------------------------------------------
@@ -3075,15 +2918,11 @@ void Song::insertTrack1(Track* track, int /*idx*/)
 
 void Song::insertTrack2(Track* track, int idx)
 {
-      //printf("Song::insertTrack2 track:%lx\n", track);
-      
       int n;
       switch(track->type()) {
             case Track::MIDI:
             case Track::DRUM:
                   _midis.push_back((MidiTrack*)track);
-                  // Added by T356.
-                  //((MidiTrack*)track)->addPortCtrlEvents();
                   addPortCtrlEvents(((MidiTrack*)track));
                   
                   break;
@@ -3120,14 +2959,10 @@ void Song::insertTrack2(Track* track, int idx)
                   return;
             }
 
-      //
       // initialize missing aux send
-      //
       iTrack i = _tracks.index2iterator(idx);
-      //printf("Song::insertTrack2 inserting into _tracks...\n");
       
       _tracks.insert(i, track);
-      //printf("Song::insertTrack2 inserted\n");
       
       n = _auxs.size();
       for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
@@ -3139,18 +2974,13 @@ void Song::insertTrack2(Track* track, int idx)
                   }
             }
 
-      //
       //  add routes
-      //
 
       if (track->type() == Track::AUDIO_OUTPUT) 
       {
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //if(r->track == track)  
-                  //  r->track->outRoutes()->push_back(*r);
-                  // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->push_back(src);
@@ -3158,8 +2988,7 @@ void Song::insertTrack2(Track* track, int idx)
                   // Update the Audio Output track's aux ref count.     p4.0.37
                   if(r->track->auxRefCount())
                     track->updateAuxRoute( r->track->auxRefCount(), NULL );
-                  else
-                  if(r->track->type() == Track::AUDIO_AUX)
+                  else if(r->track->type() == Track::AUDIO_AUX)
                     track->updateAuxRoute( 1, NULL );
             }      
       }
@@ -3168,9 +2997,6 @@ void Song::insertTrack2(Track* track, int idx)
             const RouteList* rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //if(r->track == track)  
-                  //  r->track->inRoutes()->push_back(*r);
-                  // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->push_back(src);
@@ -3178,8 +3004,7 @@ void Song::insertTrack2(Track* track, int idx)
                   // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
                   if(track->auxRefCount())
                     r->track->updateAuxRoute( track->auxRefCount(), NULL );
-                  else
-                  if(track->type() == Track::AUDIO_AUX)
+                  else if(track->type() == Track::AUDIO_AUX)
                     r->track->updateAuxRoute( 1, NULL );
             }      
       }
@@ -3188,14 +3013,12 @@ void Song::insertTrack2(Track* track, int idx)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //printf("Song::insertTrack2 %s in route port:%d\n", track->name().toLatin1().constData(), r->midiPort);   
                   Route src(track, r->channel);
                   MusEGlobal::midiPorts[r->midiPort].outRoutes()->push_back(src);
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //printf("Song::insertTrack2 %s out route port:%d\n", track->name().toLatin1().constData(), r->midiPort);  
                   Route src(track, r->channel);
                   MusEGlobal::midiPorts[r->midiPort].inRoutes()->push_back(src);
             }      
@@ -3205,9 +3028,6 @@ void Song::insertTrack2(Track* track, int idx)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //if(r->track == track)  
-                  //  r->track->outRoutes()->push_back(*r);
-                  // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->push_back(src);
@@ -3215,16 +3035,12 @@ void Song::insertTrack2(Track* track, int idx)
                   // Update this track's aux ref count.     p4.0.37
                   if(r->track->auxRefCount())
                     track->updateAuxRoute( r->track->auxRefCount(), NULL );
-                  else
-                  if(r->track->type() == Track::AUDIO_AUX)
+                  else if(r->track->type() == Track::AUDIO_AUX)
                     track->updateAuxRoute( 1, NULL );
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //if(r->track == track)  
-                  //  r->track->inRoutes()->push_back(*r);
-                  // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->push_back(src);
@@ -3232,14 +3048,10 @@ void Song::insertTrack2(Track* track, int idx)
                   // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
                   if(track->auxRefCount())
                     r->track->updateAuxRoute( track->auxRefCount(), NULL );
-                  else
-                  if(track->type() == Track::AUDIO_AUX)
+                  else if(track->type() == Track::AUDIO_AUX)
                     r->track->updateAuxRoute( 1, NULL );
             }      
       }
-      
-      //printf("Song::insertTrack2 end of function\n");
-      
 }
 
 //---------------------------------------------------------
@@ -3261,7 +3073,6 @@ void Song::removeTrack0(Track* track)
       removeTrack1(track);
       MusEGlobal::audio->msgRemoveTrack(track);
       removeTrack3(track);
-      //delete track;
       update(SC_TRACK_REMOVED);
       }
 
@@ -3313,20 +3124,15 @@ void Song::removeTrack1(Track* track)
 
 void Song::removeTrack2(Track* track)
 {
-      //printf("Song::removeTrack2 track:%s\n", track->name().toLatin1().constData());  
-                  
       switch(track->type()) {
             case Track::MIDI:
             case Track::DRUM:
-                  // Added by T356.
-                  //((MidiTrack*)track)->removePortCtrlEvents();
                   removePortCtrlEvents(((MidiTrack*)track));
                   unchainTrackParts(track, true);
                   
                   _midis.erase(track);
                   break;
             case Track::WAVE:
-                  // Added by T356.
                   unchainTrackParts(track, true);
                   
                   _waves.erase(track);
@@ -3353,19 +3159,13 @@ void Song::removeTrack2(Track* track)
             }
       _tracks.erase(track);
       
-      //
       //  remove routes
-      //
 
       if (track->type() == Track::AUDIO_OUTPUT) 
       {
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //if(r->track == track)  
-                  //  r->track->outRoutes()->removeRoute(*r);
-                  //printf("Song::removeTrack2 %s audio out track:%s\n", track->name().toLatin1().constData(), r->track->name().toLatin1().constData());  
-                  // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->removeRoute(src);
@@ -3373,8 +3173,7 @@ void Song::removeTrack2(Track* track)
                   // Update the Audio Output track's aux ref count.     p4.0.37
                   if(r->track->auxRefCount())
                     track->updateAuxRoute( -r->track->auxRefCount(), NULL );
-                  else
-                  if(r->track->type() == Track::AUDIO_AUX)
+                  else if(r->track->type() == Track::AUDIO_AUX)
                     track->updateAuxRoute( -1, NULL );
             }      
       }
@@ -3383,10 +3182,6 @@ void Song::removeTrack2(Track* track)
             const RouteList* rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //if(r->track == track)  
-                  //  r->track->inRoutes()->removeRoute(*r);
-                  //printf("Song::removeTrack2 %s audio in track:%s\n", track->name().toLatin1().constData(), r->track->name().toLatin1().constData());  
-                  // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->removeRoute(src);
@@ -3394,8 +3189,7 @@ void Song::removeTrack2(Track* track)
                   // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
                   if(track->auxRefCount())
                     r->track->updateAuxRoute( -track->auxRefCount(), NULL );
-                  else
-                  if(track->type() == Track::AUDIO_AUX)
+                  else if(track->type() == Track::AUDIO_AUX)
                     r->track->updateAuxRoute( -1, NULL );
             }      
       }
@@ -3404,14 +3198,12 @@ void Song::removeTrack2(Track* track)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //printf("Song::removeTrack2 %s in route port:%d\n", track->name().toLatin1().constData(), r->midiPort);   
                   Route src(track, r->channel);
                   MusEGlobal::midiPorts[r->midiPort].outRoutes()->removeRoute(src);
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //printf("Song::removeTrack2 %s out route port:%d\n", track->name().toLatin1().constData(), r->midiPort);  
                   Route src(track, r->channel);
                   MusEGlobal::midiPorts[r->midiPort].inRoutes()->removeRoute(src);
             }      
@@ -3421,10 +3213,6 @@ void Song::removeTrack2(Track* track)
             const RouteList* rl = track->inRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //if(r->track == track)   
-                  //  r->track->outRoutes()->removeRoute(*r);
-                  //printf("Song::removeTrack2 %s in route track:%s\n", track->name().toLatin1().constData(), r->track->name().toLatin1().constData());  
-                  // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->removeRoute(src);
@@ -3432,17 +3220,12 @@ void Song::removeTrack2(Track* track)
                   // Update this track's aux ref count.     p4.0.37
                   if(r->track->auxRefCount())
                     track->updateAuxRoute( -r->track->auxRefCount(), NULL );
-                  else
-                  if(r->track->type() == Track::AUDIO_AUX)
+                  else if(r->track->type() == Track::AUDIO_AUX)
                     track->updateAuxRoute( -1, NULL );
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
             {
-                  //if(r->track == track)  
-                  //  r->track->inRoutes()->removeRoute(*r);
-                  //printf("Song::removeTrack2 %s out route track:%s\n", track->name().toLatin1().constData(), r->track->name().toLatin1().constData()); 
-                  // p3.3.50
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->removeRoute(src);
@@ -3450,8 +3233,7 @@ void Song::removeTrack2(Track* track)
                   // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
                   if(track->auxRefCount())
                     r->track->updateAuxRoute( -track->auxRefCount(), NULL );
-                  else
-                  if(track->type() == Track::AUDIO_AUX)
+                  else if(track->type() == Track::AUDIO_AUX)
                     r->track->updateAuxRoute( -1, NULL );
             }      
       }
@@ -3500,7 +3282,6 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             fprintf(fp, "BEATLEN %d\n", AL::sigmap.ticksBeat(0));
             fprintf(fp, "QUANTLEN %d\n", quant);
 
-            //for (iCItem i = items.begin(); i != items.end(); ++i) {
             for (iEvent e = part->events()->begin(); e != part->events()->end(); e++) {
                 Event ev = e->second;
 
@@ -3564,7 +3345,6 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
                           QStringList sl = line.split(" ");
 
                           Event e(Controller);
-                          //int tick = sl[1].toInt();
                           int a = sl[2].toInt();
                           int b = sl[3].toInt();
                           int c = sl[4].toInt();
@@ -3588,11 +3368,8 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
 
 void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
 {
-      //
       // List scripts
-      // 
       QString distScripts = MusEGlobal::museGlobalShare + "/scripts";
-
       QString userScripts = MusEGlobal::configPath + "/scripts";
 
       QFileInfo distScriptsFi(distScripts);
@@ -3612,13 +3389,9 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
       QSignalMapper* userSignalMapper = new QSignalMapper(this);
 
       if (deliveredScriptNames.size() > 0 || userScriptNames.size() > 0) {
-            //menuPlugins = new QPopupMenu(this);
-            //menuBar()->insertItem(tr("&Plugins"), menuPlugins);
             int id = 0;
             if (deliveredScriptNames.size() > 0) {
                   for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
-                        //menuPlugins->insertItem(*it, this, SLOT(execDeliveredScript(int)), 0, id);
-                        //menuPlugins->insertItem(*it, this, slot_deliveredscripts, 0, id);
                         QAction* act = menuPlugins->addAction(*it);
                         connect(act, SIGNAL(triggered()), distSignalMapper, SLOT(map()));
                         distSignalMapper->setMapping(act, id);
@@ -3627,7 +3400,6 @@ void Song::populateScriptMenu(QMenu* menuPlugins, QObject* receiver)
                   }
             if (userScriptNames.size() > 0) {
                   for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
-                        //menuPlugins->insertItem(*it, this, slot_userscripts, 0, id);
                         QAction* act = menuPlugins->addAction(*it);
                         connect(act, SIGNAL(triggered()), userSignalMapper, SLOT(map()));
                         userSignalMapper->setMapping(act, id);

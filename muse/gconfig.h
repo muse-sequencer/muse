@@ -54,11 +54,7 @@ struct MixerConfig {
       bool showAuxTracks;
       bool showSyntiTracks;
 
-      //void write(MusECore::Xml&, const char* name);
-      //void write(int level, MusECore::Xml& xml, const char* name);
       void write(int level, MusECore::Xml& xml);
-      //void read(QDomNode);
-      //void read(MusECore::Xml& xml, const QString& name);
       void read(MusECore::Xml& xml);
       };
 
@@ -75,7 +71,6 @@ struct GlobalConfigValues {
       QColor bigTimeForegroundColor;
       QColor bigTimeBackgroundColor;
       QColor waveEditBackgroundColor;
-      //QFont fonts[6];
       QFont fonts[NUM_FONTS];
       QColor trackBg;
       QColor selectTrackBg;
@@ -128,12 +123,10 @@ struct GlobalConfigValues {
       QRect geometryMain;
       QRect geometryTransport;
       QRect geometryBigTime;
-//      QRect geometryMixer;
       MixerConfig mixer1;
       MixerConfig mixer2;
       bool transportVisible;
       bool bigTimeVisible;
-//      bool mixerVisible;
       bool mixer1Visible;
       bool mixer2Visible;
       bool markerVisible;

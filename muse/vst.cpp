@@ -60,7 +60,6 @@ long vstHostCallback(AEffect* effect,
       {
       static VstTimeInfo _timeInfo;
 
-//      JackVST* jackvst = effect ? ((JackVST*) effect->user) : NULL;
       jack_position_t jack_pos;
       jack_transport_state_t tstate;
 
@@ -300,7 +299,6 @@ static void scanVstDir(const QString& s)
                   FSTInfo* info = fst_get_info(path);
                   if (info) {
                         if (info->numInputs == 0 && info->numOutputs)
-                              //synthis.push_back(new VstSynth(*fi));
                               synthis.push_back(new VstSynth(*fi, fi->baseName(), QString(), QString(), QString()));
                         fst_free_info(info);
                         }
@@ -468,7 +466,7 @@ void* VstSynth::instantiate()
             undoSetuid();
             return 0;
             }
-//    int vst_version = plugin->dispatcher (plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
+
       undoSetuid();
       return fst;
       }
@@ -509,11 +507,8 @@ int VstSynthIF::totalInChannels() const
 //   createSIF
 //---------------------------------------------------------
 
-//SynthIF* VstSynth::createSIF() const
 SynthIF* VstSynth::createSIF(SynthI* s)
       {
-      //return new VstSynthIF();
-      
       VstSynthIF* sif = new VstSynthIF(s);
       sif->init(this, s);
       return sif;

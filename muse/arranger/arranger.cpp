@@ -37,9 +37,8 @@
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QPainter>
-//#include <QStackedWidget>
-#include "arrangerview.h"
 
+#include "arrangerview.h"
 #include "arranger.h"
 #include "song.h"
 #include "app.h"
@@ -120,18 +119,11 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       setObjectName(name);
       _raster  = 0;      // measure
       selected = 0;
-      // Since program covers 3 controls at once, it is in 'midi controller' units rather than 'gui control' units.
-      //program  = -1;
-      ///program  = CTRL_VAL_UNKNOWN;
-      ///pan      = -65;
-      ///volume   = -1;
       showTrackinfoFlag = true;
       
       cursVal = MAXINT;
       
       parentWin=parent;
-      
-      //setFocusPolicy(Qt::StrongFocus);
       
       //---------------------------------------------------
       //  ToolBar
@@ -166,7 +158,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       MusEGlobal::song->setArrangerRaster(0);
       toolbar->addWidget(raster);
       connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
-      ///raster->setFocusPolicy(Qt::NoFocus);
       raster->setFocusPolicy(Qt::TabFocus);
 
       // Song len
@@ -177,7 +168,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       // song length is limited to 10000 bars; the real song len is limited
       // by overflows in tick computations
-      //
       lenEntry = new SpinBox(1, 10000, 1);
       lenEntry->setValue(MusEGlobal::song->len());
       lenEntry->setToolTip(tr("song length - bars"));
@@ -193,7 +183,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       typeBox->setCurrentIndex(0);
       typeBox->setToolTip(tr("midi song type"));
       typeBox->setWhatsThis(tr("midi song type"));
-      ///typeBox->setFocusPolicy(Qt::NoFocus);
       typeBox->setFocusPolicy(Qt::TabFocus);
       toolbar->addWidget(typeBox);
       connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
@@ -242,9 +231,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       box->setContentsMargins(0, 0, 0, 0);
       box->setSpacing(0);
       box->addWidget(MusECore::hLine(this), Qt::AlignTop);
-      //QFrame* hline = MusECore::hLine(this);
-      //hline->setLineWidth(0);
-      //box->addWidget(hline, Qt::AlignTop);
 
       //---------------------------------------------------
       //  Tracklist
@@ -256,12 +242,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       split  = new Splitter(Qt::Horizontal, this, "split");
       split->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       box->addWidget(split, 1000);
-      //split->setHandleWidth(10);
 
       QWidget* tracklist = new QWidget(split);
 
       split->setStretchFactor(split->indexOf(tracklist), 0);
-      //tracklist->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding, 0, 100));
       QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
       tpolicy.setHorizontalStretch(0);
       tpolicy.setVerticalStretch(100);
@@ -269,11 +253,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       QWidget* editor = new QWidget(split);
       split->setStretchFactor(split->indexOf(editor), 1);
-      //editor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding,
-        // Changed by T356. Was causing "large int implicitly truncated" warning. These are UCHAR values...
-        //1000, 100));
-        //232, 100)); // 232 is what it was being truncated to, but what is the right value?...
-        //255, 100));
       QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
       epolicy.setHorizontalStretch(255);
       epolicy.setVerticalStretch(100);
@@ -331,12 +310,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       // Do this now that the list is available.
       genTrackInfo(tracklist);
       
-      ///connect(list, SIGNAL(selectionChanged()), SLOT(trackSelectionChanged()));
       connect(list, SIGNAL(selectionChanged(MusECore::Track*)), SLOT(trackSelectionChanged()));
       connect(list, SIGNAL(selectionChanged(MusECore::Track*)), midiTrackInfo, SLOT(setTrack(MusECore::Track*)));
       connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
-      connect(header, SIGNAL(sectionMoved(int,int,int)), this, SLOT(headerMoved()));
 
       //  tracklist:
       //
@@ -369,15 +346,11 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       hscroll->setFocusPolicy(Qt::NoFocus);
       ib->setFixedHeight(hscroll->sizeHint().height());
 
-      // Changed p3.3.43 Too small steps for me...
-      //vscroll = new QScrollBar(1, 20*20, 1, 5, 0, Vertical, editor);
-      //vscroll = new QScrollBar(1, 20*20, 5, 25, 0, Qt::Vertical, editor);
       vscroll = new QScrollBar(editor);
-      ///vscroll->setMinimum(1);
-      vscroll->setMinimum(0);      // Tim.
+      vscroll->setMinimum(0);
       vscroll->setMaximum(20*20);
       vscroll->setSingleStep(5);
-      vscroll->setPageStep(25);
+      vscroll->setPageStep(25); // FIXME: too small steps here for me (flo), better control via window height?
       vscroll->setValue(0);
       vscroll->setOrientation(Qt::Vertical);      
 
@@ -413,8 +386,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(this, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       connect(list, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       
-      //egrid->addMultiCellWidget(time,           0, 0, 0, 1);
-      //egrid->addMultiCellWidget(MusECore::hLine(editor),  1, 1, 0, 1);
       egrid->addWidget(time, 0, 0, 1, 2);
       egrid->addWidget(MusECore::hLine(editor), 1, 0, 1, 2);
 
@@ -439,7 +410,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(startEditor(MusECore::PartList*,int)),   SIGNAL(startEditor(MusECore::PartList*, int)));
 
       connect(MusEGlobal::song,   SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      //connect(MusEGlobal::song,   SIGNAL(mTypeChanged(MType)), SLOT(setMode((int)MType)));    // p4.0.7 Tim.
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
       connect(canvas, SIGNAL(dropSongFile(const QString&)), SIGNAL(dropSongFile(const QString&)));
@@ -447,12 +417,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       connect(canvas, SIGNAL(toolChanged(int)), SIGNAL(toolChanged(int)));
       connect(MusEGlobal::song,   SIGNAL(controllerChanged(MusECore::Track*)), SLOT(controllerChanged(MusECore::Track*)));
-//      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(seek()));
 
-      // Removed p3.3.43 
-      // Song::addMarker() already emits a 'markerChanged'.
-      //connect(time, SIGNAL(addMarker(int)), SIGNAL(addMarker(int)));
-      
       configChanged();  // set configuration values
       if(canvas->part())
         midiTrackInfo->setTrack(canvas->part()->track());   // Tim.
@@ -467,6 +432,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //setTabOrder(ib, hscroll);
       }
 
+// DELETETHIS 20
 //---------------------------------------------------------
 //   updateHScrollRange
 //---------------------------------------------------------
@@ -485,15 +451,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 //      if(s != s1 || e != e1) 
 //        hscroll->setRange(s, e);
 //}
-
-//---------------------------------------------------------
-//   headerMoved
-//---------------------------------------------------------
-
-void Arranger::headerMoved()
-      {
-      //header->setResizeMode(COL_NAME, QHeaderView::Stretch);
-      }
 
 //---------------------------------------------------------
 //   setTime
@@ -535,20 +492,13 @@ void Arranger::dclickPart(MusECore::Track* t)
 
 void Arranger::configChanged()
       {
-      //printf("Arranger::configChanged\n");
-      
       if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
             canvas->setBg(MusEGlobal::config.partCanvasBg);
             canvas->setBg(QPixmap());
-            //printf("Arranger::configChanged - no bitmap!\n");
       }
       else {
-        
-            //printf("Arranger::configChanged - bitmap %s!\n", MusEGlobal::config.canvasBgPixmap.ascii());
             canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       }
-      ///midiTrackInfo->setFont(MusEGlobal::config.fonts[2]);
-      //updateTrackInfo(type);
       }
 
 //---------------------------------------------------------
@@ -601,8 +551,6 @@ void Arranger::songChanged(int type)
                    SC_SIG | SC_TEMPO)) // Maybe sig. Requires tempo.
           canvas->partsChanged();
         
-        //typeBox->setCurrentIndex(int(MusEGlobal::song->mtype()));  // REMOVE Tim.  Redundant.
-        
         if (type & SC_SIG)
               time->redraw();
         if (type & SC_TEMPO)
@@ -611,7 +559,6 @@ void Arranger::songChanged(int type)
         if(type & SC_TRACK_REMOVED)
         {
           AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
-          //AudioStrip* w = (AudioStrip*)(trackInfo->widget(2));
           if(w)
           {
             MusECore::Track* t = w->getTrack();
@@ -630,7 +577,7 @@ void Arranger::songChanged(int type)
           } 
         }
         
-        // TEST p4.0.36 Try this
+        // TEST p4.0.36 Try this DELETETHIS and below and even more below
         if(type & ( //SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
            SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED)) //|
@@ -678,10 +625,10 @@ void Arranger::modeChange(int mode)
 
 void Arranger::setMode(int mode)
       {
-      typeBox->blockSignals(true);          //
+      typeBox->blockSignals(true);
       // This will only set if different.
       typeBox->setCurrentIndex(mode);
-      typeBox->blockSignals(false);         //
+      typeBox->blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -954,10 +901,8 @@ QWidget* WidgetStack::visibleWidget() const
 QSize WidgetStack::minimumSizeHint() const
       {
       if (top == -1)
-      {
-            //printf("WidgetStack::minimumSizeHint top is -1\n");
             return (QSize(0, 0));
-      }      
+
       QSize s(0,0);
       for (unsigned int i = 0; i < stack.size(); ++i) {
             if (stack[i]) {
@@ -967,7 +912,7 @@ QSize WidgetStack::minimumSizeHint() const
                   s = s.expandedTo(ss);
                   }
             }
-      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  
+
       return s;
       }
 
@@ -1014,12 +959,10 @@ void Arranger::showTrackInfo(bool flag)
 void Arranger::genTrackInfo(QWidget* parent)
       {
       trackInfo = new WidgetStack(parent, "trackInfoStack");
-      //trackInfo->setFocusPolicy(Qt::TabFocus);  // p4.0.9
-      //trackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
       noTrackInfo          = new QWidget(trackInfo);
       noTrackInfo->setAutoFillBackground(true);
-      QPixmap *noInfoPix   = new QPixmap(160, 1000); //muse_leftside_logo_xpm);
+      QPixmap *noInfoPix   = new QPixmap(160, 1000);
       const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
       noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
       QPainter p(noInfoPix);
@@ -1033,13 +976,9 @@ void Arranger::genTrackInfo(QWidget* parent)
 
       midiTrackInfo = new MidiTrackInfo(trackInfo);
       
-      //midiTrackInfo->setFocusPolicy(Qt::TabFocus);    // p4.0.9
-      //midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       trackInfo->addWidget(noTrackInfo,   0);
       trackInfo->addWidget(midiTrackInfo, 1);
       trackInfo->addWidget(0, 2);
-      
-///      genMidiTrackInfo();
       }
 
 //---------------------------------------------------------
@@ -1101,7 +1040,7 @@ void Arranger::switchInfo(int n)
       tgrid->update();   // muse-2 Qt4
       }
 
-/*
+/* DELETETHIS 12
 QSize WidgetStack::minimumSize() const 
 { 
   printf("WidgetStack::minimumSize\n");  
