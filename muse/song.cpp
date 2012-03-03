@@ -1727,23 +1727,6 @@ Marker* Song::setMarkerLock(Marker* m, bool f)
       return m;
       }
 
-// kommer inte att gå göra undo på, kanske skulle fixa det. SWEDISH_COMMENT
-
-//void Song::moveMarkers(int startOffset, int ticks) DELETETHIS 14
-//{
-//  iMarker markerI;
-//  for (markerI=_markerList->rbegin(); markerI != _markerList->rend(); ++markerI) {
-//    if (markerI->second.tick() > startOffset) {
-//      if (markerI-> )
-//    }
-//
-//
-//
-//      if (unsigned(t) == markerI->second.tick())//prevent of copmiler warning: comparison signed/unsigned
-//        return &markerI->second;
-//      }
-//
-//}
 
 //---------------------------------------------------------
 //   setRecordFlag
