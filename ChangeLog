@@ -3,6 +3,7 @@
         * New: Gui behaviour option: "Smart Focus": All toolbar boxes give focus back to respective canvases. 
           (Most boxes except Score Velo On/Off changed to StrongFocus, for non-focused wheel support.) 
         - Focusing + tabbing fixes: Exclusions, tightening of tab sequences.
+        - !! Most spinboxes now wait until return pressed !!  For example the Song Length box. 
         - PianoRoll toolbar: Fixed auto-repeats - optimized NoteInfo::setDeltaMode(). 
         - Midi boxes: Fixed Ctrl-click on/off.
         - Master Editor: Fixed can't edit if not enabled. Also Transport sig box.
