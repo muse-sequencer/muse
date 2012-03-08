@@ -1,7 +1,7 @@
 08.03.2012:
         * Comprehensive focus fixes: (Tim...)
-        * New: Gui behaviour option: "Smart Focus": All toolbar boxes give focus back to respective canvases 
-                (except Score Velo On/Off, won't support StrongFocus non-focus wheel support ATM). 
+        * New: Gui behaviour option: "Smart Focus": All toolbar boxes give focus back to respective canvases. 
+          (Most boxes except Score Velo On/Off changed to StrongFocus, for non-focused wheel support.) 
         - Focusing + tabbing fixes: Exclusions, tightening of tab sequences.
         - PianoRoll toolbar: Fixed auto-repeats - optimized NoteInfo::setDeltaMode(). 
         - Midi boxes: Fixed Ctrl-click on/off.
