@@ -159,6 +159,7 @@ struct GlobalConfigValues {
       bool rangeMarkerWithoutMMB;
       bool addHiddenTracks;
       bool unhideTracks;
+      bool smartFocus;
 
       };
 

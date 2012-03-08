@@ -172,7 +172,8 @@ Shorter periods are desirable.</string>
       popsDefStayOpenCheckBox->setChecked(MusEGlobal::config.popupsDefaultStayOpen);
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
       rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
-
+      smartFocusCheckBox->setChecked(MusEGlobal::config.smartFocus);
+      
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
 
@@ -317,6 +318,7 @@ void GlobalSettingsConfig::updateSettings()
       popsDefStayOpenCheckBox->setChecked(MusEGlobal::config.popupsDefaultStayOpen);
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
       rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
+      smartFocusCheckBox->setChecked(MusEGlobal::config.smartFocus);
       
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
@@ -420,6 +422,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.popupsDefaultStayOpen = popsDefStayOpenCheckBox->isChecked();
       MusEGlobal::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
       MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
+      MusEGlobal::config.smartFocus = smartFocusCheckBox->isChecked();
 
       MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
       MusEGlobal::config.unhideTracks = unhideTracksCheckBox->isChecked();

@@ -292,7 +292,7 @@ void addProject(const QString& name)
 MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       {
       setIconSize(ICON_SIZE);
-      setFocusPolicy(Qt::WheelFocus);
+      setFocusPolicy(Qt::NoFocus);   
       MusEGlobal::muse      = this;    // hack
       clipListEdit          = 0;
       midiSyncConfig        = 0;
@@ -2952,15 +2952,6 @@ QWidget* MusE::transportWindow() { return transport; }
 QWidget* MusE::bigtimeWindow()   { return bigtime; }
 
 //---------------------------------------------------------
-//   focusInEvent
-//---------------------------------------------------------
-
-void MusE::focusInEvent(QFocusEvent* ev)
-      {
-      QMainWindow::focusInEvent(ev);
-      }
-
-//---------------------------------------------------------
 //   execDeliveredScript
 //---------------------------------------------------------
 void MusE::execDeliveredScript(int id)
@@ -2985,8 +2976,69 @@ void MusE::findUnusedWaveFiles()
     unused.exec();
 }
 
-void MusE::focusChanged(QWidget*, QWidget* now)
+void MusE::focusChanged(QWidget* old, QWidget* now)  
 {
+  if(MusEGlobal::heavyDebugMsg)
+  {
+    printf("\n");   
+    printf("focusChanged: old:%p now:%p activeWindow:%p\n", old, now, qApp->activeWindow());  
+    if(old)                                                   
+      printf(" old type: %s\n", typeid(*old).name());  
+    if(now)                                                  
+      printf(" now type: %s\n", typeid(*now).name());  
+    if(qApp->activeWindow())                                                   
+      printf(" activeWindow type: %s\n", typeid(*qApp->activeWindow()).name());  
+    printf("\n");   
+  }
+  
+  // NOTE: FYI: This is what is required if, for 'Smart Focus', we try simply calling clearFocus from each relevant control
+  //    upon Return/Enter/Escape or whatever. 
+  // It's nice to be able to do that, but this was crash-prone and I don't like it. Instead each relevant control connects
+  //  signals to slots in the editors which set focus on the canvases AND activate their top windows. 
+  // Who knows, this code might be needed in some way. Informational, please keep.  Tim.
+  //
+  /*
+  // Allow focus proxy to do its job (if set).
+  if(now == this)
+  {
+    if(mdiArea)
+    {
+      QMdiSubWindow* mw = mdiArea->activeSubWindow();
+      if(mw && mw->widget()->focusProxy())  // Did we set a focus proxy on the window?
+        //mw->widget()->setFocus(); // Give focus to the window so proxy gets it.
+        mw->widget()->focusProxy()->setFocus(); // Give focus directly to the proxy.
+    }  
+  }
+  else
+  if(!now)
+  {
+    QWidget* aw = qApp->activeWindow();  
+    if(aw)
+    {
+      if(aw == this) // Active top-level window is MusE?
+      {
+        if(mdiArea)
+        {
+          QMdiSubWindow* mw = mdiArea->activeSubWindow();
+          if(mw && mw->widget()->focusProxy())  // Did we set a focus proxy on the window?
+            //mw->widget()->setFocus(); // Give focus to the window so proxy gets it.
+            mw->widget()->focusProxy()->setFocus(); // Give focus directly to the proxy.
+        }  
+      }
+      else   // Active top-level window is outside the MusE mdi window.
+      {
+        if(aw->focusProxy())  // Did we set a focus proxy on the window?
+        {
+          //aw->setFocus(); // Give focus to the window so proxy gets it.   
+          aw->focusProxy()->setFocus(); // Give focus directly to the proxy.
+          if(!aw->focusProxy()->isActiveWindow())
+            aw->focusProxy()->activateWindow();
+        }
+      }
+    }  
+  }
+  */
+  
   QWidget* ptr=now;
 
   if (activeTopWin)

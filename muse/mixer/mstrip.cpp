@@ -297,6 +297,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //---------------------------------------------------
 
       record  = new MusEGui::TransparentToolButton(this);
+      record->setFocusPolicy(Qt::NoFocus);
       record->setBackgroundRole(QPalette::Mid);
       record->setCheckable(true);
       record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -307,6 +308,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
 
       mute  = new QToolButton();
+      mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
       mute->setToolTip(tr("mute"));
       mute->setChecked(track->mute());
@@ -316,7 +318,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
       solo  = new QToolButton();
-      //solo->setToolTip(tr("pre fader listening"));
+      solo->setFocusPolicy(Qt::NoFocus);
       solo->setToolTip(tr("solo mode"));
       solo->setCheckable(true);
       solo->setChecked(track->solo());
@@ -328,43 +330,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       ///solo->setIconSize(soloIconOn->size());  
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       
-      /*
-      // Changed by Tim. p3.3.21
-      //QToolTip::add(record, tr("record"));
-      //smBox1->addStretch(100);
-      //smBox1->addWidget(record);
-      QLabel* dev_ch_label = new QLabel();
-      ///dev_ch_label->setMinimumWidth(STRIP_WIDTH/2);
-      
-      // Special here: Must make label same size as the 'exit' button would be IF this were an audio strip...
-      // (The 'exit1' icon is BIGGER than the 'record on' icon.)
-      MusEGui::TransparentToolButton* off  = new MusEGui::TransparentToolButton(this);
-      QIcon iconOff;
-      iconOff.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
-      iconOff.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
-      off->setIcon(iconOff);
-      off->setIconSize(exit1Icon->size());  
-      dev_ch_label->setMinimumHeight(off->height());  
-      delete off;
-      
-      //dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
-      ///dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
-      dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      dev_ch_label->setAlignment(Qt::AlignCenter);
-      int port = track->outPort();
-      int channel = track->outChannel();
-      QString dcs;
-      dcs.sprintf("%d-%d", port + 1, channel + 1);
-      dev_ch_label->setText(dcs);
-      //dev_ch_label->setBackgroundColor(QColor(0, 160, 255)); // Med blue
-      //dev_ch_label->setFont(MusEGlobal::config.fonts[6]);
-      dev_ch_label->setFont(MusEGlobal::config.fonts[1]);
-      // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
-      //autoAdjustFontSize(dev_ch_label, dev_ch_label->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5);
-      QToolTip::add(dev_ch_label, tr("output port and channel"));
-      */
-      
       off  = new MusEGui::TransparentToolButton(this);
+      off->setFocusPolicy(Qt::NoFocus);
       off->setBackgroundRole(QPalette::Mid);
       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       off->setCheckable(true);
@@ -384,6 +351,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //---------------------------------------------------
 
       iR = new QToolButton();
+      iR->setFocusPolicy(Qt::NoFocus);
       ///iR->setFont(MusEGlobal::config.fonts[1]);
       iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
       ///iR->setText(tr("iR"));
@@ -393,7 +361,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       iR->setToolTip(tr("input routing"));
       grid->addWidget(iR, _curGridRow, 0);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
+      
       oR = new QToolButton();
+      oR->setFocusPolicy(Qt::NoFocus);
       ///oR->setFont(MusEGlobal::config.fonts[1]);
       oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
       ///oR->setText(tr("oR"));
@@ -412,6 +382,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //---------------------------------------------------
 
       autoType = new MusEGui::ComboBox();
+      autoType->setFocusPolicy(Qt::NoFocus);
       ///autoType->setFont(MusEGlobal::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       autoType->setEnabled(false);

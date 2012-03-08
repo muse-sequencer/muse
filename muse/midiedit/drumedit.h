@@ -127,6 +127,7 @@ class DrumEdit : public MidiEditor {
       void configChanged();
       void songChanged1(int);
       void setStep(QString);
+      void focusCanvas();
 
    public slots:
       void setSelection(int, MusECore::Event&, MusECore::Part*);

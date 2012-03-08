@@ -197,13 +197,13 @@ void ListEdit::songChanged(int type)
       {
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
-        
+       
       if (type == 0)
             return;
       if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
          | SC_PART_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
          | SC_EVENT_INSERTED | SC_SELECTION)) {
-            if (type & (SC_PART_REMOVED | SC_PART_INSERTED))
+            if (type & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
                   genPartlist();
             // close window if editor has no parts anymore
             if (parts()->empty()) {

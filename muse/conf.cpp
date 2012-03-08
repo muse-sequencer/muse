@@ -888,6 +888,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.addHiddenTracks = xml.parseInt();
                         else if (tag == "unhideTracks")
                               MusEGlobal::config.unhideTracks = xml.parseInt();
+                        else if (tag == "smartFocus")
+                              MusEGlobal::config.smartFocus = xml.parseInt();
 
                         // ---- the following only skips obsolete entries ----
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
@@ -1193,6 +1195,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "popupsDefaultStayOpen", MusEGlobal::config.popupsDefaultStayOpen);
       xml.intTag(level, "leftMouseButtonCanDecrease", MusEGlobal::config.leftMouseButtonCanDecrease);
       xml.intTag(level, "rangeMarkerWithoutMMB", MusEGlobal::config.rangeMarkerWithoutMMB);
+      xml.intTag(level, "smartFocus", MusEGlobal::config.smartFocus);
       
       xml.intTag(level, "unhideTracks", MusEGlobal::config.unhideTracks);
       xml.intTag(level, "addHiddenTracks", MusEGlobal::config.addHiddenTracks);

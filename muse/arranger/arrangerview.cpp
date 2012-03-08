@@ -76,11 +76,11 @@ ArrangerView::ArrangerView(QWidget* parent)
    : TopWin(TopWin::ARRANGER, parent, "arrangerview", Qt::Window)
 {
   setWindowTitle(tr("MusE: Arranger"));
-  setFocusPolicy(Qt::StrongFocus);
+  setFocusPolicy(Qt::NoFocus);  
 
   arranger = new Arranger(this, "arranger");
   setCentralWidget(arranger);
-  setFocusProxy(arranger);
+  //setFocusProxy(arranger);
 
   scoreOneStaffPerTrackMapper = new QSignalMapper(this);
   scoreAllInOneMapper = new QSignalMapper(this);

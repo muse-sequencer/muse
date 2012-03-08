@@ -214,9 +214,10 @@ MusEGlobal::GlobalConfigValues config = {
       64,                           // minControlProcessPeriod
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
-      false,                         // rangeMarkerWithoutMMBCheckBox
+      false,                        // rangeMarkerWithoutMMBCheckBox
       true,                         // addHiddenTracks
-      true                          // unhideTracks
+      true,                         // unhideTracks
+      false                         // smartFocus
       
       };
 

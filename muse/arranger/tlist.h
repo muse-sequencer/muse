@@ -114,14 +114,12 @@ class TList : public QWidget {
 
    private slots:
       void returnPressed();
-      void chanValueChanged(int);
       void chanValueFinished();
       void songChanged(int flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);
 
    signals:
-      ///void selectionChanged();
       void selectionChanged(MusECore::Track*);
       void keyPressExt(QKeyEvent*);
       void redirectWheelEvent(QWheelEvent*);

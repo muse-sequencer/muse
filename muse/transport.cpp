@@ -41,6 +41,7 @@
 #include "shortcuts.h"
 #include "gconfig.h"
 #include "app.h"
+#include "audio.h"
 
 namespace MusEGui {
 
@@ -498,7 +499,7 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(slider,SIGNAL(valueChanged(int)),  SLOT(cposChanged(int)));
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
       connect(tempo, SIGNAL(tempoChanged(int)), MusEGlobal::song, SLOT(setTempo(int)));
-      connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
+      connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), SLOT(sigChange(const AL::TimeSignature&)));
       connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
@@ -790,5 +791,11 @@ void Transport::playToggled(bool val)
             buttons[4]->blockSignals(false);
             }
       }
+      
+void Transport::sigChange(const AL::TimeSignature& sig)
+{
+  MusEGlobal::audio->msgAddSig(MusEGlobal::song->cPos().tick(), sig.z, sig.n);  // Add will replace if found. 
+}
+
 
 } // namespace MusEGui

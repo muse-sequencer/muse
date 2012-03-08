@@ -38,6 +38,8 @@
 ///#include "sigedit.h"
 #include "globals.h"
 #include "app.h"
+#include "gconfig.h"
+#include "audio.h"
 
 #include <values.h>
 
@@ -76,7 +78,7 @@ void MasterEdit::songChanged(int type)
         return;
         
       if (type & SC_TEMPO) {
-            int tempo = MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos());
+            int tempo = MusEGlobal::tempomap.tempoAt(MusEGlobal::song->cpos());  // Bypass the useList flag and read from the list.
             curTempo->blockSignals(true);
             curTempo->setValue(double(60000000.0/tempo));
             
@@ -105,6 +107,7 @@ MasterEdit::MasterEdit()
    : MidiEditor(TopWin::MASTER, _rasterInit, 0)
       {
       setWindowTitle(tr("MusE: Mastertrack"));
+      setFocusPolicy(Qt::NoFocus);
       _raster = 0;      // measure
 
       //---------Pulldown Menu----------------------------
@@ -136,6 +139,7 @@ MasterEdit::MasterEdit()
       QToolBar* enableMaster = addToolBar(tr("Enable master"));
       enableMaster->setObjectName("Enable master");
       enableButton = new QToolButton();
+      enableButton->setFocusPolicy(Qt::NoFocus);
       enableButton->setCheckable(true);
       enableButton->setText(tr("Enable"));
       enableButton->setToolTip(tr("Enable usage of master track"));
@@ -163,7 +167,7 @@ MasterEdit::MasterEdit()
             QT_TRANSLATE_NOOP("MusEGui::MasterEdit", "Off"), QT_TRANSLATE_NOOP("MusEGui::MasterEdit", "Bar"), "1/2", "1/4", "1/8", "1/16"
             };
       rasterLabel = new MusEGui::LabelCombo(tr("Snap"), 0);
-      rasterLabel->setFocusPolicy(Qt::NoFocus);
+      rasterLabel->setFocusPolicy(Qt::TabFocus);
       for (int i = 0; i < 6; i++)
             rasterLabel->insertItem(i, tr(rastval[i]));
       rasterLabel->setCurrentIndex(1);
@@ -173,17 +177,15 @@ MasterEdit::MasterEdit()
       //---------values for current position---------------
       info->addWidget(new QLabel(tr("CurPos ")));
       curTempo = new MusEGui::TempoEdit(0);
-      curSig   = new SigEdit(0);
+      curSig   = new SigEdit(0);  // SigEdit is already StrongFocus.
+      curTempo->setFocusPolicy(Qt::StrongFocus);
       curSig->setValue(AL::TimeSignature(4, 4));
       curTempo->setToolTip(tr("tempo at current position"));
       curSig->setToolTip(tr("time signature at current position"));
       info->addWidget(curTempo);
       info->addWidget(curSig);
-      ///connect(curSig, SIGNAL(valueChanged(int,int)), song, SLOT(setSig(int,int)));
-      connect(curSig, SIGNAL(valueChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
-      
-      ///connect(curTempo, SIGNAL(valueChanged(double)), song, SLOT(setTempo(double)));
-      connect(curTempo, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
+      connect(curSig, SIGNAL(valueChanged(const AL::TimeSignature&)), SLOT(sigChange(const AL::TimeSignature&)));
+      connect(curTempo, SIGNAL(tempoChanged(double)), SLOT(tempoChange(double)));
                                                                                     
       //---------------------------------------------------
       //    master
@@ -231,7 +233,7 @@ MasterEdit::MasterEdit()
       mainGrid->addWidget(vscroll, 0, 2, 10, 1);
 //      mainGrid->addWidget(corner,  9, 2, AlignBottom | AlignRight);
 
-      canvas->setFocus(); // Tim.
+      canvas->setFocus(); 
 
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));
       connect(vscroll, SIGNAL(scrollChanged(int)),   canvas, SLOT(setYPos(int)));
@@ -269,6 +271,14 @@ MasterEdit::MasterEdit()
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
+      if(MusEGlobal::config.smartFocus)
+      {
+        connect(curSig,   SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(curSig,   SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        connect(curTempo, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(curTempo, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+      }
+      
       initTopwinState();
       MusEGlobal::muse->topwinMenuInited(this);
       }
@@ -386,6 +396,16 @@ void MasterEdit::writeConfiguration(int level, MusECore::Xml& xml)
       }
 
 //---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void MasterEdit::focusCanvas()
+{
+  canvas->setFocus();
+  canvas->activateWindow();
+}
+
+//---------------------------------------------------------
 //   _setRaster
 //---------------------------------------------------------
 
@@ -396,6 +416,8 @@ void MasterEdit::_setRaster(int index)
             };
       _raster = rasterTable[index];
       _rasterInit = _raster;
+      if(MusEGlobal::config.smartFocus)
+        focusCanvas();
       }
 
 //---------------------------------------------------------
@@ -406,7 +428,7 @@ void MasterEdit::posChanged(int idx, unsigned val, bool)
       {
       if (idx == 0) {
             int z, n;
-            int tempo = MusEGlobal::tempomap.tempo(val);
+            int tempo = MusEGlobal::tempomap.tempoAt(val); // Bypass the useList flag and read from the list.
             AL::sigmap.timesig(val, z, n);
             curTempo->blockSignals(true);
             curSig->blockSignals(true);
@@ -448,5 +470,24 @@ void MasterEdit::setTempo(int val)
             tempo->setValue(val);
             }
       }
+      
+void MasterEdit::sigChange(const AL::TimeSignature& sig)
+{
+  // TODO: FIXME: Tempo/sig undo + redo broken here. Either fix tempo and sig, or finish something here...
+  MusEGlobal::audio->msgAddSig(MusEGlobal::song->cPos().tick(), sig.z, sig.n);  // Add will replace if found. 
+}
+
+void MasterEdit::tempoChange(double t)
+{
+  if(int(t) == 0)
+    return;
+  
+  // TODO: FIXME: Tempo/sig undo + redo broken here. Either fix tempo and sig, or finish something here... Also in transport.
+  //MusEGlobal::song->startUndo();
+  //iTEvent e = find(tick);
+  //MusEGlobal::audio->msgDeleteTempo(it->first, it->second, false);
+  MusEGlobal::audio->msgAddTempo(MusEGlobal::song->cPos().tick(), int(60000000.0/t), true);  // Add will replace if found. 
+  //MusEGlobal::song->endUndo(SC_TEMPO);
+}
 
 } // namespace MusEGui

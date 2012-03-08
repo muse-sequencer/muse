@@ -91,7 +91,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       setObjectName(name);
       ypos = 0;
       editMode = false;
-      setFocusPolicy(Qt::StrongFocus);
+      setFocusPolicy(Qt::NoFocus);
       setMouseTracking(true);
       header    = hdr;
 
@@ -471,10 +471,6 @@ void TList::returnPressed()
                             }
                       }
                       
-                //MusECore::Track* track = editTrack->clone(false);
-                //editTrack->setName(editor->text());
-                //MusEGlobal::audio->msgChangeTrack(track, editTrack);
-                // p4.0.46 Tim...
                 MusEGlobal::song->startUndo();
                 MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackName, 
                                                           editTrack, 
@@ -490,20 +486,13 @@ void TList::returnPressed()
       }  
       
       editMode = false;
-      if(editor->isVisible())
+      if(editor && editor->isVisible())
       {  
         editor->blockSignals(true);  
         editor->hide();
         editor->blockSignals(false); 
       }  
       setFocus();
-}
-
-void TList::chanValueChanged(int /*val*/)
-{
-  //MusECore::Track* track = editTrack->clone(false);
-  //((MusECore::MidiTrack*)editTrack)->setOutChannel(val-1);
-  //MusEGlobal::audio->msgChangeTrack(track, editTrack);
 }
 
 void TList::chanValueFinished()
@@ -648,7 +637,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                         editor = new QLineEdit(this);
                         /*connect(editor, SIGNAL(returnPressed()),
                            SLOT(returnPressed()));*/
-                        editor->setFrame(true);
+                        editor->setFrame(false);
                         connect(editor, SIGNAL(editingFinished()), SLOT(returnPressed()));   
                         }
                   //editor->blockSignals(true);      
@@ -673,6 +662,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                       editTrack=t;
                       if (chan_edit==0) {
                             chan_edit=new QSpinBox(this);
+                            chan_edit->setFrame(false);
                             chan_edit->setMinimum(1);
                             //connect(chan_edit, SIGNAL(valueChanged(int)), SLOT(chanValueChanged(int)));
                             connect(chan_edit, SIGNAL(editingFinished()), SLOT(chanValueFinished()));
@@ -1079,16 +1069,14 @@ void TList::tracklistChanged()
 
 void TList::keyPressEvent(QKeyEvent* e)
       {
+      if ( e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)     
+            {
+            e->accept();
+            return;
+            }
+            
       if (editMode)
             {
-            // First time we get a keypress event when lineedit is open is on the return key:
-            // -- Not true for Qt4. Modifier keys also send key events - Orcan
-            //if ( e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)     // Removed p4.0.46 Tim.
-            //      {
-            //      returnPressed();
-            //      return;
-            //      }
-            //else 
             if ( e->key() == Qt::Key_Escape )
                   {
                   if(editor && editor->isVisible())         
@@ -1108,27 +1096,26 @@ void TList::keyPressEvent(QKeyEvent* e)
                   setFocus();
                   return;           
                   }
+            return;      
             }
-      emit keyPressExt(e); //redirect keypress events to main app
       
-      // p4.0.10 Removed by Tim. keyPressExt are sent to part canvas, where they are 
-      //  ignored *only* if necessary.
+      // Works OK (if focusing allowed). But instead we won't allow focus. Part canvas has Ctrl+up/down which moves selected track only.
+      /* int key = e->key();
+      switch (key) {
+            case Qt::Key_Up:
+                  moveSelection(-1);
+                  return;           
+            case Qt::Key_Down:
+                  moveSelection(1);
+                  return;           
+            default:
+                  break;
+            }  */
+                        
+      // keyPressExt are sent to part canvas, where they are ignored *only* if necessary.
       //e->ignore();  
       
-      /*
-      int key = e->key();
-      switch (key) {
-            case Key_Up:
-                  moveSelection(-1);
-                  break;
-            case Key_Down:
-                  moveSelection(1);
-                  break;
-            default:
-
-                  break;
-            }
-            */
+      emit keyPressExt(e); //redirect keypress events to main app
       }
 
 //---------------------------------------------------------
@@ -1150,7 +1137,6 @@ void TList::moveSelection(int n)
       for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
             MusECore::iTrack s = t;
             if ((*t)->selected()) {
-                  selTrack = *t;
                   if (n > 0) {
                         while (n--) {
                               ++t;
@@ -1161,7 +1147,10 @@ void TList::moveSelection(int n)
                               // skip over hidden tracks
                               if (!(*t)->isVisible()) {
                                     n++;
+                                    continue;
                               }
+                              selTrack = *t;
+                              break;
                          }
                   }
                   else {
@@ -1172,28 +1161,33 @@ void TList::moveSelection(int n)
                               // skip over hidden tracks
                               if (!(*t)->isVisible()) {
                                     n--;
+                                    continue;
                               }
+                              selTrack = *t;
+                              break;
                         }
                   }
-                  (*s)->setSelected(false);
-                  (*t)->setSelected(true);
+                  if(selTrack)
+                  {
+                    (*s)->setSelected(false);
+                    selTrack->setSelected(true);
 
-                  // rec enable track if expected
-                  MusECore::TrackList recd = getRecEnabledTracks();
-                  if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
-                    MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
-                    MusEGlobal::song->setRecordFlag((*t),true);
+                    // rec enable track if expected
+                    MusECore::TrackList recd = getRecEnabledTracks();
+                    if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                      MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
+                      MusEGlobal::song->setRecordFlag((selTrack),true);
+                    }
+
+                    if (editTrack && editTrack != selTrack)   
+                          returnPressed();
+                    redraw();
                   }
-
-                  if (editTrack && editTrack != *t)   
-                        returnPressed();
-                  
-                  redraw();
                   break;
-                  }
+                }
             }
-      ///emit selectionChanged();
-      emit selectionChanged(selTrack);
+      if(selTrack)
+        emit selectionChanged(selTrack);
       }
 
 MusECore::TrackList TList::getRecEnabledTracks()
@@ -1553,7 +1547,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                               t->setSelected(!t->selected());
                         if (editTrack && editTrack != t)
                               returnPressed();
-                        ///emit selectionChanged();
                         emit selectionChanged(t->selected() ? t : 0);
                         }
                   else if (button == Qt::RightButton) {
@@ -1585,7 +1578,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                           {
                                           TrackComment* tc = new TrackComment(t, 0);
                                           tc->show();
-                                          //QToolTip::add( this, "FOOOOOOOOOOOOO" );
                                           }
                                           break;
 

@@ -21,6 +21,7 @@
 //
 //=========================================================
 
+#include <stdio.h>
 #include <errno.h>
 #include <values.h>
 #include <sys/stat.h>
@@ -181,8 +182,8 @@ void EventCanvas::songChanged(int flags)
                   MusECore::EventList* el = part->events();
                   for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
                         MusECore::Event e = i->second;
-                        // Added by T356. Do not add events which are either past, or extend past the end of the part.
-                        // Reverted to just events which are past. p4.0.24 
+                        // Do not add events which are either past, or extend past the end of the part.
+                        // Reverted to just events which are past. 
                         if(e.tick() > len)      
                         //if(e.endTick() > len)
                           break;

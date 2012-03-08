@@ -157,8 +157,8 @@ LMaster::LMaster()
       editingNewItem = false;
       setWindowTitle(tr("MusE: Mastertrack"));
       setMinimumHeight(100);
-      setFixedWidth(400);
-      setFocusPolicy(Qt::StrongFocus);
+      //setFixedWidth(400);            // FIXME: Arbitrary. But without this, sig editor is too wide. Must fix sig editor width...
+      setFocusPolicy(Qt::NoFocus);
 
 
       comboboxTimer=new QTimer(this);
@@ -212,6 +212,9 @@ LMaster::LMaster()
       QToolButton* tempoButton = new QToolButton();
       QToolButton* timeSigButton = new QToolButton();
       QToolButton* keyButton = new QToolButton();
+      tempoButton->setFocusPolicy(Qt::NoFocus);
+      timeSigButton->setFocusPolicy(Qt::NoFocus);
+      keyButton->setFocusPolicy(Qt::NoFocus);
       tempoButton->setText(tr("Tempo"));
       timeSigButton->setText(tr("Timesig"));
       keyButton->setText(tr("Key"));
@@ -264,15 +267,19 @@ LMaster::LMaster()
       updateList();
 
       tempo_editor = new QLineEdit(view->viewport());
+      tempo_editor->setFrame(false);
       tempo_editor->hide();
       connect(tempo_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
       sig_editor = new SigEdit(view->viewport());
+      sig_editor->setFrame(false);
       sig_editor->hide();
       connect(sig_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
       pos_editor = new Awl::PosEdit(view->viewport());
+      pos_editor->setFrame(false);
       pos_editor->hide();
       connect(pos_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
       key_editor = new QComboBox(view->viewport());
+      key_editor->setFrame(false);
       key_editor->addItems(MusECore::keyStrs);
       key_editor->hide();
       connect(key_editor, SIGNAL(activated(int)), SLOT(returnPressed()));
@@ -587,6 +594,8 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
       //printf("itemDoubleClicked\n");
       emit seekTo(((LMasterLViewItem*) i)->tick());
 
+      QFontMetrics fm(font());
+      int fnt_w = fm.width('0');
       if (!editedItem && editorColumn == LMASTER_VAL_COL) {
             editedItem = (LMasterLViewItem*) i;
             QRect itemRect = view->visualItemRect(editedItem);
@@ -595,7 +604,6 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
             itemRect.setX(x1);
             //Qt makes crazy things with itemRect if this is called directly..
             if (editingNewItem) {
-                  QFontMetrics fm(font());
                   int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0 , this); // ddskrjo 0
                   int h  = fm.height() + fw * 2;
                   itemRect.setWidth(view->columnWidth(LMASTER_VAL_COL));
@@ -615,7 +623,10 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
             else if (editedItem->getType() == LMASTER_SIGEVENT) { // Edit signatur value:
                   //sig_editor->setValue(editedItem->text(LMASTER_VAL_COL));
                   sig_editor->setValue(((LMasterSigEventItem*)editedItem)->getEvent()->sig);
-                  sig_editor->setGeometry(itemRect);
+                  int w = fnt_w * 14;
+                  if(w > itemRect.width())
+                    w = itemRect.width();
+                  sig_editor->setGeometry(itemRect.x(), itemRect.y(), w, itemRect.height());
                   sig_editor->show();
                   sig_editor->setFocus();
                   }
@@ -643,8 +654,11 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
             else {
                   pos_editor->setValue(editedItem->tick());
                   QRect itemRect = view->visualItemRect(editedItem);
-                  itemRect.setX(0);
-                  itemRect.setWidth(view->columnWidth(LMASTER_BEAT_COL));
+                  itemRect.setX(view->indentation());
+                  int w = view->columnWidth(LMASTER_BEAT_COL) - view->indentation();
+                  if(w < (fnt_w * 13))
+                    w = fnt_w * 13;
+                  itemRect.setWidth(w);
                   pos_editor->setGeometry(itemRect);
                   pos_editor->show();
                   pos_editor->setFocus();

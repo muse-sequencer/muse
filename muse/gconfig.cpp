@@ -187,7 +187,8 @@ GlobalConfigValues config = {
       false,                        // leftMouseButtonCanDecrease
       false,                        // rangeMarkerWithoutMMB
       true,                         // addHiddenTracks
-      true                          // unhideTracks
+      true,                         // unhideTracks
+      false                         // smartFocus
 
     };
 

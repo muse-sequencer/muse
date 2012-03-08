@@ -588,7 +588,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Bank Select MSB. Double-click on/off.</string>
+      <string>Bank Select MSB. Ctrl-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -641,7 +641,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Bank Select LSB. Double-click on/off.</string>
+      <string>Bank Select LSB. Ctrl-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -694,7 +694,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Program. Double-click on/off.</string>
+      <string>Program. Ctrl-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -761,7 +761,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Volume. Double-click on/off.</string>
+      <string>Volume. Ctrl-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -828,10 +828,10 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Change stereo position. Double-click on/off.</string>
+      <string>Change stereo position. Ctrl-click on/off.</string>
      </property>
      <property name="whatsThis">
-      <string>Change stereo position. Double-click on/off.</string>
+      <string>Change stereo position. Ctrl-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>

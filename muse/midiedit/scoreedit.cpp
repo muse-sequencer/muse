@@ -45,7 +45,6 @@
 #include <QImage>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QSpinBox>
 
 #include <stdio.h>
 #include <math.h>
@@ -183,7 +182,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
    : TopWin(TopWin::SCORE, parent, name)
 {
 	setAttribute(Qt::WA_DeleteOnClose);
-	setFocusPolicy(Qt::StrongFocus);
+	setFocusPolicy(Qt::NoFocus);
 
 	mainw    = new QWidget(this);
 
@@ -247,6 +246,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	srec->setToolTip(tr("Step Record"));
 	srec->setIcon(*steprecIcon);
 	srec->setCheckable(true);
+	srec->setFocusPolicy(Qt::NoFocus);
 	steprec_tools->addWidget(srec);
 	connect(srec, SIGNAL(toggled(bool)), score_canvas, SLOT(set_steprec(bool)));
 
@@ -330,24 +330,34 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	
 	note_settings_toolbar->addWidget(apply_velo_to_label);
 	note_settings_toolbar->addWidget(new QLabel(tr("Velocity:"), note_settings_toolbar));
-	velo_spinbox = new QSpinBox(this);
+	velo_spinbox = new SpinBox(this);
 	velo_spinbox->setRange(0, 127);
 	velo_spinbox->setSingleStep(1);
 	//we do not use the valueChanged signal, because that would generate
 	//many many undos when using the spin buttons.
 	connect(velo_spinbox, SIGNAL(editingFinished()), SLOT(velo_box_changed()));
 	connect(this,SIGNAL(velo_changed(int)), score_canvas, SLOT(set_velo(int)));
+	if(MusEGlobal::config.smartFocus)
+	{
+	  connect(velo_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	  connect(velo_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+	}  
 	note_settings_toolbar->addWidget(velo_spinbox);
 	velo_spinbox->setValue(ScoreCanvas::note_velo_init);
 
 	note_settings_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), note_settings_toolbar));
-	velo_off_spinbox = new QSpinBox(this);
+	velo_off_spinbox = new SpinBox(this);
 	velo_off_spinbox->setRange(0, 127);
 	velo_off_spinbox->setSingleStep(1);
 	//we do not use the valueChanged signal, because that would generate
 	//many many undos when using the spin buttons.
 	connect(velo_off_spinbox, SIGNAL(editingFinished()), SLOT(velo_off_box_changed()));
 	connect(this,SIGNAL(velo_off_changed(int)), score_canvas, SLOT(set_velo_off(int)));
+	if(MusEGlobal::config.smartFocus)
+	{
+	  connect(velo_off_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	  connect(velo_off_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+	}
 	note_settings_toolbar->addWidget(velo_off_spinbox);
 	velo_off_spinbox->setValue(ScoreCanvas::note_velo_off_init);
 
@@ -362,21 +372,29 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	quant_combobox->addItem("8");  // _quant_power2 and _quant_power2_init
 	quant_combobox->addItem("16"); // and MAX_QUANT_POWER (must be log2(largest_value))
 	quant_combobox->addItem("32");
+	quant_combobox->setFocusPolicy(Qt::TabFocus);
 	quant_combobox->setCurrentIndex(score_canvas->quant_power2()-1);
 	// the above is intendedly executed BEFORE connecting. otherwise this would
 	// destroy pixels_per_whole_init!
-	connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int)));
+	//connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int))); 
+	connect(quant_combobox, SIGNAL(activated(int)), SLOT(quant_combobox_changed(int)));      // Tim
 	quant_toolbar->addWidget(quant_combobox);
 	
 	
 	quant_toolbar->addSeparator();
 
 	quant_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_toolbar));
-	px_per_whole_spinbox = new QSpinBox(this);
+	px_per_whole_spinbox = new SpinBox(this);
+	px_per_whole_spinbox->setFocusPolicy(Qt::StrongFocus);
 	px_per_whole_spinbox->setRange(10, 1200);
 	px_per_whole_spinbox->setSingleStep(50);
 	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
 	connect(score_canvas, SIGNAL(pixels_per_whole_changed(int)), px_per_whole_spinbox, SLOT(setValue(int)));
+	if(MusEGlobal::config.smartFocus)
+	{
+	  connect(px_per_whole_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	  connect(px_per_whole_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+	}
 	quant_toolbar->addWidget(px_per_whole_spinbox);
 	px_per_whole_spinbox->setValue(ScoreCanvas::_pixels_per_whole_init);
 
@@ -626,6 +644,12 @@ ScoreEdit::~ScoreEdit()
 	names.erase(name);
 }
 
+void ScoreEdit::focusCanvas()
+{
+  score_canvas->setFocus();
+  score_canvas->activateWindow();
+}
+
 void ScoreEdit::velo_box_changed()
 {
 	emit velo_changed(velo_spinbox->value());
@@ -634,6 +658,13 @@ void ScoreEdit::velo_box_changed()
 void ScoreEdit::velo_off_box_changed()
 {
 	emit velo_off_changed(velo_off_spinbox->value());
+}
+
+void ScoreEdit::quant_combobox_changed(int idx)
+{
+	score_canvas->set_quant(idx);
+	if(MusEGlobal::config.smartFocus)
+	  focusCanvas();
 }
 
 void ScoreEdit::song_changed(int flags)

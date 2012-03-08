@@ -45,6 +45,8 @@ SigEdit::SigEdit(QWidget* parent)
       slash = new QLabel("/",this);
       zSpin = new SigSpinBox(this);
       nSpin = new SigSpinBox(this);
+      zSpin->setFocusPolicy(Qt::StrongFocus);
+      nSpin->setFocusPolicy(Qt::StrongFocus);
       zSpin->setRange(1,100);
       nSpin->setDenominator();
       nSpin->setRange(1,128);
@@ -59,6 +61,8 @@ SigEdit::SigEdit(QWidget* parent)
       connect(nSpin, SIGNAL(valueChanged(int)), SLOT(setN(int)));
       connect(nSpin, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
       connect(zSpin, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+      connect(nSpin, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+      connect(zSpin, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
 
       connect(zSpin, SIGNAL(moveFocus()), SLOT(moveFocus()));
       connect(nSpin, SIGNAL(moveFocus()), SLOT(moveFocus()));
@@ -71,7 +75,6 @@ SigEdit::~SigEdit()
       delete zSpin;
       delete nSpin;
       }
-
 
 //---------------------------------------------------------
 //   moveFocus

@@ -31,7 +31,6 @@
 #include <list>
 
 class QCloseEvent;
-class QFocusEvent;
 class QMainWindow;
 class QMenu;
 class QPoint;
@@ -237,8 +236,6 @@ class MusE : public QMainWindow
       void writeGlobalConfiguration(int level, MusECore::Xml&) const;
       void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
-
-      virtual void focusInEvent(QFocusEvent*);
 
       QSignalMapper *midiPluginSignalMapper;
       QSignalMapper *followSignalMapper;

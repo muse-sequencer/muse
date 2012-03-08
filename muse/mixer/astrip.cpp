@@ -781,6 +781,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       stereo  = new QToolButton();
       ///stereo->setFont(MusEGlobal::config.fonts[1]);
+      stereo->setFocusPolicy(Qt::NoFocus);
       stereo->setCheckable(true);
       stereo->setToolTip(tr("1/2 channel"));
       stereo->setChecked(channel == 2);
@@ -795,6 +796,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       pre = new QToolButton();
       ///pre->setFont(MusEGlobal::config.fonts[1]);
+      pre->setFocusPolicy(Qt::NoFocus);
       pre->setCheckable(true);
       pre->setText(tr("Pre"));
       pre->setToolTip(tr("pre fader - post fader"));
@@ -895,6 +897,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       if (track->canRecord()) {
             record  = new MusEGui::TransparentToolButton(this);
+	    record->setFocusPolicy(Qt::NoFocus);
             record->setCheckable(true);
             record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
             record->setBackgroundRole(QPalette::Mid);
@@ -908,6 +911,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       MusECore::Track::TrackType type = t->type();
 
       mute  = new QToolButton();
+      mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
       mute->setToolTip(tr("mute"));
       mute->setChecked(t->mute());
@@ -917,7 +921,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
       solo  = new QToolButton();
-      
+      solo->setFocusPolicy(Qt::NoFocus);
       solo->setCheckable(true);
       solo->setChecked(t->solo());
       if(t->internalSolo())
@@ -938,6 +942,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
             }
 
       off  = new MusEGui::TransparentToolButton(this);
+      off->setFocusPolicy(Qt::NoFocus);
       off->setBackgroundRole(QPalette::Mid);
       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       off->setCheckable(true);
@@ -960,6 +965,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       if (type != MusECore::Track::AUDIO_AUX) {
             iR = new QToolButton();
+	    iR->setFocusPolicy(Qt::NoFocus);
             ///iR->setFont(MusEGlobal::config.fonts[1]);
             iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
             ///iR->setText(tr("iR"));
@@ -972,6 +978,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
             }
       
       oR = new QToolButton();
+      oR->setFocusPolicy(Qt::NoFocus);
       ///oR->setFont(MusEGlobal::config.fonts[1]);
       oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
       ///oR->setText(tr("oR"));
@@ -987,6 +994,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       //---------------------------------------------------
 
       autoType = new MusEGui::ComboBox();
+      autoType->setFocusPolicy(Qt::NoFocus);
       ///autoType->setFont(MusEGlobal::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       //autoType->setAutoFillBackground(true);

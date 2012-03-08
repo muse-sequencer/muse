@@ -1,8 +1,7 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: tempolabel.h,v 1.1.1.1 2003/10/27 18:55:05 wschweer Exp $
-//  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//    doublespinbox.h (C) Copyright 2012 Tim E. Real (terminator356 at users dot sourceforge dot net)  
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,61 +19,53 @@
 //
 //=========================================================
 
-#ifndef __TEMPOLABEL_H__
-#define __TEMPOLABEL_H__
+#ifndef __DOUBLESPINBOX_H__
+#define __DOUBLESPINBOX_H__
 
-#include <QLabel>
-#include "doublespinbox.h"
+#include <QDoubleSpinBox>
+#include <QLineEdit>
 
-namespace MusEGui {
+namespace MusEGui { 
+
+class DoubleSpinBoxLineEdit : public QLineEdit
+{
+  Q_OBJECT
+  
+  protected:
+    //virtual void mouseDoubleClickEvent(QMouseEvent* e);
+    virtual void mousePressEvent(QMouseEvent* e);
+
+  signals:
+    //void doubleClicked();
+    //void ctrlDoubleClicked();
+    void ctrlClicked();
+
+  public:
+    DoubleSpinBoxLineEdit(QWidget* parent = 0) : QLineEdit(parent) {};
+};
 
 //---------------------------------------------------------
-//   TempoLabel
+//   DoubleSpinBox
 //---------------------------------------------------------
 
-class TempoLabel : public QLabel {
-      Q_OBJECT
-    
-      double _value;
-
-      
+class DoubleSpinBox : public QDoubleSpinBox {
+   Q_OBJECT
 
    protected:
-      QSize sizeHint() const;
-
-   public slots:
-      void setValue(int);
-      void setValue(double);
-
-   public:
-      TempoLabel(QWidget*, const char* name = 0);
-      };
-
-//---------------------------------------------------------
-//   TempoEdit
-//---------------------------------------------------------
-
-class TempoEdit : public DoubleSpinBox {
-      Q_OBJECT
-
-      double curVal;
-      
-   protected:
-      QSize sizeHint() const;
-
-   private slots:
-      void newValue(double);
-
-   public slots:
-      void setValue(double);
+      virtual void keyPressEvent(QKeyEvent*);
+      virtual void wheelEvent(QWheelEvent*);
 
    signals:
-      void tempoChanged(double);
+      //void doubleClicked();
+      //void ctrlDoubleClicked();
+      void ctrlClicked();
+      void returnPressed();
+      void escapePressed();
 
    public:
-      TempoEdit(QWidget*);
-      //int tempo() const;
-      };
+      DoubleSpinBox(QWidget* parent=0);
+      DoubleSpinBox(double minValue, double maxValue, double step = 1.0, QWidget* parent=0);
+};
 
 } // namespace MusEGui
 

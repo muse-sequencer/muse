@@ -25,6 +25,8 @@
 
 #include <vector>
 
+#include <QScrollBar>
+
 #include "midieditor.h"
 #include "pcanvas.h"
 #include "trackautomationview.h"
@@ -33,7 +35,7 @@ class QAction;
 class QCheckBox;
 class QMainWindow;
 class QMenu;
-class QScrollBar;
+//class QScrollBar;
 class QToolButton;
 class QWheelEvent;
 class QKeyEvent;
@@ -68,6 +70,12 @@ class WidgetStack : public QWidget {
       std::vector<QWidget*> stack;
       int top;
 
+   protected:
+      virtual void wheelEvent(QWheelEvent* e);
+      
+   signals:
+      void redirectWheelEvent(QWheelEvent*);
+      
    public:
       WidgetStack(QWidget* parent, const char* name = 0);
       void raiseWidget(int idx);
@@ -79,6 +87,20 @@ class WidgetStack : public QWidget {
       //QSize minimumSize() const;
       //int minimumHeight() const;
       };
+
+//---------------------------------------------------------
+//   ScrollBar
+//---------------------------------------------------------
+
+class ScrollBar : public QScrollBar {
+      Q_OBJECT
+      
+  public slots:
+      void redirectedWheelEvent(QWheelEvent*);
+      
+  public:    
+    ScrollBar(Qt::Orientation orientation, QWidget * parent = 0 ) : QScrollBar(orientation, parent) {};  
+};
 
 //---------------------------------------------------------
 //   Arranger
@@ -98,7 +120,7 @@ class Arranger : public QWidget {
       bool showTrackinfoFlag;
       WidgetStack* trackInfo;
       //QStackedWidget* trackInfo;
-      QScrollBar* infoScroll;
+      ScrollBar* infoScroll;
       //MidiTrackInfoBase* midiTrackInfo;
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
@@ -143,9 +165,10 @@ class Arranger : public QWidget {
       void verticalScrollSetYpos(unsigned);
       void horizontalZoomIn();
       void horizontalZoomOut();
+      void focusCanvas();
       
    signals:
-      void redirectWheelEvent(QWheelEvent*);
+      //void redirectWheelEvent(QWheelEvent*);
       void editPart(MusECore::Track*);
       void selectionChanged();
       void dropSongFile(const QString&);
@@ -157,7 +180,7 @@ class Arranger : public QWidget {
 
 
    protected:
-      virtual void wheelEvent(QWheelEvent* e);
+      //virtual void wheelEvent(QWheelEvent* e);
       virtual void keyPressEvent(QKeyEvent* event);
 
    public slots:

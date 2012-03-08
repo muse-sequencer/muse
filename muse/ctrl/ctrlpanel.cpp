@@ -89,6 +89,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       dbox->setContentsMargins(0, 0, 0, 0);
 
       selCtrl = new QPushButton(tr("S"));
+      selCtrl->setFocusPolicy(Qt::NoFocus);
       selCtrl->setFont(MusEGlobal::config.fonts[3]);
       selCtrl->setFixedHeight(20);
       selCtrl->setSizePolicy(
@@ -99,6 +100,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
 
       // destroy button
       QPushButton* destroy = new QPushButton(tr("X"));
+      destroy->setFocusPolicy(Qt::NoFocus);
       destroy->setFont(MusEGlobal::config.fonts[3]);
       destroy->setFixedHeight(20);
       destroy->setSizePolicy(

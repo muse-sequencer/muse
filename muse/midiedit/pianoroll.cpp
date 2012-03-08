@@ -271,18 +271,21 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       srec->setToolTip(tr("Step Record"));
       srec->setIcon(*steprecIcon);
       srec->setCheckable(true);
+      srec->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
       midiin->setToolTip(tr("Midi Input"));
       midiin->setIcon(*midiinIcon);
       midiin->setCheckable(true);
+      midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
 
       speaker  = new QToolButton();
       speaker->setToolTip(tr("Play Events"));
       speaker->setIcon(*speakerIcon);
       speaker->setCheckable(true);
+      speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 
       tools2 = new MusEGui::EditToolBar(this, pianorollTools);
@@ -318,24 +321,14 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       hsplitter->setHandleWidth(2);
       
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
-      //QPushButton* ctrl = new QPushButton(tr("C"), mainw);  // Tim.
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setToolTip(tr("Add Controller View"));
-      //hscroll = new MusEGui::ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
-      // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. p4.0.18 Tim.
+      ctrl->setFocusPolicy(Qt::NoFocus);
+      // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll = new MusEGui::ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
-      //ctrl->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());  // Tim.
-      
-      // Tim.
-      /*
-      QPushButton* trackInfoButton = new QPushButton(tr("T"), mainw);
-      trackInfoButton->setObjectName("TrackInfo");
-      trackInfoButton->setFont(MusEGlobal::config.fonts[3]);
-      trackInfoButton->setToolTip(tr("Show track info"));
-      trackInfoButton->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());
-      */
+      //ctrl->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());  
       
       QSizeGrip* corner = new QSizeGrip(mainw);
 
@@ -351,6 +344,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       infoScroll->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding));
       infoScroll->setWidget(midiTrackInfo);
       infoScroll->setWidgetResizable(true);
+      infoScroll->setFocusPolicy(Qt::NoFocus);
       //infoScroll->setVisible(false);
       //infoScroll->setEnabled(false);
 
@@ -396,8 +390,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       Piano* piano        = new Piano(split1, yscale);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
       vscroll             = new MusEGui::ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
-      
-      //setFocusProxy(canvas);   // Tim.
       
       int offset = -(MusEGlobal::config.division/4);
       canvas->setOrigin(offset, 0);
@@ -456,6 +448,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
       //connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim.
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
+
       connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
@@ -482,6 +475,14 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(speaker, SIGNAL(toggled(bool)), SLOT(setSpeaker(bool)));
       connect(canvas, SIGNAL(followEvent(int)), SLOT(follow(int)));
 
+      if(MusEGlobal::config.smartFocus)
+      {
+        connect(info, SIGNAL(returnPressed()),          SLOT(focusCanvas()));
+        connect(info, SIGNAL(escapePressed()),          SLOT(focusCanvas()));
+        connect(midiTrackInfo, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(midiTrackInfo, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+      }
+
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       piano->setYPos(KH * 30);
       canvas->setYPos(KH * 30);
@@ -502,9 +503,9 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(toolbar,  SIGNAL(rasterChanged(int)),SLOT(setRaster(int)));
       connect(toolbar,  SIGNAL(soloChanged(bool)), SLOT(soloChanged(bool)));
 
-      setFocusPolicy(Qt::StrongFocus);
+      setFocusPolicy(Qt::NoFocus);
+      
       setEventColorMode(colorMode);
-
 
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
@@ -546,10 +547,8 @@ void PianoRoll::songChanged1(int bits)
           return;
         
         if (bits & SC_SOLO)
-        {
             toolbar->setSolo(canvas->track()->solo());
-            return;
-        }      
+        
         songChanged(bits);
         //trackInfo->songChanged(bits);
         // We'll receive SC_SELECTION if a different part is selected.
@@ -713,11 +712,21 @@ void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* p)
       }
 
 //---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void PianoRoll::focusCanvas()
+{
+  canvas->setFocus();
+  canvas->activateWindow();
+}
+
+//---------------------------------------------------------
 //    edit currently selected Event
 //---------------------------------------------------------
 
 void PianoRoll::noteinfoChanged(MusEGui::NoteInfo::ValType type, int val)
-      {
+      {  
       int selections = canvas->selectionSize();
 
       if (selections == 0) {
@@ -899,7 +908,8 @@ void PianoRoll::setRaster(int val)
       _rasterInit = val;
       MidiEditor::setRaster(val);
       canvas->redrawGrid();
-      canvas->setFocus();     // give back focus after kb input
+      if(MusEGlobal::config.smartFocus)
+        focusCanvas();     // give back focus after kb input
       }
 
 //---------------------------------------------------------

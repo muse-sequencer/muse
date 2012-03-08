@@ -176,7 +176,7 @@ void DrumEdit::closeEvent(QCloseEvent* e)
 DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, unsigned initPos)
    : MidiEditor(TopWin::DRUM, _rasterInit, pl, parent, name)
       {
-      setFocusPolicy(Qt::StrongFocus);
+      setFocusPolicy(Qt::NoFocus);  
 
       split1w1 = 0;
       selPart  = 0;
@@ -306,12 +306,14 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       QToolButton *ldm = new QToolButton();
       ldm->setToolTip(tr("Load Drummap"));
       ldm->setIcon(*openIcon);
+      ldm->setFocusPolicy(Qt::NoFocus);
       connect(ldm, SIGNAL(clicked()), SLOT(load()));
       tools->addWidget(ldm);
       
       QToolButton *sdm = new QToolButton();
       sdm->setToolTip(tr("Store Drummap"));
       sdm->setIcon(*saveIcon);
+      sdm->setFocusPolicy(Qt::NoFocus);
       connect(sdm, SIGNAL(clicked()), SLOT(save()));
       tools->addWidget(sdm);
       
@@ -325,12 +327,14 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       srec->setToolTip(tr("Step Record"));
       srec->setIcon(*steprecIcon);
       srec->setCheckable(true);
+      srec->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
       midiin->setToolTip(tr("Midi Input"));
       midiin->setIcon(*midiinIcon);
       midiin->setCheckable(true);
+      midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
       
       
@@ -353,8 +357,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       stepLenWidget->addItem("8");
       stepLenWidget->addItem("16");
       stepLenWidget->setCurrentIndex(0);
-      stepLenWidget->setFocusPolicy(Qt::NoFocus);
-      connect(stepLenWidget, SIGNAL(currentIndexChanged(QString)), SLOT(setStep(QString)));
+      stepLenWidget->setFocusPolicy(Qt::TabFocus);
+      connect(stepLenWidget, SIGNAL(activated(QString)), SLOT(setStep(QString)));
       cursorToolbar->addWidget(stepLenWidget);
 
       QToolBar* panicToolbar = addToolBar(tr("panic"));
@@ -382,8 +386,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(MusEGlobal::config.fonts[3]);
-      //hscroll           = new MusEGui::ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
-      // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. p4.0.18 Tim.
+      ctrl->setFocusPolicy(Qt::NoFocus);
+      // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll           = new MusEGui::ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
       ctrl->setToolTip(tr("Add Controller View"));
@@ -509,7 +513,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(toolbar, SIGNAL(rasterChanged(int)),         SLOT(setRaster(int)));
       connect(toolbar, SIGNAL(soloChanged(bool)),          SLOT(soloChanged(bool)));
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
-
+      if(MusEGlobal::config.smartFocus)
+      {
+        connect(info, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(info, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+      }
+      
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
 
       QClipboard* cb = QApplication::clipboard();
@@ -550,12 +559,9 @@ void DrumEdit::songChanged1(int bits)
           return;
         
         if (bits & SC_SOLO)
-        {
-            toolbar->setSolo(canvas->track()->solo());
-            return;
-        }      
-        songChanged(bits);
+          toolbar->setSolo(canvas->track()->solo());
 
+        songChanged(bits);
       }
 
 //---------------------------------------------------------
@@ -634,6 +640,16 @@ void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part* p)
       }
 
 //---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void DrumEdit::focusCanvas()
+{
+  canvas->setFocus();
+  canvas->activateWindow();
+}
+
+//---------------------------------------------------------
 //   soloChanged
 //---------------------------------------------------------
 
@@ -652,6 +668,8 @@ void DrumEdit::setRaster(int val)
       _rasterInit = val;
       MidiEditor::setRaster(val);
       canvas->redrawGrid();
+      if(MusEGlobal::config.smartFocus)
+        focusCanvas();     // give back focus after kb input
       }
 
 //---------------------------------------------------------
@@ -1332,8 +1350,8 @@ void DrumEdit::execUserScript(int id)
 void DrumEdit::setStep(QString v)
 {
   ((DrumCanvas*)canvas)->setStep(v.toInt());
-  stepLenWidget->setFocusPolicy(Qt::NoFocus);
-  canvas->setFocus();
+  if(MusEGlobal::config.smartFocus)
+    focusCanvas();
 }
 
 } // namespace MusEGui

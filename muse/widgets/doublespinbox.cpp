@@ -1,8 +1,7 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: spinbox.cpp,v 1.1.2.3 2009/07/09 18:27:11 terminator356 Exp $
-//    (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//    doublespinbox.cpp (C) Copyright 2012 Tim E. Real (terminator356 at users dot sourceforge dot net)  
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -21,14 +20,13 @@
 //=========================================================
 
 #include <QKeyEvent>
-#include <QEvent>
 #include <QLineEdit>
 #include <QMouseEvent>
-#include "spinbox.h"
+#include "doublespinbox.h"
 
 namespace MusEGui {
 
-//void SpinBoxLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
+//void DoubleSpinBoxLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
 //{
 //  QLineEdit::mouseDoubleClickEvent(e);
 //  emit doubleClicked();
@@ -36,7 +34,7 @@ namespace MusEGui {
 //    emit ctrlDoubleClicked();
 //}
 
-void SpinBoxLineEdit::mousePressEvent(QMouseEvent* e)
+void DoubleSpinBoxLineEdit::mousePressEvent(QMouseEvent* e)
 {
   QLineEdit::mousePressEvent(e);
   //selectAll();
@@ -45,13 +43,13 @@ void SpinBoxLineEdit::mousePressEvent(QMouseEvent* e)
 }
 
 //---------------------------------------------------------
-//   SpinBox
+//   DoubleSpinBox
 //---------------------------------------------------------
 
-SpinBox::SpinBox(QWidget* parent)
-   : QSpinBox(parent)
+DoubleSpinBox::DoubleSpinBox(QWidget* parent)
+   : QDoubleSpinBox(parent)
 {
-  SpinBoxLineEdit* le = new SpinBoxLineEdit(this);
+  DoubleSpinBoxLineEdit* le = new DoubleSpinBoxLineEdit(this);
   setLineEdit(le);
   setKeyboardTracking(false);
   
@@ -60,10 +58,10 @@ SpinBox::SpinBox(QWidget* parent)
   connect(le, SIGNAL(ctrlClicked()), this, SIGNAL(ctrlClicked()));
 }
 
-SpinBox::SpinBox(int minValue, int maxValue, int step, QWidget* parent)
-   : QSpinBox(parent)
+DoubleSpinBox::DoubleSpinBox(double minValue, double maxValue, double step, QWidget* parent)
+   : QDoubleSpinBox(parent)
 {
-  SpinBoxLineEdit* le = new SpinBoxLineEdit(this);
+  DoubleSpinBoxLineEdit* le = new DoubleSpinBoxLineEdit(this);
   setLineEdit(le);
   setRange(minValue, maxValue);
   setSingleStep(step);
@@ -74,11 +72,11 @@ SpinBox::SpinBox(int minValue, int maxValue, int step, QWidget* parent)
   connect(le, SIGNAL(ctrlClicked()), this, SIGNAL(ctrlClicked()));
 }
 
-void SpinBox::keyPressEvent(QKeyEvent* ev)
+void DoubleSpinBox::keyPressEvent(QKeyEvent* ev)
 {
     switch (ev->key()) {
       case Qt::Key_Return:
-        QSpinBox::keyPressEvent(ev);
+        QDoubleSpinBox::keyPressEvent(ev);
         emit returnPressed();
         return;
       break;
@@ -89,12 +87,12 @@ void SpinBox::keyPressEvent(QKeyEvent* ev)
       default:
       break;
     }
-    QSpinBox::keyPressEvent(ev);
+    QDoubleSpinBox::keyPressEvent(ev);
 }
 
-void SpinBox::wheelEvent(QWheelEvent* e)
+void DoubleSpinBox::wheelEvent(QWheelEvent* e)
 {
-  QSpinBox::wheelEvent(e);
+  QDoubleSpinBox::wheelEvent(e);
   // Need this because Qt doesn't deselect the text if not focused.
   if(!hasFocus() && lineEdit())
     lineEdit()->deselect();

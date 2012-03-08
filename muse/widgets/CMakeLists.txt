@@ -44,6 +44,7 @@ QT4_WRAP_CPP (widget_mocs
       dentry.h  
       didyouknow.h
       doublelabel.h  
+      doublespinbox.h  
       filedialog.h  
       genset.h  
       mdisettings.h  
@@ -150,6 +151,7 @@ file (GLOB widgets_source_files
       dentry.cpp 
       dimap.cpp
       doublelabel.cpp 
+      doublespinbox.cpp
       drange.cpp
       filedialog.cpp 
       genset.cpp 

@@ -80,7 +80,7 @@ QSize TempoLabel::sizeHint() const
 //---------------------------------------------------------
 
 TempoEdit::TempoEdit(QWidget* parent)
-   : QDoubleSpinBox(parent)
+   : DoubleSpinBox(parent)
       {
       curVal = -1.0;
       setSingleStep(1.0);

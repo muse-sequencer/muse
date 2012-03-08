@@ -31,7 +31,7 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 PitchEdit::PitchEdit(QWidget* parent)
-  : QSpinBox(parent)
+  : SpinBox(parent)
       {
       setMinimum(0);
       setMaximum(127);

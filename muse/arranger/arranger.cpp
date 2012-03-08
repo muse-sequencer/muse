@@ -71,6 +71,12 @@
 
 namespace MusEGui {
 
+void ScrollBar::redirectedWheelEvent(QWheelEvent* e)
+{
+  if(isVisible())
+    wheelEvent(e);
+}
+
 //---------------------------------------------------------
 //   Arranger::setHeaderToolTips
 //---------------------------------------------------------
@@ -125,6 +131,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       parentWin=parent;
       
+      setFocusPolicy(Qt::NoFocus);
+      
       //---------------------------------------------------
       //  ToolBar
       //    create toolbar in toplevel widget
@@ -169,6 +177,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       // song length is limited to 10000 bars; the real song len is limited
       // by overflows in tick computations
       lenEntry = new SpinBox(1, 10000, 1);
+      lenEntry->setFocusPolicy(Qt::StrongFocus);
       lenEntry->setValue(MusEGlobal::song->len());
       lenEntry->setToolTip(tr("song length - bars"));
       lenEntry->setWhatsThis(tr("song length - bars"));
@@ -193,6 +202,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       toolbar->addWidget(label);
       
       globalPitchSpinBox = new SpinBox(-127, 127, 1);
+      globalPitchSpinBox->setFocusPolicy(Qt::StrongFocus);
       globalPitchSpinBox->setValue(MusEGlobal::song->globalPitchShift());
       globalPitchSpinBox->setToolTip(tr("midi pitch"));
       globalPitchSpinBox->setWhatsThis(tr("global midi pitch shift"));
@@ -205,6 +215,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       toolbar->addWidget(label);
       
       globalTempoSpinBox = new SpinBox(50, 200, 1, toolbar);
+      globalTempoSpinBox->setFocusPolicy(Qt::StrongFocus);
       globalTempoSpinBox->setSuffix(QString("%"));
       globalTempoSpinBox->setValue(MusEGlobal::tempomap.globalTempo());
       globalTempoSpinBox->setToolTip(tr("midi tempo"));
@@ -214,16 +225,19 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       QToolButton* tempo50  = new QToolButton();
       tempo50->setText(QString("50%"));
+      tempo50->setFocusPolicy(Qt::NoFocus);
       toolbar->addWidget(tempo50);
       connect(tempo50, SIGNAL(clicked()), SLOT(setTempo50()));
       
       QToolButton* tempo100 = new QToolButton();
       tempo100->setText(tr("N"));
+      tempo100->setFocusPolicy(Qt::NoFocus);
       toolbar->addWidget(tempo100);
       connect(tempo100, SIGNAL(clicked()), SLOT(setTempo100()));
       
       QToolButton* tempo200 = new QToolButton();
       tempo200->setText(QString("200%"));
+      tempo200->setFocusPolicy(Qt::NoFocus);
       toolbar->addWidget(tempo200);
       connect(tempo200, SIGNAL(clicked()), SLOT(setTempo200()));
 
@@ -262,7 +276,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //    Track Info
       //---------------------------------------------------
 
-      infoScroll = new QScrollBar(Qt::Vertical, tracklist);
+      infoScroll = new ScrollBar(Qt::Vertical, tracklist);
       infoScroll->setObjectName("infoScrollBar");
       //genTrackInfo(tracklist); // Moved below
 
@@ -306,7 +320,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       setHeaderWhatsThis();
       header->setMovable (true );
       list = new TList(header, tracklist, "tracklist");
-
+      
       // Do this now that the list is available.
       genTrackInfo(tracklist);
       
@@ -373,7 +387,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       canvas->setCanvasTools(arrangerTools);
       canvas->setOrigin(-offset, 0);
       canvas->setFocus();
-      setFocusProxy(canvas);   // once removed by Tim (r735), added by flo again
+
+      list->setFocusProxy(canvas); // Make it easy for track list popup line editor to give focus back to canvas.
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(MusECore::Track*)), list, SLOT(selectTrack(MusECore::Track*)));
@@ -382,9 +397,21 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
       connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
       connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
-
-      connect(this, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
-      connect(list, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      if(MusEGlobal::config.smartFocus)
+      {
+        connect(lenEntry,           SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(lenEntry,           SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        connect(globalPitchSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(globalPitchSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        connect(globalTempoSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(globalTempoSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        connect(midiTrackInfo,      SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(midiTrackInfo,      SIGNAL(escapePressed()), SLOT(focusCanvas()));
+      }
+      
+      //connect(this,      SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      connect(list,      SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      connect(trackInfo, SIGNAL(redirectWheelEvent(QWheelEvent*)), infoScroll, SLOT(redirectedWheelEvent(QWheelEvent*)));
       
       egrid->addWidget(time, 0, 0, 1, 2);
       egrid->addWidget(MusECore::hLine(editor), 1, 0, 1, 2);
@@ -420,7 +447,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       configChanged();  // set configuration values
       if(canvas->part())
-        midiTrackInfo->setTrack(canvas->part()->track());   // Tim.
+        midiTrackInfo->setTrack(canvas->part()->track());   
       showTrackInfo(showTrackinfoFlag);
       
       // Take care of some tabbies!
@@ -500,6 +527,16 @@ void Arranger::configChanged()
             canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       }
       }
+
+//---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void Arranger::focusCanvas()
+{
+  canvas->setFocus();
+  canvas->activateWindow();
+}
 
 //---------------------------------------------------------
 //   songlenChanged
@@ -617,6 +654,8 @@ void Arranger::modeChange(int mode)
       {
       MusEGlobal::song->setMType(MType(mode));
       updateTrackInfo(-1);
+      if(MusEGlobal::config.smartFocus)
+        focusCanvas();
       }
 
 //---------------------------------------------------------
@@ -703,6 +742,8 @@ void Arranger::_setRaster(int index)
       // Set the audio record part snapping.
       MusEGlobal::song->setArrangerRaster(_raster);
       canvas->redraw();
+      if(MusEGlobal::config.smartFocus)
+        focusCanvas();
       }
 
 //---------------------------------------------------------
@@ -917,6 +958,15 @@ QSize WidgetStack::minimumSizeHint() const
       }
 
 //---------------------------------------------------------
+//   wheelEvent
+//---------------------------------------------------------
+
+void WidgetStack::wheelEvent(QWheelEvent* ev)
+      {
+      emit redirectWheelEvent(ev);
+      }
+
+//---------------------------------------------------------
 //   clear
 //---------------------------------------------------------
 
@@ -930,10 +980,10 @@ void Arranger::clear()
       midiTrackInfo->setTrack(0);
       }
 
-void Arranger::wheelEvent(QWheelEvent* ev)
-      {
-      emit redirectWheelEvent(ev);
-      }
+//void Arranger::wheelEvent(QWheelEvent* ev)
+//      {
+//      emit redirectWheelEvent(ev);
+//      }
 
 void Arranger::controllerChanged(MusECore::Track *t)
 {

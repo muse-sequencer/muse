@@ -174,6 +174,7 @@ class PianoRoll : public MidiEditor {
       void newCanvasWidth(int);
       void toggleTrackInfo();
       void updateTrackInfo();
+      void focusCanvas();
 
    signals:
       void isDeleting(MusEGui::TopWin*);

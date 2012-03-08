@@ -138,6 +138,21 @@ int TempoList::tempo(unsigned tick) const
       }
 
 //---------------------------------------------------------
+//   tempo
+//   Bypass the useList flag and read from the list
+//---------------------------------------------------------
+
+int TempoList::tempoAt(unsigned tick) const
+      {
+            ciTEvent i = upper_bound(tick);
+            if (i == end()) {
+                  printf("tempoAt: no TEMPO at tick %d,0x%x\n", tick, tick);
+                  return 1000;
+                  }
+            return i->second->tempo;
+      }
+
+//---------------------------------------------------------
 //   del
 //---------------------------------------------------------
 

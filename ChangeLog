@@ -1,3 +1,19 @@
+08.03.2012:
+        * Comprehensive focus fixes: (Tim...)
+        * New: Gui behaviour option: "Smart Focus": All toolbar boxes give focus back to respective canvases 
+                (except Score Velo On/Off, won't support StrongFocus non-focus wheel support ATM). 
+        - Focusing + tabbing fixes: Exclusions, tightening of tab sequences.
+        - PianoRoll toolbar: Fixed auto-repeats - optimized NoteInfo::setDeltaMode(). 
+        - Midi boxes: Fixed Ctrl-click on/off.
+        - Master Editor: Fixed can't edit if not enabled. Also Transport sig box.
+        - TracK Info panel: Fixed Scrolling. TODO: Make step sizes reasonable, same as Pianoroll ScrollBox. 
+                                             TODO: Scroll when tabbing among the Track Info controls !
+        - Track List key handling: Fixed TList::moveSelection().
+        - Visible Tracks: Drums and Synths: Fixed Track::isVisible().
+        - Track List, and Master Editor: Fixed popup editors. Sizing fixes. Use no frames. 
+        - Event List Editor: Fixed not updating when parts modified.
+        - Pianoroll and Drum Editor: Fixed not updating sometimes ex. moving part past end of song.
+          (Was returning prematurely from songChanged() coding if they got SC_SOLO.) 
 23.02.2012:
         - Compile fix in pyapi.cpp (Orcan)
         - Don't optimize debug builds of simpledrums (Orcan)

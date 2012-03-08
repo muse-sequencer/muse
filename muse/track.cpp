@@ -147,7 +147,6 @@ bool Track::isVisible()
   {
     case Track::AUDIO_AUX:
         return AudioAux::visible();
-        break;
     case Track::AUDIO_GROUP:
         return AudioGroup::visible();
     case Track::AUDIO_INPUT:
@@ -157,9 +156,10 @@ bool Track::isVisible()
     case Track::WAVE:
         return WaveTrack::visible();
     case Track::MIDI:
+    case Track::DRUM:
         return MidiTrack::visible();
     case Track::AUDIO_SOFTSYNTH:
-        return AudioAux::visible();
+        return SynthI::visible();
   default:
     break;
   }
