@@ -67,7 +67,7 @@ ClipItem::ClipItem(QTreeWidget* parent, const MusECore::SndFileR& w)
 //   samples2smpte
 //---------------------------------------------------------
 
-#if 0
+#if 0 // DELETETHIS ?
 static QString samples2smpte(int samples)
       {
       double time = double(samples) / double(sampleRate);
@@ -96,7 +96,7 @@ static QString samples2smpte(int samples)
       }
 #endif
 
-/*
+/* DELETETHIS
 //---------------------------------------------------------
 //   text
 //---------------------------------------------------------
@@ -126,14 +126,11 @@ QString ClipItem::text(int col) const
 ClipListEdit::ClipListEdit(QWidget* parent)
    : TopWin(TopWin::CLIPLIST, parent, "cliplist", Qt::Window)
       {
-      //setAttribute(Qt::WA_DeleteOnClose);
       setWindowTitle(tr("MusE: Clip List Editor"));
 
       editor = new ClipListEditorBaseWidget;
       setCentralWidget(editor);
 
-      //editor->view->setColumnAlignment(COL_REFS, Qt::AlignRight);
-      
       // Toolbars ---------------------------------------------------------
       QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
       undo_tools->setObjectName("Undo/Redo tools");
@@ -296,7 +293,7 @@ void ClipListEdit::writeConfiguration(int level, MusECore::Xml& xml)
 
 void ClipListEdit::startChanged(const MusECore::Pos& /*pos*/)//prevent compiler warning: unsused parameter
       {
-//      editor->view->triggerUpdate();
+//      editor->view->triggerUpdate(); DELETETHIS whole function?
       }
 
 //---------------------------------------------------------
@@ -305,7 +302,7 @@ void ClipListEdit::startChanged(const MusECore::Pos& /*pos*/)//prevent compiler 
 
 void ClipListEdit::lenChanged(const MusECore::Pos& /*pos*/) //prevent compiler warning: unsused parameter
       {
-//      curClip.setLenFrame(pos.frame());
+//      curClip.setLenFrame(pos.frame()); DELETETHIS whole function?
 //      editor->view->triggerUpdate();
       }
 
@@ -321,7 +318,7 @@ void ClipListEdit::clipSelectionChanged()
             editor->start->setEnabled(false);
             editor->len->setEnabled(false);
             return;
-/*
+/* DELETETHIS and the above two comments
             }
       editor->start->setEnabled(true);
       editor->len->setEnabled(true);
@@ -341,7 +338,7 @@ void ClipListEdit::clipSelectionChanged()
 
 void ClipListEdit::clicked(QTreeWidgetItem*, int)
       {
-//      printf("clicked\n");
+//      printf("clicked\n"); DELETETHIS whole function
       }
 
 } // namespace MusEGui

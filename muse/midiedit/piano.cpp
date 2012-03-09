@@ -404,13 +404,10 @@ void Piano::draw(QPainter& p, const QRect& r)
 
         int drawY = octaveSize * drawKey + 81 - KH*2;
         if (drawY > r.y() && drawY < r.y() + r.height()) {
-          //printf("drawing c %d at %d r.y %d r.x %d\n",drawKey, drawY, r.y(), r.x());
           p.drawPixmap(0,drawY,*c_keys[drawKey]);
         }
       }
-      //p.drawTiledPixmap(r, *c1, r.topLeft()+offset + coffset);
-      //printf("drawText KH %d %d, x %d y %d\n",KH, curPitch, r.x(), r.y());
-      //p.drawText(r,Qt::AlignAuto,"A");
+
       if (curPitch == -1)
             return;
       int y = pitch2y(curPitch);
@@ -457,7 +454,7 @@ int Piano::pitch2y(int pitch) const
 
 int Piano::y2pitch(int y) const
       {
-      const int total = (10 * 7 + 5) * KH;       // 75 Ganztonschritte
+      const int total = (10 * 7 + 5) * KH;       // 75 full tone steps
       y = total - y;
       int oct = (y / (7 * KH)) * 12;
       char kt[] = {
@@ -524,7 +521,6 @@ void Piano::viewMouseMoveEvent(QMouseEvent* event)
                   keyDown = nk;
                   if (keyDown != -1) {
                         int velocity = event->x()*127/40;
-                        //emit keyPressed(keyDown, shift);
                         emit keyPressed(keyDown, velocity>127 ? 127 : velocity, shift);
                         }
                   }

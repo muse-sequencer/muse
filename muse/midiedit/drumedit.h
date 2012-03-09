@@ -113,7 +113,6 @@ class DrumEdit : public MidiEditor {
    private slots:
       void setRaster(int);
       void noteinfoChanged(MusEGui::NoteInfo::ValType type, int val);
-      //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void cmd(int);
       void clipboardChanged(); // enable/disable "Paste"

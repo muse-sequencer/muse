@@ -142,7 +142,6 @@ class MidiInstrument {
 
       virtual void reset(int, MType);
       virtual QString getPatchName(int,int,MType,bool);
-      //virtual void populatePatchPopup(QMenu*, int, MType, bool);
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);
       void read(Xml&);
       void write(int level, Xml&);
@@ -172,7 +171,7 @@ extern void removeMidiInstrument(const MidiInstrument* instr);
 } // namespace MusECore
 
 //namespace MusEGui {
-//extern void populatePatchPopup(MusECore::MidiInstrument*, PopupMenu*, int, MType, bool);
+//extern void populatePatchPopup(MusECore::MidiInstrument*, PopupMenu*, int, MType, bool); DELETETHIS
 //}
 #endif
 

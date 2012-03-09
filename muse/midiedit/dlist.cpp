@@ -70,7 +70,7 @@ void DList::draw(QPainter& p, const QRect& rect)
             if (dm == currentlySelected)
                   p.fillRect(x, yy, w, TH, Qt::yellow);
 //            else
-//                  p.eraseRect(x, yy, w, TH);
+//                  p.eraseRect(x, yy, w, TH); DELETETHIS?
             QHeaderView *h = header;
             p.save();
             p.setWorldMatrixEnabled(false);
@@ -82,8 +82,6 @@ void DList::draw(QPainter& p, const QRect& rect)
                   QString s;
                   int align = Qt::AlignVCenter | Qt::AlignHCenter;
 
-                  //p.save();
-                  //p.setWorldMatrixEnabled(false);
                   switch (k) {
                         case COL_VOL:
                               s.setNum(dm->vol);
@@ -137,7 +135,6 @@ void DList::draw(QPainter& p, const QRect& rect)
                         }
                   if (!s.isEmpty())
                         p.drawText(r, align, s);
-                  //p.restore();
                   }
             p.restore();
             }
@@ -232,7 +229,6 @@ void DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll)
       {
         int instr = getSelectedInstrument();
         if(instr != -1)
-          //emit curDrumInstrumentChanged(instr);
           MusEGlobal::song->update(SC_DRUMMAP);
       }            
     }
@@ -641,7 +637,6 @@ void DList::returnPressed()
                   break;
 
             case COL_LEN:
-                  ///editEntry->len = atoi(editor->text().ascii());
                   editEntry->len = atoi(editor->text().toAscii().constData());
                   break;
 
@@ -770,7 +765,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag)
       h = new QHeaderView(Qt::Horizontal, parent);}
       header = h;
       scroll = 0;
-      //ORCAN- CHECK if really needed: header->setTracking(true);
+      //ORCAN- CHECK if really needed: header->setTracking(true); DELETETHIS seems like it's unneeded ;)
       connect(header, SIGNAL(sectionResized(int,int,int)),
          SLOT(sizeChange(int,int,int)));
       connect(header, SIGNAL(sectionMoved(int, int,int)), SLOT(moved(int,int,int)));
@@ -836,7 +831,7 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
             emit mapChanged(sPitch, dPitch); //Track pitch change done in canvas
             }
       drag = NORMAL;
-//??      redraw();          //commented out NOT by flo93; was already commented out
+//??      redraw();          //commented out NOT by flo93; was already commented out. DELETETHIS? not the below, only this single line!
 //      if (editEntry)            //removed by flo93; seems to work without it
 //            editor->setFocus(); //and causes segfaults after adding the pitchedits
       int x = ev->x();

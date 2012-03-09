@@ -113,8 +113,6 @@ class DList : public View {
       int x2col(int x) const;
       void devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll);
       
-      //void setCurDrumInstrument(int n);
-
    private slots:
       void sizeChange(int, int, int);
       void returnPressed();

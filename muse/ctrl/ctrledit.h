@@ -59,7 +59,7 @@ class CtrlEdit : public QWidget {
       void setXPos(int val)           { canvas->setXPos(val); }
       void setXMag(int val)           { canvas->setXMag(val); }
       void setCanvasWidth(int w);
-      void setController(int /*n*/);
+      void setController(int n);
       
    signals:
       void timeChanged(unsigned);

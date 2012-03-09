@@ -45,7 +45,6 @@ class MidiEditor;
 class CtrlPanel: public QWidget {
       Q_OBJECT
     
-      //QMenu* pop;
       QPushButton* selCtrl;
       MidiEditor* editor;
       
@@ -67,7 +66,6 @@ class CtrlPanel: public QWidget {
       void ctrlChanged(double val);
       void labelDoubleClicked();
       void ctrlRightClicked(const QPoint& p, int id);
-      //void ctrlReleased(int id);
       
    protected slots:
       virtual void heartBeat();

@@ -35,7 +35,6 @@
 #include "xml.h"
 #include "lcombo.h"
 #include "doublelabel.h"
-///#include "sigedit.h"
 #include "globals.h"
 #include "app.h"
 #include "gconfig.h"
@@ -111,9 +110,6 @@ MasterEdit::MasterEdit()
       _raster = 0;      // measure
 
       //---------Pulldown Menu----------------------------
-//      QPopupMenu* file = new QPopupMenu(this);
-//      menuBar()->insertItem("&File", file);
-
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
@@ -184,6 +180,7 @@ MasterEdit::MasterEdit()
       curSig->setToolTip(tr("time signature at current position"));
       info->addWidget(curTempo);
       info->addWidget(curSig);
+
       connect(curSig, SIGNAL(valueChanged(const AL::TimeSignature&)), SLOT(sigChange(const AL::TimeSignature&)));
       connect(curTempo, SIGNAL(tempoChanged(double)), SLOT(tempoChange(double)));
                                                                                     
@@ -198,7 +195,7 @@ MasterEdit::MasterEdit()
       vscroll->setRange(30000, 250000);
       time1     = new MusEGui::MTScale(&_raster, mainw, xscale);
       sign      = new MusEGui::SigScale(&_raster, mainw, xscale);
-//      thits     = new MusEGui::HitScale(&_raster, mainw, xscale);
+//      thits     = new MusEGui::HitScale(&_raster, mainw, xscale); DELETETHIS what IS this? delete zhits as well
 
       canvas    = new Master(this, mainw, xscale, yscale);
 
@@ -211,8 +208,6 @@ MasterEdit::MasterEdit()
       //    Rest
       //---------------------------------------------------
 
-//      QSizeGrip* corner   = new QSizeGrip(mainw);
-
       mainGrid->setRowStretch(5, 100);
       mainGrid->setColumnStretch(1, 100);
 
@@ -221,17 +216,16 @@ MasterEdit::MasterEdit()
       mainGrid->addWidget(MusECore::hLine(mainw),  2, 1);
       mainGrid->addWidget(sign,          3, 1);
       mainGrid->addWidget(MusECore::hLine(mainw),  4, 1);
-//    mainGrid->addWidget(thits,         5, 1);
+//    mainGrid->addWidget(thits,         5, 1); DELETETHIS
 //    mainGrid->addWidget(MusECore::hLine(mainw),  6, 1);
       mainGrid->addWidget(canvas,        5, 1);
       mainGrid->addWidget(tscale,        5, 0);
       mainGrid->addWidget(MusECore::hLine(mainw),  6, 1);
-//    mainGrid->addWidget(zhits,         9, 1);
+//    mainGrid->addWidget(zhits,         9, 1); DELETETHIS
 //    mainGrid->addWidget(MusECore::hLine(mainw),  7, 1);
       mainGrid->addWidget(time2,         7, 1);
       mainGrid->addWidget(hscroll,       8, 1);
       mainGrid->addWidget(vscroll, 0, 2, 10, 1);
-//      mainGrid->addWidget(corner,  9, 2, AlignBottom | AlignRight);
 
       canvas->setFocus(); 
 
@@ -244,20 +238,20 @@ MasterEdit::MasterEdit()
 
       connect(hscroll, SIGNAL(scrollChanged(int)), time1,  SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)), sign,   SLOT(setXPos(int)));
-//      connect(hscroll, SIGNAL(scrollChanged(int)), thits,  SLOT(setXPos(int)));
+//      connect(hscroll, SIGNAL(scrollChanged(int)), thits,  SLOT(setXPos(int))); DELETETHIS
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
-//      connect(hscroll, SIGNAL(scrollChanged(int)), zhits,  SLOT(setXPos(int)));
+//      connect(hscroll, SIGNAL(scrollChanged(int)), zhits,  SLOT(setXPos(int)));DELETETHIS
       connect(hscroll, SIGNAL(scrollChanged(int)), time2,  SLOT(setXPos(int)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)), time1,  SLOT(setXMag(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)), sign,   SLOT(setXMag(int)));
-//      connect(hscroll, SIGNAL(scaleChanged(int)), thits,  SLOT(setXMag(int)));
+//      connect(hscroll, SIGNAL(scaleChanged(int)), thits,  SLOT(setXMag(int)));DELETETHIS
       connect(hscroll, SIGNAL(scaleChanged(int)), canvas, SLOT(setXMag(int)));
-//      connect(hscroll, SIGNAL(scaleChanged(int)), zhits,  SLOT(setXMag(int)));
+//      connect(hscroll, SIGNAL(scaleChanged(int)), zhits,  SLOT(setXMag(int))); DELETETHIS
       connect(hscroll, SIGNAL(scaleChanged(int)), time2,  SLOT(setXMag(int)));
 
       connect(time1,  SIGNAL(timeChanged(unsigned)), SLOT(setTime(unsigned)));
-//      connect(sign,   SIGNAL(timeChanged(unsigned)), pos, SLOT(setValue(unsigned)));
+//      connect(sign,   SIGNAL(timeChanged(unsigned)), pos, SLOT(setValue(unsigned))); DELETETHIS
 //      connect(thits,  SIGNAL(timeChanged(unsigned)), pos, SLOT(setValue(unsigned)));
 //      connect(canvas, SIGNAL(timeChanged(unsigned)), pos, SLOT(setValue(unsigned)));
 //      connect(zhits,  SIGNAL(timeChanged(unsigned)), pos, SLOT(setValue(unsigned)));
@@ -289,7 +283,6 @@ MasterEdit::MasterEdit()
 
 MasterEdit::~MasterEdit()
       {
-      //undoRedo->removeFrom(tools);  // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -320,7 +313,7 @@ void MasterEdit::readStatus(MusECore::Xml& xml)
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "master") {
-                              // raster setzen
+                              // set raster
                               int item = 0;
                               switch(_raster) {
                                     case 1:   item = 0; break;

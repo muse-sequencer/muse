@@ -65,21 +65,6 @@
 
 namespace MusEGui {
 
-/*
-static const char* map_file_pattern[] = {
-      "Presets (*.map *.map.gz *.map.bz2)",
-      "All Files (*)",
-      0
-      };
-static const char* map_file_save_pattern[] = {
-      "Presets (*.map)",
-      "gzip compressed presets (*.map.gz)",
-      "bzip2 compressed presets (*.map.bz2)",
-      "All Files (*)",
-      0
-      };
-*/      
-
 int DrumEdit::_rasterInit = 96;
 int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
@@ -156,7 +141,6 @@ void DrumEdit::closeEvent(QCloseEvent* e)
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
 
       QSettings settings("MusE", "MusE-qt");
-      //settings.setValue("Drumedit/geometry", saveGeometry());
       settings.setValue("Drumedit/windowState", saveState());
 
       //Store values of the horizontal splitter
@@ -388,7 +372,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setFocusPolicy(Qt::NoFocus);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
-      hscroll           = new MusEGui::ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
+      hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
       ctrl->setToolTip(tr("Add Controller View"));
 
@@ -402,8 +386,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       mainGrid->addWidget(ctrl,    1, 0);
       mainGrid->addWidget(hscroll, 1, 1);
       mainGrid->addWidget(corner,  1, 2, Qt::AlignBottom|Qt::AlignRight);
-//      mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
-//      mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); 
 
       split2              = new MusEGui::Splitter(Qt::Horizontal, split1, "split2");
       split1w1            = new QWidget(split2);
@@ -432,7 +414,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       split2->setSizes(mops);
       // By T356. Not much choice but to disable this for now, to stop runaway resize bug.
       // Can't seem to get the splitter to readjust when manually setting sizes.
-      //split2->setResizeMode(split1w1, QSplitter::KeepSize);
+      //split2->setResizeMode(split1w1, QSplitter::KeepSize); DELETETHIS or FIXME?
 
       gridS2->setRowStretch(1, 100);
       gridS2->setColumnStretch(0, 100);
@@ -442,9 +424,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       gridS2->addWidget(canvas,  2, 0);
       
       gridS2->addWidget(vscroll, 2, 1);
-      //
-      //  Reihenfolge in dlist.c festgeschrieben ("Dcols")
-      //
+
+      //  Ordering is hardcoded in dlist.c ("Dcols")
       header = new MusEGui::Header(split1w1, "header");
       header->setFixedHeight(31);
       header->setColumnLabel(tr("M"), COL_MUTE, 20);
@@ -615,7 +596,6 @@ void DrumEdit::setTime(unsigned tick)
 
 DrumEdit::~DrumEdit()
       {
-      //MusEGlobal::undoRedo->removeFrom(tools);   // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -701,7 +681,6 @@ void DrumEdit::noteinfoChanged(MusEGui::NoteInfo::ValType type, int val)
                   break;
             }
       // Indicate do undo, and do not do port controller values and clone parts. 
-      //MusEGlobal::audio->msgChangeEvent(selEvent, event, selPart);
       MusEGlobal::audio->msgChangeEvent(selEvent, event, selPart, true, false, false);
       }
 
@@ -901,7 +880,6 @@ ende:
 
 void DrumEdit::save()
       {
-      //QString fn = MusEGui::getSaveFileName(QString("drummaps"), map_file_pattern,
       QString fn = MusEGui::getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
         this, tr("MusE: Store Drum Map"));
       if (fn.isEmpty())
@@ -971,7 +949,7 @@ void DrumEdit::cmd(int cmd)
                   if (quantize_dialog->exec())
                         quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
                                        (MusEGlobal::config.division*4)/raster,
-                                       /* quant_len= */false, quantize_dialog->strength, 
+                                       /* quant_len= */false, quantize_dialog->strength,  // DELETETHIS
                                        quantize_dialog->swing, quantize_dialog->threshold);
                   break;
                   }
@@ -1025,8 +1003,6 @@ CtrlEdit* DrumEdit::addCtrl()
       connect(dlist,    SIGNAL(curDrumInstrumentChanged(int)), SLOT(setCurDrumInstrument(int)));
       connect(dlist,    SIGNAL(curDrumInstrumentChanged(int)), canvas, SLOT(setCurDrumInstrument(int)));
 
-      //printf("DrumEdit::addCtrl curDrumInstrument:%d\n", dlist->getSelectedInstrument());
-      
       setCurDrumInstrument(dlist->getSelectedInstrument());
 
       // p3.3.44
@@ -1037,7 +1013,6 @@ CtrlEdit* DrumEdit::addCtrl()
 
       if(split1w1)
       {
-        ///split2->setCollapsible(split1w1, false);
         split2->setCollapsible(split2->indexOf(split1w1), false);
         split1w1->setMinimumWidth(CTRL_PANEL_FIXED_WIDTH);
       }
@@ -1071,7 +1046,6 @@ void DrumEdit::removeCtrl(CtrlEdit* ctrl)
         if(ctrlEditList.empty())
         {
           split1w1->setMinimumWidth(0);
-          ///split2->setCollapsible(split1w1, true);
           split2->setCollapsible(split2->indexOf(split1w1), true);
         }  
       }
@@ -1087,11 +1061,8 @@ void DrumEdit::newCanvasWidth(int w)
         nw = 1;
         
       for (std::list<CtrlEdit*>::iterator i = ctrlEditList.begin();
-         i != ctrlEditList.end(); ++i) {
-            // Changed by Tim. p3.3.7
-            //(*i)->setCanvasWidth(w);
+         i != ctrlEditList.end(); ++i)
             (*i)->setCanvasWidth(nw);
-            }
             
       updateHScrollRange();
       }
@@ -1244,7 +1215,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             }
 
             /*
-      else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
+      else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) { DELETETHIS
             pc->pianoCmd(CMD_INSERT);
             return;
             }
@@ -1266,7 +1237,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
             val = rasterTable[index + ((off == 0) ? 9 : 0)];
             /*
-      else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
+      else if (key == shortcuts[SHRT_EVENT_COLOR].key) { DELETETHIS
             if (colorMode == 0)
                   colorMode = 1;
             else if (colorMode == 1)
@@ -1333,7 +1304,6 @@ void DrumEdit::initShortcuts()
 //---------------------------------------------------------
 void DrumEdit::execDeliveredScript(int id)
 {
-      //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
       QString scriptfile = MusEGlobal::song->getScriptPath(id, true);
       MusEGlobal::song->executeScript(scriptfile.toLatin1().constData(), parts(), raster(), true);
 }

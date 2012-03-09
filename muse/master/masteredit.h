@@ -91,7 +91,6 @@ class MasterEdit : public MidiEditor {
 
    public slots:
       void songChanged(int);
-//      void tempoChanged(double);
 
    signals:
       void isDeleting(MusEGui::TopWin*);

@@ -77,9 +77,7 @@ QString EventCanvas::getCaption() const
       {
       int bar1, bar2, xx;
       unsigned x;
-      ///sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
       AL::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
-      ///sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
       AL::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
 
       return QString("MusE: Part <") + curPart->name()
@@ -151,7 +149,7 @@ void EventCanvas::songChanged(int flags)
         return;
     
       if (flags & ~SC_SELECTION) {
-            //items.clear();
+            //items.clear(); DELETETHIS
             bool curItemNeedsRestore=false;
             MusECore::Event storedEvent;
             int partSn;
@@ -182,10 +180,8 @@ void EventCanvas::songChanged(int flags)
                   MusECore::EventList* el = part->events();
                   for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
                         MusECore::Event e = i->second;
-                        // Do not add events which are either past, or extend past the end of the part.
-                        // Reverted to just events which are past. 
+                        // Do not add events which are past the end of the part.
                         if(e.tick() > len)      
-                        //if(e.endTick() > len)
                           break;
                         
                         if (e.isNote()) {
@@ -287,13 +283,10 @@ MusECore::MidiTrack* EventCanvas::track() const
 void EventCanvas::keyPress(QKeyEvent* event)
       {
       int key = event->key();
-      ///if (event->state() & Qt::ShiftButton)
       if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
             key += Qt::SHIFT;
-      ///if (event->state() & Qt::AltButton)
       if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
             key += Qt::ALT;
-      ///if (event->state() & Qt::ControlButton)
       if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
             key+= Qt::CTRL;
 

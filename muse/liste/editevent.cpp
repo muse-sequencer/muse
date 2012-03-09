@@ -27,7 +27,6 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QListWidget>
-//#include <QMenu>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
@@ -45,7 +44,6 @@
 #include "pitchedit.h"
 #include "intlabel.h"
 #include "globals.h"
-///#include "posedit.h"
 #include "gconfig.h"
 #include "midiport.h"
 #include "midiedit/drummap.h"
@@ -445,7 +443,6 @@ EditCAfterDialog::EditCAfterDialog(int tick, const MusECore::Event& event,
       setWindowTitle(tr("MusE: Enter Channel Aftertouch"));
 
       QLabel* l1 = new QLabel(tr("Time Position"));
-      ///epos = new PosEdit;
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pressure"));
@@ -504,7 +501,6 @@ EditPAfterDialog::EditPAfterDialog(int tick, const MusECore::Event& event,
       setWindowTitle(tr("MusE: Enter Poly Aftertouch"));
 
       QLabel* l1 = new QLabel(tr("Time Position"));
-      ///epos = new PosEdit;
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pitch"));
@@ -697,13 +693,11 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
 
 void EditCtrlDialog::newController()
       {
-      //QMenu* pup = new QMenu(this);
       MusEGui::PopupMenu* pup = new MusEGui::PopupMenu(this);
-      //pup->setCheckable(this);//not necessary in Qt4
-      //
+
       // populate popup with all controllers available for
       // current instrument
-      //
+
       MusECore::MidiTrack* track        = part->track();
       int portn               = track->outPort();
       MusECore::MidiPort* port          = &MusEGlobal::midiPorts[portn];
@@ -732,24 +726,16 @@ void EditCtrlDialog::newController()
                         {
                           MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(mc->num());
                           cll->add(channel, vl);
-                          //MusEGlobal::song->update(SC_MIDI_CONTROLLER_ADD);
                         }
-                        //for (int idx = 0; ;++idx) {
                         int idx = 0;
                         for (; idx < ctrlList->count() ;++idx) {   // p4.0.25 Fix segfault 
-			  QString str = ctrlList->item(idx)->text();
+                              QString str = ctrlList->item(idx)->text();
                               if (s == str)
                               {
-				ctrlList->item(idx)->setSelected(true);
+                                    ctrlList->item(idx)->setSelected(true);
                                     ctrlListClicked(ctrlList->item(idx));
                                     break;
                               }      
-                              //if (str.isNull()) {
-                              //      ctrlList->addItem(s);
-                              //      ctrlList->item(idx)->setSelected(true);
-                              //      ctrlListClicked(ctrlList->item(idx));
-                              //      break;
-                              //      }
                               }
                         if (idx >= ctrlList->count()) {                       // p4.0.25 Fix segfault 
                               ctrlList->addItem(s);
@@ -871,9 +857,7 @@ void EditCtrlDialog::instrPopup()
       int port    = track->outPort();
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
       
-      //QMenu* pup = new QMenu(this);
       MusEGui::PopupMenu* pup = new MusEGui::PopupMenu(this);
-      //populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
       instr->populatePatchPopup(pup, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
 
       if(pup->actions().count() == 0)
@@ -897,9 +881,6 @@ void EditCtrlDialog::instrPopup()
 
 void EditCtrlDialog::programChanged()
       {
-//      MusECore::MidiTrack* track = part->track();
-//      int channel = track->outChannel();
-//      int port    = track->outPort();
       int hb   = hbank->value();
       int lb   = lbank->value();
       int prog    = program->value();

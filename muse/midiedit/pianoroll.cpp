@@ -157,12 +157,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       menuSelect->addSeparator();
       
-      //selectPrevPartAction = select->addAction(tr("&Previous Part"));
       selectPrevPartAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
       mapper->setMapping(selectPrevPartAction, PianoCanvas::CMD_SELECT_PREV_PART);
       connect(selectPrevPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      //selNextPartAction = select->addAction(tr("&Next Part"));
       selectNextPartAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
       mapper->setMapping(selectNextPartAction, PianoCanvas::CMD_SELECT_NEXT_PART);
       connect(selectNextPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
@@ -232,17 +230,14 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       QActionGroup* actgrp = new QActionGroup(this);
       actgrp->setExclusive(true);
       
-      //evColorBlueAction = eventColor->addAction(tr("&Blue"));
       evColorBlueAction = actgrp->addAction(tr("&Blue"));
       evColorBlueAction->setCheckable(true);
       colorMapper->setMapping(evColorBlueAction, 0);
       
-      //evColorPitchAction = eventColor->addAction(tr("&Pitch colors"));
       evColorPitchAction = actgrp->addAction(tr("&Pitch colors"));
       evColorPitchAction->setCheckable(true);
       colorMapper->setMapping(evColorPitchAction, 1);
       
-      //evColorVelAction = eventColor->addAction(tr("&Velocity colors"));
       evColorVelAction = actgrp->addAction(tr("&Velocity colors"));
       evColorVelAction->setCheckable(true);
       colorMapper->setMapping(evColorVelAction, 2);
@@ -326,16 +321,16 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       ctrl->setToolTip(tr("Add Controller View"));
       ctrl->setFocusPolicy(Qt::NoFocus);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
-      hscroll = new MusEGui::ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
+      hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
-      //ctrl->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());  
+      //ctrl->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());  // DELETETHIS?
       
       QSizeGrip* corner = new QSizeGrip(mainw);
 
       midiTrackInfo       = new MusEGui::MidiTrackInfo(mainw);        
       int mtiw = midiTrackInfo->width(); // Save this.
       midiTrackInfo->setMinimumWidth(100);   
-      //midiTrackInfo->setMaximumWidth(150);   
+      //midiTrackInfo->setMaximumWidth(150);   DELETETHIS ?
 
       midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding));
       infoScroll          = new QScrollArea;
@@ -345,7 +340,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       infoScroll->setWidget(midiTrackInfo);
       infoScroll->setWidgetResizable(true);
       infoScroll->setFocusPolicy(Qt::NoFocus);
-      //infoScroll->setVisible(false);
+      //infoScroll->setVisible(false); DELETETHIS 4?
       //infoScroll->setEnabled(false);
 
       //hsplitter->addWidget(midiTrackInfo);
@@ -356,7 +351,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       mainGrid->setColumnStretch(1, 100);
       mainGrid->addWidget(hsplitter, 0, 1, 1, 3);
       
-      // Original.
+      // Original. DELETETHIS 21
       /*
       mainGrid->setColumnStretch(1, 100);
       mainGrid->addWidget(splitter, 0, 0, 1, 3);
@@ -402,7 +397,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       gridS1->setRowStretch(2, 100);
       gridS1->setColumnStretch(1, 100);     
-      //gridS1->setColumnStretch(2, 100);  // Tim.
+      //gridS1->setColumnStretch(2, 100);  // Tim. DELETETHIS
 
       gridS1->addWidget(time,                   0, 1, 1, 2);
       gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
@@ -410,7 +405,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS1->addWidget(canvas,                 2,    1);
       gridS1->addWidget(vscroll,                2,    2);
 
-      // Tim.
+      // Tim. DELETETHIS
       /*      
       gridS1->addWidget(time,                   0, 2, 1, 3);
       gridS1->addWidget(MusECore::hLine(split1),          1, 1, 1, 4);
@@ -433,11 +428,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
           gridS2->addWidget(ctrl,    0, 0);
       gridS2->addWidget(hscroll, 0, 1);
       gridS2->addWidget(corner,  0, 2, Qt::AlignBottom|Qt::AlignRight);
-          //splitter->setCollapsible(0, true);
+          //splitter->setCollapsible(0, true); DELETETHIS
       
       piano->setFixedWidth(pianoWidth);
 
-      // Tim.
       QList<int> mops;
       mops.append(mtiw + 30);  // 30 for possible scrollbar
       mops.append(width() - mtiw - 30);
@@ -446,7 +440,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
-      //connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim.
+      //connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim. DELETETHIS
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
 
       connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
@@ -487,7 +481,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       piano->setYPos(KH * 30);
       canvas->setYPos(KH * 30);
       vscroll->setPos(KH * 30);
-      //setSelection(0, 0, 0); //Really necessary? Causes segfault when only 1 item selected, replaced by the following:
       info->setEnabled(false);
 
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
@@ -517,7 +510,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       const MusECore::Pos cpos=MusEGlobal::song->cPos();
       canvas->setPos(0, cpos.tick(), true);
       canvas->selectAtTick(cpos.tick());
-      //canvas->selectFirst();//      
         
       unsigned pos=0;
       if(initPos >= MAXINT)
@@ -550,7 +542,7 @@ void PianoRoll::songChanged1(int bits)
             toolbar->setSolo(canvas->track()->solo());
         
         songChanged(bits);
-        //trackInfo->songChanged(bits);
+
         // We'll receive SC_SELECTION if a different part is selected.
         if (bits & SC_SELECTION)
           updateTrackInfo();  
@@ -563,7 +555,6 @@ void PianoRoll::songChanged1(int bits)
 void PianoRoll::configChanged()
       {
       initShortcuts();
-      //trackInfo->updateTrackInfo();
       }
 
 //---------------------------------------------------------
@@ -626,7 +617,6 @@ void PianoRoll::setTime(unsigned tick)
 
 PianoRoll::~PianoRoll()
       {
-      // MusEGlobal::undoRedo->removeFrom(tools);  // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -752,7 +742,6 @@ void PianoRoll::noteinfoChanged(MusEGui::NoteInfo::ValType type, int val)
                         break;
                   }
             // Indicate do undo, and do not do port controller values and clone parts. 
-            //MusEGlobal::audio->msgChangeEvent(selEvent, event, selPart);
             MusEGlobal::audio->msgChangeEvent(selEvent, event, selPart, true, false, false);
             }
       else {
@@ -793,8 +782,7 @@ void PianoRoll::noteinfoChanged(MusEGui::NoteInfo::ValType type, int val)
 
 CtrlEdit* PianoRoll::addCtrl()
       {
-      ///CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, xscale, false, "pianoCtrlEdit");  
-      CtrlEdit* ctrlEdit = new CtrlEdit(ctrlLane/*splitter*/, this, xscale, false, "pianoCtrlEdit");  // ccharrett
+      CtrlEdit* ctrlEdit = new CtrlEdit(ctrlLane/* formerly splitter*/, this, xscale, false, "pianoCtrlEdit");  // ccharrett
       connect(tools2,   SIGNAL(toolChanged(int)),   ctrlEdit, SLOT(setTool(int)));
       connect(hscroll,  SIGNAL(scrollChanged(int)), ctrlEdit, SLOT(setXPos(int)));
       connect(hscroll,  SIGNAL(scaleChanged(int)),  ctrlEdit, SLOT(setXMag(int)));
@@ -837,7 +825,6 @@ void PianoRoll::closeEvent(QCloseEvent* e)
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
 
       QSettings settings("MusE", "MusE-qt");
-      //settings.setValue("Pianoroll/geometry", saveGeometry());
       settings.setValue("Pianoroll/windowState", saveState());
 
       emit isDeleting(static_cast<TopWin*>(this));
@@ -1212,9 +1199,6 @@ void PianoRoll::setEventColorMode(int mode)
       colorMode = mode;
       colorModeInit = colorMode;
       
-      ///eventColor->setItemChecked(0, mode == 0);
-      ///eventColor->setItemChecked(1, mode == 1);
-      ///eventColor->setItemChecked(2, mode == 2);
       evColorBlueAction->setChecked(mode == 0);
       evColorPitchAction->setChecked(mode == 1);
       evColorVelAction->setChecked(mode == 2);
@@ -1256,7 +1240,7 @@ void PianoRoll::setSpeaker(bool val)
 
 
 
-/*
+/* DELETETHIS
 //---------------------------------------------------------
 //   trackInfoScroll
 //---------------------------------------------------------
@@ -1311,7 +1295,6 @@ void PianoRoll::initShortcuts()
 //---------------------------------------------------------
 void PianoRoll::execDeliveredScript(int id)
 {
-      //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
       QString scriptfile = MusEGlobal::song->getScriptPath(id, true);
       MusEGlobal::song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
 }
@@ -1331,7 +1314,7 @@ void PianoRoll::execUserScript(int id)
 
 void PianoRoll::newCanvasWidth(int /*w*/)
       {
-/*      
+/*       DELETETHIS whole function?
       int nw = w + (vscroll->width() - 18); // 18 is the fixed width of the CtlEdit VScale widget.
       if(nw < 1)
         nw = 1;

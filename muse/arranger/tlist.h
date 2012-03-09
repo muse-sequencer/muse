@@ -33,10 +33,8 @@ class QLineEdit;
 class QSpinBox;
 class QMouseEvent;
 class QPaintEvent;
-class QResizeEvent;
 class QScrollBar;
 class QWheelEvent;
-//class QMenu;
 
 namespace MusECore {
 class Track;
@@ -103,13 +101,11 @@ class TList : public QWidget {
       void moveSelection(int n);
       void adjustScrollbar();
       void paint(const QRect& r);
-      //virtual void resizeEvent(QResizeEvent*);
       void redraw(const QRect& r);
       MusECore::Track* y2Track(int) const;
       void classesPopupMenu(MusECore::Track*, int x, int y);
       MusECore::TrackList getRecEnabledTracks();
       void setHeaderToolTips();
-      //QMenu* colorMenu(QColor c, int id);
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);
 
    private slots:

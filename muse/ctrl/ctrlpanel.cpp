@@ -26,7 +26,6 @@
 #include "ctrlpanel.h"
 #include "ctrlcanvas.h"
 
-//#include <QMenu>
 #include <QAction>
 #include <QPushButton>
 #include <QSizePolicy>
@@ -69,8 +68,6 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       {
       setObjectName(name);
       inHeartBeat = true;
-      //ctrlMainPop = 0;
-      //ctrlSubPop = 0;
       editor = e;
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       QVBoxLayout* vbox = new QVBoxLayout;
@@ -96,8 +93,6 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
       selCtrl->setToolTip(tr("select controller"));
       
-      ///pop = new QMenu;
-
       // destroy button
       QPushButton* destroy = new QPushButton(tr("X"));
       destroy->setFocusPolicy(Qt::NoFocus);
@@ -139,7 +134,6 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       
       connect(_knob, SIGNAL(sliderMoved(double,int)), SLOT(ctrlChanged(double)));
       connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
-      //connect(_knob, SIGNAL(sliderReleased(int)), SLOT(ctrlReleased(int)));
       connect(_dl, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
       connect(_dl, SIGNAL(doubleClicked(int)), SLOT(labelDoubleClicked()));
       
@@ -170,7 +164,6 @@ void CtrlPanel::heartBeat()
   
   if(_track && _ctrl && _dnum != -1)
   {
-    //if(_dnum != MusECore::CTRL_VELOCITY && _dnum != MusECore::CTRL_PROGRAM)
     if(_dnum != MusECore::CTRL_VELOCITY)
     {
       int outport;
@@ -202,7 +195,7 @@ void CtrlPanel::heartBeat()
           else  
             // Auto bias...
             v -= _ctrl->bias();
-          if(double(v) != _knob->value())
+          if (double(v) != _knob->value())
           {
             // Added by Tim. p3.3.6
             //printf("CtrlPanel::heartBeat setting knob\n");
@@ -211,14 +204,11 @@ void CtrlPanel::heartBeat()
           }  
         }
       }
-      else
-      if(v != _val)
+      else if(v != _val)
       {
         _val = v;
         if(v == MusECore::CTRL_VAL_UNKNOWN || ((_dnum == MusECore::CTRL_PROGRAM) && ((v & 0xff) == 0xff) ))
         {
-          // MusEGui::DoubleLabel ignores the value if already set...
-          //_dl->setValue(double(_ctrl->minVal() - 1));
           _dl->setValue(_dl->off() - 1.0);
         }
         else
@@ -228,9 +218,6 @@ void CtrlPanel::heartBeat()
           else  
             // Auto bias...
             v -= _ctrl->bias();
-          
-          // Added by Tim. p3.3.6
-          //printf("CtrlPanel::heartBeat setting knob and label\n");
           
           _knob->setValue(double(v));
           _dl->setValue(double(v));
@@ -277,25 +264,22 @@ void CtrlPanel::labelDoubleClicked()
       //  (or the controller's initial value?) to 'turn on' the controller.
       if(lastv == MusECore::CTRL_VAL_UNKNOWN || ((lastv & 0xffffff) == 0xffffff))
       {
-        //int kiv = _ctrl->initVal());
         int kiv = lrint(_knob->value());
         --kiv;
         kiv &= 0x7f;
         kiv |= 0xffff00;
-        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
       else
       {
-        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
     }
     else
     {
-      //if((curv & 0xffff00) == 0xffff00)
+      //if((curv & 0xffff00) == 0xffff00) DELETETHIS?
       //{
         ////if(mp->hwCtrlState(chan, _dnum) != MusECore::CTRL_VAL_UNKNOWN)
           MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
@@ -315,28 +299,24 @@ void CtrlPanel::labelDoubleClicked()
       //  (or the controller's initial value?) to 'turn on' the controller.
       if(lastv == MusECore::CTRL_VAL_UNKNOWN)
       {
-        //int kiv = _ctrl->initVal());
         int kiv = lrint(_knob->value());
         if(kiv < _ctrl->minVal())
           kiv = _ctrl->minVal();
         if(kiv > _ctrl->maxVal())
           kiv = _ctrl->maxVal();
         kiv += _ctrl->bias();
-        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
       else
       {
-        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
     }  
     else
     {
-      //if(mp->hwCtrlState(chan, _dnum) != MusECore::CTRL_VAL_UNKNOWN)
-        MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
+      MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
     }    
   }
   MusEGlobal::song->update(SC_MIDI_CONTROLLER);
@@ -380,7 +360,6 @@ void CtrlPanel::ctrlChanged(double val)
           ival |= 0xffff00;
         else
           ival |= (curval & 0xffff00);  
-        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
@@ -388,7 +367,6 @@ void CtrlPanel::ctrlChanged(double val)
       // Shouldn't happen, but...
       if((ival < _ctrl->minVal()) || (ival > _ctrl->maxVal()))
       {
-        //if(mp->hwCtrlState(chan, _dnum) != MusECore::CTRL_VAL_UNKNOWN)
         if(curval != MusECore::CTRL_VAL_UNKNOWN)
           MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
       }  
@@ -397,7 +375,6 @@ void CtrlPanel::ctrlChanged(double val)
         // Auto bias...
         ival += _ctrl->bias();
       
-        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
         MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
@@ -440,7 +417,6 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
     ch = _track->outChannel();
   }
   
-  //if(_dnum == MusECore::CTRL_VELOCITY || _dnum == MusECore::CTRL_PROGRAM)
   if(_dnum == MusECore::CTRL_VELOCITY)
   {
     _knob->setEnabled(false);
@@ -462,7 +438,6 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
       _val = v;
       _knob->setRange(double(mn), double(mx), 1.0);
       _dl->setRange(double(mn), double(mx));
-      //_dl->setOff(double(mn - 1));
       if(v == MusECore::CTRL_VAL_UNKNOWN || ((v & 0xffffff) == 0xffffff))
       {
         int lastv = mp->lastValidHWCtrlState(ch, _dnum);
@@ -479,7 +454,6 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
         
         if(v > 128)
           v = 128;
-        //dlv = mn - 1;
         dlv = _dl->off() - 1.0;
       }  
       else
@@ -498,7 +472,6 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
       _val = v;
       _knob->setRange(double(mn), double(mx), 1.0);
       _dl->setRange(double(mn), double(mx));
-      //_dl->setOff(double(mn - 1));
       if(v == MusECore::CTRL_VAL_UNKNOWN)
       {
         int lastv = mp->lastValidHWCtrlState(ch, _dnum);
@@ -511,7 +484,6 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
         }
         else  
           v = lastv - _ctrl->bias();
-        //dlv = mn - 1;
         dlv = _dl->off() - 1.0;
       }  
       else
@@ -543,7 +515,12 @@ void CtrlPanel::setHeight(int h)
       setFixedHeight(h);
       }
 
-#if 0
+#if 0 // DELETETHIS. yeah, really!
+// when flo added the new style drumtracks in trunk, he changed a
+// lot of things. he didn't update that disabled area here, so
+// after releasing 2.0, when we continue developing on trunk,
+// then the below code is not only disabled but INVALID (as in WRONG)
+
 struct CI {
             QString s;
             bool used;
@@ -964,34 +941,18 @@ void CtrlPanel::ctrlPopup()
 
 void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
 {
-  //if(!_knob->selectedFaceColor())
-  //  _knob->selectFaceColor(true);
-  //if(_dnum == -1)
-  //  return;
   if(!editor->curCanvasPart() || !_ctrl)
     return;  
     
   int cdi = editor->curDrumInstrument();
   int ctlnum = _ctrl->num();
   if(_track->type() == MusECore::Track::DRUM && ((ctlnum & 0xff) == 0xff) && cdi != -1)
-    //ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[cdi].enote;
+    //ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[cdi].enote; DELETETHIS or which of them is correct?
     ctlnum = (ctlnum & ~0xff) | cdi;
   
   MusECore::MidiPart* part = dynamic_cast<MusECore::MidiPart*>(editor->curCanvasPart());
   MusEGlobal::song->execMidiAutomationCtlPopup(0, part, p, ctlnum);
 }
-
-/*
-//---------------------------------------------------------
-//   ctrlReleased
-//---------------------------------------------------------
-
-void CtrlPanel::ctrlReleased(int id)
-{
-  //if(_knob->selectedFaceColor())
-  //  _knob->selectFaceColor(false);
-}
-*/
 
 } // namespace MusEGui
 

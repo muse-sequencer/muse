@@ -26,14 +26,13 @@
 #include <QAction>
 #include <QDir>
 #include <QFileInfo>
-//#include <QMenu>
 #include <QMessageBox>
 
 #include "minstrument.h"
 #include "midiport.h"
-#include "mididev.h"  // p4.0.15
-#include "audio.h"    // p4.0.15
-#include "midi.h"    // p4.0.15
+#include "mididev.h"
+#include "audio.h"
+#include "midi.h"
 #include "globals.h"
 #include "xml.h"
 #include "event.h"
@@ -151,7 +150,7 @@ static void readEventList(Xml& xml, EventList* el, const char* name)
 
 static void loadIDF(QFileInfo* fi)
       {
-/*      
+/*                                                        DELETETHIS
       QFile qf(fi->filePath());
       if (!qf.open(IO_ReadOnly)) {
             printf("cannot open file %s\n", fi->fileName().toLatin1());
@@ -280,7 +279,7 @@ void initMidiInstruments()
                   ++it;
                   }
             }
-      //else
+      //else DELETETHIS
       //{
       //  if(usrInstrumentsDir.mkdir(MusEGlobal::museUserInstruments))
       //    printf("Created user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1());
@@ -410,7 +409,7 @@ MidiInstrument::~MidiInstrument()
             delete _initScript;
       }
 
-/*
+/* DELETETHIS
 //---------------------------------------------------------
 //   uniqueCopy
 //---------------------------------------------------------
@@ -458,7 +457,6 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   _nullvalue = ins._nullvalue;
   
   // Assignment
-  // *_controller = *(ins._controller);
   for(ciMidiController i = ins._controller->begin(); i != ins._controller->end(); ++i)
   {
     MidiController* mc = i->second;
@@ -466,7 +464,7 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   }  
   
 //  pg.clear();
-//  for(iPatchGroup ipg = pg.begin(); ipg != pg.end(); ++ipg)
+//  for(iPatchGroup ipg = pg.begin(); ipg != pg.end(); ++ipg) DELETETHIS
 //  {
     //ipg->patches.clear();
     
@@ -491,7 +489,6 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   pg.clear();
   
   // Assignment
-//  pg = ins.pg;
   for(ciPatchGroup g = ins.pg.begin(); g != ins.pg.end(); ++g) 
   {
     PatchGroup* pgp = *g;
@@ -516,7 +513,7 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   _name = ins._name;
   _filePath = ins._filePath;
     
-  // Hmm, dirty, yes? But init sets it to false...
+  // Hmm, dirty, yes? But init sets it to false... DELETETHIS
   //_dirty = ins._dirty;
   //_dirty = false;
   //_dirty = true;
@@ -532,18 +529,13 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
 void MidiInstrument::reset(int portNo, MType)
 {
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[portNo];
-      //if (port == 0)
-      //      return;
       if(port->device() == 0)  // p4.0.15
-      {
-        //printf("MidiInstrument::reset port device is 0\n"); 
         return;
-      }  
+
       MusECore::MidiPlayEvent ev;
       ev.setType(0x90);
       ev.setPort(portNo);
       ev.setTime(0);          // p4.0.15
-      //ev.setTime(audio->getFrameOffset() + audio->pos().frame());  
       
       for (int chan = 0; chan < MIDI_CHANNELS; ++chan) 
       {
@@ -552,15 +544,8 @@ void MidiInstrument::reset(int portNo, MType)
             {
                   ev.setA(pitch);
                   ev.setB(0);
-                  //printf("MidiInstrument::reset adding event channel:%d pitch:%d\n", chan, pitch); 
-                  //ev.dump();    
                   
                   port->sendEvent(ev);
-                  // Changed to use play events list instead of putEvent FIFO.
-                  // These loops send 2048 events, which is more than our FIFO (or Jack buffer) can handle!   p4.0.15 Tim.
-                  // Nope, instead, increased FIFO sizes to accommodate.
-                  //port->device()->playEvents()->add(ev);
-                  //port->device()->addScheduledEvent(ev);
             }
       }
 }
@@ -650,13 +635,6 @@ void Patch::read(Xml& xml)
 
 void Patch::write(int level, Xml& xml)
       {
-      //if (drumMap == 0) 
-      //{
-            //QString s = QString("Patch name=\"%1\"").arg(Xml::xmlString(name));
-            //if (typ != -1)
-            //      s += QString(" mode=\"%d\"").arg(typ);
-            //s += QString(" hbank=\"%1\" lbank=\"%2\" prog=\"%3\"").arg(hbank).arg(lbank).arg(prog);
-            //xml.tagE(s);
             xml.nput(level, "<Patch name=\"%s\"", Xml::xmlString(name).toLatin1().constData());
             if(typ != -1)
               xml.nput(" mode=\"%d\"", typ);
@@ -669,24 +647,9 @@ void Patch::write(int level, Xml& xml)
             
             xml.nput(" prog=\"%d\"", prog);
             
-            //xml.nput(level, " hbank=\"%d\" lbank=\"%d\" prog=\"%d\"", hbank, lbank, prog);
             if(drum)
-              //xml.nput(level, " drum=\"%d\"", int(drum));
               xml.nput(" drum=\"%d\"", int(drum));
-            //xml.put(level, " />");
             xml.put(" />");
-            
-            //return;
-      //}
-      
-      //QString s = QString("drummap name=\"%1\"").arg(Xml::xmlString(name));
-      //s += QString(" hbank=\"%1\" lbank=\"%2\" prog=\"%3\"").arg(hbank).arg(lbank).arg(prog);
-      //xml.stag(s);
-      //for (int i = 0; i < DRUM_MAPSIZE; ++i) {
-      //      DrumMapEntry* dm = drumMap->entry(i);
-      //      dm->write(xml);
-      //      }
-      //xml.etag("drummap");
       }
 
 //---------------------------------------------------------
@@ -695,8 +658,6 @@ void Patch::write(int level, Xml& xml)
 
 void MidiInstrument::readMidiState(Xml& xml)
 {
-  ///_midiState->read(xml, "midistate", true);
-      
   // p4.0.27 A kludge to support old midistates by wrapping them in the proper header.
   _tmpMidiStateVersion = 1;    // Assume old (unmarked) first version 1.
   for (;;) 
@@ -829,11 +790,8 @@ void MidiInstrument::read(Xml& xml)
 void MidiInstrument::write(int level, Xml& xml)
       {
       xml.header();
-      //xml.stag("muse version=\"2.1\"");
       xml.tag(level, "muse version=\"1.0\"");
-      //xml.stag(QString("MidiInstrument name=\"%1\"").arg(Xml::xmlString(iname())));
       level++;
-      //xml.tag(level, "MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().constData());
       xml.nput(level, "<MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().constData());
       
       if(_nullvalue != -1)
@@ -848,10 +806,7 @@ void MidiInstrument::write(int level, Xml& xml)
       // TODO: What about Init, Reset, State, and InitScript ?
       // -------------
       
-      //std::vector<PatchGroup>* pg = groups();
-      //for (std::vector<PatchGroup>::iterator g = pg->begin(); g != pg->end(); ++g) {
       level++;
-      //for (std::vector<PatchGroup>::iterator g = pg.begin(); g != pg.end(); ++g) {
       for (ciPatchGroup g = pg.begin(); g != pg.end(); ++g) {
             PatchGroup* pgp = *g;
             const PatchList& pl = pgp->patches;
@@ -861,20 +816,14 @@ void MidiInstrument::write(int level, Xml& xml)
             level++;
             //for (iPatch p = g->patches.begin(); p != g->patches.end(); ++p)
             for (ciPatch p = pl.begin(); p != pl.end(); ++p)
-                  //(*p)->write(xml);
-                  //p->write(level, xml);
                   (*p)->write(level, xml);
             level--;
-            //xml.etag("PatchGroup");
             xml.etag(level, "PatchGroup");
             }
       for (iMidiController ic = _controller->begin(); ic != _controller->end(); ++ic)
-            //(*ic)->write(xml);
             ic->second->write(level, xml);
-      //xml.etag("MidiInstrument");
       level--;
       xml.etag(level, "MidiInstrument");
-      //xml.etag("muse");
       level--;
       xml.etag(level, "muse");
       }
@@ -949,7 +898,6 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MTyp
               {
                 int id = (0xff << 16) + (0xff << 8) + 0x00;  // First patch
                 QAction* act = menu->addAction(gmdrumname);
-                //act->setCheckable(true);
                 act->setData(id);
                 return;
               }  
@@ -960,7 +908,6 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MTyp
       if (pg.size() > 1) {
             for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
                   PatchGroup* pgp = *i;
-                  //QMenu* pm = menu->addMenu(pgp->name);
                   MusEGui::PopupMenu* pm = new MusEGui::PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
                   menu->addMenu(pm);
                   pm->setFont(MusEGlobal::config.fonts[0]);
@@ -974,7 +921,6 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MTyp
                               int id = ((mp->hbank & 0xff) << 16)
                                          + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
                               QAction* act = pm->addAction(mp->name);
-                              //act->setCheckable(true);
                               act->setData(id);
                             }
                               
@@ -990,7 +936,6 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MTyp
                         int id = ((mp->hbank & 0xff) << 16)
                                  + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
                         QAction* act = menu->addAction(mp->name);
-                        //act->setCheckable(true);
                         act->setData(id);
                         }
                   }
@@ -999,7 +944,7 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MTyp
 } // namespace MusECore
 
 /*
-namespace MusEGui {
+namespace MusEGui { DELETETHIS
 
 void populatePatchPopup(MusECore::MidiInstrument* midiInstrument, PopupMenu* menu, int chan, MType songType, bool drum)
       {

@@ -76,11 +76,6 @@ class PianoRoll : public MidiEditor {
       MusECore::MidiPart* selPart;
       int selTick;
 
-      //enum { CMD_EVENT_COLOR, CMD_CONFIG_QUANT, CMD_LAST };
-      //int menu_ids[CMD_LAST];
-      //Q3PopupMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *menuPlugins;
-
-      
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
       MusEGui::MidiTrackInfo *midiTrackInfo;
       MusECore::Track* selected;
@@ -143,7 +138,6 @@ class PianoRoll : public MidiEditor {
 
       bool _playEvents;
 
-      //QScrollBar* infoScroll;
       QScrollArea* infoScroll;
 
       
@@ -156,10 +150,8 @@ class PianoRoll : public MidiEditor {
    private slots:
       void setSelection(int, MusECore::Event&, MusECore::Part*);
       void noteinfoChanged(MusEGui::NoteInfo::ValType, int);
-      //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);
-      //void trackInfoScroll(int);
       void setRaster(int);
       void cmd(int);
       void setSteprec(bool);
