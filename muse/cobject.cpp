@@ -75,12 +75,12 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
 	mdisubwin=NULL;
-	if (!MusEGlobal::dontShareMenu)
+	if (!MusEGlobal::unityWorkaround)
 		_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
 	else
 		_sharesToolsAndMenu=false;
 	
-	if (_defaultSubwin[_type])
+	if (_defaultSubwin[_type] && !MusEGlobal::unityWorkaround)
 	{
 		setIsMdiWin(true);
 		_savedToolbarState=_toolbarNonsharedInit[_type];
@@ -91,8 +91,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 	subwinAction->setChecked(isMdiWin());
 	shareAction->setChecked(_sharesToolsAndMenu);
-	if (MusEGlobal::dontShareMenu)
+	if (MusEGlobal::unityWorkaround)
+	{
 		shareAction->setEnabled(false);
+		subwinAction->setEnabled(false);
+	}
 	fullscreenAction->setEnabled(!isMdiWin());
 	
 	if (mdisubwin)
@@ -260,6 +263,9 @@ QMdiSubWindow* TopWin::createMdiWrapper()
 
 void TopWin::setIsMdiWin(bool val)
 {
+	if (MusEGlobal::unityWorkaround)
+		return;
+	
 	if (val)
 	{
 		if (!isMdiWin())
@@ -335,7 +341,7 @@ void TopWin::addToolBar(QToolBar* toolbar)
 {
 	_toolbars.push_back(toolbar);
 	
-	if (!_sharesToolsAndMenu || MusEGlobal::dontShareMenu)
+	if (!_sharesToolsAndMenu || MusEGlobal::unityWorkaround)
 		QMainWindow::addToolBar(toolbar);
 	else
 		toolbar->hide();
@@ -353,7 +359,7 @@ QToolBar* TopWin::addToolBar(const QString& title)
 
 void TopWin::shareToolsAndMenu(bool val)
 {
-	if (MusEGlobal::dontShareMenu)
+	if (MusEGlobal::unityWorkaround)
 		return;
 	
 	if (_sharesToolsAndMenu == val)

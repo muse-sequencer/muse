@@ -77,7 +77,7 @@ extern QString lastMidiPath;
 extern bool debugMode;
 extern bool midiInputTrace;
 extern bool midiOutputTrace;
-extern bool dontShareMenu;
+extern bool unityWorkaround;
 extern bool debugMsg;
 extern bool heavyDebugMsg;
 extern bool debugSync;

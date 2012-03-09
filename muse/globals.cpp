@@ -103,7 +103,7 @@ QString lastWavePath(".");
 QString lastMidiPath(".");
 
 bool debugMode = false;
-bool dontShareMenu = true;
+bool unityWorkaround = false;
 bool debugMsg = false;
 bool heavyDebugMsg = false;
 bool midiInputTrace = false;

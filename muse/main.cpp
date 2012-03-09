@@ -220,6 +220,8 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -m       debug mode: trace midi Input\n");
       fprintf(stderr, "   -M       debug mode: trace midi Output\n");
       fprintf(stderr, "   -s       debug mode: trace sync\n");
+      fprintf(stderr, "   -u       ubuntu/unity workaround: don't allow sharing menus\n");
+      fprintf(stderr, "                                     and mdi-subwins.\n");
       fprintf(stderr, "   -a       no audio\n");
       fprintf(stderr, "   -P  n    set audio driver real time priority to n\n");
       fprintf(stderr, "            (Dummy only, default 40. Else fixed by Jack.)\n");
@@ -389,7 +391,7 @@ int main(int argc, char* argv[])
 
       int i;
       
-      QString optstr("ahvdDmMsP:Y:l:py");
+      QString optstr("ahvdDumMsP:Y:l:py");
 #ifdef VST_SUPPORT
       optstr += QString("V");
 #endif
@@ -419,6 +421,7 @@ int main(int argc, char* argv[])
                   case 'm': MusEGlobal::midiInputTrace = true; break;
                   case 'M': MusEGlobal::midiOutputTrace = true; break;
                   case 's': MusEGlobal::debugSync = true; break;
+                  case 'u': MusEGlobal::unityWorkaround = true; break;
                   case 'P': MusEGlobal::realTimePriority = atoi(optarg); break;
                   case 'Y': MusEGlobal::midiRTPrioOverride = atoi(optarg); break;
                   case 'p': MusEGlobal::loadPlugins = false; break;
