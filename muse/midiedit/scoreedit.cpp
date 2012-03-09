@@ -1018,6 +1018,10 @@ void ScoreCanvas::write_staves(int level, MusECore::Xml& xml) const
 
 void ScoreEdit::readStatus(MusECore::Xml& xml)
 {
+	// never "return;" inside that function.
+	// instead, goto end_of_scoreedit_read_status;
+	// (there is a command which must be executed!)
+	
 	bool apply_velo_temp=apply_velo;
 	apply_velo=false;
 	
@@ -1105,12 +1109,15 @@ void ScoreEdit::readStatus(MusECore::Xml& xml)
 
 			case MusECore::Xml::TagEnd:
 				if (tag == "scoreedit")
-					return;
+					goto end_of_scoreedit_read_status;
 					
 			default:
 				break;
 		}
 	}
+
+end_of_scoreedit_read_status:
+	
 	apply_velo=apply_velo_temp;
 }
 
