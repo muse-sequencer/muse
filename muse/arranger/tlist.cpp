@@ -637,7 +637,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                         connect(editor, SIGNAL(editingFinished()), SLOT(returnPressed()));   
                         }
                   editor->setText(editTrack->name());
-                  editor->end(false);
+                  editor->selectAll();
                   editor->setGeometry(colx, coly, colw, colh);
                   editMode = true;
                   editor->show();
@@ -651,7 +651,13 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                     return;
                   } 
                   
-                  //if(t->type() != MusECore::Track::DRUM && t->type() != MusECore::Track::AUDIO_SOFTSYNTH) DELETETHIS
+                  // A disabled spinbox up or down button will pass the event to the parent! Causes pseudo 'wrapping'. Eat it up.
+                  if(chan_edit && chan_edit->hasFocus())
+                  {
+                    ev->accept();    
+                    return;
+                  }
+                  else
                   {
                       editTrack=t;
                       if (chan_edit==0) {
@@ -673,6 +679,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                       int w=colw;
                       if (w < chan_edit->sizeHint().width()) w=chan_edit->sizeHint().width();
                       chan_edit->setGeometry(colx, coly, w, colh);
+                      chan_edit->selectAll();
                       editMode = true;     
                       chan_edit->show();
                       chan_edit->setFocus();

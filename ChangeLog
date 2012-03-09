@@ -1,3 +1,6 @@
+09.03.2012:
+        - Track list: Popup editors: Pre-select text. (Tim)
+        - Track list channel popup editor: Eat up dbl-clcks if already open. Caused pseudo 'wrapping' if disabled arrows dbl-clicked. (Tim)
 08.03.2012:
         * Comprehensive focus fixes: (Tim...)
         * New: Gui behaviour option: "Smart Focus": All toolbar boxes give focus back to respective canvases. 
