@@ -1201,6 +1201,14 @@
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
       </wavetrack>
+    <Route channel="0">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_1"/>
+      </Route>
+    <Route channel="0">
+      <source type="1" name="system:capture_1"/>
+      <dest name="Input 1"/>
+      </Route>
     <Route>
       <source name="Input 1"/>
       <dest name="Track 1"/>

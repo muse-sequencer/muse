@@ -1,3 +1,6 @@
+10.03.2012:
+        - Track routing: Fixed duplicate routes: Reverted usage of operation group in Song::addTrack. (Tim)
+        - Templates: Default routing: Restored default Jack out/in routes in audio.med, synti.med, default.med, monorecord.med. (Tim)
 09.03.2012:
         - Track list: Popup editors: Pre-select text. (Tim)
         - Track list channel popup editor: Eat up dbl-clcks if already open. Caused pseudo 'wrapping' if disabled arrows dbl-clicked. (Tim)

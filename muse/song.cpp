@@ -233,7 +233,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
 //    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
-Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
+Track* Song::addTrack(Undo& /*operations*/, Track::TrackType type, Track* insertAt)
       {
       Track* track = 0;
       int lastAuxIdx = _auxs.size();
@@ -285,10 +285,12 @@ Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
       
       int idx = insertAt ? _tracks.index(insertAt) : -1;
       
-      // insertTrack1(track, idx);         // this and the below are replaced
-      // msgInsertTrack(track, idx, true); // by the UndoOp-operation
-      // insertTrack3(track, idx); // does nothing
-      operations.push_back(UndoOp(UndoOp::AddTrack, idx, track));
+      insertTrack1(track, idx);         // this and the below are replaced
+      msgInsertTrack(track, idx, true); // by the UndoOp-operation
+      insertTrack3(track, idx); // does nothing
+      // No, can't do this. insertTrack2 needs to be called now, not later, otherwise it sees
+      //  that the track may have routes, and reciprocates them, causing duplicate routes.
+      ///operations.push_back(UndoOp(UndoOp::AddTrack, idx, track));  
 
       // Add default track <-> midiport routes. 
       if(track->isMidiTrack()) 

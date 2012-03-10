@@ -1299,6 +1299,14 @@
           </event>
         </midistate>
       </SynthI>
+    <Route channel="0">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_1"/>
+      </Route>
+    <Route channel="1">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_1"/>
+      </Route>
     <Route channel="0" channels="2">
       <source name="fluid-1"/>
       <dest name="Out 1"/>
