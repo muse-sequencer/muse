@@ -1,6 +1,9 @@
 10.03.2012:
         - Track routing: Fixed duplicate routes: Reverted usage of operation group in Song::addTrack. (Tim)
         - Templates: Default routing: Restored default Jack out/in routes in audio.med, synti.med, default.med, monorecord.med. (Tim)
+        - Switch from LIB_PATH_SUFFIX to LIB_SUFFIX, and from CMAKE_INSTALL_LIBDIR to LIB_INSTALL_DIR in CMakeLists.txt. Still fall
+          back to CMAKE_INSTALL_LIBDIR if it is specified explicitly instead of LIB_INSTALL_DIR. (Orcan)
+        - Fix cmake warning in simpledrums when CMAKE_BUILD_TYPE is not set. (Orcan)
 09.03.2012:
         - Track list: Popup editors: Pre-select text. (Tim)
         - Track list channel popup editor: Eat up dbl-clcks if already open. Caused pseudo 'wrapping' if disabled arrows dbl-clicked. (Tim)

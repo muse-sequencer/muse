@@ -75,9 +75,9 @@ set (FILES_TO_TRANSLATE
 # - use precompiled header files
 #
 
-if ( ${CMAKE_BUILD_TYPE} STREQUAL release )
+if ( x${CMAKE_BUILD_TYPE} STREQUAL xrelease )
       SET(SIMPLEDRUMS_OPTFLAGS "-O6")
-endif ( ${CMAKE_BUILD_TYPE} STREQUAL release )
+endif ( x${CMAKE_BUILD_TYPE} STREQUAL xrelease )
 
 set_target_properties ( simpledrums
       PROPERTIES PREFIX ""

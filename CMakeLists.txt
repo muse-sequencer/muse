@@ -31,18 +31,22 @@ if (COMMAND cmake_policy)
       cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-if (NOT DEFINED LIB_PATH_SUFFIX)
-        SET(LIB_PATH_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
-endif (NOT DEFINED LIB_PATH_SUFFIX)
+if (NOT DEFINED LIB_SUFFIX)
+        SET(LIB_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
+endif (NOT DEFINED LIB_SUFFIX)
 
-# set libdir if not use -DCMAKE_INSTALL_LIBDIR
-if (NOT CMAKE_INSTALL_LIBDIR)
-        SET(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_PATH_SUFFIX}")
-endif (NOT CMAKE_INSTALL_LIBDIR)
+# set libdir if not use -DLIB_INSTALL_DIR
+if (NOT LIB_INSTALL_DIR)
+        if(CMAKE_INSTALL_LIBDIR)
+                SET(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+        else(CMAKE_INSTALL_LIBDIR)
+                SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
+        endif(CMAKE_INSTALL_LIBDIR)
+endif (NOT LIB_INSTALL_DIR)
 
-if (LIB_PATH_SUFFIX)
-        message(" Install libraries to: " ${CMAKE_INSTALL_LIBDIR} )          
-endif (LIB_PATH_SUFFIX)
+if (LIB_SUFFIX)
+        message(" Install libraries to: " ${LIB_INSTALL_DIR} )          
+endif (LIB_SUFFIX)
 
 IF(NOT DEFINED SHARE_INSTALL_PREFIX)
         SET(SHARE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share")
@@ -80,13 +84,13 @@ SET(MusE_INSTALL_NAME  "muse-2.0rc2")
 SET(MusE_EXEC_NAME     "muse2")
 
 ## The directory where we will install the shared components:
-SET(MusE_MODULES_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/modules)
+SET(MusE_MODULES_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/modules)
 
 ## Synthesizers directory
-SET(MusE_SYNTHI_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi)
+SET(MusE_SYNTHI_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/synthi)
 
 ## Plugins directory
-SET(MusE_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins)
+SET(MusE_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/plugins)
 
 ## Top documentation dir
 IF(NOT DEFINED MusE_DOC_DIR)
@@ -97,7 +101,7 @@ ENDIF(NOT DEFINED MusE_DOC_DIR)
 SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
 
 ## Lib directory
-SET(MusE_LIB_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME})
+SET(MusE_LIB_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME})
 
 FIND_PROGRAM(SVNVER svnversion)
 if (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
