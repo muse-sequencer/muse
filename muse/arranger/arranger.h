@@ -60,16 +60,6 @@ class TLLayout;
 class TList;
 class WidgetStack;
 
-class FloScrollBar : public QScrollBar
-{
-  Q_OBJECT
-   
-   public:
-      FloScrollBar(Qt::Orientation o, QWidget* p = 0) : QScrollBar(o,p) {}
-  
-   protected:
-      virtual void resizeEvent(QResizeEvent* e) { setPageStep(e->size().height()); }
-};
 
 //---------------------------------------------------------
 //   WidgetStack
@@ -106,9 +96,13 @@ class ScrollBar : public QScrollBar {
   public slots:
       void redirectedWheelEvent(QWheelEvent*);
       
+  protected:
+      virtual void resizeEvent(QResizeEvent* e) { setPageStep(e->size().height()); }
+      
   public:    
     ScrollBar(Qt::Orientation orientation, QWidget * parent = 0 ) : QScrollBar(orientation, parent) {};  
 };
+
 
 //---------------------------------------------------------
 //   Arranger
@@ -127,7 +121,7 @@ class Arranger : public QWidget {
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
       WidgetStack* trackInfo;
-      FloScrollBar* infoScroll;
+      ScrollBar* infoScroll;
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
