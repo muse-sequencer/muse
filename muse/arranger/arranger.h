@@ -35,11 +35,9 @@ class QAction;
 class QCheckBox;
 class QMainWindow;
 class QMenu;
-//class QScrollBar;
 class QToolButton;
 class QWheelEvent;
 class QKeyEvent;
-//class QStackedWidget;
 
 namespace MusECore {
 class Track;
@@ -84,8 +82,6 @@ class WidgetStack : public QWidget {
       QWidget* visibleWidget() const;
       int curIdx() const { return top; }
       virtual QSize minimumSizeHint() const;
-      //QSize minimumSize() const;
-      //int minimumHeight() const;
       };
 
 //---------------------------------------------------------
@@ -119,9 +115,7 @@ class Arranger : public QWidget {
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
       WidgetStack* trackInfo;
-      //QStackedWidget* trackInfo;
       ScrollBar* infoScroll;
-      //MidiTrackInfoBase* midiTrackInfo;
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
@@ -133,7 +127,6 @@ class Arranger : public QWidget {
       QToolButton* ib;
       int trackInfoType;
       Splitter* split;
-      ///QMenu* pop;
       int songType;
       PosLabel* cursorPos;
       SpinBox* globalTempoSpinBox;
@@ -161,26 +154,22 @@ class Arranger : public QWidget {
       void setTempo50();
       void setTempo100();
       void setTempo200();
-      //void seek();
       void verticalScrollSetYpos(unsigned);
       void horizontalZoomIn();
       void horizontalZoomOut();
       void focusCanvas();
       
    signals:
-      //void redirectWheelEvent(QWheelEvent*);
       void editPart(MusECore::Track*);
       void selectionChanged();
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
       void startEditor(MusECore::PartList*, int);
       void toolChanged(int);
-      //void addMarker(int);
       void setUsedTool(int);
 
 
    protected:
-      //virtual void wheelEvent(QWheelEvent* e);
       virtual void keyPressEvent(QKeyEvent* event);
 
    public slots:

@@ -4701,7 +4701,8 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
 
 /* BUGS and potential bugs
  *   o tied notes don't work properly when there's a key-change in
- *     between, for example, when a cis is tied to a des
+ *     between, for example, when a cis is tied to a des [ will not fix ]
+ *         (reason: this actually never happens if dealing with a sane piece)
  * > o when changing toolbarstate when sharing and immediately after that
  *     changing "share" status, the changed state isn't stored
  *     (could be solved by storing the current window when quitting/saving whatever)
@@ -4710,11 +4711,16 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  * 
  * CURRENT TODO
  * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
- * > o add a songposition scrollbar-toolbar (in different sizes)
- *     this might be equivalent to "redo transport menu" (below).
- * > o add toolbar(s) for tempo- etc spinboxes from the transport window 
  *
  * IMPORTANT TODO
+ *   o canvas editor: create clone via "alt+drag" moves window instead
+ *   o controller view in score editor
+ *   o solo button
+ *   o do partial recalculating; recalculating can take pretty long
+ *     (0,5 sec) when displaying a whole song in scores
+ *   o transpose etc. must also transpose key-pressure events
+ *   o transpose: support in-key-transpose
+ *   o thin out: remove unneeded ctrl messages
  *   o support edge-scrolling when opening a lasso
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes
@@ -4729,15 +4735,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *                          maybe also offer scrollbar
  *
  *   o shrink a part from its beginning as well! watch out for clones!
- *
- *   o canvas editor: create clone via "alt+drag" moves window instead
- *   o controller view in score editor
- *   o solo button
- * > o do partial recalculating; recalculating can take pretty long
- *     (0,5 sec) when displaying a whole song in scores
- *   o transpose etc. must also transpose key-pressure events
- *   o transpose: support in-key-transpose
- *   o thin out: remove unneeded ctrl messages
  *
  * less important stuff
  *   o allow "fixating" toolbars?
