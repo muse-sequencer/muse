@@ -26,6 +26,7 @@
 #include <vector>
 
 #include <QScrollBar>
+#include <QResizeEvent>
 
 #include "midieditor.h"
 #include "pcanvas.h"
@@ -58,6 +59,17 @@ class Splitter;
 class TLLayout;
 class TList;
 class WidgetStack;
+
+class FloScrollBar : public QScrollBar
+{
+  Q_OBJECT
+   
+   public:
+      FloScrollBar(Qt::Orientation o, QWidget* p = 0) : QScrollBar(o,p) {}
+  
+   protected:
+      virtual void resizeEvent(QResizeEvent* e) { setPageStep(e->size().height()); }
+};
 
 //---------------------------------------------------------
 //   WidgetStack
@@ -115,7 +127,7 @@ class Arranger : public QWidget {
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
       WidgetStack* trackInfo;
-      ScrollBar* infoScroll;
+      FloScrollBar* infoScroll;
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;

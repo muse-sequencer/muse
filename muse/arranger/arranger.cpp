@@ -276,7 +276,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //    Track Info
       //---------------------------------------------------
 
-      infoScroll = new ScrollBar(Qt::Vertical, tracklist);
+      infoScroll = new FloScrollBar(Qt::Vertical, tracklist);
       infoScroll->setObjectName("infoScrollBar");
       //genTrackInfo(tracklist); // Moved below
 
@@ -343,6 +343,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //   +-----+------------------------+
 
       connect(infoScroll, SIGNAL(valueChanged(int)), SLOT(trackInfoScroll(int)));
+      connect(trackInfo,  SIGNAL(heightChanged(int)), infoScroll, SLOT(setPageStep(int)));
       tgrid  = new TLLayout(tracklist); // layout manager for this
       tgrid->wadd(0, trackInfo);
       tgrid->wadd(1, infoScroll);
@@ -424,7 +425,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setXMag(int)));
       connect(vscroll, SIGNAL(valueChanged(int)), list,   SLOT(setYPos(int)));
-      connect(hscroll, SIGNAL(scrollChanged(int)), time,   SLOT(setXPos(int)));   //
+      connect(hscroll, SIGNAL(scrollChanged(int)), time,   SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  time,   SLOT(setXMag(int)));
       connect(canvas,  SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
       connect(canvas,  SIGNAL(verticalScroll(unsigned)),SLOT(verticalScrollSetYpos(unsigned)));
