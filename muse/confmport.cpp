@@ -1345,7 +1345,7 @@ void MPConfig::addInstanceClicked()
             MusECore::MidiDevice* dev = port->device();
             if (dev==0) {
                   MusEGlobal::midiSeq->msgSetMidiDevice(port, si);
-		  MusEGlobal::muse->changeConfig(true);     // save configuration file
+                  MusEGlobal::muse->changeConfig(true);     // save configuration file
                   MusEGlobal::song->update();
                   break;
                   }

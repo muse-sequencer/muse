@@ -20,8 +20,6 @@
 //
 //=========================================================
 
-//#include "config.h"
-
 #include <cmath>
 
 #include <QKeyEvent>
@@ -100,7 +98,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       chan_edit = NULL;
       mode      = NORMAL;
 
-      //setBackgroundMode(Qt::NoBackground); // ORCAN - FIXME
+      //setBackgroundMode(Qt::NoBackground); // ORCAN - FIXME. DELETETHIS?
       //setAttribute(Qt::WA_OpaquePaintEvent);
       resizeFlag = false;
 
@@ -300,7 +298,6 @@ void TList::paint(const QRect& r)
                                           pm = addtrack_auxsendIcon;
                                           break;
                                     case MusECore::Track::AUDIO_SOFTSYNTH:
-                                          //pm = waveIcon;
                                           pm = synthIcon;
                                           break;
                                     }
@@ -867,6 +864,8 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
 
                     MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[potential_new_port_no], sdev);
                     n=potential_new_port_no;
+                    
+                    MusEGlobal::song->update();
                   }
                   // Changed by T356. DELETETHIS 5
                   //track->setOutPort(n);
@@ -897,8 +896,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                         MusEGlobal::audio->msgUpdateSoloStates();                   // (p4.0.14)  p4.0.17
                         MusEGlobal::song->update();
                   }
-                  else
-                  if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH) 
+                  else if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH) 
                   {
                     if(md != 0)
                     {

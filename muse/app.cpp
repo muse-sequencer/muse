@@ -413,7 +413,7 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       connect(MusEGlobal::rewindAction, SIGNAL(activated()), MusEGlobal::song, SLOT(rewind()));
 
       MusEGlobal::forwardAction = new QAction(QIcon(*MusEGui::fforwardIcon),
-	 tr("Forward"), MusEGlobal::transportAction);
+         tr("Forward"), MusEGlobal::transportAction);
 
       MusEGlobal::forwardAction->setWhatsThis(tr("move current position"));
       connect(MusEGlobal::forwardAction, SIGNAL(activated()), MusEGlobal::song, SLOT(forward()));
