@@ -833,37 +833,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   ctrl_edit->show();
                   ctrl_edit->setFocus();
                 }
-                else
-                {
-                  MusECore::MidiInstrument* instr = mp->instrument();
-                  
-                  PopupMenu* pup = new PopupMenu(true);
-                  instr->populatePatchPopup(pup, mt->outChannel(), MusEGlobal::song->mtype(), mt->isDrumTrack());
-                  
-                  if(pup->actions().count() == 0)
-                  {
-                    delete pup;
-                    return;
-                  }
-                  
-                  connect(pup, SIGNAL(triggered(QAction*)), SLOT(instrPopupActivated(QAction*)));
-                  
-                  QAction *act = pup->exec(ev->globalPos());
-                  if(act)
-                  {
-                    int val = act->data().toInt();
-                    if(val != -1)
-                    {
-                      MusECore::Event a(MusECore::Controller);
-                      a.setTick(0);
-                      a.setA(MusECore::CTRL_PROGRAM);
-                      a.setB(val);
-                      MusEGlobal::song->recordEvent(mt, a);
-                    }
-                  }
-                        
-                  delete pup;      
-                }
+                // else: the CTRL_PROGRAM popup is displayed with a single click
                 ev->accept();
               }
             }
@@ -1923,17 +1893,16 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
             
             default:
-                  if (col>=COL_CUSTOM_MIDICTRL_OFFSET)
+                  mode = START_DRAG;
+                  if (col>=COL_CUSTOM_MIDICTRL_OFFSET && t->isMidiTrack())
                   {
-                    mode = START_DRAG;
-
                     int delta = 0;
                     if (button == Qt::RightButton) 
                       delta = 1;
                     else if (button == Qt::MidButton) 
                       delta = -1;
 
-                    if (delta!=0 && t->isMidiTrack()) 
+                    if (delta!=0) 
                     {
                       MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(t);
                       if (mt == 0)
@@ -1998,12 +1967,51 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         }
                       }
                     }
+                    else // if (delta==0)
+                    {
+                      ctrl_num=Arranger::custom_columns[col-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
+                      
+                      if (ctrl_num==MusECore::CTRL_PROGRAM)
+                      {
+                        editTrack=t;
+
+                        MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
+                        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
+                        MusECore::MidiController* mctl = mp->midiController(ctrl_num);
+                        MusECore::MidiInstrument* instr = mp->instrument();
+                        
+                        PopupMenu* pup = new PopupMenu(true);
+                        instr->populatePatchPopup(pup, mt->outChannel(), MusEGlobal::song->mtype(), mt->isDrumTrack());
+                        
+                        if(pup->actions().count() == 0)
+                        {
+                          delete pup;
+                          return;
+                        }
+                        
+                        connect(pup, SIGNAL(triggered(QAction*)), SLOT(instrPopupActivated(QAction*)));
+                        
+                        QAction *act = pup->exec(ev->globalPos());
+                        if(act)
+                        {
+                          int val = act->data().toInt();
+                          if(val != -1)
+                          {
+                            MusECore::Event a(MusECore::Controller);
+                            a.setTick(0);
+                            a.setA(MusECore::CTRL_PROGRAM);
+                            a.setB(val);
+                            MusEGlobal::song->recordEvent(mt, a);
+                          }
+                        }
+                              
+                        delete pup;      
+                      }
+                    }
                   }
-                  else
-                      mode = START_DRAG;
-          }        
+      } //end of "switch"
       redraw();
-      }
+}
 
 void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
 {
