@@ -28,7 +28,6 @@
 #include "cobject.h"
 #include "tempo.h"
 #include "keyevent.h"
-///#include "sig.h"
 #include "al/sig.h"
 
 #include <QTreeWidgetItem>
@@ -153,9 +152,6 @@ class LMaster : public MidiEditor {
       bool editingNewItem;
 
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
-
-//   protected:
-//      virtual void keyPressEvent(QKeyEvent*);
 
    private slots:
       void select(QTreeWidgetItem*, QTreeWidgetItem*);

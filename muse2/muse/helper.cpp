@@ -40,12 +40,12 @@
 #include "audiodev.h"
 #include "midiseq.h"
 
+#include <QMenu>
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QString>
-//#include <QTemporaryFile>
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -364,10 +364,7 @@ QMenu* populateAddSynth(QWidget* parent)
 {
   QMenu* synp = new QMenu(parent);
   
-  //typedef std::multimap<std::string, int, addSynth_cmp_str > asmap;
   typedef std::multimap<std::string, int > asmap;
-  
-  //typedef std::multimap<std::string, int, addSynth_cmp_str >::iterator imap;
   typedef std::multimap<std::string, int >::iterator imap;
   
   
@@ -514,8 +511,6 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool evenIgnor
         addTrack->addMenu(synp);
       }
 
-      //QObject::connect(addTrack, SIGNAL(triggered(QAction *)), MusEGlobal::song, SLOT(addNewTrack(QAction *)));
-
       return grp;
       }
   
@@ -525,9 +520,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool evenIgnor
 
 QString getFilterExtension(const QString &filter)
 {
-  //
   // Return the first extension found. Must contain at least one * character.
-  //
   
   int pos = filter.indexOf('*');
   if(pos == -1)
@@ -564,11 +557,9 @@ QString browseProjectFolder(QWidget* parent)
     path = d.absolutePath();
   }
   
-  QString dir = QFileDialog::getExistingDirectory(parent, qApp->tr("Select project directory"), path);
+  QString dir = QFileDialog::getExistingDirectory(parent, qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Select project directory")), path);
   if(dir.isEmpty())
     dir = MusEGlobal::config.projectBaseFolder;
-  //  projDirLineEdit->setText(dir);
-  //return QFileDialog::getExistingDirectory(this, qApp.tr("Select project directory"), path);
   return dir;
 }
 
@@ -586,7 +577,6 @@ QString projectTitleFromFilename(QString filename)
   
   QFileInfo fi(filename);
 
-  //return fi.baseName();
   return fi.fileName();
 }
 
@@ -615,9 +605,6 @@ QString projectExtensionFromFilename(QString filename)
 QString getUniqueUntitledName()
 {
   QString filename("untitled");
-  //QTemporaryFile tf(MusEGlobal::config.projectBaseFolder +"/" + s + "XXXXXX.med");
-  //if(tf.open())
-  //  s = MusEGui::projectTitleFromFilename(tf.fileName());
   
   QString fbase(MusEGlobal::config.projectBaseFolder);
   
@@ -626,7 +613,6 @@ QString getUniqueUntitledName()
     nfb += "/" + filename;
   QFileInfo fi(nfb + "/" + filename + ".med");  // TODO p4.0.40 Check other extensions.
   if(!fi.exists())
-    //return filename;
     return fi.filePath();
 
   // Find a new filename
@@ -640,14 +626,10 @@ QString getUniqueUntitledName()
         nfb += "/" + nfn;
       QFileInfo fi(nfb + "/" + nfn + ".med");
       if(!fi.exists())
-        //break;
         return fi.filePath();
   }    
 
-  //if(idx >= 10000)
-    printf("MusE error: Could not make untitled project name (10000 or more untitled projects in project dir - clean up!\n");
-  
-  //return nfn;
+  printf("MusE error: Could not make untitled project name (10000 or more untitled projects in project dir - clean up!\n");
     
   nfb = fbase;
   if(MusEGlobal::config.projectStoreInFolder) 
@@ -686,8 +668,6 @@ void populateMidiPorts()
       if(dev)
       {
         ++jack_midis_found;
-        //printf("populateMidiPorts Created jack writeable device: %s\n", dev->name().toLatin1().constData()); 
-        //dev->setOpenFlags(1);
         MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
         MusECore::Route srcRoute(dev, -1);
         MusECore::Route dstRoute(*i, true, -1, MusECore::Route::JACK_ROUTE);
@@ -704,8 +684,6 @@ void populateMidiPorts()
       if(dev)
       {
         ++jack_midis_found;
-        //printf("populateMidiPorts Created jack readable device: %s\n", dev->name().toLatin1().constData()); 
-        //dev->setOpenFlags(2);
         MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
         MusECore::Route srcRoute(*i, false, -1, MusECore::Route::JACK_ROUTE);
         MusECore::Route dstRoute(dev, -1);
@@ -717,10 +695,10 @@ void populateMidiPorts()
   }
   //else
   // If Jack is not running, use ALSA devices.
-  //if(MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::DUMMY_AUDIO)  
   // Try to do the user a favour: If we still have no Jack devices, even if Jack is running, fill with ALSA.
   // It is possible user has Jack running on ALSA back-end but without midi support.
   // IE. They use Jack for audio but use ALSA for midi!
+  // If unwanted, remove "|| jack_midis_found == 0".
   if(MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::DUMMY_AUDIO || jack_midis_found == 0)  
   {
     for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
@@ -728,40 +706,16 @@ void populateMidiPorts()
       if((*i)->deviceType() != MusECore::MidiDevice::ALSA_MIDI)
         continue;
       dev = *i;
-      // Select only sensible devices first - not thru etc.
-      //if( ... )
-      //  continue;
-      
-      //dev->setOpenFlags(1);
       MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
         
       if(++port_num == MIDI_PORTS)
         return;
     }
-
-    //for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
-    //{
-    //  if((*i)->deviceType() != MusECore::MidiDevice::ALSA_MIDI)
-    //    continue;
-    //  // Select the ones ignored in the first pass.
-    //  if(!  ... )
-    //    continue;
-    //    
-    //  dev->setOpenFlags(1);
-    //  MusEGlobal::midiSeq->msgSetMidiDevice(port_num, dev);
-    //    
-    //  if(++port_num == MIDI_PORTS)
-    //    return;
-    //}
   }
-    
-  //MusEGlobal::muse->changeConfig(true);     // save configuration file
-  //MusEGlobal::song->update();
-  
 }
 
 #else // this code is disabled
-
+// DELETETHIS uhm, yeah... do we need this?
 DISABLED AND MAYBE OUT-OF-DATE CODE!
 the code below is disabled for a longer period of time,
 there were certain changes and merges. dunno if that code
@@ -792,9 +746,7 @@ void populateMidiPorts()
   {
     std::list<QString> wsl;
     std::list<QString> rsl;
-    //wsl = MusEGlobal::audioDevice->inputPorts(true, 1);  // Ask for second aliases.
     wsl = MusEGlobal::audioDevice->inputPorts(true, 0);  // Ask for first aliases.
-    //rsl = MusEGlobal::audioDevice->outputPorts(true, 1); // Ask for second aliases.
     rsl = MusEGlobal::audioDevice->outputPorts(true, 0); // Ask for first aliases.
 
     for(std::list<QString>::iterator wi = wsl.begin(); wi != wsl.end(); ++wi)
@@ -824,16 +776,9 @@ void populateMidiPorts()
         // Do we have a matching pair?
         if(rs == ws)
         {
-          // Would like to remove the client name, but no, we need it as a distinguishing identifier.
-          //int z = ws.indexOf(":");
-          //if(z >= 0)
-          //  ws.remove(0, z + 1);
-          
           dev = MusECore::MidiJackDevice::createJackMidiDevice(ws, 3); 
           if(dev)
           {
-            //printf("populateMidiPorts Created jack writeable/readable device: %s\n", dev->name().toLatin1().constData()); 
-            //dev->setOpenFlags(1);
             MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
             MusECore::Route devRoute(dev, -1);
             MusECore::Route wdstRoute(*wi, true, -1, MusECore::Route::JACK_ROUTE);
@@ -854,15 +799,9 @@ void populateMidiPorts()
       {
         // No match was found. Create a single writeable device.
         QString s = *wi;
-        // Would like to remove the client name, but no, we need it as a distinguishing identifier.
-        //int z = s.indexOf(":");
-        //if(z >= 0)
-        //  s.remove(0, z + 1);
         dev = MusECore::MidiJackDevice::createJackMidiDevice(s, 1); 
         if(dev)
         {
-          //printf("populateMidiPorts Created jack writeable device: %s\n", dev->name().toLatin1().constData()); 
-          //dev->setOpenFlags(1);
           MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
           MusECore::Route srcRoute(dev, -1);
           MusECore::Route dstRoute(*wi, true, -1, MusECore::Route::JACK_ROUTE);
@@ -877,15 +816,9 @@ void populateMidiPorts()
     for(std::list<QString>::iterator ri = rsl.begin(); ri != rsl.end(); ++ri)
     {
       QString s = *ri;
-      // Would like to remove the client name, but no, we need it as a distinguishing identifier.
-      //int z = s.indexOf(":");
-      //if(z >= 0)
-      //  s.remove(0, z + 1);
       dev = MusECore::MidiJackDevice::createJackMidiDevice(s, 2); 
       if(dev)
       {
-        //printf("populateMidiPorts Created jack readable device: %s\n", dev->name().toLatin1().constData()); 
-        //dev->setOpenFlags(2);
         MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
         MusECore::Route srcRoute(*ri, false, -1, MusECore::Route::JACK_ROUTE);
         MusECore::Route dstRoute(dev, -1);
@@ -904,36 +837,12 @@ void populateMidiPorts()
       if((*i)->deviceType() != MusECore::MidiDevice::ALSA_MIDI)
         continue;
       dev = *i;
-      // Select only sensible devices first - not thru etc.
-      //if( ... )
-      //  continue;
-      
-      //dev->setOpenFlags(1);
       MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
         
       if(++port_num == MIDI_PORTS)
         return;
     }
-
-    //for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
-    //{
-    //  if((*i)->deviceType() != MusECore::MidiDevice::ALSA_MIDI)
-    //    continue;
-    //  // Select the ones ignored in the first pass.
-    //  if(!  ... )
-    //    continue;
-    //    
-    //  dev->setOpenFlags(1);
-    //  MusEGlobal::midiSeq->msgSetMidiDevice(port_num, dev);
-    //    
-    //  if(++port_num == MIDI_PORTS)
-    //    return;
-    //}
   }
-    
-  //MusEGlobal::muse->changeConfig(true);     // save configuration file
-  //MusEGlobal::song->update();
-  
 }
 #endif   // populateMidiPorts
 

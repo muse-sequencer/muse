@@ -33,7 +33,6 @@
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
-///#include "sig.h"
 #include "al/sig.h"
 #include "undo.h"
 #include "track.h"
@@ -264,7 +263,6 @@ class Song : public QObject {
       //   event manipulations
       //-----------------------------------------
 
-      //void cmdAddRecordedWave(WaveTrack* track, const Pos&, const Pos&);
       void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);
       void cmdAddRecordedEvents(MidiTrack*, EventList*, unsigned);
       bool addEvent(Event&, Part*);
@@ -293,7 +291,6 @@ class Song : public QObject {
       PartList* getSelectedWaveParts() const;
       bool msgRemoveParts();
 
-      //void cmdChangePart(Part* oldPart, Part* newPart);
       void cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones);
       void cmdRemovePart(Part* part);
       void cmdAddPart(Part* part);
@@ -319,7 +316,7 @@ class Song : public QObject {
       void removeTrack2(Track* track);
       void removeTrack3(Track* track);
       void removeMarkedTracks();
-      //void changeTrack(Track* oldTrack, Track* newTrack);
+      //void changeTrack(Track* oldTrack, Track* newTrack); DELETETHIS
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
       void swapTracks(int i1, int i2);
@@ -339,7 +336,6 @@ class Song : public QObject {
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
       void connectJackRoutes(AudioTrack* track, bool disconnect);
       void updateSoloStates();
-      //void chooseMidiRoutes(QButton* /*parent*/, MidiTrack* /*track*/, bool /*dst*/);
 
       //-----------------------------------------
       //   undo, redo

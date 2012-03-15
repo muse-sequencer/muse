@@ -26,6 +26,9 @@
 #include <vector>
 #include <QString>
 
+#include <QScrollBar>
+#include <QResizeEvent>
+
 #include "midieditor.h"
 #include "pcanvas.h"
 #include "trackautomationview.h"
@@ -34,11 +37,9 @@ class QAction;
 class QCheckBox;
 class QMainWindow;
 class QMenu;
-class QScrollBar;
 class QToolButton;
 class QWheelEvent;
 class QKeyEvent;
-//class QStackedWidget;
 
 namespace MusECore {
 class Track;
@@ -60,6 +61,7 @@ class TLLayout;
 class TList;
 class WidgetStack;
 
+
 //---------------------------------------------------------
 //   WidgetStack
 //---------------------------------------------------------
@@ -69,6 +71,12 @@ class WidgetStack : public QWidget {
       std::vector<QWidget*> stack;
       int top;
 
+   protected:
+      virtual void wheelEvent(QWheelEvent* e);
+      
+   signals:
+      void redirectWheelEvent(QWheelEvent*);
+      
    public:
       WidgetStack(QWidget* parent, const char* name = 0);
       void raiseWidget(int idx);
@@ -77,9 +85,25 @@ class WidgetStack : public QWidget {
       QWidget* visibleWidget() const;
       int curIdx() const { return top; }
       virtual QSize minimumSizeHint() const;
-      //QSize minimumSize() const;
-      //int minimumHeight() const;
       };
+
+//---------------------------------------------------------
+//   ScrollBar
+//---------------------------------------------------------
+
+class ScrollBar : public QScrollBar {
+      Q_OBJECT
+      
+  public slots:
+      void redirectedWheelEvent(QWheelEvent*);
+      
+  protected:
+      virtual void resizeEvent(QResizeEvent* e) { setPageStep(e->size().height()); }
+      
+  public:    
+    ScrollBar(Qt::Orientation orientation, QWidget * parent = 0 ) : QScrollBar(orientation, parent) {};  
+};
+
 
 //---------------------------------------------------------
 //   Arranger
@@ -100,9 +124,7 @@ class Arranger : public QWidget {
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
       WidgetStack* trackInfo;
-      //QStackedWidget* trackInfo;
-      QScrollBar* infoScroll;
-      //MidiTrackInfoBase* midiTrackInfo;
+      ScrollBar* infoScroll;
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
@@ -115,7 +137,6 @@ class Arranger : public QWidget {
       QToolButton* ib;
       int trackInfoType;
       Splitter* split;
-      ///QMenu* pop;
       int songType;
       PosLabel* cursorPos;
       SpinBox* globalTempoSpinBox;
@@ -138,31 +159,27 @@ class Arranger : public QWidget {
       void songChanged(int);
       void modeChange(int);
       void setTime(unsigned);
-      void headerMoved();
       void globalPitchChanged(int);
       void globalTempoChanged(int);
       void setTempo50();
       void setTempo100();
       void setTempo200();
-      //void seek();
       void verticalScrollSetYpos(unsigned);
       void horizontalZoomIn();
       void horizontalZoomOut();
+      void focusCanvas();
       
    signals:
-      void redirectWheelEvent(QWheelEvent*);
       void editPart(MusECore::Track*);
       void selectionChanged();
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
       void startEditor(MusECore::PartList*, int);
       void toolChanged(int);
-      //void addMarker(int);
       void setUsedTool(int);
 
 
    protected:
-      virtual void wheelEvent(QWheelEvent* e);
       virtual void keyPressEvent(QKeyEvent* event);
 
    public slots:

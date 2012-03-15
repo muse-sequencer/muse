@@ -115,6 +115,7 @@ bool PosEdit::event(QEvent* event)
               //   choose to clear it in their constructor."
               // Just to be sure. Otherwise escape will close a midi editor for example, which is annoying.
               ke->setAccepted(true);
+              emit escapePressed();
               return true;
             }
             

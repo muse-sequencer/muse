@@ -55,7 +55,7 @@ class Track;
 //---------------------------------------------------------
 
 enum {
-      SEQM_ADD_TRACK, SEQM_REMOVE_TRACK,   //SEQM_CHANGE_TRACK,  
+      SEQM_ADD_TRACK, SEQM_REMOVE_TRACK,   //SEQM_CHANGE_TRACK,   DELETETHIS
       SEQM_MOVE_TRACK,
       SEQM_ADD_PART, SEQM_REMOVE_PART, SEQM_CHANGE_PART,
       SEQM_ADD_EVENT, SEQM_REMOVE_EVENT, SEQM_CHANGE_EVENT,
@@ -76,15 +76,15 @@ enum {
       SEQM_SCAN_ALSA_MIDI_PORTS,
       SEQM_SET_AUX,
       SEQM_UPDATE_SOLO_STATES,
-      //MIDI_SHOW_INSTR_GUI,
-      //MIDI_SHOW_INSTR_NATIVE_GUI,
+      //MIDI_SHOW_INSTR_GUI,  DELETETHIS
+      //MIDI_SHOW_INSTR_NATIVE_GUI, DELETETHIS
       AUDIO_RECORD,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
-      //AUDIO_VOL, AUDIO_PAN,
+      //AUDIO_VOL, AUDIO_PAN,  DELETETHIS
       AUDIO_ADDPLUGIN,
       AUDIO_SET_SEG_SIZE,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
-      //AUDIO_SET_PLUGIN_CTRL_VAL,
+      //AUDIO_SET_PLUGIN_CTRL_VAL,  DELETETHIS
       AUDIO_SWAP_CONTROLLER_IDX,
       AUDIO_CLEAR_CONTROLLER_EVENTS,
       AUDIO_SEEK_PREV_AC_EVENT,
@@ -167,14 +167,13 @@ class Audio {
       int fromThreadFdw, fromThreadFdr;  // message pipe
 
       int sigFd;              // pipe fd for messages to gui
-      //QSocketNotifier* _socketNotifier;
       int sigFdr;
       
       // record values:
       Pos startRecordPos;
       Pos endRecordPos;
 
-      //
+      
       AudioOutput* _audioMaster;
       AudioOutput* _audioMonitor;
 
@@ -208,6 +207,7 @@ class Audio {
       void stop(bool);
       void seek(const Pos& pos);
 
+      bool isStarting() const   { return state == START_PLAY; }
       bool isPlaying() const    { return state == PLAY || state == LOOP1 || state == LOOP2; }
       bool isRecording() const  { return state == PLAY && recording; }
       void setRunning(bool val) { _running = val; }
@@ -222,7 +222,7 @@ class Audio {
 
       void msgRemoveTrack(Track*, bool u = true);
       void msgRemoveTracks();
-      //void msgChangeTrack(Track* oldTrack, Track* newTrack, bool u = true);
+      //void msgChangeTrack(Track* oldTrack, Track* newTrack, bool u = true); DELETETHIS
       void msgMoveTrack(int idx1, int dx2, bool u = true);
       void msgAddPart(Part*, bool u = true);
       void msgRemovePart(Part*, bool u = true);
@@ -241,8 +241,8 @@ class Audio {
       void msgRemoveSig(int tick, int z, int n, bool doUndoFlag = true);
       void msgAddKey(int tick, int key, bool doUndoFlag = true);
       void msgRemoveKey(int tick, int key, bool doUndoFlag = true);
-      //void msgShowInstrumentGui(MidiInstrument*, bool);
-      //void msgShowInstrumentNativeGui(MidiInstrument*, bool);
+      //void msgShowInstrumentGui(MidiInstrument*, bool);   DELETETHIS
+      //void msgShowInstrumentNativeGui(MidiInstrument*, bool);  DELETETHIS
       void msgPanic();
       void sendMsg(AudioMsg*);
       bool sendMessage(AudioMsg* m, bool doUndo);
@@ -254,8 +254,8 @@ class Audio {
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
       void msgSetMute(AudioTrack*, bool val);
-      //void msgSetVolume(AudioTrack*, double val);
-      //void msgSetPan(AudioTrack*, double val);
+      //void msgSetVolume(AudioTrack*, double val); DELETETHIS
+      //void msgSetPan(AudioTrack*, double val);    DELETETHIS
       void msgAddSynthI(SynthI* synth);
       void msgRemoveSynthI(SynthI* synth);
       void msgSetSegSize(int, int);
@@ -270,7 +270,7 @@ class Audio {
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgBounce();
-      //void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);
+      //void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);  DELETETHIS
       void msgSwapControllerIDX(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);

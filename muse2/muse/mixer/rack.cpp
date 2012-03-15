@@ -182,6 +182,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       setSpacing(0);
 
       setAcceptDrops(true);
+      setFocusPolicy(Qt::NoFocus);
       }
 
 void EffectRack::updateContents()
@@ -683,6 +684,8 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
                                   //printf("instantiated!\n");
                                   MusEGlobal::audio->msgAddPlugin(track, idx, plugi);
                                   MusEGlobal::song->update(SC_RACK);
+                                  if (plugi->guiVisible())
+                                    plugi->gui()->setWindowTitle(plugi->titlePrefix() + plugi->name());
                                   return;
                                   }
                               }

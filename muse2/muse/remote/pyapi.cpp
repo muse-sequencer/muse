@@ -1130,11 +1130,12 @@ bool Song::event(QEvent* _e)
                   pipeline->setOn(fxid, onoff);
                   break;
                   }
-            case QPybridgeEvent::SONG_ADD_TRACK:
+            case QPybridgeEvent::SONG_ADD_TRACK: {
                   MusECore::Undo operations;
                   MusEGlobal::song->addTrack(operations, (Track::TrackType)e->getP1());  // Add at end of list.
                   MusEGlobal::song->applyOperationGroup(operations);
                   break;
+                  }
             case QPybridgeEvent::SONG_CHANGE_TRACKNAME: {
                   Track* t = this->findTrack(e->getS1());
                   if (t == NULL)

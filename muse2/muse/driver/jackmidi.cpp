@@ -24,6 +24,7 @@
 #include <QString>
 
 #include <stdio.h>
+#include <string.h>
 
 #include <jack/jack.h>
 //#include <jack/midiport.h>
@@ -43,6 +44,8 @@
 #include "../mplugins/midiitransform.h"
 #include "../mplugins/mitplugin.h"
 #include "xml.h"
+#include "gconfig.h"
+#include "track.h"
 
 // Turn on debug messages.
 //#define JACK_MIDI_DEBUG
@@ -336,10 +339,10 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
         event.setLoopNum(MusEGlobal::audio->loopCount());
       
       if (MusEGlobal::midiInputTrace) {
-            printf("Jack MidiInput: ");
+            printf("MidiIn Jack: <%s>: ", name().toLatin1().constData());
             event.dump();
             }
-
+            
       int typ = event.type();
       
       if(_port != -1)
@@ -431,7 +434,8 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       {
       MidiRecordEvent event;
       event.setB(0);
-
+      event.setPort(_port);
+      
       // NOTE: From muse_qt4_evolution. Not done here in Muse-2 (yet).
       // move all events 2*MusEGlobal::segmentSize into the future to get
       // jitterfree playback
@@ -452,6 +456,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       int a    = *(ev->buffer + 1) & 0x7f;
       int b    = *(ev->buffer + 2) & 0x7f;
       event.setType(type);
+
       switch(type) {
             case ME_NOTEON:
             case ME_NOTEOFF:
@@ -494,7 +499,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 return;
                           case ME_SONGPOS:    
                                 if(_port != -1)
-                                  MusEGlobal::midiSeq->setSongPosition(_port, *(ev->buffer + 1) | (*(ev->buffer + 2) >> 2 )); // LSB then MSB
+                                  MusEGlobal::midiSeq->setSongPosition(_port, *(ev->buffer + 1) | (*(ev->buffer + 2) << 7 )); // LSB then MSB
                                 return;
                           //case ME_SONGSEL:    
                           //case ME_TUNE_REQ:   
@@ -525,11 +530,6 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
               return;
             }
 
-      if (MusEGlobal::midiInputTrace) {
-            printf("MidiInput<%s>: ", name().toLatin1().constData());
-            event.dump();
-            }
-            
       #ifdef JACK_MIDI_DEBUG
       printf("MidiJackDevice::eventReceived time:%d type:%d ch:%d A:%d B:%d\n", event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
       #endif  
@@ -600,14 +600,6 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
       //if(port >= JACK_MIDI_CHANNELS)
       //  return false;
         
-      //if (midiOutputTrace) {
-      //      printf("MidiOut<%s>: jackMidi: ", portName(port).toLatin1().constData());
-      //      e.dump();
-      //      }
-      
-      //if(MusEGlobal::debugMsg)
-      //  printf("MidiJackDevice::queueEvent\n");
-    
       if(!_out_client_jackport)   
         return false;
       void* pb = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);  
@@ -626,9 +618,14 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
             }
       
       #ifdef JACK_MIDI_DEBUG
-      printf("MidiJackDevice::queueEvent time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB());
+      printf("MidiJackDevice::queueEvent pos:%d fo:%d ft:%d time:%d type:%d ch:%d A:%d B:%d\n", pos, frameOffset, ft, e.time(), e.type(), e.channel(), e.dataA(), e.dataB());
       #endif  
       
+      if (MusEGlobal::midiOutputTrace) {
+            printf("MidiOut: Jack: <%s>: ", name().toLatin1().constData());
+            e.dump();
+            }
+            
       switch(e.type()) {
             case ME_NOTEON:
             case ME_NOTEOFF:
@@ -698,14 +695,47 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   }
                   break;
             case ME_SONGPOS:
+                  {
+                  #ifdef JACK_MIDI_DEBUG
+                  printf("MidiJackDevice::queueEvent songpos %d\n", e.dataA());
+                  #endif  
+                    
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, 3);
+                  if (p == 0) {
+                        #ifdef JACK_MIDI_DEBUG
+                        fprintf(stderr, "MidiJackDevice::queueEvent songpos: buffer overflow, stopping until next cycle\n");  
+                        #endif  
+                        return false;
+                        }
+                  int pos = e.dataA();      
+                  p[0] = e.type();
+                  p[1] = pos & 0x7f;         // LSB
+                  p[2] = (pos >> 7) & 0x7f;  // MSB
+                  }
+                  break;
             case ME_CLOCK:
             case ME_START:
             case ME_CONTINUE:
             case ME_STOP:
+                  {
+                  #ifdef JACK_MIDI_DEBUG
+                  printf("MidiJackDevice::queueEvent realtime %x\n", e.type());
+                  #endif  
+                    
+                  unsigned char* p = jack_midi_event_reserve(pb, ft, 1);
+                  if (p == 0) {
+                        #ifdef JACK_MIDI_DEBUG
+                        fprintf(stderr, "MidiJackDevice::queueEvent realtime: buffer overflow, stopping until next cycle\n");  
+                        #endif  
+                        return false;
+                        }
+                  p[0] = e.type();
+                  }
+                  break;
+            default:
                   if(MusEGlobal::debugMsg)
                     printf("MidiJackDevice::queueEvent: event type %x not supported\n", e.type());
-                  //return false;
-                  return true;   // Absorb the event. Don't want it hanging around in the list. FIXME: Support these?   p4.0.15 Tim.
+                  return true;   // Absorb the event. Don't want it hanging around in the list. 
                   break;
             }
             
@@ -757,12 +787,18 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
           //       event.time(), event.type(), event.channel(), event.dataA(), event.dataB(), hb, lb, pr);
           
           if (hb != 0xff)
+          {  
                 if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb)))
                   return false;  // p4.0.15 Inform that processing the event in general failed. Ditto all below... 
+///            t += 1;      
+          }
           if (lb != 0xff)
-                if(!queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
+          {
+                if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
                   return false;
-          if(!queueEvent(MidiPlayEvent(t+2, port, chn, ME_PROGRAM, pr, 0)))
+///            t += 1;      
+          }
+          if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0)))
             return false;
             
     //      }
@@ -815,13 +851,15 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
             {
                   if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb)))
                     return false;
+///                  t += 1;      
             }
             if (lb != 0xff)
             {
-                  if(!queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
+                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
                     return false;
+///                  t += 1;      
             }
-            if(!queueEvent(MidiPlayEvent(t+2, port, chn, ME_PROGRAM, pr, 0)))
+            if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0)))
               return false;
               
       //      }
@@ -851,7 +889,8 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int dataL = b & 0x7f;
       if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, ctrlH, dataH)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, ctrlL, dataL)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlL, dataL)))
         return false;
     }
     else if (a < CTRL_NRPN_OFFSET) 
@@ -860,19 +899,22 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, b)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b)))
         return false;
+///     t += 1;      
       
-      t += 3;  
+      //t += 3;  
       // Select null parameters so that subsequent data controller events do not upset the last *RPN controller.
       //sendNullRPNParams(chn, false);
       if(nvh != 0xff)
       {
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f)))
           return false;
-        t += 1;  
+///        t += 1;  
       }
       if(nvl != 0xff)
       {
@@ -887,18 +929,21 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, b)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b)))
         return false;
+///     t += 1;      
                   
-      t += 3;  
+      //t += 3;  
       //sendNullRPNParams(chn, true);
       if(nvh != 0xff)
       {
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f)))
           return false;
-        t += 1;  
+///        t += 1;  
       }
       if(nvl != 0xff)
       {
@@ -914,20 +959,24 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int dataL = b & 0x7f;
       if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+3, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
         return false;
+///     t += 1;      
       
-      t += 4;  
+      //t += 4;  
       //sendNullRPNParams(chn, false);
       if(nvh != 0xff)
       {
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f)))
           return false;
-        t += 1;  
+///        t += 1;  
       }
       if(nvl != 0xff)
       {
@@ -943,20 +992,24 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int dataL = b & 0x7f;
       if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+1, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+2, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
         return false;
-      if(!queueEvent(MidiPlayEvent(t+3, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
+///     t += 1;      
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
         return false;
+///     t += 1;      
     
-      t += 4;  
+      //t += 4;  
       //sendNullRPNParams(chn, true);
       if(nvh != 0xff)
       {
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f)))
           return false;
-        t += 1;  
+///        t += 1;  
       }
       if(nvl != 0xff)
       {
@@ -988,8 +1041,16 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
 
 void MidiJackDevice::processMidi()
 {
+  //bool stop = stopPending;  // Snapshots
+  //bool seek = seekPending;  //
+  //seekPending = stopPending = false;
+
   processStuckNotes();       
   
+  // Don't process if the device is not assigned to a port.
+  //if(_port == -1)
+  //  return;
+    
   void* port_buf = 0;
   if(_out_client_jackport && _writeEnable)  
   {
@@ -997,65 +1058,294 @@ void MidiJackDevice::processMidi()
     jack_midi_clear_buffer(port_buf);
   }  
   
+  int port = midiPort();
+  MidiPort* mp = port == -1 ? 0 : &MusEGlobal::midiPorts[port];
+
+  /*
+  bool is_playing = MusEGlobal::audio->isPlaying();  // TODO Check this. It includes LOOP1 and LOOP2 besides PLAY.
+  //bool is_playing = MusEGlobal::audio->isPlaying() || MusEGlobal::audio->isStarting(); 
+  int pos = MusEGlobal::audio->tickPos();
+  bool ext_sync = MusEGlobal::extSyncFlag.value();
+
+  if(mp)
+  {
+    MidiSyncInfo& si = mp->syncInfo();
+    if(stop)
+    {
+      // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
+      if(!ext_sync)
+      {
+        // Shall we check open flags?
+        //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
+        //if(!(dev->openFlags() & 1))
+        //  return;
+              
+        // Send MMC stop...
+        if(si.MMCOut())
+        {
+          unsigned char msg[mmcStopMsgLen];
+          memcpy(msg, mmcStopMsg, mmcStopMsgLen);
+          msg[1] = si.idOut();
+          putEvent(MidiPlayEvent(0, 0, ME_SYSEX, msg, mmcStopMsgLen));
+        }
+        
+        // Send midi stop...
+        if(si.MRTOut()) 
+        {
+          putEvent(MidiPlayEvent(0, 0, 0, ME_STOP, 0, 0));
+          // Added check of option send continue not start.    p3.3.31
+          // Hmm, is this required? Seems to make other devices unhappy.
+          // (Could try now that this is in MidiDevice. p4.0.22 )
+          //if(!si.sendContNotStart())
+          //  mp->sendSongpos(MusEGlobal::audio->tickPos() * 4 / config.division);
+        }
+      }  
+    }
+    
+    if(seek)
+    {
+      // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
+      if(!ext_sync)
+      {
+        // Send midi stop and song position pointer...
+        if(si.MRTOut())
+        {
+          // Shall we check for device write open flag to see if it's ok to send?...
+          //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
+          //if(!(openFlags() & 1))
+          //  continue;
+          putEvent(MidiPlayEvent(0, 0, 0, ME_STOP, 0, 0));
+          // Hm, try scheduling these for after stuck notes scheduled below...
+          //putEvent(MidiPlayEvent(0, 0, 0, ME_SONGPOS, beat, 0));
+          //if(is_playing)
+          //  putEvent(MidiPlayEvent(0, 0, 0, ME_CONTINUE, 0, 0));
+        }    
+      }
+    }    
+  }
+  
+  if(stop || (seek && is_playing))
+  {
+    // Clear all notes and handle stuck notes...
+    _playEvents.clear();
+    for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
+    {
+      MidiPlayEvent ev = *i;
+      ev.setTime(0);  // Schedule immediately.
+      putEvent(ev);
+    }
+    _stuckNotes.clear();
+  }
+
+  if(mp)
+  {
+    MidiSyncInfo& si = mp->syncInfo();
+    // Try scheduling these now for after stuck notes scheduled above...
+    if(stop || seek)
+    {
+      // Reset sustain.
+      for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+        if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
+          putEvent(MidiPlayEvent(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0));
+    }
+    if(seek)
+    {
+      // Send new song position.
+      if(!ext_sync && si.MRTOut())
+      {
+        int beat = (pos * 4) / MusEGlobal::config.division;
+        putEvent(MidiPlayEvent(0, 0, 0, ME_SONGPOS, beat, 0));
+      }
+      // Send new controller values.
+      MidiCtrlValListList* cll = mp->controller();
+      for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
+      {
+        MidiCtrlValList* vl = ivl->second;
+        iMidiCtrlVal imcv = vl->iValue(pos);
+        if(imcv != vl->end()) {
+          Part* p = imcv->second.part;
+          // Don't send if part or track is muted or off.
+          if(!p || p->mute())
+            continue;
+          Track* track = p->track();
+          if(track && (track->isMute() || track->off()))   
+            continue;
+          unsigned t = (unsigned)imcv->first;
+          // Do not add values that are outside of the part.
+          if(t >= p->tick() && t < (p->tick() + p->lenTick()))
+            // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
+            mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val), imcv->first == pos);
+        }
+      }
+      // Send continue.
+      // REMOVE Tim. This is redundant and too early - Audio::startRolling already properly sends it when sync ready.
+      //if(is_playing && !ext_sync && si.MRTOut())
+      //  putEvent(MidiPlayEvent(0, 0, 0, ME_CONTINUE, 0, 0));
+    }
+  }
+  */
+  
   while(!eventFifo.isEmpty())
   {
     MidiPlayEvent e(eventFifo.peek()); 
+    //printf("MidiJackDevice::processMidi FIFO event time:%d type:%d ch:%d A:%d B:%d\n", e.time(), e.type(), e.channel(), e.dataA(), e.dataB()); 
     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
     if(port_buf && !processEvent(e))  
       return;            // Give up. The Jack buffer is full. Nothing left to do.  
     eventFifo.remove();  // Successfully processed event. Remove it from FIFO.
   }
   
+  //if(!(stop || (seek && is_playing)))
+  //  processStuckNotes();  
+  
   if(_playEvents.empty())
-  {
-    //printf("MidiJackDevice::processMidi play events empty\n"); 
     return;
-  }
   
   iMPEvent i = _playEvents.begin();     
   for(; i != _playEvents.end(); ++i) 
   {
     //printf("MidiJackDevice::processMidi playEvent time:%d type:%d ch:%d A:%d B:%d\n", i->time(), i->type(), i->channel(), i->dataA(), i->dataB()); 
     // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.   
-    // Same code as in MidiPort::sendEvent()
-    if(_port != -1)
-    {
-      MidiPort* mp = &MusEGlobal::midiPorts[_port];
-      if(i->type() == ME_CONTROLLER) 
-      {
-        int da = i->dataA();
-        int db = i->dataB();
-        db = mp->limitValToInstrCtlRange(da, db);
-        if(!mp->setHwCtrlState(i->channel(), da, db))
-          continue;
-        //mp->setHwCtrlState(i->channel(), da, db);
-      }
-      else
-      if(i->type() == ME_PITCHBEND) 
-      {
-        //printf("MidiJackDevice::processMidi playEvents ME_PITCHBEND time:%d type:%d ch:%d A:%d B:%d\n", (*i).time(), (*i).type(), (*i).channel(), (*i).dataA(), (*i).dataB());
-        int da = mp->limitValToInstrCtlRange(CTRL_PITCH, i->dataA());
-        if(!mp->setHwCtrlState(i->channel(), CTRL_PITCH, da))
-          continue;
-        //mp->setHwCtrlState(i->channel(), CTRL_PITCH, da);
-        //(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f));
-      }
-      else
-      if(i->type() == ME_PROGRAM) 
-      {
-        if(!mp->setHwCtrlState(i->channel(), CTRL_PROGRAM, i->dataA()))
-          continue;
-        //mp->setHwCtrlState(i->channel(), CTRL_PROGRAM, i->dataA());
-      }
-    }
+    if(mp && !mp->sendHwCtrlState(*i, true)) // Force the event to be sent.
+      continue;
   
     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 
     if(port_buf && !processEvent(*i)) 
       break;
   }
   _playEvents.erase(_playEvents.begin(), i);
-  
 }
+
+/*
+//---------------------------------------------------------
+//   handleStop
+//---------------------------------------------------------
+
+void MidiJackDevice::handleStop()
+{
+  // If the device is not in use by a port, don't bother it.
+  if(_port == -1)
+    return;
+    
+  stopPending = true;  // Trigger stop handling in processMidi.
+  
+//   //---------------------------------------------------
+//   //    reset sustain
+//   //---------------------------------------------------
+//   
+//   MidiPort* mp = &MusEGlobal::midiPorts[_port];
+//   for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+//   {
+//     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
+//     {
+//       //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
+//       MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+//       putEvent(ev);
+//       // Do sendEvent to get the optimizations - send only on a change of value.
+//       //mp->sendEvent(ev);
+//     }
+//   }
+  
+//   //---------------------------------------------------
+//   //    send midi stop
+//   //---------------------------------------------------
+//   
+//   // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
+//   if(!MusEGlobal::extSyncFlag.value())
+//   {
+//     // Shall we check open flags?
+//     //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
+//     //if(!(dev->openFlags() & 1))
+//     //  return;
+//           
+//     MidiSyncInfo& si = mp->syncInfo();
+//     if(si.MMCOut())
+//       mp->sendMMCStop();
+//     
+//     if(si.MRTOut()) 
+//     {
+//       // Send STOP 
+//       mp->sendStop();
+//       
+//       // Added check of option send continue not start.    p3.3.31
+//       // Hmm, is this required? Seems to make other devices unhappy.
+//       // (Could try now that this is in MidiDevice. p4.0.22 )
+//       //if(!si.sendContNotStart())
+//       //  mp->sendSongpos(MusEGlobal::audio->tickPos() * 4 / config.division);
+//     }
+//   }  
+}
+*/
+
+/*
+//---------------------------------------------------------
+//   handleSeek
+//---------------------------------------------------------
+
+void MidiJackDevice::handleSeek()
+{
+  // If the device is not in use by a port, don't bother it.
+  if(_port == -1)
+    return;
+  
+  seekPending = true;  // Trigger seek handling in processMidi.
+  
+  //MidiPort* mp = &MusEGlobal::midiPorts[_port];
+  //MidiCtrlValListList* cll = mp->controller();
+  //int pos = MusEGlobal::audio->tickPos();
+  
+  //---------------------------------------------------
+  //    Send new contoller values
+  //---------------------------------------------------
+    
+//   for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
+//   {
+//     MidiCtrlValList* vl = ivl->second;
+//     iMidiCtrlVal imcv = vl->iValue(pos);
+//     if(imcv != vl->end()) 
+//     {
+//       Part* p = imcv->second.part;
+//       //printf("MidiAlsaDevice::handleSeek _port:%d ctl:%d num:%d val:%d\n", _port, ivl->first >> 24, vl->num(), imcv->second.val); 
+//       unsigned t = (unsigned)imcv->first;
+//       // Do not add values that are outside of the part.
+//       if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
+//         // Keep this and the section in processMidi() just in case we need to revert...
+//         //_playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+//         // Hmm, play event list for immediate playback? Try putEvent, putMidiEvent, or sendEvent (for the optimizations) instead. 
+//         mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+//     }
+//   }
+  
+  //---------------------------------------------------
+  //    Send STOP and "set song position pointer"
+  //---------------------------------------------------
+    
+//   // Don't send if external sync is on. The master, and our sync routing system will take care of that.  p3.3.31
+//   if(!MusEGlobal::extSyncFlag.value())
+//   {
+//     if(mp->syncInfo().MRTOut())
+//     {
+//       // Shall we check for device write open flag to see if it's ok to send?...
+//       // This means obey what the user has chosen for read/write in the midi port config dialog,
+//       //  which already takes into account whether the device is writable or not.
+//       //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
+//       //if(!(openFlags() & 1))
+//       //  continue;
+//       
+//       int beat = (pos * 4) / MusEGlobal::config.division;
+//         
+//       //bool isPlaying = (state == PLAY);
+//       bool isPlaying = MusEGlobal::audio->isPlaying();  // TODO Check this it includes LOOP1 and LOOP2 besides PLAY.  p4.0.22
+//         
+//       mp->sendStop();
+//       mp->sendSongpos(beat);
+//       // REMOVE Tim. This is redundant and too early - Audio::startRolling already properly sends it when sync ready.
+//       //if(isPlaying)
+//       //  mp->sendContinue();
+//     }    
+//   }
+}
+*/
 
 //---------------------------------------------------------
 //   initMidiJack

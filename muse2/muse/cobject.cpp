@@ -59,8 +59,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	_type=t;
 
 	setObjectName(QString(name));
-	// Allow multiple rows.	Tim.
-	//setDockNestingEnabled(true);
+	//setDockNestingEnabled(true); // Allow multiple rows.	Tim.
 	setIconSize(ICON_SIZE);
 
 	subwinAction=new QAction(tr("As subwindow"), this);
@@ -78,8 +77,12 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
 	mdisubwin=NULL;
-	_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
-	if (_defaultSubwin[_type])
+	if (!MusEGlobal::unityWorkaround)
+		_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
+	else
+		_sharesToolsAndMenu=false;
+	
+	if (_defaultSubwin[_type] && !MusEGlobal::unityWorkaround)
 	{
 		setIsMdiWin(true);
 		_savedToolbarState=_toolbarNonsharedInit[_type];
@@ -90,6 +93,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 	subwinAction->setChecked(isMdiWin());
 	shareAction->setChecked(_sharesToolsAndMenu);
+	if (MusEGlobal::unityWorkaround)
+	{
+		shareAction->setEnabled(false);
+		subwinAction->setEnabled(false);
+	}
 	fullscreenAction->setEnabled(!isMdiWin());
 	
 	if (mdisubwin)
@@ -288,6 +296,9 @@ QMdiSubWindow* TopWin::createMdiWrapper()
 
 void TopWin::setIsMdiWin(bool val)
 {
+	if (MusEGlobal::unityWorkaround)
+		return;
+	
 	if (val)
 	{
 		if (!isMdiWin())
@@ -363,7 +374,7 @@ void TopWin::addToolBar(QToolBar* toolbar)
 {
 	_toolbars.push_back(toolbar);
 	
-	if (!_sharesToolsAndMenu)
+	if (!_sharesToolsAndMenu || MusEGlobal::unityWorkaround)
 		QMainWindow::addToolBar(toolbar);
 	else
 		toolbar->hide();
@@ -381,6 +392,9 @@ QToolBar* TopWin::addToolBar(const QString& title)
 
 void TopWin::shareToolsAndMenu(bool val)
 {
+	if (MusEGlobal::unityWorkaround)
+		return;
+	
 	if (_sharesToolsAndMenu == val)
 	{
 		if (MusEGlobal::debugMsg) printf("TopWin::shareToolsAndMenu() called but has no effect\n");

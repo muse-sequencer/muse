@@ -86,6 +86,7 @@ class TempoList : public TEMPOLIST {
       void dump() const;
 
       int tempo(unsigned tick) const;
+      int tempoAt(unsigned tick) const;
       unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const;
       unsigned tick2frame(unsigned tick, int* sn = 0) const;
       unsigned frame2tick(unsigned frame, int* sn = 0) const;

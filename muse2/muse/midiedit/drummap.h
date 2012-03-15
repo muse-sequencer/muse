@@ -45,7 +45,6 @@ struct DrumMap {
       char lv1, lv2, lv3, lv4;      // velocities
       char enote, anote;            // input note - output note
       bool mute;
-//      bool selected;
 
       bool operator==(const DrumMap& map) const;
       bool operator!=(const DrumMap& map) const { return !operator==(map); }

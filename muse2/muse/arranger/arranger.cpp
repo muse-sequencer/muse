@@ -37,9 +37,8 @@
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QPainter>
-//#include <QStackedWidget>
-#include "arrangerview.h"
 
+#include "arrangerview.h"
 #include "arranger.h"
 #include "song.h"
 #include "app.h"
@@ -152,6 +151,13 @@ Arranger::custom_col_t Arranger::readOneCustomColumn(MusECore::Xml& xml)
 
 
 
+void ScrollBar::redirectedWheelEvent(QWheelEvent* e)
+{
+  if(isVisible())
+    wheelEvent(e);
+}
+
+
 //---------------------------------------------------------
 //   Arranger::setHeaderToolTips
 //---------------------------------------------------------
@@ -200,18 +206,13 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       setObjectName(name);
       _raster  = 0;      // measure
       selected = 0;
-      // Since program covers 3 controls at once, it is in 'midi controller' units rather than 'gui control' units.
-      //program  = -1;
-      ///program  = CTRL_VAL_UNKNOWN;
-      ///pan      = -65;
-      ///volume   = -1;
       showTrackinfoFlag = true;
       
       cursVal = MAXINT;
       
       parentWin=parent;
       
-      //setFocusPolicy(Qt::StrongFocus);
+      setFocusPolicy(Qt::NoFocus);
       
       //---------------------------------------------------
       //  ToolBar
@@ -246,7 +247,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       MusEGlobal::song->setArrangerRaster(0);
       toolbar->addWidget(raster);
       connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
-      ///raster->setFocusPolicy(Qt::NoFocus);
       raster->setFocusPolicy(Qt::TabFocus);
 
       // Song len
@@ -257,8 +257,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       // song length is limited to 10000 bars; the real song len is limited
       // by overflows in tick computations
-      //
       lenEntry = new SpinBox(1, 10000, 1);
+      lenEntry->setFocusPolicy(Qt::StrongFocus);
       lenEntry->setValue(MusEGlobal::song->len());
       lenEntry->setToolTip(tr("song length - bars"));
       lenEntry->setWhatsThis(tr("song length - bars"));
@@ -273,7 +273,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       typeBox->setCurrentIndex(0);
       typeBox->setToolTip(tr("midi song type"));
       typeBox->setWhatsThis(tr("midi song type"));
-      ///typeBox->setFocusPolicy(Qt::NoFocus);
       typeBox->setFocusPolicy(Qt::TabFocus);
       toolbar->addWidget(typeBox);
       connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
@@ -284,6 +283,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       toolbar->addWidget(label);
       
       globalPitchSpinBox = new SpinBox(-127, 127, 1);
+      globalPitchSpinBox->setFocusPolicy(Qt::StrongFocus);
       globalPitchSpinBox->setValue(MusEGlobal::song->globalPitchShift());
       globalPitchSpinBox->setToolTip(tr("midi pitch"));
       globalPitchSpinBox->setWhatsThis(tr("global midi pitch shift"));
@@ -296,6 +296,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       toolbar->addWidget(label);
       
       globalTempoSpinBox = new SpinBox(50, 200, 1, toolbar);
+      globalTempoSpinBox->setFocusPolicy(Qt::StrongFocus);
       globalTempoSpinBox->setSuffix(QString("%"));
       globalTempoSpinBox->setValue(MusEGlobal::tempomap.globalTempo());
       globalTempoSpinBox->setToolTip(tr("midi tempo"));
@@ -305,16 +306,19 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       QToolButton* tempo50  = new QToolButton();
       tempo50->setText(QString("50%"));
+      tempo50->setFocusPolicy(Qt::NoFocus);
       toolbar->addWidget(tempo50);
       connect(tempo50, SIGNAL(clicked()), SLOT(setTempo50()));
       
       QToolButton* tempo100 = new QToolButton();
       tempo100->setText(tr("N"));
+      tempo100->setFocusPolicy(Qt::NoFocus);
       toolbar->addWidget(tempo100);
       connect(tempo100, SIGNAL(clicked()), SLOT(setTempo100()));
       
       QToolButton* tempo200 = new QToolButton();
       tempo200->setText(QString("200%"));
+      tempo200->setFocusPolicy(Qt::NoFocus);
       toolbar->addWidget(tempo200);
       connect(tempo200, SIGNAL(clicked()), SLOT(setTempo200()));
 
@@ -322,9 +326,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       box->setContentsMargins(0, 0, 0, 0);
       box->setSpacing(0);
       box->addWidget(MusECore::hLine(this), Qt::AlignTop);
-      //QFrame* hline = MusECore::hLine(this);
-      //hline->setLineWidth(0);
-      //box->addWidget(hline, Qt::AlignTop);
 
       //---------------------------------------------------
       //  Tracklist
@@ -336,12 +337,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       split  = new Splitter(Qt::Horizontal, this, "split");
       split->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       box->addWidget(split, 1000);
-      //split->setHandleWidth(10);
 
       tracklist = new QWidget(split);
 
       split->setStretchFactor(split->indexOf(tracklist), 0);
-      //tracklist->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding, 0, 100));
       QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
       tpolicy.setHorizontalStretch(0);
       tpolicy.setVerticalStretch(100);
@@ -349,11 +348,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       QWidget* editor = new QWidget(split);
       split->setStretchFactor(split->indexOf(editor), 1);
-      //editor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding,
-        // Changed by T356. Was causing "large int implicitly truncated" warning. These are UCHAR values...
-        //1000, 100));
-        //232, 100)); // 232 is what it was being truncated to, but what is the right value?...
-        //255, 100));
       QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
       epolicy.setHorizontalStretch(255);
       epolicy.setVerticalStretch(100);
@@ -363,7 +357,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //    Track Info
       //---------------------------------------------------
 
-      infoScroll = new QScrollBar(Qt::Vertical, tracklist);
+      infoScroll = new ScrollBar(Qt::Vertical, tracklist);
       infoScroll->setObjectName("infoScrollBar");
       //genTrackInfo(tracklist); // Moved below
 
@@ -380,16 +374,14 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       tgrid=NULL;
       updateTListHeader();
       list = new TList(header, tracklist, "tracklist");
-
+      
       // Do this now that the list is available.
       genTrackInfo(tracklist);
       
-      ///connect(list, SIGNAL(selectionChanged()), SLOT(trackSelectionChanged()));
       connect(list, SIGNAL(selectionChanged(MusECore::Track*)), SLOT(trackSelectionChanged()));
       connect(list, SIGNAL(selectionChanged(MusECore::Track*)), midiTrackInfo, SLOT(setTrack(MusECore::Track*)));
       connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
-      connect(header, SIGNAL(sectionMoved(int,int,int)), this, SLOT(headerMoved()));
 
       //  tracklist:
       //
@@ -422,15 +414,11 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       hscroll->setFocusPolicy(Qt::NoFocus);
       ib->setFixedHeight(hscroll->sizeHint().height());
 
-      // Changed p3.3.43 Too small steps for me...
-      //vscroll = new QScrollBar(1, 20*20, 1, 5, 0, Vertical, editor);
-      //vscroll = new QScrollBar(1, 20*20, 5, 25, 0, Qt::Vertical, editor);
       vscroll = new QScrollBar(editor);
-      ///vscroll->setMinimum(1);
-      vscroll->setMinimum(0);      // Tim.
+      vscroll->setMinimum(0);
       vscroll->setMaximum(20*20);
       vscroll->setSingleStep(5);
-      vscroll->setPageStep(25);
+      vscroll->setPageStep(25); // FIXME: too small steps here for me (flo), better control via window height?
       vscroll->setValue(0);
       vscroll->setOrientation(Qt::Vertical);      
 
@@ -453,7 +441,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       canvas->setCanvasTools(arrangerTools);
       canvas->setOrigin(-offset, 0);
       canvas->setFocus();
-      setFocusProxy(canvas);   // once removed by Tim (r735), added by flo again
+
+      list->setFocusProxy(canvas); // Make it easy for track list popup line editor to give focus back to canvas.
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(MusECore::Track*)), list, SLOT(selectTrack(MusECore::Track*)));
@@ -462,12 +451,22 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
       connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
       connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
-
-      connect(this, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
-      connect(list, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      if(MusEGlobal::config.smartFocus)
+      {
+        connect(lenEntry,           SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(lenEntry,           SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        connect(globalPitchSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(globalPitchSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        connect(globalTempoSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(globalTempoSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+        connect(midiTrackInfo,      SIGNAL(returnPressed()), SLOT(focusCanvas()));
+        connect(midiTrackInfo,      SIGNAL(escapePressed()), SLOT(focusCanvas()));
+      }
       
-      //egrid->addMultiCellWidget(time,           0, 0, 0, 1);
-      //egrid->addMultiCellWidget(MusECore::hLine(editor),  1, 1, 0, 1);
+      //connect(this,      SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      connect(list,      SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      connect(trackInfo, SIGNAL(redirectWheelEvent(QWheelEvent*)), infoScroll, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      
       egrid->addWidget(time, 0, 0, 1, 2);
       egrid->addWidget(MusECore::hLine(editor), 1, 0, 1, 2);
 
@@ -479,7 +478,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setXMag(int)));
       connect(vscroll, SIGNAL(valueChanged(int)), list,   SLOT(setYPos(int)));
-      connect(hscroll, SIGNAL(scrollChanged(int)), time,   SLOT(setXPos(int)));   //
+      connect(hscroll, SIGNAL(scrollChanged(int)), time,   SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  time,   SLOT(setXMag(int)));
       connect(canvas,  SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
       connect(canvas,  SIGNAL(verticalScroll(unsigned)),SLOT(verticalScrollSetYpos(unsigned)));
@@ -492,7 +491,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(startEditor(MusECore::PartList*,int)),   SIGNAL(startEditor(MusECore::PartList*, int)));
 
       connect(MusEGlobal::song,   SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      //connect(MusEGlobal::song,   SIGNAL(mTypeChanged(MType)), SLOT(setMode((int)MType)));    // p4.0.7 Tim.
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
       connect(canvas, SIGNAL(dropSongFile(const QString&)), SIGNAL(dropSongFile(const QString&)));
@@ -500,15 +498,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       connect(canvas, SIGNAL(toolChanged(int)), SIGNAL(toolChanged(int)));
       connect(MusEGlobal::song,   SIGNAL(controllerChanged(MusECore::Track*)), SLOT(controllerChanged(MusECore::Track*)));
-//      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(seek()));
 
-      // Removed p3.3.43 
-      // Song::addMarker() already emits a 'markerChanged'.
-      //connect(time, SIGNAL(addMarker(int)), SIGNAL(addMarker(int)));
-      
       configChanged();  // set configuration values
       if(canvas->part())
-        midiTrackInfo->setTrack(canvas->part()->track());   // Tim.
+        midiTrackInfo->setTrack(canvas->part()->track());   
       showTrackInfo(showTrackinfoFlag);
       
       // Take care of some tabbies!
@@ -521,7 +514,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       }
 
 
-void Arranger::updateTListHeader()
+void Arranger::updateTListHeader() // TODO FIXME FINDMICHJETZT this doesn't work properly :/
 {
   if (header)
   {
@@ -580,6 +573,7 @@ void Arranger::updateTListHeader()
   }
 }
 
+// DELETETHIS 20
 //---------------------------------------------------------
 //   updateHScrollRange
 //---------------------------------------------------------
@@ -598,15 +592,6 @@ void Arranger::updateTListHeader()
 //      if(s != s1 || e != e1) 
 //        hscroll->setRange(s, e);
 //}
-
-//---------------------------------------------------------
-//   headerMoved
-//---------------------------------------------------------
-
-void Arranger::headerMoved()
-      {
-      //header->setResizeMode(COL_NAME, QHeaderView::Stretch);
-      }
 
 //---------------------------------------------------------
 //   setTime
@@ -648,21 +633,24 @@ void Arranger::dclickPart(MusECore::Track* t)
 
 void Arranger::configChanged()
       {
-      //printf("Arranger::configChanged\n");
-      
       if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
             canvas->setBg(MusEGlobal::config.partCanvasBg);
             canvas->setBg(QPixmap());
-            //printf("Arranger::configChanged - no bitmap!\n");
       }
       else {
-        
-            //printf("Arranger::configChanged - bitmap %s!\n", MusEGlobal::config.canvasBgPixmap.ascii());
             canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       }
-      ///midiTrackInfo->setFont(MusEGlobal::config.fonts[2]);
-      //updateTrackInfo(type);
       }
+
+//---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void Arranger::focusCanvas()
+{
+  canvas->setFocus();
+  canvas->activateWindow();
+}
 
 //---------------------------------------------------------
 //   songlenChanged
@@ -714,8 +702,6 @@ void Arranger::songChanged(int type)
                    SC_SIG | SC_TEMPO)) // Maybe sig. Requires tempo.
           canvas->partsChanged();
         
-        //typeBox->setCurrentIndex(int(MusEGlobal::song->mtype()));  // REMOVE Tim.  Redundant.
-        
         if (type & SC_SIG)
               time->redraw();
         if (type & SC_TEMPO)
@@ -724,7 +710,6 @@ void Arranger::songChanged(int type)
         if(type & SC_TRACK_REMOVED)
         {
           AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
-          //AudioStrip* w = (AudioStrip*)(trackInfo->widget(2));
           if(w)
           {
             MusECore::Track* t = w->getTrack();
@@ -743,7 +728,7 @@ void Arranger::songChanged(int type)
           } 
         }
         
-        // TEST p4.0.36 Try this
+        // TEST p4.0.36 Try this DELETETHIS and below and even more below
         if(type & ( //SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
            SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED)) //|
@@ -783,6 +768,8 @@ void Arranger::modeChange(int mode)
       {
       MusEGlobal::song->setMType(MType(mode));
       updateTrackInfo(-1);
+      if(MusEGlobal::config.smartFocus)
+        focusCanvas();
       }
 
 //---------------------------------------------------------
@@ -791,10 +778,10 @@ void Arranger::modeChange(int mode)
 
 void Arranger::setMode(int mode)
       {
-      typeBox->blockSignals(true);          //
+      typeBox->blockSignals(true);
       // This will only set if different.
       typeBox->setCurrentIndex(mode);
-      typeBox->blockSignals(false);         //
+      typeBox->blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -904,6 +891,8 @@ void Arranger::_setRaster(int index)
       // Set the audio record part snapping.
       MusEGlobal::song->setArrangerRaster(_raster);
       canvas->redraw();
+      if(MusEGlobal::config.smartFocus)
+        focusCanvas();
       }
 
 //---------------------------------------------------------
@@ -1102,10 +1091,8 @@ QWidget* WidgetStack::visibleWidget() const
 QSize WidgetStack::minimumSizeHint() const
       {
       if (top == -1)
-      {
-            //printf("WidgetStack::minimumSizeHint top is -1\n");
             return (QSize(0, 0));
-      }      
+
       QSize s(0,0);
       for (unsigned int i = 0; i < stack.size(); ++i) {
             if (stack[i]) {
@@ -1115,8 +1102,17 @@ QSize WidgetStack::minimumSizeHint() const
                   s = s.expandedTo(ss);
                   }
             }
-      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  
+
       return s;
+      }
+
+//---------------------------------------------------------
+//   wheelEvent
+//---------------------------------------------------------
+
+void WidgetStack::wheelEvent(QWheelEvent* ev)
+      {
+      emit redirectWheelEvent(ev);
       }
 
 //---------------------------------------------------------
@@ -1133,10 +1129,10 @@ void Arranger::clear()
       midiTrackInfo->setTrack(0);
       }
 
-void Arranger::wheelEvent(QWheelEvent* ev)
-      {
-      emit redirectWheelEvent(ev);
-      }
+//void Arranger::wheelEvent(QWheelEvent* ev)
+//      {
+//      emit redirectWheelEvent(ev);
+//      }
 
 void Arranger::controllerChanged(MusECore::Track *t)
 {
@@ -1162,12 +1158,10 @@ void Arranger::showTrackInfo(bool flag)
 void Arranger::genTrackInfo(QWidget* parent)
       {
       trackInfo = new WidgetStack(parent, "trackInfoStack");
-      //trackInfo->setFocusPolicy(Qt::TabFocus);  // p4.0.9
-      //trackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
       noTrackInfo          = new QWidget(trackInfo);
       noTrackInfo->setAutoFillBackground(true);
-      QPixmap *noInfoPix   = new QPixmap(160, 1000); //muse_leftside_logo_xpm);
+      QPixmap *noInfoPix   = new QPixmap(160, 1000);
       const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
       noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
       QPainter p(noInfoPix);
@@ -1181,13 +1175,9 @@ void Arranger::genTrackInfo(QWidget* parent)
 
       midiTrackInfo = new MidiTrackInfo(trackInfo);
       
-      //midiTrackInfo->setFocusPolicy(Qt::TabFocus);    // p4.0.9
-      //midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       trackInfo->addWidget(noTrackInfo,   0);
       trackInfo->addWidget(midiTrackInfo, 1);
       trackInfo->addWidget(0, 2);
-      
-///      genMidiTrackInfo();
       }
 
 //---------------------------------------------------------
@@ -1249,7 +1239,7 @@ void Arranger::switchInfo(int n)
       tgrid->update();   // muse-2 Qt4
       }
 
-/*
+/* DELETETHIS 12
 QSize WidgetStack::minimumSize() const 
 { 
   printf("WidgetStack::minimumSize\n");  

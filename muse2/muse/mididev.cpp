@@ -42,7 +42,6 @@
 #include "sync.h"
 #include "midiitransform.h"
 #include "part.h"
-//#include "mpevent.h"
 
 namespace MusEGlobal {
 MusECore::MidiDeviceList midiDevices;
@@ -92,6 +91,9 @@ void initMidiDevices()
 
 void MidiDevice::init()
       {
+      stopPending    = false;         
+      seekPending    = false;
+      
       _readEnable    = false;
       _writeEnable   = false;
       _rwFlags       = 3;
@@ -109,7 +111,6 @@ MidiDevice::MidiDevice()
         _tmpRecordCount[i] = 0;
       
       _sysexFIFOProcessed = false;
-      //_sysexWritingChunks = false;
       _sysexReadingChunks = false;
       
       init();
@@ -122,7 +123,6 @@ MidiDevice::MidiDevice(const QString& n)
         _tmpRecordCount[i] = 0;
       
       _sysexFIFOProcessed = false;
-      //_sysexWritingChunks = false;
       _sysexReadingChunks = false;
       
       init();
@@ -205,43 +205,17 @@ void MidiDevice::beforeProcess()
   _sysexFIFOProcessed = false;
 }
 
-/*
-//---------------------------------------------------------
-//   getEvents
-//---------------------------------------------------------
-
-void MidiDevice::getEvents(unsigned , unsigned , int ch, MPEventList* dst)  //from //to
-{
-  for (int i = 0; i < _tmpRecordCount; ++i) {
-        const MidiPlayEvent& ev = _recordFifo.peek(i);
-        if (ch == -1 || (ev.channel() == ch))
-              dst->insert(ev);
-        }
-  
-  //while(!recordFifo.isEmpty())
-  //{
-  //  MidiPlayEvent e(recordFifo.get());
-  //  if (ch == -1 || (e.channel() == ch))
-  //        dst->insert(e);
-  //}  
-}
-*/
-
 //---------------------------------------------------------
 //   recordEvent
 //---------------------------------------------------------
 
 void MidiDevice::recordEvent(MidiRecordEvent& event)
       {
-      // p3.3.35
       // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice. And revert this line.
       //event.setTime(MusEGlobal::audio->timestamp());
       event.setTime(MusEGlobal::extSyncFlag.value() ? MusEGlobal::lastExtMidiSyncTick : MusEGlobal::audio->timestamp());
       
-      //printf("MidiDevice::recordEvent event time:%d\n", event.time());
       
-      // By T356. Set the loop number which the event came in at.
-      //if(MusEGlobal::audio->isRecording())
       if(MusEGlobal::audio->isPlaying())
         event.setLoopNum(MusEGlobal::audio->loopCount());
       
@@ -255,10 +229,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       if(_port != -1)
       {
         int idin = MusEGlobal::midiPorts[_port].syncInfo().idIn();
-        
-// p3.3.26 1/23/10 Section was disabled, enabled by Tim.
-//#if 0
-  
+          
         //---------------------------------------------------
         // filter some SYSEX events
         //---------------------------------------------------
@@ -268,21 +239,17 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
               int n = event.len();
               if (n >= 4) {
                     if ((p[0] == 0x7f)
-                      //&& ((p[1] == 0x7f) || (p[1] == rxDeviceId))) {
                       && ((p[1] == 0x7f) || (idin == 0x7f) || (p[1] == idin))) {
                           if (p[2] == 0x06) {
-                                //mmcInput(p, n);
                                 MusEGlobal::midiSeq->mmcInput(_port, p, n);
                                 return;
                                 }
                           if (p[2] == 0x01) {
-                                //mtcInputFull(p, n);
                                 MusEGlobal::midiSeq->mtcInputFull(_port, p, n);
                                 return;
                                 }
                           }
                     else if (p[0] == 0x7e) {
-                          //nonRealtimeSystemSysex(p, n);
                           MusEGlobal::midiSeq->nonRealtimeSystemSysex(_port, p, n);
                           return;
                           }
@@ -291,9 +258,6 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
           else    
             // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
             MusEGlobal::midiPorts[_port].syncInfo().trigActDetect(event.channel());
-              
-//#endif
-
       }
       
       //
@@ -485,8 +449,9 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                               putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LBANK, lb));
                         return putMidiEvent(MidiPlayEvent(0, 0, chn, ME_PROGRAM, pr, 0));
                         }
+                  return false;   // Should absorb anyway and return, right?    p4.0.48 Tim.  
                   }
-#if 1 // if ALSA cannot handle RPN NRPN etc.
+#if 1 // if ALSA cannot handle RPN NRPN etc. DELETETHIS? remove the wrapping #if #endif
             
             if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
                   putMidiEvent(ev);
@@ -590,34 +555,7 @@ void MidiDevice::handleStop()
   if(_port == -1)
     return;
     
-  //---------------------------------------------------
-  //    Clear all notes and handle stuck notes
-  //---------------------------------------------------
-  
-  _playEvents.clear();
-  for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
-  {
-    MidiPlayEvent ev = *i;
-    ev.setTime(0);
-    _playEvents.add(ev);
-  }
-  _stuckNotes.clear();
-  
-  
-  //---------------------------------------------------
-  //    reset sustain
-  //---------------------------------------------------
-  
   MidiPort* mp = &MusEGlobal::midiPorts[_port];
-  for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
-  {
-    if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
-    {
-      //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
-      MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-      putEvent(ev);
-    }
-  }
   
   //---------------------------------------------------
   //    send midi stop
@@ -626,7 +564,7 @@ void MidiDevice::handleStop()
   // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
   if(!MusEGlobal::extSyncFlag.value())
   {
-    // Shall we check open flags?
+    // Shall we check open flags? DELETETHIS 4?
     //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
     //if(!(dev->openFlags() & 1))
     //  return;
@@ -637,19 +575,64 @@ void MidiDevice::handleStop()
     
     if(si.MRTOut()) 
     {
-      // Send STOP 
       mp->sendStop();
-      
-      // p3.3.31
-      // Added check of option send continue not start.
-      // Hmm, is this required? Seems to make other devices unhappy.
-      // (Could try now that this is in MidiDevice. p4.0.22 )
-      /*
-      if(!si.sendContNotStart())
-        mp->sendSongpos(MusEGlobal::audio->tickPos() * 4 / MusEGlobal::config.division);
-      */  
+      //DELETETHIS 5?
+      // Added check of option send continue not start. Hmm, is this required? Seems to make other devices unhappy.
+      // (Could try now that this is in MidiDevice.)
+      //if(!si.sendContNotStart())
+      //  mp->sendSongpos(MusEGlobal::audio->tickPos() * 4 / MusEGlobal::config.division);
     }
   }  
+
+  //---------------------------------------------------
+  //    Clear all notes and handle stuck notes
+  //---------------------------------------------------
+  
+  _playEvents.clear();
+  for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
+  {
+    MidiPlayEvent ev = *i;
+    ev.setTime(0);
+    putEvent(ev);
+  }
+  _stuckNotes.clear();
+  
+  //---------------------------------------------------
+  //    reset sustain
+  //---------------------------------------------------
+  
+  for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+  {
+    if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
+    {
+      MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+      putEvent(ev);
+    }
+  }
+  
+  /* DELETETHIS 23
+  //---------------------------------------------------
+  //    send midi stop
+  //---------------------------------------------------
+  
+  // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
+  if(!MusEGlobal::extSyncFlag.value())
+  {
+    MidiSyncInfo& si = mp->syncInfo();
+    if(si.MMCOut())
+      mp->sendMMCStop();
+    
+    if(si.MRTOut()) 
+    {
+      // Send STOP 
+      mp->sendStop();
+      // Added check of option send continue not start. Hmm, is this required? Seems to make other devices unhappy.
+      // (Could try now that this is in MidiDevice.)
+      //if(!si.sendContNotStart())
+      //  mp->sendSongpos(MusEGlobal::audio->tickPos() * 4 / MusEGlobal::config.division);
+    }
+  }  
+  */
 }
       
 //---------------------------------------------------------
@@ -662,6 +645,27 @@ void MidiDevice::handleSeek()
   if(_port == -1)
     return;
   
+  MidiPort* mp = &MusEGlobal::midiPorts[_port];
+  MidiCtrlValListList* cll = mp->controller();
+  int pos = MusEGlobal::audio->tickPos();
+  
+  //---------------------------------------------------
+  //    Send STOP 
+  //---------------------------------------------------
+    
+  // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
+  if(!MusEGlobal::extSyncFlag.value())
+  {
+    if(mp->syncInfo().MRTOut())
+    {
+      // Shall we check for device write open flag to see if it's ok to send?...
+      //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
+      //if(!(openFlags() & 1))
+      //  continue;
+      mp->sendStop();
+    }    
+  }
+
   //---------------------------------------------------
   //    If playing, clear all notes and handle stuck notes
   //---------------------------------------------------
@@ -673,17 +677,15 @@ void MidiDevice::handleSeek()
     {
       MidiPlayEvent ev = *i;
       ev.setTime(0);
-      _playEvents.add(ev);
+      //_playEvents.add(ev); 
+      putEvent(ev);          // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations) instead. 
+      //mp->sendEvent(ev);
     }
     _stuckNotes.clear();
   }
   
-  MidiPort* mp = &MusEGlobal::midiPorts[_port];
-  MidiCtrlValListList* cll = mp->controller();
-  int pos = MusEGlobal::audio->tickPos();
-  
   //---------------------------------------------------
-  //    Send new contoller values
+  //    Send new controller values
   //---------------------------------------------------
     
   for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
@@ -693,10 +695,32 @@ void MidiDevice::handleSeek()
     if(imcv != vl->end()) 
     {
       Part* p = imcv->second.part;
+      // Don't send if part or track is muted or off.
+      if(!p || p->mute())
+        continue;
+      Track* track = p->track();
+      if(track && (track->isMute() || track->off()))   
+        continue;
       unsigned t = (unsigned)imcv->first;
       // Do not add values that are outside of the part.
       if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
-        _playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+        //_playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+        // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
+        mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val), imcv->first == pos);
+        //mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val), pos == 0 || imcv->first == pos);
+    }
+  }
+  
+  //---------------------------------------------------
+  //    reset sustain
+  //---------------------------------------------------
+  
+  for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+  {
+    if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
+    {
+      MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+      putEvent(ev);
     }
   }
   
@@ -709,24 +733,9 @@ void MidiDevice::handleSeek()
   {
     if(mp->syncInfo().MRTOut())
     {
-      // Shall we check for device write open flag to see if it's ok to send?...
-      // This means obey what the user has chosen for read/write in the midi port config dialog,
-      //  which already takes into account whether the device is writable or not.
-      //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
-      //if(!(openFlags() & 1))
-      //  continue;
-      
+      //mp->sendStop();   // Moved above
       int beat = (pos * 4) / MusEGlobal::config.division;
-        
-      //bool isPlaying = false;
-      //if(state == PLAY)
-      //  isPlaying = true;
-      bool isPlaying = MusEGlobal::audio->isPlaying();  // Check this it includes LOOP1 and LOOP2 besides PLAY.  p4.0.22
-        
-      mp->sendStop();
       mp->sendSongpos(beat);
-      if(isPlaying)
-        mp->sendContinue();
     }    
   }
 }

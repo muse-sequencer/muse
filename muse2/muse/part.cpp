@@ -34,7 +34,6 @@
 #include "wave.h"
 #include "midiport.h"
 #include "drummap.h"
-//#include "midiedit/drummap.h"    // p4.0.2
 
 namespace MusECore {
 
@@ -182,7 +181,7 @@ void replaceClone(Part* p1, Part* p2)
   if(p1->cevents() != p2->cevents())
   {
     bool ret = false;
-    // If the part to be replaced is a single uncloned part, 
+    // If the part to be replaced is a single uncloned part,  DELETETHIS 4 this seems outdated=wrong to me
     //  and the replacement part is not, then this operation
     //  MUST be an undo of a de-cloning of a cloned part.  
     //if(p1->cevents()->refCount() <= 1 && p2->cevents()->refCount() > 1)
@@ -191,11 +190,11 @@ void replaceClone(Part* p1, Part* p2)
       // Chain the replacement part. We don't know the chain it came from,
       //  so we use the slow method.
       chainCloneInternal(p2);
-      //return;
+      //return; DELETETHIS
       ret = true;
     }
     
-    // If the replacement part is a single uncloned part, 
+    // If the replacement part is a single uncloned part,    DELETETHIS same as above
     //  and the part to be replaced is not, then this operation
     //  MUST be a de-cloning of a cloned part.  
     //if(p1->cevents()->refCount() > 1 && p2->cevents()->refCount() <= 1)
@@ -207,7 +206,6 @@ void replaceClone(Part* p1, Part* p2)
       // Isolate the part.
       p1->setPrevClone(p1);
       p1->setNextClone(p1);
-      //return;
       ret = true;
     }
     
@@ -376,57 +374,52 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
   // Update: Due to the varying calls, and order of, incARefcount, (msg)ChangePart, replaceClone, and remove/addPortCtrlEvents,
   //  we can not rely on the reference count as a safety net in these routines. We will just have to trust the clone chain.
   Part* p = part; 
-  //int j = doClones ? p->cevents()->arefCount() : 1;
-  //if(j > 0)
+  while(1)
   {
-    //for(int i = 0; i < j; ++i)
-    while(1)
+    Track* t = p->track();
+    if(t && t->isMidiTrack())
     {
-      Track* t = p->track();
-      if(t && t->isMidiTrack())
-      {
-        MidiTrack* mt = (MidiTrack*)t;
-        int port = mt->outPort();
-        unsigned len = p->lenTick();
+      MidiTrack* mt = (MidiTrack*)t;
+      int port = mt->outPort();
+      unsigned len = p->lenTick();
+        
+        // Do not add events which are past the end of the part.
+        if(event.tick() >= len)
+          break;
+                          
+        if(event.type() == Controller)
+        {
+          int ch = mt->outChannel();
+          int tck  = event.tick() + p->tick();
+          int cntrl = event.dataA();
+          int val   = event.dataB();
+          MidiPort* mp = &MusEGlobal::midiPorts[port];
           
-          // Do not add events which are past the end of the part.
-          if(event.tick() >= len)
-            break;
-                            
-          if(event.type() == Controller)
+          // Is it a drum controller event, according to the track port's instrument?
+          if(mt->type() == Track::DRUM)
           {
-            int ch = mt->outChannel();
-            int tck  = event.tick() + p->tick();
-            int cntrl = event.dataA();
-            int val   = event.dataB();
-            MidiPort* mp = &MusEGlobal::midiPorts[port];
-            
-            // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM)
+            MidiController* mc = mp->drumController(cntrl);
+            if(mc)
             {
-              MidiController* mc = mp->drumController(cntrl);
-              if(mc)
-              {
-                int note = cntrl & 0x7f;
-                cntrl &= ~0xff;
-                ch = MusEGlobal::drumMap[note].channel;
-                mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
-                cntrl |= MusEGlobal::drumMap[note].anote;
-              }
+              int note = cntrl & 0x7f;
+              cntrl &= ~0xff;
+              ch = MusEGlobal::drumMap[note].channel;
+              mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+              cntrl |= MusEGlobal::drumMap[note].anote;
             }
-            
-            mp->setControllerVal(ch, tck, cntrl, val, p);
           }
-      }
-      
-      if(!doClones)
-        break;
-      // Get the next clone in the chain ring.
-      p = p->nextClone();
-      // Same as original part? Finished.
-      if(p == part)
-        break;
+          
+          mp->setControllerVal(ch, tck, cntrl, val, p);
+        }
     }
+    
+    if(!doClones)
+      break;
+    // Get the next clone in the chain ring.
+    p = p->nextClone();
+    // Same as original part? Finished.
+    if(p == part)
+      break;
   }
 }
 
@@ -441,61 +434,56 @@ void addPortCtrlEvents(Part* part, bool doClones)
   // Update: Due to the varying calls, and order of, incARefcount, (msg)ChangePart, replaceClone, and remove/addPortCtrlEvents,
   //  we can not rely on the reference count as a safety net in these routines. We will just have to trust the clone chain.
   Part* p = part; 
-  //int j = doClones ? p->cevents()->arefCount() : 1;
-  //if(j > 0)
+  while(1)
   {
-    //for(int i = 0; i < j; ++i)
-    while(1)
+    Track* t = p->track();
+    if(t && t->isMidiTrack())
     {
-      Track* t = p->track();
-      if(t && t->isMidiTrack())
+      MidiTrack* mt = (MidiTrack*)t;
+      int port = mt->outPort();
+      const EventList* el = p->cevents();
+      unsigned len = p->lenTick();
+      for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
       {
-        MidiTrack* mt = (MidiTrack*)t;
-        int port = mt->outPort();
-        const EventList* el = p->cevents();
-        unsigned len = p->lenTick();
-        for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+        const Event& ev = ie->second;
+        // Added by T356. Do not add events which are past the end of the part.
+        if(ev.tick() >= len)
+          break;
+                          
+        if(ev.type() == Controller)
         {
-          const Event& ev = ie->second;
-          // Added by T356. Do not add events which are past the end of the part.
-          if(ev.tick() >= len)
-            break;
-                            
-          if(ev.type() == Controller)
+          int ch = mt->outChannel();
+          int tck  = ev.tick() + p->tick();
+          int cntrl = ev.dataA();
+          int val   = ev.dataB();
+          MidiPort* mp = &MusEGlobal::midiPorts[port];
+          
+          // Is it a drum controller event, according to the track port's instrument?
+          if(mt->type() == Track::DRUM)
           {
-            int ch = mt->outChannel();
-            int tck  = ev.tick() + p->tick();
-            int cntrl = ev.dataA();
-            int val   = ev.dataB();
-            MidiPort* mp = &MusEGlobal::midiPorts[port];
-            
-            // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM)
+            MidiController* mc = mp->drumController(cntrl);
+            if(mc)
             {
-              MidiController* mc = mp->drumController(cntrl);
-              if(mc)
-              {
-                int note = cntrl & 0x7f;
-                cntrl &= ~0xff;
-                ch = MusEGlobal::drumMap[note].channel;
-                mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
-                cntrl |= MusEGlobal::drumMap[note].anote;
-              }
+              int note = cntrl & 0x7f;
+              cntrl &= ~0xff;
+              ch = MusEGlobal::drumMap[note].channel;
+              mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+              cntrl |= MusEGlobal::drumMap[note].anote;
             }
-            
-            mp->setControllerVal(ch, tck, cntrl, val, p);
           }
+          
+          mp->setControllerVal(ch, tck, cntrl, val, p);
         }
       }
-      if(!doClones)
-        break;
-      // Get the next clone in the chain ring.
-      p = p->nextClone();
-      // Same as original part? Finished.
-      if(p == part)
-        break;
     }
-  }      
+    if(!doClones)
+      break;
+    // Get the next clone in the chain ring.
+    p = p->nextClone();
+    // Same as original part? Finished.
+    if(p == part)
+      break;
+  }
 }
 
 //---------------------------------------------------------
@@ -509,51 +497,46 @@ void removePortCtrlEvents(Event& event, Part* part, bool doClones)
   // Update: Due to the varying calls, and order of, incARefcount, (msg)ChangePart, replaceClone, and remove/addPortCtrlEvents,
   //  we can not rely on the reference count as a safety net in these routines. We will just have to trust the clone chain.
   Part* p = part; 
-  //int j = doClones ? p->cevents()->arefCount() : 1;
-  //if(j > 0)
+  while(1)
   {
-    //for(int i = 0; i < j; ++i)
-    while(1)
+    Track* t = p->track();
+    if(t && t->isMidiTrack())
     {
-      Track* t = p->track();
-      if(t && t->isMidiTrack())
-      {
-        MidiTrack* mt = (MidiTrack*)t;
-        int port = mt->outPort();
-                            
-          if(event.type() == Controller)
+      MidiTrack* mt = (MidiTrack*)t;
+      int port = mt->outPort();
+                          
+        if(event.type() == Controller)
+        {
+          int ch = mt->outChannel();
+          int tck  = event.tick() + p->tick();
+          int cntrl = event.dataA();
+          MidiPort* mp = &MusEGlobal::midiPorts[port];
+          
+          // Is it a drum controller event, according to the track port's instrument?
+          if(mt->type() == Track::DRUM)
           {
-            int ch = mt->outChannel();
-            int tck  = event.tick() + p->tick();
-            int cntrl = event.dataA();
-            MidiPort* mp = &MusEGlobal::midiPorts[port];
-            
-            // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM)
+            MidiController* mc = mp->drumController(cntrl);
+            if(mc)
             {
-              MidiController* mc = mp->drumController(cntrl);
-              if(mc)
-              {
-                int note = cntrl & 0x7f;
-                cntrl &= ~0xff;
-                ch = MusEGlobal::drumMap[note].channel;
-                mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
-                cntrl |= MusEGlobal::drumMap[note].anote;
-              }
+              int note = cntrl & 0x7f;
+              cntrl &= ~0xff;
+              ch = MusEGlobal::drumMap[note].channel;
+              mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+              cntrl |= MusEGlobal::drumMap[note].anote;
             }
-            
-            mp->deleteController(ch, tck, cntrl, p);
           }
-      }  
-      
-      if(!doClones)
-        break;
-      // Get the next clone in the chain ring.
-      p = p->nextClone();
-      // Same as original part? Finished.
-      if(p == part)
-        break;
-    }
+          
+          mp->deleteController(ch, tck, cntrl, p);
+        }
+    }  
+    
+    if(!doClones)
+      break;
+    // Get the next clone in the chain ring.
+    p = p->nextClone();
+    // Same as original part? Finished.
+    if(p == part)
+      break;
   }
 }
 
@@ -568,62 +551,57 @@ void removePortCtrlEvents(Part* part, bool doClones)
   // Update: Due to the varying calls, and order of, incARefcount, (msg)ChangePart, replaceClone, and remove/addPortCtrlEvents,
   //  we can not rely on the reference count as a safety net in these routines. We will just have to trust the clone chain.
   Part* p = part; 
-  //int j = doClones ? p->cevents()->arefCount() : 1;
-  //if(j > 0)
+  while(1)
   {
-    //for(int i = 0; i < j; ++i)
-    while(1)
+    Track* t = p->track();
+    if(t && t->isMidiTrack())
     {
-      Track* t = p->track();
-      if(t && t->isMidiTrack())
+      MidiTrack* mt = (MidiTrack*)t;
+      int port = mt->outPort();
+      const EventList* el = p->cevents();
+      //unsigned len = p->lenTick();
+      for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
       {
-        MidiTrack* mt = (MidiTrack*)t;
-        int port = mt->outPort();
-        const EventList* el = p->cevents();
-        //unsigned len = p->lenTick();
-        for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+        const Event& ev = ie->second;
+        // Added by T356. Do not remove events which are past the end of the part. DELETETHIS 5
+        // No, actually, do remove ALL of them belonging to the part.
+        // Just in case there are stray values left after the part end.
+        //if(ev.tick() >= len)
+        //  break;
+                          
+        if(ev.type() == Controller)
         {
-          const Event& ev = ie->second;
-          // Added by T356. Do not remove events which are past the end of the part.
-          // No, actually, do remove ALL of them belonging to the part.
-          // Just in case there are stray values left after the part end.
-          //if(ev.tick() >= len)
-          //  break;
-                            
-          if(ev.type() == Controller)
+          int ch = mt->outChannel();
+          int tck  = ev.tick() + p->tick();
+          int cntrl = ev.dataA();
+          MidiPort* mp = &MusEGlobal::midiPorts[port];
+          
+          // Is it a drum controller event, according to the track port's instrument?
+          if(mt->type() == Track::DRUM)
           {
-            int ch = mt->outChannel();
-            int tck  = ev.tick() + p->tick();
-            int cntrl = ev.dataA();
-            MidiPort* mp = &MusEGlobal::midiPorts[port];
-            
-            // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM)
+            MidiController* mc = mp->drumController(cntrl);
+            if(mc)
             {
-              MidiController* mc = mp->drumController(cntrl);
-              if(mc)
-              {
-                int note = cntrl & 0x7f;
-                cntrl &= ~0xff;
-                ch = MusEGlobal::drumMap[note].channel;
-                mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
-                cntrl |= MusEGlobal::drumMap[note].anote;
-              }
+              int note = cntrl & 0x7f;
+              cntrl &= ~0xff;
+              ch = MusEGlobal::drumMap[note].channel;
+              mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+              cntrl |= MusEGlobal::drumMap[note].anote;
             }
-            
-            mp->deleteController(ch, tck, cntrl, p);
           }
+          
+          mp->deleteController(ch, tck, cntrl, p);
         }
-      }  
-      
-      if(!doClones)
-        break;
-      // Get the next clone in the chain ring.
-      p = p->nextClone();
-      // Same as original part? Finished.
-      if(p == part)
-        break;
-    }
+      }
+    }  
+    
+    if(!doClones)
+      break;
+    // Get the next clone in the chain ring.
+    p = p->nextClone();
+    // Same as original part? Finished.
+    if(p == part)
+      break;
   }
 }
 
@@ -649,7 +627,6 @@ int PartList::index(Part* part)
                   }
       if(MusEGlobal::debugMsg)
         printf("PartList::index(): not found!\n");
-      //return 0; // don't comment this in again
       return -1;  // don't change that value. at least MidiEditor::addNewParts relies on this
       }
 
@@ -904,7 +881,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                           i--;
                           Event last = i->second;
                           unsigned last_start = last.frame();
-			  MusECore::SndFileR file = last.sndFile();
+                          MusECore::SndFileR file = last.sndFile();
                           if (file.isNull())
                                 return;
   
@@ -1069,7 +1046,6 @@ void Song::cmdSplitPart(Track* track, Part* part, int tick)
 
       startUndo();
       // Indicate no undo, and do port controller values but not clone parts. 
-      //MusEGlobal::audio->msgChangePart(part, p1, false);
       MusEGlobal::audio->msgChangePart(part, p1, false, true, false);
       MusEGlobal::audio->msgAddPart(p2, false);
       endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
@@ -1211,19 +1187,6 @@ WavePart* WavePart::clone() const
       }
 
 
-/*
-bool Part::hasHiddenNotes()
-{
-        unsigned lastNote=0;
-
-        for (iEvent ev=events()->begin(); ev!=events()->end(); ev++)
-                if (ev->second.endTick() > lastNote)
-                        lastNote=ev->second.endTick();
-        
-        return lastNote > lenTick();
-}
-*/
-
 //---------------------------------------------------------
 //   hasHiddenEvents
 //   Returns combination of HiddenEventsType enum.
@@ -1245,5 +1208,19 @@ int Part::hasHiddenEvents()
   _hiddenEvents = NoEventsHidden;  // Cache the result for later.
   return _hiddenEvents;
 }
+
+
+
+//---------------------------------------------------------
+//   ClonePart
+//---------------------------------------------------------
+
+ClonePart::ClonePart(const Part* p, int i) 
+{
+  cp = p;
+  id = i;
+  uuid_generate(uuid);
+}
+
 
 } // namespace MusECore

@@ -87,7 +87,6 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void tabChanged(QWidget*);
       void patchChanged();
       void controllerChanged();
-      //void instrumentNameChanged(const QString&);
       void instrumentNameReturn();
       void patchNameReturn();
       void deletePatchClicked();
@@ -95,19 +94,17 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void newGroupClicked();
       void patchButtonClicked();
       void defPatchChanged(int);
-      //void newCategoryClicked();
       void deleteControllerClicked();
       void newControllerClicked();
       void addControllerClicked();
       void ctrlTypeChanged(int);
-      //void ctrlNameChanged(const QString&);
       void ctrlNameReturn();
       void ctrlHNumChanged(int);
       void ctrlLNumChanged(int);
       void ctrlMinChanged(int);
       void ctrlMaxChanged(int);
       void ctrlDefaultChanged(int);
-      //void sysexChanged();
+      //void sysexChanged(); DELETETHIS?
       //void deleteSysexClicked();
       //void newSysexClicked();
       void ctrlNullParamHChanged(int);

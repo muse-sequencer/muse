@@ -23,7 +23,7 @@
 #ifndef __PITCHEDIT_H__
 #define __PITCHEDIT_H__
 
-#include <QSpinBox>
+#include "spinbox.h"
 
 namespace MusEGui {
 
@@ -31,7 +31,7 @@ namespace MusEGui {
 //   PitchEdit
 //---------------------------------------------------------
 
-class PitchEdit : public QSpinBox {
+class PitchEdit : public SpinBox {
       Q_OBJECT
 
       bool deltaMode;

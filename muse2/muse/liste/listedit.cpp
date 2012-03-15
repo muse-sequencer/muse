@@ -197,13 +197,13 @@ void ListEdit::songChanged(int type)
       {
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
-        
+       
       if (type == 0)
             return;
       if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
          | SC_PART_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
          | SC_EVENT_INSERTED | SC_SELECTION)) {
-            if (type & (SC_PART_REMOVED | SC_PART_INSERTED))
+            if (type & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
                   genPartlist();
             // close window if editor has no parts anymore
             if (parts()->empty()) {
@@ -213,6 +213,8 @@ void ListEdit::songChanged(int type)
             liste->setSortingEnabled(false);
             if (type == SC_SELECTION) {
                   
+                  
+                  // DELETETHIS or clean up or whatever?
                   // BUGFIX: I found the keyboard modifier states affect how QTreeWidget::setCurrentItem() operates.
                   //         So for example (not) holding shift while lassoo-ing notes in piano roll affected 
                   //          whether multiple items were selected in this event list editor! 
@@ -244,12 +246,10 @@ void ListEdit::songChanged(int type)
                   // Go backwards to avoid QTreeWidget::setCurrentItem() dependency on KB modifiers!
                   for (int row = liste->topLevelItemCount() -1; row >= 0 ; --row) 
                   {
-                    //printf("ListEdit::songChanged row:%d\n", row);   
                     QTreeWidgetItem* i = liste->topLevelItem(row);
                     bool sel = ((EventListItem*)i)->event.selected();
                     if (i->isSelected() ^ sel) 
                     {
-                      //printf("ListEdit::songChanged changing row:%d sel:%d\n", row, sel);   
                       // Do setCurrentItem() before setSelected().
                       if(sel && !ci_done)
                       {
@@ -496,7 +496,7 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       menuEdit->addActions(MusEGlobal::undoRedo->actions());
 
       menuEdit->addSeparator();
-#if 0
+#if 0 // DELETETHIS or implement?
       QAction *cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
       connect(cutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       editSignalMapper->setMapping(cutAction, EList::CMD_CUT);
@@ -615,7 +615,6 @@ ListEdit::ListEdit(MusECore::PartList* pl)
 
 ListEdit::~ListEdit()
       {
-      // MusEGlobal::undoRedo->removeFrom(listTools);  // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -1003,8 +1002,8 @@ void ListEdit::initShortcuts()
 
 void ListEdit::keyPressEvent(QKeyEvent* event)
       {
-int key = event->key();
-if (key == Qt::Key_Escape) {
+      int key = event->key();
+      if (key == Qt::Key_Escape) {
             close();
             return;
             }

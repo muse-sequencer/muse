@@ -73,7 +73,6 @@ void MusE::startHomepageBrowser()
 
 void MusE::startBugBrowser()
       {
-      //QString museBugPage("http://www.muse-sequencer.org/wiki/index.php/Report_a_bug");
       QString museBugPage("http://www.muse-sequencer.org/index.php/Report_a_bug");
       launchBrowser(museBugPage);
       }

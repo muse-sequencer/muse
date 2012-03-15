@@ -141,8 +141,6 @@ class DList : public View {
       void devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll);
       
       void init(QHeaderView*, QWidget*);
-      
-      //void setCurDrumInstrument(int n);
 
    private slots:
       void sizeChange(int, int, int);

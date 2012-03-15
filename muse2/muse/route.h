@@ -105,17 +105,7 @@ extern void removeRoute(Route, Route);
 extern void removeAllRoutes(Route, Route);  // p3.3.55
 extern Route name2route(const QString&, bool dst, int rtype = -1);
 extern bool checkRoute(const QString&, const QString&);
-//extern bool isCircularRoutePath(Track* src, Track* dst);  // Recursive.
-
-//---------------------------------------------------------
-//   RouteMenuMap
-//---------------------------------------------------------
-
-//typedef std::map<int, Route, std::less<int> >::iterator iRouteMenuMap;
-//typedef std::map<int, Route, std::less<int> >::const_iterator ciRouteMenuMap;
-//typedef std::map<int, Route, std::less<int> > RouteMenuMap;
-//typedef std::pair<int, Route> pRouteMenuMap;
-//typedef std::pair<iRouteMenuMap, bool > rpRouteMenuMap;
+//extern bool isCircularRoutePath(Track* src, Track* dst);  // Recursive. DELETETHIS
 
 } // namespace MusECore
 

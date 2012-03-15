@@ -27,7 +27,6 @@
 
 #include <QLocale>
 #include <QColor>
-//#include <stdlib.h>
 
 #include "gconfig.h"
 #include "fastlog.h"
@@ -126,10 +125,6 @@ void CtrlList::assign(const CtrlList& l, int flags)
 
 double CtrlList::value(int frame) const
 {
-      // Changed by Tim. p4.0.32...
-      
-      ///if (!automation || empty()) 
-      ///      return _curVal;
       if(empty()) 
         return _curVal;
 
@@ -137,50 +132,32 @@ double CtrlList::value(int frame) const
       ciCtrl i = upper_bound(frame); // get the index after current frame
 
       if (i == end()) { // if we are past all items just return the last value
-            ///ciCtrl i = end();
             --i;
-            ///const CtrlVal& val = i->second;
-            ///_curVal = val.val;
             rv = i->second.val;
             }
       else if(_mode == DISCRETE)
       {
         if(i == begin())
         {
-          ///_curVal = _default;
-          //if(i->second.frame == frame)
             rv = i->second.val;
-          //else  
-          //  rv = _default;
         }  
         else
         {  
           --i;
-          ///const CtrlVal& val = i->second;
-          ///_curVal = val.val;
           rv = i->second.val;
         }  
       }
       else {
-        ///int frame2 = i->second.frame;
-        ///double val2 = i->second.val;
-        ///int frame1;
-        ///double val1;
         if (i == begin()) {
-            ///frame1 = 0;
-            ///val1   = _default;
             rv = i->second.val;
         }
         else {
             int frame2 = i->second.frame;
             double val2 = i->second.val;
             --i;
-            ///frame1 = i->second.frame;
-            ///val1   = i->second.val;
             int frame1 = i->second.frame;
             double val1   = i->second.val;
-        ///}
-            //printf("before val1=%f val2=%f\n", val1,val2);
+
             if (_valueType == VAL_LOG) {
               val1 = 20.0*fast_log10(val1);
               if (val1 < MusEGlobal::config.minSlider)
@@ -189,7 +166,7 @@ double CtrlList::value(int frame) const
               if (val2 < MusEGlobal::config.minSlider)
                 val2=MusEGlobal::config.minSlider;
             }
-            //printf("after val1=%f val2=%f\n", val1,val2);
+
             frame -= frame1;
             val2  -= val1;
             frame2 -= frame1;
@@ -198,13 +175,10 @@ double CtrlList::value(int frame) const
             if (_valueType == VAL_LOG) {
               val1 = exp10(val1/20.0);
             }
-            //printf("after val1=%f\n", val1);
-            ///_curVal = val1;
+
             rv = val1;
           }
       }
-// printf("autoVal %d %f\n", frame, _curVal);
-      ///return _curVal;
       return rv;
 }
 
@@ -214,9 +188,6 @@ double CtrlList::value(int frame) const
 //---------------------------------------------------------
 double CtrlList::curVal() const
 { 
-  //double v = value(Pos(audio->tickPos()).frame());      // p4.0.33
-  //double v = value(audio->pos().frame());                 // Try this.
-  //return v;
   return _curVal;
 }
 
@@ -226,8 +197,6 @@ double CtrlList::curVal() const
 void CtrlList::setCurVal(double val)
 {
   _curVal = val;
-  //if (size() < 2)   // Removed p4.0.32
-  //  add(0,val);
 }
 
 //---------------------------------------------------------
@@ -236,7 +205,6 @@ void CtrlList::setCurVal(double val)
 
 void CtrlList::add(int frame, double val)
       {
-// printf("add %d %f\n", frame, val);
       iCtrl e = find(frame);
       if (e != end())
             e->second.val = val;
@@ -251,10 +219,9 @@ void CtrlList::add(int frame, double val)
 void CtrlList::del(int frame)
       {
       iCtrl e = find(frame);
-      if (e == end()) {
-            //printf("CtrlList::del(%d): not found\n", frame);
+      if (e == end())
             return;
-            }
+      
       erase(e);
       }
 
@@ -276,14 +243,12 @@ void CtrlList::read(Xml& xml)
                   case Xml::Attribut:
                         if (tag == "id")
                         {
-                              //_id = xml.s2().toInt();
                               _id = loc.toInt(xml.s2(), &ok);
                               if(!ok)
                                 printf("CtrlList::read failed reading _id string: %s\n", xml.s2().toLatin1().constData());
                         }
                         else if (tag == "cur")
                         {
-                              //_curVal = xml.s2().toDouble();
                               _curVal = loc.toDouble(xml.s2(), &ok);
                               if(!ok)
                                 printf("CtrlList::read failed reading _curVal string: %s\n", xml.s2().toLatin1().constData());
@@ -310,33 +275,6 @@ void CtrlList::read(Xml& xml)
                         break;
                   case Xml::Text:
                         {
-                        // Changed by Tim. Users in some locales reported corrupt reading,
-                        //  because of the way floating point is represented (2,3456 not 2.3456).
-                        /*
-                        QByteArray ba = tag.toLatin1();
-                        const char* s = ba;.constData();
-                        int frame;
-                        double val;
-
-                        for (;;) {
-                              char* endp;
-                              while (*s == ' ' || *s == '\n')
-                                    ++s;
-                              if (*s == 0)
-                                    break;
-                              frame = strtol(s, &endp, 10);
-                              s     = endp;
-                              while (*s == ' ' || *s == '\n')
-                                    ++s;
-                              val = strtod(s, &endp);
-                              add(frame, val);
-                              s = endp;
-                              ++s;
-                              }
-                           */   
-                          
-                          //printf("CtrlList::read tag:%s\n", tag.toLatin1().constData());
-                          
                           int len = tag.length();
                           int frame;
                           double val;
@@ -358,9 +296,6 @@ void CtrlList::read(Xml& xml)
                                 if(i == len)
                                       break;
                                 
-                                // Works OK, but only because if current locale fails it falls back on 'C' locale.
-                                // So, let's skip the fallback and force use of 'C' locale.
-                                //frame = fs.toInt(&ok);
                                 frame = loc.toInt(fs, &ok);
                                 if(!ok)
                                 {
@@ -380,9 +315,6 @@ void CtrlList::read(Xml& xml)
                                   ++i;
                                 }
                                 
-                                // Works OK, but only because if current locale fails it falls back on 'C' locale.
-                                // So, let's skip the fallback and force use of 'C' locale.
-                                //val = vs.toDouble(&ok); 
                                 val = loc.toDouble(vs, &ok);
                                 if(!ok)
                                 {
@@ -390,8 +322,6 @@ void CtrlList::read(Xml& xml)
                                   break;
                                 }
                                   
-                                //printf("CtrlList::read i:%d len:%d fs:%s frame %d: vs:%s val %f \n", i, len, fs.toLatin1().constData(), frame, vs.toLatin1().constData(), val);
-                                
                                 add(frame, val);
                                 
                                 if(i == len)
@@ -401,11 +331,7 @@ void CtrlList::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (xml.s1() == "controller")
-                        {
-                              //printf("CtrlList::read _id:%d _curVal:%f\n", _id, _curVal);
-                              
                               return;
-                        }      
                   default:
                         break;
                   }
@@ -418,7 +344,6 @@ void CtrlList::read(Xml& xml)
 
 void CtrlListList::add(CtrlList* vl)
       {
-//      printf("CtrlListList(%p)::add(id=%d) size %d\n", this, vl->id(), size());
       insert(std::pair<const int, CtrlList*>(vl->id(), vl));
       }
       

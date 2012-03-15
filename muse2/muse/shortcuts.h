@@ -4,10 +4,10 @@
 //  $Id: ./muse/shortcuts.h $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//
 // Author: Mathias Lundgren <lunar_shuttle@users.sourceforge.net>, (C) 2003
 //
 // Copyright: Mathias Lundgren (lunar_shuttle@users.sourceforge.net) (C) 2003
-//
 //
 //
 //  This program is free software; you can redistribute it and/or

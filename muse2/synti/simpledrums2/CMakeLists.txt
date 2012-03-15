@@ -74,9 +74,14 @@ set (FILES_TO_TRANSLATE
 #   libsimpledrums.so
 # - use precompiled header files
 #
+
+if ( x${CMAKE_BUILD_TYPE} STREQUAL xrelease )
+      SET(SIMPLEDRUMS_OPTFLAGS "-O6")
+endif ( x${CMAKE_BUILD_TYPE} STREQUAL xrelease )
+
 set_target_properties ( simpledrums
       PROPERTIES PREFIX ""
-      COMPILE_FLAGS "-O6 -fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      COMPILE_FLAGS "${SIMPLEDRUMS_OPTFLAGS} -fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
       )
 
 ##

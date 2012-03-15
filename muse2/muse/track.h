@@ -110,7 +110,7 @@ class Track {
       Track(TrackType);
       Track(const Track&, int flags);
       virtual ~Track();
-      //virtual Track& operator=(const Track& t);
+      //virtual Track& operator=(const Track& t); DELETETHIS
       virtual void assign(const Track&, int flags);
       
       static const char* _cname[];
@@ -220,14 +220,9 @@ class Track {
 //---------------------------------------------------------
 
 class MidiTrack : public Track {
-      //friend class AudioTrack;
-      //static unsigned int _soloRefCnt;
       
       int _outPort;
       int _outChannel;
-      //int _inPortMask;        
-      //unsigned int _inPortMask; // bitmask of accepted record ports
-      //int _inChannelMask;       // bitmask of accepted record channels
       bool _recEcho;              // For midi (and audio). Whether to echo incoming record events to output device.
 
       EventList* _events;     // tmp Events during midi import
@@ -288,31 +283,23 @@ class MidiTrack : public Track {
       void setOutChannel(int i)       { _outChannel = i; }
       void setOutPort(int i)          { _outPort = i; }
       // These will transfer controller data to the new selected port and/or channel.
-      void setOutChanAndUpdate(int /*chan*/);
-      void setOutPortAndUpdate(int /*port*/);
+      void setOutChanAndUpdate(int chan);
+      void setOutPortAndUpdate(int port);
       // Combines both port and channel operations.
-      void setOutPortAndChannelAndUpdate(int /*port*/, int /*chan*/);
+      void setOutPortAndChannelAndUpdate(int port, int chan);
       
-      //void setInPortMask(int i)       { _inPortMask = i; }
-      //void setInPortMask(unsigned int i) { _inPortMask = i; }  // Obsolete
-      //void setInChannelMask(int i)    { _inChannelMask = i; }  //
       // Backward compatibility: For reading old songs.
-      void setInPortAndChannelMask(unsigned int /*portmask*/, int /*chanmask*/); 
+      void setInPortAndChannelMask(unsigned int portmask, int chanmask); 
       
       void setRecEcho(bool b)         { _recEcho = b; }
       int outPort() const             { return _outPort;     }
-      //int inPortMask() const          { return _inPortMask;  }
-      //unsigned int inPortMask() const { return _inPortMask;  }
       int outChannel() const          { return _outChannel;  }
-      //int inChannelMask() const       { return _inChannelMask; }
       bool recEcho() const            { return _recEcho; }
 
       virtual bool isMute() const;
       virtual void setSolo(bool val);
       virtual void updateSoloStates(bool noDec);
       virtual void updateInternalSoloStates();
-      
-      //bool soloMode() const           { return _soloRefCnt; }
       
       virtual bool canRecord() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }
@@ -350,9 +337,6 @@ class MidiTrack : public Track {
 //---------------------------------------------------------
 
 class AudioTrack : public Track {
-      //friend class MidiTrack;
-      //static unsigned int _soloRefCnt;
-      
       bool _haveData; // Whether we have data from a previous process call during current cycle.
       
       CtrlListList _controller;
@@ -360,7 +344,6 @@ class AudioTrack : public Track {
 
       bool _prefader;               // prefader metering
       std::vector<double> _auxSend;
-      //void readRecfile(Xml& xml);
       void readAuxSend(Xml& xml);
       
       bool _sendMetronome;
@@ -370,7 +353,6 @@ class AudioTrack : public Track {
 
    protected:
       float** outBuffers;
-      //float* outBuffers[MAX_CHANNELS];  
       int _totalOutChannels;
       int _totalInChannels;
       
@@ -382,7 +364,6 @@ class AudioTrack : public Track {
       
    public:
       AudioTrack(TrackType t);
-      //AudioTrack(TrackType t, int num_out_bufs = MAX_CHANNELS); 
       
       AudioTrack(const AudioTrack&, int flags);
       virtual ~AudioTrack();
@@ -397,7 +378,6 @@ class AudioTrack : public Track {
       bool prepareRecording();
 
       bool processed() { return _processed; }
-      //void setProcessed(bool v) { _processed = v; }
 
       void addController(CtrlList*);
       void removeController(int id);
@@ -425,8 +405,6 @@ class AudioTrack : public Track {
       virtual void updateSoloStates(bool noDec);
       virtual void updateInternalSoloStates();
       
-      //bool soloMode() const               { return _soloRefCnt; }
-
       void putFifo(int channels, unsigned long n, float** bp);
 
       void record();
@@ -457,11 +435,10 @@ class AudioTrack : public Track {
       void setPluginCtrlVal(int param, double val);
       
       void readVolume(Xml& xml);
-      //void writeRouting(int, Xml&) const;
 
       virtual void preProcessAlways() { _processed = false; }
-      virtual void  addData(unsigned /*samplePos*/, int /*channels*/, int /*srcStartChan*/, int /*srcChannels*/, unsigned /*frames*/, float** /*buffer*/);
-      virtual void copyData(unsigned /*samplePos*/, int /*channels*/, int /*srcStartChan*/, int /*srcChannels*/, unsigned /*frames*/, float** /*buffer*/);
+      virtual void  addData(unsigned samplePos, int channels, int srcStartChan, int srcChannels, unsigned frames, float** buffer);
+      virtual void copyData(unsigned samplePos, int channels, int srcStartChan, int srcChannels, unsigned frames, float** buffer);
       virtual bool hasAuxSend() const { return false; }
       
       // automation
@@ -539,7 +516,6 @@ class AudioOutput : public AudioTrack {
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
       virtual void setChannels(int n);
-//      virtual bool isMute() const;
       void processInit(unsigned);
       void process(unsigned pos, unsigned offset, unsigned);
       void processWrite();
@@ -617,7 +593,6 @@ class WaveTrack : public AudioTrack {
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
 
-      //virtual void fetchData(unsigned pos, unsigned frames, float** bp);
       virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek);
       
       virtual bool getData(unsigned, int ch, unsigned, float** bp);

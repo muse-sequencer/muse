@@ -1,3 +1,5 @@
+// THIS FILE IS ORPHANED: nothing uses its functions
+
 //=========================================================
 //  MusE
 //  Linux Music Editor
@@ -84,7 +86,6 @@ void SigList::add(unsigned tick, int z, int n)
 
 void SigList::del(unsigned tick)
       {
-// printf("SigList::del(%d)\n", tick);
       iSigEvent e = find(tick);
       if (e == end()) {
             printf("SigList::del(%d): not found\n", tick);
@@ -98,7 +99,7 @@ void SigList::del(unsigned tick)
             }
       ne->second->z = e->second->z;
       ne->second->n = e->second->n;
-      ne->second->tick  = e->second->tick;
+      ne->second->tick = e->second->tick;
       erase(e);
       normalize();
       }
@@ -133,7 +134,7 @@ void SigList::normalize()
             int ticksB = ticks_beat(e->second->n);
             int ticksM = ticksB * e->second->z;
             bar += delta / ticksM;
-            if (delta % ticksM)     // Teil eines Taktes
+            if (delta % ticksM)     // Part of a measure
                   ++bar;
             ++e;
             }
@@ -175,7 +176,6 @@ int SigList::ticksMeasure(unsigned tick) const
       ciSigEvent i = upper_bound(tick);
       if (i == end()) {
             printf("ticksMeasure: not found %d\n", tick);
-            // abort();
             return 0;
             }
       return ticksMeasure(i->second->z, i->second->n);
@@ -223,7 +223,6 @@ void SigList::timesig(unsigned tick, int& z, int& n) const
       ciSigEvent i = upper_bound(tick);
       if (i == end()) {
             printf("timesig(%d): not found\n", tick);
-            // abort();
             z = 4;
             n = 4;
             }
@@ -242,7 +241,6 @@ void SigList::tickValues(unsigned t, int* bar, int* beat, unsigned* tick) const
       ciSigEvent e = upper_bound(t);
       if (e == end()) {
             fprintf(stderr, "tickValues(0x%x) not found(%zd)\n", t, size());
-            // abort();
             *bar = 0;
             *beat = 0;
             *tick = 0;
@@ -293,7 +291,6 @@ unsigned SigList::raster(unsigned t, int raster) const
       ciSigEvent e = upper_bound(t);
       if (e == end()) {
             printf("SigList::raster(%x,)\n", t);
-            // abort();
             return t;
             }
       int delta  = t - e->second->tick;

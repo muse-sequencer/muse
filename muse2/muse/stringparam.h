@@ -33,21 +33,19 @@ namespace MusECore {
 
 class Xml;
 
-//typedef std::pair<std::string, std::string >                 StringParamMapItem;
 typedef std::map<std::string, std::string >::iterator           iStringParamMap;
 typedef std::map<std::string, std::string >::const_iterator     ciStringParamMap;
 
 class StringParamMap : public std::map<std::string, std::string > 
 {
   public:
-    void set(const char* /*key*/, const char* /*value*/);
-    void remove(const char* /*key*/);
+    void set(const char* key, const char* value);
+    void remove(const char* key);
     
-    iStringParamMap findKey(const char* /*key*/);
-    //int index(char* /*key*/);
+    iStringParamMap findKey(const char* key);
     
-    void read(Xml& /*xml*/, const QString& /*name*/);
-    void write(int /*level*/, Xml& /*xml*/, const char* /*name*/) const;
+    void read(Xml& xml, const QString& name);
+    void write(int level, Xml& xml, const char* name) const;
 };
 
 } // namespace MusECore

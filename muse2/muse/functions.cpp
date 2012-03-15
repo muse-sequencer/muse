@@ -1181,7 +1181,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
 	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
-	                                         // pointer changes (by resize) screw it up
+	                                                     // pointer changes (by resize) screw it up
 	MusEGlobal::song->applyOperationGroup(operations);
 	MusEGlobal::song->update(SC_SELECTION);
 }

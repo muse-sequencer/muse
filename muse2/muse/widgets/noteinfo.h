@@ -29,8 +29,6 @@ namespace Awl {
       //class PitchEdit;
       };
 
-class QSpinBox;
-
 ///class PosEdit;
 namespace MusECore {
 class Pos;
@@ -39,6 +37,7 @@ class Pos;
 namespace MusEGui {
 
 class PitchEdit;
+class SpinBox;
 
 //---------------------------------------------------------
 //   NoteInfo
@@ -46,16 +45,14 @@ class PitchEdit;
 
 class NoteInfo : public QToolBar {
       Q_OBJECT
-    
+      
       ///PosEdit* selTime;
       Awl::PosEdit* selTime;
-      QSpinBox* selLen;
+      SpinBox* selLen;
       PitchEdit* selPitch;
-      QSpinBox* selVelOn;
-      QSpinBox* selVelOff;
+      SpinBox* selVelOn;
+      SpinBox* selVelOff;
       bool deltaMode;
-
-      
 
    public:
       enum ValType {VAL_TIME, VAL_LEN, VAL_VELON, VAL_VELOFF, VAL_PITCH };
@@ -76,6 +73,8 @@ class NoteInfo : public QToolBar {
 
    signals:
       void valueChanged(MusEGui::NoteInfo::ValType, int);
+      void returnPressed();
+      void escapePressed();
       };
 
 } // namespace MusEGui

@@ -458,8 +458,7 @@ void PosLen::setLenTick(unsigned len)
       {
       _lenTick = len;
       sn       = -1;
-//      if (type() == FRAMES)
-            _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
+      _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
       }
 
 //---------------------------------------------------------
@@ -470,8 +469,7 @@ void PosLen::setLenFrame(unsigned len)
       {
       _lenFrame = len;
       sn      = -1;
-//      if (type() == TICKS)
-            _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + len, &sn);
+      _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + len, &sn);
       }
 
 //---------------------------------------------------------

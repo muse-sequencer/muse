@@ -136,6 +136,7 @@ class Transport : public QWidget
       void stopToggled(bool);
       void playToggled(bool);
       void configChanged();
+      void sigChange(const AL::TimeSignature&);
 
    public slots:
       void setTempo(int tempo);

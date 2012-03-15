@@ -147,7 +147,6 @@ GlobalConfigValues config = {
       QRect(0, 0, 400, 300),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
-      //QRect(0, 0, 300, 500),        // GeometryMixer;  // Obsolete
       {
          QString("Mixer A"),
          QRect(0, 0, 300, 500),        // Mixer1
@@ -193,9 +192,8 @@ GlobalConfigValues config = {
       MusECore::DONT_REC_MUTED_OR_HIDDEN,
       true,                         // addHiddenTracks
       true,                         // unhideTracks
-      MusEGlobal::PREFER_NEW        // drumTrackPreference
+      MusEGlobal::PREFER_NEW,       // drumTrackPreference
+      false                         // smartFocus
     };
 
-//GlobalConfigValues globalConfig = config;
-    
 } // namespace MusEGlobal

@@ -50,7 +50,6 @@ class PopupMenu;
 class MPConfig : public QDialog, Ui::SynthConfigBase {
       Q_OBJECT
       QMenu* instrPopup;
-      //QMenu* popup;
       MusEGui::PopupMenu* defpup;
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
       void setWhatsThis(QTableWidgetItem *item, int col);

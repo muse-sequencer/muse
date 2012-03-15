@@ -17,8 +17,10 @@
     <extSync>0</extSync>
     <bigtimeVisible>0</bigtimeVisible>
     <transportVisible>0</transportVisible>
-    <geometryMain x="0" y="0" w="878" h="468"></geometryMain>
-    <geometryTransport x="0" y="0" w="607" h="86"></geometryTransport>
+    <geometryMain x="0" y="0" w="1024" h="695"></geometryMain>
+    <geometryTransport x="0" y="0" w="0" h="0"></geometryTransport>
+    <arrangerVisible>1</arrangerVisible>
+    <markerVisible>0</markerVisible>
     <mixer1Visible>0</mixer1Visible>
     <mixer2Visible>0</mixer2Visible>
     <sequencer>
@@ -57,9 +59,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -71,9 +97,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -85,9 +135,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -99,9 +173,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -113,9 +211,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -127,9 +249,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -141,9 +287,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -155,9 +325,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -169,9 +363,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -183,9 +401,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -197,9 +439,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -211,9 +477,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -225,9 +515,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -239,9 +553,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -253,9 +591,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -267,9 +629,33 @@
             </controller>
           <controller id="10">
             </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
           <controller id="91">
             </controller>
           <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
             </controller>
           <controller id="262144">
             </controller>
@@ -412,7 +798,7 @@
           </channel>
         </midiport>
       <midiport idx="2">
-        <instrument>generic midi</instrument>
+        <instrument>General Midi</instrument>
         <channel idx="0">
           <controller id="7">
             </controller>
@@ -692,7 +1078,7 @@
         <range>1</range>
         <strength>90</strength>
         <threshold>0</threshold>
-        <raster>3</raster>
+        <raster>2</raster>
         <swing>0</swing>
         <quant_len>1</quant_len>
         </quantize>
@@ -732,7 +1118,7 @@
       <pastedialog>
         <insert_method>0</insert_method>
         <number>1</number>
-        <raster>384</raster>
+        <raster>1536</raster>
         <clone>0</clone>
         <all_in_one_track>0</all_in_one_track>
         </pastedialog>
@@ -862,7 +1248,7 @@
       <label>Organ</label>
       <port>0</port>
       <nativeGuiVisible>0</nativeGuiVisible>
-      <nativeGeometry x="3" y="23" w="460" h="364"></nativeGeometry>
+      <nativeGeometry x="478" y="27" w="460" h="364"></nativeGeometry>
       <curProgram bankH="0" bankL="0" prog="0"/>
       <midistate version="2">
         <event type="2" datalen="75">
@@ -897,7 +1283,7 @@
       <label>vam</label>
       <port>3</port>
       <nativeGuiVisible>0</nativeGuiVisible>
-      <nativeGeometry x="0" y="0" w="696" h="533"></nativeGeometry>
+      <nativeGeometry x="270" y="27" w="726" h="533"></nativeGeometry>
       <curProgram bankH="0" bankL="0" prog="0"/>
       <midistate version="2">
         <event type="2" datalen="131">
@@ -919,7 +1305,7 @@
       </Route>
     <Route channel="1">
       <source name="Out 1"/>
-      <dest type="1" name="system:playback_2"/>
+      <dest type="1" name="system:playback_1"/>
       </Route>
     <Route channel="0" channels="2">
       <source name="fluid-1"/>
@@ -934,19 +1320,7 @@
       <dest name="Out 1"/>
       </Route>
     <Route channelMask="65535">
-      <source mport="0"/>
-      <dest name="Track 1"/>
-      </Route>
-    <Route channelMask="65535">
-      <source mport="1"/>
-      <dest name="Track 1"/>
-      </Route>
-    <Route channelMask="65535">
       <source mport="2"/>
-      <dest name="Track 1"/>
-      </Route>
-    <Route channelMask="65535">
-      <source mport="3"/>
       <dest name="Track 1"/>
       </Route>
     <tempolist fix="500000">
@@ -971,4 +1345,6 @@
     <drummap>
       </drummap>
     </song>
+  <no_toplevels>
+  </no_toplevels>
   </muse>

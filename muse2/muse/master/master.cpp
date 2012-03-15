@@ -245,7 +245,7 @@ void Master::viewMouseMoveEvent(QMouseEvent* event)
       {
       QPoint pos = event->pos();
 //      QPoint dist = pos - start;
-//      bool moving = dist.y() >= 3 || dist.y() <= 3 || dist.x() >= 3 || dist.x() <= 3;
+//      bool moving = dist.y() >= 3 || dist.y() <= 3 || dist.x() >= 3 || dist.x() <= 3; DELETETHIS
 
       switch (drag) {
             case DRAG_NEW:

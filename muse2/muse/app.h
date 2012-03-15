@@ -31,7 +31,6 @@
 #include <list>
 
 class QCloseEvent;
-class QFocusEvent;
 class QMainWindow;
 class QMenu;
 class QPoint;
@@ -211,14 +210,16 @@ class MusE : public QMainWindow
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
       
+      bool writeTopwinState;
+      
       bool readMidi(FILE*);
       void read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate);
       void processTrack(MusECore::MidiTrack* track);
 
-      void write(MusECore::Xml& xml) const;
+      void write(MusECore::Xml& xml, bool writeTopwins) const;
       // If clear_all is false, it will not touch things like midi ports.
       bool clearSong(bool clear_all = true);
-      bool save(const QString&, bool);
+      bool save(const QString&, bool overwriteWarn, bool writeTopwins);
       void setUntitledProject();
       void setConfigDefaults();
 
@@ -235,8 +236,6 @@ class MusE : public QMainWindow
       void writeGlobalConfiguration(int level, MusECore::Xml&) const;
       void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
-
-      virtual void focusInEvent(QFocusEvent*);
 
       QSignalMapper *midiPluginSignalMapper;
       QSignalMapper *followSignalMapper;
@@ -279,18 +278,12 @@ class MusE : public QMainWindow
       void startSongInfo(bool editable=true);
 
       void writeGlobalConfiguration() const;
-      //void startEditInstrument();
       void startClipList(bool);
       
       void openRecentMenu();
       void selectProject(QAction* act);
       void cmd(int);
-/*    void copyMeasure();  // commented out by flo: these are not implemented,
-      void eraseMeasure(); // but maybe will be in future (state: revision 988)
-      void deleteMeasure();
-      void createMeasure();
-      void mixTrack();
-*/
+
       void startMidiInputPlugin(int);
       void hideMitPluginTranspose();
       void hideMidiInputTransform();
@@ -325,8 +318,6 @@ class MusE : public QMainWindow
       void arrangeSubWindowsColumns();
       void tileSubWindows();
 
-      //void hackishSongOpenTimerTimeout();
-      
    public slots:
       bool saveAs();
       void bounceToFile(MusECore::AudioOutput* ao = 0);
@@ -351,7 +342,7 @@ class MusE : public QMainWindow
       void startEditor(MusECore::PartList*, int);
       void startScoreQuickly();
       void startPianoroll();
-      void startPianoroll(MusECore::PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
+      void startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls = false);
       void startWaveEditor();
       void startWaveEditor(MusECore::PartList*);
       void openInScoreEdit(ScoreEdit* destination, MusECore::PartList* pl, bool allInOne=false);
@@ -363,7 +354,7 @@ class MusE : public QMainWindow
       void startListEditor();
       void startListEditor(MusECore::PartList*);
       void startDrumEditor();
-      void startDrumEditor(MusECore::PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
+      void startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls = false);
       void startEditor(MusECore::Track*);
       void startMidiTransformer();
       

@@ -76,7 +76,7 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   
   //createFolderCheckbox->setChecked(MusEGlobal::config.projectStoreInFolder && is_new); // Suggest no folder if not new.
   
-  connect(templateCheckBox,SIGNAL(clicked()), this, SLOT(templateButtonChanged()));
+  connect(templateCheckBox,SIGNAL(toggled(bool)), this, SLOT(templateButtonChanged(bool)));
   //connect(templateCheckBox,SIGNAL(clicked()), this, SLOT(updateDirectoryPath()));
   connect(projDirToolButton,SIGNAL(clicked()), this, SLOT(browseProjDir()));
   connect(restorePathButton,SIGNAL(clicked()), this, SLOT(restorePath()));
@@ -215,9 +215,10 @@ void ProjectCreateImpl::browseProjDir()
   }  
 }
 
-void ProjectCreateImpl::templateButtonChanged()
+void ProjectCreateImpl::templateButtonChanged(bool v)
 {
-  restorePathButton->setEnabled(templateCheckBox->isChecked() ? !overrideTemplDirPath.isEmpty() : !overrideDirPath.isEmpty()); 
+  restorePathButton->setEnabled(v ? !overrideTemplDirPath.isEmpty() : !overrideDirPath.isEmpty()); 
+  winStateCheckbox->setChecked(!v);
   updateDirectoryPath();
 }
 
@@ -231,12 +232,18 @@ void ProjectCreateImpl::restorePath()
   updateDirectoryPath();
 }
 
-/*
-bool ProjectCreateImpl::getProjectIsTemplate() const
+
+bool ProjectCreateImpl::getWriteTopwins() const
 {
-  return templateCheckBox->isChecked();
+  return winStateCheckbox->isChecked();
 }
 
+void ProjectCreateImpl::setWriteTopwins(bool v)
+{
+  winStateCheckbox->setChecked(v);
+}
+
+/*
 QString ProjectCreateImpl::getTemplatePath() const
 {
    return templDirPath;

@@ -38,13 +38,11 @@
 #include "midiport.h"
 #include "transport.h"
 #include "arranger.h"
-//#include "arranger/arranger.h"    // p4.0.2
 #include "mpevent.h"
 #include "event.h"
 #include "midictrl.h"
 #include "instruments/minstrument.h"
 #include "drummap.h"
-//#include "midiedit/drummap.h"    // p4.0.2        
 #include "xml.h"
 #include "audio.h"
 #include "gconfig.h"
@@ -195,9 +193,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         mport->setInstrument(instr);
 
                         MusECore::EventList* mel = track->events();
-                        //buildMidiEventList(mel, el, track, division, first);
-                        // Don't do loops.
-                        buildMidiEventList(mel, el, track, division, first, false);
+                        buildMidiEventList(mel, el, track, division, first, false); // Don't do loops.
                         first = false;
 
                         // Comment Added by T356.
@@ -209,8 +205,7 @@ bool MusE::importMidi(const QString name, bool merge)
                            else
                            {
                               track->setType(MusECore::Track::DRUM);
-
-                              // remap drum pitch with drumOutmap
+                              // remap drum pitch with drumOutmap (was: Inmap. flo93 thought this was wrong)
                               MusECore::EventList* tevents = track->events();
                               for (MusECore::iEvent i = tevents->begin(); i != tevents->end(); ++i) {
                                     MusECore::Event ev  = i->second;
@@ -246,9 +241,7 @@ bool MusE::importMidi(const QString name, bool merge)
                   track->setOutChannel(0);
                   track->setOutPort(0);
                   MusECore::EventList* mel = track->events();
-                  //buildMidiEventList(mel, el, track, division, true);
-                  // Do SysexMeta. Don't do loops.
-                  buildMidiEventList(mel, el, track, division, true, false);
+                  buildMidiEventList(mel, el, track, division, true, false); // Do SysexMeta. Don't do loops.
                   processTrack(track);
                   MusEGlobal::song->insertTrack0(track, -1);
                   }
@@ -263,7 +256,6 @@ bool MusE::importMidi(const QString name, bool merge)
             MusEGlobal::song->initLen();
 
             int z, n;
-            ///sigmap.timesig(0, z, n);
             AL::sigmap.timesig(0, z, n);
 
             int tempo = MusEGlobal::tempomap.tempo(0);
@@ -277,7 +269,6 @@ bool MusE::importMidi(const QString name, bool merge)
             MusEGlobal::song->updatePos();
 
             _arranger->reset();
-            ///_arranger->setMode(int(MusEGlobal::song->mtype())); // p4.0.7 Tim
             }
       else {
             MusEGlobal::song->initLen();
@@ -324,7 +315,6 @@ void MusE::processTrack(MusECore::MidiTrack* track)
         
         int bar2, beat;
         unsigned tick;
-        ///sigmap.tickValues(len, &bar2, &beat, &tick);
         AL::sigmap.tickValues(len, &bar2, &beat, &tick);
         
         int lastOff = 0;
@@ -333,7 +323,6 @@ void MusE::processTrack(MusECore::MidiTrack* track)
         int x2 = 0;       // end tick current measure
   
         for (int bar = 0; bar < bar2; ++bar, x1 = x2) {
-              ///x2 = sigmap.bar2tick(bar+1, 0, 0);
               x2 = AL::sigmap.bar2tick(bar+1, 0, 0);
               if (lastOff > x2) {
                     // this measure is busy!
@@ -347,7 +336,6 @@ void MusE::processTrack(MusECore::MidiTrack* track)
                           MusECore::MidiPart* part = new MusECore::MidiPart(track);
                           part->setTick(st);
                           part->setLenTick(x1-st);
-  // printf("new part %d len: %d\n", st, x1-st);
                           part->setName(partname);
                           pl->add(part);
                           st = -1;
@@ -371,7 +359,6 @@ void MusE::processTrack(MusECore::MidiTrack* track)
         if (st != -1) {
               MusECore::MidiPart* part = new MusECore::MidiPart(track);
               part->setTick(st);
-  // printf("new part %d len: %d\n", st, x2-st);
               part->setLenTick(x2-st);
               part->setName(partname);
               pl->add(part);
@@ -381,7 +368,6 @@ void MusE::processTrack(MusECore::MidiTrack* track)
       {
         // Just one long part...
         MusECore::MidiPart* part = new MusECore::MidiPart(track);
-        //part->setTick(st);
         part->setTick(0);
         part->setLenTick(len);
         part->setName(partname);
@@ -434,11 +420,9 @@ void MusE::importController(int channel, MusECore::MidiPort* mport, int n)
             return;           // controller does already exist
       MusECore::MidiController* ctrl = 0;
       MusECore::MidiControllerList* mcl = instr->controller();
-// printf("import Ctrl\n");
       for (MusECore::iMidiController i = mcl->begin(); i != mcl->end(); ++i) {
             MusECore::MidiController* mc = i->second;
             int cn = mc->num();
-// printf("   %x %x\n", n, cn);
             if (cn == n) {
                   ctrl = mc;
                   break;
@@ -452,8 +436,6 @@ void MusE::importController(int channel, MusECore::MidiPort* mport, int n)
       if (ctrl == 0) {
             printf("controller 0x%x not defined for instrument %s, channel %d\n",
                n, instr->iname().toLatin1().constData(), channel);
-// TODO: register default Controller
-//      MusECore::MidiController* MusECore::MidiPort::midiController(int num) const
             }
       MusECore::MidiCtrlValList* newValList = new MusECore::MidiCtrlValList(n);
       vll->add(channel, newValList);
@@ -473,13 +455,11 @@ void MusE::importPart()
             MusECore::Track* t = *i;
             if (t->selected()) {
                   // Changed by T356. Support mixed .mpt files.
-                  //if (t->isMidiTrack()) {
                   if (t->isMidiTrack() || t->type() == MusECore::Track::WAVE) {
                         track = t;
                         break;
                         }
                   else {
-                        //QMessageBox::warning(this, QString("MusE"), tr("Import part is only valid for midi tracks!"));
                         QMessageBox::warning(this, QString("MusE"), tr("Import part is only valid for midi and wave tracks!"));
                         return;
                         }
@@ -515,6 +495,7 @@ void MusE::importPart()
 //---------------------------------------------------------
 void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track)
 {
+      // DELETETHIS 41
       // Changed by T356
       /*
       bool popenFlag = false;
@@ -581,9 +562,6 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
                   break;
             case MusECore::Xml::TagStart:
                   if (tag == "part") {
-                        //MusECore::MidiPart* p = new MusECore::MidiPart((MusECore::MidiTrack*)track);
-                        //p->read(xml);
-                        
                         // Read the part.
                         MusECore::Part* p = 0;
                         p = readXmlPart(xml, track);
@@ -604,8 +582,6 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
                           posOffset = tick - p->tick();
                         }
                         p->setTick(p->tick() + posOffset);
-                        //finalPos=p->tick() + p->lenTick();
-                        ////pos += p->lenTick();
                         MusEGlobal::audio->msgAddPart(p,false);
                         }
                   else

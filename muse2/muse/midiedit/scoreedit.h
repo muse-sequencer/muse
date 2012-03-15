@@ -51,6 +51,7 @@
 #include "steprec.h"
 #include "cleftypes.h"
 #include "helper.h"
+#include "spinbox.h"
 
 #include <set>
 #include <map>
@@ -106,11 +107,11 @@ class ScoreEdit : public TopWin
 		QWidget* mainw;
 		
 		MusEGui::EditToolBar* edit_tools;
-		QSpinBox* velo_spinbox;
-		QSpinBox* velo_off_spinbox;
+		SpinBox* velo_spinbox;
+		SpinBox* velo_off_spinbox;
 		
 		QComboBox* quant_combobox;
-		QSpinBox* px_per_whole_spinbox;
+		SpinBox* px_per_whole_spinbox;
 		
 		QAction* preamble_keysig_action;
 		QAction* preamble_timesig_action;
@@ -179,9 +180,11 @@ class ScoreEdit : public TopWin
 		void menu_command(int);
 		void velo_box_changed();
 		void velo_off_box_changed();
+		void quant_combobox_changed(int);
 		void init_shortcuts();
 		void selection_changed();
 		void clipboard_changed();
+		void focusCanvas();
 		
 	signals:
 		void isDeleting(MusEGui::TopWin*);

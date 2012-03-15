@@ -148,7 +148,6 @@ void initMidiController()
       defaultMidiController.add(&veloCtrl);
       defaultMidiController.add(&pitchCtrl);
       defaultMidiController.add(&programCtrl);
-      // Removed p3.3.37 Re-added p4.0.15
       defaultMidiController.add(&mastervolCtrl);
       defaultMidiController.add(&volumeCtrl);
       defaultMidiController.add(&panCtrl);
@@ -198,11 +197,6 @@ QString midiCtrlNumString(int ctrl, bool fullyQualified)
 
 QString midiCtrlName(int ctrl, bool fullyQualified)
 {
-      //if (ctrl < 0x10000)
-      //      return QString(ctrlName[ctrl]);
-      //return QString("?N?");
-      
-      // p4.0.25 Tim
       int h = (ctrl >> 8) & 0xff;
       int l = ctrl & 0xff;
       QString s1 = QString("%1").arg(h);
@@ -271,7 +265,6 @@ void MidiController::copy(const MidiController &mc)
       _minVal  = mc._minVal;
       _maxVal  = mc._maxVal;
       _initVal = mc._initVal;
-      //updateBias();
       _bias    = mc._bias;
 }
 
@@ -291,17 +284,12 @@ MidiController& MidiController::operator=(const MidiController &mc)
 
 MidiController::ControllerType midiControllerType(int num)
       {
-      // p3.3.37
-      //if (num < 0x10000)
       if (num < CTRL_14_OFFSET)
             return MidiController::Controller7;
-      //if (num < 0x20000)
       if (num < CTRL_RPN_OFFSET)
             return MidiController::Controller14;
-      //if (num < 0x30000)
       if (num < CTRL_NRPN_OFFSET)
             return MidiController::RPN;
-      //if (num < 0x40000)
       if (num < CTRL_INTERNAL_OFFSET)
             return MidiController::NRPN;
       if (num == CTRL_PITCH)
@@ -310,10 +298,8 @@ MidiController::ControllerType midiControllerType(int num)
             return MidiController::Program;
       if (num == CTRL_VELOCITY)
             return MidiController::Velo;
-      //if (num < 0x60000)
       if (num < CTRL_NRPN14_OFFSET)
             return MidiController::RPN14;
-      //if (num < 0x70000)
       if (num < CTRL_NONE_OFFSET)
             return MidiController::NRPN14;
       return MidiController::Controller7;
@@ -366,14 +352,6 @@ void MidiController::updateBias()
           break;
   }
   
-  // Special handling of pan: Only thing to do is force the range!
-  //if(_num == CTRL_PANPOT)
-  //{
-  //  _minVal = -64;
-  //  _maxVal = 63;
-  //  _initVal = 0;
-  //}
-  
   // TODO: Limit _minVal and _maxVal to range.
   
   if(_minVal >= 0)
@@ -386,11 +364,9 @@ void MidiController::updateBias()
     {
       // Adjust bias to fit desired range.
       if(_minVal + _bias < mn)
-        //_minVal = mn - _bias;
         _bias += mn - _minVal + _bias;
       else
       if(_maxVal + _bias > mx)
-        //_maxVal = mx - _bias;
         _bias -= _maxVal + _bias - mx;
     }  
   }  
@@ -467,7 +443,6 @@ void MidiController::write(int level, Xml& xml) const
         if(_initVal != CTRL_VAL_UNKNOWN)     
           xml.nput(" init=\"%d\"", _initVal);
       }
-      //xml.put(level, " />");
       xml.put(" />");
 }
 
@@ -532,14 +507,11 @@ void MidiController::read(Xml& xml)
                                     case RPN:
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 127;
-                                          // p3.3.37
-                                          //_num |= 0x20000;
                                           _num |= CTRL_RPN_OFFSET;
                                           break;
                                     case NRPN:
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 127;
-                                          //_num |= 0x30000;
                                           _num |= CTRL_NRPN_OFFSET;
                                           break;
                                     case Controller7:
@@ -547,7 +519,6 @@ void MidiController::read(Xml& xml)
                                                 _maxVal = 127;
                                           break;
                                     case Controller14:
-                                          //_num |= 0x10000;
                                           _num |= CTRL_14_OFFSET;
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 16383;
@@ -555,13 +526,11 @@ void MidiController::read(Xml& xml)
                                     case RPN14:
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 16383;
-                                          //_num |= 0x50000;
                                           _num |= CTRL_RPN14_OFFSET;
                                           break;
                                     case NRPN14:
                                           if (_maxVal == NOT_SET)
                                                 _maxVal = 16383;
-                                          //_num |= 0x60000;
                                           _num |= CTRL_NRPN14_OFFSET;
                                           break;
                                     case Pitch:
@@ -604,10 +573,8 @@ int MidiController::genNum(MidiController::ControllerType t, int h, int l)
             case Controller14:
                   return val + CTRL_14_OFFSET;
             case RPN:
-                  //return l + CTRL_RPN_OFFSET;
                   return val + CTRL_RPN_OFFSET;
             case NRPN:
-                  //return l + CTRL_NRPN_OFFSET;
                   return val + CTRL_NRPN_OFFSET;
             case RPN14:
                   return val + CTRL_RPN14_OFFSET;
@@ -772,8 +739,6 @@ int MidiCtrlValList::value(int tick, Part* part) const
 //    return true if new controller value added or replaced
 //---------------------------------------------------------
 
-// Changed by T356.
-//bool MidiCtrlValList::add(int tick, int val)
 bool MidiCtrlValList::addMCtlVal(int tick, int val, Part* part)
       {
       iMidiCtrlVal e = findMCtlVal(tick, part);
@@ -798,8 +763,6 @@ bool MidiCtrlValList::addMCtlVal(int tick, int val, Part* part)
 //   del
 //---------------------------------------------------------
 
-// Changed by T356.
-//void MidiCtrlValList::del(int tick)
 void MidiCtrlValList::delMCtlVal(int tick, Part* part)
 {
       iMidiCtrlVal e = findMCtlVal(tick, part);
@@ -815,8 +778,6 @@ void MidiCtrlValList::delMCtlVal(int tick, Part* part)
 //   find
 //---------------------------------------------------------
 
-// Changed by T356.
-//iMidiCtrlVal MidiCtrlValList::find(int tick, Part* part)
 iMidiCtrlVal MidiCtrlValList::findMCtlVal(int tick, Part* part)
 {
   MidiCtrlValRange range = equal_range(tick);
@@ -834,35 +795,11 @@ iMidiCtrlVal MidiCtrlValList::findMCtlVal(int tick, Part* part)
 
 MidiControllerList::MidiControllerList(const MidiControllerList& mcl) : std::map<int, MidiController*>()
 {
-  //copy(mcl);
-  
   for(ciMidiController i = mcl.begin(); i != mcl.end(); ++i)
   {
     MidiController* mc = i->second;
     add(new MidiController(*mc));
   }  
 }
-
-//---------------------------------------------------------
-//   copy
-//---------------------------------------------------------
-//void MidiControllerList::copy(const MidiControllerList &mcl)
-//{
-//  clear();
-//  for(ciMidiController i = mcl.begin(); i != mcl.end(); ++i)
-//  {
-//    MidiController* mc = *i;
-//    push_back(new MidiController(*mc));
-//  }  
-//}
-
-//---------------------------------------------------------
-//   operator =
-//---------------------------------------------------------
-//MidiControllerList& MidiControllerList::operator= (const MidiControllerList &mcl)
-//{
-//  copy(mcl);
-//  return *this;
-//}
 
 } // namespace MusECore

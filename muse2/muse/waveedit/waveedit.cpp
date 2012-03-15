@@ -80,7 +80,7 @@ void WaveEdit::closeEvent(QCloseEvent* e)
 WaveEdit::WaveEdit(MusECore::PartList* pl)
    : MidiEditor(TopWin::WAVE, 1, pl)
       {
-      setFocusPolicy(Qt::StrongFocus);
+      setFocusPolicy(Qt::NoFocus);
 
       QSignalMapper* mapper = new QSignalMapper(this);
       QAction* act;
@@ -190,6 +190,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       solo = new QToolButton();
       solo->setText(tr("Solo"));
       solo->setCheckable(true);
+      solo->setFocusPolicy(Qt::NoFocus);
       tb1->addWidget(solo);
       connect(solo,  SIGNAL(toggled(bool)), SLOT(soloChanged(bool)));
       
@@ -230,7 +231,8 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       ymag->setMaximum(256);
       ymag->setPageStep(256);
       ymag->setValue(yscale);
-       
+      ymag->setFocusPolicy(Qt::NoFocus);
+
       time                 = new MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
       connect(view, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
@@ -250,7 +252,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       mainGrid->addWidget(hscroll, 3, 0);
       mainGrid->addWidget(corner,  3, 1, Qt::AlignBottom | Qt::AlignRight);
 
-      view->setFocus();  // Tim.
+      view->setFocus();  
       
       connect(hscroll, SIGNAL(scrollChanged(int)), view, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  view, SLOT(setXMag(int)));

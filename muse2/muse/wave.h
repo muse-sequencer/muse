@@ -52,7 +52,6 @@ class SndFileList;
 //---------------------------------------------------------
 
 class SndFile {
-      //static SndFileList _sndFiles;
       QFileInfo* finfo;
       SNDFILE* sf;
       SNDFILE* sfUI;
@@ -242,7 +241,6 @@ class Clip {
       bool operator==(ClipBase* c) const { return clip == c; }
       ~Clip();
 
-      // ClipBase* clipBase() const    { return clip; }
       bool isNull() const              { return clip == 0; }
       int getRefCount() const          { return clip->getRefCount(); }
 

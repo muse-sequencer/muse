@@ -240,6 +240,7 @@ MFileDialog::MFileDialog(const QString& dir,
 
 	          }
             buttons.readMidiPortsGroup->setVisible(false);
+            buttons.writeWinStateGroup->setVisible(false);
             }
       }
 
@@ -314,7 +315,7 @@ QString getOpenFileName(const QString &startWith, const char** filters_chararray
 //---------------------------------------------------------
 
 QString getSaveFileName(const QString &startWith,
-   const char** filters_chararray, QWidget* parent, const QString& name)
+   const char** filters_chararray, QWidget* parent, const QString& name, bool* writeWinState)
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
       
@@ -322,12 +323,20 @@ QString getSaveFileName(const QString &startWith,
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
       dlg->setFileMode(QFileDialog::AnyFile);
+      if (writeWinState)
+      {
+        dlg->buttons.writeWinStateGroup->setVisible(true);
+        dlg->buttons.writeWinStateButton->setChecked(*writeWinState);
+      }
+
       QStringList files;
       QString result;
       if (dlg->exec() == QDialog::Accepted) {
             files = dlg->selectedFiles();
             if (!files.isEmpty())
                   result = files[0];
+          if (writeWinState)
+              *writeWinState = dlg->buttons.writeWinStateButton->isChecked();
       }
                   
       // Added by T356.

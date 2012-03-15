@@ -60,8 +60,9 @@ class PosEdit : public QAbstractSpinBox
    signals:
       void valueChanged(const MusECore::Pos&);
       
-      // Choose these three carefully, watch out for focusing recursion. 
+      // Choose these carefully, watch out for focusing recursion. 
       void returnPressed();
+      void escapePressed();
       void lostFocus();      
       // This is emitted when focus lost or return pressed (same as QAbstractSpinBox). 
       void editingFinished();

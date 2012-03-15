@@ -35,8 +35,6 @@
 #include <stdio.h>
 #include <values.h>
 #include <errno.h>
-//#include <sys/stat.h>
-//#include <sys/mman.h>
 
 #include "dcanvas.h"
 #include "midieditor.h"
@@ -97,7 +95,7 @@ CItem* DrumCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
       
       int diff = event.endTick()-part->lenTick();
       if (diff > 0)  {// too short part? extend it
-            //printf("addItem - this code should not be run!\n");
+            //printf("addItem - this code should not be run!\n");  DELETETHIS
             //MusECore::Part* newPart = part->clone();
             //newPart->setLenTick(newPart->lenTick()+diff);
             //MusEGlobal::audio->msgChangePart(part, newPart,false);
@@ -159,7 +157,6 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
 
 DrumCanvas::~DrumCanvas()
 {
-  //items.clearDelete();
   
   if (must_delete_our_drum_map && ourDrumMap!=NULL)
     delete [] ourDrumMap;
@@ -338,10 +335,9 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       newEvent.setPitch(ev_pitch);
       newEvent.setTick(ntick);
 
-      // Added by T356, removed by flo93: with operation groups, it happens that the
-      // part is too short right now, even if it's queued for being extended
-      //if(((int)newEvent.endTick() - (int)part->lenTick()) > 0)  
-      //  printf("DrumCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
+      // don't check, whether the new event is within the part
+      // at this place. with operation groups, the part isn't
+      // resized yet. (flo93)
       
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, dest_part, false, false));
@@ -364,7 +360,7 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
 
 CItem* DrumCanvas::newItem(const QPoint& p, int state)
       {
-      int instr = y2pitch(p.y());         //MusEGlobal::drumInmap[y2pitch(p.y())];
+      int instr = y2pitch(p.y());
       if ((instr<0) || (instr>=getOurDrumMapSize()))
         return NULL;
       
@@ -449,10 +445,8 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       int npitch = event.pitch();
       //event.setPitch(npitch); // commented out by flo: has no effect
 
-      //
       // check for existing event
       //    if found change command semantic from insert to delete
-      //
       MusECore::EventList* el = nevent->part()->events();
       MusECore::iEvent lower  = el->lower_bound(event.tick());
       MusECore::iEvent upper  = el->upper_bound(event.tick());
@@ -858,7 +852,7 @@ void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
 //---------------------------------------------------------
 
 void DrumCanvas::keyPressed(int index, int velocity)
-      {
+{
       using MusECore::MidiTrack;
       
       if ((index<0) || (index>=getOurDrumMapSize()))

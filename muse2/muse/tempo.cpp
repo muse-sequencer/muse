@@ -138,12 +138,26 @@ int TempoList::tempo(unsigned tick) const
       }
 
 //---------------------------------------------------------
+//   tempo
+//   Bypass the useList flag and read from the list
+//---------------------------------------------------------
+
+int TempoList::tempoAt(unsigned tick) const
+      {
+            ciTEvent i = upper_bound(tick);
+            if (i == end()) {
+                  printf("tempoAt: no TEMPO at tick %d,0x%x\n", tick, tick);
+                  return 1000;
+                  }
+            return i->second->tempo;
+      }
+
+//---------------------------------------------------------
 //   del
 //---------------------------------------------------------
 
 void TempoList::del(unsigned tick)
       {
-// printf("TempoList::del(%d)\n", tick);
       iTEvent e = find(tick);
       if (e == end()) {
             printf("TempoList::del(%d): not found\n", tick);
@@ -270,7 +284,6 @@ unsigned TempoList::tick2frame(unsigned tick, int* sn) const
             ciTEvent i = upper_bound(tick);
             if (i == end()) {
                   printf("tick2frame(%d,0x%x): not found\n", tick, tick);
-                  // abort();
                   return 0;
                   }
             unsigned dtick = tick - i->second->tick;

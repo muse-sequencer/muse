@@ -104,9 +104,6 @@ void EventList::move(Event& event, unsigned tick)
 
 iEvent EventList::find(const Event& event)
       {
-      // Changed by T356.
-      // Changed by Tim. p3.3.8
-      //EventRange range = equal_range(event.tick());
       EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
 
       

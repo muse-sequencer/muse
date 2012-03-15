@@ -151,7 +151,7 @@ void UndoList::clearDelete()
                   }
                 }
                 break;
-          /* case UndoOp::ModifyTrack:
+          /* case UndoOp::ModifyTrack: DELETETHIS 50
                 if(i->oTrack)
                 {
                   // Prevent delete i->oTrack from crashing.
@@ -207,7 +207,6 @@ void UndoList::clearDelete()
                   delete i->copyMarker;
                 break;
           case UndoOp::ModifyTrackName:
-                //printf("UndoList::clearDelete ModifyTrackName old:%s new:%s\n", i->_oldName, i->_newName);  
                 if (i->_oldName)
                   delete i->_oldName;
                 if (i->_newName)
@@ -230,9 +229,8 @@ void UndoList::clearDelete()
 
 void Song::startUndo()
       {
-      //redoList->clear(); // added by flo93: redo must be invalidated when a new undo is started
-      redoList->clearDelete(); // p4.0.46 Tim
-			MusEGlobal::redoAction->setEnabled(false);     // 
+      redoList->clearDelete(); // redo must be invalidated when a new undo is started
+			MusEGlobal::redoAction->setEnabled(false);
 			
       undoList->push_back(Undo());
       updateFlags = 0;
@@ -299,9 +297,8 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
             }
             else
             {
-                  //redoList->clear(); // added by flo93: redo must be invalidated when a new undo is started
-                  redoList->clearDelete(); // p4.0.46 Tim.
-                  MusEGlobal::redoAction->setEnabled(false);     // 
+                  redoList->clearDelete(); // redo must be invalidated when a new undo is started
+                  MusEGlobal::redoAction->setEnabled(false);
 						}
             
             return doUndo;
@@ -328,12 +325,11 @@ void Song::doUndo2()
                         break;
                   case UndoOp::DeleteTrack:
                         insertTrack2(i->oTrack, i->trackno);
-                        // Added by T356.
                         chainTrackParts(i->oTrack, true);
                         
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
-/*                        
+/*  DELETETHIS  130                     
                   case UndoOp::ModifyTrack:
                         {
                         //printf("Song::doUndo2 ModifyTrack #1 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
@@ -483,7 +479,7 @@ void Song::doUndo2()
                         removePart(part);
                         updateFlags |= SC_PART_REMOVED;
                         i->oPart->events()->incARef(-1);
-                        //i->oPart->unchainClone();
+                        //i->oPart->unchainClone(); DELETETHIS
                         unchainClone(i->oPart);
                         }
                         break;
@@ -491,7 +487,7 @@ void Song::doUndo2()
                         addPart(i->oPart);
                         updateFlags |= SC_PART_INSERTED;
                         i->oPart->events()->incARef(1);
-                        //i->oPart->chainClone();
+                        //i->oPart->chainClone(); DELETETHIS
                         chainClone(i->oPart);
                         break;
                   case UndoOp::ModifyPart:
@@ -500,7 +496,7 @@ void Song::doUndo2()
                         changePart(i->oPart, i->nPart);
                         i->oPart->events()->incARef(-1);
                         i->nPart->events()->incARef(1);
-                        //i->oPart->replaceClone(i->nPart);
+                        //i->oPart->replaceClone(i->nPart); DELETETHIS
                         replaceClone(i->oPart, i->nPart);
                         if(i->doCtrls)
                           addPortCtrlEvents(i->nPart, i->doClones);
@@ -527,22 +523,18 @@ void Song::doUndo2()
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
                   case UndoOp::AddTempo:
-                        //printf("doUndo2: UndoOp::AddTempo. deleting tempo at: %d\n", i->a);
                         MusEGlobal::tempomap.delTempo(i->a);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::DeleteTempo:
-                        //printf("doUndo2: UndoOp::DeleteTempo. adding tempo at: %d, tempo=%d\n", i->a, i->b);
                         MusEGlobal::tempomap.addTempo(i->a, i->b);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::AddSig:
-                        ///sigmap.del(i->a);
                         AL::sigmap.del(i->a);
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::DeleteSig:
-                        ///sigmap.add(i->a, i->b, i->c);
                         AL::sigmap.add(i->a, AL::TimeSignature(i->b, i->c));
                         updateFlags |= SC_SIG;
                         break;
@@ -581,7 +573,6 @@ void Song::doRedo2()
             switch(i->type) {
                   case UndoOp::AddTrack:
                         insertTrack2(i->oTrack, i->trackno);
-                        // Added by T356.
                         chainTrackParts(i->oTrack, true);
                         
                         updateFlags |= SC_TRACK_INSERTED;
@@ -591,7 +582,7 @@ void Song::doRedo2()
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
                         
-/*                        
+/*         DELETETHIS 130                
                   case UndoOp::ModifyTrack:
                         {
                         // Unchain the track parts, but don't touch the ref counts.
@@ -732,14 +723,14 @@ void Song::doRedo2()
                         addPart(i->oPart);
                         updateFlags |= SC_PART_INSERTED;
                         i->oPart->events()->incARef(1);
-                        //i->oPart->chainClone();
+                        //i->oPart->chainClone(); DELETETHIS
                         chainClone(i->oPart);
                         break;
                   case UndoOp::DeletePart:
                         removePart(i->oPart);
                         updateFlags |= SC_PART_REMOVED;
                         i->oPart->events()->incARef(-1);
-                        //i->oPart->unchainClone();
+                        //i->oPart->unchainClone(); DELETETHIS
                         unchainClone(i->oPart);
                         break;
                   case UndoOp::ModifyPart:
@@ -748,7 +739,7 @@ void Song::doRedo2()
                         changePart(i->nPart, i->oPart);
                         i->oPart->events()->incARef(1);
                         i->nPart->events()->incARef(-1);
-                        //i->nPart->replaceClone(i->oPart);
+                        //i->nPart->replaceClone(i->oPart); DELETETHIS
                         replaceClone(i->nPart, i->oPart);
                         if(i->doCtrls)
                           addPortCtrlEvents(i->oPart, i->doClones);
@@ -775,22 +766,18 @@ void Song::doRedo2()
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
                   case UndoOp::AddTempo:
-                        //printf("doRedo2: UndoOp::AddTempo. adding tempo at: %d with tempo=%d\n", i->a, i->b);
                         MusEGlobal::tempomap.addTempo(i->a, i->b);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::DeleteTempo:
-                        //printf("doRedo2: UndoOp::DeleteTempo. deleting tempo at: %d with tempo=%d\n", i->a, i->b);
                         MusEGlobal::tempomap.delTempo(i->a);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::AddSig:
-                        ///sigmap.add(i->a, i->b, i->c);
                         AL::sigmap.add(i->a, AL::TimeSignature(i->b, i->c));
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::DeleteSig:
-                        ///sigmap.del(i->a);
                         AL::sigmap.del(i->a);
                         updateFlags |= SC_SIG;
                         break;
@@ -982,7 +969,7 @@ bool Song::doUndo1()
                               case Track::AUDIO_INPUT:
                                       connectJackRoutes((AudioTrack*)i->oTrack, false);
                                     break;
-                              //case Track::AUDIO_SOFTSYNTH:
+                              //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
                                       //SynthI* si = (SynthI*)i->oTrack;
                                       //si->synth()->init(
                               //      break;
@@ -1003,22 +990,19 @@ bool Song::doUndo1()
                         {
                           MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
                           if (mt == 0 || mt->type() == MusECore::Track::DRUM)
-                          //if (mt == 0 || mt->isDrumTrack())  // For Flo later with new drum tracks.  p4.0.46 Tim
                             break;
                           if (i->_oldPropValue != mt->outChannel()) 
                           {
-                                //mt->setOutChannel(i->_oldPropValue);
                                 MusEGlobal::audio->msgIdle(true);
-                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->_oldPropValue);
                                 mt->setOutChanAndUpdate(i->_oldPropValue);
                                 MusEGlobal::audio->msgIdle(false);
+                                // DELETETHIS 6
                                 //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
                                 //      for (int i=0; i<DRUM_MAPSIZE; i++)
                                 //            MusEGlobal::drumMap[i].channel = i->_oldPropValue;
                                 //      }
                                 //updateFlags |= SC_CHANNELS;
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
-                                //updateFlags |= SC_MIDI_TRACK_PROP | SC_ROUTE;  
                                 updateFlags |= SC_MIDI_TRACK_PROP;               
                           }
                         }
@@ -1061,19 +1045,17 @@ void Song::doUndo3()
                         insertTrack3(i->oTrack, i->trackno);
                         break;
                   case UndoOp::ModifyTrack:
-                        // Not much choice but to do this - Tim.
+                        // Not much choice but to do this - Tim. DELETETHIS 2
                         //clearClipboardAndCloneList();
                         break;      
                   case UndoOp::ModifyMarker:
                         {
-                          //printf("performing undo for one marker at copy %d real %d\n", i->copyMarker, i->realMarker);
                           if (i->realMarker) {
                             Marker tmpMarker = *i->realMarker;
                             *i->realMarker = *i->copyMarker; // swap them
                             *i->copyMarker = tmpMarker;
                           }
                           else {
-                            //printf("flipping marker\n");
                             i->realMarker = _markerList->add(*i->copyMarker);
                             delete i->copyMarker;
                             i->copyMarker = 0;
@@ -1112,7 +1094,7 @@ bool Song::doRedo1()
                               case Track::AUDIO_INPUT:
                                       connectJackRoutes((AudioTrack*)i->oTrack, false);
                                     break;
-                              //case Track::AUDIO_SOFTSYNTH:
+                              //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
                                       //SynthI* si = (SynthI*)i->oTrack;
                                       //si->synth()->init(
                               //      break;
@@ -1136,22 +1118,19 @@ bool Song::doRedo1()
                         {
                           MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
                           if (mt == 0 || mt->type() == MusECore::Track::DRUM)
-                          //if (mt == 0 || mt->isDrumTrack())  // For Flo later with new drum tracks.  p4.0.46 Tim
                             break;
                           if (i->_newPropValue != mt->outChannel()) 
                           {
-                                //mt->setOutChannel(i->_newPropValue);
                                 MusEGlobal::audio->msgIdle(true);
-                                //MusEGlobal::audio->msgSetTrackOutChannel(mt, i->_newPropValue);
                                 mt->setOutChanAndUpdate(i->_newPropValue);
                                 MusEGlobal::audio->msgIdle(false);
+                                // DELETETHIS 5
                                 //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
                                 //      for (int i=0; i<DRUM_MAPSIZE; i++)
                                 //            MusEGlobal::drumMap[i].channel = i->_newPropValue;
                                 //      }
                                 //updateFlags |= SC_CHANNELS;
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
-                                //updateFlags |= SC_MIDI_TRACK_PROP | SC_ROUTE;  
                                 updateFlags |= SC_MIDI_TRACK_PROP;               
                           }
                         }
@@ -1194,12 +1173,11 @@ void Song::doRedo3()
                         removeTrack3(i->oTrack);
                         break;
                   case UndoOp::ModifyTrack:
-                        // Not much choice but to do this - Tim.
+                        // Not much choice but to do this - Tim. DELETETHIS 2
                         //clearClipboardAndCloneList();
                         break;      
                   case UndoOp::ModifyMarker:
                         {
-                          //printf("performing redo for one marker at copy %d real %d\n", i->copyMarker, i->realMarker);
                           if (i->copyMarker) {
                             Marker tmpMarker = *i->realMarker;
                             *i->realMarker = *i->copyMarker; // swap them

@@ -173,7 +173,7 @@ namespace MusECore {
           (long int)((1000000000.0 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params)));
       }
 
-      return 0;
+      return (long int)((1000000000.0 / snd_timer_info_get_resolution(info)) / snd_timer_params_get_ticks(params));
     }
     actFreq = (1000000000 / snd_timer_info_get_resolution(info)) / setTick;
     if (actFreq != freq) {

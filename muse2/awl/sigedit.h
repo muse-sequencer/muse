@@ -44,7 +44,7 @@ namespace Awl {
 class SigEdit : public QWidget
       {
       Q_OBJECT
-
+      
       AL::TimeSignature _sig;
       bool initialized;
       QLabel *slash;
@@ -58,6 +58,7 @@ class SigEdit : public QWidget
    signals:
       void valueChanged(const AL::TimeSignature&);
       void returnPressed();
+      void escapePressed();
 
    private slots:
       void setN(const int n);
@@ -71,8 +72,8 @@ class SigEdit : public QWidget
    public:
       SigEdit(QWidget* parent = 0);
       ~SigEdit();
-
       AL::TimeSignature sig() const { return _sig; }
+      void setFrame(bool v) { zSpin->setFrame(v); nSpin->setFrame(v); }
       };
 }
 

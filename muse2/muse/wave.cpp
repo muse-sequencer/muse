@@ -48,18 +48,8 @@
 
 namespace MusECore {
 
-/*
-const char* audioFilePattern[] = {
-      "Wave/Binary (*.wav *.ogg *.bin)",
-      "Wave (*.wav *.ogg)",
-      "Binary (*.bin)",
-      "All Files (*)",
-      0
-      };
-*/
 const int cacheMag = 128;
 
-// ClipList* waveClips;
 
 SndFileList SndFile::sndFiles;
 
@@ -147,18 +137,14 @@ void SndFile::update()
 
 void SndFile::readCache(const QString& path, bool showProgress)
       {
-//      printf("readCache %s for %d samples channel %d\n",
-//         path.toLatin1().constData(), samples(), channels());
-
       if (cache) {
             for (unsigned i = 0; i < channels(); ++i)
                   delete [] cache[i];
             delete[] cache;
             }
-      if (samples() == 0) {
-//            printf("SndFile::readCache: file empty\n");
+      if (samples() == 0) 
             return;
-            }
+      
       csize = (samples() + cacheMag - 1)/cacheMag;
       cache = new SampleV*[channels()];
       for (unsigned ch = 0; ch < channels(); ++ch)
@@ -249,10 +235,9 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite)
             s[ch].rms = 0;
             }
             
-      if (pos > samples()) {
-//            printf("%p pos %d > samples %d\n", this, pos, samples());
+      if (pos > samples())
             return;
-            }
+      
 
       if (mag < cacheMag) {
             float data[channels()][mag];
@@ -556,7 +541,6 @@ size_t SndFile::write(int srcChannels, float** src, size_t n)
       if (srcChannels == dstChannels) {
             for (size_t i = 0; i < n; ++i) {
                   for (int ch = 0; ch < dstChannels; ++ch)
-                        //*dst++ = *(src[ch]+i); // < limitValue ? *(src[ch]+i) : limitValue;
                         if (*(src[ch]+i) > 0)
                           *dst++ = *(src[ch]+i) < limitValue ? *(src[ch]+i) : limitValue;
                         else
@@ -648,7 +632,6 @@ SndFile* getWave(const QString& inName, bool readOnlyFlag)
                         }
                   }
             }
-// printf("=====%s %s\n", inName.toLatin1().constData(), name.toLatin1().constData());
 
       // only open one instance of wave file
       SndFile* f = SndFile::sndFiles.search(name);
@@ -669,7 +652,6 @@ SndFile* getWave(const QString& inName, bool readOnlyFlag)
                   QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
                   QFileInfo wcainfo(cacheName);
                   if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-                        //printf("wcafile is older or does not exist!\n");
                         QFile(cacheName).remove();
                         f->readCache(cacheName,true);
                         }
@@ -702,7 +684,6 @@ SndFile* getWave(const QString& inName, bool readOnlyFlag)
                   QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
                   QFileInfo wcainfo(cacheName);
                   if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-                        //printf("wcafile is older or does not exist!\n");
                         QFile(cacheName).remove();
                         f->readCache(cacheName,true);
                         }
@@ -727,7 +708,6 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       // put in the tmpfile, and when redo is eventually called the data is switched again (causing the muted data to be written to the "original"
       // file. The data is merely switched.
 
-      //printf("Applying undofile: orig=%s tmpfile=%s startframe=%d endframe=%d\n", original.toLatin1().constData(), tmpfile.toLatin1().constData(), startframe, endframe);
       SndFile* orig = sndFiles.search(original);
       SndFile tmp  = SndFile(tmpfile);
       if (!orig) {
@@ -809,6 +789,7 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       MusEGlobal::audio->msgIdle(false);
       }
 
+// DELETETHIS 170
 #if 0
 //---------------------------------------------------------
 //   Clip
@@ -983,7 +964,6 @@ int ClipList::idx(const Clip& clip) const
 //   cmdAddRecordedWave
 //---------------------------------------------------------
 
-//void Song::cmdAddRecordedWave(WaveTrack* track, const MusECore::Pos& s, const MusECore::Pos& e)
 void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e)
       {
       if (MusEGlobal::debugMsg)
@@ -996,18 +976,11 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
             return;
             }
       
-      // Removed by Tim. p3.3.8
-      //unsigned startTick = roundDownBar(s.tick());
-      //unsigned endTick   = roundUpBar(e.tick());
-      
-      // Added by Tim. p3.3.8
-      
       if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
         s.setTick(lPos().tick());
       // If we are looping, just set the end to the right marker, since we don't know how many loops have occurred.
       // (Fixed: Added Audio::loopCount)
       // Otherwise if punchout is on, limit the end to the right marker.
-      //if(loop() || (punchout() && e.tick() > rPos().tick()) )
       if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )
         e.setTick(rPos().tick());
       // No part to be created? Delete the rec sound file.
@@ -1126,13 +1099,6 @@ void SndFileList::clearDelete()
       // sure) and deletes the entry on its own.
       while (!empty()) 
             delete *begin();
-
-      /* this is wrong, because ~SndFile deletes itself from the
-       * list, causing the iterator to be invalidated -> fail.
-      for (SndFileList::iterator i = begin(); i != end(); ++i)
-            delete *i;
-      clear();
-      */
 }
 
 
@@ -1153,7 +1119,6 @@ void MusE::importWave()
               "a wave track"));
             return;
             }
-      //QString fn = MusEGui::getOpenFileName(MusEGlobal::lastWavePath, audioFilePattern, this,
       QString fn = MusEGui::getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
          tr("Import Wave File"), 0);                                    
       if (!fn.isEmpty()) {
@@ -1186,7 +1151,6 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
                   tr("&Yes"), tr("&No"),
                   QString::null, 0, 1 ))
                   {
-                  //printf("why won't muse let me delete the file object? %d\n", f->getRefCount());
                   if (f->getRefCount() == 0)
                         delete f;
                   return true;

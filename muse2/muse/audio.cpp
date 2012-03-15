@@ -63,11 +63,11 @@ void initAudio()
   
 extern double curTime();
 
-//static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
+//static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 }; DELETETHIS 2
 //static const unsigned char mmcStopMsg[] =         { 0x7f, 0x7f, 0x06, 0x01 };
 
 const char* seqMsgList[] = {
-      "SEQM_ADD_TRACK", "SEQM_REMOVE_TRACK", //"SEQM_CHANGE_TRACK",  
+      "SEQM_ADD_TRACK", "SEQM_REMOVE_TRACK", //"SEQM_CHANGE_TRACK",   DELETETHIS
       "SEQM_MOVE_TRACK",
       "SEQM_ADD_PART", "SEQM_REMOVE_PART", "SEQM_CHANGE_PART",
       "SEQM_ADD_EVENT", "SEQM_REMOVE_EVENT", "SEQM_CHANGE_EVENT",
@@ -87,15 +87,15 @@ const char* seqMsgList[] = {
       "SEQM_SCAN_ALSA_MIDI_PORTS",
       "SEQM_SET_AUX",
       "SEQM_UPDATE_SOLO_STATES",
-      //"MIDI_SHOW_INSTR_GUI",
-      //"MIDI_SHOW_INSTR_NATIVE_GUI",
+      //"MIDI_SHOW_INSTR_GUI", DELETETHIS
+      //"MIDI_SHOW_INSTR_NATIVE_GUI", DELETETHIS
       "AUDIO_RECORD",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
-      //"AUDIO_VOL", "AUDIO_PAN",
+      //"AUDIO_VOL", "AUDIO_PAN", DELETETHIS
       "AUDIO_ADDPLUGIN",
       "AUDIO_SET_SEG_SIZE",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
-      //"AUDIO_SET_PLUGIN_CTRL_VAL",
+      //"AUDIO_SET_PLUGIN_CTRL_VAL", DELETETHIS
       "AUDIO_SWAP_CONTROLLER_IDX",
       "AUDIO_CLEAR_CONTROLLER_EVENTS",
       "AUDIO_SEEK_PREV_AC_EVENT",
@@ -125,7 +125,6 @@ Audio::Audio()
       idle          = false;
       _freewheel    = false;
       _bounce       = false;
-      //loopPassed    = false;
       _loopFrame    = 0;
       _loopCount    = 0;
 
@@ -145,8 +144,6 @@ Audio::Audio()
       state         = STOP;
       msg           = 0;
 
-      //startRecordPos.setType(Pos::TICKS);
-      //endRecordPos.setType(Pos::TICKS);
       startRecordPos.setType(Pos::FRAMES);  // Tim
       endRecordPos.setType(Pos::FRAMES);
       
@@ -189,22 +186,16 @@ extern bool initJackAudio();
 
 bool Audio::start()
       {
-      //process(MusEGlobal::segmentSize);   // warm up caches
       state = STOP;
       _loopCount = 0;
       
       MusEGlobal::muse->setHeartBeat();  
       
-      if (MusEGlobal::audioDevice) {
-          //_running = true;
-          //MusEGlobal::audioDevice->start();
-          }
-      else {
-          if(false == initJackAudio()) {
-                //_running = true;
+      if (!MusEGlobal::audioDevice) {
+          if(initJackAudio() == false) {
                 InputList* itl = MusEGlobal::song->inputs();
                 for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
-                      //printf("reconnecting input %s\n", (*i)->name().ascii());
+                      if (MusEGlobal::debugMsg) printf("reconnecting input %s\n", (*i)->name().toAscii().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
                       (*i)->setName((*i)->name()); // restore jack connection
@@ -212,13 +203,12 @@ bool Audio::start()
 
                 OutputList* otl = MusEGlobal::song->outputs();
                 for (iAudioOutput i = otl->begin(); i != otl->end(); ++i) {
-                      //printf("reconnecting output %s\n", (*i)->name().ascii());
+                      if (MusEGlobal::debugMsg) printf("reconnecting output %s\n", (*i)->name().toAscii().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
-                      //printf("name=%s\n",(*i)->name().toLatin1());
+                      if (MusEGlobal::debugMsg) printf("name=%s\n",(*i)->name().toAscii().data());
                       (*i)->setName((*i)->name()); // restore jack connection
                       }
-               //MusEGlobal::audioDevice->start();
                }
           else {
                printf("Failed to init audio!\n");
@@ -235,7 +225,6 @@ bool Audio::start()
 
       MusEGlobal::audioDevice->stopTransport();  
       
-      //MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos().frame());
       MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());   
       
       return true;
@@ -260,12 +249,14 @@ void Audio::stop(bool)
 
 bool Audio::sync(int jackState, unsigned frame)
       {
+      //printf("Audio::sync: state:%d jackState:%d\n", state, jackState);  
+        
       bool done = true;
       if (state == LOOP1)
             state = LOOP2;
       else {
             State s = State(jackState);
-            //
+            
             //  STOP -> START_PLAY      start rolling
             //  STOP -> STOP            seek in stop state
             //  PLAY -> START_PLAY  seek in play state
@@ -273,10 +264,10 @@ bool Audio::sync(int jackState, unsigned frame)
             if (state != START_PLAY) {
                 Pos p(frame, false);
                 seek(p);
-              if (!_freewheel)
+                if (!_freewheel)
                       done = MusEGlobal::audioPrefetch->seekDone();
                 if (s == START_PLAY)
-                        state = START_PLAY;
+                      state = START_PLAY;
                 }
             else {
                 if (frame != _pos.frame()) {
@@ -286,6 +277,7 @@ bool Audio::sync(int jackState, unsigned frame)
                 done = MusEGlobal::audioPrefetch->seekDone();
                   }
             }
+      //printf("Audio::sync: done:%d\n", done);  
       return done;
       
       }
@@ -296,7 +288,6 @@ bool Audio::sync(int jackState, unsigned frame)
 
 void Audio::setFreewheel(bool val)
       {
-// printf("JACK: freewheel callback %d\n", val);
       _freewheel = val;
       }
 
@@ -319,9 +310,6 @@ void Audio::shutdown()
 
 void Audio::process(unsigned frames)
       {
-//      extern int watchAudio;
-//      ++watchAudio;           // make a simple watchdog happy. Disabled. 
-      
       if (!MusEGlobal::checkAudioDevice()) return;
       if (msg) {
             processMsg(msg);
@@ -360,16 +348,6 @@ void Audio::process(unsigned frames)
             startRolling();
             }
       else if (isPlaying() && jackState == STOP) {
-            // Make sure to stop bounce and freewheel mode, for example if user presses stop 
-            //  in QJackCtl before right-hand marker is reached (which is handled below). p3.3.43 
-            //printf("Audio::process isPlaying() && jackState == STOP\n");
-            //if (_bounce) 
-            //{
-              //printf("  stopping bounce...\n");
-            //  _bounce = false;
-            //  write(sigFd, "F", 1);
-            //}
-            
             stopRolling();
             }
       else if (state == START_PLAY && jackState == STOP) {
@@ -393,7 +371,7 @@ void Audio::process(unsigned frames)
             printf("JACK: state transition %s -> %s ?\n",
                audioStates[state], audioStates[jackState]);
 
-// printf("p %s %s %d\n", audioStates[jackState], audioStates[state], _pos.frame());
+      // printf("p %s %s %d\n", audioStates[jackState], audioStates[state], _pos.frame());
 
       //
       // clear aux send buffers
@@ -428,8 +406,9 @@ void Audio::process(unsigned frames)
                && !(MusEGlobal::song->record()
                 || _bounce
                 || MusEGlobal::song->loop())) {
-                  //if(MusEGlobal::debugMsg)
-                  //  printf("Audio::process curTickPos >= MusEGlobal::song->len\n");
+
+                  if(MusEGlobal::debugMsg)
+                    printf("Audio::process curTickPos >= MusEGlobal::song->len\n");
                   
                   MusEGlobal::audioDevice->stopTransport();
                   return;
@@ -456,7 +435,6 @@ void Audio::process(unsigned frames)
                             for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
                                 if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
                                     if (mp->device()!=NULL) {
-                                        //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
                                         MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
                                         // may cause problems, called from audio thread
                                         mp->device()->putEvent(ev);
@@ -465,10 +443,8 @@ void Audio::process(unsigned frames)
                                 }
                             }
 
-                        //MusEGlobal::audioDevice->seekTransport(_loopFrame);
                         Pos lp(_loopFrame, false);
                         MusEGlobal::audioDevice->seekTransport(lp);
-// printf("  process: seek to %d, end %d\n", _loopFrame, loop.frame());
                         }
                   }
             
@@ -493,8 +469,6 @@ void Audio::process(unsigned frames)
       syncTime    = curTime();
       frameOffset = syncFrame - samplePos;
 
-      //printf("Audio::process calling process1:\n");
-      
       process1(samplePos, offset, frames);
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
             (*i)->processWrite();
@@ -513,8 +487,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       if (MusEGlobal::midiSeqRunning) {
             processMidi();
             }
-            //MusEGlobal::midiSeq->msgProcess();
-      
       //
       // process not connected tracks
       // to animate meter display
@@ -553,14 +525,14 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         track = (AudioTrack*)(*it);
         if(!track->processed() && track->type() == Track::AUDIO_AUX)
         {
-          //printf("Audio::process1 Do aux: track:%s\n", track->name().toLatin1().constData());  
+          //printf("Audio::process1 Do aux: track:%s\n", track->name().toLatin1().constData());   DELETETHIS
           channels = track->channels();
           // Just a dummy buffer.
           float* buffer[channels];
           float data[frames * channels];
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
-          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1());
+          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
           track->copyData(samplePos, channels, -1, -1, frames, buffer);
         }
       }      
@@ -580,20 +552,16 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         if((*it)->isMidiTrack())
           continue;
         track = (AudioTrack*)(*it);
-        // Ignore unprocessed tracks which have an output route, because they will be processed by 
-        //  whatever track(s) they are routed to.
-        //if(!track->processed() && track->noOutRoute() && (track->type() != Track::AUDIO_OUTPUT))
-        // No, do all.
         if(!track->processed() && (track->type() != Track::AUDIO_OUTPUT))
         {
-          //printf("Audio::process1 track:%s\n", track->name().toLatin1().constData()); 
+          //printf("Audio::process1 track:%s\n", track->name().toLatin1().constData());  DELETETHIS
           channels = track->channels();
           // Just a dummy buffer.
           float* buffer[channels];
           float data[frames * channels];
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
-          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1());
+          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
           track->copyData(samplePos, channels, -1, -1, frames, buffer);
         }
       }      
@@ -618,12 +586,6 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_REMOVEROUTES:      
                   removeAllRoutes(msg->sroute, msg->droute);
                   break;
-            //case AUDIO_VOL:
-            //      msg->snode->setVolume(msg->dval);
-            //      break;
-            //case AUDIO_PAN:
-            //      msg->snode->setPan(msg->dval);
-            //      break;
             case SEQM_SET_AUX:
                   msg->snode->setAuxSend(msg->ival, msg->dval);
                   break;
@@ -636,10 +598,6 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_ADDPLUGIN:
                   msg->snode->addPlugin(msg->plugin, msg->ival);
                   break;
-            //case AUDIO_SET_PLUGIN_CTRL_VAL:
-                  //msg->plugin->track()->setPluginCtrlVal(msg->ival, msg->dval);
-            //      msg->snode->setPluginCtrlVal(msg->ival, msg->dval);
-            //      break;
             case AUDIO_SWAP_CONTROLLER_IDX:
                   msg->snode->swapControllerIDX(msg->a, msg->b);
                   break;
@@ -675,7 +633,7 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_SET_SEG_SIZE:
                   MusEGlobal::segmentSize = msg->ival;
                   MusEGlobal::sampleRate  = msg->iival;
-#if 0 //TODO
+#if 0 //TODO or DELETETHIS ?
                   audioOutput.MusEGlobal::segmentSizeChanged();
                   for (int i = 0; i < mixerGroups; ++i)
                         audioGroups[i].MusEGlobal::segmentSizeChanged();
@@ -685,7 +643,6 @@ void Audio::processMsg(AudioMsg* msg)
                   break;
 
             case SEQM_RESET_DEVICES:
-                  //printf("Audio::processMsg SEQM_RESET_DEVICES\n");  
                   for (int i = 0; i < MIDI_PORTS; ++i)                         
                   {      
                     if(MusEGlobal::midiPorts[i].device())                       
@@ -723,6 +680,7 @@ void Audio::processMsg(AudioMsg* msg)
             case SEQM_SCAN_ALSA_MIDI_PORTS:
                   alsaScanMidiPorts();
                   break;
+            //DELETETHIS 6
             //case MIDI_SHOW_INSTR_GUI:
             //      MusEGlobal::midiSeq->msgUpdatePollFd();
             //      break;
@@ -743,6 +701,7 @@ void Audio::processMsg(AudioMsg* msg)
                         frameOffset   = syncFrame - samplePos;
                         }
                   break;
+            // DELETETHIS 6
             //case SEQM_ADD_TRACK:
             //case SEQM_REMOVE_TRACK:
             //case SEQM_CHANGE_TRACK:
@@ -780,23 +739,27 @@ void Audio::seek(const Pos& p)
               printf("Audio::seek already there\n");
             return;        
             }
-      //printf("Audio::seek frame:%d\n", p.frame());
+      if (MusEGlobal::heavyDebugMsg)
+        printf("Audio::seek frame:%d\n", p.frame());
+        
       _pos        = p;
       if (!MusEGlobal::checkAudioDevice()) return;
       syncFrame   = MusEGlobal::audioDevice->framePos();
       frameOffset = syncFrame - _pos.frame();
       curTickPos  = _pos.tick();
 
-      if (curTickPos == 0 && !MusEGlobal::song->record())     
+// ALSA support       
+#if 1 
+      MusEGlobal::midiSeq->msgSeek();     // handle stuck notes and set controller for new position
+#else      
+      if (curTickPos == 0 && !MusEGlobal::song->record())     // Moved here from MidiSeq::processStop()
             MusEGlobal::audio->initDevices();
-
       for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
           (*i)->handleSeek();  
+#endif
       
-      //loopPassed = true;   // for record loop mode
       if (state != LOOP2 && !freewheel())
       {
-            //MusEGlobal::audioPrefetch->msgSeek(_pos.frame());
             // We need to force prefetch to update, to ensure the most recent data. 
             // Things can happen to a part before play is pressed - such as part muting, 
             //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
@@ -863,11 +826,6 @@ void Audio::startRolling()
           if(!dev)
             continue;
               
-          // Shall we check open flags?
-          //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-          //if(!(dev->openFlags() & 1))
-          //  continue;
-          
           MidiSyncInfo& si = mp->syncInfo();
             
           if(si.MMCOut())
@@ -887,7 +845,8 @@ void Audio::startRolling()
          && MusEGlobal::song->click()
          && !MusEGlobal::extSyncFlag.value()
          && MusEGlobal::song->record()) {
-#if 0
+// DELETETHIS 14 or keep?
+/*
             state = PRECOUNT;
             int z, n;
             if (precountFromMastertrackFlag)
@@ -899,7 +858,7 @@ void Audio::startRolling()
             clickno       = z * preMeasures;
             clicksMeasure = z;
             ticksBeat     = (division * 4)/n;
-#endif
+*/
             }
       else {
             //
@@ -919,15 +878,12 @@ void Audio::startRolling()
           for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
               if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
                   if(mp->device() != NULL) {
-                        //printf("send enable sustain!!!!!!!! port %d ch %d\n", i,ch);
                         MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
-                        mp->device()->addScheduledEvent(ev);    // TODO: Not working? Try putEvent
+                        mp->device()->putEvent(ev);    
                         }
                   }
               }
           }
-     
-     //tempomap.clearExtTempoList();     
      }
 
 //---------------------------------------------------------
@@ -936,19 +892,23 @@ void Audio::startRolling()
 
 void Audio::stopRolling()
 {
-      //if(MusEGlobal::debugMsg)
-      //  printf("Audio::stopRolling state %s\n", audioStates[state]);
+      if (MusEGlobal::debugMsg)
+        printf("Audio::stopRolling state %s\n", audioStates[state]);
       
       state = STOP;
       
-      MusEGlobal::midiSeq->setExternalPlayState(false); // not playing   Moved here from MidiSeq::processStop()   p4.0.34
-      
+// ALSA support      
+#if 1        
+      MusEGlobal::midiSeq->msgStop();
+#else      
+      MusEGlobal::midiSeq->setExternalPlayState(false); // not playing   Moved here from MidiSeq::processStop()   
       for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
       {
         MidiDevice* md = *id;
         md->handleStop();
       }
-
+#endif
+      
       WaveTrackList* tracks = MusEGlobal::song->waves();
       for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {
             WaveTrack* track = *i;
@@ -985,9 +945,7 @@ void Audio::recordStop()
                   //  MusEGlobal::song->setRecordFlag knows about it...
 
                   track->setRecFile(0);              // flush out the old file
-                  MusEGlobal::song->setRecordFlag(track, false); //
-                  //track->setRecordFlag1(true);       // and re-arm the track here
-                  //MusEGlobal::song->setRecordFlag(track, true);  // here
+                  MusEGlobal::song->setRecordFlag(track, false);
                   }
             }
       MidiTrackList* ml = MusEGlobal::song->midis();
@@ -1000,7 +958,6 @@ void Audio::recordStop()
             //    resolve NoteOff events, Controller etc.
             //---------------------------------------------------
 
-            //buildMidiEventList(el, mpel, mt, MusEGlobal::config.division, true);
             // Do SysexMeta. Do loops.
             buildMidiEventList(el, mpel, mt, MusEGlobal::config.division, true, true);
             MusEGlobal::song->cmdAddRecordedEvents(mt, el, startRecordPos.tick());

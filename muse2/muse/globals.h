@@ -77,6 +77,7 @@ extern QString lastMidiPath;
 extern bool debugMode;
 extern bool midiInputTrace;
 extern bool midiOutputTrace;
+extern bool unityWorkaround;
 extern bool debugMsg;
 extern bool heavyDebugMsg;
 extern bool debugSync;
@@ -96,7 +97,6 @@ extern const char* med_file_pattern[];
 extern const char* med_file_save_pattern[];
 extern const char* project_create_file_save_pattern[];
 extern const char* image_file_pattern[];
-//extern const char* ctrl_file_pattern[];
 extern const char* part_file_pattern[];
 extern const char* part_file_save_pattern[];
 extern const char* preset_file_pattern[];
@@ -105,7 +105,6 @@ extern const char* drum_map_file_pattern[];
 extern const char* drum_map_file_save_pattern[];
 extern const char* audio_file_pattern[];
 
-///extern Qt::ButtonState globalKeyState;
 extern Qt::KeyboardModifiers globalKeyState;
 
 extern int midiInputPorts;          //!< receive from all devices
@@ -146,8 +145,6 @@ extern QAction* punchoutAction;
 extern QAction* recordAction;
 extern QAction* panicAction;
 
-//class AudioMixerApp;
-//extern AudioMixerApp* audioMixer;
 extern MusEGui::MusE* muse;
 
 extern int preMeasures;

@@ -41,7 +41,6 @@ namespace MusECore {
 //    called from prefetch thread
 //---------------------------------------------------------
 
-//void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp)
 void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek)
       {
       // Added by Tim. p3.3.17
@@ -53,7 +52,6 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
       for (int i = 0; i < channels(); ++i)
             memset(bp[i], 0, samples * sizeof(float));
       
-      // p3.3.29
       // Process only if track is not off.
       if(!off())
       {  
@@ -62,8 +60,6 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
         unsigned n = samples;
         for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
               WavePart* part = (WavePart*)(ip->second);
-              // Changed by Tim. p3.3.17
-              //if (part->mute() || isMute())
               if (part->mute())
                   continue;
               
@@ -106,12 +102,6 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                     for (int i = 0; i < channels(); ++i)
                           bpp[i] = bp[i] + dstOffset;
   
-                    // By T356. Allow overlapping parts or events to mix together !
-                    // Since the buffers are cleared above, just read and add (don't overwrite) the samples.
-                    //event.read(srcOffset, bpp, channels(), nn);
-                    //event.read(srcOffset, bpp, channels(), nn, false);
-                    //event.readAudio(srcOffset, bpp, channels(), nn, doSeek, false);
-                    // p3.3.33
                     event.readAudio(part, srcOffset, bpp, channels(), nn, doSeek, false);
                     
                     }
@@ -122,21 +112,8 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
             // add denormal bias to outdata
             for (int i = 0; i < channels(); ++i)
                   for (unsigned int j = 0; j < samples; ++j)
-                  {
                       bp[i][j] +=MusEGlobal::denormalBias;
-                      
-                      /*
-                      // p3.3.41
-                      if(j & 1)
-                        bp[i][j] -=MusEGlobal::denormalBias;
-                      else  
-                        bp[i][j] +=MusEGlobal::denormalBias;
-                      */  
-                  }      
             }
-      
-      // p3.3.41
-      //fprintf(stderr, "WaveTrack::fetchData data: samples:%ld %e %e %e %e\n", samples, bp[0][0], bp[0][1], bp[0][2], bp[0][3]);
       
       _prefetchFifo.add();
       }
@@ -170,8 +147,6 @@ void WaveTrack::read(Xml& xml)
                         return;
                   case Xml::TagStart:
                         if (tag == "part") {
-                              //Part* p = newPart();
-                              //p->read(xml);
                               Part* p = 0;
                               p = readXmlPart(xml, this);
                               if(p)
@@ -209,7 +184,6 @@ Part* WaveTrack::newPart(Part*p, bool clone)
             }
       
       if(clone)
-        //p->chainClone(part);
         chainClone(p, part);
       
       return part;
@@ -221,22 +195,13 @@ Part* WaveTrack::newPart(Part*p, bool clone)
 
 bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float** bp)
       {
-      //if(MusEGlobal::debugMsg)
-      //  printf("WaveTrack::getData framePos:%u channels:%d nframe:%u processed?:%d\n", framePos, channels, nframe, processed());
-      
       if ((MusEGlobal::song->bounceTrack != this) && !noInRoute()) {
             RouteList* irl = inRoutes();
             ciRoute i = irl->begin();
             if(i->track->isMidiTrack())
-            {
-              //if(MusEGlobal::debugMsg)
-              //  printf("WaveTrack::getData: Error: First route is a midi track route!\n");
               return false;
-            }
-            // p3.3.38
-            //((AudioTrack*)i->track)->copyData(framePos, channels, nframe, bp);
+
             ((AudioTrack*)i->track)->copyData(framePos, channels, 
-                                              //(i->track->type() == Track::AUDIO_SOFTSYNTH && i->channel != -1) ? i->channel : 0, 
                                               i->channel, 
                                               i->channels,
                                               nframe, bp);
@@ -245,16 +210,9 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
             for (; i != irl->end(); ++i)
             {
               if(i->track->isMidiTrack())
-              {
-                //if(MusEGlobal::debugMsg)
-                //  printf("WaveTrack::getData: Error: Route is a midi track route!\n");
-                //return false;
                 continue;
-              }
-              // p3.3.38
-              //((AudioTrack*)i->track)->addData(framePos, channels, nframe, bp);
+
               ((AudioTrack*)i->track)->addData(framePos, channels, 
-                                               //(i->track->type() == Track::AUDIO_SOFTSYNTH && i->channel != -1) ? i->channel : 0, 
                                                i->channel, 
                                                i->channels,
                                                nframe, bp);
@@ -276,6 +234,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       if (!MusEGlobal::audio->isPlaying())
             return false;
       
+      // DELETETHIS 43
       // Removed by T356. Multiple out route cacheing now handled by AudioTrack::copyData and ::addData.
       /*
       if (outRoutes()->size() > 1) {
@@ -318,14 +277,11 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       else {
       */
       
-            //printf("WaveTrack::getData no out routes\n");
             
             if (MusEGlobal::audio->freewheel()) {
                   
                   // when freewheeling, read data direct from file:
                   // Indicate do not seek file before each read.
-                  // Changed by Tim. p3.3.17
-                  //fetchData(framePos, nframe, bp);
                   fetchData(framePos, nframe, bp, false);
                   
                   }
@@ -348,12 +304,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                                     }
                               }
                         }
-                        
-                        // p3.3.41
-                        //fprintf(stderr, "WaveTrack::getData %s data: nframe:%ld %e %e %e %e\n", name().toLatin1().constData(), nframe, bp[0][0], bp[0][1], bp[0][2], bp[0][3]);
-                        
                   }
-            //}
       return true;
       }
 

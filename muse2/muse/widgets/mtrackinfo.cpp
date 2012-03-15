@@ -104,18 +104,43 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   //iChanDetectLabel->setPixmap(*darkgreendotIcon);
   iChanDetectLabel->setPixmap(*darkRedLedIcon);
   
+  recEchoButton->setFocusPolicy(Qt::NoFocus);
   recEchoButton->setIcon((selected && ((MusECore::MidiTrack*)selected)->recEcho()) ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
   recEchoButton->setIconSize(midiThruOnIcon->size());  
   //recEchoButton->setOffPixmap(midiThruOffIcon);
   //recEchoButton->setOnPixmap(midiThruOnIcon);
   
+  iRButton->setFocusPolicy(Qt::NoFocus);
   iRButton->setIcon(QIcon(*routesMidiInIcon));
   iRButton->setIconSize(routesMidiInIcon->size());  
   //iRButton->setOffPixmap(routesMidiInIcon);
   
+  oRButton->setFocusPolicy(Qt::NoFocus);
   oRButton->setIcon(QIcon(*routesMidiOutIcon));
   oRButton->setIconSize(routesMidiOutIcon->size());  
   //oRButton->setOffPixmap(routesMidiOutIcon);
+
+  recordButton->setFocusPolicy(Qt::NoFocus);
+  progRecButton->setFocusPolicy(Qt::NoFocus);
+  volRecButton->setFocusPolicy(Qt::NoFocus);
+  panRecButton->setFocusPolicy(Qt::NoFocus);
+
+  iOutput->setFocusPolicy(Qt::StrongFocus);
+  iOutputChannel->setFocusPolicy(Qt::StrongFocus);
+  iHBank->setFocusPolicy(Qt::StrongFocus);
+  iLBank->setFocusPolicy(Qt::StrongFocus);
+  iProgram->setFocusPolicy(Qt::StrongFocus);
+  iHBank->setFocusPolicy(Qt::StrongFocus);
+  iLBank->setFocusPolicy(Qt::StrongFocus);
+  iProgram->setFocusPolicy(Qt::StrongFocus);
+  iLautst->setFocusPolicy(Qt::StrongFocus);
+  iLautst->setFocusPolicy(Qt::StrongFocus);
+  iTransp->setFocusPolicy(Qt::StrongFocus);
+  iAnschl->setFocusPolicy(Qt::StrongFocus);
+  iVerz->setFocusPolicy(Qt::StrongFocus);
+  iLen->setFocusPolicy(Qt::StrongFocus);
+  iKompr->setFocusPolicy(Qt::StrongFocus);
+  iPan->setFocusPolicy(Qt::StrongFocus);
   
   // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
   trackNameLabel->setAlignment(Qt::AlignCenter);
@@ -180,18 +205,18 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   connect(iHBank, SIGNAL(valueChanged(int)), SLOT(iProgHBankChanged()));
   connect(iLBank, SIGNAL(valueChanged(int)), SLOT(iProgLBankChanged()));
   connect(iProgram, SIGNAL(valueChanged(int)), SLOT(iProgramChanged()));
-  connect(iHBank, SIGNAL(doubleClicked()), SLOT(iProgramDoubleClicked()));
-  connect(iLBank, SIGNAL(doubleClicked()), SLOT(iProgramDoubleClicked()));
-  connect(iProgram, SIGNAL(doubleClicked()), SLOT(iProgramDoubleClicked()));
+  connect(iHBank, SIGNAL(ctrlClicked()), SLOT(iProgramDoubleClicked()));
+  connect(iLBank, SIGNAL(ctrlClicked()), SLOT(iProgramDoubleClicked()));
+  connect(iProgram, SIGNAL(ctrlClicked()), SLOT(iProgramDoubleClicked()));
   connect(iLautst, SIGNAL(valueChanged(int)), SLOT(iLautstChanged(int)));
-  connect(iLautst, SIGNAL(doubleClicked()), SLOT(iLautstDoubleClicked()));
+  connect(iLautst, SIGNAL(ctrlClicked()), SLOT(iLautstDoubleClicked()));
   connect(iTransp, SIGNAL(valueChanged(int)), SLOT(iTranspChanged(int)));
   connect(iAnschl, SIGNAL(valueChanged(int)), SLOT(iAnschlChanged(int)));
   connect(iVerz, SIGNAL(valueChanged(int)), SLOT(iVerzChanged(int)));
   connect(iLen, SIGNAL(valueChanged(int)), SLOT(iLenChanged(int)));
   connect(iKompr, SIGNAL(valueChanged(int)), SLOT(iKomprChanged(int)));
   connect(iPan, SIGNAL(valueChanged(int)), SLOT(iPanChanged(int)));
-  connect(iPan, SIGNAL(doubleClicked()), SLOT(iPanDoubleClicked()));
+  connect(iPan, SIGNAL(ctrlClicked()), SLOT(iPanDoubleClicked()));
   connect(iOutput, SIGNAL(activated(int)), SLOT(iOutputPortChanged(int)));
   ///connect(iInput, SIGNAL(textChanged(const QString&)), SLOT(iInputPortChanged(const QString&)));
   connect(recordButton, SIGNAL(clicked()), SLOT(recordClicked()));
@@ -200,6 +225,38 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   connect(panRecButton, SIGNAL(clicked()), SLOT(panRecClicked()));
   connect(recEchoButton, SIGNAL(toggled(bool)), SLOT(recEchoToggled(bool)));
   connect(iRButton, SIGNAL(pressed()), SLOT(inRoutesPressed()));
+
+  connect(iOutputChannel, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iHBank, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iLBank, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iProgram, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iHBank, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iLBank, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iProgram, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iLautst, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iLautst, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iTransp, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iAnschl, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iVerz, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iLen, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iKompr, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  connect(iPan, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+  
+  connect(iOutputChannel, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iHBank, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iLBank, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iProgram, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iHBank, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iLBank, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iProgram, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iLautst, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iLautst, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iTransp, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iAnschl, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iVerz, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iLen, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iKompr, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+  connect(iPan, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
   
   // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
   // Enabled (for Midi Port to Audio Input routing). p4.0.14 Tim.

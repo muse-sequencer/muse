@@ -116,7 +116,8 @@ bool MEvent::operator<(const MEvent& e) const
 
       if (channel() == e.channel())
             return type() == ME_NOTEOFF
-               || (type() == ME_NOTEON && dataB() == 0);
+               || (type() == ME_NOTEON && dataB() == 0)
+               || type() != ME_NOTEON;  // Make note-ons last so that controllers such as program come before notes played. 1/31/2012 Tim.
 
       int map[16] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15 };
       return map[channel()] < map[e.channel()];
@@ -147,7 +148,6 @@ MidiPlayEvent MidiFifo::get()
       {
       MidiPlayEvent event(fifo[rIndex]);
       rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
-      // q_atomic_decrement(&size);
       --size;
       return event;
       }
@@ -169,7 +169,6 @@ const MidiPlayEvent& MidiFifo::peek(int n)
 void MidiFifo::remove()
       {
       rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
-      // q_atomic_decrement(&size);
       --size;
       }
 
@@ -184,7 +183,6 @@ bool MidiRecFifo::put(const MidiPlayEvent& event)
       if (size < MIDI_REC_FIFO_SIZE) {
             fifo[wIndex] = event;
             wIndex = (wIndex + 1) % MIDI_REC_FIFO_SIZE;
-            // q_atomic_increment(&size);
             ++size;
             return false;
             }
@@ -199,7 +197,6 @@ MidiPlayEvent MidiRecFifo::get()
       {
       MidiPlayEvent event(fifo[rIndex]);
       rIndex = (rIndex + 1) % MIDI_REC_FIFO_SIZE;
-      // q_atomic_decrement(&size);
       --size;
       return event;
       }
@@ -221,7 +218,6 @@ const MidiPlayEvent& MidiRecFifo::peek(int n)
 void MidiRecFifo::remove()
       {
       rIndex = (rIndex + 1) % MIDI_REC_FIFO_SIZE;
-      // q_atomic_decrement(&size);
       --size;
       }
 

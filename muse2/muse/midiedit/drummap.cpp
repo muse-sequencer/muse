@@ -119,77 +119,6 @@ const DrumMap idrumMap[DRUM_MAPSIZE] = {
       { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 97, 97, false },
       { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 98, 98, false },
 
-      /*
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 83, 83, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 84, 84, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 85, 85, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 86, 86, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 87, 87, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 88, 88, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 89, 89, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 90, 90, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 91, 91, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 92, 92, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 93, 93, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 94, 94, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 95, 95, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 96, 96, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 97, 97, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 98, 98, false },
-
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 83, 83, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 84, 84, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 85, 85, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 86, 86, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 87, 87, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 88, 88, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 89, 89, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 90, 90, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 91, 91, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 92, 92, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 93, 93, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 94, 94, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 95, 95, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 96, 96, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 97, 97, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 98, 98, false },
-
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 83, 83, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 84, 84, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 85, 85, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 86, 86, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 87, 87, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 88, 88, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 89, 89, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 90, 90, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 91, 91, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 92, 92, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 93, 93, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 94, 94, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 95, 95, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 96, 96, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 97, 97, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 98, 98, false },
-
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 83, 83, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 84, 84, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 85, 85, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 86, 86, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 87, 87, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 88, 88, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 89, 89, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 90, 90, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 91, 91, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 92, 92, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 93, 93, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 94, 94, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 95, 95, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 96, 96, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 97, 97, false },
-      { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 98, 98, false }
-      };
-      */
-
       { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 99, 99, false },
       { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 100, 100, false },
       { QString(""),                   100, 16, 32, 9, 0, 70, 90, 127, 110, 101, 101, false },
@@ -339,9 +268,7 @@ void initDrumMap()
 void resetGMDrumMap()
       {
       MusEGlobal::audio->msgIdle(true);
-      // Delete all port controller events.
-      //MusEGlobal::audio->msgChangeAllPortDrumCtrlEvents(false);
-      MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
+      MusEGlobal::song->changeAllPortDrumCtrlEvents(false); // Delete all port controller events.
       
       for(int i = 0; i < DRUM_MAPSIZE; ++i) 
         MusEGlobal::drumMap[i] = idrumMap[i];
@@ -351,9 +278,8 @@ void resetGMDrumMap()
             MusEGlobal::drumInmap[(unsigned int)(MusEGlobal::drumMap[i].enote)] = i;
             MusEGlobal::drumOutmap[(unsigned int)(MusEGlobal::drumMap[i].anote)] = i;
             }
-      // Add all port controller events.
-      //MusEGlobal::audio->msgChangeAllPortDrumCtrlEvents(true);
-      MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
+      
+      MusEGlobal::song->changeAllPortDrumCtrlEvents(true); // Add all port controller events.
       MusEGlobal::audio->msgIdle(false);
       }
 
@@ -522,9 +448,7 @@ static void readDrummapEntry(Xml& xml, DrumMap* dm)
 void readDrumMap(Xml& xml, bool external)
       {
       MusEGlobal::audio->msgIdle(true);
-      // Delete all port controller events.
-      //MusEGlobal::audio->msgChangeAllPortDrumCtrlEvents(false);
-      MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
+      MusEGlobal::song->changeAllPortDrumCtrlEvents(false); // Delete all port controller events.
       
       if (external) {
             for (int i = 0; i < DRUM_MAPSIZE; ++i)
@@ -568,9 +492,8 @@ void readDrumMap(Xml& xml, bool external)
                                     MusEGlobal::drumInmap[(unsigned int)(MusEGlobal::drumMap[i].enote)] = i;
                                     MusEGlobal::drumOutmap[(unsigned int)(MusEGlobal::drumMap[i].anote)] = i;
                                     }
-                              // Add all port controller events.
-                              //MusEGlobal::audio->msgChangeAllPortDrumCtrlEvents(true);
-                              MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
+                              
+                              MusEGlobal::song->changeAllPortDrumCtrlEvents(true); // Add all port controller events.
                               
                               MusEGlobal::audio->msgIdle(false);
                               return;
@@ -579,9 +502,8 @@ void readDrumMap(Xml& xml, bool external)
                         break;
                   }
             }
-            // Add all port controller events.
-            //MusEGlobal::audio->msgChangeAllPortDrumCtrlEvents(true);
-            MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
+            
+            MusEGlobal::song->changeAllPortDrumCtrlEvents(true); // Add all port controller events.
             MusEGlobal::audio->msgIdle(false);
       }
 

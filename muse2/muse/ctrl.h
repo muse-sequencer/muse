@@ -43,7 +43,6 @@ const int AC_VOLUME = 0;
 const int AC_PAN    = 1;
 const int AC_MUTE   = 2;
 
-//inline int genACnum(int plugin, int ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
 inline unsigned long genACnum(unsigned long plugin, unsigned long ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
 
 enum CtrlValueType { VAL_LOG, VAL_LINEAR, VAL_INT, VAL_BOOL };
@@ -122,8 +121,8 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void setMode(Mode m)       { _mode = m; }
       double getDefault() const   { return _default; }
       void setDefault(double val) { _default = val; }
-      double curVal() const;  /*  { return _curVal; }  */
-      void setCurVal(double val); //  { _curVal = val; }
+      double curVal() const;
+      void setCurVal(double val);
       int id() const             { return _id; }
       QString name() const       { return _name; }
       void setName(const QString& s) { _name = s; }

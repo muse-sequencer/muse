@@ -72,8 +72,6 @@ class MarkerView : public TopWin {
     
       QTreeWidget* table;
       QLineEdit* editName;
-      ///PosEdit* editSMPTE;
-      ///PosEdit* editTick;
       Awl::PosEdit* editSMPTE;
       Awl::PosEdit* editTick;
       QToolButton* lock;

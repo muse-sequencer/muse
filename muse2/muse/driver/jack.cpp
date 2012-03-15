@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: jack.cpp,v 1.30.2.17 2009/12/20 05:00:35 terminator356 Exp $
 //  (C) Copyright 2002 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on sourceforge.net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -82,15 +83,6 @@ bool checkAudioDevice()
 
 namespace MusECore {
 
-//extern int jackmidi_pi[2];
-//extern int jackmidi_po[2];
-
-//jack_port_t *midi_port_in[JACK_MIDI_CHANNELS];
-//jack_port_t *midi_port_out[JACK_MIDI_CHANNELS];
-
-//muse_jack_midi_buffer jack_midi_out_data[JACK_MIDI_CHANNELS];
-//muse_jack_midi_buffer jack_midi_in_data[JACK_MIDI_CHANNELS];
-
 JackAudioDevice* jackAudio;
 
 //---------------------------------------------------------
@@ -109,38 +101,9 @@ inline bool checkJackClient(jack_client_t* _client)
 //   jack_thread_init
 //---------------------------------------------------------
 
-static void jack_thread_init (void* )  // data
+static void jack_thread_init (void* )  
       {
       MusEGlobal::doSetuid();
-      /*
-      if (jackAudio->isRealtime()) {
-            struct sched_param rt_param;
-            int rv;
-            memset(&rt_param, 0, sizeof(sched_param));
-            int type;
-            rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
-            if (rv != 0)
-                  perror("get scheduler parameter");
-            if (type != SCHED_FIFO) {
-                  fprintf(stderr, "JACK thread not running SCHED_FIFO, try to set...\n");
-
-                  memset(&rt_param, 0, sizeof(sched_param));
-                  rt_param.sched_priority = 1;
-                  rv = pthread_setschedparam(pthread_self(), SCHED_FIFO, &rt_param);
-                  if (rv != 0)
-                        perror("set realtime scheduler");
-                  memset(&rt_param, 0, sizeof(sched_param));
-                  rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
-                  if (rv != 0)
-                        perror("get scheduler parameter");
-                  if (type != SCHED_FIFO)
-                        fprintf(stderr, "JACK still not running FIFO !?!\n"
-                        "======reliable RT operation not possible!!======\n");
-                  else
-                        fprintf(stderr, "JACK thread succesfully set to SCHED_FIFO\n");
-                  } 
-            }
-            */
 #ifdef VST_SUPPORT
       if (loadVST)
             fst_adopt_thread();
@@ -148,161 +111,78 @@ static void jack_thread_init (void* )  // data
       MusEGlobal::undoSetuid();
       }
 
-/*
-//---------------------------------------------------------
-//   processAudio + Midi
-//    JACK callback
-//---------------------------------------------------------
-void
-print_triplet(unsigned char *data)
-{
-  int a,b,c;
-  a = b = c = 0;
-  memcpy(&a, data, 1);
-  memcpy(&b, data+1, 1);
-  memcpy(&c, data+2, 1);
-  fprintf(stderr, "%x,%x,%x", a, b, c);
-}
-*/
-
-/*
-void handle_jack_midi_in_events(jack_nframes_t frames)
-{
-  char buf = 0;
-  int i,j;
-  jack_midi_event_t midi_event;
-  unsigned char t,n,v;
-
-  for(j = 0; j < JACK_MIDI_CHANNELS; j++){
-    void *midi_buffer_in = jack_port_get_buffer(midi_port_in[j], frames);
-    int event_count = jack_midi_get_event_count(midi_buffer_in);
-
-    for(i = 0; i < event_count; i++){
-      jack_midi_event_get(&midi_event, midi_buffer_in, i);
-      t = midi_event.buffer[0];
-      n = midi_event.buffer[1];
-      v = midi_event.buffer[2];
-      if(((*(midi_event.buffer) & 0xf0)) == 0x90){
-        fprintf(stderr, "jack-midi-in-event: ON_ time=%d %u ", midi_event.time,
-                midi_event.size);
-        print_triplet(midi_event.buffer);
-        fprintf(stderr, "\n");
-      }else if(((*(midi_event.buffer)) & 0xf0) == 0x80){
-        fprintf(stderr, "jack-midi-in-event: OFF time=%d %u ", midi_event.time,
-                midi_event.size);
-        print_triplet(midi_event.buffer);
-        fprintf(stderr, "\n");
-      }else{
-        fprintf(stderr, "jack-midi-in-event: ??? time=%d %u ", midi_event.time,
-                midi_event.size);
-        print_triplet(midi_event.buffer);
-        fprintf(stderr, "\n");
-      }
-      jack_midi_in_data[j].buffer[0] = t;
-      jack_midi_in_data[j].buffer[1] = n;
-      jack_midi_in_data[j].buffer[2] = v;
-      jack_midi_in_data[j].buffer[3] = 1;
-      fprintf(stderr, "handle_jack_midi_in_events() w\n");
-      write(jackmidi_pi[1], &buf, 1);
-      fprintf(stderr, "handle_jack_midi_in_events() wd\n");
-    }
-  }
-}
-
-void handle_jack_midi_out_events(jack_nframes_t frames)
-{
-  unsigned char *data;
-  void *port_buf;
-  int i,j,n,x;
-
-  //for(i = 0; i < JACK_MIDI_CHANNELS; i++){
-  for(i = 0; i < JACK_MIDI_CHANNELS; ++i){
-    // jack-midi-clear any old events 
-    while(jack_midi_out_data[i].buffer[jack_midi_out_data[i].take*4+3] == 2){
-      port_buf = jack_port_get_buffer(midi_port_out[i], frames);
-      jack_midi_clear_buffer(port_buf);
-      jack_midi_out_data[i].buffer[jack_midi_out_data[i].take*4+3] = 0;
-      // point the take to the next slot 
-      jack_midi_out_data[i].take++;
-      if(jack_midi_out_data[i].take >= JACK_MIDI_BUFFER_SIZE){
-        jack_midi_out_data[i].take = 0;
-      }
-    }
-    // check if any incoming midi-events from muse 
-    if(jack_midi_out_data[i].give != jack_midi_out_data[i].take){
-
-      if(jack_midi_out_data[i].give > jack_midi_out_data[i].take){
-        n = jack_midi_out_data[i].give - jack_midi_out_data[i].take;
-      }else{
-        n = jack_midi_out_data[i].give +
-            (JACK_MIDI_BUFFER_SIZE - jack_midi_out_data[i].take);
-      }
-      port_buf = jack_port_get_buffer(midi_port_out[i], frames);
-      jack_midi_clear_buffer(port_buf);
-      // FIX: midi events has different sizes, compare note-on to
-      //        program-change. We should first walk over the events
-      //        counting the size. 
-      //data = jack_midi_event_reserve(port_buf, 0, n*3);
-      //x = jack_midi_out_data[i].take;
-      //for(j = 0; j < n; j++){
-      //  data[j*3+0] = jack_midi_out_data[i].buffer[x*4+0];
-      //  data[j*3+1] = jack_midi_out_data[i].buffer[x*4+1];
-      //  data[j*3+2] = jack_midi_out_data[i].buffer[x*4+2];
-        // after having copied the buffer over to the jack-buffer, 
-        // mark the muses midi-out buffer as 'need-cleaning' 
-      //  jack_midi_out_data[i].buffer[x*4+3] = 2;
-      //  x++;
-      //  if(x >= JACK_MIDI_BUFFER_SIZE){
-      //    x = 0;
-      //  }
-      //}
-      
-      x = jack_midi_out_data[i].take;
-      for(j = 0; j < n; ++j)
-      {
-        data = jack_midi_event_reserve(port_buf, 0, 3);
-        if(data == 0) 
-        {
-          fprintf(stderr, "handle_jack_midi_out_events: buffer overflow, event lost\n");
-          // Can do no more processing. Just return.
-          return;
-        }
-        data[0] = jack_midi_out_data[i].buffer[x*4+0];
-        data[1] = jack_midi_out_data[i].buffer[x*4+1];
-        data[2] = jack_midi_out_data[i].buffer[x*4+2];
-        // after having copied the buffer over to the jack-buffer, 
-        //  mark the muses midi-out buffer as 'need-cleaning' 
-        jack_midi_out_data[i].buffer[x*4+3] = 2;
-        x++;
-        if(x >= JACK_MIDI_BUFFER_SIZE){
-          x = 0;
-        }
-      }
-      
-    }
-  }
-}
-*/
-
-//static int processAudio(jack_nframes_t frames, void*)
 int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
 {
-  jackAudio->_frameCounter += frames;
-  
-///  handle_jack_midi_in_events(frames);
-///  handle_jack_midi_out_events(frames);
-  
-//      if (JACK_DEBUG)
-//            printf("processAudio - >>>>\n");
+      int state_pending = jackAudio->_dummyStatePending;  // Snapshots.
+      int pos_pending   = jackAudio->_dummyPosPending;    //
+      jackAudio->_dummyStatePending = -1;                 // Reset.
+      jackAudio->_dummyPosPending = -1;                   //
+      
+      jackAudio->_frameCounter += frames;
       MusEGlobal::segmentSize = frames;
+
       if (MusEGlobal::audio->isRunning())
-            MusEGlobal::audio->process((unsigned long)frames);
+      {
+            // Are we not using Jack transport?
+            if(!MusEGlobal::useJackTransport.value())
+            {
+              // STOP -> STOP, STOP -> START_PLAY, PLAY -> START_PLAY all count as 'syncing'.
+              if(((jackAudio->dummyState == Audio::STOP || jackAudio->dummyState == Audio::PLAY) && state_pending == Audio::START_PLAY) 
+                 || (jackAudio->dummyState == Audio::STOP && state_pending == Audio::STOP) )
+              {
+                jackAudio->_syncTimeout = (float)frames / (float)MusEGlobal::sampleRate;  // (Re)start the timeout counter...
+                if(pos_pending != -1)
+                  jackAudio->dummyPos = pos_pending; // Set the new dummy position.
+                if((jackAudio->dummyState == Audio::STOP || jackAudio->dummyState == Audio::PLAY) && state_pending == Audio::START_PLAY)
+                  jackAudio->dummyState = Audio::START_PLAY;
+              }
+              else // All other states such as START_PLAY -> STOP, PLAY -> STOP.
+              if(state_pending != -1 && state_pending != jackAudio->dummyState)
+              {
+                jackAudio->_syncTimeout = 0.0;  // Reset.
+                jackAudio->dummyState = state_pending;                
+              }
+              
+              // Is the sync timeout counter running?
+              if(jackAudio->_syncTimeout > 0.0)
+              {
+                //printf("Jack processAudio dummy sync: state:%d pending:%d\n", jackAudio->dummyState, state_pending);  
+                // Is MusE audio ready to roll?
+                if(MusEGlobal::audio->sync(jackAudio->dummyState, jackAudio->dummyPos))
+                {
+                  jackAudio->_syncTimeout = 0.0;  // Reset.
+                  // We're ready. Switch to PLAY state.
+                  if(jackAudio->dummyState == Audio::START_PLAY)
+                    jackAudio->dummyState = Audio::PLAY;
+                }
+                else
+                {  
+                  jackAudio->_syncTimeout += (float)frames / (float)MusEGlobal::sampleRate;
+                  if(jackAudio->_syncTimeout > 5.0)  // TODO: Make this timeout a 'settings' option so it can be applied both to Jack and here.
+                  {
+                    if (MusEGlobal::debugMsg)
+                      puts("Jack dummy sync timeout! Starting anyway...\n");
+                    jackAudio->_syncTimeout = 0.0;  // Reset.
+                    // We're not ready, but no time left - gotta roll anyway. Switch to PLAY state, similar to how Jack is supposed to work.
+                    if(jackAudio->dummyState == Audio::START_PLAY)
+                    {
+                      jackAudio->dummyState = Audio::PLAY;
+                      // Docs say sync will be called with Rolling state when timeout expires.
+                      MusEGlobal::audio->sync(jackAudio->dummyState, jackAudio->dummyPos);
+                    }
+                  }
+                }
+              }
+            }
+        
+            //if(jackAudio->getState() != Audio::START_PLAY)  // Don't process while we're syncing. TODO: May need to deliver silence in process!
+              MusEGlobal::audio->process((unsigned long)frames);
+      }
       else {
             if (MusEGlobal::debugMsg)
                  puts("jack calling when audio is disconnected!\n");
             }
-//      if (JACK_DEBUG)
-//            printf("processAudio - <<<<\n");
+            
   return 0;
 }
 
@@ -344,13 +224,9 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
             }
             
       unsigned frame = pos->frame;
-      //printf("processSync valid:%d frame:%d\n", pos->valid, frame);
-      
-            // p3.3.23
-            //printf("Jack processSync() before MusEGlobal::audio->sync frame:%d\n", frame);
       //return MusEGlobal::audio->sync(audioState, frame);
       int rv = MusEGlobal::audio->sync(audioState, frame);
-            //printf("Jack processSync() after MusEGlobal::audio->sync frame:%d\n", frame);
+      //printf("Jack processSync() after MusEGlobal::audio->sync frame:%d\n", frame);
       return rv;      
       }
 
@@ -366,7 +242,6 @@ static void timebase_callback(jack_transport_state_t /* state */,
   {
       //printf("Jack timebase_callback pos->frame:%u MusEGlobal::audio->tickPos:%d MusEGlobal::song->cpos:%d\n", pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
       
-      // p3.3.27
       //Pos p(pos->frame, false);
       Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
       // Can't use song pos - it is only updated every (slow) GUI heartbeat !
@@ -382,7 +257,6 @@ static void timebase_callback(jack_transport_state_t /* state */,
       //  dummy:
       //
       
-      // p3.3.26
       //pos->beats_per_bar = 4;
       //pos->beat_type = 4;
       //pos->ticks_per_beat = 384;
@@ -472,20 +346,7 @@ JackAudioDevice::~JackAudioDevice()
       if (JACK_DEBUG)
             printf("~JackAudioDevice()\n");
       if (_client) {
-            
-            /*
-            // p3.3.35
-            for(int i = 0; i < JACK_MIDI_CHANNELS; i++)
-            {
-              if(midi_port_in[i])
-                jack_port_unregister(_client, midi_port_in[i]);
-              if(midi_port_out[i])
-                jack_port_unregister(_client, midi_port_out[i]);
-            }
-            */
-            
             if (jack_client_close(_client)) {
-                  //error->logError("jack_client_close() failed: %s\n", strerror(errno));
                   fprintf(stderr,"jack_client_close() failed: %s\n", strerror(errno));
                   }
             }
@@ -518,32 +379,6 @@ int JackAudioDevice::realtimePriority() const
       return param.sched_priority;
       }
 
-/*
-//---------------------------------------------------------
-//   getJackName()
-//---------------------------------------------------------
-
-char* JackAudioDevice::getJackName()
-      {
-      return jackRegisteredName;
-      }
-*/
-
-/*
-//---------------------------------------------------------
-//   clientName()
-//---------------------------------------------------------
-
-const char* JackAudioDevice::clientName()
-{
-  //if(_client)
-  //  return jack_get_client_name(_client);
-  //else
-  //  return "MusE";  
-  return jackRegisteredName;
-}
-*/
-
 //---------------------------------------------------------
 //   initJackAudio
 //    return true if JACK not found
@@ -551,15 +386,6 @@ const char* JackAudioDevice::clientName()
 
 bool initJackAudio()
       {
-      /*
-      // p3.3.35
-      for(int i = 0; i < JACK_MIDI_CHANNELS; i++)
-      {
-        midi_port_in[i] = 0;
-        midi_port_out[i] = 0;
-      }
-      */
-      
       if (JACK_DEBUG)
             printf("initJackAudio()\n");
       if (MusEGlobal::debugMsg) {
@@ -596,7 +422,7 @@ bool initJackAudio()
             if (status & JackVersionError)
                   printf("jack server has wrong version\n");
             printf("cannot create jack client\n");
-	    MusEGlobal::undoSetuid();   // p3.3.51
+	    MusEGlobal::undoSetuid();   
             return true;
             }
 
@@ -616,39 +442,6 @@ bool initJackAudio()
             }
       MusEGlobal::undoSetuid();
       
-      /*
-      // setup midi input/output 
-      //memset(jack_midi_out_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
-      //memset(jack_midi_in_data, 0, JACK_MIDI_CHANNELS * sizeof(muse_jack_midi_buffer));
-      if(client){
-        for(i = 0; i < JACK_MIDI_CHANNELS; i++)
-        {
-          char buf[80];
-          snprintf(buf, 80, "muse-jack-midi-in-%d", i+1);
-          midi_port_in[i] = jack_port_register(client, buf,
-                                              JACK_DEFAULT_MIDI_TYPE,
-                                              JackPortIsInput, 0);
-          if(midi_port_in[i] == NULL){
-            fprintf(stderr, "failed to register jack-midi-in\n");
-            exit(-1);
-          }
-          snprintf(buf, 80, "muse-jack-midi-out-%d", i+1);
-          midi_port_out[i] = jack_port_register(client, buf,
-                                                JACK_DEFAULT_MIDI_TYPE,
-                                                JackPortIsOutput, 0);
-          if(midi_port_out == NULL)
-          {
-            fprintf(stderr, "failed to register jack-midi-out\n");
-            exit(-1);
-          }
-        }
-      }
-      else
-      {
-        fprintf(stderr, "WARNING NO muse-jack midi connection\n");
-      }
-      */    
-          
       if (client) {
             MusEGlobal::audioDevice = jackAudio;
             jackAudio->scanMidiPorts();
@@ -730,8 +523,8 @@ void JackAudioDevice::connectJackMidiPorts()
     //void* port = md->clientPort();
     if(md->rwFlags() & 1)
     {
-      void* port = md->outClientPort(); // p3.3.55
-      if(port)                          // 
+      void* port = md->outClientPort(); 
+      if(port)                           
       {
         RouteList* rl = md->outRoutes();
         for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
@@ -743,12 +536,10 @@ void JackAudioDevice::connectJackMidiPorts()
       }    
     }
     
-    // else  // p3.3.55 Removed
-    
     if(md->rwFlags() & 2)
     {  
-      void* port = md->inClientPort();  // p3.3.55
-      if(port)                          //
+      void* port = md->inClientPort();  
+      if(port)                          
       {
         RouteList* rl = md->inRoutes();
         for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
@@ -760,117 +551,8 @@ void JackAudioDevice::connectJackMidiPorts()
       }    
     }    
   }
-  
-  
-  /*
-  const char* type = JACK_DEFAULT_MIDI_TYPE;
-  const char** ports = jack_get_ports(_client, 0, type, 0);
-  for (const char** p = ports; p && *p; ++p) 
-  {
-    jack_port_t* port = jack_port_by_name(_client, *p);
-    if(!port)
-      continue;
-    // Ignore our own client ports.
-    if(jack_port_is_mine(_client, port))
-    {
-      if(MusEGlobal::debugMsg)
-        printf(" ignoring own port: %s\n", *p);
-      continue;         
-    }
-    int nsz = jack_port_name_size();
-    char buffer[nsz];
-    strncpy(buffer, *p, nsz);
-    // Ignore the MusE Jack port.
-    //if(strncmp(buffer, "MusE", 4) == 0)
-    //  continue;
-    
-    if(MusEGlobal::debugMsg)
-      printf(" found port: %s  ", buffer);
-    
-    // If there are aliases for this port, use the first one - much better for identifying. 
-    //char a1[nsz]; 
-    char a2[nsz]; 
-    char* aliases[2];
-    //aliases[0] = a1;
-    aliases[0] = buffer;
-    aliases[1] = a2;
-    // To disable aliases, just rem this line.
-    jack_port_get_aliases(port, aliases);
-    //int na = jack_port_get_aliases(port, aliases);
-    //char* namep = (na >= 1) ? aliases[0] : buffer;
-    char* namep = aliases[0];
-  
-    if(MusEGlobal::debugMsg)
-      printf("alias: %s\n", aliases[0]);
-    
-    //int flags = 0;
-    int pf = jack_port_flags(port);
-    // If Jack port can send data to us...
-    //if(pf & JackPortIsOutput)
-      // Mark as input capable.
-    //  flags |= 2;
-    // If Jack port can receive data from us...
-    //if(pf & JackPortIsInput)
-      // Mark as output capable.
-    //  flags |= 1;
-    
-    //JackPort jp(0, QString(buffer), flags);
-    //portList.append(jp);
-    
-    QString name(namep);
-    
-    if(JACK_DEBUG)
-      printf("JackAudioDevice::graphChanged %s\n", name.toLatin1());
-      
-    for(iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
-    {
-      // Is it a Jack midi device? 
-      MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(*imd);
-      if(!mjd)
-        continue;
-        
-      //if(dev->name() != name)
-      //  continue;
-      
-      // Is this port the one created for the Jack midi device?
-      if(!mjd->clientJackPort() || (mjd->clientJackPort() != port))
-        continue;
-      
-      jack_port_t* devport = jack_port_by_name(_client, mjd->name().toLatin1());
-      if(!devport)
-        continue;
-      
-      int ofl = mjd->openFlags();
-    
-      if(JACK_DEBUG)
-        printf("JackAudioDevice::graphChanged found MidiJackDevice:%s\n", mjd->name().toLatin1());
-      
-      // Note docs say it can't be both input and output. src, dest
-      // If Jack port can receive data from us and we actually want to...
-      if((pf & JackPortIsOutput) && (ofl & 1))
-      {
-        if(JACK_DEBUG)
-          printf("JackAudioDevice::graphChanged connecting MusE output\n");
-        MusEGlobal::audioDevice->connect(port, devport);
-      }
-      else 
-      // If Jack port can send data to us and we actually want it...
-      if((pf & JackPortIsInput) && (ofl & 2))
-      {
-        if(JACK_DEBUG)
-          printf("JackAudioDevice::graphChanged connecting MusE input\n");
-        MusEGlobal::audioDevice->connect(devport, port);
-      }
-      
-      break;  
-    }
-  }
-  
-  if(ports)
-    free(ports);      
-    
-  */  
 }
+
 //---------------------------------------------------------
 //   client_registration_callback
 //---------------------------------------------------------
@@ -1009,9 +691,6 @@ void JackAudioDevice::graphChanged()
                               ++pn;
                               }
 
-                        // p3.3.37
-                        //delete ports;
-                        //free(ports);
                         jack_free(ports);  // p4.0.29
                         
                         ports = NULL;
@@ -1100,9 +779,6 @@ void JackAudioDevice::graphChanged()
                               ++pn;
                               }
 
-                        // p3.3.37
-                        //delete ports;
-                        //free(ports);
                         jack_free(ports);  // p4.0.29
                         
                         ports = NULL;
@@ -1134,12 +810,9 @@ void JackAudioDevice::graphChanged()
                   
                   if(md->rwFlags() & 1) // Writable
                   {
-                    // p3.3.55
                     jack_port_t* port = (jack_port_t*)md->outClientPort();
                     if(port != 0)
                     {
-                      //printf("graphChanged() valid out client port\n"); // p3.3.55
-                      
                       const char** ports = jack_port_get_all_connections(_client, port);
                       
                       RouteList* rl      = md->outRoutes();
@@ -1160,7 +833,7 @@ void JackAudioDevice::graphChanged()
                                   //if (irl->channel != channel)
                                   //      continue;
                                   QString name = irl->name();
-                                  //name += QString(JACK_MIDI_OUT_PORT_SUFFIX);    // p3.3.55
+                                  //name += QString(JACK_MIDI_OUT_PORT_SUFFIX);    
                                   QByteArray ba = name.toLatin1();
                                   const char* portName = ba.constData();
                                   bool found = false;
@@ -1224,9 +897,6 @@ void JackAudioDevice::graphChanged()
                                   ++pn;
                                   }
     
-                            // p3.3.55
-                            // Done with ports. Free them.
-                            //free(ports);
                             jack_free(ports);  // p4.0.29
                       }
                     }  
@@ -1239,11 +909,9 @@ void JackAudioDevice::graphChanged()
                   
                   if(md->rwFlags() & 2) // Readable
                   {
-                    // p3.3.55
                     jack_port_t* port = (jack_port_t*)md->inClientPort();
                     if(port != 0)
                     {
-                      //printf("graphChanged() valid in client port\n"); // p3.3.55
                       const char** ports = jack_port_get_all_connections(_client, port);
                       
                       RouteList* rl = md->inRoutes();
@@ -1326,20 +994,11 @@ void JackAudioDevice::graphChanged()
                                         }
                                   ++pn;
                                   }
-                            // p3.3.55
-                            // Done with ports. Free them.
-                            //free(ports);
+                                  
                             jack_free(ports);  // p4.0.29
                       }
                     }  
                   }  
-                  
-                  // p3.3.55 Removed.
-                  //if(ports) 
-                    // Done with ports. Free them.
-                    //delete ports;
-                  //  free(ports);
-                  //ports = NULL;
       }
 }
 
@@ -1360,18 +1019,12 @@ void JackAudioDevice::registerClient()
       if(!checkJackClient(_client)) return;
       jack_set_process_callback(_client, processAudio, 0);
       jack_set_sync_callback(_client, processSync, 0);
-      // FIXME: FIXME:
-      // Added by Tim. p3.3.20
-      // Did not help. Seek during play: Jack keeps switching to STOP state after about 1-2 seconds timeout if sync is holding it up.
-      // Nothing in MusE seems to be telling it to stop.
-      // NOTE: Update: It was a bug in QJackCtl. Fixed now.
       //jack_set_sync_timeout(_client, 5000000); // Change default 2 to 5 second sync timeout because prefetch may be very slow esp. with resampling !
       
       jack_on_shutdown(_client, processShutdown, 0);
       jack_set_buffer_size_callback(_client, bufsize_callback, 0);
       jack_set_sample_rate_callback(_client, srate_callback, 0);
       jack_set_port_registration_callback(_client, registration_callback, 0);
-      // p3.3.37
       jack_set_client_registration_callback(_client, client_registration_callback, 0);
       jack_set_port_connect_callback(_client, port_connect_callback, 0);
       
@@ -1384,7 +1037,6 @@ void JackAudioDevice::registerClient()
 //   registerInPort
 //---------------------------------------------------------
 
-//void* JackAudioDevice::registerInPort(const char* name)
 void* JackAudioDevice::registerInPort(const char* name, bool midi)
       {
       if (JACK_DEBUG)
@@ -1401,7 +1053,6 @@ void* JackAudioDevice::registerInPort(const char* name, bool midi)
 //   registerOutPort
 //---------------------------------------------------------
 
-//void* JackAudioDevice::registerOutPort(const char* name)
 void* JackAudioDevice::registerOutPort(const char* name, bool midi)
       {
       if (JACK_DEBUG)
@@ -1452,7 +1103,7 @@ void JackAudioDevice::disconnect(void* src, void* dst)
       if (JACK_DEBUG)
             printf("JackAudioDevice::disconnect()\n");
       if(!checkJackClient(_client)) return;
-      if(!src || !dst)  // p3.3.55
+      if(!src || !dst)  
         return;
       const char* sn = jack_port_name((jack_port_t*) src);
       const char* dn = jack_port_name((jack_port_t*) dst);
@@ -1478,7 +1129,6 @@ void JackAudioDevice::disconnect(void* src, void* dst)
 //   start
 //---------------------------------------------------------
 
-//void JackAudioDevice::start()
 void JackAudioDevice::start(int /*priority*/)
       {
       if (JACK_DEBUG)
@@ -1488,7 +1138,7 @@ void JackAudioDevice::start(int /*priority*/)
       MusEGlobal::doSetuid();
 
       if (jack_activate(_client)) {
-            MusEGlobal::undoSetuid();   // p3.3.51
+            MusEGlobal::undoSetuid();   
             fprintf (stderr, "JACK: cannot activate client\n");
             exit(-1);
             }
@@ -1530,7 +1180,6 @@ void JackAudioDevice::start(int /*priority*/)
                   }
             }
       
-      // p3.3.37
       // Connect the Jack midi client ports to device ports.
       connectJackMidiPorts();
       
@@ -1723,9 +1372,6 @@ void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_
             name_list.push_back(qname);
             }
             
-      // p3.3.37
-      //if(ports)
-        //free(ports);      
       //  jack_free(ports);  // p4.0.29
       
       //return clientList;
@@ -1743,61 +1389,6 @@ std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
       if(!checkJackClient(_client)) return clientList;
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
       const char** ports = jack_get_ports(_client, 0, type, JackPortIsOutput);
-      
-      /*
-      QString qname;
-      for (const char** p = ports; p && *p; ++p) {
-            jack_port_t* port = jack_port_by_name(_client, *p);
-            //int flags = jack_port_flags(port);
-            //if (!(flags & JackPortIsOutput))
-            //      continue;
-            //char buffer[128];
-            
-            int nsz = jack_port_name_size();
-            char buffer[nsz];
-            
-            strncpy(buffer, *p, nsz);
-            //if (strncmp(buffer, "MusE", 4) == 0)
-            //{
-            //  if(MusEGlobal::debugMsg)
-            //    printf("JackAudioDevice::outputPorts ignoring own MusE port: %s\n", *p);
-            //  continue;         
-            //}
-            
-            // Ignore our own client ports.
-            if(jack_port_is_mine(_client, port))
-            {
-              if(MusEGlobal::debugMsg)
-                printf("JackAudioDevice::outputPorts ignoring own port: %s\n", *p);
-              continue;         
-            }
-            
-            // p3.3.38
-            if((aliases == 0) || (aliases == 1)) 
-            {
-              //char a1[nsz]; 
-              char a2[nsz]; 
-              char* al[2];
-              //aliases[0] = a1;
-              al[0] = buffer;
-              al[1] = a2;
-              int na = jack_port_get_aliases(port, al);
-              int a = aliases;
-              if(a >= na)
-              {
-                a = na;
-                if(a > 0)
-                  a--;
-              }    
-              qname = QString(al[a]);
-            }
-            else
-              qname = QString(buffer);
-            
-            //clientList.push_back(QString(buffer));
-            clientList.push_back(qname);
-            }
-      */
       
       if(ports)
       {
@@ -1822,61 +1413,6 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
       if(!checkJackClient(_client)) return clientList;
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
       const char** ports = jack_get_ports(_client, 0, type, JackPortIsInput);
-      
-      /*
-      QString qname;
-      for (const char** p = ports; p && *p; ++p) {
-            jack_port_t* port = jack_port_by_name(_client, *p);
-            //int flags = jack_port_flags(port);
-            //if (!(flags & JackPortIsInput))
-            //      continue;
-            //char buffer[128];
-            
-            int nsz = jack_port_name_size();
-            char buffer[nsz];
-            
-            strncpy(buffer, *p, nsz);
-            //if (strncmp(buffer, "MusE", 4) == 0)
-            //{
-            //  if(MusEGlobal::debugMsg)
-            //    printf("JackAudioDevice::inputPorts ignoring own MusE port: %s\n", *p);
-            //  continue;         
-            //}
-            
-            // Ignore our own client ports.
-            if(jack_port_is_mine(_client, port))
-            {
-              if(MusEGlobal::debugMsg)
-                printf("JackAudioDevice::inputPorts ignoring own port: %s\n", *p);
-              continue;         
-            }
-            
-            // p3.3.38
-            if((aliases == 0) || (aliases == 1)) 
-            {
-              //char a1[nsz]; 
-              char a2[nsz]; 
-              char* al[2];
-              //aliases[0] = a1;
-              al[0] = buffer;
-              al[1] = a2;
-              int na = jack_port_get_aliases(port, al);
-              int a = aliases;
-              if(a >= na)
-              {
-                a = na;
-                if(a > 0)
-                  a--;
-              }    
-              qname = QString(al[a]);
-            }
-            else
-              qname = QString(buffer);
-            
-            //clientList.push_back(QString(buffer));
-            clientList.push_back(qname);
-            }
-      */
       
       if(ports)
       {
@@ -1979,37 +1515,6 @@ void JackAudioDevice::setFreewheel(bool f)
       }
 
 //---------------------------------------------------------
-//   dummySync
-//---------------------------------------------------------
-
-bool JackAudioDevice::dummySync(int state)
-{
-  // Roughly segment time length.
-  //timespec ts = { 0, (1000000000 * MusEGlobal::segmentSize) / MusEGlobal::sampleRate };     // In nanoseconds.
-  unsigned int sl = (1000000 * MusEGlobal::segmentSize) / MusEGlobal::sampleRate;            // In microseconds.
-  
-  double ct = curTime();
-  // Wait for a default maximum of 5 seconds. 
-  // Similar to how Jack is supposed to wait a default of 2 seconds for slow clients.
-  // TODO: Make this timeout a 'settings' option so it can be applied both to Jack and here.
-  while((curTime() - ct) < 5.0)  
-  {
-    // Is MusE audio ready to roll?
-    if(MusEGlobal::audio->sync(state, dummyPos))
-      return true;
-    
-    // Not ready. Wait a 'segment', try again...
-    //nanosleep(&ts, NULL);  
-    usleep(sl);              // usleep is supposed to be obsolete!
-  }
-    
-  //if(JACK_DEBUG)
-    printf("JackAudioDevice::dummySync Sync timeout - audio not ready!\n");
-  
-  return false;
-}
-
-//---------------------------------------------------------
 //   startTransport
 //---------------------------------------------------------
 
@@ -2022,19 +1527,7 @@ void JackAudioDevice::startTransport()
       //  as if processSync was called. 
       if(!MusEGlobal::useJackTransport.value())
       {
-        //dummyState = Audio::START_PLAY;
-        
-        // Is MusE audio ready to roll?
-        //if(dummySync(dummyState))
-        if(dummySync(Audio::START_PLAY))
-        {
-          // MusE audio is ready to roll. Let's play.
-          dummyState = Audio::PLAY;
-          return;
-        }
-          
-        // Ready or not, we gotta roll. Similar to how Jack is supposed to roll anyway.
-        dummyState = Audio::PLAY;
+        _dummyStatePending = Audio::START_PLAY;
         return;
       }
       
@@ -2052,11 +1545,9 @@ void JackAudioDevice::stopTransport()
       if (JACK_DEBUG)
             printf("JackAudioDevice::stopTransport()\n");
       
-      dummyState = Audio::STOP;
-      
       if(!MusEGlobal::useJackTransport.value())
       {
-        //dummyState = Audio::STOP;
+        _dummyStatePending = Audio::STOP;
         return;
       }
       
@@ -2077,32 +1568,11 @@ void JackAudioDevice::seekTransport(unsigned frame)
       if (JACK_DEBUG)
             printf("JackAudioDevice::seekTransport() frame:%d\n", frame);
       
-      dummyPos = frame;
       if(!MusEGlobal::useJackTransport.value())
       {
-        // If we're not using Jack's transport, just pass the current state and new frame along
-        //  as if processSync was called. 
-        //dummyPos = frame;
-        int tempState = dummyState;
-        //dummyState = Audio::START_PLAY;
-        
-        // Is MusE audio ready yet?
-        //MusEGlobal::audio->sync(dummyState, dummyPos);
-        //if(dummySync(dummyState))
-        if(dummySync(Audio::START_PLAY))
-        {
-          dummyState = tempState;
-          return;
-        }
-        
-        // Not ready, resume previous state anyway.
-        // FIXME: Observed: Seek during play: Jack transport STOPs on timeout. 
-        // Docs say when starting play, transport will roll anyway, ready or not (observed),
-        //  but don't mention what should happen on seek during play. 
-        // And setting the slow-sync timeout doesn't seem to do anything!
-        // NOTE: Update: It was a bug with QJackCtl. Fixed now.
-        //dummyState = tempState;
-        dummyState = Audio::STOP;
+        _dummyPosPending   = frame;
+        // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
+        _dummyStatePending = (dummyState == Audio::STOP ? Audio::STOP : Audio::START_PLAY);
         return;
       }
       
@@ -2120,28 +1590,11 @@ void JackAudioDevice::seekTransport(const Pos &p)
       if (JACK_DEBUG)
             printf("JackAudioDevice::seekTransport() frame:%d\n", p.frame());
       
-      dummyPos = p.frame();
       if(!MusEGlobal::useJackTransport.value())
       {
-        // If we're not using Jack's transport, just pass the current state and new frame along
-        //  as if processSync was called. 
-        //dummyPos = p.frame();
-        int tempState = dummyState;
-        //dummyState = Audio::START_PLAY;
-        
-        // Is MusE audio ready yet?
-        //MusEGlobal::audio->sync(dummyState, dummyPos);
-        //if(dummySync(dummyState))
-        if(dummySync(Audio::START_PLAY))
-        {
-          dummyState = tempState;
-          return;
-        }
-        
-        // Not ready, resume previous state anyway.
-        // FIXME: See fixme in other seekTransport...
-        //dummyState = tempState;
-        dummyState = Audio::STOP;
+        _dummyPosPending   = p.frame();
+        // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
+        _dummyStatePending = (dummyState == Audio::STOP ? Audio::STOP : Audio::START_PLAY);
         return;
       }
       
@@ -2380,8 +1833,7 @@ void exitJackAudio()
       if (JACK_DEBUG)
             printf("exitJackAudio() after delete jackAudio\n");
       
-      // Added by Tim. p3.3.14
-      MusEGlobal::audioDevice = NULL;      
+      MusEGlobal::audioDevice = NULL;      // By Tim
       
       }
 } // namespace MusECore

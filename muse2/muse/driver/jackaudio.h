@@ -40,13 +40,16 @@ class MidiPlayEvent;
 class JackAudioDevice : public AudioDevice {
 
       jack_client_t* _client;
-      double sampleTime;
-      int samplePos;
+      //double sampleTime;
+      //int samplePos;
+      float _syncTimeout;
       jack_transport_state_t transportState;
       jack_position_t pos;
       char jackRegisteredName[16];
       int dummyState;
       int dummyPos;
+      volatile int _dummyStatePending;
+      volatile int _dummyPosPending;
       // Free-running frame counter incremented always in process.
       jack_nframes_t _frameCounter; 
       
@@ -58,14 +61,13 @@ class JackAudioDevice : public AudioDevice {
       virtual ~JackAudioDevice();
       virtual void nullify_client() { _client = 0; }
       
-      virtual inline int deviceType() const { return JACK_AUDIO; }   // p3.3.52
+      virtual inline int deviceType() const { return JACK_AUDIO; }   
       
       void scanMidiPorts();
       
       //virtual void start();
       virtual void start(int);
       virtual void stop ();
-      virtual bool dummySync(int state); // Artificial sync when not using Jack transport.
       
       virtual int framePos() const;
       virtual unsigned frameTime() const     { return _frameCounter; }  
@@ -80,8 +82,6 @@ class JackAudioDevice : public AudioDevice {
       virtual void registerClient();
       virtual const char* clientName() { return jackRegisteredName; }
 
-      //virtual void* registerOutPort(const char* name);
-      //virtual void* registerInPort(const char* name);
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/);
       virtual void* registerInPort(const char* /*name*/, bool /*midi*/);
 

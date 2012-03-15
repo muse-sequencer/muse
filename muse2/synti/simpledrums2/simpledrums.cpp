@@ -366,7 +366,8 @@ bool SimpleSynth::processEvent(const MusECore::MidiPlayEvent& ev)
                               printf("%x ", ev.data()[i]);
                         }
                   setController(ev.channel(), ev.dataA(), ev.dataB(), false);
-                  return true;
+                  //return true;  // ??
+                  return false;   
             case MusECore::ME_NOTEON:
                   return playNote(ev.channel(), ev.dataA(), ev.dataB());
             case MusECore::ME_NOTEOFF:

@@ -99,9 +99,9 @@ unsigned int RtcTimer::setTimerFreq(unsigned int freq)
     {
     int rc = ioctl(timerFd, RTC_IRQP_SET, freq);
     if (rc == -1) {
-            fprintf(stderr, "RtcTimer::setTimerFreq(): cannot set tick on /dev/rtc: %s\n",
+            fprintf(stderr, "RtcTimer::setTimerFreq(): cannot set freq %d on /dev/rtc: %s\n", freq,
                strerror(errno));
-            fprintf(stderr, "  precise timer not available\n");
+            fprintf(stderr, "  precise timer not available, check file permissions and allowed RTC freq (/sys/class/rtc/rtc0/max_user_freq)\n");
             return 0;
             }
     return freq;

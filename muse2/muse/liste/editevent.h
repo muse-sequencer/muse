@@ -48,7 +48,6 @@ namespace MusEGui {
 
 class IntLabel;
 class PitchEdit;
-///class PosEdit;
 
 
 //---------------------------------------------------------
@@ -117,7 +116,6 @@ class EditCtrlDialog : public QDialog, public Ui::EditCtrlBase  {
       int val;          // controller value (for prog. changes)
 
       const MusECore::MidiPart* part;
-      ///QMenu* pop;
 
       void updatePatch();
 
@@ -148,7 +146,6 @@ class EditMetaDialog : public EditEventDialog {
 
       unsigned char* meta;
       int len;
-      ///PosEdit* epos;
       Awl::PosEdit* epos;
       QTextEdit* edit;
       MusEGui::IntLabel* il2;
@@ -179,7 +176,6 @@ class EditMetaDialog : public EditEventDialog {
 class EditCAfterDialog : public EditEventDialog {
       Q_OBJECT
 
-      ///PosEdit* epos;
       Awl::PosEdit* epos;
       MusEGui::IntLabel* il2;
 
@@ -201,7 +197,6 @@ class EditCAfterDialog : public EditEventDialog {
 class EditPAfterDialog : public EditEventDialog {
       Q_OBJECT
 
-      ///PosEdit* epos;
       Awl::PosEdit* epos;
       MusEGui::PitchEdit* pl;
       MusEGui::IntLabel* il2;

@@ -80,6 +80,10 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       void configChanged();
       void songChanged(int);
    
+   signals:
+      void returnPressed();
+      void escapePressed();
+      
    public:
       MidiTrackInfo(QWidget*, MusECore::Track* = 0);
       MusECore::Track* track() const { return selected; }

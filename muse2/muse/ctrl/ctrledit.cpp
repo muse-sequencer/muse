@@ -88,7 +88,6 @@ void CtrlEdit::writeStatus(int level, MusECore::Xml& xml)
       {
       if (canvas->controller()) {
             xml.tag(level++, "ctrledit");
-            //xml.strTag(level, "ctrl", canvas->controller()->name());
             xml.intTag(level, "ctrlnum", canvas->controller()->num());
             xml.tag(level, "/ctrledit");
             }
@@ -108,23 +107,8 @@ void CtrlEdit::readStatus(MusECore::Xml& xml)
                   case MusECore::Xml::End:
                         return;
                   case MusECore::Xml::TagStart:
-                        if (tag == "ctrl") {
-                              xml.parse1();  // Obsolete. 
-                              /*
-                              QString name = xml.parse1();
-                              int portno = canvas->track()->outPort();
-                              MusECore::MidiPort* port = &midiPorts[portno];
-                              MusECore::MidiInstrument* instr = port->instrument();
-                              MusECore::MidiControllerList* mcl = instr->controller();
-
-                              for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
-                                    if (ci->second->name() == name) {
-                                          canvas->setController(ci->second->num());
-                                          break;
-                                          }
-                                    }
-                              */      
-                              }
+                        if (tag == "ctrl")
+                              xml.parse1();  // Obsolete.
                         else if (tag == "ctrlnum") {
                               int num = xml.parseInt();
                               canvas->setController(num);

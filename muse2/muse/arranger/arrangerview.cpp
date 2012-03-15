@@ -37,7 +37,6 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPushButton>
-//#include <QResizeEvent>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSettings>
@@ -59,7 +58,6 @@
 #include "mtscale.h"
 #include "scoreedit.h"
 #include "shortcuts.h"
-#include "sig.h"
 #include "song.h"
 #include "structure.h"
 #include "tb1.h"
@@ -78,15 +76,12 @@ namespace MusEGui {
 ArrangerView::ArrangerView(QWidget* parent)
    : TopWin(TopWin::ARRANGER, parent, "arrangerview", Qt::Window)
 {
-  //using MusEGlobal::muse;
-  
-  //setAttribute(Qt::WA_DeleteOnClose);
   setWindowTitle(tr("MusE: Arranger"));
-  setFocusPolicy(Qt::StrongFocus);
+  setFocusPolicy(Qt::NoFocus);  
 
   arranger = new Arranger(this, "arranger");
   setCentralWidget(arranger);
-  setFocusProxy(arranger);
+  //setFocusProxy(arranger);
 
   scoreOneStaffPerTrackMapper = new QSignalMapper(this);
   scoreAllInOneMapper = new QSignalMapper(this);
@@ -658,7 +653,6 @@ void ArrangerView::populateAddTrack()
 void ArrangerView::addNewTrack(QAction* action)
 {
   MusEGlobal::song->addNewTrack(action, MusEGlobal::muse->arranger()->curTrack());  // Insert at current selected track.
-  //MusEGlobal::song->addNewTrack(action);  // Add at end.
 }
 
 void ArrangerView::updateShortcuts()

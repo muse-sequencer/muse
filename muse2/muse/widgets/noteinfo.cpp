@@ -45,7 +45,7 @@ NoteInfo::NoteInfo(QWidget* parent)
       {
       setObjectName("Note Info");
       deltaMode = false;
-
+      
       //QLabel* label = new QLabel(tr("Start"), this, "Start");
       QLabel* label = new QLabel(tr("Start"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
@@ -55,6 +55,7 @@ NoteInfo::NoteInfo(QWidget* parent)
       //selTime = new PosEdit(this, "Start");
       ///selTime = new PosEdit(0, "Start");
       selTime = new Awl::PosEdit;
+      selTime->setFocusPolicy(Qt::StrongFocus);
       selTime->setObjectName("Start");
       
       addWidget(selTime);
@@ -65,7 +66,8 @@ NoteInfo::NoteInfo(QWidget* parent)
       label->setIndent(3);
       addWidget(label);
       //selLen = new QSpinBox(0, 100000, 1, this);
-      selLen = new QSpinBox();
+      selLen = new SpinBox();
+      selLen->setFocusPolicy(Qt::StrongFocus);
       selLen->setRange(0, 100000);
       selLen->setSingleStep(1);
       addWidget(selLen);
@@ -77,6 +79,8 @@ NoteInfo::NoteInfo(QWidget* parent)
       addWidget(label);
       //selPitch = new PitchEdit(this, "selPitch");
       selPitch = new PitchEdit;
+      selPitch->setFocusPolicy(Qt::StrongFocus);
+      selPitch->setDeltaMode(deltaMode);
       addWidget(selPitch);
 
       //label = new QLabel(tr("Velo On"), this, "Velocity On");
@@ -85,7 +89,8 @@ NoteInfo::NoteInfo(QWidget* parent)
       label->setIndent(3);
       addWidget(label);
       //selVelOn = new QSpinBox(0, 127, 1, this);
-      selVelOn = new QSpinBox();
+      selVelOn = new SpinBox();
+      selVelOn->setFocusPolicy(Qt::StrongFocus);
       selVelOn->setRange(0, 127);
       selVelOn->setSingleStep(1);
       addWidget(selVelOn);
@@ -96,7 +101,8 @@ NoteInfo::NoteInfo(QWidget* parent)
       label->setIndent(3);
       addWidget(label);
       //selVelOff = new QSpinBox(0, 127, 1, this);
-      selVelOff = new QSpinBox();
+      selVelOff = new SpinBox();
+      selVelOff->setFocusPolicy(Qt::StrongFocus);
       selVelOff->setRange(0, 127);
       selVelOff->setSingleStep(1);
       addWidget(selVelOff);
@@ -106,6 +112,18 @@ NoteInfo::NoteInfo(QWidget* parent)
       connect(selVelOn,   SIGNAL(valueChanged(int)), SLOT(velOnChanged(int)));
       connect(selVelOff,  SIGNAL(valueChanged(int)), SLOT(velOffChanged(int)));
       connect(selTime,    SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(timeChanged(const MusECore::Pos&)));
+      
+      connect(selLen,     SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+      connect(selPitch,   SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+      connect(selVelOn,   SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+      connect(selVelOff,  SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+      connect(selTime,    SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+      
+      connect(selLen,     SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+      connect(selPitch,   SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+      connect(selVelOn,   SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+      connect(selVelOff,  SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+      connect(selTime,    SIGNAL(escapePressed()), SIGNAL(escapePressed()));
       }
 
 //---------------------------------------------------------
@@ -114,6 +132,8 @@ NoteInfo::NoteInfo(QWidget* parent)
 
 void NoteInfo::setDeltaMode(bool val)
       {
+      if(val == deltaMode)
+        return;
       deltaMode = val;
       selPitch->setDeltaMode(val);
       if (val) {

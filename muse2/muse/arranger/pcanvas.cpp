@@ -34,7 +34,6 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
-//#include <QPainter>
 #include <QUrl>
 #include <QPoint>
 
@@ -48,7 +47,6 @@
 #include "globals.h"
 #include "icons.h"
 #include "event.h"
-//#include "xml.h"
 #include "wave.h"
 #include "audio.h"
 #include "shortcuts.h"
@@ -65,8 +63,6 @@
 #include "dialogs.h"
 #include "widgets/pastedialog.h"
 
-//#define ABS(x)  ((x) < 0) ? -(x) : (x))
-//#define ABS(x) (x>=0?x:-x)
 #define ABS(x) (abs(x))
 
 #define EDITING_FINISHED_TIMEOUT 50 /* in milliseconds */
@@ -108,7 +104,6 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       setMouseTracking(true);
       drag          = DRAG_OFF;
       curColorIndex = 0;
-      //automation.currentCtrl = 0;
       automation.currentCtrlValid = false;
       automation.controllerState = doNothing;
       automation.moveController = false;
@@ -117,7 +112,6 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
 
 PartCanvas::~PartCanvas()
 {
-  //items.clearDelete();
 }
 
 //---------------------------------------------------------
@@ -131,7 +125,6 @@ int PartCanvas::y2pitch(int y) const
       int idx = 0;
       for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it, ++idx) {
             int h = (*it)->height();
-            // if ((y >= yy) && (y < yy+h))
             if (y < yy+h)
                   break;
             yy += h;
@@ -177,7 +170,6 @@ void PartCanvas::returnPressed()
           //twice. the second call would cause a crash, however!
           MusECore::Part* oldPart = editPart->part();
           MusECore::Part* newPart = oldPart->clone();
-          //printf("PartCanvas::returnPressed before msgChangePart oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oldPart->events()->refCount(), oldPart->events()->arefCount(), newPart->events()->refCount(), newPart->events()->arefCount());
           
           newPart->setName(lineEditor->text());
           // Indicate do undo, and do port controller values but not clone parts. 
@@ -290,6 +282,7 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
   {
     CItem* ci = ici->second;
     
+    // DELETETHIS 5
     // If this item's part is in the parts2change list, change the item's part to the new part.
     //MusECore::Part* pt = ci->part();
     //iP2C ip2c = parts2change.find(pt);
@@ -323,7 +316,6 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 //    return false, if copy/move not allowed
 //---------------------------------------------------------
 
-// Changed by T356.
 bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& newpos, DragType t)
       {
       NPart* npart    = (NPart*) item;
@@ -380,12 +372,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       if(t == MOVE_MOVE) 
         item->setPart(dpart);
       if (t == MOVE_COPY && !clone) {
-            //dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-                                          // so we must decrement it first :/
-
-            //
             // Copy Events
-            //
             MusECore::EventList* se = spart->events();
             MusECore::EventList* de = dpart->events();
             for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
@@ -400,7 +387,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
             dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
                                           // so we must decrement it first :/
             // These will not increment ref count, and will not chain clones... 
-            // TODO: is this comment still correct (by flo93)? i doubt it!
+            // TODO DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
             }
       else if (t == MOVE_MOVE) {
@@ -412,7 +399,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
                                           // so we must increment it first :/
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
-            // TODO: is this comment still correct (by flo93)? i doubt it!
+            // TODO DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPart,spart, dpart, true, false));
             
             spart->setSelected(false);
@@ -456,7 +443,6 @@ void PartCanvas::songIsClearing()
 
 void PartCanvas::partsChanged()
       {
-      //items.clear();
       int sn = -1;
       if (curItem) sn=curItem->part()->sn();
       curItem=NULL;      
@@ -975,7 +961,7 @@ MusECore::Track* PartCanvas::y2Track(int y) const
 void PartCanvas::keyPress(QKeyEvent* event)
       {
       int key = event->key();
-
+// DELETETHIS 10
 //      if (_tool == AutomationTool) { // can't get the cursor pos to work right, skipping for now
 //        // clear all the automation parameters
 //        automation.moveController=false;
@@ -992,7 +978,6 @@ void PartCanvas::keyPress(QKeyEvent* event)
             // to "false" some usec ago by returnPressed, called by editingFinished.
             if ( key == Qt::Key_Return || key == Qt::Key_Enter ) 
                   {
-                  //returnPressed(); commented out by flo
                   return;
                   }
             // the below CAN indeed happen.
@@ -1090,9 +1075,8 @@ void PartCanvas::keyPress(QKeyEvent* event)
             emit selectTrackBelow();
             return;
             }
-      //
+
       // Shortcuts that require selected parts from here
-      //
       if (!curItem) {
           if (items.size()==0) {
               event->ignore();  // give global accelerators a chance
@@ -1202,11 +1186,10 @@ void PartCanvas::keyPress(QKeyEvent* event)
             MusECore::Track* track = curItem->part()->track();//top->part()->track();
             track = y2Track(track->y() - 1);
 
-            //If we're at topmost, leave
-            if (!track) {
-              //printf("no track above!\n");
+            //If we're at topmost (no track above), leave
+            if (!track)
                   return;
-                }
+
             int middle = curItem->x() + curItem->part()->lenTick()/2;
             CItem *aboveL = 0, *aboveR = 0;
             //Upper limit: song end, lower limit: song start
@@ -1367,7 +1350,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
 //    draws a part
 //---------------------------------------------------------
 
-#if 0
+#if 0 // DELETETHIS 430 WHOA!
 void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       {
       int from   = rect.x();
@@ -1794,7 +1777,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       int from   = rect.x();
       int to     = from + rect.width();
 
-      //printf("from %d to %d\n", from,to);
       MusECore::Part* part = ((NPart*)item)->part();
       int pTick  = part->tick();
       from      -= pTick;
@@ -1817,17 +1799,13 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       
       // Item bounding box x is in tick coordinates, same as rectangle.
       if((rr & mr).isNull())
-      {
-        //printf("PartCanvas::drawItem rectangle is null\n");
         return;
-      }
       
-      //p.save();
       p.setWorldMatrixEnabled(false);
       
       // NOTE: Optimization: For each item, hasHiddenEvents() is called once in Canvas::draw(), and we use cachedHasHiddenEvents().
       // Not used for now.
-      //int het = part->cachedHasHiddenEvents();
+      //int het = part->cachedHasHiddenEvents(); DELETETHIS or FIXME or whatever?
       int het = part->hasHiddenEvents();
         
       int xs_0 = rr.x();
@@ -1923,18 +1901,13 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       int h = rr.height();
       double s = double(h) / 4.0;
       int y0 = ys_0;
-      //int y1 = y0 + lrint(s);
       int y2 = y0 + lrint(s * 2.0);
-      //int y3 = y0 + lrint(s * 3.0);
       int y4 = y0 + h;
       
-      //QPoint points[12];   
       QPoint points[8];   
       int pts;
       
-      //
       // Fill the part rectangles, accounting for hidden events by using 'jagged' edges...
-      //
       
       p.setBrush(brush);
       p.setPen(Qt::NoPen);
@@ -1946,7 +1919,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         pts = 0;
         if(het == (MusECore::Part::LeftEventsHidden | MusECore::Part::RightEventsHidden))
         {
-          //points[pts++] = QPoint(xs_0, y0);
+          //points[pts++] = QPoint(xs_0, y0); DELETETHIS 11
           //points[pts++] = QPoint(xe_0, y0);
           //points[pts++] = QPoint(xe_j, y1);
           //points[pts++] = QPoint(xe_0, y2);
@@ -1969,7 +1942,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         else
         if(het == MusECore::Part::LeftEventsHidden)
         {
-          //points[pts++] = QPoint(xs_0, y0);
+          //points[pts++] = QPoint(xs_0, y0); DELETETHIS 7
           //points[pts++] = QPoint(xe_0, y0);
           //points[pts++] = QPoint(xe_0, y4);
           //points[pts++] = QPoint(xs_0, y4);
@@ -1988,7 +1961,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         else
         if(het == MusECore::Part::RightEventsHidden)
         {
-          //points[pts++] = QPoint(xs_0, y0);
+          //points[pts++] = QPoint(xs_0, y0); DELETETHIS 7
           //points[pts++] = QPoint(xe_0, y0);
           //points[pts++] = QPoint(xe_j, y1);
           //points[pts++] = QPoint(xe_0, y2);
@@ -2005,13 +1978,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           p.drawConvexPolygon(points, pts);   
         }
         
-        //
         // Draw remaining 'hidden events' decorations with 'jagged' edges...
-        //
                       
         int part_r, part_g, part_b, brightness, color_brightness;
         MusEGlobal::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
         brightness =  part_r*29 + part_g*59 + part_b*12;
+        // DELETETHIS 4 ??
         //if ((brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving())
         //  color_brightness=223;   // too dark: use lighter color 
         //else
@@ -2022,11 +1994,10 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           color_brightness=180; //255;   // too dark: use lighter color 
         QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
         p.setBrush(QBrush(MusECore::gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft())));
-        //p.setBrush(QBrush(c));
         if(het & MusECore::Part::RightEventsHidden)
         {
           pts = 0;
-          //points[pts++] = QPoint(xe_0, y0);
+          //points[pts++] = QPoint(xe_0, y0); DELETETHIS 5
           //points[pts++] = QPoint(xe_0, y4);
           //points[pts++] = QPoint(xe_j, y3);
           //points[pts++] = QPoint(xe_0, y2);
@@ -2041,7 +2012,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         if(het & MusECore::Part::LeftEventsHidden)
         {
           pts = 0;
-          //points[pts++] = QPoint(xs_0, y0);
+          //points[pts++] = QPoint(xs_0, y0); DELETETHIS 5
           //points[pts++] = QPoint(xs_j, y1);
           //points[pts++] = QPoint(xs_0, y2);
           //points[pts++] = QPoint(xs_j, y3);
@@ -2056,7 +2027,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       }  
       else
       {
-        //p.fillRect(rr, brush);
         p.fillRect(rr & mr, brush);  // Respect the requested drawing rectangle. Gives speed boost!
       }
           
@@ -2064,11 +2034,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if(part->mute())
       {
         p.setPen(Qt::NoPen);
-        //brush.setStyle(Qt::DiagCrossPattern);
         brush.setStyle(Qt::Dense7Pattern);
         
-        //p.fillRect(rr, brush);                                                       // FIXME: Some shifting going on
-        //p.fillRect(QRect(rr.x(), rr.y(), rr.width() + 1, rr.height() + 1), brush);   // Same here
         p.fillRect(rr & mr, brush);   // Respect the requested drawing rectangle. Gives speed boost!                                                      
       }  
       
@@ -2093,7 +2060,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 
       p.setWorldMatrixEnabled(false);
       
-  #if 0
+  #if 0 // DELETETHIS 13
         //
         // Now draw the borders...
         // Works great but requires clones be drawn with the highest priority on top of all other parts, in Canvas::draw.
@@ -2108,7 +2075,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
   //#else 
   #endif
   
-  #if 1
+  #if 1 // DELETETHIS remove wrapping #if
         //
         // Now draw the borders, using custom segments...
         //
@@ -2258,12 +2225,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             int part_r, part_g, part_b, brightness;
             // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
             //  get the lowest colour in the gradient used to draw the part.
-            //QRect rr = map(r);
             QRect tr = rr;
             tr.setX(tr.x() + 3);
             MusECore::gGradientFromQColor(MusEGlobal::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
-            //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving();
+            //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving(); DELETETHIS
             bool rev = brightness >= 12000 && !part->selected();
             p.setFont(MusEGlobal::config.fonts[4]);
             if (rev)
@@ -2278,7 +2244,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             p.drawText(tr, Qt::AlignBottom|Qt::AlignLeft, part->name());
             }
             
-      //p.restore();
       p.setWorldMatrixEnabled(true);
       }
 
@@ -2292,7 +2257,7 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
         p.setPen( Qt::black);
         MusECore::Part* part = ((NPart*)item)->part();
         QColor c(part->mute() ? Qt::white : MusEGlobal::config.partColors[part->colorIndex()]);        
-        //c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+        //c.setAlpha(MusEGlobal::config.globalAlphaBlend); DELETETHIS
         c.setAlpha(128);  // Fix this regardless of global setting. Should be OK.
         p.setBrush(c);
         p.drawRect(item->mp().x(), item->mp().y(), item->width(), item->height());
@@ -2314,7 +2279,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
     int part_r, part_g, part_b, brightness;
     MusEGlobal::config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
     brightness =  part_r*29 + part_g*59 + part_b*12;
-    //if ((brightness < 12000 || pt->selected()) && !pt->mute())
+    //if ((brightness < 12000 || pt->selected()) && !pt->mute()) DELETETHIS 4
     //  color_brightness=192;   // too dark: use lighter color 
     //else
     //  color_brightness=64;  // otherwise use dark color 
@@ -2506,8 +2471,6 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
             if (te < (from + pTick))
                   continue;
 
-            //if (te > (to + pTick))
-            //      te = to + pTick;
             if (te >= (to + pTick))
                   te = lrint(rmapxDev_f(rmapx_f(to + pTick) - 1.0));
             
@@ -2537,9 +2500,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
 void PartCanvas::drawWavePart(QPainter& p,
    const QRect& bb, MusECore::WavePart* wp, const QRect& _pr)
       {
-      //QRect rr = p.worldMatrix().mapRect(bb);    // Gives inconsistent positions. Source shows wrong operation for our needs.
       QRect rr = map(bb);                          // Use our own map instead.
-      //QRect pr = p.worldMatrix().mapRect(_pr);
       QRect pr = map(_pr);
 
       p.save();
@@ -2592,10 +2553,7 @@ void PartCanvas::drawWavePart(QPainter& p,
             if(ex > x2)
               ex = x2;
             if (h < 20) {
-                  //
                   //    combine multi channels into one waveform
-                  //
-                  //printf("PartCanvas::drawWavePart i:%d ex:%d\n", i, ex);  
                   
                   for (; i < ex; i++) {
                         MusECore::SampleV sa[channels];
@@ -2620,14 +2578,12 @@ void PartCanvas::drawWavePart(QPainter& p,
                         }
                   }
             else {
-                  //
                   //  multi channel display
-                  //
                   int hm = hh / (channels * 2);
                   int cc = hh % (channels * 2) ? 0 : 1;
                   for (; i < ex; i++) {
                         y  = pr.y() + hm;
-			MusECore::SampleV sa[channels];
+                        MusECore::SampleV sa[channels];
                         xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
                         f.read(sa, xScale, pos);
                         postick += tickstep;
@@ -3147,10 +3103,6 @@ void PartCanvas::dragEnterEvent(QDragEnterEvent* event)
       }
 
 //---------------------------------------------------------
-//   dragvent
-//---------------------------------------------------------
-
-//---------------------------------------------------------
 //   dropEvent
 //---------------------------------------------------------
 
@@ -3394,7 +3346,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             //  does NOT depend on the update rectangle (except to check intersection). That's why this issue 
             //  does not show up there. Should probably try to make that routine more efficient, just like here.   Tim. p4.0.30
             QRect r(mx, yy, mw, th);
-            //if(r.intersects(mr)) 
+            //if(r.intersects(mr))  DELETETHIS
             {
               if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
                     //QRect r = rect & QRect(x, yy, w, track->height());
@@ -3402,6 +3354,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
                     //p.setPen(baseColor);
               }
               
+              // DELETETHIS 13
               // This was redundant drawing. Not required, done via drawTopItem in Canvas::draw
               /*
               //p.setWorldMatrixEnabled(true);
@@ -3418,7 +3371,6 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
       }
       
       p.restore();
-      //p.setWorldMatrixEnabled(true);
 }
 
 //---------------------------------------------------------
@@ -3426,17 +3378,8 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
 {
-    //int x = rect.x();
-    //int y = rect.y();
-    //int w = rect.width();
-    //int h = rect.height();
-
-    // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
-    
     //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
     QRect mr = map(rect);                      // Use our own map instead.
-    
-    //printf("PartCanvas::drawTopItem x:%d y:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height()); 
     
     int mx = mr.x();
     int my = mr.y();
@@ -3444,18 +3387,16 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
     int mh = mr.height();
     
     QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
-    //p.setPen(baseColor);
 
     p.save();
     p.setWorldMatrixEnabled(false);
     
     MusECore::TrackList* tl = MusEGlobal::song->tracks();
     int yoff = -rmapy(yorg) - ypos;
-    //int yy = 0;
     int yy = yoff;
     int th;
     for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it) {
-          //if (yy > y + h)
+          //if (yy > y + h) DELETETHIS
           if (yy > my + mh)
                 break;
           MusECore::Track* track = *it;
@@ -3463,15 +3404,15 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
           if (!th)
             continue;
           if (!track->isMidiTrack()) { // draw automation
-                //QRect r = rect & QRect(x, yy, w, track->height());
+                //QRect r = rect & QRect(x, yy, w, track->height()); DELETETHIS
                 QRect r(mx, yy, mw, th);
                 if(r.intersects(mr)) 
                 {
                   drawAutomation(p, r, (MusECore::AudioTrack*)track);
-                  //p.setPen(baseColor);
+                  //p.setPen(baseColor); DELETETHIS
                 }  
           }
-          //yy += track->height();
+          //yy += track->height(); DELETETHIS
           yy += th;
           }
 
@@ -3482,22 +3423,16 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
     int width = mapx(MusEGlobal::song->cpos()) - mapx(startPos);
 
     if (MusEGlobal::song->cpos() < startPos) {
-        //p.setWorldMatrixEnabled(true);
         p.restore();
         return; // no drawing if we are before punch out
     }
     if (MusEGlobal::song->punchout() && MusEGlobal::song->cpos() > MusEGlobal::song->rpos()) {
-       //p.setWorldMatrixEnabled(true);
        p.restore();
        return; // no drawing if we are beyond punch out.
     }
 
-    ///p.save();
-    ///p.resetTransform();
-
     // write recording while it happens to get feedback
     // should be enhanced with solution that draws waveform also
-    //int yPos=0;
     int yPos = yoff;
     if (MusEGlobal::song->record() && MusEGlobal::audio->isPlaying()) {
       for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it) {
@@ -3522,7 +3457,6 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
       }
     }
     p.restore();
-    //p.setWorldMatrixEnabled(true);
 
     // draw midi events on
     yPos=0;
@@ -3588,13 +3522,13 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, 
       p.setPen(Qt::black);
       QColor c(Qt::gray);
       c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-      //QLinearGradient gradient(r.topLeft(), r.bottomLeft());
       QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 1);    // Inside the border
       gradient.setColorAt(0, c);
       gradient.setColorAt(1, c.darker());
       QBrush brush(gradient);
       p.fillRect(mr, brush);       // p4.0.30  ...
       
+      // DELETETHIS 6
       //int xx = -rmapx(xorg) - xpos;           
       //printf("PartCanvas::drawAudioTrack x:%d y:%d w:%d h:%d th:%d xx:%d\n", r.x(), r.y(), r.width(), r.height(), t->height(), xx);  
       //if(r.x() <= xx)
@@ -3604,7 +3538,7 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, 
       
       if(mex >= mx && mex <= mx + mw)
         p.drawLine(mex, my, mex, my + mh - 1);                // The left edge
-      //if(mex + mew >= mx && mex + mew <= mx + mw)
+      //if(mex + mew >= mx && mex + mew <= mx + mw) DELETETHIS 2
       //  p.drawLine(mex + mew, my, mex + mew, my + mh - 1);  // The right edge. Not used - infinite to the right
       if(mey >= my && mey <= my + mh)
         p.drawLine(mx, mey, mx + mw - 1, mey);                // The top edge
@@ -3647,7 +3581,6 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       int ypixel = oldY;
       double min, max;
       cl->range(&min,&max);
-      //bool discrete = cl->valueType() == VAL_BOOL || cl->mode() == MusECore::CtrlList::DISCRETE;  
       bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;  
       QPen pen1(cl->color(), 0);  
       QPen pen2(cl->color(), 2);  
@@ -3658,7 +3591,6 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       {
         double y;   
         if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-          //printf("log conversion val=%f min=%f max=%f\n", cl->curVal(), min, max);
           y = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
           if (y < 0) y = 0.0;
         }
@@ -3672,7 +3604,6 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
         {
             double y = ic->second.val; 
             if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-              //printf("log conversion val=%f min=%f max=%f\n", cl->curVal(), min, max);
               y = logToVal(y, min, max); // represent volume between 0 and 1
               if (y < 0) y = 0.0;
             }
@@ -3684,7 +3615,6 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
             
             if (oldY==-1) oldY = ypixel;
 
-            //printf(" line x1:%d x2:%d prevVal:%f nextVal:%f\n", leftX, currentPixel, prevVal, nextVal); 
             p.setPen(pen1);
             if(discrete)
             {
@@ -3712,12 +3642,10 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       }
       if (xpixel <= rr.right())
       {
-        //printf(" endline prevVal:%f\n", prevVal); 
         p.setPen(pen1);
         p.drawLine(xpixel, ypixel, rr.right(), ypixel);
       }  
     }
-    //p.restore();
 }
 
 
@@ -3764,7 +3692,6 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
         int ypixel = oldY;
         double min, max;
         cl->range(&min,&max);
-        //bool discrete = cl->valueType() == VAL_BOOL || cl->mode() == MusECore::CtrlList::DISCRETE;  // Tim
         bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;  
 
         // First check that there IS automation, ic == cl->end means no automation
@@ -3795,12 +3722,9 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
              xpixel = mapx(MusEGlobal::tempomap.frame2tick(ic->second.frame));
 
              if (oldY==-1) oldY = ypixel;
-             //printf("     oldX:%d oldY:%d xpixel:%d ypixel:%d\n", oldX, oldY, xpixel, ypixel); 
              
              bool foundIt=false;
              if (addNewCtrl) {
-                // check if we are reasonably close to a line
-               //printf("xpixel=%d oldX=%d\n", xpixel, oldX);
                double firstX=oldX;
                double lastX=xpixel;
                double firstY=oldY;
@@ -3808,8 +3732,6 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
 
                double proportion = (currX-firstX)/(lastX-firstX);
 
-               //if (    (currX > lastX && firstY!=lastY) // omit special cases.
-               //     || firstX==lastX ) {
                if((currX < oldX) || (currX > lastX) || (firstX==lastX) ) 
                {
                     oldX = xpixel;
@@ -3825,7 +3747,6 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
                //   /
                // 1
                double calcY = (lastY-firstY)*proportion+firstY;
-               //printf("calcY=%f currY=%d\n", calcY, currY);
                if(ABS(calcY-currY) < circumference || (xpixel == oldX && ABS(currX-xpixel) < circumference))
                  foundIt=true;
              
@@ -3847,9 +3768,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
                  automation.currentCtrlValid = false;
                  automation.controllerState = addNewController;
                }else {
-                 //automation.currentCtrl=&ic->second;
                  automation.currentCtrlFrame = ic->second.frame;
-                 //automation.currentCtrlVal = ic->second.val;
                  automation.currentCtrlValid = true;
                  automation.controllerState = movingController;
                }
@@ -3869,7 +3788,6 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
             automation.controllerState = addNewController;
             automation.currentCtrlList = cl;
             automation.currentTrack = t;
-            //automation.currentCtrl = 0;
             automation.currentCtrlValid = false;
             return;
           }
@@ -3877,7 +3795,6 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
       }
       // if there are no hits we default to clearing all the data
       automation.controllerState = doNothing;
-      //automation.currentCtrl = 0;
       automation.currentCtrlValid = false;
       automation.currentCtrlList = 0;
       automation.currentTrack = 0;
@@ -3886,7 +3803,6 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
 
 void PartCanvas::controllerChanged(MusECore::Track* t)
 {
-  //redraw();
   redraw((QRect(0, mapy(t->y()), width(), rmapy(t->height()))));  // TODO Check this - correct?
 }
 
@@ -3911,19 +3827,15 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 
     if (automation.controllerState == addNewController)
     {
-       //printf("adding a new ctrler!\n");
        int frame = MusEGlobal::tempomap.tick2frame(pos.x());
        // FIXME Inefficient to add with wait here, then remove and add with wait again below. Tim.
        MusEGlobal::audio->msgAddACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), frame, 1.0 /*dummy value */);
-       //MusEGlobal::song->addACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), frame, 1.0 /*dummy value */);
 
        MusECore::iCtrl ic=automation.currentCtrlList->begin();
        for (; ic !=automation.currentCtrlList->end(); ++ic) {
          MusECore::CtrlVal &cv = ic->second;
          if (cv.frame == frame) {
-           //automation.currentCtrl = &cv;
            automation.currentCtrlFrame = cv.frame;
-           //automation.currentCtrlVal = cv.val;
            automation.currentCtrlValid = true;
            automation.controllerState = movingController;
            break;
@@ -3937,7 +3849,6 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     for (; ic !=automation.currentCtrlList->end(); ++ic)
     {
        MusECore::CtrlVal &cv = ic->second;
-       //if (&cv == automation.currentCtrl)
        if (cv.frame == automation.currentCtrlFrame)
        {
          currFrame = cv.frame;
@@ -3958,9 +3869,7 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     //  there is only one value at t, and the next value at t+1, and so on.
     // Also these are maps, not multimaps.           p4.0.32 Tim.
     int newFrame = MusEGlobal::tempomap.tick2frame(pos.x());
-    //if(currFrame == 0) 
-    //  newFrame = 0;  // Force first item to stay at x = 0.
-    //else 
+
     if (newFrame <= prevFrame) 
       newFrame=prevFrame + (icc == automation.currentCtrlList->begin() ? 0: 1);  // Only first item is allowed to go to zero x.
     if (nextFrame!=-1 && newFrame >= nextFrame) newFrame=nextFrame-1;
@@ -3968,7 +3877,6 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     int posy=mapy(pos.y());
     int tracky = mapy(automation.currentTrack->y());
     int trackHeight = automation.currentTrack->height();
-    //printf("posy=%d tracky=%d trackHeight=%d\n", posy,tracky,trackHeight);
 
     int mouseY = trackHeight - (posy - tracky)-2;
     double yfraction = ((double)mouseY)/automation.currentTrack->height();
@@ -3979,7 +3887,6 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
        printf("log conversion val=%f min=%f max=%f\n", yfraction, min, max);
        cvval = valToLog(yfraction, min, max);
-       //printf("calc yfraction = %f v=%f ",yfraction,cvval);
        if (cvval< min) cvval=min;
        if (cvval>max) cvval=max;
     }
@@ -3987,7 +3894,6 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
       // we need to set val between 0 and 1 (unless integer)
       cvval = yfraction * (max-min) + min;
       // 'Snap' to integer or boolean
-      //if (automation.currentCtrlList->valueType() == VAL_INT || automation.currentCtrlList->valueType() == VAL_BOOL)
       if (automation.currentCtrlList->mode() == MusECore::CtrlList::DISCRETE)
         cvval = rint(cvval + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
       if (cvval< min) cvval=min;
@@ -3995,18 +3901,12 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     }
     
     automation.currentCtrlFrame = newFrame;
-    //automation.currentCtrlVal = cvval;
     automation.currentCtrlValid = true;
     
     if(icc != automation.currentCtrlList->end())
       MusEGlobal::audio->msgChangeACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), icc->second.frame, newFrame, cvval);
-      //MusEGlobal::song->changeACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), icc->second.frame, newFrame, cvval);
     else
       MusEGlobal::audio->msgAddACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), newFrame, cvval);
-      //MusEGlobal::song->addACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), newFrame, cvval);
-    
-    // Not needed. Redraw is now handled by msgXXX().
-    //controllerChanged(automation.currentTrack);
   }
 
 }
@@ -4019,7 +3919,6 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 //---------------------------------------------------------
 double PartCanvas::logToVal(double inLog, double min, double max)
 {
-    //printf("logToVal inLog %f :", inLog);
     if (inLog < min) inLog = min;
     if (inLog > max) inLog = max;
     double linMin = 20.0*MusECore::fast_log10(min);
@@ -4027,7 +3926,6 @@ double PartCanvas::logToVal(double inLog, double min, double max)
     double linVal = 20.0*MusECore::fast_log10(inLog);
 
     double outVal = (linVal-linMin) / (linMax - linMin);
-    // printf("inLog %f outVal %f linVal %f min %f max %f dbMin %f dbMax %f\n", inLog, outVal, linVal, min, max, linMin, linMax);
 
     return outVal;
 }

@@ -221,7 +221,8 @@ MusEGlobal::GlobalConfigValues config = {
       MusECore::DONT_REC_MUTED_OR_HIDDEN,
       true,                         // addHiddenTracks
       true,                         // unhideTracks
-      MusEGlobal::PREFER_NEW        // drumTrackPreference
+      MusEGlobal::PREFER_NEW,       // drumTrackPreference
+      false                         // smartFocus
       };
 
 //---------------------------------------------------------

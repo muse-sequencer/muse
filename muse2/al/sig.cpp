@@ -82,7 +82,6 @@ void SigList::add(unsigned tick, const TimeSignature& s)
       {
       if (s.z == 0 || s.n == 0) {
             printf("illegal signature %d/%d\n", s.z, s.n);
-            // Added by Tim.
             return;
             }
       tick = raster1(tick, 0);

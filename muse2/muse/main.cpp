@@ -35,6 +35,8 @@
 #include <QIcon>
 #include <QString>
 #include <QStringList>
+#include <QStyle>
+
 
 #include <sys/mman.h>
 #include <alsa/asoundlib.h>
@@ -43,12 +45,14 @@
 #include "app.h"
 #include "audio.h"
 #include "audiodev.h"
+#include "config.h"
 #include "gconfig.h"
 #include "globals.h"
 #include "helper.h"
 #include "icons.h"
 #include "sync.h"
 #include "functions.h"
+#include "appearance.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -138,27 +142,17 @@ class MuseApplication : public QApplication {
             }
 
       bool notify(QObject* receiver, QEvent* event) {
-            //if (event->type() == QEvent::KeyPress)
-            //  printf("notify key press before app::notify accepted:%d\n", event->isAccepted());  
             bool flag = QApplication::notify(receiver, event);
             if (event->type() == QEvent::KeyPress) {
-              //printf("notify key press after app::notify accepted:%d\n", event->isAccepted());   
                   QKeyEvent* ke = (QKeyEvent*)event;
-                  ///MusEGlobal::globalKeyState = ke->stateAfter();
-		  MusEGlobal::globalKeyState = ke->modifiers();
+                  MusEGlobal::globalKeyState = ke->modifiers();
                   bool accepted = ke->isAccepted();
                   if (!accepted) {
                         int key = ke->key();
-                        ///if (ke->state() & Qt::ShiftModifier)
-                        //if (MusEGlobal::globalKeyState & Qt::ShiftModifier)
                         if (((QInputEvent*)ke)->modifiers() & Qt::ShiftModifier)
                               key += Qt::SHIFT;
-                        ///if (ke->state() & Qt::AltModifier)
-                        //if (MusEGlobal::globalKeyState & Qt::AltModifier)
                         if (((QInputEvent*)ke)->modifiers() & Qt::AltModifier)
                               key += Qt::ALT;
-                        ///if (ke->state() & Qt::ControlModifier)
-                        //if (MusEGlobal::globalKeyState & Qt::ControlModifier)
                         if (((QInputEvent*)ke)->modifiers() & Qt::ControlModifier)
                               key+= Qt::CTRL;
                         muse->kbAccel(key);
@@ -175,7 +169,7 @@ class MuseApplication : public QApplication {
             }
 
 #ifdef HAVE_LASH
-     virtual void timerEvent (QTimerEvent * /* e */) {
+     virtual void timerEvent (QTimerEvent*) {
             if(MusEGlobal::useLASH)
               muse->lash_idle_cb ();
             }
@@ -226,6 +220,8 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -m       debug mode: trace midi Input\n");
       fprintf(stderr, "   -M       debug mode: trace midi Output\n");
       fprintf(stderr, "   -s       debug mode: trace sync\n");
+      fprintf(stderr, "   -u       ubuntu/unity workaround: don't allow sharing menus\n");
+      fprintf(stderr, "                                     and mdi-subwins.\n");
       fprintf(stderr, "   -a       no audio\n");
       fprintf(stderr, "   -P  n    set audio driver real time priority to n\n");
       fprintf(stderr, "            (Dummy only, default 40. Else fixed by Jack.)\n");
@@ -254,7 +250,6 @@ static void usage(const char* prog, const char* txt)
 int main(int argc, char* argv[])
       {
       
-//      error = ErrorHandler::create(argv[0]);
       MusEGlobal::ruid = getuid();
       MusEGlobal::euid = geteuid();
       MusEGlobal::undoSetuid();
@@ -279,13 +274,12 @@ int main(int argc, char* argv[])
         utemplDir.mkpath(".");
         // Support old versions: Copy existing templates over.
         QDir old_utemplDir = QDir(QString(getenv("HOME")) + QString("/templates"));
-        // printf(" old templates dir:%s\n", (QString(getenv("HOME")) + QString("/templates")).toLatin1().constData()); 
         if(old_utemplDir.exists())
         {
-          //printf(" found old templates dir\n"); 
           // We really just want these, even though it's possible other filenames were saved.
           // Another application might have used that directory.
-          QStringList flt; flt << "*.med" << "*.med.gz" << "*.med.bz2" << "*.mid" << "*.midi" << "*.kar";
+          QStringList flt;
+          flt << "*.med" << "*.med.gz" << "*.med.bz2" << "*.mid" << "*.midi" << "*.kar";
           old_utemplDir.setNameFilters(flt);
           
           QFileInfoList fil = old_utemplDir.entryInfoList();
@@ -295,7 +289,6 @@ int main(int argc, char* argv[])
             QString fn = fi.fileName();
             QFile f(fi.absoluteFilePath());
             f.copy(utemplDir.absolutePath() + "/" + fn);
-            //printf(" copy old template to:%s result:%d\n", QString(utemplPath.absolutePath() + "/" + fn).toLatin1().constData(), rv); 
           }
         }
       }
@@ -330,10 +323,11 @@ int main(int argc, char* argv[])
 #endif
 
       srand(time(0));   // initialize random number generator
-//      signal(SIGCHLD, catchSignal);  // interferes with initVST()
+//      signal(SIGCHLD, catchSignal);  // interferes with initVST(). see also app.cpp, function catchSignal()
       MusECore::initMidiController();
       QApplication::setColorSpec(QApplication::ManyColor);
       MuseApplication app(argc, argv);
+      MusEGui::Appearance::defaultStyle = MuseApplication::style()->objectName();
 
       MusEGui::init_function_dialogs(MusEGlobal::muse);
       MusEGui::initShortCuts();
@@ -344,8 +338,6 @@ int main(int argc, char* argv[])
       if(!cConfExists)
         MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
 
-      //MusEGlobal::museUserInstruments = MusEGlobal::config.userInstrumentsDir;
-      
       // Create user instruments dir if it doesn't exist
       {
         QString uinstrPath = MusEGlobal::configPath + QString("/instruments");
@@ -357,10 +349,8 @@ int main(int argc, char* argv[])
         {
           // Support old versions: Copy existing instruments over.
           QDir old_uinstrDir(MusEGlobal::config.userInstrumentsDir);
-          //printf(" old instruments dir:%s\n", MusEGlobal::config.userInstrumentsDir.toLatin1().constData()); 
           if(old_uinstrDir.exists())
           {
-            //printf(" found old instruments dir\n"); 
             QStringList flt; flt << "*.idf";
             old_uinstrDir.setNameFilters(flt);
             
@@ -374,7 +364,6 @@ int main(int argc, char* argv[])
               if(!newf.exists())
               {  
                 f.copy(newf.fileName());
-                //printf(" copy old instrument to:%s result:%d\n", newf.fileName().toLatin1().constData(), rv); 
               }  
             }
           }
@@ -395,14 +384,14 @@ int main(int argc, char* argv[])
                   muse_splash->show();
                   QTimer* stimer = new QTimer(0);
                   muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
-		  stimer->setSingleShot(true);
+                  stimer->setSingleShot(true);
                   stimer->start(6000);
                   }
             }
 
       int i;
       
-      QString optstr("ahvdDmMsP:Y:l:py");
+      QString optstr("ahvdDumMsP:Y:l:py");
 #ifdef VST_SUPPORT
       optstr += QString("V");
 #endif
@@ -413,12 +402,6 @@ int main(int argc, char* argv[])
       optstr += QString("L");
 #endif
 
-//#ifdef VST_SUPPORT
-//      while ((i = getopt(argc, argv, "ahvdDmMsVP:py")) != EOF) {
-//#else
-//      while ((i = getopt(argc, argv, "ahvdDmMsP:py")) != EOF) {
-//#endif
-      
       while ((i = getopt(argc, argv, optstr.toLatin1().constData())) != EOF) {
       char c = (char)i;
             switch (c) {
@@ -438,6 +421,7 @@ int main(int argc, char* argv[])
                   case 'm': MusEGlobal::midiInputTrace = true; break;
                   case 'M': MusEGlobal::midiOutputTrace = true; break;
                   case 's': MusEGlobal::debugSync = true; break;
+                  case 'u': MusEGlobal::unityWorkaround = true; break;
                   case 'P': MusEGlobal::realTimePriority = atoi(optarg); break;
                   case 'Y': MusEGlobal::midiRTPrioOverride = atoi(optarg); break;
                   case 'p': MusEGlobal::loadPlugins = false; break;
@@ -450,23 +434,6 @@ int main(int argc, char* argv[])
                   default:  usage(argv[0], "bad argument"); return -1;
                   }
             }
-      
-      /*
-      if(!MusEGlobal::config.styleSheetFile.isEmpty())
-      {
-        if(MusEGlobal::debugMsg)
-          printf("loading style sheet <%s> \n", qPrintable(MusEGlobal::config.styleSheetFile));
-        QFile cf(MusEGlobal::config.styleSheetFile);
-        if (cf.open(QIODevice::ReadOnly)) {
-              QByteArray ss = cf.readAll();
-              QString sheet(QString::fromUtf8(ss.data()));
-              app.setStyleSheet(sheet);
-              cf.close();
-              }
-        else
-              printf("loading style sheet <%s> failed\n", qPrintable(MusEGlobal::config.styleSheetFile));
-      }
-      */
       
       
       AL::initDsp();
@@ -481,9 +448,6 @@ int main(int argc, char* argv[])
       else if (noAudio) {
             MusECore::initDummyAudio();
             MusEGlobal::realTimeScheduling = true;
-            //if (MusEGlobal::debugMode) {              // ??
-            //          MusEGlobal::realTimeScheduling = false;
-            //          }
             }
       else if (MusECore::initJackAudio()) {
             if (!MusEGlobal::debugMode)
@@ -507,7 +471,6 @@ int main(int argc, char* argv[])
                   fprintf(stderr, "no audio functions available\n");
                   fprintf(stderr, "*** experimental mode -- no play possible ***\n");
                   MusECore::initDummyAudio();
-                  //MusEGlobal::realTimeScheduling = MusEGlobal::audioDevice->isRealtime();
                   }
             MusEGlobal::realTimeScheduling = true;
             }
@@ -517,8 +480,6 @@ int main(int argc, char* argv[])
       // ??? With Jack2 this reports true even if it is not running realtime. 
       // Jack says: "Cannot use real-time scheduling (RR/10)(1: Operation not permitted)". The kernel is non-RT.
       // I cannot seem to find a reliable answer to the question, even with dummy audio and system calls.
-      //if (MusEGlobal::debugMsg) 
-      //  printf("MusEGlobal::realTimeScheduling:%d\n", MusEGlobal::realTimeScheduling);
 
       MusEGlobal::useJackTransport.setValue(true);
       
@@ -574,8 +535,6 @@ int main(int argc, char* argv[])
       MusEGui::initIcons();
 
       MusECore::initMetronome();
-      
-      //QApplication::clipboard()->setSelectionMode(false); ddskrjo obsolete even in Qt3
       
       QApplication::addLibraryPath(MusEGlobal::museGlobalLib + "/qtplugins");
       if (MusEGlobal::debugMsg) {

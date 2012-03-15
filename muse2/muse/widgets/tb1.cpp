@@ -69,6 +69,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       solo = new QToolButton();    
       solo->setText(tr("Solo"));
       solo->setCheckable(true);
+      solo->setFocusPolicy(Qt::NoFocus);
       addWidget(solo);
 
       //---------------------------------------------------
@@ -94,6 +95,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       //---------------------------------------------------
 
       raster = new LabelCombo(tr("Snap"), 0);
+      raster->setFocusPolicy(Qt::TabFocus);
 
       rlist = new QTableWidget(10, 3);    
       rlist->verticalHeader()->setDefaultSectionSize(22);                      
@@ -130,6 +132,7 @@ void Toolbar1::_rasterChanged(int /*i*/)
 //void Toolbar1::_rasterChanged(int r, int c)
       {
       emit rasterChanged(rasterTable[rlist->currentRow() + rlist->currentColumn() * 10]);
+      //parentWidget()->setFocus();
       //emit rasterChanged(rasterTable[r + c * 10]);
       }
 

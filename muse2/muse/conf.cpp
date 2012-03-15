@@ -39,7 +39,6 @@
 #include "arrangerview.h"
 #include "marker/markerview.h"
 #include "master/lmaster.h"
-///#include "transport.h"
 #include "bigtime.h"
 #include "arranger.h"
 #include "conf.h"
@@ -171,7 +170,6 @@ static void readController(Xml& xml, int midiPort, int channel)
                   case Xml::TagEnd:
                         if (tag == "controller") {
                               MidiPort* port = &MusEGlobal::midiPorts[midiPort];
-                              //port->addManagedController(channel, id);
                               val = port->limitValToInstrCtlRange(id, val);
                               // The value here will actually be sent to the device LATER, in MidiPort::setMidiDevice()
                               port->setHwCtrlState(channel, id, val);
@@ -225,9 +223,6 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
       int idx = 0;
       QString device;
       
-      //QString instrument;
-      // Changed by Tim. 
-      //QString instrument("generic midi"); 
       // Let's be bold. New users have been confused by generic midi not enabling any patches and controllers.
       // I had said this may cause HW problems by sending out GM sysEx when really the HW might not be GM.
       // But this really needs to be done, one way or another. 
@@ -306,7 +301,6 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               if(onlyReadChannelState)      // p4.0.41
                                 return;
                               
-                              //if (idx > MIDI_PORTS) {
                               if (idx < 0 || idx >= MIDI_PORTS) {
                                     fprintf(stderr, "bad midi port %d (>%d)\n",
                                        idx, MIDI_PORTS);
@@ -315,9 +309,6 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               
                               MidiDevice* dev = MusEGlobal::midiDevices.find(device);
                               
-                              //if(MusEGlobal::debugMsg && !dev)
-                              //  fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLatin1().constData());
-                                
                               if(!dev && type == MidiDevice::JACK_MIDI)
                               {
                                 if(MusEGlobal::debugMsg)
@@ -356,83 +347,6 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                   }
             }
       }
-
-/*
-//---------------------------------------------------------
-//   readConfigMidiSyncInfo
-//---------------------------------------------------------
-
-static void readConfigMidiSyncInfo(Xml& xml)
-{
-      QString device;
-      int idOut       = 127;
-      int idIn        = 127;
-      bool sendMC     = false;
-      bool sendMMC    = false;
-      bool sendMTC    = false;
-      bool recMC      = false;
-      bool recMMC     = false;
-      bool recMTC     = false;
-      
-      for (;;) {
-            Xml::Token token = xml.parse();
-            if (token == Xml::Error || token == Xml::End)
-                  break;
-            QString tag = xml.s1();
-            switch (token) {
-                  case Xml::TagStart:
-                        if (tag == "device")
-                              device = xml.parse1();
-                        else if (tag == "idOut")
-                              idOut = (xml.parseInt());
-                        else if (tag == "idIn")
-                              idIn = xml.parseInt();
-                        else if (tag == "sendMC")
-                              sendMC = xml.parseInt();
-                        else if (tag == "sendMMC")
-                              sendMMC = xml.parseInt();
-                        else if (tag == "sendMTC")
-                              sendMTC = xml.parseInt();
-                        else if (tag == "recMC")
-                              recMC = xml.parseInt();
-                        else if (tag == "recMMC")
-                              recMMC = xml.parseInt();
-                        else if (tag == "recMTC")
-                              recMTC = xml.parseInt();
-                        else
-                              xml.unknown("midiSyncInfo");
-                        break;
-                  case Xml::Attribut:
-                        break;
-                  case Xml::TagEnd:
-                        if(tag == "midiSyncInfo") 
-                        {
-                          MidiDevice* dev = MusEGlobal::midiDevices.find(device);
-                          if(dev) 
-                          {
-                            MidiSyncInfo& si = dev->syncInfo();
-                            si.setIdIn(idIn);
-                            si.setIdOut(idOut);
-                            
-                            si.setMCIn(recMC);
-                            si.setMMCIn(recMMC);
-                            si.setMTCIn(recMTC);
-                            
-                            si.setMCOut(sendMC);
-                            si.setMMCOut(sendMMC);
-                            si.setMTCOut(sendMTC);
-                          }
-                          else
-                            fprintf(stderr, "Read configuration: Sync device: %s not found\n", device.toLatin1().constData());
-                            
-                          return;
-                        }
-                  default:
-                        break;
-                  }
-            }
-}
-*/
 
 //---------------------------------------------------------
 //   loadConfigMetronom
@@ -982,52 +896,37 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.drumTrackPreference = (MusEGlobal::drumTrackPreference_t) xml.parseInt();
                         else if (tag == "unhideTracks")
                               MusEGlobal::config.unhideTracks = xml.parseInt();
+                        else if (tag == "smartFocus")
+                              MusEGlobal::config.smartFocus = xml.parseInt();
 
                         // ---- the following only skips obsolete entries ----
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
                               xml.skip(tag);
                         else if (tag == "mixerVisible")
-                              // MusEGlobal::config.mixerVisible = xml.parseInt();  // Obsolete
                               xml.skip(tag);
                         else if (tag == "geometryMixer")
-                              // MusEGlobal::config.geometryMixer = readGeometry(xml, tag); // Obsolete
                               xml.skip(tag);
                         else if (tag == "txDeviceId")
-                                //txDeviceId = xml.parseInt();
                                 xml.parseInt();
                         else if (tag == "rxDeviceId")
-                                //rxDeviceId = xml.parseInt();
                                 xml.parseInt();
                         else if (tag == "txSyncPort")
-                                //txSyncPort= xml.parseInt();
                                 xml.parseInt();
                         else if (tag == "rxSyncPort")
-                                //rxSyncPort= xml.parseInt();
                                 xml.parseInt();
-                        else if (tag == "syncgentype") {
-                              // for compatibility
-                              //int syncGenType= xml.parseInt();
-                              //genMTCSync = syncGenType == 1;
-                              //genMCSync = syncGenType == 2;
+                        else if (tag == "syncgentype")
                               xml.parseInt();
-                              }
                         else if (tag == "genMTCSync")
-                              //genMTCSync = xml.parseInt();
                               xml.parseInt();
                         else if (tag == "genMCSync")
-                              //genMCSync = xml.parseInt();
                               xml.parseInt();
                         else if (tag == "genMMC")
-                              //genMMC = xml.parseInt();
                               xml.parseInt();
                         else if (tag == "acceptMTC")
-                              //acceptMTC = xml.parseInt();
                               xml.parseInt();
                         else if (tag == "acceptMMC")
-                              //acceptMMC = xml.parseInt();
                               xml.parseInt();
                         else if (tag == "acceptMC")
-                              //acceptMC = xml.parseInt();
                               xml.parseInt();
                         else if ((tag == "samplerate") || (tag == "segmentsize") || (tag == "segmentcount"))
                               xml.parseInt();
@@ -1164,8 +1063,6 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   // This prevents bogus routes from being saved and propagated in the med file.
                   // Hmm tough decision, should we save if no device? That would preserve routes in case user upgrades HW, 
                   //  or ALSA reorders or renames devices etc etc, then we have at least kept the track <-> port routes.
-                  //if(((!mport->noInRoute() || !mport->noOutRoute()) && dev) || 
-                     //mport->defaultInChannels() || mport->defaultOutChannels() ||
                      mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1 ||   // p4.0.17 Default is now to connect to all channels.
                      mport->defaultOutChannels() ||
                      (!mport->instrument()->iname().isEmpty() && mport->instrument()->iname() != "GM") ||
@@ -1189,7 +1086,6 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                         continue;
                   xml.tag(level++, "midiport idx=\"%d\"", i);
                   
-                  //if(mport->defaultInChannels())
                   if(mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1)     // p4.0.17 Default is now to connect to all channels.
                     xml.intTag(level, "defaultInChans", mport->defaultInChannels());
                   if(mport->defaultOutChannels())
@@ -1202,14 +1098,9 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   if (dev) {
                         xml.strTag(level, "name",   dev->name());
                         
-                        //if(dynamic_cast<MidiJackDevice*>(dev))
                         if(dev->deviceType() != MidiDevice::ALSA_MIDI)
-                          //xml.intTag(level, "type", MidiDevice::JACK_MIDI);
                           xml.intTag(level, "type", dev->deviceType());
                         
-                        // Changed by T356. "record" is old and by mistake written as rwFlags here. 
-                        // openFlags was read before, but never written here.
-                        //xml.intTag(level, "record", dev->rwFlags() & 0x2 ? 1 : 0);
                         xml.intTag(level, "openFlags", dev->openFlags());
                         
                         if(dev->deviceType() == MidiDevice::JACK_MIDI)
@@ -1282,8 +1173,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);
       xml.intTag(level, "guiRefresh", MusEGlobal::config.guiRefresh);
       
-      // Removed by Orcan. 20101220
-      //xml.strTag(level, "helpBrowser", config.helpBrowser);
       xml.intTag(level, "extendedMidi", MusEGlobal::config.extendedMidi);
       xml.intTag(level, "midiExportDivision", MusEGlobal::config.midiDivision);
       xml.intTag(level, "guiDivision", MusEGlobal::config.guiDivision);
@@ -1307,8 +1196,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiFilterCtrl3", MusEGlobal::midiFilterCtrl3);
       xml.intTag(level, "midiFilterCtrl4", MusEGlobal::midiFilterCtrl4);
       
-      //xml.intTag(level, "txDeviceId", txDeviceId);
-      //xml.intTag(level, "rxDeviceId", rxDeviceId);
       xml.strTag(level, "theme", MusEGlobal::config.style);
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
@@ -1317,6 +1204,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "popupsDefaultStayOpen", MusEGlobal::config.popupsDefaultStayOpen);
       xml.intTag(level, "leftMouseButtonCanDecrease", MusEGlobal::config.leftMouseButtonCanDecrease);
       xml.intTag(level, "rangeMarkerWithoutMMB", MusEGlobal::config.rangeMarkerWithoutMMB);
+      xml.intTag(level, "smartFocus", MusEGlobal::config.smartFocus);
       
       xml.intTag(level, "unhideTracks", MusEGlobal::config.unhideTracks);
       xml.intTag(level, "addHiddenTracks", MusEGlobal::config.addHiddenTracks);
@@ -1330,7 +1218,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "outputTracksVisible",  MusECore::AudioOutput::visible());
       xml.intTag(level, "synthTracksVisible",  MusECore::SynthI::visible());
 
-      //for (int i = 0; i < 6; ++i) {
       for (int i = 0; i < NUM_FONTS; ++i) {
             char buffer[32];
             sprintf(buffer, "font%d", i);
@@ -1384,28 +1271,15 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "auxTrackBg",    MusEGlobal::config.auxTrackBg);
       xml.colorTag(level, "synthTrackBg",  MusEGlobal::config.synthTrackBg);
 
-      //xml.intTag(level, "txSyncPort", txSyncPort);
-      //xml.intTag(level, "rxSyncPort", rxSyncPort);
       xml.intTag(level, "mtctype", MusEGlobal::mtcType);
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
         MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
-      //xml.uintTag(level, "sendClockDelay", MusEGlobal::syncSendFirstClockDelay);
-      //xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport);
-      //xml.intTag(level, "jackTransportMaster", MusEGlobal::jackTransportMaster);
       MusEGlobal::extSyncFlag.save(level, xml);
       
-//      xml.intTag(level, "genMTCSync", genMTCSync);
-//      xml.intTag(level, "genMCSync", genMCSync);
-//      xml.intTag(level, "genMMC", genMMC);
-//      xml.intTag(level, "acceptMTC", acceptMTC);
-//      xml.intTag(level, "acceptMMC", acceptMMC);
-//      xml.intTag(level, "acceptMC", acceptMC);
-
       xml.qrectTag(level, "geometryMain",      MusEGlobal::config.geometryMain);
       xml.qrectTag(level, "geometryTransport", MusEGlobal::config.geometryTransport);
       xml.qrectTag(level, "geometryBigTime",   MusEGlobal::config.geometryBigTime);
-      //xml.qrectTag(level, "geometryMixer",     MusEGlobal::config.geometryMixer);  // Obsolete
 
       xml.intTag(level, "bigtimeVisible", MusEGlobal::config.bigTimeVisible);
       xml.intTag(level, "transportVisible", MusEGlobal::config.transportVisible);
@@ -1464,39 +1338,6 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiFilterCtrl3",  MusEGlobal::midiFilterCtrl3);
       xml.intTag(level, "midiFilterCtrl4",  MusEGlobal::midiFilterCtrl4);
 
-      //xml.intTag(level, "txDeviceId", txDeviceId);
-      //xml.intTag(level, "rxDeviceId", rxDeviceId);
-
-      //xml.intTag(level, "txSyncPort", txSyncPort);
-      /*
-      // To keep old muse versions happy...
-      bool mcsync = mmc = mtc = false;
-      for(int sp = 0; sp < MIDI_PORTS; ++sp)
-      {
-        MidiSyncTxPort* txPort = &midiSyncTxPorts[sp];
-        if(txPort->doMCSync() || txPort->doMMC() || txPort->doMTC())
-        {
-          if(txPort->doMCSync())
-            mcsync = true;
-          if(txPort->doMMC())
-            mmc = true;
-          if(txPort->doMTC())
-            mtc = true;
-          xml.intTag(level, "txSyncPort", sp);
-          break;
-        }  
-      }
-      */
-      
-      //xml.tag(level++, "midiSyncInfo");
-      //for(iMusECore::MidiDevice id = MusECore::MusEGlobal::midiDevices.begin(); id != MusECore::MusEGlobal::midiDevices.end(); ++id) 
-      //{
-      //  MusECore::MidiDevice* md = *id;
-      //  md->syncInfo().write(level, xml, md);
-      //}      
-      //xml.etag(level, "midiSyncInfo");
-
-      //xml.intTag(level, "rxSyncPort", rxSyncPort);
       xml.intTag(level, "mtctype", MusEGlobal::mtcType);
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
         MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
@@ -1506,16 +1347,9 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "jackTransportMaster", MusEGlobal::jackTransportMaster);
       MusEGlobal::extSyncFlag.save(level, xml);
       
-//      xml.intTag(level, "genMTCSync", genMTCSync);
-//      xml.intTag(level, "genMCSync", genMCSync);
-//      xml.intTag(level, "genMMC", genMMC);
-//      xml.intTag(level, "acceptMTC", acceptMTC);
-//      xml.intTag(level, "acceptMMC", acceptMMC);
-//      xml.intTag(level, "acceptMC", acceptMC);
-
       xml.intTag(level, "bigtimeVisible",   viewBigtimeAction->isChecked());
       xml.intTag(level, "transportVisible", viewTransportAction->isChecked());
-
+      
       xml.geometryTag(level, "geometryMain", this); // FINDME: maybe remove this? do we want
                                                     // the main win to jump around when loading?
       if (transport)
@@ -1552,7 +1386,6 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
 void MusE::configMidiSync()
       {
       if (!midiSyncConfig)
-        //midiSyncConfig = new MusEGui::MidiSyncConfig(this);
         midiSyncConfig = new MusEGui::MidiSyncConfig;
         
       if (midiSyncConfig->isVisible()) {
@@ -1734,11 +1567,9 @@ void MixerConfig::read(MusECore::Xml& xml)
                         else if (tag == "showSyntiTracks")
                               showSyntiTracks = xml.parseInt();
                         else
-                              //xml.unknown(name.toLatin1().constData());
                               xml.unknown("Mixer");
                         break;
                   case MusECore::Xml::TagEnd:
-                        //if (tag == name)
                         if (tag == "Mixer")
                             return;
                   default:

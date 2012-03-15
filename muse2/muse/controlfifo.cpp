@@ -34,7 +34,6 @@ bool ControlFifo::put(const ControlEvent& event)
       if (size < CONTROL_FIFO_SIZE) {
             fifo[wIndex] = event;
             wIndex = (wIndex + 1) % CONTROL_FIFO_SIZE;
-            // q_atomic_increment(&size);
             ++size;
             return false;
             }
@@ -49,7 +48,6 @@ ControlEvent ControlFifo::get()
       {
       ControlEvent event(fifo[rIndex]);
       rIndex = (rIndex + 1) % CONTROL_FIFO_SIZE;
-      // q_atomic_decrement(&size);
       --size;
       return event;
       }
@@ -71,7 +69,6 @@ const ControlEvent& ControlFifo::peek(int n)
 void ControlFifo::remove()
       {
       rIndex = (rIndex + 1) % CONTROL_FIFO_SIZE;
-      // q_atomic_decrement(&size);
       --size;
       }
 
