@@ -425,7 +425,7 @@ void TList::paint(const QRect& r)
                                   MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(track);
                                   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
                                   MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
-                                  int val=mt->getFirstControllerValue(col_ctrl_no,MusECore::CTRL_VAL_UNKNOWN);
+                                  int val=mt->getControllerValueAtTick(0,col_ctrl_no,MusECore::CTRL_VAL_UNKNOWN);
                                   if (val!=MusECore::CTRL_VAL_UNKNOWN)
                                     val-=mctl->bias();
                                   
@@ -810,7 +810,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   
                   ctrl_edit->setMinimum(mctl->minVal()-1); // -1 because of the specialValueText
                   ctrl_edit->setMaximum(mctl->maxVal());
-                  ctrl_edit->setValue(((MusECore::MidiTrack*)editTrack)->getFirstControllerValue(ctrl_num)-mctl->bias());
+                  ctrl_edit->setValue(((MusECore::MidiTrack*)editTrack)->getControllerValueAtTick(0,ctrl_num)-mctl->bias());
                   int w=colw;
                   if (w < ctrl_edit->sizeHint().width()) w=ctrl_edit->sizeHint().width();
                   ctrl_edit->setGeometry(colx, coly, w, colh);
@@ -1858,7 +1858,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       int minval=mctl->minVal()+mctl->bias();
                       int maxval=mctl->maxVal()+mctl->bias();
 
-                      int val = mt->getFirstControllerValue(ctrl_num);
+                      int val = mt->getControllerValueAtTick(0,ctrl_num);
                       int oldval=val;
                       
                       if (ctrl_num!=MusECore::CTRL_PROGRAM)
@@ -1919,7 +1919,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                         MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
                         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                        MusECore::MidiController* mctl = mp->midiController(ctrl_num);
                         MusECore::MidiInstrument* instr = mp->instrument();
                         
                         PopupMenu* pup = new PopupMenu(true);
@@ -2335,7 +2334,7 @@ void TList::wheelEvent(QWheelEvent* ev)
                       int minval=mctl->minVal()+mctl->bias();
                       int maxval=mctl->maxVal()+mctl->bias();
 
-                      int val = mt->getFirstControllerValue(ctrl_num);
+                      int val = mt->getControllerValueAtTick(0,ctrl_num);
                       int oldval=val;
 
                       if (ctrl_num!=MusECore::CTRL_PROGRAM)

@@ -1306,6 +1306,27 @@ int MidiTrack::getFirstControllerValue(int ctrl, int def)
   return val;
 }
 
+int MidiTrack::getControllerValueAtTick(int tick, int ctrl, int def)
+{
+  for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
+  {
+    Part* part=pit->second;
+    if (part->tick() > tick) break; // ignore this and the rest. we'd find nothing any more
+    if (part->endTick() < tick) continue; // ignore only this.
+    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    {
+      if (eit->first+part->tick() > tick) break; // we won't find anything in this part from now on.
+      if (eit->first+part->tick() < tick) continue; // ignore only this
+      
+      // else if (eit->first+part->tick() == tick) and
+      if (eit->second.type()==Controller && eit->second.dataA()==ctrl)
+        return eit->second.dataB();
+    }
+  }
+
+  return def;
+}
+
 
 // returns true if the autoupdate changed something
 bool MidiTrack::auto_update_drummap()

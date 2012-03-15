@@ -110,7 +110,6 @@ class Track {
       Track(TrackType);
       Track(const Track&, int flags);
       virtual ~Track();
-      //virtual Track& operator=(const Track& t); DELETETHIS
       virtual void assign(const Track&, int flags);
       
       static const char* _cname[];
@@ -183,7 +182,7 @@ class Track {
       bool mute() const                  { return _mute;         }
       bool off() const                   { return _off;          }
       bool recordFlag() const            { return _recordFlag;   }
-      //
+
       // Internal use...
       static void clearSoloRefCounts();
       void updateSoloState();
@@ -220,7 +219,6 @@ class Track {
 //---------------------------------------------------------
 
 class MidiTrack : public Track {
-      
       int _outPort;
       int _outChannel;
       bool _recEcho;              // For midi (and audio). Whether to echo incoming record events to output device.
@@ -306,6 +304,7 @@ class MidiTrack : public Track {
       static bool visible() { return _isVisible; }
       
       int getFirstControllerValue(int ctrl, int def=-1);
+      int getControllerValueAtTick(int tick, int ctrl, int def=-1);
 
       void setClef(clefTypes i) { clefType = i; }
       clefTypes getClef() { return clefType; }
