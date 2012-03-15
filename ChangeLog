@@ -1,3 +1,5 @@
+15.03.2012:
+        - Updated swedish translation with help from Cristian Ramos (rj)
 10.03.2012:
         - Track routing: Fixed duplicate routes: Reverted usage of operation group in Song::addTrack. (Tim)
         - Templates: Default routing: Restored default Jack out/in routes in audio.med, synti.med, default.med, monorecord.med. (Tim)
