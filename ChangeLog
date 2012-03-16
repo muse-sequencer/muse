@@ -1,3 +1,8 @@
+16.03.2012:
+        - Drum editor:  Added missing multiple-note editing. (Tim...)
+        - Midi editors: Don't allow notes to be added before part. (Caused crash in Drum editor, odd behaviour in Pianoroll.)
+        - Midi editors: Added "Delta Mode" button to Note Info toolbar. 
+        - Code cleanups in Pianoroll, Drum editor.
 15.03.2012:
         - Updated swedish translation with help from Cristian Ramos (rj)
 10.03.2012:

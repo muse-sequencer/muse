@@ -125,7 +125,7 @@ class PianoCanvas : public EventCanvas {
             colorMode = mode;
             redraw();
             }
-      virtual void modifySelected(NoteInfo::ValType type, int delta);
+      virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);
       };
 
 } // namespace MusEGui

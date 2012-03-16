@@ -217,8 +217,7 @@ MusEGlobal::GlobalConfigValues config = {
       false,                        // rangeMarkerWithoutMMBCheckBox
       true,                         // addHiddenTracks
       true,                         // unhideTracks
-      false                         // smartFocus
-      
+      true                          // smartFocus
       };
 
 //---------------------------------------------------------

@@ -72,10 +72,20 @@ class Toolbar1;
 class DrumEdit : public MidiEditor {
       Q_OBJECT
     
-      MusECore::Event selEvent;
-      MusECore::MidiPart* selPart;
-      int selTick;
       QMenu* menuEdit, *menuFunctions, *menuFile, *menuSelect;
+
+      int tickValue;
+      int lenValue;
+      int pitchValue;
+      int veloOnValue;
+      int veloOffValue;
+      bool firstValueSet;
+      int tickOffset;
+      int lenOffset;
+      int pitchOffset;
+      int veloOnOffset;
+      int veloOffOffset;
+      bool deltaMode;
 
       MusEGui::NoteInfo* info;
       QToolButton* srec;
@@ -127,6 +137,7 @@ class DrumEdit : public MidiEditor {
       void songChanged1(int);
       void setStep(QString);
       void focusCanvas();
+      void deltaModeChanged(bool);
 
    public slots:
       void setSelection(int, MusECore::Event&, MusECore::Part*);

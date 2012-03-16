@@ -486,7 +486,8 @@ MusEGui::CItem* PianoCanvas::newItem(const QPoint& p, int)
       int len   = p.x() - tick;
       tick     -= curPart->tick();
       if (tick < 0)
-            tick=0;
+            //tick=0;
+            return 0;
       MusECore::Event e =  MusECore::Event(MusECore::Note);
       e.setTick(tick);
       e.setPitch(pitch);
@@ -1057,7 +1058,7 @@ void PianoCanvas::curPartChanged()
 //   modifySelected
 //---------------------------------------------------------
 
-void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
+void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
       {
       QList< QPair<MusECore::EventList*,MusECore::Event> > already_done;
       MusEGlobal::audio->msgIdle(true);
@@ -1080,7 +1081,11 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
             switch (type) {
                   case MusEGui::NoteInfo::VAL_TIME:
                         {
-                        int newTime = event.tick() + delta;
+                        int newTime = val;
+                        if(delta_mode)
+                          newTime += event.tick();
+                        else
+                          newTime -= part->tick();
                         if (newTime < 0)
                            newTime = 0;
                         newEvent.setTick(newTime);
@@ -1088,7 +1093,9 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
                         break;
                   case MusEGui::NoteInfo::VAL_LEN:
                         {
-                        int len = event.lenTick() + delta;
+                        int len = val;
+                        if(delta_mode)
+                          len += event.lenTick();
                         if (len < 1)
                               len = 1;
                         newEvent.setLenTick(len);
@@ -1096,7 +1103,9 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
                         break;
                   case MusEGui::NoteInfo::VAL_VELON:
                         {
-                        int velo = event.velo() + delta;
+                        int velo = val;
+                        if(delta_mode)
+                          velo += event.velo();
                         if (velo > 127)
                               velo = 127;
                         else if (velo < 0)
@@ -1106,7 +1115,9 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
                         break;
                   case MusEGui::NoteInfo::VAL_VELOFF:
                         {
-                        int velo = event.veloOff() + delta;
+                        int velo = val;
+                        if(delta_mode)
+                          velo += event.veloOff();
                         if (velo > 127)
                               velo = 127;
                         else if (velo < 0)
@@ -1116,7 +1127,9 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
                         break;
                   case MusEGui::NoteInfo::VAL_PITCH:
                         {
-                        int pitch = event.pitch() + delta;
+                        int pitch = val;
+                        if(delta_mode)
+                          pitch += event.pitch();
                         if (pitch > 127)
                               pitch = 127;
                         else if (pitch < 0)
@@ -1125,6 +1138,7 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
                         }
                         break;
                   }
+            
             MusEGlobal::song->changeEvent(event, newEvent, part);
             // Indicate do not do port controller values and clone parts. 
             MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));

@@ -31,6 +31,7 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QStyle>
+#include <QString>
 
 namespace MusEGlobal {
 extern int mtcType;
@@ -48,6 +49,7 @@ namespace Awl {
 PosEdit::PosEdit(QWidget* parent)
    : QAbstractSpinBox(parent)
       {
+      _returnMode = false; 
       validator = new QIntValidator(this);
       
       initialized = false;
@@ -100,7 +102,11 @@ bool PosEdit::event(QEvent* event)
             {
               //printf("key press event Return\n");   
               //enterPressed();
-              finishEdit();
+              bool changed = finishEdit();
+              if(changed || _returnMode)   // Force valueChanged if return mode set, even if not modified.
+              {
+                emit valueChanged(_pos);
+              }
               emit returnPressed();
               emit editingFinished();
               return true;
@@ -191,7 +197,8 @@ bool PosEdit::event(QEvent* event)
       {
           QFocusEvent* fe = static_cast<QFocusEvent*>(event);
           QAbstractSpinBox::focusOutEvent(fe);
-          finishEdit();
+          if(finishEdit())
+            emit valueChanged(_pos);
           emit lostFocus();        
           emit editingFinished();  
           return true;
@@ -653,9 +660,10 @@ void PosEdit::paintEvent(QPaintEvent* event)
 
 //---------------------------------------------------------
 //   finishEdit
+//   Return true if position changed.
 //---------------------------------------------------------
 
-void PosEdit::finishEdit()
+bool PosEdit::finishEdit()
 {
       // If our validator did its job correctly, the entire line edit text should be valid now...
       
@@ -666,7 +674,7 @@ void PosEdit::finishEdit()
         if(sl.size() != 4)
         {
           printf("finishEdit smpte string:%s sections:%d != 4\n", text().toLatin1().data(), sl.size());  
-          return;
+          return false;
         }  
         
         MusECore::Pos newPos(sl[0].toInt(), sl[1].toInt(), sl[2].toInt(), sl[3].toInt());
@@ -681,7 +689,7 @@ void PosEdit::finishEdit()
         if(sl.size() != 3)
         {
           printf("finishEdit bbt string:%s sections:%d != 3\n", text().toLatin1().data(), sl.size());  
-          return;
+          return false;
         }
           
         MusECore::Pos newPos(sl[0].toInt() - 1, sl[1].toInt() - 1, sl[2].toInt());
@@ -692,11 +700,7 @@ void PosEdit::finishEdit()
         }
       }
   
-  if (changed) 
-  {
-    //updateValue();
-    emit valueChanged(_pos);
-  }
+  return changed;
 }
 
 

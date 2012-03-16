@@ -221,7 +221,8 @@ void EventCanvas::songChanged(int flags)
       start_tick = MusEGlobal::song->roundDownBar(start_tick);
       end_tick   = MusEGlobal::song->roundUpBar(end_tick);
 
-      if (n == 1) {
+      if (n == 1)    
+      {
             x     = nevent->x();
             event = nevent->event();
             part  = (MusECore::MidiPart*)nevent->part();
@@ -231,6 +232,14 @@ void EventCanvas::songChanged(int flags)
                   curPartChanged();
                   }
             }
+      else
+      if (n > 1) 
+      {
+        x     = nevent->x();
+        event = nevent->event();
+        part  = (MusECore::MidiPart*)nevent->part();
+      }
+      
       emit selectionChanged(x, event, part);
       if (curPart == 0)
             curPart = (MusECore::MidiPart*)(editor->parts()->begin()->second);

@@ -44,7 +44,8 @@ class PosEdit : public QAbstractSpinBox
       bool _smpte;
       MusECore::Pos _pos;
       bool initialized;
-
+      bool _returnMode;
+      
       QIntValidator* validator;
       
       virtual void paintEvent(QPaintEvent* event);
@@ -55,7 +56,7 @@ class PosEdit : public QAbstractSpinBox
       void updateValue();
       int curSegment() const;
       virtual bool event(QEvent*);
-      void finishEdit();
+      bool finishEdit();
 
    signals:
       void valueChanged(const MusECore::Pos&);
@@ -81,6 +82,8 @@ class PosEdit : public QAbstractSpinBox
       void setSmpte(bool);
       bool smpte() const { return _smpte; }
       // void* operator new(size_t);          // What was this for? Tim.
+      void setReturnMode(bool v) { _returnMode = v; } 
+      bool returnMode() const    { return _returnMode; }
       };
 }
 

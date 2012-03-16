@@ -188,8 +188,7 @@ GlobalConfigValues config = {
       false,                        // rangeMarkerWithoutMMB
       true,                         // addHiddenTracks
       true,                         // unhideTracks
-      false                         // smartFocus
-
+      true                          // smartFocus
     };
 
 } // namespace MusEGlobal

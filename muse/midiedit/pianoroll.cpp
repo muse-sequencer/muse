@@ -87,8 +87,18 @@ static int pianorollTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui
 PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, unsigned initPos)
    : MidiEditor(TopWin::PIANO_ROLL, _rasterInit, pl, parent, name)
       {
-      deltaMode = false;
-      selPart        = 0;
+      deltaMode     = false;
+      tickValue     = 0;
+      lenValue      = 0;
+      pitchValue    = 0;
+      veloOnValue   = 0;
+      veloOffValue  = 0;
+      firstValueSet = false;
+      tickOffset    = 0;
+      lenOffset     = 0;
+      pitchOffset   = 0;
+      veloOnOffset  = 0;
+      veloOffOffset = 0;
       _playEvents    = false;
       colorMode      = colorModeInit;
       
@@ -351,36 +361,12 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       mainGrid->setColumnStretch(1, 100);
       mainGrid->addWidget(hsplitter, 0, 1, 1, 3);
       
-      // Original. DELETETHIS 21
-      /*
-      mainGrid->setColumnStretch(1, 100);
-      mainGrid->addWidget(splitter, 0, 0, 1, 3);
-      mainGrid->addWidget(ctrl,    1, 0);
-      mainGrid->addWidget(hscroll, 1, 1);
-      mainGrid->addWidget(corner,  1, 2, Qt::AlignBottom|Qt::AlignRight);
-      */
-      
-      
-      // Tim.
-      /*
-      mainGrid->setColumnStretch(2, 100);
-      mainGrid->addWidget(splitter,           0, 0, 1, 4);
-      mainGrid->addWidget(trackInfoButton,    1, 0);
-      mainGrid->addWidget(ctrl,               1, 1);
-      mainGrid->addWidget(hscroll,            1, 2);
-      mainGrid->addWidget(corner,             1, 3, Qt::AlignBottom|Qt::AlignRight);
-      */
-      
-      //mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
-      //mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); // Orig + Tim.
-      
       QWidget* split1     = new QWidget(splitter);
       split1->setObjectName("split1");
       QGridLayout* gridS1 = new QGridLayout(split1);
       gridS1->setContentsMargins(0, 0, 0, 0);
       gridS1->setSpacing(0);  
-    //Defined and configure your program change bar here.
-    //This may well be a copy of MTScale extended for our needs
+
       time                = new MusEGui::MTScale(&_raster, split1, xscale);
       Piano* piano        = new Piano(split1, yscale);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
@@ -397,24 +383,12 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       gridS1->setRowStretch(2, 100);
       gridS1->setColumnStretch(1, 100);     
-      //gridS1->setColumnStretch(2, 100);  // Tim. DELETETHIS
 
       gridS1->addWidget(time,                   0, 1, 1, 2);
       gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
       gridS1->addWidget(piano,                  2,    0);
       gridS1->addWidget(canvas,                 2,    1);
       gridS1->addWidget(vscroll,                2,    2);
-
-      // Tim. DELETETHIS
-      /*      
-      gridS1->addWidget(time,                   0, 2, 1, 3);
-      gridS1->addWidget(MusECore::hLine(split1),          1, 1, 1, 4);
-      //gridS1->addWidget(infoScroll,             2,    0);
-      gridS1->addWidget(infoScroll,             0, 0, 3, 1);
-      gridS1->addWidget(piano,                  2,    1);
-      gridS1->addWidget(canvas,                 2,    2);
-      gridS1->addWidget(vscroll,                2,    3);
-      */
 
       ctrlLane = new MusEGui::Splitter(Qt::Vertical, splitter, "ctrllane");
       QWidget* split2     = new QWidget(splitter);
@@ -428,7 +402,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
           gridS2->addWidget(ctrl,    0, 0);
       gridS2->addWidget(hscroll, 0, 1);
       gridS2->addWidget(corner,  0, 2, Qt::AlignBottom|Qt::AlignRight);
-          //splitter->setCollapsible(0, true); DELETETHIS
       
       piano->setFixedWidth(pianoWidth);
 
@@ -440,8 +413,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
-      //connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim. DELETETHIS
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
+      connect(info, SIGNAL(deltaModeChanged(bool)), SLOT(deltaModeChanged(bool)));
 
       connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
@@ -582,7 +555,6 @@ void PianoRoll::updateTrackInfo()
       selected = curCanvasPart()->track();
       if (selected->isMidiTrack()) {
             midiTrackInfo->setTrack(selected);
-            ///midiTrackInfo->updateTrackInfo(-1);
       }
 }
 
@@ -663,41 +635,71 @@ void PianoRoll::cmd(int cmd)
 //    update Info Line
 //---------------------------------------------------------
 
-void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* p)
+void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*p*/)
       {
       int selections = canvas->selectionSize();
 
-      selEvent = e;
-      selPart  = (MusECore::MidiPart*)p;
-      selTick  = tick;
-
-      if (selections > 1) {
+      // Diagnostics:
+      //printf("PianoRoll::setSelection selections:%d event empty:%d firstValueSet:%d\n", selections, e.empty(), firstValueSet); 
+      //if(!e.empty())
+      //  e.dump(); 
+      
+      if(!firstValueSet)
+      {
+        if (selections == 1) 
+        {
+          deltaMode = false;
+          info->setDeltaMode(deltaMode); 
+        }
+        else
+        if (selections > 1)
+        {
+          deltaMode = true;
+          info->setDeltaMode(deltaMode); 
+        }
+      }
+        
+      if ((selections == 1) || (selections > 1 && !firstValueSet)) 
+      {
+        tickValue    = tick; 
+        lenValue     = e.lenTick();
+        pitchValue   = e.pitch();
+        veloOnValue  = e.velo();
+        veloOffValue = e.veloOff();
+        firstValueSet = true;
+      }
+      
+      if (selections > 0) {
             info->setEnabled(true);
-            info->setDeltaMode(true);
-            if (!deltaMode) {
-                  deltaMode = true;
-                  info->setValues(0, 0, 0, 0, 0);
-                  tickOffset    = 0;
-                  lenOffset     = 0;
-                  pitchOffset   = 0;
-                  veloOnOffset  = 0;
-                  veloOffOffset = 0;
+            if (deltaMode) {
+                  //tickOffset    = 0;
+                  //lenOffset     = 0;
+                  //pitchOffset   = 0;
+                  //veloOnOffset  = 0;
+                  //veloOffOffset = 0;
+                  info->setValues(tickOffset, lenOffset, pitchOffset, veloOnOffset, veloOffOffset);
+                  }
+            else  {
+                  info->setValues(tickValue, lenValue, pitchValue, veloOnValue, veloOffValue);
                   }
             }
-      else if (selections == 1) {
-            deltaMode = false;
-            info->setEnabled(true);
-            info->setDeltaMode(false);
-            info->setValues(tick,
-               selEvent.lenTick(),
-               selEvent.pitch(),
-               selEvent.velo(),
-               selEvent.veloOff());
-            }
       else {
-            deltaMode = false;
             info->setEnabled(false);
+            info->setValues(0, 0, 0, 0, 0);
+            firstValueSet = false;
+            tickValue     = 0;
+            lenValue      = 0;
+            pitchValue    = 0;
+            veloOnValue   = 0;
+            veloOffValue  = 0;
+            tickOffset    = 0;
+            lenOffset     = 0;
+            pitchOffset   = 0;
+            veloOnOffset  = 0;
+            veloOffOffset = 0;
             }
+            
+      info->setReturnMode(selections >= 2);      
       selectionChanged();
       }
 
@@ -712,6 +714,30 @@ void PianoRoll::focusCanvas()
 }
 
 //---------------------------------------------------------
+//   deltaModeChanged
+//---------------------------------------------------------
+
+void PianoRoll::deltaModeChanged(bool delta_on)
+{
+      if(deltaMode == delta_on)
+        return;
+      deltaMode = delta_on;
+      
+      int selections = canvas->selectionSize();
+      
+      if(deltaMode)
+      {
+        if(selections > 0)
+          info->setValues(tickOffset, lenOffset, pitchOffset, veloOnOffset, veloOffOffset);
+      }
+      else
+      {
+        if(selections > 0)
+          info->setValues(tickValue, lenValue, pitchValue, veloOnValue, veloOffValue);
+      }
+}
+
+//---------------------------------------------------------
 //    edit currently selected Event
 //---------------------------------------------------------
 
@@ -722,57 +748,55 @@ void PianoRoll::noteinfoChanged(MusEGui::NoteInfo::ValType type, int val)
       if (selections == 0) {
             printf("noteinfoChanged while nothing selected\n");
             }
-      else if (selections == 1) {
-            MusECore::Event event = selEvent.clone();
-            switch(type) {
-                  case MusEGui::NoteInfo::VAL_TIME:
-                        event.setTick(val - selPart->tick());
-                        break;
-                  case MusEGui::NoteInfo::VAL_LEN:
-                        event.setLenTick(val);
-                        break;
-                  case MusEGui::NoteInfo::VAL_VELON:
-                        event.setVelo(val);
-                        break;
-                  case MusEGui::NoteInfo::VAL_VELOFF:
-                        event.setVeloOff(val);
-                        break;
-                  case MusEGui::NoteInfo::VAL_PITCH:
-                        event.setPitch(val);
-                        break;
+      else if (selections > 0) {
+            if(deltaMode) {
+                  // treat noteinfo values as offsets to event values
+                  int delta = 0;
+                  switch (type) {
+                        case MusEGui::NoteInfo::VAL_TIME:
+                              delta = val - tickOffset;
+                              tickOffset = val;
+                              break;
+                        case MusEGui::NoteInfo::VAL_LEN:
+                              delta = val - lenOffset;
+                              lenOffset = val;
+                              break;
+                        case MusEGui::NoteInfo::VAL_VELON:
+                              delta = val - veloOnOffset;
+                              veloOnOffset = val;
+                              break;
+                        case MusEGui::NoteInfo::VAL_VELOFF:
+                              delta = val - veloOffOffset;
+                              veloOffOffset = val;
+                              break;
+                        case MusEGui::NoteInfo::VAL_PITCH:
+                              delta = val - pitchOffset;
+                              pitchOffset = val;
+                              break;
+                        }
+                  if (delta)
+                        canvas->modifySelected(type, delta);
                   }
-            // Indicate do undo, and do not do port controller values and clone parts. 
-            MusEGlobal::audio->msgChangeEvent(selEvent, event, selPart, true, false, false);
-            }
-      else {
-            // multiple events are selected; treat noteinfo values
-            // as offsets to event values
-
-            int delta = 0;
-            switch (type) {
-                  case MusEGui::NoteInfo::VAL_TIME:
-                        delta = val - tickOffset;
-                        tickOffset = val;
-                        break;
-                  case MusEGui::NoteInfo::VAL_LEN:
-                        delta = val - lenOffset;
-                        lenOffset = val;
-                        break;
-                  case MusEGui::NoteInfo::VAL_VELON:
-                        delta = val - veloOnOffset;
-                        veloOnOffset = val;
-                        break;
-                  case MusEGui::NoteInfo::VAL_VELOFF:
-                        delta = val - veloOffOffset;
-                        veloOffOffset = val;
-                        break;
-                  case MusEGui::NoteInfo::VAL_PITCH:
-                        delta = val - pitchOffset;
-                        pitchOffset = val;
-                        break;
+            else {
+                      switch (type) {
+                            case MusEGui::NoteInfo::VAL_TIME:
+                                  tickValue = val;
+                                  break;
+                            case MusEGui::NoteInfo::VAL_LEN:
+                                  lenValue = val;
+                                  break;
+                            case MusEGui::NoteInfo::VAL_VELON:
+                                  veloOnValue = val;
+                                  break;
+                            case MusEGui::NoteInfo::VAL_VELOFF:
+                                  veloOffValue = val;
+                                  break;
+                            case MusEGui::NoteInfo::VAL_PITCH:
+                                  pitchValue = val;
+                                  break;
+                            }
+                  canvas->modifySelected(type, val, false);  // No delta mode.
                   }
-            if (delta)
-                  canvas->modifySelected(type, delta);
             }
       }
 
@@ -1237,20 +1261,6 @@ void PianoRoll::setSpeaker(bool val)
       _playEvents = val;
       canvas->playEvents(_playEvents);
       }
-
-
-
-/* DELETETHIS
-//---------------------------------------------------------
-//   trackInfoScroll
-//---------------------------------------------------------
-
-void PianoRoll::trackInfoScroll(int y)
-      {
-      if (trackInfo->visibleWidget())
-            trackInfo->visibleWidget()->move(0, -y);
-      }
-*/
 
 //---------------------------------------------------------
 //   initShortcuts

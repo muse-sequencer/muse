@@ -51,6 +51,7 @@ void SpinBoxLineEdit::mousePressEvent(QMouseEvent* e)
 SpinBox::SpinBox(QWidget* parent)
    : QSpinBox(parent)
 {
+  _returnMode = false;
   SpinBoxLineEdit* le = new SpinBoxLineEdit(this);
   setLineEdit(le);
   setKeyboardTracking(false);
@@ -63,6 +64,7 @@ SpinBox::SpinBox(QWidget* parent)
 SpinBox::SpinBox(int minValue, int maxValue, int step, QWidget* parent)
    : QSpinBox(parent)
 {
+  _returnMode = false;
   SpinBoxLineEdit* le = new SpinBoxLineEdit(this);
   setLineEdit(le);
   setRange(minValue, maxValue);
@@ -78,8 +80,13 @@ void SpinBox::keyPressEvent(QKeyEvent* ev)
 {
     switch (ev->key()) {
       case Qt::Key_Return:
-        QSpinBox::keyPressEvent(ev);
-        emit returnPressed();
+        {
+          bool mod =  lineEdit()->isModified();
+          QSpinBox::keyPressEvent(ev);
+          if(_returnMode && !mod)        // Force valueChanged if return mode set, even if not modified.
+            emit valueChanged(value());
+          emit returnPressed();
+        }  
         return;
       break;
       case Qt::Key_Escape:

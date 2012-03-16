@@ -72,10 +72,6 @@ class Toolbar1;
 class PianoRoll : public MidiEditor {
       Q_OBJECT
     
-      MusECore::Event selEvent;
-      MusECore::MidiPart* selPart;
-      int selTick;
-
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
       MusEGui::MidiTrackInfo *midiTrackInfo;
       MusECore::Track* selected;
@@ -110,6 +106,12 @@ class PianoRoll : public MidiEditor {
       QAction* funcDelOverlapsAction;
       
       
+      int tickValue;
+      int lenValue;
+      int pitchValue;
+      int veloOnValue;
+      int veloOffValue;
+      bool firstValueSet;
       int tickOffset;
       int lenOffset;
       int pitchOffset;
@@ -167,6 +169,7 @@ class PianoRoll : public MidiEditor {
       void toggleTrackInfo();
       void updateTrackInfo();
       void focusCanvas();
+      void deltaModeChanged(bool);
 
    signals:
       void isDeleting(MusEGui::TopWin*);

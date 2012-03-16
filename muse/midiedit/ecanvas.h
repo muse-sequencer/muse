@@ -57,9 +57,9 @@ class MidiEditor;
 
 class EventCanvas : public Canvas {
       Q_OBJECT
+      
       virtual void leaveEvent(QEvent*e);
       virtual void enterEvent(QEvent*e);
-      
       virtual void mouseMove(QMouseEvent* event);
 
    protected:
@@ -101,7 +101,7 @@ class EventCanvas : public Canvas {
       void playEvents(bool flag) { _playEvents = flag; }
       void selectAtTick(unsigned int tick);
       void viewDropEvent(QDropEvent* event);
-      virtual void modifySelected(NoteInfo::ValType, int) {}
+      virtual void modifySelected(NoteInfo::ValType, int /*val*/, bool /*delta_mode*/ = true) {}
       virtual void keyPress(QKeyEvent*);
       };
 
