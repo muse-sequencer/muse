@@ -36,6 +36,7 @@
 #include "drummap.h"
 #include "midictrl.h"
 #include "helper.h"
+#include "limits.h"
 
 namespace MusECore {
 
@@ -1293,6 +1294,7 @@ int MidiTrack::getFirstControllerValue(int ctrl, int def)
     for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
     {
       if (eit->first+part->tick() >= tick) break;
+      if (eit->first > part->lenTick()) break; // ignore events past the end of the part
       // else if (eit->first+part->tick() < tick) and
       if (eit->second.type()==Controller && eit->second.dataA()==ctrl)
       {
@@ -1306,7 +1308,7 @@ int MidiTrack::getFirstControllerValue(int ctrl, int def)
   return val;
 }
 
-int MidiTrack::getControllerValueAtTick(int tick, int ctrl, int def)
+int MidiTrack::getControllerChangeAtTick(int tick, int ctrl, int def)
 {
   for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
   {
@@ -1316,6 +1318,7 @@ int MidiTrack::getControllerValueAtTick(int tick, int ctrl, int def)
     for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
     {
       if (eit->first+part->tick() > tick) break; // we won't find anything in this part from now on.
+      if (eit->first > part->lenTick()) break; // ignore events past the end of the part
       if (eit->first+part->tick() < tick) continue; // ignore only this
       
       // else if (eit->first+part->tick() == tick) and
@@ -1327,6 +1330,33 @@ int MidiTrack::getControllerValueAtTick(int tick, int ctrl, int def)
   return def;
 }
 
+// returns the tick where this CC gets overriden by a new one
+// returns -1 for "never"
+unsigned MidiTrack::getControllerValueLifetime(int tick, int ctrl) 
+{
+  unsigned result=UINT_MAX;
+  
+  for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
+  {
+    Part* part=pit->second;
+    if (part->tick() > result) break; // ignore this and the rest. we won't find anything new.
+    if (part->endTick() < tick) continue; // ignore only this part, we won't find anything there.
+    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    {
+      if (eit->first+part->tick() >= result) break;
+      if (eit->first > part->lenTick()) break; // ignore events past the end of the part
+      // else if (eit->first+part->tick() < result) and
+      if (eit->first+part->tick() > tick &&
+          eit->second.type()==Controller && eit->second.dataA()==ctrl)
+      {
+        result = eit->first+part->tick();
+        break;
+      }
+    }
+  }
+
+  return result;
+}
 
 // returns true if the autoupdate changed something
 bool MidiTrack::auto_update_drummap()

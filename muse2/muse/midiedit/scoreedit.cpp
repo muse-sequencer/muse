@@ -4704,10 +4704,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o test old- and new drumtrack recording, steprecording
  *
  * CURRENT TODO
- *   o automatically send controller changes by the arranger columns
- *     if necessary (i.e., if no later controller overrides this)
- *   o make custom columns only look at CCs at tick0, not at "the firstCC"
- *     beacuse this probably causes confusion.
  *   o custom columns should also be able to store at cpos, not only at tick0
  *
  *   o column's widths aren't stored into configuration. fix that.
