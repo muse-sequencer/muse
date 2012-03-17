@@ -84,6 +84,7 @@ void Arranger::writeCustomColumns(int level, MusECore::Xml& xml)
     xml.tag(level++, "column");
     xml.strTag(level, "name", new_custom_columns[i].name);
     xml.intTag(level, "ctrl", new_custom_columns[i].ctrl);
+    xml.intTag(level, "affected_pos", new_custom_columns[i].affected_pos);
     xml.etag(--level, "column");
   }
   
@@ -136,6 +137,8 @@ Arranger::custom_col_t Arranger::readOneCustomColumn(MusECore::Xml& xml)
                               temp.name=xml.parse1();
                         else if (tag == "ctrl")
                               temp.ctrl=xml.parseInt();
+                        else if (tag == "affected_pos")
+                              temp.affected_pos=(custom_col_t::affected_pos_t)xml.parseInt();
                         else
                               xml.unknown("Arranger::readOneCustomColumn");
                         break;

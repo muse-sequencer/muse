@@ -29,6 +29,8 @@ namespace MusEGui {
 
 ArrangerColumns::ArrangerColumns(QWidget* parent) : QDialog(parent)
 {
+	ignoreSomethingChanged=true;
+	
 	setupUi(this);
 	
 	initList();
@@ -38,6 +40,8 @@ ArrangerColumns::ArrangerColumns(QWidget* parent) : QDialog(parent)
 	connect(nameEdit,SIGNAL(textEdited(const QString&)), SLOT(somethingChanged()));
 	connect(spinBoxHCtrlNo,SIGNAL(valueChanged(int)), SLOT(somethingChanged()));
 	connect(spinBoxLCtrlNo,SIGNAL(valueChanged(int)), SLOT(somethingChanged()));
+	connect(affectBeginButton,SIGNAL(toggled(bool)), SLOT(somethingChanged()));
+	connect(affectCposButton,SIGNAL(toggled(bool)), SLOT(somethingChanged()));
 	connect(listWidget,SIGNAL(currentRowChanged(int)), SLOT(itemSelected(int)));
 	connect(addBtn,SIGNAL(clicked()), SLOT(addEntry()));
 	connect(delBtn,SIGNAL(clicked()), SLOT(delEntry()));
@@ -48,6 +52,8 @@ ArrangerColumns::ArrangerColumns(QWidget* parent) : QDialog(parent)
 		itemSelected(-1);
 	
 	ctrlTypeChanged(ctrlType->currentIndex());
+	
+	ignoreSomethingChanged=false;
 }
 
 void ArrangerColumns::ctrlTypeChanged(int idx)
@@ -81,6 +87,8 @@ void ArrangerColumns::ctrlTypeChanged(int idx)
 
 void ArrangerColumns::somethingChanged()
 {
+	if (ignoreSomethingChanged) return;
+	
 	int row=listWidget->currentRow();
 	if (row!=-1)
 	{
@@ -91,6 +99,7 @@ void ArrangerColumns::somethingChanged()
 
 		Arranger::new_custom_columns[row].name=nameEdit->text();
 		Arranger::new_custom_columns[row].ctrl=ctrl_number;
+		Arranger::new_custom_columns[row].affected_pos=(affectBeginButton->isChecked() ? Arranger::custom_col_t::AFFECT_BEGIN : Arranger::custom_col_t::AFFECT_CPOS);
 		
 		listWidget->currentItem()->setText(getListEntryString(row));
 	}
@@ -111,6 +120,8 @@ void ArrangerColumns::initList()
 
 void ArrangerColumns::itemSelected(int i)
 {
+	ignoreSomethingChanged=true;
+	
 	if (i==-1)
 	{
 		frame->setEnabled(false);
@@ -133,7 +144,12 @@ void ArrangerColumns::itemSelected(int i)
 			spinBoxLCtrlNo->setValue(num & 0xFF);
 		else
 			spinBoxLCtrlNo->setValue(0);
+		
+		affectBeginButton->setChecked(Arranger::new_custom_columns[i].affected_pos == Arranger::custom_col_t::AFFECT_BEGIN);
+		affectCposButton->setChecked(Arranger::new_custom_columns[i].affected_pos == Arranger::custom_col_t::AFFECT_CPOS);
 	}
+	
+	ignoreSomethingChanged=false;
 }
 
 void ArrangerColumns::addEntry()

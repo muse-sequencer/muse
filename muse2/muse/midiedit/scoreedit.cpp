@@ -4704,8 +4704,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o test old- and new drumtrack recording, steprecording
  *
  * CURRENT TODO
- *   o custom columns should also be able to store at cpos, not only at tick0
- *
  *   o column's widths aren't stored into configuration. fix that.
  *   o storing <no_toplevels /> into a template file seems to ignore
  *     the arranger's "MDI-ness", sets is at subwin all the time!

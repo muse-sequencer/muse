@@ -1,3 +1,6 @@
+17.03.2012:
+        - Custom columns can now either affect tick0 or song->cpos() (flo)
+        - hopefully fixed a big in the custom columns dialog (flo)
 16.03.2012:
         - Custom columns now send their controller changes to the device
           automatically if appropriate (flo)

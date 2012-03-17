@@ -109,6 +109,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(redraw()));
+      connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(maybeUpdateVolatileCustomColumns()));
       }
 
 //---------------------------------------------------------
@@ -425,7 +426,16 @@ void TList::paint(const QRect& r)
                                   MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(track);
                                   MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
                                   MusECore::MidiController* mctl = mp->midiController(col_ctrl_no);
-                                  int val=mt->getControllerChangeAtTick(0,col_ctrl_no,MusECore::CTRL_VAL_UNKNOWN);
+                                  int val;
+                                  if (Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].affected_pos == 
+                                      Arranger::custom_col_t::AFFECT_BEGIN)
+                                    val=mt->getControllerChangeAtTick(0,col_ctrl_no,MusECore::CTRL_VAL_UNKNOWN);
+                                  else
+                                  {
+                                    val=mp->hwCtrlState(mt->outChannel(), col_ctrl_no);
+                                    old_ctrl_hw_states[mt][section]=val;
+                                  }
+                                    
                                   if (val!=MusECore::CTRL_VAL_UNKNOWN)
                                     val-=mctl->bias();
                                   
@@ -476,6 +486,46 @@ void TList::paint(const QRect& r)
             p.drawLine(xpos, 0, xpos, height());
             }
       }
+
+void TList::maybeUpdateVolatileCustomColumns()
+{
+  MusECore::TrackList* l = MusEGlobal::song->tracks();
+  int idx = 0;
+  int yy  = -ypos;
+  for (MusECore::iTrack i = l->begin(); i != l->end(); ++idx, yy += (*i)->height(), ++i)
+  {
+    MusECore::Track* track = *i;
+    int trackHeight = track->height();
+    if (trackHeight==0) // not visible
+          continue;
+
+
+    int x = 0;
+    for (int index = 0; index < header->count(); ++index)
+    {
+      int section = header->logicalIndex(index);
+
+      if (section>=COL_CUSTOM_MIDICTRL_OFFSET && track->isMidiTrack() &&
+            (Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].affected_pos == 
+             Arranger::custom_col_t::AFFECT_CPOS) )
+      {
+        int w   = header->sectionSize(section);
+        QRect r = QRect(x+2, yy, w-4, trackHeight); 
+
+        int ctrl_no = Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
+
+        MusECore::MidiTrack* mt=(MusECore::MidiTrack*)track;
+        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
+        int new_val = mp->hwCtrlState(mt->outChannel(), ctrl_no);
+
+        if (new_val != old_ctrl_hw_states[track][section])
+          update(r);
+      }
+
+      x += header->sectionSize(section);
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   returnPressed
@@ -627,7 +677,7 @@ void TList::ctrlValueFinished()
         
       if (val!=MusECore::CTRL_VAL_UNKNOWN)
       {
-        record_controller_change_and_maybe_send(0, ctrl_num, val, mt);
+        record_controller_change_and_maybe_send(ctrl_at_tick, ctrl_num, val, mt);
       }
       else
       {
@@ -797,6 +847,12 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
 
                 if (ctrl_num!=MusECore::CTRL_PROGRAM)
                 {
+                  if (Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].affected_pos ==
+                      Arranger::custom_col_t::AFFECT_BEGIN)
+                    ctrl_at_tick=0;
+                  else
+                    ctrl_at_tick=MusEGlobal::song->cpos();
+                  
                   if (ctrl_edit==0)
                   {
                     ctrl_edit=new QSpinBox(this);
@@ -1834,6 +1890,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   mode = START_DRAG;
                   if (col>=COL_CUSTOM_MIDICTRL_OFFSET && t->isMidiTrack())
                   {
+                    if (Arranger::custom_columns[col-COL_CUSTOM_MIDICTRL_OFFSET].affected_pos ==
+                        Arranger::custom_col_t::AFFECT_BEGIN)
+                      ctrl_at_tick=0;
+                    else
+                      ctrl_at_tick=MusEGlobal::song->cpos();
+                    
                     int delta = 0;
                     if (button == Qt::RightButton) 
                       delta = 1;
@@ -1876,7 +1938,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       {
                         if (val!=minval-1)
                         {
-                          record_controller_change_and_maybe_send(0, ctrl_num, val, mt);
+                          record_controller_change_and_maybe_send(ctrl_at_tick, ctrl_num, val, mt);
                         }
                         else
                         {
@@ -1929,7 +1991,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         {
                           int val = act->data().toInt();
                           if(val != -1)
-                            record_controller_change_and_maybe_send(0, MusECore::CTRL_PROGRAM, val, mt);
+                            record_controller_change_and_maybe_send(ctrl_at_tick, MusECore::CTRL_PROGRAM, val, mt);
                         }
                               
                         delete pup;      
@@ -2342,7 +2404,14 @@ void TList::wheelEvent(QWheelEvent* ev)
                       {
                         if (val!=minval-1)
                         {
-                          record_controller_change_and_maybe_send(0, ctrl_num, val, mt);
+                          int at_tick;
+                          if (Arranger::custom_columns[col-COL_CUSTOM_MIDICTRL_OFFSET].affected_pos ==
+                              Arranger::custom_col_t::AFFECT_BEGIN)
+                            at_tick=0;
+                          else
+                            at_tick=MusEGlobal::song->cpos();
+                          
+                          record_controller_change_and_maybe_send(at_tick, ctrl_num, val, mt);
                         }
                         else
                         {
@@ -2514,7 +2583,7 @@ void TList::instrPopupActivated(QAction* act)
   {
     int val = act->data().toInt();
     if(val != -1)
-      record_controller_change_and_maybe_send(0, MusECore::CTRL_PROGRAM, val, mt);
+      record_controller_change_and_maybe_send(ctrl_at_tick, MusECore::CTRL_PROGRAM, val, mt);
   }
 }
 

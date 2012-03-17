@@ -196,13 +196,17 @@ class Arranger : public QWidget {
       
       struct custom_col_t
       {
+        enum affected_pos_t {AFFECT_BEGIN, AFFECT_CPOS};
+
         int ctrl;
         QString name;
+        affected_pos_t affected_pos;
         
-        custom_col_t(int c, QString n)
+        custom_col_t(int c, QString n, affected_pos_t a=AFFECT_BEGIN)
         {
           ctrl=c;
           name=n;
+          affected_pos=a;
         }
       };
       static std::vector<custom_col_t> custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns

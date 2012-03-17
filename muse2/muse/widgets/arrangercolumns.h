@@ -45,6 +45,9 @@ class ArrangerColumns : public QDialog, private Ui::ArrangerColumnsBase
 		void delEntry();
 		
 		QString getListEntryString(int idx);
+	
+	private:
+		bool ignoreSomethingChanged;
 };
 
 } // namespace MusEGui

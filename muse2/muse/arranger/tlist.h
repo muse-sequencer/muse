@@ -24,7 +24,7 @@
 #define __TLIST_H__
 
 #include "track.h"
-
+#include <map>
 #include <QWidget>
 
 class QWidget;
@@ -71,6 +71,8 @@ class TList : public QWidget {
       int ypos;
       bool editMode;
       bool editJustFinished;
+      
+      std::map<MusECore::Track*, std::map<int, int> > old_ctrl_hw_states;
 
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
@@ -81,6 +83,7 @@ class TList : public QWidget {
       QSpinBox* chan_edit;
       QSpinBox* ctrl_edit;
       int ctrl_num;
+      unsigned ctrl_at_tick;
       MusECore::Track* editTrack;
       MusECore::Track* editAutomation;
 
@@ -113,6 +116,7 @@ class TList : public QWidget {
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);
 
    private slots:
+      void maybeUpdateVolatileCustomColumns(); // updates AFFECT_CPOS-columns when and only when the hwState has changed
       void returnPressed();
       void chanValueFinished();
       void ctrlValueFinished();
