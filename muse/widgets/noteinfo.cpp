@@ -277,8 +277,8 @@ void NoteInfo::setValues(unsigned tick, int val2, int val3, int val4,
    int val5)
       {
       blockSignals(true);
-      if (selTime->pos().tick() != tick)
-            selTime->setValue(tick);
+      // PosEdit will take care of optimizations. It must check whether actual values dependent on tempo or sig changed...
+      selTime->setValue(tick);  
       if (selLen->value() != val2)
             selLen->setValue(val2);
       if (selPitch->value() != val3)

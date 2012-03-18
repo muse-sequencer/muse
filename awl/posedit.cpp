@@ -50,6 +50,9 @@ PosEdit::PosEdit(QWidget* parent)
    : QAbstractSpinBox(parent)
       {
       _returnMode = false; 
+      cur_minute = cur_sec = cur_frame = cur_subframe = 0;
+      cur_bar = cur_beat = cur_tick = 0;
+      
       validator = new QIntValidator(this);
       
       initialized = false;
@@ -58,20 +61,6 @@ PosEdit::PosEdit(QWidget* parent)
       
       //connect(this, SIGNAL(editingFinished()), SLOT(finishEdit()));
       //connect(this, SIGNAL(returnPressed()), SLOT(enterPressed()));
-      }
-
-// What was this for? Tim.
-/*
-void* PosEdit::operator new(size_t n)
-      {
-      void* p = new char[n];
-      memset(p, 0, n);
-      return p;
-      }
-*/
-
-PosEdit::~PosEdit()
-      {
       }
 
 QSize PosEdit::sizeHint() const
@@ -228,12 +217,29 @@ void PosEdit::setSmpte(bool f)
 //---------------------------------------------------------
 
 void PosEdit::setValue(const MusECore::Pos& time)
-      {
+{
       if(_pos == time)
-        return;
-      _pos = time;
-      updateValue();
+      {
+        // Must check whether actual values dependent on tempo or sig changed...
+        if (_smpte) {
+              int minute, sec, frame, subframe;
+              time.msf(&minute, &sec, &frame, &subframe);
+              if(minute != cur_minute || sec != cur_sec || frame != cur_frame || subframe != cur_subframe)
+                updateValue();
+              }
+        else {
+              int bar, beat, tick;
+              time.mbt(&bar, &beat, &tick);
+              if(bar != cur_bar || beat != cur_beat || tick != cur_tick)
+                updateValue();
+              }
+      }      
+      else
+      {
+        _pos = time;
+        updateValue();
       }
+}
 
 void PosEdit::setValue(const QString& s)
       {
@@ -255,15 +261,12 @@ void PosEdit::updateValue()
       {
       char buffer[64];
       if (_smpte) {
-            int minute, sec, frame, subframe;
-            _pos.msf(&minute, &sec, &frame, &subframe);
-            sprintf(buffer, "%03d:%02d:%02d:%02d", minute, sec, frame, subframe);
+            _pos.msf(&cur_minute, &cur_sec, &cur_frame, &cur_subframe);
+            sprintf(buffer, "%03d:%02d:%02d:%02d", cur_minute, cur_sec, cur_frame, cur_subframe);
             }
       else {
-            int bar, beat;
-            int tick;
-            _pos.mbt(&bar, &beat, &tick);
-            sprintf(buffer, "%04d.%02d.%03d", bar+1, beat+1, tick);
+            _pos.mbt(&cur_bar, &cur_beat, &cur_tick);
+            sprintf(buffer, "%04d.%02d.%03d", cur_bar+1, cur_beat+1, cur_tick);
             }
       lineEdit()->setText(buffer);
       }

@@ -85,7 +85,7 @@ class EventCanvas : public Canvas {
    signals:
       void pitchChanged(int);       // current cursor position
       void timeChanged(unsigned);
-      void selectionChanged(int, MusECore::Event&, MusECore::Part*);
+      void selectionChanged(int /*tick*/ , MusECore::Event&, MusECore::Part*, bool /*update*/);
       void enterCanvas();
 
    public:

@@ -86,6 +86,7 @@ class DrumEdit : public MidiEditor {
       int veloOnOffset;
       int veloOffOffset;
       bool deltaMode;
+      int lastSelections;
 
       MusEGui::NoteInfo* info;
       QToolButton* srec;
@@ -140,7 +141,7 @@ class DrumEdit : public MidiEditor {
       void deltaModeChanged(bool);
 
    public slots:
-      void setSelection(int, MusECore::Event&, MusECore::Part*);
+      void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);
       void soloChanged(bool);       // called by Solo button
       void execDeliveredScript(int);
       void execUserScript(int);

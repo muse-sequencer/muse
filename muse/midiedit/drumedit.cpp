@@ -174,6 +174,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       pitchOffset   = 0;
       veloOnOffset  = 0;
       veloOffOffset = 0;
+      lastSelections = 0;
       split1w1 = 0;
       //selPart  = 0;
       QSignalMapper *signalMapper = new QSignalMapper(this);
@@ -490,8 +491,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));  // in Canvas
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool2(int))); // in DrumCanvas
 
-      connect(canvas, SIGNAL(selectionChanged(int, MusECore::Event&, MusECore::Part*)), this,
-         SLOT(setSelection(int, MusECore::Event&, MusECore::Part*)));
+      connect(canvas, SIGNAL(selectionChanged(int, MusECore::Event&, MusECore::Part*, bool)), this,
+         SLOT(setSelection(int, MusECore::Event&, MusECore::Part*, bool)));
       connect(canvas, SIGNAL(followEvent(int)), SLOT(follow(int)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
@@ -615,7 +616,7 @@ DrumEdit::~DrumEdit()
 //    update Info Line
 //---------------------------------------------------------
 
-void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*p*/)
+void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part*, bool update)
       {
       int selections = canvas->selectionSize();
 
@@ -624,8 +625,16 @@ void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*p*/)
       //if(!e.empty())
       //  e.dump(); 
       
-      if(!firstValueSet)
+      if(update)
       {
+        // Selections have changed. Reset these.
+        tickOffset    = 0;
+        lenOffset     = 0;
+        pitchOffset   = 0;
+        veloOnOffset  = 0;
+        veloOffOffset = 0;
+        
+        // Force 'suggested' modes:
         if (selections == 1) 
         {
           deltaMode = false;
@@ -634,11 +643,18 @@ void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*p*/)
         else
         if (selections > 1)
         {
-          deltaMode = true;
-          info->setDeltaMode(deltaMode); 
+          // A feeble attempt to hold on to the user's setting. Should try to bring back 
+          //  selEvent (removed), but there were problems using it (it's a reference).
+          //if(lastSelections <= 1) 
+          {
+            deltaMode = true;
+            info->setDeltaMode(deltaMode); 
+          }
         }
       }
         
+      lastSelections = selections;
+      
       if ((selections == 1) || (selections > 1 && !firstValueSet)) 
       {
         tickValue    = tick; 
@@ -651,17 +667,10 @@ void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*p*/)
 
       if (selections > 0) {
             info->setEnabled(true);
-            if (deltaMode) {
-                  //tickOffset    = 0;
-                  //lenOffset     = 0;
-                  //pitchOffset   = 0;
-                  //veloOnOffset  = 0;
-                  //veloOffOffset = 0;
-                  info->setValues(tickOffset, lenOffset, pitchOffset, veloOnOffset, veloOffOffset);
-                  }
-            else  {
-                      info->setValues(tickValue, lenValue, pitchValue, veloOnValue, veloOffValue);
-                  }
+            if (deltaMode) 
+              info->setValues(tickOffset, lenOffset, pitchOffset, veloOnOffset, veloOffOffset);
+            else  
+              info->setValues(tickValue, lenValue, pitchValue, veloOnValue, veloOffValue);
             }
       else {
             info->setEnabled(false);

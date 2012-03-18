@@ -45,6 +45,8 @@ class PosEdit : public QAbstractSpinBox
       MusECore::Pos _pos;
       bool initialized;
       bool _returnMode;
+      int cur_minute, cur_sec, cur_frame, cur_subframe;
+      int cur_bar, cur_beat, cur_tick;
       
       QIntValidator* validator;
       
@@ -53,7 +55,6 @@ class PosEdit : public QAbstractSpinBox
       virtual StepEnabled stepEnabled() const;
       virtual void fixup(QString& input) const;
       virtual QValidator::State validate(QString&, int&) const;
-      void updateValue();
       int curSegment() const;
       virtual bool event(QEvent*);
       bool finishEdit();
@@ -75,15 +76,14 @@ class PosEdit : public QAbstractSpinBox
 
    public:
       PosEdit(QWidget* parent = 0);
-      ~PosEdit();
       QSize sizeHint() const;
 
       MusECore::Pos pos() const { return _pos; }
       void setSmpte(bool);
       bool smpte() const { return _smpte; }
-      // void* operator new(size_t);          // What was this for? Tim.
       void setReturnMode(bool v) { _returnMode = v; } 
       bool returnMode() const    { return _returnMode; }
+      void updateValue();
       };
 }
 

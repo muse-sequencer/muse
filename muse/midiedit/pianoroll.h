@@ -118,6 +118,7 @@ class PianoRoll : public MidiEditor {
       int veloOnOffset;
       int veloOffOffset;
       bool deltaMode;
+      int lastSelections;
 
       MusEGui::NoteInfo* info;
       QToolButton* srec;
@@ -150,7 +151,7 @@ class PianoRoll : public MidiEditor {
       virtual void keyPressEvent(QKeyEvent*);
 
    private slots:
-      void setSelection(int, MusECore::Event&, MusECore::Part*);
+      void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);
       void noteinfoChanged(MusEGui::NoteInfo::ValType, int);
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);

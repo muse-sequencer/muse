@@ -99,6 +99,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       pitchOffset   = 0;
       veloOnOffset  = 0;
       veloOffOffset = 0;
+      lastSelections = 0;
       _playEvents    = false;
       colorMode      = colorModeInit;
       
@@ -432,8 +433,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
-      connect(canvas, SIGNAL(selectionChanged(int, MusECore::Event&, MusECore::Part*)), this,
-         SLOT(setSelection(int, MusECore::Event&, MusECore::Part*)));
+      connect(canvas, SIGNAL(selectionChanged(int, MusECore::Event&, MusECore::Part*, bool)), this,
+         SLOT(setSelection(int, MusECore::Event&, MusECore::Part*, bool)));
 
       connect(piano, SIGNAL(keyPressed(int, int, bool)), canvas, SLOT(pianoPressed(int, int, bool)));
       connect(piano, SIGNAL(keyReleased(int, bool)), canvas, SLOT(pianoReleased(int, bool)));
@@ -635,7 +636,7 @@ void PianoRoll::cmd(int cmd)
 //    update Info Line
 //---------------------------------------------------------
 
-void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*p*/)
+void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*part*/, bool update)
       {
       int selections = canvas->selectionSize();
 
@@ -644,8 +645,16 @@ void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*p*/
       //if(!e.empty())
       //  e.dump(); 
       
-      if(!firstValueSet)
+      if(update)
       {
+        // Selections have changed. Reset these.
+        tickOffset    = 0;
+        lenOffset     = 0;
+        pitchOffset   = 0;
+        veloOnOffset  = 0;
+        veloOffOffset = 0;
+        
+        // Force 'suggested' modes:
         if (selections == 1) 
         {
           deltaMode = false;
@@ -654,11 +663,18 @@ void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*p*/
         else
         if (selections > 1)
         {
-          deltaMode = true;
-          info->setDeltaMode(deltaMode); 
+          // A feeble attempt to hold on to the user's setting. Should try to bring back 
+          //  selEvent (removed), but there were problems using it (it's a reference).
+          //if(lastSelections <= 1) 
+          {
+            deltaMode = true;
+            info->setDeltaMode(deltaMode); 
+          }  
         }
       }
-        
+
+      lastSelections = selections;
+      
       if ((selections == 1) || (selections > 1 && !firstValueSet)) 
       {
         tickValue    = tick; 
@@ -671,17 +687,10 @@ void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*p*/
       
       if (selections > 0) {
             info->setEnabled(true);
-            if (deltaMode) {
-                  //tickOffset    = 0;
-                  //lenOffset     = 0;
-                  //pitchOffset   = 0;
-                  //veloOnOffset  = 0;
-                  //veloOffOffset = 0;
-                  info->setValues(tickOffset, lenOffset, pitchOffset, veloOnOffset, veloOffOffset);
-                  }
-            else  {
-                  info->setValues(tickValue, lenValue, pitchValue, veloOnValue, veloOffValue);
-                  }
+            if (deltaMode) 
+              info->setValues(tickOffset, lenOffset, pitchOffset, veloOnOffset, veloOffOffset);
+            else  
+              info->setValues(tickValue, lenValue, pitchValue, veloOnValue, veloOffValue);
             }
       else {
             info->setEnabled(false);
@@ -723,16 +732,11 @@ void PianoRoll::deltaModeChanged(bool delta_on)
         return;
       deltaMode = delta_on;
       
-      int selections = canvas->selectionSize();
-      
-      if(deltaMode)
+      if(canvas->selectionSize() > 0)
       {
-        if(selections > 0)
+        if(deltaMode)
           info->setValues(tickOffset, lenOffset, pitchOffset, veloOnOffset, veloOffOffset);
-      }
-      else
-      {
-        if(selections > 0)
+        else
           info->setValues(tickValue, lenValue, pitchValue, veloOnValue, veloOffValue);
       }
 }
