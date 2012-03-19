@@ -208,6 +208,8 @@
 #include "xpm/cliplistS.xpm"
 #include "xpm/mixeraudioS.xpm"
 #include "xpm/initS.xpm"
+#include "xpm/delta_on.xpm"
+#include "xpm/delta_off.xpm"
 
 #include "xpm/addtrack_addmiditrack.xpm"
 #include "xpm/addtrack_audiogroup.xpm"
@@ -288,6 +290,8 @@ QPixmap* inputpluginSIcon;
 QPixmap* cliplistSIcon;
 QPixmap* mixerAudioSIcon;
 QPixmap* initSIcon;
+QPixmap* deltaOnIcon;
+QPixmap* deltaOffIcon;
 
 QPixmap* exitIcon;
 QPixmap* exit1Icon;
@@ -666,6 +670,8 @@ void initIcons()
       cliplistSIcon        = new MPIXMAP(cliplistS_xpm, NULL);
       mixerAudioSIcon      = new MPIXMAP(mixerAudioS_xpm, NULL);
       initSIcon            = new MPIXMAP(initS_xpm, NULL);
+      deltaOnIcon          = new MPIXMAP(delta_on_xpm, NULL);
+      deltaOffIcon         = new MPIXMAP(delta_off_xpm, NULL);
 
       addtrack_addmiditrackIcon     = new MPIXMAP(addtrack_addmiditrack_xpm, NULL);
       addtrack_audiogroupIcon       = new MPIXMAP(addtrack_audiogroup_xpm, NULL);

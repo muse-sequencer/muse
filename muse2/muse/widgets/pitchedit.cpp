@@ -72,6 +72,9 @@ int PitchEdit::mapTextToValue(bool* ok)
 
 void PitchEdit::setDeltaMode(bool val)
       {
+      if(deltaMode == val)
+        return;
+      
       deltaMode = val;
       if (deltaMode)
             setRange(-127, 127);

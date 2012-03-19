@@ -30,13 +30,15 @@
 #include "globals.h"
 ///#include "posedit.h"
 #include "pitchedit.h"
+#include "icons.h"
+#include "pixmap_button.h"
 
 namespace MusEGui {
 
 //---------------------------------------------------
 //    NoteInfo
 //    ToolBar
-//    Start, Lï¿½nge, Note, Velo an, Velo aus, Kanal
+//    Start, Length, Note, Velo on, Velo off
 //---------------------------------------------------
 
 //NoteInfo::NoteInfo(QMainWindow* parent)
@@ -44,63 +46,60 @@ NoteInfo::NoteInfo(QWidget* parent)
    : QToolBar(tr("Note Info"), parent)
       {
       setObjectName("Note Info");
+      _enabled = true;
+      _returnMode = false;
       deltaMode = false;
+
+      deltaButton = new PixmapButton(deltaOnIcon, deltaOffIcon, 2);
+      deltaButton->setFocusPolicy(Qt::NoFocus);
+      deltaButton->setCheckable(true);
+      deltaButton->setToolTip(tr("delta/absolute mode"));
+      addWidget(deltaButton);
       
-      //QLabel* label = new QLabel(tr("Start"), this, "Start");
       QLabel* label = new QLabel(tr("Start"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
       
-      //selTime = new PosEdit(this, "Start");
-      ///selTime = new PosEdit(0, "Start");
       selTime = new Awl::PosEdit;
       selTime->setFocusPolicy(Qt::StrongFocus);
       selTime->setObjectName("Start");
       
       addWidget(selTime);
 
-      //label = new QLabel(tr("Len"), this, "Len");
       label = new QLabel(tr("Len"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
-      //selLen = new QSpinBox(0, 100000, 1, this);
       selLen = new SpinBox();
       selLen->setFocusPolicy(Qt::StrongFocus);
       selLen->setRange(0, 100000);
       selLen->setSingleStep(1);
       addWidget(selLen);
 
-      //label = new QLabel(tr("Pitch"), this, "Pitch");
       label = new QLabel(tr("Pitch"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
-      //selPitch = new PitchEdit(this, "selPitch");
       selPitch = new PitchEdit;
       selPitch->setFocusPolicy(Qt::StrongFocus);
       selPitch->setDeltaMode(deltaMode);
       addWidget(selPitch);
 
-      //label = new QLabel(tr("Velo On"), this, "Velocity On");
       label = new QLabel(tr("Velo On"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
-      //selVelOn = new QSpinBox(0, 127, 1, this);
       selVelOn = new SpinBox();
       selVelOn->setFocusPolicy(Qt::StrongFocus);
       selVelOn->setRange(0, 127);
       selVelOn->setSingleStep(1);
       addWidget(selVelOn);
 
-      //label = new QLabel(tr("Velo Off"), this, "Velocity Off");
       label = new QLabel(tr("Velo Off"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       addWidget(label);
-      //selVelOff = new QSpinBox(0, 127, 1, this);
       selVelOff = new SpinBox();
       selVelOff->setFocusPolicy(Qt::StrongFocus);
       selVelOff->setRange(0, 127);
@@ -124,19 +123,33 @@ NoteInfo::NoteInfo(QWidget* parent)
       connect(selVelOn,   SIGNAL(escapePressed()), SIGNAL(escapePressed()));
       connect(selVelOff,  SIGNAL(escapePressed()), SIGNAL(escapePressed()));
       connect(selTime,    SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+      
+      connect(deltaButton, SIGNAL(clicked(bool)), SLOT(deltaModeClicked(bool)));
       }
 
 //---------------------------------------------------------
-//   setDeltaMode
+//   setEnabled
 //---------------------------------------------------------
 
-void NoteInfo::setDeltaMode(bool val)
+void NoteInfo::setEnabled(bool val)
+{
+  _enabled = val;
+  selLen->setEnabled(val);
+  selPitch->setEnabled(val);
+  selVelOn->setEnabled(val);
+  selVelOff->setEnabled(val);
+  selTime->setEnabled(val);
+}
+      
+//---------------------------------------------------------
+//   set_mode
+//---------------------------------------------------------
+
+void NoteInfo::set_mode()
       {
-      if(val == deltaMode)
-        return;
-      deltaMode = val;
-      selPitch->setDeltaMode(val);
-      if (val) {
+      blockSignals(true);
+      selPitch->setDeltaMode(deltaMode);
+      if (deltaMode) {
             selLen->setRange(-100000, 100000);
             selVelOn->setRange(-127, 127);
             selVelOff->setRange(-127, 127);
@@ -146,6 +159,34 @@ void NoteInfo::setDeltaMode(bool val)
             selVelOn->setRange(0, 127);
             selVelOff->setRange(0, 127);
             }
+      blockSignals(false);
+      }
+
+//---------------------------------------------------------
+//   setReturnMode
+//---------------------------------------------------------
+
+void NoteInfo::setReturnMode(bool v)
+{
+  _returnMode = v;
+  selTime->setReturnMode(_returnMode);
+  selLen->setReturnMode(_returnMode);
+  selPitch->setReturnMode(_returnMode);
+  selVelOn->setReturnMode(_returnMode);
+  selVelOff->setReturnMode(_returnMode);
+}
+      
+//---------------------------------------------------------
+//   setDeltaMode
+//---------------------------------------------------------
+
+void NoteInfo::setDeltaMode(bool val)
+      {
+      if(val == deltaMode)
+        return;
+      deltaMode = val;
+      deltaButton->setChecked(deltaMode);
+      set_mode();
       }
 
 //---------------------------------------------------------
@@ -189,6 +230,19 @@ void NoteInfo::pitchChanged(int val)
       }
 
 //---------------------------------------------------------
+//   setDeltaMode
+//---------------------------------------------------------
+
+void NoteInfo::deltaModeClicked(bool val)
+{
+  if(val == deltaMode)
+    return;
+  deltaMode = val;
+  set_mode();
+  emit deltaModeChanged(deltaMode);
+}
+
+//---------------------------------------------------------
 //   setValue
 //---------------------------------------------------------
 
@@ -223,8 +277,8 @@ void NoteInfo::setValues(unsigned tick, int val2, int val3, int val4,
    int val5)
       {
       blockSignals(true);
-      if (selTime->pos().tick() != tick)
-            selTime->setValue(tick);
+      // PosEdit will take care of optimizations. It must check whether actual values dependent on tempo or sig changed...
+      selTime->setValue(tick);  
       if (selLen->value() != val2)
             selLen->setValue(val2);
       if (selPitch->value() != val3)

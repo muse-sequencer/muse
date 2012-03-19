@@ -222,7 +222,7 @@ MusEGlobal::GlobalConfigValues config = {
       true,                         // addHiddenTracks
       true,                         // unhideTracks
       MusEGlobal::PREFER_NEW,       // drumTrackPreference
-      false                         // smartFocus
+      true                          // smartFocus
       };
 
 //---------------------------------------------------------

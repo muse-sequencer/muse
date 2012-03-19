@@ -486,16 +486,24 @@ void MidiSeq::start(int priority)
       prio = priority;
       
       MusEGlobal::doSetuid();
-      int gotTicks = setRtcTicks();
+      setRtcTicks();
       MusEGlobal::undoSetuid();
       Thread::start(priority);
-
-      if (gotTicks < 500) {
-          QMessageBox::warning( MusEGlobal::muse, QString("Bad timing"), QString("Timing source has a frequency below 500hz!\n" \
-                                          "This could lead to audible timing problems.\n" \
-                                          "Please see console output for any further error messages\n "));
-          }
       }
+
+//---------------------------------------------------------
+//   checkAndReportTimingResolution
+//---------------------------------------------------------
+void MidiSeq::checkAndReportTimingResolution()
+{
+    int freq = timer->getTimerFreq();
+    if (freq < 500) {
+        QMessageBox::warning( MusEGlobal::muse, QString("Bad timing"), QString("Timing source frequency is %1hz, which is below the recommended minimum: 500hz!\n" \
+                                        "This could lead to audible timing problems for MIDI.\n" \
+                                        "Please see the FAQ on http://muse-sequencer.org for remedies.\n" \
+                                        "Also please check console output for any further error messages\n ").arg(freq));
+    }
+}
 
 //---------------------------------------------------------
 //   processMidiClock

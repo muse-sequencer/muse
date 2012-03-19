@@ -191,6 +191,8 @@ extern QPixmap* inputpluginSIcon;
 extern QPixmap* cliplistSIcon;
 extern QPixmap* mixerAudioSIcon;
 extern QPixmap* initSIcon;
+extern QPixmap* deltaOnIcon;
+extern QPixmap* deltaOffIcon;
 
 extern QPixmap* addtrack_addmiditrackIcon;
 extern QPixmap* addtrack_audiogroupIcon;

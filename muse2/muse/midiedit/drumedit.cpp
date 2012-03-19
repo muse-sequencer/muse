@@ -149,8 +149,21 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       {
       setFocusPolicy(Qt::NoFocus);  
 
+      deltaMode     = false;
+      tickValue     = 0;
+      lenValue      = 0;
+      pitchValue    = 0;
+      veloOnValue   = 0;
+      veloOffValue  = 0;
+      firstValueSet = false;
+      tickOffset    = 0;
+      lenOffset     = 0;
+      pitchOffset   = 0;
+      veloOnOffset  = 0;
+      veloOffOffset = 0;
+      lastSelections = 0;
       split1w1 = 0;
-      selPart  = 0;
+      //selPart  = 0;
       QSignalMapper *signalMapper = new QSignalMapper(this);
       
       _group_mode = GROUP_SAME_CHANNEL;
@@ -534,7 +547,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         header->hideSection(COL_HIDE);
 
       dlist = new DList(header, split1w1, yscale, (DrumCanvas*)canvas, old_style_drummap_mode());
-      // p3.3.44
       setCurDrumInstrument(dlist->getSelectedInstrument());
       
       connect(dlist, SIGNAL(keyPressed(int, int)), canvas, SLOT(keyPressed(int, int)));
@@ -567,8 +579,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));  // in Canvas
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool2(int))); // in DrumCanvas
 
-      connect(canvas, SIGNAL(selectionChanged(int, MusECore::Event&, MusECore::Part*)), this,
-         SLOT(setSelection(int, MusECore::Event&, MusECore::Part*)));
+      connect(canvas, SIGNAL(selectionChanged(int, MusECore::Event&, MusECore::Part*, bool)), this,
+         SLOT(setSelection(int, MusECore::Event&, MusECore::Part*, bool)));
       connect(canvas, SIGNAL(followEvent(int)), SLOT(follow(int)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
@@ -582,6 +594,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(toolbar, SIGNAL(rasterChanged(int)),         SLOT(setRaster(int)));
       connect(toolbar, SIGNAL(soloChanged(bool)),          SLOT(soloChanged(bool)));
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
+      connect(info, SIGNAL(deltaModeChanged(bool)), SLOT(deltaModeChanged(bool)));
       if(MusEGlobal::config.smartFocus)
       {
         connect(info, SIGNAL(returnPressed()), SLOT(focusCanvas()));
@@ -698,19 +711,79 @@ DrumEdit::~DrumEdit()
 //    update Info Line
 //---------------------------------------------------------
 
-void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part* p)
+void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part*, bool update)
       {
-      selEvent = e;
-      selPart  = (MusECore::MidiPart*)p;
-      selTick  = tick;
-      info->setEnabled(!e.empty());
-      if (!e.empty()) {
-            info->setValues(tick,
-               selEvent.lenTick(),
-               selEvent.pitch(),
-               selEvent.velo(),
-               selEvent.veloOff());
+      int selections = canvas->selectionSize();
+
+      // Diagnostics:
+      //printf("DrumEdit::setSelection selections:%d event empty:%d firstValueSet:%d\n", selections, e.empty(), firstValueSet); 
+      //if(!e.empty())
+      //  e.dump(); 
+      
+      if(update)
+      {
+        // Selections have changed. Reset these.
+        tickOffset    = 0;
+        lenOffset     = 0;
+        pitchOffset   = 0;
+        veloOnOffset  = 0;
+        veloOffOffset = 0;
+        
+        // Force 'suggested' modes:
+        if (selections == 1) 
+        {
+          deltaMode = false;
+          info->setDeltaMode(deltaMode); 
+        }
+        else
+        if (selections > 1)
+        {
+          // A feeble attempt to hold on to the user's setting. Should try to bring back 
+          //  selEvent (removed), but there were problems using it (it's a reference).
+          //if(lastSelections <= 1) 
+          {
+            deltaMode = true;
+            info->setDeltaMode(deltaMode); 
+          }
+        }
+      }
+        
+      lastSelections = selections;
+      
+      if ((selections == 1) || (selections > 1 && !firstValueSet)) 
+      {
+        tickValue    = tick; 
+        lenValue     = e.lenTick();
+        pitchValue   = e.pitch();
+        veloOnValue  = e.velo();
+        veloOffValue = e.veloOff();
+        firstValueSet = true;
+      }
+
+      if (selections > 0) {
+            info->setEnabled(true);
+            if (deltaMode) 
+              info->setValues(tickOffset, lenOffset, pitchOffset, veloOnOffset, veloOffOffset);
+            else  
+              info->setValues(tickValue, lenValue, pitchValue, veloOnValue, veloOffValue);
             }
+      else {
+            info->setEnabled(false);
+            info->setValues(0, 0, 0, 0, 0);
+            firstValueSet = false;
+            tickValue     = 0;
+            lenValue      = 0;
+            pitchValue    = 0;
+            veloOnValue   = 0;
+            veloOffValue  = 0;
+            tickOffset    = 0;
+            lenOffset     = 0;
+            pitchOffset   = 0;
+            veloOnOffset  = 0;
+            veloOffOffset = 0;
+            }
+            
+      info->setReturnMode(selections >= 2);      
       selectionChanged();
       }
 
@@ -722,6 +795,30 @@ void DrumEdit::focusCanvas()
 {
   canvas->setFocus();
   canvas->activateWindow();
+}
+
+//---------------------------------------------------------
+//   deltaModeChanged
+//---------------------------------------------------------
+
+void DrumEdit::deltaModeChanged(bool delta_on)
+{
+      if(deltaMode == delta_on)
+        return;
+      deltaMode = delta_on;
+      
+      int selections = canvas->selectionSize();
+      
+      if(deltaMode)
+      {
+        if(selections > 0)
+          info->setValues(tickOffset, lenOffset, pitchOffset, veloOnOffset, veloOffOffset);
+      }
+      else
+      {
+        if(selections > 0)
+          info->setValues(tickValue, lenValue, pitchValue, veloOnValue, veloOffValue);
+      }
 }
 
 //---------------------------------------------------------
@@ -753,30 +850,62 @@ void DrumEdit::setRaster(int val)
 
 void DrumEdit::noteinfoChanged(MusEGui::NoteInfo::ValType type, int val)
       {
-      if (selEvent.empty()) {
-            printf("noteinfoChanged while note is zero %d\n", type);
-            return;
+      int selections = canvas->selectionSize();
+
+      if (selections == 0) {
+            printf("noteinfoChanged while nothing selected\n");
             }
-      MusECore::Event event = selEvent.clone();
-      switch (type) {
-            case MusEGui::NoteInfo::VAL_TIME:
-                  event.setTick(val - selPart->tick());
-                  break;
-            case MusEGui::NoteInfo::VAL_LEN:
-                  event.setLenTick(val);
-                  break;
-            case MusEGui::NoteInfo::VAL_VELON:
-                  event.setVelo(val);
-                  break;
-            case MusEGui::NoteInfo::VAL_VELOFF:
-                  event.setVeloOff(val);
-                  break;
-            case MusEGui::NoteInfo::VAL_PITCH:
-                  event.setPitch(val);
-                  break;
+      else if (selections > 0) {
+            if(deltaMode) {
+                  // treat noteinfo values as offsets to event values
+                  int delta = 0;
+                  switch (type) {
+                        case MusEGui::NoteInfo::VAL_TIME:
+                              delta = val - tickOffset;
+                              tickOffset = val;
+                              break;
+                        case MusEGui::NoteInfo::VAL_LEN:
+                              delta = val - lenOffset;
+                              lenOffset = val;
+                              break;
+                        case MusEGui::NoteInfo::VAL_VELON:
+                              delta = val - veloOnOffset;
+                              veloOnOffset = val;
+                              break;
+                        case MusEGui::NoteInfo::VAL_VELOFF:
+                              delta = val - veloOffOffset;
+                              veloOffOffset = val;
+                              break;
+                        case MusEGui::NoteInfo::VAL_PITCH:
+                              delta = val - pitchOffset;
+                              pitchOffset = val;
+                              break;
+                        }
+                  if (delta)
+                        canvas->modifySelected(type, delta);
+                  }
+            else {
+                      switch (type) {
+                            case MusEGui::NoteInfo::VAL_TIME:
+                                  tickValue = val;
+                                  break;
+                            case MusEGui::NoteInfo::VAL_LEN:
+                                  lenValue = val;
+                                  break;
+                            case MusEGui::NoteInfo::VAL_VELON:
+                                  veloOnValue = val;
+                                  break;
+                            case MusEGui::NoteInfo::VAL_VELOFF:
+                                  veloOffValue = val;
+                                  break;
+                            case MusEGui::NoteInfo::VAL_PITCH:
+                                  pitchValue = val;
+                                  break;
+                            }
+                      canvas->modifySelected(type, val, false); // No delta mode.
+                 }
             }
-      // Indicate do undo, and do not do port controller values and clone parts. 
-      MusEGlobal::audio->msgChangeEvent(selEvent, event, selPart, true, false, false);
+      
       }
 
 //---------------------------------------------------------
@@ -928,7 +1057,6 @@ void DrumEdit::writeConfiguration(int level, MusECore::Xml& xml)
 
 void DrumEdit::load()
       {
-      //QString fn = MusEGui::getOpenFileName("drummaps", map_file_pattern,
       QString fn = MusEGui::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
          this, tr("Muse: Load Drum Map"), 0);
       if (fn.isEmpty())
@@ -1111,9 +1239,7 @@ CtrlEdit* DrumEdit::addCtrl()
 
       setCurDrumInstrument(dlist->getSelectedInstrument());
 
-      // p3.3.44
       ctrlEdit->setTool(tools2->curTool());
-      
       ctrlEdit->setXPos(hscroll->pos());
       ctrlEdit->setXMag(hscroll->getScaleValue());
 

@@ -80,10 +80,21 @@ class DrumEdit : public MidiEditor {
       bool _ignore_hide;
       bool _old_style_drummap_mode;
       
-      MusECore::Event selEvent;
-      MusECore::MidiPart* selPart;
-      int selTick;
       QMenu* menuEdit, *menuFunctions, *menuSelect;
+
+      int tickValue;
+      int lenValue;
+      int pitchValue;
+      int veloOnValue;
+      int veloOffValue;
+      bool firstValueSet;
+      int tickOffset;
+      int lenOffset;
+      int pitchOffset;
+      int veloOnOffset;
+      int veloOffOffset;
+      bool deltaMode;
+      int lastSelections;
 
       MusEGui::NoteInfo* info;
       QToolButton* srec;
@@ -144,9 +155,10 @@ class DrumEdit : public MidiEditor {
       
       void display_old_new_conflict_message();
       void focusCanvas();
+      void deltaModeChanged(bool);
 
    public slots:
-      void setSelection(int, MusECore::Event&, MusECore::Part*);
+      void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);
       void soloChanged(bool);       // called by Solo button
       void execDeliveredScript(int);
       void execUserScript(int);

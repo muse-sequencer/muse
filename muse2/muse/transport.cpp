@@ -538,6 +538,11 @@ void Transport::setTempo(int t)
             tempo->setTempo(t);
             tempoVal = t;
             }
+      blockSignals(true);
+      // Make sure positional controls are updated
+      unsigned v = MusEGlobal::song->cpos();
+      time2->setValue(v); // time2 is SMPTE, it only need tempo updates.
+      blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -558,7 +563,19 @@ void Transport::setHandleColor(QColor c)
 
 void Transport::setTimesig(int z, int n)
       {
+      blockSignals(true);
       tempo->setTimesig(z, n);
+      
+      // Make sure positional controls are updated
+      unsigned v = MusEGlobal::song->cpos();
+      time1->setValue(v); // time2 is SMPTE. It only need tempo updates.
+      
+      v = MusEGlobal::song->lpos();      
+      tl1->setValue(v);
+      v = MusEGlobal::song->rpos();      
+      tl2->setValue(v);
+      
+      blockSignals(false);
       }
 
 //---------------------------------------------------------

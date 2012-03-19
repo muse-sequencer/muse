@@ -222,18 +222,26 @@ void EventCanvas::songChanged(int flags)
       start_tick = MusEGlobal::song->roundDownBar(start_tick);
       end_tick   = MusEGlobal::song->roundUpBar(end_tick);
 
-      if (n == 1 && _setCurPartIfOnlyOneEventIsSelected) {
+      if (n >= 1)    
+      {
             x     = nevent->x();
             event = nevent->event();
             part  = (MusECore::MidiPart*)nevent->part();
-            if (curPart != part) {
+            if (_setCurPartIfOnlyOneEventIsSelected && n == 1 && curPart != part) {
                   curPart = part;
                   curPartId = curPart->sn();
                   curPartChanged();
                   }
-            }
+      }
       
-      emit selectionChanged(x, event, part);
+      bool f1 = flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
+                         SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
+                         SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+                         SC_SIG | SC_TEMPO | SC_KEY | SC_MASTER | SC_CONFIG | SC_DRUMMAP); 
+      bool f2 = flags & SC_SELECTION;
+      if(f1 || f2)   // Try to avoid all unnecessary emissions.
+        emit selectionChanged(x, event, part, !f1);
+      
       if (curPart == 0)
             curPart = (MusECore::MidiPart*)(editor->parts()->begin()->second);
       redraw();

@@ -81,12 +81,12 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       label->setIndent(3);
       addWidget(label);
       pos   = new PosLabel(0, "pos");
-      pos->setFixedHeight(22);
+      ///pos->setFixedHeight(22);
       addWidget(pos);
       if (showPitch) {
             pitch = new PitchLabel(0);
             pitch->setEnabled(false);
-            pitch->setFixedHeight(22);
+            ///pitch->setFixedHeight(22);
             addWidget(pitch);
             }
 
@@ -117,7 +117,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       addWidget(raster);
       
       // FIXME: Not working right.
-      raster->setFixedHeight(38);
+      ///raster->setFixedHeight(38);
       
       connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
       connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));

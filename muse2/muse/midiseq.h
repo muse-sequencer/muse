@@ -93,6 +93,7 @@ class MidiSeq : public Thread {
       void mmcInput(int, const unsigned char*, int);
       void mtcInputFull(int, const unsigned char*, int);
       void nonRealtimeSystemSysex(int, const unsigned char*, int);
+      void checkAndReportTimingResolution();
 
       void msgMsg(int id);
       void msgSeek();

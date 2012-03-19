@@ -31,6 +31,8 @@
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QResizeEvent>
+#include <QList>
+#include <QPair>
 
 #include <stdio.h>
 #include <values.h>
@@ -404,6 +406,9 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
   // else or if we found an alternative part (which has now been set as curPart)
 
   tick    -= curPart->tick();
+  if (tick < 0)
+        //tick=0;
+        return 0;
   MusECore::Event e(MusECore::Note);
   e.setTick(tick);
   e.setPitch(instrument_map[instrument].pitch);
@@ -439,6 +444,8 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       DEvent* nevent = (DEvent*) item;
       MusECore::Event event    = nevent->event();
       int x = item->x();
+      if (x<0)
+            x=0;
       if (!noSnap)
             x = editor->rasterVal(x);
       event.setTick(x - nevent->part()->tick());
@@ -1101,8 +1108,9 @@ void DrumCanvas::resizeEvent(QResizeEvent* ev)
 //   modifySelected
 //---------------------------------------------------------
 
-void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
+void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode)
       {
+      QList< QPair<MusECore::EventList*,MusECore::Event> > already_done;
       MusEGlobal::audio->msgIdle(true);
       MusEGlobal::song->startUndo();
       for (iCItem i = items.begin(); i != items.end(); ++i) {
@@ -1114,30 +1122,65 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
                   continue;
 
             MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
+
+            if (already_done.contains(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event)))
+              continue;
+            
             MusECore::Event newEvent = event.clone();
 
             switch (type) {
-                  case NoteInfo::VAL_TIME:
+                  case MusEGui::NoteInfo::VAL_TIME:
                         {
-                        int newTime = event.tick() + delta;
+                        int newTime = val;
+                        if(delta_mode)
+                          newTime += event.tick();
+                        else
+                          newTime -= part->tick();
                         if (newTime < 0)
                            newTime = 0;
                         newEvent.setTick(newTime);
                         }
                         break;
-                  case NoteInfo::VAL_LEN:
-                        printf("DrumCanvas::modifySelected - NoteInfo::VAL_LEN not implemented\n");
+                  case MusEGui::NoteInfo::VAL_LEN:
+                        {
+                        int len = val;
+                        if(delta_mode)
+                          len += event.lenTick();
+                        if (len < 1)
+                              len = 1;
+                        newEvent.setLenTick(len);
+                        }
                         break;
-                  case NoteInfo::VAL_VELON:
-                        printf("DrumCanvas::modifySelected - NoteInfo::VAL_VELON not implemented\n");
+                  case MusEGui::NoteInfo::VAL_VELON:
+                        {
+                        int velo = val;
+                        if(delta_mode)
+                          velo += event.velo();
+                        if (velo > 127)
+                              velo = 127;
+                        else if (velo < 0)
+                              velo = 0;
+                        newEvent.setVelo(velo);
+                        }
                         break;
-                  case NoteInfo::VAL_VELOFF:
-                        printf("DrumCanvas::modifySelected - NoteInfo::VAL_VELOFF not implemented\n");
+                  case MusEGui::NoteInfo::VAL_VELOFF:
+                        {
+                        int velo = val;
+                        if(delta_mode)
+                          velo += event.veloOff();
+                        if (velo > 127)
+                              velo = 127;
+                        else if (velo < 0)
+                              velo = 0;
+                        newEvent.setVeloOff(velo);
+                        }
                         break;
                   case NoteInfo::VAL_PITCH:
                         if (old_style_drummap_mode)
                         {
-                        int pitch = event.pitch() - delta; // Reversing order since the drumlist is displayed in increasing order
+                        int pitch = val; 
+                        if(delta_mode)
+                          pitch += event.pitch();  
                         if (pitch > 127)
                               pitch = 127;
                         else if (pitch < 0)
@@ -1151,6 +1194,8 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
             MusEGlobal::song->changeEvent(event, newEvent, part);
             // Indicate do not do port controller values and clone parts. 
             MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
+
+            already_done.append(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event));
             }
       MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
       MusEGlobal::audio->msgIdle(false);

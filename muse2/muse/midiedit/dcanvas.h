@@ -158,7 +158,7 @@ class DrumCanvas : public EventCanvas {
          const char* name = 0);
       virtual ~DrumCanvas();
       void cmd(int);
-      virtual void modifySelected(NoteInfo::ValType type, int delta);
+      virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);
       virtual void keyPress(QKeyEvent* event);
       MusECore::Event *getEventAtCursorPos();
       void selectCursorEvent(MusECore::Event *ev);

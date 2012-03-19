@@ -68,6 +68,8 @@ class SpinBoxLineEdit : public QLineEdit
 class SpinBox : public QSpinBox {
       Q_OBJECT
 
+      bool _returnMode;
+      
    protected:
       virtual void keyPressEvent(QKeyEvent*);
       virtual void wheelEvent(QWheelEvent*);
@@ -82,6 +84,8 @@ class SpinBox : public QSpinBox {
    public:
       SpinBox(QWidget* parent=0);
       SpinBox(int minValue, int maxValue, int step = 1, QWidget* parent=0);
+      void setReturnMode(bool v) { _returnMode = v; }
+      bool returnMode() const    { return _returnMode; }
 };
 
 } // namespace MusEGui
