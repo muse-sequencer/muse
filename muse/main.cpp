@@ -53,6 +53,7 @@
 #include "sync.h"
 #include "functions.h"
 #include "appearance.h"
+#include "midiseq.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -590,6 +591,9 @@ int main(int argc, char* argv[])
       // Load the default song.                            
       //--------------------------------------------------
       MusEGlobal::muse->loadDefaultSong(argc, &argv[optind]);    // p4.0.41
+
+      MusEGlobal::midiSeq->checkAndReportTimingResolution();
+
       
       QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialog()));
       

@@ -119,7 +119,7 @@ unsigned int RtcTimer::getTimerFreq()
     {
     unsigned int freq;
     int rv = ioctl(timerFd, RTC_IRQP_READ, &freq);
-    if (rv < 1)
+    if (rv < 0)
       return 0;
     return freq;
     }

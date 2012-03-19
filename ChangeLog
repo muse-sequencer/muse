@@ -1,6 +1,8 @@
 19.03.2012:
         - Song load: Arranger MDI window: Fixed size restoration. (Tim)
           In TopWin::readStatus(), if mdisubwin is maximized, restore it before setting pos and height.
+        - Changed reporting of bad timing a bit to possibly make it clearer what the problem is 
+          and what to do about it (rj)
 18.03.2012:
         - Delta/absolute mode button: Improved behaviour. (Tim)
         - Transport and NoteInfo toolbar positional editors: Fixed not updating when tempo or sig changed. (Tim)
