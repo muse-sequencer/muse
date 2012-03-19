@@ -167,7 +167,7 @@ void TopWin::readStatus(MusECore::Xml& xml)
 					if (mdisubwin)
 					{
 						if(mdisubwin->isMaximized())
-						  mdisubwin->showNormal();
+							mdisubwin->showNormal();
 						mdisubwin->move(x, y);
 						mdisubwin->resize(width, height);
 					}
