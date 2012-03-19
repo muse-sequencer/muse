@@ -58,7 +58,6 @@ class WaveEdit : public MidiEditor {
     
       WaveView* view;
       QSlider* ymag;
-      QToolBar* tools;
       QToolBar* tb1;
       QToolButton* solo;
       MusEGui::PosLabel* pos1;

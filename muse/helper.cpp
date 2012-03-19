@@ -38,6 +38,7 @@
 #include "globaldefs.h"
 #include "audio.h"
 #include "audiodev.h"
+#include "midi.h"
 #include "midiseq.h"
 
 #include <QMenu>
@@ -115,6 +116,23 @@ bool any_event_selected(const set<Part*>& parts, bool in_range)
 {
   return !get_events(parts, in_range ? 3 : 1).empty();
 }
+
+void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int val, MidiTrack* mt)
+{
+	MusECore::Event a(MusECore::Controller);
+	a.setTick(tick);
+	a.setA(ctrl_num);
+	a.setB(val);
+	MusEGlobal::song->recordEvent(mt, a);
+	
+	if (MusEGlobal::song->cpos() < mt->getControllerValueLifetime(tick, ctrl_num))
+	{
+		// this CC has an immediate effect? so send it out to the device.
+		MusECore::MidiPlayEvent ev(0, mt->outPort(), mt->outChannel(), MusECore::ME_CONTROLLER, ctrl_num, val);
+		MusEGlobal::audio->msgPlayMidiEvent(&ev);
+	}
+}
+
 
 } // namespace MusECore
 

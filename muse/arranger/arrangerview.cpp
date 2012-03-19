@@ -65,6 +65,7 @@
 #include "ttoolbar.h"
 #include "visibletracks.h"
 #include "xml.h"
+#include "arrangercolumns.h"
 
 namespace MusEGui {
 
@@ -92,19 +93,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   editSignalMapper->setMapping(sc, CMD_DELETE);
 
   // Toolbars ---------------------------------------------------------
-  QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-  undo_tools->setObjectName("Undo/Redo tools");
-  undo_tools->addActions(MusEGlobal::undoRedo->actions());
-
-
-  QToolBar* panic_toolbar = addToolBar(tr("panic"));
-  panic_toolbar->setObjectName("panic");
-  panic_toolbar->addAction(MusEGlobal::panicAction);
-
-  QToolBar* transport_toolbar = addToolBar(tr("transport"));
-  transport_toolbar->setObjectName("transport");
-  transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-
   editTools = new EditToolBar(this, arrangerTools);
   addToolBar(editTools);
   editTools->setObjectName("arrangerTools");
@@ -280,6 +268,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   
   
   QMenu* menuSettings = menuBar()->addMenu(tr("Window &Config"));
+  menuSettings->addAction(tr("Configure &custom columns"), this, SLOT(configCustomColumns()));
+  menuSettings->addSeparator();
   menuSettings->addAction(subwinAction);
   menuSettings->addAction(shareAction);
   menuSettings->addAction(fullscreenAction);
@@ -443,6 +433,8 @@ void ArrangerView::readConfiguration(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "topwin")
                               TopWin::readConfiguration(ARRANGER, xml);
+                        else if (tag == "arranger")
+                              Arranger::readConfiguration(xml);
                         else
                               xml.unknown("ArrangerView");
                         break;
@@ -463,6 +455,7 @@ void ArrangerView::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arrangerview");
       TopWin::writeConfiguration(ARRANGER, level, xml);
+      arranger->writeConfiguration(level,xml);
       xml.tag(level, "/arrangerview");
       }
 
@@ -747,5 +740,14 @@ void ArrangerView::globalSplit() { MusECore::globalSplit(); }
 void ArrangerView::globalCutSel() { MusECore::globalCut(true); }
 void ArrangerView::globalInsertSel() { MusECore::globalInsert(true); }
 void ArrangerView::globalSplitSel() { MusECore::globalSplit(true); }
+
+void ArrangerView::configCustomColumns()
+{
+  ArrangerColumns* dialog = new ArrangerColumns(this);
+  dialog->exec();
+  delete dialog;
+  
+  QMessageBox::information(this, tr("Changed Settings"), tr("Unfortunately, the changed arranger column settings\ncannot be applied while MusE is running.\nTo apply the changes, please restart MusE. Sorry.\n(we'll try to fix that)"));
+}
 
 } // namespace MusEGui

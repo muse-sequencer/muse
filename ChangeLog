@@ -1,4 +1,9 @@
 19.03.2012:
+        - added customizable columns to the arranger (cherry-pick from trunk) (flo93)
+        - added song-position toolbar (cherry-pick from trunk) (flo93)
+        - added tempo- and sig-toolbar (cherry-pick from trunk) (flo93)
+        - moved redundant toolbar generation (undo etc) from the various
+          topwins into TopWin (cherry-pick from trunk) (flo93)
         - Song load: Arranger MDI window: Fixed size restoration. (Tim)
           In TopWin::readStatus(), if mdisubwin is maximized, restore it before setting pos and height.
         - Changed reporting of bad timing a bit to possibly make it clearer what the problem is 

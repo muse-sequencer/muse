@@ -175,19 +175,9 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
 
-      //---------ToolBar----------------------------------
-      tools = addToolBar(tr("Wave edit tools"));
-      tools->setObjectName("Wave edit tools");
-
-      tools->addActions(MusEGlobal::undoRedo->actions());
 
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
-      //--------------------------------------------------
-      //    Transport Bar
-      QToolBar* transport = addToolBar(tr("transport"));
-      transport->setObjectName("transport");
-      transport->addActions(MusEGlobal::transportAction->actions());
 
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2

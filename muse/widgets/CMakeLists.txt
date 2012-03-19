@@ -32,6 +32,7 @@ subdirs (${SubDirs})
 ##
 QT4_WRAP_CPP (widget_mocs
       aboutbox_impl.h 
+      arrangercolumns.h 
       action.h
       bigtime.h  
       canvas.h  
@@ -80,9 +81,11 @@ QT4_WRAP_CPP (widget_mocs
       # sigedit.h  
       siglabel.h  
       sigscale.h  
+      sig_tempo_toolbar.h 
       slider.h  
       sliderbase.h  
       songinfo.h
+      songpos_toolbar.h
       spinbox.h  
       spinboxFP.h  
       splitter.h  
@@ -105,6 +108,7 @@ QT4_WRAP_CPP (widget_mocs
 ##
 file (GLOB widgets_ui_files
       aboutbox.ui  
+      arrangercolumnsbase.ui 
       appearancebase.ui 
       cliplisteditorbase.ui  
       commentbase.ui  
@@ -139,6 +143,7 @@ QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 ##
 file (GLOB widgets_source_files
       aboutbox_impl.cpp 
+      arrangercolumns.cpp 
       bigtime.cpp 
       canvas.cpp 
       checkbox.cpp 
@@ -192,8 +197,10 @@ file (GLOB widgets_source_files
       # sigedit.cpp 
       siglabel.cpp 
       sigscale.cpp 
+      sig_tempo_toolbar.cpp 
       slider.cpp 
       sliderbase.cpp 
+      songpos_toolbar.cpp 
       spinbox.cpp 
       spinboxFP.cpp 
       splitter.cpp  

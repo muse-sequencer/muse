@@ -317,8 +317,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       tools->addAction(QWhatsThis::createAction());
 
       tools->addSeparator();
-      tools->addActions(MusEGlobal::undoRedo->actions());
-      tools->addSeparator();
 
       srec  = new QToolButton();
       srec->setToolTip(tr("Step Record"));
@@ -358,14 +356,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(stepLenWidget, SIGNAL(activated(QString)), SLOT(setStep(QString)));
       cursorToolbar->addWidget(stepLenWidget);
 
-      QToolBar* panicToolbar = addToolBar(tr("panic"));
-      panicToolbar->setObjectName("panic");
-      panicToolbar->addAction(MusEGlobal::panicAction);
-      
-      QToolBar* transport = addToolBar(tr("transport"));
-      transport->setObjectName("transport");
-      transport->addActions(MusEGlobal::transportAction->actions());
-      
       addToolBarBreak();
       // don't show pitch value in toolbar
       toolbar = new MusEGui::Toolbar1(this, _rasterInit, false);

@@ -201,10 +201,6 @@ LMaster::LMaster()
       connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
       // Toolbars ---------------------------------------------------------
-      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-      undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(MusEGlobal::undoRedo->actions());
-
       QToolBar* edit = addToolBar(tr("Edit tools"));
       edit->setObjectName("Master List Edit Tools");
       QToolButton* tempoButton = new QToolButton();
@@ -223,14 +219,6 @@ LMaster::LMaster()
       edit->addWidget(timeSigButton);
       edit->addWidget(keyButton);
       
-      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
-      panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(MusEGlobal::panicAction);
-
-      QToolBar* transport_toolbar = addToolBar(tr("transport"));
-      transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-
       //---------------------------------------------------
       //    master
       //---------------------------------------------------

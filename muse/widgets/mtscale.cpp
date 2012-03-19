@@ -250,7 +250,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
             if (xp > x+w)
                   break;
             int xe = r.x() + r.width();
-	    MusECore::iMarker mm = m;
+            MusECore::iMarker mm = m;
             ++mm;
             if (mm != marker->end()) {
                   

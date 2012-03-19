@@ -77,6 +77,89 @@ void ScrollBar::redirectedWheelEvent(QWheelEvent* e)
     wheelEvent(e);
 }
 
+std::vector<Arranger::custom_col_t> Arranger::custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns
+std::vector<Arranger::custom_col_t> Arranger::new_custom_columns; //and instead let the arranger update without restarting muse!
+QString Arranger::header_state;
+
+void Arranger::writeCustomColumns(int level, MusECore::Xml& xml)
+{
+  xml.tag(level++, "custom_columns");
+  
+  for (unsigned i=0;i<new_custom_columns.size();i++)
+  {
+    xml.tag(level++, "column");
+    xml.strTag(level, "name", new_custom_columns[i].name);
+    xml.intTag(level, "ctrl", new_custom_columns[i].ctrl);
+    xml.intTag(level, "affected_pos", new_custom_columns[i].affected_pos);
+    xml.etag(--level, "column");
+  }
+  
+  xml.etag(--level, "custom_columns");
+}
+
+void Arranger::readCustomColumns(MusECore::Xml& xml)
+{
+      custom_columns.clear();
+      
+      for (;;) {
+            MusECore::Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
+                        new_custom_columns=custom_columns;
+                        return;
+                  case MusECore::Xml::TagStart:
+                        if (tag == "column")
+                              custom_columns.push_back(readOneCustomColumn(xml));
+                        else
+                              xml.unknown("Arranger::readCustomColumns");
+                        break;
+                  case MusECore::Xml::TagEnd:
+                        if (tag == "custom_columns")
+                        {
+                              new_custom_columns=custom_columns;
+                              return;
+                        }
+                  default:
+                        break;
+                  }
+            }
+}
+
+Arranger::custom_col_t Arranger::readOneCustomColumn(MusECore::Xml& xml)
+{
+      custom_col_t temp(0, "-");
+      
+      for (;;) {
+            MusECore::Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
+                        return temp;
+                  case MusECore::Xml::TagStart:
+                        if (tag == "name")
+                              temp.name=xml.parse1();
+                        else if (tag == "ctrl")
+                              temp.ctrl=xml.parseInt();
+                        else if (tag == "affected_pos")
+                              temp.affected_pos=(custom_col_t::affected_pos_t)xml.parseInt();
+                        else
+                              xml.unknown("Arranger::readOneCustomColumn");
+                        break;
+                  case MusECore::Xml::TagEnd:
+                        if (tag == "column")
+                              return temp;
+                  default:
+                        break;
+                  }
+            }
+      return temp;
+}
+
+
+
 //---------------------------------------------------------
 //   Arranger::setHeaderToolTips
 //---------------------------------------------------------
@@ -257,7 +340,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       split->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       box->addWidget(split, 1000);
 
-      QWidget* tracklist = new QWidget(split);
+      tracklist = new QWidget(split);
 
       split->setStretchFactor(split->indexOf(tracklist), 0);
       QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
@@ -287,38 +370,11 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       ib->setChecked(showTrackinfoFlag);
       ib->setFocusPolicy(Qt::NoFocus);
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
-
-      header = new Header(tracklist, "header");
       
-      header->setFixedHeight(30);
-
-      QFontMetrics fm1(header->font());
-      int fw = 8;
-
-      header->setColumnLabel(tr("R"), COL_RECORD, fm1.width('R')+fw);
-      header->setColumnLabel(tr("M"), COL_MUTE, fm1.width('M')+fw);
-      header->setColumnLabel(tr("S"), COL_SOLO, fm1.width('S')+fw);
-      header->setColumnLabel(tr("C"), COL_CLASS, fm1.width('C')+fw);
-      header->setColumnLabel(tr("Track"), COL_NAME, 100);
-      header->setColumnLabel(tr("Port"), COL_OPORT, 60);
-      header->setColumnLabel(tr("Ch"), COL_OCHANNEL, 30);
-      header->setColumnLabel(tr("T"), COL_TIMELOCK, fm1.width('T')+fw);
-      header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
-      header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
-      header->setResizeMode(COL_RECORD, QHeaderView::Fixed);
-      header->setResizeMode(COL_MUTE, QHeaderView::Fixed);
-      header->setResizeMode(COL_SOLO, QHeaderView::Fixed);
-      header->setResizeMode(COL_CLASS, QHeaderView::Fixed);
-      header->setResizeMode(COL_NAME, QHeaderView::Interactive);
-      header->setResizeMode(COL_OPORT, QHeaderView::Interactive);
-      header->setResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
-      header->setResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
-      header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
-      header->setResizeMode(COL_CLEF, QHeaderView::Interactive);
-
-      setHeaderToolTips();
-      setHeaderWhatsThis();
-      header->setMovable (true );
+      list=NULL;
+      header=NULL;
+      tgrid=NULL;
+      updateTListHeader();
       list = new TList(header, tracklist, "tracklist");
       
       // Do this now that the list is available.
@@ -478,6 +534,66 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 //      if(s != s1 || e != e1) 
 //        hscroll->setRange(s, e);
 //}
+
+
+void Arranger::updateTListHeader()
+{
+  if (header)
+  {
+    header_state=header->getStatus();
+    delete header;
+  }
+
+  header = new Header(tracklist, "header");
+
+  header->setFixedHeight(30);
+
+  QFontMetrics fm1(header->font());
+  int fw = 8;
+
+  header->setColumnLabel(tr("R"), COL_RECORD, fm1.width('R')+fw);
+  header->setColumnLabel(tr("M"), COL_MUTE, fm1.width('M')+fw);
+  header->setColumnLabel(tr("S"), COL_SOLO, fm1.width('S')+fw);
+  header->setColumnLabel(tr("C"), COL_CLASS, fm1.width('C')+fw);
+  header->setColumnLabel(tr("Track"), COL_NAME, 100);
+  header->setColumnLabel(tr("Port"), COL_OPORT, 60);
+  header->setColumnLabel(tr("Ch"), COL_OCHANNEL, 30);
+  header->setColumnLabel(tr("T"), COL_TIMELOCK, fm1.width('T')+fw);
+  header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
+  header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
+  for (unsigned i=0;i<custom_columns.size();i++)
+    header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
+  header->setResizeMode(COL_RECORD, QHeaderView::Fixed);
+  header->setResizeMode(COL_MUTE, QHeaderView::Fixed);
+  header->setResizeMode(COL_SOLO, QHeaderView::Fixed);
+  header->setResizeMode(COL_CLASS, QHeaderView::Fixed);
+  header->setResizeMode(COL_NAME, QHeaderView::Interactive);
+  header->setResizeMode(COL_OPORT, QHeaderView::Interactive);
+  header->setResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
+  header->setResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
+  header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
+  header->setResizeMode(COL_CLEF, QHeaderView::Interactive);
+  for (unsigned i=0;i<custom_columns.size();i++)
+    header->setResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
+
+  setHeaderToolTips();
+  setHeaderWhatsThis();
+  header->setMovable (true);
+  header->setStatus(header_state);
+
+  if (list)
+  {
+    list->setHeader(header);  
+    connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
+    connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
+    connect(header, SIGNAL(sectionMoved(int,int,int)), this, SLOT(headerMoved()));
+  }
+
+  if (tgrid)
+  {
+    tgrid->wadd(2, header);
+  }
+}
 
 //---------------------------------------------------------
 //   setTime
@@ -679,12 +795,49 @@ void Arranger::writeStatus(int level, MusECore::Xml& xml)
       xml.tag(level++, "arranger");
       xml.intTag(level, "info", ib->isChecked());
       split->writeStatus(level, xml);
-      list->writeStatus(level, xml, "list");
 
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
       xml.intTag(level, "ypos", vscroll->value());
       xml.etag(level, "arranger");
+      }
+
+void Arranger::writeConfiguration(int level, MusECore::Xml& xml)
+      {
+      xml.tag(level++, "arranger");
+      writeCustomColumns(level, xml);
+      xml.strTag(level, "tlist_header", header->getStatus());
+      xml.etag(level, "arranger");
+      }
+
+//---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void Arranger::readConfiguration(MusECore::Xml& xml)
+      {
+      for (;;) {
+            MusECore::Xml::Token token(xml.parse());
+            const QString& tag(xml.s1());
+            switch (token) {
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
+                        return;
+                  case MusECore::Xml::TagStart:
+                        if (tag == "tlist_header")
+                              header_state = xml.parse1();
+                        else if (tag == "custom_columns")
+                              readCustomColumns(xml);
+                        else
+                              xml.unknown("Arranger");
+                        break;
+                  case MusECore::Xml::TagEnd:
+                        if (tag == "arranger")
+                              return;
+                  default:
+                        break;
+                  }
+            }
       }
 
 //---------------------------------------------------------
@@ -705,8 +858,6 @@ void Arranger::readStatus(MusECore::Xml& xml)
                               showTrackinfoFlag = xml.parseInt();
                         else if (tag == split->objectName())
                               split->readStatus(xml);
-                        else if (tag == "list")
-                              list->readStatus(xml, "list");
                         else if (tag == "xmag")
                               hscroll->setMag(xml.parseInt());
                         else if (tag == "xpos") {

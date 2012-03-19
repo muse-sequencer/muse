@@ -24,7 +24,7 @@
 #define __TLIST_H__
 
 #include "track.h"
-
+#include <map>
 #include <QWidget>
 
 class QWidget;
@@ -57,6 +57,7 @@ enum TrackColumn {
       COL_TIMELOCK,
       COL_AUTOMATION,
       COL_CLEF,
+      COL_CUSTOM_MIDICTRL_OFFSET,
       COL_NONE = -1
       };
 
@@ -69,6 +70,9 @@ class TList : public QWidget {
 
       int ypos;
       bool editMode;
+      bool editJustFinished;
+      
+      std::map<MusECore::Track*, std::map<int, int> > old_ctrl_hw_states;
 
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
@@ -77,6 +81,9 @@ class TList : public QWidget {
       QScrollBar* _scroll;
       QLineEdit* editor;
       QSpinBox* chan_edit;
+      QSpinBox* ctrl_edit;
+      int ctrl_num;
+      unsigned ctrl_at_tick;
       MusECore::Track* editTrack;
       MusECore::Track* editAutomation;
 
@@ -109,8 +116,11 @@ class TList : public QWidget {
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);
 
    private slots:
+      void maybeUpdateVolatileCustomColumns(); // updates AFFECT_CPOS-columns when and only when the hwState has changed
       void returnPressed();
       void chanValueFinished();
+      void ctrlValueFinished();
+      void instrPopupActivated(QAction*);
       void songChanged(int flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);
@@ -127,13 +137,12 @@ class TList : public QWidget {
       void selectTrack(MusECore::Track*);
       void selectTrackAbove();
       void selectTrackBelow();
+      void setHeader(Header*);
 
    public:
       TList(Header*, QWidget* parent, const char* name);
       void setScroll(QScrollBar* s) { _scroll = s; }
       MusECore::Track* track() const { return editTrack; }
-      void writeStatus(int level, MusECore::Xml&, const char* name) const;
-      void readStatus(MusECore::Xml&, const char* name);
       };
 
 } // namespace MusEGui

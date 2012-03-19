@@ -1,8 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: header.h,v 1.1.1.1 2003/10/27 18:55:03 wschweer Exp $
-//  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  $Id: arrangercolumns.h, flo93 $
+//
+//  (C) Copyright 2012 Florian Jung (florian.a.jung@web.de)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,38 +21,33 @@
 //
 //=========================================================
 
-#ifndef __HEADER_H__
-#define __HEADER_H__
+#ifndef __ARRANGERCOLUMNS_H__
+#define __ARRANGERCOLUMNS_H__
 
-#include <QHeaderView>
-#include <QAction>
-#include <QString>
-
-class QStandardItemModel;
-
-namespace MusECore {
-class Xml;
-}
+#include "ui_arrangercolumnsbase.h"
+#include <QDialog>
 
 namespace MusEGui {
 
-class Header : public QHeaderView {
-      Q_OBJECT
-
-      QStandardItemModel *itemModel;
-
-   public:
-      Header(QWidget* parent=0, const char* name=0);
-      void writeStatus(int level, MusECore::Xml&) const;
-      QString getStatus() const;
-      void readStatus(MusECore::Xml&);
-      void setStatus(QString status);
-      void setColumnLabel( const QString & s, int col, int width = -1 );
-      void setToolTip(int col, const QString &text);
-      void setWhatsThis(int col, const QString &text);
-      void mousePressEvent ( QMouseEvent * e );
-    private slots:
-      void changeColumns(QAction* a);
+class ArrangerColumns : public QDialog, private Ui::ArrangerColumnsBase
+{
+	Q_OBJECT
+	
+	public:
+		ArrangerColumns(QWidget* parent);
+	
+	private slots:
+		void ctrlTypeChanged(int idx);
+		void somethingChanged();
+		void initList();
+		void itemSelected(int idx);
+		void addEntry();
+		void delEntry();
+		
+		QString getListEntryString(int idx);
+	
+	private:
+		bool ignoreSomethingChanged;
 };
 
 } // namespace MusEGui

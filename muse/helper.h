@@ -30,13 +30,14 @@ class QActionGroup;
 class QString;
 class QMenu;
 class QWidget;
-
+class MidiTrack;
 
 namespace MusECore {
 class Part;
 QString pitch2string(int v);
 Part* partFromSerialNumber(int serial);
 bool any_event_selected(const std::set<Part*>&, bool in_range=false);
+void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int val, MidiTrack* mt);
 }
 
 namespace MusEGui {

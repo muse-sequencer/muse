@@ -270,8 +270,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Pianoroll tools"));
       tools->setObjectName("Pianoroll tools");
-      tools->addActions(MusEGlobal::undoRedo->actions());
-      tools->addSeparator();
 
       srec  = new QToolButton();
       srec->setToolTip(tr("Step Record"));
@@ -296,16 +294,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       tools2 = new MusEGui::EditToolBar(this, pianorollTools);
       addToolBar(tools2);
-
-      QToolBar* panicToolbar = addToolBar(tr("panic"));         
-      panicToolbar->setObjectName("panic");
-      panicToolbar->addAction(MusEGlobal::panicAction);
-
-      //-------------------------------------------------------------
-      //    Transport Bar
-      QToolBar* transport = addToolBar(tr("transport"));
-      transport->setObjectName("transport");
-      transport->addActions(MusEGlobal::transportAction->actions());
 
       addToolBarBreak();
       toolbar = new MusEGui::Toolbar1(this, _rasterInit);

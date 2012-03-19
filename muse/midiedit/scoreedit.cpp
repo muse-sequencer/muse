@@ -234,11 +234,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 
 	// Toolbars ---------------------------------------------------------
-	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-	undo_tools->setObjectName("Undo/Redo tools");
-	undo_tools->addActions(MusEGlobal::undoRedo->actions());
-	addToolBar(undo_tools);
-
 	QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
 	steprec_tools->setObjectName("Step recording tools");
 	srec  = new QToolButton();
@@ -255,14 +250,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	edit_tools->set(MusEGui::PointerTool);
 	score_canvas->set_tool(MusEGui::PointerTool);
 	connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
-
-	QToolBar* panic_toolbar = addToolBar(tr("panic"));
-	panic_toolbar->setObjectName("panic");
-	panic_toolbar->addAction(MusEGlobal::panicAction);
-
-	QToolBar* transport_toolbar = addToolBar(tr("transport"));
-	transport_toolbar->setObjectName("transport");
-	transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
 	addToolBarBreak();
 
@@ -4710,6 +4697,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * 
  * CURRENT TODO
+ *   o column's widths aren't stored into configuration. fix that.
  * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
  *
  * IMPORTANT TODO
@@ -4731,8 +4719,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     "range" setting, or they've been modified), default to "in range" or "selected in range"
  * 
  *   o rename stuff with F2 key
- *   o redo transport menu: offer "one beat" and "one bar" steps
- *                          maybe also offer scrollbar
  *
  *   o shrink a part from its beginning as well! watch out for clones!
  *

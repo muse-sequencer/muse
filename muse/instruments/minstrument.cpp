@@ -881,6 +881,125 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
       return "<unknown>";
       }
 
+
+
+
+
+
+unsigned MidiInstrument::getNextPatch(int channel, unsigned patch, MType songType, bool drum)
+{
+  QList<dumb_patchlist_entry_t> haystack=getPatches(channel,songType,drum);
+  if (haystack.empty()) return MusECore::CTRL_VAL_UNKNOWN;
+  
+  int prog=patch&0xFF;
+  int lbank=(patch>>8)&0xFF;
+  int hbank=(patch>>16)&0xFF;
+  
+  dumb_patchlist_entry_t needle=dumb_patchlist_entry_t(prog, (lbank!=0xFF)?lbank:-1, (hbank!=0xFF)?hbank:-1);
+  
+  QList<dumb_patchlist_entry_t>::iterator it;
+  for (it=haystack.begin(); it!=haystack.end(); it++)
+    if ((*it) == needle)
+      break;
+  
+  if (it==haystack.end()) //not found? use first entry
+    it=haystack.begin();
+  else
+  {
+    for (;it!=haystack.end(); it++)
+      if ((*it)!=needle)
+        break;
+    if (it==haystack.end()) it=haystack.begin(); //wrap-over
+  }
+  
+  return (it->prog&0xFF)  |
+         ((((it->lbank==-1)?0xFF:it->lbank)<<8)&0xFF00)  |
+         ((((it->hbank==-1)?0xFF:it->hbank)<<16)&0xFF0000);
+}
+
+unsigned MidiInstrument::getPrevPatch(int channel, unsigned patch, MType songType, bool drum)
+{
+  QList<dumb_patchlist_entry_t> haystack=getPatches(channel,songType,drum);
+  if (haystack.empty()) return MusECore::CTRL_VAL_UNKNOWN;
+  
+  int prog=patch&0xFF;
+  int lbank=(patch>>8)&0xFF;
+  int hbank=(patch>>16)&0xFF;
+  
+  dumb_patchlist_entry_t needle=dumb_patchlist_entry_t(prog, (lbank!=0xFF)?lbank:-1, (hbank!=0xFF)?hbank:-1);
+  
+  QList<dumb_patchlist_entry_t>::iterator it;
+  for (it=haystack.begin(); it!=haystack.end(); it++)
+    if ((*it) == needle)
+      break;
+  
+  if (it==haystack.end()) //not found? use first entry
+    it=haystack.begin();
+  else
+  {
+    if (it==haystack.begin()) it=haystack.end(); //wrap-over
+    it--;
+  }
+  
+  return (it->prog&0xFF)  |
+         ((((it->lbank==-1)?0xFF:it->lbank)<<8)&0xFF00)  |
+         ((((it->hbank==-1)?0xFF:it->hbank)<<16)&0xFF0000);
+}
+
+QList<dumb_patchlist_entry_t> MidiInstrument::getPatches(int channel, MType mode, bool drum)
+      {
+      int tmask = 1;
+      bool drumchan = channel == 9;
+      bool hb = false;
+      bool lb = false;
+      switch (mode) {
+            case MT_GS:
+                  tmask = 2;
+                  hb    = true;
+                  break;
+            case MT_XG:
+                  hb    = true;
+                  lb    = true;
+                  tmask = 4;
+                  break;
+            case MT_GM:
+                  if(drumchan)
+                  {
+                    QList<dumb_patchlist_entry_t> tmp;
+                    tmp.push_back(dumb_patchlist_entry_t(0,-1,-1));
+                  }
+                  else
+                    tmask = 1;
+                  break;
+            default:
+                  hb    = true;     // MSB bank matters
+                  lb    = true;     // LSB bank matters
+                  break;
+            }
+      
+      
+      QList<dumb_patchlist_entry_t> tmp;
+      
+      for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
+            const PatchList& pl = (*i)->patches;
+            for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
+                  const Patch* mp = *ipl;
+                  if ((mp->typ & tmask) && 
+                      ((drum && mode != MT_GM) || 
+                      (mp->drum == drumchan)) )  
+                  {
+                    int prog = mp->prog;
+                    int lbank = (mp->lbank==-1 || !lb) ? -1 : mp->lbank;
+                    int hbank = (mp->hbank==-1 || !hb) ? -1 : mp->hbank;
+                    tmp.push_back(dumb_patchlist_entry_t(prog,lbank,hbank));
+                  }
+            }
+      }
+      
+      return tmp;
+      }
+
+
 //---------------------------------------------------------
 //   populatePatchPopup
 //---------------------------------------------------------

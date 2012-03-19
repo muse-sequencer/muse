@@ -33,6 +33,7 @@
 #include "audio.h"
 #include "globaldefs.h"
 #include "route.h"
+#include "limits.h"
 
 namespace MusECore {
 
@@ -1128,6 +1129,82 @@ void Track::writeRouting(int level, Xml& xml) const
           xml.etag(level--, "Route");
         }
       }
+}
+
+int MidiTrack::getFirstControllerValue(int ctrl, int def)
+{
+  int val=def;
+  unsigned tick=-1; // maximum integer
+  
+  for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
+  {
+    Part* part=pit->second;
+    if (part->tick() > tick) break; // ignore this and the rest. we won't find anything new.
+    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    {
+      if (eit->first+part->tick() >= tick) break;
+      if (eit->first > part->lenTick()) break; // ignore events past the end of the part
+      // else if (eit->first+part->tick() < tick) and
+      if (eit->second.type()==Controller && eit->second.dataA()==ctrl)
+      {
+        val = eit->second.dataB();
+        tick = eit->first+part->tick();
+        break;
+      }
+    }
+  }
+
+  return val;
+}
+
+int MidiTrack::getControllerChangeAtTick(int tick, int ctrl, int def)
+{
+  for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
+  {
+    Part* part=pit->second;
+    if (part->tick() > tick) break; // ignore this and the rest. we'd find nothing any more
+    if (part->endTick() < tick) continue; // ignore only this.
+    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    {
+      if (eit->first+part->tick() > tick) break; // we won't find anything in this part from now on.
+      if (eit->first > part->lenTick()) break; // ignore events past the end of the part
+      if (eit->first+part->tick() < tick) continue; // ignore only this
+      
+      // else if (eit->first+part->tick() == tick) and
+      if (eit->second.type()==Controller && eit->second.dataA()==ctrl)
+        return eit->second.dataB();
+    }
+  }
+
+  return def;
+}
+
+// returns the tick where this CC gets overriden by a new one
+// returns -1 for "never"
+unsigned MidiTrack::getControllerValueLifetime(int tick, int ctrl) 
+{
+  unsigned result=UINT_MAX;
+  
+  for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
+  {
+    Part* part=pit->second;
+    if (part->tick() > result) break; // ignore this and the rest. we won't find anything new.
+    if (part->endTick() < tick) continue; // ignore only this part, we won't find anything there.
+    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    {
+      if (eit->first+part->tick() >= result) break;
+      if (eit->first > part->lenTick()) break; // ignore events past the end of the part
+      // else if (eit->first+part->tick() < result) and
+      if (eit->first+part->tick() > tick &&
+          eit->second.type()==Controller && eit->second.dataA()==ctrl)
+      {
+        result = eit->first+part->tick();
+        break;
+      }
+    }
+  }
+
+  return result;
 }
 
 } // namespace MusECore

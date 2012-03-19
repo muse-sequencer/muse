@@ -83,6 +83,8 @@
 #include "tools.h"
 #include "widgets/unusedwavefiles.h"
 #include "functions.h"
+#include "songpos_toolbar.h"
+#include "sig_tempo_toolbar.h"
 
 namespace MusECore {
 extern void initMidiSynth();
@@ -664,6 +666,23 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       // when adding a toolbar to the main window, remember adding it to
       // either the requiredToolbars or optionalToolbars list!
 
+      QToolBar* songpos_tb;
+      songpos_tb = addToolBar(tr("Song Position"));
+      songpos_tb->setObjectName("Song Position");
+      songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
+      songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+      songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+      
+      QToolBar* tempo_tb;
+      tempo_tb = addToolBar(tr("Tempo"));
+      tempo_tb->setObjectName("Tempo");
+      tempo_tb->addWidget(new MusEGui::TempoToolbarWidget(tempo_tb));
+      
+      QToolBar* sig_tb;
+      sig_tb = addToolBar(tr("Signature"));
+      sig_tb->setObjectName("Signature");
+      sig_tb->addWidget(new MusEGui::SigToolbarWidget(tempo_tb));
+      
       tools = addToolBar(tr("File Buttons"));
       tools->setObjectName("File Buttons");
       tools->addAction(fileNewAction);
@@ -684,6 +703,9 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       panicToolbar->addAction(MusEGlobal::panicAction);
 
       requiredToolbars.push_back(tools);
+      optionalToolbars.push_back(songpos_tb);
+      optionalToolbars.push_back(sig_tb);
+      optionalToolbars.push_back(tempo_tb);
       optionalToolbars.push_back(undoToolbar);
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);
@@ -895,13 +917,10 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
 
 
       arrangerView = new MusEGui::ArrangerView(this);
-      arrangerView->shareToolsAndMenu(true);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(arrangerView);
       arrangerView->hide();
       _arranger=arrangerView->getArranger();
-      
-      arrangerView->setIsMdiWin(true);
       
       
       //---------------------------------------------------

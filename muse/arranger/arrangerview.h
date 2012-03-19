@@ -125,7 +125,8 @@ class ArrangerView : public TopWin
     void globalInsertSel();
     void globalSplitSel();
     void cmd(int);
-                void addNewTrack(QAction* action);
+    void addNewTrack(QAction* action);
+    void configCustomColumns();
 
 	signals:
 		void isDeleting(MusEGui::TopWin*);
@@ -153,7 +154,7 @@ class ArrangerView : public TopWin
 		void writeStatus(int level, MusECore::Xml& xml) const;
 		void readStatus(MusECore::Xml& xml);
 		static void readConfiguration(MusECore::Xml&);
-		static void writeConfiguration(int, MusECore::Xml&);
+		void writeConfiguration(int, MusECore::Xml&);
 };
 
 }  // namespace MusEGui

@@ -24,6 +24,7 @@
 #define __ARRANGER_H__
 
 #include <vector>
+#include <QString>
 
 #include <QScrollBar>
 #include <QResizeEvent>
@@ -111,6 +112,8 @@ class ScrollBar : public QScrollBar {
 class Arranger : public QWidget {
       Q_OBJECT
 
+      static QString header_state;
+
       int _quant, _raster;
       PartCanvas* canvas;
       ScrollScale* hscroll;
@@ -125,6 +128,7 @@ class Arranger : public QWidget {
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
+      QWidget* tracklist;
       TLLayout* tgrid;
 
       MusECore::Track* selected;
@@ -184,10 +188,29 @@ class Arranger : public QWidget {
       void updateTrackInfo(int flags);
       void configChanged();
       void controllerChanged(MusECore::Track *t);
+      void updateTListHeader();
 
    public:
       enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
              CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_INSERT_EMPTYMEAS };
+      
+      struct custom_col_t
+      {
+        enum affected_pos_t {AFFECT_BEGIN, AFFECT_CPOS};
+
+        int ctrl;
+        QString name;
+        affected_pos_t affected_pos;
+        
+        custom_col_t(int c, QString n, affected_pos_t a=AFFECT_BEGIN)
+        {
+          ctrl=c;
+          name=n;
+          affected_pos=a;
+        }
+      };
+      static std::vector<custom_col_t> custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns
+      static std::vector<custom_col_t> new_custom_columns; //and instead let the arranger update without restarting muse!
 
       Arranger(ArrangerView* parent, const char* name = 0);
 
@@ -197,6 +220,11 @@ class Arranger : public QWidget {
       
       void writeStatus(int level, MusECore::Xml&);
       void readStatus(MusECore::Xml&);
+      void writeConfiguration(int level, MusECore::Xml&);
+      static void readConfiguration(MusECore::Xml&);
+      static void writeCustomColumns(int level, MusECore::Xml&);
+      static void readCustomColumns(MusECore::Xml&);
+      static custom_col_t readOneCustomColumn(MusECore::Xml&);
 
       MusECore::Track* curTrack() const { return selected; }
       void cmd(int);

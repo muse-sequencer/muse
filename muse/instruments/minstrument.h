@@ -80,6 +80,45 @@ struct SysEx {
       unsigned char* data;
       };
 
+struct dumb_patchlist_entry_t
+{
+  int prog;
+  int lbank;
+  int hbank; // "-1" means "unused"
+  
+  dumb_patchlist_entry_t(int p, int l, int h)
+  {
+    prog=p;
+    lbank=l;
+    hbank=h;
+  }
+  
+  bool operator<(const dumb_patchlist_entry_t& other) const
+  {
+    if (hbank < other.hbank) return true;
+    if (hbank > other.hbank) return false;
+    if (lbank < other.lbank) return true;
+    if (lbank > other.lbank) return false;
+    return (prog < other.prog);
+  }
+  
+  bool operator>(const dumb_patchlist_entry_t& other) const
+  {
+    return other < *this;
+  }
+  
+  bool operator==(const dumb_patchlist_entry_t& other) const
+  {
+    return (prog==other.prog && lbank==other.lbank && hbank==other.hbank);
+  }
+  
+  bool operator!=(const dumb_patchlist_entry_t& other) const
+  {
+    return (!(*this==other));
+  }
+};
+
+
 //---------------------------------------------------------
 //   MidiInstrument
 //---------------------------------------------------------
@@ -122,6 +161,9 @@ class MidiInstrument {
       const QList<SysEx*>& sysex() const     { return _sysex; }
       void removeSysex(SysEx* sysex)         { _sysex.removeAll(sysex); }
       void addSysex(SysEx* sysex)            { _sysex.append(sysex); }
+      QList<dumb_patchlist_entry_t> getPatches(int channel, MType songType, bool drum);
+      unsigned getNextPatch(int channel, unsigned patch, MType songType, bool drum);
+      unsigned getPrevPatch(int channel, unsigned patch, MType songType, bool drum);
       
       EventList* midiInit() const            { return _midiInit; }
       EventList* midiReset() const           { return _midiReset; }
