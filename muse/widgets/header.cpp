@@ -44,7 +44,7 @@ void Header::readStatus(MusECore::Xml& xml)
                 case MusECore::Xml::End:
                       return;
                 case MusECore::Xml::Text:
-                      setStatus(tag);
+                      restoreState(QByteArray::fromHex(tag.toAscii()));
                       break;
                 case MusECore::Xml::TagStart:
                       xml.unknown("Header");
@@ -58,38 +58,6 @@ void Header::readStatus(MusECore::Xml& xml)
           }
 }
 
-void Header::setStatus(QString status)
-{
-    QStringList l = status.split(QString(" "), QString::SkipEmptyParts);
-    int index = count() -1;
-    for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-          int logialIdx=abs((*it).toInt());
-          bool isHidden = ((*it).toInt() < 0);
-          int section = visualIndex(logialIdx - (isHidden? 1:0));
-          moveSection(section, index);
-          if (isHidden)
-            hideSection(logialIdx-1);
-          else
-            showSection(logialIdx);
-          --index;
-    }
-
-    // loop again looking for missing indexes
-    for (int i =0; i < count(); i++) {
-        bool foundIt=false;
-        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-          int id=((*it).toInt());
-          if ( id == i || i == -1 - id )
-              foundIt=true;
-        }
-        if (foundIt == false) {
-          int section = visualIndex(i);
-          moveSection(section, i);
-          //printf("Adding missing i %d index %d section %d!\n", i, index, section);
-        }
-    }
-}
-
 //---------------------------------------------------------
 //   writeStatus
 //---------------------------------------------------------
@@ -97,25 +65,9 @@ void Header::setStatus(QString status)
 void Header::writeStatus(int level, MusECore::Xml& xml) const
       {
       xml.nput(level, "<%s> ", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
-      xml.nput("%s", getStatus().toLatin1().constData());
+      xml.nput("%s", saveState().toHex().constData());
       xml.put("</%s>", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
       }
-
-QString Header::getStatus() const
-{
-  QString temp="";
-  
-  int n = count();
-  for (int i = n-1; i >= 0; --i)
-  {
-    if (isSectionHidden(logicalIndex(i)))
-      temp+=QString::number(-logicalIndex(i)-1)+" "; // hidden is stored as negative value starting from -1
-    else
-      temp+=QString::number(logicalIndex(i))+" ";
-  }
-  
-  return temp;
-}
 
 //---------------------------------------------------------
 //   Header

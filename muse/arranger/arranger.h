@@ -112,7 +112,7 @@ class ScrollBar : public QScrollBar {
 class Arranger : public QWidget {
       Q_OBJECT
 
-      static QString header_state;
+      static QByteArray header_state;
 
       int _quant, _raster;
       PartCanvas* canvas;
@@ -188,7 +188,6 @@ class Arranger : public QWidget {
       void updateTrackInfo(int flags);
       void configChanged();
       void controllerChanged(MusECore::Track *t);
-      void updateTListHeader();
 
    public:
       enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,

@@ -4697,7 +4697,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * 
  * CURRENT TODO
- *   o column's widths aren't stored into configuration. fix that.
  * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
  *
  * IMPORTANT TODO

@@ -79,7 +79,7 @@ void ScrollBar::redirectedWheelEvent(QWheelEvent* e)
 
 std::vector<Arranger::custom_col_t> Arranger::custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns
 std::vector<Arranger::custom_col_t> Arranger::new_custom_columns; //and instead let the arranger update without restarting muse!
-QString Arranger::header_state;
+QByteArray Arranger::header_state;
 
 void Arranger::writeCustomColumns(int level, MusECore::Xml& xml)
 {
@@ -371,10 +371,44 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       ib->setFocusPolicy(Qt::NoFocus);
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
       
-      list=NULL;
-      header=NULL;
-      tgrid=NULL;
-      updateTListHeader();
+      // set up the header
+      header = new Header(tracklist, "header");
+      header->setFixedHeight(30);
+
+      QFontMetrics fm1(header->font());
+      int fw = 8;
+
+      header->setColumnLabel(tr("R"), COL_RECORD, fm1.width('R')+fw);
+      header->setColumnLabel(tr("M"), COL_MUTE, fm1.width('M')+fw);
+      header->setColumnLabel(tr("S"), COL_SOLO, fm1.width('S')+fw);
+      header->setColumnLabel(tr("C"), COL_CLASS, fm1.width('C')+fw);
+      header->setColumnLabel(tr("Track"), COL_NAME, 100);
+      header->setColumnLabel(tr("Port"), COL_OPORT, 60);
+      header->setColumnLabel(tr("Ch"), COL_OCHANNEL, 30);
+      header->setColumnLabel(tr("T"), COL_TIMELOCK, fm1.width('T')+fw);
+      header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
+      header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
+      for (unsigned i=0;i<custom_columns.size();i++)
+        header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
+      header->setResizeMode(COL_RECORD, QHeaderView::Fixed);
+      header->setResizeMode(COL_MUTE, QHeaderView::Fixed);
+      header->setResizeMode(COL_SOLO, QHeaderView::Fixed);
+      header->setResizeMode(COL_CLASS, QHeaderView::Fixed);
+      header->setResizeMode(COL_NAME, QHeaderView::Interactive);
+      header->setResizeMode(COL_OPORT, QHeaderView::Interactive);
+      header->setResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
+      header->setResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
+      header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
+      header->setResizeMode(COL_CLEF, QHeaderView::Interactive);
+      for (unsigned i=0;i<custom_columns.size();i++)
+        header->setResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
+
+      setHeaderToolTips();
+      setHeaderWhatsThis();
+      header->setMovable (true);
+      header->restoreState(header_state);
+
+
       list = new TList(header, tracklist, "tracklist");
       
       // Do this now that the list is available.
@@ -535,65 +569,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 //        hscroll->setRange(s, e);
 //}
 
-
-void Arranger::updateTListHeader()
-{
-  if (header)
-  {
-    header_state=header->getStatus();
-    delete header;
-  }
-
-  header = new Header(tracklist, "header");
-
-  header->setFixedHeight(30);
-
-  QFontMetrics fm1(header->font());
-  int fw = 8;
-
-  header->setColumnLabel(tr("R"), COL_RECORD, fm1.width('R')+fw);
-  header->setColumnLabel(tr("M"), COL_MUTE, fm1.width('M')+fw);
-  header->setColumnLabel(tr("S"), COL_SOLO, fm1.width('S')+fw);
-  header->setColumnLabel(tr("C"), COL_CLASS, fm1.width('C')+fw);
-  header->setColumnLabel(tr("Track"), COL_NAME, 100);
-  header->setColumnLabel(tr("Port"), COL_OPORT, 60);
-  header->setColumnLabel(tr("Ch"), COL_OCHANNEL, 30);
-  header->setColumnLabel(tr("T"), COL_TIMELOCK, fm1.width('T')+fw);
-  header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
-  header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
-  for (unsigned i=0;i<custom_columns.size();i++)
-    header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
-  header->setResizeMode(COL_RECORD, QHeaderView::Fixed);
-  header->setResizeMode(COL_MUTE, QHeaderView::Fixed);
-  header->setResizeMode(COL_SOLO, QHeaderView::Fixed);
-  header->setResizeMode(COL_CLASS, QHeaderView::Fixed);
-  header->setResizeMode(COL_NAME, QHeaderView::Interactive);
-  header->setResizeMode(COL_OPORT, QHeaderView::Interactive);
-  header->setResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
-  header->setResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
-  header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
-  header->setResizeMode(COL_CLEF, QHeaderView::Interactive);
-  for (unsigned i=0;i<custom_columns.size();i++)
-    header->setResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
-
-  setHeaderToolTips();
-  setHeaderWhatsThis();
-  header->setMovable (true);
-  header->setStatus(header_state);
-
-  if (list)
-  {
-    list->setHeader(header);  
-    connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
-    connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
-    connect(header, SIGNAL(sectionMoved(int,int,int)), this, SLOT(headerMoved()));
-  }
-
-  if (tgrid)
-  {
-    tgrid->wadd(2, header);
-  }
-}
 
 //---------------------------------------------------------
 //   setTime
@@ -806,7 +781,7 @@ void Arranger::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arranger");
       writeCustomColumns(level, xml);
-      xml.strTag(level, "tlist_header", header->getStatus());
+      xml.strTag(level, "tlist_header", header->saveState().toHex().constData());
       xml.etag(level, "arranger");
       }
 
@@ -825,7 +800,7 @@ void Arranger::readConfiguration(MusECore::Xml& xml)
                         return;
                   case MusECore::Xml::TagStart:
                         if (tag == "tlist_header")
-                              header_state = xml.parse1();
+                              header_state = QByteArray::fromHex(xml.parse1().toAscii());
                         else if (tag == "custom_columns")
                               readCustomColumns(xml);
                         else

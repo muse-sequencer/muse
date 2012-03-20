@@ -1,4 +1,7 @@
 20.03.2012:
+        - Header::write/readStatus now uses the save/restoreState functions,
+          simplifying the code and storing column widths as well (flo93)
+        - removed unused and non-working updateTListHeader function (flo93)
         - PixmapButton (red LEDs, and Delta Mode): Eat up right-clicks. (Tim)
 19.03.2012:
         - added customizable columns to the arranger (cherry-pick from trunk) (flo93)
@@ -6,6 +9,8 @@
         - added tempo- and sig-toolbar (cherry-pick from trunk) (flo93)
         - moved redundant toolbar generation (undo etc) from the various
           topwins into TopWin (cherry-pick from trunk) (flo93)
+        - column state is now stored into the global config, not
+          into the song file (flo93)
         - Song load: Arranger MDI window: Fixed size restoration. (Tim)
           In TopWin::readStatus(), if mdisubwin is maximized, restore it before setting pos and height.
         - Changed reporting of bad timing a bit to possibly make it clearer what the problem is 
