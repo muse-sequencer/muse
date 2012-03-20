@@ -4,7 +4,8 @@
         - Header::write/readStatus now uses the save/restoreState functions,
           simplifying the code and storing column widths as well (flo93)
         - removed unused and non-working updateTListHeader function (flo93)
-        - PixmapButton (red LEDs, and Delta Mode): Eat up right-clicks. (Tim)
+        - PixmapButton (red LEDs, and Delta Mode): Eat up context menu events. (Tim)
+        - Class SpinBox, DoubleSpinBox, Dentry: Change to consistent "ctrl-double-click on/off". (Tim)
 19.03.2012:
         - added customizable columns to the arranger (cherry-pick from trunk) (flo93)
         - added song-position toolbar (cherry-pick from trunk) (flo93)

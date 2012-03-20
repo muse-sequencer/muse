@@ -235,6 +235,8 @@ void Dentry::mouseDoubleClickEvent(QMouseEvent* event)
       QLineEdit::setFrame(true);
       update();
       emit doubleClicked(_id);
+      if(event->modifiers() & Qt::ControlModifier)
+        emit ctrlDoubleClicked(_id);
       }
 
 //---------------------------------------------------------

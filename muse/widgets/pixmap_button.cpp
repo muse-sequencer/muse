@@ -147,11 +147,6 @@ void PixmapButton::paintEvent(QPaintEvent* e)
 
 void PixmapButton::mousePressEvent(QMouseEvent* e)
 {
-  if(e->button() != Qt::LeftButton)
-  {  
-    e->setAccepted(true);
-    return;
-  }
   if(_checkable)
     _checked = !_checked;
   update();
@@ -166,15 +161,15 @@ void PixmapButton::mousePressEvent(QMouseEvent* e)
 
 void PixmapButton::mouseReleaseEvent(QMouseEvent* e)
 {
-  if(e->button() != Qt::LeftButton)
-  {
-    e->setAccepted(true);
-    return;
-  }
   emit clicked(_checked);
   
   //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desireable with many small buttons... 
   QWidget::mouseReleaseEvent(e); // Hm, need this so menus can close.
+}
+
+void PixmapButton::contextMenuEvent(QContextMenuEvent * e)
+{
+  e->accept();
 }
 
 } // MusEGui

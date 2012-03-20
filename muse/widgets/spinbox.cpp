@@ -28,21 +28,21 @@
 
 namespace MusEGui {
 
-//void SpinBoxLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
-//{
-//  QLineEdit::mouseDoubleClickEvent(e);
-//  emit doubleClicked();
-//  if((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::ControlModifier))
-//    emit ctrlDoubleClicked();
-//}
-
-void SpinBoxLineEdit::mousePressEvent(QMouseEvent* e)
+void SpinBoxLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
 {
-  QLineEdit::mousePressEvent(e);
-  //selectAll();
+  QLineEdit::mouseDoubleClickEvent(e);
+  emit doubleClicked();
   if((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::ControlModifier))
-    emit ctrlClicked();
+    emit ctrlDoubleClicked();
 }
+
+//void SpinBoxLineEdit::mousePressEvent(QMouseEvent* e)
+//{
+//  QLineEdit::mousePressEvent(e);
+  //selectAll();
+//  if((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::ControlModifier))
+//    emit ctrlClicked();
+//}
 
 //---------------------------------------------------------
 //   SpinBox
@@ -56,9 +56,9 @@ SpinBox::SpinBox(QWidget* parent)
   setLineEdit(le);
   setKeyboardTracking(false);
   
-  //connect(le, SIGNAL(doubleClicked()),     this, SIGNAL(doubleClicked()));
-  //connect(le, SIGNAL(ctrlDoubleClicked()), this, SIGNAL(ctrlDoubleClicked()));
-  connect(le, SIGNAL(ctrlClicked()), this, SIGNAL(ctrlClicked()));
+  connect(le, SIGNAL(doubleClicked()),     this, SIGNAL(doubleClicked()));
+  connect(le, SIGNAL(ctrlDoubleClicked()), this, SIGNAL(ctrlDoubleClicked()));
+  //connect(le, SIGNAL(ctrlClicked()), this, SIGNAL(ctrlClicked()));
 }
 
 SpinBox::SpinBox(int minValue, int maxValue, int step, QWidget* parent)
@@ -71,9 +71,9 @@ SpinBox::SpinBox(int minValue, int maxValue, int step, QWidget* parent)
   setSingleStep(step);
   setKeyboardTracking(false);
 
-  //connect(le, SIGNAL(doubleClicked()),     this, SIGNAL(doubleClicked()));
-  //connect(le, SIGNAL(ctrlDoubleClicked()), this, SIGNAL(ctrlDoubleClicked()));
-  connect(le, SIGNAL(ctrlClicked()), this, SIGNAL(ctrlClicked()));
+  connect(le, SIGNAL(doubleClicked()),     this, SIGNAL(doubleClicked()));
+  connect(le, SIGNAL(ctrlDoubleClicked()), this, SIGNAL(ctrlDoubleClicked()));
+  //connect(le, SIGNAL(ctrlClicked()), this, SIGNAL(ctrlClicked()));
 }
 
 void SpinBox::keyPressEvent(QKeyEvent* ev)
