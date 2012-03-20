@@ -175,18 +175,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>Midi controller number low byte (* means drum controller)</string>
+             <string>Midi controller number low byte</string>
             </property>
             <property name="whatsThis">
-             <string>Midi controller number low byte. 
-If low byte is * then the controller is a 
- 'drum controller'. For drum tracks and 
- GS/XG type songs and instruments.
-Allows controllers for each instrument in 
- Muse's drum map. The low byte will be 
- replaced by the 'ANote' in the drum map.
-Examples: The GS and XG instruments' 
- Drum controllers.</string>
+             <string>Midi controller number low byte</string>
             </property>
             <property name="specialValueText">
              <string comment="wild card">*</string>
