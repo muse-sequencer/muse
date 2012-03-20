@@ -122,7 +122,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       
       _dl = new MusEGui::DoubleLabel(-1.0, 0.0, +127.0);
       _dl->setPrecision(0);
-      _dl->setToolTip(tr("double click on/off"));
+      _dl->setToolTip(tr("ctrl-double-click on/off"));
       _dl->setSpecialText(tr("off"));
       _dl->setFont(MusEGlobal::config.fonts[1]);
       _dl->setBackgroundRole(QPalette::Mid);
@@ -135,7 +135,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       connect(_knob, SIGNAL(sliderMoved(double,int)), SLOT(ctrlChanged(double)));
       connect(_knob, SIGNAL(sliderRightClicked(const QPoint&, int)), SLOT(ctrlRightClicked(const QPoint&, int)));
       connect(_dl, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
-      connect(_dl, SIGNAL(doubleClicked(int)), SLOT(labelDoubleClicked()));
+      connect(_dl, SIGNAL(ctrlDoubleClicked(int)), SLOT(labelDoubleClicked()));
       
       bbox->addStretch();
       bbox->addWidget(selCtrl);
