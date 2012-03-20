@@ -1,4 +1,6 @@
 20.03.2012:
+        - arranger's part canvas now doesn't display thin slivers for
+          parts of hidden tracks (flo93)
         - Header::write/readStatus now uses the save/restoreState functions,
           simplifying the code and storing column widths as well (flo93)
         - removed unused and non-working updateTListHeader function (flo93)

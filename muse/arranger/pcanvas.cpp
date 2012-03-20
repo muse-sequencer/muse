@@ -215,7 +215,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   emit dclickPart(((NPart*)(curItem))->track());
                   }
             }
-      //
+      
       // double click creates new part between left and
       // right mark
 
@@ -226,7 +226,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
             int y = event->y();
             for (it = tl->begin(); it != tl->end(); ++it) {
                   int h = (*it)->height();
-                  if (y >= yy && y < (yy + h))
+                  if (y >= yy && y < (yy + h) && (*it)->isVisible())
                         break;
                   yy += h;
                   }
@@ -448,6 +448,8 @@ void PartCanvas::partsChanged()
       
       items.clearDelete();
       for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+         if ((*t)->isVisible()) //ignore parts from hidden tracks
+         {
             MusECore::PartList* pl = (*t)->parts();
             for (MusECore::iPart i = pl->begin(); i != pl->end(); ++i) {
                   MusECore::Part* part = i->second;
@@ -457,9 +459,8 @@ void PartCanvas::partsChanged()
                   if (np->part()->sn() == sn)
                     curItem=np;
                   
-                  if (i->second->selected()) {
+                  if (i->second->selected())
                         selectItem(np, true);
-                        }
                   
                   // Check for touching borders. p4.0.29
                   MusECore::Part* pp;
@@ -475,10 +476,11 @@ void PartCanvas::partsChanged()
                     if(pp->tick() == part->endTick())
                       np->rightBorderTouches = true;
                   }      
-                }
             }
-      redraw();
+         }
       }
+      redraw();
+}
 
 //---------------------------------------------------------
 //   updateSelection
