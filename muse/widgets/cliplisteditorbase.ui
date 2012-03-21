@@ -55,7 +55,7 @@
           </column>
           <column>
             <property name="text">
-              <string>Start</string>
+              <string>Samplerate</string>
             </property>
             <property name="clickable">
               <bool>true</bool>
