@@ -1305,7 +1305,7 @@
       </Route>
     <Route channel="1">
       <source name="Out 1"/>
-      <dest type="1" name="system:playback_1"/>
+      <dest type="1" name="system:playback_2"/>
       </Route>
     <Route channel="0" channels="2">
       <source name="fluid-1"/>
