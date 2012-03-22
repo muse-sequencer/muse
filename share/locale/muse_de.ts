@@ -14616,7 +14616,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
     <message>
         <location line="+4"/>
         <source>&amp;Pitch colors</source>
-        <translation>Farme nach &amp;Tonhöhe</translation>
+        <translation type="unfinished">Farbe nach &amp;Tonhöhe</translation>
     </message>
     <message>
         <location line="+4"/>
