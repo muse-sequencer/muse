@@ -496,10 +496,10 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
                   zip += QString(" > \"");
             //zip += name;
             zip = zip + name + QString("\"");    // p4.0.40
-            fp  = popen(zip.toAscii().data(), mode);
+            fp  = popen(zip.toLocal8Bit().data(), mode);
             }
       else {
-            fp = fopen(name.toAscii().data(), mode);
+            fp = fopen(name.toLocal8Bit().data(), mode);
             }
       if (fp == 0 && !noError) {
             QString s(QWidget::tr("Open File\n%1\nfailed: %2").arg(name).arg(strerror(errno)));
