@@ -1957,16 +1957,29 @@ void MusE::startSongInfo(bool editable)
 void MusE::showDidYouKnowDialog()
       {
       if ((bool)MusEGlobal::config.showDidYouKnow == true) {
-            MusEGui::DidYouKnowWidget dyk;
-            dyk.tipText->setText("To get started with MusE why don't you try some demo songs available at http://demos.muse-sequencer.org/");
-            dyk.show();
-            if( dyk.exec()) {
-                  if (dyk.dontShowCheckBox->isChecked()) {
-                        MusEGlobal::config.showDidYouKnow=false;
-                        MusEGlobal::muse->changeConfig(true);    // save settings
-                        }
-                  }
-            }
+        MusEGui::DidYouKnowWidget dyk;
+
+        QFile file(MusEGlobal::museGlobalShare + "/didyouknow.txt");
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+          printf("could not open didyouknow.txt!\n");
+          return;
+        }
+
+        while (!file.atEnd())  {
+          dyk.tipList.append(file.readLine());
+        }
+
+        //dyk.tipList.append(tr("To get started with MusE why don't you visit the tutorials at <br><a href=\"http://muse-sequencer.org\">http://muse-sequencer.org/index.php/Support</a>"));
+        //dyk.tipList.append(tr("MusE can act as a realtime audio mixer if you connect it to jack!"));
+
+        dyk.show();
+        if( dyk.exec()) {
+              if (dyk.dontShowCheckBox->isChecked()) {
+                    MusEGlobal::config.showDidYouKnow=false;
+                    MusEGlobal::muse->changeConfig(true);    // save settings
+                    }
+              }
+        }
       }
 //---------------------------------------------------------
 //   startDefineController

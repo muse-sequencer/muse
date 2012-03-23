@@ -1,3 +1,5 @@
+23.03.2012:
+        - Made the DidYouKnow dialog actually work, add lines to share/didyouknow.txt (rj)
 20.03.2012:
         - arranger's part canvas now doesn't display thin slivers for
           parts of hidden tracks (flo93)
