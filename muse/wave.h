@@ -124,9 +124,13 @@ class SndFileR {
       SndFileR() { sf = 0; }
       SndFileR(SndFile* _sf);
       SndFileR(const SndFileR& ed);
+      SndFileR& operator=(SndFile* ptr);
       SndFileR& operator=(const SndFileR& ed);
       bool operator==(const SndFileR& c) const { return sf == c.sf; }
       bool operator==(SndFile* c) const { return sf == c; }
+      SndFile* operator->() { return sf; }
+      const SndFile* operator->() const { return sf; }
+      operator bool() { return sf!=NULL; }
       ~SndFileR();
       int getRefCount() const { return sf->refCount; }
       bool isNull() const     { return sf == 0; }
@@ -278,7 +282,7 @@ typedef ClipList::const_iterator ciClip;
 extern ClipBase* readClip(Xml& xml);
 #endif
 
-extern SndFile* getWave(const QString& name, bool readOnlyFlag);
+extern SndFileR getWave(const QString& name, bool readOnlyFlag);
 
 } // namespace MusECore
 

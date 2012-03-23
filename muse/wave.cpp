@@ -71,6 +71,9 @@ SndFile::SndFile(const QString& name)
 
 SndFile::~SndFile()
       {
+      if (MusEGlobal::debugMsg)  
+        printf("===== DEBUG ===== ~SndFile()\n");
+        
       if (openFlag)
             close();
       for (iSndFile i = sndFiles.begin(); i != sndFiles.end(); ++i) {
@@ -611,14 +614,14 @@ SndFile* SndFileList::search(const QString& name)
             if ((*i)->path() == name)
                   return *i;
             }
-      return 0;
+      return NULL;
       }
 
 //---------------------------------------------------------
-//   getSnd
+//   getWave
 //---------------------------------------------------------
 
-SndFile* getWave(const QString& inName, bool readOnlyFlag)
+SndFileR getWave(const QString& inName, bool readOnlyFlag)
       {
       QString name = inName;
 
@@ -639,7 +642,7 @@ SndFile* getWave(const QString& inName, bool readOnlyFlag)
             if (!QFile::exists(name)) {
                   fprintf(stderr, "wave file <%s> not found\n",
                      name.toLatin1().constData());
-                  return 0;
+                  return NULL;
                   }
             f = new SndFile(name);
             bool error;
@@ -878,7 +881,7 @@ void ClipBase::write(int level, Xml& xml) const
 
 ClipBase* readClip(Xml& xml)
       {
-      SndFile* f = 0;
+      SndFileR f = 0;
       QString name;
       unsigned spos = 0;
       int len = 0;
@@ -969,8 +972,8 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       if (MusEGlobal::debugMsg)
           printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
 
-      MusECore::SndFile* f = track->recFile();
-      if (f == 0) {
+      MusECore::SndFileR f = track->recFile();
+      if (f.isNull()) {
             printf("cmdAddRecordedWave: no snd file for track <%s>\n",
                track->name().toLatin1().constData());
             return;
@@ -987,9 +990,9 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       if(s.tick() >= e.tick())
       {
         QString st = f->path();
-        delete f;
         // The function which calls this function already does this immediately after. But do it here anyway.
-        track->setRecFile(0);
+        track->setRecFile(NULL); // upon "return", f is removed from the stack, the WaveTrack::_recFile's
+                                 // counter has dropped by 2 and _recFile will probably deleted then
         remove(st.toLatin1().constData());
         if(MusEGlobal::debugMsg)
           printf("Song::cmdAddRecordedWave: remove file %s - start=%d end=%d\n", st.toLatin1().constData(), s.tick(), e.tick());
@@ -1009,8 +1012,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
 
       // create Event
       MusECore::Event event(MusECore::Wave);
-      MusECore::SndFileR sf(f);
-      event.setSndFile(sf);
+      event.setSndFile(f);
       // We are done with the _recFile member. Set to zero. The function which 
       //  calls this function already does this immediately after. But do it here anyway.
       track->setRecFile(0);
@@ -1067,17 +1069,22 @@ SndFileR::SndFileR(const SndFileR& ed)
 //   operator=
 //---------------------------------------------------------
 
-SndFileR& SndFileR::operator=(const SndFileR& ed)
-      {
-      if (sf == ed.sf)
+SndFileR& SndFileR::operator=(SndFile* ptr)
+{
+      if (sf == ptr)
             return *this;
       if (sf && --(sf->refCount) == 0) {
             delete sf;
             }
-      sf = ed.sf;
+      sf = ptr;
       if (sf)
             (sf->refCount)++;
       return *this;
+}
+
+SndFileR& SndFileR::operator=(const SndFileR& ed)
+      {
+      return operator=(ed.sf);
       }
 
 //---------------------------------------------------------
@@ -1086,19 +1093,12 @@ SndFileR& SndFileR::operator=(const SndFileR& ed)
 
 SndFileR::~SndFileR()
       {
-      if (sf)
-            if (--(sf->refCount) == 0) {
-                delete sf;
-                sf=NULL;
-                }
+      *this=NULL; // decrease the refcounter, maybe delete
       }
 
 void SndFileList::clearDelete()
 {
-      // ~SndFile searches itself on the list (and will find for
-      // sure) and deletes the entry on its own.
-      while (!empty()) 
-            delete *begin();
+  if (MusEGlobal::debugMsg) printf("==== DEBUG ====: SndFileList::clearDelete() called, expecting %i SndFiles to be deleted soon...\n",size());
 }
 
 
@@ -1136,14 +1136,14 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       if (track==NULL)
             track = (MusECore::WaveTrack*)(_arranger->curTrack());
 
-      MusECore::SndFile* f = MusECore::getWave(name, true);
+      MusECore::SndFileR f = MusECore::getWave(name, true);
 
-      if (f == 0) {
+      if (f.isNull()) {
             printf("import audio file failed\n");
             return true;
             }
       int samples = f->samples();
-      if ((unsigned)MusEGlobal::sampleRate !=f->samplerate()) {
+      if ((unsigned)MusEGlobal::sampleRate != f->samplerate()) {
             if(QMessageBox::question(this, tr("Import Wavefile"),
                   tr("This wave file has a samplerate of %1,\n"
                   "as opposed to current setting %2.\n"
@@ -1151,9 +1151,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
                   tr("&Yes"), tr("&No"),
                   QString::null, 0, 1 ))
                   {
-                  if (f->getRefCount() == 0)
-                        delete f;
-                  return true;
+                  return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
                   }
             }
       track->setChannels(f->channels());

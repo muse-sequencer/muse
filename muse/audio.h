@@ -44,7 +44,6 @@ class MidiPort;
 class MidiTrack;
 class Part;
 class PluginI;
-class SndFile;
 class SynthI;
 class Track;
 
@@ -106,7 +105,7 @@ extern const char* seqMsgList[];  // for debug
 
 struct AudioMsg : public ThreadMsg {   // this should be an union
       int serialNo;
-      SndFile* downmix;
+      //SndFile* downmix; // DELETETHIS this is unused and probably WRONG (all SndFiles have been replaced by SndFileRs)
       AudioTrack* snode;
       AudioTrack* dnode;
       Route sroute, droute;

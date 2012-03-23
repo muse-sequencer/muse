@@ -3270,6 +3270,13 @@ void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
       emit activeTopWinChanged(activeTopWin);
     }
   }
+  else if (topwin == currentMenuSharingTopwin)
+  {
+    printf("====== DEBUG ======: topwin's menu got inited AFTER being shared!\n"); // DELETETHIS 2
+    if (!topwin->sharesToolsAndMenu()) printf("======       ======: WTF, now it doesn't share any more?!?\n");
+    setCurrentMenuSharingTopwin(NULL);
+    setCurrentMenuSharingTopwin(topwin);
+  }
 }
 
 void MusE::updateWindowMenu()

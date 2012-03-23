@@ -1,4 +1,15 @@
 23.03.2012:
+        - Fixed invalid reads/writes/deletes when having the cliplist editor open:
+          there was a funny mixture of reference-counting smartpointers and normal,
+          "dumb" pointers, and some pieces of the code relies on the smartpointers
+          to delete stuff automatically (which was correct), other pieces just deleted
+          stuff, regardless of the refcount.
+          now everything using SndFile uses refcounting. HOWEVER this created a MEMORY
+          LEAK: when recording to a wave track (this creates a SndFile, refcount=1),
+          then undoing this (this doesn't delete, but only stashes away the part and
+          so the smart pointer), then opening a new song (this doesn't delete the stashed
+          away part and so the smart pointer, so refcount never drops to zero) the SndFile
+          is never deleted.                                                         (flo93)
         - Made the DidYouKnow dialog actually work, add lines to share/didyouknow.txt (rj)
 20.03.2012:
         - arranger's part canvas now doesn't display thin slivers for

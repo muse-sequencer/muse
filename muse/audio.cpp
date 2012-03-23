@@ -976,10 +976,7 @@ void Audio::recordStop()
         if(ao->recordFlag())
         {            
           MusEGlobal::song->bounceOutput = 0;
-          SndFile* sf = ao->recFile();
-          if (sf)
-                delete sf;              // close
-          ao->setRecFile(0);
+          ao->setRecFile(NULL); // if necessary, this automatically deletes _recFile
           ao->setRecordFlag1(false);
           msgSetRecord(ao, false);
         }

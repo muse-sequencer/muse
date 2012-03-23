@@ -101,7 +101,7 @@ AudioTrack::AudioTrack(TrackType t)
       _sendMetronome = false;
       _prefader = false;
       _efxPipe  = new Pipeline();
-      _recFile  = 0;
+      //_recFile  = 0; //unneeded, _recFile's ctor does this
       _channels = 0;
       _automationType = AUTO_OFF;
       setChannels(2);
@@ -1803,7 +1803,7 @@ bool AudioTrack::setRecordFlag1(bool f)
       if (f == _recordFlag)
             return true;
       if (f) {
-        if (_recFile == 0 && MusEGlobal::song->record()) {
+        if (_recFile.isNull() && MusEGlobal::song->record()) {
           // this rec-enables a track if the global arm already was done
           // the standard case would be that rec-enable be done there
           prepareRecording();
@@ -1819,8 +1819,7 @@ bool AudioTrack::setRecordFlag1(bool f)
               //  recording, the _recFile pointer is made into an event, 
               //  then _recFile is made zero before this function is called.
               QString s = _recFile->path();
-              delete _recFile;
-              setRecFile(0);
+              setRecFile(NULL);
               
               remove(s.toLatin1().constData());
               if(MusEGlobal::debugMsg)
@@ -1843,7 +1842,7 @@ bool AudioTrack::prepareRecording()
       if(MusEGlobal::debugMsg)
         printf("prepareRecording for track %s\n", _name.toLatin1().constData());
 
-      if (_recFile == 0) {
+      if (_recFile.isNull()) {
             //
             // create soundfile for recording
             //

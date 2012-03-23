@@ -30,6 +30,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "wave.h" // for SndFileR
 #include "part.h"
 #include "key.h"
 #include "node.h"
@@ -42,7 +43,6 @@ namespace MusECore {
 class MPEventList;
 class Pipeline;
 class PluginI;
-class SndFile;
 class SynthI;
 class Xml;
 
@@ -322,7 +322,7 @@ class AudioTrack : public Track {
       
       unsigned bufferPos;
       virtual bool getData(unsigned, int, unsigned, float**);
-      SndFile* _recFile;
+      SndFileR _recFile;
       Fifo fifo;                    // fifo -> _recFile
       bool _processed;
       
@@ -353,8 +353,8 @@ class AudioTrack : public Track {
       void mapRackPluginsToControllers();
       void showPendingPluginNativeGuis();
 
-      SndFile* recFile() const           { return _recFile; }
-      void setRecFile(SndFile* sf)       { _recFile = sf;   }
+      SndFileR recFile() const           { return _recFile; }
+      void setRecFile(SndFileR sf)       { _recFile = sf;   }
 
       CtrlListList* controller()         { return &_controller; }
 

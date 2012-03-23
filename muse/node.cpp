@@ -1030,6 +1030,10 @@ void AudioTrack::readVolume(Xml& xml)
 // Removed by T356
 // "recfile" tag not saved anymore
 /*
+
+THIS CODE IS OBSOLETE! _recFile has been changed from SndFile* to SndFileR.
+this code has NOT been adapted!
+
 //---------------------------------------------------------
 //   readRecfile
 //---------------------------------------------------------
