@@ -1,3 +1,5 @@
+24.03.2012:
+        - Changed locale loading to use system setting instead of keyboard setting (rj)
 23.03.2012:
         - Changed file loading to use .toLocal8Bit instead of .toAscii seems to 
           fix issues to load files with local chars like åäö in the name (rj)

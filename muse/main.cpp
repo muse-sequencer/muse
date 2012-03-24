@@ -36,7 +36,7 @@
 #include <QString>
 #include <QStringList>
 #include <QStyle>
-
+#include <iostream>
 
 #include <sys/mman.h>
 #include <alsa/asoundlib.h>
@@ -499,26 +499,27 @@ int main(int argc, char* argv[])
             }
 
       static QTranslator translator(0);
-      QString locale(QApplication::keyboardInputLocale().name());
-      if (locale_override.length())
-            locale = locale_override;
+      QString locale(QLocale::system().name());
+      if (locale_override.length() >0 )
+          locale = locale_override;
       if (locale != "C") {
-            QString loc("muse_");
-            loc += locale;
-            if (translator.load(loc, QString(".")) == false) {
-                  QString lp(MusEGlobal::museGlobalShare);
-                  lp += QString("/locale");
-                  if (translator.load(loc, lp) == false) {
-                        printf("no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
-                        }
-                  }
-            app.installTranslator(&translator);
-            }
+          QString loc("muse_");
+          loc += locale;
+          if (translator.load(loc, QString(".")) == false) {
+                QString lp(MusEGlobal::museGlobalShare);
+                lp += QString("/locale");
+                if (translator.load(loc, lp) == false) {
+                      printf("no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
+                }
+          }
+          app.installTranslator(&translator);
+      }
+      printf("LOCALE %s\n",QLocale::system().name().toLatin1().data());
 
-      if (locale == "de") {
-            printf("locale de\n");
-	    MusEGlobal::hIsB = false;
-            }
+      if (QLocale::system().name() == "de" || locale_override == "de") {
+        printf("locale de - setting override parameter.\n");
+        MusEGlobal::hIsB = false;
+      }
       
       MusEGui::retranslate_function_dialogs();
       
