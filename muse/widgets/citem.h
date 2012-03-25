@@ -27,7 +27,7 @@
 #include <QPoint>
 #include <QRect>
 
-#include "../event.h"
+#include "event.h"
 
 namespace MusECore {
 class Part;

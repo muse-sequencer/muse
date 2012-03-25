@@ -32,7 +32,7 @@
 #include "tools.h"
 #include "header.h"
 #include "shortcuts.h"
-#include "../event.h"
+#include "event.h"
 
 class QCloseEvent;
 class QLabel;

@@ -39,7 +39,7 @@
 #include "midieditor.h"
 #include "ecanvas.h"
 #include "song.h"
-#include "../event.h"
+#include "event.h"
 #include "shortcuts.h"
 #include "audio.h"
 #include "functions.h"

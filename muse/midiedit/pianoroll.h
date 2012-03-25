@@ -33,7 +33,7 @@
 #include "cobject.h"
 #include "midieditor.h"
 #include "tools.h"
-#include "../event.h"
+#include "event.h"
 
 class QAction;
 class QLabel;

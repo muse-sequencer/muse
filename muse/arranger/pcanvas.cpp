@@ -64,7 +64,6 @@
 #include "widgets/pastedialog.h"
 
 #define ABS(x) (abs(x))
-#define exp10(x) exp((x)*log(10))
 
 #define EDITING_FINISHED_TIMEOUT 50 /* in milliseconds */
 

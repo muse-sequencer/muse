@@ -26,7 +26,7 @@
 #include "ui_editnotedialogbase.h"
 #include "ui_editsysexdialogbase.h"
 #include "ui_editctrlbase.h"
-#include "../event.h"
+#include "event.h"
 
 class QDialog;
 class QLabel;

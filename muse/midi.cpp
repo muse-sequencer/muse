@@ -24,7 +24,6 @@
 
 #include <cmath>
 #include <errno.h>
-#include <limits.h>
 
 #include "song.h"
 #include "midi.h"

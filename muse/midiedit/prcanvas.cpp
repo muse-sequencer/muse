@@ -42,7 +42,7 @@
 #include "xml.h"
 #include "prcanvas.h"
 #include "midiport.h"
-#include "../event.h"
+#include "event.h"
 #include "mpevent.h"
 #include "globals.h"
 #include "cmd.h"
