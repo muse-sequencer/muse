@@ -1,3 +1,6 @@
+25.03.2012:
+        - Added "beautifying" frame to the song position toolbar, hope that looks nicer
+          for all :) (rj)
 24.03.2012:
         - Fixed memory leaks in the undo system. Removed unused ModifyTrack action (flo93)
         - Swapped usage of oPart and nPart in the undo system. this was completely

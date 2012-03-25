@@ -33,7 +33,9 @@ namespace MusEGui
 		
 		private:
 			int _raster;
-		
+    protected:
+      virtual void paintEvent(QPaintEvent* ev);
+
 		public:
 			SongPosToolbarWidget(QWidget* parent);
 			
