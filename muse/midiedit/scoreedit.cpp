@@ -542,7 +542,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	apply_velo=true;
 	
 	initTopwinState();
-	MusEGlobal::muse->topwinMenuInited(this);
+	finalizeInit();
 }
 
 void ScoreEdit::init_shortcuts()

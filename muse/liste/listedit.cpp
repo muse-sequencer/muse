@@ -606,7 +606,7 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       
       setWindowTitle("MusE: List Editor");
       
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
       }
 
 //---------------------------------------------------------

@@ -352,7 +352,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
   connect(cb, SIGNAL(selectionChanged()), SLOT(clipboardChanged()));
 
-  MusEGlobal::muse->topwinMenuInited(this);
+  finalizeInit();
 
   // work around for probable QT/WM interaction bug.
   // for certain window managers, e.g xfce, this window is

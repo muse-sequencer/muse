@@ -273,7 +273,7 @@ LMaster::LMaster()
       connect(keyButton, SIGNAL(clicked()), SLOT(insertKey()));
 
       initShortcuts();
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
       }
 
 //---------------------------------------------------------

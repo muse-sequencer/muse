@@ -62,6 +62,7 @@ class TopWin : public QMainWindow
       ToplevelType type() const { return _type; }
       static QString typeName(ToplevelType t);
 
+      bool initalizing() const { return _initalizing; }
       bool deleting() const { return _isDeleting; }
       
       virtual void readStatus(MusECore::Xml&);
@@ -93,6 +94,7 @@ class TopWin : public QMainWindow
       QMdiSubWindow* mdisubwin;
       bool _sharesToolsAndMenu;
       std::list<QToolBar*> _toolbars;
+      bool _initalizing;
 
       void insertToolBar(QToolBar*, QToolBar*);
       void insertToolBarBreak(QToolBar*);
@@ -124,6 +126,7 @@ class TopWin : public QMainWindow
       //  which may cause a crash while deleting.
       bool _isDeleting;  
       
+      void finalizeInit();
       void initTopwinState();
 
   private slots:

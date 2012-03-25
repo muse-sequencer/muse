@@ -1595,7 +1595,7 @@ void MusE::markerClosed()
         if ((*lit)->isVisible() && (*lit)->widget() != markerView)
         {
           if (MusEGlobal::debugMsg)
-            printf("bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toAscii().data());
+            printf("bringing '%s' to front instead of closed marker window\n",(*lit)->widget()->windowTitle().toAscii().data());
 
           bringToFront((*lit)->widget());
 
@@ -3018,6 +3018,14 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
       printf(" old type: %s\n", typeid(*old).name());  
     if(now)                                                  
       printf(" now type: %s\n", typeid(*now).name());  
+    if (dynamic_cast<QMdiSubWindow*>(now)!=0)
+    {
+      QWidget* tmp=dynamic_cast<QMdiSubWindow*>(now)->widget();
+      if (tmp)
+        printf("  subwin contains %p which is a %s\n", tmp, typeid(*tmp).name());
+      else
+        printf("  subwin contains NULL\n");
+    }
     if(qApp->activeWindow())                                                   
       printf(" activeWindow type: %s\n", typeid(*qApp->activeWindow()).name());  
     printf("\n");   
@@ -3083,8 +3091,17 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
   if ( (dynamic_cast<QMdiSubWindow*>(ptr)!=0) &&
        (dynamic_cast<MusEGui::TopWin*>( ((QMdiSubWindow*)ptr)->widget() )!=0) )
   {
-    waitingForTopwin=(MusEGui::TopWin*) ((QMdiSubWindow*)ptr)->widget();
-    return;
+    MusEGui::TopWin* tmp = (MusEGui::TopWin*) ((QMdiSubWindow*)ptr)->widget();
+    if (tmp->initalizing())
+    {
+      waitingForTopwin=tmp;
+      return;
+    }
+    else
+    {
+      ptr=tmp;
+      // go on.
+    }
   }
 
   while (ptr)
@@ -3272,7 +3289,7 @@ void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
   }
   else if (topwin == currentMenuSharingTopwin)
   {
-    printf("====== DEBUG ======: topwin's menu got inited AFTER being shared!\n"); // DELETETHIS 2
+    printf("====== DEBUG ======: topwin's menu got inited AFTER being shared!\n");
     if (!topwin->sharesToolsAndMenu()) printf("======       ======: WTF, now it doesn't share any more?!?\n");
     setCurrentMenuSharingTopwin(NULL);
     setCurrentMenuSharingTopwin(topwin);

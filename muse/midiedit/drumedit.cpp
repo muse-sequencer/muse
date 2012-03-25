@@ -530,7 +530,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       
       initTopwinState();
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
       }
 
 //---------------------------------------------------------

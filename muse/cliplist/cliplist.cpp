@@ -151,7 +151,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       connect(editor->len, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lenChanged(const MusECore::Pos&)));
 
       updateList();
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
       }
 
 ClipListEdit::~ClipListEdit()

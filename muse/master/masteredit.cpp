@@ -261,7 +261,7 @@ MasterEdit::MasterEdit()
       }
       
       initTopwinState();
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
       }
 
 //---------------------------------------------------------

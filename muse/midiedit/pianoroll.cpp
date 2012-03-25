@@ -488,7 +488,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       }
 
       initTopwinState();
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
       }
 
 //---------------------------------------------------------

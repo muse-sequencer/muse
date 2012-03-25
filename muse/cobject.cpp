@@ -52,6 +52,8 @@ bool TopWin::initInited=false;
 TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlags f)
                  : QMainWindow(parent, f)
 {
+	_initalizing = true;
+	
 	_isDeleting = false;
 	if (initInited==false)
 		initConfiguration();
@@ -134,7 +136,6 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	sig_tb = addToolBar(tr("Signature"));
 	sig_tb->setObjectName("Signature");
 	sig_tb->addWidget(new MusEGui::SigToolbarWidget(tempo_tb));
-
 }
 
 
@@ -563,6 +564,12 @@ void TopWin::writeConfiguration(ToplevelType t, int level, MusECore::Xml& xml)
 	xml.intTag(level, "shares_when_subwin", _sharesWhenSubwin[t]);
 	xml.intTag(level, "default_subwin", _defaultSubwin[t]);
 	xml.etag(level, "topwin");
+}
+
+void TopWin::finalizeInit()
+{
+	MusEGlobal::muse->topwinMenuInited(this);
+	_initalizing=false;
 }
 
 void TopWin::initTopwinState()
