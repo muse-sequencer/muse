@@ -670,7 +670,7 @@ void Arranger::songChanged(int type)
         if(type & SC_SONG_TYPE)    
           setMode(MusEGlobal::song->mtype());
           
-        if(type & SC_SELECTION)       // TEST p4.0.36 Try this alone, may need more.
+        if(type & (SC_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
           trackSelectionChanged();
         
         // Keep this light, partsChanged is a heavy move!       TEST p4.0.36 Try these, may need more.
@@ -1173,8 +1173,8 @@ void Arranger::updateTrackInfo(int flags)
             }
       if (selected->isMidiTrack()) {
             switchInfo(1);
-            // If a new part was selected, and only if it's different.
-            if((flags & SC_SELECTION) && midiTrackInfo->track() != selected)
+            // If a different part was selected
+            if(midiTrackInfo->track() != selected)
               // Set a new track and do a complete update.
               midiTrackInfo->setTrack(selected);
             else  
