@@ -149,7 +149,8 @@ void EventCanvas::songChanged(int flags)
         return;
     
       if (flags & ~SC_SELECTION) {
-            //items.clear(); DELETETHIS
+            // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
+            //             (same in waveview.cpp)
             bool curItemNeedsRestore=false;
             MusECore::Event storedEvent;
             int partSn;

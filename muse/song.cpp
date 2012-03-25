@@ -84,8 +84,8 @@ Song::Song(const char* name)
       noteFifoSize   = 0;
       noteFifoWindex = 0;
       noteFifoRindex = 0;
-      undoList     = new UndoList;
-      redoList     = new UndoList;
+      undoList     = new UndoList(true);  // "true" means "this is an undoList",
+      redoList     = new UndoList(false); // "false" means "redoList"
       _markerList  = new MarkerList;
       _globalPitchShift = 0;
       bounceTrack = NULL;
@@ -561,24 +561,6 @@ void Song::deselectTracks()
             (*t)->setSelected(false);
       }
 
-/*    DELETETHIS 17   
-//---------------------------------------------------------
-//   changeTrack
-//    oldTrack - copy of the original track befor modification
-//    newTrack - modified original track
-//---------------------------------------------------------
-
-void Song::changeTrack(Track* oldTrack, Track* newTrack)
-      {
-      oldTrack->setSelected(false);  //??
-      int idx = _tracks.index(newTrack);
-      
-      //addUndo(UndoOp(UndoOp::ModifyTrack, oldTrack, newTrack));
-      addUndo(UndoOp(UndoOp::ModifyTrack, idx, oldTrack, newTrack));
-      updateFlags |= SC_TRACK_MODIFIED;
-      }
-*/
-      
 //---------------------------------------------------------
 //  addEvent
 //    return true if event was added
@@ -2087,13 +2069,11 @@ void Song::clear(bool signal, bool clear_all)
       MusEGlobal::keymap.clear();
       
       undoList->clearDelete();
-      // DELETETHIS
-      //redoList->clear();  // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists. 
-      redoList->clearDelete();                   // p4.0.46 Tim
+      redoList->clearDelete();
       if(MusEGlobal::undoAction)
-        MusEGlobal::undoAction->setEnabled(false); //
+        MusEGlobal::undoAction->setEnabled(false);
       if(MusEGlobal::redoAction)
-        MusEGlobal::redoAction->setEnabled(false); //
+        MusEGlobal::redoAction->setEnabled(false);
       
       _markerList->clear();
       pos[0].setTick(0);
@@ -2181,11 +2161,9 @@ void Song::cleanupForQuit()
       MusEGlobal::keymap.clear();
       
       if(MusEGlobal::debugMsg)
-        printf("deleting undoList, clearing redoList\n");
+        printf("deleting undoList and redoList\n");
       undoList->clearDelete();
-      //DELETETHIS
-      //redoList->clear(); // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists.
-      redoList->clearDelete(); // p4.0.46 Tim
+      redoList->clearDelete();
       
       _markerList->clear();
       
@@ -2247,10 +2225,6 @@ void Song::cleanupForQuit()
       // Nothing required for ladspa plugin list, and rack instances of them
       //  are handled by ~AudioTrack.
       
-      if(MusEGlobal::debugMsg)
-        printf("Muse: Deleting sound files\n");
-      SndFile::sndFiles.clearDelete();      
-
       if(MusEGlobal::debugMsg)
         printf("...finished cleaning up.\n");
 }

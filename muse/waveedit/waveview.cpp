@@ -221,8 +221,6 @@ void WaveView::draw(QPainter& p, const QRect& r)
       if (pos[2] >= x && pos[2] < x2)
             p.drawLine(pos[2], y, pos[2], y2);
 
-      // Changed by T356. Support multiple (or none) selected parts.
-      //int n  = curPart->track()->channels();
       int n = 1;
       if(curPart)
         n = curPart->track()->channels();
@@ -245,9 +243,6 @@ void WaveView::draw(QPainter& p, const QRect& r)
 
 QString WaveView::getCaption() const
       {
-      
-      // Changed by T356. Support multiple (or none) selected parts.
-      //return QString("Part ") + curPart->name();
       if(curPart)
         return QString("Part ") + curPart->name();
       else  
@@ -265,7 +260,9 @@ void WaveView::songChanged(int flags)
       if(flags == SC_MIDI_CONTROLLER)
         return;
     
-      if (flags & SC_SELECTION) {
+      if (flags & ~SC_SELECTION) {
+            // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
+            //             (same in ecanvas.cpp)
             startSample  = MAXINT;
             endSample    = 0;
             curPart      = 0;

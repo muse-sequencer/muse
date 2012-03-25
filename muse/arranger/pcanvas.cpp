@@ -80,6 +80,8 @@ NPart::NPart(MusECore::Part* e) : CItem(MusECore::Event(), e)
       leftBorderTouches = false;
       rightBorderTouches = false;
       
+      _serial=e->sn();
+      
       int y  = track()->y();
       setPos(QPoint(e->tick(), y));
       setBBox(QRect(e->tick(), y, e->lenTick(), track()->height()));
@@ -394,7 +396,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
             // But just in case we ever have two different lists...
             dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
                                           // so we must decrement it first :/
-            spart->events()->incARef(1); // the later MusEGlobal::song->applyOperationGroup() will decrement it
+            spart->events()->incARef(1);  // the later MusEGlobal::song->applyOperationGroup() will decrement it
                                           // so we must increment it first :/
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
@@ -443,8 +445,8 @@ void PartCanvas::songIsClearing()
 void PartCanvas::partsChanged()
       {
       int sn = -1;
-      if (curItem) sn=curItem->part()->sn();
-      curItem=NULL;      
+      if (curItem) sn=static_cast<NPart*>(curItem)->serial();
+      curItem=NULL;     
       
       items.clearDelete();
       for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
@@ -456,7 +458,7 @@ void PartCanvas::partsChanged()
                   NPart* np = new NPart(part);
                   items.add(np);
                   
-                  if (np->part()->sn() == sn)
+                  if (np->serial() == sn)
                     curItem=np;
                   
                   if (i->second->selected())

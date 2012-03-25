@@ -1,4 +1,12 @@
 24.03.2012:
+        - Fixed memory leaks in the undo system. Removed unused ModifyTrack action (flo93)
+        - Swapped usage of oPart and nPart in the undo system. this was completely
+          braindead: oPart was assigned the nPart_-ctor-parameter and vice versa (flo93)
+        - Removed unused UndoOp-ctors (flo93)
+        - Code cleanups in undo.cpp (flo93)
+        - changed some sharing-menu-debug-messages from debugMsg to heavyDebugMsg (flo93)
+        - added a copy-ctor to Part which increases the eventlist's refcounter (flo93)
+        - NPart stores serial number (flo93)
         - Changed locale loading to use system setting instead of keyboard setting (rj)
 23.03.2012:
         - Changed file loading to use .toLocal8Bit instead of .toAscii seems to 

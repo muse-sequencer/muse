@@ -61,6 +61,12 @@ class Part : public PosLen {
    public:
       enum HiddenEventsType { NoEventsHidden = 0, LeftEventsHidden, RightEventsHidden };
    
+   // @@@@@@@@@@@ IMPORTANT @@@@@@@@@@@@
+   // @@ when adding member variables @@
+   // @@ here, don't forget to update @@
+   // @@ the copy-constructor!        @@
+   // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   
    private:
       static int snGen;
       int _sn;
@@ -81,6 +87,7 @@ class Part : public PosLen {
    public:
       Part(Track*);
       Part(Track*, EventList*);
+      Part(const Part& p);
       virtual ~Part();
       int sn()                         { return _sn; }
       void setSn(int n)                { _sn = n; }

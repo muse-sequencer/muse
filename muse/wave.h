@@ -185,7 +185,8 @@ class SndFileR {
 class SndFileList : public std::list<SndFile*> {
    public:
       SndFile* search(const QString& name);
-      void clearDelete();
+      // void clearDelete(); // clearDelete MUST NOT exist! deleting is handled by the refcounting SndFileRs!
+                             // this SndFileList is just for information, consider it as "weak pointers"
       };
 
 typedef SndFileList::iterator iSndFile;

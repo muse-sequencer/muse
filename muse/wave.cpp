@@ -71,9 +71,6 @@ SndFile::SndFile(const QString& name)
 
 SndFile::~SndFile()
       {
-      if (MusEGlobal::debugMsg)  
-        printf("===== DEBUG ===== ~SndFile()\n");
-        
       if (openFlag)
             close();
       for (iSndFile i = sndFiles.begin(); i != sndFiles.end(); ++i) {
@@ -1096,10 +1093,6 @@ SndFileR::~SndFileR()
       *this=NULL; // decrease the refcounter, maybe delete
       }
 
-void SndFileList::clearDelete()
-{
-  if (MusEGlobal::debugMsg) printf("==== DEBUG ====: SndFileList::clearDelete() called, expecting %i SndFiles to be deleted soon...\n",size());
-}
 
 
 } // namespace MusECore

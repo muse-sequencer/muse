@@ -3159,7 +3159,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       for (list<QToolBar*>::iterator it = foreignToolbars.begin(); it!=foreignToolbars.end(); it++)
         if (*it) 
         {
-          if (MusEGlobal::debugMsg) printf("  removing sharer's toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          if (MusEGlobal::heavyDebugMsg) printf("  removing sharer's toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
           removeToolBar(*it); // this does not delete *it, which is good
           (*it)->setParent(NULL);
         }
@@ -3171,7 +3171,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       for (list<QToolBar*>::iterator it = optionalToolbars.begin(); it!=optionalToolbars.end(); it++)
         if (*it) 
         {
-          if (MusEGlobal::debugMsg) printf("  removing optional toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          if (MusEGlobal::heavyDebugMsg) printf("  removing optional toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
           removeToolBar(*it); // this does not delete *it, which is good
           (*it)->setParent(NULL);
         }
@@ -3191,7 +3191,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       const QList<QAction*>& actions=win->menuBar()->actions();
       for (QList<QAction*>::const_iterator it=actions.begin(); it!=actions.end(); it++)
       {
-        if (MusEGlobal::debugMsg) printf("  menu entry '%s'\n", (*it)->text().toAscii().data());
+        if (MusEGlobal::heavyDebugMsg) printf("  adding menu entry '%s'\n", (*it)->text().toAscii().data());
         
         menuBar()->addAction(*it);
       }
@@ -3202,7 +3202,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       for (list<QToolBar*>::const_iterator it=toolbars.begin(); it!=toolbars.end(); it++)
         if (*it)
         {
-          if (MusEGlobal::debugMsg) printf("  toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          if (MusEGlobal::heavyDebugMsg) printf("  adding toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
           
           addToolBar(*it);
           foreignToolbars.push_back(*it);
@@ -3210,7 +3210,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
         }
         else
         {
-          if (MusEGlobal::debugMsg) printf("  toolbar break\n");
+          if (MusEGlobal::heavyDebugMsg) printf("  adding toolbar break\n");
           
           addToolBarBreak();
           foreignToolbars.push_back(NULL);
