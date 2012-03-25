@@ -21,7 +21,7 @@
 //=========================================================
 
 #include <stdio.h>
-#include <values.h>
+#include <limits.h>
 
 #include <QHeaderView>
 #include <QTableWidget>    
@@ -167,7 +167,7 @@ void Toolbar1::setTime(unsigned val)
             //printf("NOT visible\n");
             return;
             }
-      if (val == MAXINT)
+      if (val == INT_MAX)
             pos->setEnabled(false);
       else {
             pos->setEnabled(true);

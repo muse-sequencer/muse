@@ -34,7 +34,7 @@
 
 #include <set>
 
-#include <values.h>
+#include <limits.h>
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
@@ -42,7 +42,7 @@
 #include "xml.h"
 #include "prcanvas.h"
 #include "midiport.h"
-#include "event.h"
+#include "../event.h"
 #include "mpevent.h"
 #include "globals.h"
 #include "cmd.h"

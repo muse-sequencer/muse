@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <values.h>
+#include <limits.h>
 
 #include <QMouseEvent>
 #include <QPainter>
@@ -76,10 +76,10 @@ void MTScaleFlo::songChanged(int type)
 
 void MTScaleFlo::setPos(int idx, unsigned val, bool)
       {
-      if ((val == MAXINT) || (val == pos[idx]))
+      if ((val == INT_MAX) || (val == pos[idx]))
             return;
 
-      int opos = parent->tick_to_x(pos[idx] == MAXINT ? val : pos[idx]) + xoffset - xpos;
+      int opos = parent->tick_to_x(pos[idx] == INT_MAX ? val : pos[idx]) + xoffset - xpos;
 
       pos[idx] = val;
       

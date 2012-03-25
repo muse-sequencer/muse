@@ -474,10 +474,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       canvas->selectAtTick(cpos.tick());
         
       unsigned pos=0;
-      if(initPos >= MAXINT)
+      if(initPos >= INT_MAX)
         pos = MusEGlobal::song->cpos();
-      if(pos > MAXINT)
-        pos = MAXINT;
+      if(pos > INT_MAX)
+        pos = INT_MAX;
       if (pos)
         hscroll->setOffset((int)pos);
 

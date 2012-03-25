@@ -39,7 +39,7 @@
 #include <QByteArray>
 #include <QToolButton>
 
-#include <values.h>
+#include <limits.h>
 #include "noteinfo.h"
 #include "cobject.h"
 #include "event.h"
@@ -200,7 +200,7 @@ class ScoreEdit : public TopWin
 		void song_changed(int);
 		
 	public:
-		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
 		~ScoreEdit();
 
 		void writeStatus(int level, MusECore::Xml& xml) const;

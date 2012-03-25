@@ -23,7 +23,7 @@
 #include "config.h"
 
 #include <stdio.h>
-#include <values.h>
+#include <limits.h>
 
 #include <QComboBox>
 #include <QGridLayout>
@@ -210,7 +210,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       selected = 0;
       showTrackinfoFlag = true;
       
-      cursVal = MAXINT;
+      cursVal = INT_MAX;
       
       parentWin=parent;
       
@@ -576,7 +576,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
 void Arranger::setTime(unsigned tick)
       {
-      if (tick == MAXINT)
+      if (tick == INT_MAX)
             cursorPos->setEnabled(false);
       else {
             cursVal = tick;

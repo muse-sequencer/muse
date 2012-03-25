@@ -34,14 +34,14 @@
 #include <QPair>
 
 #include <stdio.h>
-#include <values.h>
+#include <limits.h>
 #include <errno.h>
 #include <set>
 
 #include "dcanvas.h"
 #include "midieditor.h"
 #include "drummap.h"
-#include "event.h"
+#include "../event.h"
 #include "mpevent.h"
 #include "xml.h"
 #include "globals.h"

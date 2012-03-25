@@ -29,7 +29,7 @@
 #include "view.h"
 #include "tools.h"
 #include "midictrl.h"
-#include "event.h"
+#include "../event.h"
 
 class QMouseEvent;
 class QEvent;

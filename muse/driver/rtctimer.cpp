@@ -1,3 +1,4 @@
+#if 0
   //=========================================================
   //  MusE
   //  Linux Music Editor
@@ -171,3 +172,5 @@ unsigned int RtcTimer::getTimerTicks(bool /*printTicks*/)// prevent compiler war
     }
 
 } // namespace MusECore
+
+#endif

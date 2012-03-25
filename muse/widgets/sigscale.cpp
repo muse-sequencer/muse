@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <values.h>
+#include <limits.h>
 
 #include <QMouseEvent>
 #include <QPainter>
@@ -120,7 +120,7 @@ void SigScale::viewMouseMoveEvent(QMouseEvent* event)
 
 void SigScale::leaveEvent(QEvent*)
       {
-//      emit timeChanged(MAXINT);
+//      emit timeChanged(INT_MAX);
       }
 
 //---------------------------------------------------------

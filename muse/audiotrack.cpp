@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include <values.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <map>
 
@@ -118,7 +118,7 @@ AudioTrack::AudioTrack(TrackType t)
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
       
-      bufferPos = MAXINT;
+      bufferPos = INT_MAX;
       
       setVolume(1.0);
       }
@@ -136,7 +136,7 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
       
-      bufferPos = MAXINT;
+      bufferPos = INT_MAX;
       
       _recFile = NULL;
       

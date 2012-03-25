@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <values.h>
+#include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -39,7 +39,7 @@
 #include "midieditor.h"
 #include "ecanvas.h"
 #include "song.h"
-#include "event.h"
+#include "../event.h"
 #include "shortcuts.h"
 #include "audio.h"
 #include "functions.h"
@@ -91,7 +91,7 @@ QString EventCanvas::getCaption() const
 void EventCanvas::leaveEvent(QEvent*)
       {
       emit pitchChanged(-1);
-      emit timeChanged(MAXINT);
+      emit timeChanged(INT_MAX);
       }
 
 //---------------------------------------------------------
@@ -163,7 +163,7 @@ void EventCanvas::songChanged(int flags)
             curItem=NULL;
             
             items.clearDelete();
-            start_tick  = MAXINT;
+            start_tick  = INT_MAX;
             end_tick    = 0;
             curPart = 0;
             for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {

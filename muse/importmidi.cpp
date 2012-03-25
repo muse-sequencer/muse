@@ -22,7 +22,7 @@
 //=========================================================
 
 #include <errno.h>
-#include <values.h>
+#include <limits.h>
 
 #include <set>
 #include <utility>

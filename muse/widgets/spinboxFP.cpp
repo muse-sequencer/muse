@@ -29,6 +29,8 @@
 
 #include "spinboxFP.h"
 
+#define exp10(x) exp((x)*log(10))
+
 namespace MusEGui {
 
 //---------------------------------------------------------

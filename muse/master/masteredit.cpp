@@ -40,7 +40,7 @@
 #include "gconfig.h"
 #include "audio.h"
 
-#include <values.h>
+#include <limits.h>
 
 #include <QActionGroup>
 #include <QCloseEvent>
@@ -427,7 +427,7 @@ void MasterEdit::posChanged(int idx, unsigned val, bool)
 
 void MasterEdit::setTime(unsigned tick)
       {
-      if (tick == MAXINT)
+      if (tick == INT_MAX)
             cursorPos->setEnabled(false);
       else {
             cursorPos->setEnabled(true);

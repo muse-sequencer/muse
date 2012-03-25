@@ -25,7 +25,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <errno.h>
-#include <values.h>
+#include <limits.h>
 #include <uuid/uuid.h>
 #include <math.h>
 #include <map>
@@ -64,6 +64,7 @@
 #include "widgets/pastedialog.h"
 
 #define ABS(x) (abs(x))
+#define exp10(x) exp((x)*log(10))
 
 #define EDITING_FINISHED_TIMEOUT 50 /* in milliseconds */
 
@@ -157,7 +158,7 @@ int PartCanvas::pitch2y(int p) const
 
 void PartCanvas::leaveEvent(QEvent*)
       {
-      emit timeChanged(MAXINT);
+      emit timeChanged(INT_MAX);
       }
 
 //---------------------------------------------------------

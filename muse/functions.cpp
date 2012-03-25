@@ -41,10 +41,9 @@
 #include "widgets/function_dialogs/legato.h"
 #include "widgets/pasteeventsdialog.h"
 
-#include <values.h>
+#include <limits.h>
 #include <iostream>
 #include <errno.h>
-#include <values.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -832,7 +831,7 @@ bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 			Event& event1=*(it1->first);
 			Part* part1=it1->second;
 			
-			unsigned len=MAXINT;
+			unsigned len=INT_MAX;
 			// we may NOT optimize by letting it2 start at (it1 +1); this optimisation
 			// is only allowed when events was sorted by time. it is, however, sorted
 			// randomly by pointer.
@@ -851,7 +850,7 @@ bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 					len=event2.tick()-event1.tick();
 			}
 			
-			if (len==MAXINT) len=event1.lenTick(); // if no following note was found, keep the length
+			if (len==INT_MAX) len=event1.lenTick(); // if no following note was found, keep the length
 			
 			if (event1.lenTick() != len)
 			{
@@ -955,7 +954,7 @@ void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Pa
 // if nothing is selected/relevant, this function returns NULL
 QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 {
-	unsigned start_tick = MAXINT; //will be the tick of the first event or MAXINT if no events are there
+	unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
 	
 	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
@@ -963,7 +962,7 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 				if (ev->second.tick() < start_tick)
 					start_tick=ev->second.tick();
 	
-	if (start_tick == MAXINT)
+	if (start_tick == INT_MAX)
 		return NULL;
 	
 	//---------------------------------------------------
@@ -1402,7 +1401,7 @@ bool merge_parts(const set<Part*>& parts)
 	{
 		Track* track=*t_it;
 
-		unsigned begin=MAXINT, end=0;
+		unsigned begin=INT_MAX, end=0;
 		Part* first_part=NULL;
 		
 		// find begin of the first and end of the last part
@@ -1420,9 +1419,9 @@ bool merge_parts(const set<Part*>& parts)
 					end=p->endTick();
 			}
 		
-		if (begin==MAXINT || end==0)
+		if (begin==INT_MAX || end==0)
 		{
-			printf("THIS SHOULD NEVER HAPPEN: begin==MAXINT || end==0 in merge_parts()\n");
+			printf("THIS SHOULD NEVER HAPPEN: begin==INT_MAX || end==0 in merge_parts()\n");
 			continue; // skip the actual work, as we cannot work under errornous conditions.
 		}
 		

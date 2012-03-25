@@ -36,6 +36,8 @@
 #include "xml.h"
 #include "audio.h"
 
+#define exp10(x) exp((x)*log(10))
+
 namespace MusECore {
 
 void CtrlList::initColor(int i)

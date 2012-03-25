@@ -25,14 +25,14 @@
 
 #include <QByteArray>
 
-#include <values.h>
+#include <limits.h>
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
 #include "tools.h"
 #include "header.h"
 #include "shortcuts.h"
-#include "event.h"
+#include "../event.h"
 
 class QCloseEvent;
 class QLabel;
@@ -152,7 +152,7 @@ class DrumEdit : public MidiEditor {
       void isDeleting(MusEGui::TopWin*);
 
    public:
-      DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+      DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
       virtual ~DrumEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

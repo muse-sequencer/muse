@@ -39,7 +39,7 @@
 #include <QByteArray>
 #include <QToolButton>
 
-#include <values.h>
+#include <limits.h>
 #include "noteinfo.h"
 #include "cobject.h"
 #include "event.h"

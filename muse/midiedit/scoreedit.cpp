@@ -4031,7 +4031,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				}
 				
 				old_pitch=-1;
-				old_dest_tick=MAXINT;
+				old_dest_tick=INT_MAX;
 				old_len=-1;
 			}
 		}

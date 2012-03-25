@@ -21,7 +21,7 @@
 //=========================================================
 
 #include <stdio.h>
-#include <values.h>
+#include <limits.h>
 
 #include <QPainter>
 #include <QCursor>
@@ -321,7 +321,7 @@ void CtrlCanvas::setMidiController(int num)
 
 void CtrlCanvas::leaveEvent(QEvent*)
       {
-      emit xposChanged(MAXINT);
+      emit xposChanged(INT_MAX);
       emit yposChanged(-1);
       }
 

@@ -1,3 +1,5 @@
+#if 0
+
 //=========================================================
 //  MusE
 //  Linux Music Editor
@@ -60,3 +62,5 @@ class RtcTimer : public Timer{
 } // namespace MusECore
 
 #endif //__RTCTIMER_H__
+
+#endif

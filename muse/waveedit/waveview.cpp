@@ -21,7 +21,7 @@
 //=========================================================
 
 #include <stdio.h>
-#include <values.h>
+#include <limits.h>
 #include <sys/wait.h>
 
 #include <QPainter>
@@ -263,7 +263,7 @@ void WaveView::songChanged(int flags)
       if (flags & ~SC_SELECTION) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in ecanvas.cpp)
-            startSample  = MAXINT;
+            startSample  = INT_MAX;
             endSample    = 0;
             curPart      = 0;
             for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {

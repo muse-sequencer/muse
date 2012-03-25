@@ -28,12 +28,12 @@
 #include <QLabel>
 #include <QKeyEvent>
 
-#include <values.h>
+#include <limits.h>
 #include "noteinfo.h"
 #include "cobject.h"
 #include "midieditor.h"
 #include "tools.h"
-#include "event.h"
+#include "../event.h"
 
 class QAction;
 class QLabel;
@@ -182,7 +182,7 @@ class PianoRoll : public MidiEditor {
       CtrlEdit* addCtrl();
       
    public:
-      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
       ~PianoRoll();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;
