@@ -1,3 +1,5 @@
+07.03.2012:
+        - Fixed bug with drawing of song position toolbar (rj)
 25.03.2012:
         - Added "beautifying" frame to the song position toolbar, hope that looks nicer
           for all :) (rj)

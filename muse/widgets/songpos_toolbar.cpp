@@ -59,9 +59,9 @@ namespace MusEGui
     QPainter p;
     p.begin(this);
     p.setPen(Qt::darkGray);
-    p.drawRect(ev->rect().x(), ev->rect().y(), ev->rect().width()-2, ev->rect().height()-2);
+    p.drawRect(0, 0, width()-1, height()-1);
     p.setPen(Qt::lightGray);
-    p.drawRect(ev->rect().x()+1, ev->rect().y()+1, ev->rect().width()-2, ev->rect().height()-2);
+    p.drawRect(1, 1, width()-1, height()-1);
     p.end();
   }
 
