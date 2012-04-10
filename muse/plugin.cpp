@@ -768,13 +768,7 @@ int Plugin::incReferences(int val)
           break;
         
         QString label(descr->LADSPA_Plugin->Label);
-        // Listing effect plugins only while excluding synths:
-        // Do exactly what dssi-vst.cpp does for listing ladspa plugins.
-        if(label == _label &&
-          !descr->run_synth &&
-          !descr->run_synth_adding &&
-          !descr->run_multiple_synths &&
-          !descr->run_multiple_synths_adding) 
+        if(label == _label) 
         {  
           _isDssi = true;
           ladspa = NULL;
@@ -993,26 +987,23 @@ static void loadPluginLib(QFileInfo* fi)
       if (descr == 0)
             break;
       
-      // Listing effect plugins only while excluding synths:
-      // Do exactly what dssi-vst.cpp does for listing ladspa plugins.
-      if(!descr->run_synth &&
-        !descr->run_synth_adding &&
-        !descr->run_multiple_synths &&
-        !descr->run_multiple_synths_adding) 
-      {
-        // Make sure it doesn't already exist.
-        if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
-          continue;
+      // Make sure it doesn't already exist.
+      if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
+        continue;
 
-        #ifdef PLUGIN_DEBUGIN 
-        fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
-        #endif
-      
-        if(MusEGlobal::debugMsg)
-          fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label);
-      
-        MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true);
-      }
+      #ifdef PLUGIN_DEBUGIN 
+      fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
+      #endif
+    
+      if(MusEGlobal::debugMsg)
+        fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d\n", 
+                fi->filePath().toLatin1().constData(), 
+                descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label,
+                descr->run_synth || descr->run_synth_adding 
+                  || descr->run_multiple_synths || descr->run_multiple_synths_adding 
+                );
+    
+      MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true);
     }      
   }
   else

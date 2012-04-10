@@ -146,6 +146,25 @@ class Plugin {
               plugin->connect_port(handle, port, value);
             }
       void apply(LADSPA_Handle handle, unsigned long n) {                            
+      #ifdef DSSI_SUPPORT
+            if(_isDssi && dssi_descr)
+            {
+              if(dssi_descr->run_synth)
+              {
+                dssi_descr->run_synth(handle, n, 0, 0);
+                return;
+              }  
+              else if (dssi_descr->run_multiple_synths) 
+              {
+                snd_seq_event_t* ev = 0;
+                unsigned long nev = 0;
+                dssi_descr->run_multiple_synths(1, &handle, n, &ev, &nev);
+                return;
+              }
+              if(dssi_descr->run_synth_adding || dssi_descr->run_multiple_synths_adding)
+                return;
+            }
+      #endif
             if(plugin)
               plugin->run(handle, n);
             }
