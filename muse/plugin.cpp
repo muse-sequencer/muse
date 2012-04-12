@@ -626,9 +626,10 @@ void PluginBase::range(unsigned long i, float* min, float* max) const
 //   Plugin
 //---------------------------------------------------------
 
-Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi)
+Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDssiSynth)
 {
   _isDssi = isDssi;
+  _isDssiSynth = isDssiSynth;
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
   #endif
@@ -995,15 +996,16 @@ static void loadPluginLib(QFileInfo* fi)
       fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
       #endif
     
+      bool is_synth = descr->run_synth || descr->run_synth_adding 
+                  || descr->run_multiple_synths || descr->run_multiple_synths_adding; 
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d\n", 
                 fi->filePath().toLatin1().constData(), 
                 descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label,
-                descr->run_synth || descr->run_synth_adding 
-                  || descr->run_multiple_synths || descr->run_multiple_synths_adding 
+                is_synth
                 );
     
-      MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true);
+      MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true, is_synth);
     }      
   }
   else
@@ -2849,12 +2851,12 @@ PluginDialog::PluginDialog(QWidget* parent)
       QVBoxLayout* layout = new QVBoxLayout(this);
 
       pList  = new QTreeWidget(this);
-      pList->setColumnCount(11);
+      pList->setColumnCount(12);
       // "Note: In order to avoid performance issues, it is recommended that sorting 
       //   is enabled after inserting the items into the tree. Alternatively, you could 
       //   also insert the items into a list before inserting the items into the tree. "
-      //pList->setSortingEnabled(true); DELETETHIS
       QStringList headerLabels;
+      headerLabels << tr("Type");
       headerLabels << tr("Lib");
       headerLabels << tr("Label");
       headerLabels << tr("Name");
@@ -2869,14 +2871,18 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       pList->setHeaderLabels(headerLabels);
 
+      pList->headerItem()->setToolTip(4,  tr("Audio inputs"));      
+      pList->headerItem()->setToolTip(5,  tr("Audio outputs"));      
+      pList->headerItem()->setToolTip(6,  tr("Control inputs"));      
+      pList->headerItem()->setToolTip(7,  tr("Control outputs"));      
+      pList->headerItem()->setToolTip(8,  tr("In-place capable"));      
+      pList->headerItem()->setToolTip(9,  tr("ID number"));      
+      
+      pList->setRootIsDecorated(false);
       pList->setSelectionBehavior(QAbstractItemView::SelectRows);
       pList->setSelectionMode(QAbstractItemView::SingleSelection);
       pList->setAlternatingRowColors(true);
       pList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-      
-      //fillPlugs(selectedPlugType); DELETETHIS 3
-      //pList->setSortingEnabled(true);
-      //pList->sortByColumn(sortColumn, sortOrder);
       
       layout->addWidget(pList);
 
@@ -2937,8 +2943,8 @@ PluginDialog::PluginDialog(QWidget* parent)
             }
 
       plugSelGroup->setToolTip(tr("Select which types of plugins should be visible in the list.<br>"
-                             "Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.<br>"
-                             "Also beware that the 'all' alternative includes plugins that probably not are usable by MusE."));
+                             "Note that using mono plugins on stereo tracks is not a problem, two will be used in parallel.<br>"
+                             "Also beware that the 'all' alternative includes plugins that may not be useful in an effect rack."));
 
       w5->addSpacing(8);
       w5->addWidget(plugSelGroup);
@@ -2960,7 +2966,6 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       sortBox->setMinimumSize(100, 10);
       srch_lo->addWidget(sortBox);
-      //srch_lo->addStretch(); DELETETHIS 4
       // FIXME: Adding this makes the whole bottom hlayout expand. Would like some space between lineedit and bottom.
       //        Same thing if spacers added to group box or Ok Cancel box.
       //srch_lo->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Maximum));
@@ -2971,13 +2976,13 @@ PluginDialog::PluginDialog(QWidget* parent)
       
       if(listSave.isEmpty())
       {
-        int sizes[] = { 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
-        for (int i = 0; i < 11; ++i) {
+        int sizes[] = { 100, 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
+        for (int i = 0; i < 12; ++i) {
               if (sizes[i] <= 50)     // hack alert!
                     pList->header()->setResizeMode(i, QHeaderView::Fixed);
               pList->header()->resizeSection(i, sizes[i]);
         }
-        pList->sortByColumn(0, Qt::AscendingOrder);
+        pList->sortByColumn(3, Qt::AscendingOrder);
       }
       else
         pList->header()->restoreState(listSave);
@@ -3008,7 +3013,7 @@ MusECore::Plugin* PluginDialog::value()
       {
       QTreeWidgetItem* item = pList->currentItem();
       if (item)
-        return MusEGlobal::plugins.find(item->text(0), item->text(1));
+        return MusEGlobal::plugins.find(item->text(1), item->text(2));
       printf("plugin not found\n");
       return 0;
       }
@@ -3076,6 +3081,7 @@ void PluginDialog::fillPlugs(QAbstractButton* ab)
 
 void PluginDialog::fillPlugs()
 {
+    QString type_name;
     pList->clear();
     for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i) {
           unsigned long ai = i->inports();       // p4.0.21
@@ -3110,17 +3116,24 @@ void PluginDialog::fillPlugs()
                 }
           if (found && addFlag) {
                 QTreeWidgetItem* item = new QTreeWidgetItem;
-                item->setText(0,  i->lib());
-                item->setText(1,  i->label());
-                item->setText(2,  i->name());
-                item->setText(3,  QString().setNum(ai));
-                item->setText(4,  QString().setNum(ao));
-                item->setText(5,  QString().setNum(ci));
-                item->setText(6,  QString().setNum(co));
-                item->setText(7,  QString().setNum(i->inPlaceCapable()));
-                item->setText(8,  QString().setNum(i->id()));
-                item->setText(9,  i->maker());
-                item->setText(10, i->copyright());
+                if(i->isDssiSynth())
+                  type_name = tr("dssi synth");
+                else if(i->isDssiPlugin())
+                  type_name = tr("dssi effect");
+                else
+                  type_name = tr("ladspa effect");
+                item->setText(0,  type_name);
+                item->setText(1,  i->lib());
+                item->setText(2,  i->label());
+                item->setText(3,  i->name());
+                item->setText(4,  QString().setNum(ai));
+                item->setText(5,  QString().setNum(ao));
+                item->setText(6,  QString().setNum(ci));
+                item->setText(7,  QString().setNum(co));
+                item->setText(8,  QString().setNum(i->inPlaceCapable()));
+                item->setText(9,  QString().setNum(i->id()));
+                item->setText(10,  i->maker());
+                item->setText(11, i->copyright());
                 pList->addTopLevelItem(item);
                 }
           }

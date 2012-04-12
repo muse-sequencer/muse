@@ -92,6 +92,7 @@ class Plugin {
       QString _maker;
       QString _copyright;
       
+      bool _isDssiSynth;
       bool _isDssi;
       // Hack: Special flag required.
       bool _isDssiVst;
@@ -110,7 +111,7 @@ class Plugin {
       bool _inPlaceCapable;
    
    public:
-      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi = false);
+      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false);
       ~Plugin();
       
       QString label() const                        { return _label; }
@@ -127,6 +128,7 @@ class Plugin {
       int instNo()                                 { return _instNo++;        }
 
       bool isDssiPlugin() const { return _isDssi; }  
+      bool isDssiSynth() const  { return _isDssiSynth; }  
       
       LADSPA_Handle instantiate(); 
       void activate(LADSPA_Handle handle) {
@@ -209,9 +211,9 @@ typedef std::list<Plugin>::iterator iPlugin;
 
 class PluginList : public std::list<Plugin> {
    public:
-      void add(QFileInfo* fi, const LADSPA_Descriptor* d, bool isDssi = false) 
+      void add(QFileInfo* fi, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false) 
       {
-        push_back(Plugin(fi, d, isDssi));
+        push_back(Plugin(fi, d, isDssi, isDssiSynth));
       }
       
       Plugin* find(const QString&, const QString&);

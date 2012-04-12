@@ -1,3 +1,5 @@
+12.04.2012:
+        - Add new 'type' column to LADSPA browser, add tooltips to AO, AI CO, CI, IP, ID columns. (Tim)
 09.04.2012:
         - Feature request: Allow loading of DSSI synths (those with a run*_synth* function) in LADSPA browser. (Tim)
 07.04.2012:
