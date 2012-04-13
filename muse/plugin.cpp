@@ -2976,7 +2976,7 @@ PluginDialog::PluginDialog(QWidget* parent)
       
       if(listSave.isEmpty())
       {
-        int sizes[] = { 100, 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
+        int sizes[] = { 80, 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
         for (int i = 0; i < 12; ++i) {
               if (sizes[i] <= 50)     // hack alert!
                     pList->header()->setResizeMode(i, QHeaderView::Fixed);
@@ -3121,7 +3121,7 @@ void PluginDialog::fillPlugs()
                 else if(i->isDssiPlugin())
                   type_name = tr("dssi effect");
                 else
-                  type_name = tr("ladspa effect");
+                  type_name = tr("ladspa");
                 item->setText(0,  type_name);
                 item->setText(1,  i->lib());
                 item->setText(2,  i->label());
