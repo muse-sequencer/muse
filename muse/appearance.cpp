@@ -27,7 +27,6 @@
 #include <QFontDialog>
 #include <QStyleFactory>
 #include <QToolTip>
-#include <QByteArray>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>

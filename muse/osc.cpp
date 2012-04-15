@@ -178,9 +178,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
       if(!instance)
         break;
         
-      QByteArray ba2 = synti->name().toLatin1();
-      p = sub + strlen(ba2.constData());
-      
+      p = sub + ba.length();
       if (*p != '/' || *(p + 1) == 0)
       {
         fprintf(stderr, "oscMessageHandler error: synth: end of path or no /\n");
@@ -241,9 +239,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
         if(!plugin)
           break;
         
-        QByteArray ba3 = instance->label().toLatin1();
-        p = sub + strlen(ba3.constData());
-        
+        p = sub + ba.length();
         if (*p != '/' || *(p + 1) == 0)
         {
           fprintf(stderr, "oscMessageHandler: error: effect: end of path or no /\n");

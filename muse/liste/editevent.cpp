@@ -379,7 +379,7 @@ void EditMetaDialog::toggled(bool flag)
 
       QString dst;
       if (flag) {       // convert to hex
-            dst = string2hex((unsigned char*)src, strlen(src));
+            dst = string2hex((unsigned char*)src, ba.length());
             }
       else {            // convert to string
             int len;
@@ -422,7 +422,7 @@ void EditMetaDialog::accept()
       const char* src = ba.constData();
       if (!hexButton->isChecked()) {
             meta = (unsigned char*)strdup(src);
-            len  = strlen(src);
+            len  = ba.length();
             QDialog::accept();
             return;
             }

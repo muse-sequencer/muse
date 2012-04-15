@@ -757,7 +757,7 @@ void MidiInstrument::read(Xml& xml)
                                     delete _initScript;
 			      QByteArray ba = xml.parse1().toLatin1();
                               const char* istr = ba.constData();
-                              int len = strlen(istr) +1;
+                              int len = ba.length() +1;
                               if (len > 1) {
                                     _initScript = new char[len];
                                     memcpy(_initScript, istr, len);

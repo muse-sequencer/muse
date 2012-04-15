@@ -1,3 +1,5 @@
+14.04.2012:
+        - Optimize some QByteArray usages and use length() instead of taking strlen(). (Tim)
 12.04.2012:
         - Add new 'type' column to LADSPA browser, add tooltips to AO, AI CO, CI, IP, ID columns. (Tim)
 09.04.2012:
