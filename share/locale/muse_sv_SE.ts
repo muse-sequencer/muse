@@ -6161,7 +6161,7 @@ klicka på en part för att Tysta/Avtysta</translation>
     </message>
     <message>
         <source>Edit tools</source>
-        <translation>Redigera verktyg</translation>
+        <translation>Redigera-verktyg</translation>
     </message>
     <message>
         <source>Tempo</source>
@@ -7095,7 +7095,7 @@ Aktivera synkinställningar?</translation>
     </message>
     <message>
         <source>Loop</source>
-        <translation>slinga</translation>
+        <translation>Loop</translation>
     </message>
     <message>
         <source>loop between left mark and right mark</source>
@@ -7103,7 +7103,7 @@ Aktivera synkinställningar?</translation>
     </message>
     <message>
         <source>Punchin</source>
-        <translation>Kontrollera stansen</translation>
+        <translation>Tryck in</translation>
     </message>
     <message>
         <source>record starts at left mark</source>
@@ -7111,7 +7111,7 @@ Aktivera synkinställningar?</translation>
     </message>
     <message>
         <source>Punchout</source>
-        <translation>Stansa ut</translation>
+        <translation>Tryck ut</translation>
     </message>
     <message>
         <source>record stops at right mark</source>
@@ -7119,7 +7119,7 @@ Aktivera synkinställningar?</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation>starta</translation>
+        <translation>Starta</translation>
     </message>
     <message>
         <source>rewind to start position</source>
@@ -7127,7 +7127,7 @@ Aktivera synkinställningar?</translation>
     </message>
     <message>
         <source>Rewind</source>
-        <translation>Flytta tillbaka</translation>
+        <translation>Spola tillbaka</translation>
     </message>
     <message>
         <source>rewind current position</source>
@@ -7135,7 +7135,7 @@ Aktivera synkinställningar?</translation>
     </message>
     <message>
         <source>Forward</source>
-        <translation>Frammåt</translation>
+        <translation>Framåt</translation>
     </message>
     <message>
         <source>move current position</source>
@@ -7245,11 +7245,11 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
     </message>
     <message>
         <source>Mixer A</source>
-        <translation>Bländare A</translation>
+        <translation>Mixer A</translation>
     </message>
     <message>
         <source>Mixer B</source>
-        <translation>Bländare B</translation>
+        <translation>Mixer B</translation>
     </message>
     <message>
         <source>Cliplist</source>
@@ -7273,7 +7273,7 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
     </message>
     <message>
         <source>Edit Instrument</source>
-        <translation>Redigera verktyget</translation>
+        <translation>Redigera instrument</translation>
     </message>
     <message>
         <source>Input Plugins</source>
@@ -7337,7 +7337,7 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
     </message>
     <message>
         <source>Cascade</source>
-        <translation>kaskad</translation>
+        <translation>Kaskad</translation>
     </message>
     <message>
         <source>Tile</source>
@@ -7345,15 +7345,15 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
     </message>
     <message>
         <source>In rows</source>
-        <translation>Rad</translation>
+        <translation>I rader</translation>
     </message>
     <message>
         <source>In columns</source>
-        <translation>Kolonner</translation>
+        <translation>I kolumner</translation>
     </message>
     <message>
         <source>Global Settings</source>
-        <translation>Globala Inställningar</translation>
+        <translation>Globala inställningar</translation>
     </message>
     <message>
         <source>Configure Shortcuts</source>
@@ -7361,19 +7361,19 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
     </message>
     <message>
         <source>Follow Song</source>
-        <translation>följ sång</translation>
+        <translation>Följ sång</translation>
     </message>
     <message>
         <source>Don&apos;t Follow Song</source>
-        <translation>följ inte Sång</translation>
+        <translation>Följ inte Sång</translation>
     </message>
     <message>
         <source>Follow Page</source>
-        <translation>följ sida</translation>
+        <translation>Följ sida</translation>
     </message>
     <message>
         <source>Follow Continuous</source>
-        <translation>följ kontinuerligt</translation>
+        <translation>Följ kontinuerligt</translation>
     </message>
     <message>
         <source>Metronome</source>
@@ -7381,7 +7381,7 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
     </message>
     <message>
         <source>Midi Sync</source>
-        <translation>Midi Synk</translation>
+        <translation>Midi synk</translation>
     </message>
     <message>
         <source>Midi File Import/Export</source>
@@ -7413,7 +7413,7 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
     </message>
     <message>
         <source>File Buttons</source>
-        <translation>Kolumn med knappar</translation>
+        <translation>Arkivknappar</translation>
     </message>
     <message>
         <source>Undo/Redo</source>
@@ -7477,7 +7477,7 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
     </message>
     <message>
         <source>MusE: load project</source>
-        <translation>MusE: Öppna projekt</translation>
+        <translation>MusE: öppna projekt</translation>
     </message>
     <message>
         <source>MusE: load template</source>
@@ -7485,13 +7485,13 @@ Du kan också välja menyalternativet Spara från Arkivmenyn.</translation>
     </message>
     <message>
         <source>MusE: Write File failed</source>
-        <translation>MusE: Misslyckades med att skriva Fil</translation>
+        <translation>MusE: Misslyckades med att skriva fil</translation>
     </message>
     <message>
         <source>The current Project contains unsaved data
 Save Current Project?</source>
-        <translation>Det nuvarande Projektet innehåller osparade ändringar
-Spara nuvarande Projekt?</translation>
+        <translation>Det nuvarande projektet innehåller osparade ändringar.
+Spara nuvarande projekt?</translation>
     </message>
     <message>
         <source>S&amp;kip</source>
@@ -7511,15 +7511,15 @@ Spara nuvarande Projekt?</translation>
     </message>
     <message>
         <source>MusE: Bounce to Track</source>
-        <translation>MusE: Bounce till Spår</translation>
+        <translation>MusE: Bounce till spår</translation>
     </message>
     <message>
         <source>No wave tracks found</source>
-        <translation>Det finns ingen ljudfil</translation>
+        <translation>Det finns inget ljudspår</translation>
     </message>
     <message>
         <source>No audio output tracks found</source>
-        <translation>Inget ljud</translation>
+        <translation>Inget utgångs-spår</translation>
     </message>
     <message>
         <source>Select one audio output track,
@@ -7547,7 +7547,7 @@ och en ljudutgång</translation>
     </message>
     <message>
         <source>MusE: Bounce</source>
-        <translation>Muse: Studsa</translation>
+        <translation>Muse: Bounce</translation>
     </message>
     <message>
         <source>set left/right marker for bounce range</source>
@@ -7557,7 +7557,7 @@ och en ljudutgång</translation>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
-        <translation>Det nuvarande Projektet innehåller osparade ändringar
+        <translation>Det nuvarande projektet innehåller osparade ändringar
 Öppning skriver över nuvarande Projekt
 Spara nuvarande Projekt?</translation>
     </message>
@@ -8021,7 +8021,7 @@ Filer:</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation>Om</translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -8507,7 +8507,7 @@ Den valda titeln är inte unik</translation>
     <name>MusEGui::ShortcutCaptureDialog</name>
     <message>
         <source>Ok</source>
-        <translation>Om</translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Cancel</source>

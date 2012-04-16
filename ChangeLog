@@ -1,3 +1,5 @@
+16.04.2012:
+        - Fixed some bugs in swedish translation (rj)
 14.04.2012:
         - Optimize some QByteArray usages and use length() instead of taking strlen(). (Tim)
 12.04.2012:
