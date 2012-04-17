@@ -638,6 +638,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
                         continue;
                   }
             MusECore::MidiController* c = port->midiController(num);
+	    {
             isList i = sList.begin();
             for (; i != sList.end(); ++i) {
                   if (*i == c->name())
@@ -645,6 +646,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
                   }
             if (i == sList.end())
                   sList.push_back(c->name());
+	    }
             }
       MusECore::MidiController* mc = port->midiController(num);
       int idx = 0;

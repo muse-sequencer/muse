@@ -1,3 +1,6 @@
+17.04.2012:
+        - Added gcc4.7 patch from Matthias Klose <doko@debian.org> (rj)
+        - Added -Werror=format-security from Alessio Treglia <alessio@debian.org> (rj)
 16.04.2012:
         - Fixed some bugs in swedish translation (rj)
 14.04.2012:
