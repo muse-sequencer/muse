@@ -1,3 +1,7 @@
+18.04.2012:
+        - Prefer native GUI for plugins when double clicking in the rack (rj)
+        - Prefer description instead of label in synth name in track list, it's more descriptive (rj)
+        - Grayed out "copy plugins" in duplicate track dialog since it's not finished (rj)
 17.04.2012:
         - Added gcc4.7 patch from Matthias Klose <doko@debian.org> (rj)
         - Added -Werror=format-security from Alessio Treglia <alessio@debian.org> (rj)
