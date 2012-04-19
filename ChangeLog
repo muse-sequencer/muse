@@ -1,7 +1,7 @@
 19.04.2012:
         - Reverted yesterdays description change, now shows label again (rj)
         - Added tooltips to trackInfo which shows additional info for synths (rj)
-        - Fixed focus for tempo and signature widgets (rj)
+        - Fixed focus for tempo and signature widgets and patch selector in midi track info (rj)
 18.04.2012:
         - Prefer native GUI for plugins when double clicking in the rack (rj)
         - Prefer description instead of label in synth name in track list, it's more descriptive (rj)

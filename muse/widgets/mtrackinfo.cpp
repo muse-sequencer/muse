@@ -124,6 +124,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   progRecButton->setFocusPolicy(Qt::NoFocus);
   volRecButton->setFocusPolicy(Qt::NoFocus);
   panRecButton->setFocusPolicy(Qt::NoFocus);
+  iPatch->setFocusPolicy(Qt::NoFocus);
 
   iOutput->setFocusPolicy(Qt::StrongFocus);
   iOutputChannel->setFocusPolicy(Qt::StrongFocus);
