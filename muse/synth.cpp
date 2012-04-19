@@ -164,12 +164,7 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
             si = new SynthI();
             QString n;
             n.setNum(s->instances());
-            QString instance_name;
-            if (s->description().size()>0)
-                instance_name = s->description() + "-" + n;
-            else
-              instance_name = s->name() + "-" + n;
-
+            QString instance_name = s->name() + "-" + n;
             if (si->initInstance(s, instance_name)) {
                   delete si;
                   return 0;

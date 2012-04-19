@@ -34,6 +34,7 @@
 #include <QWheelEvent>
 #include <QIcon>
 #include <QSpinBox>
+#include <QToolTip>
 
 #include "globals.h"
 #include "icons.h"
@@ -162,6 +163,38 @@ void TList::redraw(const QRect& r)
       {
       update(r);
       }
+
+
+//---------------------------------------------------------
+//   event
+//---------------------------------------------------------
+
+bool TList::event(QEvent *event)
+{
+    if (event->type() == QEvent::ToolTip) {
+         QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+         MusECore::TrackList* l = MusEGlobal::song->tracks();
+         int idx = 0;
+         int yy  = -ypos;
+         for (MusECore::iTrack i = l->begin(); i != l->end(); ++idx, yy += (*i)->height(), ++i) {
+               MusECore::Track* track = *i;
+               MusECore::Track::TrackType type = track->type();
+               int trackHeight = track->height();
+               if (trackHeight==0) // not visible
+                     continue;
+               if (helpEvent->pos().y() > yy && helpEvent->pos().y() < yy + trackHeight) {
+                   if (type == MusECore::Track::AUDIO_SOFTSYNTH) {
+                     MusECore::SynthI *s = (MusECore::SynthI*)track;
+                     QToolTip::showText(helpEvent->globalPos(),track->name() + " : " + s->synth()->description());
+                   }
+                   else
+                      QToolTip::showText(helpEvent->globalPos(),track->name());
+               }
+         }
+        return true;
+    }
+    return QWidget::event(event);
+}
 
 //---------------------------------------------------------
 //   paint

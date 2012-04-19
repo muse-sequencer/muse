@@ -25,6 +25,10 @@
 #include "tempolabel.h"
 #include "awl/sigedit.h"
 #include "song.h"
+#include "arranger.h"
+#include "app.h"
+
+
 
 #include <QLayout>
 #include <QLabel>
@@ -49,7 +53,8 @@ namespace MusEGui
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
 		
 		connect(tempo_edit, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
-		
+    connect(tempo_edit, SIGNAL(returnPressed()), SLOT(completeTempoChange()));
+
 		song_changed(-1);
 	}
 	
@@ -57,7 +62,7 @@ namespace MusEGui
 	{
 		song_changed(SC_TEMPO);
 	}
-	
+
 	void TempoToolbarWidget::song_changed(int type)
 	{
 		if (type & SC_TEMPO)
@@ -73,6 +78,10 @@ namespace MusEGui
 			label->setEnabled(MusEGlobal::song->masterFlag());
 		}
 	}
+  void TempoToolbarWidget::completeTempoChange()
+  {
+    MusEGlobal::muse->arranger()->setFocus();
+  }
 
 	SigToolbarWidget::SigToolbarWidget(QWidget* p) : QWidget(p)
 	{
@@ -92,7 +101,8 @@ namespace MusEGui
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
 		
 		connect(sig_edit, SIGNAL(valueChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
-		
+    connect(sig_edit, SIGNAL(returnPressed()), SLOT(completeSigChange()));
+
 		song_changed(-1);
 	}
 	
@@ -117,5 +127,9 @@ namespace MusEGui
 			label->setEnabled(MusEGlobal::song->masterFlag());
 		}
 	}
+  void SigToolbarWidget::completeSigChange()
+  {
+    MusEGlobal::muse->arranger()->setFocus();
+  }
 
 }

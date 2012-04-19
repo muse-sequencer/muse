@@ -52,7 +52,8 @@ namespace MusEGui
 		private slots:
 			void pos_changed(int,unsigned,bool);
 			void song_changed(int);
-	};
+      void completeSigChange();
+  };
 
 	class TempoToolbarWidget : public QWidget
 	{
@@ -69,7 +70,8 @@ namespace MusEGui
 		private slots:
 			void pos_changed(int,unsigned,bool);
 			void song_changed(int);
-	};
+      void completeTempoChange();
+  };
 }
 
 #endif
