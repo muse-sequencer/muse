@@ -130,12 +130,19 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	QToolBar* tempo_tb;
 	tempo_tb = addToolBar(tr("Tempo"));
 	tempo_tb->setObjectName("Tempo");
-	tempo_tb->addWidget(new MusEGui::TempoToolbarWidget(tempo_tb));
+	MusEGui::TempoToolbarWidget* tw = new MusEGui::TempoToolbarWidget(tempo_tb);
+	tempo_tb->addWidget(tw);
 
 	QToolBar* sig_tb;
 	sig_tb = addToolBar(tr("Signature"));
 	sig_tb->setObjectName("Signature");
-	sig_tb->addWidget(new MusEGui::SigToolbarWidget(tempo_tb));
+	MusEGui::SigToolbarWidget* sw = new MusEGui::SigToolbarWidget(tempo_tb);
+	sig_tb->addWidget(sw);
+	
+	connect(tw, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(tw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+	connect(sw, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(sw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 }
 
 

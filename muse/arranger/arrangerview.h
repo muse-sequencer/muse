@@ -139,6 +139,7 @@ class ArrangerView : public TopWin
 		void selectionChanged();
 		void updateShortcuts();
 		void updateVisibleTracksButtons();
+		virtual void focusCanvas() { arranger->focusCanvas(); } 
 
 	public:
 		ArrangerView(QWidget* parent = 0);

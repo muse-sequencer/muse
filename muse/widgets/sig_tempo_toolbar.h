@@ -45,14 +45,17 @@ namespace MusEGui
 			QHBoxLayout* layout;
 			QLabel* label;
 			Awl::SigEdit* sig_edit;
-		
+			
 		public:
 			SigToolbarWidget(QWidget* parent);
+		
+		signals:
+			void returnPressed();
+			void escapePressed();
 		
 		private slots:
 			void pos_changed(int,unsigned,bool);
 			void song_changed(int);
-      void completeSigChange();
   };
 
 	class TempoToolbarWidget : public QWidget
@@ -63,14 +66,17 @@ namespace MusEGui
 			QHBoxLayout* layout;
 			QLabel* label;
 			MusEGui::TempoEdit* tempo_edit;
-		
+			
 		public:
 			TempoToolbarWidget(QWidget* parent);
 		
+		signals:
+			void returnPressed();
+			void escapePressed();
+			
 		private slots:
 			void pos_changed(int,unsigned,bool);
 			void song_changed(int);
-      void completeTempoChange();
   };
 }
 

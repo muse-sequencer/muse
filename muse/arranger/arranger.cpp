@@ -487,17 +487,14 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
       connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
       connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
-      if(MusEGlobal::config.smartFocus)
-      {
-        connect(lenEntry,           SIGNAL(returnPressed()), SLOT(focusCanvas()));
-        connect(lenEntry,           SIGNAL(escapePressed()), SLOT(focusCanvas()));
-        connect(globalPitchSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-        connect(globalPitchSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-        connect(globalTempoSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-        connect(globalTempoSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-        connect(midiTrackInfo,      SIGNAL(returnPressed()), SLOT(focusCanvas()));
-        connect(midiTrackInfo,      SIGNAL(escapePressed()), SLOT(focusCanvas()));
-      }
+      connect(lenEntry,           SIGNAL(returnPressed()), SLOT(focusCanvas()));
+      connect(lenEntry,           SIGNAL(escapePressed()), SLOT(focusCanvas()));
+      connect(globalPitchSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+      connect(globalPitchSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+      connect(globalTempoSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+      connect(globalTempoSpinBox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+      connect(midiTrackInfo,      SIGNAL(returnPressed()), SLOT(focusCanvas()));
+      connect(midiTrackInfo,      SIGNAL(escapePressed()), SLOT(focusCanvas()));
       
       //connect(this,      SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       connect(list,      SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
@@ -625,8 +622,11 @@ void Arranger::configChanged()
 
 void Arranger::focusCanvas()
 {
-  canvas->setFocus();
-  canvas->activateWindow();
+  if(MusEGlobal::config.smartFocus)
+  {
+    canvas->setFocus();
+    canvas->activateWindow();
+  }
 }
 
 //---------------------------------------------------------
@@ -745,8 +745,7 @@ void Arranger::modeChange(int mode)
       {
       MusEGlobal::song->setMType(MType(mode));
       updateTrackInfo(-1);
-      if(MusEGlobal::config.smartFocus)
-        focusCanvas();
+      focusCanvas();
       }
 
 //---------------------------------------------------------
@@ -868,8 +867,7 @@ void Arranger::_setRaster(int index)
       // Set the audio record part snapping.
       MusEGlobal::song->setArrangerRaster(_raster);
       canvas->redraw();
-      if(MusEGlobal::config.smartFocus)
-        focusCanvas();
+      focusCanvas();
       }
 
 //---------------------------------------------------------

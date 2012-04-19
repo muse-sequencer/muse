@@ -169,7 +169,6 @@ class PianoRoll : public MidiEditor {
       void newCanvasWidth(int);
       void toggleTrackInfo();
       void updateTrackInfo();
-      void focusCanvas();
       void deltaModeChanged(bool);
 
    signals:
@@ -179,6 +178,7 @@ class PianoRoll : public MidiEditor {
       virtual void updateHScrollRange();
       void execDeliveredScript(int id);
       void execUserScript(int id);
+      void focusCanvas();
       CtrlEdit* addCtrl();
       
    public:

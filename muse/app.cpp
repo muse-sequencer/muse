@@ -676,12 +676,14 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       QToolBar* tempo_tb;
       tempo_tb = addToolBar(tr("Tempo"));
       tempo_tb->setObjectName("Tempo");
-      tempo_tb->addWidget(new MusEGui::TempoToolbarWidget(tempo_tb));
+      MusEGui::TempoToolbarWidget* tempo_tb_widget = new MusEGui::TempoToolbarWidget(tempo_tb);
+      tempo_tb->addWidget(tempo_tb_widget);
       
       QToolBar* sig_tb;
       sig_tb = addToolBar(tr("Signature"));
       sig_tb->setObjectName("Signature");
-      sig_tb->addWidget(new MusEGui::SigToolbarWidget(tempo_tb));
+      MusEGui::SigToolbarWidget* sig_tb_widget = new MusEGui::SigToolbarWidget(tempo_tb);
+      sig_tb->addWidget(sig_tb_widget);
       
       tools = addToolBar(tr("File Buttons"));
       tools->setObjectName("File Buttons");
@@ -922,6 +924,10 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       arrangerView->hide();
       _arranger=arrangerView->getArranger();
       
+      connect(tempo_tb_widget, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
+      connect(tempo_tb_widget, SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
+      connect(sig_tb_widget,   SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
+      connect(sig_tb_widget,   SIGNAL(escapePressed()), arrangerView, SLOT(focusCanvas()));
       
       //---------------------------------------------------
       //  read list of "Recent Projects"

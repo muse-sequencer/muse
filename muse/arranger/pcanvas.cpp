@@ -3823,7 +3823,7 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 
     int prevFrame = 0;
     int nextFrame = -1;
-    int currFrame = 0;
+    //int currFrame = 0;
 
     if (automation.controllerState == addNewController)
     {
@@ -3851,7 +3851,7 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
        MusECore::CtrlVal &cv = ic->second;
        if (cv.frame == automation.currentCtrlFrame)
        {
-         currFrame = cv.frame;
+         //currFrame = cv.frame;
          break;
        }  
        prevFrame = cv.frame;

@@ -431,13 +431,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(speaker, SIGNAL(toggled(bool)), SLOT(setSpeaker(bool)));
       connect(canvas, SIGNAL(followEvent(int)), SLOT(follow(int)));
 
-      if(MusEGlobal::config.smartFocus)
-      {
-        connect(info, SIGNAL(returnPressed()),          SLOT(focusCanvas()));
-        connect(info, SIGNAL(escapePressed()),          SLOT(focusCanvas()));
-        connect(midiTrackInfo, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-        connect(midiTrackInfo, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-      }
+      connect(info, SIGNAL(returnPressed()),          SLOT(focusCanvas()));
+      connect(info, SIGNAL(escapePressed()),          SLOT(focusCanvas()));
+      connect(midiTrackInfo, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+      connect(midiTrackInfo, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       piano->setYPos(KH * 30);
@@ -706,8 +703,11 @@ void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* /*par
 
 void PianoRoll::focusCanvas()
 {
-  canvas->setFocus();
-  canvas->activateWindow();
+  if(MusEGlobal::config.smartFocus)
+  {
+    canvas->setFocus();
+    canvas->activateWindow();
+  }
 }
 
 //---------------------------------------------------------
@@ -911,8 +911,7 @@ void PianoRoll::setRaster(int val)
       _rasterInit = val;
       MidiEditor::setRaster(val);
       canvas->redrawGrid();
-      if(MusEGlobal::config.smartFocus)
-        focusCanvas();     // give back focus after kb input
+      focusCanvas();     // give back focus after kb input
       }
 
 //---------------------------------------------------------

@@ -167,7 +167,6 @@ class Arranger : public QWidget {
       void verticalScrollSetYpos(unsigned);
       void horizontalZoomIn();
       void horizontalZoomOut();
-      void focusCanvas();
       
    signals:
       void editPart(MusECore::Track*);
@@ -188,6 +187,7 @@ class Arranger : public QWidget {
       void updateTrackInfo(int flags);
       void configChanged();
       void controllerChanged(MusECore::Track *t);
+      void focusCanvas();
 
    public:
       enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,

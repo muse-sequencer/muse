@@ -458,13 +458,13 @@ void CtrlCanvas::songChanged(int type)
   if((type & (SC_CONFIG | SC_DRUMMAP)) || ((type & (SC_PART_MODIFIED | SC_SELECTION)) && changed))
     setMidiController(_cnum);
   
-  if(!curPart)         // p4.0.27
+  if(!curPart)         
     return;
               
-  if(type & (SC_CONFIG | SC_DRUMMAP | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED))   // p4.0.18
+  if(type & (SC_CONFIG | SC_DRUMMAP | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED))   
     updateItems();
   else if(type & SC_SELECTION)
-    updateSelections();               // p4.0.18
+    updateSelections();               
 }
 
 //---------------------------------------------------------
@@ -486,7 +486,7 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
   }
   else 
   {
-    if(!part)         // p4.0.27
+    if(!part)         
     {
       if(mcvl)
         *mcvl = 0;
@@ -639,7 +639,7 @@ void CtrlCanvas::updateSelections()
 
 void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
       {
-      if(!_controller)  // p4.0.27
+      if(!_controller)  
         return;
         
       start = event->pos();
@@ -653,7 +653,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
 
       switch (activeTool) {
             case MusEGui::PointerTool:
-                  if(curPart)      // p4.0.27
+                  if(curPart)      
                   {
                     drag = DRAG_LASSO_START;
                     bool do_redraw = false;
@@ -747,7 +747,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
 
 void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
       {
-      if(!_controller)  // p4.0.27
+      if(!_controller)  
         return;
         
       QPoint pos  = event->pos();
@@ -816,7 +816,7 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                   lasso.setRect(-1, -1, -1, -1);
 
             case DRAG_LASSO:
-                  if(_controller)  // p4.0.27
+                  if(_controller)  
                   {
                     lasso = lasso.normalized();
                     int h = height();
@@ -849,7 +849,7 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
 
 void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
       {
-      if(!curPart || !_controller)         // p4.0.27
+      if(!curPart || !_controller)         
         return;
       
       if(x2 - x1 < 0)
@@ -875,8 +875,7 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
       int raster = editor->raster();
       if (raster == 1)          // set reasonable raster
       {
-        //raster = MusEGlobal::config.division/4;
-        raster = MusEGlobal::config.division/16;  // Let's use 64th notes, for a bit finer resolution. p4.0.18 Tim.
+        raster = MusEGlobal::config.division/16;  // Let's use 64th notes, for a bit finer resolution. Tim.
         useRaster = true;
       }  
 
@@ -953,11 +952,10 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
 
 void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
       {
-      if(!curPart || !_controller)         // p4.0.27
+      if(!curPart || !_controller)
         return;
       
       int h   = height();
-      bool changed = false;
       int type = _controller->num();
 
       MusECore::Undo operations;
@@ -995,7 +993,6 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                               ev->setEvent(newEvent);
                               // Do not do port controller values and clone parts. 
                               operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, false, false));
-                              changed = true;
                               }
                         }
                   else {
@@ -1006,7 +1003,6 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                                     ev->setEvent(newEvent);
                                     // Do port controller values and clone parts. 
                                     operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, true, true));
-                                    changed = true;
                                     }
                               }
                         }
@@ -1022,7 +1018,7 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
 
 void CtrlCanvas::changeVal(int x1, int x2, int y)
       {
-      if(!curPart || !_controller)         // p4.0.27
+      if(!curPart || !_controller)         
         return;
       
       bool changed = false;
@@ -1085,7 +1081,7 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
 
 void CtrlCanvas::newVal(int x1, int y)
       {
-      if(!curPart || !_controller)         // p4.0.27
+      if(!curPart || !_controller)         
         return;
       
       int xx1  = editor->rasterVal1(x1);
@@ -1270,7 +1266,7 @@ void CtrlCanvas::newVal(int x1, int y)
 
 void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       {
-      if(!curPart || !_controller)         // p4.0.27
+      if(!curPart || !_controller)         
         return;
       
       if(x2 - x1 < 0)
@@ -1304,8 +1300,7 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       int raster = editor->raster();
       if (raster == 1)          // set reasonable raster
       {
-        //raster = MusEGlobal::config.division/4;
-        raster = MusEGlobal::config.division/16;  // Let's use 64th notes, for a bit finer resolution. p4.0.18 Tim.
+        raster = MusEGlobal::config.division/16;  // Let's use 64th notes, for a bit finer resolution. Tim.
         useRaster = true;
       }  
 
@@ -1444,7 +1439,7 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
 
 void CtrlCanvas::deleteVal(int x1, int x2, int)
       {
-      if(!curPart)         // p4.0.27
+      if(!curPart)         
         return;
       
       if(x2 - x1 < 0)
@@ -1588,7 +1583,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
   }
   else
   {
-    if(!part)         // p4.0.27
+    if(!part)         
       return;
     
     MusECore::MidiTrack* mt = part->track();
@@ -1710,7 +1705,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
 
 void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
       {
-      if(!_controller)   // p4.0.27
+      if(!_controller)   
         return;
        
       int x = rect.x() - 1;   // compensate for 3 pixel line width

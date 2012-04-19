@@ -137,7 +137,6 @@ class DrumEdit : public MidiEditor {
       void configChanged();
       void songChanged1(int);
       void setStep(QString);
-      void focusCanvas();
       void deltaModeChanged(bool);
 
    public slots:
@@ -145,6 +144,7 @@ class DrumEdit : public MidiEditor {
       void soloChanged(bool);       // called by Solo button
       void execDeliveredScript(int);
       void execUserScript(int);
+      void focusCanvas();
       CtrlEdit* addCtrl();
       
       virtual void updateHScrollRange();

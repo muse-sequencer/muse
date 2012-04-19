@@ -184,7 +184,6 @@ class ScoreEdit : public TopWin
 		void init_shortcuts();
 		void selection_changed();
 		void clipboard_changed();
-		void focusCanvas();
 		
 	signals:
 		void isDeleting(MusEGui::TopWin*);
@@ -198,6 +197,7 @@ class ScoreEdit : public TopWin
 		void canvas_height_changed(int);
 		void viewport_height_changed(int);
 		void song_changed(int);
+		void focusCanvas();
 		
 	public:
 		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);

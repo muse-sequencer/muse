@@ -252,13 +252,10 @@ MasterEdit::MasterEdit()
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
-      if(MusEGlobal::config.smartFocus)
-      {
-        connect(curSig,   SIGNAL(returnPressed()), SLOT(focusCanvas()));
-        connect(curSig,   SIGNAL(escapePressed()), SLOT(focusCanvas()));
-        connect(curTempo, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-        connect(curTempo, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-      }
+      connect(curSig,   SIGNAL(returnPressed()), SLOT(focusCanvas()));
+      connect(curSig,   SIGNAL(escapePressed()), SLOT(focusCanvas()));
+      connect(curTempo, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+      connect(curTempo, SIGNAL(escapePressed()), SLOT(focusCanvas()));
       
       initTopwinState();
       finalizeInit();
@@ -381,8 +378,11 @@ void MasterEdit::writeConfiguration(int level, MusECore::Xml& xml)
 
 void MasterEdit::focusCanvas()
 {
-  canvas->setFocus();
-  canvas->activateWindow();
+  if(MusEGlobal::config.smartFocus)
+  {
+    canvas->setFocus();
+    canvas->activateWindow();
+  } 
 }
 
 //---------------------------------------------------------
@@ -396,8 +396,7 @@ void MasterEdit::_setRaster(int index)
             };
       _raster = rasterTable[index];
       _rasterInit = _raster;
-      if(MusEGlobal::config.smartFocus)
-        focusCanvas();
+      focusCanvas();
       }
 
 //---------------------------------------------------------

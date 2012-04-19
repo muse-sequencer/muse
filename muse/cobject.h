@@ -141,7 +141,7 @@ class TopWin : public QMainWindow
       void restoreMainwinState();
       void storeInitialState() const;
       virtual void setWindowTitle (const QString&);
-      
+      virtual void focusCanvas() { }
       };
 
 
