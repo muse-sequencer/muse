@@ -532,4 +532,17 @@ void WaveEdit::horizontalZoomOut()
 
 }
 
+//---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void WaveEdit::focusCanvas()
+{
+  if(MusEGlobal::config.smartFocus)
+  {
+    view->setFocus();
+    view->activateWindow();
+  }
+}
+
 } // namespace MusEGui
