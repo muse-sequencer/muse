@@ -36,6 +36,7 @@ namespace MusEGui
 	{
 		tempo_edit=new MusEGui::TempoEdit(this);
 		tempo_edit->setToolTip(tr("tempo at current position"));
+		tempo_edit->setFocusPolicy(Qt::StrongFocus);
 		
 		label=new QLabel(tr("Tempo: "),this);
 		
@@ -79,6 +80,7 @@ namespace MusEGui
 	SigToolbarWidget::SigToolbarWidget(QWidget* p) : QWidget(p)
 	{
 		sig_edit=new Awl::SigEdit(this);
+		sig_edit->setFocusPolicy(Qt::StrongFocus);
 		sig_edit->setValue(AL::TimeSignature(4, 4));
 		sig_edit->setToolTip(tr("time signature at current position"));
 		
