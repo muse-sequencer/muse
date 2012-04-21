@@ -1364,15 +1364,11 @@ void MusE::loadProject()
 
 void MusE::loadTemplate()
       {
+      bool doReadMidiPorts;
       QString fn = MusEGui::getOpenFileName(QString("templates"), MusEGlobal::med_file_pattern, this,
-                                               tr("MusE: load template"), 0, MusEGui::MFileDialog::GLOBAL_VIEW);
+                                               tr("MusE: load template"), &doReadMidiPorts, MusEGui::MFileDialog::GLOBAL_VIEW);
       if (!fn.isEmpty()) {
-            // With templates, don't clear midi ports. 
-            // Any named ports in the template file are useless (Hm, not true...) since they likely would not be found on other users' machines. 
-            // Keep whatever the user currently has set up for ports. This will also keep the current window configurations etc.
-            //  but actually that's also probably a good thing. 
-            loadProjectFile(fn, true, false);
-            
+            loadProjectFile(fn, true, doReadMidiPorts);
             setUntitledProject();
             }
       }

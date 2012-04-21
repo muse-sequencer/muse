@@ -101,12 +101,10 @@ static bool testDirCreate(QWidget* parent, const QString& path)
 void MFileDialog::globalToggled(bool flag)
       {
       if (flag) {
-            buttons.userButton->setChecked(!flag);
-            buttons.projectButton->setChecked(!flag);
+            buttons.readMidiPortsButton->setChecked(false);
             if (lastGlobalDir.isEmpty())
                   lastGlobalDir = MusEGlobal::museGlobalShare + QString("/") + baseDir; // Initialize if first time
-            QString dir = lastGlobalDir;
-            setDirectory(dir);
+            setDirectory(lastGlobalDir);
             lastViewUsed = GLOBAL_VIEW;
             }
       }
@@ -118,10 +116,7 @@ void MFileDialog::globalToggled(bool flag)
 void MFileDialog::userToggled(bool flag)
       {
       if (flag) {
-            buttons.globalButton->setChecked(!flag);
-            buttons.projectButton->setChecked(!flag);
-
-
+            buttons.readMidiPortsButton->setChecked(true);
             if (lastUserDir.isEmpty()) {
                   //lastUserDir = MusEGlobal::museUser + QString("/") + baseDir; // Initialize if first time
                   lastUserDir = MusEGlobal::configPath + QString("/") + baseDir; // Initialize if first time    // p4.0.39
@@ -144,9 +139,7 @@ void MFileDialog::userToggled(bool flag)
 void MFileDialog::projectToggled(bool flag)
       {
       if (flag) {
-            buttons.globalButton->setChecked(!flag);
-            buttons.userButton->setChecked(!flag);
-
+            buttons.readMidiPortsButton->setChecked(true);
             QString s;
             if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) {
                   // if project path is uninitialized, meaning it is still set to museProjectInitPath.
@@ -204,7 +197,11 @@ MFileDialog::MFileDialog(const QString& dir,
             buttons.projectButton->setIcon(style()->standardIcon(QStyle::SP_DirOpenIcon));
 #endif	    
 
-            connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
+            buttons.globalButton->setAutoExclusive(true);
+            buttons.userButton->setAutoExclusive(true);
+            buttons.projectButton->setAutoExclusive(true);
+
+	    connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
             connect(buttons.userButton, SIGNAL(toggled(bool)), this, SLOT(userToggled(bool)));
             connect(buttons.projectButton, SIGNAL(toggled(bool)), this, SLOT(projectToggled(bool)));
             connect(this, SIGNAL(directoryEntered(const QString&)), SLOT(directoryChanged(const QString&)));
@@ -215,26 +212,26 @@ MFileDialog::MFileDialog(const QString& dir,
                   switch (lastViewUsed) {
                            case GLOBAL_VIEW:
                            case PROJECT_VIEW:
-                                 buttons.projectButton->setChecked(true);
+                                 buttons.globalButton->setChecked(true); // Let toggled be called. Don't block these...
                                  break;
 
                            case USER_VIEW:
-                                 buttons.userButton->setChecked(true);
+                                 buttons.userButton->setChecked(true); 
                                  break;
                         }
                   }
             else {
                   switch (lastViewUsed) {
                         case GLOBAL_VIEW:
-                              buttons.globalButton->setChecked(true);
+                              buttons.globalButton->setChecked(true); 
                               break;
 
                         case PROJECT_VIEW:
-                              buttons.projectButton->setChecked(true);
+                              buttons.projectButton->setChecked(true); 
                               break;
 
                         case USER_VIEW:
-                              buttons.userButton->setChecked(true);
+                              buttons.userButton->setChecked(true); 
                               break;
                         }
 
@@ -281,21 +278,19 @@ QString getOpenFileName(const QString &startWith, const char** filters_chararray
       {
       QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
       
-      QString initialSelection;  // FIXME Tim.
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
-      if (viewType == MFileDialog::GLOBAL_VIEW)
-        dlg->globalToggled(true);
-      else if (viewType == MFileDialog::PROJECT_VIEW)
-        dlg->projectToggled(true);
-      else if (viewType == MFileDialog::USER_VIEW)
-        dlg->userToggled(true);
       if (doReadMidiPorts)
             dlg->buttons.readMidiPortsGroup->setVisible(true);
+      // Allow overrides. FIXME - some redundancy in MFileDialog ctor. Make this better.
+      if (viewType == MFileDialog::GLOBAL_VIEW)
+        dlg->buttons.globalButton->setChecked(true); // Let toggled be called. Don't block these...
+      else if (viewType == MFileDialog::PROJECT_VIEW)
+        dlg->buttons.projectButton->setChecked(true);
+      else if (viewType == MFileDialog::USER_VIEW)
+        dlg->buttons.userButton->setChecked(true);
 
-      if (!initialSelection.isEmpty())
-            dlg->selectFile(initialSelection);
       dlg->setFileMode(QFileDialog::ExistingFile);
       QStringList files;
       QString result;
