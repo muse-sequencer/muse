@@ -207,9 +207,6 @@ void AudioTrack::internal_assign(const Track& t, int flags)
         }
       }
       
-      // FIXME: May get "addRoute: src track route already exists" when say, 
-      //         an audio output and wave track are selected just because
-      //         of the redundancy (wave track wants to connect to output by default).
       if(flags & ASSIGN_ROUTES)
       {
         for(ciRoute ir = at._inRoutes.begin(); ir != at._inRoutes.end(); ++ir)
@@ -217,8 +214,8 @@ void AudioTrack::internal_assign(const Track& t, int flags)
           // Defer all Jack routes to Audio Input and Output copy constructors or assign !
           if(ir->type == Route::JACK_ROUTE)
             continue;
-          // Amazingly, this single line seems to work.
-          MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+          _inRoutes.push_back(*ir);
         }
         
         for(ciRoute ir = at._outRoutes.begin(); ir != at._outRoutes.end(); ++ir)
@@ -226,8 +223,8 @@ void AudioTrack::internal_assign(const Track& t, int flags)
           // Defer all Jack routes to Audio Input and Output copy constructors or assign !
           if(ir->type == Route::JACK_ROUTE)
             continue;
-          // Amazingly, this single line seems to work.
-          MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir);
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+          _outRoutes.push_back(*ir);
         }
       } 
       else if(flags & ASSIGN_DEFAULT_ROUTES)
@@ -241,11 +238,13 @@ void AudioTrack::internal_assign(const Track& t, int flags)
               switch(type()) {
                     case Track::WAVE:
                     case Track::AUDIO_AUX:
-                          MusEGlobal::audio->msgAddRoute(Route(this, -1), Route(ao, -1));
+                          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+                          _outRoutes.push_back(Route(ao, -1));
                           break;
                     // It should actually never get here now, but just in case.
                     case Track::AUDIO_SOFTSYNTH:
-                          MusEGlobal::audio->msgAddRoute(Route(this, 0, channels()), Route(ao, 0, channels()));
+                          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+                          _outRoutes.push_back(Route(ao, 0, channels()));
                           break;
                     default:
                           break;
@@ -1446,7 +1445,9 @@ void AudioInput::internal_assign(const Track& t, int flags)
       // Defer all Jack routes to these copy constructors or assign !
       if(ir->type != Route::JACK_ROUTE)
         continue;
-      MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));
+      // FIXME Must use msgAddRoute instead of _inRoutes.push_back, because it connects to Jack. 
+      // The track is still fresh has not been added to track lists yet. Will cause audio processing problems ?
+      MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));  
     }
   } 
 }
@@ -1556,7 +1557,9 @@ void AudioOutput::internal_assign(const Track& t, int flags)
       // Defer all Jack routes to these copy constructors or assign !
       if(ir->type != Route::JACK_ROUTE)
         continue;
-      MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir);
+      // FIXME Must use msgAddRoute instead of _outRoutes.push_back, because it connects to Jack. 
+      // The track is still fresh has not been added to track lists yet. Will cause audio processing problems ?
+      MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir); 
     }
   } 
 }

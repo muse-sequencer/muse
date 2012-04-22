@@ -287,7 +287,6 @@ void Track::internal_assign(const Track& t, int flags)
             // Do not call setName here. Audio Input and Output override it and try to set 
             //  Jack ports, which have not been initialized yet here. Must wait until 
             // .Audio Input and Output copy constructors or assign are called.
-            //setName(s);
             _name = s;
             break;
           }
@@ -525,18 +524,15 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         clefType       = mt.clefType;
       }  
       
-      // FIXME: May get "addRoute: src track route already exists" when say, 
-      //         an audio output and wave track are selected just because
-      //         of the redundancy (wave track wants to connect to output by default).
       if(flags & ASSIGN_ROUTES)
       {
         for(ciRoute ir = mt._inRoutes.begin(); ir != mt._inRoutes.end(); ++ir)
-          // Amazingly, this single line seems to work.
-          MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel));
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+          _inRoutes.push_back(*ir); 
         
         for(ciRoute ir = mt._outRoutes.begin(); ir != mt._outRoutes.end(); ++ir)
-          // Amazingly, this single line seems to work.
-          MusEGlobal::audio->msgAddRoute(Route(this, ir->channel), *ir);
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+         _outRoutes.push_back(*ir); 
       }
       else if(flags & ASSIGN_DEFAULT_ROUTES)
       {
@@ -551,7 +547,8 @@ void MidiTrack::internal_assign(const Track& t, int flags)
           {
             c = mp->defaultInChannels();
             if(c)
-              MusEGlobal::audio->msgAddRoute(Route(i, c), Route(this, c));
+              // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+              _inRoutes.push_back(Route(i, c)); 
           }  
           
           if(!defOutFound)
@@ -562,7 +559,8 @@ void MidiTrack::internal_assign(const Track& t, int flags)
               
         /// TODO: Switch if and when multiple output routes supported.
         #if 0
-              MusEGlobal::audio->msgAddRoute(Route(this, c), Route(i, c));
+              // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+              _outRoutes.push_back(Route(i, c)); 
         #else 
               for(ch = 0; ch < MIDI_CHANNELS; ++ch)   
               {
