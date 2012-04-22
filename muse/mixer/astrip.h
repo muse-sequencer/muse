@@ -85,6 +85,7 @@ class AudioStrip : public Strip {
       void updateVolume();
       void updatePan();
       void updateChannels();
+      void updateRouteButtons();
 
    private slots:
       void stereoToggled(bool);

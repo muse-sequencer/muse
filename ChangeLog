@@ -4,6 +4,7 @@
            because caller later calls msgAddTrack which 'mirrors' that single routing node.
           Exception: Audio Input and Output still need to call msgAddRoute which connects to Jack.
           May still cause audio processing problems ?
+        - Added colorhints to iR and oR routing buttons (rj)
 21.04.2012:
         - Templates: File dialog: Added 'read Midi Port Configuration' box. (Tim)
         - File dialog: Unset 'read Midi Port Configuration' box for Global folder, set for others. (Tim) 
