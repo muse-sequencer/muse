@@ -337,8 +337,11 @@ int main(int argc, char* argv[])
 
       // Need to put a sane default here because we can't use ~ in the file name string.
       if(!cConfExists)
+      {
         MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
-
+        MusEGlobal::config.startSong = MusEGlobal::museGlobalShare + QString("/templates/default.med");
+      }
+      
       // Create user instruments dir if it doesn't exist
       {
         QString uinstrPath = MusEGlobal::configPath + QString("/instruments");
@@ -579,9 +582,9 @@ int main(int argc, char* argv[])
 #endif /* HAVE_LASH */
 
       //--------------------------------------------------
-      // Auto-fill the midi ports, if appropriate.         p4.0.41
+      // Auto-fill the midi ports, if appropriate.         
       //--------------------------------------------------
-      if(argc < 2 && MusEGlobal::config.startMode == 1)
+      if(argc < 2 && (MusEGlobal::config.startMode == 1 || MusEGlobal::config.startMode == 2) && !MusEGlobal::config.startSongLoadConfig)
       {  
         MusEGui::populateMidiPorts();
         //MusEGlobal::muse->changeConfig(true);     // save configuration file
@@ -591,7 +594,7 @@ int main(int argc, char* argv[])
       //--------------------------------------------------
       // Load the default song.                            
       //--------------------------------------------------
-      MusEGlobal::muse->loadDefaultSong(argc, &argv[optind]);    // p4.0.41
+      MusEGlobal::muse->loadDefaultSong(argc, &argv[optind]);    
 
       MusEGlobal::midiSeq->checkAndReportTimingResolution();
 

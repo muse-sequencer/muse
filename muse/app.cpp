@@ -1002,6 +1002,7 @@ void MusE::loadDefaultSong(int argc, char** argv)
 {
   QString name;
   bool useTemplate = false;
+  bool loadConfig = true;
   if (argc >= 2)
         name = argv[0];
   else if (MusEGlobal::config.startMode == 0) {
@@ -1012,15 +1013,34 @@ void MusE::loadDefaultSong(int argc, char** argv)
         printf("starting with selected song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
         }
   else if (MusEGlobal::config.startMode == 1) {
-        printf("starting with default template\n");
-        name = MusEGlobal::museGlobalShare + QString("/templates/default.med");
+        if(MusEGlobal::config.startSong.isEmpty()) // Sanity check to avoid some errors later
+        {
+          name = MusEGlobal::museGlobalShare + QString("/templates/default.med");
+          loadConfig = false;
+        }
+        else
+        {
+          name = MusEGlobal::config.startSong;
+          loadConfig = MusEGlobal::config.startSongLoadConfig;
+        }
         useTemplate = true;
+        printf("starting with template %s\n", name.toLatin1().constData());
         }
   else if (MusEGlobal::config.startMode == 2) {
+        if(MusEGlobal::config.startSong.isEmpty()) // Sanity check to avoid some errors later
+        {
+          name = MusEGlobal::museGlobalShare + QString("/templates/default.med");
+          useTemplate = true;
+          loadConfig = false;
+        }
+        else
+        {
+          name = MusEGlobal::config.startSong;
+          loadConfig = MusEGlobal::config.startSongLoadConfig;
+        }
         printf("starting with pre configured song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
-        name = MusEGlobal::config.startSong;
   }
-  loadProjectFile(name, useTemplate, !useTemplate);  
+  loadProjectFile(name, useTemplate, loadConfig);  
 }
       
 //---------------------------------------------------------

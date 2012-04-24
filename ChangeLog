@@ -1,3 +1,7 @@
+23.04.2012:
+        - Global Settings: Start song: Changed to allow other templates. (Tim)
+          * Please revisit this setting or start with clean config so MusE can 
+           initialize the box with the global default.med file.
 22.04.2012:
         - Duplicate Tracks: Fixed routing bug. (Tim)
           In tracks' ::internal_assign(), don't call msgAddRoute, push_back the route node,

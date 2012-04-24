@@ -37,6 +37,7 @@
 #include "globals.h"
 #include "icons.h"
 #include "helper.h"
+#include "filedialog.h"
 
 namespace MusEGui {
 
@@ -70,7 +71,11 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       
       projDirOpenToolButton->setIcon(*openIcon); // FINDMICH
       connect(projDirOpenToolButton, SIGNAL(clicked()), SLOT(browseProjDir()));
-
+      startSongFileOpenToolButton->setIcon(*openIcon); 
+      connect(startSongFileOpenToolButton, SIGNAL(clicked()), SLOT(browseStartSongFile()));
+      startSongResetToolButton->setIcon(*undoIcon);
+      connect(startSongResetToolButton, SIGNAL(clicked()), SLOT(startSongReset()));
+      
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
@@ -159,7 +164,8 @@ void GlobalSettingsConfig::updateSettings()
 
       startSongEntry->setText(MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
-
+      readMidiConfigFromSongCheckBox->setChecked(MusEGlobal::config.startSongLoadConfig);
+      
       showTransport->setChecked(MusEGlobal::config.transportVisible);
       showBigtime->setChecked(MusEGlobal::config.bigTimeVisible);
       showMixer->setChecked(MusEGlobal::config.mixer1Visible);
@@ -252,6 +258,8 @@ void GlobalSettingsConfig::apply()
       
       MusEGlobal::config.startSong   = startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();
+      MusEGlobal::config.startSongLoadConfig = readMidiConfigFromSongCheckBox->isChecked();
+      
       int das = dummyAudioSize->currentIndex();
       MusEGlobal::config.dummyAudioBufSize = dummyAudioBufSizes[das];
       MusEGlobal::config.dummyAudioSampleRate = dummyAudioRate->value();
@@ -478,6 +486,25 @@ void GlobalSettingsConfig::browseProjDir()
   QString dir = MusEGui::browseProjectFolder(this);
   if(!dir.isEmpty())
     projDirEntry->setText(dir);
+}
+
+void GlobalSettingsConfig::browseStartSongFile()
+{
+  bool doReadMidiPorts;
+  QString sstr = startSongGroup->button(1)->isChecked() ? QString("templates") : QString("");
+
+  QString fn = MusEGui::getOpenFileName(sstr, MusEGlobal::med_file_pattern, this,
+      tr("MusE: Choose start template or song"), &doReadMidiPorts, MusEGui::MFileDialog::GLOBAL_VIEW);
+  if (!fn.isEmpty()) {
+        startSongEntry->setText(fn);
+        readMidiConfigFromSongCheckBox->setChecked(doReadMidiPorts);
+        }
+}
+
+void GlobalSettingsConfig::startSongReset()
+{
+  startSongEntry->setText(MusEGlobal::museGlobalShare + QString("/templates/default.med"));
+  readMidiConfigFromSongCheckBox->setChecked(false);
 }
 
 } // namespace MusEGui
