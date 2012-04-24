@@ -167,6 +167,7 @@ class LMaster : public MidiEditor {
    public slots:
       void songChanged(int);
       void configChanged();
+      void focusCanvas();
 
    signals:
       void isDeleting(MusEGui::TopWin*);

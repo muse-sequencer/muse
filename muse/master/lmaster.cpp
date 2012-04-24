@@ -31,6 +31,7 @@
 #include "audio.h"
 #include "shortcuts.h"
 #include "debug.h"
+#include "gconfig.h"
 
 #include <QCloseEvent>
 #include <QGridLayout>
@@ -283,6 +284,19 @@ LMaster::LMaster()
 LMaster::~LMaster()
       {
       }
+
+//---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void LMaster::focusCanvas()
+{
+  if(MusEGlobal::config.smartFocus)
+  {
+    view->setFocus();
+    view->activateWindow();
+  }
+}
 
 //---------------------------------------------------------
 //   insertSig

@@ -46,6 +46,7 @@
 #include "midiport.h"
 #include "midictrl.h"
 #include "app.h"
+#include "gconfig.h"
 
 namespace MusEGui {
 
@@ -1008,5 +1009,18 @@ void ListEdit::keyPressEvent(QKeyEvent* event)
             return;
             }
       }
+
+//---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void ListEdit::focusCanvas()
+{
+  if(MusEGlobal::config.smartFocus)
+  {
+    liste->setFocus();
+    liste->activateWindow();
+  }
+}
 
 } // namespace MusEGui

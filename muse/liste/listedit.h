@@ -84,6 +84,7 @@ class ListEdit : public MidiEditor {
 
    public slots:
       void songChanged(int);
+      void focusCanvas();
 
    signals:
       void isDeleting(MusEGui::TopWin*);
