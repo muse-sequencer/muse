@@ -1,3 +1,7 @@
+24.04.2012:
+        - Changed automation drawing in arranger to be more forgiving
+          shift no longer needed and it's not needed to be too close
+          to the line. TODO: some cleanup (rj)
 23.04.2012:
         - Global Settings: Start song: Changed to allow other templates. (Tim)
           * Please revisit this setting or start with clean config so MusE can 

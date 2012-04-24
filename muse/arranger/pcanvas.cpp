@@ -3317,11 +3317,9 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
       //--------------------------------
 
       MusECore::TrackList* tl = MusEGlobal::song->tracks();
-      //int yy = 0;
       int yy = -rmapy(yorg) - ypos;
       int th;
       for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it) {
-            //if (yy > y + h)
             if (yy > my + mh)
                   break;
             MusECore::Track* track = *it;
@@ -3331,9 +3329,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             if (MusEGlobal::config.canvasShowGrid && (track->isMidiTrack() || track->type() == MusECore::Track::WAVE))   // Tim.
             {
               p.setPen(baseColor.dark(130));
-              //p.drawLine(x, yy + th, x + w, yy + th);  
               p.drawLine(mx, yy + th, mx + mw, yy + th);  
-              //p.setPen(baseColor);
             }
             
             // The update rectangle (rect and mr etc) is clipped at x<0 and y<0 in View::pdraw(). 
@@ -3346,26 +3342,10 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             //  does NOT depend on the update rectangle (except to check intersection). That's why this issue 
             //  does not show up there. Should probably try to make that routine more efficient, just like here.   Tim. p4.0.30
             QRect r(mx, yy, mw, th);
-            //if(r.intersects(mr))  DELETETHIS
             {
               if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
-                    //QRect r = rect & QRect(x, yy, w, track->height());
                     drawAudioTrack(p, mr, r, (MusECore::AudioTrack*)track);
-                    //p.setPen(baseColor);
-              }
-              
-              // DELETETHIS 13
-              // This was redundant drawing. Not required, done via drawTopItem in Canvas::draw
-              /*
-              //p.setWorldMatrixEnabled(true);
-              //if (!track->isMidiTrack()) { // draw automation
-              if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
-                    //QRect r = rect & QRect(x, yy, w, track->height());
-                    drawAutomation(p, r, (MusECore::AudioTrack*)track);
-                    //p.setPen(baseColor);
-              }
-              //p.setWorldMatrixEnabled(false);
-              */
+              }              
             }
             yy += th;
       }
@@ -3378,8 +3358,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
 {
-    //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
-    QRect mr = map(rect);                      // Use our own map instead.
+    QRect mr = map(rect);
     
     int mx = mr.x();
     int my = mr.y();
@@ -3396,7 +3375,6 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
     int yy = yoff;
     int th;
     for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it) {
-          //if (yy > y + h) DELETETHIS
           if (yy > my + mh)
                 break;
           MusECore::Track* track = *it;
@@ -3404,15 +3382,12 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
           if (!th)
             continue;
           if (!track->isMidiTrack()) { // draw automation
-                //QRect r = rect & QRect(x, yy, w, track->height()); DELETETHIS
                 QRect r(mx, yy, mw, th);
                 if(r.intersects(mr)) 
                 {
                   drawAutomation(p, r, (MusECore::AudioTrack*)track);
-                  //p.setPen(baseColor); DELETETHIS
                 }  
           }
-          //yy += track->height(); DELETETHIS
           yy += th;
           }
 
@@ -3648,6 +3623,42 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
     }
 }
 
+//---------------------------------------------------------
+//  checkIfOnLine
+//    check if our point is on the line defined by
+//    by first/last X/Y
+//---------------------------------------------------------
+
+bool checkIfOnLine(double mouseX, double mouseY, double firstX, double lastX, double firstY, double lastY, int circumference)
+{
+  double proportion = (mouseX-firstX)/(lastX-firstX);
+
+  // 10   X(15)   20
+  // proportion = 0.5
+  //              10
+  //          /
+  //      Y(5)
+  //   /
+  // 1
+  double calcY = (lastY-firstY)*proportion+firstY;
+  if(ABS(calcY-mouseY) < circumference || (lastX == firstX && ABS(mouseX-lastX) < circumference))
+    return true;
+  return false;
+}
+
+//---------------------------------------------------------
+//  checkIfNearPoint
+//---------------------------------------------------------
+
+bool checkIfNearPoint(int mouseX, int mouseY, int eventX, int eventY, int circumference)
+{
+  int x1 = ABS(mouseX - eventX) ;
+  int y1 = ABS(mouseY - eventY);
+  if (x1 < circumference &&  y1 < circumference) {
+    return true;
+  }
+  return false;
+}
 
 //---------------------------------------------------------
 //  checkAutomation
@@ -3660,22 +3671,22 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
 //    controller added.
 //---------------------------------------------------------
 
-void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, bool addNewCtrl)
+void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, bool NOTaddNewCtrl)
 {
     if (t->isMidiTrack())
       return;
 
-    int currY;
+    int mouseY;
     int trackY = t->y();
     int trackH = t->height();
     
     { int y = pointer.y();
       if(y < trackY || y >= (trackY + trackH))
         return; 
-      currY =  mapy(y);  }
+      mouseY =  mapy(y);  }
     
-    int currX =  mapx(pointer.x());
-    int circumference = 5;
+    int mouseX =  mapx(pointer.x());
+    int circumference = 10;
     
     MusECore::CtrlListList* cll = ((MusECore::AudioTrack*) t)->controller();
     for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll)
@@ -3686,15 +3697,15 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
         }
         MusECore::iCtrl ic=cl->begin();
 
-        int oldX = mapx(0);
-        int xpixel = oldX;
-        int oldY = -1;
-        int ypixel = oldY;
+        int eventOldX = mapx(0);
+        int eventX = eventOldX;
+        int eventOldY = -1;
+        int eventY = eventOldY;
         double min, max;
         cl->range(&min,&max);
         bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;  
 
-        // First check that there IS automation, ic == cl->end means no automation
+        // First check that there IS automation for this controller, ic == cl->end means no automation
         if (ic == cl->end()) 
         {
           double y;   
@@ -3704,70 +3715,41 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
           }
           else 
             y = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
-          ypixel = oldY = mapy(trackY+trackH-1 - 2 - y * trackH);
+          eventY = eventOldY = mapy(trackY+trackH-1 - 2 - y * trackH);
         }
-        else
+        else // we have automation, loop through it
         {  
           for (; ic !=cl->end(); ic++)
           {
              double y = ic->second.val;
              if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-                y = logToVal(y, min, max); // represent volume between 0 and 1
+               y = logToVal(y, min, max); // represent volume between 0 and 1
                if (y < 0) y = 0;
              }
              else 
                y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
              
-             ypixel = mapy(trackY + trackH - 2 - y * trackH);
-             xpixel = mapx(MusEGlobal::tempomap.frame2tick(ic->second.frame));
+             eventY = mapy(trackY + trackH - 2 - y * trackH);
+             eventX = mapx(MusEGlobal::tempomap.frame2tick(ic->second.frame));
 
-             if (oldY==-1) oldY = ypixel;
+             if (eventOldY==-1) eventOldY = eventY;
              
-             bool foundIt=false;
-             if (addNewCtrl) {
-               double firstX=oldX;
-               double lastX=xpixel;
-               double firstY=oldY;
-               double lastY = discrete ? oldY : ypixel;
+             //if (addNewCtrl) {
+             bool onLine = checkIfOnLine(mouseX, mouseY, eventOldX,eventX, eventOldY, discrete? eventOldY:eventY, circumference);
+             bool onPoint = false;
+             if ( pointer.x() > 0 && pointer.y() > 0)
+               onPoint = checkIfNearPoint(mouseX, mouseY, eventX, eventY, circumference);
 
-               double proportion = (currX-firstX)/(lastX-firstX);
+             eventOldX = eventX;
+             eventOldY = eventY;
 
-               if((currX < oldX) || (currX > lastX) || (firstX==lastX) ) 
-               {
-                    oldX = xpixel;
-                    oldY = ypixel;
-                    continue; // not the right region
-               }
-
-               // 10   X(15)   20
-               // proportion = 0.5
-               //              10
-               //          /
-               //      Y(5)
-               //   /
-               // 1
-               double calcY = (lastY-firstY)*proportion+firstY;
-               if(ABS(calcY-currY) < circumference || (xpixel == oldX && ABS(currX-xpixel) < circumference))
-                 foundIt=true;
-             
-             } else {
-               int x1 = ABS(currX - xpixel) ;
-               int y1 = ABS(currY - ypixel);
-               if (x1 < circumference &&  y1 < circumference && pointer.x() > 0 && pointer.y() > 0) {
-                 foundIt=true;
-               }
-
-             }
-             oldX = xpixel;
-             oldY = ypixel;
-
-             if (foundIt) {
-               QWidget::setCursor(Qt::CrossCursor);
-               if (addNewCtrl) {
-                 //automation.currentCtrl = 0;
+             if (onLine) {
+               if (!onPoint) {
+                 QWidget::setCursor(Qt::CrossCursor);
                  automation.currentCtrlValid = false;
                  automation.controllerState = addNewController;
                }else {
+                 QWidget::setCursor(Qt::OpenHandCursor);
                  automation.currentCtrlFrame = ic->second.frame;
                  automation.currentCtrlValid = true;
                  automation.controllerState = movingController;
@@ -3779,18 +3761,17 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
           }
         } 
 
-        if (addNewCtrl) {
-          // check if we are reasonably close to a line, we only need to check Y
-          // as the line is straight after the last controller
-          //printf("post oldX:%d oldY:%d xpixel:%d ypixel:%d currX:%d currY:%d\n", oldX, oldY, xpixel, ypixel, currX, currY); 
-          if(currX >= xpixel && ypixel == oldY && ABS(currY-ypixel) < circumference) {
-            QWidget::setCursor(Qt::CrossCursor);
-            automation.controllerState = addNewController;
-            automation.currentCtrlList = cl;
-            automation.currentTrack = t;
-            automation.currentCtrlValid = false;
-            return;
-          }
+        // we are now after the last existing controller
+        // check if we are reasonably close to a line, we only need to check Y
+        // as the line is straight after the last controller
+        //printf("post oldX:%d oldY:%d xpixel:%d ypixel:%d currX:%d currY:%d\n", oldX, oldY, xpixel, ypixel, currX, currY);
+        if(mouseX >= eventX && eventY == eventOldY && ABS(mouseY-eventY) < circumference) {
+          QWidget::setCursor(Qt::CrossCursor);
+          automation.controllerState = addNewController;
+          automation.currentCtrlList = cl;
+          automation.currentTrack = t;
+          automation.currentCtrlValid = false;
+          return;
         }
       }
       // if there are no hits we default to clearing all the data
@@ -3820,10 +3801,8 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
       }
 
     // automation.moveController is set, lets rock.
-
     int prevFrame = 0;
     int nextFrame = -1;
-    //int currFrame = 0;
 
     if (automation.controllerState == addNewController)
     {
@@ -3885,7 +3864,7 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     automation.currentCtrlList->range(&min,&max);
     double cvval;    
     if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
-       printf("log conversion val=%f min=%f max=%f\n", yfraction, min, max);
+       //printf("log conversion val=%f min=%f max=%f\n", yfraction, min, max);
        cvval = valToLog(yfraction, min, max);
        if (cvval< min) cvval=min;
        if (cvval>max) cvval=max;
