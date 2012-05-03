@@ -1,3 +1,5 @@
+03.05.2012:
+        - Fixed crash bug with coloring of iR button on aux strip (it does not have one) (rj)
 24.04.2012:
         - Changed automation drawing in arranger to be more forgiving
           shift no longer needed and it's not needed to be too close

@@ -152,10 +152,13 @@ void AudioStrip::configChanged()
 
 void AudioStrip::updateRouteButtons()
 {
-    if (track->noInRoute())
-      iR->setStyleSheet("background-color:darkgray;");
-    else
-      iR->setStyleSheet("");
+    if (iR)
+    {
+        if (track->noInRoute())
+          iR->setStyleSheet("background-color:darkgray;");
+        else
+          iR->setStyleSheet("");
+    }
 
     if (track->noOutRoute())
       oR->setStyleSheet("background-color:red;");
