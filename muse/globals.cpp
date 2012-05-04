@@ -116,6 +116,7 @@ bool loadVST = true;
 bool loadDSSI = true;
 bool usePythonBridge = false;
 bool useLASH = true;
+bool useAlsaWithJack = false;
 
 const char* midi_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)"),

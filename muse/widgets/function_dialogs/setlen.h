@@ -47,10 +47,10 @@ class Setlen : public QDialog, public Ui::SetlenBase
 	public:
 		Setlen(QWidget* parent = 0);
 
-		int range;
-		int len;
+		static int range;
+		static int len;
 		
-		void read_configuration(MusECore::Xml& xml);
+		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
 		

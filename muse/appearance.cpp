@@ -538,7 +538,7 @@ void Appearance::apply()
       config->fonts[6].setItalic(italic6->isChecked());
       config->fonts[6].setBold(bold6->isChecked());
 
-      config->style = themeComboBox->currentText();
+      config->style = themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText();
     	// setting up a new theme might change the fontsize, so re-read
       fontSize0->setValue(QApplication::font().pointSize());
 

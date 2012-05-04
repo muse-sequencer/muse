@@ -26,6 +26,13 @@
 
 namespace MusEGui {
 
+int Remove::range = 1;
+int Remove::velo_threshold = 16;
+bool Remove::velo_thres_used = 0;
+int Remove::len_threshold = 12;
+bool Remove::len_thres_used = 0;
+
+
 Remove::Remove(QWidget* parent)
 	: QDialog(parent)
 {
@@ -35,8 +42,6 @@ Remove::Remove(QWidget* parent)
 	range_group->addButton(selected_events_button,1);
 	range_group->addButton(looped_events_button,2);
 	range_group->addButton(selected_looped_button,3);
-	
-	pull_values();
 }
 
 void Remove::pull_values()

@@ -1149,6 +1149,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QLabel" name="theme_label">
+              <property name="text">
+               <string>May require restarting MusE for best results</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="Spacer2">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -1158,7 +1165,7 @@
               </property>
               <property name="sizeHint" stdset="0">
                <size>
-                <width>190</width>
+                <width>90</width>
                 <height>20</height>
                </size>
               </property>

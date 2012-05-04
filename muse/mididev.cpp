@@ -38,6 +38,7 @@
 #include "gconfig.h"
 #include "globals.h"
 #include "audio.h"
+#include "audiodev.h"
 #include "midiseq.h"
 #include "sync.h"
 #include "midiitransform.h"
@@ -68,13 +69,16 @@ void initMidiDevices()
 #ifdef MIDI_DRIVER_MIDI_SERIAL
       initMidiSerial();
 #endif
-      if(initMidiAlsa())
+      if(MusEGlobal::useAlsaWithJack || MusEGlobal::audioDevice->deviceType() != AudioDevice::JACK_AUDIO)
+      {
+        if(initMidiAlsa())
           {
           QMessageBox::critical(NULL, "MusE fatal error.", "MusE failed to initialize the\n" 
                                                           "Alsa midi subsystem, check\n"
                                                           "your configuration.");
           exit(-1);
           }
+      }
       
       if(initMidiJack())
           {

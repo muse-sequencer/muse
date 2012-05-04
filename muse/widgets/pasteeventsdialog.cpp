@@ -29,6 +29,13 @@ using MusEGlobal::config;
 
 namespace MusEGui {
 
+int PasteEventsDialog::number = 1;
+int PasteEventsDialog::raster = 384;
+bool PasteEventsDialog::always_new_part = 0;
+bool PasteEventsDialog::never_new_part = 0;
+unsigned PasteEventsDialog::max_distance = 3072;
+bool PasteEventsDialog::into_single_part = 0;
+  
 PasteEventsDialog::PasteEventsDialog(QWidget* parent)
 	: QDialog(parent)
 {
@@ -41,8 +48,6 @@ PasteEventsDialog::PasteEventsDialog(QWidget* parent)
 	connect(max_distance_spinbox, SIGNAL(valueChanged(int)), this, SLOT(max_distance_changed(int)));
 	
 	into_single_part_allowed=true;
-	
-	pull_values();
 }
 
 void PasteEventsDialog::pull_values()

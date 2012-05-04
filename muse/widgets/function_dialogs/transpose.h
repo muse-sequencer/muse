@@ -45,10 +45,10 @@ class Transpose : public QDialog, public Ui::TransposeBase
 	public:
 		Transpose(QWidget* parent = 0);
 
-		int range;
-		int amount;
+		static int range;
+		static int amount;
 		
-		void read_configuration(MusECore::Xml& xml);
+		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
 		

@@ -47,12 +47,12 @@ class Crescendo : public QDialog, public Ui::CrescendoBase
 	public:
 		Crescendo(QWidget* parent = 0);
 
-		int range;
-		int start_val;
-		int end_val;
-		bool absolute;
+		static int range;
+		static int start_val;
+		static int end_val;
+		static bool absolute;
 		
-		void read_configuration(MusECore::Xml& xml);
+		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
 		

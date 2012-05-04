@@ -26,6 +26,9 @@
 
 namespace MusEGui {
 
+int Transpose::range = 1;
+int Transpose::amount = 0;
+  
 Transpose::Transpose(QWidget* parent)
 	: QDialog(parent)
 {
@@ -35,8 +38,6 @@ Transpose::Transpose(QWidget* parent)
 	range_group->addButton(selected_events_button,1);
 	range_group->addButton(looped_events_button,2);
 	range_group->addButton(selected_looped_button,3);
-	
-	pull_values();
 }
 
 void Transpose::pull_values()

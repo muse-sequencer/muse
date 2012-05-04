@@ -367,8 +367,7 @@ class MusE : public QMainWindow
       void updateWindowMenu();
 
    public:
-      MusE(int argc, char** argv);
-      ~MusE();
+      MusE();
       void loadDefaultSong(int argc, char** argv);
       Arranger* arranger() const { return _arranger; }
       ArrangerView* getArrangerView() const { return arrangerView; }

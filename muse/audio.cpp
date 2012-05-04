@@ -216,9 +216,8 @@ bool Audio::start()
                }
           }
 
+      _running = true;  // Set before we start to avoid error messages in process.
       MusEGlobal::audioDevice->start(MusEGlobal::realTimePriority);
-      
-      _running = true;
 
       // shall we really stop JACK transport and locate to
       // saved position?

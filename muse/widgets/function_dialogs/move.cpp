@@ -26,6 +26,9 @@
 
 namespace MusEGui {
 
+int Move::range = 1;
+int Move::amount = 0;
+  
 Move::Move(QWidget* parent)
 	: QDialog(parent)
 {
@@ -35,8 +38,6 @@ Move::Move(QWidget* parent)
 	range_group->addButton(selected_events_button,1);
 	range_group->addButton(looped_events_button,2);
 	range_group->addButton(selected_looped_button,3);
-	
-	pull_values();
 }
 
 void Move::pull_values()

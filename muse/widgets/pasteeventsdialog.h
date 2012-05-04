@@ -49,15 +49,15 @@ class PasteEventsDialog : public QDialog, public Ui::PasteEventsDialogBase
 	public:
 		PasteEventsDialog(QWidget* parent = 0);
 
-		int number;
-		int raster;
-		bool always_new_part;
-		bool never_new_part;
-		unsigned max_distance;
-		bool into_single_part;
+		static int number;
+		static int raster;
+		static bool always_new_part;
+		static bool never_new_part;
+		static unsigned max_distance;
+		static bool into_single_part;
 		bool into_single_part_allowed;
 		
-		void read_configuration(MusECore::Xml& xml);
+		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
 	

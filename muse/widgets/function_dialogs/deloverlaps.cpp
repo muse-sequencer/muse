@@ -26,6 +26,8 @@
 
 namespace MusEGui {
 
+int DelOverlaps::range = 1;
+
 DelOverlaps::DelOverlaps(QWidget* parent)
 	: QDialog(parent)
 {
@@ -35,8 +37,6 @@ DelOverlaps::DelOverlaps(QWidget* parent)
 	range_group->addButton(selected_events_button,1);
 	range_group->addButton(looped_events_button,2);
 	range_group->addButton(selected_looped_button,3);
-	
-	pull_values();
 }
 
 void DelOverlaps::pull_values()

@@ -140,7 +140,7 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
                 if(LADSPA_IS_PORT_OUTPUT(pd) && LADSPA_IS_PORT_CONTROL(pd))
                   co++;
               }  
-              fprintf(stderr, "MusEGlobal::audio ins:%d outs:%d control ins:%d outs:%d\n", ai, ao, ci, co);
+              fprintf(stderr, "  audio ins:%d outs:%d control ins:%d outs:%d\n", ai, ao, ci, co);
             }
             
             MusEGlobal::synthis.push_back(s);

@@ -87,18 +87,15 @@
 #include "sig_tempo_toolbar.h"
 
 namespace MusECore {
-extern void initMidiSynth();
 extern void exitJackAudio();
 extern void exitDummyAudio();
 extern void exitOSC();
 extern void exitMidiAlsa();
-
-extern void initMidiSequencer();   
-extern void initAudio();           
-extern void initAudioPrefetch();   
 }
 
 namespace MusEGui {
+
+extern void deleteIcons();
 
 //extern void cacheJackRouteNames();
 
@@ -291,7 +288,7 @@ void addProject(const QString& name)
 //   MusE
 //---------------------------------------------------------
 
-MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
+MusE::MusE() : QMainWindow()
       {
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::NoFocus);   
@@ -323,9 +320,10 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       activeTopWin          = NULL;
       currentMenuSharingTopwin = NULL;
       waitingForTopwin      = NULL;
-      
+
       appName               = QString("MusE");
       setWindowTitle(appName);
+      setWindowIcon(*MusEGui::museIcon);
       midiPluginSignalMapper = new QSignalMapper(this);
       followSignalMapper = new QSignalMapper(this);
       windowsMapper = new QSignalMapper(this);
@@ -447,10 +445,6 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
 
       MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(activated()), MusEGlobal::song, SLOT(panic()));
-
-      MusECore::initMidiInstruments();  
-      MusECore::initMidiPorts();
-      MusECore::initMidiDevices();
 
       //----Actions
       //-------- File Actions
@@ -712,32 +706,9 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);
 
-      //rlimit lim; getrlimit(RLIMIT_RTPRIO, &lim);
-      //printf("RLIMIT_RTPRIO soft:%d hard:%d\n", lim.rlim_cur, lim.rlim_max);    // Reported 80, 80 even with non-RT kernel.
+       QSocketNotifier* ss = new QSocketNotifier(MusEGlobal::audio->getFromThreadFdr(), QSocketNotifier::Read, this); 
+       connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));  
 
-      if (MusEGlobal::realTimePriority < sched_get_priority_min(SCHED_FIFO))
-            MusEGlobal::realTimePriority = sched_get_priority_min(SCHED_FIFO);
-      else if (MusEGlobal::realTimePriority > sched_get_priority_max(SCHED_FIFO))
-            MusEGlobal::realTimePriority = sched_get_priority_max(SCHED_FIFO);
-
-      // If we requested to force the midi thread priority...
-      if(MusEGlobal::midiRTPrioOverride > 0)
-      {
-        if (MusEGlobal::midiRTPrioOverride < sched_get_priority_min(SCHED_FIFO))
-            MusEGlobal::midiRTPrioOverride = sched_get_priority_min(SCHED_FIFO);
-        else if (MusEGlobal::midiRTPrioOverride > sched_get_priority_max(SCHED_FIFO))
-            MusEGlobal::midiRTPrioOverride = sched_get_priority_max(SCHED_FIFO);
-      }
-            
-      MusECore::initMidiSequencer();   
-      MusECore::initAudio();           
-      
-      // Moved here from Audio::Audio
-      QSocketNotifier* ss = new QSocketNotifier(MusEGlobal::audio->getFromThreadFdr(), QSocketNotifier::Read, this); 
-      connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));  
-      
-      MusECore::initAudioPrefetch();   
-      
       //---------------------------------------------------
       //    Popups
       //---------------------------------------------------
@@ -956,8 +927,6 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
             fclose(f);
             }
 
-      MusECore::initMidiSynth();
-      
       arrangerView->populateAddTrack();
       arrangerView->updateShortcuts();
       
@@ -972,14 +941,7 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
 
       MusEGlobal::song->update();
       updateWindowMenu();
-
-      // Load start song now in main.cpp
       }
-
-
-MusE::~MusE()
-{
-}
 
 //---------------------------------------------------------
 //   setHeartBeat
@@ -1564,6 +1526,10 @@ void MusE::closeEvent(QCloseEvent* event)
       delete MusEGlobal::audio;
       delete MusEGlobal::midiSeq;
       delete MusEGlobal::song;
+      
+      if(MusEGlobal::debugMsg)
+        printf("MusE: Deleting icons\n");
+      deleteIcons();
       
       qApp->quit();
       }
@@ -2329,17 +2295,16 @@ void MusE::configAppearance()
 void MusE::loadTheme(const QString& s)
       {
       QStringList sl = QStyleFactory::keys();
-      if (sl.indexOf(s) == -1) {
+      if (s.isEmpty() || sl.indexOf(s) == -1) {
         if(MusEGlobal::debugMsg)
-          printf("Set style does not exist, setting default.");
-        QApplication::setStyle(Appearance::defaultStyle);
-        style()->setObjectName(Appearance::defaultStyle);
-
+          printf("Set style does not exist, setting default.\n");
+        qApp->setStyle(Appearance::defaultStyle);
+        qApp->style()->setObjectName(Appearance::defaultStyle);
       }
-      else if (style()->objectName() != s)
+      else if (qApp->style()->objectName() != s)
       {
-            QApplication::setStyle(s);
-            style()->setObjectName(s);   // p4.0.45
+            qApp->setStyle(s);
+            qApp->style()->setObjectName(s);   
       }      
       }
 

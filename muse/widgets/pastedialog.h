@@ -49,13 +49,13 @@ class PasteDialog : public QDialog, public Ui::PasteDialogBase
 	public:
 		PasteDialog(QWidget* parent = 0);
 
-		int insert_method;
-		int number;
-		int raster;
-		bool all_in_one_track;
-		bool clone;
+		static int insert_method;
+		static int number;
+		static int raster;
+		static bool all_in_one_track;
+		static bool clone;
 		
-		void read_configuration(MusECore::Xml& xml);
+		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
 	

@@ -1,3 +1,12 @@
+04.05.2012:
+        *Added: -A switch: "Force inclusion of ALSA midi even if using Jack". (Tim...) 
+        - Fixed intermittent Jack crash at startup with jack <= 1.9.8. Fixed in Jack 1.9.9  
+        - Rearranged main.cpp, moved a few init items into it from app.cpp 
+        - Fixed "Jack calling while audio disconnected" errors at startup.
+        - Fixed LASH leak: Added lash_args_destroy().
+        - Fixed icons leak: Destroy all icons.
+        - Fixed function dialogs leak: Created with NULL parent.
+        - Removed QApplication::setColorSpec() call. Caused "pixmap is not an X11 class pixmap" errors.
 03.05.2012:
         - Fixed crash bug with coloring of iR button on aux strip (it does not have one) (rj)
 24.04.2012:

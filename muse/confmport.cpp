@@ -734,28 +734,31 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                           printf("MPConfig::rbClicked unknown midi device: %s\n", (*i)->name().toLatin1().constData());
                       }
                       
-                      pup->addSeparator();
-                      pup->addAction(new MusEGui::MenuTitleItem("ALSA:", pup));
-                      
-                      for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
+                      if(!mapALSA.empty())
                       {
-                        int idx = i->second;
-                        //if(idx > sz)           // Sanity check DELETETHIS 2
-                        //  continue;
-                        QString s(i->first.c_str());
-                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::ALSA_MIDI);
-                        if(md)
+                        pup->addSeparator();
+                        pup->addAction(new MusEGui::MenuTitleItem("ALSA:", pup));
+                        
+                        for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
                         {
-                          //if(!dynamic_cast<MidiAlsaDevice*>(md)) DELETETHIS
-                          if(md->deviceType() != MusECore::MidiDevice::ALSA_MIDI)  
-                            continue;
-                            
-                          act = pup->addAction(md->name());
-                          act->setData(idx);
-                          act->setCheckable(true);
-                          act->setChecked(md == dev);
+                          int idx = i->second;
+                          //if(idx > sz)           // Sanity check DELETETHIS 2
+                          //  continue;
+                          QString s(i->first.c_str());
+                          MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::ALSA_MIDI);
+                          if(md)
+                          {
+                            //if(!dynamic_cast<MidiAlsaDevice*>(md)) DELETETHIS
+                            if(md->deviceType() != MusECore::MidiDevice::ALSA_MIDI)  
+                              continue;
+                              
+                            act = pup->addAction(md->name());
+                            act->setData(idx);
+                            act->setCheckable(true);
+                            act->setChecked(md == dev);
+                          }  
                         }  
-                      }  
+                      }
                       
                       if(!mapSYNTH.empty())
                       {
@@ -780,24 +783,27 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         }
                       }  
                       
-                      pup->addSeparator();
-                      pup->addAction(new MusEGui::MenuTitleItem("JACK:", pup));
-                      
-                      for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
+                      if(!mapJACK.empty())
                       {
-                        int idx = i->second;
-                        QString s(i->first.c_str());
-                        MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::JACK_MIDI);
-                        if(md)
+                        pup->addSeparator();
+                        pup->addAction(new MusEGui::MenuTitleItem("JACK:", pup));
+                        
+                        for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
                         {
-                          if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)  
-                            continue;
-                            
-                          act = pup->addAction(md->name());
-                          act->setData(idx);
-                          act->setCheckable(true);
-                          act->setChecked(md == dev);
-                        }  
+                          int idx = i->second;
+                          QString s(i->first.c_str());
+                          MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::JACK_MIDI);
+                          if(md)
+                          {
+                            if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)  
+                              continue;
+                              
+                            act = pup->addAction(md->name());
+                            act->setData(idx);
+                            act->setCheckable(true);
+                            act->setChecked(md == dev);
+                          }  
+                        }
                       }
                       
                       act = pup->exec(ppt);
