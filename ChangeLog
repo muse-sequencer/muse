@@ -1,3 +1,6 @@
+05.05.2012:
+        * Updated .ts translation files in repository. Updated with -no-obsolete to
+          trim away lots of unused strings (rj)
 04.05.2012:
         *Added: -A switch: "Force inclusion of ALSA midi even if using Jack". (Tim...) 
         - Fixed intermittent Jack crash at startup with jack <= 1.9.8. Fixed in Jack 1.9.9  
