@@ -26,6 +26,8 @@
 
 // Turn on debugging messages
 //#define DSSI_DEBUG 
+// Turn on constant flow of process debugging messages
+//#define DSSI_DEBUG_PROCESS 
 
 // Support vst state saving/loading with vst chunks. 
 //#define DSSI_VST_CHUNK_SUPPORT    
@@ -546,7 +548,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             synti->_guiUpdateControls.push_back(false);
           
             #ifdef DSSI_DEBUG 
-            printf("DssiSynthIF::init control port:%d port idx:%d name:%s\n", cip, k, ld->PortNames[k]);
+            printf("DssiSynthIF::init control port:%d port idx:%lu name:%s\n", cip, k, ld->PortNames[k]);
             #endif
             
             // This code is duplicated in ::getControllerInfo()
@@ -642,7 +644,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             controlsOut[cop].en2Ctrl = false;
 
             #ifdef DSSI_DEBUG 
-            printf("DssiSynthIF::init control output port:%d port idx:%d name:%s\n", cop, k, ld->PortNames[k]);
+            printf("DssiSynthIF::init control output port:%d port idx:%lu name:%s\n", cop, k, ld->PortNames[k]);
             #endif
             
             //  Control outs are not handled but still must be connected to something.
@@ -1066,6 +1068,10 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
         snd_seq_ev_set_noteoff(event, chn, a, 0);
     break;
     case MusECore::ME_NOTEOFF:
+      #ifdef DSSI_DEBUG 
+      fprintf(stderr, "DssiSynthIF::processEvent midi event is MusECore::ME_NOTEOFF\n");
+      #endif
+          
       snd_seq_ev_clear(event); 
       event->queue = SND_SEQ_QUEUE_DIRECT;
       snd_seq_ev_set_noteoff(event, chn, a, 0);
@@ -1370,6 +1376,10 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
   int frameOffset = MusEGlobal::audio->getFrameOffset();
   unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();  
   
+  #ifdef DSSI_DEBUG_PROCESS 
+  fprintf(stderr, "DssiSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu nevents:%lu\n", pos, ports, nframes, syncFrame, nevents);
+  #endif
+          
   // All ports must be connected to something!
   unsigned long nop, k;
   
@@ -1416,6 +1426,10 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
   if(min_per > nframes)
     min_per = nframes;
   
+  #ifdef DSSI_DEBUG_PROCESS 
+  fprintf(stderr, "DssiSynthIF::getData: Handling inputs...\n");
+  #endif
+          
   //
   // p4.0.38 Handle inputs...
   //
@@ -1488,6 +1502,10 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     }
   }  
   
+  #ifdef DSSI_DEBUG_PROCESS 
+  fprintf(stderr, "DssiSynthIF::getData: Processing automation control values...\n");
+  #endif
+          
   // Process automation control values now.
   // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
   if(MusEGlobal::automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
@@ -1510,14 +1528,20 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     while(!_controlFifo.isEmpty())
     {
       ControlEvent v = _controlFifo.peek(); 
-      // The events happened in the last period or even before that. Shift into this period with + n. This will sync with MusEGlobal::audio. 
+      // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio. 
       // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
       evframe = (syncFrame > v.frame + nframes) ? 0 : v.frame - syncFrame + nframes; 
+
+      #ifdef DSSI_DEBUG 
+      fprintf(stderr, "DssiSynthIF::getData found:%d evframe:%lu frame:%lu  event frame:%lu idx:%lu val:%f unique:%d\n", 
+          found, evframe, frame, v.frame, v.idx, v.value, v.unique);
+      #endif
+
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
       {
-        printf("DssiSynthIF::getData *** Error: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d\n", 
-          evframe, v.frame, v.idx, v.value, v.unique); 
+        printf("DssiSynthIF::getData *** Error: evframe:%lu < frame:%lu event: frame:%lu idx:%lu val:%f unique:%d\n", 
+          evframe, frame, v.frame, v.idx, v.value, v.unique); 
         // Just make it equal to the current frame so it gets processed right away.
         evframe = frame;  
       }    
@@ -1535,7 +1559,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       // Set the ladspa control port value.
       controls[v.idx].val = v.value;
       
-      // Need to update the automation value, otherwise it overwrites later with the last MusEGlobal::automation value.
+      // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(id() != -1)
       {
         // Since we are now in the audio thread context, there's no need to send a message,
@@ -1586,13 +1610,13 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     // Process event list events...
     for(; start_event != el->end(); ++start_event) 
     {
+      #ifdef DSSI_DEBUG 
+      fprintf(stderr, "DssiSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", start_event->time(), pos, sample, nsamp, frameOffset);
+      #endif
+
       if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
         break;
         
-      #ifdef DSSI_DEBUG 
-      fprintf(stderr, "DssiSynthIF::getData eventlist event time:%d\n", i->time());
-      #endif
-      
       // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
       // Same code as in MidiPort::sendEvent()
       if(synti->midiPort() != -1)
@@ -1624,16 +1648,21 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       // Returns false if the event was not filled. It was handled, but some other way.
       if(processEvent(*start_event, &events[nevents]))
       {
-        // Time-stamp the event.   p4.0.15 Tim.
-        int ft = start_event->time() - frameOffset - pos;
+        // Time-stamp the event.   
+        int ft = start_event->time() - frameOffset - pos - sample;
         if(ft < 0)
           ft = 0;
 
-        if (ft >= int(sample + nsamp)) 
+        if (ft >= int(nsamp)) 
         {
             printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
-            ft = sample + nsamp - 1;
+            ft = nsamp - 1;
         }
+      
+        #ifdef DSSI_DEBUG 
+        fprintf(stderr, "DssiSynthIF::getData eventlist: ft:%d current nevents:%lu\n", ft, nevents);
+        #endif
+      
         // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
         //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
         events[nevents].time.tick = ft;
@@ -1658,14 +1687,14 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       // Returns false if the event was not filled. It was handled, but some other way.
       if(processEvent(e, &events[nevents]))
       {
-        // Time-stamp the event.   p4.0.15 Tim.
-        int ft = e.time() - frameOffset - pos;
+        // Time-stamp the event.   
+        int ft = e.time() - frameOffset - pos  - sample;
         if(ft < 0)
           ft = 0;
-        if (ft >= int(sample + nsamp)) 
+        if (ft >= int(nsamp)) 
         {
             printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
-            ft = sample + nsamp - 1;
+            ft = nsamp - 1;
         }
         // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
         //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
@@ -1675,6 +1704,10 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       }  
     }
     
+    #ifdef DSSI_DEBUG_PROCESS 
+    fprintf(stderr, "DssiSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
+    #endif
+          
     k = 0;
     // Connect the given buffers directly to the ports, up to a max of synth ports.
     for(; k < nop; ++k)
@@ -2151,7 +2184,7 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
   unsigned long i = controls[id].idx;   
   
   #ifdef DSSI_DEBUG 
-  printf("DssiSynthIF::getControllerInfo control port:%d port idx:%d name:%s\n", id, i, ld->PortNames[i]);
+  printf("DssiSynthIF::getControllerInfo control port:%d port idx:%lu name:%s\n", id, i, ld->PortNames[i]);
   #endif
   
   int ctlnum = DSSI_NONE;
