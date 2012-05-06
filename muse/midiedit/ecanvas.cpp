@@ -331,6 +331,9 @@ void EventCanvas::keyPress(QKeyEvent* event)
       // Select items by key (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
               rciCItem i;
+
+              if (items.empty())
+                  return;
               for (i = items.rbegin(); i != items.rend(); ++i) 
                 if (i->second->isSelected()) 
                   break;
@@ -359,7 +362,9 @@ void EventCanvas::keyPress(QKeyEvent* event)
       //Select items by key: (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key) {
               ciCItem i;
-              for (i = items.begin(); i != items.end(); ++i) 
+              if (items.empty())
+                  return;
+              for (i = items.begin(); i != items.end(); ++i)
                 if (i->second->isSelected()) 
                   break;
 

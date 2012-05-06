@@ -869,10 +869,10 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
 //   viewMousePressEvent
 //---------------------------------------------------------
 
-void PartCanvas::mousePress(QMouseEvent* event)
+bool PartCanvas::mousePress(QMouseEvent* event)
       {
     if (event->modifiers() & Qt::ControlModifier) {
-            return;
+            return true;
             }
       QPoint pt = event->pos();
       CItem* item = items.find(pt);
@@ -901,10 +901,26 @@ void PartCanvas::mousePress(QMouseEvent* event)
                       }
                   }
             case AutomationTool:
-                    if (automation.controllerState != doNothing)
-                        automation.moveController=true;
-                    break;
+                  if (event->button() & Qt::RightButton) {
+                      QMenu *automationMenu = new QMenu(this);
+                      QAction* act;
+                      act = automationMenu->addAction(tr("Remove selected"));
+                      act = automationMenu->exec(event->globalPos());
+                      if (act && automation.currentTrack) {
+                          foreach(int frame, automation.currentCtrlFrameList)
+                              MusEGlobal::audio->msgEraseACEvent((MusECore::AudioTrack*)automation.currentTrack,
+                                       automation.currentCtrlList->id(), frame);
+                      }
+
+                  }
+                  else {
+                      if (automation.controllerState != doNothing)
+                          automation.moveController=true;
+                  }
+                  return false;
+                  break;
             }
+      return true;
       }
 
 //---------------------------------------------------------
@@ -3606,13 +3622,25 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
             //p.drawRect(mapx(MusEGlobal::tempomap.frame2tick(prevPosFrame))-2, (rr.bottom()-2)-prevVal*height-2, 5, 5);
             //p.drawRect(mapx(MusEGlobal::tempomap.frame2tick(prevPosFrame))-1, (rr.bottom()-1)-prevVal*height-2, 3, 3);
             pen2.setColor((automation.currentCtrlValid && automation.currentCtrlList == cl && 
-                           automation.currentCtrlFrame == ic->second.frame) ? 
+                           automation.currentCtrlFrameList.contains(ic->second.frame)) ?
                           Qt::white : cl->color());  
             
             p.setPen(pen2);
             p.drawRect(xpixel-2, ypixel-2, 5, 5);
             oldX = xpixel;
             oldY = ypixel;
+            if (automation.currentCtrlValid && automation.currentCtrlList == cl &&
+                 automation.currentCtrlFrameList.contains(ic->second.frame) &&
+                 automation.currentCtrlFrameList.size() == 1) {
+                    double val = ic->second.val;
+                    QRect textRect = rr;
+                    textRect.setX(xpixel + 20);
+                    textRect.setY(ypixel);
+                    if (cl->valueType() == MusECore::VAL_LOG) {
+                        val = MusECore::fast_log10(ic->second.val) * 20.0;
+                    }
+                    p.drawText(textRect, QString("Value: %1").arg(val));
+            }
         }
       }
       if (xpixel <= rr.right())
@@ -3750,12 +3778,14 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
                  automation.controllerState = addNewController;
                }else {
                  QWidget::setCursor(Qt::OpenHandCursor);
-                 automation.currentCtrlFrame = ic->second.frame;
+                 automation.currentCtrlFrameList.clear();
+                 automation.currentCtrlFrameList.append(ic->second.frame);
                  automation.currentCtrlValid = true;
                  automation.controllerState = movingController;
                }
                automation.currentCtrlList = cl;
                automation.currentTrack = t;
+               update();
                return;
              }
           }
@@ -3779,6 +3809,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
       automation.currentCtrlValid = false;
       automation.currentCtrlList = 0;
       automation.currentTrack = 0;
+      automation.currentCtrlFrameList.clear();
       setCursor();
 }
 
@@ -3814,7 +3845,8 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
        for (; ic !=automation.currentCtrlList->end(); ++ic) {
          MusECore::CtrlVal &cv = ic->second;
          if (cv.frame == frame) {
-           automation.currentCtrlFrame = cv.frame;
+           automation.currentCtrlFrameList.clear();
+           automation.currentCtrlFrameList.append(cv.frame);
            automation.currentCtrlValid = true;
            automation.controllerState = movingController;
            break;
@@ -3828,7 +3860,7 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     for (; ic !=automation.currentCtrlList->end(); ++ic)
     {
        MusECore::CtrlVal &cv = ic->second;
-       if (cv.frame == automation.currentCtrlFrame)
+       if (automation.currentCtrlFrameList.contains(cv.frame))
        {
          //currFrame = cv.frame;
          break;
@@ -3879,7 +3911,8 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
       if (cvval>max) cvval=max;
     }
     
-    automation.currentCtrlFrame = newFrame;
+    automation.currentCtrlFrameList.clear();
+    automation.currentCtrlFrameList.append(newFrame);
     automation.currentCtrlValid = true;
     
     if(icc != automation.currentCtrlList->end())

@@ -76,7 +76,7 @@ class NPart : public CItem {
 
 enum ControllerVals { doNothing, movingController, addNewController };
 struct AutomationObject {
-  int currentCtrlFrame;
+  QList<int> currentCtrlFrameList;
   bool currentCtrlValid;
   MusECore::CtrlList *currentCtrlList;
   MusECore::Track *currentTrack;
@@ -104,7 +104,7 @@ class PartCanvas : public Canvas {
       AutomationObject automation;
 
       virtual void keyPress(QKeyEvent*);
-      virtual void mousePress(QMouseEvent*);
+      virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
       virtual void mouseRelease(const QPoint&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);

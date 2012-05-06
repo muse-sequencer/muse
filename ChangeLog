@@ -1,3 +1,7 @@
+06.05.2012:
+        - Added automation right-click remove point and printout with current value, also started 
+          working towards editing multiple points (rj)
+        - Fixed crash bug in pianoroll when using arrow keys on an empty part (rj)
 05.05.2012:
         * Updated .ts translation files in repository. Updated with -no-obsolete to
           trim away lots of unused strings (rj)

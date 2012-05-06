@@ -635,6 +635,9 @@ void Canvas::viewKeyPressEvent(QKeyEvent* event)
 
 void Canvas::viewMousePressEvent(QMouseEvent* event)
       {
+      if (!mousePress(event))
+          return;
+
       ///keyState = event->state();
       keyState = ((QInputEvent*)event)->modifiers();
       button = event->button();
@@ -808,7 +811,6 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         break;
                   }
             }
-      mousePress(event);
       }
 
 void Canvas::scrollTimerDone()
