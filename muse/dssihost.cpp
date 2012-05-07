@@ -1542,8 +1542,10 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       {
         printf("DssiSynthIF::getData *** Error: evframe:%lu < frame:%lu event: frame:%lu idx:%lu val:%f unique:%d\n", 
           evframe, frame, v.frame, v.idx, v.value, v.unique); 
-        // Just make it equal to the current frame so it gets processed right away.
-        evframe = frame;  
+
+        // No choice but to ignore it.
+        _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+        continue;
       }    
       
       if(evframe >= nframes

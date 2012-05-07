@@ -2471,9 +2471,12 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           {
             printf("PluginI::apply *** Error: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d\n", 
               evframe, v.frame, v.idx, v.value, v.unique); 
-            // Just make it equal to the current frame so it gets processed right away.
-            evframe = frame;  
-          }    
+
+            // No choice but to ignore it.
+            _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+            continue;
+          } 
+          
           //if(v.frame >= (endPos + frameOffset) || (found && v.frame != frame))   DELETETHIS 5
           //if(v.frame < sample || v.frame >= (sample + nsamp) || (found && v.frame != frame))  
           //if(v.frame < sample || v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  

@@ -1,3 +1,6 @@
+07.05.2012:
+        - DSSI: Fixed second of two crashes when operating controls while playing notes. (Tim)
+          Just ignore rare out-of-order events.
 06.05.2012:
         - Added automation right-click remove point and printout with current value, also started 
           working towards editing multiple points (rj)
