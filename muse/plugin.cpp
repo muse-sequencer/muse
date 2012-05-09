@@ -85,8 +85,6 @@ MusECore::PluginList plugins;
 namespace MusEGui {
 int PluginDialog::selectedPlugType = 0;
 QStringList PluginDialog::sortItems = QStringList();
-///int PluginDialog::sortColumn = 0;
-///Qt::SortOrder PluginDialog::sortOrder = Qt::AscendingOrder;
 QRect PluginDialog::geometrySave = QRect();
 QByteArray PluginDialog::listSave = QByteArray();
 }
@@ -482,16 +480,22 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
         LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
         LADSPA_PortRangeHintDescriptor rh = range.HintDescriptor;
         float m = (rh & LADSPA_HINT_SAMPLE_RATE) ? float(MusEGlobal::sampleRate) : 1.0f;
+        
         if (LADSPA_IS_HINT_DEFAULT_MINIMUM(rh)) 
         {
-          *val = range.LowerBound * m;
-          return true;
+              *val = range.LowerBound * m;
+              return true;
+        }
+        else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh)) 
+        {
+              *val = range.UpperBound*m;
+              return true;
         }
         else if (LADSPA_IS_HINT_DEFAULT_LOW(rh)) 
         {
               if (LADSPA_IS_HINT_LOGARITHMIC(rh))
               {
-                *val = expf(fast_log10(range.LowerBound * m) * .75 +  // Why fast_log10?
+                *val = expf(logf(range.LowerBound * m) * .75 +  
                       logf(range.UpperBound * m) * .25);
                 return true;
               }         
@@ -506,7 +510,7 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
               if (LADSPA_IS_HINT_LOGARITHMIC(rh))
               {
                 *val = expf(logf(range.LowerBound * m) * .5 +
-                      log10f(range.UpperBound * m) * .5);     // Why log10?
+                      logf(range.UpperBound * m) * .5);     
                 return true;
               }         
               else
@@ -529,11 +533,6 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
                 return true;
               }      
         }
-        else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh)) 
-        {
-              *val = range.UpperBound*m;
-              return true;
-        }
         else if (LADSPA_IS_HINT_DEFAULT_0(rh))
         {
               *val = 0.0;
@@ -554,10 +553,42 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
               *val = 440.0;
               return true;
         } 
+        
+        // No default found. Make one up...
+        else if (LADSPA_IS_HINT_BOUNDED_BELOW(rh) && LADSPA_IS_HINT_BOUNDED_ABOVE(rh))
+        {
+          if (LADSPA_IS_HINT_LOGARITHMIC(rh))
+          {
+            *val = expf(logf(range.LowerBound * m) * .5 +
+                  logf(range.UpperBound * m) * .5);
+            return true;
+          }         
+          else
+          {
+            *val = range.LowerBound*.5*m + range.UpperBound*.5*m;
+            return true;
+          }      
+        }
+        else if (LADSPA_IS_HINT_BOUNDED_BELOW(rh))
+        {
+            *val = range.LowerBound;
+            return true;
+        }
+        else if (LADSPA_IS_HINT_BOUNDED_ABOVE(rh))
+        {
+            // Hm. What to do here... Just try 0.0 or the upper bound if less than zero.
+            //if(range.UpperBound > 0.0)
+            //  *val = 0.0;
+            //else
+            //  *val = range.UpperBound * m;
+            // Instead try this: Adopt an 'attenuator-like' policy, where upper is the default.
+            *val = range.UpperBound * m;
+            return true;
+        }
       }
       
-      // No default found. Set return value to 1.0, but return false.
-      *val = 1.0;
+      // No default found. Set return value to 0.0, but return false.
+      *val = 0.0;
       return false;
 }
 

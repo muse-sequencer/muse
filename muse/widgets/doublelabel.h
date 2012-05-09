@@ -36,6 +36,7 @@ class DoubleLabel : public Dentry {
 
       Q_PROPERTY( double minValue READ minValue WRITE setMinValue )
       Q_PROPERTY( double maxValue READ maxValue WRITE setMaxValue )
+      Q_PROPERTY( double offValue READ off WRITE setOff )
       Q_PROPERTY( QString specialText READ specialText WRITE setSpecialText )
       Q_PROPERTY( QString suffix READ suffix WRITE setSuffix )
       Q_PROPERTY( int precision READ precision WRITE setPrecision )

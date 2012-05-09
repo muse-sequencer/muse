@@ -1,3 +1,10 @@
+08.05.2012:
+        - ladspa/dssi/simplesynth controls: Fixed logarithmic defaults. (Tim)
+           Use log not log10 in plugin.cpp:ladspaDefaultValue(). 
+        - ladspa/dssi/simplesynth controls: A better default than 1.0 if none found, compute from upper/lower. (Tim)
+           In plugin.cpp:ladspaDefaultValue(). TODO: simplesynth controls still wrong. 
+        - ladspa: TAP Reverberator built-in MusE GUI: Fixed wet/dry infinity display "---". (Tim)
+           Added DoubleLabel 'offValue' Qt property. Set in file 2142.ui 
 07.05.2012:
         - DSSI: Fixed second of two crashes when operating controls while playing notes. (Tim)
           Just ignore rare out-of-order events.
