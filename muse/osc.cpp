@@ -898,8 +898,7 @@ void OscIF::oscShowGui(bool v)
         }  
       }  
       
-      //for (int i = 0; i < 5; ++i) {
-      for (int i = 0; i < 20; ++i) {    // Give it a wee bit more time?
+      for (int i = 0; i < 20; ++i) {
             if (_uiOscPath)
                   break;
             sleep(1);

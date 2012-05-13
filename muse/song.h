@@ -426,7 +426,7 @@ class Song : public QObject {
       void markerChanged(int);
       void midiPortsChanged();
       void midiNote(int pitch, int velo);  
-      void controllerChanged(MusECore::Track* t); 
+      void controllerChanged(MusECore::Track* t); // maybe DELETETHIS: this only triggers a redraw in pcanvas.cpp; what is this for?
       void newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
       };
 

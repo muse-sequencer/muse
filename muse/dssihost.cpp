@@ -414,7 +414,7 @@ bool DssiSynthIF::guiVisible() const
       }
 
 //---------------------------------------------------------
-//   showGui
+//   showNativeGui
 //---------------------------------------------------------
 
 void DssiSynthIF::showNativeGui(bool v)
@@ -422,7 +422,7 @@ void DssiSynthIF::showNativeGui(bool v)
       #ifdef OSC_SUPPORT
       
       #ifdef DSSI_DEBUG 
-      printf("DssiSynthIF::showGui(): v:%d visible:%d\n", v, guiVisible());
+      printf("DssiSynthIF::showNativeGui(): v:%d visible:%d\n", v, guiVisible());
       #endif
       
       _oscif.oscShowGui(v);
@@ -1408,13 +1408,11 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
   // But this 'packet' method sure seems to work nicely so far, so we'll throw it in...
   //
   // Must make this detectable for dssi vst synths, just like the plugins' in-place blacklist.
-  //const bool usefixedrate = true;      
-  const bool usefixedrate = synth->_isDssiVst;  // Try this.
+  const bool usefixedrate = synth->_isDssiVst;  // Try this. (was: true)
   // TODO Make this number a global setting.
   // Note for dssi-vst this MUST equal MusEGlobal::audio period. It doesn't like broken-up runs (it stutters), 
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
-  //unsigned long fixedsize = 2048;   
-  unsigned long fixedsize = nframes;     
+  unsigned long fixedsize = nframes;  // was: 2048
   
   // For now, the fixed size is clamped to the MusEGlobal::audio buffer size.
   // TODO: We could later add slower processing over several cycles -
@@ -1430,9 +1428,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
   fprintf(stderr, "DssiSynthIF::getData: Handling inputs...\n");
   #endif
           
-  //
   // p4.0.38 Handle inputs...
-  //
   if(!((MusECore::AudioTrack*)synti)->noInRoute()) 
   {
     RouteList* irl = ((MusECore::AudioTrack*)synti)->inRoutes();
@@ -1564,42 +1560,30 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(id() != -1)
       {
-        // Since we are now in the audio thread context, there's no need to send a message,
-        //  just modify directly.
+        // We're in the audio thread context: no need to send a message, just modify directly.
         synti->setPluginCtrlVal(genACnum(id(), v.idx), v.value);
         
-        // DELETETHIS 15, cleanup, fix, maybe just keep it? dunno.
-        // Record automation.
-        // NO! Take care of this immediately in the OSC control handler, because we don't want 
-        //  any delay.
-        // OTOH Since this is the actual place and time where the control ports values
-        //  are set, best to reflect what happens here to automation.
-        // However for dssi-vst it might be best to handle it that way.
+        /* Record automation. DELETETHIS?
+         * NO! Take care of this immediately in the OSC control handler, because we don't want 
+         *  any delay.
+         * OTOH Since this is the actual place and time where the control ports values
+         *  are set, best to reflect what happens here to automation.
+         * However for dssi-vst it might be best to handle it that way.
         
-        //AutomationType at = _track->automationType();
         // TODO: Taken from our native gui control handlers. 
         // This may need modification or may cause problems - 
         //  we don't have the luxury of access to the dssi gui controls !
-        //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        //  enableController(k, false);
-        //_track->recordAutomation(id, v.value);
+        AutomationType at = _track->automationType();
+        if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+          enableController(k, false);
+        _track->recordAutomation(id, v.value);
+        */
       }  
-      
     }
-    
-    // DELETETHIS 10 ?
-    // Process automation control values now.
-    //if(MusEGlobal::automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
-    //{
-    //  for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
-    //  {
-    //    if(controls[k].enCtrl && controls[k].en2Ctrl )
-    //      controls[k].val = synti->pluginCtrlVal(genACnum(id(), k));
-    //  }      
-    //}
     
     if(found && !usefixedrate)
       nsamp = frame - sample;
+    
     if(sample + nsamp >= nframes)         // Safety check.
       nsamp = nframes - sample; 
     
@@ -1632,15 +1616,13 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
           if(!mp->setHwCtrlState(start_event->channel(), da, db))
             continue;
         }
-        else
-        if(start_event->type() == MusECore::ME_PITCHBEND) 
+        else if(start_event->type() == MusECore::ME_PITCHBEND) 
         {
           int da = mp->limitValToInstrCtlRange(MusECore::CTRL_PITCH, start_event->dataA());
           if(!mp->setHwCtrlState(start_event->channel(), MusECore::CTRL_PITCH, da))
             continue;
         }
-        else
-        if(start_event->type() == MusECore::ME_PROGRAM) 
+        else if(start_event->type() == MusECore::ME_PROGRAM) 
         {
           if(!mp->setHwCtrlState(start_event->channel(), MusECore::CTRL_PROGRAM, start_event->dataA()))
             continue;
@@ -1670,7 +1652,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
         events[nevents].time.tick = ft;
         
         ++nevents;
-      }  
+      }
     }
     
     // Now process putEvent events...

@@ -136,15 +136,9 @@ class SynthIF {
       virtual bool guiVisible() const = 0;
       virtual void showGui(bool v) = 0;
       virtual bool hasGui() const = 0;
-      //virtual bool guiVisible() const { return false; } DELETETHIS 3
-      //virtual void showGui(bool v)    { };
-      //virtual bool hasGui() const     { return false; }
       virtual bool nativeGuiVisible() const = 0;
       virtual void showNativeGui(bool v) = 0;
       virtual bool hasNativeGui() const = 0;
-      //virtual bool nativeGuiVisible() const { return false; } DELETETHIS 3
-      //virtual void showNativeGui(bool v) { };
-      //virtual bool hasNativeGui() const { return false; }
       virtual void getGeometry(int*, int*, int*, int*) const = 0;
       virtual void setGeometry(int, int, int, int) = 0;
       virtual void getNativeGeometry(int*, int*, int*, int*) const = 0;
