@@ -1,3 +1,5 @@
+18.05.2012:
+        - Added Czech translation by Pavel Fric[pavelfric@seznam.cz] (rj)
 08.05.2012:
         - ladspa/dssi/simplesynth controls: Fixed logarithmic defaults. (Tim)
            Use log not log10 in plugin.cpp:ladspaDefaultValue(). 
