@@ -1,5 +1,10 @@
 18.05.2012:
         - Added Czech translation by Pavel Fric[pavelfric@seznam.cz] (rj)
+        - fixed native GUIs not updating                            (flo93)
+                - removed _guiUpdate{Program,Control[]}
+                - OscIF now stores the native GUI's state
+                - OscIF doesn't send control changes if they don't differ from the
+                    native GUI's state (until enforced)
 08.05.2012:
         - ladspa/dssi/simplesynth controls: Fixed logarithmic defaults. (Tim)
            Use log not log10 in plugin.cpp:ladspaDefaultValue(). 

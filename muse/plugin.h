@@ -182,6 +182,8 @@ class Plugin {
       unsigned long controlInPorts() const  { return _controlInPorts; }
       unsigned long controlOutPorts() const { return _controlOutPorts; }
       bool inPlaceCapable() const           { return _inPlaceCapable; }
+      
+      const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
       };
 
 typedef std::list<Plugin>::iterator iPlugin;

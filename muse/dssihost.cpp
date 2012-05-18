@@ -519,8 +519,6 @@ bool DssiSynthIF::init(DssiSynth* s)
 
       synth->midiCtl2PortMap.clear();
       synth->port2MidiCtlMap.clear();
-      synti->_guiUpdateControls.clear();
-      synti->_guiUpdateProgram = false;
                 
       int cip = 0;
       int cop = 0;
@@ -544,9 +542,6 @@ bool DssiSynthIF::init(DssiSynth* s)
             controls[cip].enCtrl  = true;
             controls[cip].en2Ctrl = true;
             
-            // Set to false at first.
-            synti->_guiUpdateControls.push_back(false);
-          
             #ifdef DSSI_DEBUG 
             printf("DssiSynthIF::init control port:%d port idx:%lu name:%s\n", cip, k, ld->PortNames[k]);
             #endif
@@ -721,6 +716,10 @@ DssiSynthIF::~DssiSynthIF()
       #ifdef DSSI_DEBUG 
       printf("DssiSynthIF::~DssiSynthIF\n");
       #endif
+
+      #ifdef OSC_SUPPORT
+      _oscif.oscSetSynthIF(NULL);
+      #endif
       
       if(synth)
       {
@@ -860,11 +859,6 @@ void DssiSynthIF::setParameter(unsigned long n, float v)
   {
     fprintf(stderr, "DssiSynthIF::setParameter: fifo overflow: in control number:%lu\n", n);
   }
-  
-  // Notify that changes are to be sent upon heartbeat.
-  // TODO: No, at least not for now. So far, setParameter is only called during loading of stored params,
-  //  and we don't want this interfering with oscUpdate which also sends the values.
-  //synti->_guiUpdateControls[n] = true;
 }
 
 //---------------------------------------------------------
@@ -1089,11 +1083,8 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
       synti->_curProgram = prog;
       
       if(dssi->select_program)
-      {
         dssi->select_program(handle, bank, prog);
-        // Notify that changes are to be sent upon heartbeat.
-        synti->_guiUpdateProgram = true;
-      }  
+
       // Event pointer not filled. Return false.
       return false;
     }    
@@ -1121,11 +1112,8 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
         synti->_curProgram = prog;
         
         if(dssi->select_program)
-        {
           dssi->select_program(handle, bank, prog);
-          // Notify that changes are to be sent upon heartbeat.
-          synti->_guiUpdateProgram = true;
-        }  
+
         // Event pointer not filled. Return false.
         return false;
       }
@@ -1231,10 +1219,6 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
       
       // Set the ladspa port value.
       controls[k].val = val;
-      // FIXME: Testing - Works but is this safe in a RT process callback? Try hooking into gui heartbeat timer instead...
-      // lo_send(uiTarget, uiOscControlPath, "if", i, val);
-      // Notify that changes are to be sent upon heartbeat.
-      synti->_guiUpdateControls[k] = true;
       
       // Since we absorbed the message as a ladspa control change, return false - the event is not filled.
       return false;
@@ -1798,25 +1782,13 @@ void DssiSynthIF::guiHeartBeat()
 {
   #ifdef OSC_SUPPORT
   // Update the gui's program if needed.
-  if(synti->_guiUpdateProgram)
-  {
-    _oscif.oscSendProgram(synti->_curProgram, synti->_curBankL);
-    synti->_guiUpdateProgram = false;
-  }
+  _oscif.oscSendProgram(synti->_curProgram, synti->_curBankL);
   
   // Update the gui's controls if needed.
   unsigned long ports = synth->_controlInPorts;
-  if(ports > synti->_guiUpdateControls.size())
-    return;
+
   for(unsigned long i = 0; i < ports; ++i)
-  {
-    if(synti->_guiUpdateControls[i])
-    {
-      _oscif.oscSendControl(controls[i].idx, controls[i].val);
-      // Reset.
-      synti->_guiUpdateControls[i] = false;
-    }
-  }
+    _oscif.oscSendControl(controls[i].idx, controls[i].val);
   #endif
 }
 
@@ -1842,13 +1814,13 @@ int DssiSynthIF::oscUpdate()
       }  
       
       // Send current bank and program.
-      _oscif.oscSendProgram(synti->_curProgram, synti->_curBankL);
+      _oscif.oscSendProgram(synti->_curProgram, synti->_curBankL, true /*force*/);
       
       // Send current control values.
       unsigned long ports = synth->_controlInPorts;
       for(unsigned long i = 0; i < ports; ++i) 
       {
-        _oscif.oscSendControl(controls[i].idx, controls[i].val);
+        _oscif.oscSendControl(controls[i].idx, controls[i].val, true /*force*/);
         // Avoid overloading the GUI if there are lots and lots of ports. 
         if((i+1) % 50 == 0)
           usleep(300000);

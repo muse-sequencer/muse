@@ -184,12 +184,6 @@ class SynthI : public AudioTrack, public MidiDevice,
       // Used once upon song reload, then discarded.
       std::vector<float> initParams;
 
-      // List of gui controls to update upon heartbeat.
-      std::vector<bool> _guiUpdateControls;  
-
-      // Update gui program upon heartbeat.
-      bool _guiUpdateProgram;
-
       // Initial, and running, string parameters for synths which use them, like dssi.
       StringParamMap _stringParamMap; 
 

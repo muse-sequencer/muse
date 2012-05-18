@@ -1622,6 +1622,10 @@ PluginI::PluginI()
 
 PluginI::~PluginI()
       {
+      #ifdef OSC_SUPPORT
+      _oscif.oscSetPluginI(NULL);      
+      #endif
+
       if (_plugin) {
             deactivate();
             _plugin->incReferences(-1);
@@ -1750,11 +1754,6 @@ void PluginI::setParam(unsigned long i, float val)
   {
     fprintf(stderr, "PluginI::setParameter: fifo overflow: in control number:%lu\n", i);
   }
-  
-  // Notify that changes are to be sent upon heartbeat. DELETETHIS 4
-  // TODO: No, at least not for now. So far, setParameter is only called during loading of stored params,
-  //  and we don't want this interfering with oscUpdate which also sends the values.
-  //synti->_guiUpdateControls[n] = true;
 }     
 
 //---------------------------------------------------------
@@ -2568,7 +2567,7 @@ int PluginI::oscUpdate()
       // Send current bank and program.
       unsigned long bank, prog;
       synti->currentProg(&prog, &bank, 0);
-      _oscIF.oscSendProgram(prog, bank);
+      _oscIF.oscSendProgram(prog, bank, true); // "true" means "force"
       */
       
       // FIXME: TESTING FLAM: I have to put a delay because flammer hasn't opened yet.
@@ -2581,9 +2580,9 @@ int PluginI::oscUpdate()
       for(unsigned long i = 0; i < controlPorts; ++i) 
       {
         //unsigned long k = synth->pIdx(i); DELETETHIS 2
-        //_oscIF.oscSendControl(k, controls[i]);
+        //_oscIF.oscSendControl(k, controls[i], true /*force*/);
         //printf("PluginI::oscUpdate() sending control:%lu val:%f\n", i, controls[i].val);
-        _oscif.oscSendControl(controls[i].idx, controls[i].val);
+        _oscif.oscSendControl(controls[i].idx, controls[i].val, true /*force*/);
         // Avoid overloading the GUI if there are lots and lots of ports. 
         if((i+1) % 50 == 0)
           usleep(300000);
@@ -3401,7 +3400,10 @@ void PluginGui::getPluginConvertedValues(LADSPA_PortRangeHint range,
 
 void PluginGui::heartBeat()
 {
-  updateControls();
+  updateControls(); // FINDMICHJETZT TODO: this is not good. we have concurrent
+                    // access from the audio thread (possibly writing control values)
+                    // while reading them from some GUI thread. this will lead
+                    // to problems if writing floats is non-atomic
 }
 
 //---------------------------------------------------------
