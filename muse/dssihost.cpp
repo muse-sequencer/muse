@@ -1963,7 +1963,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
     // This may need modification or may cause problems - 
     //  we don't have the luxury of access to the dssi gui controls !
     if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-      enableController(cport, false);
+      enableController(cport, false); //FINDMICHJETZT maybe re-enable the ctrl soon?
       
     synti->recordAutomation(pid, value);
   } 

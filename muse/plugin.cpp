@@ -2419,21 +2419,9 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
             // We're in the audio thread context: no need to send a message, just modify directly.
             _track->setPluginCtrlVal(genACnum(_id, v.idx), v.value);
             
-            /* Record automation. DELETETHIS?
-             * NO! Take care of this immediately in the OSC control handler, because we don't want 
-             *  any delay.
-             * OTOH Since this is the actual place and time where the control ports values
-             *  are set, best to reflect what happens here to automation.
-             * However for dssi-vst it might be best to handle it that way.
-            
-            // TODO: Taken from our native gui control handlers. 
-            // This may need modification or may cause problems - 
-            //  we don't have the luxury of access to the dssi gui controls !
-            AutomationType at = _track->automationType();
-            if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH)) DELETETHIS 3
-              enableController(k, false);
-            _track->recordAutomation(id, v.value);
-            */
+            /* Recording automation is done immediately in the         *
+             * OSC control handler, because we don't want any delay.   *
+             * we might want to handle dssi-vst synthes here, however! */
           }  
         }
 
@@ -2683,7 +2671,7 @@ int PluginI::oscControl(unsigned long port, float value)
     // This may need modification or may cause problems - 
     //  we don't have the luxury of access to the dssi gui controls !
     if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-      enableController(cport, false);
+      enableController(cport, false); //FINDMICHJETZT maybe re-enable the ctrl soon?
       
     _track->recordAutomation(id, value);
   } 
@@ -3515,9 +3503,6 @@ void PluginGui::sliderChanged(double val, int param)
       if(track)
         at = track->automationType();
       
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        plugin->enableController(param, false);
-      
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
             val = pow(10.0, val/20.0);
       else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
@@ -3552,9 +3537,6 @@ void PluginGui::labelChanged(double val, int param)
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
-      
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        plugin->enableController(param, false);
       
       double dval = val;
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
@@ -3896,9 +3878,6 @@ void PluginGui::guiParamChanged(int idx)
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
-      
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        plugin->enableController(param, false);
       
       double val = 0.0;
       switch(type) {

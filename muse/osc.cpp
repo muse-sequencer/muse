@@ -807,7 +807,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
         if (maxDssiPort!=nDssiPorts)
         {
           // this should never happen, right?
-          printf("STRANGE: nDssiPorts has changed (old=%i, now=%i)!\n", maxDssiPort, nDssiPorts);
+          printf("STRANGE: nDssiPorts has changed (old=%li, now=%i)!\n", maxDssiPort, nDssiPorts);
           delete [] old_control;
           old_control=new float[nDssiPorts];
           for (int i=0;i<nDssiPorts;i++) // init them all with "not a number"
