@@ -1,0 +1,275 @@
+%% (c) 2012 florian jung
+%% we should consider putting this under a proper license. GPL, or
+%% some GPL-like documentation license??
+
+%% rules for editing documentation: (READ THIS FIRST)
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%%
+%% please try to let newly written lines be shorter than 72 characters.
+%% minor exceptions are okay, but please not more than 80 chars.
+%%
+%% DON'T MIX up changes and reformatting in one commit. when changing
+%% stuff, please don't touch the lines before and after your change
+%% (that is, do not re-wrap them), even if it will look a bit patchy.
+%% this is for being able to easily use diff.
+%% when you want to reformat this file, then do it. but don't change
+%% anything, as this would be hard to find in a diff. and clearly
+%% state in the commit log that you "only" rearranged things.
+%%
+%% please adhere to the "User's manual" / "Internals" / "Design"
+%% partitioning. Below that, feel free to change the logical arrangement
+%% (making paragraphs to subsections and similar) if you deem it
+%% neccessary.
+%%
+%% Whenever referring to code symbols, constants or source/header
+%% files, please use \texttt{someClass::someSymbol} or \texttt{file.cpp}
+%% Only specify file paths or namespaces where it would be ambiguous
+%% otherwise. Specify 'someClass::' until it would disturb the reader
+%% and it is obvious. (watch out to prefix _ with \)
+%%
+%% Where possible, reference other parts of this documents with
+%% \label and \ref. Avoid duplicate information under "Internals" by
+%% referring to the appropriate section in "User's manual".
+%%
+%% Please do no time-stamping of sections. if you need time-stamps,
+%% use "svn blame documentation.tex"
+%%
+%% If you contribute something, feel free to add yourself to \author.
+%%
+%% If you don't speak LaTeX fluently, a few tips:
+%% * \section, \subsection, \subsubsection, \paragraph, \subparagraph
+%%   let you create sections etc. just copy-and-paste if unsure.
+%% * you must prefix special characters like the underscore with \
+%%   (backslash)
+%% * \emph{some text} emphasizes the text, printing it italic.
+%% * \texttt{some text} displays the text in a typewriter font
+%% * \label{someName} creates a label at this position. this doesn't
+%%   show up in the pdf. with \ref{someName}, you can reference to this
+%%   label. (LaTeX will insert the section number instead of \ref)
+%%   For this to work, you might need to recompile the .tex twice.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\documentclass[a4paper]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\author{Florian Jung}
+\title{MusE Documentation}
+\begin{document}
+
+\chapter{User's manual}
+someone should really write this!
+
+\section{Tracks and parts}
+MusE arranges your music in \emph{tracks} and \emph{parts}. The following
+section shall provice you an overview of how things are done with MusE.
+If you are or were a Cubase or Cakewalk user, you will feel familiar with
+this.
+
+\subsection{Tracks}
+\paragraph{Creation}
+You can create a track by either right-clicking in the arranger's track   % TODO: insert screenshot
+list and then adding the desired track, or via the edit menu. There are
+MIDI and drum tracks (which are internally MIDI tracks) which can hold
+note data, wave tracks which hold wave data, and several kinds of
+audio tracks, synthesizers etc.
+
+\paragraph{Attributes}                                                    % TODO: this should be a list
+Tracks have several attributes.
+\subparagraph{Mute} If you click on the \emph{Mute} field (denoted with
+a "M" column header), the track gets muted and stops producing sound.
+\subparagraph{Solo} The solo button ("S" column header) mutes all other   % TODO: soloing chains etc?
+tracks.
+\subparagraph{Record} The R column "arms" your track for recording.
+When you rec-arm your song and have no tracks rec-armed, you won't be
+able to record anything. See also the config option "move rec-arm with    % TODO: reference to rec-arm config option
+selection".
+\subparagraph{Track name} Double-click and you will see.
+\subparagraph{Port} For MIDI tracks, this lets you select the MIDI
+port to which the events should be routed. This can be your physical
+synthesizer or a software synthesizer. For soft synthes, this is the
+port the synth is associated to. For other track types, this is disabled.
+\subparagraph{Channel} For MIDI tracks, this is the MIDI channel the
+output is sent to. For any kind of audio tracks, this is the number of
+channels (mono, stereo).
+                                                                          % TODO: what's that "T" column?!
+\subparagraph{Automation} For audio tracks, this lets you set up the
+automation display in the arranger. Clicking this will provide you with
+a popup menu with lots of submenus. The submenus let you select the
+color you want to associate with the automation parameter. \emph{Clicking % TODO: this is nonstandard
+on a submenu} will select or unselect it, making the automation parameter % TODO: put reference to automation section
+shown or hidden.
+
+\subparagraph{Clef} For MIDI tracks, you can specify a clef here. This
+only affects the score editor.
+
+\paragraph{The trackinfo side bar}
+In the arranger and the part editors, you'll have a trackinfo sidebar
+on the left side. You can set up track-type specific things there.
+
+\subsubsection{MIDI tracks}
+MIDI parts have no automation settings. However, they support various     % TODO: this will hopefully become wrong soon
+controllers, program changes etc.. The MIDI trackinfo sidebar lets you
+change program, volume, pan and more. Just editing the value in the
+boxes will send an event, but not write it to the track. In order to
+write it, you will need to click on the corresponding button ("Vol" for
+writing down volume information).
+
+\subsubsection{Audio tracks}
+\paragraph{Effect rack}
+On the top of the sidebar, there is an effect rack which allows you to
+apply various plugins on the audio. For more information on this, refer
+to \ref{plugins}.
+
+\paragraph{Controls}
+Lorem ipsum % TODO FINDMICH HIER WEITER
+
+
+\subsection{Parts}
+Within MIDI, drum and wave tracks, you can create \emph{parts}. Parts
+are chunks of coherent notes or wave data which can be moved around,
+copied, cloned and deleted independent from other parts.
+
+Parts are created by selecting the pencil tool and then drawing onto
+the right part area in the arranger. You can move them with the arrow
+tool, delete them using the \texttt{DEL} key, and a right-click opens
+a popup menu. This menu allows you even more stuff, such as setting
+the part's color, saving the part to disk etc.. You can use
+\texttt{CTRL+C} and \texttt{CTRL+V} for copying and pasting parts.
+\texttt{CTRL+B} pastes the part as a clone. Pressing \texttt{SHIFT}
+additionally provides you a dialog which allows you to paste the part
+multiple times and set more stuff.
+
+You can also copy parts with the mouse by moving the part with the mouse
+while holding down the \texttt{CTRL} key.
+
+
+
+\section{Plugins and automation} \label{plugins}
+There are several kinds of plugins. First, there are audio plugins, which
+can be applied to any track handling audio (that is, inputs, outputs,
+wave tracks, synth tracks). Plugins can be added by double-clicking
+on an entry in the effect rack in the track info pane (which is shown
+at the left side of the arranger when the according track is selected).
+Right-clicking them offers a self-explanatory popup menu.
+
+\section{Configuration}
+\paragraph{Minimum control period}
+Plugins can usually process an arbitrarily small (or large) amount of
+samples. If some plugin control value changes continously, to provide
+ideal listening experience, MusE would need to call the plugin 44100
+times a second, asking for one single value at a time. With the minimum
+control period setting, the user can force MusE to ask the plugin for
+at least N values. Setting this value to 64 would in this situation
+make MusE call the plugin $689 = \frac{44100}{64})$ times a second,
+asking for 64 values at a time. While doing this will reduce accuracy
+of control changes, it may also reduce CPU usage, because calling
+the plugin more often, requesting smaller chunks, is more expensive
+than calling it seldomly, requesting larger chunks.
+\subparagraph{Recommendation}
+If you have no performance problems, or if you want to do the final
+downmix of your project, set this to a low value. If you're experiencing
+performance problems, increasing this value might help.
+
+
+
+
+
+
+\chapter{Internals -- how it works}
+This chapter explains how MusE is built internally, and is meant
+to be an aid for developers wanting to quickly start up with MusE.
+For details on \emph{why} stuff is done please refer to the following
+chapter.
+\section{User controls and automation}
+\subsection{Handling user input}
+\paragraph{Plugins and synthesizers}
+When the user launches a plugin's GUI, either a MusE-window with
+the relevant controls is shown, or the native GUI is launched. MusE
+will communicate with this native GUI through OSC (Open Sound Control).
+
+The relevant classes are \texttt{PluginGui}, \texttt{PluginIBase}
+(in \texttt{plugin.h}) and \texttt{OscIF} (in \texttt{osc.h}).
+
+If the user changes a slider, first the corresponding control is
+disabled, making MusE not steadily update it through automation
+while the user operates it. \texttt{PluginIBase::setParam} is called,
+which usually writes the control change into the ringbuffer
+\texttt{PluginI::\_controlFifo}. (\texttt{PluginI::apply()},
+\texttt{DssiSynthIF::getData()} will read this ringbuffer and
+do the processing accordingly). Furthermore, the change is written
+into a "to be recorded"-list (done by calling \texttt{AudioTrack::recordAutomation}).
+This list is processed after recording has finished.                                   %TODO: where and when exactly?
+
+Disabling the controller is both dependent from the current automation
+mode and from whether the GUI is native or not.
+In \texttt{AUTO\_WRITE} mode, once a slider is touched (for MusE-GUIs) or
+once a OSC control change is received (for native GUIs), the control
+is disabled until the song is stopped.                                               (not sure)  % TODO
+
+In \texttt{AUTO\_TOUCH} (and currently (r1492) \texttt{AUTO\_READ}, but
+that's to be fixed) mode, once a MusE-GUI's slider is pressed down, the
+corresponding control is disabled. Once the slider is released, the
+control is re-enabled again. Checkboxes remain in "disabled" mode,
+however they only affect the recorded automation until the last toggle
+of the checkbox. (Example: start the song, toggle the checkbox, toggle
+it again, wait 10 seconds, stop the song. This will NOT overwrite the
+last 10 seconds of automation data, but everything between the first
+and the last toggle.). For native GUIs, this is a bit tricky, because
+we don't have direct access to the GUI widgets. That is, we have no
+way to find out whether the user doesn't touch a control at all, or
+whether he has it held down, but just doesn't operate it. The current
+behaviour for native GUIs is to behave like in \texttt{AUTO\_WRITE} mode.
+
+
+
+
+
+
+\chapter{Design decisions}
+\section{Automation}
+As of revision 1490, automation is handled in two ways: User-generated
+(live) automation data (generated by the user moving sliders while playing)
+is fed into \texttt{PluginI::\_controlFifo}. Automation data is kept
+in \texttt{AudioTrack::\_controller}, which is a \texttt{CtrlListList},
+that is, a list of \texttt{CtrlList}s, that is, a list of lists of
+controller-objects which hold the control points of the automation graph.
+The \texttt{CtrlList} also stores whether the list is meant discrete
+(a new control point results in a value-jump) or continous (a new control
+point results in the value slowly sloping to the new value).
+
+While \texttt{PluginI::\_controlFifo} can be queried very quickly and
+thus is processed with a very high resolution (only limited by the
+minimum control period setting), the automation value are expensive to
+query, and are only processed once in an audio \emph{driver} period.
+This might lead to noticeable jumps in value.
+
+This could possibly be solved in two ways:
+\paragraph{Maintaining a slave control list}
+This approach would maintain a fully redundant slave control list,
+similar to \texttt{PluginI::\_controlFifo}. This list must be updated
+every time any automation-related thing is changed, and shall contain
+every controller change as a tuple of controller number and value.
+This could be processed in the same loop as \texttt{PluginI::\_controlFifo},
+making it comfortable to implement; furthermore, it allows to cleanly
+offer automation-settings at other places in future (such as storing
+automation data in parts or similar).
+
+\paragraph{Holding iterators}
+We also could hold a list of iterators of the single \texttt{CtrlList}s.
+This would also cause low CPU usage, because usually, the iterators only
+need to be incremented once. However, it is pretty complex to implement,
+because the iterators may become totally wrong (because of a seek in the
+song), and we must iterate through a whole list of iterators.
+
+\paragraph{Just use the current data access functions}
+By just using the current functions for accessing automation data,
+we might get a quick-and-dirty solution, which however wastes way too
+much CPU ressources. This is because on \emph{every single frame}, we
+need to do a binary search on multiple controller lists.
+
+\end{document}
