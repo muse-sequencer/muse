@@ -41,7 +41,7 @@ file (GLOB synti_source_files
 ## Define target
 ##
 add_library(synti ${MODULES_BUILD}
-      ${PROJECT_BINARY_DIR}/all-pic.h.pch
+      ${PROJECT_BINARY_DIR}/all-pic.h
       ${synti_source_files}
       )
 

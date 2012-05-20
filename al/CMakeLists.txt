@@ -44,7 +44,7 @@ endif (USE_SSE)
 ## Define target
 ##
 add_library(al ${MODULES_BUILD}
-      ${PROJECT_BINARY_DIR}/all.h.pch
+      ${PROJECT_BINARY_DIR}/all.h
       ${al_source_files}
       )
 

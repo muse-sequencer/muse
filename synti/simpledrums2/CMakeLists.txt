@@ -75,13 +75,15 @@ set (FILES_TO_TRANSLATE
 # - use precompiled header files
 #
 
-if ( x${CMAKE_BUILD_TYPE} STREQUAL xrelease )
-      SET(SIMPLEDRUMS_OPTFLAGS "-O6")
-endif ( x${CMAKE_BUILD_TYPE} STREQUAL xrelease )
+# Don't override the default optimization. Can be reconsidered 
+# according to Mathias' feedback. - Orcan 2012-05-20
+#if ( x${CMAKE_BUILD_TYPE} STREQUAL xrelease )
+#      SET(SIMPLEDRUMS_OPTFLAGS "-O6")
+#endif ( x${CMAKE_BUILD_TYPE} STREQUAL xrelease )
 
 set_target_properties ( simpledrums
       PROPERTIES PREFIX ""
-      COMPILE_FLAGS "${SIMPLEDRUMS_OPTFLAGS} -fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
       )
 
 ##

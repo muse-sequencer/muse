@@ -417,7 +417,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
 
       chptr+=strlen(lastdir.c_str())+1;
 
-      FluidSoundFont fonts[nrOfSoundfonts]; //Just a temp one
+      FluidSoundFont* fonts = new FluidSoundFont[nrOfSoundfonts]; //Just a temp one
       //Fonts:
       for (int i=0; i<nr_of_fonts; i++) {
             fonts[i].filename = (char*)(chptr);
@@ -470,6 +470,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
       for (int i=0; i<nrOfSoundfonts; i++) {
             pushSoundfont(fonts[i].filename.c_str(), fonts[i].extid);
             }
+      delete[] fonts;
 }
 
 

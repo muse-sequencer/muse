@@ -1,3 +1,6 @@
+20.05.2012:
+        - MusE can now compile with clang/llvm via -DCMAKE_CXX_COMPILER=clang++ flag to cmake. (Orcan)
+        - Update some URLs in README. (Orcan)
 18.05.2012:
         - Added Czech translation by Pavel Fric[pavelfric@seznam.cz] (rj)
         - fixed native GUIs not updating                            (flo93)

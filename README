@@ -28,7 +28,9 @@ details.
           http://qt.nokia.com/products/
           MusE does _not_ compile with older versions
 
-      - gcc >= 4.x.x
+      - gcc >= 4.x.x or clang >= 2.9
+          http://gcc.gnu.org/
+          http://clang.llvm.org/
 
       - libsndfile >= 1.0.1
           http://www.mega-nerd.com/libsndfile/
@@ -37,7 +39,7 @@ details.
           http://www.mega-nerd.com/SRC/
 
       - JACK >= 0.103
-          http://jackit.sourceforge.net/download/
+          http://jackaudio.org/
 
       - libuuid
          e2fsprogs package http://e2fsprogs.sourceforge.net/
@@ -46,7 +48,7 @@ details.
       Optional:
 
       - fluidsynth >= 1.0.3 (formerly known as iiwusynth) from
-        http://savannah.nongnu.org/download/fluid
+        http://sourceforge.net/apps/trac/fluidsynth/
 
       - liblo           Lightweight OSC (Open Sound Control)    http://liblo.sourceforge.net/
       - DSSI            Disposable Soft Synth Interface.        http://dssi.sourceforge.net/

@@ -32,6 +32,8 @@ add_custom_command(
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )
 
+# Disable precompilation of this header file for now since it is empty - Orcan 2012-05-20
+if(0)
 add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/all.h.pch
       COMMAND ${CMAKE_CXX_COMPILER}
@@ -58,6 +60,7 @@ add_custom_command(
       DEPENDS ${PROJECT_BINARY_DIR}/all-pic.h
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )
+endif(0)
 
 set_source_files_properties(
       ${PROJECT_BINARY_DIR}/all.h
