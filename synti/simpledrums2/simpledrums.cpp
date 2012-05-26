@@ -1768,8 +1768,8 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
             QString errorString = "Error loading plugin \"" + plugin->label() + "\"";
             guiSendError(errorString.toLatin1().constData());
             }
-      return success;
       SS_TRACE_OUT
+      return success;
       }
 
 

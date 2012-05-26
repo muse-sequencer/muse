@@ -1155,7 +1155,7 @@ int MidiTrack::getFirstControllerValue(int ctrl, int def)
   return val;
 }
 
-int MidiTrack::getControllerChangeAtTick(int tick, int ctrl, int def)
+int MidiTrack::getControllerChangeAtTick(unsigned tick, int ctrl, int def)
 {
   for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
   {
@@ -1178,8 +1178,8 @@ int MidiTrack::getControllerChangeAtTick(int tick, int ctrl, int def)
 }
 
 // returns the tick where this CC gets overriden by a new one
-// returns -1 for "never"
-unsigned MidiTrack::getControllerValueLifetime(int tick, int ctrl) 
+// returns UINT_MAX for "never"
+unsigned MidiTrack::getControllerValueLifetime(unsigned tick, int ctrl) 
 {
   unsigned result=UINT_MAX;
   

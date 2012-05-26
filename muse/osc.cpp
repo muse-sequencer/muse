@@ -780,16 +780,13 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       {
         control_port_mapper=control_port_mapper_;
         
-        int nDssiPorts=0;
+        unsigned long nDssiPorts=0;
         for (unsigned i=0;i<control_port_mapper->size();i++)
-          if (control_port_mapper->at(i)!=-1 && control_port_mapper->at(i) > nDssiPorts)
-            nDssiPorts=control_port_mapper->at(i);
-        nDssiPorts++; // we had the largest port. now we have the number of ports
+          if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
+            nDssiPorts=control_port_mapper->at(i)+1;
         
-        printf("allocating old_control[%i]\n",nDssiPorts);
-
         old_control=new float[nDssiPorts];
-        for (int i=0;i<nDssiPorts;i++) // init them all with "not a number"
+        for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
           old_control[i]=NAN;
 
         maxDssiPort=nDssiPorts;
@@ -798,19 +795,18 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       {
         control_port_mapper=control_port_mapper_;
         
-        int nDssiPorts=0;
+        unsigned long nDssiPorts=0;
         for (unsigned i=0;i<control_port_mapper->size();i++)
-          if (control_port_mapper->at(i)!=-1 && control_port_mapper->at(i) > nDssiPorts)
-            nDssiPorts=control_port_mapper->at(i);
-        nDssiPorts++; // we had the largest port. now we have the number of ports
+          if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
+            nDssiPorts=control_port_mapper->at(i)+1;
         
         if (maxDssiPort!=nDssiPorts)
         {
           // this should never happen, right?
-          printf("STRANGE: nDssiPorts has changed (old=%li, now=%i)!\n", maxDssiPort, nDssiPorts);
+          printf("STRANGE: nDssiPorts has changed (old=%lu, now=%lu)!\n", maxDssiPort, nDssiPorts);
           delete [] old_control;
           old_control=new float[nDssiPorts];
-          for (int i=0;i<nDssiPorts;i++) // init them all with "not a number"
+          for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
             old_control[i]=NAN;
           maxDssiPort=nDssiPorts;
         }

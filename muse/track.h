@@ -285,9 +285,9 @@ class MidiTrack : public Track {
       static void setVisible(bool t) { _isVisible = t; }
       static bool visible() { return _isVisible; }
       int getFirstControllerValue(int ctrl, int def=-1);
-      int getControllerChangeAtTick(int tick, int ctrl, int def=-1);
-      unsigned getControllerValueLifetime(int tick, int ctrl); // returns the tick where this CC gets overriden by a new one
-                                                               // returns UINT_MAX for "never"
+      int getControllerChangeAtTick(unsigned tick, int ctrl, int def=-1);
+      unsigned getControllerValueLifetime(unsigned tick, int ctrl); // returns the tick where this CC gets overriden by a new one
+                                                                    // returns UINT_MAX for "never"
 
       void setClef(clefTypes i) { clefType = i; }
       clefTypes getClef() { return clefType; }
