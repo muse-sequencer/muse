@@ -2359,7 +2359,6 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
         for(unsigned long k = 0; k < controlPorts; ++k)
         {
           if(controls[k].enCtrl && controls[k].en2Ctrl )
-            //controls[k].tmpVal = _track->pluginCtrlVal(genACnum(_id, k));
             controls[k].tmpVal = _track->controller()->value(genACnum(_id, k), MusEGlobal::audio->pos().frame());
         }      
       }
@@ -2673,7 +2672,7 @@ int PluginI::oscControl(unsigned long port, float value)
     //  we don't have the luxury of access to the dssi gui controls !
     if ((at == AUTO_WRITE) ||
         (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()))
-      enableController(cport, false); //FINDMICHJETZT maybe re-enable the ctrl soon?
+      enableController(cport, false); //TODO maybe re-enable the ctrl soon?
       
     _track->recordAutomation(id, value);
   } 
@@ -3433,8 +3432,8 @@ void PluginGui::ctrlPressed(int param)
           MusEGlobal::song->controllerChange(track);
           
           track->startAutoRecord(id, val);
-        }  
-      }       
+        }
+      }
       else if(params[param].type == GuiParam::GUI_SWITCH)
       {
         float val = (float)((CheckBox*)params[param].actuator)->isChecked();      // p4.0.21
@@ -3446,8 +3445,8 @@ void PluginGui::ctrlPressed(int param)
           MusEGlobal::song->controllerChange(track);
           
           track->startAutoRecord(id, val);
-        }  
-      }       
+        }
+      }
 }
 
 //---------------------------------------------------------
@@ -3481,7 +3480,7 @@ void PluginGui::ctrlReleased(int param)
         else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
               val = rint(val);
         track->stopAutoRecord(id, val);
-      }       
+      }
 }
 
 //---------------------------------------------------------
