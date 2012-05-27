@@ -529,8 +529,6 @@ MusE::MusE() : QMainWindow()
       autoMixerAction->setCheckable(true);
       autoSnapshotAction = new QAction(QIcon(*MusEGui::automation_take_snapshotIcon), tr("Take Snapshot"), this);
       autoClearAction = new QAction(QIcon(*MusEGui::automation_clear_dataIcon), tr("Clear Automation Data"), this);
-      autoClearAction->setEnabled(false);
-      
 
       //-------- Windows Actions
       windowsCascadeAction = new QAction(tr("Cascade"), this);
@@ -2745,9 +2743,26 @@ void MusE::startEditInstrument()
 
 void MusE::switchMixerAutomation()
       {
+      // Could be intensive, try idling instead of a single message.  
+      MusEGlobal::audio->msgIdle(true);
+      
       MusEGlobal::automation = ! MusEGlobal::automation;
       // Clear all pressed and touched and rec event lists.
       MusEGlobal::song->clearRecAutomation(true);
+      
+      // If going to OFF mode, need to update current 'manual' values from the automation values at this time...   
+      if(!MusEGlobal::automation)
+      {
+        MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+        for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
+              if ((*i)->isMidiTrack())
+                    continue;
+              static_cast<MusECore::AudioTrack*>(*i)->controller()->updateCurValues(MusEGlobal::audio->curFramePos());
+              }
+      }
+        
+      MusEGlobal::audio->msgIdle(false);
+      
       autoMixerAction->setChecked(MusEGlobal::automation);
       }
 
@@ -2757,7 +2772,24 @@ void MusE::switchMixerAutomation()
 
 void MusE::clearAutomation()
       {
-      printf("not implemented\n");
+      QMessageBox::StandardButton b = QMessageBox::warning(this, appName,
+          tr("This will clear all automation data on\n all audio tracks!\nProceed?"),
+          QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel);
+      
+      if(b != QMessageBox::Ok)
+        return;
+        
+      // Could be intensive, try idling instead of a single message.  
+      MusEGlobal::audio->msgIdle(true);
+      
+      MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+      for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
+            if ((*i)->isMidiTrack())
+                  continue;
+            static_cast<MusECore::AudioTrack*>(*i)->controller()->clearAllAutomation();
+            }
+            
+      MusEGlobal::audio->msgIdle(false);
       }
 
 //---------------------------------------------------------
@@ -2766,18 +2798,34 @@ void MusE::clearAutomation()
 
 void MusE::takeAutomationSnapshot()
       {
-      int frame = MusEGlobal::song->cPos().frame();
+      QMessageBox::StandardButton b = QMessageBox::warning(this, appName,
+          tr("This takes an automation snapshot of\n all controllers on all audio tracks,\n"
+             " at the current position.\nProceed?"),
+          QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel);
+      
+      if(b != QMessageBox::Ok)
+        return;
+        
+      // Could be intensive, try idling instead of a single message.  
+      MusEGlobal::audio->msgIdle(true);
+      
+      int frame = MusEGlobal::audio->curFramePos();
       MusECore::TrackList* tracks = MusEGlobal::song->tracks();
       for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
             if ((*i)->isMidiTrack())
                   continue;
-	    MusECore::AudioTrack* track = (MusECore::AudioTrack*)*i;
-	    MusECore::CtrlListList* cll = track->controller();
+	    MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
+            MusECore::CtrlListList* cll = track->controller();
+            // Need to update current 'manual' values from the automation values at this time.   
+            cll->updateCurValues(frame);
+            
             for (MusECore::iCtrlList icl = cll->begin(); icl != cll->end(); ++icl) {
                   double val = icl->second->curVal();
                   icl->second->add(frame, val);
                   }
             }
+            
+      MusEGlobal::audio->msgIdle(false);
       }
 
 //---------------------------------------------------------

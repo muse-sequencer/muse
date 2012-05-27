@@ -17,6 +17,10 @@
            controllers in AudioTrack::copyData/addData is now done at a more proper and accurate 
            frame time instead of wallclock-based queries via AudioTrack::volume/pan/pluginCtrlVal.
           (Sorry, this does not mean frame accuracy on playback yet.)
+        - Menu 'Take automation snapshot' now operates with frame resolution. Added a warning message as well.
+        - Menu 'Clear automation' enabled and implemented. Added a warning message as well.
+        - DSSI synths: Fixed errors with Pitch controller on playback. Removed AND'ing of 0x3FFF in
+           CTRL_PITCH section of DssiSynthIF::processEvent.
 20.05.2012:
         - MusE can now compile with clang/llvm via -DCMAKE_CXX_COMPILER=clang++ flag to cmake. (Orcan)
         - Update some URLs in README. (Orcan)

@@ -1125,7 +1125,6 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
         fprintf(stderr, "DssiSynthIF::processEvent midi event is MusECore::ME_CONTROLLER, dataA is MusECore::CTRL_PITCH\n");
         #endif
         
-        b &= 0x3fff;
         snd_seq_ev_clear(event); 
         event->queue = SND_SEQ_QUEUE_DIRECT;
         snd_seq_ev_set_pitchbend(event, chn, b);

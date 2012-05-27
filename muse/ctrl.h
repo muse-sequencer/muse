@@ -178,6 +178,10 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
             
       double value(int ctrlId, int frame, bool cur_val_only = false) const;
       void updateCurValues(int frame);
+      void clearAllAutomation() {
+            for(iCtrlList i = begin(); i != end(); ++i)
+              i->second->clear();
+           }     
       };
 
 } // namespace MusECore

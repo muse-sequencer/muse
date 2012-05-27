@@ -2730,7 +2730,11 @@ void Song::processAutomationEvents()
   // Just clear all pressed and touched flags, not rec event lists.
   clearRecAutomation(false);
   if (!MusEGlobal::automation)
+  {
+    MusEGlobal::audio->msgIdle(false);
     return;
+  }
+  
   for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i)
   {
     if(!(*i)->isMidiTrack())
