@@ -34,7 +34,6 @@
 #include "globals.h"
 #include "ctrl.h"
 #include "xml.h"
-#include "audio.h"
 
 namespace MusECore {
 
@@ -184,7 +183,7 @@ double CtrlList::value(int frame) const
 
 //---------------------------------------------------------
 //   curVal
-//   returns the value at the current audio position 
+//   returns the static 'manual' value
 //---------------------------------------------------------
 double CtrlList::curVal() const
 { 
@@ -193,6 +192,7 @@ double CtrlList::curVal() const
 
 //---------------------------------------------------------
 //   setCurVal
+//   Sets the static 'manual' value
 //---------------------------------------------------------
 void CtrlList::setCurVal(double val)
 {
@@ -201,6 +201,7 @@ void CtrlList::setCurVal(double val)
 
 //---------------------------------------------------------
 //   add
+//   Add, or replace, an event at time frame having value val. 
 //---------------------------------------------------------
 
 void CtrlList::add(int frame, double val)
@@ -225,6 +226,17 @@ void CtrlList::del(int frame)
       erase(e);
       }
 
+//---------------------------------------------------------
+//   updateCurValues
+//   Set the current static 'manual' value (non-automation value) 
+//    from the automation value at the given time.
+//---------------------------------------------------------
+
+void CtrlList::updateCurValue(int frame)
+{
+  _curVal = value(frame);
+}
+      
 //---------------------------------------------------------
 //   read
 //---------------------------------------------------------
@@ -346,5 +358,38 @@ void CtrlListList::add(CtrlList* vl)
       {
       insert(std::pair<const int, CtrlList*>(vl->id(), vl));
       }
+
+//---------------------------------------------------------
+//   value
+//---------------------------------------------------------
+
+double CtrlListList::value(int ctrlId, int frame, bool cur_val_only) const
+      {
+      ciCtrlList cl = find(ctrlId);
+      if (cl == end())
+            return 0.0;
+
+      if(cur_val_only)
+        return cl->second->curVal();
+      
+      return cl->second->value(frame);  
+      }
+
+//---------------------------------------------------------
+//   updateCurValues
+//   Set the current 'manual' values (non-automation values) 
+//    from the automation values at the given time.
+//   This is typically called right after a track's automation type changes
+//    to OFF, so that the manual value becomes the last automation value.
+//   There are some interesting advantages to having completely independent 
+//    'manual' and automation values, but the jumping around when switching to OFF
+//    becomes disconcerting.
+//---------------------------------------------------------
+
+void CtrlListList::updateCurValues(int frame)
+{
+  for(ciCtrlList cl = begin(); cl != end(); ++cl)
+    cl->second->updateCurValue(frame);
+}
       
 } // namespace MusECore

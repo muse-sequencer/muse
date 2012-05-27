@@ -1226,10 +1226,33 @@ jack_transport_state_t JackAudioDevice::transportQuery(jack_position_t* pos)
 }
 
 //---------------------------------------------------------
+//   systemTime
+//   Return system time. Depends on selected clock source. 
+//   With Jack, may be based upon wallclock time, the   
+//    processor cycle counter or the HPET clock etc.
+//---------------------------------------------------------
+
+double JackAudioDevice::systemTime() const
+{
+  // Client valid? According to sletz: For jack_get_time "There are some timing related 
+  //  initialization that are done once when a first client is created."
+  if(!checkJackClient(_client))
+  {
+    struct timeval t;
+    gettimeofday(&t, 0);
+    //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
+    return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
+  }
+  
+  jack_time_t t = jack_get_time();
+  return double(t) / 1000000.0;
+}
+
+//---------------------------------------------------------
 //   getCurFrame
 //---------------------------------------------------------
 
-unsigned int JackAudioDevice::getCurFrame()
+unsigned int JackAudioDevice::getCurFrame() const
 { 
   if (JACK_DEBUG)
     printf("JackAudioDevice::getCurFrame pos.frame:%d\n", pos.frame);

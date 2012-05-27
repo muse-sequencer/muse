@@ -59,12 +59,8 @@ void initAudio()
 {
       MusEGlobal::audio = new Audio();
 }
-
   
 extern double curTime();
-
-//static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 }; DELETETHIS 2
-//static const unsigned char mmcStopMsg[] =         { 0x7f, 0x7f, 0x06, 0x01 };
 
 const char* seqMsgList[] = {
       "SEQM_ADD_TRACK", "SEQM_REMOVE_TRACK", //"SEQM_CHANGE_TRACK",   DELETETHIS
@@ -82,6 +78,7 @@ const char* seqMsgList[] = {
       "SEQM_SET_HW_CTRL_STATES",
       "SEQM_SET_TRACK_OUT_PORT",
       "SEQM_SET_TRACK_OUT_CHAN",
+      "SEQM_SET_TRACK_AUTO_TYPE",
       "SEQM_REMAP_PORT_DRUM_CTL_EVS",
       "SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS",
       "SEQM_SCAN_ALSA_MIDI_PORTS",
@@ -714,6 +711,10 @@ void Audio::processMsg(AudioMsg* msg)
                   MusEGlobal::midiSeq->sendMsg(msg);
                   break;
 
+            case SEQM_SET_TRACK_AUTO_TYPE:
+                  msg->track->setAutomationType(AutomationType(msg->ival));
+                  break;
+                  
             case SEQM_IDLE:
                   idle = msg->a;
                   MusEGlobal::midiSeq->sendMsg(msg);
@@ -986,17 +987,44 @@ void Audio::recordStop()
       }
 
 //---------------------------------------------------------
+//   framesSinceCycleStart
+//    Estimated frames since the last process cycle began
+//---------------------------------------------------------
+
+unsigned Audio::framesSinceCycleStart() const
+{
+  return lrint((curTime() - syncTime) * MusEGlobal::sampleRate);
+}
+
+//---------------------------------------------------------
+//   curFramePos()
+//    Current play position frame. Estimated to single-frame resolution while in play mode.
+//---------------------------------------------------------
+
+unsigned Audio::curFramePos() const
+{
+  return _pos.frame() + (isPlaying() ? framesSinceCycleStart() : 0);
+}
+
+//---------------------------------------------------------
 //   curFrame
-//    extrapolates current play frame on syncTime/syncFrame
+//    Extrapolates current play frame on syncTime/syncFrame
+//    Estimated to single-frame resolution.
+//    This is an always-increasing number. Good for timestamps, and 
+//     handling them during process when referenced to syncFrame.
 //---------------------------------------------------------
 
 unsigned int Audio::curFrame() const
       {
-      return lrint((curTime() - syncTime) * MusEGlobal::sampleRate) + syncFrame;
+      //return lrint((curTime() - syncTime) * MusEGlobal::sampleRate) + syncFrame;
+      return framesSinceCycleStart() + syncFrame;
       }
 
 //---------------------------------------------------------
 //   timestamp
+//    Estimated to single-frame resolution.
+//    This is an always-increasing number in play mode, but in stop mode
+//     it is circular (about the cur pos, width = segment size).
 //---------------------------------------------------------
 
 int Audio::timestamp() const

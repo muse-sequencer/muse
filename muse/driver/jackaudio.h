@@ -71,6 +71,7 @@ class JackAudioDevice : public AudioDevice {
       
       virtual int framePos() const;
       virtual unsigned frameTime() const     { return _frameCounter; }  
+      virtual double systemTime() const;
 
       virtual float* getBuffer(void* port, unsigned long nframes) {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
@@ -95,7 +96,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void* findPort(const char* name);
       virtual QString portName(void* port);
       virtual int getState();
-      virtual unsigned int getCurFrame();
+      virtual unsigned int getCurFrame() const;
       virtual bool isRealtime()          { return jack_is_realtime(_client); }
       virtual int realtimePriority() const;
       virtual void startTransport();

@@ -2359,7 +2359,8 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
         for(unsigned long k = 0; k < controlPorts; ++k)
         {
           if(controls[k].enCtrl && controls[k].en2Ctrl )
-            controls[k].tmpVal = _track->pluginCtrlVal(genACnum(_id, k));
+            //controls[k].tmpVal = _track->pluginCtrlVal(genACnum(_id, k));
+            controls[k].tmpVal = _track->controller()->value(genACnum(_id, k), MusEGlobal::audio->pos().frame());
         }      
       }
         

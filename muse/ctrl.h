@@ -122,6 +122,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       double getDefault() const   { return _default; }
       void setDefault(double val) { _default = val; }
       double curVal() const;
+      void updateCurValue(int frame);
       void setCurVal(double val);
       int id() const             { return _id; }
       QString name() const       { return _name; }
@@ -174,6 +175,9 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
       ciCtrlList find(int id) const {
             return std::map<int, CtrlList*, std::less<int> >::find(id);
             }
+            
+      double value(int ctrlId, int frame, bool cur_val_only = false) const;
+      void updateCurValues(int frame);
       };
 
 } // namespace MusECore

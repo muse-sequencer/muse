@@ -401,8 +401,11 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   
   // precalculate stereo volume
   double vol[2];
-  double _volume = volume();
-  double _pan = pan();
+  //double _volume = volume();
+  //double _pan = pan();
+  double _volume = controller()->value(AC_VOLUME, pos);
+  double _pan    = controller()->value(AC_PAN,    pos);
+  
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
   float meter[trackChans];
@@ -736,8 +739,11 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   
   // precalculate stereo volume
   double vol[2];
-  double _volume = volume();
-  double _pan = pan();
+  //double _volume = volume();
+  //double _pan = pan();
+  double _volume = controller()->value(AC_VOLUME, pos);
+  double _pan    = controller()->value(AC_PAN,    pos);
+
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
   float meter[trackChans];

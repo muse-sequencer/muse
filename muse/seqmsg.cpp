@@ -1243,6 +1243,19 @@ void Audio::msgSetTrackOutPort(MidiTrack* track, int port)
 }
 
 //---------------------------------------------------------
+//   msgSetTrackAutomationType
+//---------------------------------------------------------
+
+void Audio::msgSetTrackAutomationType(Track* track, int type)
+{
+      AudioMsg msg;
+      msg.id = SEQM_SET_TRACK_AUTO_TYPE;
+      msg.track = track;
+      msg.ival = type;
+      sendMessage(&msg, false);
+}
+      
+//---------------------------------------------------------
 //   msgRemapPortDrumCtlEvents
 //---------------------------------------------------------
 

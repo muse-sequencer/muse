@@ -2725,6 +2725,8 @@ void Song::clearRecAutomation(bool clearList)
 
 void Song::processAutomationEvents()
 {
+  MusEGlobal::audio->msgIdle(true); // gain access to all data structures
+   
   // Just clear all pressed and touched flags, not rec event lists.
   clearRecAutomation(false);
   if (!MusEGlobal::automation)
@@ -2735,6 +2737,8 @@ void Song::processAutomationEvents()
       // Process (and clear) rec events.
       ((AudioTrack*)(*i))->processAutomationEvents();
   }
+  
+  MusEGlobal::audio->msgIdle(false); 
 }
 
 //---------------------------------------------------------
@@ -2754,7 +2758,10 @@ void Song::abortRolling()
 
 void Song::stopRolling()
       {
-      abortRolling();
+      if (record())
+            MusEGlobal::audio->recordStop();
+      setStopPlay(false);
+      
       processAutomationEvents();
       }
 

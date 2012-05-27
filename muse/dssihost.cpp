@@ -52,6 +52,7 @@
 #include "controlfifo.h"
 #include "xml.h"
 #include "song.h"
+#include "ctrl.h"
 
 #include "app.h"
 #include "globals.h"
@@ -1493,7 +1494,8 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
     {
       if(controls[k].enCtrl && controls[k].en2Ctrl )
-        controls[k].val = synti->pluginCtrlVal(genACnum(id(), k));
+        //controls[k].val = synti->pluginCtrlVal(genACnum(id(), k));
+        controls[k].val = (static_cast<MusECore::AudioTrack*>(synti))->controller()->value(genACnum(id(), k), pos);
     }      
   }
         

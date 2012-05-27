@@ -1,3 +1,22 @@
+27.05.2012:
+        * Timing, resolution, accuracy, and automation fixes:  (Tim)
+        - Ask audio driver for 'its' current system time instead of wallclock in utils.cpp:curTime(). 
+          Reason: Jack's clock source can be wallclock, cycle counter, HPET etc. 
+          TODO: Try more Jack time functions for accuracy in Audio::framesSinceCycleStart etc.
+        - Fixed automation 'manual' slider values: Update them from automation values at the current time 
+           when switching to automation OFF. After some recent changes by me, the 'manual' values were
+           left 'independent' of the automation values. While this had interesting effects, the value
+           would 'jump' back to the manual value when switching to OFF, which became disconcerting.
+          The best solution, in muse_evolution (from where I adopted the previous changes), was to 
+           continuously update the manual values during process, but there may be too many controllers,
+           so this was the other lesser option. 
+        - All audio/plugin GENERIC gui controls now record their automation at FRAME resolution.
+          Previously the timestamps were ticks converted to frames (lossy). Now they are true frames.
+          This means these recorded graphs can be much denser with vertices now, if needed.
+        - Querying of plugin controller values in DssiSynthIF::getData, PluginI::apply, and volume/pan 
+           controllers in AudioTrack::copyData/addData is now done at a more proper and accurate 
+           frame time instead of wallclock-based queries via AudioTrack::volume/pan/pluginCtrlVal.
+          (Sorry, this does not mean frame accuracy on playback yet.)
 20.05.2012:
         - MusE can now compile with clang/llvm via -DCMAKE_CXX_COMPILER=clang++ flag to cmake. (Orcan)
         - Update some URLs in README. (Orcan)
