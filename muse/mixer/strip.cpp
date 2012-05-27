@@ -295,7 +295,7 @@ Strip::~Strip()
 void Strip::setAutomationType(int t)
 {
   // If going to OFF mode, need to update current 'manual' values from the automation values at this time...   
-  if(t == AUTO_OFF && track->automationType() != AUTO_OFF)
+  if(t == AUTO_OFF && track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
   {
     // May have a lot to do in updateCurValues, so try using idle.
     MusEGlobal::audio->msgIdle(true);
