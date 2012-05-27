@@ -271,7 +271,7 @@ Disabling the controller is both dependent from the current automation
 mode and from whether the GUI is native or not.
 In \texttt{AUTO\_WRITE} mode, once a slider is touched (for MusE-GUIs) or
 once a OSC control change is received (for native GUIs), the control
-is disabled until the song is stopped.                                               (not sure)  % TODO
+is disabled until the song is stopped or seeked.
 
 In \texttt{AUTO\_TOUCH} (and currently (r1492) \texttt{AUTO\_READ}, but
 that's to be fixed) mode, once a MusE-GUI's slider is pressed down, the
@@ -287,7 +287,30 @@ way to find out whether the user doesn't touch a control at all, or
 whether he has it held down, but just doesn't operate it. The current
 behaviour for native GUIs is to behave like in \texttt{AUTO\_WRITE} mode.
 
+The responsible functions are: \texttt{PluginI::oscControl} and
+\texttt{DssiSynthIF::oscControl} for handling native GUIs,
+\texttt{PluginI::ctrlPressed} and \texttt{ctrlReleased} for MusE
+default GUIs and \texttt{PluginI::guiParamPressed},
+\texttt{guiParamReleased}, \texttt{guiSliderPressed} and
+\texttt{guiSliderReleased} for MusE GUIs read from a UI file;
+\texttt{guiSlider*} obviously handle sliders, while \texttt{guiParam*}
+handle everything else which is not a slider. They call
+\texttt{PluginI::enableController} to enable/disable it.
 
+Furthermore, on every song stop or seek, \texttt{PluginI::enableAllControllers}
+is called, which re-enables all controllers again. The call paths for
+this are:
+\begin{itemize}
+\item For stop: \texttt{Song::stopRolling} calls
+                \texttt{Song::processAutomationEvents} calls
+                \texttt{Song::clearRecAutomation} calls
+                \texttt{Track::clearRecAutomation} calls
+                \texttt{PluginI::enableAllControllers}
+\item For seek: \texttt{Audio::seek} sends a message ("\texttt{G}") to
+                \texttt{Song::seqSignal} which calls
+                \texttt{Song::clearRecAutomation} which calls
+                \texttt{PluginI::enableAllControllers}                
+\end{itemize}
 
 
 
