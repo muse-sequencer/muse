@@ -2670,7 +2670,8 @@ int PluginI::oscControl(unsigned long port, float value)
     // TODO: Taken from our native gui control handlers. 
     // This may need modification or may cause problems - 
     //  we don't have the luxury of access to the dssi gui controls !
-    if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+    if ((at == AUTO_WRITE) ||
+        (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()))
       enableController(cport, false); //FINDMICHJETZT maybe re-enable the ctrl soon?
       
     _track->recordAutomation(id, value);
@@ -3405,7 +3406,7 @@ void PluginGui::ctrlPressed(int param)
       if(track)
         at = track->automationType();
             
-      if(at != AUTO_OFF)
+      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
         plugin->enableController(param, false);
       
       int id = plugin->id();
@@ -3460,9 +3461,10 @@ void PluginGui::ctrlReleased(int param)
         at = track->automationType();
         
       // Special for switch - don't enable controller until transport stopped.
-      if(at != AUTO_WRITE && ((params[param].type != GuiParam::GUI_SWITCH
-          || !MusEGlobal::audio->isPlaying()
-          || at != AUTO_TOUCH) || (!MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH)) )
+      if ((at == AUTO_OFF) ||
+          (at == AUTO_READ) ||
+          (at == AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
+                                !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
       
       int id = plugin->id();
@@ -3951,7 +3953,7 @@ void PluginGui::guiParamPressed(int idx)
       if(track)
         at = track->automationType();
       
-      if(at != AUTO_OFF)
+      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
         plugin->enableController(param, false);
       
       int id = plugin->id();
@@ -3993,9 +3995,10 @@ void PluginGui::guiParamReleased(int idx)
         at = track->automationType();
       
       // Special for switch - don't enable controller until transport stopped.
-      if(at != AUTO_WRITE && (type != GuiWidgets::QCHECKBOX
-          || !MusEGlobal::audio->isPlaying()
-          || at != AUTO_TOUCH))
+      if ((at == AUTO_OFF) ||
+          (at == AUTO_READ) ||
+          (at == AUTO_TOUCH && (type != GuiWidgets::QCHECKBOX ||
+                                !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
       
       int id = plugin->id();
@@ -4039,7 +4042,7 @@ void PluginGui::guiSliderPressed(int idx)
       
       int id = plugin->id();
       
-      if(at == AUTO_WRITE || (at == AUTO_READ || at == AUTO_TOUCH))
+      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
         plugin->enableController(param, false);
       
       if(!track || id == -1)
@@ -4092,7 +4095,12 @@ void PluginGui::guiSliderReleased(int idx)
       if(track)
         at = track->automationType();
       
-      if(at != AUTO_WRITE || (!MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      /* equivalent to
+      if ((at == AUTO_OFF) ||
+          (at == AUTO_READ) ||
+          (at == AUTO_TOUCH && (type != GuiWidgets::QCHECKBOX ||    <--- this type is SLIDER != CHECKBOX -> true
+                                !MusEGlobal::audio->isPlaying()) ) ) <--- above==true -> this doesn't matter */
+      if (at == AUTO_OFF || at == AUTO_READ || at == AUTO_TOUCH)
         plugin->enableController(param, true);
       
       int id = plugin->id();

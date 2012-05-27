@@ -1558,7 +1558,8 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
         // This may need modification or may cause problems - 
         //  we don't have the luxury of access to the dssi gui controls !
         AutomationType at = _track->automationType();
-        if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+        if ((at == AUTO_WRITE) ||
+            (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()))
           enableController(k, false);
         _track->recordAutomation(id, v.value);
         */
@@ -1962,8 +1963,9 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
     // TODO: Taken from our native gui control handlers. 
     // This may need modification or may cause problems - 
     //  we don't have the luxury of access to the dssi gui controls !
-    if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-      enableController(cport, false); //FINDMICHJETZT maybe re-enable the ctrl soon?
+    if ((at == AUTO_WRITE) || 
+        (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()))
+      enableController(cport, false); //TODO maybe re-enable the ctrl soon?
       
     synti->recordAutomation(pid, value);
   } 

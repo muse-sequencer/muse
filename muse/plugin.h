@@ -270,38 +270,6 @@ class PluginIBase
       void deleteGui();
 };
 
-/* DELETETHIS 30
-class PluginBase 
-{
-   public:
-      bool on() const        { return _on; }
-      void setOn(bool val)   { _on = val; }
-      int pluginID()                { return plugin()->id(); }
-      int id()                      { return _id; }
-      QString pluginLabel() const    { return _plugin->label(); }
-      QString name() const           { return _name; }
-      
-      AudioTrack* track()           { return _track; }
-      
-      void enableController(int i, bool v = true)   { controls[i].enCtrl = v; }
-      bool controllerEnabled(int i) const           { return controls[i].enCtrl; }
-      bool controllerEnabled2(int i) const          { return controls[i].en2Ctrl; }
-      void updateControllers();
-      
-      void writeConfiguration(int level, Xml& xml);
-      bool readConfiguration(Xml& xml, bool readPreset=false);
-      
-      int parameters() const           { return controlPorts; }
-      void setParam(int i, double val) { controls[i].tmpVal = val; }
-      double param(int i) const        { return controls[i].val; }
-      const char* paramName(int i)     { return _plugin->portName(controls[i].idx); }
-      LADSPA_PortRangeHint range(int i) 
-      {
-            return _plugin->range(controls[i].idx);
-      }
-};
-*/
-
 //---------------------------------------------------------
 //   PluginI
 //    plugin instance
