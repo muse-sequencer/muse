@@ -143,7 +143,7 @@ static Synth* findSynth(const QString& sclass, const QString& label, Synth::Type
          i != MusEGlobal::synthis.end(); ++i) 
          {
             if( ((*i)->baseName() == sclass) && 
-                (label.isEmpty() || ((*i)->name() == label)) && 
+                (label.isEmpty() || ((*i)->name() == label)) &&
                 (type == Synth::SYNTH_TYPE_END || type == (*i)->synthType()) )
               return *i;
          }
@@ -165,7 +165,6 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
             QString n;
             n.setNum(s->instances());
             QString instance_name = s->name() + "-" + n;
-            
             if (si->initInstance(s, instance_name)) {
                   delete si;
                   return 0;

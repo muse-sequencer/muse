@@ -57,9 +57,16 @@ class OscIF
       char* _uiOscControlPath;
       char* _uiOscShowPath;
       bool _oscGuiVisible;
-   
+      
+      unsigned long old_prog;
+      unsigned long old_bank;
+      float* old_control;
+      unsigned long maxDssiPort;
+      const std::vector<unsigned long>* control_port_mapper;
+      
       virtual bool oscInitGui(const QString& typ, const QString& baseName, const QString& name, 
-                       const QString& label, const QString& filePath, const QString& guiPath);
+                       const QString& label, const QString& filePath, const QString& guiPath,
+                       const std::vector<unsigned long>* control_port_mapper_);
                        
    public:
       OscIF();
@@ -72,8 +79,8 @@ class OscIF
       virtual int oscMidi(lo_arg**)      { return 0; }      
       virtual int oscConfigure(lo_arg**) { return 0; } 
    
-      virtual void oscSendProgram(unsigned long prog, unsigned long bank);    
-      virtual void oscSendControl(unsigned long dssiPort, float val);    
+      virtual void oscSendProgram(unsigned long prog, unsigned long bank, bool force=false);    
+      virtual void oscSendControl(unsigned long dssiPort, float val, bool force=false);    
       virtual void oscSendConfigure(const char *key, const char *val); 
       
       virtual bool oscInitGui() { return false; }
@@ -91,7 +98,7 @@ class OscEffectIF : public OscIF
    public:
       OscEffectIF() {}
 
-      void oscSetPluginI(PluginI*);
+      void oscSetPluginI(PluginI*); // this MUST be called with NULL-argument from PluginI's destructor!
       
       virtual int oscUpdate(lo_arg**);
       virtual int oscControl(lo_arg**);
@@ -111,7 +118,7 @@ class OscDssiIF : public OscIF
    public:
       OscDssiIF() {}
       
-      void oscSetSynthIF(DssiSynthIF*);
+      void oscSetSynthIF(DssiSynthIF*); // this MUST be called with NULL-argument from DssiSynthIF's destructor!
       
       virtual int oscUpdate(lo_arg**);
       virtual int oscProgram(lo_arg**);

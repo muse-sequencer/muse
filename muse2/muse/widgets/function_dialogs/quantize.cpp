@@ -26,6 +26,14 @@
 
 namespace MusEGui {
 
+int Quantize::range = 1;
+int Quantize::strength = 90;
+int Quantize::threshold = 0;
+int Quantize::raster_index = 3;
+int Quantize::swing = 0;
+bool Quantize::quant_len = 1;
+
+
 int rasterVals[] = {
   1, // Whole note divisor
   2, // Half note divisor
@@ -49,8 +57,6 @@ Quantize::Quantize(QWidget* parent)
 	range_group->addButton(selected_events_button,1);
 	range_group->addButton(looped_events_button,2);
 	range_group->addButton(selected_looped_button,3);
-	
-	pull_values();
 }
 
 void Quantize::pull_values()
@@ -58,7 +64,7 @@ void Quantize::pull_values()
 	range = range_group->checkedId();
 	strength = strength_spinbox->value();
 	threshold = threshold_spinbox->value();
-  raster_index = raster_combobox->currentIndex();
+	raster_index = raster_combobox->currentIndex();
 	quant_len = len_checkbox->isChecked();
 	swing = swing_spinbox->value();
 }
@@ -102,7 +108,7 @@ void Quantize::read_configuration(MusECore::Xml& xml)
 				else if (tag == "threshold")
 					threshold=xml.parseInt();
 				else if (tag == "raster")
-          raster_index=xml.parseInt();
+					raster_index=xml.parseInt();
 				else if (tag == "swing")
 					swing=xml.parseInt();
 				else if (tag == "quant_len")

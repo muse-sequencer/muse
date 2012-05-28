@@ -42,11 +42,12 @@
 #include "ticksynth.h"  // metronome
 #include "al/dsp.h"
 
-// Uncomment this (and make sure to set Jack buffer size high like 2048) 
-//  to see process flow messages.
-//#define NODE_DEBUG 
-//#define FIFO_DEBUG 
+// Turn on debugging messages
+//#define NODE_DEBUG     
+// Turn on constant flow of process debugging messages
+//#define NODE_DEBUG_PROCESS     
 
+//#define FIFO_DEBUG 
 //#define METRONOME_DEBUG 
 
 namespace MusECore {
@@ -375,7 +376,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   // Make better use of AudioTrack::outBuffers as a post-effect pre-volume cache system for multiple calls here during processing.
   // Previously only WaveTrack used them. (Changed WaveTrack as well).
   
-  #ifdef NODE_DEBUG
+  #ifdef NODE_DEBUG_PROCESS
   printf("MusE: AudioTrack::copyData name:%s processed:%d\n", name().toLatin1().constData(), processed());
   #endif
   
@@ -400,8 +401,11 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   
   // precalculate stereo volume
   double vol[2];
-  double _volume = volume();
-  double _pan = pan();
+  //double _volume = volume();
+  //double _pan = pan();
+  double _volume = controller()->value(AC_VOLUME, pos);
+  double _pan    = controller()->value(AC_PAN,    pos);
+  
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
   float meter[trackChans];
@@ -411,7 +415,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   {
     // If there is only one (or no) output routes, it's an error - we've been called more than once per process cycle!
     // No, this is no longer an error, it's deliberate. Processing no longer done in 'chains', now done randomly.  p4.0.37
-    #ifdef NODE_DEBUG
+    #ifdef NODE_DEBUG_PROCESS
     printf("MusE: AudioTrack::copyData name:%s already processed _haveData:%d\n", name().toLatin1().constData(), _haveData);
     #endif
     
@@ -447,7 +451,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
 
     if(off())  
     {  
-      #ifdef NODE_DEBUG
+      #ifdef NODE_DEBUG_PROCESS
       printf("MusE: AudioTrack::copyData name:%s dstChannels:%d Off, zeroing buffers\n", name().toLatin1().constData(), dstChannels);
       #endif
       
@@ -482,7 +486,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     //  so still call getData before it. Off is NOT meant to be toggled rapidly, but mute is !
     if(!getData(pos, srcTotalOutChans, nframes, buffer) || (isMute() && !_prefader)) 
     {
-      #ifdef NODE_DEBUG
+      #ifdef NODE_DEBUG_PROCESS
       printf("MusE: AudioTrack::copyData name:%s srcTotalOutChans:%d zeroing buffers\n", name().toLatin1().constData(), srcTotalOutChans);
       #endif
       
@@ -622,7 +626,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   //    postfader metering
   //---------------------------------------------------
 
-  #ifdef NODE_DEBUG
+  #ifdef NODE_DEBUG_PROCESS
   printf("MusE: AudioTrack::copyData trackChans:%d srcTotalOutChans:%d srcStartChan:%d srcChans:%d dstChannels:%d\n", trackChans, srcTotalOutChans, srcStartChan, srcChans, dstChannels);
   #endif
       
@@ -711,7 +715,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   // Make better use of AudioTrack::outBuffers as a post-effect pre-volume cache system for multiple calls here during processing.
   // Previously only WaveTrack used them. (Changed WaveTrack as well).
   
-  #ifdef NODE_DEBUG
+  #ifdef NODE_DEBUG_PROCESS
   printf("MusE: AudioTrack::addData name:%s processed:%d\n", name().toLatin1().constData(), processed());
   #endif
   
@@ -735,8 +739,11 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   
   // precalculate stereo volume
   double vol[2];
-  double _volume = volume();
-  double _pan = pan();
+  //double _volume = volume();
+  //double _pan = pan();
+  double _volume = controller()->value(AC_VOLUME, pos);
+  double _pan    = controller()->value(AC_PAN,    pos);
+
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
   float meter[trackChans];
@@ -746,7 +753,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   {
     // If there is only one (or no) output routes, it's an error - we've been called more than once per process cycle!
     // No, this is no longer an error, it's deliberate. Processing no longer done in 'chains', now done randomly.  p4.0.37
-    #ifdef NODE_DEBUG
+    #ifdef NODE_DEBUG_PROCESS
     printf("MusE: AudioTrack::addData name:%s already processed _haveData:%d\n", name().toLatin1().constData(), _haveData);
     #endif
     
@@ -772,7 +779,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     
     if(off())  
     {  
-      #ifdef NODE_DEBUG
+      #ifdef NODE_DEBUG_PROCESS
       printf("MusE: AudioTrack::addData name:%s dstChannels:%d Track is Off \n", name().toLatin1().constData(), dstChannels);
       #endif
       
@@ -917,7 +924,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   //    postfader metering
   //---------------------------------------------------
 
-  #ifdef NODE_DEBUG
+  #ifdef NODE_DEBUG_PROCESS
   printf("MusE: AudioTrack::addData trackChans:%d srcTotalOutChans:%d srcChans:%d dstChannels:%d\n", trackChans, srcTotalOutChans, srcChans, dstChannels);
   #endif
       
@@ -1030,6 +1037,10 @@ void AudioTrack::readVolume(Xml& xml)
 // Removed by T356
 // "recfile" tag not saved anymore
 /*
+
+THIS CODE IS OBSOLETE! _recFile has been changed from SndFile* to SndFileR.
+this code has NOT been adapted!
+
 //---------------------------------------------------------
 //   readRecfile
 //---------------------------------------------------------
@@ -1136,8 +1147,8 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 
       RouteList* rl = inRoutes();
       
-      #ifdef NODE_DEBUG
-      printf("AudioTrack::getData name:%s inRoutes:%d\n", name().toLatin1().constData(), rl->size());
+      #ifdef NODE_DEBUG_PROCESS
+      printf("AudioTrack::getData name:%s inRoutes:%lu\n", name().toLatin1().constData(), rl->size());
       #endif
       
       ciRoute ir = rl->begin();
@@ -1147,7 +1158,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       if(ir->track->isMidiTrack())
         return false;
         
-      #ifdef NODE_DEBUG
+      #ifdef NODE_DEBUG_PROCESS
       printf("    calling copyData on %s...\n", ir->track->name().toLatin1().constData());
       #endif
       
@@ -1159,7 +1170,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       
       ++ir;
       for (; ir != rl->end(); ++ir) {
-            #ifdef NODE_DEBUG
+            #ifdef NODE_DEBUG_PROCESS
             printf("    calling addData on %s...\n", ir->track->name().toLatin1().constData());
             #endif
               
@@ -1439,7 +1450,7 @@ void AudioOutput::processInit(unsigned nframes)
 
 void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
 {
-      #ifdef NODE_DEBUG
+      #ifdef NODE_DEBUG_PROCESS
       printf("MusE: AudioOutput::process name:%s processed:%d\n", name().toLatin1().constData(), processed());
       #endif
       

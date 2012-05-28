@@ -50,11 +50,11 @@ class GateTime : public QDialog, public Ui::GateTimeBase {
    public:
       GateTime(QWidget* parent=0);
 
-      int range;
-      int rateVal;
-      int offsetVal;
+      static int range;
+      static int rateVal;
+      static int offsetVal;
       
-      void read_configuration(MusECore::Xml& xml);
+      static void read_configuration(MusECore::Xml& xml);
       void write_configuration(int level, MusECore::Xml& xml);
 
       

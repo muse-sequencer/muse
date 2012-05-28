@@ -167,6 +167,7 @@ void chainClone(Part* p)
 //   replaceClone
 //---------------------------------------------------------
 
+// this replaces p1 by p2. p1 is isolated, and p2 takes its place instead.
 void replaceClone(Part* p1, Part* p2)
 {
   chainCheckErr(p1);
@@ -181,7 +182,7 @@ void replaceClone(Part* p1, Part* p2)
   if(p1->cevents() != p2->cevents())
   {
     bool ret = false;
-    // If the part to be replaced is a single uncloned part,  DELETETHIS 4 this seems outdated=wrong to me
+    // If the part to be replaced is a single uncloned part,  [DELETETHIS 4 this seems outdated=wrong to me]
     //  and the replacement part is not, then this operation
     //  MUST be an undo of a de-cloning of a cloned part.  
     //if(p1->cevents()->refCount() <= 1 && p2->cevents()->refCount() > 1)
@@ -647,6 +648,22 @@ Part* PartList::find(int idx)
 //   Part
 //---------------------------------------------------------
 
+Part::Part(const Part& p) : PosLen(p)
+{
+  _sn=p._sn;
+  _name=p._name;
+  _selected=p._selected;
+  _mute=p._mute;
+  _colorIndex=p._colorIndex;
+  _hiddenEvents=p._hiddenEvents;
+  _track=p._track;
+  _events=p._events;
+  _prevClone=p._prevClone;
+  _nextClone=p._nextClone;
+  
+  _events->incRef(1);
+}
+
 Part::Part(Track* t)
       {
       _hiddenEvents = NoEventsHidden;
@@ -661,10 +678,6 @@ Part::Part(Track* t)
       _events->incRef(1);
       _events->incARef(1);
       }
-
-//---------------------------------------------------------
-//   Part
-//---------------------------------------------------------
 
 Part::Part(Track* t, EventList* ev)
       {

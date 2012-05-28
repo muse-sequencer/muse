@@ -180,7 +180,7 @@ void MusE::exportMidi()
                   for (MusECore::ciMarker m = ml->begin(); m != ml->end(); ++m) {
                         QByteArray ba = m->second.name().toLatin1();
                         const char* name = ba.constData();
-                        int len = strlen(name);
+                        int len = ba.length();
                         MusECore::MidiPlayEvent ev(m->first, port, MusECore::ME_META, (unsigned char*)name, len);
                         ev.setA(0x6);
                         l->add(ev);
@@ -192,7 +192,7 @@ void MusE::exportMidi()
                   QByteArray ba = MusEGlobal::config.copyright.toLatin1();
                   const char* copyright = ba.constData();
                   if (copyright && *copyright) {
-                        int len = strlen(copyright);
+                        int len = ba.length();
                         MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)copyright, len);
                         ev.setA(0x2);
                         l->add(ev);
@@ -293,7 +293,7 @@ void MusE::exportMidi()
               if (!track->name().isEmpty()) {
                     QByteArray ba = track->name().toLatin1();
                     const char* name = ba.constData();
-                    int len = strlen(name);
+                    int len = ba.length();
                     MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)name, len+1);
                     ev.setA(0x3);    // Meta Sequence/Track Name
                     l->add(ev);
@@ -309,7 +309,7 @@ void MusE::exportMidi()
               if (!track->comment().isEmpty()) {
                     QByteArray ba = track->comment().toLatin1();
                     const char* comment = ba.constData();
-                    int len = strlen(comment);
+                    int len = ba.length();
                     MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)comment, len+1);
                     ev.setA(0xf);    // Meta Text
                     l->add(ev);

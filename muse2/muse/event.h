@@ -27,9 +27,9 @@
 #include <map>
 #include <sys/types.h>
 
-#include "wave.h"   // for SndFile
 #include "pos.h"
 #include "evdata.h"
+#include "wave.h" // for SndFileR
 
 class QString;
 

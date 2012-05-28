@@ -275,7 +275,7 @@ MarkerView::MarkerView(QWidget* parent)
       
       updateList();
 
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
 
       // work around for probable QT/WM interaction bug.
       // for certain window managers, e.g xfce, this window is

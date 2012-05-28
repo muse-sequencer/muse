@@ -42,6 +42,10 @@
 
 #include <QApplication>
 
+// Enable debugging:
+//#define ALSA_DEBUG 1  
+
+
 namespace MusECore {
 
 static int alsaSeqFdi = -1;
@@ -98,7 +102,9 @@ QString MidiAlsaDevice::open()
 
       int cap = snd_seq_port_info_get_capability(pinfo);
 
-      //printf("MidiAlsaDevice::open cap:%d\n", cap);  
+#ifdef ALSA_DEBUG
+      printf("MidiAlsaDevice::open cap:%d\n", cap);  
+#endif
       
       // subscribe for writing
       if (_openFlags & 1) 
@@ -175,7 +181,9 @@ void MidiAlsaDevice::close()
 
       int cap = snd_seq_port_info_get_capability(pinfo);
 
-      //printf("MidiAlsaDevice::close cap:%d\n", cap);  
+#ifdef ALSA_DEBUG
+      printf("MidiAlsaDevice::close cap:%d\n", cap);  
+#endif
 
       // This function appears to be called only by MidiPort::setMidiDevice(), 
       //  which closes then opens the device.
@@ -433,6 +441,10 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
 bool MidiAlsaDevice::putEvent(snd_seq_event_t* event)
       {
       int error;
+
+#ifdef ALSA_DEBUG
+      printf("MidiAlsaDevice::putEvent\n");  
+#endif
 
       do {
             error   = snd_seq_event_output_direct(alsaSeq, event);
@@ -860,9 +872,10 @@ bool initMidiAlsa()
                snd_strerror(error));
             return true;
             }
+            
       const int inCap  = SND_SEQ_PORT_CAP_SUBS_READ;
       const int outCap = SND_SEQ_PORT_CAP_SUBS_WRITE;
-
+      
       snd_seq_client_info_t *cinfo;
       snd_seq_client_info_alloca(&cinfo);
       snd_seq_client_info_set_client(cinfo, -1);
@@ -955,7 +968,11 @@ bool initMidiAlsa()
             
             
       //snd_seq_set_client_name(alsaSeq, "MusE Sequencer");
-      snd_seq_set_client_name(alsaSeq, MusEGlobal::audioDevice->clientName());
+      error = snd_seq_set_client_name(alsaSeq, MusEGlobal::audioDevice->clientName());
+      if (error < 0) {
+            printf("Alsa: Set client name failed: %s", snd_strerror(error));
+            return true;
+            }
       
       int ci = snd_seq_poll_descriptors_count(alsaSeq, POLLIN);
       int co = snd_seq_poll_descriptors_count(alsaSeq, POLLOUT);
@@ -1045,6 +1062,24 @@ void exitMidiAlsa()
 }
 
 
+//---------------------------------------------------------
+//   setAlsaClientName
+//---------------------------------------------------------
+
+void setAlsaClientName(const char* name)
+{
+#ifdef ALSA_DEBUG
+  printf("setAlsaClientName: %s  seq:%p\n", name, alsaSeq);
+#endif            
+  
+  if(!alsaSeq)
+    return; 
+    
+  int error = snd_seq_set_client_name(alsaSeq, name);
+  if (error < 0) 
+    printf("setAlsaClientName: failed: %s", snd_strerror(error));
+}
+
 struct AlsaPort {
       snd_seq_addr_t adr;
       char* name;
@@ -1064,7 +1099,9 @@ static std::list<AlsaPort> portList;
 
 void alsaScanMidiPorts()
       {
-//    printf("alsa scan midi ports\n");
+#ifdef ALSA_DEBUG
+    printf("alsa scan midi ports\n");
+#endif
       const int inCap  = SND_SEQ_PORT_CAP_SUBS_READ;
       const int outCap = SND_SEQ_PORT_CAP_SUBS_WRITE;
 

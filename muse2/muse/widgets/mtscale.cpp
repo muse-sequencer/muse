@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <values.h>
+#include <limits.h>
 
 #include <QMouseEvent>
 #include <QPainter>
@@ -54,7 +54,7 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
             pos[1] = MusEGlobal::song->lpos();
             pos[2] = MusEGlobal::song->rpos();
             }
-      pos[3] = MAXINT;            // do not show
+      pos[3] = INT_MAX;            // do not show
       button = Qt::NoButton;
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
@@ -87,9 +87,9 @@ void MTScale::songChanged(int type)
 
 void MTScale::setPos(int idx, unsigned val, bool)
       {
-      if (val == MAXINT) {
+      if (val == INT_MAX) {
             if (idx == 3) {
-                  pos[3] = MAXINT;
+                  pos[3] = INT_MAX;
                   redraw(QRect(0, 0, width(), height()));
                   }
             return;
@@ -98,8 +98,8 @@ void MTScale::setPos(int idx, unsigned val, bool)
             val = MusEGlobal::tempomap.tick2frame(val);
       if (val == pos[idx])
             return;
-      //unsigned opos = mapx(pos[idx] == MAXINT ? val : pos[idx]);
-      int opos = mapx(pos[idx] == MAXINT ? val : pos[idx]);
+      //unsigned opos = mapx(pos[idx] == INT_MAX ? val : pos[idx]);
+      int opos = mapx(pos[idx] == INT_MAX ? val : pos[idx]);
       pos[idx] = val;
       if (!isVisible())
             return;
@@ -211,7 +211,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
 
 void MTScale::leaveEvent(QEvent*)
       {
-      emit timeChanged(MAXINT);
+      emit timeChanged(INT_MAX);
       }
 
 //---------------------------------------------------------
@@ -344,7 +344,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                   }
             }
       p.setPen(Qt::black);
-      if (pos[3] != MAXINT) {
+      if (pos[3] != INT_MAX) {
             int xp = mapx(pos[3]);
             if (xp >= x && xp < x+w)
                   p.drawLine(xp, 0, xp, height());

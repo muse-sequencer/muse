@@ -323,11 +323,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	//many many undos when using the spin buttons.
 	connect(velo_spinbox, SIGNAL(editingFinished()), SLOT(velo_box_changed()));
 	connect(this,SIGNAL(velo_changed(int)), score_canvas, SLOT(set_velo(int)));
-	if(MusEGlobal::config.smartFocus)
-	{
-		connect(velo_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-		connect(velo_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-	}
+	connect(velo_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(velo_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 	note_settings_toolbar->addWidget(velo_spinbox);
 	velo_spinbox->setValue(ScoreCanvas::note_velo_init);
 
@@ -339,11 +336,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	//many many undos when using the spin buttons.
 	connect(velo_off_spinbox, SIGNAL(editingFinished()), SLOT(velo_off_box_changed()));
 	connect(this,SIGNAL(velo_off_changed(int)), score_canvas, SLOT(set_velo_off(int)));
-	if(MusEGlobal::config.smartFocus)
-	{
-		connect(velo_off_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-		connect(velo_off_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-	}
+	connect(velo_off_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(velo_off_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 	note_settings_toolbar->addWidget(velo_off_spinbox);
 	velo_off_spinbox->setValue(ScoreCanvas::note_velo_off_init);
 
@@ -376,11 +370,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	px_per_whole_spinbox->setSingleStep(50);
 	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
 	connect(score_canvas, SIGNAL(pixels_per_whole_changed(int)), px_per_whole_spinbox, SLOT(setValue(int)));
-	if(MusEGlobal::config.smartFocus)
-	{
-		connect(px_per_whole_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-		connect(px_per_whole_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-	}
+	connect(px_per_whole_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(px_per_whole_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 	quant_toolbar->addWidget(px_per_whole_spinbox);
 	px_per_whole_spinbox->setValue(ScoreCanvas::_pixels_per_whole_init);
 
@@ -542,7 +533,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	apply_velo=true;
 	
 	initTopwinState();
-	MusEGlobal::muse->topwinMenuInited(this);
+	finalizeInit();
 }
 
 void ScoreEdit::init_shortcuts()
@@ -632,8 +623,11 @@ ScoreEdit::~ScoreEdit()
 
 void ScoreEdit::focusCanvas()
 {
-	score_canvas->setFocus();
-	score_canvas->activateWindow();
+	if(MusEGlobal::config.smartFocus)
+	{
+	  score_canvas->setFocus();
+	  score_canvas->activateWindow();
+	}
 }
 
 void ScoreEdit::velo_box_changed()
@@ -649,8 +643,7 @@ void ScoreEdit::velo_off_box_changed()
 void ScoreEdit::quant_combobox_changed(int idx)
 {
 	score_canvas->set_quant(idx);
-	if(MusEGlobal::config.smartFocus)
-		focusCanvas();
+	focusCanvas();
 }
 
 void ScoreEdit::song_changed(int flags)
@@ -4036,7 +4029,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				}
 				
 				old_pitch=-1;
-				old_dest_tick=MAXINT;
+				old_dest_tick=INT_MAX;
 				old_len=-1;
 			}
 		}
@@ -4705,7 +4698,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o velo-controller doesn't work in new-style drum tracks
  *
  * CURRENT TODO
- *   o column's widths aren't stored into configuration. fix that.
  *   o storing <no_toplevels /> into a template file seems to ignore
  *     the arranger's "MDI-ness", sets is at subwin all the time!
  * 

@@ -124,8 +124,9 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   progRecButton->setFocusPolicy(Qt::NoFocus);
   volRecButton->setFocusPolicy(Qt::NoFocus);
   panRecButton->setFocusPolicy(Qt::NoFocus);
+  iPatch->setFocusPolicy(Qt::NoFocus);
 
-  iOutput->setFocusPolicy(Qt::StrongFocus);
+  iOutput->setFocusPolicy(Qt::NoFocus);
   iOutputChannel->setFocusPolicy(Qt::StrongFocus);
   iHBank->setFocusPolicy(Qt::StrongFocus);
   iLBank->setFocusPolicy(Qt::StrongFocus);
@@ -205,18 +206,18 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   connect(iHBank, SIGNAL(valueChanged(int)), SLOT(iProgHBankChanged()));
   connect(iLBank, SIGNAL(valueChanged(int)), SLOT(iProgLBankChanged()));
   connect(iProgram, SIGNAL(valueChanged(int)), SLOT(iProgramChanged()));
-  connect(iHBank, SIGNAL(ctrlClicked()), SLOT(iProgramDoubleClicked()));
-  connect(iLBank, SIGNAL(ctrlClicked()), SLOT(iProgramDoubleClicked()));
-  connect(iProgram, SIGNAL(ctrlClicked()), SLOT(iProgramDoubleClicked()));
+  connect(iHBank, SIGNAL(ctrlDoubleClicked()), SLOT(iProgramDoubleClicked()));
+  connect(iLBank, SIGNAL(ctrlDoubleClicked()), SLOT(iProgramDoubleClicked()));
+  connect(iProgram, SIGNAL(ctrlDoubleClicked()), SLOT(iProgramDoubleClicked()));
   connect(iLautst, SIGNAL(valueChanged(int)), SLOT(iLautstChanged(int)));
-  connect(iLautst, SIGNAL(ctrlClicked()), SLOT(iLautstDoubleClicked()));
+  connect(iLautst, SIGNAL(ctrlDoubleClicked()), SLOT(iLautstDoubleClicked()));
   connect(iTransp, SIGNAL(valueChanged(int)), SLOT(iTranspChanged(int)));
   connect(iAnschl, SIGNAL(valueChanged(int)), SLOT(iAnschlChanged(int)));
   connect(iVerz, SIGNAL(valueChanged(int)), SLOT(iVerzChanged(int)));
   connect(iLen, SIGNAL(valueChanged(int)), SLOT(iLenChanged(int)));
   connect(iKompr, SIGNAL(valueChanged(int)), SLOT(iKomprChanged(int)));
   connect(iPan, SIGNAL(valueChanged(int)), SLOT(iPanChanged(int)));
-  connect(iPan, SIGNAL(ctrlClicked()), SLOT(iPanDoubleClicked()));
+  connect(iPan, SIGNAL(ctrlDoubleClicked()), SLOT(iPanDoubleClicked()));
   connect(iOutput, SIGNAL(activated(int)), SLOT(iOutputPortChanged(int)));
   ///connect(iInput, SIGNAL(textChanged(const QString&)), SLOT(iInputPortChanged(const QString&)));
   connect(recordButton, SIGNAL(clicked()), SLOT(recordClicked()));

@@ -23,6 +23,8 @@
 
 #include "songpos_toolbar.h"
 #include "song.h"
+#include <QPainter>
+#include <QPaintEvent>
 
 namespace MusEGui
 {
@@ -51,4 +53,17 @@ namespace MusEGui
 		song_changed(0);
 		MTScale::resizeEvent(ev);
 	}
+  void SongPosToolbarWidget::paintEvent(QPaintEvent* ev)
+  {
+    View::paintEvent(ev);
+    QPainter p;
+    p.begin(this);
+    p.setPen(Qt::darkGray);
+    p.drawRect(0, 0, width()-1, height()-1);
+    p.setPen(Qt::lightGray);
+    p.drawRect(1, 1, width()-1, height()-1);
+    p.end();
+  }
+
+
 }

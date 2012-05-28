@@ -25,7 +25,7 @@
 
 #include <QByteArray>
 
-#include <values.h>
+#include <limits.h>
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
@@ -146,6 +146,7 @@ class DrumEdit : public MidiEditor {
       void configChanged();
       void songChanged1(int);
       void setStep(QString);
+
       void updateGroupingActions();
       void set_ignore_hide(bool);
       void showAllInstruments();
@@ -154,14 +155,15 @@ class DrumEdit : public MidiEditor {
       void hideEmptyInstruments();
       
       void display_old_new_conflict_message();
-      void focusCanvas();
+
       void deltaModeChanged(bool);
 
    public slots:
-      void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);
+      void setSelection(int tick, MusECore::Event&, MusECore::Part*, bool update);
       void soloChanged(bool);       // called by Solo button
       void execDeliveredScript(int);
       void execUserScript(int);
+      void focusCanvas();
       CtrlEdit* addCtrl();
       void ourDrumMapChanged(bool);
       virtual void updateHScrollRange();
@@ -170,7 +172,7 @@ class DrumEdit : public MidiEditor {
       void isDeleting(MusEGui::TopWin*);
 
    public:
-      DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+      DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
       virtual ~DrumEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

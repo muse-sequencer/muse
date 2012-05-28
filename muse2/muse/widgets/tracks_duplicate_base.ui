@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>269</width>
-    <height>319</height>
+    <width>238</width>
+    <height>261</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -119,6 +119,9 @@
    </item>
    <item>
     <widget class="QCheckBox" name="pluginsCheckBox">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Copy effects rack plugins</string>
      </property>

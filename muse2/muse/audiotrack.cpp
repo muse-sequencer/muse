@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include <values.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <map>
 
@@ -101,7 +101,7 @@ AudioTrack::AudioTrack(TrackType t)
       _sendMetronome = false;
       _prefader = false;
       _efxPipe  = new Pipeline();
-      _recFile  = 0;
+      //_recFile  = 0; //unneeded, _recFile's ctor does this
       _channels = 0;
       _automationType = AUTO_OFF;
       setChannels(2);
@@ -118,7 +118,7 @@ AudioTrack::AudioTrack(TrackType t)
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
       
-      bufferPos = MAXINT;
+      bufferPos = INT_MAX;
       
       setVolume(1.0);
       }
@@ -136,7 +136,7 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
       
-      bufferPos = MAXINT;
+      bufferPos = INT_MAX;
       
       _recFile = NULL;
       
@@ -207,9 +207,6 @@ void AudioTrack::internal_assign(const Track& t, int flags)
         }
       }
       
-      // FIXME: May get "addRoute: src track route already exists" when say, 
-      //         an audio output and wave track are selected just because
-      //         of the redundancy (wave track wants to connect to output by default).
       if(flags & ASSIGN_ROUTES)
       {
         for(ciRoute ir = at._inRoutes.begin(); ir != at._inRoutes.end(); ++ir)
@@ -217,8 +214,8 @@ void AudioTrack::internal_assign(const Track& t, int flags)
           // Defer all Jack routes to Audio Input and Output copy constructors or assign !
           if(ir->type == Route::JACK_ROUTE)
             continue;
-          // Amazingly, this single line seems to work.
-          MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+          _inRoutes.push_back(*ir);
         }
         
         for(ciRoute ir = at._outRoutes.begin(); ir != at._outRoutes.end(); ++ir)
@@ -226,8 +223,8 @@ void AudioTrack::internal_assign(const Track& t, int flags)
           // Defer all Jack routes to Audio Input and Output copy constructors or assign !
           if(ir->type == Route::JACK_ROUTE)
             continue;
-          // Amazingly, this single line seems to work.
-          MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir);
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+          _outRoutes.push_back(*ir);
         }
       } 
       else if(flags & ASSIGN_DEFAULT_ROUTES)
@@ -241,11 +238,13 @@ void AudioTrack::internal_assign(const Track& t, int flags)
               switch(type()) {
                     case Track::WAVE:
                     case Track::AUDIO_AUX:
-                          MusEGlobal::audio->msgAddRoute(Route(this, -1), Route(ao, -1));
+                          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+                          _outRoutes.push_back(Route(ao, -1));
                           break;
                     // It should actually never get here now, but just in case.
                     case Track::AUDIO_SOFTSYNTH:
-                          MusEGlobal::audio->msgAddRoute(Route(this, 0, channels()), Route(ao, 0, channels()));
+                          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+                          _outRoutes.push_back(Route(ao, 0, channels()));
                           break;
                     default:
                           break;
@@ -688,11 +687,11 @@ void AudioTrack::seekPrevACEvent(int id)
     if(cl->empty())
       return;
     
-    iCtrl s = cl->lower_bound(MusEGlobal::audio->pos().frame());    // p4.0.33
+    iCtrl s = cl->lower_bound(MusEGlobal::audio->pos().frame());    
     if(s != cl->begin())
       --s;
     
-    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
+    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  
     return;
 }
 
@@ -710,14 +709,14 @@ void AudioTrack::seekNextACEvent(int id)
     if(cl->empty())
       return;
     
-    iCtrl s = cl->upper_bound(MusEGlobal::audio->pos().frame());         // p4.0.33
+    iCtrl s = cl->upper_bound(MusEGlobal::audio->pos().frame());         
     
     if(s == cl->end())
     {
       --s;
     }
     
-    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
+    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  
     return;  
 }
 
@@ -800,15 +799,8 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
 
 double AudioTrack::volume() const
       {
-      ciCtrlList cl = _controller.find(AC_VOLUME);
-      if (cl == _controller.end())
-            return 0.0;
-      
-      if (MusEGlobal::automation && 
-          automationType() != AUTO_OFF && _volumeEnCtrl && _volumeEn2Ctrl )
-            return cl->second->value(MusEGlobal::song->cPos().frame());
-      else
-            return cl->second->curVal();
+      return _controller.value(AC_VOLUME, MusEGlobal::audio->curFramePos(), 
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_volumeEnCtrl || !_volumeEn2Ctrl);
       }
 
 //---------------------------------------------------------
@@ -832,15 +824,8 @@ void AudioTrack::setVolume(double val)
 
 double AudioTrack::pan() const
       {
-      ciCtrlList cl = _controller.find(AC_PAN);
-      if (cl == _controller.end())
-            return 0.0;
-      
-      if (MusEGlobal::automation && 
-          automationType() != AUTO_OFF && _panEnCtrl && _panEn2Ctrl )
-        return cl->second->value(MusEGlobal::song->cPos().frame());
-      else
-        return cl->second->curVal();
+      return _controller.value(AC_PAN, MusEGlobal::audio->curFramePos(), 
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_volumeEnCtrl || !_volumeEn2Ctrl);
       }
 
 //---------------------------------------------------------
@@ -863,14 +848,8 @@ void AudioTrack::setPan(double val)
 
 double AudioTrack::pluginCtrlVal(int ctlID) const
       {
-      ciCtrlList cl = _controller.find(ctlID);
-      if (cl == _controller.end())
-            return 0.0;
-      
-      if (MusEGlobal::automation && (automationType() != AUTO_OFF))
-        return cl->second->value(MusEGlobal::song->cPos().frame());
-      else
-        return cl->second->curVal();
+      return _controller.value(ctlID, MusEGlobal::audio->curFramePos(), 
+                               !MusEGlobal::automation || automationType() == AUTO_OFF);
       }
 
 //---------------------------------------------------------
@@ -891,11 +870,11 @@ void AudioTrack::recordAutomation(int n, double v)
         if(!MusEGlobal::automation)
           return;
         if(MusEGlobal::audio->isPlaying())
-          _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
+          _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));      
         else 
         {
           if(automationType() == AUTO_WRITE)
-            _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
+            _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));    
           else 
           if(automationType() == AUTO_TOUCH)
           // In touch mode and not playing. Send directly to controller list.
@@ -904,7 +883,7 @@ void AudioTrack::recordAutomation(int n, double v)
             if (cl == _controller.end()) 
               return;
             // Add will replace if found.
-            cl->second->add(MusEGlobal::song->cPos().frame(), v);
+            cl->second->add(MusEGlobal::audio->curFramePos(), v);     
           }  
         }
       }
@@ -916,25 +895,26 @@ void AudioTrack::startAutoRecord(int n, double v)
         if(MusEGlobal::audio->isPlaying())
         {
           if(automationType() == AUTO_TOUCH)
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v, ARVT_START));
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_START));  
           else    
           if(automationType() == AUTO_WRITE)
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));    
         } 
         else
         {
           if(automationType() == AUTO_TOUCH)
           // In touch mode and not playing. Send directly to controller list.
           {
+            // FIXME: Unsafe? Should sync by sending a message, but that'll really slow it down with large audio bufs.
             iCtrlList cl = _controller.find(n);
             if (cl == _controller.end()) 
               return;
             // Add will replace if found.
-            cl->second->add(MusEGlobal::song->cPos().frame(), v);
+            cl->second->add(MusEGlobal::audio->curFramePos(), v);                 
           }    
           else    
           if(automationType() == AUTO_WRITE)
-            _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
+            _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));    
         }   
       }
 
@@ -946,8 +926,8 @@ void AudioTrack::stopAutoRecord(int n, double v)
         {
           if(automationType() == AUTO_TOUCH)
           {
-              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::song->cPos().frame(), v);
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v, ARVT_STOP));
+              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::audio->curFramePos(), v);        
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_STOP));   
           }   
         } 
       }
@@ -1087,7 +1067,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
               if(p && m < p->parameters())
                   ctlfound = true;
             }
-            // Support a special block for dssi synth ladspa controllers. p4.0.20
+            // Support a special block for dssi synth ladspa controllers. 
             else if(n == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)    
             {
               SynthI* synti = dynamic_cast < SynthI* > (this);
@@ -1330,70 +1310,6 @@ void AudioTrack::mapRackPluginsToControllers()
     */
 }
 
-// DELETETHIS 60
-/*
-//---------------------------------------------------------
-//   writeRouting
-//---------------------------------------------------------
-
-void AudioTrack::writeRouting(int level, Xml& xml) const
-{
-      QString n;
-      if (type() == Track::AUDIO_INPUT) {
-                ciJackRouteNameCache circ = jackRouteNameCache.find(this);
-                if(circ != jackRouteNameCache.end())
-                {
-                  jackRouteNameMap rm = circ->second;
-                  for(ciJackRouteNameMap cirm = rm.begin(); cirm != rm.end(); ++cirm)
-                  {
-                    n = cirm->second;
-                    if(!n.isEmpty())
-                    {
-                      Route dst(name(), true, cirm->first);
-                      xml.tag(level++, "Route");
-                      xml.strTag(level, "srcNode", n);
-                      xml.strTag(level, "dstNode", dst.name());
-                      xml.etag(level--, "Route");
-                    }  
-                  }  
-                }
-            }
-      if(type() == Track::AUDIO_OUTPUT) 
-      {
-        ciJackRouteNameCache circ = jackRouteNameCache.find(this);
-        if(circ != jackRouteNameCache.end())
-        {
-          jackRouteNameMap rm = circ->second;
-          for(ciJackRouteNameMap cirm = rm.begin(); cirm != rm.end(); ++cirm)
-          {
-            n = cirm->second;
-            if(!n.isEmpty())
-            {
-              Route src(name(), false, cirm->first);
-              xml.tag(level++, "Route");
-              xml.strTag(level, "srcNode", src.name());
-              xml.strTag(level, "dstNode", n);
-              xml.etag(level--, "Route");
-            }  
-          }  
-        }
-      }
-      else
-      {
-        const RouteList* rl = &_outRoutes;
-        for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-            if(!r->name().isEmpty())
-            {
-              xml.tag(level++, "Route");
-              xml.strTag(level, "srcNode", name());
-              xml.strTag(level, "dstNode", r->name());
-              xml.etag(level--, "Route");
-            }
-        }  
-      }  
-}
-*/       
-       
 //---------------------------------------------------------
 //   AudioInput
 //---------------------------------------------------------
@@ -1446,7 +1362,9 @@ void AudioInput::internal_assign(const Track& t, int flags)
       // Defer all Jack routes to these copy constructors or assign !
       if(ir->type != Route::JACK_ROUTE)
         continue;
-      MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));
+      // FIXME Must use msgAddRoute instead of _inRoutes.push_back, because it connects to Jack. 
+      // The track is still fresh has not been added to track lists yet. Will cause audio processing problems ?
+      MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));  
     }
   } 
 }
@@ -1556,7 +1474,9 @@ void AudioOutput::internal_assign(const Track& t, int flags)
       // Defer all Jack routes to these copy constructors or assign !
       if(ir->type != Route::JACK_ROUTE)
         continue;
-      MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir);
+      // FIXME Must use msgAddRoute instead of _outRoutes.push_back, because it connects to Jack. 
+      // The track is still fresh has not been added to track lists yet. Will cause audio processing problems ?
+      MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir); 
     }
   } 
 }
@@ -1744,7 +1664,7 @@ void AudioAux::read(Xml& xml)
 
 bool AudioAux::getData(unsigned pos, int ch, unsigned samples, float** data)
       {
-      // Make sure all the aux-supporting tracks are processed first so aux data is gathered.    p4.0.37
+      // Make sure all the aux-supporting tracks are processed first so aux data is gathered.    
       TrackList* tl = MusEGlobal::song->tracks();
       AudioTrack* track;
       for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
@@ -1803,7 +1723,7 @@ bool AudioTrack::setRecordFlag1(bool f)
       if (f == _recordFlag)
             return true;
       if (f) {
-        if (_recFile == 0 && MusEGlobal::song->record()) {
+        if (_recFile.isNull() && MusEGlobal::song->record()) {
           // this rec-enables a track if the global arm already was done
           // the standard case would be that rec-enable be done there
           prepareRecording();
@@ -1819,8 +1739,7 @@ bool AudioTrack::setRecordFlag1(bool f)
               //  recording, the _recFile pointer is made into an event, 
               //  then _recFile is made zero before this function is called.
               QString s = _recFile->path();
-              delete _recFile;
-              setRecFile(0);
+              setRecFile(NULL);
               
               remove(s.toLatin1().constData());
               if(MusEGlobal::debugMsg)
@@ -1843,7 +1762,7 @@ bool AudioTrack::prepareRecording()
       if(MusEGlobal::debugMsg)
         printf("prepareRecording for track %s\n", _name.toLatin1().constData());
 
-      if (_recFile == 0) {
+      if (_recFile.isNull()) {
             //
             // create soundfile for recording
             //

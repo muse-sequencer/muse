@@ -39,7 +39,7 @@
 #include <QByteArray>
 #include <QToolButton>
 
-#include <values.h>
+#include <limits.h>
 #include "noteinfo.h"
 #include "cobject.h"
 #include "event.h"
@@ -139,6 +139,7 @@ class ArrangerView : public TopWin
 		void selectionChanged();
 		void updateShortcuts();
 		void updateVisibleTracksButtons();
+		virtual void focusCanvas() { arranger->focusCanvas(); } 
 
 	public:
 		ArrangerView(QWidget* parent = 0);

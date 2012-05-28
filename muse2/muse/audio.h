@@ -44,7 +44,6 @@ class MidiPort;
 class MidiTrack;
 class Part;
 class PluginI;
-class SndFile;
 class SynthI;
 class Track;
 
@@ -71,6 +70,7 @@ enum {
       SEQM_SET_HW_CTRL_STATES,
       SEQM_SET_TRACK_OUT_PORT,
       SEQM_SET_TRACK_OUT_CHAN,
+      SEQM_SET_TRACK_AUTO_TYPE,
       SEQM_REMAP_PORT_DRUM_CTL_EVS,
       SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS,
       SEQM_SCAN_ALSA_MIDI_PORTS,
@@ -106,7 +106,7 @@ extern const char* seqMsgList[];  // for debug
 
 struct AudioMsg : public ThreadMsg {   // this should be an union
       int serialNo;
-      SndFile* downmix;
+      //SndFile* downmix; // DELETETHIS this is unused and probably WRONG (all SndFiles have been replaced by SndFileRs)
       AudioTrack* snode;
       AudioTrack* dnode;
       Route sroute, droute;
@@ -284,6 +284,7 @@ class Audio {
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);
       void msgSetTrackOutChannel(MidiTrack*, int);
       void msgSetTrackOutPort(MidiTrack*, int);
+      void msgSetTrackAutomationType(Track*, int);
       void msgRemapPortDrumCtlEvents(int, int, int, int);
       void msgChangeAllPortDrumCtrlEvents(bool, bool);
       void msgSetSendMetronome(AudioTrack*, bool);
@@ -303,8 +304,10 @@ class Audio {
       unsigned nextTick() const   { return nextTickPos; }
       int timestamp() const;
       void processMidi();
+      unsigned framesSinceCycleStart() const;   
       unsigned curFrame() const;
       unsigned curSyncFrame() const { return syncFrame; }
+      unsigned curFramePos() const;
       void recordStop();
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);

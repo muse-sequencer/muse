@@ -26,6 +26,11 @@
 
 namespace MusEGui {
 
+int Crescendo::range = 3;
+int Crescendo::start_val = 80;
+int Crescendo::end_val = 130;
+bool Crescendo::absolute = 0;
+  
 Crescendo::Crescendo(QWidget* parent)
 	: QDialog(parent)
 {
@@ -35,8 +40,6 @@ Crescendo::Crescendo(QWidget* parent)
 	range_group->addButton(selected_looped_button,3);
 	
 	connect(absolute_button, SIGNAL(toggled(bool)), SLOT(absolute_changed(bool)));
-	
-	pull_values();
 }
 
 void Crescendo::pull_values()

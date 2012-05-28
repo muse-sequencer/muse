@@ -108,7 +108,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       MusEGui::DoubleLabel* dl = new MusEGui::DoubleLabel(0.0, double(mn), double(mx), this);
       dl->setId(idx);
       dl->setSpecialText(tr("off"));
-      dl->setToolTip(tr("double click on/off"));
+      dl->setToolTip(tr("ctrl-double-click on/off"));
       controller[idx].dl = dl;
       ///dl->setFont(MusEGlobal::config.fonts[1]);
       dl->setBackgroundRole(QPalette::Mid);
@@ -166,7 +166,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       connect(knob, SIGNAL(sliderMoved(double,int)), slot);
       connect(knob, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(controlRightClicked(const QPoint &, int)));
       connect(dl, SIGNAL(valueChanged(double, int)), slot);
-      connect(dl, SIGNAL(doubleClicked(int)), SLOT(labelDoubleClicked(int)));
+      connect(dl, SIGNAL(ctrlDoubleClicked(int)), SLOT(labelDoubleClicked(int)));
       }
 
 //---------------------------------------------------------
@@ -233,7 +233,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
       sl->setSuffix(tr("dB"));
-      sl->setToolTip(tr("double click on/off"));
+      sl->setToolTip(tr("ctrl-double-click on/off"));
       sl->setFrame(true);
       sl->setPrecision(0);
       sl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
@@ -278,7 +278,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       connect(slider, SIGNAL(sliderMoved(double,int)), SLOT(setVolume(double)));
       connect(slider, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(controlRightClicked(const QPoint &, int)));
       connect(sl, SIGNAL(valueChanged(double, int)), SLOT(volLabelChanged(double)));
-      connect(sl, SIGNAL(doubleClicked(int)), SLOT(labelDoubleClicked(int)));
+      connect(sl, SIGNAL(ctrlDoubleClicked(int)), SLOT(labelDoubleClicked(int)));
       
       grid->addWidget(sl, _curGridRow++, 0, 1, 2, Qt::AlignCenter); 
 

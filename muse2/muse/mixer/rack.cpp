@@ -411,8 +411,17 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
             return;
             }
       if (pipe) {
-            bool flag = !pipe->guiVisible(idx);
-            pipe->showGui(idx, flag);
+            bool flag;
+            if (pipe->has_dssi_ui(idx))
+            {
+              flag = !pipe->nativeGuiVisible(idx);
+              pipe->showNativeGui(idx, flag);
+
+            }
+            else {
+              flag = !pipe->guiVisible(idx);
+              pipe->showGui(idx, flag);
+            }
             }
       }
 
@@ -508,6 +517,8 @@ void EffectRack::startDrag(int idx)
       
       QString xmlconf;
       xml.dump(xmlconf);
+      printf("[%s]\n", xmlconf.toLatin1().constData());
+
       
       QByteArray data(xmlconf.toLatin1().constData());
       //printf("sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());

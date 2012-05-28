@@ -115,6 +115,8 @@ class TList : public QWidget {
       void setHeaderToolTips();
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);
 
+   protected:
+      bool event(QEvent *);
    private slots:
       void maybeUpdateVolatileCustomColumns(); // updates AFFECT_CPOS-columns when and only when the hwState has changed
       void returnPressed();

@@ -24,7 +24,7 @@
 #include <poll.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <values.h>
+#include <limits.h>
 
 #include "audioprefetch.h"
 #include "globals.h"

@@ -200,7 +200,8 @@ void MidiEditor::songChanged(int type)
             if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
                   
-                    updateHScrollRange();
+                  updateHScrollRange();
+                  
                   if (canvas)
                         setWindowTitle(canvas->getCaption());
                   else if (wview)

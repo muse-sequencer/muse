@@ -29,6 +29,12 @@ using MusEGlobal::config;
 
 namespace MusEGui {
 
+int PasteDialog::insert_method = 0;
+int PasteDialog::number = 1;
+int PasteDialog::raster = 384;
+bool PasteDialog::all_in_one_track = 0;
+bool PasteDialog::clone = 0;
+  
 PasteDialog::PasteDialog(QWidget* parent)
 	: QDialog(parent)
 {
@@ -42,8 +48,6 @@ PasteDialog::PasteDialog(QWidget* parent)
 	
 	connect(raster_spinbox, SIGNAL(valueChanged(int)), this, SLOT(raster_changed(int)));
 	connect(n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(number_changed(int)));
-	
-	pull_values();
 }
 
 void PasteDialog::pull_values()

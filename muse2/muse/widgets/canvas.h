@@ -105,7 +105,7 @@ class Canvas : public View {
       virtual void draw(QPainter&, const QRect&);
       virtual void wheelEvent(QWheelEvent* e);
 
-      virtual void mousePress(QMouseEvent*) {}
+      virtual bool mousePress(QMouseEvent*) { return true; }
       virtual void keyPress(QKeyEvent*);
       virtual void mouseMove(QMouseEvent* event) = 0;
       virtual void mouseRelease(const QPoint&) {}

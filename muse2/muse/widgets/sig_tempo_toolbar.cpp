@@ -36,6 +36,7 @@ namespace MusEGui
 	{
 		tempo_edit=new MusEGui::TempoEdit(this);
 		tempo_edit->setToolTip(tr("tempo at current position"));
+		tempo_edit->setFocusPolicy(Qt::StrongFocus);
 		
 		label=new QLabel(tr("Tempo: "),this);
 		
@@ -49,7 +50,9 @@ namespace MusEGui
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
 		
 		connect(tempo_edit, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
-		
+		connect(tempo_edit, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+		connect(tempo_edit, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+
 		song_changed(-1);
 	}
 	
@@ -57,7 +60,7 @@ namespace MusEGui
 	{
 		song_changed(SC_TEMPO);
 	}
-	
+
 	void TempoToolbarWidget::song_changed(int type)
 	{
 		if (type & SC_TEMPO)
@@ -77,6 +80,7 @@ namespace MusEGui
 	SigToolbarWidget::SigToolbarWidget(QWidget* p) : QWidget(p)
 	{
 		sig_edit=new Awl::SigEdit(this);
+		sig_edit->setFocusPolicy(Qt::StrongFocus);
 		sig_edit->setValue(AL::TimeSignature(4, 4));
 		sig_edit->setToolTip(tr("time signature at current position"));
 		
@@ -92,7 +96,9 @@ namespace MusEGui
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
 		
 		connect(sig_edit, SIGNAL(valueChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
-		
+		connect(sig_edit, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+		connect(sig_edit, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+
 		song_changed(-1);
 	}
 	
@@ -117,5 +123,4 @@ namespace MusEGui
 			label->setEnabled(MusEGlobal::song->masterFlag());
 		}
 	}
-
 }

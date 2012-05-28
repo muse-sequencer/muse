@@ -30,6 +30,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "wave.h" // for SndFileR
 #include "part.h"
 #include "key.h"
 #include "node.h"
@@ -42,7 +43,6 @@ namespace MusECore {
 class MPEventList;
 class Pipeline;
 class PluginI;
-class SndFile;
 class SynthI;
 class Xml;
 class DrumMap;
@@ -304,9 +304,9 @@ class MidiTrack : public Track {
       static bool visible() { return _isVisible; }
       
       int getFirstControllerValue(int ctrl, int def=-1);
-      int getControllerChangeAtTick(int tick, int ctrl, int def=-1);
-      unsigned getControllerValueLifetime(int tick, int ctrl); // returns the tick where this CC gets overriden by a new one
-                                                               // returns UINT_MAX for "never"
+      int getControllerChangeAtTick(unsigned tick, int ctrl, int def=-1);
+      unsigned getControllerValueLifetime(unsigned tick, int ctrl); // returns the tick where this CC gets overriden by a new one
+                                                                    // returns UINT_MAX for "never"
 
       void setClef(clefTypes i) { clefType = i; }
       clefTypes getClef() { return clefType; }
@@ -359,7 +359,7 @@ class AudioTrack : public Track {
       
       unsigned bufferPos;
       virtual bool getData(unsigned, int, unsigned, float**);
-      SndFile* _recFile;
+      SndFileR _recFile;
       Fifo fifo;                    // fifo -> _recFile
       bool _processed;
       
@@ -390,8 +390,8 @@ class AudioTrack : public Track {
       void mapRackPluginsToControllers();
       void showPendingPluginNativeGuis();
 
-      SndFile* recFile() const           { return _recFile; }
-      void setRecFile(SndFile* sf)       { _recFile = sf;   }
+      SndFileR recFile() const           { return _recFile; }
+      void setRecFile(SndFileR sf)       { _recFile = sf;   }
 
       CtrlListList* controller()         { return &_controller; }
 

@@ -86,6 +86,7 @@ extern bool loadVST;
 extern bool loadDSSI;
 extern bool usePythonBridge;
 extern bool useLASH;
+extern bool useAlsaWithJack;
 
 extern bool realTimeScheduling;
 extern int realTimePriority;

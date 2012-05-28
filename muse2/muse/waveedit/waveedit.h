@@ -86,11 +86,10 @@ class WaveEdit : public MidiEditor {
 
    public slots:
       void configChanged();
-   
       virtual void updateHScrollRange();
       void horizontalZoomIn();
       void horizontalZoomOut();
-
+      void focusCanvas();
 
    signals:
       void isDeleting(MusEGui::TopWin*);

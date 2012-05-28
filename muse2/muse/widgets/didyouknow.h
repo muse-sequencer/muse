@@ -34,8 +34,35 @@ class DidYouKnowWidget : public QDialog, public Ui::DidYouKnow
 {
       Q_OBJECT
 
+      int currTip;
    public:
-      DidYouKnowWidget(QDialog *parent = 0) : QDialog(parent) { setupUi(this); }
+      QStringList tipList;
+
+      DidYouKnowWidget(QDialog *parent = 0) : QDialog(parent)
+      {
+          setupUi(this);
+          tipText->setBackgroundRole(QPalette::Text);
+          tipText->setForegroundRole(QPalette::Foreground);
+          tipText->setOpenExternalLinks(true);
+          currTip=0;
+          connect(nextButton,SIGNAL(clicked()),SLOT(nextTip()));
+      }
+
+    public slots:
+      void nextTip()
+      {
+        if (currTip > tipList.size()-1){
+            currTip=0;
+        }
+        tipText->setText(tipList[currTip]);
+        currTip++;
+      }
+      void show()
+      {
+          nextTip();
+          QDialog::show();
+      }
+
 };
 
 } // namespace MusEGui

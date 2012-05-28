@@ -26,6 +26,9 @@
 
 namespace MusEGui {
 
+int Setlen::range = 1;
+int Setlen::len = 384;
+  
 Setlen::Setlen(QWidget* parent)
 	: QDialog(parent)
 {
@@ -35,8 +38,6 @@ Setlen::Setlen(QWidget* parent)
 	range_group->addButton(selected_events_button,1);
 	range_group->addButton(looped_events_button,2);
 	range_group->addButton(selected_looped_button,3);
-	
-	pull_values();
 }
 
 void Setlen::pull_values()

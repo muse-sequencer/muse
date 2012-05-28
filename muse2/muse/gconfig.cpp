@@ -143,6 +143,7 @@ GlobalConfigValues config = {
       true,                         // importMidiNewStyleDrum
       1,                            // startMode
       QString(""),                  // start song path
+      false,                        // startSongLoadConfig
       384,                          // gui division
       QRect(0, 0, 400, 300),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;

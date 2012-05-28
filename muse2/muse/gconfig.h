@@ -138,6 +138,7 @@ struct GlobalConfigValues {
                               // 1 - start with default template
                               // 2 - start with song
       QString startSong;      // path for start song
+      bool startSongLoadConfig;  // Whether to load configuration with the start template or song
       int guiDivision;        // division for tick display
 
       QRect geometryMain;

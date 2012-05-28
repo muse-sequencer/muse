@@ -110,10 +110,8 @@ void WaveEventBase::read(Xml& xml)
                         else if (tag == "frame")
                               _spos = xml.parseInt();
                         else if (tag == "file") {
-                              SndFile* wf = getWave(xml.parse1(), true);
-                              if (wf) {
-                                    f = SndFileR(wf);
-                                    }
+                              SndFileR wf = getWave(xml.parse1(), true);
+                              if (wf) f = wf;
                               }
                         else
                               xml.unknown("Event");

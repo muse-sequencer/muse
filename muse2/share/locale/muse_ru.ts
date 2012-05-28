@@ -1,4 +1,6 @@
-<!DOCTYPE TS><TS>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>@default</name>
     <message>
@@ -68,6 +70,18 @@
     <message>
         <source> channelMask=&quot;%1&quot;</source>
         <translation> МаскаКанала=&quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Bad timing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Timing source frequency is %1hz, which is below the recommended minimum: 500hz!
+This could lead to audible timing problems for MIDI.
+Please see the FAQ on http://muse-sequencer.org for remedies.
+Also please check console output for any further error messages
+ </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -339,6 +353,112 @@ Published under the GNU Public License</source>
         <source>Font 6</source>
         <translation>Шрифт 6</translation>
     </message>
+    <message>
+        <source>May require restarting MusE for best results</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ArrangerColumnsBase</name>
+    <message>
+        <source>Configure arranger columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Columns:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Имя:</translation>
+    </message>
+    <message>
+        <source>Controller type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi controller type</source>
+        <translation type="unfinished">Тип midi-контроллера</translation>
+    </message>
+    <message>
+        <source>Control7</source>
+        <translation type="unfinished">Контрл7</translation>
+    </message>
+    <message>
+        <source>Control14</source>
+        <translation type="unfinished">Контрл14</translation>
+    </message>
+    <message>
+        <source>RPN</source>
+        <translation type="unfinished">RPN</translation>
+    </message>
+    <message>
+        <source>NRPN</source>
+        <translation type="unfinished">NRPN</translation>
+    </message>
+    <message>
+        <source>RPN14</source>
+        <translation type="unfinished">RPN14</translation>
+    </message>
+    <message>
+        <source>NRPN14</source>
+        <translation type="unfinished">NRPN14</translation>
+    </message>
+    <message>
+        <source>Pitch</source>
+        <translation type="unfinished">Высота тона</translation>
+    </message>
+    <message>
+        <source>Program</source>
+        <translation type="unfinished">Программа</translation>
+    </message>
+    <message>
+        <source>H-Ctrl</source>
+        <translation type="unfinished">H-Ктрл</translation>
+    </message>
+    <message>
+        <source>Midi controller number high byte</source>
+        <translation type="unfinished">Старший байт midi-контроллера</translation>
+    </message>
+    <message>
+        <source>L-Ctrl</source>
+        <translation type="unfinished">L-Ктрл</translation>
+    </message>
+    <message>
+        <source>Midi controller number low byte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>*</source>
+        <comment>wild card</comment>
+        <translation type="unfinished">*
+
+универсальный шаблон</translation>
+    </message>
+    <message>
+        <source>affect CCs at</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>begin of song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>current position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Add</source>
+        <translation type="unfinished">&amp;Добавить</translation>
+    </message>
+    <message>
+        <source>&amp;Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Done</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Awl::MidiVolEntry</name>
@@ -373,10 +493,6 @@ Published under the GNU Public License</source>
         <translation>Ссыл (Refs)</translation>
     </message>
     <message>
-        <source>Start</source>
-        <translation>К началу</translation>
-    </message>
-    <message>
         <source>Len</source>
         <translation>Дл</translation>
     </message>
@@ -395,6 +511,10 @@ Published under the GNU Public License</source>
     <message>
         <source>Len:</source>
         <translation>Дл:</translation>
+    </message>
+    <message>
+        <source>Samplerate</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1048,15 +1168,15 @@ Published under the GNU Public License</source>
         <source>Release Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>2° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>1° Decay Level</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>1° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1796,6 +1916,53 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
     <message>
         <source>Close</source>
         <translation>Закрыть</translation>
+    </message>
+</context>
+<context>
+    <name>DuplicateTracksBase</name>
+    <message>
+        <source>Duplicate tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of copies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy all routes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default routing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No routes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy standard controllers (vol, pan)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy effects rack plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy plugin controllers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
     </message>
 </context>
 <context>
@@ -2680,6 +2847,11 @@ midi порта</translation>
         <source>fdialogbuttons</source>
         <translation>КнопкиДиалогаФайлов</translation>
     </message>
+    <message>
+        <source>write window
+states</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>FluidSynthGui</name>
@@ -2934,10 +3106,6 @@ left button behave like the middle button in such areas.</source>
         <translation>запустить с проектом</translation>
     </message>
     <message>
-        <source>start song:</source>
-        <translation>запустить проект:</translation>
-    </message>
-    <message>
         <source>Views</source>
         <translation>Виды</translation>
     </message>
@@ -2976,10 +3144,6 @@ left button behave like the middle button in such areas.</source>
     <message>
         <source>set current values</source>
         <translation>установить текущее значение</translation>
-    </message>
-    <message>
-        <source>start with template: default.med</source>
-        <translation>начать с шаблона: default.med</translation>
     </message>
     <message>
         <source>show splash screen</source>
@@ -3192,6 +3356,40 @@ Adjusts responsiveness of audio controls and
     <message>
         <source>Behavior</source>
         <translation>Поведение</translation>
+    </message>
+    <message>
+        <source>Choose start song or template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset to default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start with template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start template or song:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read MIDI Ports configuration from file, 
+ or else automatically configure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read MIDI Ports configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smart focus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>After editing, controls will return
+ focus to their respective canvas</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3443,167 +3641,6 @@ Adjusts responsiveness of audio controls and
     <message>
         <source>Alt+C</source>
         <translation>Alt+C</translation>
-    </message>
-</context>
-<context>
-    <name>MidiControllerEditDialogBase</name>
-    <message>
-        <source>MusE: Define Midi Controller</source>
-        <translation>MusE: Назначить MIDI-контроллер</translation>
-    </message>
-    <message>
-        <source>Name                  </source>
-        <translation>Имя                  </translation>
-    </message>
-    <message>
-        <source>Type       </source>
-        <translation>Тип       </translation>
-    </message>
-    <message>
-        <source>H-Ctrl</source>
-        <translation>H-Ctrl</translation>
-    </message>
-    <message>
-        <source>L-Ctrl</source>
-        <translation>L-Ctrl</translation>
-    </message>
-    <message>
-        <source>Min Val</source>
-        <translation>Мин знач</translation>
-    </message>
-    <message>
-        <source>Max Val</source>
-        <translation>Макс знач</translation>
-    </message>
-    <message>
-        <source>list of defined controllers</source>
-        <translation>Список назначенных контроллеров</translation>
-    </message>
-    <message>
-        <source>This is the MusE list of defined controllers.</source>
-        <translation>Это список назначенных в MusE контроллеров.</translation>
-    </message>
-    <message>
-        <source>Properties</source>
-        <translation>Свойства</translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <translation>Имя</translation>
-    </message>
-    <message>
-        <source>Max Value</source>
-        <translation>Макс значение</translation>
-    </message>
-    <message>
-        <source>Min Value</source>
-        <translation>Мин значение</translation>
-    </message>
-    <message>
-        <source>Control7</source>
-        <translation>Контрл7</translation>
-    </message>
-    <message>
-        <source>Control14</source>
-        <translation>Контрл14</translation>
-    </message>
-    <message>
-        <source>RPN</source>
-        <translation>RPN</translation>
-    </message>
-    <message>
-        <source>NRPN</source>
-        <translation>NRPN</translation>
-    </message>
-    <message>
-        <source>Type</source>
-        <translation>Тип</translation>
-    </message>
-    <message>
-        <source>create new entry</source>
-        <translation>создать новую запись</translation>
-    </message>
-    <message>
-        <source>pressing the New button you create a new entry
-in the MusE list of defined controllers</source>
-        <translation>При нажатии на  кнопку &quot;Новая&quot;, создаётся новая
-запись в списке назначенных в MusE контроллеров</translation>
-    </message>
-    <message>
-        <source>&amp;Delete</source>
-        <translation>&amp;Удалить</translation>
-    </message>
-    <message>
-        <source>delete selected entry</source>
-        <translation>удалить выделенную запись</translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation>&amp;OK</translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation>&amp;Отмена</translation>
-    </message>
-    <message>
-        <source>&amp;Add</source>
-        <translation>&amp;Добавить</translation>
-    </message>
-    <message>
-        <source>Alt+A</source>
-        <translation>Alt+A</translation>
-    </message>
-    <message>
-        <source>A&amp;pply</source>
-        <translation>&amp;Применить</translation>
-    </message>
-    <message>
-        <source>Predefined Controller:</source>
-        <translation>Уже назначенный контроллер:</translation>
-    </message>
-    <message>
-        <source>Managed Controller for Port</source>
-        <translation>Настроенный контроллер для порта</translation>
-    </message>
-    <message>
-        <source>Channel</source>
-        <translation>Канал</translation>
-    </message>
-    <message>
-        <source>This is a list of commonly used midi controllers.
-Note that in MusE pitch and program changes are
-handled like normal controllers.</source>
-        <translation>Это список общеупотребительных midi-контроллеров.
-Обратите внимание, что изменение высоты тона и программ в MusE,
-такое же, как и управление обычными контроллерами.</translation>
-    </message>
-    <message>
-        <source>RPN14</source>
-        <translation>RPN14</translation>
-    </message>
-    <message>
-        <source>NRPN14</source>
-        <translation>NRPN14</translation>
-    </message>
-    <message>
-        <source>Pitch</source>
-        <translation>Высота тона</translation>
-    </message>
-    <message>
-        <source>Program</source>
-        <translation>Программа</translation>
-    </message>
-    <message>
-        <source>Midi Controller Number High Byte</source>
-        <translation>Значение Старшего Байта Midi-контроллера</translation>
-    </message>
-    <message>
-        <source>Midi Controller Number Low Byte</source>
-        <translation>Значение Младшего Байта Midi-контроллера</translation>
-    </message>
-    <message>
-        <source>Range</source>
-        <translation>Диапазон</translation>
     </message>
 </context>
 <context>
@@ -4099,8 +4136,8 @@ Enabled inputs in the list will
         <translation>Посылать синхр. задержку</translation>
     </message>
     <message>
-        <source>Note: Sync delay and MTC sync currently not fully implemeted</source>
-        <translation>Примеч: Задержка синхр. и MTC синхр. в наст. время реализованы не полностью</translation>
+        <source>Note: Sync delay and MTC sync currently not fully implemented</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4229,36 +4266,36 @@ Enabled inputs in the list will
         <translation>Все</translation>
     </message>
     <message>
-        <source>Bank Select MSB. Double-click on/off.</source>
-        <translation>Банк Выбрать MSB. Двойной щелчок вкл/выкл.</translation>
-    </message>
-    <message>
-        <source>Bank Select LSB. Double-click on/off.</source>
-        <translation>Банк Выбрать LSB. Двойной щелчок вкл/выкл.</translation>
-    </message>
-    <message>
-        <source>Program. Double-click on/off.</source>
-        <translation>Программа. Двойной щелчок вкл/выкл.</translation>
-    </message>
-    <message>
         <source>Add bank + prog settings to song</source>
         <translation>Добавить банк и программу в проект</translation>
-    </message>
-    <message>
-        <source>Volume. Double-click on/off.</source>
-        <translation>Громкость. Двойной щелчок вкл/выкл.</translation>
     </message>
     <message>
         <source>Add vol setting to song</source>
         <translation>Добавить настройки громк. в проект</translation>
     </message>
     <message>
-        <source>Change stereo position. Double-click on/off.</source>
-        <translation>Изменить стерео позицию. Двойной щелчок вкл/выкл.</translation>
-    </message>
-    <message>
         <source>Add pan setting to song</source>
         <translation>Добавить настройки панорамы в проект</translation>
+    </message>
+    <message>
+        <source>Bank Select MSB. Ctrl-double-click on/off.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bank Select LSB. Ctrl-double-click on/off.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Program. Ctrl-double-click on/off.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Volume. Ctrl-double-click on/off.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Change stereo position. Ctrl-double-click on/off.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4750,6 +4787,10 @@ Word-breaking but only with spaces.</source>
         <source>Qt style sheets (*.qss)</source>
         <translation>Таблицы стилей Qt (*.qss)</translation>
     </message>
+    <message>
+        <source>Keep Qt system style</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::Arranger</name>
@@ -4981,18 +5022,6 @@ Right-click to show GUI.</source>
         <translation>MusE: Компоновщик</translation>
     </message>
     <message>
-        <source>Undo/Redo tools</source>
-        <translation>Инструменты Отмена/Повтор</translation>
-    </message>
-    <message>
-        <source>panic</source>
-        <translation>паника</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
-    </message>
-    <message>
         <source>C&amp;ut</source>
         <translation>&amp;Вырезать</translation>
     </message>
@@ -5204,6 +5233,21 @@ Right-click to show GUI.</source>
         <source>New</source>
         <translation>Новый</translation>
     </message>
+    <message>
+        <source>Configure &amp;custom columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Changed Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unfortunately, the changed arranger column settings
+cannot be applied while MusE is running.
+To apply the changes, please restart MusE. Sorry.
+(we&apos;ll try to fix that)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::AudioMixerApp</name>
@@ -5377,18 +5421,6 @@ Right-click to show GUI.</source>
         <translation>MusE: Редактор списка клипов</translation>
     </message>
     <message>
-        <source>Undo/Redo tools</source>
-        <translation>Инструменты Отменить/Вернуть</translation>
-    </message>
-    <message>
-        <source>panic</source>
-        <translation>паника</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
-    </message>
-    <message>
         <source>Window &amp;Config</source>
         <translation>Конфигурация &amp;окна</translation>
     </message>
@@ -5434,10 +5466,6 @@ Right-click to show GUI.</source>
         <translation>настройка вручную</translation>
     </message>
     <message>
-        <source>double click on/off</source>
-        <translation>двойной щелчок вкл/выкл</translation>
-    </message>
-    <message>
         <source>off</source>
         <translation>выкл</translation>
     </message>
@@ -5468,6 +5496,10 @@ Right-click to show GUI.</source>
     <message>
         <source>Common Controls</source>
         <translation>Обычные кнопки</translation>
+    </message>
+    <message>
+        <source>ctrl-double-click on/off</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5679,14 +5711,6 @@ Right-click to show GUI.</source>
     <message>
         <source>Set step size for cursor edit</source>
         <translation>Установить размер шага для курсора</translation>
-    </message>
-    <message>
-        <source>panic</source>
-        <translation>паника</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
     </message>
     <message>
         <source>ctrl</source>
@@ -6108,6 +6132,13 @@ click on part to mute/unmute</source>
     </message>
 </context>
 <context>
+    <name>MusEGui::GlobalSettingsConfig</name>
+    <message>
+        <source>MusE: Choose start template or song</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::Header</name>
     <message>
         <source>Track Info Columns</source>
@@ -6153,10 +6184,6 @@ click on part to mute/unmute</source>
         <translation>Кофигурация &amp;окна</translation>
     </message>
     <message>
-        <source>Undo/Redo tools</source>
-        <translation>инструменты Отменить/Повторить</translation>
-    </message>
-    <message>
         <source>Edit tools</source>
         <translation>Инструменты правки</translation>
     </message>
@@ -6183,14 +6210,6 @@ click on part to mute/unmute</source>
     <message>
         <source>new key</source>
         <translation>новый ключ</translation>
-    </message>
-    <message>
-        <source>panic</source>
-        <translation>паника</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
     </message>
     <message>
         <source>Meter</source>
@@ -6276,20 +6295,8 @@ click on part to mute/unmute</source>
         <translation>Конфигурация &amp;окна</translation>
     </message>
     <message>
-        <source>Undo/Redo tools</source>
-        <translation>Инструменты Отменить/Вернуть</translation>
-    </message>
-    <message>
         <source>Insert tools</source>
         <translation>Инструменты вставки</translation>
-    </message>
-    <message>
-        <source>panic</source>
-        <translation>паника</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
     </message>
     <message>
         <source>Tick</source>
@@ -6566,20 +6573,8 @@ Do you want to apply to all existing midi tracks now?</source>
         <translation>Конфигурация &amp;окна</translation>
     </message>
     <message>
-        <source>Undo/Redo tools</source>
-        <translation>инструменты Отменить/Вернуть</translation>
-    </message>
-    <message>
         <source>edit tools</source>
         <translation>инструменты правки</translation>
-    </message>
-    <message>
-        <source>panic</source>
-        <translation>паника</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
     </message>
     <message>
         <source>Bar:Beat:Tick</source>
@@ -6611,18 +6606,6 @@ Do you want to apply to all existing midi tracks now?</source>
     <message>
         <source>Window &amp;Config</source>
         <translation>Конфигурация &amp;окна</translation>
-    </message>
-    <message>
-        <source>Undo/Redo tools</source>
-        <translation>инструменты Отменить/Вернуть</translation>
-    </message>
-    <message>
-        <source>panic</source>
-        <translation>паника</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
     </message>
     <message>
         <source>Enable master</source>
@@ -6691,10 +6674,6 @@ Do you want to apply to all existing midi tracks now?</source>
         <translation>выкл</translation>
     </message>
     <message>
-        <source>double click on/off</source>
-        <translation>двойной щелчок вкл/выкл</translation>
-    </message>
-    <message>
         <source>VariationSend</source>
         <translation>Вариационный посыл</translation>
     </message>
@@ -6749,6 +6728,10 @@ Do you want to apply to all existing midi tracks now?</source>
     <message>
         <source>output routing</source>
         <translation>маршрут выхода</translation>
+    </message>
+    <message>
+        <source>ctrl-double-click on/off</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7634,18 +7617,22 @@ failed: </source>
         <source>No track selected for import</source>
         <translation>Не выбран трек для импорта</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>%n part(s) out of %1 could not be imported.
 Likely the selected track is the wrong type.</source>
-        <translation>%n парти(я, и, ий) из %1 не могут быть импортированы.
+        <translation type="unfinished">
+            <numerusform>%n парти(я, и, ий) из %1 не могут быть импортированы.
 Возможно выбранный трек неверного типа.
+        </numerusform>
         </translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>%n part(s) could not be imported.
 Likely the selected track is the wrong type.</source>
-        <translation>%n парти(я, и, ий) могут быть импортированы.
+        <translation type="unfinished">
+            <numerusform>%n парти(я, и, ий) могут быть импортированы.
 Возможно выбранный трек неверного типа.
+        </numerusform>
         </translation>
     </message>
     <message>
@@ -7671,6 +7658,22 @@ Do you still want to import it?</source>
     <message>
         <source>&amp;No</source>
         <translation>&amp;Нет</translation>
+    </message>
+    <message>
+        <source>Song Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tempo</source>
+        <translation type="unfinished">Темп</translation>
+    </message>
+    <message>
+        <source>Signature</source>
+        <translation type="unfinished">Размер</translation>
+    </message>
+    <message>
+        <source>About &amp;Qt</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7698,6 +7701,10 @@ Do you still want to import it?</source>
     <message>
         <source>Velo Off</source>
         <translation>Скор. снятия</translation>
+    </message>
+    <message>
+        <source>delta/absolute mode</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7772,18 +7779,22 @@ Files:</source>
         <translation>Имя партии:
 Файлы:</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>%n part(s) out of %1 could not be pasted.
 Likely the selected track is the wrong type.</source>
-        <translation>%n парти(я)(и)(й) из %1 не могут быть вставлены.
+        <translation type="unfinished">
+            <numerusform>%n парти(я)(и)(й) из %1 не могут быть вставлены.
 Неверный формат, выбранного трека.
+        </numerusform>
         </translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>%n part(s) could not be pasted.
 Likely the selected track is the wrong type.</source>
-        <translation>%n парти(я)(и)(й) не могут быть вставлены.
+        <translation type="unfinished">
+            <numerusform>%n парти(я)(и)(й) не могут быть вставлены.
 Неверный формат, выбранного трека.
+        </numerusform>
         </translation>
     </message>
     <message>
@@ -7813,9 +7824,11 @@ Likely the selected track is the wrong type.</source>
 </context>
 <context>
     <name>MusEGui::PasteDialog</name>
-    <message>
+    <message numerus="yes">
         <source>%n quarter(s)</source>
-        <translation>%n четверт(и)
+        <translation type="unfinished">
+            <numerusform>%n четверт(и)
+        </numerusform>
         </translation>
     </message>
     <message>
@@ -7831,9 +7844,11 @@ Likely the selected track is the wrong type.</source>
 </context>
 <context>
     <name>MusEGui::PasteEventsDialog</name>
-    <message>
+    <message numerus="yes">
         <source>%n quarter(s)</source>
-        <translation>%n четверт(и)
+        <translation type="unfinished">
+            <numerusform>%n четверт(и)
+        </numerusform>
         </translation>
     </message>
     <message>
@@ -7994,14 +8009,6 @@ Likely the selected track is the wrong type.</source>
         <translation>Воспроизвести события</translation>
     </message>
     <message>
-        <source>panic</source>
-        <translation>паника</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
-    </message>
-    <message>
         <source>ctrl</source>
         <translation>ctrl</translation>
     </message>
@@ -8085,12 +8092,52 @@ Likely the selected track is the wrong type.</source>
         <translation>Показать Все</translation>
     </message>
     <message>
-        <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that probably not are usable by MusE.</source>
-        <translation>Выберите типы плагинов, которые будут видны в списке.&lt;br&gt;Обратите внимание, что можно использовать моно плагины в стерео треках, два будут использованы параллельно.&lt;br&gt;Также будте осторожны с плагинами категории &quot;все&quot; альтернативные, возможно их нельзя использовать в MusE.</translation>
-    </message>
-    <message>
         <source>Search in &apos;Label&apos; and &apos;Name&apos;:</source>
         <translation>Искать по &quot;Меткам&quot; и &quot;Именам&quot;:</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished">Тип</translation>
+    </message>
+    <message>
+        <source>Audio inputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio outputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Control inputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Control outputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>In-place capable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallel.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that may not be useful in an effect rack.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dssi synth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dssi effect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ladspa</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -8212,24 +8259,12 @@ Likely the selected track is the wrong type.</source>
 <context>
     <name>MusEGui::ScoreEdit</name>
     <message>
-        <source>Undo/Redo tools</source>
-        <translation>Инструменты Отменить/Вернуть</translation>
-    </message>
-    <message>
         <source>Step recording tools</source>
         <translation>Инструменты пошаговой записи</translation>
     </message>
     <message>
         <source>Step Record</source>
         <translation>Пошаговая запись</translation>
-    </message>
-    <message>
-        <source>panic</source>
-        <translation>паника</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
     </message>
     <message>
         <source>Note settings</source>
@@ -8460,6 +8495,17 @@ the selected title is not unique</source>
     </message>
 </context>
 <context>
+    <name>MusEGui::SigToolbarWidget</name>
+    <message>
+        <source>time signature at current position</source>
+        <translation type="unfinished">размер в текущей позиции</translation>
+    </message>
+    <message>
+        <source>Signature: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::Strip</name>
     <message>
         <source>Remove track?</source>
@@ -8568,12 +8614,31 @@ the selected title is not unique</source>
         <source>Do you want to use same port and channel for all instruments in the drummap?</source>
         <translation>Вы хотите использовать тот же порт и канал для всех инструментов в списке ударных?</translation>
     </message>
+    <message>
+        <source>off</source>
+        <translation type="unfinished">выкл</translation>
+    </message>
+    <message>
+        <source>&lt;unknown&gt;</source>
+        <translation type="unfinished">&lt;неизвестно&gt;</translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::TempoSig</name>
     <message>
         <source>Tempo/Sig</source>
         <translation>Темп/Размер</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::TempoToolbarWidget</name>
+    <message>
+        <source>tempo at current position</source>
+        <translation type="unfinished">темп в текущей позиции</translation>
+    </message>
+    <message>
+        <source>Tempo: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -8652,6 +8717,30 @@ the selected title is not unique</source>
     <message>
         <source>&lt;unknown toplevel type&gt;</source>
         <translation>&lt;неизвестный тип уровня&gt;</translation>
+    </message>
+    <message>
+        <source>Undo/Redo tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Panic</source>
+        <translation type="unfinished">Паника</translation>
+    </message>
+    <message>
+        <source>Transport</source>
+        <translation type="unfinished">Транспорт</translation>
+    </message>
+    <message>
+        <source>Song Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tempo</source>
+        <translation type="unfinished">Темп</translation>
+    </message>
+    <message>
+        <source>Signature</source>
+        <translation type="unfinished">Размер</translation>
     </message>
 </context>
 <context>
@@ -8848,13 +8937,6 @@ the selected title is not unique</source>
     </message>
 </context>
 <context>
-    <name>MusEGui::WTScale</name>
-    <message>
-        <source>bar scale</source>
-        <translation>шкала тактов</translation>
-    </message>
-</context>
-<context>
     <name>MusEGui::WaveEdit</name>
     <message>
         <source>&amp;Edit</source>
@@ -8923,14 +9005,6 @@ the selected title is not unique</source>
     <message>
         <source>Window &amp;Config</source>
         <translation>Конфигурация &amp;окна</translation>
-    </message>
-    <message>
-        <source>Wave edit tools</source>
-        <translation>Инструменты правки wave</translation>
-    </message>
-    <message>
-        <source>transport</source>
-        <translation>транспорт</translation>
     </message>
     <message>
         <source>WaveEdit tools</source>
@@ -9221,6 +9295,10 @@ to be expanded by more than </source>
         <source>Song information:</source>
         <translation>Информация о сонге:</translation>
     </message>
+    <message>
+        <source>Write window state</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
@@ -9493,405 +9571,10 @@ p, li { white-space: pre-wrap; }(new line)
     </message>
 </context>
 <context>
-    <name>RhythmBase</name>
-    <message>
-        <source>MusE: Random Rhythm Generator</source>
-        <translation>MusE: Генератор случайного ритма</translation>
-    </message>
-    <message>
-        <source>Instrument Properties</source>
-        <translation>Свойства Инструмента</translation>
-    </message>
-    <message>
-        <source>counts/bar</source>
-        <translation>счет/такт</translation>
-    </message>
-    <message>
-        <source>steps/count</source>
-        <translation>шаги/счет</translation>
-    </message>
-    <message>
-        <source># bars</source>
-        <translation># такты</translation>
-    </message>
-    <message>
-        <source>test</source>
-        <translation>тест</translation>
-    </message>
-    <message>
-        <source>contrib</source>
-        <translation>внести</translation>
-    </message>
-    <message>
-        <source>randomize</source>
-        <translation>случайным образом</translation>
-    </message>
-    <message>
-        <source>Group 1</source>
-        <translation>Группа 1</translation>
-    </message>
-    <message>
-        <source>Group 2</source>
-        <translation>Группа 2</translation>
-    </message>
-    <message>
-        <source>Group 3</source>
-        <translation>Группа 3</translation>
-    </message>
-    <message>
-        <source>Group 4</source>
-        <translation>Группа 4</translation>
-    </message>
-    <message>
-        <source>Group 5</source>
-        <translation>Группа 5</translation>
-    </message>
-    <message>
-        <source>listen</source>
-        <translation>слушать</translation>
-    </message>
-    <message>
-        <source>Instrument</source>
-        <translation>Инструмент</translation>
-    </message>
-    <message>
-        <source>Group</source>
-        <translation>Группа</translation>
-    </message>
-    <message>
-        <source>&amp;New</source>
-        <translation>&amp;Новый</translation>
-    </message>
-    <message>
-        <source>create new entry</source>
-        <translation>создать новую запись</translation>
-    </message>
-    <message>
-        <source>pressing the New button you create a new entry
-in the MusE list of defined controllers</source>
-        <translation>нажав кнопку &quot;Новая&quot; вы создаёте новую запись
-в списке назначенных в MusE контроллеров</translation>
-    </message>
-    <message>
-        <source>&amp;Delete</source>
-        <translation>&amp;Удалить</translation>
-    </message>
-    <message>
-        <source>delete selected entry</source>
-        <translation>удалить выделенную запись</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation>Вверх</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation>Вниз</translation>
-    </message>
-    <message>
-        <source>Instrument              </source>
-        <translation>Инструмент              </translation>
-    </message>
-    <message>
-        <source>steps/count      </source>
-        <translation>шаги/счет</translation>
-    </message>
-    <message>
-        <source>list of defined controllers</source>
-        <translation>список назначенных контроллеров</translation>
-    </message>
-    <message>
-        <source>This is the MusE list of defined controllers.</source>
-        <translation>Это список назначенных контроллеров для MusE.</translation>
-    </message>
-    <message>
-        <source>&amp;File</source>
-        <translation>&amp;Файл</translation>
-    </message>
-    <message>
-        <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
-    </message>
-    <message>
-        <source>&amp;Help</source>
-        <translation>&amp;Справка</translation>
-    </message>
-    <message>
-        <source>Tools</source>
-        <translation>Инструменты</translation>
-    </message>
-    <message>
-        <source>New</source>
-        <translation>Новый</translation>
-    </message>
-    <message>
-        <source>Open</source>
-        <translation>Открыть</translation>
-    </message>
-    <message>
-        <source>&amp;Open...</source>
-        <translation>&amp;Открыть...</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation>Сохранить</translation>
-    </message>
-    <message>
-        <source>&amp;Save</source>
-        <translation>&amp;Сохранить</translation>
-    </message>
-    <message>
-        <source>Save As</source>
-        <translation>Сохранить как</translation>
-    </message>
-    <message>
-        <source>Save &amp;As...</source>
-        <translation>Сохранить &amp;как...</translation>
-    </message>
-    <message>
-        <source>Print</source>
-        <translation>Печать</translation>
-    </message>
-    <message>
-        <source>&amp;Print...</source>
-        <translation>&amp;Печать...</translation>
-    </message>
-    <message>
-        <source>Exit</source>
-        <translation>Выйти</translation>
-    </message>
-    <message>
-        <source>E&amp;xit</source>
-        <translation>В&amp;ыйти</translation>
-    </message>
-    <message>
-        <source>Undo</source>
-        <translation>Отмена</translation>
-    </message>
-    <message>
-        <source>&amp;Undo</source>
-        <translation>&amp;Отмена</translation>
-    </message>
-    <message>
-        <source>Redo</source>
-        <translation>Повторить</translation>
-    </message>
-    <message>
-        <source>&amp;Redo</source>
-        <translation>П&amp;овторить</translation>
-    </message>
-    <message>
-        <source>Cut</source>
-        <translation>Вырезать</translation>
-    </message>
-    <message>
-        <source>&amp;Cut</source>
-        <translation>&amp;Вырезать</translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation>Копировать</translation>
-    </message>
-    <message>
-        <source>C&amp;opy</source>
-        <translation>&amp;Копировать</translation>
-    </message>
-    <message>
-        <source>Paste</source>
-        <translation>Вставить</translation>
-    </message>
-    <message>
-        <source>&amp;Paste</source>
-        <translation>&amp;Вставить</translation>
-    </message>
-    <message>
-        <source>Find</source>
-        <translation>Найти</translation>
-    </message>
-    <message>
-        <source>&amp;Find...</source>
-        <translation>&amp;Найти...</translation>
-    </message>
-    <message>
-        <source>Contents</source>
-        <translation>Содержание</translation>
-    </message>
-    <message>
-        <source>&amp;Contents...</source>
-        <translation>&amp;Содержание...</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <translation>Индекс</translation>
-    </message>
-    <message>
-        <source>&amp;Index...</source>
-        <translation>&amp;Индекс...</translation>
-    </message>
-    <message>
-        <source>About</source>
-        <translation>О программе</translation>
-    </message>
-    <message>
-        <source>&amp;About...</source>
-        <translation>&amp;О программе...</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Notice!&lt;/b&gt;&lt;br&gt;
-Random Rhythm Generator is not enabled yet!</source>
-        <translation>&lt;b&gt;Уведомление!&lt;/b&gt;&lt;br&gt;
-Генератора Случайного Ритма пока ещё нет!</translation>
-    </message>
-    <message>
-        <source>Ctrl+N</source>
-        <translation>Ctrl+N</translation>
-    </message>
-    <message>
-        <source>Ctrl+O</source>
-        <translation>Ctrl+O</translation>
-    </message>
-    <message>
-        <source>Ctrl+S</source>
-        <translation>Ctrl+S</translation>
-    </message>
-    <message>
-        <source>Ctrl+P</source>
-        <translation>Ctrl+P</translation>
-    </message>
-    <message>
-        <source>Ctrl+Z</source>
-        <translation>Ctrl+Z</translation>
-    </message>
-    <message>
-        <source>Ctrl+Y</source>
-        <translation>Ctrl+Y</translation>
-    </message>
-    <message>
-        <source>Ctrl+X</source>
-        <translation>Ctrl+X</translation>
-    </message>
-    <message>
-        <source>Ctrl+C</source>
-        <translation>Ctrl+C</translation>
-    </message>
-    <message>
-        <source>Ctrl+V</source>
-        <translation>Ctrl+V</translation>
-    </message>
-    <message>
-        <source>Ctrl+F</source>
-        <translation>Ctrl+F</translation>
-    </message>
-</context>
-<context>
     <name>RhythmGenerator</name>
-    <message>
-        <source>Form3</source>
-        <translation>Форма3</translation>
-    </message>
-    <message>
-        <source>Instrument Settings:</source>
-        <translation>Настройки инструмента:</translation>
-    </message>
-    <message>
-        <source>Instrument</source>
-        <translation>Инструмент</translation>
-    </message>
-    <message>
-        <source>Hi-Hat</source>
-        <translation>Хай-хэт</translation>
-    </message>
-    <message>
-        <source>add</source>
-        <translation>добавить</translation>
-    </message>
-    <message>
-        <source>delete</source>
-        <translation>удалить</translation>
-    </message>
-    <message>
-        <source>Group Settings:</source>
-        <translation>Настройки группы:</translation>
-    </message>
-    <message>
-        <source>Group</source>
-        <translation>Группа</translation>
-    </message>
-    <message>
-        <source>Group 1</source>
-        <translation>Группа 1</translation>
-    </message>
-    <message>
-        <source>Group 2</source>
-        <translation>Группа 2</translation>
-    </message>
-    <message>
-        <source>Group 3</source>
-        <translation>Группа 3</translation>
-    </message>
-    <message>
-        <source>Group 4</source>
-        <translation>Группа 4</translation>
-    </message>
-    <message>
-        <source>Group 5</source>
-        <translation>Группа 5</translation>
-    </message>
-    <message>
-        <source>contrib</source>
-        <translation>внести</translation>
-    </message>
-    <message>
-        <source>listen</source>
-        <translation>слушать</translation>
-    </message>
-    <message>
-        <source>Randomize</source>
-        <translation>Случайным образом</translation>
-    </message>
-    <message>
-        <source>Rhythm Style:</source>
-        <translation>Ритмический Стиль:</translation>
-    </message>
-    <message>
-        <source>Clear</source>
-        <translation>Очистить</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>Открыть...</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation>Сохранить</translation>
-    </message>
-    <message>
-        <source>Save as...</source>
-        <translation>Сохранить как...</translation>
-    </message>
-    <message>
-        <source>Generate</source>
-        <translation>Сгенерировать</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>Закрыть</translation>
-    </message>
     <message>
         <source></source>
         <translation></translation>
-    </message>
-    <message>
-        <source>steps/count</source>
-        <translation>шаги/счет</translation>
-    </message>
-    <message>
-        <source>count/bar</source>
-        <translation>счет/такт</translation>
-    </message>
-    <message>
-        <source># bars</source>
-        <translation># такты</translation>
     </message>
 </context>
 <context>
@@ -10233,18 +9916,6 @@ Random Rhythm Generator is not enabled yet!</source>
     </message>
 </context>
 <context>
-    <name>TimeCanvas</name>
-    <message>
-        <source>Ctrl</source>
-        <translation>Ctrl
-</translation>
-    </message>
-    <message>
-        <source>Add Controller View</source>
-        <translation>Добавить Панель</translation>
-    </message>
-</context>
-<context>
     <name>TransposeBase</name>
     <message>
         <source>MusE: Transpose</source>
@@ -10459,7 +10130,7 @@ in current
         <source>On</source>
         <translation>Вкл</translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <source>VAM 1.0beta3
 Virtual Analog for MusE
 Released under GPL.

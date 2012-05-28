@@ -297,10 +297,23 @@ Strip::~Strip()
 //---------------------------------------------------------
 
 void Strip::setAutomationType(int t)
-      {
-      track->setAutomationType(AutomationType(t));
-      MusEGlobal::song->update(SC_AUTOMATION);
-      }
+{
+  // If going to OFF mode, need to update current 'manual' values from the automation values at this time...   
+  if(t == AUTO_OFF && track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
+  {
+    // May have a lot to do in updateCurValues, so try using idle.
+    MusEGlobal::audio->msgIdle(true);
+    track->setAutomationType(AutomationType(t));
+    if(!track->isMidiTrack())
+      (static_cast<MusECore::AudioTrack*>(track))->controller()->updateCurValues(MusEGlobal::audio->curFramePos());
+    MusEGlobal::audio->msgIdle(false);
+  }
+  else
+    // Try it within one message.
+    MusEGlobal::audio->msgSetTrackAutomationType(track, t);   
+  
+  MusEGlobal::song->update(SC_AUTOMATION);
+}
       
 void Strip::resizeEvent(QResizeEvent* ev)
 {

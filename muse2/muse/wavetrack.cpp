@@ -315,7 +315,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
 void WaveTrack::setChannels(int n)
       {
       AudioTrack::setChannels(n);
-      SndFile* sf = recFile();
+      SndFileR sf = recFile();
       if (sf) {
             if (sf->samples() == 0) {
                   sf->remove();

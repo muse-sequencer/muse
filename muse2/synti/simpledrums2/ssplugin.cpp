@@ -324,9 +324,11 @@ float LadspaPlugin::defaultValue(int k) const
       double val = 1.0;
       if (LADSPA_IS_HINT_DEFAULT_MINIMUM(rh))
             val = range.LowerBound;
+      else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh))
+            val = range.UpperBound;
       else if (LADSPA_IS_HINT_DEFAULT_LOW(rh))
             if (LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor))
-                  val = exp(fast_log10(range.LowerBound) * .75 +
+                  val = exp(log(range.LowerBound) * .75 +
                      log(range.UpperBound) * .25);
             else
                   val = range.LowerBound*.75 + range.UpperBound*.25;
@@ -342,8 +344,6 @@ float LadspaPlugin::defaultValue(int k) const
                      log(range.UpperBound) * .75);
             else
                   val = range.LowerBound*.25 + range.UpperBound*.75;
-      else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh))
-            val = range.UpperBound;
       else if (LADSPA_IS_HINT_DEFAULT_0(rh))
             val = 0.0;
       else if (LADSPA_IS_HINT_DEFAULT_1(rh))
@@ -352,6 +352,29 @@ float LadspaPlugin::defaultValue(int k) const
             val = 100.0;
       else if (LADSPA_IS_HINT_DEFAULT_440(rh))
             val = 440.0;
+        // No default found. Make one up...
+      else if (LADSPA_IS_HINT_BOUNDED_BELOW(rh) && LADSPA_IS_HINT_BOUNDED_ABOVE(rh))
+      {
+        if (LADSPA_IS_HINT_LOGARITHMIC(rh))
+          val = exp(log(range.LowerBound) * .5 +
+                log(range.UpperBound) * .5);
+        else
+          val = range.LowerBound*.5 + range.UpperBound*.5;
+      }
+      else if (LADSPA_IS_HINT_BOUNDED_BELOW(rh))
+          val = range.LowerBound;
+      else if (LADSPA_IS_HINT_BOUNDED_ABOVE(rh))
+      {
+          // Hm. What to do here... Just try 0.0 or the upper bound if less than zero.
+          //if(range.UpperBound > 0.0)
+          //  val = 0.0;
+          //else
+          //  val = range.UpperBound;
+          // Instead try this: Adopt an 'attenuator-like' policy, where upper is the default.
+          val = range.UpperBound;
+          return true;
+      }
+      
       SS_TRACE_OUT
       return val;
       }

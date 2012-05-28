@@ -49,13 +49,13 @@ class SpinBoxLineEdit : public QLineEdit
   Q_OBJECT
   
   protected:
-    //virtual void mouseDoubleClickEvent(QMouseEvent* e);
-    virtual void mousePressEvent(QMouseEvent* e);
+    virtual void mouseDoubleClickEvent(QMouseEvent* e);
+    //virtual void mousePressEvent(QMouseEvent* e);
 
   signals:
-    //void doubleClicked();
-    //void ctrlDoubleClicked();
-    void ctrlClicked();
+    void doubleClicked();
+    void ctrlDoubleClicked();
+    //void ctrlClicked();
 
   public:
     SpinBoxLineEdit(QWidget* parent = 0) : QLineEdit(parent) {};
@@ -75,9 +75,9 @@ class SpinBox : public QSpinBox {
       virtual void wheelEvent(QWheelEvent*);
 
    signals:
-      //void doubleClicked();
-      //void ctrlDoubleClicked();
-      void ctrlClicked();
+      void doubleClicked();
+      void ctrlDoubleClicked();
+      //void ctrlClicked();
       void returnPressed();
       void escapePressed();
 

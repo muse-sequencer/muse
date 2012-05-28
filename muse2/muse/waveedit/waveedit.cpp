@@ -281,7 +281,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       }
 
       initTopwinState();
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
       }
 
 void WaveEdit::initShortcuts()
@@ -530,6 +530,19 @@ void WaveEdit::horizontalZoomOut()
 
   hscroll->setMag(newmag);
 
+}
+
+//---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void WaveEdit::focusCanvas()
+{
+  if(MusEGlobal::config.smartFocus)
+  {
+    view->setFocus();
+    view->activateWindow();
+  }
 }
 
 } // namespace MusEGui

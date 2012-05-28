@@ -34,6 +34,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <math.h>
 
 #include <QFileInfo>
 #include <QString>
@@ -178,9 +179,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
       if(!instance)
         break;
         
-      QByteArray ba2 = synti->name().toLatin1();
-      p = sub + strlen(ba2.constData());
-      
+      p = sub + ba.length();
       if (*p != '/' || *(p + 1) == 0)
       {
         fprintf(stderr, "oscMessageHandler error: synth: end of path or no /\n");
@@ -241,9 +240,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
         if(!plugin)
           break;
         
-        QByteArray ba3 = instance->label().toLatin1();
-        p = sub + strlen(ba3.constData());
-        
+        p = sub + ba.length();
         if (*p != '/' || *(p + 1) == 0)
         {
           fprintf(stderr, "oscMessageHandler: error: effect: end of path or no /\n");
@@ -387,6 +384,11 @@ OscIF::OscIF()
   _guiPid = -1;
 #endif
   _oscGuiVisible = false;
+  
+  old_prog=old_bank=0xDEADBEEF;
+  old_control=NULL;
+  control_port_mapper=NULL;
+  maxDssiPort=0;
 }
 
 OscIF::~OscIF()
@@ -429,6 +431,9 @@ OscIF::~OscIF()
     free(_uiOscProgramPath);
   if(_uiOscPath)
     free(_uiOscPath);
+    
+  if (old_control)
+    delete [] old_control;
 }
 
 //---------------------------------------------------------
@@ -728,20 +733,29 @@ int OscIF::oscExiting(lo_arg**)
 //   oscSendProgram
 //---------------------------------------------------------
 
-void OscIF::oscSendProgram(unsigned long prog, unsigned long bank)
+void OscIF::oscSendProgram(unsigned long prog, unsigned long bank, bool force)
 {
-  if(_uiOscTarget && _uiOscProgramPath)
+  if(_uiOscTarget && _uiOscProgramPath &&
+     (bank!=old_bank || prog!=old_prog || force) )
+  {
     lo_send(_uiOscTarget, _uiOscProgramPath, "ii", bank, prog);
+    old_bank=bank;
+    old_prog=prog;
+  }
 }
 
 //---------------------------------------------------------
 //   oscSendControl
 //---------------------------------------------------------
 
-void OscIF::oscSendControl(unsigned long dssiPort, float v)
+void OscIF::oscSendControl(unsigned long dssiPort, float v, bool force)
 {
-  if(_uiOscTarget && _uiOscControlPath)
+  if(_uiOscTarget && _uiOscControlPath &&
+     ((dssiPort<maxDssiPort && old_control[control_port_mapper->at(dssiPort)]!=v) || force) )
+  {
     lo_send(_uiOscTarget, _uiOscControlPath, "if", dssiPort, v);
+    old_control[control_port_mapper->at(dssiPort)]=v;
+  }
 }
 
 //---------------------------------------------------------
@@ -759,8 +773,45 @@ void OscIF::oscSendConfigure(const char *key, const char *val)
 //---------------------------------------------------------
 
 bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QString& name, 
-                       const QString& label, const QString& filePath, const QString& guiPath)
+                       const QString& label, const QString& filePath, const QString& guiPath,
+                       const std::vector<unsigned long>* control_port_mapper_)
 {
+      if (old_control==NULL)
+      {
+        control_port_mapper=control_port_mapper_;
+        
+        unsigned long nDssiPorts=0;
+        for (unsigned i=0;i<control_port_mapper->size();i++)
+          if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
+            nDssiPorts=control_port_mapper->at(i)+1;
+        
+        old_control=new float[nDssiPorts];
+        for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
+          old_control[i]=NAN;
+
+        maxDssiPort=nDssiPorts;
+      }
+      else
+      {
+        control_port_mapper=control_port_mapper_;
+        
+        unsigned long nDssiPorts=0;
+        for (unsigned i=0;i<control_port_mapper->size();i++)
+          if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
+            nDssiPorts=control_port_mapper->at(i)+1;
+        
+        if (maxDssiPort!=nDssiPorts)
+        {
+          // this should never happen, right?
+          printf("STRANGE: nDssiPorts has changed (old=%lu, now=%lu)!\n", maxDssiPort, nDssiPorts);
+          delete [] old_control;
+          old_control=new float[nDssiPorts];
+          for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
+            old_control[i]=NAN;
+          maxDssiPort=nDssiPorts;
+        }
+      }
+      
       // Are we already running? We don't want to allow another process do we...
 #ifdef _USE_QPROCESS_FOR_GUI_
       if((_oscGuiQProc != 0) && (_oscGuiQProc->state()))
@@ -902,8 +953,7 @@ void OscIF::oscShowGui(bool v)
         }  
       }  
       
-      //for (int i = 0; i < 5; ++i) {
-      for (int i = 0; i < 20; ++i) {    // Give it a wee bit more time?
+      for (int i = 0; i < 20; ++i) {
             if (_uiOscPath)
                   break;
             sleep(1);
@@ -1020,7 +1070,11 @@ int OscDssiIF::oscMidi(lo_arg** argv)
 int OscDssiIF::oscProgram(lo_arg** argv)
 {
   if(_oscSynthIF)
+  {
     _oscSynthIF->oscProgram(argv[1]->i, argv[0]->i);
+    old_prog=argv[1]->i;
+    old_bank=argv[0]->i;
+  }
   
   return 0;
 }
@@ -1036,7 +1090,11 @@ int OscDssiIF::oscControl(lo_arg** argv)
     return 0;
     
   if(_oscSynthIF)
+  {
     _oscSynthIF->oscControl(argv[0]->i, argv[1]->f);
+    if (port<maxDssiPort)
+      old_control[control_port_mapper->at(port)]=argv[1]->f;
+  }
   
   return 0;
 }
@@ -1048,10 +1106,11 @@ bool OscDssiIF::oscInitGui()
 {
   if(!_oscSynthIF)
     return false;
-    
+  
   return OscIF::oscInitGui("dssi_synth", _oscSynthIF->dssiSynth()->baseName(), 
                            _oscSynthIF->dssiSynth()->name(), _oscSynthIF->dssiSynthI()->name(), 
-                           _oscSynthIF->dssiSynth()->fileName(), _oscSynthIF->dssi_ui_filename()); 
+                           _oscSynthIF->dssiSynth()->fileName(), _oscSynthIF->dssi_ui_filename(),
+                           _oscSynthIF->dssiSynth()->getRpIdx());
 }
 
 QString OscDssiIF::titlePrefix() const 
@@ -1109,7 +1168,11 @@ int OscEffectIF::oscControl(lo_arg** argv)
     return 0;
     
   if(_oscPluginI)
+  {
     _oscPluginI->oscControl(argv[0]->i, argv[1]->f);
+    if (port<maxDssiPort)
+      old_control[control_port_mapper->at(port)]=argv[1]->f;
+  }
   
   return 0;
 }
@@ -1124,7 +1187,8 @@ bool OscEffectIF::oscInitGui()
     
   return OscIF::oscInitGui("ladspa_efx", _oscPluginI->plugin()->lib(false), 
                            _oscPluginI->plugin()->label(), _oscPluginI->label(), 
-                           _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename());  
+                           _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename(),
+                           _oscPluginI->plugin()->getRpIdx());  
 }
       
 QString OscEffectIF::titlePrefix() const 

@@ -81,6 +81,9 @@
      <property name="value" stdset="0">
       <number>0</number>
      </property>
+     <property name="offValue" stdset="0">
+      <number>-70</number>
+     </property>
      <property name="minValue" stdset="0">
       <number>-70</number>
      </property>
@@ -121,6 +124,9 @@
      </property>
      <property name="value" stdset="0">
       <number>0</number>
+     </property>
+     <property name="offValue" stdset="0">
+      <number>-70</number>
      </property>
      <property name="minValue" stdset="0">
       <number>-70</number>

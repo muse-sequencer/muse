@@ -28,7 +28,7 @@
 #include <QLabel>
 #include <QKeyEvent>
 
-#include <values.h>
+#include <limits.h>
 #include "noteinfo.h"
 #include "cobject.h"
 #include "midieditor.h"
@@ -169,7 +169,6 @@ class PianoRoll : public MidiEditor {
       void newCanvasWidth(int);
       void toggleTrackInfo();
       void updateTrackInfo();
-      void focusCanvas();
       void deltaModeChanged(bool);
 
    signals:
@@ -179,10 +178,11 @@ class PianoRoll : public MidiEditor {
       virtual void updateHScrollRange();
       void execDeliveredScript(int id);
       void execUserScript(int id);
+      void focusCanvas();
       CtrlEdit* addCtrl();
       
    public:
-      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
       ~PianoRoll();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

@@ -22,7 +22,6 @@
 //=========================================================
 
 #include <errno.h>
-#include <values.h>
 
 #include "song.h"
 #include "midi.h"

@@ -82,6 +82,7 @@ extern int alsaSelectRfd();
 extern int alsaSelectWfd();
 extern void alsaProcessMidiInput();
 extern void alsaScanMidiPorts();
+extern void setAlsaClientName(const char*);
 
 } // namespace MusECore
 

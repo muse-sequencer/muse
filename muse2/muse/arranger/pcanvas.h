@@ -59,19 +59,24 @@ class MidiEditor;
 //---------------------------------------------------------
 
 class NPart : public CItem {
+   protected:
+      int _serial;
+   
    public:
       NPart(MusECore::Part* e);
       const QString name() const     { return part()->name(); }
       void setName(const QString& s) { part()->setName(s); }
       MusECore::Track* track() const           { return part()->track(); }
+      int serial() { return _serial; }
       
       bool leftBorderTouches;  // Whether the borders touch other part borders. 
       bool rightBorderTouches;
+    
       };
 
 enum ControllerVals { doNothing, movingController, addNewController };
 struct AutomationObject {
-  int currentCtrlFrame;
+  QList<int> currentCtrlFrameList;
   bool currentCtrlValid;
   MusECore::CtrlList *currentCtrlList;
   MusECore::Track *currentTrack;
@@ -99,7 +104,7 @@ class PartCanvas : public Canvas {
       AutomationObject automation;
 
       virtual void keyPress(QKeyEvent*);
-      virtual void mousePress(QMouseEvent*);
+      virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
       virtual void mouseRelease(const QPoint&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);

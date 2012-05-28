@@ -79,7 +79,7 @@ void FLUIDGui::loadFont()
             }
       QByteArray ba = pathEntry->text().toLatin1();
       const char* path = ba.constData();
-      int len     = strlen(path) + 1 + 3;
+      int len     = ba.length() + 1 + 3;
       unsigned char buffer[len];
       int k       = 0;
       buffer[k++] = MUSE_SYNTH_SYSEX_MFG_ID;

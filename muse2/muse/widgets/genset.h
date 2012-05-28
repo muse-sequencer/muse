@@ -55,6 +55,8 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void mainCurrent();
       void transportCurrent();
       void browseProjDir();
+      void browseStartSongFile();
+      void startSongReset();
       void traditionalPreset();
       void mdiPreset();
       void borlandPreset();

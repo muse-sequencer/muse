@@ -136,15 +136,9 @@ class SynthIF {
       virtual bool guiVisible() const = 0;
       virtual void showGui(bool v) = 0;
       virtual bool hasGui() const = 0;
-      //virtual bool guiVisible() const { return false; } DELETETHIS 3
-      //virtual void showGui(bool v)    { };
-      //virtual bool hasGui() const     { return false; }
       virtual bool nativeGuiVisible() const = 0;
       virtual void showNativeGui(bool v) = 0;
       virtual bool hasNativeGui() const = 0;
-      //virtual bool nativeGuiVisible() const { return false; } DELETETHIS 3
-      //virtual void showNativeGui(bool v) { };
-      //virtual bool hasNativeGui() const { return false; }
       virtual void getGeometry(int*, int*, int*, int*) const = 0;
       virtual void setGeometry(int, int, int, int) = 0;
       virtual void getNativeGeometry(int*, int*, int*, int*) const = 0;
@@ -189,12 +183,6 @@ class SynthI : public AudioTrack, public MidiDevice,
       // List of initial floating point parameters, for synths which use them. 
       // Used once upon song reload, then discarded.
       std::vector<float> initParams;
-
-      // List of gui controls to update upon heartbeat.
-      std::vector<bool> _guiUpdateControls;  
-
-      // Update gui program upon heartbeat.
-      bool _guiUpdateProgram;
 
       // Initial, and running, string parameters for synths which use them, like dssi.
       StringParamMap _stringParamMap; 

@@ -98,7 +98,6 @@ static inline void muse_atomic_destroy(muse_atomic_t*) {}
 
 class Xml;
 class Pipeline;
-class SndFile;
 
 
 //---------------------------------------------------------

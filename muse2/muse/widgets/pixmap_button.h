@@ -58,6 +58,7 @@ class PixmapButton : public QWidget
     virtual void paintEvent(QPaintEvent* );
     virtual void mousePressEvent(QMouseEvent* );
     virtual void mouseReleaseEvent(QMouseEvent* );
+    void contextMenuEvent(QContextMenuEvent*);
     
    signals:
      void clicked(bool checked = false);

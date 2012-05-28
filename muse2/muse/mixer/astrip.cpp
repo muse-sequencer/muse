@@ -121,7 +121,7 @@ void AudioStrip::heartBeat()
 
 void AudioStrip::configChanged()    
 { 
-  // Set the whole strip's font, except for the label.    
+  // Set the whole strip's font, except for the label.
   if(font() != MusEGlobal::config.fonts[1])
     setFont(MusEGlobal::config.fonts[1]);
   
@@ -150,6 +150,22 @@ void AudioStrip::configChanged()
     meter[c]->setRange(MusEGlobal::config.minMeter, 10.0);
 }
 
+void AudioStrip::updateRouteButtons()
+{
+    if (iR)
+    {
+        if (track->noInRoute())
+          iR->setStyleSheet("background-color:darkgray;");
+        else
+          iR->setStyleSheet("");
+    }
+
+    if (track->noOutRoute())
+      oR->setStyleSheet("background-color:red;");
+    else
+      oR->setStyleSheet("");
+}
+
 //---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
@@ -159,6 +175,8 @@ void AudioStrip::songChanged(int val)
       // Is it simply a midi controller value adjustment? Forget it.
       if (val == SC_MIDI_CONTROLLER)
         return;
+
+      updateRouteButtons();
     
       MusECore::AudioTrack* src = (MusECore::AudioTrack*)track;
       
@@ -1055,6 +1073,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
             off->blockSignals(false);
             }
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+
+      updateRouteButtons();
+
       }
 
 //---------------------------------------------------------
@@ -1067,7 +1088,7 @@ void AudioStrip::iRoutePressed()
       RoutePopupMenu* pup = new RoutePopupMenu();
       pup->exec(QCursor::pos(), track, false);
       delete pup;
-      iR->setDown(false);     
+      iR->setDown(false);
       }
       
 //---------------------------------------------------------

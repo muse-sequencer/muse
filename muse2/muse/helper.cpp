@@ -386,7 +386,7 @@ QMenu* populateAddSynth(QWidget* parent)
   typedef std::multimap<std::string, int >::iterator imap;
   
   
-  int ntypes = MusECore::Synth::SYNTH_TYPE_END;
+  const int ntypes = MusECore::Synth::SYNTH_TYPE_END;
   asmap smaps[ntypes];
   QMenu* mmaps[ntypes];
   for(int itype = 0; itype < ntypes; ++itype)

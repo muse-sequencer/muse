@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <values.h>
+#include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -92,7 +92,7 @@ QString EventCanvas::getCaption() const
 void EventCanvas::leaveEvent(QEvent*)
       {
       emit pitchChanged(-1);
-      emit timeChanged(MAXINT);
+      emit timeChanged(INT_MAX);
       }
 
 //---------------------------------------------------------
@@ -150,7 +150,8 @@ void EventCanvas::songChanged(int flags)
         return;
     
       if (flags & ~SC_SELECTION) {
-            //items.clear(); DELETETHIS
+            // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
+            //             (same in waveview.cpp)
             bool curItemNeedsRestore=false;
             MusECore::Event storedEvent;
             int partSn;
@@ -163,7 +164,7 @@ void EventCanvas::songChanged(int flags)
             curItem=NULL;
             
             items.clearDelete();
-            start_tick  = MAXINT;
+            start_tick  = INT_MAX;
             end_tick    = 0;
             curPart = 0;
             for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
@@ -331,6 +332,9 @@ void EventCanvas::keyPress(QKeyEvent* event)
       // Select items by key (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
               rciCItem i;
+
+              if (items.empty())
+                  return;
               for (i = items.rbegin(); i != items.rend(); ++i) 
                 if (i->second->isSelected()) 
                   break;
@@ -359,7 +363,9 @@ void EventCanvas::keyPress(QKeyEvent* event)
       //Select items by key: (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key) {
               ciCItem i;
-              for (i = items.begin(); i != items.end(); ++i) 
+              if (items.empty())
+                  return;
+              for (i = items.begin(); i != items.end(); ++i)
                 if (i->second->isSelected()) 
                   break;
 

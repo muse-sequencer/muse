@@ -85,8 +85,6 @@ MusECore::PluginList plugins;
 namespace MusEGui {
 int PluginDialog::selectedPlugType = 0;
 QStringList PluginDialog::sortItems = QStringList();
-///int PluginDialog::sortColumn = 0;
-///Qt::SortOrder PluginDialog::sortOrder = Qt::AscendingOrder;
 QRect PluginDialog::geometrySave = QRect();
 QByteArray PluginDialog::listSave = QByteArray();
 }
@@ -482,16 +480,22 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
         LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
         LADSPA_PortRangeHintDescriptor rh = range.HintDescriptor;
         float m = (rh & LADSPA_HINT_SAMPLE_RATE) ? float(MusEGlobal::sampleRate) : 1.0f;
+        
         if (LADSPA_IS_HINT_DEFAULT_MINIMUM(rh)) 
         {
-          *val = range.LowerBound * m;
-          return true;
+              *val = range.LowerBound * m;
+              return true;
+        }
+        else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh)) 
+        {
+              *val = range.UpperBound*m;
+              return true;
         }
         else if (LADSPA_IS_HINT_DEFAULT_LOW(rh)) 
         {
               if (LADSPA_IS_HINT_LOGARITHMIC(rh))
               {
-                *val = expf(fast_log10(range.LowerBound * m) * .75 +  // Why fast_log10?
+                *val = expf(logf(range.LowerBound * m) * .75 +  
                       logf(range.UpperBound * m) * .25);
                 return true;
               }         
@@ -506,7 +510,7 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
               if (LADSPA_IS_HINT_LOGARITHMIC(rh))
               {
                 *val = expf(logf(range.LowerBound * m) * .5 +
-                      log10f(range.UpperBound * m) * .5);     // Why log10?
+                      logf(range.UpperBound * m) * .5);     
                 return true;
               }         
               else
@@ -529,11 +533,6 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
                 return true;
               }      
         }
-        else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh)) 
-        {
-              *val = range.UpperBound*m;
-              return true;
-        }
         else if (LADSPA_IS_HINT_DEFAULT_0(rh))
         {
               *val = 0.0;
@@ -554,10 +553,42 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
               *val = 440.0;
               return true;
         } 
+        
+        // No default found. Make one up...
+        else if (LADSPA_IS_HINT_BOUNDED_BELOW(rh) && LADSPA_IS_HINT_BOUNDED_ABOVE(rh))
+        {
+          if (LADSPA_IS_HINT_LOGARITHMIC(rh))
+          {
+            *val = expf(logf(range.LowerBound * m) * .5 +
+                  logf(range.UpperBound * m) * .5);
+            return true;
+          }         
+          else
+          {
+            *val = range.LowerBound*.5*m + range.UpperBound*.5*m;
+            return true;
+          }      
+        }
+        else if (LADSPA_IS_HINT_BOUNDED_BELOW(rh))
+        {
+            *val = range.LowerBound;
+            return true;
+        }
+        else if (LADSPA_IS_HINT_BOUNDED_ABOVE(rh))
+        {
+            // Hm. What to do here... Just try 0.0 or the upper bound if less than zero.
+            //if(range.UpperBound > 0.0)
+            //  *val = 0.0;
+            //else
+            //  *val = range.UpperBound * m;
+            // Instead try this: Adopt an 'attenuator-like' policy, where upper is the default.
+            *val = range.UpperBound * m;
+            return true;
+        }
       }
       
-      // No default found. Set return value to 1.0, but return false.
-      *val = 1.0;
+      // No default found. Set return value to 0.0, but return false.
+      *val = 0.0;
       return false;
 }
 
@@ -626,9 +657,10 @@ void PluginBase::range(unsigned long i, float* min, float* max) const
 //   Plugin
 //---------------------------------------------------------
 
-Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi)
+Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDssiSynth)
 {
   _isDssi = isDssi;
+  _isDssiSynth = isDssiSynth;
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
   #endif
@@ -768,13 +800,7 @@ int Plugin::incReferences(int val)
           break;
         
         QString label(descr->LADSPA_Plugin->Label);
-        // Listing effect plugins only while excluding synths:
-        // Do exactly what dssi-vst.cpp does for listing ladspa plugins.
-        if(label == _label &&
-          !descr->run_synth &&
-          !descr->run_synth_adding &&
-          !descr->run_multiple_synths &&
-          !descr->run_multiple_synths_adding) 
+        if(label == _label) 
         {  
           _isDssi = true;
           ladspa = NULL;
@@ -993,26 +1019,24 @@ static void loadPluginLib(QFileInfo* fi)
       if (descr == 0)
             break;
       
-      // Listing effect plugins only while excluding synths:
-      // Do exactly what dssi-vst.cpp does for listing ladspa plugins.
-      if(!descr->run_synth &&
-        !descr->run_synth_adding &&
-        !descr->run_multiple_synths &&
-        !descr->run_multiple_synths_adding) 
-      {
-        // Make sure it doesn't already exist.
-        if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
-          continue;
+      // Make sure it doesn't already exist.
+      if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
+        continue;
 
-        #ifdef PLUGIN_DEBUGIN 
-        fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
-        #endif
-      
-        if(MusEGlobal::debugMsg)
-          fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label);
-      
-        MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true);
-      }
+      #ifdef PLUGIN_DEBUGIN 
+      fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
+      #endif
+    
+      bool is_synth = descr->run_synth || descr->run_synth_adding 
+                  || descr->run_multiple_synths || descr->run_multiple_synths_adding; 
+      if(MusEGlobal::debugMsg)
+        fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d\n", 
+                fi->filePath().toLatin1().constData(), 
+                descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label,
+                is_synth
+                );
+    
+      MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true, is_synth);
     }      
   }
   else
@@ -1598,6 +1622,10 @@ PluginI::PluginI()
 
 PluginI::~PluginI()
       {
+      #ifdef OSC_SUPPORT
+      _oscif.oscSetPluginI(NULL);      
+      #endif
+
       if (_plugin) {
             deactivate();
             _plugin->incReferences(-1);
@@ -1726,11 +1754,6 @@ void PluginI::setParam(unsigned long i, float val)
   {
     fprintf(stderr, "PluginI::setParameter: fifo overflow: in control number:%lu\n", i);
   }
-  
-  // Notify that changes are to be sent upon heartbeat. DELETETHIS 4
-  // TODO: No, at least not for now. So far, setParameter is only called during loading of stored params,
-  //  and we don't want this interfering with oscUpdate which also sends the values.
-  //synti->_guiUpdateControls[n] = true;
 }     
 
 //---------------------------------------------------------
@@ -2093,7 +2116,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                         else if (tag == "gui") {
                               bool flag = xml.parseInt();
                               if (_plugin)
-			        showGui(flag);
+                                  showGui(flag);
                               }
                         else if (tag == "nativegui") {
                               // We can't tell OSC to show the native plugin gui 
@@ -2305,129 +2328,19 @@ QString PluginI::titlePrefix() const
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-//DELETETHIS 90
-
-/*
-//void PluginI::apply(int n)
-void PluginI::apply(unsigned long n)
-{
-      // Process control value changes.
-      //if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
-      //{
-      //  for(int i = 0; i < controlPorts; ++i)
-      //  {
-      //    if( controls[i].enCtrl && controls[i].en2Ctrl )
-      //      controls[i].tmpVal = _track->pluginCtrlVal(genACnum(_id, i));
-      //  }  
-      //}      
-      
-      unsigned long ctls = controlPorts;
-      for(unsigned long k = 0; k < ctls; ++k)
-      {
-        // First, update the temporary value if needed...
-        
-        #ifdef OSC_SUPPORT
-        // Process OSC gui input control fifo events.
-        // It is probably more important that these are processed so that they take precedence over all other
-        //  events because OSC + DSSI/DSSI-VST are fussy about receiving feedback via these control ports, from GUI changes.
-        
-        OscControlFifo* cfifo = _oscif.oscFifo(k);
-        //if(!cfifo)
-        //  continue;
-          
-        // If there are 'events' in the fifo, get exactly one 'event' per control per process cycle...
-        //if(!cfifo->isEmpty()) 
-        if(cfifo && !cfifo->isEmpty()) 
-        {
-          OscControlValue v = cfifo->get();  
-          
-          #ifdef PLUGIN_DEBUGIN
-          fprintf(stderr, "PluginI::apply OscControlFifo event input control number:%lu value:%f\n", k, v.value);
-          #endif
-          
-          // Set the ladspa control port value.
-          controls[k].tmpVal = v.value;
-          
-          // Need to update the automation value, otherwise it overwrites later with the last automation value.
-          if(_track && _id != -1)
-          {
-            // Since we are now in the audio thread context, there's no need to send a message,
-            //  just modify directly.
-            //MusEGlobal::audio->msgSetPluginCtrlVal(this, genACnum(_id, k), controls[k].val);
-            // p3.3.43
-            //MusEGlobal::audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
-            _track->setPluginCtrlVal(genACnum(_id, k), v.value);
-            
-            // Record automation.
-            // NO! Take care of this immediately in the OSC control handler, because we don't want 
-            //  the silly delay associated with processing the fifo one-at-a-time here.
-            
-            //AutomationType at = _track->automationType();
-            // TODO: Taken from our native gui control handlers. 
-            // This may need modification or may cause problems - 
-            //  we don't have the luxury of access to the dssi gui controls !
-            //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-            //  enableController(k, false);
-            //_track->recordAutomation(id, v.value);
-          }  
-        }
-        else
-        #endif // OSC_SUPPORT
-        {
-          // Process automation control value.
-          if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
-          {
-            if(controls[k].enCtrl && controls[k].en2Ctrl )
-              controls[k].tmpVal = _track->pluginCtrlVal(genACnum(_id, k));
-          }      
-        }
-        
-        // Now update the actual value from the temporary value...
-        controls[k].val = controls[k].tmpVal;
-      }  
-      
-      //for (int i = 0; i < controlPorts; ++i)
-      //      controls[i].val = controls[i].tmpVal;
-      
-      for (int i = 0; i < instances; ++i)
-      {
-            // p3.3.41
-            //fprintf(stderr, "PluginI::apply handle %d\n", i);
-            _plugin->apply(handle[i], n);
-      }      
-      }
-*/
 
 void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float** bufOut)
 {
-      // Process control value changes. DELETETHIS 10
-      //if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
-      //{
-      //  for(int i = 0; i < controlPorts; ++i)
-      //  {
-      //    if( controls[i].enCtrl && controls[i].en2Ctrl )
-      //      controls[i].tmpVal = _track->pluginCtrlVal(genACnum(_id, i));
-      //  }  
-      //}      
-      
-      // Grab the control ring buffer size now.
-      //const int cbsz = _controlFifo.getSize();  DELETETHIS 4
-      
-      //unsigned endPos = pos + n;
-      //unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
       unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();  
-      
       unsigned long sample = 0;
-      int loopcount = 0;      // REMOVE Tim.
       
       // Must make this detectable for dssi vst effects.
-      //const bool usefixedrate = true;      
-      const bool usefixedrate = _plugin->_isDssiVst;  // Try this.
+      const bool usefixedrate = _plugin->_isDssiVst;  // Try this. (was: = true; )
+
       // TODO Make this number a global setting.
       // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters), 
       //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
-      //unsigned fixedsize = 2048;   
-      unsigned long fixedsize = n;     
+      unsigned long fixedsize = n;  // was: 2048
       
       // For now, the fixed size is clamped to the audio buffer size.
       // TODO: We could later add slower processing over several cycles -
@@ -2446,111 +2359,79 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
         for(unsigned long k = 0; k < controlPorts; ++k)
         {
           if(controls[k].enCtrl && controls[k].en2Ctrl )
-            controls[k].tmpVal = _track->pluginCtrlVal(genACnum(_id, k));
+            controls[k].tmpVal = _track->controller()->value(genACnum(_id, k), MusEGlobal::audio->pos().frame());
         }      
       }
         
       while(sample < n)
       {
-        //unsigned long nsamp = n; DELETETHIS 2
-        //unsigned long nsamp = n - sample;
+        // nsamp is the number of samples the plugin->process() call will be supposed to do
         unsigned long nsamp = usefixedrate ? fixedsize : n - sample;
+
         bool found = false;
         unsigned long frame = 0; 
         unsigned long index = 0;
         unsigned long evframe; 
+
         // Get all control ring buffer items valid for this time period...
-        //for(int m = 0; m < cbsz; ++m)    // Doesn't like this. Why? DELETETHIS
         while(!_controlFifo.isEmpty())
         {
-          //ControlValue v = _controlFifo.get();  DELETETHIS
           ControlEvent v = _controlFifo.peek(); 
           // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio. 
           // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
-          //evframe = (pos + frameOffset > v.frame + n) ? 0 : v.frame - pos - frameOffset + n;  DELETETHIS
           evframe = (syncFrame > v.frame + n) ? 0 : v.frame - syncFrame + n; 
           // Process only items in this time period. Make sure to process all
           //  subsequent items which have the same frame. 
-          //printf("PluginI::apply control idx:%lu frame:%lu val:%f  unique:%d evframe:%lu\n",  DELETETHIS
-          //  v.idx, v.frame, v.value, v.unique, evframe);   // REMOVE Tim.
+
           // Protection. Observed this condition. Why? Supposed to be linear timestamps.
           if(found && evframe < frame)
           {
             printf("PluginI::apply *** Error: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d\n", 
               evframe, v.frame, v.idx, v.value, v.unique); 
-            // Just make it equal to the current frame so it gets processed right away.
-            evframe = frame;  
-          }    
-          //if(v.frame >= (endPos + frameOffset) || (found && v.frame != frame))   DELETETHIS 5
-          //if(v.frame < sample || v.frame >= (sample + nsamp) || (found && v.frame != frame))  
-          //if(v.frame < sample || v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
-          //if(v.frame < sample || v.frame >= (endPos + frameOffset)  
-          //if(v.frame < sample || v.frame >= frameOffset  
+
+            // No choice but to ignore it.
+            _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+            continue;
+          } 
+          
+          // process control events up to the end of our processing cycle.
+          // but stop after a control event was found (then process(),
+          // then loop here again), but ensure that process() must process
+          // at least min_per frames.
           if(evframe >= n
-              //|| (found && v.frame != frame)   DELETETHIS 3
-              //|| (!usefixedrate && found && !v.unique && v.frame != frame)  
-              //|| (found && !v.unique && evframe != frame)  
-              // Not enough requested samples to satisfy minimum setting? Keep going.
-              || (found && !v.unique && (evframe - sample >= min_per))  
-              // Protection. Observed this condition (dummy audio so far). Why? Supposed to be linear timestamps.
-              //|| (found && evframe < frame)     DELETETHIS
-              // dssi-vst needs them serialized and accounted for, no matter what. This works with fixed rate 
-              //  because nsamp is constant. But with packets, we need to guarantee at least one-frame spacing. 
-              // Although we likely won't be using packets with dssi-vst, so it's OK for now.
-              //|| (found && v.idx == index))   DELETETHIS
-              //|| (usefixedrate && found && v.idx == index))  // Try this.
-              || (usefixedrate && found && v.unique && v.idx == index))  // 
+              || (found && !v.unique && (evframe - sample >= min_per))
+              || (usefixedrate && found && v.unique && v.idx == index))
             break;
           _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
-          //if(v.idx >= controlPorts)            // Sanity check. DELETETHIS
-          if(v.idx >= _plugin->_controlInPorts) 
+
+          if(v.idx >= _plugin->_controlInPorts) // Sanity check
             break;
+
           found = true;
-          //frame = v.frame; DELETETHIS
           frame = evframe;
           index = v.idx;
-          // Set the ladspa control port value.
-          //controls[v.idx].val = v.value; DELETETHIS
+
           controls[v.idx].tmpVal = v.value;
           
-          // Need to update the automation value, otherwise it overwrites later with the last MusEGlobal::automation value.
+          // Need to update the automation value, otherwise it overwrites later with the last automation value.
           if(_track && _id != -1)
           {
-            // Since we are now in the audio thread context, there's no need to send a message, DELETETHIS 5
-            //  just modify directly.
-            //MusEGlobal::audio->msgSetPluginCtrlVal(this, genACnum(_id, k), controls[k].val);
-            // p3.3.43
-            //MusEGlobal::audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
+            // We're in the audio thread context: no need to send a message, just modify directly.
             _track->setPluginCtrlVal(genACnum(_id, v.idx), v.value);
             
-            // Record automation.
-            // NO! Take care of this immediately in the OSC control handler, because we don't want 
-            //  any delay.
-            // OTOH Since this is the actual place and time where the control ports values
-            //  are set, best to reflect what happens here to automation.
-            // However for dssi-vst it might be best to handle it that way.
-            
-            //AutomationType at = _track->automationType();
-            // TODO: Taken from our native gui control handlers. 
-            // This may need modification or may cause problems - 
-            //  we don't have the luxury of access to the dssi gui controls !
-            //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH)) DELETETHIS 3
-            //  enableController(k, false);
-            //_track->recordAutomation(id, v.value);
+            /* Recording automation is done immediately in the         *
+             * OSC control handler, because we don't want any delay.   *
+             * we might want to handle dssi-vst synthes here, however! */
           }  
         }
 
         // Now update the actual values from the temporary values...
         for(unsigned long k = 0; k < controlPorts; ++k)
-        {
-          // printf("PluginI::apply updating port:%lu val:%f\n", k, controls[k].tmpVal);    DELETETHIS
           controls[k].val = controls[k].tmpVal;
-        }
         
-        //if(found)
         if(found && !usefixedrate)
-          //nsamp = frame - sample + 1; DELETETHIS
           nsamp = frame - sample;
+
         if(sample + nsamp >= n)         // Safety check.
           nsamp = n - sample; 
         
@@ -2568,7 +2449,6 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
         }
         
         sample += nsamp;
-        loopcount++;       // REMOVE Tim. DELETETHIS then
       }
 }
 
@@ -2675,7 +2555,7 @@ int PluginI::oscUpdate()
       // Send current bank and program.
       unsigned long bank, prog;
       synti->currentProg(&prog, &bank, 0);
-      _oscIF.oscSendProgram(prog, bank);
+      _oscIF.oscSendProgram(prog, bank, true); // "true" means "force"
       */
       
       // FIXME: TESTING FLAM: I have to put a delay because flammer hasn't opened yet.
@@ -2688,9 +2568,9 @@ int PluginI::oscUpdate()
       for(unsigned long i = 0; i < controlPorts; ++i) 
       {
         //unsigned long k = synth->pIdx(i); DELETETHIS 2
-        //_oscIF.oscSendControl(k, controls[i]);
+        //_oscIF.oscSendControl(k, controls[i], true /*force*/);
         //printf("PluginI::oscUpdate() sending control:%lu val:%f\n", i, controls[i].val);
-        _oscif.oscSendControl(controls[i].idx, controls[i].val);
+        _oscif.oscSendControl(controls[i].idx, controls[i].val, true /*force*/);
         // Avoid overloading the GUI if there are lots and lots of ports. 
         if((i+1) % 50 == 0)
           usleep(300000);
@@ -2790,8 +2670,9 @@ int PluginI::oscControl(unsigned long port, float value)
     // TODO: Taken from our native gui control handlers. 
     // This may need modification or may cause problems - 
     //  we don't have the luxury of access to the dssi gui controls !
-    if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-      enableController(cport, false);
+    if ((at == AUTO_WRITE) ||
+        (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()))
+      enableController(cport, false); //TODO maybe re-enable the ctrl soon?
       
     _track->recordAutomation(id, value);
   } 
@@ -2858,12 +2739,12 @@ PluginDialog::PluginDialog(QWidget* parent)
       QVBoxLayout* layout = new QVBoxLayout(this);
 
       pList  = new QTreeWidget(this);
-      pList->setColumnCount(11);
+      pList->setColumnCount(12);
       // "Note: In order to avoid performance issues, it is recommended that sorting 
       //   is enabled after inserting the items into the tree. Alternatively, you could 
       //   also insert the items into a list before inserting the items into the tree. "
-      //pList->setSortingEnabled(true); DELETETHIS
       QStringList headerLabels;
+      headerLabels << tr("Type");
       headerLabels << tr("Lib");
       headerLabels << tr("Label");
       headerLabels << tr("Name");
@@ -2878,14 +2759,18 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       pList->setHeaderLabels(headerLabels);
 
+      pList->headerItem()->setToolTip(4,  tr("Audio inputs"));      
+      pList->headerItem()->setToolTip(5,  tr("Audio outputs"));      
+      pList->headerItem()->setToolTip(6,  tr("Control inputs"));      
+      pList->headerItem()->setToolTip(7,  tr("Control outputs"));      
+      pList->headerItem()->setToolTip(8,  tr("In-place capable"));      
+      pList->headerItem()->setToolTip(9,  tr("ID number"));      
+      
+      pList->setRootIsDecorated(false);
       pList->setSelectionBehavior(QAbstractItemView::SelectRows);
       pList->setSelectionMode(QAbstractItemView::SingleSelection);
       pList->setAlternatingRowColors(true);
       pList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-      
-      //fillPlugs(selectedPlugType); DELETETHIS 3
-      //pList->setSortingEnabled(true);
-      //pList->sortByColumn(sortColumn, sortOrder);
       
       layout->addWidget(pList);
 
@@ -2946,8 +2831,8 @@ PluginDialog::PluginDialog(QWidget* parent)
             }
 
       plugSelGroup->setToolTip(tr("Select which types of plugins should be visible in the list.<br>"
-                             "Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.<br>"
-                             "Also beware that the 'all' alternative includes plugins that probably not are usable by MusE."));
+                             "Note that using mono plugins on stereo tracks is not a problem, two will be used in parallel.<br>"
+                             "Also beware that the 'all' alternative includes plugins that may not be useful in an effect rack."));
 
       w5->addSpacing(8);
       w5->addWidget(plugSelGroup);
@@ -2969,7 +2854,6 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       sortBox->setMinimumSize(100, 10);
       srch_lo->addWidget(sortBox);
-      //srch_lo->addStretch(); DELETETHIS 4
       // FIXME: Adding this makes the whole bottom hlayout expand. Would like some space between lineedit and bottom.
       //        Same thing if spacers added to group box or Ok Cancel box.
       //srch_lo->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Maximum));
@@ -2980,13 +2864,13 @@ PluginDialog::PluginDialog(QWidget* parent)
       
       if(listSave.isEmpty())
       {
-        int sizes[] = { 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
-        for (int i = 0; i < 11; ++i) {
+        int sizes[] = { 80, 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
+        for (int i = 0; i < 12; ++i) {
               if (sizes[i] <= 50)     // hack alert!
                     pList->header()->setResizeMode(i, QHeaderView::Fixed);
               pList->header()->resizeSection(i, sizes[i]);
         }
-        pList->sortByColumn(0, Qt::AscendingOrder);
+        pList->sortByColumn(3, Qt::AscendingOrder);
       }
       else
         pList->header()->restoreState(listSave);
@@ -3017,7 +2901,7 @@ MusECore::Plugin* PluginDialog::value()
       {
       QTreeWidgetItem* item = pList->currentItem();
       if (item)
-        return MusEGlobal::plugins.find(item->text(0), item->text(1));
+        return MusEGlobal::plugins.find(item->text(1), item->text(2));
       printf("plugin not found\n");
       return 0;
       }
@@ -3085,6 +2969,7 @@ void PluginDialog::fillPlugs(QAbstractButton* ab)
 
 void PluginDialog::fillPlugs()
 {
+    QString type_name;
     pList->clear();
     for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i) {
           unsigned long ai = i->inports();       // p4.0.21
@@ -3119,17 +3004,24 @@ void PluginDialog::fillPlugs()
                 }
           if (found && addFlag) {
                 QTreeWidgetItem* item = new QTreeWidgetItem;
-                item->setText(0,  i->lib());
-                item->setText(1,  i->label());
-                item->setText(2,  i->name());
-                item->setText(3,  QString().setNum(ai));
-                item->setText(4,  QString().setNum(ao));
-                item->setText(5,  QString().setNum(ci));
-                item->setText(6,  QString().setNum(co));
-                item->setText(7,  QString().setNum(i->inPlaceCapable()));
-                item->setText(8,  QString().setNum(i->id()));
-                item->setText(9,  i->maker());
-                item->setText(10, i->copyright());
+                if(i->isDssiSynth())
+                  type_name = tr("dssi synth");
+                else if(i->isDssiPlugin())
+                  type_name = tr("dssi effect");
+                else
+                  type_name = tr("ladspa");
+                item->setText(0,  type_name);
+                item->setText(1,  i->lib());
+                item->setText(2,  i->label());
+                item->setText(3,  i->name());
+                item->setText(4,  QString().setNum(ai));
+                item->setText(5,  QString().setNum(ao));
+                item->setText(6,  QString().setNum(ci));
+                item->setText(7,  QString().setNum(co));
+                item->setText(8,  QString().setNum(i->inPlaceCapable()));
+                item->setText(9,  QString().setNum(i->id()));
+                item->setText(10,  i->maker());
+                item->setText(11, i->copyright());
                 pList->addTopLevelItem(item);
                 }
           }
@@ -3252,7 +3144,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         continue;
                   unsigned long parameter;                         // p4.0.21
                   int rv = sscanf(name, "P%lu", &parameter);
-                  if(rv != 1)
+                if(rv != 1)
                     continue;
 
                   mapper->setMapping(obj, nobj);
@@ -3427,10 +3319,10 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       paramsOut[i].label->setPrecision(2);
                       paramsOut[i].label->setId(i);
 
-		      Meter::MeterType mType=Meter::LinMeter;
+                      Meter::MeterType mType=Meter::LinMeter;
                       if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
                         mType=Meter::DBMeter;
-		      VerticalMeter* m = new VerticalMeter(this, mType);
+                      VerticalMeter* m = new VerticalMeter(this, mType);
 
                       m->setRange(dlower, dupper);
                       m->setVal(dval);
@@ -3497,7 +3389,10 @@ void PluginGui::getPluginConvertedValues(LADSPA_PortRangeHint range,
 
 void PluginGui::heartBeat()
 {
-  updateControls();
+  updateControls(); // FINDMICHJETZT TODO: this is not good. we have concurrent
+                    // access from the audio thread (possibly writing control values)
+                    // while reading them from some GUI thread. this will lead
+                    // to problems if writing floats is non-atomic
 }
 
 //---------------------------------------------------------
@@ -3511,7 +3406,7 @@ void PluginGui::ctrlPressed(int param)
       if(track)
         at = track->automationType();
             
-      if(at != AUTO_OFF)
+      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
         plugin->enableController(param, false);
       
       int id = plugin->id();
@@ -3537,8 +3432,8 @@ void PluginGui::ctrlPressed(int param)
           MusEGlobal::song->controllerChange(track);
           
           track->startAutoRecord(id, val);
-        }  
-      }       
+        }
+      }
       else if(params[param].type == GuiParam::GUI_SWITCH)
       {
         float val = (float)((CheckBox*)params[param].actuator)->isChecked();      // p4.0.21
@@ -3550,8 +3445,8 @@ void PluginGui::ctrlPressed(int param)
           MusEGlobal::song->controllerChange(track);
           
           track->startAutoRecord(id, val);
-        }  
-      }       
+        }
+      }
 }
 
 //---------------------------------------------------------
@@ -3566,9 +3461,10 @@ void PluginGui::ctrlReleased(int param)
         at = track->automationType();
         
       // Special for switch - don't enable controller until transport stopped.
-      if(at != AUTO_WRITE && ((params[param].type != GuiParam::GUI_SWITCH
-          || !MusEGlobal::audio->isPlaying()
-          || at != AUTO_TOUCH) || (!MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH)) )
+      if ((at == AUTO_OFF) ||
+          (at == AUTO_READ) ||
+          (at == AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
+                                !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
       
       int id = plugin->id();
@@ -3584,7 +3480,7 @@ void PluginGui::ctrlReleased(int param)
         else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
               val = rint(val);
         track->stopAutoRecord(id, val);
-      }       
+      }
 }
 
 //---------------------------------------------------------
@@ -3609,13 +3505,11 @@ void PluginGui::sliderChanged(double val, int param)
       if(track)
         at = track->automationType();
       
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        plugin->enableController(param, false);
-      
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
             val = pow(10.0, val/20.0);
       else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
             val = rint(val);
+      
       if (plugin->param(param) != val) {
             plugin->setParam(param, val);
             ((DoubleLabel*)params[param].label)->setValue(val);
@@ -3645,9 +3539,6 @@ void PluginGui::labelChanged(double val, int param)
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
-      
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        plugin->enableController(param, false);
       
       double dval = val;
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
@@ -3990,9 +3881,6 @@ void PluginGui::guiParamChanged(int idx)
       if(track)
         at = track->automationType();
       
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        plugin->enableController(param, false);
-      
       double val = 0.0;
       switch(type) {
             case GuiWidgets::SLIDER:
@@ -4065,7 +3953,7 @@ void PluginGui::guiParamPressed(int idx)
       if(track)
         at = track->automationType();
       
-      if(at != AUTO_OFF)
+      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
         plugin->enableController(param, false);
       
       int id = plugin->id();
@@ -4107,9 +3995,10 @@ void PluginGui::guiParamReleased(int idx)
         at = track->automationType();
       
       // Special for switch - don't enable controller until transport stopped.
-      if(at != AUTO_WRITE && (type != GuiWidgets::QCHECKBOX
-          || !MusEGlobal::audio->isPlaying()
-          || at != AUTO_TOUCH))
+      if ((at == AUTO_OFF) ||
+          (at == AUTO_READ) ||
+          (at == AUTO_TOUCH && (type != GuiWidgets::QCHECKBOX ||
+                                !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
       
       int id = plugin->id();
@@ -4153,7 +4042,7 @@ void PluginGui::guiSliderPressed(int idx)
       
       int id = plugin->id();
       
-      if(at == AUTO_WRITE || (at == AUTO_READ || at == AUTO_TOUCH))
+      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
         plugin->enableController(param, false);
       
       if(!track || id == -1)
@@ -4206,7 +4095,12 @@ void PluginGui::guiSliderReleased(int idx)
       if(track)
         at = track->automationType();
       
-      if(at != AUTO_WRITE || (!MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      /* equivalent to
+      if ((at == AUTO_OFF) ||
+          (at == AUTO_READ) ||
+          (at == AUTO_TOUCH && (type != GuiWidgets::QCHECKBOX ||    <--- this type is SLIDER != CHECKBOX -> true
+                                !MusEGlobal::audio->isPlaying()) ) ) <--- above==true -> this doesn't matter */
+      if (at == AUTO_OFF || at == AUTO_READ || at == AUTO_TOUCH)
         plugin->enableController(param, true);
       
       int id = plugin->id();

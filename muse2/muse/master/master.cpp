@@ -21,7 +21,7 @@
 //=========================================================
 
 #include <stdio.h>
-#include <values.h>
+#include <limits.h>
 
 #include <QCursor>
 #include <QEvent>
@@ -138,7 +138,7 @@ void Master::setPos(int idx, unsigned val, bool adjustScrollbar)
 void Master::leaveEvent(QEvent*)
       {
       emit tempoChanged(-1);
-      emit timeChanged(MAXINT);
+      emit timeChanged(INT_MAX);
       }
 
 //---------------------------------------------------------

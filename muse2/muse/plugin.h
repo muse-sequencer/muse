@@ -92,6 +92,7 @@ class Plugin {
       QString _maker;
       QString _copyright;
       
+      bool _isDssiSynth;
       bool _isDssi;
       // Hack: Special flag required.
       bool _isDssiVst;
@@ -110,7 +111,7 @@ class Plugin {
       bool _inPlaceCapable;
    
    public:
-      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi = false);
+      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false);
       ~Plugin();
       
       QString label() const                        { return _label; }
@@ -127,6 +128,7 @@ class Plugin {
       int instNo()                                 { return _instNo++;        }
 
       bool isDssiPlugin() const { return _isDssi; }  
+      bool isDssiSynth() const  { return _isDssiSynth; }  
       
       LADSPA_Handle instantiate(); 
       void activate(LADSPA_Handle handle) {
@@ -180,6 +182,8 @@ class Plugin {
       unsigned long controlInPorts() const  { return _controlInPorts; }
       unsigned long controlOutPorts() const { return _controlOutPorts; }
       bool inPlaceCapable() const           { return _inPlaceCapable; }
+      
+      const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
       };
 
 typedef std::list<Plugin>::iterator iPlugin;
@@ -190,9 +194,9 @@ typedef std::list<Plugin>::iterator iPlugin;
 
 class PluginList : public std::list<Plugin> {
    public:
-      void add(QFileInfo* fi, const LADSPA_Descriptor* d, bool isDssi = false) 
+      void add(QFileInfo* fi, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false) 
       {
-        push_back(Plugin(fi, d, isDssi));
+        push_back(Plugin(fi, d, isDssi, isDssiSynth));
       }
       
       Plugin* find(const QString&, const QString&);
@@ -265,38 +269,6 @@ class PluginIBase
       MusEGui::PluginGui* gui() const { return _gui; }
       void deleteGui();
 };
-
-/* DELETETHIS 30
-class PluginBase 
-{
-   public:
-      bool on() const        { return _on; }
-      void setOn(bool val)   { _on = val; }
-      int pluginID()                { return plugin()->id(); }
-      int id()                      { return _id; }
-      QString pluginLabel() const    { return _plugin->label(); }
-      QString name() const           { return _name; }
-      
-      AudioTrack* track()           { return _track; }
-      
-      void enableController(int i, bool v = true)   { controls[i].enCtrl = v; }
-      bool controllerEnabled(int i) const           { return controls[i].enCtrl; }
-      bool controllerEnabled2(int i) const          { return controls[i].en2Ctrl; }
-      void updateControllers();
-      
-      void writeConfiguration(int level, Xml& xml);
-      bool readConfiguration(Xml& xml, bool readPreset=false);
-      
-      int parameters() const           { return controlPorts; }
-      void setParam(int i, double val) { controls[i].tmpVal = val; }
-      double param(int i) const        { return controls[i].val; }
-      const char* paramName(int i)     { return _plugin->portName(controls[i].idx); }
-      LADSPA_PortRangeHint range(int i) 
-      {
-            return _plugin->range(controls[i].idx);
-      }
-};
-*/
 
 //---------------------------------------------------------
 //   PluginI

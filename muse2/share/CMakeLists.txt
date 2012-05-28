@@ -36,6 +36,8 @@ subdirs(
       locale
       )
 
+install (FILES didyouknow.txt DESTINATION ${MusE_SHARE_DIR} )
+
 # We don't have a splash image for MusE2 yet. When we do, the
 # following line can be uncommented:
-#install (FILES splash.png DESTINATION ${MusE_SHARE_DIR} )
+install (FILES splash.png DESTINATION ${MusE_SHARE_DIR} )

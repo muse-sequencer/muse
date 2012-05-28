@@ -35,7 +35,7 @@
 #include <QPair>
 
 #include <stdio.h>
-#include <values.h>
+#include <limits.h>
 #include <errno.h>
 
 #include "dcanvas.h"

@@ -89,13 +89,6 @@ void retranslate_function_dialogs()
 
 void read_function_dialog_config(MusECore::Xml& xml)
 {
-	if (erase_dialog==NULL)
-	{
-		cout << "ERROR: THIS SHOULD NEVER HAPPEN: read_function_dialog_config() called, but\n"
-		        "                                 dialogs are still uninitalized (NULL)!"<<endl;
-		return;
-	}
-		
 	for (;;)
 	{
 		MusECore::Xml::Token token = xml.parse();

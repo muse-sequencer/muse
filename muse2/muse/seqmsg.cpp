@@ -244,21 +244,12 @@ void Audio::msgAddRoute(Route src, Route dst)
             if (!MusEGlobal::checkAudioDevice()) return;
             if (isRunning())
             {
-                //if(dst.type == Route::JACK_MIDI_ROUTE)   DELETETHIS
                 if(dst.type == Route::MIDI_DEVICE_ROUTE)  
                 {
-                  //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(dst.device); DELETETHIS
-                  //if(jmd)
                   if(dst.device)
                   {
                     if(dst.device->deviceType() == MidiDevice::JACK_MIDI)  
-                      MusEGlobal::audioDevice->connect(src.jackPort, dst.device->inClientPort());    // p3.3.55
-                    //else
-                    //{
-                      // TODO... or DELETETHIS
-                      //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(dst.device);
-                      //if(amd)
-                    //}
+                      MusEGlobal::audioDevice->connect(src.jackPort, dst.device->inClientPort());    
                   }  
                 }
                 else  
@@ -270,22 +261,12 @@ void Audio::msgAddRoute(Route src, Route dst)
             if (!MusEGlobal::checkAudioDevice()) return;
             if (MusEGlobal::audio->isRunning())
             {
-                //if(src.type == Route::JACK_MIDI_ROUTE)   DELETETHIS
                 if(src.type == Route::MIDI_DEVICE_ROUTE)  
                 {
-                  //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(src.device); DELETETHIS
-                  //if(jmd)
                   if(src.device)
                   {
                     if(src.device->deviceType() == MidiDevice::JACK_MIDI)  
-                      //MusEGlobal::audioDevice->connect(src.device->clientPort(), dst.jackPort); DELETETHIS
-                      MusEGlobal::audioDevice->connect(src.device->outClientPort(), dst.jackPort);      // p3.3.55
-                    //else
-                    //{
-                      // TODO... or DELETETHIS
-                      //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(src.device);
-                      //if(amd)
-                    //}
+                      MusEGlobal::audioDevice->connect(src.device->outClientPort(), dst.jackPort);      
                   }  
                 }
                 else  
@@ -1261,6 +1242,19 @@ void Audio::msgSetTrackOutPort(MidiTrack* track, int port)
       sendMessage(&msg, false);
 }
 
+//---------------------------------------------------------
+//   msgSetTrackAutomationType
+//---------------------------------------------------------
+
+void Audio::msgSetTrackAutomationType(Track* track, int type)
+{
+      AudioMsg msg;
+      msg.id = SEQM_SET_TRACK_AUTO_TYPE;
+      msg.track = track;
+      msg.ival = type;
+      sendMessage(&msg, false);
+}
+      
 //---------------------------------------------------------
 //   msgRemapPortDrumCtlEvents
 //---------------------------------------------------------

@@ -595,11 +595,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(toolbar, SIGNAL(soloChanged(bool)),          SLOT(soloChanged(bool)));
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
       connect(info, SIGNAL(deltaModeChanged(bool)), SLOT(deltaModeChanged(bool)));
-      if(MusEGlobal::config.smartFocus)
-      {
-        connect(info, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-        connect(info, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-      }
+      connect(info, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+      connect(info, SIGNAL(escapePressed()), SLOT(focusCanvas()));
       
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
 
@@ -616,10 +613,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       //canvas->selectFirst();
         
       unsigned pos=0;
-      if(initPos >= MAXINT)
+      if(initPos >= INT_MAX)
         pos = MusEGlobal::song->cpos();
-      if(pos > MAXINT)
-        pos = MAXINT;
+      if(pos > INT_MAX)
+        pos = INT_MAX;
       if (pos)
         hscroll->setOffset((int)pos);
 
@@ -628,7 +625,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       
       initTopwinState();
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
       }
 
 //---------------------------------------------------------
@@ -793,8 +790,11 @@ void DrumEdit::setSelection(int tick, MusECore::Event& e, MusECore::Part*, bool 
 
 void DrumEdit::focusCanvas()
 {
-  canvas->setFocus();
-  canvas->activateWindow();
+  if(MusEGlobal::config.smartFocus)
+  {
+    canvas->setFocus();
+    canvas->activateWindow();
+  }
 }
 
 //---------------------------------------------------------
@@ -840,8 +840,7 @@ void DrumEdit::setRaster(int val)
       _rasterInit = val;
       MidiEditor::setRaster(val);
       canvas->redrawGrid();
-      if(MusEGlobal::config.smartFocus)
-        focusCanvas();     // give back focus after kb input
+      focusCanvas();     // give back focus after kb input
       }
 
 //---------------------------------------------------------
@@ -1552,8 +1551,7 @@ void DrumEdit::execUserScript(int id)
 void DrumEdit::setStep(QString v)
 {
   ((DrumCanvas*)canvas)->setStep(v.toInt());
-  if(MusEGlobal::config.smartFocus)
-    focusCanvas();
+  focusCanvas();
 }
 
 void DrumEdit::ourDrumMapChanged(bool instrMapChanged)

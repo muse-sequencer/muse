@@ -38,7 +38,7 @@
 namespace MusEGui {
 
 extern int mtcType;
-enum { COL_NAME=0, COL_REFS, COL_POS, COL_LEN };
+enum { COL_NAME=0, COL_REFS, COL_SAMPLERATE, COL_LEN };
 
 //---------------------------------------------------------
 //   ClipItem
@@ -57,10 +57,10 @@ class ClipItem : public QTreeWidgetItem {
 ClipItem::ClipItem(QTreeWidget* parent, const MusECore::SndFileR& w)
    : QTreeWidgetItem(parent), _wf(w)
       {
-        setText(COL_NAME, _wf.name());
-        setText(COL_REFS, QString().setNum(_wf.getRefCount()));
-        setText(COL_POS, QString().setNum(_wf.samplerate()));
-        setText(COL_LEN, QString().setNum(_wf.samples()));
+        setText(COL_NAME,       _wf.name());
+        setText(COL_REFS,       QString().setNum(_wf.getRefCount()));
+        setText(COL_SAMPLERATE, QString().setNum(_wf.samplerate()));
+        setText(COL_LEN,        QString().setNum(_wf.samples()));
       }
 
 //---------------------------------------------------------
@@ -140,9 +140,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       QFontMetrics fm(editor->view->font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0
       int w  = 2 + fm.width('9') * 9 + fm.width(':') * 3 + fw * 4;
-      //editor->view->setColumnAlignment(COL_POS, Qt::AlignRight);
-      editor->view->setColumnWidth(COL_POS, w);
-      //editor->view->setColumnAlignment(COL_LEN, Qt::AlignRight);
+      editor->view->setColumnWidth(COL_SAMPLERATE, w);
       editor->view->setColumnWidth(COL_LEN, w);
 
       connect(editor->view, SIGNAL(itemSelectionChanged()), SLOT(clipSelectionChanged()));
@@ -153,7 +151,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       connect(editor->len, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lenChanged(const MusECore::Pos&)));
 
       updateList();
-      MusEGlobal::muse->topwinMenuInited(this);
+      finalizeInit();
       }
 
 ClipListEdit::~ClipListEdit()

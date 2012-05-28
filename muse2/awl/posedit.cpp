@@ -368,9 +368,9 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
 //   fixup
 //---------------------------------------------------------
 
-void PosEdit::fixup(QString& input) const
+void PosEdit::fixup(QString& /*input*/) const
       {
-      printf("fixup <%s>\n", input.toLatin1().constData()); // REMOVE Tim.
+      //printf("fixup <%s>\n", input.toLatin1().constData()); 
       }
 
 //---------------------------------------------------------

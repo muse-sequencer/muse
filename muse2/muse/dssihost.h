@@ -105,6 +105,8 @@ class DssiSynth : public Synth {
       unsigned long outPorts()    const { return _outports; }
       unsigned long inControls()  const { return _controlInPorts; }
       unsigned long outControls() const { return _controlOutPorts; }
+      
+      const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
       };
 
 //---------------------------------------------------------

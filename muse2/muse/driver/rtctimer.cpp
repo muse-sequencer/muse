@@ -1,12 +1,12 @@
-  //=========================================================
-  //  MusE
-  //  Linux Music Editor
-  //  $Id: rtctimer.cpp,v 1.1.2.11 2009/03/09 02:05:18 terminator356 Exp $
-  //
-  //  Most code moved from midiseq.cpp by Werner Schweer.
-  //
-  //  (C) Copyright -2004 Werner Schweer (werner@seh.de)
-  //  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: rtctimer.cpp,v 1.1.2.11 2009/03/09 02:05:18 terminator356 Exp $
+//
+//  Most code moved from midiseq.cpp by Werner Schweer.
+//
+//  (C) Copyright -2004 Werner Schweer (werner@seh.de)
+//  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-  //=========================================================
+//=========================================================
 
 #include <linux/version.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)

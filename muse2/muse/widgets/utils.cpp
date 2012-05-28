@@ -37,6 +37,8 @@
 #include <QPainter>
 #include <QPointF>
 
+#include "audio.h"
+#include "audiodev.h"
 #include "part.h"
 #include "utils.h"
 #include "xml.h"
@@ -49,12 +51,22 @@ namespace MusECore {
 
 double curTime()
       {
-      struct timeval t;
-      gettimeofday(&t, 0);
-      //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
-      return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
+      // No audio device yet? Just get wall clock time.
+      if(!MusEGlobal::audioDevice)  
+      {
+        struct timeval t;
+        gettimeofday(&t, 0);
+        //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
+        return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
+      }
+      
+      // Ask the driver for the system time. 
+      // May depend on selected clock source. 
+      // With Jack, may be based upon wallclock time, the   
+      //  processor cycle counter or the HPET clock etc.
+      return MusEGlobal::audioDevice->systemTime();
+      
       /*
-      // Changed by Tim. p4.0.23
       struct timespec t;
       //clock_gettime(CLOCK_MONOTONIC, &t);
       //clock_gettime(CLOCK_MONOTONIC_RAW, &t);
