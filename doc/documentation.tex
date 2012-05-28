@@ -160,7 +160,7 @@ boxes will send an event, but not write it to the track. In order to
 write it, you will need to click on the corresponding button ("Vol" for
 writing down volume information).
 
-\subsubsection{Old style drum tracks}
+\subsubsection{Drum tracks}
 These are MIDI tracks as well, but with a few differences. They allow
 you to map certain drum sounds with different input notes, and you
 can change the output settings of a certain "drum instrument" without
@@ -170,16 +170,8 @@ However, they have certain limitations: They only can handle 128 sounds
 (even if you have more synthes), they aren't really compatible with
 MIDI tracks (you can interchange parts between them, but if you touched
 the drum list, you'll get unexpected results), you can't set a program
-for the used channel and more.
-
-\subsubsection{New style drum tracks}
-That's why there will be new-style drum tracks in the next development version. % TODO: in trunk, change this
-They are handled exactly like plain MIDI tracks (staying compatible with
-them), and offer all of the functionality, though in a different way.
-They allow you to re-order the drum map efficiently, you can open parts
-from multiple drum tracks in \emph{one} drum editor (MusE will separate
-the sounds from different tracks according to your settings, see the
-"Window Config" menu), and you can set programs as with normal MIDI tracks.
+for the used channel and more. These limitations will be addressed in
+MusE 2.1, which offers a new concept of drum tracks.
 
 \subsubsection{Audio tracks}
 \paragraph{Effect rack}
