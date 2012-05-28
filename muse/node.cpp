@@ -401,10 +401,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   
   // precalculate stereo volume
   double vol[2];
-  //double _volume = volume();
-  //double _pan = pan();
-  double _volume = controller()->value(AC_VOLUME, pos);
-  double _pan    = controller()->value(AC_PAN,    pos);
+  double _volume = controller()->value(AC_VOLUME, pos, 
+                   !MusEGlobal::automation || automationType() == AUTO_OFF || !_volumeEnCtrl || !_volumeEn2Ctrl);
+  double _pan    = controller()->value(AC_PAN, pos,
+                   !MusEGlobal::automation || automationType() == AUTO_OFF || !_panEnCtrl || !_panEn2Ctrl);
   
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
@@ -739,10 +739,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   
   // precalculate stereo volume
   double vol[2];
-  //double _volume = volume();
-  //double _pan = pan();
-  double _volume = controller()->value(AC_VOLUME, pos);
-  double _pan    = controller()->value(AC_PAN,    pos);
+  double _volume = controller()->value(AC_VOLUME, pos, 
+                   !MusEGlobal::automation || automationType() == AUTO_OFF || !_volumeEnCtrl || !_volumeEn2Ctrl);
+  double _pan    = controller()->value(AC_PAN, pos,
+                   !MusEGlobal::automation || automationType() == AUTO_OFF || !_panEnCtrl || !_panEn2Ctrl);
 
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);

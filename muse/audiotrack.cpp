@@ -825,7 +825,7 @@ void AudioTrack::setVolume(double val)
 double AudioTrack::pan() const
       {
       return _controller.value(AC_PAN, MusEGlobal::audio->curFramePos(), 
-                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_volumeEnCtrl || !_volumeEn2Ctrl);
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_panEnCtrl || !_panEn2Ctrl);
       }
 
 //---------------------------------------------------------
