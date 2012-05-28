@@ -471,7 +471,7 @@ MusE will play back the stuff, record it again and re-enable the
 pre-rendered information.
 
 
-\section{Extensions}
+\subsection{Extensions}
 \paragraph{Automatic discovery of physical audio connections}
 The user plugs all (or only some) synthes' audio outs into the available
 audio inputs, then runs automatic discovery. This will send MIDI events
@@ -498,5 +498,53 @@ change some MIDI notes, then begin re-recording shortly before the
 changes, and end re-recording as soon as the recorded stuff doesn't
 differ to much from the stuff coming from the synth. Then properly
 blend the old recording with the updated part.
+
+
+
+\section{Slotted editors}
+Currently, MusE has the pianoroll editor, drum editor, score editor,
+then the controller editor which is inside the pianoroll/drum editor.
+All these editors have a very similar concept: the "time axis" is
+vertical and (almost) linear, they handle parts, and events are
+manipulated similarly.
+
+A unified editor shall be created which allows you to combine different
+kinds of editors in one window, properly aligned against each other.
+These "different kinds of editors" shall be handled as "slots"; one
+unified editor window consists of:
+\begin{itemize}
+\item A menu bar, containing stuff suitable for the complete window,
+      which might include window name, MDI-ness etc.
+\item A toolbar which contains controls suitable for every single slot.
+\item A container with one or more slots; the slots can be scrolled in
+      y-direction if there are multipe slots.
+\item A time-scrollbar with zoom
+\end{itemize}
+
+Each slot contains the following:
+\begin{itemize}
+\item A menu button, button box or control panel for setting up this
+      particular slot. This could contain "note head colors", "show
+      a transposing instrument" etc for score edit slots, "event
+      rectangle color", "grid size" and "snap to grid" for pianoroll/
+      drum editors.
+\item The actual canvas
+\item A y-direction scroll bar, possibly with zoom control (for
+      pianoroll editor)
+\end{itemize}
+
+The main window does not show its scroll bar if there is only one slot,
+because the slot's scrollbar is sufficient then.
+
+Slots can be added, destroyed, moved around, maybe even merged (if the
+slot types allow it); basically, you can compare them with the staves
+in the score editor.
+
+The slots shall align against each other, that is, if a score editor
+slot displays a key change with lots of accidentials, then all other
+slots shall either also display the key change (if they're score slots)
+or display a gap. Events which happen at the same time shall be at the
+same x-coordinate, regardless which slot they are.
+
 
 \end{document}
