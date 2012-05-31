@@ -102,6 +102,7 @@ const char* seqMsgList[] = {
       "AUDIO_ADD_AC_EVENT",
       "AUDIO_CHANGE_AC_EVENT",
       "AUDIO_SET_SOLO", "AUDIO_SET_SEND_METRONOME", 
+      "AUDIO_START_MIDI_LEARN",
       "MS_PROCESS", "MS_STOP", "MS_SET_RTC", "MS_UPDATE_POLL_FD",
       "SEQM_IDLE", "SEQM_SEEK"
       };
@@ -624,6 +625,13 @@ void Audio::processMsg(AudioMsg* msg)
 
             case AUDIO_SET_SEND_METRONOME:
                   msg->snode->setSendMetronome((bool)msg->ival);
+                  break;
+            
+            case AUDIO_START_MIDI_LEARN:
+                  // Reset the values. The engine will fill these from driver events.
+                  MusEGlobal::midiLearnPort = -1;
+                  MusEGlobal::midiLearnChan = -1;
+                  MusEGlobal::midiLearnCtrl = -1;
                   break;
             
             case AUDIO_SET_SEG_SIZE:

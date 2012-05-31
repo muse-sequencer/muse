@@ -94,6 +94,7 @@ enum {
       AUDIO_ADD_AC_EVENT,
       AUDIO_CHANGE_AC_EVENT,
       AUDIO_SET_SOLO, AUDIO_SET_SEND_METRONOME, 
+      AUDIO_START_MIDI_LEARN,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
       SEQM_IDLE, SEQM_SEEK,
       };
@@ -288,6 +289,7 @@ class Audio {
       void msgRemapPortDrumCtlEvents(int, int, int, int);
       void msgChangeAllPortDrumCtrlEvents(bool, bool);
       void msgSetSendMetronome(AudioTrack*, bool);
+      void msgStartMidiLearn();
 
       void msgPlayMidiEvent(const MidiPlayEvent* event);
       void rescanAlsaPorts();

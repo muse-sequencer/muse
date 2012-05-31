@@ -28,11 +28,13 @@
 #include <QLocale>
 #include <QColor>
 
+#include <math.h>
+
 #include "gconfig.h"
 #include "fastlog.h"
-#include "math.h"
 #include "globals.h"
 #include "ctrl.h"
+#include "midictrl.h"
 #include "xml.h"
 
 namespace MusECore {
@@ -48,6 +50,251 @@ void CtrlList::initColor(int i)
   _visible = false;
 }
 
+//---------------------------------------------------------
+//   midi2AudioCtrlValue
+//   Apply mapper if it is non-null
+//---------------------------------------------------------
+
+double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlStruct* /*mapper*/, int midi_ctlnum, int midi_val)
+{
+  double fmin, fmax;
+  audio_ctrl_list->range(&fmin, &fmax);
+  
+  int   imin;
+  double frng;
+  
+  MidiController::ControllerType t = midiControllerType(midi_ctlnum);
+  CtrlValueType aud_t = audio_ctrl_list->valueType();
+  
+  //printf("midi2AudioCtrlValue: midi_ctlnum:%d val:%d\n", midi_ctlnum, midi_val);  // REMOVE Tim.
+  
+  frng = fmax - fmin;
+  imin = lrint(fmin);  
+
+  // TODO: Do stuff with the mapper, if supplied.
+  
+  if(aud_t == VAL_BOOL) 
+  {
+    //printf("midi2AudioCtrlValue: is VAL_BOOL\n");  // REMOVE Tim.
+    
+    if(midi_val > 0)
+      return fmax;
+    else
+      return fmin;
+  }
+  
+  int ctlmn = 0;
+  int ctlmx = 127;
+  
+  //printf("midi2AudioCtrlValue: fmin:%f fmax:%f \n", fmin, fmax); // REMOVE Tim.
+  
+  // FIXME: Negative range is wrong for example with pan.
+  
+  bool isneg = (imin < 0);
+  int bval = midi_val;
+  int cval = midi_val;
+  switch(t) 
+  {
+    case MidiController::RPN:
+    case MidiController::NRPN:
+    case MidiController::Controller7:
+      if(isneg)
+      {
+        ctlmn = -64;
+        ctlmx = 63;
+        bval -= 64;
+        cval -= 64;
+      }
+      else
+      {
+        ctlmn = 0;
+        ctlmx = 127;
+        cval -= 64;
+      }
+    break;
+    case MidiController::Controller14:
+    case MidiController::RPN14:
+    case MidiController::NRPN14:
+      if(isneg)
+      {
+        ctlmn = -8192;
+        ctlmx = 8191;
+        bval -= 8192;
+        cval -= 8192;
+      }
+      else
+      {
+        ctlmn = 0;
+        ctlmx = 16383;
+        cval -= 8192;
+      }
+    break;
+    case MidiController::Program:
+      ctlmn = 0;
+      ctlmx = 0xffffff;
+    break;
+    case MidiController::Pitch:
+      ctlmn = -8192;
+      ctlmx = 8191;
+    break;
+    case MidiController::Velo:        // cannot happen
+    default:
+      break;
+  }
+  int ctlrng = ctlmx - ctlmn;
+  double fctlrng = double(ctlmx - ctlmn);
+  
+  // Is it an integer control?
+  if(aud_t == VAL_INT)
+  {
+    double ret = double(cval);
+    if(ret < fmin)
+      ret = fmin;
+    if(ret > fmax)
+      ret = fmax;
+    //printf("midi2AudioCtrlValue: is VAL_INT returning:%f\n", ret);   // REMOVE Tim.
+    
+    return ret;  
+  }
+  
+  // Avoid divide-by-zero error below.
+  if(ctlrng == 0)
+    return 0.0;
+    
+  // It's a floating point control, just use wide open maximum range.
+  double normval = double(bval) / fctlrng;
+
+  // Is it a log control?
+  if(aud_t == VAL_LOG)
+  {
+    // FIXME: Fix this LOG stuff!
+    double ret = normval * frng + fmin;
+    //double ret = exp(normval * frng + fmin); 
+    //double ret = exp(normval) * frng + fmin; 
+    //printf("midi2AudioCtrlValue: is VAL_LOG normval:%f frng:%f returning:%f\n", normval, frng, ret);          // REMOVE Tim.
+    return ret;
+  }
+
+  double ret = normval * frng + fmin;
+  //printf("midi2AudioCtrlValue: is VAL_LINEAR normval:%f frng:%f returning:%f\n", normval, frng, ret);          // REMOVE Tim.
+  return ret;
+}      
+
+//---------------------------------------------------------
+// Midi to audio controller stuff
+//---------------------------------------------------------
+
+MidiAudioCtrlStruct* MidiAudioCtrlPortMap::add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id)
+{
+  iMidiAudioCtrlPortMap imacp = find(midi_port);
+  if(imacp == end())
+    imacp = insert(std::pair<int, MidiAudioCtrlChanMap >(midi_port, MidiAudioCtrlChanMap() )).first;
+  
+  iMidiAudioCtrlChanMap imacc = imacp->second.find(midi_chan);
+  if(imacc == imacp->second.end())
+    imacc = imacp->second.insert(std::pair<int, MidiAudioCtrlMap >(midi_chan, MidiAudioCtrlMap() )).first;
+  
+  iMidiAudioCtrlMap imac = imacc->second.find(midi_ctrl_num);
+  if(imac == imacc->second.end())
+    imac = imacc->second.insert(std::pair<int, MidiAudioCtrlStructMap >(midi_ctrl_num, MidiAudioCtrlStructMap() )).first;
+
+  iMidiAudioCtrlStructMap imacs = imac->second.find(audio_ctrl_id);
+  if(imacs == imac->second.end())
+    imacs = imac->second.insert(std::pair<int, MidiAudioCtrlStruct >(audio_ctrl_id, MidiAudioCtrlStruct() )).first;
+  
+  return &imacs->second;
+}
+
+MidiAudioCtrlStructMap* MidiAudioCtrlPortMap::find_ctrl_map(int midi_port, int midi_chan, int midi_ctrl_num)
+{
+  iMidiAudioCtrlPortMap imacp = find(midi_port);
+  if(imacp == end())
+    return NULL;
+  
+  iMidiAudioCtrlChanMap imacc = imacp->second.find(midi_chan);
+  if(imacc == imacp->second.end())
+    return NULL;
+  
+  iMidiAudioCtrlMap imac = imacc->second.find(midi_ctrl_num);
+  if(imac == imacc->second.end())
+    return NULL;
+
+  return &imac->second;  
+}
+
+MidiAudioCtrlStruct* MidiAudioCtrlPortMap::find_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id)
+{
+  iMidiAudioCtrlPortMap imacp = find(midi_port);
+  if(imacp == end())
+    return NULL;
+  
+  iMidiAudioCtrlChanMap imacc = imacp->second.find(midi_chan);
+  if(imacc == imacp->second.end())
+    return NULL;
+  
+  iMidiAudioCtrlMap imac = imacc->second.find(midi_ctrl_num);
+  if(imac == imacc->second.end())
+    return NULL;
+
+  iMidiAudioCtrlStructMap imacs = imac->second.find(audio_ctrl_id);
+  if(imacs == imac->second.end())
+    return NULL;
+  
+  return &imacs->second;  
+}
+
+void MidiAudioCtrlPortMap::erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id)
+{
+  iMidiAudioCtrlPortMap imacp = find(midi_port);
+  if(imacp == end())
+    return;
+  
+  iMidiAudioCtrlChanMap imacc = imacp->second.find(midi_chan);
+  if(imacc == imacp->second.end())
+    return;
+  
+  iMidiAudioCtrlMap imac = imacc->second.find(midi_ctrl_num);
+  if(imac == imacc->second.end())
+    return;
+
+  iMidiAudioCtrlStructMap imacs = imac->second.find(audio_ctrl_id);
+  if(imacs == imac->second.end())
+    return;
+
+  imac->second.erase(imacs);  
+  
+  if(imac->second.empty())
+    imacc->second.erase(imac);
+  
+  if(imacc->second.empty())
+    imacp->second.erase(imacc);
+  
+  if(imacp->second.empty())
+    erase(imacp);
+}
+
+void MidiAudioCtrlPortMap::find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs)
+{
+  for(iMidiAudioCtrlPortMap         imacp = begin();               imacp != end();               ++imacp)
+  {
+    for(iMidiAudioCtrlChanMap       imacc = imacp->second.begin(); imacc != imacp->second.end(); ++imacc)
+    {
+      for(iMidiAudioCtrlMap         imac  = imacc->second.begin(); imac != imacc->second.end();  ++imac)
+      {
+        for(iMidiAudioCtrlStructMap imacs = imac->second.begin();  imacs != imac->second.end();  ++imacs)
+        {
+          if(imacs->first == audio_ctrl_id)
+          {
+            //iAudioMidiCtrlStructMap iamcs = 
+              amcs->insert(std::pair<int, AudioMidiCtrlStruct>
+                    (audio_ctrl_id, AudioMidiCtrlStruct(imacp->first, imacc->first, imac->first) ));
+          }
+        }
+      }
+    }
+  }
+  
+}
 
 
 //---------------------------------------------------------

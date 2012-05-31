@@ -119,7 +119,7 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
     
     *min = 0;
     *max = 1;
-    *def = (int)lrint(fdef);
+    *def = (int)lrintf(fdef);
     return hasdef;
   }
   
@@ -156,8 +156,8 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
     fmax = 1.0;
     
   frng = fmax - fmin;
-  imin = lrint(fmin);  
-  imax = lrint(fmax);  
+  imin = lrintf(fmin);  
+  imax = lrintf(fmax);  
 
   int ctlmn = 0;
   int ctlmx = 127;
@@ -230,7 +230,7 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
     *min = imin;
     *max = imax;
     
-    *def = (int)lrint(fdef);
+    *def = (int)lrintf(fdef);
     
     return hasdef;
   }
@@ -244,7 +244,7 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
   
   // FIXME: TODO: Incorrect... Fix this somewhat more trivial stuff later....
   
-  *def = (int)lrint(fdef) + bias;
+  *def = (int)lrintf(fdef) + bias;
  
   #ifdef PLUGIN_DEBUGIN 
   printf("ladspa2MidiControlValues: setting default:%d\n", *def);
@@ -305,7 +305,7 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int 
     fmax = 1.0;
     
   frng = fmax - fmin;
-  imin = lrint(fmin);  
+  imin = lrintf(fmin);  
 
   if(desc & LADSPA_HINT_TOGGLED) 
   {

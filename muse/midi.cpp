@@ -862,26 +862,96 @@ void Audio::processMidi()
       //
       // TODO: syntis should directly write into recordEventList
       //
-      for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) {
-            MidiDevice* md = *id;
+      for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
+      {
+        MidiDevice* md = *id;
 
-            // klumsy hack for synti devices:
-            if(md->isSynti())
+        // klumsy hack for synti devices:
+        if(md->isSynti())
+        {
+          SynthI* s = (SynthI*)md;
+          while (s->eventsPending()) 
+          {
+            MusECore::MidiRecordEvent ev = s->receiveEvent();
+            md->recordEvent(ev);
+          }
+        }
+        
+        md->collectMidiEvents();
+        
+        // Take snapshots of the current sizes of the recording fifos, 
+        //  because they may change while here in process, asynchronously.
+        md->beforeProcess();
+        
+        //
+        // --------- Handle midi events for audio tracks -----------
+        // 
+        
+        int port = md->midiPort(); // Port should be same as event.port() from this device. Same idea event.channel().
+        if(port < 0)
+          continue;
+        
+        for(int chan = 0; chan < MIDI_CHANNELS; ++chan)     
+        {
+          MusECore::MidiRecFifo& rf = md->recordEvents(chan);
+          int count = md->tmpRecordCount(chan);
+          for(int i = 0; i < count; ++i) 
+          {
+            MusECore::MidiPlayEvent event(rf.peek(i));
+
+            int etype = event.type();
+            if(etype == MusECore::ME_CONTROLLER || etype == MusECore::ME_PITCHBEND || etype == MusECore::ME_PROGRAM)
             {
-              SynthI* s = (SynthI*)md;
-              while (s->eventsPending()) 
+              int ctl, val;
+              if(etype == MusECore::ME_CONTROLLER)
               {
-                MusECore::MidiRecordEvent ev = s->receiveEvent();
-                md->recordEvent(ev);
+                ctl = event.dataA();
+                val = event.dataB();
               }
+              else if(etype == MusECore::ME_PITCHBEND)
+              {
+                ctl = MusECore::CTRL_PITCH;
+                val = event.dataA();
+              }
+              else if(etype == MusECore::ME_PROGRAM)
+              {
+                ctl = MusECore::CTRL_PROGRAM;
+                val = event.dataA();
+              }
+              
+              // Midi learn ! 
+              MusEGlobal::midiLearnPort = port;
+              MusEGlobal::midiLearnChan = chan;
+              MusEGlobal::midiLearnCtrl = ctl;
+              
+              // Send to audio tracks...
+              for (MusECore::iTrack t = MusEGlobal::song->tracks()->begin(); t != MusEGlobal::song->tracks()->end(); ++t) 
+              {
+                if((*t)->isMidiTrack())
+                  continue;
+                MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*t);
+
+                MidiAudioCtrlStructMap* macs = track->controller()->midiControls()->find_ctrl_map(port, chan, ctl);
+                if(!macs)
+                  continue;
+              
+                for(iMidiAudioCtrlStructMap imacs = macs->begin(); imacs != macs->end(); ++imacs)
+                {
+                  int audio_ctrl = imacs->first;
+                  MidiAudioCtrlStruct* macs = &imacs->second;
+                  iCtrlList icl = track->controller()->find(audio_ctrl);
+                  if(icl == track->controller()->end())
+                    continue;
+                  CtrlList* cl = icl->second;
+                  double dval = midi2AudioCtrlValue(cl, macs, ctl, val);
+                  cl->setCurVal(dval);
+                  // TODO: Rec automation...
+                }
+              }  
             }
-            
-            md->collectMidiEvents();
-            
-            // Take snapshots of the current sizes of the recording fifos, 
-            //  because they may change while here in process, asynchronously.
-            md->beforeProcess();
-            }
+          }   
+        }
+      }
 
       bool extsync = MusEGlobal::extSyncFlag.value();
       for (MusECore::iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t) 

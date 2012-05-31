@@ -242,6 +242,7 @@ typedef MidiControllerList MidiControllerList;
 extern MidiControllerList defaultMidiController;
 extern void initMidiController();
 extern MidiController::ControllerType midiControllerType(int num);
+extern int midiCtrlTerms2Number(int type_num, int ctrl);
 
 
 extern const QString& int2ctrlType(int n);

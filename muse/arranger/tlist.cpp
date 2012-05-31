@@ -63,6 +63,7 @@
 #include "menutitleitem.h"
 #include "arranger.h"
 #include "undo.h"
+#include "midi_audio_control.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -1400,17 +1401,25 @@ MusECore::TrackList TList::getRecEnabledTracks()
 void TList::changeAutomation(QAction* act)
 {
   //if (editAutomation->type() == MusECore::Track::MIDI) {  // commented out by flo93. DELETETHIS is the below line correct?
-  if ( (editAutomation->type() == MusECore::Track::MIDI) || (editAutomation->type() == MusECore::Track::DRUM) ) {
-    printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
+  //if ( (editAutomation->type() == MusECore::Track::MIDI) || (editAutomation->type() == MusECore::Track::DRUM) ) {
+  //  printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
+  //  return;
+  //}
+  
+  if(!editAutomation || editAutomation->isMidiTrack())
     return;
-  }
+  if(act->data() == -1)
+    return;
   int colindex = act->data().toInt() & 0xff;
   int id = (act->data().toInt() & 0x00ffffff) / 256;
+  // Is it the midi control action item?
+  if (colindex == 255)
+    return;
+  
   if (colindex < 100)
       return; // this was meant for changeAutomationColor
               // one of these days I'll rewrite this so it's understandable
               // this is just to get it up and running...
-
 
   MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
   for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
@@ -1426,13 +1435,87 @@ void TList::changeAutomation(QAction* act)
 //---------------------------------------------------------
 void TList::changeAutomationColor(QAction* act)
 {
-  if (editAutomation->type() == MusECore::Track::MIDI) {
-    printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
+  //if (editAutomation->type() == MusECore::Track::MIDI) {
+  //  printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
+  //  return;
+  //}
+  if(!editAutomation || editAutomation->isMidiTrack())
     return;
-  }
+  if(act->data() == -1)
+    return;
   int colindex = act->data().toInt() & 0xff;
   int id = (act->data().toInt() & 0x00ffffff) / 256;
 
+  // Is it the clear midi control action item?
+  if(colindex == 254)  
+  {
+    MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
+    MusECore::MidiAudioCtrlPortMap* macp = track->controller()->midiControls();
+    MusECore::AudioMidiCtrlStructMap amcs;
+    macp->find_audio_ctrl_structs(id, &amcs);
+    if(!amcs.empty())
+      MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+    for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+    {
+      int port = iamcs->second._midi_port;
+      int chan = iamcs->second._midi_chan;
+      int ctrl = iamcs->second._midi_ctrl;
+      macp->erase_ctrl_struct(port, chan, ctrl, id);
+    }
+    if(!amcs.empty())
+      MusEGlobal::audio->msgIdle(false);
+    return;
+  }
+  
+  // Is it the midi control action item?
+  if(colindex == 255)  
+  {
+    MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
+    MusECore::MidiAudioCtrlPortMap* macp = track->controller()->midiControls();
+    MusECore::AudioMidiCtrlStructMap amcs;
+    macp->find_audio_ctrl_structs(id, &amcs);
+    
+    int port = -1;
+    int chan = 0;
+    int ctrl = 0;
+    for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+    {
+      port = iamcs->second._midi_port;
+      chan = iamcs->second._midi_chan;
+      ctrl = iamcs->second._midi_ctrl;
+      
+      break; // Only a single item for now, thanks!
+    }
+    
+    MidiAudioControl* pup = new MidiAudioControl(port, chan, ctrl);
+    
+    if(pup->exec() == QDialog::Accepted)
+    {
+      MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+      // Erase all for now.
+      for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+      {
+        port = iamcs->second._midi_port;
+        chan = iamcs->second._midi_chan;
+        ctrl = iamcs->second._midi_ctrl;
+        macp->erase_ctrl_struct(port, chan, ctrl, id);
+      }
+      
+      port = pup->port();
+      chan = pup->chan();
+      ctrl = pup->ctrl();
+      
+      if(port >= 0 && chan >=0 && ctrl >= 0)
+        // Add will replace if found.
+        macp->add_ctrl_struct(port, chan, ctrl, id);
+      
+      MusEGlobal::audio->msgIdle(false);
+    }
+    
+    delete pup;
+    return;
+  }
+  
   if (colindex > 100)
       return; // this was meant for changeAutomation
               // one of these days I'll rewrite this so it's understandable
@@ -1464,10 +1547,44 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     act->setCheckable(true);
     if (c == collist[i])
         act->setChecked(true);
-    int data = id * 256; // shift 8 bits
-    data += i; // color in the bottom 8 bits
-    act->setData(data);
+    act->setData(id * 256 + i); // Shift 8 bits. Color in the bottom 8 bits. 
   }
+  
+  m->addSeparator();
+  m->addAction(new MenuTitleItem(tr("Midi control"), m));
+  
+  if(editAutomation && !editAutomation->isMidiTrack()) 
+  {
+    m->addSeparator();
+    QAction *act = m->addAction(tr("Assign"));
+    act->setCheckable(false);
+    act->setData(id * 256 + 255); // Shift 8 bits. Make midi menu the last item at 255.
+    
+    MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
+    MusECore::MidiAudioCtrlPortMap* macp = track->controller()->midiControls();
+    MusECore::AudioMidiCtrlStructMap amcs;
+    macp->find_audio_ctrl_structs(id, &amcs);
+    
+    if(!amcs.empty())
+    {
+      QAction *cact = m->addAction(tr("Clear"));
+      cact->setData(id * 256 + 254); // Shift 8 bits. Make clear the second-last item at 254
+      m->addSeparator();
+    }
+    
+    for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+    {
+      //QString s = QString("Port:%1 Chan:%2 Ctl:%3-%4").arg(iamcs->second._midi_port + 1)
+      QString s = QString("Port:%1 Chan:%2 Ctl:%3").arg(iamcs->second._midi_port + 1)
+                                                      .arg(iamcs->second._midi_chan + 1)
+                                                      //.arg((iamcs->second._midi_ctrl >> 8) & 0xff)
+                                                      //.arg(iamcs->second._midi_ctrl & 0xff);
+                                                      .arg(MusECore::midiCtrlName(iamcs->second._midi_ctrl, true));
+      QAction *mact = m->addAction(s);
+      mact->setData(-1); // Not used
+    }
+  }
+  
   connect(m, SIGNAL(triggered(QAction*)), SLOT(changeAutomationColor(QAction*)));
   return m;
 

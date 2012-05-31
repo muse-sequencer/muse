@@ -275,6 +275,12 @@ unsigned char rcPlayNote = 29;
 unsigned char rcSteprecNote = 36;
 bool automation = true;
 
+// Midi learn params. These will be initialized to -1 by any midi learn function, 
+//  and then filled by the midi engine in response to the drivers.
+int midiLearnPort = -1;
+int midiLearnChan = -1;
+int midiLearnCtrl = -1;
+
 uid_t euid, ruid;  // effective user id, real user id
 
 bool midiSeqRunning = false;

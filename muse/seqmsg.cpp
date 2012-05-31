@@ -1297,6 +1297,18 @@ void Audio::msgSetSendMetronome(AudioTrack* track, bool b)
 }
 
 //---------------------------------------------------------
+//   msgStartMidiLearn
+//    Start learning midi 
+//---------------------------------------------------------
+
+void Audio::msgStartMidiLearn()
+{
+      AudioMsg msg;
+      msg.id    = AUDIO_START_MIDI_LEARN;
+      sendMessage(&msg, false);
+}
+
+//---------------------------------------------------------
 //   msgBounce
 //    start bounce operation
 //---------------------------------------------------------
