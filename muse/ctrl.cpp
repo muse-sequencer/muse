@@ -6,7 +6,7 @@
 //    controller handling for mixer automation
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Time E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011-2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -24,6 +24,8 @@
 //
 //=========================================================
 
+// Turn on debugging messages
+//#define _CTRL_DEBUG_
 
 #include <QLocale>
 #include <QColor>
@@ -59,75 +61,32 @@ double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlS
 {
   double fmin, fmax;
   audio_ctrl_list->range(&fmin, &fmax);
-  
-  int   imin;
-  double frng;
+  double frng = fmax - fmin;             // The audio control range.
   
   MidiController::ControllerType t = midiControllerType(midi_ctlnum);
   CtrlValueType aud_t = audio_ctrl_list->valueType();
   
-  //printf("midi2AudioCtrlValue: midi_ctlnum:%d val:%d\n", midi_ctlnum, midi_val);  // REMOVE Tim.
-  
-  frng = fmax - fmin;
-  imin = lrint(fmin);  
-
-  // TODO: Do stuff with the mapper, if supplied.
-  
-  if(aud_t == VAL_BOOL) 
-  {
-    //printf("midi2AudioCtrlValue: is VAL_BOOL\n");  // REMOVE Tim.
-    
-    if(midi_val > 0)
-      return fmax;
-    else
-      return fmin;
-  }
+  #ifdef _CTRL_DEBUG_
+  printf("midi2AudioCtrlValue: midi_ctlnum:%d val:%d fmin:%f fmax:%f\n", midi_ctlnum, midi_val, fmin, fmax);  
+  #endif  
   
   int ctlmn = 0;
   int ctlmx = 127;
   
-  //printf("midi2AudioCtrlValue: fmin:%f fmax:%f \n", fmin, fmax); // REMOVE Tim.
-  
-  // FIXME: Negative range is wrong for example with pan.
-  
-  bool isneg = (imin < 0);
   int bval = midi_val;
-  int cval = midi_val;
   switch(t) 
   {
     case MidiController::RPN:
     case MidiController::NRPN:
     case MidiController::Controller7:
-      if(isneg)
-      {
-        ctlmn = -64;
-        ctlmx = 63;
-        bval -= 64;
-        cval -= 64;
-      }
-      else
-      {
-        ctlmn = 0;
-        ctlmx = 127;
-        cval -= 64;
-      }
+      ctlmn = 0;
+      ctlmx = 127;
     break;
     case MidiController::Controller14:
     case MidiController::RPN14:
     case MidiController::NRPN14:
-      if(isneg)
-      {
-        ctlmn = -8192;
-        ctlmx = 8191;
-        bval -= 8192;
-        cval -= 8192;
-      }
-      else
-      {
-        ctlmn = 0;
-        ctlmx = 16383;
-        cval -= 8192;
-      }
+      ctlmn = 0;
+      ctlmx = 16383;
     break;
     case MidiController::Program:
       ctlmn = 0;
@@ -136,48 +95,64 @@ double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlS
     case MidiController::Pitch:
       ctlmn = -8192;
       ctlmx = 8191;
+      bval += 8192;
     break;
     case MidiController::Velo:        // cannot happen
     default:
       break;
   }
-  int ctlrng = ctlmx - ctlmn;
-  double fctlrng = double(ctlmx - ctlmn);
-  
-  // Is it an integer control?
-  if(aud_t == VAL_INT)
-  {
-    double ret = double(cval);
-    if(ret < fmin)
-      ret = fmin;
-    if(ret > fmax)
-      ret = fmax;
-    //printf("midi2AudioCtrlValue: is VAL_INT returning:%f\n", ret);   // REMOVE Tim.
-    
-    return ret;  
-  }
-  
-  // Avoid divide-by-zero error below.
-  if(ctlrng == 0)
-    return 0.0;
-    
-  // It's a floating point control, just use wide open maximum range.
-  double normval = double(bval) / fctlrng;
 
-  // Is it a log control?
+  double fictlrng = double(ctlmx - ctlmn);   // Float version of the integer midi range.
+  double normval = double(bval) / fictlrng;  // Float version of the normalized midi value.
+
+  // ----------  TODO: Do stuff with the mapper, if supplied.
+  
   if(aud_t == VAL_LOG)
   {
-    // FIXME: Fix this LOG stuff!
-    double ret = normval * frng + fmin;
-    //double ret = exp(normval * frng + fmin); 
-    //double ret = exp(normval) * frng + fmin; 
-    //printf("midi2AudioCtrlValue: is VAL_LOG normval:%f frng:%f returning:%f\n", normval, frng, ret);          // REMOVE Tim.
+    // FIXME: Although this should be correct, some sliders show "---" at top end, some don't. 
+    // Possibly because of use of fast_log10 in value(), and in sliders and automation IIRC.
+    fmin = 20.0*log10(fmin);
+    fmax = 20.0*log10(fmax);
+    frng = fmax - fmin;
+    double ret = exp10((normval * frng + fmin) / 20.0);
+    #ifdef _CTRL_DEBUG_
+    printf("midi2AudioCtrlValue: is VAL_LOG normval:%f frng:%f returning:%f\n", normval, frng, ret);          
+    #endif
     return ret;
   }
 
-  double ret = normval * frng + fmin;
-  //printf("midi2AudioCtrlValue: is VAL_LINEAR normval:%f frng:%f returning:%f\n", normval, frng, ret);          // REMOVE Tim.
-  return ret;
+  if(aud_t == VAL_LINEAR)
+  {
+    double ret = normval * frng + fmin;
+    #ifdef _CTRL_DEBUG_
+    printf("midi2AudioCtrlValue: is VAL_LINEAR normval:%f frng:%f returning:%f\n", normval, frng, ret);       
+    #endif
+    return ret;
+  }
+
+  if(aud_t == VAL_INT)
+  {
+    double ret = int(normval * frng + fmin);
+    #ifdef _CTRL_DEBUG_
+    printf("midi2AudioCtrlValue: is VAL_INT returning:%f\n", ret);   
+    #endif
+    return ret;  
+  }
+  
+  if(aud_t == VAL_BOOL) 
+  {
+    #ifdef _CTRL_DEBUG_
+    printf("midi2AudioCtrlValue: is VAL_BOOL\n");  
+    #endif
+    //if(midi_val > ((ctlmx - ctlmn)/2 + ctlmn))
+    if((normval * frng + fmin) > (frng/2.0 + fmin))
+      return fmax;
+    else
+      return fmin;
+  }
+  
+  printf("midi2AudioCtrlValue: unknown audio controller type:%d\n", aud_t);
+  return 0.0;
 }      
 
 //---------------------------------------------------------

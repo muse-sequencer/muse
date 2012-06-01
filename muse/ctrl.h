@@ -6,7 +6,7 @@
 //    controller for mixer automation
 //
 //  (C) Copyright 2003-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Time E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011-2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
