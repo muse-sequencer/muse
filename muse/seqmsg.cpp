@@ -46,6 +46,7 @@ namespace MusECore {
 //   sendMsg
 //---------------------------------------------------------
 
+// this function blocks until the request has been processed
 void Audio::sendMsg(AudioMsg* m)
       {
       static int sno = 0;

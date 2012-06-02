@@ -641,6 +641,9 @@ void AudioTrack::processAutomationEvents()
     }
   }
   
+  if (!_recEvents.empty())
+    MusEGlobal::song->controllerChange(this);
+  
   // Done with the recorded automation event list. Clear it.
   _recEvents.clear();
 }
@@ -670,6 +673,8 @@ void AudioTrack::clearControllerEvents(int id)
   
   CtrlList* cl = icl->second;
   cl->clear();
+  
+  MusEGlobal::song->controllerChange(this);
   return;  
 }
 
@@ -757,6 +762,8 @@ void AudioTrack::eraseRangeACEvents(int id, int frame1, int frame2)
     iCtrl s = cl->lower_bound(frame1);
     iCtrl e = cl->lower_bound(frame2);
     cl->erase(s, e);
+    
+    MusEGlobal::song->controllerChange(this);
     return;  
 }
 
@@ -774,6 +781,8 @@ void AudioTrack::addACEvent(int id, int frame, double val)
     
     // Add will replace if found.
     cl->add(frame, val);
+    
+    MusEGlobal::song->controllerChange(this);
     return;  
 }
 
@@ -790,7 +799,8 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
   iCtrl ic = cl->find(frame); 
   if(ic != cl->end())
     cl->erase(ic);
-  cl->insert(std::pair<const int, CtrlVal> (newframe, CtrlVal(newframe, newval)));      
+  cl->insert(std::pair<const int, CtrlVal> (newframe, CtrlVal(newframe, newval)));
+  MusEGlobal::song->controllerChange(this);
 }
 
 //---------------------------------------------------------
@@ -883,7 +893,8 @@ void AudioTrack::recordAutomation(int n, double v)
             if (cl == _controller.end()) 
               return;
             // Add will replace if found.
-            cl->second->add(MusEGlobal::audio->curFramePos(), v);     
+            cl->second->add(MusEGlobal::audio->curFramePos(), v);   
+            MusEGlobal::song->controllerChange(this);  
           }  
         }
       }
@@ -895,10 +906,10 @@ void AudioTrack::startAutoRecord(int n, double v)
         if(MusEGlobal::audio->isPlaying())
         {
           if(automationType() == AUTO_TOUCH)
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_START));  
-          else    
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_START));
+          else
           if(automationType() == AUTO_WRITE)
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));    
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));
         } 
         else
         {
@@ -911,6 +922,7 @@ void AudioTrack::startAutoRecord(int n, double v)
               return;
             // Add will replace if found.
             cl->second->add(MusEGlobal::audio->curFramePos(), v);                 
+            MusEGlobal::song->controllerChange(this);
           }    
           else    
           if(automationType() == AUTO_WRITE)
@@ -926,7 +938,7 @@ void AudioTrack::stopAutoRecord(int n, double v)
         {
           if(automationType() == AUTO_TOUCH)
           {
-              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::audio->curFramePos(), v);        
+              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::audio->curFramePos(), v);
               _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_STOP));   
           }   
         } 

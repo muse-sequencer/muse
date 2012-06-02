@@ -210,6 +210,9 @@ details.
   =============================
 
       - not so many: only some usability quirks we're working on currently
+      - automation recording displays odd things in the arranger
+        while recording; the display is corrected once recording is
+        complete.
 
 ====================================================================
 Let us know whether MusE works for you !!!

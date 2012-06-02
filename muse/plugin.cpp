@@ -3429,8 +3429,6 @@ void PluginGui::ctrlPressed(int param)
         if(track)
         {
           track->setPluginCtrlVal(id, val);
-          MusEGlobal::song->controllerChange(track);
-          
           track->startAutoRecord(id, val);
         }
       }
@@ -3442,8 +3440,6 @@ void PluginGui::ctrlPressed(int param)
         if(track)
         {
           track->setPluginCtrlVal(id, val);
-          MusEGlobal::song->controllerChange(track);
-          
           track->startAutoRecord(id, val);
         }
       }
@@ -3523,8 +3519,6 @@ void PluginGui::sliderChanged(double val, int param)
       if(track)
       {
         track->setPluginCtrlVal(id, val);
-        MusEGlobal::song->controllerChange(track);
-        
         track->recordAutomation(id, val);
       }  
 }
@@ -3559,8 +3553,6 @@ void PluginGui::labelChanged(double val, int param)
       if(track)
       {
         track->setPluginCtrlVal(id, val);
-        MusEGlobal::song->controllerChange(track);
-        
         track->startAutoRecord(id, val);
       }  
 }
@@ -4054,8 +4046,6 @@ void PluginGui::guiSliderPressed(int idx)
       plugin->setParam(param, val);
       
       track->setPluginCtrlVal(id, val);
-      MusEGlobal::song->controllerChange(track);
-      
       track->startAutoRecord(id, val);
       
       // Needed so that paging a slider updates a label or other buddy control.
