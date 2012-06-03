@@ -32,6 +32,10 @@
 %% otherwise. Specify 'someClass::' until it would disturb the reader
 %% and it is obvious. (watch out to prefix _ with \)
 %%
+%% Whenever referring to URLs, please wrap them in \url{blah}. Key
+%% combinations shall look like \key{CTRL+C}. Menu items shall look
+%% like \menu{Menu > Submenu > Menu Item}.
+%%
 %% Where possible, reference other parts of this documents with
 %% \label and \ref. Avoid duplicate information under "Internals" by
 %% referring to the appropriate section in "User's manual".
@@ -67,6 +71,13 @@
 \author{Florian Jung, Robert Jonsson}
 \title{MusE Documentation}
 
+\newcommand{\url}[1]{\texttt{#1}}
+\newcommand{\key}[1]{\textbf{#1}}
+\newcommand{\shell}[1]{\textbf{#1}}
+\newcommand{\menu}[1]{\textbf{#1}}
+\newcommand{\screenshotwidth}[0]{0.8\textwidth}
+
+
 \begin{document}
 \label{Main/Arranger}
 \begin{figure}[htp]
@@ -77,7 +88,7 @@
 \chapter {What is this?}
 You are, if you have printed this document, holding in your hand the
 written documentation for the audio and midi sequencer MusE version 2.\\ 
-\emph{http://www.muse-sequencer.org} is MusE's home on the internet where
+\url{http://www.muse-sequencer.org} is MusE's home on the internet where
 everything MusE releated should be possible to find, software, this
 documentation, forums, mailing lists, bug reporting, FAQs. If you have
 this document but not the software head on over there to find what it's
@@ -97,17 +108,17 @@ strives to encompass most of the music recording process, creation, editing,
 mastering.
 
 \subsection {Definitions}
-\textbf{CTRL} refers to the control key on the keyboard, e.g. \textbf{CTRL+C}
+\key{CTRL} refers to the control key on the keyboard, e.g. \key{CTRL+C}
 means to press and hold the control key while pressing the c key. Make sure
 you know where you have it so you won't accidentally lose control
 (bad jokes are the best jokes, so say we all!).\\
-\textbf{SHIFT} refers to the shift key on the keyboard, see above for usage\\
-\textbf{ALT} refers to the alt key on the keyboard, see above for usage\\
-\textbf{\$>} is used as a generic definition for a terminal prompt. When the
+\key{SHIFT} refers to the shift key on the keyboard, see above for usage\\
+\key{ALT} refers to the alt key on the keyboard, see above for usage\\
+\shell{\$>} is used as a generic definition for a terminal prompt. When the
 manual lists a command that shall be typed, the prompt is not part of the
 command.\\
-Keys are always referred to in bold uppercase, e.g. \textbf{A}. For instance
-\textbf{SHIFT+A} for the key a pressed together with the shift key.\\
+Keys are always referred to in bold uppercase, e.g. \key{A}. For instance
+\key{SHIFT+A} for the key a pressed together with the shift key.\\
 Sometimes terminal examples are written tabbed in with a fixed font to
 visualize more closely what something looks like on the screen.
 E.g.\\
@@ -121,7 +132,7 @@ terminal:\\
 Or, if you prefer, use the launcher utility \textbf{QJackCtl} to get some
 help starting Jack.
 After this, start MusE from the menu or fire up another terminal and type
-\textbf{muse2}.\\
+\shell{muse2}.\\
 If this didn't work out read on for the slighly more complete route for
 getting things started.
 
@@ -136,7 +147,7 @@ Building MusE from source is not hard, there are a number of prerequistes
 that must be met but the actual building should be painless (ha, famous
 last words).\\
 Please follow the README in the source package and/or read the instructions
-on the homepage: http://muse-sequencer.org/index.php/Installation
+on the homepage: \url{http://muse-sequencer.org/index.php/Installation}
 
 \subsubsection {Hardware}
 MusE on the Linux platform supports midi through ALSA and Jack-midi and audio
@@ -144,7 +155,7 @@ through Jack. For information on what hardware is supported there are some
 convenient places to check:
 \begin {itemize}
 \item Alsa soundcard matrix
-\item FFADO.org for firewire devices.
+\item \url{http://FFADO.org} for firewire devices.
 \end {itemize}
 Also, as is often a very good approach for Linux and open source, the
 various forums available on the internet often contain good information.
@@ -158,7 +169,7 @@ do however install a menu entry so MusE should be conveniently available
 from there.
 \subsubsection {Audio preconditions}
 In the standard case MusE expects to find and connect to the Jack audio
-server http://jackaudio.org. Make sure jack is installed (if MusE was
+server \url{http://jackaudio.org}. Make sure jack is installed (if MusE was
 installed with a distribution-package Jack will very likely already be
 installed) For Jack to run with best performance your system should be
 sufficiently tuned to allow it to run with realtime capabilities. The
@@ -176,20 +187,20 @@ the realtime APPENDIX.
 \subsubsection {Running MusE}
 Find MusE in the menu or open a terminal and enter muse2. A splash screen
 should pop up followed by the main application window and you are off!
-\textbf{\$> muse2}\\
+\shell{\$> muse2}\\
 If an error like the screenshot below pops up the Jack audio server is
 either not running or started as a different user than what you are trying
 to start MusE as.
 \begin{figure}[htp]
 \centering
-\includegraphics[width=.6\textwidth]{pics/no_audio}
+\includegraphics[width=\screenshotwidth]{pics/no_audio}
 \caption{Jack server missing}
 \label{fig:no_audio}
 \end{figure}
 \subsubsection {Midi only}
 MusE can be started in Midi-only mode where MusE does not have any external
 dependencies apart from ALSA midi. In this case start MusE from a terminal:
-\textbf{\$> muse2 -a}\\
+\shell{\$> muse2 -a}\\
 
 \subsection {Beginners tutorial}
 To get a quick grip of what MusE can achieve please follow this beginners
@@ -201,18 +212,18 @@ to allow for audio output without breakup. Also make sure your system can
 make sound.
 \subsubsection {Soft synth test}
 With MusE up and running right click in the Track-pane (see screenshot in
-~\ref{Main/Arranger}) and select \textbf{Add Synth > MESS > Organ}. A Soft
+~\ref{Main/Arranger}) and select \menu{Add Synth > MESS > Organ}. A Soft
 Synth track called Organ-0 should appear as well as a separate GUI for
 thesynthesizer.\\
-Now right click once more in the Track-pane and select \textbf{Add Midi
+Now right click once more in the Track-pane and select \menu{Add Midi
 Track}. Another track appears called Track-1, you will notice that it is
 by default bound to the synth that was just created Organ-0.
-\begin{wrapfigure}{r}{0.03\textwidth}
-\includegraphics[width=0.03\textwidth]{pics/arrow_tool}
+\begin{wrapfigure}{r}{0.05\textwidth}
+\includegraphics[width=0.05\textwidth]{pics/arrow_tool}
 %\hrulefill
 \end{wrapfigure}
 Now select the drawing tool icon
-from the toolbar, alternatively press the shortcut key \textbf{D}.
+from the toolbar, alternatively press the shortcut key \key{D}.
 Move the mouse over to the arranger canvas as referenced in ~\ref{Main/Arranger}
 and point at the midi track, the mouse should have changed to a small pencil.
 Draw a Part along the midi track using the mouse. For this exercise it is
@@ -223,7 +234,7 @@ on the keys in this virtual keyboard each click should be rewarded with an
 organ sound (maybe of questionable quality, a sound nevertheless)
 \begin{figure}[htp]
 \centering
-\includegraphics[width=.4\textwidth]{pics/organ_synth}
+\includegraphics[width=.5\textwidth]{pics/organ_synth}
 \caption{Organ synthesizer}
 \label{fig:organ_synth}
 \end{figure}
@@ -236,7 +247,7 @@ of, click on Arranger window once more and select the Organ-0 track in the
 track-pane.
 \begin{figure}[ht]
 \centering
-\includegraphics[width=.7\textwidth]{pics/main_window_with_midi_editor}
+\includegraphics[width=\screenshotwidth]{pics/main_window_with_midi_editor}
 \caption{Midi editor view}
 \label{fig:Midi editor}
 \end{figure}
@@ -284,7 +295,7 @@ different editors, their purpose and what functions they support.
 \label{Main/Arranger}
 \begin{figure}[htp]
 \centering
-\includegraphics[width=.7\textwidth]{pics/main_window_annotated}
+\includegraphics[width=\screenshotwidth]{pics/main_window_annotated}
 \caption{MusE main window}
 \label{fig:Main Window}
 \end{figure}
@@ -302,7 +313,7 @@ the multicolored line are different Parts of a drum track.
 \label{Main/Arranger}
 \begin{figure}[htp]
 \centering
-\includegraphics[width=.7\textwidth]{pics/main_window_with_arrangement}
+\includegraphics[width=\screenshotwidth]{pics/main_window_with_arrangement}
 \caption{MusE main window with arrangement}
 \label{fig:Main Window with arrangement}
 \end{figure}
@@ -859,5 +870,44 @@ slots shall either also display the key change (if they're score slots)
 or display a gap. Events which happen at the same time shall be at the
 same x-coordinate, regardless which slot they are.
 
+\section{Controller master values}
+All controllers (MIDI-controllers and also automation controllers)
+shall have one set of "master values" which allow you to set a gain and
+a bias. Instead of the actual set value, $\textrm{value} * \textrm{bias}
++ textrm{bias}$ shall be sent to the MIDI device / the plugin. For
+controllers like "pan", the unbiased values shall be transformed, that
+is, a pan of 64, with $\textrm{bias}=2$ and $\textrm{gain}=0.5$, shall
+be transformed to 66 (because 64 is actually 0, while 0 is actually -64).
+These values shall be set in the arranger and whereever the actual
+controller/automation values can be edited.
+
+\section{Enabled-indicator while recording}
+The MusE-plugin-GUIs shall display a small LED displaying whether a
+controller is currently enabled or disabled. By clicking this LED, the
+enabled state shall be switched.
+
+Furthermore, there shall be a dedicated window which only lets you switch
+enabled/disabled states. This will be useful when using external GUIs
+or the MIDI-controller-to-automation feature, to re-enable a controller
+when in \texttt{AUTO\_TOUCH} mode.
+
+
+
+\section{Linear automation editing}
+While holding some modifier key (like shift), operating the MusE-native-
+GUI sliders shall only generate control points when clicking and when
+releasing the slider. This will result in linear graphs for continous
+controllers, and in large steps for discrete controllers (which is in
+particular useful for stuff like "which low/high-pass filter type to use").
+
+Maybe make this behaviour default for discrete controllers?
+
+
+
+
+
 
 \end{document}
+
+% TODO: song type etc? kill it!
+%       song len box: same
