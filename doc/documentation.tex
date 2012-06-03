@@ -27,7 +27,7 @@
 %% neccessary.
 %%
 %% Whenever referring to code symbols, constants or source/header
-%% files, please use \texttt{someClass::someSymbol} or \texttt{file.cpp}
+%% files, please use \sym{someClass::someSymbol} or \f{file.cpp}
 %% Only specify file paths or namespaces where it would be ambiguous
 %% otherwise. Specify 'someClass::' until it would disturb the reader
 %% and it is obvious. (watch out to prefix _ with \)
@@ -62,19 +62,33 @@
 
 
 \documentclass[a4paper]{report}
+\usepackage[a4paper,  left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage[english]{babel}
 \usepackage{graphicx}
-\usepackage{wrapfig }
+\usepackage{wrapfig}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+	\lhead{\scriptsize{\slshape\leftmark}}
+	\chead{}
+	\rhead{\thepage}
+	\lfoot{}
+	\cfoot{}
+	\rfoot{}
+	\renewcommand{\headrulewidth}{0.4pt}
+
+
 \author{Florian Jung, Robert Jonsson}
 \title{MusE Documentation}
 
 \newcommand{\url}[1]{\texttt{#1}}
 \newcommand{\key}[1]{\textbf{#1}}
-\newcommand{\shell}[1]{\textbf{#1}}
+\newcommand{\shell}[1]{\texttt{\textbf{#1}}}
 \newcommand{\menu}[1]{\textbf{#1}}
+\newcommand{\sym}[1]{\texttt{#1}}
+\newcommand{\file}[1]{\texttt{#1}}
 \newcommand{\screenshotwidth}[0]{0.8\textwidth}
 
 
@@ -122,13 +136,13 @@ Keys are always referred to in bold uppercase, e.g. \key{A}. For instance
 Sometimes terminal examples are written tabbed in with a fixed font to
 visualize more closely what something looks like on the screen.
 E.g.\\
-\hspace*{1cm}\texttt{\$> muse2}\\
+\hspace*{1cm}\shell{\$> muse2}\\
 
 \subsection {Getting up and running for impatient people}
 Install MusE from the repository of your chosen distribution.
 To get decent performance start Jack with the following command in a
 terminal:\\
-\hspace*{1cm}\texttt{\$> jackd -d alsa -d hw:0 -p 256}\\
+\hspace*{1cm}\shell{\$> jackd -d alsa -d hw:0 -p 256}\\
 Or, if you prefer, use the launcher utility \textbf{QJackCtl} to get some
 help starting Jack.
 After this, start MusE from the menu or fire up another terminal and type
@@ -459,16 +473,16 @@ copied, cloned and deleted independent from other parts.
 
 Parts are created by selecting the pencil tool and then drawing onto
 the right part area in the arranger. You can move them with the arrow
-tool, delete them using the \texttt{DEL} key, and a right-click opens
+tool, delete them using the \key{DEL} key, and a right-click opens
 a popup menu. This menu allows you even more stuff, such as setting
 the part's color, saving the part to disk etc.. You can use
-\texttt{CTRL+C} and \texttt{CTRL+V} for copying and pasting parts.
-\texttt{CTRL+B} pastes the part as a clone. Pressing \texttt{SHIFT}
+\key{CTRL+C} and \key{CTRL+V} for copying and pasting parts.
+\key{CTRL+B} pastes the part as a clone. Pressing \key{SHIFT}
 additionally provides you a dialog which allows you to paste the part
 multiple times and set more stuff.
 
 You can also copy parts with the mouse by moving the part with the mouse
-while holding down the \texttt{CTRL} key.
+while holding down the \key{CTRL} key.
 
 
 
@@ -515,8 +529,8 @@ chapter.
 When the user launches a plugin's GUI, either a MusE-window with
 the relevant controls is shown, or the native GUI is launched. MusE
 will communicate with this native GUI through OSC (Open Sound Control).
-The relevant classes are \texttt{PluginGui}, \texttt{PluginIBase}
-(in \texttt{plugin.h}) and \texttt{OscIF} (in \texttt{osc.h}).
+The relevant classes are \sym{PluginGui}, \sym{PluginIBase}
+(in \file{plugin.h}) and \sym{OscIF} (in \sym{osc.h}).
 
 If the user changes a GUI element, first the corresponding control is
 disabled, making MusE not steadily update it through automation
@@ -525,79 +539,79 @@ value, and also record the new value. When appropriate, the controller
 is enabled again.
 
 \paragraph{Processing the input, recording}
-Upon operating a slider, \texttt{PluginIBase::setParam} is called,
+Upon operating a slider, \sym{PluginIBase::setParam} is called,
 which usually writes the control change into the ringbuffer
-\texttt{PluginI::\_controlFifo}. (\texttt{PluginI::apply()},
-\texttt{DssiSynthIF::getData()} will read this ringbuffer and
-do the processing accordingly). Furthermore, \texttt{AudioTrack::recordAutomation}
+\sym{PluginI::\_controlFifo}. (\sym{PluginI::apply()},
+\sym{DssiSynthIF::getData()} will read this ringbuffer and
+do the processing accordingly). Furthermore, \sym{AudioTrack::recordAutomation}
 is called, which either directly modifies the controller lists or writes
-the change into a "to be recorded"-list (\texttt{AudioTrack::\_recEvents})
+the change into a "to be recorded"-list (\sym{AudioTrack::\_recEvents})
 (depending on whether the song is stopped or played).
 
-The \texttt{AudioTrack::\_recEvents} list consists of \texttt{CtrlRecVal}
-items (see \texttt{ctrl.h}), which hold the following data:
+The \sym{AudioTrack::\_recEvents} list consists of \sym{CtrlRecVal}
+items (see \file{ctrl.h}), which hold the following data:
 \begin{itemize}
 \item the frame where the change occurred
 \item the value
-\item the type, which can be \texttt{ARVT\_START}, \texttt{ARVT\_VAL} or \texttt{ARVT\_STOP}.
-      \texttt{ARVT\_VAL} are written by every \texttt{AudioTrack::recordAutomation}
-      call, \texttt{ARVT\_START} and \texttt{ARVT\_STOP} are generated by
-      \texttt{AudioTrack::startAutoRecord} and \texttt{stopAutoRecord},
+\item the type, which can be \sym{ARVT\_START}, \sym{ARVT\_VAL} or \sym{ARVT\_STOP}.
+      \sym{ARVT\_VAL} are written by every \sym{AudioTrack::recordAutomation}
+      call, \sym{ARVT\_START} and \sym{ARVT\_STOP} are generated by
+      \sym{AudioTrack::startAutoRecord} and \sym{stopAutoRecord},
       respectively.
 \item and the id of the controller which is affected
 \end{itemize}
 It is processed when the song is stopped. The call path for this is:
-\texttt{Song::stopRolling} calls \texttt{Song::processAutomationEvents}
-calls \texttt{AudioTrack::processAutomationEvents}.
+\sym{Song::stopRolling} calls \sym{Song::processAutomationEvents}
+calls \sym{AudioTrack::processAutomationEvents}.
 This function removes the old events from the track's controller list
-and replaces them with the new events from \texttt{\_recEvents}. In
-\texttt{AUTO\_WRITE} mode, just all controller events within the recorded
-range are erased; in \texttt{AUTO\_TOUCH} mode, the \texttt{ARVT\_START}
-and \texttt{ARVT\_STOP} types of the \texttt{CtrlRecVal} events are used
+and replaces them with the new events from \sym{\_recEvents}. In
+\sym{AUTO\_WRITE} mode, just all controller events within the recorded
+range are erased; in \sym{AUTO\_TOUCH} mode, the \sym{ARVT\_START}
+and \sym{ARVT\_STOP} types of the \sym{CtrlRecVal} events are used
 to determine the range(s) which should be wiped.
 
 \paragraph{How it's stored}
 Automation data is kept                                                  % this is copied from
-in \texttt{AudioTrack::\_controller}, which is a \texttt{CtrlListList},  % "design decisions" -> "automation"
-that is, a list of \texttt{CtrlList}s, that is, a list of lists of
+in \sym{AudioTrack::\_controller}, which is a \sym{CtrlListList},        % "design decisions" -> "automation"
+that is, a list of \sym{CtrlList}s, that is, a list of lists of
 controller-objects which hold the control points of the automation graph.
-The \texttt{CtrlList} also stores whether the list is meant discrete
+The \sym{CtrlList} also stores whether the list is meant discrete
 (a new control point results in a value-jump) or continous (a new control
 point results in the value slowly sloping to the new value).
-Furthermore, it stores a \texttt{\_curVal} (accessed by \texttt{curVal()}),
+Furthermore, it stores a \sym{\_curVal} (accessed by \sym{curVal()}),
 which holds the currently active value, which can be different from the
 actually stored value because of user interaction. This value is also
 used when there is no stored automation data.
 
-\texttt{AudioTrack::addController} and \texttt{removeController} are used % TODO: swapControllerIDX??
+\sym{AudioTrack::addController} and \sym{removeController} are used        % TODO: swapControllerIDX??
 to add/remove whole controller types; the most important functions which
-access \texttt{\_controller} are:
+access \sym{\_controller} are:
 \begin{itemize}
-\item \texttt{processAutomationEvents}, \texttt{recordAutomation},
-      \texttt{startAutoRecord}, \texttt{stopAutoRecord}: see above.
-\item \texttt{seekPrevACEvent}, \texttt{seekNextACEvent}, \texttt{eraseACEvent},
-      \texttt{eraseRangeACEvents}, \texttt{addACEvent}, \texttt{changeACEvent},
+\item \sym{processAutomationEvents}, \sym{recordAutomation},
+      \sym{startAutoRecord}, \sym{stopAutoRecord}: see above.
+\item \sym{seekPrevACEvent}, \sym{seekNextACEvent}, \sym{eraseACEvent},
+      \sym{eraseRangeACEvents}, \sym{addACEvent}, \sym{changeACEvent},
       which do the obvious
-\item \texttt{pluginCtrlVal}, \texttt{setPluginCtrlVal}: the first
-      returns the current value according the the \texttt{\_controller}
-      list, the second only sets the \texttt{curVal}, but does not
+\item \sym{pluginCtrlVal}, \sym{setPluginCtrlVal}: the first
+      returns the current value according the the \sym{\_controller}
+      list, the second only sets the \sym{curVal}, but does not
       insert any events.
 \end{itemize}
 
-Whenever a \texttt{CtrlList} has been manipulated,
-\texttt{MusEGlobal::song->controllerChange(Track*)} shall be called,
-which emits the \texttt{MusEGlobal::song->controllerChanged(Track*)}
+Whenever a \sym{CtrlList} has been manipulated,
+\sym{MusEGlobal::song->controllerChange(Track*)} shall be called,
+which emits the \sym{MusEGlobal::song->controllerChanged(Track*)}
 signal in order to inform any parts of MusE about the change (currently,
 only the arranger's part canvas utilizes this).
 
 \paragraph{Enabling and disabling controllers}
 Disabling the controller is both dependent from the current automation
 mode and from whether the GUI is native or not.
-In \texttt{AUTO\_WRITE} mode, once a slider is touched (for MusE-GUIs) or
+In \sym{AUTO\_WRITE} mode, once a slider is touched (for MusE-GUIs) or
 once a OSC control change is received (for native GUIs), the control
 is disabled until the song is stopped or seeked.
 
-In \texttt{AUTO\_TOUCH} (and currently (r1492) \texttt{AUTO\_READ}, but
+In \sym{AUTO\_TOUCH} (and currently (r1492) \sym{AUTO\_READ}, but
 that's to be fixed) mode, once a MusE-GUI's slider is pressed down, the
 corresponding control is disabled. Once the slider is released, the
 control is re-enabled again. Checkboxes remain in "disabled" mode,
@@ -609,31 +623,31 @@ and the last toggle.). For native GUIs, this is a bit tricky, because
 we don't have direct access to the GUI widgets. That is, we have no
 way to find out whether the user doesn't touch a control at all, or
 whether he has it held down, but just doesn't operate it. The current
-behaviour for native GUIs is to behave like in \texttt{AUTO\_WRITE} mode.
+behaviour for native GUIs is to behave like in \sym{AUTO\_WRITE} mode.
 
-The responsible functions are: \texttt{PluginI::oscControl} and
-\texttt{DssiSynthIF::oscControl} for handling native GUIs,
-\texttt{PluginI::ctrlPressed} and \texttt{ctrlReleased} for MusE
-default GUIs and \texttt{PluginI::guiParamPressed},
-\texttt{guiParamReleased}, \texttt{guiSliderPressed} and
-\texttt{guiSliderReleased} for MusE GUIs read from a UI file;
-\texttt{guiSlider*} obviously handle sliders, while \texttt{guiParam*}
+The responsible functions are: \sym{PluginI::oscControl} and
+\sym{DssiSynthIF::oscControl} for handling native GUIs,
+\sym{PluginI::ctrlPressed} and \sym{ctrlReleased} for MusE
+default GUIs and \sym{PluginI::guiParamPressed},
+\sym{guiParamReleased}, \sym{guiSliderPressed} and
+\sym{guiSliderReleased} for MusE GUIs read from a UI file;
+\sym{guiSlider*} obviously handle sliders, while \sym{guiParam*}
 handle everything else which is not a slider. They call
-\texttt{PluginI::enableController} to enable/disable it.
+\sym{PluginI::enableController} to enable/disable it.
 
-Furthermore, on every song stop or seek, \texttt{PluginI::enableAllControllers}
+Furthermore, on every song stop or seek, \sym{PluginI::enableAllControllers}
 is called, which re-enables all controllers again. The call paths for
 this are:
 \begin{itemize}
-\item For stop: \texttt{Song::stopRolling} calls
-                \texttt{Song::processAutomationEvents} calls
-                \texttt{Song::clearRecAutomation} calls
-                \texttt{Track::clearRecAutomation} calls
-                \texttt{PluginI::enableAllControllers}
-\item For seek: \texttt{Audio::seek} sends a message ("\texttt{G}") to
-                \texttt{Song::seqSignal} which calls
-                \texttt{Song::clearRecAutomation} which calls
-                \texttt{PluginI::enableAllControllers}                
+\item For stop: \sym{Song::stopRolling} calls
+                \sym{Song::processAutomationEvents} calls
+                \sym{Song::clearRecAutomation} calls
+                \sym{Track::clearRecAutomation} calls
+                \sym{PluginI::enableAllControllers}
+\item For seek: \sym{Audio::seek} sends a message ("\sym{G}") to
+                \sym{Song::seqSignal} which calls
+                \sym{Song::clearRecAutomation} which calls
+                \sym{PluginI::enableAllControllers}                
 \end{itemize}
 
 
@@ -643,15 +657,15 @@ this are:
 \section{Automation}
 As of revision 1490, automation is handled in two ways: User-generated
 (live) automation data (generated by the user moving sliders while playing)
-is fed into \texttt{PluginI::\_controlFifo}. Automation data is kept
-in \texttt{AudioTrack::\_controller}, which is a \texttt{CtrlListList},
-that is, a list of \texttt{CtrlList}s, that is, a list of lists of
+is fed into \sym{PluginI::\_controlFifo}. Automation data is kept
+in \sym{AudioTrack::\_controller}, which is a \sym{CtrlListList},
+that is, a list of \sym{CtrlList}s, that is, a list of lists of
 controller-objects which hold the control points of the automation graph.
-The \texttt{CtrlList} also stores whether the list is meant discrete
+The \sym{CtrlList} also stores whether the list is meant discrete
 (a new control point results in a value-jump) or continous (a new control
 point results in the value slowly sloping to the new value).
 
-While \texttt{PluginI::\_controlFifo} can be queried very quickly and
+While \sym{PluginI::\_controlFifo} can be queried very quickly and
 thus is processed with a very high resolution (only limited by the
 minimum control period setting), the automation value are expensive to
 query, and are only processed once in an audio \emph{driver} period.
@@ -660,16 +674,16 @@ This might lead to noticeable jumps in value.
 This could possibly be solved in two ways:
 \paragraph{Maintaining a slave control list}
 This approach would maintain a fully redundant slave control list,
-similar to \texttt{PluginI::\_controlFifo}. This list must be updated
+similar to \sym{PluginI::\_controlFifo}. This list must be updated
 every time any automation-related thing is changed, and shall contain
 every controller change as a tuple of controller number and value.
-This could be processed in the same loop as \texttt{PluginI::\_controlFifo},
+This could be processed in the same loop as \sym{PluginI::\_controlFifo},
 making it comfortable to implement; furthermore, it allows to cleanly
 offer automation-settings at other places in future (such as storing
 automation data in parts or similar).
 
 \paragraph{Holding iterators}
-We also could hold a list of iterators of the single \texttt{CtrlList}s.
+We also could hold a list of iterators of the single \sym{CtrlList}s.
 This would also cause low CPU usage, because usually, the iterators only
 need to be incremented once. However, it is pretty complex to implement,
 because the iterators may become totally wrong (because of a seek in the
@@ -889,7 +903,7 @@ enabled state shall be switched.
 Furthermore, there shall be a dedicated window which only lets you switch
 enabled/disabled states. This will be useful when using external GUIs
 or the MIDI-controller-to-automation feature, to re-enable a controller
-when in \texttt{AUTO\_TOUCH} mode.
+when in \sym{AUTO\_TOUCH} mode.
 
 
 
