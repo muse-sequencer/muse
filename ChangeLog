@@ -1,3 +1,5 @@
+03.06.2012:
+        - Merged documentation from local source to repository LaTeX document, 80% done (rj)
 27.05.2012:
         * Timing, resolution, accuracy, and automation fixes:  (Tim)
         - Ask audio driver for 'its' current system time instead of wallclock in utils.cpp:curTime(). 
