@@ -178,7 +178,7 @@ void MidiFifo::remove()
 //    return true on fifo overflow
 //---------------------------------------------------------
 
-bool MidiRecFifo::put(const MidiPlayEvent& event)
+bool MidiRecFifo::put(const MidiRecordEvent& event)
       {
       if (size < MIDI_REC_FIFO_SIZE) {
             fifo[wIndex] = event;
@@ -193,9 +193,9 @@ bool MidiRecFifo::put(const MidiPlayEvent& event)
 //   get
 //---------------------------------------------------------
 
-MidiPlayEvent MidiRecFifo::get()
+MidiRecordEvent MidiRecFifo::get()
       {
-      MidiPlayEvent event(fifo[rIndex]);
+      MidiRecordEvent event(fifo[rIndex]);
       rIndex = (rIndex + 1) % MIDI_REC_FIFO_SIZE;
       --size;
       return event;
@@ -205,7 +205,7 @@ MidiPlayEvent MidiRecFifo::get()
 //   peek
 //---------------------------------------------------------
 
-const MidiPlayEvent& MidiRecFifo::peek(int n)
+const MidiRecordEvent& MidiRecFifo::peek(int n)
       {
       int idx = (rIndex + n) % MIDI_REC_FIFO_SIZE;
       return fifo[idx];

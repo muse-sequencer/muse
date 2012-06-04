@@ -25,7 +25,7 @@
 #ifdef DSSI_SUPPORT
 
 // Turn on debugging messages
-//#define DSSI_DEBUG 
+#define DSSI_DEBUG 
 // Turn on constant flow of process debugging messages
 //#define DSSI_DEBUG_PROCESS 
 
@@ -839,27 +839,7 @@ float DssiSynthIF::getParameterOut(unsigned long n) const
 
 void DssiSynthIF::setParameter(unsigned long n, float v)
 {
-  if(n >= synth->_controlInPorts)
-  {
-    printf("DssiSynthIF::setParameter param number %lu out of range of ports:%lu\n", n, synth->_controlInPorts);
-    return;
-  }
-  
-  ControlEvent ce;
-  ce.unique = false;
-  ce.idx = n;
-  ce.value = v;
-  // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
-  //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
-  //  are treated when they arrive in our ALSA driver.) 
-  //ce.frame = MusEGlobal::audio->timestamp();  
-  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
-  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
-  ce.frame = MusEGlobal::audio->curFrame();  
-  if(_controlFifo.put(ce))
-  {
-    fprintf(stderr, "DssiSynthIF::setParameter: fifo overflow: in control number:%lu\n", n);
-  }
+  addScheduledControlEvent(n, v, MusEGlobal::audio->curFrame());   
 }
 
 //---------------------------------------------------------
@@ -1493,7 +1473,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
     for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
     {
       if(controls[k].enCtrl && controls[k].en2Ctrl )
-        controls[k].val = (static_cast<MusECore::AudioTrack*>(synti))->controller()->value(genACnum(id(), k), pos);
+       controls[k].val = (static_cast<MusECore::AudioTrack*>(synti))->controller()->value(genACnum(id(), k), pos);
     }      
   }
         
@@ -1586,8 +1566,13 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       #endif
 
       if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+      {
+        #ifdef DSSI_DEBUG 
+        fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
+        #endif
         break;
-        
+      }
+      
       // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
       // Same code as in MidiPort::sendEvent()
       if(synti->midiPort() != -1)
@@ -2242,7 +2227,7 @@ bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return 
 
 unsigned long DssiSynthIF::parameters() const                { return synth ? synth->_controlInPorts : 0; }
 unsigned long DssiSynthIF::parametersOut() const             { return synth ? synth->_controlOutPorts : 0; }
-void DssiSynthIF::setParam(unsigned long i, float val)       { setParameter(i, val); }
+void DssiSynthIF::setParam(unsigned long i, float val)  { setParameter(i, val); }
 float DssiSynthIF::param(unsigned long i) const              { return getParameter(i); }
 float DssiSynthIF::paramOut(unsigned long i) const           { return getParameterOut(i); }
 const char* DssiSynthIF::paramName(unsigned long i)          { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx] : 0; }

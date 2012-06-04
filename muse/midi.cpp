@@ -34,6 +34,7 @@
 #include "marker/marker.h"
 #include "midiport.h"
 #include "midictrl.h"
+#include "sync.h"
 #include "audio.h"
 #include "mididev.h"
 #include "driver/alsamidi.h"
@@ -859,6 +860,9 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 void Audio::processMidi()
       {
       MusEGlobal::midiBusy=true;
+      
+      bool extsync = MusEGlobal::extSyncFlag.value();
+      
       //
       // TODO: syntis should directly write into recordEventList
       //
@@ -866,7 +870,7 @@ void Audio::processMidi()
       {
         MidiDevice* md = *id;
 
-        // klumsy hack for synti devices:
+        // klumsy hack for MESS synti devices:
         if(md->isSynti())
         {
           SynthI* s = (SynthI*)md;
@@ -897,7 +901,7 @@ void Audio::processMidi()
           int count = md->tmpRecordCount(chan);
           for(int i = 0; i < count; ++i) 
           {
-            MusECore::MidiPlayEvent event(rf.peek(i));
+            MusECore::MidiRecordEvent event(rf.peek(i));
 
             int etype = event.type();
             if(etype == MusECore::ME_CONTROLLER || etype == MusECore::ME_PITCHBEND || etype == MusECore::ME_PROGRAM)
@@ -944,7 +948,25 @@ void Audio::processMidi()
                     continue;
                   CtrlList* cl = icl->second;
                   double dval = midi2AudioCtrlValue(cl, macs, ctl, val);
-                  cl->setCurVal(dval);
+                  
+                  // Time here needs to be frames always. 
+                  unsigned int t = event.time();
+                  
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                  unsigned int pframe = _previousPos.frame();
+#else
+                  unsigned int pframe = _pos.frame();
+#endif
+                  if(pframe > t)  // Technically that's an error, shouldn't happen
+                    t = 0;
+                  else
+                    // Subtract the current audio position frame
+                    t -= pframe;  
+                  
+                  // Add the current running sync frame to make the control processing happy
+                  t += syncFrame;
+                  track->addScheduledControlEvent(audio_ctrl, dval, t);
+                    
                   // TODO: Rec automation...
                 }
               }  
@@ -953,7 +975,6 @@ void Audio::processMidi()
         }
       }
 
-      bool extsync = MusEGlobal::extSyncFlag.value();
       for (MusECore::iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t) 
       {
             MusECore::MidiTrack* track = *t;
@@ -1003,15 +1024,30 @@ void Audio::processMidi()
                           
                             for(int i = 0; i < count; ++i) 
                             {
-                              MusECore::MidiPlayEvent event(rf.peek(i));
+                              MusECore::MidiRecordEvent event(rf.peek(i));
                               event.setPort(port);
                               // dont't echo controller changes back to software
                               // synthesizer:
                               if(!dev->isSynti() && md && track->recEcho())
+                              {
+                                // All recorded events arrived in the previous period. Shift into this period for playback.
+                                unsigned int et = event.time();
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                                unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+#else                                
+                                unsigned int t = et + frameOffset;
+#endif
+                                event.setTime(t);
                                 md->addScheduledEvent(event);
-                              // If syncing externally the event time is already in units of ticks, set above.  p3.3.25
-                              if(!extsync)
-                                event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));  // set tick time
+                                event.setTime(et);  // Restore for recording.
+                              }
+                              
+                              // Make sure the event is recorded in units of ticks.  
+                              if(extsync)  
+                                event.setTime(event.tick());  // HACK: Transfer the tick to the frame time
+                              else
+                                event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
+                                
                               if(recording) 
                                 rl->add(event);
                             }      
@@ -1022,7 +1058,7 @@ void Audio::processMidi()
                           int count = dev->tmpRecordCount(channel);
                           for(int i = 0; i < count; ++i) 
                           {
-                                MusECore::MidiPlayEvent event(rf.peek(i));
+                                MusECore::MidiRecordEvent event(rf.peek(i));
                                 int defaultPort = devport;
                                 int drumRecPitch=0; //prevent compiler warning: variable used without initialization
                                 MusECore::MidiController *mc = 0;
@@ -1113,7 +1149,16 @@ void Audio::processMidi()
   
                                 if (!dev->isSynti()) 
                                 {
-                                  //Check if we're outputting to another port than default:
+                                  // All recorded events arrived in previous period. Shift into this period for playback. 
+                                  //  frameoffset needed to make process happy.
+                                  unsigned int et = event.time();
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                                  unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+#else
+                                  unsigned int t = et + frameOffset;
+#endif
+                                  event.setTime(t);  
+                                  // Check if we're outputting to another port than default:
                                   if (devport == defaultPort) {
                                         event.setPort(port);
                                         if(md && track->recEcho())
@@ -1125,14 +1170,18 @@ void Audio::processMidi()
                                         if(mdAlt && track->recEcho())
                                           mdAlt->addScheduledEvent(event);
                                         }
+                                  event.setTime(et);  // Restore for recording.
+                                  
                                   // Shall we activate meters even while rec echo is off? Sure, why not...
                                   if(event.isNote() && event.dataB() > track->activity())
                                     track->setActivity(event.dataB());
                                 }
                                 
-                                // If syncing externally the event time is already in units of ticks, set above.  p3.3.25
-                                if(!extsync)
-                                  event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));  // set tick time
+                                // Make sure the event is recorded in units of ticks.  
+                                if(extsync)  
+                                  event.setTime(event.tick());  // HACK: Transfer the tick to the frame time
+                                else
+                                  event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
   
                                 // Special handling of events stored in rec-lists. a bit hACKish. TODO: Clean up (after 0.7)! :-/ (ml)
                                 if (recording) 

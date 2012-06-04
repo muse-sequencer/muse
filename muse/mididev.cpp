@@ -46,7 +46,6 @@
 
 namespace MusEGlobal {
 MusECore::MidiDeviceList midiDevices;
-extern unsigned int volatile lastExtMidiSyncTick;
 }
 
 namespace MusECore {
@@ -215,10 +214,14 @@ void MidiDevice::beforeProcess()
 
 void MidiDevice::recordEvent(MidiRecordEvent& event)
       {
-      // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice. And revert this line.
-      //event.setTime(MusEGlobal::audio->timestamp());
-      event.setTime(MusEGlobal::extSyncFlag.value() ? MusEGlobal::lastExtMidiSyncTick : MusEGlobal::audio->timestamp());
-      
+      // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice. 
+      unsigned frame_ts = MusEGlobal::audio->timestamp();
+#ifndef _AUDIO_USE_TRUE_FRAME_
+      if(MusEGlobal::audio->isPlaying())
+       frame_ts += MusEGlobal::segmentSize;  // Shift forward into this period if playing
+#endif
+      event.setTime(frame_ts);  
+      event.setTick(MusEGlobal::lastExtMidiSyncTick);    
       
       if(MusEGlobal::audio->isPlaying())
         event.setLoopNum(MusEGlobal::audio->loopCount());
@@ -300,7 +303,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       
       // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
       unsigned int ch = (typ == ME_SYSEX)? MIDI_CHANNELS : event.channel();
-      if(_recordFifo[ch].put(MidiPlayEvent(event)))
+      if(_recordFifo[ch].put(event))
         printf("MidiDevice::recordEvent: fifo channel %d overflow\n", ch);
       }
 

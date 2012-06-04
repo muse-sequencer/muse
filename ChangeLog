@@ -1,3 +1,7 @@
+04.06.2012:
+        - Side branch r2_0_extra, copied from release_2_0:
+        * Feature: Midi control of audio paramters. (Tim)
+        - More important timing, accuracy fixes.
 27.05.2012:
         * Timing, resolution, accuracy, and automation fixes:  (Tim)
         - Ask audio driver for 'its' current system time instead of wallclock in utils.cpp:curTime(). 

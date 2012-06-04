@@ -39,6 +39,7 @@
 #include "synth.h"
 #include "dssihost.h"
 #include "app.h"
+#include "controlfifo.h"
 
 namespace MusECore {
 
@@ -865,6 +866,46 @@ void AudioTrack::setPluginCtrlVal(int param, double val)
   cl->second->setCurVal(val);
 }
       
+//---------------------------------------------------------
+//   addScheduledControlEvent
+//   returns true if event cannot be delivered
+//---------------------------------------------------------
+
+bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
+{
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  // FIXME: These controllers (three so far - vol, pan, mute) have no vari-run-length support.
+  {
+    iCtrlList icl = _controller.find(track_ctrl_id);
+    if(icl == _controller.end())
+      return true;
+    icl->second->setCurVal(val);
+    return false;
+  }
+  else
+  {
+    if(track_ctrl_id < genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+      return _efxPipe->addScheduledControlEvent(track_ctrl_id, val, frame);
+    else
+    {
+      if(type() == AUDIO_SOFTSYNTH)
+      {
+        SynthI* synth = static_cast<SynthI*>(this);
+        if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+        {
+          SynthIF* sif = synth->sif();
+          if(sif)
+          {
+            DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
+            int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+            return dssi_sif->addScheduledControlEvent(in_ctrl_idx, val, frame);
+          }
+        }
+      }
+    }
+  }  
+  return true;
+}
+
 void AudioTrack::recordAutomation(int n, double v)
       {
         if(!MusEGlobal::automation)

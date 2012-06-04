@@ -252,6 +252,7 @@ class PluginIBase
       virtual void writeConfiguration(int level, Xml& xml) = 0;
       virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
       
+      virtual bool addScheduledControlEvent(unsigned long i, float val, unsigned frame);    // returns true if event cannot be delivered
       virtual unsigned long parameters() const = 0;                  
       virtual unsigned long parametersOut() const = 0;
       virtual void setParam(unsigned long i, float val) = 0;
@@ -412,6 +413,7 @@ class Pipeline : public std::vector<PluginI*> {
       void move(int idx, bool up);
       bool empty(int idx) const;
       void setChannels(int);
+      bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // returns true if event cannot be delivered
       };
 
 typedef Pipeline::iterator iPluginI;

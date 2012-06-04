@@ -151,6 +151,7 @@ extern int volatile curMidiSyncInPort;
 extern MusECore::BValue useJackTransport;
 extern bool volatile jackTransportMaster;
 extern unsigned int syncSendFirstClockDelay; // In milliseconds.
+extern unsigned int volatile lastExtMidiSyncTick;
 
 } // namespace MusEGlobal
 

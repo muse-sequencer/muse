@@ -1224,6 +1224,27 @@ Pipeline::~Pipeline()
       }
 
 //---------------------------------------------------------
+//   addScheduledControlEvent
+//   track_ctrl_id is the fully qualified track audio controller number
+//   Returns true if event cannot be delivered
+//---------------------------------------------------------
+
+bool Pipeline::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
+{
+  // If a track controller, or the special dssi synth controller block, just return.
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= genACnum(MAX_PLUGINS, 0)) 
+    return true;
+  int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
+  for (int i = 0; i < PipelineDepth; ++i)
+  {
+    PluginI* p = (*this)[i];
+    if(p && p->id() == rack_idx)
+      return p->addScheduledControlEvent(track_ctrl_id & AC_PLUGIN_CTL_ID_MASK, val, frame);
+  }
+  return true;
+}
+      
+//---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------
 
@@ -1524,6 +1545,39 @@ PluginIBase::~PluginIBase()
     delete _gui;
 } 
  
+//---------------------------------------------------------
+//   addScheduledControlEvent
+//   i is the specific index of the control input port
+//   Returns true if event cannot be delivered
+//---------------------------------------------------------
+
+bool PluginIBase::addScheduledControlEvent(unsigned long i, float val, unsigned frame) 
+{ 
+  if(i >= parameters())
+  {
+    printf("PluginIBase::addScheduledControlEvent param number %lu out of range of ports:%lu\n", i, parameters());
+    return true;
+  }
+  ControlEvent ce;
+  ce.unique = false;
+  ce.idx = i;
+  ce.value = val;
+  // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
+  //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
+  //  are treated when they arrive in our ALSA driver.) 
+  //ce.frame = MusEGlobal::audio->timestamp();  
+  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
+  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
+  ce.frame = frame;  
+  
+  if(_controlFifo.put(ce))
+  {
+    fprintf(stderr, "PluginIBase::addScheduledControlEvent: fifo overflow: in control number:%lu\n", i);
+    return true;
+  }
+  return false;
+}     
+
 QString PluginIBase::dssi_ui_filename() const 
 { 
   QString libr(lib());
@@ -1733,27 +1787,7 @@ void PluginI::setChannels(int c)
 
 void PluginI::setParam(unsigned long i, float val) 
 { 
-  if(i >= _plugin->_controlInPorts)
-  {
-    printf("PluginI::setParameter param number %lu out of range of ports:%lu\n", i, _plugin->_controlInPorts);
-    return;
-  }
-  ControlEvent ce;
-  ce.unique = false;
-  ce.idx = i;
-  ce.value = val;
-  // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
-  //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
-  //  are treated when they arrive in our ALSA driver.) 
-  //ce.frame = MusEGlobal::audio->timestamp();  
-  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
-  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
-  ce.frame = MusEGlobal::audio->curFrame();  
-  
-  if(_controlFifo.put(ce))
-  {
-    fprintf(stderr, "PluginI::setParameter: fifo overflow: in control number:%lu\n", i);
-  }
+  addScheduledControlEvent(i, val, MusEGlobal::audio->curFrame());
 }     
 
 //---------------------------------------------------------
