@@ -29,6 +29,7 @@
 
 #include <map>
 #include <list>
+#include <vector>
 #include <qcolor.h>
 #include <lo/lo_osc_types.h>
 
@@ -128,9 +129,15 @@ struct AudioMidiCtrlStruct {
         _midi_ctrl = midi_ctrl;
       }
       };
-typedef std::multimap<int, AudioMidiCtrlStruct, std::less<int> >::iterator iAudioMidiCtrlStructMap;
-typedef std::multimap<int, AudioMidiCtrlStruct, std::less<int> >::const_iterator ciAudioMidiCtrlStructMap;
-class AudioMidiCtrlStructMap : public std::multimap<int /*audio ctrl id number*/, AudioMidiCtrlStruct, std::less<int> > {
+// typedef std::multimap<int, AudioMidiCtrlStruct, std::less<int> >::iterator iAudioMidiCtrlStructMap;
+// typedef std::multimap<int, AudioMidiCtrlStruct, std::less<int> >::const_iterator ciAudioMidiCtrlStructMap;
+// class AudioMidiCtrlStructMap : public std::multimap<int /*audio ctrl id number*/, AudioMidiCtrlStruct, std::less<int> > {
+//   public:
+//     
+//      };
+typedef std::vector<AudioMidiCtrlStruct>::iterator iAudioMidiCtrlStructMap;
+typedef std::vector<AudioMidiCtrlStruct>::const_iterator ciAudioMidiCtrlStructMap;
+class AudioMidiCtrlStructMap : public std::vector<AudioMidiCtrlStruct> {
   public:
     
      };

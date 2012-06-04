@@ -261,8 +261,7 @@ void MidiAudioCtrlPortMap::find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiC
           if(imacs->first == audio_ctrl_id)
           {
             //iAudioMidiCtrlStructMap iamcs = 
-              amcs->insert(std::pair<int, AudioMidiCtrlStruct>
-                    (audio_ctrl_id, AudioMidiCtrlStruct(imacp->first, imacc->first, imac->first) ));
+              amcs->push_back(AudioMidiCtrlStruct(imacp->first, imacc->first, imac->first));
           }
         }
       }
