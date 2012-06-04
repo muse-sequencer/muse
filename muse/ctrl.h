@@ -118,23 +118,19 @@ class MidiAudioCtrlChanMap : public std::map<int /*midi chan number*/, MidiAudio
       
 // A reverse lookup thingy. Slower for now.
 struct AudioMidiCtrlStruct {
+      int _audio_ctrl;
       int _midi_port;
       int _midi_chan;
       int _midi_ctrl;
   
-      AudioMidiCtrlStruct(int midi_port, int midi_chan, int midi_ctrl)
+      AudioMidiCtrlStruct(int audio_ctrl, int midi_port, int midi_chan, int midi_ctrl)
       {
+        _audio_ctrl = audio_ctrl;
         _midi_port = midi_port;
         _midi_chan = midi_chan;
         _midi_ctrl = midi_ctrl;
       }
       };
-// typedef std::multimap<int, AudioMidiCtrlStruct, std::less<int> >::iterator iAudioMidiCtrlStructMap;
-// typedef std::multimap<int, AudioMidiCtrlStruct, std::less<int> >::const_iterator ciAudioMidiCtrlStructMap;
-// class AudioMidiCtrlStructMap : public std::multimap<int /*audio ctrl id number*/, AudioMidiCtrlStruct, std::less<int> > {
-//   public:
-//     
-//      };
 typedef std::vector<AudioMidiCtrlStruct>::iterator iAudioMidiCtrlStructMap;
 typedef std::vector<AudioMidiCtrlStruct>::const_iterator ciAudioMidiCtrlStructMap;
 class AudioMidiCtrlStructMap : public std::vector<AudioMidiCtrlStruct> {
@@ -148,7 +144,6 @@ typedef std::map<int, MidiAudioCtrlChanMap, std::less<int> >::const_iterator ciM
 class MidiAudioCtrlPortMap : public std::map<int /*midi port number*/, MidiAudioCtrlChanMap, std::less<int> > {
    public:
      
-      // Add will replace if found.
       MidiAudioCtrlStruct*    add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id);
       MidiAudioCtrlStructMap* find_ctrl_map(int midi_port, int midi_chan, int midi_ctrl_num);
       MidiAudioCtrlStruct*    find_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id);
@@ -156,9 +151,6 @@ class MidiAudioCtrlPortMap : public std::map<int /*midi port number*/, MidiAudio
       void erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id);
       };
 
-      
-      
-      
       
 //---------------------------------------------------------
 //   CtrlList

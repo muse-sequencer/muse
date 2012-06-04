@@ -251,25 +251,13 @@ void MidiAudioCtrlPortMap::erase_ctrl_struct(int midi_port, int midi_chan, int m
 void MidiAudioCtrlPortMap::find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs)
 {
   for(iMidiAudioCtrlPortMap         imacp = begin();               imacp != end();               ++imacp)
-  {
     for(iMidiAudioCtrlChanMap       imacc = imacp->second.begin(); imacc != imacp->second.end(); ++imacc)
-    {
       for(iMidiAudioCtrlMap         imac  = imacc->second.begin(); imac != imacc->second.end();  ++imac)
-      {
         for(iMidiAudioCtrlStructMap imacs = imac->second.begin();  imacs != imac->second.end();  ++imacs)
-        {
           if(imacs->first == audio_ctrl_id)
-          {
             //iAudioMidiCtrlStructMap iamcs = 
-              amcs->push_back(AudioMidiCtrlStruct(imacp->first, imacc->first, imac->first));
-          }
-        }
-      }
-    }
-  }
-  
+              amcs->push_back(AudioMidiCtrlStruct(audio_ctrl_id, imacp->first, imacc->first, imac->first));
 }
-
 
 //---------------------------------------------------------
 //   CtrlList

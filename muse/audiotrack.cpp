@@ -400,20 +400,14 @@ void AudioTrack::removeController(int id)
 
 void AudioTrack::swapControllerIDX(int idx1, int idx2)
 {
-  // FIXME This code is ugly.
-  // At best we would like to modify the keys (IDXs) in-place and
-  //  do some kind of deferred re-sort, but it can't be done...
-  
-  if(idx1 == idx2)
-    return;
-    
-  if(idx1 < 0 || idx2 < 0 || idx1 >= PipelineDepth || idx2 >= PipelineDepth)
+  if(idx1 == idx2 || idx1 < 0 || idx2 < 0 || idx1 >= PipelineDepth || idx2 >= PipelineDepth)
     return;
   
   CtrlList *cl;
   CtrlList *newcl;
   int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
   int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
+  int id_mask = ~((int)AC_PLUGIN_CTL_ID_MASK);
   int i, j;
   
   CtrlListList tmpcll;
@@ -423,7 +417,7 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
   {
     cl = icl->second;
     i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    j = cl->id() & ~((unsigned long)AC_PLUGIN_CTL_ID_MASK);
+    j = cl->id() & id_mask;
     if(j == id1 || j == id2)
     {
       newcl = new CtrlList(i | (j == id1 ? id2 : id1));
@@ -460,6 +454,32 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
     newcl = icl->second;
     _controller.insert(std::pair<const int, CtrlList*>(newcl->id(), newcl));
   } 
+  
+  // Remap midi to audio controls...
+  MidiAudioCtrlPortMap* macp = _controller.midiControls();
+  AudioMidiCtrlStructMap amcs;
+  for(iMidiAudioCtrlPortMap         imacp = macp->begin();         imacp != macp->end();         ++imacp)
+    for(iMidiAudioCtrlChanMap       imacc = imacp->second.begin(); imacc != imacp->second.end(); ++imacc)
+      for(iMidiAudioCtrlMap         imac  = imacc->second.begin(); imac != imacc->second.end();  ++imac)
+        for(iMidiAudioCtrlStructMap imacs = imac->second.begin();  imacs != imac->second.end();  ++imacs)
+        {
+          int id = imacs->first & id_mask;
+          if(id == id1 || id == id2)
+            amcs.push_back(AudioMidiCtrlStruct(imacs->first, imacp->first, imacc->first, imac->first));
+        }
+  for(iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+    macp->erase_ctrl_struct(iamcs->_midi_port, iamcs->_midi_chan, iamcs->_midi_ctrl, iamcs->_audio_ctrl);
+  for(iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+  {
+    int actrl = iamcs->_audio_ctrl;
+    int id    = actrl & id_mask;
+    actrl &= AC_PLUGIN_CTL_ID_MASK;
+    if(id == id1)
+      actrl |= id2;
+    else 
+      actrl |= id1;
+    macp->add_ctrl_struct(iamcs->_midi_port, iamcs->_midi_chan, iamcs->_midi_ctrl, actrl);
+  }
   
   // DELETETHIS 67
   /*
@@ -883,7 +903,7 @@ bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned
   }
   else
   {
-    if(track_ctrl_id < genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
       return _efxPipe->addScheduledControlEvent(track_ctrl_id, val, frame);
     else
     {
