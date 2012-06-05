@@ -49,7 +49,7 @@ private slots:
     void configChanged();
 
 public:
-    MidiAudioControl(int port = -1, int chan = 0, int ctrl = 0);
+    MidiAudioControl(int port = -1, int chan = 0, int ctrl = 0, QWidget* parent = 0);
     int port() const { return _port; }
     int chan() const { return _chan; }
     int ctrl() const { return _ctrl; }

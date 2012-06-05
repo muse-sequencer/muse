@@ -386,6 +386,10 @@ void AudioTrack::addController(CtrlList* list)
 
 void AudioTrack::removeController(int id)
       {
+      AudioMidiCtrlStructMap amcs;
+      _controller.midiControls()->find_audio_ctrl_structs(id, &amcs);  
+      for(ciAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++ iamcs)
+        _controller.midiControls()->erase(*iamcs);
       iCtrlList i = _controller.find(id);
       if (i == _controller.end()) {
             printf("AudioTrack::removeController id %d not found\n", id);
@@ -456,99 +460,29 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
   } 
   
   // Remap midi to audio controls...
-  MidiAudioCtrlPortMap* macp = _controller.midiControls();
+  MidiAudioCtrlMap* macm = _controller.midiControls();
   AudioMidiCtrlStructMap amcs;
-  for(iMidiAudioCtrlPortMap         imacp = macp->begin();         imacp != macp->end();         ++imacp)
-    for(iMidiAudioCtrlChanMap       imacc = imacp->second.begin(); imacc != imacp->second.end(); ++imacc)
-      for(iMidiAudioCtrlMap         imac  = imacc->second.begin(); imac != imacc->second.end();  ++imac)
-        for(iMidiAudioCtrlStructMap imacs = imac->second.begin();  imacs != imac->second.end();  ++imacs)
-        {
-          int id = imacs->first & id_mask;
-          if(id == id1 || id == id2)
-            amcs.push_back(AudioMidiCtrlStruct(imacs->first, imacp->first, imacc->first, imac->first));
-        }
-  for(iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
-    macp->erase_ctrl_struct(iamcs->_midi_port, iamcs->_midi_chan, iamcs->_midi_ctrl, iamcs->_audio_ctrl);
+  for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end();  ++imacm)
+  {
+    int actrl;
+    macm->hash_values(imacm->first, 0, 0, 0, &actrl);
+    actrl &= id_mask;
+    if(actrl == id1 || actrl == id2)
+      amcs.push_back(imacm);
+  }
   for(iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
   {
-    int actrl = iamcs->_audio_ctrl;
-    int id    = actrl & id_mask;
+    int port, chan, mctrl, actrl;
+    macm->hash_values((*iamcs)->first, &port, &chan, &mctrl, &actrl);
+    int id = actrl & id_mask;
     actrl &= AC_PLUGIN_CTL_ID_MASK;
     if(id == id1)
       actrl |= id2;
     else 
       actrl |= id1;
-    macp->add_ctrl_struct(iamcs->_midi_port, iamcs->_midi_chan, iamcs->_midi_ctrl, actrl);
+    macm->add_ctrl_struct(port, chan, mctrl, actrl, (*iamcs)->second);
+    macm->erase(*iamcs);
   }
-  
-  // DELETETHIS 67
-  /*
-  unsigned int idmask = ~AC_PLUGIN_CTL_ID_MASK;
-  
-  CtrlList* cl;
-  CtrlList* ctl1 = 0;
-  CtrlList* ctl2 = 0;
-  CtrlList* newcl1 = 0;
-  CtrlList* newcl2 = 0;
-  CtrlVal cv(0, 0.0);
-  int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
-  int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
-  int i, j;
-  double min, max;
-  
-  for(ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) 
-  {
-    cl = icl->second;
-    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    j = cl->id() & idmask;
-    
-    if(j == id1)
-    {
-      ctl1 = cl;
-      newcl1 = new CtrlList( i | id2 );
-      newcl1->setMode(cl->mode());
-      newcl1->setValueType(cl->valueType());
-      newcl1->setName(cl->name());
-      cl->range(&min, &max);
-      newcl1->setRange(min, max);
-      newcl1->setCurVal(cl->curVal());
-      newcl1->setDefault(cl->getDefault());
-      for(iCtrl ic = cl->begin(); ic != cl->end(); ++ic) 
-      {
-        cv = ic->second;
-        newcl1->insert(std::pair<const int, CtrlVal>(cv.frame, cv));
-      }
-    }
-    //else  
-    if(j == id2)
-    {
-      ctl2 = cl;
-      newcl2 = new CtrlList( i | id1 );
-      newcl2->setMode(cl->mode());
-      newcl2->setValueType(cl->valueType());
-      newcl2->setName(cl->name());
-      cl->range(&min, &max);
-      newcl2->setRange(min, max);
-      newcl2->setCurVal(cl->curVal());
-      newcl2->setDefault(cl->getDefault());
-      for(iCtrl ic = cl->begin(); ic != cl->end(); ++ic) 
-      {
-        cv = ic->second;
-        newcl2->insert(std::pair<const int, CtrlVal>(cv.frame, cv));
-      }
-    }
-  }  
-  if(ctl1)
-    _controller.erase(ctl1->id());
-  if(ctl2)
-    _controller.erase(ctl2->id());
-  if(newcl1)
-    //_controller.add(newcl1);
-    _controller.insert(std::pair<const int, CtrlList*>(newcl1->id(), newcl1));
-  if(newcl2)
-    _controller.insert(std::pair<const int, CtrlList*>(newcl2->id(), newcl2));
-    //_controller.add(newcl2);
-  */  
 }
 
 //---------------------------------------------------------
@@ -1014,26 +948,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
             if (*ip)
                   (*ip)->writeConfiguration(level, xml);
             }
-      for (ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) {
-            const CtrlList* cl = icl->second;
-
-            QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(cl->id()).arg(cl->curVal()).toAscii().constData();
-            s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
-            xml.tag(level++, s.toAscii().constData());
-            int i = 0;
-            for (ciCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
-                  QString s("%1 %2, ");
-                  xml.nput(level, s.arg(ic->second.frame).arg(ic->second.val).toAscii().constData());
-                  ++i;
-                  if (i >= 4) {
-                        xml.put(level, "");
-                        i = 0;
-                        }
-                  }
-            if (i)
-                  xml.put(level, "");
-            xml.etag(level--, "controller");
-            }
+      _controller.write(level, xml);            
       }
 
 //---------------------------------------------------------
@@ -1174,6 +1089,8 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                   l->setMode(p->ctrlMode(m));  
                 } 
             }
+      else if (tag == "midiMapper") 
+            _controller.midiControls()->read(xml);
       else
             return Track::readProperties(xml, tag);
       return false;

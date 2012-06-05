@@ -1,3 +1,7 @@
+05.06.2012:
+        - Rewrote midi-to-audio control mapper classes. (Tim...)
+        - Added save and load midi-to-audio settings.
+        - Remap or remove mappers when rack items moved or removed.
 04.06.2012:
         - Side branch r2_0_extra, copied from release_2_0:
         * Feature: Midi control of audio paramters. (Tim)

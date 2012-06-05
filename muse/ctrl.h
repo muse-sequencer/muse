@@ -92,63 +92,32 @@ typedef CtrlRecList::iterator iCtrlRec;
 //---------------------------------------------------------
 
 struct MidiAudioCtrlStruct {
-      
       };
+      
+typedef uint64_t MidiAudioCtrlMap_idx_t;
 
-typedef std::map<int, MidiAudioCtrlStruct, std::less<int> >::iterator iMidiAudioCtrlStructMap;
-typedef std::map<int, MidiAudioCtrlStruct, std::less<int> >::const_iterator ciMidiAudioCtrlStructMap;
-class MidiAudioCtrlStructMap : public std::map<int /*audio ctrl id number*/, MidiAudioCtrlStruct, std::less<int> > {
-  public:
-    
-     };
-      
-typedef std::map<int, MidiAudioCtrlStructMap, std::less<int> >::iterator iMidiAudioCtrlMap;
-typedef std::map<int, MidiAudioCtrlStructMap, std::less<int> >::const_iterator ciMidiAudioCtrlMap;
-class MidiAudioCtrlMap : public std::map<int /*midi ctrl number*/, MidiAudioCtrlStructMap, std::less<int> > {
-  public:
-    
-     };
+typedef std::map<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> >::iterator iMidiAudioCtrlMap;
+typedef std::map<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> >::const_iterator ciMidiAudioCtrlMap;
 
-typedef std::map<int, MidiAudioCtrlMap, std::less<int> >::iterator iMidiAudioCtrlChanMap;
-typedef std::map<int, MidiAudioCtrlMap, std::less<int> >::const_iterator ciMidiAudioCtrlChanMap;
-class MidiAudioCtrlChanMap : public std::map<int /*midi chan number*/, MidiAudioCtrlMap, std::less<int> > {
-   public:
-     
-      };
-      
-// A reverse lookup thingy. Slower for now.
-struct AudioMidiCtrlStruct {
-      int _audio_ctrl;
-      int _midi_port;
-      int _midi_chan;
-      int _midi_ctrl;
-  
-      AudioMidiCtrlStruct(int audio_ctrl, int midi_port, int midi_chan, int midi_ctrl)
-      {
-        _audio_ctrl = audio_ctrl;
-        _midi_port = midi_port;
-        _midi_chan = midi_chan;
-        _midi_ctrl = midi_ctrl;
-      }
-      };
-typedef std::vector<AudioMidiCtrlStruct>::iterator iAudioMidiCtrlStructMap;
-typedef std::vector<AudioMidiCtrlStruct>::const_iterator ciAudioMidiCtrlStructMap;
-class AudioMidiCtrlStructMap : public std::vector<AudioMidiCtrlStruct> {
+// Reverse lookup based on audio control.
+typedef std::vector<iMidiAudioCtrlMap>::iterator iAudioMidiCtrlStructMap;
+typedef std::vector<iMidiAudioCtrlMap>::const_iterator ciAudioMidiCtrlStructMap;
+class AudioMidiCtrlStructMap : public std::vector<iMidiAudioCtrlMap> {
   public:
     
      };
     
-// The main top level midi to audio map.     
-typedef std::map<int, MidiAudioCtrlChanMap, std::less<int> >::iterator iMidiAudioCtrlPortMap;
-typedef std::map<int, MidiAudioCtrlChanMap, std::less<int> >::const_iterator ciMidiAudioCtrlPortMap;
-class MidiAudioCtrlPortMap : public std::map<int /*midi port number*/, MidiAudioCtrlChanMap, std::less<int> > {
-   public:
-     
-      MidiAudioCtrlStruct*    add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id);
-      MidiAudioCtrlStructMap* find_ctrl_map(int midi_port, int midi_chan, int midi_ctrl_num);
-      MidiAudioCtrlStruct*    find_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id);
-      void find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs);
+// Midi to audio controller map.     
+// The index is a hash of port, chan, midi control number, and audio control number.     
+class MidiAudioCtrlMap : public std::map<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> > {
+  public:
+      MidiAudioCtrlMap_idx_t index_hash(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id) const; 
+      void hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num, int* audio_ctrl_id) const; 
+      iMidiAudioCtrlMap add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id, const MidiAudioCtrlStruct& amcs); 
+      void find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs); // const;
       void erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id);
+      void write(int level, Xml& xml) const;
+      void read(Xml& xml);
       };
 
       
@@ -230,7 +199,7 @@ typedef std::map<int, CtrlList*, std::less<int> >::const_iterator ciCtrlList;
 
 class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
    private:
-      MidiAudioCtrlPortMap _midi_controls;  // For midi control of audio controllers.
+      MidiAudioCtrlMap _midi_controls;  // For midi control of audio controllers.
    public:
       void add(CtrlList* vl);
       void clearDelete() {
@@ -246,7 +215,7 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
             return std::map<int, CtrlList*, std::less<int> >::find(id);
             }
             
-      MidiAudioCtrlPortMap* midiControls() { return &_midi_controls; }  
+      MidiAudioCtrlMap* midiControls() { return &_midi_controls; }  
       
       double value(int ctrlId, int frame, bool cur_val_only = false) const;
       void updateCurValues(int frame);
@@ -254,6 +223,7 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
             for(iCtrlList i = begin(); i != end(); ++i)
               i->second->clear();
            }     
+      void write(int level, Xml& xml) const;
       };
 
 extern double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlStruct* mapper, int midi_ctlnum, int midi_val);

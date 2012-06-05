@@ -40,7 +40,8 @@ namespace MusEGui {
 //    the first combo box item (the first readable port).
 // -----------------------------------
 
-MidiAudioControl::MidiAudioControl(int port, int chan, int ctrl)
+MidiAudioControl::MidiAudioControl(int port, int chan, int ctrl, QWidget* parent)
+  : QDialog(parent)
 {
   setupUi(this);
 

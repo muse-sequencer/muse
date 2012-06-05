@@ -159,106 +159,140 @@ double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlS
 // Midi to audio controller stuff
 //---------------------------------------------------------
 
-MidiAudioCtrlStruct* MidiAudioCtrlPortMap::add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id)
-{
-  iMidiAudioCtrlPortMap imacp = find(midi_port);
-  if(imacp == end())
-    imacp = insert(std::pair<int, MidiAudioCtrlChanMap >(midi_port, MidiAudioCtrlChanMap() )).first;
-  
-  iMidiAudioCtrlChanMap imacc = imacp->second.find(midi_chan);
-  if(imacc == imacp->second.end())
-    imacc = imacp->second.insert(std::pair<int, MidiAudioCtrlMap >(midi_chan, MidiAudioCtrlMap() )).first;
-  
-  iMidiAudioCtrlMap imac = imacc->second.find(midi_ctrl_num);
-  if(imac == imacc->second.end())
-    imac = imacc->second.insert(std::pair<int, MidiAudioCtrlStructMap >(midi_ctrl_num, MidiAudioCtrlStructMap() )).first;
-
-  iMidiAudioCtrlStructMap imacs = imac->second.find(audio_ctrl_id);
-  if(imacs == imac->second.end())
-    imacs = imac->second.insert(std::pair<int, MidiAudioCtrlStruct >(audio_ctrl_id, MidiAudioCtrlStruct() )).first;
-  
-  return &imacs->second;
+inline MidiAudioCtrlMap_idx_t MidiAudioCtrlMap::index_hash(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id) const
+{ 
+  return ((MidiAudioCtrlMap_idx_t(midi_port) & 0xffff) << 56) | 
+          ((MidiAudioCtrlMap_idx_t(midi_chan) & 0xf) << 52) | 
+          ((MidiAudioCtrlMap_idx_t(midi_ctrl_num) & 0xfffff) << 32) | 
+          (MidiAudioCtrlMap_idx_t(audio_ctrl_id) & 0xffffffff); 
 }
 
-MidiAudioCtrlStructMap* MidiAudioCtrlPortMap::find_ctrl_map(int midi_port, int midi_chan, int midi_ctrl_num)
+inline void MidiAudioCtrlMap::hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num, int* audio_ctrl_id) const
 {
-  iMidiAudioCtrlPortMap imacp = find(midi_port);
-  if(imacp == end())
-    return NULL;
-  
-  iMidiAudioCtrlChanMap imacc = imacp->second.find(midi_chan);
-  if(imacc == imacp->second.end())
-    return NULL;
-  
-  iMidiAudioCtrlMap imac = imacc->second.find(midi_ctrl_num);
-  if(imac == imacc->second.end())
-    return NULL;
-
-  return &imac->second;  
+  if(audio_ctrl_id)
+    *audio_ctrl_id = hash & 0xffffffff;
+  if(midi_ctrl_num)
+    *midi_ctrl_num = (hash >> 32) & 0xfffff;
+  if(midi_chan)
+    *midi_chan     = (hash >> 52) & 0xf;
+  if(midi_port)
+    *midi_port     = (hash >> 56) & 0xffffffff;
 }
 
-MidiAudioCtrlStruct* MidiAudioCtrlPortMap::find_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id)
+iMidiAudioCtrlMap MidiAudioCtrlMap::add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id, 
+                                                    const MidiAudioCtrlStruct& macs)
 {
-  iMidiAudioCtrlPortMap imacp = find(midi_port);
-  if(imacp == end())
-    return NULL;
-  
-  iMidiAudioCtrlChanMap imacc = imacp->second.find(midi_chan);
-  if(imacc == imacp->second.end())
-    return NULL;
-  
-  iMidiAudioCtrlMap imac = imacc->second.find(midi_ctrl_num);
-  if(imac == imacc->second.end())
-    return NULL;
-
-  iMidiAudioCtrlStructMap imacs = imac->second.find(audio_ctrl_id);
-  if(imacs == imac->second.end())
-    return NULL;
-  
-  return &imacs->second;  
+  MidiAudioCtrlMap_idx_t h = index_hash(midi_port, midi_chan, midi_ctrl_num, audio_ctrl_id);
+  iMidiAudioCtrlMap imacm = find(h);
+  if(imacm == end())
+    imacm = insert(std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(h, macs)).first;
+  return imacm;
 }
 
-void MidiAudioCtrlPortMap::erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id)
+void MidiAudioCtrlMap::erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id)
 {
-  iMidiAudioCtrlPortMap imacp = find(midi_port);
-  if(imacp == end())
-    return;
-  
-  iMidiAudioCtrlChanMap imacc = imacp->second.find(midi_chan);
-  if(imacc == imacp->second.end())
-    return;
-  
-  iMidiAudioCtrlMap imac = imacc->second.find(midi_ctrl_num);
-  if(imac == imacc->second.end())
-    return;
-
-  iMidiAudioCtrlStructMap imacs = imac->second.find(audio_ctrl_id);
-  if(imacs == imac->second.end())
-    return;
-
-  imac->second.erase(imacs);  
-  
-  if(imac->second.empty())
-    imacc->second.erase(imac);
-  
-  if(imacc->second.empty())
-    imacp->second.erase(imacc);
-  
-  if(imacp->second.empty())
-    erase(imacp);
+  MidiAudioCtrlMap_idx_t h = index_hash(midi_port, midi_chan, midi_ctrl_num, audio_ctrl_id);
+  erase(h);
 }
 
-void MidiAudioCtrlPortMap::find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs)
+void MidiAudioCtrlMap::find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs) //const
 {
-  for(iMidiAudioCtrlPortMap         imacp = begin();               imacp != end();               ++imacp)
-    for(iMidiAudioCtrlChanMap       imacc = imacp->second.begin(); imacc != imacp->second.end(); ++imacc)
-      for(iMidiAudioCtrlMap         imac  = imacc->second.begin(); imac != imacc->second.end();  ++imac)
-        for(iMidiAudioCtrlStructMap imacs = imac->second.begin();  imacs != imac->second.end();  ++imacs)
-          if(imacs->first == audio_ctrl_id)
-            //iAudioMidiCtrlStructMap iamcs = 
-              amcs->push_back(AudioMidiCtrlStruct(audio_ctrl_id, imacp->first, imacc->first, imac->first));
+  for(iMidiAudioCtrlMap imacm = begin(); imacm != end(); ++imacm)
+    if((imacm->first & 0xffffffff) == audio_ctrl_id)
+    {
+//       int port, chan, ctrl;
+//       hash_values(imacm->first, &port, &chan, &ctrl, 0);
+//       amcs->push_back(AudioMidiCtrlStruct(audio_ctrl_id, port, chan, ctrl));
+      amcs->push_back(imacm);
+    }
 }
 
+void MidiAudioCtrlMap::write(int level, Xml& xml) const
+{
+  for(ciMidiAudioCtrlMap imacm = begin(); imacm != end();  ++imacm)
+  {
+      int port, chan, mctrl, actrl;
+      hash_values(imacm->first, &port, &chan, &mctrl, &actrl);
+      QString s= QString("midiMapper port=\"%1\" ch=\"%2\" mctrl=\"%3\" actrl=\"%4\"")
+                          .arg(port)
+                          .arg(chan)
+                          .arg(mctrl)
+                          .arg(actrl);
+      xml.tag(level++, s.toAscii().constData());
+      
+      // TODO
+      //const MidiAudioCtrlStruct& macs = imacs->second;
+      //xml.intTag(level, "macs ???", macs.);
+      
+      xml.etag(level--, "midiMapper");
+  }
+}
+
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void MidiAudioCtrlMap::read(Xml& xml)
+      {
+      int port = -1, chan = -1, midi_ctrl = -1, audio_ctrl = -1;
+      MidiAudioCtrlStruct macs;
+      
+      QLocale loc = QLocale::c();
+      bool ok;
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::Attribut:
+                        if (tag == "port")
+                        {
+                              port = loc.toInt(xml.s2(), &ok);
+                              if(!ok)
+                                printf("MidiAudioCtrlPortMap::read failed reading port string: %s\n", xml.s2().toLatin1().constData());
+                        }
+                        else if (tag == "ch")
+                        {
+                              chan = loc.toDouble(xml.s2(), &ok);
+                              if(!ok)
+                                printf("MidiAudioCtrlPortMap::read failed reading ch string: %s\n", xml.s2().toLatin1().constData());
+                        }        
+                        else if (tag == "mctrl")
+                        {
+                              midi_ctrl = loc.toInt(xml.s2(), &ok);
+                              if(!ok)
+                                printf("MidiAudioCtrlPortMap::read failed reading mctrl string: %s\n", xml.s2().toLatin1().constData());
+                        }
+                        else if (tag == "actrl")
+                        {
+                              audio_ctrl = loc.toInt(xml.s2(), &ok);
+                              if(!ok)
+                                printf("MidiAudioCtrlPortMap::read failed reading actrl string: %s\n", xml.s2().toLatin1().constData());
+                        }
+                        else
+                              printf("unknown tag %s\n", tag.toLatin1().constData());
+                        break;
+                  case Xml::TagStart:
+                        // TODO
+                        //if (tag == "???") {  
+                        //      }
+                        //else
+                              xml.unknown("midiMapper");
+                        break;
+                  case Xml::TagEnd:
+                        if (xml.s1() == "midiMapper")
+                        {
+                              if(port != -1 && chan != -1 && midi_ctrl != -1 && audio_ctrl != -1)
+                                  add_ctrl_struct(port, chan, midi_ctrl, audio_ctrl, macs);
+                              return;
+                        }
+                  default:
+                        break;
+                  }
+            }
+      }
 //---------------------------------------------------------
 //   CtrlList
 //---------------------------------------------------------
@@ -600,5 +634,36 @@ void CtrlListList::updateCurValues(int frame)
   for(ciCtrlList cl = begin(); cl != end(); ++cl)
     cl->second->updateCurValue(frame);
 }
-      
+
+//---------------------------------------------------------
+//   value
+//---------------------------------------------------------
+
+void CtrlListList::write(int level, Xml& xml) const
+{
+  for (ciCtrlList icl = begin(); icl != end(); ++icl) {
+        const CtrlList* cl = icl->second;
+
+        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(cl->id()).arg(cl->curVal()).toAscii().constData();
+        s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
+        xml.tag(level++, s.toAscii().constData());
+        int i = 0;
+        for (ciCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
+              QString s("%1 %2, ");
+              xml.nput(level, s.arg(ic->second.frame).arg(ic->second.val).toAscii().constData());
+              ++i;
+              if (i >= 4) {
+                    xml.put(level, "");
+                    i = 0;
+                    }
+              }
+        if (i)
+              xml.put(level, "");
+        xml.etag(level--, "controller");
+        }
+  
+  _midi_controls.write(level, xml);
+}
+
+
 } // namespace MusECore
