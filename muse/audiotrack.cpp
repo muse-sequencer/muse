@@ -461,27 +461,18 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
   
   // Remap midi to audio controls...
   MidiAudioCtrlMap* macm = _controller.midiControls();
-  AudioMidiCtrlStructMap amcs;
-  for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end();  ++imacm)
+  for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end(); ++imacm)
   {
-    int actrl;
-    macm->hash_values(imacm->first, 0, 0, 0, &actrl);
-    actrl &= id_mask;
-    if(actrl == id1 || actrl == id2)
-      amcs.push_back(imacm);
-  }
-  for(iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
-  {
-    int port, chan, mctrl, actrl;
-    macm->hash_values((*iamcs)->first, &port, &chan, &mctrl, &actrl);
+    int actrl = imacm->second.audioCtrlId();
     int id = actrl & id_mask;
     actrl &= AC_PLUGIN_CTL_ID_MASK;
     if(id == id1)
       actrl |= id2;
-    else 
+    else if(id == id2)
       actrl |= id1;
-    macm->add_ctrl_struct(port, chan, mctrl, actrl, (*iamcs)->second);
-    macm->erase(*iamcs);
+    else
+      continue;
+    imacm->second.setAudioCtrlId(actrl);
   }
 }
 

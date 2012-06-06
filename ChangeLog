@@ -1,3 +1,5 @@
+06.06.2012:
+        - Another midi-to-audio mapper classes rewrite. (Tim)
 05.06.2012:
         - Rewrote midi-to-audio control mapper classes. (Tim...)
         - Added save and load midi-to-audio settings.

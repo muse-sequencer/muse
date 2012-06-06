@@ -935,14 +935,14 @@ void Audio::processMidi()
                   continue;
                 MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*t);
                 MidiAudioCtrlMap* macm = track->controller()->midiControls();
-                for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end(); ++imacm)
+                int h = macm->index_hash(port, chan, ctl);
+                std::pair<ciMidiAudioCtrlMap, ciMidiAudioCtrlMap> range = macm->equal_range(h);
+                for(ciMidiAudioCtrlMap imacm = range.first; imacm != range.second; ++imacm)
                 {
-                  int m_port, m_chan, m_mctrl, m_actrl;
-                  macm->hash_values(imacm->first, &m_port, &m_chan, &m_mctrl, &m_actrl);
-                  if(m_port != port || m_chan != chan || m_mctrl != ctl)
-                    continue;
-                  MidiAudioCtrlStruct* macs = &imacm->second;
-                  iCtrlList icl = track->controller()->find(m_actrl); 
+                  const MidiAudioCtrlStruct* macs = &imacm->second;
+                  int actrl = macs->audioCtrlId();
+                  
+                  iCtrlList icl = track->controller()->find(actrl); 
                   if(icl == track->controller()->end())
                     continue;
                   CtrlList* cl = icl->second;
@@ -964,7 +964,7 @@ void Audio::processMidi()
                   
                   // Add the current running sync frame to make the control processing happy
                   t += syncFrame;
-                  track->addScheduledControlEvent(m_actrl, dval, t);
+                  track->addScheduledControlEvent(actrl, dval, t);
                     
                   // TODO: Rec automation...
                 }

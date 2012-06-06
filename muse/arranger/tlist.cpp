@@ -1473,7 +1473,7 @@ void TList::changeAutomationColor(QAction* act)
     int port = -1, chan = 0, ctrl = 0;
     for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
     {
-      macm->hash_values((*iamcs)->first, &port, &chan, &ctrl, 0);
+      macm->hash_values((*iamcs)->first, &port, &chan, &ctrl);
       break; // Only a single item for now, thanks!
     }
     
@@ -1486,10 +1486,10 @@ void TList::changeAutomationColor(QAction* act)
       for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
         macm->erase(*iamcs);
       
-      port = pup->port();  chan = pup->chan();  ctrl = pup->ctrl();
+      port = pup->port(); chan = pup->chan(); ctrl = pup->ctrl();
       if(port >= 0 && chan >=0 && ctrl >= 0)
         // Add will replace if found.
-        macm->add_ctrl_struct(port, chan, ctrl, id, MusECore::MidiAudioCtrlStruct());
+        macm->add_ctrl_struct(port, chan, ctrl, MusECore::MidiAudioCtrlStruct(id));
       
       MusEGlobal::audio->msgIdle(false);
     }
@@ -1557,7 +1557,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
     {
       int port, chan, mctrl;
-      macm->hash_values((*iamcs)->first, &port, &chan, &mctrl, 0);
+      macm->hash_values((*iamcs)->first, &port, &chan, &mctrl);
       //QString s = QString("Port:%1 Chan:%2 Ctl:%3-%4").arg(port + 1)
       QString s = QString("Port:%1 Chan:%2 Ctl:%3").arg(port + 1)
                                                    .arg(chan + 1)

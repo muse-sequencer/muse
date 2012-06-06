@@ -91,13 +91,19 @@ typedef CtrlRecList::iterator iCtrlRec;
 //    Describes midi control of audio controllers
 //---------------------------------------------------------
 
-struct MidiAudioCtrlStruct {
+class MidiAudioCtrlStruct {
+        int _audio_ctrl_id;
+  public:
+        MidiAudioCtrlStruct();
+        MidiAudioCtrlStruct(int audio_ctrl_id);
+        int audioCtrlId() const        { return _audio_ctrl_id; } 
+        void setAudioCtrlId(int actrl) { _audio_ctrl_id = actrl; } 
       };
       
-typedef uint64_t MidiAudioCtrlMap_idx_t;
+typedef uint32_t MidiAudioCtrlMap_idx_t;
 
-typedef std::map<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> >::iterator iMidiAudioCtrlMap;
-typedef std::map<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> >::const_iterator ciMidiAudioCtrlMap;
+typedef std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> >::iterator iMidiAudioCtrlMap;
+typedef std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> >::const_iterator ciMidiAudioCtrlMap;
 
 // Reverse lookup based on audio control.
 typedef std::vector<iMidiAudioCtrlMap>::iterator iAudioMidiCtrlStructMap;
@@ -108,12 +114,12 @@ class AudioMidiCtrlStructMap : public std::vector<iMidiAudioCtrlMap> {
      };
     
 // Midi to audio controller map.     
-// The index is a hash of port, chan, midi control number, and audio control number.     
-class MidiAudioCtrlMap : public std::map<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> > {
+// The index is a hash of port, chan, and midi control number.     
+class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> > {
   public:
-      MidiAudioCtrlMap_idx_t index_hash(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id) const; 
-      void hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num, int* audio_ctrl_id) const; 
-      iMidiAudioCtrlMap add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id, const MidiAudioCtrlStruct& amcs); 
+      MidiAudioCtrlMap_idx_t index_hash(int midi_port, int midi_chan, int midi_ctrl_num) const; 
+      void hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num) const; 
+      iMidiAudioCtrlMap add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, const MidiAudioCtrlStruct& amcs); 
       void find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs); // const;
       void erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id);
       void write(int level, Xml& xml) const;

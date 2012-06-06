@@ -1232,7 +1232,7 @@ Pipeline::~Pipeline()
 bool Pipeline::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
 {
   // If a track controller, or the special dssi synth controller block, just return.
-  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= genACnum(MAX_PLUGINS, 0)) 
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0)) 
     return true;
   int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
   for (int i = 0; i < PipelineDepth; ++i)
