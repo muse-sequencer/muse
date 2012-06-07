@@ -610,10 +610,6 @@ void AudioTrack::processAutomationEvents()
             if(icr->id == id && icr->type == ARVT_STOP) 
             {
               int end = icr->frame;
-              // Erase everything up to, not including, this stop event's frame.
-              // Because an event was already stored directly when slider released.
-              if(end > start)
-                --end;
                   
               iCtrl s = cl->lower_bound(start);
               iCtrl e = cl->lower_bound(end);
@@ -636,7 +632,7 @@ void AudioTrack::processAutomationEvents()
     //  from CtrlRecList and put into cl.
     for (iCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
     {
-          if (icr->id == id && (icr->type == ARVT_VAL || icr->type == ARVT_START))
+          if (icr->id == id)
                 cl->add(icr->frame, icr->val);
     }
   }

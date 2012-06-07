@@ -1,3 +1,9 @@
+08.06.2012:
+        - ARVT_STOP automation events are also recorded now
+        - When clicking sliders in the plugin's native GUIs or the
+          mixer with SHIFT held down, straight lines are drawn (no
+          intermediate control points are recorded)
+          TODO: does not yet work for muse-native, but customized GUIs (flo)
 03.06.2012:
         - Merged documentation from local source to repository LaTeX document, 80% done (rj)
 27.05.2012:

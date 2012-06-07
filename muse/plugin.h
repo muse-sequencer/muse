@@ -497,7 +497,7 @@ class PluginGui : public QMainWindow {
       void load();
       void save();
       void bypassToggled(bool);
-      void sliderChanged(double, int);
+      void sliderChanged(double, int, bool);
       void labelChanged(double, int);
       void guiParamChanged(int);
       void ctrlPressed(int);

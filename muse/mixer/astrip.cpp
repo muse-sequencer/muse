@@ -455,12 +455,8 @@ void AudioStrip::auxLabelChanged(double val, unsigned int idx)
 //   volumeChanged
 //---------------------------------------------------------
 
-void AudioStrip::volumeChanged(double val)
+void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        track->enableVolumeController(false);
-      
       double vol;
       if (val <= MusEGlobal::config.minSlider) {
             vol = 0.0;
@@ -474,10 +470,7 @@ void AudioStrip::volumeChanged(double val)
       ((MusECore::AudioTrack*)track)->setVolume(vol);
       MusEGlobal::song->controllerChange(track);
       
-      ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_VOLUME, vol);
-
-      //MusEGlobal::song->update(SC_TRACK_MODIFIED); // for graphical automation update
-      //MusEGlobal::song->controllerChange(track);
+      if (!shift_pressed) ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_VOLUME, vol);
       }
 
 //---------------------------------------------------------
@@ -487,7 +480,7 @@ void AudioStrip::volumeChanged(double val)
 void AudioStrip::volumePressed()
       {
       AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if(at == AUTO_WRITE || (at == AUTO_READ || at == AUTO_TOUCH))
+      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
         track->enableVolumeController(false);
       
       double val = slider->value();
@@ -513,7 +506,8 @@ void AudioStrip::volumePressed()
 
 void AudioStrip::volumeReleased()
       {
-      if(track->automationType() != AUTO_WRITE)
+      AutomationType at = track->automationType();
+      if (at == AUTO_OFF || at == AUTO_READ || at == AUTO_TOUCH)
         track->enableVolumeController(true);
       
       ((MusECore::AudioTrack*)track)->stopAutoRecord(MusECore::AC_VOLUME, volume);
@@ -533,9 +527,9 @@ void AudioStrip::volumeRightClicked(const QPoint &p)
 
 void AudioStrip::volLabelChanged(double val)
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        track->enableVolumeController(false);
+      //AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
+      //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH)) // commented out by flo, not sure though
+      //  track->enableVolumeController(false);
       
       double vol;
       if (val <= MusEGlobal::config.minSlider) {
@@ -558,19 +552,15 @@ void AudioStrip::volLabelChanged(double val)
 //   panChanged
 //---------------------------------------------------------
 
-void AudioStrip::panChanged(double val)
+void AudioStrip::panChanged(double val, int, bool shift_pressed)
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        track->enablePanController(false);
-      
       panVal = val;  
       //MusEGlobal::audio->msgSetPan(((MusECore::AudioTrack*)track), val);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setPan(val);
       MusEGlobal::song->controllerChange(track);
       
-      ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_PAN, val);
+      if (!shift_pressed) ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_PAN, val);
       }
 
 //---------------------------------------------------------
@@ -580,7 +570,7 @@ void AudioStrip::panChanged(double val)
 void AudioStrip::panPressed()
       {
       AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if(at == AUTO_WRITE || (at == AUTO_READ || at == AUTO_TOUCH))
+      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
         track->enablePanController(false);
       
       panVal = pan->value();  
@@ -598,7 +588,8 @@ void AudioStrip::panPressed()
 
 void AudioStrip::panReleased()
       {
-      if(track->automationType() != AUTO_WRITE)
+      AutomationType at = track->automationType();
+      if (at == AUTO_OFF || at == AUTO_READ || at == AUTO_TOUCH)
         track->enablePanController(true);
       ((MusECore::AudioTrack*)track)->stopAutoRecord(MusECore::AC_PAN, panVal);
       }
@@ -617,9 +608,9 @@ void AudioStrip::panRightClicked(const QPoint &p)
 
 void AudioStrip::panLabelChanged(double val)
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-        track->enablePanController(false);
+      //AutomationType at = ((MusECore::AudioTrack*)track)->automationType(); // commented out by flo, not sure
+      //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      //  track->enablePanController(false);
       
       panVal = val;
       pan->setValue(val);
@@ -727,11 +718,10 @@ MusEGui::Knob* AudioStrip::addKnob(int type, int id, MusEGui::DoubleLabel** dlab
       _curGridRow += 2;
 
       connect(knob, SIGNAL(valueChanged(double,int)), pl, SLOT(setValue(double)));
-      //connect(pl, SIGNAL(valueChanged(double, int)), SLOT(panChanged(double)));
 
       if (type == 0) {
             connect(pl, SIGNAL(valueChanged(double, int)), SLOT(panLabelChanged(double)));
-            connect(knob, SIGNAL(sliderMoved(double,int)), SLOT(panChanged(double)));
+            connect(knob, SIGNAL(sliderMoved(double,int,bool)), SLOT(panChanged(double,int,bool)));
             connect(knob, SIGNAL(sliderPressed(int)), SLOT(panPressed()));
             connect(knob, SIGNAL(sliderReleased(int)), SLOT(panReleased()));
             connect(knob, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(panRightClicked(const QPoint &)));
@@ -894,9 +884,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       sl->setValue(MusECore::fast_log10(t->volume()) * 20.0);
 
       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));
-      //connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));
       connect(slider, SIGNAL(valueChanged(double,int)), sl, SLOT(setValue(double)));
-      connect(slider, SIGNAL(sliderMoved(double,int)), SLOT(volumeChanged(double)));
+      connect(slider, SIGNAL(sliderMoved(double,int,bool)), SLOT(volumeChanged(double,int,bool)));
       connect(slider, SIGNAL(sliderPressed(int)), SLOT(volumePressed()));
       connect(slider, SIGNAL(sliderReleased(int)), SLOT(volumeReleased()));
       connect(slider, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(volumeRightClicked(const QPoint &)));

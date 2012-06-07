@@ -3281,7 +3281,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         grid->addWidget(params[i].actuator, i, 0, 1, 3);
                         }
                   if (params[i].type == GuiParam::GUI_SLIDER) {
-                        connect(params[i].actuator, SIGNAL(sliderMoved(double,int)), SLOT(sliderChanged(double,int)));
+                        connect(params[i].actuator, SIGNAL(sliderMoved(double,int,bool)), SLOT(sliderChanged(double,int,bool)));
                         connect(params[i].label,    SIGNAL(valueChanged(double,int)), SLOT(labelChanged(double,int)));
                         connect(params[i].actuator, SIGNAL(sliderPressed(int)), SLOT(ctrlPressed(int)));
                         connect(params[i].actuator, SIGNAL(sliderReleased(int)), SLOT(ctrlReleased(int)));
@@ -3494,7 +3494,7 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
 //   sliderChanged
 //---------------------------------------------------------
 
-void PluginGui::sliderChanged(double val, int param)
+void PluginGui::sliderChanged(double val, int param, bool shift_pressed)
 {
       AutomationType at = AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
@@ -3519,7 +3519,7 @@ void PluginGui::sliderChanged(double val, int param)
       if(track)
       {
         track->setPluginCtrlVal(id, val);
-        track->recordAutomation(id, val);
+        if (!shift_pressed) track->recordAutomation(id, val); //with shift, we get straight lines :)
       }  
 }
 
