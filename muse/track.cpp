@@ -34,6 +34,7 @@
 #include "globaldefs.h"
 #include "route.h"
 #include "limits.h"
+#include "dssihost.h"
 
 namespace MusECore {
 
@@ -380,7 +381,21 @@ void Track::clearRecAutomation(bool clearList)
         continue;
       p->enableAllControllers(true);
     }
-      
+
+    if(type() == AUDIO_SOFTSYNTH)
+    {
+      SynthI* synth = static_cast<SynthI*>(this);
+      if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+      {
+        SynthIF* sif = synth->sif();
+        if(sif)
+        {
+          DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
+          dssi_sif->enableAllControllers(true);
+        }
+      }
+    }
+    
     if(clearList)
       t->recEvents()->clear();
 }

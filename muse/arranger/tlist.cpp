@@ -64,6 +64,7 @@
 #include "arranger.h"
 #include "undo.h"
 #include "midi_audio_control.h"
+#include "ctrl.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -1532,12 +1533,12 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     act->setData(id * 256 + i); // Shift 8 bits. Color in the bottom 8 bits. 
   }
   
-  m->addSeparator();
+  //m->addSeparator();
   m->addAction(new MenuTitleItem(tr("Midi control"), m));
   
   if(editAutomation && !editAutomation->isMidiTrack()) 
   {
-    m->addSeparator();
+    //m->addSeparator();
     QAction *act = m->addAction(tr("Assign"));
     act->setCheckable(false);
     act->setData(id * 256 + 255); // Shift 8 bits. Make midi menu the last item at 255.
@@ -1703,14 +1704,53 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     p->setTitle(tr("Viewable automation"));
                     MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)t)->controller();
                     QAction* act = 0;
+                    int last_rackpos = -1;
+                    bool internal_found = false;
+                    bool synth_found = false;
                     for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
                       MusECore::CtrlList *cl = icll->second;
                       if (cl->dontShow())
                         continue;
+                      
+                      int ctrl = cl->id();
+                      
+                      if(ctrl < AC_PLUGIN_CTL_BASE)
+                      {
+                        if(!internal_found)
+                          p->addAction(new MusEGui::MenuTitleItem(tr("Internal"), p)); 
+                        internal_found = true;
+                      }
+                      else
+                      {
+                        if(ctrl < (int)MusECore::genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+                        {
+                          int rackpos = (ctrl - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
+                          if(rackpos < PipelineDepth)
+                          {
+                            if(rackpos != last_rackpos)
+                            {
+                              QString s = ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos);
+                              p->addAction(new MusEGui::MenuTitleItem(s, p)); 
+                            }
+                            last_rackpos = rackpos;
+                          }
+                        }
+                        else
+                        {
+                          if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+                          {
+                            if(!synth_found)
+                              p->addAction(new MusEGui::MenuTitleItem(tr("Synth"), p)); 
+                            synth_found = true;
+                          }
+                        }
+                      }
+                      
                       act = p->addAction(cl->name());
                       act->setCheckable(true);
                       act->setChecked(cl->isVisible());
-                      int data = cl->id() * 256; // shift 8 bits
+                      
+                      int data = ctrl * 256; // shift 8 bits
                       data += 150; // illegal color > 100
                       act->setData(data);
                       PopupMenu *m = colorMenu(cl->color(), cl->id(), p);

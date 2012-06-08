@@ -794,8 +794,49 @@ void AudioTrack::setPan(double val)
 
 double AudioTrack::pluginCtrlVal(int ctlID) const
       {
+      bool en_1 = true, en_2 = true;
+      if(ctlID < AC_PLUGIN_CTL_BASE)  
+      {
+        if(ctlID == AC_VOLUME)
+        {
+          en_1 = _volumeEnCtrl; 
+          en_2 = _volumeEn2Ctrl;
+        }
+        else
+        if(ctlID == AC_PAN)
+        {
+          en_1 = _panEnCtrl; 
+          en_2 = _panEn2Ctrl;
+        }
+      }
+      else
+      {
+        if(ctlID < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+        {
+          _efxPipe->controllersEnabled(ctlID, &en_1, &en_2); 
+        }
+        else
+        {
+          if(type() == AUDIO_SOFTSYNTH)
+          {
+            const SynthI* synth = static_cast<const SynthI*>(this);
+            if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+            {
+              SynthIF* sif = synth->sif();
+              if(sif)
+              {
+                const DssiSynthIF* dssi_sif = static_cast<const DssiSynthIF*>(sif);
+                int in_ctrl_idx = ctlID & AC_PLUGIN_CTL_ID_MASK;
+                en_1 = dssi_sif->controllerEnabled(in_ctrl_idx);
+                en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
+              }
+            }
+          }
+        }
+      }  
+            
       return _controller.value(ctlID, MusEGlobal::audio->curFramePos(), 
-                               !MusEGlobal::automation || automationType() == AUTO_OFF);
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !en_1 || !en_2);
       }
 
 //---------------------------------------------------------
@@ -834,7 +875,7 @@ bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned
     {
       if(type() == AUDIO_SOFTSYNTH)
       {
-        SynthI* synth = static_cast<SynthI*>(this);
+        const SynthI* synth = static_cast<const SynthI*>(this);
         if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
         {
           SynthIF* sif = synth->sif();
@@ -850,6 +891,100 @@ bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned
   }  
   return true;
 }
+
+//---------------------------------------------------------
+//   enableController
+//   Enable or disable gui controls. 
+//   Used during automation recording to inhibit gui controls 
+//    from playback controller stream
+//---------------------------------------------------------
+
+void AudioTrack::enableController(int track_ctrl_id, bool en) 
+{
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
+  {
+    if(track_ctrl_id == AC_VOLUME)
+      enableVolumeController(en);
+    else
+    if(track_ctrl_id == AC_PAN)
+      enablePanController(en);
+  }
+  else
+  {
+    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+      _efxPipe->enableController(track_ctrl_id, en);
+    else
+    {
+      if(type() == AUDIO_SOFTSYNTH)
+      {
+        SynthI* synth = static_cast<SynthI*>(this);
+        if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+        {
+          SynthIF* sif = synth->sif();
+          if(sif)
+          {
+            DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
+            int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+            dssi_sif->enableController(in_ctrl_idx, en);
+          }
+        }
+      }
+    }
+  }  
+}
+
+//---------------------------------------------------------
+//   controllersEnabled
+//---------------------------------------------------------
+
+void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) const
+      {
+      bool en_1 = true, en_2 = true;
+      if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
+      {
+        if(track_ctrl_id == AC_VOLUME)
+        {
+          en_1 = _volumeEnCtrl; 
+          en_2 = _volumeEn2Ctrl;
+        }
+        else
+        if(track_ctrl_id == AC_PAN)
+        {
+          en_1 = _panEnCtrl; 
+          en_2 = _panEn2Ctrl;
+        }
+      }
+      else
+      {
+        if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+        {
+          _efxPipe->controllersEnabled(track_ctrl_id, &en_1, &en_2); 
+        }
+        else
+        {
+          if(type() == AUDIO_SOFTSYNTH)
+          {
+            const SynthI* synth = static_cast<const SynthI*>(this);
+            if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+            {
+              SynthIF* sif = synth->sif();
+              if(sif)
+              {
+                const DssiSynthIF* dssi_sif = static_cast<const DssiSynthIF*>(sif);
+                int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+                en_1 = dssi_sif->controllerEnabled(in_ctrl_idx);
+                en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
+              }
+            }
+          }
+        }
+      }  
+        
+      if(en1)
+        *en1 = en_1;
+      if(en2)
+        *en2 = en_2;
+      }
 
 void AudioTrack::recordAutomation(int n, double v)
       {
@@ -1199,20 +1334,20 @@ void AudioTrack::mapRackPluginsToControllers()
       unsigned param = id & AC_PLUGIN_CTL_ID_MASK;    
       int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
       
-      PluginIBase* p = 0;
+      const PluginIBase* p = 0;
       if(idx >= 0 && idx < PipelineDepth)
         p = (*_efxPipe)[idx];
       // Support a special block for dssi synth ladspa controllers. 
       else if(idx == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)    
       {
-        SynthI* synti = dynamic_cast < SynthI* > (this);
+        const SynthI* synti = dynamic_cast < const SynthI* > (this);
         if(synti)
         {
           SynthIF* sif = synti->sif();
           if(sif)
           {
 #ifdef DSSI_SUPPORT
-            DssiSynthIF* dsif = dynamic_cast < DssiSynthIF* > (sif);
+            const DssiSynthIF* dsif = dynamic_cast < const DssiSynthIF* > (sif);
             if(dsif)
               p = dsif;
 #endif

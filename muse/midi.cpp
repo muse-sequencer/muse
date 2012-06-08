@@ -949,7 +949,8 @@ void Audio::processMidi()
                   double dval = midi2AudioCtrlValue(cl, macs, ctl, val);
                   
                   // Time here needs to be frames always. 
-                  unsigned int t = event.time();
+                  unsigned int ev_t = event.time();
+                  unsigned int t = ev_t;
                   
 #ifdef _AUDIO_USE_TRUE_FRAME_
                   unsigned int pframe = _previousPos.frame();
@@ -966,7 +967,35 @@ void Audio::processMidi()
                   t += syncFrame;
                   track->addScheduledControlEvent(actrl, dval, t);
                     
-                  // TODO: Rec automation...
+                  // Rec automation...
+
+                  // For the record time, if stopped we don't want the circular running position,
+                  //  just the static one.
+                  unsigned int rec_t = isPlaying() ? ev_t : pframe;
+                  
+                  if(!MusEGlobal::automation)
+                    continue;
+                  AutomationType at = track->automationType();
+                  // Unlike our built-in gui controls, there is not much choice here but to 
+                  //  just do this:
+                  if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+                  //if(isPlaying() && (at == AUTO_WRITE || at == AUTO_TOUCH))
+                    track->enableController(actrl, false);
+                  if(isPlaying())
+                  {
+                    if(at == AUTO_WRITE || at == AUTO_TOUCH)
+                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));      
+                  }
+                  else 
+                  {
+                    if(at == AUTO_WRITE)
+                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));    
+                    else 
+                    if(at == AUTO_TOUCH)
+                      // In touch mode and not playing. Send directly to controller list.
+                      // Add will replace if found.
+                      cl->add(rec_t, dval);     
+                  }
                 }
               }  
             }
