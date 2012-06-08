@@ -326,6 +326,7 @@ CtrlList::CtrlList()
       _mode    = INTERPOLATE;
       _dontShow = false;
       _visible = false;
+      _guiUpdatePending = false;
       initColor(0);
       }
 
@@ -337,6 +338,7 @@ CtrlList::CtrlList(int id)
       _mode    = INTERPOLATE;
       _dontShow = false;
       _visible = false;
+      _guiUpdatePending = false;
       initColor(id);
       }
 
@@ -352,6 +354,7 @@ CtrlList::CtrlList(int id, QString name, double min, double max, CtrlValueType v
       _valueType = v;
       _dontShow = dontShow;
       _visible = false;
+      _guiUpdatePending = false;
       initColor(id);
 }
 
@@ -374,6 +377,7 @@ void CtrlList::assign(const CtrlList& l, int flags)
     _dontShow      = l._dontShow;
     _displayColor  = l._displayColor;
     _visible       = l._visible;
+    _guiUpdatePending = l._guiUpdatePending;
   }
   
   if(flags & ASSIGN_VALUES)
@@ -460,7 +464,12 @@ double CtrlList::curVal() const
 //---------------------------------------------------------
 void CtrlList::setCurVal(double val)
 {
+  bool upd = (val != _curVal);
   _curVal = val;
+  // If empty, any controller graphs etc. will be displaying this value.
+  // Otherwise they'll be displaying the list, so update is not required.
+  if(empty())     
+    _guiUpdatePending = upd;
 }
 
 //---------------------------------------------------------
@@ -470,11 +479,17 @@ void CtrlList::setCurVal(double val)
 
 void CtrlList::add(int frame, double val)
       {
+      bool upd = false;
       iCtrl e = find(frame);
       if (e != end())
+      {
+            upd = (val != e->second.val);
             e->second.val = val;
+      }
       else
             insert(std::pair<const int, CtrlVal> (frame, CtrlVal(frame, val)));
+            upd = true;
+      _guiUpdatePending = upd;
       }
 
 //---------------------------------------------------------
@@ -488,6 +503,7 @@ void CtrlList::del(int frame)
             return;
       
       erase(e);
+      _guiUpdatePending = true;
       }
 
 //---------------------------------------------------------
@@ -498,7 +514,10 @@ void CtrlList::del(int frame)
 
 void CtrlList::updateCurValue(int frame)
 {
-  _curVal = value(frame);
+  double v = value(frame);
+  bool upd = (v != _curVal);
+  _curVal = v;
+  _guiUpdatePending = upd;
 }
       
 //---------------------------------------------------------

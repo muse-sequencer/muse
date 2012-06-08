@@ -472,8 +472,6 @@ void AudioStrip::volumeChanged(double val)
       //MusEGlobal::audio->msgSetVolume((MusECore::AudioTrack*)track, vol);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setVolume(vol);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_VOLUME, vol);
 
       //MusEGlobal::song->update(SC_TRACK_MODIFIED); // for graphical automation update
@@ -502,8 +500,6 @@ void AudioStrip::volumePressed()
       //MusEGlobal::audio->msgSetVolume((MusECore::AudioTrack*)track, volume);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setVolume(volume);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_VOLUME, volume);
       }
 
@@ -549,8 +545,6 @@ void AudioStrip::volLabelChanged(double val)
       //audio->msgSetVolume((MusECore::AudioTrack*)track, vol);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setVolume(vol);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_VOLUME, vol);
       }
 
@@ -568,8 +562,6 @@ void AudioStrip::panChanged(double val)
       //MusEGlobal::audio->msgSetPan(((MusECore::AudioTrack*)track), val);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setPan(val);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_PAN, val);
       }
 
@@ -587,8 +579,6 @@ void AudioStrip::panPressed()
       //MusEGlobal::audio->msgSetPan(((MusECore::AudioTrack*)track), panVal);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setPan(panVal);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_PAN, panVal);
       }
 
@@ -626,8 +616,6 @@ void AudioStrip::panLabelChanged(double val)
       //MusEGlobal::audio->msgSetPan((MusECore::AudioTrack*)track, val);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setPan(val);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_PAN, val);
       }
 

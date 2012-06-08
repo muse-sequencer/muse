@@ -1,3 +1,8 @@
+08.06.2012:
+        - Replaced Song::controllerChange() with a lower-level 
+           CtrlList::guiUpdatePending()/clearGuiUpdatePending(). Checked and cleared in 
+           Song::beat() at the nice slow heartbeat rate instead of direct calls to QWidget::update().
+          This means ALL controls should update their graphs now, and at a more reasonable rate.
 07.06.2012:
         - More automation fixes. (Tim)
 06.06.2012:

@@ -522,7 +522,6 @@ void Audio::msgSwapControllerIDX(AudioTrack* node, int idx1, int idx2)
       msg.a      = idx1;
       msg.b      = idx2;
       sendMsg(&msg);
-      MusEGlobal::song->controllerChange(node);
 }
 
 //---------------------------------------------------------
@@ -537,7 +536,6 @@ void Audio::msgClearControllerEvents(AudioTrack* node, int acid)
       msg.snode  = node;
       msg.ival   = acid;
       sendMsg(&msg);
-      MusEGlobal::song->controllerChange(node);
 }
 
 //---------------------------------------------------------
@@ -581,7 +579,6 @@ void Audio::msgEraseACEvent(AudioTrack* node, int acid, int frame)
       msg.ival   = acid;
       msg.a      = frame; 
       sendMsg(&msg);
-      MusEGlobal::song->controllerChange(node);
 }
 
 //---------------------------------------------------------
@@ -598,7 +595,6 @@ void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int fr
       msg.a      = frame1; 
       msg.b      = frame2; 
       sendMsg(&msg);
-      MusEGlobal::song->controllerChange(node);
 }
 
 //---------------------------------------------------------
@@ -615,7 +611,6 @@ void Audio::msgAddACEvent(AudioTrack* node, int acid, int frame, double val)
       msg.a      = frame; 
       msg.dval   = val;
       sendMsg(&msg);
-      MusEGlobal::song->controllerChange(node);
 }
 
 //---------------------------------------------------------
@@ -633,7 +628,6 @@ void Audio::msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame
       msg.b      = newFrame; 
       msg.dval   = val;
       sendMsg(&msg);
-      MusEGlobal::song->controllerChange(node);
 }
 
 //---------------------------------------------------------

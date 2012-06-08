@@ -3813,7 +3813,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
       setCursor();
 }
 
-void PartCanvas::controllerChanged(MusECore::Track* t)
+void PartCanvas::controllerChanged(MusECore::Track* t, int)
 {
   redraw((QRect(0, mapy(t->y()), width(), rmapy(t->height()))));  // TODO Check this - correct?
 }

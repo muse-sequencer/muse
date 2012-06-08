@@ -152,6 +152,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       QColor _displayColor;
       bool _visible;
       bool _dontShow; // when this is true the control exists but is not compatible with viewing in the arranger
+      volatile bool _guiUpdatePending; // Gui heartbeat routines read this. Checked and cleared in Song::beat().
       void initColor(int i);
 
    public:
@@ -191,6 +192,8 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void setVisible(bool v) { _visible = v; }
       bool isVisible() const { return _visible; }
       bool dontShow() const { return _dontShow; }
+      bool guiUpdatePending() const { return _guiUpdatePending; }
+      void clearGuiUpdatePending() { _guiUpdatePending = false; }
       };
 
 //---------------------------------------------------------

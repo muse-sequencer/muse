@@ -1677,8 +1677,6 @@ void PluginI::updateControllers()
     
   for(unsigned long i = 0; i < controlPorts; ++i) 
     _track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);  // TODO A faster bulk message
-   
-  MusEGlobal::song->controllerChange(_track);
 }
   
 //---------------------------------------------------------
@@ -3413,8 +3411,6 @@ void PluginGui::ctrlPressed(int param)
         if(track)
         {
           track->setPluginCtrlVal(id, val);
-          MusEGlobal::song->controllerChange(track);
-          
           track->startAutoRecord(id, val);
         }
       }
@@ -3426,8 +3422,6 @@ void PluginGui::ctrlPressed(int param)
         if(track)
         {
           track->setPluginCtrlVal(id, val);
-          MusEGlobal::song->controllerChange(track);
-          
           track->startAutoRecord(id, val);
         }
       }
@@ -3510,8 +3504,6 @@ void PluginGui::sliderChanged(double val, int param)
       if(track)
       {
         track->setPluginCtrlVal(id, val);
-        MusEGlobal::song->controllerChange(track);
-        
         track->recordAutomation(id, val);
       }  
 }
@@ -3549,8 +3541,6 @@ void PluginGui::labelChanged(double val, int param)
       if(track)
       {
         track->setPluginCtrlVal(id, val);
-        MusEGlobal::song->controllerChange(track);
-        
         track->startAutoRecord(id, val);
       }  
 }
@@ -3938,10 +3928,7 @@ void PluginGui::guiParamChanged(int idx)
       if(track && id != -1)
       {
           id = MusECore::genACnum(id, param);
-          
           track->setPluginCtrlVal(id, val);
-          MusEGlobal::song->controllerChange(track);
-          
           switch(type) 
           {
              case GuiWidgets::DOUBLE_LABEL:
@@ -4070,8 +4057,6 @@ void PluginGui::guiSliderPressed(int idx)
       plugin->setParam(param, val);
       
       track->setPluginCtrlVal(id, val);
-      MusEGlobal::song->controllerChange(track);
-      
       track->startAutoRecord(id, val);
       
       // Needed so that paging a slider updates a label or other buddy control.

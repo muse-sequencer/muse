@@ -751,18 +751,11 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
 void Song::addACEvent(AudioTrack* t, int acid, int frame, double val)
 {
   MusEGlobal::audio->msgAddACEvent(t, acid, frame, val);
-  emit controllerChanged(t); 
 }
 
 void Song::changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val)
 {
   MusEGlobal::audio->msgChangeACEvent(t, acid, frame, newFrame, val);
-  emit controllerChanged(t); 
-}
-
-void Song::controllerChange(Track* t)
-{
-  emit controllerChanged(t); 
 }
 
 //---------------------------------------------------------
@@ -1613,6 +1606,22 @@ void Song::beat()
       if (MusEGlobal::audio->isPlaying())
         setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
 
+      // Update anything related to audio controller graphs etc.
+      for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++ it)
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        AudioTrack* at = static_cast<AudioTrack*>(*it); 
+        CtrlListList* cll = at->controller();
+        for(ciCtrlList icl = cll->begin(); icl != cll->end(); ++icl)
+        {
+          CtrlList* cl = icl->second;
+          if(cl->isVisible() && !cl->dontShow() && cl->guiUpdatePending())  
+            emit controllerChanged(at, cl->id());
+          cl->clearGuiUpdatePending();
+        }
+      }
+      
       // Update synth native guis at the heartbeat rate.
       for(ciSynthI is = _synthIs.begin(); is != _synthIs.end(); ++is)
         (*is)->guiHeartBeat();
