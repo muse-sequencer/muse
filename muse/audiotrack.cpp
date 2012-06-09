@@ -556,10 +556,6 @@ void AudioTrack::processAutomationEvents()
             if(icr->id == id && icr->type == ARVT_STOP) 
             {
               int end = icr->frame;
-              // Erase everything up to, not including, this stop event's frame.
-              // Because an event was already stored directly when slider released.
-              //if(end > start)   // Removed by Flo  // REMOVE Tim.
-              //  --end;
               
               iCtrl s = cl->lower_bound(start);
               iCtrl e = cl->lower_bound(end);
@@ -582,7 +578,6 @@ void AudioTrack::processAutomationEvents()
     //  from CtrlRecList and put into cl.
     for (iCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
     {
-          //if (icr->id == id && (icr->type == ARVT_VAL || icr->type == ARVT_START))   // Changed by Flo.  REMOVE Tim.
           if (icr->id == id)
           {
                 // Must optimize these types otherwise multiple vertices appear on flat straight lines in the graphs.

@@ -3483,7 +3483,8 @@ void PluginGui::sliderChanged(double val, int param, bool shift_pressed)
       if(track)
         at = track->automationType();
       
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      if ( (at == AUTO_WRITE) || // FINDMICHJETZT: tim, i think this is wrong (flo)
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
         plugin->enableController(param, false);
       
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
@@ -3519,7 +3520,8 @@ void PluginGui::labelChanged(double val, int param)
       if(track)
         at = track->automationType();
       
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      if ( (at == AUTO_WRITE) || // FINDMICHJETZT: tim, this _might_ be wrong (flo)
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
         plugin->enableController(param, false);
       
       double dval = val;
@@ -3884,7 +3886,8 @@ void PluginGui::guiParamChanged(int idx)
       if(track)
         at = track->automationType();
       
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      if ( (at == AUTO_WRITE) || // FINDMICHJETZT: tim, i think this is wrong (flo)
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
         plugin->enableController(param, false);
       
       double val = 0.0;

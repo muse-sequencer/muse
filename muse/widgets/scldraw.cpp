@@ -721,7 +721,7 @@ QRect ScaleDraw::maxBoundingRect(QPainter *p) const
 	r.setBottom(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
 		    + fm.height() );
 
-	//wmax = d_len + d_majLen + d_hpad + wl;
+	//wmax = d_len + d_majLen + d_hpad + wl; DELETETHIS
 
 	r.setLeft(d_xorg - d_majLen - d_hpad - wl);
 	r.setWidth(d_len + 2*(d_majLen + d_hpad + wl));

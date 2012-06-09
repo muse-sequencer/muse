@@ -458,7 +458,8 @@ void AudioStrip::auxLabelChanged(double val, unsigned int idx)
 void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
       {
       AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      if ( (at == AUTO_WRITE) ||
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
         track->enableVolumeController(false);
       
       double vol;
@@ -528,7 +529,8 @@ void AudioStrip::volumeRightClicked(const QPoint &p)
 void AudioStrip::volLabelChanged(double val)
       {
       AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH)) 
+      if ( (at == AUTO_WRITE) ||
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
         track->enableVolumeController(false);
       
       double vol;
@@ -553,7 +555,8 @@ void AudioStrip::volLabelChanged(double val)
 void AudioStrip::panChanged(double val, int, bool shift_pressed)
       {
       AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      if ( (at == AUTO_WRITE) ||
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
         track->enablePanController(false);
       
       panVal = val;  
@@ -607,7 +610,8 @@ void AudioStrip::panRightClicked(const QPoint &p)
 void AudioStrip::panLabelChanged(double val)
       {
       AutomationType at = ((MusECore::AudioTrack*)track)->automationType(); 
-      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      if ( (at == AUTO_WRITE) ||
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
         track->enablePanController(false);
       
       panVal = val;

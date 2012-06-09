@@ -1412,7 +1412,7 @@ void TList::changeAutomation(QAction* act)
   if(act->data() == -1)
     return;
   int colindex = act->data().toInt() & 0xff;
-  int id = (act->data().toInt() & 0x00ffffff) / 256;
+  int id = (act->data().toInt() & 0x00ffffff) >> 8;
   // Is it the midi control action item?
   if (colindex == 255)
     return;
@@ -1445,7 +1445,7 @@ void TList::changeAutomationColor(QAction* act)
   if(act->data() == -1)
     return;
   int colindex = act->data().toInt() & 0xff;
-  int id = (act->data().toInt() & 0x00ffffff) / 256;
+  int id = (act->data().toInt() & 0x00ffffff) >> 8;
 
   // Is it the clear midi control action item?
   if(colindex == 254)  
@@ -1530,7 +1530,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     act->setCheckable(true);
     if (c == collist[i])
         act->setChecked(true);
-    act->setData(id * 256 + i); // Shift 8 bits. Color in the bottom 8 bits. 
+    act->setData((id<<8) + i); // Shift 8 bits. Color in the bottom 8 bits. 
   }
   
   //m->addSeparator();
@@ -1541,7 +1541,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     //m->addSeparator();
     QAction *act = m->addAction(tr("Assign"));
     act->setCheckable(false);
-    act->setData(id * 256 + 255); // Shift 8 bits. Make midi menu the last item at 255.
+    act->setData((id<<8) + 255); // Shift 8 bits. Make midi menu the last item at 255.
     
     MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
     MusECore::MidiAudioCtrlMap* macm = track->controller()->midiControls();
@@ -1551,7 +1551,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     if(!amcs.empty())
     {
       QAction *cact = m->addAction(tr("Clear"));
-      cact->setData(id * 256 + 254); // Shift 8 bits. Make clear the second-last item at 254
+      cact->setData((id<<8) + 254); // Shift 8 bits. Make clear the second-last item at 254
       m->addSeparator();
     }
     
@@ -1750,7 +1750,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       act->setCheckable(true);
                       act->setChecked(cl->isVisible());
                       
-                      int data = ctrl * 256; // shift 8 bits
+                      int data = ctrl<<8; // shift 8 bits
                       data += 150; // illegal color > 100
                       act->setData(data);
                       PopupMenu *m = colorMenu(cl->color(), cl->id(), p);

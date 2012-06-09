@@ -923,7 +923,7 @@ void Audio::processMidi()
                 val = event.dataA();
               }
               
-              // Midi learn ! 
+              // Midi learn! 
               MusEGlobal::midiLearnPort = port;
               MusEGlobal::midiLearnChan = chan;
               MusEGlobal::midiLearnCtrl = ctl;
@@ -978,8 +978,9 @@ void Audio::processMidi()
                   AutomationType at = track->automationType();
                   // Unlike our built-in gui controls, there is not much choice here but to 
                   //  just do this:
-                  if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-                  //if(isPlaying() && (at == AUTO_WRITE || at == AUTO_TOUCH))
+                  if ( (at == AUTO_WRITE) ||
+                       (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
+                  //if(isPlaying() && (at == AUTO_WRITE || at == AUTO_TOUCH)) DELETETHIS
                     track->enableController(actrl, false);
                   if(isPlaying())
                   {
@@ -990,8 +991,7 @@ void Audio::processMidi()
                   {
                     if(at == AUTO_WRITE)
                       track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));    
-                    else 
-                    if(at == AUTO_TOUCH)
+                    else if(at == AUTO_TOUCH)
                       // In touch mode and not playing. Send directly to controller list.
                       // Add will replace if found.
                       cl->add(rec_t, dval);     
