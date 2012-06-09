@@ -457,6 +457,10 @@ void AudioStrip::auxLabelChanged(double val, unsigned int idx)
 
 void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
       {
+      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
+      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+        track->enableVolumeController(false);
+      
       double vol;
       if (val <= MusEGlobal::config.minSlider) {
             vol = 0.0;
@@ -468,8 +472,6 @@ void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
       //MusEGlobal::audio->msgSetVolume((MusECore::AudioTrack*)track, vol);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setVolume(vol);
-      MusEGlobal::song->controllerChange(track);
-      
       if (!shift_pressed) ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_VOLUME, vol);
       }
 
@@ -495,8 +497,6 @@ void AudioStrip::volumePressed()
       //MusEGlobal::audio->msgSetVolume((MusECore::AudioTrack*)track, volume);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setVolume(volume);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_VOLUME, volume);
       }
 
@@ -527,9 +527,9 @@ void AudioStrip::volumeRightClicked(const QPoint &p)
 
 void AudioStrip::volLabelChanged(double val)
       {
-      //AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH)) // commented out by flo, not sure though
-      //  track->enableVolumeController(false);
+      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
+      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH)) 
+        track->enableVolumeController(false);
       
       double vol;
       if (val <= MusEGlobal::config.minSlider) {
@@ -543,8 +543,6 @@ void AudioStrip::volLabelChanged(double val)
       //audio->msgSetVolume((MusECore::AudioTrack*)track, vol);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setVolume(vol);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_VOLUME, vol);
       }
 
@@ -554,12 +552,14 @@ void AudioStrip::volLabelChanged(double val)
 
 void AudioStrip::panChanged(double val, int, bool shift_pressed)
       {
+      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
+      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+        track->enablePanController(false);
+      
       panVal = val;  
       //MusEGlobal::audio->msgSetPan(((MusECore::AudioTrack*)track), val);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setPan(val);
-      MusEGlobal::song->controllerChange(track);
-      
       if (!shift_pressed) ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_PAN, val);
       }
 
@@ -577,8 +577,6 @@ void AudioStrip::panPressed()
       //MusEGlobal::audio->msgSetPan(((MusECore::AudioTrack*)track), panVal);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setPan(panVal);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_PAN, panVal);
       }
 
@@ -608,17 +606,15 @@ void AudioStrip::panRightClicked(const QPoint &p)
 
 void AudioStrip::panLabelChanged(double val)
       {
-      //AutomationType at = ((MusECore::AudioTrack*)track)->automationType(); // commented out by flo, not sure
-      //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
-      //  track->enablePanController(false);
+      AutomationType at = ((MusECore::AudioTrack*)track)->automationType(); 
+      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+        track->enablePanController(false);
       
       panVal = val;
       pan->setValue(val);
       //MusEGlobal::audio->msgSetPan((MusECore::AudioTrack*)track, val);
       // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       ((MusECore::AudioTrack*)track)->setPan(val);
-      MusEGlobal::song->controllerChange(track);
-      
       ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_PAN, val);
       }
 

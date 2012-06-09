@@ -1092,7 +1092,7 @@ int OscDssiIF::oscControl(lo_arg** argv)
   if(_oscSynthIF)
   {
     _oscSynthIF->oscControl(argv[0]->i, argv[1]->f);
-    if (port<maxDssiPort)
+    if (port<(int)maxDssiPort)
       old_control[control_port_mapper->at(port)]=argv[1]->f;
   }
   
@@ -1170,7 +1170,7 @@ int OscEffectIF::oscControl(lo_arg** argv)
   if(_oscPluginI)
   {
     _oscPluginI->oscControl(argv[0]->i, argv[1]->f);
-    if (port<maxDssiPort)
+    if (port<(int)maxDssiPort)
       old_control[control_port_mapper->at(port)]=argv[1]->f;
   }
   

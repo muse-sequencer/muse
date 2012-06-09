@@ -3699,7 +3699,7 @@ bool checkIfNearPoint(int mouseX, int mouseY, int eventX, int eventY, int circum
 //    controller added.
 //---------------------------------------------------------
 
-void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, bool NOTaddNewCtrl)
+void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, bool /*NOTaddNewCtrl*/)
 {
     if (t->isMidiTrack())
       return;
@@ -3813,7 +3813,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
       setCursor();
 }
 
-void PartCanvas::controllerChanged(MusECore::Track* t)
+void PartCanvas::controllerChanged(MusECore::Track* t, int)
 {
   redraw((QRect(0, mapy(t->y()), width(), rmapy(t->height()))));  // TODO Check this - correct?
 }

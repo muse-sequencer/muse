@@ -751,18 +751,11 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
 void Song::addACEvent(AudioTrack* t, int acid, int frame, double val)
 {
   MusEGlobal::audio->msgAddACEvent(t, acid, frame, val);
-  emit controllerChanged(t); 
 }
 
 void Song::changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val)
 {
   MusEGlobal::audio->msgChangeACEvent(t, acid, frame, newFrame, val);
-  emit controllerChanged(t); 
-}
-
-void Song::controllerChange(Track* t)
-{
-  emit controllerChanged(t); 
 }
 
 //---------------------------------------------------------
@@ -1613,6 +1606,22 @@ void Song::beat()
       if (MusEGlobal::audio->isPlaying())
         setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
 
+      // Update anything related to audio controller graphs etc.
+      for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++ it)
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        AudioTrack* at = static_cast<AudioTrack*>(*it); 
+        CtrlListList* cll = at->controller();
+        for(ciCtrlList icl = cll->begin(); icl != cll->end(); ++icl)
+        {
+          CtrlList* cl = icl->second;
+          if(cl->isVisible() && !cl->dontShow() && cl->guiUpdatePending())  
+            emit controllerChanged(at, cl->id());
+          cl->setGuiUpdatePending(false);
+        }
+      }
+      
       // Update synth native guis at the heartbeat rate.
       for(ciSynthI is = _synthIs.begin(); is != _synthIs.end(); ++is)
         (*is)->guiHeartBeat();
@@ -2412,6 +2421,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   bool isEvent = false, canSeekPrev = false, canSeekNext = false, canEraseRange = false;
   bool canAdd = false;
   double ctlval = 0.0;
+  int frame = 0;
   if(track)
   {
     ciCtrlList icl = track->controller()->find(acid);
@@ -2420,11 +2430,17 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
       CtrlList *cl = icl->second;
       canAdd = true;
       
-      //int frame = pos[0].frame(); DELETETHIS
-      int frame = MusEGlobal::audio->pos().frame();       // Try this. p4.0.33 DELETETHIS
+      frame = MusEGlobal::audio->pos().frame();       
       
-      ctlval = cl->curVal();
-
+      bool en1, en2;
+      track->controllersEnabled(acid, &en1, &en2);
+      
+      AutomationType at = track->automationType();
+      if(!MusEGlobal::automation || at == AUTO_OFF || !en1 || !en2) 
+        ctlval = cl->curVal();  
+      else  
+        ctlval = cl->value(frame);
+      
       count = cl->size();
       if(count)
       {
@@ -2490,10 +2506,10 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   switch(sel)
   {
     case ADD_EVENT:
-          MusEGlobal::audio->msgAddACEvent(track, acid, pos[0].frame(), ctlval);
+          MusEGlobal::audio->msgAddACEvent(track, acid, frame, ctlval);
     break;
     case CLEAR_EVENT:
-          MusEGlobal::audio->msgEraseACEvent(track, acid, pos[0].frame());
+          MusEGlobal::audio->msgEraseACEvent(track, acid, frame);
     break;
 
     case CLEAR_RANGE:

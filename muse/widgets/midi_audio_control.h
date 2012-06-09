@@ -1,9 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: panknob.cpp,v 1.5 2004/01/23 08:41:38 wschweer Exp $
 //
-//  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  midi_audio_control.h
+//  Copyright (C) 2012 by Tim E. Real (terminator356 at users.sourceforge.net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,34 +20,41 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 //=========================================================
+#ifndef MIDI_AUDIO_CONTROL_H
+#define MIDI_AUDIO_CONTROL_H
 
-//#include "../audio.h"
-#include "song.h"
-#include "panknob.h"
-#include "track.h"
+#include "ui_midi_audio_control_base.h"
 
 namespace MusEGui {
 
-//---------------------------------------------------------
-//   PanKnob
-//---------------------------------------------------------
+class MidiAudioControl : public QDialog, public Ui::MidiAudioControlBase
+{
+    Q_OBJECT
 
-PanKnob::PanKnob(QWidget* parent, AudioTrack* s)
-   : MusEGui::Knob(parent, "pan")
-      {
-      src = s;
-      connect(this, SIGNAL(valueChanged(double,int)), SLOT(valueChanged(double)));
-      }
+private:
+    int _port, _chan, _ctrl;
+    bool _is_learning;
+    void update();
+    void resetLearn();
+    void updateCtrlBoxes();
 
-//---------------------------------------------------------
-//   panChanged
-//---------------------------------------------------------
+private slots:
+    void heartbeat();
+    void learnChanged(bool);
+    void portChanged(int);
+    void chanChanged();
+    void ctrlTypeChanged(int);
+    void ctrlHChanged();
+    void ctrlLChanged();
+    void configChanged();
 
-void PanKnob::valueChanged(double val)
-      {
-      //audio->msgSetPan(src, val);
-      // p4.0.21 audio->msgXXX waits. Do we really need to?
-      src->setPan(val);
-      }
+public:
+    MidiAudioControl(int port = -1, int chan = 0, int ctrl = 0, QWidget* parent = 0);
+    int port() const { return _port; }
+    int chan() const { return _chan; }
+    int ctrl() const { return _ctrl; }
+};
 
-} // namespace MusEGui
+}
+
+#endif // MIDI_AUDIO_CONTROL_H

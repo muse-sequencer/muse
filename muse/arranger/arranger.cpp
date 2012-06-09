@@ -530,7 +530,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(dropMidiFile(const QString&)), SIGNAL(dropMidiFile(const QString&)));
 
       connect(canvas, SIGNAL(toolChanged(int)), SIGNAL(toolChanged(int)));
-      connect(MusEGlobal::song,   SIGNAL(controllerChanged(MusECore::Track*)), SLOT(controllerChanged(MusECore::Track*)));
+      connect(MusEGlobal::song,   SIGNAL(controllerChanged(MusECore::Track*, int)), SLOT(controllerChanged(MusECore::Track*, int)));
 
       configChanged();  // set configuration values
       if(canvas->part())
@@ -1109,9 +1109,9 @@ void Arranger::clear()
 //      emit redirectWheelEvent(ev);
 //      }
 
-void Arranger::controllerChanged(MusECore::Track *t)
+void Arranger::controllerChanged(MusECore::Track *t, int ctrlId)
 {
-      canvas->controllerChanged(t);
+      canvas->controllerChanged(t, ctrlId);
 }
 
 //---------------------------------------------------------

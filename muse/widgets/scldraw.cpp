@@ -636,7 +636,7 @@ int ScaleDraw::maxHeight(QPainter *p) const
 //------------------------------------------------------------
 QRect ScaleDraw::maxBoundingRect(QPainter *p) const
 {
-    int i, wl,h,wmax;
+    int i, wl; //,wmax;
     int a, ar, amin, amax;
     double arc;
 
@@ -645,7 +645,6 @@ QRect ScaleDraw::maxBoundingRect(QPainter *p) const
     QFontMetrics fm = p->fontMetrics();
 
     wl = maxLabelWidth(p, TRUE);
-    h = fm.height();
 
     switch(d_orient)
     {
@@ -722,7 +721,7 @@ QRect ScaleDraw::maxBoundingRect(QPainter *p) const
 	r.setBottom(MusECore::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
 		    + fm.height() );
 
-	wmax = d_len + d_majLen + d_hpad + wl;
+	//wmax = d_len + d_majLen + d_hpad + wl;
 
 	r.setLeft(d_xorg - d_majLen - d_hpad - wl);
 	r.setWidth(d_len + 2*(d_majLen + d_hpad + wl));

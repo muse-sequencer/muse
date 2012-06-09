@@ -57,6 +57,7 @@ QT4_WRAP_CPP (widget_mocs
       menutitleitem.h
       meter.h
       metronome.h  
+      midi_audio_control.h  
       midisyncimpl.h  
       mixdowndialog.h  
       mlabel.h  
@@ -122,6 +123,7 @@ file (GLOB widgets_ui_files
       itransformbase.ui  
       metronomebase.ui  
       midisync.ui  
+      midi_audio_control_base.ui  
       mittransposebase.ui  
       mixdowndialogbase.ui  
       mtrackinfobase.ui
@@ -169,6 +171,7 @@ file (GLOB widgets_source_files
       menutitleitem.cpp
       meter.cpp
       metronome.cpp 
+      midi_audio_control.cpp 
       midisyncimpl.cpp 
       mixdowndialog.cpp 
       mlabel.cpp 

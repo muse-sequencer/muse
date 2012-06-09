@@ -128,7 +128,6 @@ int grepTrack(FILE* f, int trackno)
       {
 //      printf("TRACK %d\n", trackno);
       int mtype, mlen;
-      int b;
       char* buffer;
 
       char tmp[4];
@@ -156,7 +155,7 @@ int grepTrack(FILE* f, int trackno)
                   case 0xa0:
                   case 0xb0:
                   case 0xe0:
-                        b = getc(f);
+                        getc(f);
                         ++cpos;
                   case 0xc0:
                   case 0xd0:

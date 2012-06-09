@@ -102,6 +102,7 @@ const char* seqMsgList[] = {
       "AUDIO_ADD_AC_EVENT",
       "AUDIO_CHANGE_AC_EVENT",
       "AUDIO_SET_SOLO", "AUDIO_SET_SEND_METRONOME", 
+      "AUDIO_START_MIDI_LEARN",
       "MS_PROCESS", "MS_STOP", "MS_SET_RTC", "MS_UPDATE_POLL_FD",
       "SEQM_IDLE", "SEQM_SEEK"
       };
@@ -127,6 +128,10 @@ Audio::Audio()
 
       _pos.setType(Pos::FRAMES);
       _pos.setFrame(0);
+#ifdef _AUDIO_USE_TRUE_FRAME_
+      _previousPos.setType(Pos::FRAMES);
+      _previousPos.setFrame(0);
+#endif
       nextTickPos = curTickPos = 0;
 
       midiClick     = 0;
@@ -468,6 +473,10 @@ void Audio::process(unsigned frames)
       process1(samplePos, offset, frames);
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
             (*i)->processWrite();
+      
+#ifdef _AUDIO_USE_TRUE_FRAME_
+      _previousPos = _pos;
+#endif
       if (isPlaying()) {
             _pos += frames;
             curTickPos = nextTickPos;
@@ -626,6 +635,13 @@ void Audio::processMsg(AudioMsg* msg)
                   msg->snode->setSendMetronome((bool)msg->ival);
                   break;
             
+            case AUDIO_START_MIDI_LEARN:
+                  // Reset the values. The engine will fill these from driver events.
+                  MusEGlobal::midiLearnPort = -1;
+                  MusEGlobal::midiLearnChan = -1;
+                  MusEGlobal::midiLearnCtrl = -1;
+                  break;
+            
             case AUDIO_SET_SEG_SIZE:
                   MusEGlobal::segmentSize = msg->ival;
                   MusEGlobal::sampleRate  = msg->iival;
@@ -690,6 +706,9 @@ void Audio::processMsg(AudioMsg* msg)
                   MusEGlobal::song->processMsg(msg);
                   if (isPlaying()) {
                         if (!MusEGlobal::checkAudioDevice()) return;
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                        _previousPos = _pos;
+#endif
                         _pos.setTick(curTickPos);
                         int samplePos = _pos.frame();
                         syncFrame     = MusEGlobal::audioDevice->framePos();
@@ -742,6 +761,9 @@ void Audio::seek(const Pos& p)
       if (MusEGlobal::heavyDebugMsg)
         printf("Audio::seek frame:%d\n", p.frame());
         
+#ifdef _AUDIO_USE_TRUE_FRAME_
+      _previousPos = _pos;
+#endif
       _pos        = p;
       if (!MusEGlobal::checkAudioDevice()) return;
       syncFrame   = MusEGlobal::audioDevice->framePos();
@@ -993,7 +1015,11 @@ void Audio::recordStop()
 
 unsigned Audio::framesSinceCycleStart() const
 {
-  return lrint((curTime() - syncTime) * MusEGlobal::sampleRate);
+  unsigned f =  lrint((curTime() - syncTime) * MusEGlobal::sampleRate);
+  // Safety due to inaccuracies. It cannot be after the segment, right?
+  if(f >= MusEGlobal::segmentSize)
+    f = MusEGlobal::segmentSize - 1;
+  return f;
 }
 
 //---------------------------------------------------------

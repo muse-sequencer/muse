@@ -246,12 +246,16 @@ class PluginIBase
       
       virtual void enableController(unsigned long i, bool v = true) = 0;   
       virtual bool controllerEnabled(unsigned long i) const = 0;          
+      virtual void enable2Controller(unsigned long i, bool v = true) = 0; 
       virtual bool controllerEnabled2(unsigned long i) const = 0;          
+      virtual void enableAllControllers(bool v = true) = 0;
+      virtual void enable2AllControllers(bool v = true) = 0;
       virtual void updateControllers() = 0;
       
       virtual void writeConfiguration(int level, Xml& xml) = 0;
       virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
       
+      virtual bool addScheduledControlEvent(unsigned long i, float val, unsigned frame);    // returns true if event cannot be delivered
       virtual unsigned long parameters() const = 0;                  
       virtual unsigned long parametersOut() const = 0;
       virtual void setParam(unsigned long i, float val) = 0;
@@ -412,6 +416,10 @@ class Pipeline : public std::vector<PluginI*> {
       void move(int idx, bool up);
       bool empty(int idx) const;
       void setChannels(int);
+      bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // returns true if event cannot be delivered
+      void enableController(int track_ctrl_id, bool en); 
+      void enable2Controller(int track_ctrl_id, bool en); 
+      void controllersEnabled(int track_ctrl_id, bool* en1, bool* en2); 
       };
 
 typedef Pipeline::iterator iPluginI;
@@ -508,6 +516,7 @@ class PluginGui : public QMainWindow {
       void guiSliderReleased(int);
       void ctrlRightClicked(const QPoint &, int);
       void guiSliderRightClicked(const QPoint &, int);
+      void guiContextMenuReq(int idx);
 
    protected slots:
       void heartBeat();

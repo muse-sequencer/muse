@@ -111,6 +111,8 @@ class MEvent {
 //---------------------------------------------------------
 
 class MidiRecordEvent : public MEvent {
+   private:
+      unsigned int _tick; // To store tick when external sync is on, required besides frame.
    public:
       MidiRecordEvent() : MEvent() {}
       MidiRecordEvent(const MEvent& e) : MEvent(e) {}
@@ -121,6 +123,9 @@ class MidiRecordEvent : public MEvent {
       MidiRecordEvent(unsigned t, int p, int type, EvData data)
         : MEvent(t, p, type, data) {}
       ~MidiRecordEvent() {}
+      
+      unsigned int tick() {return _tick;}
+      void setTick(unsigned int tick) {_tick = tick;}
       };
 
 //---------------------------------------------------------
@@ -200,20 +205,19 @@ class MidiFifo {
 
 //---------------------------------------------------------
 //   MidiRecFifo
-//   (Same as MidiFifo, but with a smaller size.)
 //---------------------------------------------------------
 
 class MidiRecFifo {
-      MidiPlayEvent fifo[MIDI_REC_FIFO_SIZE];
+      MidiRecordEvent fifo[MIDI_REC_FIFO_SIZE];
       volatile int size;
       int wIndex;
       int rIndex;
 
    public:
       MidiRecFifo()  { clear(); }
-      bool put(const MidiPlayEvent& event);   // returns true on fifo overflow
-      MidiPlayEvent get();
-      const MidiPlayEvent& peek(int = 0);
+      bool put(const MidiRecordEvent& event);   // returns true on fifo overflow
+      MidiRecordEvent get();
+      const MidiRecordEvent& peek(int = 0);
       void remove();
       bool isEmpty() const { return size == 0; }
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }

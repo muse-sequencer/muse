@@ -34,6 +34,7 @@
 #include "marker/marker.h"
 #include "midiport.h"
 #include "midictrl.h"
+#include "sync.h"
 #include "audio.h"
 #include "mididev.h"
 #include "driver/alsamidi.h"
@@ -859,31 +860,149 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 void Audio::processMidi()
       {
       MusEGlobal::midiBusy=true;
+      
+      bool extsync = MusEGlobal::extSyncFlag.value();
+      
       //
       // TODO: syntis should directly write into recordEventList
       //
-      for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) {
-            MidiDevice* md = *id;
+      for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
+      {
+        MidiDevice* md = *id;
 
-            // klumsy hack for synti devices:
-            if(md->isSynti())
+        // klumsy hack for MESS synti devices:
+        if(md->isSynti())
+        {
+          SynthI* s = (SynthI*)md;
+          while (s->eventsPending()) 
+          {
+            MusECore::MidiRecordEvent ev = s->receiveEvent();
+            md->recordEvent(ev);
+          }
+        }
+        
+        md->collectMidiEvents();
+        
+        // Take snapshots of the current sizes of the recording fifos, 
+        //  because they may change while here in process, asynchronously.
+        md->beforeProcess();
+        
+        //
+        // --------- Handle midi events for audio tracks -----------
+        // 
+        
+        int port = md->midiPort(); // Port should be same as event.port() from this device. Same idea event.channel().
+        if(port < 0)
+          continue;
+        
+        for(int chan = 0; chan < MIDI_CHANNELS; ++chan)     
+        {
+          MusECore::MidiRecFifo& rf = md->recordEvents(chan);
+          int count = md->tmpRecordCount(chan);
+          for(int i = 0; i < count; ++i) 
+          {
+            MusECore::MidiRecordEvent event(rf.peek(i));
+
+            int etype = event.type();
+            if(etype == MusECore::ME_CONTROLLER || etype == MusECore::ME_PITCHBEND || etype == MusECore::ME_PROGRAM)
             {
-              SynthI* s = (SynthI*)md;
-              while (s->eventsPending()) 
+              int ctl, val;
+              if(etype == MusECore::ME_CONTROLLER)
               {
-                MusECore::MidiRecordEvent ev = s->receiveEvent();
-                md->recordEvent(ev);
+                ctl = event.dataA();
+                val = event.dataB();
               }
-            }
-            
-            md->collectMidiEvents();
-            
-            // Take snapshots of the current sizes of the recording fifos, 
-            //  because they may change while here in process, asynchronously.
-            md->beforeProcess();
-            }
+              else if(etype == MusECore::ME_PITCHBEND)
+              {
+                ctl = MusECore::CTRL_PITCH;
+                val = event.dataA();
+              }
+              else if(etype == MusECore::ME_PROGRAM)
+              {
+                ctl = MusECore::CTRL_PROGRAM;
+                val = event.dataA();
+              }
+              
+              // Midi learn ! 
+              MusEGlobal::midiLearnPort = port;
+              MusEGlobal::midiLearnChan = chan;
+              MusEGlobal::midiLearnCtrl = ctl;
+              
+              // Send to audio tracks...
+              for (MusECore::iTrack t = MusEGlobal::song->tracks()->begin(); t != MusEGlobal::song->tracks()->end(); ++t) 
+              {
+                if((*t)->isMidiTrack())
+                  continue;
+                MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*t);
+                MidiAudioCtrlMap* macm = track->controller()->midiControls();
+                int h = macm->index_hash(port, chan, ctl);
+                std::pair<ciMidiAudioCtrlMap, ciMidiAudioCtrlMap> range = macm->equal_range(h);
+                for(ciMidiAudioCtrlMap imacm = range.first; imacm != range.second; ++imacm)
+                {
+                  const MidiAudioCtrlStruct* macs = &imacm->second;
+                  int actrl = macs->audioCtrlId();
+                  
+                  iCtrlList icl = track->controller()->find(actrl); 
+                  if(icl == track->controller()->end())
+                    continue;
+                  CtrlList* cl = icl->second;
+                  double dval = midi2AudioCtrlValue(cl, macs, ctl, val);
+                  
+                  // Time here needs to be frames always. 
+                  unsigned int ev_t = event.time();
+                  unsigned int t = ev_t;
+                  
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                  unsigned int pframe = _previousPos.frame();
+#else
+                  unsigned int pframe = _pos.frame();
+#endif
+                  if(pframe > t)  // Technically that's an error, shouldn't happen
+                    t = 0;
+                  else
+                    // Subtract the current audio position frame
+                    t -= pframe;  
+                  
+                  // Add the current running sync frame to make the control processing happy
+                  t += syncFrame;
+                  track->addScheduledControlEvent(actrl, dval, t);
+                    
+                  // Rec automation...
 
-      bool extsync = MusEGlobal::extSyncFlag.value();
+                  // For the record time, if stopped we don't want the circular running position,
+                  //  just the static one.
+                  unsigned int rec_t = isPlaying() ? ev_t : pframe;
+                  
+                  if(!MusEGlobal::automation)
+                    continue;
+                  AutomationType at = track->automationType();
+                  // Unlike our built-in gui controls, there is not much choice here but to 
+                  //  just do this:
+                  if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+                  //if(isPlaying() && (at == AUTO_WRITE || at == AUTO_TOUCH))
+                    track->enableController(actrl, false);
+                  if(isPlaying())
+                  {
+                    if(at == AUTO_WRITE || at == AUTO_TOUCH)
+                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));      
+                  }
+                  else 
+                  {
+                    if(at == AUTO_WRITE)
+                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));    
+                    else 
+                    if(at == AUTO_TOUCH)
+                      // In touch mode and not playing. Send directly to controller list.
+                      // Add will replace if found.
+                      cl->add(rec_t, dval);     
+                  }
+                }
+              }  
+            }
+          }   
+        }
+      }
+
       for (MusECore::iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t) 
       {
             MusECore::MidiTrack* track = *t;
@@ -933,15 +1052,30 @@ void Audio::processMidi()
                           
                             for(int i = 0; i < count; ++i) 
                             {
-                              MusECore::MidiPlayEvent event(rf.peek(i));
+                              MusECore::MidiRecordEvent event(rf.peek(i));
                               event.setPort(port);
                               // dont't echo controller changes back to software
                               // synthesizer:
                               if(!dev->isSynti() && md && track->recEcho())
+                              {
+                                // All recorded events arrived in the previous period. Shift into this period for playback.
+                                unsigned int et = event.time();
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                                unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+#else                                
+                                unsigned int t = et + frameOffset;
+#endif
+                                event.setTime(t);
                                 md->addScheduledEvent(event);
-                              // If syncing externally the event time is already in units of ticks, set above.  p3.3.25
-                              if(!extsync)
-                                event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));  // set tick time
+                                event.setTime(et);  // Restore for recording.
+                              }
+                              
+                              // Make sure the event is recorded in units of ticks.  
+                              if(extsync)  
+                                event.setTime(event.tick());  // HACK: Transfer the tick to the frame time
+                              else
+                                event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
+                                
                               if(recording) 
                                 rl->add(event);
                             }      
@@ -952,7 +1086,7 @@ void Audio::processMidi()
                           int count = dev->tmpRecordCount(channel);
                           for(int i = 0; i < count; ++i) 
                           {
-                                MusECore::MidiPlayEvent event(rf.peek(i));
+                                MusECore::MidiRecordEvent event(rf.peek(i));
                                 int defaultPort = devport;
                                 int drumRecPitch=0; //prevent compiler warning: variable used without initialization
                                 MusECore::MidiController *mc = 0;
@@ -1043,7 +1177,16 @@ void Audio::processMidi()
   
                                 if (!dev->isSynti()) 
                                 {
-                                  //Check if we're outputting to another port than default:
+                                  // All recorded events arrived in previous period. Shift into this period for playback. 
+                                  //  frameoffset needed to make process happy.
+                                  unsigned int et = event.time();
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                                  unsigned int t = et - _previousPos.frame() + _pos.frame() + frameOffset;
+#else
+                                  unsigned int t = et + frameOffset;
+#endif
+                                  event.setTime(t);  
+                                  // Check if we're outputting to another port than default:
                                   if (devport == defaultPort) {
                                         event.setPort(port);
                                         if(md && track->recEcho())
@@ -1055,14 +1198,18 @@ void Audio::processMidi()
                                         if(mdAlt && track->recEcho())
                                           mdAlt->addScheduledEvent(event);
                                         }
+                                  event.setTime(et);  // Restore for recording.
+                                  
                                   // Shall we activate meters even while rec echo is off? Sure, why not...
                                   if(event.isNote() && event.dataB() > track->activity())
                                     track->setActivity(event.dataB());
                                 }
                                 
-                                // If syncing externally the event time is already in units of ticks, set above.  p3.3.25
-                                if(!extsync)
-                                  event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));  // set tick time
+                                // Make sure the event is recorded in units of ticks.  
+                                if(extsync)  
+                                  event.setTime(event.tick());  // HACK: Transfer the tick to the frame time
+                                else
+                                  event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
   
                                 // Special handling of events stored in rec-lists. a bit hACKish. TODO: Clean up (after 0.7)! :-/ (ml)
                                 if (recording) 

@@ -306,6 +306,39 @@ MidiController::ControllerType midiControllerType(int num)
       }
 
 //---------------------------------------------------------
+//   midiCtrlTerms2Number
+//---------------------------------------------------------
+
+int midiCtrlTerms2Number(int type_num, int ctrl)
+{
+  ctrl &= 0xffff;
+  switch(type_num)
+  {
+    case MidiController::Controller7:
+      return ctrl & 0xff;
+    case MidiController::Controller14:
+      return CTRL_14_OFFSET + ctrl;
+    case MidiController::RPN:
+      return CTRL_RPN_OFFSET + ctrl;
+    case MidiController::NRPN:
+      return CTRL_NRPN_OFFSET  + ctrl;
+    case MidiController::Pitch:
+      return CTRL_PITCH;
+    case MidiController::Program:
+      return CTRL_PROGRAM;
+    case MidiController::Velo:
+      return CTRL_VELOCITY;
+    case MidiController::RPN14:
+      return CTRL_RPN14_OFFSET + ctrl;
+    case MidiController::NRPN14:
+      return CTRL_NRPN14_OFFSET + ctrl;
+    default:
+      printf("MusE: unknown ctrl type in midiCtrTerms2Number()\n");
+      return ctrl;
+  }
+}
+
+//---------------------------------------------------------
 //   updateBias
 //---------------------------------------------------------
 

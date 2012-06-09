@@ -250,61 +250,11 @@ void Thread::removePollFd(int fd, int action)
 
 void Thread::loop()
       {
-      // Changed by Tim. p3.3.17
-
       if (!MusEGlobal::debugMode) {
             if (mlockall(MCL_CURRENT | MCL_FUTURE))
                   perror("WARNING: Cannot lock memory:");
             }
       
-/*      DELETETHIS 46 
-      pthread_attr_t* attributes = 0;
-      attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
-      pthread_attr_init(attributes);
-
-      if (MusEGlobal::realTimeScheduling && realTimePriority > 0) {
-
-            doSetuid();
-//             if (pthread_attr_setschedpolicy(attributes, SCHED_FIFO)) {
-//                   printf("cannot set FIFO scheduling class for RT thread\n");
-//                   }
-//             if (pthread_attr_setscope (attributes, PTHREAD_SCOPE_SYSTEM)) {
-//                   printf("Cannot set scheduling scope for RT thread\n");
-//                   }
-//             struct sched_param rt_param;
-//             memset(&rt_param, 0, sizeof(rt_param));
-//             rt_param.sched_priority = realTimePriority;
-//             if (pthread_attr_setschedparam (attributes, &rt_param)) {
-//                   printf("Cannot set scheduling priority %d for RT thread (%s)\n",
-//                      realTimePriority, strerror(errno));
-//                   }
-
-           // do the SCHED_FIFO stuff _after_ thread creation:
-           struct sched_param *param = new struct sched_param;
-           param->sched_priority = realTimePriority;
-           int error = pthread_setschedparam(pthread_self(), SCHED_FIFO, param);
-            if (error != 0)
-              perror( "error set_schedparam 2:");
-
-//          if (!MusEGlobal::debugMode) {
-//                if (mlockall(MCL_CURRENT|MCL_FUTURE))
-//                      perror("WARNING: Cannot lock memory:");
-//                }
-
-            undoSetuid();
-            }
-
-*/
-
-
-/*
-#define BIG_ENOUGH_STACK (1024*1024*1)
-      char buf[BIG_ENOUGH_STACK];
-      for (int i = 0; i < BIG_ENOUGH_STACK; i++)
-            buf[i] = i;
-#undef BIG_ENOUGH_STACK
-*/
-
 #ifdef __APPLE__
 #define BIG_ENOUGH_STACK (1024*256*1)
 #else
@@ -318,7 +268,8 @@ void Thread::loop()
       pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
       pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 
-      int policy = 0;
+      int policy = buf[0]; // Initialize using buf[0] to keep the compiler from complaining about unused buf.
+      policy = 0;          // Now set the true desired inital value.
       if ((policy = sched_getscheduler (0)) < 0) {
             printf("Thread: Cannot get current client scheduler: %s\n", strerror(errno));
             }
