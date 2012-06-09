@@ -169,14 +169,14 @@ MidiAudioCtrlStruct::MidiAudioCtrlStruct(int audio_ctrl_id) : _audio_ctrl_id(aud
 { 
 };
 
-inline MidiAudioCtrlMap_idx_t MidiAudioCtrlMap::index_hash(int midi_port, int midi_chan, int midi_ctrl_num) const
+MidiAudioCtrlMap_idx_t MidiAudioCtrlMap::index_hash(int midi_port, int midi_chan, int midi_ctrl_num) const
 { 
   return ((MidiAudioCtrlMap_idx_t(midi_port) & 0xff) << 24) | 
           ((MidiAudioCtrlMap_idx_t(midi_chan) & 0xf) << 20) | 
           (MidiAudioCtrlMap_idx_t(midi_ctrl_num) & 0xfffff);  
 }
 
-inline void MidiAudioCtrlMap::hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num) const
+void MidiAudioCtrlMap::hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num) const
 {
   if(midi_ctrl_num)
     *midi_ctrl_num = hash & 0xfffff;
