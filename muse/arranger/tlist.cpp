@@ -22,6 +22,8 @@
 
 #include <cmath>
 
+#include <QAction>
+#include <QActionGroup>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -35,6 +37,7 @@
 #include <QIcon>
 #include <QSpinBox>
 #include <QToolTip>
+#include <QList>
 
 #include "globals.h"
 #include "icons.h"
@@ -1413,8 +1416,8 @@ void TList::changeAutomation(QAction* act)
     return;
   int colindex = act->data().toInt() & 0xff;
   int id = (act->data().toInt() & 0x00ffffff) >> 8;
-  // Is it the midi control action item?
-  if (colindex == 255)
+  // Is it the midi control action or clear action item?
+  if (colindex == 254 || colindex == 255)
     return;
   
   if (colindex < 100)
@@ -1460,6 +1463,21 @@ void TList::changeAutomationColor(QAction* act)
       macp->erase(*iamcs);
     if(!amcs.empty())
       MusEGlobal::audio->msgIdle(false);
+    
+    // Hm, need to remove the 'clear' item, and the status lines below it. Try this:
+    QActionGroup* midi_actgrp = act->actionGroup();
+    if(midi_actgrp)
+    {
+      QList<QAction*> act_list = midi_actgrp->actions();
+      int sz = act_list.size();
+      for(int i = 0; i < sz; ++i)
+      {
+        QAction* list_act = act_list.at(i);
+        midi_actgrp->removeAction(list_act);
+        // list_act has no parent now.
+        delete list_act;
+      }
+    }
     return;
   }
   
@@ -1518,7 +1536,10 @@ void TList::changeAutomationColor(QAction* act)
 //---------------------------------------------------------
 PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
 {
-  PopupMenu * m = new PopupMenu(parent);  //, true);  //TODO
+  PopupMenu * m = new PopupMenu(parent, true);  //TODO
+
+  QActionGroup* col_actgrp = new QActionGroup(m);
+  col_actgrp->setExclusive(true);
   for (int i = 0; i< 6; i++) {
     QPixmap pix(10,10);
     QPainter p(&pix);
@@ -1526,12 +1547,14 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     p.setPen(Qt::black);
     p.drawRect(0,0,10,10);
     QIcon icon(pix);
-    QAction *act = m->addAction(icon,"");
+    //QAction *act = m->addAction(icon,"");
+    QAction *act = col_actgrp->addAction(icon,"");
     act->setCheckable(true);
     if (c == collist[i])
         act->setChecked(true);
     act->setData((id<<8) + i); // Shift 8 bits. Color in the bottom 8 bits. 
   }
+  m->addActions(col_actgrp->actions());
   
   //m->addSeparator();
   m->addAction(new MenuTitleItem(tr("Midi control"), m));
@@ -1548,25 +1571,27 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     MusECore::AudioMidiCtrlStructMap amcs;
     macm->find_audio_ctrl_structs(id, &amcs);
     
+    // Group only the clear and status items so they can both be easily removed when clear is clicked.
     if(!amcs.empty())
     {
-      QAction *cact = m->addAction(tr("Clear"));
+      QActionGroup* midi_actgrp = new QActionGroup(m);
+      QAction *cact = midi_actgrp->addAction(tr("Clear"));
       cact->setData((id<<8) + 254); // Shift 8 bits. Make clear the second-last item at 254
-      m->addSeparator();
-    }
-    
-    for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
-    {
-      int port, chan, mctrl;
-      macm->hash_values((*iamcs)->first, &port, &chan, &mctrl);
-      //QString s = QString("Port:%1 Chan:%2 Ctl:%3-%4").arg(port + 1)
-      QString s = QString("Port:%1 Chan:%2 Ctl:%3").arg(port + 1)
-                                                   .arg(chan + 1)
-                                                   //.arg((mctrl >> 8) & 0xff)
-                                                   //.arg(mctrl & 0xff);
-                                                   .arg(MusECore::midiCtrlName(mctrl, true));
-      QAction *mact = m->addAction(s);
-      mact->setData(-1); // Not used
+      for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+      {
+        int port, chan, mctrl;
+        macm->hash_values((*iamcs)->first, &port, &chan, &mctrl);
+        //QString s = QString("Port:%1 Chan:%2 Ctl:%3-%4").arg(port + 1)
+        QString s = QString("Port:%1 Chan:%2 Ctl:%3").arg(port + 1)
+                                                    .arg(chan + 1)
+                                                    //.arg((mctrl >> 8) & 0xff)
+                                                    //.arg(mctrl & 0xff);
+                                                    .arg(MusECore::midiCtrlName(mctrl, true));
+        QAction *mact = midi_actgrp->addAction(s);
+        mact->setEnabled(false);
+        mact->setData(-1); // Not used
+      }
+      m->addActions(midi_actgrp->actions());
     }
   }
   

@@ -1,5 +1,6 @@
 10.06.2012:
         - Add midi-to-audio control popups to right-click automation menus. (Tim)
+        - Track list audio automation popup now can stay open, for colour and 'clear' items. (Tim)
 08.06.2012:
         * Merge: From branch r2_0_extra. (Tim)
         - More automation fixes. In AudioTrack::processAutomationEvents, optimize integer, bool, 
