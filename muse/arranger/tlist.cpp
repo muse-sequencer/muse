@@ -1404,12 +1404,6 @@ MusECore::TrackList TList::getRecEnabledTracks()
 
 void TList::changeAutomation(QAction* act)
 {
-  //if (editAutomation->type() == MusECore::Track::MIDI) {  // commented out by flo93. DELETETHIS is the below line correct?
-  //if ( (editAutomation->type() == MusECore::Track::MIDI) || (editAutomation->type() == MusECore::Track::DRUM) ) {
-  //  printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
-  //  return;
-  //}
-  
   if(!editAutomation || editAutomation->isMidiTrack())
     return;
   if(act->data() == -1)
@@ -1439,10 +1433,6 @@ void TList::changeAutomation(QAction* act)
 //---------------------------------------------------------
 void TList::changeAutomationColor(QAction* act)
 {
-  //if (editAutomation->type() == MusECore::Track::MIDI) {
-  //  printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
-  //  return;
-  //}
   if(!editAutomation || editAutomation->isMidiTrack())
     return;
   if(act->data() == -1)
@@ -1536,7 +1526,7 @@ void TList::changeAutomationColor(QAction* act)
 //---------------------------------------------------------
 PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
 {
-  PopupMenu * m = new PopupMenu(parent, true);  //TODO
+  PopupMenu * m = new PopupMenu(parent, true);  
 
   QActionGroup* col_actgrp = new QActionGroup(m);
   col_actgrp->setExclusive(true);
@@ -1547,7 +1537,6 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     p.setPen(Qt::black);
     p.drawRect(0,0,10,10);
     QIcon icon(pix);
-    //QAction *act = m->addAction(icon,"");
     QAction *act = col_actgrp->addAction(icon,"");
     act->setCheckable(true);
     if (c == collist[i])
@@ -1561,7 +1550,6 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
   
   if(editAutomation && !editAutomation->isMidiTrack()) 
   {
-    //m->addSeparator();
     QAction *act = m->addAction(tr("Assign"));
     act->setCheckable(false);
     act->setData((id<<8) + 255); // Shift 8 bits. Make midi menu the last item at 255.
