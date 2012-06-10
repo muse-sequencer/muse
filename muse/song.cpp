@@ -57,6 +57,7 @@
 #include "sync.h"
 #include "midictrl.h"
 #include "menutitleitem.h"
+#include "midi_audio_control.h"
 #include "tracks_duplicate.h"
 #include "midi.h"
 #include "al/sig.h"
@@ -2414,7 +2415,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
 
 int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int acid)
 {
-  enum { PREV_EVENT, NEXT_EVENT, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
+  enum { PREV_EVENT=0, NEXT_EVENT, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS, MIDI_ASSIGN, MIDI_CLEAR };
   QMenu* menu = new QMenu;
 
   int count = 0;
@@ -2493,6 +2494,39 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   clearAction->setData(CLEAR_ALL_EVENTS);
   clearAction->setEnabled((bool)count);
 
+
+  menu->addSeparator();
+  menu->addAction(new MusEGui::MenuTitleItem(tr("Midi control"), menu));
+  
+  QAction *assign_act = menu->addAction(tr("Assign"));
+  assign_act->setCheckable(false);
+  assign_act->setData(MIDI_ASSIGN); 
+  
+  MidiAudioCtrlMap* macm = track->controller()->midiControls();
+  AudioMidiCtrlStructMap amcs;
+  macm->find_audio_ctrl_structs(acid, &amcs);
+  
+  if(!amcs.empty())
+  {
+    QAction *cact = menu->addAction(tr("Clear"));
+    cact->setData(MIDI_CLEAR); 
+    menu->addSeparator();
+  }
+  
+  for(iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+  {
+    int port, chan, mctrl;
+    macm->hash_values((*iamcs)->first, &port, &chan, &mctrl);
+    //QString s = QString("Port:%1 Chan:%2 Ctl:%3-%4").arg(port + 1)
+    QString s = QString("Port:%1 Chan:%2 Ctl:%3").arg(port + 1)
+                                                  .arg(chan + 1)
+                                                  //.arg((mctrl >> 8) & 0xff)
+                                                  //.arg(mctrl & 0xff);
+                                                  .arg(midiCtrlName(mctrl, true));
+    QAction *mact = menu->addAction(s);
+    mact->setData(-1); // Not used
+  }
+  
   QAction* act = menu->exec(menupos);
   if (!act || !track)
   {
@@ -2529,6 +2563,45 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
 
     case NEXT_EVENT:
           MusEGlobal::audio->msgSeekNextACEvent(track, acid);
+    break;
+    
+    case MIDI_ASSIGN:
+          {
+            int port = -1, chan = 0, ctrl = 0;
+            for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+            {
+              macm->hash_values((*iamcs)->first, &port, &chan, &ctrl);
+              break; // Only a single item for now, thanks!
+            }
+            
+            MusEGui::MidiAudioControl* pup = new MusEGui::MidiAudioControl(port, chan, ctrl);
+            
+            if(pup->exec() == QDialog::Accepted)
+            {
+              MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+              // Erase all for now.
+              for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+                macm->erase(*iamcs);
+              
+              port = pup->port(); chan = pup->chan(); ctrl = pup->ctrl();
+              if(port >= 0 && chan >=0 && ctrl >= 0)
+                // Add will replace if found.
+                macm->add_ctrl_struct(port, chan, ctrl, MusECore::MidiAudioCtrlStruct(acid));
+              
+              MusEGlobal::audio->msgIdle(false);
+            }
+            
+            delete pup;
+          }
+          break;
+    
+    case MIDI_CLEAR:
+          if(!amcs.empty())
+            MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+          for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+            macm->erase(*iamcs);
+          if(!amcs.empty())
+            MusEGlobal::audio->msgIdle(false);
     break;
     
     default:
