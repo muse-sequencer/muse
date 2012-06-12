@@ -79,6 +79,9 @@
 // Turn on debugging messages.
 //#define PLUGIN_DEBUGIN 
 
+// Turn on constant stream of debugging messages.
+//#define PLUGIN_DEBUGIN_PROCESS 
+
 namespace MusEGlobal {
 MusECore::PluginList plugins;
 }
@@ -2349,32 +2352,65 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       if(min_per > n)
         min_per = n;
       
-      // Process automation control values now.
-      // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
-        
-      if(_id != -1)
-      {
-        unsigned frame = MusEGlobal::audio->pos().frame();
-        AutomationType at = AUTO_OFF;
-        if(_track)
-          at = _track->automationType();
-        bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
-        for(unsigned long k = 0; k < controlPorts; ++k)
-          controls[k].tmpVal = _track->controller()->value(genACnum(_id, k), frame,
-                                  no_auto || !controls[k].enCtrl || !controls[k].en2Ctrl);
-      }
-        
       while(sample < n)
       {
         // nsamp is the number of samples the plugin->process() call will be supposed to do
         unsigned long nsamp = usefixedrate ? fixedsize : n - sample;
 
+        //
+        // Process automation control values, while also determining the maximum acceptable 
+        //  size of this run. Further processing, from FIFOs for example, can lower the size 
+        //  from there, but this section determines where the next highest maximum frame 
+        //  absolutely needs to be for smooth playback of the controller value stream...
+        //
+        if(_id != -1 && ports != 0) // Don't bother if not 'running'.
+        {
+          unsigned long frame = MusEGlobal::audio->pos().frame() + sample;
+          AutomationType at = AUTO_OFF;
+          if(_track)
+            at = _track->automationType();
+          bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
+          int nextFrame;
+          for(unsigned long k = 0; k < controlPorts; ++k)
+          {
+            controls[k].tmpVal = _track->controller()->value(genACnum(_id, k), frame,
+                                    no_auto || !controls[k].enCtrl || !controls[k].en2Ctrl,
+                                    &nextFrame);
+#ifdef PLUGIN_DEBUGIN_PROCESS
+            printf("PluginI::apply k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, nextFrame, nsamp);
+#endif
+            if(MusEGlobal::audio->isPlaying() && !usefixedrate && nextFrame != -1)
+            {
+              // Returned value of nextFrame can be zero meaning caller replaces with some (constant) value.
+              unsigned long samps = (unsigned long)nextFrame;
+              if(samps > frame + min_per)
+              {
+                unsigned long diff = samps - frame;
+                unsigned long mask = min_per-1;   // min_per must be power of 2
+                samps = diff & ~mask;
+                if((diff & mask) != 0)
+                  samps += min_per;
+              }
+              else
+                samps = min_per;
+              
+              if(samps < nsamp)
+                nsamp = samps;
+            }
+          }
+          
+#ifdef PLUGIN_DEBUGIN_PROCESS
+          printf("PluginI::apply sample:%lu nsamp:%lu\n", sample, nsamp);
+#endif
+        }
+        
+        //
+        // Process all control ring buffer items valid for this time period...
+        //
         bool found = false;
         unsigned long frame = 0; 
         unsigned long index = 0;
         unsigned long evframe; 
-
-        // Get all control ring buffer items valid for this time period...
         while(!_controlFifo.isEmpty())
         {
           ControlEvent v = _controlFifo.peek(); 
@@ -2399,9 +2435,10 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           // but stop after a control event was found (then process(),
           // then loop here again), but ensure that process() must process
           // at least min_per frames.
-          if(evframe >= n
-              || (found && !v.unique && (evframe - sample >= min_per))
-              || (usefixedrate && found && v.unique && v.idx == index))
+          if(evframe >= n                                                               // Next events are for a later period.
+              || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
+              || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
+              || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
             break;
           _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
@@ -2416,27 +2453,20 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           
           // Need to update the automation value, otherwise it overwrites later with the last automation value.
           if(_track && _id != -1)
-          {
-            // We're in the audio thread context: no need to send a message, just modify directly.
             _track->setPluginCtrlVal(genACnum(_id, v.idx), v.value);
-            
-            /* Recording automation is done immediately in the         *
-             * OSC control handler, because we don't want any delay.   *
-             * we might want to handle dssi-vst synthes here, however! */
-          }  
         }
 
         // Now update the actual values from the temporary values...
         for(unsigned long k = 0; k < controlPorts; ++k)
           controls[k].val = controls[k].tmpVal;
         
-        if(found && !usefixedrate)
-          nsamp = frame - sample;
+        if(found && !usefixedrate) // If a control FIFO item was found, takes priority over automation controller stream.
+          nsamp = frame - sample;  
 
-        if(sample + nsamp >= n)         // Safety check.
+        if(sample + nsamp >= n)    // Safety check.
           nsamp = n - sample; 
         
-        // Don't allow zero-length runs. This could/should be checked in the control loop instead.
+        // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
         // Note this means it is still possible to get stuck in the top loop (at least for a while).
         if(nsamp == 0)
           continue;

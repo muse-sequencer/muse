@@ -1,3 +1,12 @@
+11.06.2012:
+        - Finally! Audio controller playback has smooooth frame resolution even with large audio buffers. (Tim)
+          CtrlList::value() now accepts a nextFrame*, filled with next event frame, which the
+           plugin and dssi process use to determine the run sizes. 
+          Bonus! This processing is now guaranteed to be ALIGNED with user's chosen minimum control processing 
+           period in Settings. Before, it was occasionally going to 1, 2, 4 frame runs etc., was not good. 
+          TODO: Sorry, track audio/pan have no 'variable run length' support yet. Choppy with large buffers.
+                Tip: If a ping-pong effect is desired, try a plugin for now!
+        - Increased default minimum controller period from 64 to 256. Tests showed 256 is just fine, smooth.
 10.06.2012:
         - Add midi-to-audio control popups to right-click automation menus. (Tim)
         - Track list audio automation popup now can stay open, for colour and 'clear' items. (Tim)

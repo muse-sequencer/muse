@@ -389,34 +389,48 @@ void CtrlList::assign(const CtrlList& l, int flags)
 
 //---------------------------------------------------------
 //   value
+//   Returns value at frame.
+//   cur_val_only means read the current 'manual' value, not from the list even if it is not empty.
+//   If passed a nextFrame, sets nextFrame to the next event frame, or -1 if no next frame (wide-open), or, 
+//    since CtrlList is a map, ZERO if should be replaced with some other frame by the caller (interpolation). 
 //---------------------------------------------------------
 
-double CtrlList::value(int frame) const
+double CtrlList::value(int frame, bool cur_val_only, int* nextFrame) const
 {
-      if(empty()) 
+      if(cur_val_only || empty()) 
+      {
+        if(nextFrame)
+          *nextFrame = -1;
         return _curVal;
+      }
 
       double rv;
-      ciCtrl i = upper_bound(frame); // get the index after current frame
+      int nframe;
 
+      ciCtrl i = upper_bound(frame); // get the index after current frame
       if (i == end()) { // if we are past all items just return the last value
             --i;
-            rv = i->second.val;
+            if(nextFrame)
+              *nextFrame = -1;
+            return i->second.val;
             }
       else if(_mode == DISCRETE)
       {
         if(i == begin())
         {
+            nframe = i->second.frame;
             rv = i->second.val;
         }  
         else
         {  
+          nframe = i->second.frame;
           --i;
           rv = i->second.val;
         }  
       }
-      else {
+      else {                  // INTERPOLATE
         if (i == begin()) {
+            nframe = i->second.frame;
             rv = i->second.val;
         }
         else {
@@ -426,6 +440,12 @@ double CtrlList::value(int frame) const
             int frame1 = i->second.frame;
             double val1   = i->second.val;
 
+            
+            if(val2 != val1)
+              nframe = 0; // Zero signifies the next frame should be determined by caller.
+            else
+              nframe = frame2;
+            
             if (_valueType == VAL_LOG) {
               val1 = 20.0*fast_log10(val1);
               if (val1 < MusEGlobal::config.minSlider)
@@ -435,10 +455,8 @@ double CtrlList::value(int frame) const
                 val2=MusEGlobal::config.minSlider;
             }
 
-            frame -= frame1;
             val2  -= val1;
-            frame2 -= frame1;
-            val1 += (double(frame) * val2)/double(frame2);
+            val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
     
             if (_valueType == VAL_LOG) {
               val1 = exp10(val1/20.0);
@@ -447,6 +465,10 @@ double CtrlList::value(int frame) const
             rv = val1;
           }
       }
+
+      if(nextFrame)
+          *nextFrame = nframe;
+      
       return rv;
 }
 
@@ -738,18 +760,23 @@ void CtrlListList::add(CtrlList* vl)
 
 //---------------------------------------------------------
 //   value
+//   Returns value at frame for controller with id ctrlId.
+//   cur_val_only means read the current 'manual' value, not from the list even if it is not empty.
+//   If passed a nextFrame, sets nextFrame to the next event frame, or -1 if no next frame (wide-open), or, 
+//    since CtrlList is a map, ZERO if should be replaced with some other frame by the caller (interpolation). 
 //---------------------------------------------------------
 
-double CtrlListList::value(int ctrlId, int frame, bool cur_val_only) const
+double CtrlListList::value(int ctrlId, int frame, bool cur_val_only, int* nextFrame) const     
       {
       ciCtrlList cl = find(ctrlId);
       if (cl == end())
-            return 0.0;
-
-      if(cur_val_only)
-        return cl->second->curVal();
+      {
+        if(nextFrame)
+          *nextFrame = -1;
+        return 0.0;
+      }
       
-      return cl->second->value(frame);  
+      return cl->second->value(frame, cur_val_only, nextFrame);  
       }
 
 //---------------------------------------------------------

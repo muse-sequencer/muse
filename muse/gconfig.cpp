@@ -183,7 +183,7 @@ GlobalConfigValues config = {
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
       true,                         // useProjectSaveDialog
-      64,                           // minControlProcessPeriod
+      256,                          // minControlProcessPeriod
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
       false,                        // rangeMarkerWithoutMMB

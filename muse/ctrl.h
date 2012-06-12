@@ -191,7 +191,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       CtrlValueType valueType() const { return _valueType; }
       void setValueType(CtrlValueType t) { _valueType = t; }
 
-      double value(int frame) const;
+      double value(int frame, bool cur_val_only = false, int* nextFrame = NULL) const;  
       void add(int frame, double value);
       void del(int frame);
       void read(Xml& xml);
@@ -235,7 +235,7 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
             
       MidiAudioCtrlMap* midiControls() { return &_midi_controls; }  
       
-      double value(int ctrlId, int frame, bool cur_val_only = false) const;
+      double value(int ctrlId, int frame, bool cur_val_only = false, int* nextFrame = NULL) const;   
       void updateCurValues(int frame);
       void clearAllAutomation() {
             for(iCtrlList i = begin(); i != end(); ++i)

@@ -1389,7 +1389,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
   if(fixedsize > nframes)
     fixedsize = nframes;
   
-  unsigned long min_per = MusEGlobal::config.minControlProcessPeriod;  
+  unsigned long min_per = MusEGlobal::config.minControlProcessPeriod;  // Must be power of 2 !
   if(min_per > nframes)
     min_per = nframes;
   
@@ -1397,7 +1397,7 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
   fprintf(stderr, "DssiSynthIF::getData: Handling inputs...\n");
   #endif
           
-  // p4.0.38 Handle inputs...
+  // Handle inputs...
   if(!((MusECore::AudioTrack*)synti)->noInRoute()) 
   {
     RouteList* irl = ((MusECore::AudioTrack*)synti)->inRoutes();
@@ -1470,25 +1470,57 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
   #ifdef DSSI_DEBUG_PROCESS 
   fprintf(stderr, "DssiSynthIF::getData: Processing automation control values...\n");
   #endif
-          
-  // Process automation control values now.
-  // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
-  
-  if(id() != -1)
-  {
-    AutomationType at = AUTO_OFF;
-    if(synti)
-      at = synti->automationType();
-    bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
-    AudioTrack* track = (static_cast<AudioTrack*>(synti));
-    for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
-      controls[k].val = track->controller()->value(genACnum(id(), k), pos,
-                              no_auto || !controls[k].enCtrl || !controls[k].en2Ctrl);
-  }
-       
+    
   while(sample < nframes)
   {
     unsigned long nsamp = usefixedrate ? fixedsize : nframes - sample;
+
+    //
+    // Process automation control values, while also determining the maximum acceptable 
+    //  size of this run. Further processing, from FIFOs for example, can lower the size 
+    //  from there, but this section determines where the next highest maximum frame 
+    //  absolutely needs to be for smooth playback of the controller value stream...
+    //
+    if(id() != -1)
+    {
+      unsigned long frame = pos + sample;
+      AutomationType at = AUTO_OFF;
+      at = synti->automationType();
+      bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
+      AudioTrack* track = (static_cast<AudioTrack*>(synti));
+      int nextFrame;
+      for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
+      {  
+        controls[k].val = track->controller()->value(genACnum(id(), k), frame,
+                                no_auto || !controls[k].enCtrl || !controls[k].en2Ctrl,
+                                &nextFrame);
+#ifdef DSSI_DEBUG_PROCESS
+        printf("DssiSynthIF::getData k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, nextFrame, nsamp);
+#endif
+        if(MusEGlobal::audio->isPlaying() && !usefixedrate && nextFrame != -1)
+        {
+          // Returned value of nextFrame can be zero meaning caller replaces with some (constant) value.
+          unsigned long samps = (unsigned long)nextFrame;
+          if(samps > frame + min_per)
+          {
+            unsigned long diff = samps - frame;
+            unsigned long mask = min_per-1;   // min_per must be power of 2
+            samps = diff & ~mask;
+            if((diff & mask) != 0)
+              samps += min_per;
+          }
+          else
+            samps = min_per;
+          
+          if(samps < nsamp)
+            nsamp = samps;
+        }
+      }  
+#ifdef DSSI_DEBUG
+      printf("DssiSynthIF::getData sample:%lu nsamp:%lu\n", sample, nsamp);
+#endif
+    }
+    
     bool found = false;
     unsigned long frame = 0; 
     unsigned long index = 0;
@@ -1517,11 +1549,13 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
         continue;
       }    
       
-      if(evframe >= nframes
-         || (found && !v.unique && (evframe - sample >= min_per))  
-         || (usefixedrate && found && v.unique && v.idx == index))
+      if(evframe >= nframes                                                        // Next events are for a later period.
+         || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
+         || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
+         || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
         break;
       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+
       if(v.idx >= synth->_controlInPorts) // Sanity check.
         break;
       found = true;
@@ -1532,36 +1566,16 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(id() != -1)
-      {
-        // We're in the audio thread context: no need to send a message, just modify directly.
         synti->setPluginCtrlVal(genACnum(id(), v.idx), v.value);
-        
-        /* Record automation. DELETETHIS?
-         * NO! Take care of this immediately in the OSC control handler, because we don't want 
-         *  any delay.
-         * OTOH Since this is the actual place and time where the control ports values
-         *  are set, best to reflect what happens here to automation.
-         * However for dssi-vst it might be best to handle it that way.
-        
-        // TODO: Taken from our native gui control handlers. 
-        // This may need modification or may cause problems - 
-        //  we don't have the luxury of access to the dssi gui controls !
-        AutomationType at = _track->automationType();
-        if ((at == AUTO_WRITE) ||
-            (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()))
-          enableController(k, false);
-        _track->recordAutomation(id, v.value);
-        */
-      }  
     }
     
-    if(found && !usefixedrate)
+    if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
       nsamp = frame - sample;
     
     if(sample + nsamp >= nframes)         // Safety check.
       nsamp = nframes - sample; 
     
-    // TODO: TESTING: Don't allow zero-length runs. This could/should be checked in the control loop instead.
+    // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
     // Note this means it is still possible to get stuck in the top loop (at least for a while).
     if(nsamp == 0)
       continue;
