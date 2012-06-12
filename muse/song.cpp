@@ -2524,6 +2524,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
                                                   //.arg(mctrl & 0xff);
                                                   .arg(midiCtrlName(mctrl, true));
     QAction *mact = menu->addAction(s);
+    mact->setEnabled(false);
     mact->setData(-1); // Not used
   }
   
