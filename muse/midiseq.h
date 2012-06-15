@@ -57,7 +57,12 @@ class MidiSeq : public Thread {
       int lastTempo;
       double timediff[24];
       int storedtimediffs;
-
+      double _avgClkDiff;
+      double _avgClkLockDiff;
+      int    _avgClkDiffCounter;
+      double _lastRealTempo;
+      int _lastExtTempoTick;
+      
       void alignAllTicks(int frameOverride = 0);
 /* Testing */
 
@@ -87,7 +92,7 @@ class MidiSeq : public Thread {
 
       bool externalPlayState() const { return playStateExt; }
       void setExternalPlayState(bool v) { playStateExt = v; }
-      void realtimeSystemInput(int, int);
+      void realtimeSystemInput(int port, int type, double time = 0.0);
       void mtcInputQuarter(int, unsigned char);
       void setSongPosition(int, int);
       void mmcInput(int, const unsigned char*, int);

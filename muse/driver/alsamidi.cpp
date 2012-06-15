@@ -1318,24 +1318,24 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_CLOCK:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CLOCK);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CLOCK, curTime());
                         //mdev->syncInfo().trigMCSyncDetect();
                         break;
 
                   case SND_SEQ_EVENT_START:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_START);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_START, curTime());
                         break;
 
                   case SND_SEQ_EVENT_CONTINUE:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CONTINUE);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CONTINUE, curTime());
                         break;
 
                   case SND_SEQ_EVENT_STOP:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_STOP);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_STOP, curTime());
                         break;
 
                   case SND_SEQ_EVENT_TICK:
-                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_TICK);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_TICK, curTime());
                         //mdev->syncInfo().trigTickDetect();
                         break;
 

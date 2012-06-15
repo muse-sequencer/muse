@@ -1,3 +1,10 @@
+15.06.2012:
+        * Sync fix: MusE now records tempo changes from externally clocked midi. (Tim)
+          Still experimental but non-intrusive: You will be asked at the end of recording if you  
+           want to transfer the recorded tempos to the master tempo graph. 
+          Tested OK so far with ALSA and Jack midi. Best results ATM may be when recording from 
+           position 0, not 'continuing' a recording or skipping 'fwd' or 'rew'. 
+          TODO: Record Jack timebase changes! Find patch someone sent years ago, likely still useful...
 11.06.2012:
         - Finally! Audio controller playback has smooooth frame resolution even with large audio buffers. (Tim)
           CtrlList::value() now accepts a nextFrame*, filled with next event frame, which the

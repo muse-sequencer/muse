@@ -32,6 +32,7 @@
 
 namespace MusEGlobal {
 MusECore::TempoList tempomap;
+MusECore::TempoRecList tempo_rec_list;
 }
 
 namespace MusECore {

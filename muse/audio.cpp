@@ -1003,6 +1003,7 @@ void Audio::recordStop()
           msgSetRecord(ao, false);
         }
       }  
+   
       MusEGlobal::audio->msgIdle(false);
       MusEGlobal::song->endUndo(0);
       MusEGlobal::song->setRecord(false);

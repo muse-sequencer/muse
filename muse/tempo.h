@@ -25,6 +25,7 @@
 #define __TEMPO_H__
 
 #include <map>
+#include <vector>
 
 #ifndef MAX_TICK
 #define MAX_TICK (0x7fffffff/100)
@@ -70,7 +71,6 @@ class TempoList : public TEMPOLIST {
       int _tempo;             // tempo if not using tempo list
       int _globalTempo;       // %percent 50-200%
 
-      void normalize();
       void add(unsigned tick, int tempo);
       void change(unsigned tick, int newTempo);
       void del(iTEvent);
@@ -79,6 +79,7 @@ class TempoList : public TEMPOLIST {
    public:
       TempoList();
       ~TempoList();
+      void normalize();
       void clear();
 
       void read(Xml&);
@@ -104,10 +105,32 @@ class TempoList : public TEMPOLIST {
       void setGlobalTempo(int val);
       };
 
+      
+//---------------------------------------------------------
+//   Tempo Record Event
+//---------------------------------------------------------
+
+struct TempoRecEvent {
+      int tempo;
+      unsigned tick;    
+      TempoRecEvent() { }
+      TempoRecEvent(unsigned tk, unsigned t) {
+            tick  = tk;
+            tempo = t;
+            }
+      };
+
+class TempoRecList : public std::vector<TempoRecEvent >
+{
+  public:
+    void add(int tick, int tempo) { push_back(TempoRecEvent(tick, tempo)); }
+};
+
 } // namespace MusECore
 
 namespace MusEGlobal {
 extern MusECore::TempoList tempomap;
+extern MusECore::TempoRecList tempo_rec_list;
 }
 
 #endif

@@ -2352,6 +2352,15 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       if(min_per > n)
         min_per = n;
       
+      // CtrlListList* cll = NULL;  // WIP
+      AutomationType at = AUTO_OFF;
+      if(_track)
+      {
+        at = _track->automationType();
+        //cll = _track->controller();  // WIP
+      }
+      bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
+      
       while(sample < n)
       {
         // nsamp is the number of samples the plugin->process() call will be supposed to do
@@ -2363,19 +2372,97 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
         //  from there, but this section determines where the next highest maximum frame 
         //  absolutely needs to be for smooth playback of the controller value stream...
         //
-        if(_id != -1 && ports != 0) // Don't bother if not 'running'.
+        if(_track && _id != -1 && ports != 0) // Don't bother if not 'running'.
         {
           unsigned long frame = MusEGlobal::audio->pos().frame() + sample;
-          AutomationType at = AUTO_OFF;
-          if(_track)
-            at = _track->automationType();
-          bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
           int nextFrame;
+          //double val;  // WIP
           for(unsigned long k = 0; k < controlPorts; ++k)
           {
+
+            
+#if 0  // WIP - Work in progress. Tim.    
+
+            ciCtrlList icl = cll->find(genACnum(_id, k));
+            if(icl == cll->end())
+              continue;
+            CtrlList* cl = icl->second;
+            if(no_auto || !controls[k].enCtrl || !controls[k].en2Ctrl || cl->empty()) 
+            {
+              nextFrame = -1;
+              val = cl->curVal();
+            }
+            else
+            {
+              ciCtrl i = cl->upper_bound(frame); // get the index after current frame
+              if (i == cl->end()) { // if we are past all items just return the last value
+                    --i;
+                    nextFrame = -1;
+                    val = i->second.val;
+                    }
+              else if(cl->mode() == CtrlList::DISCRETE)
+              {
+                if(i == cl->begin())
+                {
+                    nextFrame = i->second.frame;
+                    val = i->second.val;
+                }  
+                else
+                {  
+                  nextFrame = i->second.frame;
+                  --i;
+                  val = i->second.val;
+                }  
+              }
+              else {                  // INTERPOLATE
+                if (i == cl->begin()) {
+                    nextFrame = i->second.frame;
+                    val = i->second.val;
+                }
+                else {
+                    int frame2 = i->second.frame;
+                    double val2 = i->second.val;
+                    --i;
+                    int frame1 = i->second.frame;
+                    double val1   = i->second.val;
+
+                    
+                    if(val2 != val1)
+                      nextFrame = 0; // Zero signifies the next frame should be determined by caller.
+                    else
+                      nextFrame = frame2;
+                    
+                    if (cl->valueType() == VAL_LOG) {
+                      val1 = 20.0*fast_log10(val1);
+                      if (val1 < MusEGlobal::config.minSlider)
+                        val1=MusEGlobal::config.minSlider;
+                      val2 = 20.0*fast_log10(val2);
+                      if (val2 < MusEGlobal::config.minSlider)
+                        val2=MusEGlobal::config.minSlider;
+                    }
+
+                    val2  -= val1;
+                    val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
+            
+                    if (cl->valueType() == VAL_LOG) {
+                      val1 = exp10(val1/20.0);
+                    }
+
+                    val = val1;
+                  }
+              }
+            }
+            
+            controls[k].tmpVal = val;
+            
+            
+#else            
             controls[k].tmpVal = _track->controller()->value(genACnum(_id, k), frame,
                                     no_auto || !controls[k].enCtrl || !controls[k].en2Ctrl,
                                     &nextFrame);
+#endif            
+            
+            
 #ifdef PLUGIN_DEBUGIN_PROCESS
             printf("PluginI::apply k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, nextFrame, nsamp);
 #endif

@@ -21,6 +21,7 @@
 //
 //=========================================================
 
+#include <stdlib.h>
 #include <cmath>
 #include "sync.h"
 #include "song.h"
@@ -820,18 +821,24 @@ void MidiSeq::alignAllTicks(int frameOverride)
         recTick2 = 0;
       if (MusEGlobal::debugSync)
         printf("alignAllTicks curFrame=%d recTick=%d tempo=%.3f frameOverride=%d\n",curFrame,recTick,(float)((1000000.0 * 60.0)/tempo), frameOverride);
-
+      
+      
+      _avgClkDiff = 0.0;
+      _avgClkLockDiff = 0.0;
+      _avgClkDiffCounter = 0;
+      _lastRealTempo = 0.0;
+      _lastExtTempoTick = MusEGlobal::lastExtMidiSyncTick;
       }
 
 //---------------------------------------------------------
 //   realtimeSystemInput
 //    real time message received
 //---------------------------------------------------------
-void MidiSeq::realtimeSystemInput(int port, int c)
+void MidiSeq::realtimeSystemInput(int port, int c, double time)
       {
 
       if (MusEGlobal::midiInputTrace)
-            printf("realtimeSystemInput port:%d 0x%x\n", port+1, c);
+            printf("realtimeSystemInput port:%d 0x%x time:%f\n", port+1, c, time);
 
       MidiPort* mp = &MusEGlobal::midiPorts[port];
       
@@ -873,6 +880,9 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
                       MusEGlobal::midiPorts[p].sendClock();
                   
+                  MusEGlobal::lastExtMidiSyncTime = MusEGlobal::curExtMidiSyncTime;
+                  MusEGlobal::curExtMidiSyncTime = time;
+                  
                   if(MusEGlobal::playPendingFirstClock)
                   {
                     MusEGlobal::playPendingFirstClock = false;
@@ -887,12 +897,76 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   // Can't check audio state, might not be playing yet, we might miss some increments.
                   if(playStateExt)
                   {
-                    MusEGlobal::lastExtMidiSyncTime = MusEGlobal::curExtMidiSyncTime;
-                    MusEGlobal::curExtMidiSyncTime = curTime();
                     int div = MusEGlobal::config.division/24;
                     MusEGlobal::midiExtSyncTicks += div;
                     MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
                     MusEGlobal::curExtMidiSyncTick += div;
+                    
+                    if(MusEGlobal::audio->isRecording() && MusEGlobal::lastExtMidiSyncTime > 0.0)
+                    {
+                      double diff = MusEGlobal::curExtMidiSyncTime - MusEGlobal::lastExtMidiSyncTime;
+                      if(diff != 0.0)
+                      {
+                        _avgClkDiff     += diff;
+                        ///_avgClkLockDiff += diff;
+                        ++_avgClkDiffCounter;
+                        
+                        const int samples = 16;       // TODO: Make user-settable?
+                        ///const int lock_samples = 8;   //
+                        ///const int lock_range = 10;    //
+                        
+                        // Check for end of averaging filter:
+                        if(_avgClkDiffCounter >= samples)
+                        {
+                          _avgClkDiffCounter = 0;
+                          _avgClkDiff /= double(samples);
+                          
+                          double real_tempo = 60.0/(_avgClkDiff * 24.0);
+                          
+                          double real_tempo_diff = abs(real_tempo - _lastRealTempo);
+                          if(real_tempo_diff >= 2.0)   // Avoid jitter
+                          {
+                            _lastRealTempo = real_tempo;
+                            
+                            int real_tempo_int = int(real_tempo);
+                            if(real_tempo_int & 1)
+                              ++real_tempo_int; 
+                            int newTempo = (1000000 * 60.0) / (real_tempo_int);
+                            
+                            if(newTempo != lastTempo)
+                            {
+                              lastTempo = newTempo;
+                              if(MusEGlobal::debugSync)
+                                printf("adding new tempo tick:%d _avgClkDiff:%f real_tempo:%f newTempo:%d = %f\n", _lastExtTempoTick, _avgClkDiff, real_tempo, newTempo, (float)((1000000.0 * 60.0)/newTempo));
+                              MusEGlobal::tempo_rec_list.add(_lastExtTempoTick, newTempo);
+                            }  
+                          }
+                         _avgClkDiff = 0.0;
+                         ///_avgClkLockDiff = 0.0;
+                         _lastExtTempoTick = MusEGlobal::lastExtMidiSyncTick;
+                        }
+                        
+#if 0  // TODO:                       
+
+                        // Check for unlocked (a large average change) at the lock sample periods:
+                        else if(_avgClkDiffCounter != 0 && (_avgClkDiffCounter % lock_samples) == 0)  
+                        {
+                          double lock_average    = _avgClkLockDiff / double(lock_samples);
+                          double real_lock_tempo = 60.0/(lock_average * 24.0);
+                          if(int(abs(real_lock_tempo - _lastRealTempo)) >= lock_range)
+                          {
+                            //printf("tempo A large change occured: _avgClkDiff:%f lock_average:%f real_lock_tempo:%f\n", _avgClkDiff, lock_average, real_lock_tempo);  
+                            // A large change occured. Reset the averaging filter, storing this as a first value.
+                            _avgClkDiff = lock_average;
+                            _avgClkDiffCounter = 1;
+                            _lastRealTempo = real_lock_tempo;
+                          }
+                          _avgClkLockDiff = 0.0;
+                        }
+#endif                    
+
+                      }
+                    }
                   }
                   
 //BEGIN : Original code: DELETETHIS 250
@@ -1243,7 +1317,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     
                     if (MusEGlobal::debugSync)
                           printf("realtimeSystemInput stop\n");
-                    
+
                     //DELETETHIS 7
                     // Just in case the process still runs a cycle or two and causes the 
                     //  audio tick position to increment, reset the incrementer and force 

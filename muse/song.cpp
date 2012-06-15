@@ -2815,6 +2815,17 @@ void Song::clearRecAutomation(bool clearList)
 
 void Song::processAutomationEvents()
 {
+  bool do_tempo = false;
+  int tempo_rec_list_sz = MusEGlobal::tempo_rec_list.size();
+  if(tempo_rec_list_sz != 0)
+  {
+    if(QMessageBox::question(MusEGlobal::muse, 
+                          tr("MusE: Tempo list"), 
+                          tr("External tempo changes were recorded.\nTransfer them to master tempo list?"),
+                          QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel) == QMessageBox::Ok)
+       do_tempo = true;
+  }
+  
   MusEGlobal::audio->msgIdle(true); // gain access to all data structures
    
   // Just clear all pressed and touched flags, not rec event lists.
@@ -2832,7 +2843,39 @@ void Song::processAutomationEvents()
       ((AudioTrack*)(*i))->processAutomationEvents();
   }
   
+  if(do_tempo)
+  {
+    for(int i = 0; i < tempo_rec_list_sz; ++i)
+    {
+      //if(MusEGlobal::audio->isRecording())
+      TempoRecEvent& rt = MusEGlobal::tempo_rec_list[i]; 
+      unsigned tick = rt.tick;
+      int tempo = rt.tempo;
+      
+      // TODO: Don't clear - erase only the range between the lowest and highest tick.
+      //MusEGlobal::tempomap.clear();
+      if (tick > MAX_TICK)
+            tick = MAX_TICK;
+      iTEvent e = MusEGlobal::tempomap.upper_bound(tick);
+
+      if (tick == e->second->tick)
+            e->second->tempo = tempo;
+      else {
+            TEvent* ne = e->second;
+            TEvent* ev = new TEvent(ne->tempo, ne->tick);
+            ne->tempo  = tempo;
+            ne->tick   = tick;
+            MusEGlobal::tempomap.insert(std::pair<const unsigned, TEvent*> (tick, ev));
+            }
+    }
+    MusEGlobal::tempomap.normalize();
+  }
+  MusEGlobal::tempo_rec_list.clear();
+  
   MusEGlobal::audio->msgIdle(false); 
+
+  if(do_tempo)
+    update(SC_TEMPO);
 }
 
 //---------------------------------------------------------

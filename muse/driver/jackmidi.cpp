@@ -30,6 +30,7 @@
 //#include <jack/midiport.h>
 
 #include "jackmidi.h"
+#include "jackaudio.h"
 #include "song.h"
 #include "globals.h"
 #include "midi.h"
@@ -513,9 +514,20 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                           case ME_START:      
                           case ME_CONTINUE:   
                           case ME_STOP:       
-                                if(_port != -1)
-                                  MusEGlobal::midiSeq->realtimeSystemInput(_port, type);
+                          {
+                                if(MusEGlobal::audioDevice && MusEGlobal::audioDevice->deviceType() == JACK_MIDI && _port != -1)
+                                {
+                                  MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
+                                  jack_client_t* jc = jad->jackClient();
+                                  if(jc)
+                                  {
+                                    jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
+                                    double abs_ev_t = double(jack_frames_to_time(jc, abs_ft)) / 1000000.0;
+                                    MusEGlobal::midiSeq->realtimeSystemInput(_port, type, abs_ev_t);
+                                  }
+                                }
                                 return;
+                          }
                           //case ME_SYSEX_END:  
                                 //break;
                           //      return;

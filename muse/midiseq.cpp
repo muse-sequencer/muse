@@ -287,6 +287,13 @@ MidiSeq::MidiSeq(const char* name)
       lastTempo = 0;
       storedtimediffs = 0;
       playStateExt = false; // not playing
+
+      _avgClkDiff        = 0.0;
+      _avgClkLockDiff    = 0.0;
+      _avgClkDiffCounter = 0;
+      _lastRealTempo     = 0.0;
+      _lastExtTempoTick  = 0;
+      
       MusEGlobal::doSetuid();
       timerFd=selectTimer();
       MusEGlobal::undoSetuid();
