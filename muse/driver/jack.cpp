@@ -42,6 +42,7 @@
 #include "tempo.h"
 #include "sync.h"
 #include "utils.h"
+#include "gconfig.h"
 
 #include "midi.h"
 #include "mididev.h"
@@ -50,7 +51,7 @@
 #include "jackmidi.h"
 
 
-#define JACK_DEBUG 0   
+#define JACK_DEBUG 0    
 
 //#include "errorhandler.h"
 
@@ -176,6 +177,28 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
                 }
               }
             }
+            else
+            {
+              if (JACK_DEBUG)
+              {
+                jack_position_t jp;
+                jack_transport_query(static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->jackClient(), &jp);
+
+                if(jp.valid & JackPositionBBT)
+                {
+                  printf("processAudio BBT:\nbar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+                          jp.bar, jp.beat, jp.tick, jp.bar_start_tick, jp.beats_per_bar, jp.beat_type, jp.ticks_per_beat, jp.beats_per_minute);
+                  if(jp.valid & JackBBTFrameOffset)
+                    printf("processAudio BBTFrameOffset: %u\n", jp.bbt_offset);
+                  if(jp.valid & JackPositionTimecode)
+                    printf("processAudio JackPositionTimecode: frame_time:%f next_time:%f\n", jp.frame_time, jp.next_time);
+                  if(jp.valid & JackAudioVideoRatio)
+                    printf("processAudio JackAudioVideoRatio: %f\n", jp.audio_frames_per_video_frame);
+                  if(jp.valid & JackVideoFrameOffset)
+                    printf("processAudio JackVideoFrameOffset: %u\n", jp.video_offset);
+                }
+              }
+            }
         
             //if(jackAudio->getState() != Audio::START_PLAY)  // Don't process while we're syncing. TODO: May need to deliver silence in process!
               MusEGlobal::audio->process((unsigned long)frames);
@@ -242,9 +265,6 @@ static void timebase_callback(jack_transport_state_t /* state */,
    int /* new_pos */,
    void*)
   {
-      if (JACK_DEBUG)
-        printf("Jack timebase_callback pos->frame:%u MusEGlobal::audio->tickPos:%d MusEGlobal::song->cpos:%d\n", pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
-      
       //Pos p(pos->frame, false);
       Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
       // Can't use song pos - it is only updated every (slow) GUI heartbeat !
@@ -252,34 +272,26 @@ static void timebase_callback(jack_transport_state_t /* state */,
       
       pos->valid = JackPositionBBT;
       p.mbt(&pos->bar, &pos->beat, &pos->tick);
+      pos->bar_start_tick = Pos(pos->bar, 0, 0).tick();
       pos->bar++;
       pos->beat++;
-      pos->bar_start_tick = Pos(pos->bar, 0, 0).tick();
       
-      //
-      //  dummy:
-      //
-      
-      //pos->beats_per_bar = 4;
-      //pos->beat_type = 4;
-      //pos->ticks_per_beat = 384;
-      //
-      /* // From example client transport.c :
-      float time_beats_per_bar = 4.0;
-      float time_beat_type = 0.25;            // Huh? Inverted? From docs: "Time signature 'denominator'" 
-      double time_ticks_per_beat = 1920.0;    // Huh? Ticks per beat should be 24 etc. not 384 or 1920 etc. Otherwise it would be called 'frames_per_beat'.
-      double time_beats_per_minute = 120.0;
-      */
-      //
       int z, n;
       AL::sigmap.timesig(p.tick(), z, n);
       pos->beats_per_bar = z;
       pos->beat_type = n;
-      //pos->ticks_per_beat = config.division;
-      pos->ticks_per_beat = 24;
+      pos->ticks_per_beat = MusEGlobal::config.division;
+      //pos->ticks_per_beat = 24;
       
       int tempo = MusEGlobal::tempomap.tempo(p.tick());
       pos->beats_per_minute = (60000000.0 / tempo) * MusEGlobal::tempomap.globalTempo()/100.0;
+      if (JACK_DEBUG)
+      {
+        printf("Jack timebase_callback pos->frame:%u MusEGlobal::audio->tickPos:%d MusEGlobal::song->cpos:%d\n", pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
+        printf("     bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+               pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+      }
+      
       }
 
 //---------------------------------------------------------

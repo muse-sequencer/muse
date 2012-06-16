@@ -1,3 +1,5 @@
+16.06.2012:
+         - MusE as Jack Timebase master: Corrected ticks_per_beat and bar_start_tick fields. (Tim) 
 15.06.2012:
         * Sync fix: MusE now records tempo changes from externally clocked midi. (Tim)
           Still experimental but non-intrusive: You will be asked at the end of recording if you  
