@@ -911,7 +911,7 @@ void MidiSeq::realtimeSystemInput(int port, int c, double time)
                         ///_avgClkLockDiff += diff;
                         ++_avgClkDiffCounter;
                         
-                        const int samples = 16;       // TODO: Make user-settable?
+                        const int samples = 24;       // TODO: Make user-settable?
                         ///const int lock_samples = 8;   //
                         ///const int lock_range = 10;    //
                         
