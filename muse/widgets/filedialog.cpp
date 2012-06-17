@@ -158,6 +158,31 @@ void MFileDialog::projectToggled(bool flag)
             }
       }
 
+void MFileDialog::fileChanged(const QString& path)
+{
+  printf("%s\n", path.toAscii().data());
+  bool is_med = path.endsWith(".med", Qt::CaseInsensitive) ||
+                path.endsWith(".med.gz", Qt::CaseInsensitive) ||
+                path.endsWith(".med.bz2", Qt::CaseInsensitive);
+  
+  
+  if (is_med)
+  {
+    if (!buttons.readMidiPortsButton->isEnabled())
+    {
+      buttons.readMidiPortsButton->setEnabled(true);
+      buttons.readMidiPortsButton->setChecked(readMidiPortsSaved);
+    }
+  }
+  else
+  {
+    readMidiPortsSaved=buttons.readMidiPortsButton->isChecked();
+    buttons.readMidiPortsButton->setEnabled(false);
+    buttons.readMidiPortsButton->setChecked(false);
+  }
+  
+}
+
 
 //---------------------------------------------------------
 //   MFileDialog
@@ -201,10 +226,11 @@ MFileDialog::MFileDialog(const QString& dir,
             buttons.userButton->setAutoExclusive(true);
             buttons.projectButton->setAutoExclusive(true);
 
-	    connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
+            connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
             connect(buttons.userButton, SIGNAL(toggled(bool)), this, SLOT(userToggled(bool)));
             connect(buttons.projectButton, SIGNAL(toggled(bool)), this, SLOT(projectToggled(bool)));
             connect(this, SIGNAL(directoryEntered(const QString&)), SLOT(directoryChanged(const QString&)));
+            connect(this, SIGNAL(currentChanged(const QString&)), SLOT(fileChanged(const QString&)));
 
             if (writeFlag) {
                   setAcceptMode(QFileDialog::AcceptSave);
