@@ -920,6 +920,9 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                             MusEGlobal::audio->msgIdle(true);
                             for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
                             {
+                              // We are only interested in tracks which use this port being changed now.
+                              if((*it)->outPort() != no)
+                                continue;
                               // Leave drum track channel at current setting.
                               if((*it)->type() == MusECore::Track::DRUM)
                                 (*it)->setOutPortAndUpdate(no);
