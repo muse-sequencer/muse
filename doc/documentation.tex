@@ -74,6 +74,7 @@
 \usepackage{lmodern}
 \usepackage[english]{babel}
 \usepackage{graphicx}
+\usepackage{hyphenat}
 \usepackage{wrapfig}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -96,7 +97,7 @@
 \def\@fterfirst #1#2{#2#1}
 \def\c@amelhyph #1{%
 \ifthenelse{\equal{#1}\relax}{}{%  Do nothing if the end has been reached
-  \ifnum`#1=95 \_\hspace{0pt}\else      %     Check whether #1 is "_", then print _\-
+  \ifnum`#1=95 \_\hspace{0pt}\else      %     Check whether #1 is "_", then print _[thin space]
     \ifnum`#1=58 :\hspace{0pt}\else
       \ifnum`#1>64
         \ifnum`#1<91 \-#1\else#1\fi%     Check whether #1 is an uppercase letter,
@@ -251,7 +252,7 @@ to start MusE as.
 \subsubsection {Midi only}
 MusE can be started in Midi-only mode where MusE does not have any external
 dependencies apart from ALSA midi. In this case start MusE from a terminal:
-\shell{\$> muse2 -a}\\
+\shell{\$> muse2 -a}
 
 \subsection {Beginners tutorial}
 To get a quick grip of what MusE can achieve please follow this beginners
@@ -265,7 +266,8 @@ make sound.
 With MusE up and running right click in the Track-pane (see screenshot in
 ~\ref{Main/Arranger}) and select \menu{Add Synth > MESS > Organ}. A Soft
 Synth track called Organ-0 should appear as well as a separate GUI for
-thesynthesizer.\\
+the synthesizer.
+
 Now right click once more in the Track-pane and select \menu{Add Midi
 Track}. Another track appears called Track-1, you will notice that it is
 by default bound to the synth that was just created Organ-0.
@@ -643,7 +645,7 @@ access \sym{{\_}controller} are:
       \sym{eraseRangeACEvents}, \sym{addACEvent}, \sym{changeACEvent},
       which do the obvious
 \item \sym{pluginCtrlVal}, \sym{setPluginCtrlVal}: the first
-      returns the current value according the the \sym{{\_}controller}
+      returns the current value according to the \sym{{\_}controller}
       list, the second only sets the \sym{curVal}, but does not
       insert any events.
 \end{itemize}
@@ -691,7 +693,7 @@ this are:
 \begin{itemize}
 \item For stop: \sym{Song::stopRolling} calls
                 \sym{Song::processAutomationEvents} calls
-                \sym{Song::clearRecAutomation} calls
+                \sym{Song::clearRecAu{\-}to{\-}ma{\-}tion} calls
                 \sym{Track::clearRecAutomation} calls
                 \sym{PluginI::enableAllControllers}
 \item For seek: \sym{Audio::seek} sends a message ("\sym{G}") to
@@ -972,3 +974,21 @@ Maybe make this behaviour default for discrete controllers?
 
 % TODO: song type etc? kill it!
 %       song len box: same
+
+% TODO: unified automation and midi ctrls:
+%       both shall be editable through the same editors
+%       four modes: 1. discrete
+%                   2. continous (plus a global and per-port setting for the max rate)
+%                   3. switch (not necessarily ON/OFF; signals with color plus text annotation)
+%                   4. raw (no graph, instead a box with the value sent out (for "all voices off")
+%       they shall be copy-and-pastable, at least between compatible modes
+%       they shall be slotted, like pianoroll
+%       maybe also "overlapping", like arranger (?)
+%       midi recording tries to make out straight lines (like non-ended automation streams)
+%       
+
+
+% new song (in general: load as template) plus "overwrite port config"
+% should re-create the default jack devices and autoconnect them.
+
+% what's audio aux for?

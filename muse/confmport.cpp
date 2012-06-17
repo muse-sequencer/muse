@@ -888,7 +888,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   #endif
                       
                       MusEGlobal::midiSeq->msgSetMidiDevice(port, sdev);
-		      MusEGlobal::muse->changeConfig(true);     // save configuration file
+                      MusEGlobal::muse->changeConfig(true);     // save configuration file
                       
                       // Add all track routes to/from this port...
                       if(sdev)
