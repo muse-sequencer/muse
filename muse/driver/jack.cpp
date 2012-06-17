@@ -51,7 +51,7 @@
 #include "jackmidi.h"
 
 
-#define JACK_DEBUG 0    
+#define JACK_DEBUG 0 
 
 //#include "errorhandler.h"
 
@@ -183,20 +183,17 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
               {
                 jack_position_t jp;
                 jack_transport_query(static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->jackClient(), &jp);
-
                 if(jp.valid & JackPositionBBT)
-                {
-                  printf("processAudio BBT:\nbar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+                  printf("processAudio BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
                           jp.bar, jp.beat, jp.tick, jp.bar_start_tick, jp.beats_per_bar, jp.beat_type, jp.ticks_per_beat, jp.beats_per_minute);
-                  if(jp.valid & JackBBTFrameOffset)
-                    printf("processAudio BBTFrameOffset: %u\n", jp.bbt_offset);
-                  if(jp.valid & JackPositionTimecode)
-                    printf("processAudio JackPositionTimecode: frame_time:%f next_time:%f\n", jp.frame_time, jp.next_time);
-                  if(jp.valid & JackAudioVideoRatio)
-                    printf("processAudio JackAudioVideoRatio: %f\n", jp.audio_frames_per_video_frame);
-                  if(jp.valid & JackVideoFrameOffset)
-                    printf("processAudio JackVideoFrameOffset: %u\n", jp.video_offset);
-                }
+                if(jp.valid & JackBBTFrameOffset)
+                  printf("processAudio BBTFrameOffset: %u\n", jp.bbt_offset);
+                if(jp.valid & JackPositionTimecode)
+                  printf("processAudio JackPositionTimecode: frame_time:%f next_time:%f\n", jp.frame_time, jp.next_time);
+                if(jp.valid & JackAudioVideoRatio)
+                  printf("processAudio JackAudioVideoRatio: %f\n", jp.audio_frames_per_video_frame);
+                if(jp.valid & JackVideoFrameOffset)
+                  printf("processAudio JackVideoFrameOffset: %u\n", jp.video_offset);
               }
             }
         
@@ -260,12 +257,28 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
 //---------------------------------------------------------
 
 static void timebase_callback(jack_transport_state_t /* state */,
-   jack_nframes_t /* nframes */,
+   jack_nframes_t nframes,
    jack_position_t* pos,
-   int /* new_pos */,
+   int new_pos,
    void*)
   {
-      //Pos p(pos->frame, false);
+
+    if (JACK_DEBUG)
+    {
+      if(pos->valid & JackPositionBBT)
+        printf("timebase_callback BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+                pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+      if(pos->valid & JackBBTFrameOffset)
+        printf("timebase_callback BBTFrameOffset: %u\n", pos->bbt_offset);
+      if(pos->valid & JackPositionTimecode)
+        printf("timebase_callback JackPositionTimecode: frame_time:%f next_time:%f\n", pos->frame_time, pos->next_time);
+      if(pos->valid & JackAudioVideoRatio)
+        printf("timebase_callback JackAudioVideoRatio: %f\n", pos->audio_frames_per_video_frame);
+      if(pos->valid & JackVideoFrameOffset)
+        printf("timebase_callback JackVideoFrameOffset: %u\n", pos->video_offset);
+    }
+    
+    //Pos p(pos->frame, false);
       Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
       // Can't use song pos - it is only updated every (slow) GUI heartbeat !
       //Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
@@ -287,8 +300,8 @@ static void timebase_callback(jack_transport_state_t /* state */,
       pos->beats_per_minute = (60000000.0 / tempo) * MusEGlobal::tempomap.globalTempo()/100.0;
       if (JACK_DEBUG)
       {
-        printf("Jack timebase_callback pos->frame:%u MusEGlobal::audio->tickPos:%d MusEGlobal::song->cpos:%d\n", pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
-        printf("     bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+        printf("timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
+        printf(" new: bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
                pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
       }
       

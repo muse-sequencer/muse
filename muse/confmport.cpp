@@ -923,11 +923,12 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                               // We are only interested in tracks which use this port being changed now.
                               if((*it)->outPort() != no)
                                 continue;
-                              // Leave drum track channel at current setting.
-                              if((*it)->type() == MusECore::Track::DRUM)
-                                (*it)->setOutPortAndUpdate(no);
-                              else
-                                (*it)->setOutPortAndChannelAndUpdate(no, ch);
+                              // Leave drum track channel at current setting.  // REMOVE Tim.
+                              //if((*it)->type() == MusECore::Track::DRUM)
+                              //  (*it)->setOutPortAndUpdate(no);
+                              //else
+                              //  (*it)->setOutPortAndChannelAndUpdate(no, ch);
+                              (*it)->setOutPortAndUpdate(no);
                             }  
                             MusEGlobal::audio->msgIdle(false);
                             // Stop at the first output channel found.

@@ -1,7 +1,7 @@
 16.06.2012:
          - MusE as Jack Timebase master: Corrected ticks_per_beat and bar_start_tick fields. (Tim) 
          - Fixed bug by Geoff B and Flo: Changing a midi port device: We are only interested in altering 
-            tracks using the port being changed in the midi port list. (Tim)
+            tracks using the port being changed in the midi port list. And don't change channel. (Tim)
 15.06.2012:
         * Sync fix: MusE now records tempo changes from externally clocked midi. (Tim)
           Still experimental but non-intrusive: You will be asked at the end of recording if you  
