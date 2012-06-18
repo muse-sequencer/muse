@@ -1,3 +1,7 @@
+18.06.2012:
+         - Removed printouts about no longer supported VST implementation,
+           use DSSI implementation instead (rj)
+         - Some preparations for 2.0 (rj)
 16.06.2012:
          - MusE as Jack Timebase master: Corrected ticks_per_beat and bar_start_tick fields. (Tim) 
          - Fixed bug by Geoff B and Flo: Changing a midi port device: We are only interested in altering 
