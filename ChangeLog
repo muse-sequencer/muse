@@ -1,3 +1,6 @@
+23.06.2012:
+         - automation graphs: deletion with middle-click, fixed automation    (flo93)
+                              editing.
 18.06.2012:
          - Removed printouts about no longer supported VST implementation,
            use DSSI implementation instead (rj)
