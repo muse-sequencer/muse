@@ -79,7 +79,7 @@
         <source>Timing source frequency is %1hz, which is below the recommended minimum: 500hz!
 This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
-Also please check console output for any further error messages
+Also please check console output for any further error messages.
  </source>
         <translation type="unfinished"></translation>
     </message>
@@ -91,24 +91,24 @@ Also please check console output for any further error messages
         <translation>Om</translation>
     </message>
     <message>
-        <source>Version 2 pre-alpha</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>(C) Copyright 1999-2010 Werner Schweer and others.
-See http://www.muse-sequencer.org for new versions and
-more information.
-
-Published under the GNU Public License</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>&amp;Keep On Rocking!</source>
         <translation>&amp;Rocka på!</translation>
     </message>
     <message>
         <source>Alt+K</source>
         <translation></translation>
+    </message>
+    <message>
+        <source>Version 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(C) Copyright 1999-2012 Werner Schweer and others.
+See http://www.muse-sequencer.org for new versions and
+more information.
+
+Published under the GNU Public License</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3644,6 +3644,69 @@ fokus till respektive editor</translation>
     </message>
 </context>
 <context>
+    <name>MidiAudioControlBase</name>
+    <message>
+        <source>Midi control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Control type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Control7</source>
+        <translation type="unfinished">Kontroll7</translation>
+    </message>
+    <message>
+        <source>Control14</source>
+        <translation type="unfinished">Kontroll14</translation>
+    </message>
+    <message>
+        <source>RPN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NRPN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RPN14</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NRPN14</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pitch</source>
+        <translation type="unfinished">Tonhöjd</translation>
+    </message>
+    <message>
+        <source>Program</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hi:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lo:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Learn</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MidiControllerEditDialogBase</name>
     <message>
         <source>MusE: Define Midi Controller</source>
@@ -4872,6 +4935,27 @@ För att fortsätta, säkerställ att Jack är igång och klicka på Omstart kna
         <source>MusE was unable to launch the script, error message:
 %1</source>
         <translation>MusE kunde inte starta skript, felmeddelande: %1</translation>
+    </message>
+    <message>
+        <source>Midi control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Assign</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation type="unfinished">Rensa</translation>
+    </message>
+    <message>
+        <source>MusE: Tempo list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>External tempo changes were recorded.
+Transfer them to master tempo list?</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7896,6 +7980,19 @@ Likely the selected track is the wrong type.</source>
             <numerusform></numerusform>
         </translation>
     </message>
+    <message>
+        <source>This will clear all automation data on
+ all audio tracks!
+Proceed?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This takes an automation snapshot of
+ all controllers on all audio tracks,
+ at the current position.
+Proceed?</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::NoteInfo</name>
@@ -8039,6 +8136,10 @@ Likely the selected track is the wrong type.</source>
             <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Remove selected</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -8368,6 +8469,10 @@ Likely the selected track is the wrong type.</source>
     </message>
     <message>
         <source>ladspa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show plugs:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8962,6 +9067,26 @@ Den valda titeln är inte unik</translation>
     </message>
     <message>
         <source>&lt;unknown&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Assign</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation type="unfinished">Rensa</translation>
+    </message>
+    <message>
+        <source>Internal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Synth</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

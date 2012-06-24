@@ -512,7 +512,7 @@ void MidiSeq::checkAndReportTimingResolution()
                              "Timing source frequency is %1hz, which is below the recommended minimum: 500hz!\n" \
                              "This could lead to audible timing problems for MIDI.\n" \
                              "Please see the FAQ on http://muse-sequencer.org for remedies.\n" \
-                             "Also please check console output for any further error messages\n ")).arg(freq) );
+                             "Also please check console output for any further error messages.\n ")).arg(freq) );
     }
 }
 

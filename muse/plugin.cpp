@@ -2886,7 +2886,7 @@ PluginDialog::PluginDialog(QWidget* parent)
       ok_lo->addWidget(cancelB);
 
       QGroupBox* plugSelGroup = new QGroupBox(this);
-      plugSelGroup->setTitle("Show plugs:");
+      plugSelGroup->setTitle(tr("Show plugs:"));
       plugSelGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
       QGridLayout* psl = new QGridLayout;
       plugSelGroup->setLayout(psl);
