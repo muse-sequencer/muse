@@ -100,7 +100,10 @@ This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
 Also please check console output for any further error messages.
  </source>
-        <translation type="unfinished"></translation>
+        <translation>Kmitočet zdroje časování je %1hz, což je pod doporučeným minimem: 500hz!
+To by u MIDI mohlo vést až ke slyšitelným problémům s časováním.
+Podívejte se, prosím, na často kladené otázky na stránkách http://muse-sequencer.org na řešení.
+Také se, prosím, podívejte na výstup konzole kvůli jakýmkoli dalším chybovým hláškám.</translation>
     </message>
     <message>
         <source>Timing source frequency is %1hz, which is below the recommended minimum: 500hz!
@@ -140,7 +143,7 @@ Zveřejněno pod GNU Public License</translation>
     <message>
         <location filename="../../muse/widgets/aboutbox.ui" line="51"/>
         <source>Version 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Verze 2</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/aboutbox.ui" line="61"/>
@@ -149,11 +152,11 @@ See http://www.muse-sequencer.org for new versions and
 more information.
 
 Published under the GNU Public License</source>
-        <translation type="unfinished">(C) Autorské právo 1999-2010 Werner Schweer a další.
+        <translation>(C) Autorské právo 1999-2012 Werner Schweer a další.
 Podívejte se na stránky http://www.muse-sequencer.org na nové verze a
 kvůli více informacím.
 
-Zveřejněno pod GNU Public License {1999-2012 ?}</translation>
+Zveřejněno pod GNU Public License</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/aboutbox.ui" line="75"/>
@@ -4825,77 +4828,77 @@ zaměření na jim příslušné plátno</translation>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="14"/>
         <source>Midi control</source>
-        <translation type="unfinished"></translation>
+        <translation>Ovládání MIDI</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="28"/>
         <source>Port:</source>
-        <translation type="unfinished"></translation>
+        <translation>Přípojka:</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="44"/>
         <source>Channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kanál:</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="71"/>
         <source>Control type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Typ ovládání:</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="85"/>
         <source>Control7</source>
-        <translation type="unfinished">Ovladač 7</translation>
+        <translation>Ovladač 7</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="90"/>
         <source>Control14</source>
-        <translation type="unfinished">Ovladač 14</translation>
+        <translation>Ovladač 14</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="95"/>
         <source>RPN</source>
-        <translation type="unfinished">RPN</translation>
+        <translation>RPN</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="100"/>
         <source>NRPN</source>
-        <translation type="unfinished">NRPN</translation>
+        <translation>NRPN</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="105"/>
         <source>RPN14</source>
-        <translation type="unfinished">RPN14</translation>
+        <translation>RPN 14</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="110"/>
         <source>NRPN14</source>
-        <translation type="unfinished">NRPN14</translation>
+        <translation>NRPN 14</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="115"/>
         <source>Pitch</source>
-        <translation type="unfinished">Výška tónu</translation>
+        <translation>Výška tónu</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="120"/>
         <source>Program</source>
-        <translation type="unfinished">Program</translation>
+        <translation>Program</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="147"/>
         <source>Hi:</source>
-        <translation type="unfinished"></translation>
+        <translation>Vysoký:</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="179"/>
         <source>Lo:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nízký:</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/midi_audio_control_base.ui" line="228"/>
         <source>Learn</source>
-        <translation type="unfinished"></translation>
+        <translation>Naučit se</translation>
     </message>
 </context>
 <context>
@@ -6343,17 +6346,17 @@ zkuste Jack znovu spustit a klepněte na tlačítko &quot;Spustit znovu&quot;.</
     <message>
         <location filename="../../muse/song.cpp" line="2499"/>
         <source>Midi control</source>
-        <translation type="unfinished"></translation>
+        <translation>Ovládání MIDI</translation>
     </message>
     <message>
         <location filename="../../muse/song.cpp" line="2501"/>
         <source>Assign</source>
-        <translation type="unfinished"></translation>
+        <translation>Přiřadit</translation>
     </message>
     <message>
         <location filename="../../muse/song.cpp" line="2511"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Smazat</translation>
     </message>
     <message>
         <location filename="../../muse/song.cpp" line="2556"/>
@@ -6373,13 +6376,14 @@ zkuste Jack znovu spustit a klepněte na tlačítko &quot;Spustit znovu&quot;.</
     <message>
         <location filename="../../muse/song.cpp" line="2823"/>
         <source>MusE: Tempo list</source>
-        <translation type="unfinished"></translation>
+        <translation>MusE: Seznam tempa</translation>
     </message>
     <message>
         <location filename="../../muse/song.cpp" line="2824"/>
         <source>External tempo changes were recorded.
 Transfer them to master tempo list?</source>
-        <translation type="unfinished"></translation>
+        <translation>Byly nahrány vnější změny tempa.
+Mají se převzít do hlavního seznamu tempa?</translation>
     </message>
     <message>
         <location filename="../../muse/song.cpp" line="3416"/>
@@ -9970,7 +9974,9 @@ Uložit nynější projekt?</translation>
         <source>This will clear all automation data on
  all audio tracks!
 Proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation>Toto smaže všechna data automatizace
+u všech zvukových stop!
+Pokračovat?</translation>
     </message>
     <message>
         <location filename="../../muse/app.cpp" line="2804"/>
@@ -9978,7 +9984,10 @@ Proceed?</source>
  all controllers on all audio tracks,
  at the current position.
 Proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation>Toto udělá v nynější poloze snímek
+automatizace všech ovladačů na všech
+zvukových stopách.
+Pokračovat?</translation>
     </message>
     <message>
         <location filename="../../muse/exportmidi.cpp" line="139"/>
@@ -10244,7 +10253,7 @@ Soubory:</translation>
     <message>
         <location filename="../../muse/arranger/pcanvas.cpp" line="915"/>
         <source>Remove selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Odstranit vybrané</translation>
     </message>
     <message numerus="yes">
         <location filename="../../muse/arranger/pcanvas.cpp" line="2939"/>
@@ -10654,7 +10663,7 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
     <message>
         <location filename="../../muse/plugin.cpp" line="2889"/>
         <source>Show plugs:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ukázat přídavné moduly:</translation>
     </message>
     <message>
         <location filename="../../muse/plugin.cpp" line="2896"/>
@@ -11273,17 +11282,17 @@ zvolený název není jedinečný</translation>
     <message>
         <location filename="../../muse/arranger/tlist.cpp" line="1549"/>
         <source>Midi control</source>
-        <translation type="unfinished"></translation>
+        <translation>Ovládání MIDI</translation>
     </message>
     <message>
         <location filename="../../muse/arranger/tlist.cpp" line="1553"/>
         <source>Assign</source>
-        <translation type="unfinished"></translation>
+        <translation>Přiřadit</translation>
     </message>
     <message>
         <location filename="../../muse/arranger/tlist.cpp" line="1566"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Smazat</translation>
     </message>
     <message>
         <location filename="../../muse/arranger/tlist.cpp" line="1685"/>
@@ -11308,12 +11317,12 @@ zvolený název není jedinečný</translation>
     <message>
         <location filename="../../muse/arranger/tlist.cpp" line="1733"/>
         <source>Internal</source>
-        <translation type="unfinished"></translation>
+        <translation>Vnitřní</translation>
     </message>
     <message>
         <location filename="../../muse/arranger/tlist.cpp" line="1756"/>
         <source>Synth</source>
-        <translation type="unfinished"></translation>
+        <translation>Syntetizátor</translation>
     </message>
     <message>
         <location filename="../../muse/arranger/tlist.cpp" line="1889"/>
