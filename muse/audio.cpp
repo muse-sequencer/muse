@@ -45,6 +45,19 @@
 #include "pos.h"
 #include "ticksynth.h"
 
+// Experimental for now - allow other Jack timebase masters to control our midi engine.
+// TODO: Be friendly to other apps and ask them to be kind to us by using jack_transport_reposition. 
+//       It is actually required IF we want the extra position info to show up
+//        in the sync callback, otherwise we get just the frame only.
+//       This information is shared on the server, it is directly passed around. 
+//       jack_transport_locate blanks the info from sync until the timebase callback reads 
+//        it again right after, from some timebase master. 
+//       Sadly not many of us use jack_transport_reposition. So we need to work around it !
+//#define _JACK_TIMEBASE_DRIVES_MIDI_
+
+#ifdef _JACK_TIMEBASE_DRIVES_MIDI_
+#include "jackaudio.h"  
+#endif
 
 namespace MusEGlobal {
 MusECore::Audio* audio;
@@ -148,6 +161,8 @@ Audio::Audio()
 
       startRecordPos.setType(Pos::FRAMES);  // Tim
       endRecordPos.setType(Pos::FRAMES);
+      startExternalRecTick = 0;
+      endExternalRecTick = 0;
       
       _audioMonitor = 0;
       _audioMaster  = 0;
@@ -389,7 +404,10 @@ void Audio::process(unsigned frames)
             (*i)->processInit(frames);
       int samplePos = _pos.frame();
       int offset    = 0;      // buffer offset in audio buffers
-
+#ifdef _JACK_TIMEBASE_DRIVES_MIDI_              
+      bool use_jack_timebase = false;
+#endif
+      
       if (isPlaying()) {
             if (!freewheel())
                   MusEGlobal::audioPrefetch->msgTick();
@@ -399,7 +417,22 @@ void Audio::process(unsigned frames)
                   write(sigFd, "F", 1);
                   return;
                   }
-
+                  
+#ifdef _JACK_TIMEBASE_DRIVES_MIDI_
+            unsigned curr_jt_tick, next_jt_ticks;
+            use_jack_timebase = 
+                MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
+                !MusEGlobal::jackTransportMaster && 
+                !MusEGlobal::song->masterFlag() &&
+                !MusEGlobal::extSyncFlag.value() &&
+                static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
+                  frames, NULL, NULL, NULL, &curr_jt_tick, &next_jt_ticks);
+            // NOTE: I would rather trust the reported current tick than rely solely on the stream of 
+            // tempos to correctly advance to the next position (which did actually test OK anyway).
+            if(use_jack_timebase)
+              curTickPos = curr_jt_tick;
+#endif
+            
             //
             //  check for end of song
             //
@@ -457,10 +490,19 @@ void Audio::process(unsigned frames)
             }
             else
             {
-              
-              Pos ppp(_pos);
-              ppp += frames;
-              nextTickPos = ppp.tick();
+
+#ifdef _JACK_TIMEBASE_DRIVES_MIDI_              
+              if(use_jack_timebase)
+                // With jack timebase this might not be accurate -
+                //  we are relying on the tempo to figure out the next tick.
+                nextTickPos = curTickPos + next_jt_ticks;
+              else
+#endif                
+              {
+                Pos ppp(_pos);
+                ppp += frames;
+                nextTickPos = ppp.tick();
+              }
             }
           }
       //
@@ -479,7 +521,9 @@ void Audio::process(unsigned frames)
 #endif
       if (isPlaying()) {
             _pos += frames;
-            curTickPos = nextTickPos;
+            // With jack timebase this might not be accurate if we 
+            //  set curTickPos (above) from the reported current tick.
+            curTickPos = nextTickPos; 
             }
       }
 
@@ -768,6 +812,18 @@ void Audio::seek(const Pos& p)
       if (!MusEGlobal::checkAudioDevice()) return;
       syncFrame   = MusEGlobal::audioDevice->framePos();
       frameOffset = syncFrame - _pos.frame();
+      
+#ifdef _JACK_TIMEBASE_DRIVES_MIDI_
+      unsigned curr_jt_tick;
+      if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO && 
+         !MusEGlobal::jackTransportMaster && 
+         !MusEGlobal::song->masterFlag() &&
+         !MusEGlobal::extSyncFlag.value() &&
+         static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
+             MusEGlobal::segmentSize, NULL, NULL, NULL, &curr_jt_tick, NULL))
+        curTickPos = curr_jt_tick;
+      else
+#endif
       curTickPos  = _pos.tick();
 
 // ALSA support       
@@ -824,6 +880,7 @@ void Audio::startRolling()
 
       if(_loopCount == 0) {
         startRecordPos = _pos;
+        startExternalRecTick = curTickPos;
       }
       if (MusEGlobal::song->record()) {
             recording      = true;
@@ -938,6 +995,7 @@ void Audio::stopRolling()
             }
       recording    = false;
       endRecordPos = _pos;
+      endExternalRecTick = curTickPos;
       write(sigFd, "0", 1);   // STOP
       }
 
@@ -948,8 +1006,10 @@ void Audio::stopRolling()
 
 void Audio::recordStop()
       {
+      MusEGlobal::song->processMasterRec();   
+        
       if (MusEGlobal::debugMsg)
-        printf("recordStop - startRecordPos=%d\n", startRecordPos.tick());
+        printf("recordStop - startRecordPos=%d\n", MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
 
       MusEGlobal::audio->msgIdle(true); // gain access to all data structures
 
@@ -959,7 +1019,7 @@ void Audio::recordStop()
       for (iWaveTrack it = wl->begin(); it != wl->end(); ++it) {
             WaveTrack* track = *it;
             if (track->recordFlag() || MusEGlobal::song->bounceTrack == track) {
-                  MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, endRecordPos);
+                  MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, endRecordPos);   
                   // The track's _recFile pointer may have been kept and turned
                   //  into a SndFileR and added to a new part.
                   // Or _recFile may have been discarded (no new recorded part created).
@@ -982,7 +1042,8 @@ void Audio::recordStop()
 
             // Do SysexMeta. Do loops.
             buildMidiEventList(el, mpel, mt, MusEGlobal::config.division, true, true);
-            MusEGlobal::song->cmdAddRecordedEvents(mt, el, startRecordPos.tick());
+            MusEGlobal::song->cmdAddRecordedEvents(mt, el, 
+                 MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
             el->clear();
             mpel->clear();
             }

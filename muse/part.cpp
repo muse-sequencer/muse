@@ -864,17 +864,18 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                               unsigned event_endframe = event_startframe + e.lenFrame();
                               if (event_endframe < new_partlength)
                                     continue;
-                              if (event_startframe > new_partlength) { // If event start was after the new length, remove it from part
-                                    // Do not do port controller values and clone parts. 
-                                    operations.push_back(UndoOp(UndoOp::DeleteEvent, e, nPart, false, false));
-                                    continue;
-                                    }
-                              if (event_endframe > new_partlength) { // If this event starts before new length and ends after, shrink it
-                                    Event newEvent = e.clone();
-                                    newEvent.setLenFrame(new_partlength - event_startframe);
-                                    // Do not do port controller values and clone parts. 
-                                    operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, nPart, false,false));
-                                    }
+// REMOVE Tim. 
+//                               if (event_startframe > new_partlength) { // If event start was after the new length, remove it from part
+//                                     // Do not do port controller values and clone parts. 
+//                                     operations.push_back(UndoOp(UndoOp::DeleteEvent, e, nPart, false, false));
+//                                     continue;
+//                                     }
+//                               if (event_endframe > new_partlength) { // If this event starts before new length and ends after, shrink it
+//                                     Event newEvent = e.clone();
+//                                     newEvent.setLenFrame(new_partlength - event_startframe);
+//                                     // Do not do port controller values and clone parts. 
+//                                     operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, nPart, false,false));
+//                                     }
                               }
                         nPart->setLenFrame(new_partlength);
                         // Do not do port controller values and clone parts. 
@@ -893,19 +894,20 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                           iEvent i = el->end();
                           i--;
                           Event last = i->second;
-                          unsigned last_start = last.frame();
+// REMOVE Tim.              unsigned last_start = last.frame();
                           MusECore::SndFileR file = last.sndFile();
                           if (file.isNull())
                                 return;
   
-                          unsigned clipframes = (file.samples() - last.spos());// / file.channels();
+//                          unsigned clipframes = (file.samples() - last.spos());// / file.channels();
                           Event newEvent = last.clone();
   
-                          unsigned new_eventlength = new_partlength - last_start;
-                          if (new_eventlength > clipframes) // Shrink event length if new partlength exceeds last clip
-                                new_eventlength = clipframes;
-  
-                          newEvent.setLenFrame(new_eventlength);
+// REMOVE Tim. 
+//                          unsigned new_eventlength = new_partlength - last_start;
+//                           if (new_eventlength > clipframes) // Shrink event length if new partlength exceeds last clip
+//                                 new_eventlength = clipframes;
+//  
+//                          newEvent.setLenFrame(new_eventlength);
                           // Do not do port controller values and clone parts. 
                           operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, last, nPart, false, false));
                         }  
@@ -1196,13 +1198,12 @@ WavePart* WavePart::clone() const
       return new WavePart(*this);
       }
 
-
 //---------------------------------------------------------
 //   hasHiddenEvents
 //   Returns combination of HiddenEventsType enum.
 //---------------------------------------------------------
 
-int Part::hasHiddenEvents() 
+int MidiPart::hasHiddenEvents() 
 {
   unsigned len = lenTick();
 
@@ -1219,7 +1220,27 @@ int Part::hasHiddenEvents()
   return _hiddenEvents;
 }
 
+//---------------------------------------------------------
+//   hasHiddenEvents
+//   Returns combination of HiddenEventsType enum.
+//---------------------------------------------------------
 
+int WavePart::hasHiddenEvents() 
+{
+  unsigned len = lenFrame();
+  
+  // TODO: For now, we don't support events before the left border, only events past the right border.
+  for(iEvent ev=events()->begin(); ev!=events()->end(); ev++)
+  {
+    if(ev->second.endFrame() > len)
+    {
+      _hiddenEvents = RightEventsHidden;  // Cache the result for later.
+      return _hiddenEvents;
+    }  
+  }
+  _hiddenEvents = NoEventsHidden;  // Cache the result for later.
+  return _hiddenEvents;
+}
 
 //---------------------------------------------------------
 //   ClonePart

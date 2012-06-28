@@ -177,26 +177,7 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
                 }
               }
             }
-            else
-            {
-              if (JACK_DEBUG)
-              {
-                jack_position_t jp;
-                jack_transport_query(static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->jackClient(), &jp);
-                if(jp.valid & JackPositionBBT)
-                  printf("processAudio BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
-                          jp.bar, jp.beat, jp.tick, jp.bar_start_tick, jp.beats_per_bar, jp.beat_type, jp.ticks_per_beat, jp.beats_per_minute);
-                if(jp.valid & JackBBTFrameOffset)
-                  printf("processAudio BBTFrameOffset: %u\n", jp.bbt_offset);
-                if(jp.valid & JackPositionTimecode)
-                  printf("processAudio JackPositionTimecode: frame_time:%f next_time:%f\n", jp.frame_time, jp.next_time);
-                if(jp.valid & JackAudioVideoRatio)
-                  printf("processAudio JackAudioVideoRatio: %f\n", jp.audio_frames_per_video_frame);
-                if(jp.valid & JackVideoFrameOffset)
-                  printf("processAudio JackVideoFrameOffset: %u\n", jp.video_offset);
-              }
-            }
-        
+            
             //if(jackAudio->getState() != Audio::START_PLAY)  // Don't process while we're syncing. TODO: May need to deliver silence in process!
               MusEGlobal::audio->process((unsigned long)frames);
       }
@@ -216,8 +197,21 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
 static int processSync(jack_transport_state_t state, jack_position_t* pos, void*)
       {
       if (JACK_DEBUG)
-            printf("processSync()\n");
+      {
+        printf("processSync frame:%u\n", pos->frame);
       
+        if(pos->valid & JackPositionBBT)
+        {
+          if(JACK_DEBUG)
+          {
+            printf("processSync BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+                    pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+            if(pos->valid & JackBBTFrameOffset)
+              printf("processSync BBTFrameOffset: %u\n", pos->bbt_offset);
+          }
+        }
+      }
+        
       if(!MusEGlobal::useJackTransport.value())
         return 1;
         
@@ -296,8 +290,8 @@ static void timebase_callback(jack_transport_state_t /* state */,
       pos->ticks_per_beat = MusEGlobal::config.division;
       //pos->ticks_per_beat = 24;
       
-      int tempo = MusEGlobal::tempomap.tempo(p.tick());
-      pos->beats_per_minute = (60000000.0 / tempo) * MusEGlobal::tempomap.globalTempo()/100.0;
+      double tempo = MusEGlobal::tempomap.tempo(p.tick());
+      pos->beats_per_minute = (60000000.0 / tempo) * double(MusEGlobal::tempomap.globalTempo())/100.0;
       if (JACK_DEBUG)
       {
         printf("timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
@@ -1251,6 +1245,69 @@ jack_transport_state_t JackAudioDevice::transportQuery(jack_position_t* pos)
 }
 
 //---------------------------------------------------------
+//   timebaseQuery
+//   Given the number of frames in this period, get the bar, beat, tick, 
+//    and current absolute tick, and number of ticks in this period.
+//   Return false if information could not be obtained.
+//---------------------------------------------------------
+
+bool JackAudioDevice::timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks) 
+{
+  jack_position_t jp;
+  jack_transport_query(_client, &jp); 
+
+  if(JACK_DEBUG)
+    printf("timebaseQuery frame:%u\n", jp.frame); 
+  
+  if(jp.valid & JackPositionBBT)
+  {
+    if(JACK_DEBUG)
+    {
+      printf("timebaseQuery BBT:\n bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+              jp.bar, jp.beat, jp.tick, jp.bar_start_tick, jp.beats_per_bar, jp.beat_type, jp.ticks_per_beat, jp.beats_per_minute);
+      if(jp.valid & JackBBTFrameOffset)
+        printf("timebaseQuery BBTFrameOffset: %u\n", jp.bbt_offset);
+    }
+    
+    if(jp.ticks_per_beat > 0.0)
+    {
+      unsigned muse_tick = unsigned((double(jp.tick) / jp.ticks_per_beat) * double(MusEGlobal::config.division));
+      unsigned curr_tick = ((jp.bar - 1) * jp.beats_per_bar + (jp.beat - 1)) * double(MusEGlobal::config.division) + muse_tick;
+      // Prefer the reported frame rate over the app's rate if possible.  
+      double f_rate = jp.frame_rate != 0 ? jp.frame_rate : MusEGlobal::sampleRate;
+      // beats_per_minute is "supposed" to be quantized to period size - that is, computed
+      //  so that mid-period changes are averaged out to produce a single tempo which 
+      //  produces the same tick in the end. If we can rely on that, we should be good accuracy.
+      unsigned ticks  = double(MusEGlobal::config.division) * (jp.beats_per_minute / 60.0) * double(frames) / f_rate;   
+
+      if(JACK_DEBUG)
+        printf("timebaseQuery curr_tick:%u f_rate:%f ticks:%u\n", curr_tick, f_rate, ticks);  
+
+      if(bar) *bar = jp.bar;
+      if(beat) *beat = jp.beat;
+      if(tick) *tick = muse_tick;
+      
+      if(curr_abs_tick) *curr_abs_tick = curr_tick;
+      if(next_ticks) *next_ticks = ticks;
+        
+      return true;
+    }
+  }
+
+  if(JACK_DEBUG)
+  {
+    if(jp.valid & JackPositionTimecode)
+      printf("timebaseQuery JackPositionTimecode: frame_time:%f next_time:%f\n", jp.frame_time, jp.next_time);
+    if(jp.valid & JackAudioVideoRatio)
+      printf("timebaseQuery JackAudioVideoRatio: %f\n", jp.audio_frames_per_video_frame);
+    if(jp.valid & JackVideoFrameOffset)
+      printf("timebaseQuery JackVideoFrameOffset: %u\n", jp.video_offset);
+  }
+  
+  return false;
+}                
+
+//---------------------------------------------------------
 //   systemTime
 //   Return system time. Depends on selected clock source. 
 //   With Jack, may be based upon wallclock time, the   
@@ -1642,7 +1699,7 @@ void JackAudioDevice::seekTransport(unsigned frame)
 void JackAudioDevice::seekTransport(const Pos &p)
       {
       if (JACK_DEBUG)
-            printf("JackAudioDevice::seekTransport() frame:%d\n", p.frame());
+            printf("JackAudioDevice::seekTransport(Pos) frame:%d\n", p.frame());
       
       if(!MusEGlobal::useJackTransport.value())
       {
@@ -1653,25 +1710,29 @@ void JackAudioDevice::seekTransport(const Pos &p)
       }
       
       if(!checkJackClient(_client)) return;
+
+// TODO: Be friendly to other apps... Sadly not many of us use jack_transport_reposition.
+//       This is actually required IF we want the extra position info to show up
+//        in the sync callback, otherwise we get just the frame only.
+//       This information is shared on the server, it is directly passed around. 
+//       jack_transport_locate blanks the info from sync until the timebase callback reads 
+//        it again right after, from some timebase master. See process in audio.cpp     
+
+//       jack_position_t jp;
+//       jp.frame = p.frame();
+//       
+//       jp.valid = JackPositionBBT;
+//       p.mbt(&jp.bar, &jp.beat, &jp.tick);
+//       jp.bar_start_tick = Pos(jp.bar, 0, 0).tick();
+//       jp.bar++;
+//       jp.beat++;
+//       jp.beats_per_bar = 5;  // TODO Make this correct !
+//       jp.beat_type = 8;      //
+//       jp.ticks_per_beat = MusEGlobal::config.division;
+//       int tempo = MusEGlobal::tempomap.tempo(p.tick());
+//       jp.beats_per_minute = (60000000.0 / tempo) * MusEGlobal::tempomap.globalTempo()/100.0;
+//       jack_transport_reposition(_client, &jp);
       
-      /*
-      jack_position_t jp;
-      jp.valid = JackPositionBBT;
-      p.mbt(&jp.bar, &jp.beat, &jp.tick);
-      jp.bar++;
-      jp.beat++;
-      jp.bar_start_tick = Pos(jp.bar, 0, 0).tick();
-      //
-      //  dummy:
-      //
-      jp.beats_per_bar = 4;
-      jp.beat_type = 4;
-      jp.ticks_per_beat = 384;
-      int tempo = MusEGlobal::tempomap.tempo(p.tick());
-      jp.beats_per_minute = (60000000.0 / tempo) * MusEGlobal::tempomap.globalTempo()/100.0;
-      
-      jack_transport_reposition(_client, &jp);
-      */
       jack_transport_locate(_client, p.frame());
       }
 

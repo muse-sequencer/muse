@@ -676,7 +676,7 @@ void Arranger::songChanged(int type)
         // Keep this light, partsChanged is a heavy move!       TEST p4.0.36 Try these, may need more.
         if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
                    SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
-                   SC_SIG | SC_TEMPO)) // Maybe sig. Requires tempo.
+                   SC_SIG | SC_TEMPO | SC_MASTER)) // Maybe sig. Requires tempo.
           canvas->partsChanged();
         
         if (type & SC_SIG)

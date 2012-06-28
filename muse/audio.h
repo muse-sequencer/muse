@@ -183,7 +183,8 @@ class Audio {
       // record values:
       Pos startRecordPos;
       Pos endRecordPos;
-
+      unsigned startExternalRecTick;
+      unsigned endExternalRecTick;
       
       AudioOutput* _audioMaster;
       AudioOutput* _audioMonitor;
@@ -312,6 +313,8 @@ class Audio {
 #endif
       const Pos& getStartRecordPos() const { return startRecordPos; }
       const Pos& getEndRecordPos() const { return endRecordPos; }
+      unsigned getStartExternalRecTick() const { return startExternalRecTick; }
+      unsigned getEndExternalRecTick() const { return endExternalRecTick; }
       int loopCount() { return _loopCount; }         // Number of times we have looped so far
       unsigned loopFrame() { return _loopFrame; }          
 

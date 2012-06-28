@@ -32,9 +32,11 @@ namespace MusECore {
 
 class Xml;
 
-
 class MidiSyncInfo
 {
+  public:
+    enum SyncRecFilterPresetType { NONE=0, TINY, SMALL, MEDIUM, LARGE, LARGE_WITH_PRE_DETECT, TYPE_END };
+    
   private:
     int _port;
     
@@ -152,6 +154,8 @@ extern MusECore::BValue useJackTransport;
 extern bool volatile jackTransportMaster;
 extern unsigned int syncSendFirstClockDelay; // In milliseconds.
 extern unsigned int volatile lastExtMidiSyncTick;
+extern MusECore::MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset;
+extern double syncRecTempoValQuant;
 
 } // namespace MusEGlobal
 

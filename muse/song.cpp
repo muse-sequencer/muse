@@ -63,6 +63,7 @@
 #include "al/sig.h"
 #include "keyevent.h"
 #include <sys/wait.h>
+#include "tempo.h"
 
 namespace MusEGlobal {
 MusECore::Song* song = 0;
@@ -866,7 +867,6 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   if (endTick < tick)
                         endTick = tick;
                   }
-            // Added by Tim. p3.3.8
             
             // Round the end up (again) using the Arranger part snap raster value. 
             endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
@@ -1607,6 +1607,10 @@ void Song::beat()
       if (MusEGlobal::audio->isPlaying())
         setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
 
+      // Process external tempo changes:
+      while(!_tempoFifo.isEmpty())
+        MusEGlobal::tempo_rec_list.addTempo(_tempoFifo.get()); 
+      
       // Update anything related to audio controller graphs etc.
       for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++ it)
       {
@@ -2075,6 +2079,7 @@ void Song::clear(bool signal, bool clear_all)
       while (loop);
       
       MusEGlobal::tempomap.clear();
+      MusEGlobal::tempo_rec_list.clear();
       AL::sigmap.clear();
       MusEGlobal::keymap.clear();
       
@@ -2815,17 +2820,6 @@ void Song::clearRecAutomation(bool clearList)
 
 void Song::processAutomationEvents()
 {
-  bool do_tempo = false;
-  int tempo_rec_list_sz = MusEGlobal::tempo_rec_list.size();
-  if(tempo_rec_list_sz != 0)
-  {
-    if(QMessageBox::question(MusEGlobal::muse, 
-                          tr("MusE: Tempo list"), 
-                          tr("External tempo changes were recorded.\nTransfer them to master tempo list?"),
-                          QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel) == QMessageBox::Ok)
-       do_tempo = true;
-  }
-  
   MusEGlobal::audio->msgIdle(true); // gain access to all data structures
    
   // Just clear all pressed and touched flags, not rec event lists.
@@ -2842,34 +2836,56 @@ void Song::processAutomationEvents()
       // Process (and clear) rec events.
       ((AudioTrack*)(*i))->processAutomationEvents();
   }
+
+  MusEGlobal::audio->msgIdle(false); 
+}
+
+//---------------------------------------------------------
+//   processMasterRec
+//---------------------------------------------------------
+
+void Song::processMasterRec()
+{
+  bool do_tempo = false;
   
+  // Wait a few seconds for the tempo fifo to be empty.
+  int tout = 30;
+  while(!_tempoFifo.isEmpty())
+  {
+    usleep(100000);
+    --tout;
+    if(tout == 0)
+      break;
+  }
+  
+  int tempo_rec_list_sz = MusEGlobal::tempo_rec_list.size();
+  if(tempo_rec_list_sz != 0) 
+  {
+    if(QMessageBox::question(MusEGlobal::muse, 
+                          tr("MusE: Tempo list"), 
+                          tr("External tempo changes were recorded.\nTransfer them to master tempo list?"),
+                          QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel) == QMessageBox::Ok)
+       do_tempo = true;
+  }
+  
+  MusEGlobal::audio->msgIdle(true); // gain access to all data structures
+
   if(do_tempo)
   {
-    for(int i = 0; i < tempo_rec_list_sz; ++i)
-    {
-      //if(MusEGlobal::audio->isRecording())
-      TempoRecEvent& rt = MusEGlobal::tempo_rec_list[i]; 
-      unsigned tick = rt.tick;
-      int tempo = rt.tempo;
-      
-      // TODO: Don't clear - erase only the range between the lowest and highest tick.
-      //MusEGlobal::tempomap.clear();
-      if (tick > MAX_TICK)
-            tick = MAX_TICK;
-      iTEvent e = MusEGlobal::tempomap.upper_bound(tick);
+    // Erase from master tempo the (approximate) recording start/end tick range according to the recorded tempo map,
+    //MusEGlobal::tempomap.eraseRange(MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getStartRecordPos().frame()), 
+    //                                MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getEndRecordPos().frame()));
+    // This is more accurate but lacks resolution:
+    MusEGlobal::tempomap.eraseRange(MusEGlobal::audio->getStartExternalRecTick(), MusEGlobal::audio->getEndExternalRecTick());
 
-      if (tick == e->second->tick)
-            e->second->tempo = tempo;
-      else {
-            TEvent* ne = e->second;
-            TEvent* ev = new TEvent(ne->tempo, ne->tick);
-            ne->tempo  = tempo;
-            ne->tick   = tick;
-            MusEGlobal::tempomap.insert(std::pair<const unsigned, TEvent*> (tick, ev));
-            }
-    }
+    // Add the recorded tempos to the master tempo list:
+    for(int i = 0; i < tempo_rec_list_sz; ++i)
+      MusEGlobal::tempomap.addTempo(MusEGlobal::tempo_rec_list[i].tick, 
+                                    MusEGlobal::tempo_rec_list[i].tempo, 
+                                    false);  // False: Defer normalize
     MusEGlobal::tempomap.normalize();
   }
+  
   MusEGlobal::tempo_rec_list.clear();
   
   MusEGlobal::audio->msgIdle(false); 

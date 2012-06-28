@@ -28,6 +28,7 @@
 #include "mpevent.h"
 #include "driver/alsatimer.h"
 #include "driver/rtctimer.h"
+#include "sync.h"
 
 namespace MusECore {
 
@@ -55,13 +56,16 @@ class MidiSeq : public Thread {
       double songtick1, songtick2;
       int recTick1, recTick2;
       int lastTempo;
-      double timediff[24];
+      double timediff[16][48];
       int storedtimediffs;
-      double _avgClkDiff;
-      double _avgClkLockDiff;
-      int    _avgClkDiffCounter;
+      int    _avgClkDiffCounter[16];
       double _lastRealTempo;
-      int _lastExtTempoTick;
+      bool _averagerFull[16];
+      int _clockAveragerPoles;
+      int* _clockAveragerStages; 
+      bool _preDetect;
+      double _tempoQuantizeAmount;
+      MidiSyncInfo::SyncRecFilterPresetType _syncRecFilterPreset;
       
       void alignAllTicks(int frameOverride = 0);
 /* Testing */
@@ -99,6 +103,10 @@ class MidiSeq : public Thread {
       void mtcInputFull(int, const unsigned char*, int);
       void nonRealtimeSystemSysex(int, const unsigned char*, int);
       void checkAndReportTimingResolution();
+      MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset() const { return _syncRecFilterPreset; }
+      void setSyncRecFilterPreset(MidiSyncInfo::SyncRecFilterPresetType type);
+      double recTempoValQuant() const { return _tempoQuantizeAmount; }
+      void setRecTempoValQuant(double q) { _tempoQuantizeAmount = q; }
 
       void msgMsg(int id);
       void msgSeek();
