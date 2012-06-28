@@ -268,7 +268,7 @@ void MidiAudioCtrlMap::read(Xml& xml)
                         }
                         else if (tag == "ch")
                         {
-                              chan = loc.toDouble(xml.s2(), &ok);
+                              chan = loc.toInt(xml.s2(), &ok);
                               if(!ok)
                               {
                                 ++errcount;
