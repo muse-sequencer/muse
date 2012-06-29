@@ -1,3 +1,5 @@
+29.06.2012:
+         - Fixed file dialog: disable 'read configuration' for midi files. (Tim)
 28.06.2012:
          - External sync fixes: Now have user-selectable of clock filtering and quantization. (Tim)
          - Fixed clicking tempo master does not update wave parts. Allow SC_MASTER to call canvas->partsChanged. (Tim)

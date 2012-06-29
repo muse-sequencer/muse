@@ -160,12 +160,11 @@ void MFileDialog::projectToggled(bool flag)
 
 void MFileDialog::fileChanged(const QString& path)
 {
-  bool is_med = path.endsWith(".med", Qt::CaseInsensitive) ||
-                path.endsWith(".med.gz", Qt::CaseInsensitive) ||
-                path.endsWith(".med.bz2", Qt::CaseInsensitive);
+  bool is_mid = path.endsWith(".mid", Qt::CaseInsensitive) ||
+                path.endsWith(".midi", Qt::CaseInsensitive) ||
+                path.endsWith(".kar", Qt::CaseInsensitive);
   
-  
-  if (is_med)
+  if (!is_mid)
   {
     if (!buttons.readMidiPortsButton->isEnabled())
     {
