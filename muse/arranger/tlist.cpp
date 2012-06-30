@@ -1406,7 +1406,7 @@ void TList::changeAutomation(QAction* act)
 {
   if(!editAutomation || editAutomation->isMidiTrack())
     return;
-  if(act->data() == -1)
+  if(act->data().toInt() == -1)
     return;
   int colindex = act->data().toInt() & 0xff;
   int id = (act->data().toInt() & 0x00ffffff) >> 8;
@@ -1435,7 +1435,7 @@ void TList::changeAutomationColor(QAction* act)
 {
   if(!editAutomation || editAutomation->isMidiTrack())
     return;
-  if(act->data() == -1)
+  if(act->data().toInt() == -1)
     return;
   int colindex = act->data().toInt() & 0xff;
   int id = (act->data().toInt() & 0x00ffffff) >> 8;
@@ -1463,9 +1463,10 @@ void TList::changeAutomationColor(QAction* act)
       for(int i = 0; i < sz; ++i)
       {
         QAction* list_act = act_list.at(i);
-        midi_actgrp->removeAction(list_act);
+        ///midi_actgrp->removeAction(list_act);
         // list_act has no parent now.
-        delete list_act;
+        ///delete list_act;
+        list_act->setVisible(false); // HACK Cannot delete any actions! Causes crash with our PopupMenu due to recent fixes.
       }
     }
     return;
