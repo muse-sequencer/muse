@@ -1,9 +1,6 @@
 30.06.2012:
          - Emergency crash fix: In automation popup midi control 'Clear' item. (Tim)
            Cannot delete any actions from menu due to recent December PopupMenu fixes. 
-           Those should be looked at again, because they cause double activate signals 
-            from action->activate(QAction::Trigger) and QMenu::mouseReleaseEvent(e),
-            as well as crashing at the next lines if action has been deleted.
 29.06.2012:
          - Fixed file dialog: disable 'read configuration' for midi files. (Tim)
          - Updated swedish translation (rj)
