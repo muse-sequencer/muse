@@ -1,4 +1,7 @@
 30.06.2012:
+         =======================================
+         * 2.0 tagged (rj)
+         =======================================
          - Emergency crash fix: In automation popup midi control 'Clear' item. (Tim)
            Cannot delete any actions from menu due to recent December PopupMenu fixes. 
 29.06.2012:
