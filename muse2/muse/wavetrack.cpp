@@ -223,7 +223,17 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                         if (MusEGlobal::audio->freewheel()) {
                               }
                         else {
-                              if (fifo.put(channels, nframe, bp, MusEGlobal::audio->pos().frame()))
+#ifdef _AUDIO_USE_TRUE_FRAME_
+                              // TODO: Tested: This is the line that would be needed for Audio Inputs, 
+                              //  because the data arrived in the previous period! Test OK, the waves are in sync.
+                              // So we need to do Audio Inputs separately above, AND find a way to mix two overlapping
+                              //  periods into the file! Nothing wrong with the FIFO per se, we could stamp overlapping
+                              //  times. But the soundfile just writes, does not mix.
+                              //if (fifo.put(channels, nframe, bp, MusEGlobal::audio->previousPos().frame()))
+                              //
+                              // Tested: This line is OK for track-to-track recording, the waves are in sync:
+#endif                              
+                              if (fifo.put(channels, nframe, bp, MusEGlobal::audio->pos().frame()))  
                                     printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n",
                                        framePos, channels, nframe);
                               }

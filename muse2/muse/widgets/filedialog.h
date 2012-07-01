@@ -52,9 +52,12 @@ class MFileDialog : public QFileDialog {
       QString  lastUserDir, lastGlobalDir;
       bool showButtons;
       QString baseDir;
+      
+      bool readMidiPortsSaved;
 
    private slots:
       void directoryChanged(const QString& directory);
+      void fileChanged(const QString&);
    public slots:
       void globalToggled(bool);
       void userToggled(bool);

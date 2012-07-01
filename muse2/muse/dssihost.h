@@ -128,6 +128,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
 
       std::vector<DSSI_Program_Descriptor> programs;
       void queryPrograms();
+      void doSelectProgram(LADSPA_Handle handle, int bank, int prog); 
       bool processEvent(const MusECore::MidiPlayEvent&, snd_seq_event_t*);
       
       float** audioInBuffers;
@@ -209,7 +210,10 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       MusECore::AudioTrack* track();          
       void enableController(unsigned long i, bool v = true);      
       bool controllerEnabled(unsigned long i) const;          
+      void enable2Controller(unsigned long i, bool v = true);      
       bool controllerEnabled2(unsigned long i) const;          
+      void enableAllControllers(bool v = true);
+      void enable2AllControllers(bool v = true);
       void updateControllers();
       void writeConfiguration(int level, Xml& xml);
       bool readConfiguration(Xml& xml, bool readPreset=false);

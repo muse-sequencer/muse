@@ -80,6 +80,7 @@ class JackAudioDevice : public AudioDevice {
       virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1);
       virtual std::list<QString> inputPorts(bool midi = false, int aliases = -1);
 
+      jack_client_t* jackClient() const { return _client; }
       virtual void registerClient();
       virtual const char* clientName() { return jackRegisteredName; }
 
@@ -105,6 +106,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void seekTransport(const Pos &p);
       virtual void setFreewheel(bool f);
       jack_transport_state_t transportQuery(jack_position_t* pos);
+      bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
       void graphChanged();
       void registrationChanged();
       void connectJackMidiPorts();

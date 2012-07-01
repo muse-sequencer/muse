@@ -76,14 +76,13 @@ class Part : public PosLen {
       bool _mute;
       int _colorIndex;
                    
-      int _hiddenEvents;   // Combination of HiddenEventsType.
-                   
    protected:
       Track* _track;
       EventList* _events;
       Part* _prevClone;
       Part* _nextClone;
-
+      int _hiddenEvents;   // Combination of HiddenEventsType.
+                   
    public:
       Part(Track*);
       Part(Track*, EventList*);
@@ -114,7 +113,7 @@ class Part : public PosLen {
       void setNextClone(Part* p)       { _nextClone = p; }
       
       // Returns combination of HiddenEventsType enum.
-      int hasHiddenEvents();
+      virtual int hasHiddenEvents() = 0;
       // If repeated calls to hasHiddenEvents() are desired, then to avoid re-iteration of the event list, 
       //  call this after hasHiddenEvents().
       int cachedHasHiddenEvents() const { return _hiddenEvents; }
@@ -140,7 +139,9 @@ class MidiPart : public Part {
       virtual ~MidiPart() {}
       virtual MidiPart* clone() const;
       MidiTrack* track() const   { return (MidiTrack*)Part::track(); }
-
+      // Returns combination of HiddenEventsType enum.
+      int hasHiddenEvents();
+      
       virtual void dump(int n = 0) const;
       };
 
@@ -161,6 +162,8 @@ class WavePart : public Part {
       virtual ~WavePart() {}
       virtual WavePart* clone() const;
       WaveTrack* track() const   { return (WaveTrack*)Part::track(); }
+      // Returns combination of HiddenEventsType enum.
+      int hasHiddenEvents();
 
       virtual void dump(int n = 0) const;
       };

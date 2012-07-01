@@ -39,6 +39,7 @@
 #include "synth.h"
 #include "dssihost.h"
 #include "app.h"
+#include "controlfifo.h"
 
 namespace MusECore {
 
@@ -385,6 +386,10 @@ void AudioTrack::addController(CtrlList* list)
 
 void AudioTrack::removeController(int id)
       {
+      AudioMidiCtrlStructMap amcs;
+      _controller.midiControls()->find_audio_ctrl_structs(id, &amcs);  
+      for(ciAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++ iamcs)
+        _controller.midiControls()->erase(*iamcs);
       iCtrlList i = _controller.find(id);
       if (i == _controller.end()) {
             printf("AudioTrack::removeController id %d not found\n", id);
@@ -399,20 +404,14 @@ void AudioTrack::removeController(int id)
 
 void AudioTrack::swapControllerIDX(int idx1, int idx2)
 {
-  // FIXME This code is ugly.
-  // At best we would like to modify the keys (IDXs) in-place and
-  //  do some kind of deferred re-sort, but it can't be done...
-  
-  if(idx1 == idx2)
-    return;
-    
-  if(idx1 < 0 || idx2 < 0 || idx1 >= PipelineDepth || idx2 >= PipelineDepth)
+  if(idx1 == idx2 || idx1 < 0 || idx2 < 0 || idx1 >= PipelineDepth || idx2 >= PipelineDepth)
     return;
   
   CtrlList *cl;
   CtrlList *newcl;
   int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
   int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
+  int id_mask = ~((int)AC_PLUGIN_CTL_ID_MASK);
   int i, j;
   
   CtrlListList tmpcll;
@@ -422,7 +421,7 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
   {
     cl = icl->second;
     i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    j = cl->id() & ~((unsigned long)AC_PLUGIN_CTL_ID_MASK);
+    j = cl->id() & id_mask;
     if(j == id1 || j == id2)
     {
       newcl = new CtrlList(i | (j == id1 ? id2 : id1));
@@ -460,74 +459,21 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
     _controller.insert(std::pair<const int, CtrlList*>(newcl->id(), newcl));
   } 
   
-  // DELETETHIS 67
-  /*
-  unsigned int idmask = ~AC_PLUGIN_CTL_ID_MASK;
-  
-  CtrlList* cl;
-  CtrlList* ctl1 = 0;
-  CtrlList* ctl2 = 0;
-  CtrlList* newcl1 = 0;
-  CtrlList* newcl2 = 0;
-  CtrlVal cv(0, 0.0);
-  int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
-  int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
-  int i, j;
-  double min, max;
-  
-  for(ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) 
+  // Remap midi to audio controls...
+  MidiAudioCtrlMap* macm = _controller.midiControls();
+  for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end(); ++imacm)
   {
-    cl = icl->second;
-    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    j = cl->id() & idmask;
-    
-    if(j == id1)
-    {
-      ctl1 = cl;
-      newcl1 = new CtrlList( i | id2 );
-      newcl1->setMode(cl->mode());
-      newcl1->setValueType(cl->valueType());
-      newcl1->setName(cl->name());
-      cl->range(&min, &max);
-      newcl1->setRange(min, max);
-      newcl1->setCurVal(cl->curVal());
-      newcl1->setDefault(cl->getDefault());
-      for(iCtrl ic = cl->begin(); ic != cl->end(); ++ic) 
-      {
-        cv = ic->second;
-        newcl1->insert(std::pair<const int, CtrlVal>(cv.frame, cv));
-      }
-    }
-    //else  
-    if(j == id2)
-    {
-      ctl2 = cl;
-      newcl2 = new CtrlList( i | id1 );
-      newcl2->setMode(cl->mode());
-      newcl2->setValueType(cl->valueType());
-      newcl2->setName(cl->name());
-      cl->range(&min, &max);
-      newcl2->setRange(min, max);
-      newcl2->setCurVal(cl->curVal());
-      newcl2->setDefault(cl->getDefault());
-      for(iCtrl ic = cl->begin(); ic != cl->end(); ++ic) 
-      {
-        cv = ic->second;
-        newcl2->insert(std::pair<const int, CtrlVal>(cv.frame, cv));
-      }
-    }
-  }  
-  if(ctl1)
-    _controller.erase(ctl1->id());
-  if(ctl2)
-    _controller.erase(ctl2->id());
-  if(newcl1)
-    //_controller.add(newcl1);
-    _controller.insert(std::pair<const int, CtrlList*>(newcl1->id(), newcl1));
-  if(newcl2)
-    _controller.insert(std::pair<const int, CtrlList*>(newcl2->id(), newcl2));
-    //_controller.add(newcl2);
-  */  
+    int actrl = imacm->second.audioCtrlId();
+    int id = actrl & id_mask;
+    actrl &= AC_PLUGIN_CTL_ID_MASK;
+    if(id == id1)
+      actrl |= id2;
+    else if(id == id2)
+      actrl |= id1;
+    else
+      continue;
+    imacm->second.setAudioCtrlId(actrl);
+  }
 }
 
 //---------------------------------------------------------
@@ -610,11 +556,7 @@ void AudioTrack::processAutomationEvents()
             if(icr->id == id && icr->type == ARVT_STOP) 
             {
               int end = icr->frame;
-              // Erase everything up to, not including, this stop event's frame.
-              // Because an event was already stored directly when slider released.
-              if(end > start)
-                --end;
-                  
+              
               iCtrl s = cl->lower_bound(start);
               iCtrl e = cl->lower_bound(end);
               
@@ -636,8 +578,21 @@ void AudioTrack::processAutomationEvents()
     //  from CtrlRecList and put into cl.
     for (iCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
     {
-          if (icr->id == id && (icr->type == ARVT_VAL || icr->type == ARVT_START))
+          if (icr->id == id)
+          {
+                // Must optimize these types otherwise multiple vertices appear on flat straight lines in the graphs.
+                CtrlValueType vtype = cl->valueType();
+                if(!cl->empty() && (cl->mode() == CtrlList::DISCRETE || vtype == VAL_BOOL || vtype == VAL_INT))
+                {
+                  iCtrl icl_prev = cl->lower_bound(icr->frame);
+                  if(icl_prev != cl->begin())
+                    --icl_prev;
+                  if(icl_prev->second.val == icr->val)
+                    continue;
+                }  
+                // Now add the value.
                 cl->add(icr->frame, icr->val);
+          }
     }
   }
   
@@ -790,7 +745,7 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
   iCtrl ic = cl->find(frame); 
   if(ic != cl->end())
     cl->erase(ic);
-  cl->insert(std::pair<const int, CtrlVal> (newframe, CtrlVal(newframe, newval)));      
+  cl->insert(std::pair<const int, CtrlVal> (newframe, CtrlVal(newframe, newval)));
 }
 
 //---------------------------------------------------------
@@ -825,7 +780,7 @@ void AudioTrack::setVolume(double val)
 double AudioTrack::pan() const
       {
       return _controller.value(AC_PAN, MusEGlobal::audio->curFramePos(), 
-                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_volumeEnCtrl || !_volumeEn2Ctrl);
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_panEnCtrl || !_panEn2Ctrl);
       }
 
 //---------------------------------------------------------
@@ -848,8 +803,49 @@ void AudioTrack::setPan(double val)
 
 double AudioTrack::pluginCtrlVal(int ctlID) const
       {
+      bool en_1 = true, en_2 = true;
+      if(ctlID < AC_PLUGIN_CTL_BASE)  
+      {
+        if(ctlID == AC_VOLUME)
+        {
+          en_1 = _volumeEnCtrl; 
+          en_2 = _volumeEn2Ctrl;
+        }
+        else
+        if(ctlID == AC_PAN)
+        {
+          en_1 = _panEnCtrl; 
+          en_2 = _panEn2Ctrl;
+        }
+      }
+      else
+      {
+        if(ctlID < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+        {
+          _efxPipe->controllersEnabled(ctlID, &en_1, &en_2); 
+        }
+        else
+        {
+          if(type() == AUDIO_SOFTSYNTH)
+          {
+            const SynthI* synth = static_cast<const SynthI*>(this);
+            if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+            {
+              SynthIF* sif = synth->sif();
+              if(sif)
+              {
+                const DssiSynthIF* dssi_sif = static_cast<const DssiSynthIF*>(sif);
+                int in_ctrl_idx = ctlID & AC_PLUGIN_CTL_ID_MASK;
+                en_1 = dssi_sif->controllerEnabled(in_ctrl_idx);
+                en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
+              }
+            }
+          }
+        }
+      }  
+            
       return _controller.value(ctlID, MusEGlobal::audio->curFramePos(), 
-                               !MusEGlobal::automation || automationType() == AUTO_OFF);
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !en_1 || !en_2);
       }
 
 //---------------------------------------------------------
@@ -865,6 +861,140 @@ void AudioTrack::setPluginCtrlVal(int param, double val)
   cl->second->setCurVal(val);
 }
       
+//---------------------------------------------------------
+//   addScheduledControlEvent
+//   returns true if event cannot be delivered
+//---------------------------------------------------------
+
+bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
+{
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  // FIXME: These controllers (three so far - vol, pan, mute) have no vari-run-length support.
+  {
+    iCtrlList icl = _controller.find(track_ctrl_id);
+    if(icl == _controller.end())
+      return true;
+    icl->second->setCurVal(val);
+    return false;
+  }
+  else
+  {
+    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+      return _efxPipe->addScheduledControlEvent(track_ctrl_id, val, frame);
+    else
+    {
+      if(type() == AUDIO_SOFTSYNTH)
+      {
+        const SynthI* synth = static_cast<const SynthI*>(this);
+        if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+        {
+          SynthIF* sif = synth->sif();
+          if(sif)
+          {
+            DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
+            int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+            return dssi_sif->addScheduledControlEvent(in_ctrl_idx, val, frame);
+          }
+        }
+      }
+    }
+  }  
+  return true;
+}
+
+//---------------------------------------------------------
+//   enableController
+//   Enable or disable gui controls. 
+//   Used during automation recording to inhibit gui controls 
+//    from playback controller stream
+//---------------------------------------------------------
+
+void AudioTrack::enableController(int track_ctrl_id, bool en) 
+{
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
+  {
+    if(track_ctrl_id == AC_VOLUME)
+      enableVolumeController(en);
+    else
+    if(track_ctrl_id == AC_PAN)
+      enablePanController(en);
+  }
+  else
+  {
+    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+      _efxPipe->enableController(track_ctrl_id, en);
+    else
+    {
+      if(type() == AUDIO_SOFTSYNTH)
+      {
+        SynthI* synth = static_cast<SynthI*>(this);
+        if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+        {
+          SynthIF* sif = synth->sif();
+          if(sif)
+          {
+            DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
+            int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+            dssi_sif->enableController(in_ctrl_idx, en);
+          }
+        }
+      }
+    }
+  }  
+}
+
+//---------------------------------------------------------
+//   controllersEnabled
+//---------------------------------------------------------
+
+void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) const
+      {
+      bool en_1 = true, en_2 = true;
+      if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
+      {
+        if(track_ctrl_id == AC_VOLUME)
+        {
+          en_1 = _volumeEnCtrl; 
+          en_2 = _volumeEn2Ctrl;
+        }
+        else
+        if(track_ctrl_id == AC_PAN)
+        {
+          en_1 = _panEnCtrl; 
+          en_2 = _panEn2Ctrl;
+        }
+      }
+      else
+      {
+        if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+        {
+          _efxPipe->controllersEnabled(track_ctrl_id, &en_1, &en_2); 
+        }
+        else
+        {
+          if(type() == AUDIO_SOFTSYNTH)
+          {
+            const SynthI* synth = static_cast<const SynthI*>(this);
+            if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+            {
+              SynthIF* sif = synth->sif();
+              if(sif)
+              {
+                const DssiSynthIF* dssi_sif = static_cast<const DssiSynthIF*>(sif);
+                int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+                en_1 = dssi_sif->controllerEnabled(in_ctrl_idx);
+                en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
+              }
+            }
+          }
+        }
+      }  
+        
+      if(en1)
+        *en1 = en_1;
+      if(en2)
+        *en2 = en_2;
+      }
+
 void AudioTrack::recordAutomation(int n, double v)
       {
         if(!MusEGlobal::automation)
@@ -883,7 +1013,7 @@ void AudioTrack::recordAutomation(int n, double v)
             if (cl == _controller.end()) 
               return;
             // Add will replace if found.
-            cl->second->add(MusEGlobal::audio->curFramePos(), v);     
+            cl->second->add(MusEGlobal::audio->curFramePos(), v);   
           }  
         }
       }
@@ -895,10 +1025,10 @@ void AudioTrack::startAutoRecord(int n, double v)
         if(MusEGlobal::audio->isPlaying())
         {
           if(automationType() == AUTO_TOUCH)
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_START));  
-          else    
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_START));
+          else
           if(automationType() == AUTO_WRITE)
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));    
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));
         } 
         else
         {
@@ -926,7 +1056,7 @@ void AudioTrack::stopAutoRecord(int n, double v)
         {
           if(automationType() == AUTO_TOUCH)
           {
-              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::audio->curFramePos(), v);        
+              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::audio->curFramePos(), v);
               _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_STOP));   
           }   
         } 
@@ -953,26 +1083,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
             if (*ip)
                   (*ip)->writeConfiguration(level, xml);
             }
-      for (ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) {
-            const CtrlList* cl = icl->second;
-
-            QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(cl->id()).arg(cl->curVal()).toAscii().constData();
-            s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
-            xml.tag(level++, s.toAscii().constData());
-            int i = 0;
-            for (ciCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
-                  QString s("%1 %2, ");
-                  xml.nput(level, s.arg(ic->second.frame).arg(ic->second.val).toAscii().constData());
-                  ++i;
-                  if (i >= 4) {
-                        xml.put(level, "");
-                        i = 0;
-                        }
-                  }
-            if (i)
-                  xml.put(level, "");
-            xml.etag(level--, "controller");
-            }
+      _controller.write(level, xml);            
       }
 
 //---------------------------------------------------------
@@ -1113,6 +1224,8 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                   l->setMode(p->ctrlMode(m));  
                 } 
             }
+      else if (tag == "midiMapper") 
+            _controller.midiControls()->read(xml);
       else
             return Track::readProperties(xml, tag);
       return false;
@@ -1230,20 +1343,20 @@ void AudioTrack::mapRackPluginsToControllers()
       unsigned param = id & AC_PLUGIN_CTL_ID_MASK;    
       int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
       
-      PluginIBase* p = 0;
+      const PluginIBase* p = 0;
       if(idx >= 0 && idx < PipelineDepth)
         p = (*_efxPipe)[idx];
       // Support a special block for dssi synth ladspa controllers. 
       else if(idx == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)    
       {
-        SynthI* synti = dynamic_cast < SynthI* > (this);
+        const SynthI* synti = dynamic_cast < const SynthI* > (this);
         if(synti)
         {
           SynthIF* sif = synti->sif();
           if(sif)
           {
 #ifdef DSSI_SUPPORT
-            DssiSynthIF* dsif = dynamic_cast < DssiSynthIF* > (sif);
+            const DssiSynthIF* dsif = dynamic_cast < const DssiSynthIF* > (sif);
             if(dsif)
               p = dsif;
 #endif

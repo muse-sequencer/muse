@@ -31,6 +31,12 @@
 #include "route.h"
 #include "event.h"
 
+// An experiment to use true frames for time-stamping all recorded input. 
+// (All recorded data actually arrived in the previous period.)
+// TODO: Some more work needs to be done in WaveTrack::getData() in order to
+//  make everything line up and sync correctly. Cannot use this yet!
+//#define _AUDIO_USE_TRUE_FRAME_
+
 namespace MusECore {
 class AudioDevice;
 class AudioTrack;
@@ -94,6 +100,7 @@ enum {
       AUDIO_ADD_AC_EVENT,
       AUDIO_CHANGE_AC_EVENT,
       AUDIO_SET_SOLO, AUDIO_SET_SEND_METRONOME, 
+      AUDIO_START_MIDI_LEARN,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
       SEQM_IDLE, SEQM_SEEK,
       };
@@ -147,7 +154,11 @@ class Audio {
       int _loopCount;         // Number of times we have looped so far
 
       Pos _pos;               // current play position
-
+      
+#ifdef _AUDIO_USE_TRUE_FRAME_
+      Pos _previousPos;       // previous play position
+#endif
+      
       unsigned curTickPos;   // pos at start of frame during play/record
       unsigned nextTickPos;  // pos at start of next frame during play/record
 
@@ -172,7 +183,8 @@ class Audio {
       // record values:
       Pos startRecordPos;
       Pos endRecordPos;
-
+      unsigned startExternalRecTick;
+      unsigned endExternalRecTick;
       
       AudioOutput* _audioMaster;
       AudioOutput* _audioMonitor;
@@ -288,6 +300,7 @@ class Audio {
       void msgRemapPortDrumCtlEvents(int, int, int, int);
       void msgChangeAllPortDrumCtrlEvents(bool, bool);
       void msgSetSendMetronome(AudioTrack*, bool);
+      void msgStartMidiLearn();
 
       void msgPlayMidiEvent(const MidiPlayEvent* event);
       void rescanAlsaPorts();
@@ -295,8 +308,13 @@ class Audio {
       void midiPortsChanged();
 
       const Pos& pos() const { return _pos; }
+#ifdef _AUDIO_USE_TRUE_FRAME_
+      const Pos& previousPos() const { return _previousPos; }
+#endif
       const Pos& getStartRecordPos() const { return startRecordPos; }
       const Pos& getEndRecordPos() const { return endRecordPos; }
+      unsigned getStartExternalRecTick() const { return startExternalRecTick; }
+      unsigned getEndExternalRecTick() const { return endExternalRecTick; }
       int loopCount() { return _loopCount; }         // Number of times we have looped so far
       unsigned loopFrame() { return _loopFrame; }          
 

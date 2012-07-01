@@ -57,11 +57,13 @@
 #include "sync.h"
 #include "midictrl.h"
 #include "menutitleitem.h"
+#include "midi_audio_control.h"
 #include "tracks_duplicate.h"
 #include "midi.h"
 #include "al/sig.h"
 #include "keyevent.h"
 #include <sys/wait.h>
+#include "tempo.h"
 
 namespace MusEGlobal {
 MusECore::Song* song = 0;
@@ -762,18 +764,11 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
 void Song::addACEvent(AudioTrack* t, int acid, int frame, double val)
 {
   MusEGlobal::audio->msgAddACEvent(t, acid, frame, val);
-  emit controllerChanged(t); 
 }
 
 void Song::changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val)
 {
   MusEGlobal::audio->msgChangeACEvent(t, acid, frame, newFrame, val);
-  emit controllerChanged(t); 
-}
-
-void Song::controllerChange(Track* t)
-{
-  emit controllerChanged(t); 
 }
 
 //---------------------------------------------------------
@@ -883,7 +878,6 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   if (endTick < tick)
                         endTick = tick;
                   }
-            // Added by Tim. p3.3.8
             
             // Round the end up (again) using the Arranger part snap raster value. 
             endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
@@ -1626,6 +1620,26 @@ void Song::beat()
       if (MusEGlobal::audio->isPlaying())
         setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
 
+      // Process external tempo changes:
+      while(!_tempoFifo.isEmpty())
+        MusEGlobal::tempo_rec_list.addTempo(_tempoFifo.get()); 
+      
+      // Update anything related to audio controller graphs etc.
+      for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++ it)
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        AudioTrack* at = static_cast<AudioTrack*>(*it); 
+        CtrlListList* cll = at->controller();
+        for(ciCtrlList icl = cll->begin(); icl != cll->end(); ++icl)
+        {
+          CtrlList* cl = icl->second;
+          if(cl->isVisible() && !cl->dontShow() && cl->guiUpdatePending())  
+            emit controllerChanged(at, cl->id());
+          cl->setGuiUpdatePending(false);
+        }
+      }
+      
       // Update synth native guis at the heartbeat rate.
       for(ciSynthI is = _synthIs.begin(); is != _synthIs.end(); ++is)
         (*is)->guiHeartBeat();
@@ -2078,6 +2092,7 @@ void Song::clear(bool signal, bool clear_all)
       while (loop);
       
       MusEGlobal::tempomap.clear();
+      MusEGlobal::tempo_rec_list.clear();
       AL::sigmap.clear();
       MusEGlobal::keymap.clear();
       
@@ -2419,13 +2434,14 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
 
 int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int acid)
 {
-  enum { PREV_EVENT, NEXT_EVENT, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS };
+  enum { PREV_EVENT=0, NEXT_EVENT, ADD_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS, MIDI_ASSIGN, MIDI_CLEAR };
   QMenu* menu = new QMenu;
 
   int count = 0;
   bool isEvent = false, canSeekPrev = false, canSeekNext = false, canEraseRange = false;
   bool canAdd = false;
   double ctlval = 0.0;
+  int frame = 0;
   if(track)
   {
     ciCtrlList icl = track->controller()->find(acid);
@@ -2434,11 +2450,17 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
       CtrlList *cl = icl->second;
       canAdd = true;
       
-      //int frame = pos[0].frame(); DELETETHIS
-      int frame = MusEGlobal::audio->pos().frame();       // Try this. p4.0.33 DELETETHIS
+      frame = MusEGlobal::audio->pos().frame();       
       
-      ctlval = cl->curVal();
-
+      bool en1, en2;
+      track->controllersEnabled(acid, &en1, &en2);
+      
+      AutomationType at = track->automationType();
+      if(!MusEGlobal::automation || at == AUTO_OFF || !en1 || !en2) 
+        ctlval = cl->curVal();  
+      else  
+        ctlval = cl->value(frame);
+      
       count = cl->size();
       if(count)
       {
@@ -2491,6 +2513,40 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   clearAction->setData(CLEAR_ALL_EVENTS);
   clearAction->setEnabled((bool)count);
 
+
+  menu->addSeparator();
+  menu->addAction(new MusEGui::MenuTitleItem(tr("Midi control"), menu));
+  
+  QAction *assign_act = menu->addAction(tr("Assign"));
+  assign_act->setCheckable(false);
+  assign_act->setData(MIDI_ASSIGN); 
+  
+  MidiAudioCtrlMap* macm = track->controller()->midiControls();
+  AudioMidiCtrlStructMap amcs;
+  macm->find_audio_ctrl_structs(acid, &amcs);
+  
+  if(!amcs.empty())
+  {
+    QAction *cact = menu->addAction(tr("Clear"));
+    cact->setData(MIDI_CLEAR); 
+    menu->addSeparator();
+  }
+  
+  for(iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+  {
+    int port, chan, mctrl;
+    macm->hash_values((*iamcs)->first, &port, &chan, &mctrl);
+    //QString s = QString("Port:%1 Chan:%2 Ctl:%3-%4").arg(port + 1)
+    QString s = QString("Port:%1 Chan:%2 Ctl:%3").arg(port + 1)
+                                                  .arg(chan + 1)
+                                                  //.arg((mctrl >> 8) & 0xff)
+                                                  //.arg(mctrl & 0xff);
+                                                  .arg(midiCtrlName(mctrl, true));
+    QAction *mact = menu->addAction(s);
+    mact->setEnabled(false);
+    mact->setData(-1); // Not used
+  }
+  
   QAction* act = menu->exec(menupos);
   if (!act || !track)
   {
@@ -2504,10 +2560,10 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   switch(sel)
   {
     case ADD_EVENT:
-          MusEGlobal::audio->msgAddACEvent(track, acid, pos[0].frame(), ctlval);
+          MusEGlobal::audio->msgAddACEvent(track, acid, frame, ctlval);
     break;
     case CLEAR_EVENT:
-          MusEGlobal::audio->msgEraseACEvent(track, acid, pos[0].frame());
+          MusEGlobal::audio->msgEraseACEvent(track, acid, frame);
     break;
 
     case CLEAR_RANGE:
@@ -2527,6 +2583,45 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
 
     case NEXT_EVENT:
           MusEGlobal::audio->msgSeekNextACEvent(track, acid);
+    break;
+    
+    case MIDI_ASSIGN:
+          {
+            int port = -1, chan = 0, ctrl = 0;
+            for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+            {
+              macm->hash_values((*iamcs)->first, &port, &chan, &ctrl);
+              break; // Only a single item for now, thanks!
+            }
+            
+            MusEGui::MidiAudioControl* pup = new MusEGui::MidiAudioControl(port, chan, ctrl);
+            
+            if(pup->exec() == QDialog::Accepted)
+            {
+              MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+              // Erase all for now.
+              for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+                macm->erase(*iamcs);
+              
+              port = pup->port(); chan = pup->chan(); ctrl = pup->ctrl();
+              if(port >= 0 && chan >=0 && ctrl >= 0)
+                // Add will replace if found.
+                macm->add_ctrl_struct(port, chan, ctrl, MusECore::MidiAudioCtrlStruct(acid));
+              
+              MusEGlobal::audio->msgIdle(false);
+            }
+            
+            delete pup;
+          }
+          break;
+    
+    case MIDI_CLEAR:
+          if(!amcs.empty())
+            MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+          for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+            macm->erase(*iamcs);
+          if(!amcs.empty())
+            MusEGlobal::audio->msgIdle(false);
     break;
     
     default:
@@ -2755,8 +2850,62 @@ void Song::processAutomationEvents()
       // Process (and clear) rec events.
       ((AudioTrack*)(*i))->processAutomationEvents();
   }
+
+  MusEGlobal::audio->msgIdle(false); 
+}
+
+//---------------------------------------------------------
+//   processMasterRec
+//---------------------------------------------------------
+
+void Song::processMasterRec()
+{
+  bool do_tempo = false;
+  
+  // Wait a few seconds for the tempo fifo to be empty.
+  int tout = 30;
+  while(!_tempoFifo.isEmpty())
+  {
+    usleep(100000);
+    --tout;
+    if(tout == 0)
+      break;
+  }
+  
+  int tempo_rec_list_sz = MusEGlobal::tempo_rec_list.size();
+  if(tempo_rec_list_sz != 0) 
+  {
+    if(QMessageBox::question(MusEGlobal::muse, 
+                          tr("MusE: Tempo list"), 
+                          tr("External tempo changes were recorded.\nTransfer them to master tempo list?"),
+                          QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel) == QMessageBox::Ok)
+       do_tempo = true;
+  }
+  
+  MusEGlobal::audio->msgIdle(true); // gain access to all data structures
+
+  if(do_tempo)
+  {
+    // Erase from master tempo the (approximate) recording start/end tick range according to the recorded tempo map,
+    //MusEGlobal::tempomap.eraseRange(MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getStartRecordPos().frame()), 
+    //                                MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getEndRecordPos().frame()));
+    // This is more accurate but lacks resolution:
+    MusEGlobal::tempomap.eraseRange(MusEGlobal::audio->getStartExternalRecTick(), MusEGlobal::audio->getEndExternalRecTick());
+
+    // Add the recorded tempos to the master tempo list:
+    for(int i = 0; i < tempo_rec_list_sz; ++i)
+      MusEGlobal::tempomap.addTempo(MusEGlobal::tempo_rec_list[i].tick, 
+                                    MusEGlobal::tempo_rec_list[i].tempo, 
+                                    false);  // False: Defer normalize
+    MusEGlobal::tempomap.normalize();
+  }
+  
+  MusEGlobal::tempo_rec_list.clear();
   
   MusEGlobal::audio->msgIdle(false); 
+
+  if(do_tempo)
+    update(SC_TEMPO);
 }
 
 //---------------------------------------------------------

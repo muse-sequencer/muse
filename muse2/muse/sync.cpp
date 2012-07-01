@@ -21,6 +21,7 @@
 //
 //=========================================================
 
+#include <stdlib.h>
 #include <cmath>
 #include "sync.h"
 #include "song.h"
@@ -59,12 +60,13 @@ static unsigned int curExtMidiSyncTick = 0;
 unsigned int volatile lastExtMidiSyncTick = 0;
 double volatile curExtMidiSyncTime = 0.0;
 double volatile lastExtMidiSyncTime = 0.0;
+MusECore::MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset = MusECore::MidiSyncInfo::SMALL;
+double syncRecTempoValQuant = 1.0;
 
 // Not used yet. DELETETHIS?
 // static bool mcStart = false;
 // static int mcStartTick;
 
-// p3.3.25
 // From the "Introduction to the Volatile Keyword" at Embedded dot com
 /* A variable should be declared volatile whenever its value could change unexpectedly. 
  ... <such as> global variables within a multi-threaded application    
@@ -820,18 +822,25 @@ void MidiSeq::alignAllTicks(int frameOverride)
         recTick2 = 0;
       if (MusEGlobal::debugSync)
         printf("alignAllTicks curFrame=%d recTick=%d tempo=%.3f frameOverride=%d\n",curFrame,recTick,(float)((1000000.0 * 60.0)/tempo), frameOverride);
-
+      
+      lastTempo = 0;
+      for(int i = 0; i < _clockAveragerPoles; ++i)
+      {
+        _avgClkDiffCounter[i] = 0;
+        _averagerFull[i] = false;
+      }
+      _lastRealTempo = 0.0;
       }
 
 //---------------------------------------------------------
 //   realtimeSystemInput
 //    real time message received
 //---------------------------------------------------------
-void MidiSeq::realtimeSystemInput(int port, int c)
+void MidiSeq::realtimeSystemInput(int port, int c, double time)
       {
 
       if (MusEGlobal::midiInputTrace)
-            printf("realtimeSystemInput port:%d 0x%x\n", port+1, c);
+            printf("realtimeSystemInput port:%d 0x%x time:%f\n", port+1, c, time);
 
       MidiPort* mp = &MusEGlobal::midiPorts[port];
       
@@ -873,6 +882,9 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
                       MusEGlobal::midiPorts[p].sendClock();
                   
+                  MusEGlobal::lastExtMidiSyncTime = MusEGlobal::curExtMidiSyncTime;
+                  MusEGlobal::curExtMidiSyncTime = time;
+                  
                   if(MusEGlobal::playPendingFirstClock)
                   {
                     MusEGlobal::playPendingFirstClock = false;
@@ -887,12 +899,158 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   // Can't check audio state, might not be playing yet, we might miss some increments.
                   if(playStateExt)
                   {
-                    MusEGlobal::lastExtMidiSyncTime = MusEGlobal::curExtMidiSyncTime;
-                    MusEGlobal::curExtMidiSyncTime = curTime();
                     int div = MusEGlobal::config.division/24;
                     MusEGlobal::midiExtSyncTicks += div;
                     MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
                     MusEGlobal::curExtMidiSyncTick += div;
+                    
+                    if(MusEGlobal::song->record() && MusEGlobal::lastExtMidiSyncTime > 0.0)
+                    {
+                      double diff = MusEGlobal::curExtMidiSyncTime - MusEGlobal::lastExtMidiSyncTime;
+                      if(diff != 0.0)
+                      {
+                        if(_clockAveragerPoles == 0)
+                        {
+                          double real_tempo = 60.0/(diff * 24.0);
+                          if(_tempoQuantizeAmount > 0.0)
+                          {
+                            double f_mod = fmod(real_tempo, _tempoQuantizeAmount);
+                            if(f_mod < _tempoQuantizeAmount/2.0)
+                              real_tempo -= f_mod;
+                            else
+                              real_tempo += _tempoQuantizeAmount - f_mod;
+                          }
+                          int new_tempo = ((1000000.0 * 60.0) / (real_tempo));
+                          if(new_tempo != lastTempo)
+                          {
+                            lastTempo = new_tempo;
+                            // Compute tick for this tempo - it is one step back in time. 
+                            int add_tick = MusEGlobal::curExtMidiSyncTick - div;
+                            if(MusEGlobal::debugSync)
+                              printf("adding new tempo tick:%d curExtMidiSyncTick:%d avg_diff:%f real_tempo:%f new_tempo:%d = %f\n", add_tick, MusEGlobal::curExtMidiSyncTick, diff, real_tempo, new_tempo, (double)((1000000.0 * 60.0)/new_tempo));
+                            MusEGlobal::song->addExternalTempo(TempoRecEvent(add_tick, new_tempo));
+                          }  
+                        }
+                        else
+                        {
+                          double avg_diff = diff;
+                          for(int pole = 0; pole < _clockAveragerPoles; ++pole)
+                          {
+                            timediff[pole][_avgClkDiffCounter[pole]] = avg_diff;
+                            ++_avgClkDiffCounter[pole];
+                            if(_avgClkDiffCounter[pole] >= _clockAveragerStages[pole])
+                            {
+                              _avgClkDiffCounter[pole] = 0;
+                              _averagerFull[pole] = true;
+                            }
+                            
+                            // Each averager needs to be full before we can pass the data to 
+                            //  the next averager or use the data if all averagers are full...
+                            if(!_averagerFull[pole])  
+                              break;
+                            else
+                            {
+                              avg_diff = 0.0;
+                              for(int i = 0; i < _clockAveragerStages[pole]; ++i) 
+                                avg_diff += timediff[pole][i];
+                              avg_diff /= _clockAveragerStages[pole];
+                              
+                              int fin_idx = _clockAveragerPoles - 1;
+                                
+                              // On the first pole? Check for large differences.
+                              if(_preDetect && pole == 0)
+                              {
+                                double real_tempo = 60.0/(avg_diff * 24.0);
+                                double real_tempo_diff = abs(real_tempo - _lastRealTempo);
+                                
+                                // If the tempo changed a large amount, reset.
+                                if(real_tempo_diff >= 10.0)  // TODO: User-adjustable?
+                                {
+                                  if(_tempoQuantizeAmount > 0.0)
+                                  {
+                                    double f_mod = fmod(real_tempo, _tempoQuantizeAmount);
+                                    if(f_mod < _tempoQuantizeAmount/2.0)
+                                      real_tempo -= f_mod;
+                                    else
+                                      real_tempo += _tempoQuantizeAmount - f_mod;
+                                  }
+                                  _lastRealTempo = real_tempo;
+                                  int new_tempo = ((1000000.0 * 60.0) / (real_tempo));
+                                  
+                                  if(new_tempo != lastTempo)
+                                  {
+                                    lastTempo = new_tempo;
+                                    // Compute tick for this tempo - it is way back in time. 
+                                    int add_tick = MusEGlobal::curExtMidiSyncTick - _clockAveragerStages[0] * div;
+                                    if(add_tick < 0) 
+                                    {
+                                      printf("FIXME sync: adding restart tempo curExtMidiSyncTick:%d: add_tick:%d < 0 !\n", MusEGlobal::curExtMidiSyncTick, add_tick);
+                                      add_tick = 0;
+                                    }
+                                    if(MusEGlobal::debugSync)
+                                      printf("adding restart tempo tick:%d curExtMidiSyncTick:%d tick_idx_sub:%d avg_diff:%f real_tempo:%f real_tempo_diff:%f new_tempo:%d = %f\n", add_tick, MusEGlobal::curExtMidiSyncTick, _clockAveragerStages[0], avg_diff, real_tempo, real_tempo_diff, new_tempo, (double)((1000000.0 * 60.0)/new_tempo));
+                                    MusEGlobal::song->addExternalTempo(TempoRecEvent(add_tick, new_tempo));
+                                  }  
+                                  
+                                  // Reset all the poles.
+                                  //for(int i = 0; i < clockAveragerPoles; ++i)
+                                  // We have a value for this pole, let's keep it but reset the other poles.
+                                  for(int i = 1; i < _clockAveragerPoles; ++i)
+                                  {
+                                    _avgClkDiffCounter[i] = 0;
+                                    _averagerFull[i] = false;
+                                  }
+                                  break;
+                                }
+                              }
+                              
+                              // On the last pole? 
+                              // All averagers need to be full before we can use the data...
+                              if(pole == fin_idx)
+                              {
+                                double real_tempo = 60.0/(avg_diff * 24.0);
+                                double real_tempo_diff = abs(real_tempo - _lastRealTempo);
+                                
+                                if(real_tempo_diff >= _tempoQuantizeAmount/2.0) // Anti-hysteresis
+                                {
+                                  if(_tempoQuantizeAmount > 0.0)
+                                  {
+                                    double f_mod = fmod(real_tempo, _tempoQuantizeAmount);
+                                    if(f_mod < _tempoQuantizeAmount/2.0)
+                                      real_tempo -= f_mod;
+                                    else
+                                      real_tempo += _tempoQuantizeAmount - f_mod;
+                                  }
+                                  _lastRealTempo = real_tempo;
+                                  int new_tempo = ((1000000.0 * 60.0) / (real_tempo));
+                                  
+                                  if(new_tempo != lastTempo)
+                                  {
+                                    lastTempo = new_tempo;
+                                    // Compute tick for this tempo - it is way back in time. 
+                                    int tick_idx_sub = 0;
+                                    for(int i = 0; i <= pole; ++i)
+                                      tick_idx_sub += _clockAveragerStages[i];
+                                    // Compensate: Each pole > 0 has a delay one less than its number of stages. 
+                                    // For example three pole {8, 8, 8} has a delay of 22 not 24.
+                                    tick_idx_sub -= pole;
+                                    int add_tick = MusEGlobal::curExtMidiSyncTick - tick_idx_sub * div;
+                                    if(add_tick < 0) 
+                                    {
+                                      printf("FIXME sync: adding new tempo curExtMidiSyncTick:%d: add_tick:%d < 0 !\n", MusEGlobal::curExtMidiSyncTick, add_tick);
+                                      add_tick = 0;
+                                    }
+                                    if(MusEGlobal::debugSync)
+                                      printf("adding new tempo tick:%d curExtMidiSyncTick:%d tick_idx_sub:%d avg_diff:%f real_tempo:%f new_tempo:%d = %f\n", add_tick, MusEGlobal::curExtMidiSyncTick, tick_idx_sub, avg_diff, real_tempo, new_tempo, (double)((1000000.0 * 60.0)/new_tempo));
+                                    MusEGlobal::song->addExternalTempo(TempoRecEvent(add_tick, new_tempo));
+                                  }  
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
                   }
                   
 //BEGIN : Original code: DELETETHIS 250
@@ -1185,8 +1343,6 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                         alignAllTicks();
 
                         storedtimediffs = 0;
-                        for (int i=0; i<24; i++)
-                              timediff[i] = 0.0;
                         
                         // p3.3.26 1/23/10 DELETETHIS 6
                         // Changed because msgPlay calls MusEGlobal::audioDevice->seekTransport(song->cPos())
@@ -1243,7 +1399,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     
                     if (MusEGlobal::debugSync)
                           printf("realtimeSystemInput stop\n");
-                    
+
                     //DELETETHIS 7
                     // Just in case the process still runs a cycle or two and causes the 
                     //  audio tick position to increment, reset the incrementer and force 

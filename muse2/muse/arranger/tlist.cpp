@@ -22,6 +22,8 @@
 
 #include <cmath>
 
+#include <QAction>
+#include <QActionGroup>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -35,6 +37,7 @@
 #include <QIcon>
 #include <QSpinBox>
 #include <QToolTip>
+#include <QList>
 
 #include "popupmenu.h"
 #include "globals.h"
@@ -64,6 +67,8 @@
 #include "menutitleitem.h"
 #include "arranger.h"
 #include "undo.h"
+#include "midi_audio_control.h"
+#include "ctrl.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -1409,17 +1414,20 @@ MusECore::TrackList TList::getRecEnabledTracks()
 
 void TList::changeAutomation(QAction* act)
 {
-  if ( (editAutomation->type() == MusECore::Track::MIDI) || (editAutomation->type() == MusECore::Track::DRUM) || (editAutomation->type() == MusECore::Track::NEW_DRUM) ) {
-    printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
+  if(!editAutomation || editAutomation->isMidiTrack())
     return;
-  }
+  if(act->data().toInt() == -1)
+    return;
   int colindex = act->data().toInt() & 0xff;
-  int id = (act->data().toInt() & 0x00ffffff) / 256;
+  int id = (act->data().toInt() & 0x00ffffff) >> 8;
+  // Is it the midi control action or clear action item?
+  if (colindex == 254 || colindex == 255)
+    return;
+  
   if (colindex < 100)
       return; // this was meant for changeAutomationColor
               // one of these days I'll rewrite this so it's understandable
               // this is just to get it up and running...
-
 
   MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
   for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
@@ -1435,13 +1443,81 @@ void TList::changeAutomation(QAction* act)
 //---------------------------------------------------------
 void TList::changeAutomationColor(QAction* act)
 {
-  if ( (editAutomation->type() == MusECore::Track::MIDI) || (editAutomation->type() == MusECore::Track::DRUM) || (editAutomation->type() == MusECore::Track::NEW_DRUM) ) {
-    printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
+  if(!editAutomation || editAutomation->isMidiTrack())
+    return;
+  if(act->data().toInt() == -1)
+    return;
+  int colindex = act->data().toInt() & 0xff;
+  int id = (act->data().toInt() & 0x00ffffff) >> 8;
+
+  // Is it the clear midi control action item?
+  if(colindex == 254)  
+  {
+    MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
+    MusECore::MidiAudioCtrlMap* macp = track->controller()->midiControls();
+    MusECore::AudioMidiCtrlStructMap amcs;
+    macp->find_audio_ctrl_structs(id, &amcs);
+    if(!amcs.empty())
+      MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+    for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+      macp->erase(*iamcs);
+    if(!amcs.empty())
+      MusEGlobal::audio->msgIdle(false);
+    
+    // Hm, need to remove the 'clear' item, and the status lines below it. Try this:
+    QActionGroup* midi_actgrp = act->actionGroup();
+    if(midi_actgrp)
+    {
+      QList<QAction*> act_list = midi_actgrp->actions();
+      int sz = act_list.size();
+      for(int i = 0; i < sz; ++i)
+      {
+        QAction* list_act = act_list.at(i);
+        ///midi_actgrp->removeAction(list_act);
+        // list_act has no parent now.
+        ///delete list_act;
+        list_act->setVisible(false); // HACK Cannot delete any actions! Causes crash with our PopupMenu due to recent fixes.
+      }
+    }
     return;
   }
-  int colindex = act->data().toInt() & 0xff;
-  int id = (act->data().toInt() & 0x00ffffff) / 256;
-
+  
+  // Is it the midi control action item?
+  if(colindex == 255)  
+  {
+    MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
+    MusECore::MidiAudioCtrlMap* macm = track->controller()->midiControls();
+    MusECore::AudioMidiCtrlStructMap amcs;
+    macm->find_audio_ctrl_structs(id, &amcs);
+    
+    int port = -1, chan = 0, ctrl = 0;
+    for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+    {
+      macm->hash_values((*iamcs)->first, &port, &chan, &ctrl);
+      break; // Only a single item for now, thanks!
+    }
+    
+    MidiAudioControl* pup = new MidiAudioControl(port, chan, ctrl);
+    
+    if(pup->exec() == QDialog::Accepted)
+    {
+      MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+      // Erase all for now.
+      for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+        macm->erase(*iamcs);
+      
+      port = pup->port(); chan = pup->chan(); ctrl = pup->ctrl();
+      if(port >= 0 && chan >=0 && ctrl >= 0)
+        // Add will replace if found.
+        macm->add_ctrl_struct(port, chan, ctrl, MusECore::MidiAudioCtrlStruct(id));
+      
+      MusEGlobal::audio->msgIdle(false);
+    }
+    
+    delete pup;
+    return;
+  }
+  
   if (colindex > 100)
       return; // this was meant for changeAutomation
               // one of these days I'll rewrite this so it's understandable
@@ -1461,7 +1537,10 @@ void TList::changeAutomationColor(QAction* act)
 //---------------------------------------------------------
 PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
 {
-  PopupMenu * m = new PopupMenu(parent);  //, true);  //TODO
+  PopupMenu * m = new PopupMenu(parent, true);  
+
+  QActionGroup* col_actgrp = new QActionGroup(m);
+  col_actgrp->setExclusive(true);
   for (int i = 0; i< 6; i++) {
     QPixmap pix(10,10);
     QPainter p(&pix);
@@ -1469,14 +1548,52 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     p.setPen(Qt::black);
     p.drawRect(0,0,10,10);
     QIcon icon(pix);
-    QAction *act = m->addAction(icon,"");
+    QAction *act = col_actgrp->addAction(icon,"");
     act->setCheckable(true);
     if (c == collist[i])
         act->setChecked(true);
-    int data = id * 256; // shift 8 bits
-    data += i; // color in the bottom 8 bits
-    act->setData(data);
+    act->setData((id<<8) + i); // Shift 8 bits. Color in the bottom 8 bits. 
   }
+  m->addActions(col_actgrp->actions());
+  
+  //m->addSeparator();
+  m->addAction(new MenuTitleItem(tr("Midi control"), m));
+  
+  if(editAutomation && !editAutomation->isMidiTrack()) 
+  {
+    QAction *act = m->addAction(tr("Assign"));
+    act->setCheckable(false);
+    act->setData((id<<8) + 255); // Shift 8 bits. Make midi menu the last item at 255.
+    
+    MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
+    MusECore::MidiAudioCtrlMap* macm = track->controller()->midiControls();
+    MusECore::AudioMidiCtrlStructMap amcs;
+    macm->find_audio_ctrl_structs(id, &amcs);
+    
+    // Group only the clear and status items so they can both be easily removed when clear is clicked.
+    if(!amcs.empty())
+    {
+      QActionGroup* midi_actgrp = new QActionGroup(m);
+      QAction *cact = midi_actgrp->addAction(tr("Clear"));
+      cact->setData((id<<8) + 254); // Shift 8 bits. Make clear the second-last item at 254
+      for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+      {
+        int port, chan, mctrl;
+        macm->hash_values((*iamcs)->first, &port, &chan, &mctrl);
+        //QString s = QString("Port:%1 Chan:%2 Ctl:%3-%4").arg(port + 1)
+        QString s = QString("Port:%1 Chan:%2 Ctl:%3").arg(port + 1)
+                                                    .arg(chan + 1)
+                                                    //.arg((mctrl >> 8) & 0xff)
+                                                    //.arg(mctrl & 0xff);
+                                                    .arg(MusECore::midiCtrlName(mctrl, true));
+        QAction *mact = midi_actgrp->addAction(s);
+        mact->setEnabled(false);
+        mact->setData(-1); // Not used
+      }
+      m->addActions(midi_actgrp->actions());
+    }
+  }
+  
   connect(m, SIGNAL(triggered(QAction*)), SLOT(changeAutomationColor(QAction*)));
   return m;
 
@@ -1611,14 +1728,53 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     p->setTitle(tr("Viewable automation"));
                     MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)t)->controller();
                     QAction* act = 0;
+                    int last_rackpos = -1;
+                    bool internal_found = false;
+                    bool synth_found = false;
                     for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
                       MusECore::CtrlList *cl = icll->second;
                       if (cl->dontShow())
                         continue;
+                      
+                      int ctrl = cl->id();
+                      
+                      if(ctrl < AC_PLUGIN_CTL_BASE)
+                      {
+                        if(!internal_found)
+                          p->addAction(new MusEGui::MenuTitleItem(tr("Internal"), p)); 
+                        internal_found = true;
+                      }
+                      else
+                      {
+                        if(ctrl < (int)MusECore::genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+                        {
+                          int rackpos = (ctrl - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
+                          if(rackpos < PipelineDepth)
+                          {
+                            if(rackpos != last_rackpos)
+                            {
+                              QString s = ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos);
+                              p->addAction(new MusEGui::MenuTitleItem(s, p)); 
+                            }
+                            last_rackpos = rackpos;
+                          }
+                        }
+                        else
+                        {
+                          if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+                          {
+                            if(!synth_found)
+                              p->addAction(new MusEGui::MenuTitleItem(tr("Synth"), p)); 
+                            synth_found = true;
+                          }
+                        }
+                      }
+                      
                       act = p->addAction(cl->name());
                       act->setCheckable(true);
                       act->setChecked(cl->isVisible());
-                      int data = cl->id() * 256; // shift 8 bits
+                      
+                      int data = ctrl<<8; // shift 8 bits
                       data += 150; // illegal color > 100
                       act->setData(data);
                       PopupMenu *m = colorMenu(cl->color(), cl->id(), p);

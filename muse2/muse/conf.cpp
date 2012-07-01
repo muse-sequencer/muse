@@ -561,6 +561,23 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                                 if(MusEGlobal::audioDevice)
                                       MusEGlobal::audioDevice->setMaster(MusEGlobal::jackTransportMaster);      
                               }  
+                        else if (tag == "syncRecFilterPreset")
+                              {
+                              int p = xml.parseInt();  
+                              if(p >= 0 && p < MidiSyncInfo::TYPE_END)
+                              {
+                                MusEGlobal::syncRecFilterPreset = MidiSyncInfo::SyncRecFilterPresetType(p);
+                                if(MusEGlobal::midiSeq)
+                                  MusEGlobal::midiSeq->setSyncRecFilterPreset(MusEGlobal::syncRecFilterPreset);
+                              }
+                              }
+                        else if (tag == "syncRecTempoValQuant")
+                              {
+                                double qv = xml.parseDouble();
+                                MusEGlobal::syncRecTempoValQuant = qv;
+                                if(MusEGlobal::midiSeq)
+                                  MusEGlobal::midiSeq->setRecTempoValQuant(qv);
+                              }
                         else if (tag == "mtcoffset") {
                               QString qs(xml.parse1());
                               QByteArray ba = qs.toLatin1();
@@ -1348,6 +1365,8 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
       xml.uintTag(level, "sendClockDelay", MusEGlobal::syncSendFirstClockDelay);
       xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport.value());
       xml.intTag(level, "jackTransportMaster", MusEGlobal::jackTransportMaster);
+      xml.intTag(level, "syncRecFilterPreset", MusEGlobal::syncRecFilterPreset);
+      xml.doubleTag(level, "syncRecTempoValQuant", MusEGlobal::syncRecTempoValQuant);
       MusEGlobal::extSyncFlag.save(level, xml);
       
       xml.intTag(level, "bigtimeVisible",   viewBigtimeAction->isChecked());

@@ -27,10 +27,20 @@
 %% neccessary.
 %%
 %% Whenever referring to code symbols, constants or source/header
-%% files, please use \texttt{someClass::someSymbol} or \texttt{file.cpp}
+%% files, please use \sym{someClass::someSymbol}, \usym{UPPERCASE_THING}
+%% or \f{file.cpp}.
 %% Only specify file paths or namespaces where it would be ambiguous
 %% otherwise. Specify 'someClass::' until it would disturb the reader
-%% and it is obvious. (watch out to prefix _ with \)
+%% and it is obvious. you have to replace '_' by {\_} (with the {}!).
+%% These macros do automatic hyphenation on Camel-Case, under_-score
+%% and scope::-operator boundaries. If you need to insert additional
+%% hyphenation points, use {\-}.
+%% Example: \sym{someClass::someAb{\-}nor{\-}mal{\-}lyLongName} will
+%%          hyphenate: some-Class::-some-Ab-nor-mal-ly-Long-Name
+%%
+%% Whenever referring to URLs, please wrap them in \url{blah}. Key
+%% combinations shall look like \key{CTRL+C}. Menu items shall look
+%% like \menu{Menu > Submenu > Menu Item}.
 %%
 %% Where possible, reference other parts of this documents with
 %% \label and \ref. Avoid duplicate information under "Internals" by
@@ -58,18 +68,343 @@
 
 
 \documentclass[a4paper]{report}
+\usepackage[a4paper,  left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage[english]{babel}
-\author{Florian Jung}
+\usepackage{graphicx}
+\usepackage{hyphenat}
+\usepackage{wrapfig}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+	\lhead{\scriptsize{\slshape\leftmark}}
+	\chead{}
+	\rhead{\thepage}
+	\lfoot{}
+	\cfoot{}
+	\rfoot{}
+	\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{ifthen}
+
+% Hyphenate symbols before each uppercase letter, after each underscore
+% (without a "-") and after each ':' (without a "-")
+% TODO for any latex crack: also do automatic hyphenation, that is,
+% instead of some-Automation-Expression, do some-Au-to-ma-tion-Ex-press-ion
+\makeatletter
+\newcommand{\camelhyph}[1]{\@fterfirst\c@amelhyph#1\relax }
+\newcommand{\underscorehyph}[1]{\@fterfirst\u@nderscorehyph#1\relax }
+\def\@fterfirst #1#2{#2#1}
+\def\c@amelhyph #1{%
+\ifthenelse{\equal{#1}\relax}{}{%  Do nothing if the end has been reached
+  \ifnum`#1=95 \_\hspace{0pt}\else      %     Check whether #1 is "_", then print _[thin space]
+    \ifnum`#1=58 :\hspace{0pt}\else
+      \ifnum`#1>64
+        \ifnum`#1<91 \-#1\else#1\fi%     Check whether #1 is an uppercase letter,
+      \else#1\fi
+    \fi
+  \fi
+                            %     if so, print \-#1, otherwise #1
+  \expandafter\c@amelhyph%    %     insert \c@amelhyph again.
+}}
+\def\u@nderscorehyph #1{%
+\ifthenelse{\equal{#1}\relax}{}{%  Do nothing if the end has been reached
+  \ifnum`#1=95 \_\hspace{0pt}\else      %     Check whether #1 is "_", then print _\-
+    \ifnum`#1=58 :\hspace{0pt}\else#1\fi\fi
+  \expandafter\u@nderscorehyph%    %     insert \u@nderscorehyph again.
+}}
+\makeatother
+
+
+
+\author{Florian Jung, Robert Jonsson}
 \title{MusE Documentation}
+
+\newcommand{\url}[1]{\texttt{#1}}
+\newcommand{\key}[1]{\textbf{#1}}
+\newcommand{\shell}[1]{\texttt{\textbf{#1}}}
+\newcommand{\menu}[1]{\textbf{#1}}
+\newcommand{\sym}[1]{\texttt{\camelhyph{#1}}}
+\newcommand{\usym}[1]{\texttt{\underscorehyph{#1}}}
+\newcommand{\file}[1]{\texttt{\camelhyph{#1}}}
+\newcommand{\screenshotwidth}[0]{0.8\textwidth}
+
+
 \begin{document}
-
+\label{Main/Arranger}
+\begin{figure}[htp]
+\centering
+\includegraphics[width=1.0\textwidth]{pics/muse2}
+\label{fig:MusE}
+\end{figure}
+\chapter {What is this?}
+You are, if you have printed this document, holding in your hand the
+written documentation for the audio and midi sequencer MusE version 2.\\ 
+\url{http://www.muse-sequencer.org} is MusE's home on the internet where
+everything MusE releated should be possible to find, software, this
+documentation, forums, mailing lists, bug reporting, FAQs. If you have
+this document but not the software head on over there to find what it's
+all about.
 \chapter{User's manual}
-someone should really write this!
 
-\section{Basic overview}
+\section {Introduction}
+\subsection {A brief history of computer audio and MusE}
+To quickly summarize over a decades open source development: in 1999 Werner
+ Schweer released the first version of MusE, muse-0.0.1.tar.gz, in it's first
+few releases (actually not few, Werner relentlessly churned out new releases)
+MusE was only a midi sequencer. The target was to create a fully fledged
+midi sequencer for the Linux operating system. Over the years audio was
+added among with other things implemented and sometimes abandoned.
+Today MusE is a stable and feature rich music creation environment which
+strives to encompass most of the music recording process, creation, editing,
+mastering.
+
+\subsection {Definitions}
+\key{CTRL} refers to the control key on the keyboard, e.g. \key{CTRL+C}
+means to press and hold the control key while pressing the c key. Make sure
+you know where you have it so you won't accidentally lose control
+(bad jokes are the best jokes, so say we all!).\\
+\key{SHIFT} refers to the shift key on the keyboard, see above for usage\\
+\key{ALT} refers to the alt key on the keyboard, see above for usage\\
+\shell{\$>} is used as a generic definition for a terminal prompt. When the
+manual lists a command that shall be typed, the prompt is not part of the
+command.\\
+Keys are always referred to in bold uppercase, e.g. \key{A}. For instance
+\key{SHIFT+A} for the key a pressed together with the shift key.\\
+Sometimes terminal examples are written tabbed in with a fixed font to
+visualize more closely what something looks like on the screen.
+E.g.\\
+\hspace*{1cm}\shell{\$> muse2}\\
+
+\subsection {Getting up and running for impatient people}
+Install MusE from the repository of your chosen distribution.
+To get decent performance start Jack with the following command in a
+terminal:\\
+\hspace*{1cm}\shell{\$> jackd -d alsa -d hw:0 -p 256}\\
+Or, if you prefer, use the launcher utility \textbf{QJackCtl} to get some
+help starting Jack.
+After this, start MusE from the menu or fire up another terminal and type
+\shell{muse2}.\\
+If this didn't work out read on for the slighly more complete route for
+getting things started.
+
+\subsection {Getting up and running}
+\subsubsection {Installation from binaries}
+There are several ways to install MusE depending on your situation. The
+most convenient way is to install a prepackaged version from your chosen
+distribution. The drawback of this is that it may not be the most recent
+version, though often there is a more recent package from a private packager.
+\subsubsection {Installation from source}
+Building MusE from source is not hard, there are a number of prerequistes
+that must be met but the actual building should be painless (ha, famous
+last words).\\
+Please follow the README in the source package and/or read the instructions
+on the homepage: \url{http://muse-sequencer.org/index.php/Installation}
+
+\subsubsection {Hardware}
+MusE on the Linux platform supports midi through ALSA and Jack-midi and audio
+through Jack. For information on what hardware is supported there are some
+convenient places to check:
+\begin {itemize}
+\item Alsa soundcard matrix
+\item \url{http://FFADO.org} for firewire devices.
+\end {itemize}
+Also, as is often a very good approach for Linux and open source, the
+various forums available on the internet often contain good information.
+Chances are someone has already tried your configuration and/or had your
+specific problem and the solution is already written down.
+\subsubsection {Launching}
+After installation the binary muse2 is installed on the computer. If MusE
+was installed from a distribution repository the binary may have a
+different name depending on the distribution policies. Most distributions
+do however install a menu entry so MusE should be conveniently available
+from there.
+\subsubsection {Audio preconditions}
+In the standard case MusE expects to find and connect to the Jack audio
+server \url{http://jackaudio.org}. Make sure jack is installed (if MusE was
+installed with a distribution-package Jack will very likely already be
+installed) For Jack to run with best performance your system should be
+sufficiently tuned to allow it to run with realtime capabilities. The
+realtime configuration is configuration of the operating system and roughly
+consists of two parts.
+\begin {enumerate}
+\item By default on most distros only the superuser lets applications setup
+realtime capabilities. Please see the APPENDIX for setting up realtime
+\item Maximizing performance. A standard linux installation may not able
+to reach the performance required by a power user. This requires exchanging
+the linux kernel for a so called lowlatency kernel, this is also covered by
+the realtime APPENDIX.
+\end {enumerate}
+
+\subsubsection {Running MusE}
+Find MusE in the menu or open a terminal and enter muse2. A splash screen
+should pop up followed by the main application window and you are off!
+\shell{\$> muse2}\\
+If an error like the screenshot below pops up the Jack audio server is
+either not running or started as a different user than what you are trying
+to start MusE as.
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\screenshotwidth]{pics/no_audio}
+\caption{Jack server missing}
+\label{fig:no_audio}
+\end{figure}
+\subsubsection {Midi only}
+MusE can be started in Midi-only mode where MusE does not have any external
+dependencies apart from ALSA midi. In this case start MusE from a terminal:
+\shell{\$> muse2 -a}
+
+\subsection {Beginners tutorial}
+To get a quick grip of what MusE can achieve please follow this beginners
+tutorial.
+\subsubsection {Setup}
+First off, fire up MusE as was described in the previous chapter, making
+sure that the jack audio server is started with sufficient configuration
+to allow for audio output without breakup. Also make sure your system can
+make sound.
+\subsubsection {Soft synth test}
+With MusE up and running right click in the Track-pane (see screenshot in
+~\ref{Main/Arranger}) and select \menu{Add Synth > MESS > Organ}. A Soft
+Synth track called Organ-0 should appear as well as a separate GUI for
+the synthesizer.
+
+Now right click once more in the Track-pane and select \menu{Add Midi
+Track}. Another track appears called Track-1, you will notice that it is
+by default bound to the synth that was just created Organ-0.
+\begin{wrapfigure}{r}{0.05\textwidth}
+\includegraphics[width=0.05\textwidth]{pics/arrow_tool}
+%\hrulefill
+\end{wrapfigure}
+Now select the drawing tool icon
+from the toolbar, alternatively press the shortcut key \key{D}.
+Move the mouse over to the arranger canvas as referenced in ~\ref{Main/Arranger}
+and point at the midi track, the mouse should have changed to a small pencil.
+Draw a Part along the midi track using the mouse. For this exercise it is
+not important where or how large the drawn Part is. When you are done double
+click on the drawn part. This will open up the Piano Roll editor. To the
+left of the Piano Roll there are piano keys in a vertical line, try clicking
+on the keys in this virtual keyboard each click should be rewarded with an
+organ sound (maybe of questionable quality, a sound nevertheless)
+\begin{figure}[htp]
+\centering
+\includegraphics[width=.5\textwidth]{pics/organ_synth}
+\caption{Organ synthesizer}
+\label{fig:organ_synth}
+\end{figure}
+
+\subsubsection {Missing sound}
+If you got sound from the previous exercise you can carry on to the next,
+or keep reading for further enlightenment in case you come upon trouble
+later on. If there are no sound we need to do some fault hunting. First
+of, click on Arranger window once more and select the Organ-0 track in the
+track-pane.
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\screenshotwidth]{pics/main_window_with_midi_editor}
+\caption{Midi editor view}
+\label{fig:Midi editor}
+\end{figure}
+Now bring back Piano Roll window and align the windows so you
+can see the piano keys as well as the Meter on the Mixer Strip (see the
+5 Function by function chapter for more information on these windows).
+The result should be something like the following:
+
+When pressing one of the keys on virtual Keyboard the Meter on the Mixer
+Strip should light up in green to visualize that the Synth is making
+sound, if it is not try to trace back your steps and and see if you did
+anything differently than described.
+Now, if the Meter lights up but there is still no sound we need to to
+check the routing between the tracks. Click on the Arranger window again
+and select the Out 1 track, this is the predefined output which MusE by
+default loads at startup, at the bottom of Mixer Strip there are two
+buttons looking like tele- jacks, these bring up the inputs and outputs
+of the track, click on the right one, the output and make sure that it is
+connected to some valid outputs on your system.
+\begin{wrapfigure}{r}{0.25\textwidth}
+\includegraphics[width=0.25\textwidth]{pics/output_routing}
+%\hrulefill
+\end{wrapfigure}
+Click on the outputs to select them, if you did changes here go back and
+try clicking on the Piano Roll keyboard again, hopefully it helped. If there
+ still are problems make sure your system actually can make sound through
+Jack, this is however getting outside the scope of this manual.\\\\
+\textit{This might be the time to bring up the concept of community support.
+Open source software could never be what it is without the support given by
+individuals on forums and mailinglists, if the information given in this
+document is not enough, try googling your problem and/or get in touch with
+one of the online forums for MusE or Linux audio in general. See some pointers
+in the Support chapter.}
+
+\subsubsection {Recording}                                               %TODO: walkthrough of recording midi
+TBD
+
+
+\section {Basic overview}
+In this section we will make a step by step walk-through of all the
+different editors, their purpose and what functions they support.
+
+\subsection{Main/Arranger}
+
+\label{Main/Arranger}
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\screenshotwidth]{pics/main_window_annotated}
+\caption{MusE main window}
+\label{fig:Main Window}
+\end{figure}
+Above is the main window of MusE, the Arranger, this is what greets you
+when launching MusE. The Arranger consists of two main parts, the Track-pane
+and the Arranger canvas. The Track-pane lists all currently visible tracks
+and the Arranger canvas contains all Parts of the composition. The
+screenshot above shows an empty project. Below is MusE with a song in
+progress, turns out it wasn't a very good song, but for our purposes it
+is fine. In the below screenshot there are a lot of tracks visible in the
+Track-pane, each have an icon which indicate it's type, wave-trace, input,
+output etcetera, more about that later. In the Arranger canvas a number of
+parts are visible, the ones in yellow are in this composition wave files,
+the multicolored line are different Parts of a drum track.
+\label{Main/Arranger}
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\screenshotwidth]{pics/main_window_with_arrangement}
+\caption{MusE main window with arrangement}
+\label{fig:Main Window with arrangement}
+\end{figure}
+
+\subsection{Mixer}
+Choosing \menu{View > Mixer A} or \menu{B} from the menu in the main
+window will bring up the mixer as viewed below. The mixer will with all
+options enabled show channel strips for all tracks in the current setup,
+depending on how far you have gotten this view may become very large,
+at which point it may be a good idea to limit what is viewed in the
+Mixer. From the view menu all the different kinds of tracks can be
+toggled on/off from the mixer. Some may find it a good idea to use the
+two mixers A and B setup with different setup and store this in your
+song template(s), more about this in the Song Template section. It can
+be argued that everything in MusE is a track analogous to the Unix
+idiom that everything is a file.
+The types of tracks viable in the mixer (and track-pane) are:
+\begin{wrapfigure}{r}{0.5\textwidth}
+\includegraphics[width=0.5\textwidth]{pics/mixer}
+%\hrulefill
+\end{wrapfigure}
+\begin {itemize}
+\item Audio output
+\item Audio input
+\item Group track
+\item Aux track
+\item Wave track
+\item Synth track
+\item Midi track
+\end{itemize}
+
+
+There are also a Midi Track variation called Drum Track, they are 
+however not distinguishable from Midi Tracks in the Mixer. Also the 
+strips for midi tracks are different in the Mixer than in the 
+Track-pane view.
+
+
 \subsection{Tracks}
 MusE arranges your music in \emph{tracks} and \emph{parts}. The following
 section shall provice you an overview of how things are done with MusE.
@@ -202,16 +537,16 @@ copied, cloned and deleted independent from other parts.
 
 Parts are created by selecting the pencil tool and then drawing onto
 the right part area in the arranger. You can move them with the arrow
-tool, delete them using the \texttt{DEL} key, and a right-click opens
+tool, delete them using the \key{DEL} key, and a right-click opens
 a popup menu. This menu allows you even more stuff, such as setting
 the part's color, saving the part to disk etc.. You can use
-\texttt{CTRL+C} and \texttt{CTRL+V} for copying and pasting parts.
-\texttt{CTRL+B} pastes the part as a clone. Pressing \texttt{SHIFT}
+\key{CTRL+C} and \key{CTRL+V} for copying and pasting parts.
+\key{CTRL+B} pastes the part as a clone. Pressing \key{SHIFT}
 additionally provides you a dialog which allows you to paste the part
 multiple times and set more stuff.
 
 You can also copy parts with the mouse by moving the part with the mouse
-while holding down the \texttt{CTRL} key.
+while holding down the \key{CTRL} key.
 
 
 
@@ -253,31 +588,94 @@ For details on \emph{why} stuff is done please refer to the following
 chapter.
 \section{User controls and automation}
 \subsection{Handling user input}
-\paragraph{Plugins and synthesizers}
+\subsubsection{Plugins and synthesizers}
+\paragraph{Overview}
 When the user launches a plugin's GUI, either a MusE-window with
 the relevant controls is shown, or the native GUI is launched. MusE
 will communicate with this native GUI through OSC (Open Sound Control).
+The relevant classes are \sym{PluginGui}, \sym{PluginIBase}
+(in \file{plugin.h}) and \sym{OscIF} (in \sym{osc.h}).
 
-The relevant classes are \texttt{PluginGui}, \texttt{PluginIBase}
-(in \texttt{plugin.h}) and \texttt{OscIF} (in \texttt{osc.h}).
-
-If the user changes a slider, first the corresponding control is
+If the user changes a GUI element, first the corresponding control is
 disabled, making MusE not steadily update it through automation
-while the user operates it. \texttt{PluginIBase::setParam} is called,
-which usually writes the control change into the ringbuffer
-\texttt{PluginI::\_controlFifo}. (\texttt{PluginI::apply()},
-\texttt{DssiSynthIF::getData()} will read this ringbuffer and
-do the processing accordingly). Furthermore, the change is written
-into a "to be recorded"-list (done by calling \texttt{AudioTrack::recordAutomation}).
-This list is processed after recording has finished.                                   %TODO: where and when exactly?
+while the user operates it. Then MusE will update the plugin's parameter
+value, and also record the new value. When appropriate, the controller
+is enabled again.
 
+\paragraph{Processing the input, recording}
+Upon operating a slider, \sym{PluginIBase::setParam} is called,
+which usually writes the control change into the ringbuffer
+\sym{PluginI::{\_}controlFifo}. (\sym{PluginI::apply()},
+\sym{DssiSynthIF::getData()} will read this ringbuffer and
+do the processing accordingly). Furthermore, \sym{AudioTrack::recordAutomation}
+is called, which either directly modifies the controller lists or writes
+the change into a "to be recorded"-list (\sym{AudioTrack::{\_}recEvents})
+(depending on whether the song is stopped or played).
+
+The \sym{AudioTrack::{\_}recEvents} list consists of \sym{CtrlRecVal}
+items (see \file{ctrl.h}), which hold the following data:
+\begin{itemize}
+\item the frame where the change occurred
+\item the value
+\item the type, which can be \usym{ARVT{\_}START}, \usym{ARVT{\_}VAL} or \usym{ARVT{\_}STOP}.
+      \usym{ARVT{\_}VAL} are written by every \usym{AudioTrack::recordAutomation}
+      call, \usym{ARVT{\_}START} and \usym{ARVT{\_}STOP} are generated by
+      \sym{AudioTrack::startAutoRecord} and \sym{stopAutoRecord},
+      respectively.
+\item and the id of the controller which is affected
+\end{itemize}
+It is processed when the song is stopped. The call path for this is:
+\sym{Song::stopRolling} calls \sym{Song::processAutomationEvents}
+calls \sym{AudioTrack::processAutomationEvents}.
+This function removes the old events from the track's controller list
+and replaces them with the new events from \sym{{\_}recEvents}. In
+\usym{AUTO{\_}WRITE} mode, just all controller events within the recorded
+range are erased; in \usym{AUTO{\_}TOUCH} mode, the \usym{ARVT{\_}START}
+and \usym{ARVT{\_}STOP} types of the \sym{CtrlRecVal} events are used
+to determine the range(s) which should be wiped.
+
+\paragraph{How it's stored}
+Automation data is kept                                                  % this is copied from
+in \sym{AudioTrack::{\_}controller}, which is a \sym{CtrlListList},        % "design decisions" -> "automation"
+that is, a list of \sym{CtrlList}s, that is, a list of lists of
+controller-objects which hold the control points of the automation graph.
+The \sym{CtrlList} also stores whether the list is meant discrete
+(a new control point results in a value-jump) or continous (a new control
+point results in the value slowly sloping to the new value).
+Furthermore, it stores a \sym{{\_}curVal} (accessed by \sym{curVal()}),
+which holds the currently active value, which can be different from the
+actually stored value because of user interaction. This value is also
+used when there is no stored automation data.
+
+\sym{AudioTrack::addController} and \sym{removeController} are used        % TODO: swapControllerIDX??
+to add/remove whole controller types; the most important functions which
+access \sym{{\_}controller} are:
+\begin{itemize}
+\item \sym{processAutomationEvents}, \sym{recordAutomation},
+      \sym{startAutoRecord}, \sym{stopAutoRecord}: see above.
+\item \sym{seekPrevACEvent}, \sym{seekNextACEvent}, \sym{eraseACEvent},
+      \sym{eraseRangeACEvents}, \sym{addACEvent}, \sym{changeACEvent},
+      which do the obvious
+\item \sym{pluginCtrlVal}, \sym{setPluginCtrlVal}: the first
+      returns the current value according to the \sym{{\_}controller}
+      list, the second only sets the \sym{curVal}, but does not
+      insert any events.
+\end{itemize}
+
+Whenever a \sym{CtrlList} has been manipulated,
+\sym{MusEGlobal::song->controllerChange(Track*)} shall be called,
+which emits the \sym{MusEGlobal::song->controllerChanged(Track*)}
+signal in order to inform any parts of MusE about the change (currently,
+only the arranger's part canvas utilizes this).
+
+\paragraph{Enabling and disabling controllers}
 Disabling the controller is both dependent from the current automation
 mode and from whether the GUI is native or not.
-In \texttt{AUTO\_WRITE} mode, once a slider is touched (for MusE-GUIs) or
+In \usym{AUTO{\_}WRITE} mode, once a slider is touched (for MusE-GUIs) or
 once a OSC control change is received (for native GUIs), the control
 is disabled until the song is stopped or seeked.
 
-In \texttt{AUTO\_TOUCH} (and currently (r1492) \texttt{AUTO\_READ}, but
+In \usym{AUTO{\_}TOUCH} (and currently (r1492) \usym{AUTO{\_}READ}, but
 that's to be fixed) mode, once a MusE-GUI's slider is pressed down, the
 corresponding control is disabled. Once the slider is released, the
 control is re-enabled again. Checkboxes remain in "disabled" mode,
@@ -289,31 +687,31 @@ and the last toggle.). For native GUIs, this is a bit tricky, because
 we don't have direct access to the GUI widgets. That is, we have no
 way to find out whether the user doesn't touch a control at all, or
 whether he has it held down, but just doesn't operate it. The current
-behaviour for native GUIs is to behave like in \texttt{AUTO\_WRITE} mode.
+behaviour for native GUIs is to behave like in \usym{AUTO{\_}WRITE} mode.
 
-The responsible functions are: \texttt{PluginI::oscControl} and
-\texttt{DssiSynthIF::oscControl} for handling native GUIs,
-\texttt{PluginI::ctrlPressed} and \texttt{ctrlReleased} for MusE
-default GUIs and \texttt{PluginI::guiParamPressed},
-\texttt{guiParamReleased}, \texttt{guiSliderPressed} and
-\texttt{guiSliderReleased} for MusE GUIs read from a UI file;
-\texttt{guiSlider*} obviously handle sliders, while \texttt{guiParam*}
+The responsible functions are: \sym{PluginI::oscControl} and
+\sym{DssiSynthIF::oscControl} for handling native GUIs,
+\sym{PluginI::ctrlPressed} and \sym{ctrlReleased} for MusE
+default GUIs and \sym{PluginI::guiParamPressed},
+\sym{guiParamReleased}, \sym{guiSliderPressed} and
+\sym{guiSliderReleased} for MusE GUIs read from a UI file;
+\sym{guiSlider*} obviously handle sliders, while \sym{guiParam*}
 handle everything else which is not a slider. They call
-\texttt{PluginI::enableController} to enable/disable it.
+\sym{PluginI::enableController} to enable/disable it.
 
-Furthermore, on every song stop or seek, \texttt{PluginI::enableAllControllers}
+Furthermore, on every song stop or seek, \sym{PluginI::enableAllControllers}
 is called, which re-enables all controllers again. The call paths for
 this are:
 \begin{itemize}
-\item For stop: \texttt{Song::stopRolling} calls
-                \texttt{Song::processAutomationEvents} calls
-                \texttt{Song::clearRecAutomation} calls
-                \texttt{Track::clearRecAutomation} calls
-                \texttt{PluginI::enableAllControllers}
-\item For seek: \texttt{Audio::seek} sends a message ("\texttt{G}") to
-                \texttt{Song::seqSignal} which calls
-                \texttt{Song::clearRecAutomation} which calls
-                \texttt{PluginI::enableAllControllers}                
+\item For stop: \sym{Song::stopRolling} calls
+                \sym{Song::processAutomationEvents} calls
+                \sym{Song::clearRecAu{\-}to{\-}ma{\-}tion} calls
+                \sym{Track::clearRecAutomation} calls
+                \sym{PluginI::enableAllControllers}
+\item For seek: \sym{Audio::seek} sends a message ("\sym{G}") to
+                \sym{Song::seqSignal} which calls
+                \sym{Song::clearRecAutomation} which calls
+                \sym{PluginI::enableAllControllers}                
 \end{itemize}
 
 
@@ -323,15 +721,15 @@ this are:
 \section{Automation}
 As of revision 1490, automation is handled in two ways: User-generated
 (live) automation data (generated by the user moving sliders while playing)
-is fed into \texttt{PluginI::\_controlFifo}. Automation data is kept
-in \texttt{AudioTrack::\_controller}, which is a \texttt{CtrlListList},
-that is, a list of \texttt{CtrlList}s, that is, a list of lists of
+is fed into \sym{PluginI::{\_}controlFifo}. Automation data is kept
+in \sym{AudioTrack::{\_}controller}, which is a \sym{CtrlListList},
+that is, a list of \sym{CtrlList}s, that is, a list of lists of
 controller-objects which hold the control points of the automation graph.
-The \texttt{CtrlList} also stores whether the list is meant discrete
+The \sym{CtrlList} also stores whether the list is meant discrete
 (a new control point results in a value-jump) or continous (a new control
 point results in the value slowly sloping to the new value).
 
-While \texttt{PluginI::\_controlFifo} can be queried very quickly and
+While \sym{PluginI::{\_}controlFifo} can be queried very quickly and
 thus is processed with a very high resolution (only limited by the
 minimum control period setting), the automation value are expensive to
 query, and are only processed once in an audio \emph{driver} period.
@@ -340,16 +738,16 @@ This might lead to noticeable jumps in value.
 This could possibly be solved in two ways:
 \paragraph{Maintaining a slave control list}
 This approach would maintain a fully redundant slave control list,
-similar to \texttt{PluginI::\_controlFifo}. This list must be updated
+similar to \sym{PluginI::{\_}controlFifo}. This list must be updated
 every time any automation-related thing is changed, and shall contain
 every controller change as a tuple of controller number and value.
-This could be processed in the same loop as \texttt{PluginI::\_controlFifo},
+This could be processed in the same loop as \sym{PluginI::{\_}controlFifo},
 making it comfortable to implement; furthermore, it allows to cleanly
 offer automation-settings at other places in future (such as storing
 automation data in parts or similar).
 
 \paragraph{Holding iterators}
-We also could hold a list of iterators of the single \texttt{CtrlList}s.
+We also could hold a list of iterators of the single \sym{CtrlList}s.
 This would also cause low CPU usage, because usually, the iterators only
 need to be incremented once. However, it is pretty complex to implement,
 because the iterators may become totally wrong (because of a seek in the
@@ -550,5 +948,62 @@ slots shall either also display the key change (if they're score slots)
 or display a gap. Events which happen at the same time shall be at the
 same x-coordinate, regardless which slot they are.
 
+\section{Controller master values}
+All controllers (MIDI-controllers and also automation controllers)
+shall have one set of "master values" which allow you to set a gain and
+a bias. Instead of the actual set value, $\textrm{value} * \textrm{bias}
++ textrm{bias}$ shall be sent to the MIDI device / the plugin. For
+controllers like "pan", the unbiased values shall be transformed, that
+is, a pan of 64, with $\textrm{bias}=2$ and $\textrm{gain}=0.5$, shall
+be transformed to 66 (because 64 is actually 0, while 0 is actually -64).
+These values shall be set in the arranger and whereever the actual
+controller/automation values can be edited.
+
+\section{Enabled-indicator while recording}
+The MusE-plugin-GUIs shall display a small LED displaying whether a
+controller is currently enabled or disabled. By clicking this LED, the
+enabled state shall be switched.
+
+Furthermore, there shall be a dedicated window which only lets you switch
+enabled/disabled states. This will be useful when using external GUIs
+or the MIDI-controller-to-automation feature, to re-enable a controller
+when in \usym{AUTO{\_}TOUCH} mode.
+
+
+
+\section{Linear automation editing}
+While holding some modifier key (like shift), operating the MusE-native-
+GUI sliders shall only generate control points when clicking and when
+releasing the slider. This will result in linear graphs for continous
+controllers, and in large steps for discrete controllers (which is in
+particular useful for stuff like "which low/high-pass filter type to use").
+
+Maybe make this behaviour default for discrete controllers?
+
+
 
 \end{document}
+
+% TODO: song type etc? kill it!
+%       song len box: same
+
+% TODO: unified automation and midi ctrls:
+%       both shall be editable through the same editors
+%       four modes: 1. discrete
+%                   2. continous (plus a global and per-port setting for the max rate)
+%                   3. switch (not necessarily ON/OFF; signals with color plus text annotation)
+%                   4. raw (no graph, instead a box with the value sent out (for "all voices off")
+%       they shall be copy-and-pastable, at least between compatible modes
+%       they shall be slotted, like pianoroll
+%       maybe also "overlapping", like arranger (?)
+%       midi recording tries to make out straight lines (like non-ended automation streams)
+%       
+
+
+% new song (in general: load as template) plus "overwrite port config"
+% should re-create the default jack devices and autoconnect them.
+
+% what's audio aux for?
+
+% bug in arranger/pcanvas/automation: if a controlpoint is directly on
+% a line of another ctrl graph, you can't click it

@@ -102,6 +102,7 @@ void MFileDialog::globalToggled(bool flag)
       {
       if (flag) {
             buttons.readMidiPortsButton->setChecked(false);
+            readMidiPortsSaved = false;
             if (lastGlobalDir.isEmpty())
                   lastGlobalDir = MusEGlobal::museGlobalShare + QString("/") + baseDir; // Initialize if first time
             setDirectory(lastGlobalDir);
@@ -117,6 +118,7 @@ void MFileDialog::userToggled(bool flag)
       {
       if (flag) {
             buttons.readMidiPortsButton->setChecked(true);
+            readMidiPortsSaved = true;
             if (lastUserDir.isEmpty()) {
                   //lastUserDir = MusEGlobal::museUser + QString("/") + baseDir; // Initialize if first time
                   lastUserDir = MusEGlobal::configPath + QString("/") + baseDir; // Initialize if first time    // p4.0.39
@@ -140,6 +142,7 @@ void MFileDialog::projectToggled(bool flag)
       {
       if (flag) {
             buttons.readMidiPortsButton->setChecked(true);
+            readMidiPortsSaved = true;
             QString s;
             if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) {
                   // if project path is uninitialized, meaning it is still set to museProjectInitPath.
@@ -158,6 +161,29 @@ void MFileDialog::projectToggled(bool flag)
             }
       }
 
+void MFileDialog::fileChanged(const QString& path)
+{
+  bool is_mid = path.endsWith(".mid", Qt::CaseInsensitive) ||
+                path.endsWith(".midi", Qt::CaseInsensitive) ||
+                path.endsWith(".kar", Qt::CaseInsensitive);
+  
+  if (is_mid)
+  {
+    readMidiPortsSaved=buttons.readMidiPortsButton->isChecked();
+    buttons.readMidiPortsButton->setEnabled(false);
+    buttons.readMidiPortsButton->setChecked(false);
+  }
+  else
+  {
+    if (!buttons.readMidiPortsButton->isEnabled())
+    {
+      buttons.readMidiPortsButton->setEnabled(true);
+      buttons.readMidiPortsButton->setChecked(readMidiPortsSaved);
+    }
+  }
+  
+}
+
 
 //---------------------------------------------------------
 //   MFileDialog
@@ -167,6 +193,7 @@ MFileDialog::MFileDialog(const QString& dir,
    const QString& filter, QWidget* parent, bool writeFlag)
   : QFileDialog(parent, QString(), QString("."), filter)
       {
+      readMidiPortsSaved = true;
       showButtons = false;
       lastUserDir = "";
       lastGlobalDir = "";
@@ -201,10 +228,11 @@ MFileDialog::MFileDialog(const QString& dir,
             buttons.userButton->setAutoExclusive(true);
             buttons.projectButton->setAutoExclusive(true);
 
-	    connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
+            connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
             connect(buttons.userButton, SIGNAL(toggled(bool)), this, SLOT(userToggled(bool)));
             connect(buttons.projectButton, SIGNAL(toggled(bool)), this, SLOT(projectToggled(bool)));
             connect(this, SIGNAL(directoryEntered(const QString&)), SLOT(directoryChanged(const QString&)));
+            connect(this, SIGNAL(currentChanged(const QString&)), SLOT(fileChanged(const QString&)));
 
             if (writeFlag) {
                   setAcceptMode(QFileDialog::AcceptSave);

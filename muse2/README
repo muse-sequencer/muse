@@ -99,7 +99,8 @@ details.
         --------------
           There are a few different ways to configure (notice the two dots):
 
-          Type "cmake -i .." to run in step-by-step 'Wizard' mode. 
+          Type "cmake -i .." to run in step-by-step 'Wizard' mode, this is the RECOMMENDED way to
+          setup the build environment.
 
           Or type "cmake -L .." to see options, then compose "cmake <options>" yourself. 
           Some <options> are:
@@ -210,6 +211,9 @@ details.
   =============================
 
       - not so many: only some usability quirks we're working on currently
+      - automation recording displays odd things in the arranger
+        while recording; the display is corrected once recording is
+        complete.
 
 ====================================================================
 Let us know whether MusE works for you !!!

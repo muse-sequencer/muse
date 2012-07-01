@@ -73,15 +73,18 @@
     </message>
     <message>
         <source>Bad timing</source>
-        <translation type="unfinished"></translation>
+        <translation>Dålig timing</translation>
     </message>
     <message>
         <source>Timing source frequency is %1hz, which is below the recommended minimum: 500hz!
 This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
-Also please check console output for any further error messages
+Also please check console output for any further error messages.
  </source>
-        <translation type="unfinished"></translation>
+        <translation>Frekvensen på tidkällan är %1hz vilket är under det rekommenderade minsta värdet: 500hz!
+Det kan leda till hörbara timingproblem för MIDI.
+See FAQ på http://muse-sequencer.org för lösningsförslag.
+See också terminalutskrifter för eventuella fler felmeddelanden.</translation>
     </message>
 </context>
 <context>
@@ -91,24 +94,28 @@ Also please check console output for any further error messages
         <translation>Om</translation>
     </message>
     <message>
-        <source>Version 2 pre-alpha</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>(C) Copyright 1999-2010 Werner Schweer and others.
-See http://www.muse-sequencer.org for new versions and
-more information.
-
-Published under the GNU Public License</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>&amp;Keep On Rocking!</source>
         <translation>&amp;Rocka på!</translation>
     </message>
     <message>
         <source>Alt+K</source>
         <translation></translation>
+    </message>
+    <message>
+        <source>Version 2</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>(C) Copyright 1999-2012 Werner Schweer and others.
+See http://www.muse-sequencer.org for new versions and
+more information.
+
+Published under the GNU Public License</source>
+        <translation>(C) Copyright 1999-2012 Werner Schweer och andra.
+Se http://www.muse-sequencer.org för nya versioner och
+mer information.
+
+Publicerad under GNU Public License</translation>
     </message>
 </context>
 <context>
@@ -355,107 +362,107 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>May require restarting MusE for best results</source>
-        <translation type="unfinished"></translation>
+        <translation>Kan kräva omstart av MusE för bästa resultat</translation>
     </message>
 </context>
 <context>
     <name>ArrangerColumnsBase</name>
     <message>
         <source>Configure arranger columns</source>
-        <translation type="unfinished"></translation>
+        <translation>Konfigurera arrangerarkolumner</translation>
     </message>
     <message>
         <source>Columns:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kolumner:</translation>
     </message>
     <message>
         <source>Name:</source>
-        <translation type="unfinished">Namn:</translation>
+        <translation>Namn:</translation>
     </message>
     <message>
         <source>Controller type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontroltyp:</translation>
     </message>
     <message>
         <source>Midi controller type</source>
-        <translation type="unfinished">Midi kontrolltyp</translation>
+        <translation>Midi kontrolltyp</translation>
     </message>
     <message>
         <source>Control7</source>
-        <translation type="unfinished">Kontroll7</translation>
+        <translation>Kontroll7</translation>
     </message>
     <message>
         <source>Control14</source>
-        <translation type="unfinished">Kontroll14</translation>
+        <translation>Kontroll14</translation>
     </message>
     <message>
         <source>RPN</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>NRPN</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>RPN14</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>NRPN14</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>Pitch</source>
-        <translation type="unfinished">Tonhöjd</translation>
+        <translation>Tonhöjd</translation>
     </message>
     <message>
         <source>Program</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>H-Ctrl</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>Midi controller number high byte</source>
-        <translation type="unfinished">Midikontroll-nummer, hög byte</translation>
+        <translation>Midikontroll-nummer, hög byte</translation>
     </message>
     <message>
         <source>L-Ctrl</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>Midi controller number low byte</source>
-        <translation type="unfinished"></translation>
+        <translation>Midikontrollnummer, låg byte</translation>
     </message>
     <message>
         <source>*</source>
         <comment>wild card</comment>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>affect CCs at</source>
-        <translation type="unfinished"></translation>
+        <translation>påverkar CC vid</translation>
     </message>
     <message>
         <source>begin of song</source>
-        <translation type="unfinished"></translation>
+        <translation>början på sång</translation>
     </message>
     <message>
         <source>current position</source>
-        <translation type="unfinished"></translation>
+        <translation>nuvarande position</translation>
     </message>
     <message>
         <source>&amp;Add</source>
-        <translation type="unfinished">&amp;Lägg till</translation>
+        <translation>&amp;Lägg till</translation>
     </message>
     <message>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Ta bort</translation>
+        <translation>&amp;Ta bort</translation>
     </message>
     <message>
         <source>Done</source>
-        <translation type="unfinished"></translation>
+        <translation>Färdig</translation>
     </message>
 </context>
 <context>
@@ -516,7 +523,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Samplerate</source>
-        <translation type="unfinished"></translation>
+        <translation>Samplingshastighet</translation>
     </message>
 </context>
 <context>
@@ -1924,47 +1931,47 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
     <name>DuplicateTracksBase</name>
     <message>
         <source>Duplicate tracks</source>
-        <translation type="unfinished"></translation>
+        <translation>Duplicera spår</translation>
     </message>
     <message>
         <source>Number of copies</source>
-        <translation type="unfinished"></translation>
+        <translation>Antal kopior</translation>
     </message>
     <message>
         <source>Copy all routes</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopiera alla kopplingar</translation>
     </message>
     <message>
         <source>Default routing</source>
-        <translation type="unfinished"></translation>
+        <translation>Förvald koppling</translation>
     </message>
     <message>
         <source>No routes</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga kopplingar</translation>
     </message>
     <message>
         <source>Copy parts</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopiera parter</translation>
     </message>
     <message>
         <source>Copy standard controllers (vol, pan)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopiera standardkontroller (vol, pan)</translation>
     </message>
     <message>
         <source>Copy effects rack plugins</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopiera effektrack-instickseffekter</translation>
     </message>
     <message>
         <source>Copy plugin controllers</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopiera instickseffekt-kontroller</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Avbryt</translation>
+        <translation>Avbryt</translation>
     </message>
 </context>
 <context>
@@ -2623,17 +2630,17 @@ Vanligtvis inställd på 127/127, eller genom att använda
     <message>
         <source>---</source>
         <comment>dont care</comment>
-        <translation type="unfinished"></translation>
+        <translation>ignorera</translation>
     </message>
     <message>
         <source>*</source>
         <comment>wild card</comment>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>off</source>
         <comment>dont care</comment>
-        <translation type="unfinished">av</translation>
+        <translation>av</translation>
     </message>
 </context>
 <context>
@@ -3368,28 +3375,29 @@ fokus till respektive editor</translation>
     </message>
     <message>
         <source>Choose start song or template</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj startsång eller mall</translation>
     </message>
     <message>
         <source>Reset to default</source>
-        <translation type="unfinished"></translation>
+        <translation>Återställ till förvalt</translation>
     </message>
     <message>
         <source>start with template</source>
-        <translation type="unfinished"></translation>
+        <translation>Starta med mall</translation>
     </message>
     <message>
         <source>Start template or song:</source>
-        <translation type="unfinished"></translation>
+        <translation>Startmall eller sång:</translation>
     </message>
     <message>
         <source>Read MIDI Ports configuration from file, 
  or else automatically configure</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs MIDI-port konfiguration från fil,
+eller i annatfall, konfigurera automatiskt</translation>
     </message>
     <message>
         <source>Read MIDI Ports configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>läs midi-portkonfiguration</translation>
     </message>
 </context>
 <context>
@@ -3641,6 +3649,69 @@ fokus till respektive editor</translation>
     <message>
         <source>Alt+C</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>MidiAudioControlBase</name>
+    <message>
+        <source>Midi control</source>
+        <translation>Midikontroll</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Channel:</source>
+        <translation>Kanal:</translation>
+    </message>
+    <message>
+        <source>Control type:</source>
+        <translation>Kontrolltyp:</translation>
+    </message>
+    <message>
+        <source>Control7</source>
+        <translation>Kontroll7</translation>
+    </message>
+    <message>
+        <source>Control14</source>
+        <translation>Kontroll14</translation>
+    </message>
+    <message>
+        <source>RPN</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>NRPN</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>RPN14</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>NRPN14</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Pitch</source>
+        <translation>Tonhöjd</translation>
+    </message>
+    <message>
+        <source>Program</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hi:</source>
+        <translation>Hög:</translation>
+    </message>
+    <message>
+        <source>Lo:</source>
+        <translation>Låg:</translation>
+    </message>
+    <message>
+        <source>Learn</source>
+        <translation>Lär</translation>
     </message>
 </context>
 <context>
@@ -4436,23 +4507,23 @@ program change-, pitchbend-, men inte SysEX- eller realtids-event på de valda k
     </message>
     <message>
         <source>Bank Select MSB. Ctrl-double-click on/off.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bankval MSB. Ctrl-dubbelklick av/på.</translation>
     </message>
     <message>
         <source>Bank Select LSB. Ctrl-double-click on/off.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bankval LSB. Ctrl-dubbelklick av/på.</translation>
     </message>
     <message>
         <source>Program. Ctrl-double-click on/off.</source>
-        <translation type="unfinished"></translation>
+        <translation>Program. Ctrl-dubbelklick av/på.</translation>
     </message>
     <message>
         <source>Volume. Ctrl-double-click on/off.</source>
-        <translation type="unfinished"></translation>
+        <translation>Volym. Ctrl-dubbelklick av/på.</translation>
     </message>
     <message>
         <source>Change stereo position. Ctrl-double-click on/off.</source>
-        <translation type="unfinished"></translation>
+        <translation>Byt stereo position. Ctrl-dubbelklick av/på.</translation>
     </message>
 </context>
 <context>
@@ -4872,6 +4943,28 @@ För att fortsätta, säkerställ att Jack är igång och klicka på Omstart kna
         <source>MusE was unable to launch the script, error message:
 %1</source>
         <translation>MusE kunde inte starta skript, felmeddelande: %1</translation>
+    </message>
+    <message>
+        <source>Midi control</source>
+        <translation>Midikontroll</translation>
+    </message>
+    <message>
+        <source>Assign</source>
+        <translation>Tilldela</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Rensa</translation>
+    </message>
+    <message>
+        <source>MusE: Tempo list</source>
+        <translation>MusE: Tempolista</translation>
+    </message>
+    <message>
+        <source>External tempo changes were recorded.
+Transfer them to master tempo list?</source>
+        <translation>Externa tempoändringar har spelats in.
+För över dem till master-tempolistan?</translation>
     </message>
 </context>
 <context>
@@ -5395,18 +5488,21 @@ Högerklick för at visa GUI.</translation>
     </message>
     <message>
         <source>Configure &amp;custom columns</source>
-        <translation type="unfinished"></translation>
+        <translation>Konfigurera &amp;anpassade kolumner</translation>
     </message>
     <message>
         <source>Changed Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ändrade inställningar</translation>
     </message>
     <message>
         <source>Unfortunately, the changed arranger column settings
 cannot be applied while MusE is running.
 To apply the changes, please restart MusE. Sorry.
 (we&apos;ll try to fix that)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tyvärr kan inte de ändrade kolumninställningarna 
+i arrangeraren appliceras när MusE kör.
+För att aktivera starta om MusE. (Vi kommer att
+försöka fixa det senare)</translation>
     </message>
 </context>
 <context>
@@ -5671,7 +5767,7 @@ To apply the changes, please restart MusE. Sorry.
     </message>
     <message>
         <source>ctrl-double-click on/off</source>
-        <translation type="unfinished"></translation>
+        <translation>kontroll dubbelklick av/på</translation>
     </message>
 </context>
 <context>
@@ -6316,7 +6412,7 @@ klicka på en part för att Tysta/Avtysta</translation>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
         <source>MusE: Choose start template or song</source>
-        <translation type="unfinished"></translation>
+        <translation>MusE: Välj startsång eller mall</translation>
     </message>
 </context>
 <context>
@@ -6964,7 +7060,7 @@ Vill du att gälla för alla befintliga MIDI-spår?</translation>
     </message>
     <message>
         <source>ctrl-double-click on/off</source>
-        <translation type="unfinished"></translation>
+        <translation>kontroll dubbelklick av/på</translation>
     </message>
 </context>
 <context>
@@ -7870,31 +7966,51 @@ Vill du importera den ändå?</translation>
     </message>
     <message>
         <source>Song Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Sångposition</translation>
     </message>
     <message>
         <source>Tempo</source>
-        <translation type="unfinished">Tempo</translation>
+        <translation>Tempo</translation>
     </message>
     <message>
         <source>Signature</source>
-        <translation type="unfinished">Signatur</translation>
+        <translation>Signatur</translation>
     </message>
     <message numerus="yes">
         <source>%n part(s) out of %1 could not be imported.
 Likely the selected track is the wrong type.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n parter av %1 kunde inte importeras.
+Antagligen var det valda spåret av fel typ.</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%n part(s) could not be imported.
 Likely the selected track is the wrong type.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n parter kunde inte importeras.
+Antagligen var det valda spåret av fel typ.</numerusform>
             <numerusform></numerusform>
         </translation>
+    </message>
+    <message>
+        <source>This will clear all automation data on
+ all audio tracks!
+Proceed?</source>
+        <translation>Detta rensar all automationsdata på 
+alla ljudspår!
+Fortsätt?</translation>
+    </message>
+    <message>
+        <source>This takes an automation snapshot of
+ all controllers on all audio tracks,
+ at the current position.
+Proceed?</source>
+        <translation>Detta tar en ögonblicks bild av automationen
+för alla kontrollrar på alla ljudspår vid den
+nuvarande positionen.
+Försätt?</translation>
     </message>
 </context>
 <context>
@@ -7925,7 +8041,7 @@ Likely the selected track is the wrong type.</source>
     </message>
     <message>
         <source>delta/absolute mode</source>
-        <translation type="unfinished"></translation>
+        <translation>delta/absolut-läge</translation>
     </message>
 </context>
 <context>
@@ -8027,18 +8143,24 @@ Filer:</translation>
     <message numerus="yes">
         <source>%n part(s) out of %1 could not be pasted.
 Likely the selected track is the wrong type.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n parter av %1 kunde inte klistras in.
+Antagligen var det valda spåret av fel typ.</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%n part(s) could not be pasted.
 Likely the selected track is the wrong type.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n parter kunde inte klistras in.
+Antagligen var det valda spåret av fel typ.</numerusform>
             <numerusform></numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Remove selected</source>
+        <translation>Ta bort valt</translation>
     </message>
 </context>
 <context>
@@ -8055,8 +8177,8 @@ Likely the selected track is the wrong type.</source>
     </message>
     <message numerus="yes">
         <source>%n quarter(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%1 kvartar</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -8075,8 +8197,8 @@ Likely the selected track is the wrong type.</source>
     </message>
     <message numerus="yes">
         <source>%n quarter(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%1 kvartar</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -8328,47 +8450,51 @@ Likely the selected track is the wrong type.</source>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished">Typ</translation>
+        <translation>Typ</translation>
     </message>
     <message>
         <source>Audio inputs</source>
-        <translation type="unfinished"></translation>
+        <translation>Ljudingång</translation>
     </message>
     <message>
         <source>Audio outputs</source>
-        <translation type="unfinished"></translation>
+        <translation>Ljudutgång</translation>
     </message>
     <message>
         <source>Control inputs</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrollingångar</translation>
     </message>
     <message>
         <source>Control outputs</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrollutgångar</translation>
     </message>
     <message>
         <source>In-place capable</source>
-        <translation type="unfinished"></translation>
+        <translation>Påplats-kapabel</translation>
     </message>
     <message>
         <source>ID number</source>
-        <translation type="unfinished"></translation>
+        <translation>ID-nummer</translation>
     </message>
     <message>
         <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallel.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that may not be useful in an effect rack.</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj vilka typer av instickseffekter som skall vara synliga i listan.&lt;br&gt;Notera att användning av mono effekter på ett stereospår inte är något problem, två instanser kommer&lt;br&gt; att att användas parallellt. Var också medveten om att &apos;alla&apos; alternativet inkluderar instickseffekter kanske inte går använda i ett effektrack.</translation>
     </message>
     <message>
         <source>dssi synth</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>dssi effect</source>
-        <translation type="unfinished"></translation>
+        <translation>dssi-effekt</translation>
     </message>
     <message>
         <source>ladspa</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Show plugs:</source>
+        <translation>Visa instickseffekter:</translation>
     </message>
 </context>
 <context>
@@ -8840,11 +8966,11 @@ Den valda titeln är inte unik</translation>
     <name>MusEGui::SigToolbarWidget</name>
     <message>
         <source>time signature at current position</source>
-        <translation type="unfinished">time signature vid nuvarande position</translation>
+        <translation>tid-signatur vid nuvarande position</translation>
     </message>
     <message>
         <source>Signature: </source>
-        <translation type="unfinished"></translation>
+        <translation>Signatur</translation>
     </message>
 </context>
 <context>
@@ -8958,11 +9084,31 @@ Den valda titeln är inte unik</translation>
     </message>
     <message>
         <source>off</source>
-        <translation type="unfinished">av</translation>
+        <translation>av</translation>
     </message>
     <message>
         <source>&lt;unknown&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;okänd&gt;</translation>
+    </message>
+    <message>
+        <source>Midi control</source>
+        <translation>Midikontroll</translation>
+    </message>
+    <message>
+        <source>Assign</source>
+        <translation>Tilldela</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Rensa</translation>
+    </message>
+    <message>
+        <source>Internal</source>
+        <translation>Intern</translation>
+    </message>
+    <message>
+        <source>Synth</source>
+        <translation>Synt</translation>
     </message>
 </context>
 <context>
@@ -8976,11 +9122,11 @@ Den valda titeln är inte unik</translation>
     <name>MusEGui::TempoToolbarWidget</name>
     <message>
         <source>tempo at current position</source>
-        <translation type="unfinished">tempo vid nuvarande position</translation>
+        <translation>tempo vid nuvarande position</translation>
     </message>
     <message>
         <source>Tempo: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -9062,27 +9208,27 @@ Den valda titeln är inte unik</translation>
     </message>
     <message>
         <source>Undo/Redo tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Ångra/Gör om verktyg</translation>
     </message>
     <message>
         <source>Panic</source>
-        <translation type="unfinished">Panik</translation>
+        <translation>Panik</translation>
     </message>
     <message>
         <source>Transport</source>
-        <translation type="unfinished">Transport</translation>
+        <translation>Transport</translation>
     </message>
     <message>
         <source>Song Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Sångposition</translation>
     </message>
     <message>
         <source>Tempo</source>
-        <translation type="unfinished">Tempo</translation>
+        <translation>Tempo</translation>
     </message>
     <message>
         <source>Signature</source>
-        <translation type="unfinished">Signatur</translation>
+        <translation>Signatur</translation>
     </message>
 </context>
 <context>

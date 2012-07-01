@@ -184,7 +184,7 @@ class PartCanvas : public Canvas {
       
    public slots:
       void redirKeypress(QKeyEvent* e) { keyPress(e); }
-      void controllerChanged(MusECore::Track *t);
+      void controllerChanged(MusECore::Track *t, int CtrlId);
 };
 
 } // namespace MusEGui

@@ -531,7 +531,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(dropMidiFile(const QString&)), SIGNAL(dropMidiFile(const QString&)));
 
       connect(canvas, SIGNAL(toolChanged(int)), SIGNAL(toolChanged(int)));
-      connect(MusEGlobal::song,   SIGNAL(controllerChanged(MusECore::Track*)), SLOT(controllerChanged(MusECore::Track*)));
+      connect(MusEGlobal::song,   SIGNAL(controllerChanged(MusECore::Track*, int)), SLOT(controllerChanged(MusECore::Track*, int)));
 
       configChanged();  // set configuration values
       if(canvas->part())
@@ -677,7 +677,7 @@ void Arranger::songChanged(int type)
         // Keep this light, partsChanged is a heavy move!       TEST p4.0.36 Try these, may need more.
         if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
                    SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
-                   SC_SIG | SC_TEMPO)) // Maybe sig. Requires tempo.
+                   SC_SIG | SC_TEMPO | SC_MASTER)) // Maybe sig. Requires tempo.
           canvas->partsChanged();
         
         if (type & SC_SIG)
@@ -1110,9 +1110,9 @@ void Arranger::clear()
 //      emit redirectWheelEvent(ev);
 //      }
 
-void Arranger::controllerChanged(MusECore::Track *t)
+void Arranger::controllerChanged(MusECore::Track *t, int ctrlId)
 {
-      canvas->controllerChanged(t);
+      canvas->controllerChanged(t, ctrlId);
 }
 
 //---------------------------------------------------------

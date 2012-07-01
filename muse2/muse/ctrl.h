@@ -6,7 +6,7 @@
 //    controller for mixer automation
 //
 //  (C) Copyright 2003-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Time E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011-2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -29,7 +29,9 @@
 
 #include <map>
 #include <list>
+#include <vector>
 #include <qcolor.h>
+#include <lo/lo_osc_types.h>
 
 #define AC_PLUGIN_CTL_BASE         0x1000
 #define AC_PLUGIN_CTL_BASE_POW     12
@@ -85,6 +87,47 @@ class CtrlRecList : public std::list<CtrlRecVal> {
 typedef CtrlRecList::iterator iCtrlRec;
 
 //---------------------------------------------------------
+//   MidiAudioCtrlMap
+//    Describes midi control of audio controllers
+//---------------------------------------------------------
+
+class MidiAudioCtrlStruct {
+        int _audio_ctrl_id;
+  public:
+        MidiAudioCtrlStruct();
+        MidiAudioCtrlStruct(int audio_ctrl_id);
+        int audioCtrlId() const        { return _audio_ctrl_id; } 
+        void setAudioCtrlId(int actrl) { _audio_ctrl_id = actrl; } 
+      };
+      
+typedef uint32_t MidiAudioCtrlMap_idx_t;
+
+typedef std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> >::iterator iMidiAudioCtrlMap;
+typedef std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> >::const_iterator ciMidiAudioCtrlMap;
+
+// Reverse lookup based on audio control.
+typedef std::vector<iMidiAudioCtrlMap>::iterator iAudioMidiCtrlStructMap;
+typedef std::vector<iMidiAudioCtrlMap>::const_iterator ciAudioMidiCtrlStructMap;
+class AudioMidiCtrlStructMap : public std::vector<iMidiAudioCtrlMap> {
+  public:
+    
+     };
+    
+// Midi to audio controller map.     
+// The index is a hash of port, chan, and midi control number.     
+class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> > {
+  public:
+      MidiAudioCtrlMap_idx_t index_hash(int midi_port, int midi_chan, int midi_ctrl_num) const; 
+      void hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num) const; 
+      iMidiAudioCtrlMap add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, const MidiAudioCtrlStruct& amcs); 
+      void find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs); // const;
+      void erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id);
+      void write(int level, Xml& xml) const;
+      void read(Xml& xml);
+      };
+
+      
+//---------------------------------------------------------
 //   CtrlList
 //    arrange controller events of a specific type in a
 //    list for easy retrieval
@@ -109,6 +152,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       QColor _displayColor;
       bool _visible;
       bool _dontShow; // when this is true the control exists but is not compatible with viewing in the arranger
+      volatile bool _guiUpdatePending; // Gui heartbeat routines read this. Checked and cleared in Song::beat().
       void initColor(int i);
 
    public:
@@ -116,6 +160,15 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       CtrlList(int id);
       CtrlList(int id, QString name, double min, double max, CtrlValueType v, bool dontShow=false);
       void assign(const CtrlList& l, int flags); 
+
+      void swap(CtrlList&);
+      std::pair<iCtrl, bool> insert(const std::pair<int, CtrlVal>& p);
+      iCtrl insert(iCtrl ic, const std::pair<int, CtrlVal>& p);
+      void erase(iCtrl ictl);
+      size_type erase(int frame);
+      void erase(iCtrl first, iCtrl last);
+      void clear();
+      CtrlList& operator=(const CtrlList&);
 
       Mode mode() const          { return _mode; }
       void setMode(Mode m)       { _mode = m; }
@@ -138,7 +191,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       CtrlValueType valueType() const { return _valueType; }
       void setValueType(CtrlValueType t) { _valueType = t; }
 
-      double value(int frame) const;
+      double value(int frame, bool cur_val_only = false, int* nextFrame = NULL) const;  
       void add(int frame, double value);
       void del(int frame);
       void read(Xml& xml);
@@ -148,6 +201,8 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void setVisible(bool v) { _visible = v; }
       bool isVisible() const { return _visible; }
       bool dontShow() const { return _dontShow; }
+      bool guiUpdatePending() const { return _guiUpdatePending; }
+      void setGuiUpdatePending(bool v) { _guiUpdatePending = v; }
       };
 
 //---------------------------------------------------------
@@ -161,6 +216,8 @@ typedef std::map<int, CtrlList*, std::less<int> >::iterator iCtrlList;
 typedef std::map<int, CtrlList*, std::less<int> >::const_iterator ciCtrlList;
 
 class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
+   private:
+      MidiAudioCtrlMap _midi_controls;  // For midi control of audio controllers.
    public:
       void add(CtrlList* vl);
       void clearDelete() {
@@ -176,13 +233,18 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
             return std::map<int, CtrlList*, std::less<int> >::find(id);
             }
             
-      double value(int ctrlId, int frame, bool cur_val_only = false) const;
+      MidiAudioCtrlMap* midiControls() { return &_midi_controls; }  
+      
+      double value(int ctrlId, int frame, bool cur_val_only = false, int* nextFrame = NULL) const;   
       void updateCurValues(int frame);
       void clearAllAutomation() {
             for(iCtrlList i = begin(); i != end(); ++i)
               i->second->clear();
            }     
+      void write(int level, Xml& xml) const;
       };
+
+extern double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlStruct* mapper, int midi_ctlnum, int midi_val);
 
 } // namespace MusECore
 

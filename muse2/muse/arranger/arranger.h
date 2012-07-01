@@ -186,7 +186,7 @@ class Arranger : public QWidget {
       void setTool(int);
       void updateTrackInfo(int flags);
       void configChanged();
-      void controllerChanged(MusECore::Track *t);
+      void controllerChanged(MusECore::Track *t, int ctrlId);
       void focusCanvas();
 
    public:

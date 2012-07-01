@@ -126,6 +126,8 @@ class Song : public QObject {
       int noteFifoWindex;
       int noteFifoRindex;
 
+      TempoFifo _tempoFifo; // External tempo changes, processed in heartbeat.
+      
       int updateFlags;
 
       TrackList _tracks;      // tracklist as seen by arranger
@@ -263,7 +265,7 @@ class Song : public QObject {
       //   event manipulations
       //-----------------------------------------
 
-      void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);
+      void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);  
       void cmdAddRecordedEvents(MidiTrack*, EventList*, unsigned);
       bool addEvent(Event&, Part*);
       void changeEvent(Event&, Event&, Part*);
@@ -274,8 +276,8 @@ class Song : public QObject {
       
       void addACEvent(AudioTrack* t, int acid, int frame, double val);
       void changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val);
-      void controllerChange(Track* t);
-
+      void addExternalTempo(const TempoRecEvent& e) { _tempoFifo.put(e); }
+      
       //-----------------------------------------
       //   part manipulations
       //-----------------------------------------
@@ -332,6 +334,7 @@ class Song : public QObject {
       void msgInsertTrack(Track* track, int idx, bool u = true);
       void clearRecAutomation(bool clearList);
       void processAutomationEvents();
+      void processMasterRec();
       int execAutomationCtlPopup(AudioTrack*, const QPoint&, int);
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
       void connectJackRoutes(AudioTrack* track, bool disconnect);
@@ -428,7 +431,7 @@ class Song : public QObject {
       void markerChanged(int);
       void midiPortsChanged();
       void midiNote(int pitch, int velo);  
-      void controllerChanged(MusECore::Track* t); // maybe DELETETHIS: this only triggers a redraw in pcanvas.cpp; what is this for?
+      void controllerChanged(MusECore::Track*, int); 
       void newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
       };
 

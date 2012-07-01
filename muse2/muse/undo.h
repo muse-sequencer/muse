@@ -125,12 +125,12 @@ struct UndoOp {
       UndoOp(UndoType type, Track* track, const char* old_name, const char* new_name);
       UndoOp(UndoType type, Track* track, int old_chan, int new_chan);
       UndoOp(UndoType type);
-      };
+};
 
 class Undo : public std::list<UndoOp> {
    public:
       bool empty() const;
-      };
+};
 
 typedef Undo::iterator iUndoOp;
 typedef Undo::reverse_iterator riUndoOp;
@@ -141,7 +141,7 @@ class UndoList : public std::list<Undo> {
    public:
       void clearDelete();
       UndoList(bool _isUndo) : std::list<Undo>() { isUndo=_isUndo; }
-      };
+};
 
 typedef UndoList::iterator iUndo;
 typedef UndoList::reverse_iterator riUndo;

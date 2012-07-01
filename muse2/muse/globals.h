@@ -172,6 +172,10 @@ extern unsigned char rcGotoLeftMarkNote;
 extern unsigned char rcPlayNote;
 extern unsigned char rcSteprecNote;
 
+extern int midiLearnPort;
+extern int midiLearnChan;
+extern int midiLearnCtrl;
+
 extern bool midiSeqRunning;
 extern bool automation;
 

@@ -4558,7 +4558,7 @@ void DeicsOnzeGui::updatePreset() {
 void DeicsOnzeGui::updateSelectPreset(int hbank, int lbank, int prog) {
   //QTreeWidgetItem* cat = categoryListView->currentItem();
   //QTreeWidgetItem* sub = subcategoryListView->currentItem();
-  QTreeWidgetItem* pre = presetListView->currentItem();
+  //QTreeWidgetItem* pre = presetListView->currentItem();
   //select category, subcategory, preset
   //category
   QList<QTreeWidgetItem *> qlcat =
@@ -4621,7 +4621,7 @@ void DeicsOnzeGui::updateSelectPreset(int hbank, int lbank, int prog) {
     presetListView->scrollToItem(qpre);
     updatePresetName(qpre->text(1), true);
     updateProg(prog, true);
-    pre=(QTreePreset*) qpre;
+    //pre=(QTreePreset*) qpre;
     setEnabledPreset(true);
   }
   else {

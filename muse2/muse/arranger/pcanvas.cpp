@@ -904,12 +904,25 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                       }
                   }
             case AutomationTool:
-                  if (event->button() & Qt::RightButton) {
-                      QMenu *automationMenu = new QMenu(this);
-                      QAction* act;
-                      act = automationMenu->addAction(tr("Remove selected"));
-                      act = automationMenu->exec(event->globalPos());
-                      if (act && automation.currentTrack) {
+                  if (event->button() & Qt::RightButton  || 
+                      event->button() & Qt::MidButton) {
+                      
+                      bool do_delete;
+                      
+                      if (event->button() & Qt::MidButton) // mid-click
+                        do_delete=true;
+                      else // right-click
+                      {
+                        QMenu *automationMenu = new QMenu(this);
+                        QAction* act;
+                        act = automationMenu->addAction(tr("Remove selected"));
+                        act = automationMenu->exec(event->globalPos());
+                        if (act)
+                          do_delete=true;
+                        else
+                          do_delete=false;
+                      }
+                      if (do_delete && automation.currentTrack) {
                           foreach(int frame, automation.currentCtrlFrameList)
                               MusEGlobal::audio->msgEraseACEvent((MusECore::AudioTrack*)automation.currentTrack,
                                        automation.currentCtrlList->id(), frame);
@@ -2683,6 +2696,7 @@ void PartCanvas::cmd(int cmd)
                       case 0: paste_mode=PASTEMODE_MIX; break;
                       case 1: paste_mode=PASTEMODE_MOVEALL; break;
                       case 2: paste_mode=PASTEMODE_MOVESOME; break;
+                      default: paste_mode=PASTEMODE_MIX; // shall never be executed
                     }
 
                     paste(paste_dialog->clone, paste_mode, paste_dialog->all_in_one_track,
@@ -3411,7 +3425,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
           yy += th;
           }
 
-    unsigned int startPos = MusEGlobal::audio->getStartRecordPos().tick();
+    unsigned int startPos = MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->getStartExternalRecTick() : MusEGlobal::audio->getStartRecordPos().tick(); 
     if (MusEGlobal::song->punchin())
       startPos=MusEGlobal::song->lpos();
     int startx = mapx(startPos);
@@ -3663,19 +3677,36 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
 
 bool checkIfOnLine(double mouseX, double mouseY, double firstX, double lastX, double firstY, double lastY, int circumference)
 {
-  double proportion = (mouseX-firstX)/(lastX-firstX);
-
-  // 10   X(15)   20
-  // proportion = 0.5
-  //              10
-  //          /
-  //      Y(5)
-  //   /
-  // 1
-  double calcY = (lastY-firstY)*proportion+firstY;
-  if(ABS(calcY-mouseY) < circumference || (lastX == firstX && ABS(mouseX-lastX) < circumference))
-    return true;
-  return false;
+  if (lastX==firstX)  
+    return (ABS(mouseX-lastX) < circumference);
+  else if (mouseX < firstX || mouseX > lastX+circumference) // (*)
+    return false;
+  else
+  {
+    double proportion = (mouseX-firstX)/(lastX-firstX); // a value between 0 and 1, where firstX->0 and lastX->1
+    double calcY = (lastY-firstY)*proportion+firstY;    // where the drawn line's y-coord is at mouseX
+    double slope = (lastY-firstY)/(lastX-firstX);
+    
+    return (ABS(calcY-mouseY) < (circumference * sqrt(1+slope*slope)));
+    // this is equivalent to circumference / cos( atan(slope) ). to
+    // verify, draw a sloped line (the graph), a 90°-line to it with
+    // length "circumference". from the (unconnected) endpoint of that
+    // line, draw a vertical line down to the sloped line.
+    // use slope=tan(alpha) <==> alpha=atan(slope) and
+    // cos(alpha) = adjacent side / hypothenuse (hypothenuse is what we
+    // want, and adjacent = circumference).
+    // to optimize: this looks similar to abs(slope)+1
+    
+    //return (ABS(calcY-mouseY) < circumference);
+  }
+  
+  /* without the +circumference in the above if statement (*), moving
+   * the mouse towards a control point from the right would result in
+   * the line segment from the targeted point to the next to be con-
+   * sidered, but not the segment from the previous to the targeted.
+   * however, only points for which the line segment they _end_ is
+   * under the cursor are considered, so we need to enlengthen this
+   * a bit  (flo93)*/
 }
 
 //---------------------------------------------------------
@@ -3684,12 +3715,7 @@ bool checkIfOnLine(double mouseX, double mouseY, double firstX, double lastX, do
 
 bool checkIfNearPoint(int mouseX, int mouseY, int eventX, int eventY, int circumference)
 {
-  int x1 = ABS(mouseX - eventX) ;
-  int y1 = ABS(mouseY - eventY);
-  if (x1 < circumference &&  y1 < circumference) {
-    return true;
-  }
-  return false;
+  return (ABS(mouseX - eventX) < circumference &&  ABS(mouseY - eventY) < circumference);
 }
 
 //---------------------------------------------------------
@@ -3703,7 +3729,7 @@ bool checkIfNearPoint(int mouseX, int mouseY, int eventX, int eventY, int circum
 //    controller added.
 //---------------------------------------------------------
 
-void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, bool NOTaddNewCtrl)
+void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, bool /*NOTaddNewCtrl*/)
 {
     if (t->isMidiTrack())
       return;
@@ -3751,7 +3777,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
         }
         else // we have automation, loop through it
         {  
-          for (; ic !=cl->end(); ic++)
+          for (; ic!=cl->end(); ic++)
           {
              double y = ic->second.val;
              if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
@@ -3774,7 +3800,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
 
              eventOldX = eventX;
              eventOldY = eventY;
-
+             
              if (onLine) {
                if (!onPoint) {
                  QWidget::setCursor(Qt::CrossCursor);
@@ -3799,7 +3825,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
         // check if we are reasonably close to a line, we only need to check Y
         // as the line is straight after the last controller
         //printf("post oldX:%d oldY:%d xpixel:%d ypixel:%d currX:%d currY:%d\n", oldX, oldY, xpixel, ypixel, currX, currY);
-        if(mouseX >= eventX && eventY == eventOldY && ABS(mouseY-eventY) < circumference) {
+        if(mouseX >= eventX && ABS(mouseY-eventY) < circumference) {
           QWidget::setCursor(Qt::CrossCursor);
           automation.controllerState = addNewController;
           automation.currentCtrlList = cl;
@@ -3817,7 +3843,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
       setCursor();
 }
 
-void PartCanvas::controllerChanged(MusECore::Track* t)
+void PartCanvas::controllerChanged(MusECore::Track* t, int)
 {
   redraw((QRect(0, mapy(t->y()), width(), rmapy(t->height()))));  // TODO Check this - correct?
 }

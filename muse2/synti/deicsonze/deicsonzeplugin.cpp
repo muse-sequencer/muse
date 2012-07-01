@@ -300,12 +300,12 @@ void DeicsOnzeGui::buildGuiReverb() {
   //for(int i = 0; i < plugI->plugin()->parameter(); i++) { 
   for(int i = 0; i < (int)plugI->plugin()->controlInPorts(); i++) { 
     ///double min, max, val;
-    float min, max, val;
+    float min, max; //, val;
     plugI->range(i, &min, &max);
-    val = _deicsOnze->getReverbParam(i);
 
 // FIXME FIXME Tim
 /*     
+    val = _deicsOnze->getReverbParam(i);
      if(plugI->isBool(i))
       addPluginCheckBox(i, plugI->getParameterName(i), val > 0.0,
 			_reverbSuperWidget, grid, true);
@@ -351,12 +351,12 @@ void DeicsOnzeGui::buildGuiChorus() {
   //for(int i = 0; i < plugI->plugin()->parameter(); i++) {
   for(int i = 0; i < (int)plugI->plugin()->controlInPorts(); i++) {
     ///double min, max, val;
-    float min, max, val;
+    float min, max; //, val;
     plugI->range(i, &min, &max);
-    val = _deicsOnze->getChorusParam(i);
     
 // FIXME FIXME Tim
 /*    
+    val = _deicsOnze->getChorusParam(i);
     if(plugI->isBool(i))
       addPluginCheckBox(i, plugI->getParameterName(i), val > 0.0,
 			_chorusSuperWidget, grid, false);

@@ -46,7 +46,7 @@ class PluginI;
 class SynthI;
 class Xml;
 class DrumMap;
-
+class ControlEvent;
 
 //---------------------------------------------------------
 //   Track
@@ -447,6 +447,9 @@ class AudioTrack : public Track {
       virtual void setAutomationType(AutomationType t);
       void processAutomationEvents();
       CtrlRecList* recEvents()                         { return &_recEvents; }
+      bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // return true if event cannot be delivered
+      void enableController(int track_ctrl_id, bool en); 
+      void controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) const;
       void recordAutomation(int n, double v);
       void startAutoRecord(int, double);
       void stopAutoRecord(int, double);

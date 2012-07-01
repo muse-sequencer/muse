@@ -964,7 +964,7 @@ int ClipList::idx(const Clip& clip) const
 //   cmdAddRecordedWave
 //---------------------------------------------------------
 
-void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e)
+void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e) 
       {
       if (MusEGlobal::debugMsg)
           printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
@@ -976,15 +976,31 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
             return;
             }
       
+      // If externally clocking (and therefore master was forced off), 
+      //  tempos may have been recorded. We really should temporarily force
+      //  the master tempo map on in order to properly determine the ticks below.
+      // Else internal clocking, the user decided to record either with or without 
+      //  master on, so let it be.
+      // FIXME: We really should allow the master flag to be on at the same time as
+      //  the external sync flag! AFAIR when external sync is on, no part of the app shall
+      //  depend on the tempo map anyway, so it should not matter whether it's on or off.
+      // If we do that, then we may be able to remove this section and user simply decides
+      //  whether master is on/off, because we may be able to use the flag to determine
+      //  whether to record external tempos at all, because we may want a switch for it!
+      bool master_was_on = MusEGlobal::tempomap.masterFlag();
+      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+        MusEGlobal::tempomap.setMasterFlag(0, true);
+      
       if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
         s.setTick(lPos().tick());
       // If we are looping, just set the end to the right marker, since we don't know how many loops have occurred.
       // (Fixed: Added Audio::loopCount)
       // Otherwise if punchout is on, limit the end to the right marker.
-      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )
+      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )  
         e.setTick(rPos().tick());
+
       // No part to be created? Delete the rec sound file.
-      if(s.tick() >= e.tick())
+      if(s.frame() >= e.frame())
       {
         QString st = f->path();
         // The function which calls this function already does this immediately after. But do it here anyway.
@@ -992,19 +1008,30 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
                                  // counter has dropped by 2 and _recFile will probably deleted then
         remove(st.toLatin1().constData());
         if(MusEGlobal::debugMsg)
-          printf("Song::cmdAddRecordedWave: remove file %s - start=%d end=%d\n", st.toLatin1().constData(), s.tick(), e.tick());
+          printf("Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLatin1().constData(), s.frame(), e.frame());  
+      
+        // Restore master flag. 
+        if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+          MusEGlobal::tempomap.setMasterFlag(0, false);
+
         return;
       }
       // Round the start down using the Arranger part snap raster value. 
-      unsigned startTick = AL::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster());
+      int a_rast = MusEGlobal::song->arrangerRaster();
+      unsigned sframe = (a_rast == 1) ? s.frame() : Pos(AL::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();   
       // Round the end up using the Arranger part snap raster value. 
-      unsigned endTick   = AL::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster());
+      unsigned eframe = (a_rast == 1) ? e.frame() : Pos(AL::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
+      unsigned etick = Pos(eframe).tick();
+
+      // Done using master tempo map. Restore master flag. 
+      if(MusEGlobal::extSyncFlag.value() && !master_was_on)
+        MusEGlobal::tempomap.setMasterFlag(0, false);
 
       f->update();
 
       MusECore::WavePart* part = new MusECore::WavePart(track);
-      part->setTick(startTick);
-      part->setLenTick(endTick - startTick);
+      part->setFrame(sframe);
+      part->setLenFrame(eframe - sframe);
       part->setName(track->name());
 
       // create Event
@@ -1015,20 +1042,18 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       track->setRecFile(0);
       
       event.setSpos(0);
-      
       // Since the part start was snapped down, we must apply the difference so that the
       //  wave event tick lines up with when the user actually started recording.
-      // Added by Tim. p3.3.8
-      event.setTick(s.tick() - startTick);
-      
-      
+      event.setFrame(s.frame() - sframe);   
+      // NO Can't use this. SF reports too long samples at first part recorded in sequence. See samples() - funny business with SEEK ?
+      //event.setLenFrame(f.samples()); 
       event.setLenFrame(e.frame() - s.frame());
       part->addEvent(event);
 
       MusEGlobal::song->cmdAddPart(part);
 
-      if (MusEGlobal::song->len() < endTick)
-            MusEGlobal::song->setLen(endTick);
+      if (MusEGlobal::song->len() < etick)
+            MusEGlobal::song->setLen(etick);
       }
 
 //---------------------------------------------------------

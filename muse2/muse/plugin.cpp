@@ -32,6 +32,7 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QCursor>
 #include <QDir>
 #include <QFile>
 #include <QGridLayout>
@@ -78,6 +79,9 @@
 // Turn on debugging messages.
 //#define PLUGIN_DEBUGIN 
 
+// Turn on constant stream of debugging messages.
+//#define PLUGIN_DEBUGIN_PROCESS 
+
 namespace MusEGlobal {
 MusECore::PluginList plugins;
 }
@@ -119,7 +123,7 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
     
     *min = 0;
     *max = 1;
-    *def = (int)lrint(fdef);
+    *def = (int)lrintf(fdef);
     return hasdef;
   }
   
@@ -156,8 +160,8 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
     fmax = 1.0;
     
   frng = fmax - fmin;
-  imin = lrint(fmin);  
-  imax = lrint(fmax);  
+  imin = lrintf(fmin);  
+  imax = lrintf(fmax);  
 
   int ctlmn = 0;
   int ctlmx = 127;
@@ -230,7 +234,7 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
     *min = imin;
     *max = imax;
     
-    *def = (int)lrint(fdef);
+    *def = (int)lrintf(fdef);
     
     return hasdef;
   }
@@ -244,7 +248,7 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
   
   // FIXME: TODO: Incorrect... Fix this somewhat more trivial stuff later....
   
-  *def = (int)lrint(fdef) + bias;
+  *def = (int)lrintf(fdef) + bias;
  
   #ifdef PLUGIN_DEBUGIN 
   printf("ladspa2MidiControlValues: setting default:%d\n", *def);
@@ -305,7 +309,7 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int 
     fmax = 1.0;
     
   frng = fmax - fmin;
-  imin = lrint(fmin);  
+  imin = lrintf(fmin);  
 
   if(desc & LADSPA_HINT_TOGGLED) 
   {
@@ -619,40 +623,6 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
             *max = 1.0;
       }
 
-// DELETETHIS 35
-/*
-//---------------------------------------------------------
-//   PluginBase
-//---------------------------------------------------------
-
-//---------------------------------------------------------
-//   range
-//---------------------------------------------------------
-
-void PluginBase::range(unsigned long i, float* min, float* max) const
-      {
-      LADSPA_PortRangeHint range = plugin->PortRangeHints[i];
-      LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
-      if (desc & LADSPA_HINT_TOGGLED) {
-            *min = 0.0;
-            *max = 1.0;
-            return;
-            }
-      float m = 1.0;
-      if (desc & LADSPA_HINT_SAMPLE_RATE)
-            m = float(MusEGlobal::sampleRate);
-
-      if (desc & LADSPA_HINT_BOUNDED_BELOW)
-            *min =  range.LowerBound * m;
-      else
-            *min = 0.0;
-      if (desc & LADSPA_HINT_BOUNDED_ABOVE)
-            *max =  range.UpperBound * m;
-      else
-            *max = 1.0;
-      }
-*/
-
 //---------------------------------------------------------
 //   Plugin
 //---------------------------------------------------------
@@ -792,8 +762,7 @@ int Plugin::incReferences(int val)
     if(dssi)
     {
       const DSSI_Descriptor* descr;
-      //for(int i = 0;; ++i) 
-      for(unsigned long i = 0;; ++i)     // p4.0.21
+      for(unsigned long i = 0;; ++i)     
       {
         descr = dssi(i);
         if(descr == NULL)
@@ -817,7 +786,7 @@ int Plugin::incReferences(int val)
       if(ladspadf)
       {
         const LADSPA_Descriptor* descr;
-        for(unsigned long i = 0;; ++i)       // p4.0.21
+        for(unsigned long i = 0;; ++i)       
         {
           descr = ladspadf(i);
           if(descr == NULL)
@@ -913,7 +882,7 @@ int Plugin::incReferences(int val)
 
 void Plugin::range(unsigned long i, float* min, float* max) const
       {
-      ladspaControlRange(plugin, i, min, max);  // p4.0.20
+      ladspaControlRange(plugin, i, min, max);  
       }
 
 //---------------------------------------------------------
@@ -922,59 +891,9 @@ void Plugin::range(unsigned long i, float* min, float* max) const
 
 float Plugin::defaultValue(unsigned long port) const
 {
-    // p4.0.21
     float val;
     ladspaDefaultValue(plugin, port, &val);
     return val;
-    
-    // DELETETHIS 50
-    /*
-    if(port >= plugin->PortCount) 
-      return 0.0;
-      
-    LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
-    LADSPA_PortRangeHintDescriptor rh = range.HintDescriptor;
-    //double val = 1.0;
-    float val = 1.0; 
-    if (LADSPA_IS_HINT_DEFAULT_MINIMUM(rh))
-          val = range.LowerBound;
-    else if (LADSPA_IS_HINT_DEFAULT_LOW(rh))
-          if (LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor))
-                //val = exp(fast_log10(range.LowerBound) * .75 +
-                //    log(range.UpperBound) * .25);
-                val = expf(fast_log10(range.LowerBound) * .75 +
-                    logf(range.UpperBound) * .25);
-          else
-                val = range.LowerBound*.75 + range.UpperBound*.25;
-    else if (LADSPA_IS_HINT_DEFAULT_MIDDLE(rh))
-          if (LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor))
-                //val = exp(log(range.LowerBound) * .5 +
-                //    log(range.UpperBound) * .5);
-                val = expf(logf(range.LowerBound) * .5 +
-                    logf(range.UpperBound) * .5);
-          else
-                val = range.LowerBound*.5 + range.UpperBound*.5;
-    else if (LADSPA_IS_HINT_DEFAULT_HIGH(rh))
-          if (LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor))
-                //val = exp(log(range.LowerBound) * .25 +
-                //    log(range.UpperBound) * .75);
-                val = expf(logf(range.LowerBound) * .25 +
-                    logf(range.UpperBound) * .75);
-          else
-                val = range.LowerBound*.25 + range.UpperBound*.75;
-    else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh))
-          val = range.UpperBound;
-    else if (LADSPA_IS_HINT_DEFAULT_0(rh))
-          val = 0.0;
-    else if (LADSPA_IS_HINT_DEFAULT_1(rh))
-          val = 1.0;
-    else if (LADSPA_IS_HINT_DEFAULT_100(rh))
-          val = 100.0;
-    else if (LADSPA_IS_HINT_DEFAULT_440(rh))
-          val = 440.0;
-          
-    return val;      
-    */
 }
 
 //---------------------------------------------------------
@@ -1013,7 +932,7 @@ static void loadPluginLib(QFileInfo* fi)
   if(dssi)
   {
     const DSSI_Descriptor* descr;
-    for (unsigned long i = 0;; ++i)  // p4.0.21
+    for (unsigned long i = 0;; ++i)  
     {
       descr = dssi(i);
       if (descr == 0)
@@ -1060,7 +979,7 @@ static void loadPluginLib(QFileInfo* fi)
     }
     
     const LADSPA_Descriptor* descr;
-    for (unsigned long i = 0;; ++i)       // p4.0.21
+    for (unsigned long i = 0;; ++i)       
     {
       descr = ladspa(i);
       if (descr == NULL)
@@ -1223,6 +1142,76 @@ Pipeline::~Pipeline()
             ::free(buffer[i]);
       }
 
+//---------------------------------------------------------
+//   addScheduledControlEvent
+//   track_ctrl_id is the fully qualified track audio controller number
+//   Returns true if event cannot be delivered
+//---------------------------------------------------------
+
+bool Pipeline::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
+{
+  // If a track controller, or the special dssi synth controller block, just return.
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0)) 
+    return true;
+  int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
+  for (int i = 0; i < PipelineDepth; ++i)
+  {
+    PluginI* p = (*this)[i];
+    if(p && p->id() == rack_idx)
+      return p->addScheduledControlEvent(track_ctrl_id & AC_PLUGIN_CTL_ID_MASK, val, frame);
+  }
+  return true;
+}
+      
+//---------------------------------------------------------
+//   controllersEnabled
+//   Returns whether automation control stream is enabled or disabled. 
+//   Used during automation recording to inhibit gui controls
+//---------------------------------------------------------
+
+void Pipeline::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2)
+{
+  // If a track controller, or the special dssi synth controller block, just return.
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0)) 
+    return;
+  int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
+  for (int i = 0; i < PipelineDepth; ++i)
+  {
+    PluginI* p = (*this)[i];
+    if(p && p->id() == rack_idx)
+    {
+      if(en1)
+        *en1 = p->controllerEnabled(track_ctrl_id & AC_PLUGIN_CTL_ID_MASK);
+      if(en2)
+        *en2 = p->controllerEnabled2(track_ctrl_id & AC_PLUGIN_CTL_ID_MASK);
+      return;
+    }
+  }
+}
+
+//---------------------------------------------------------
+//   enableController
+//   Enable or disable gui automation control stream. 
+//   Used during automation recording to inhibit gui controls
+//---------------------------------------------------------
+
+void Pipeline::enableController(int track_ctrl_id, bool en) 
+{
+  // If a track controller, or the special dssi synth controller block, just return.
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0)) 
+    return;
+  int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
+  for (int i = 0; i < PipelineDepth; ++i)
+  {
+    PluginI* p = (*this)[i];
+    if(p && p->id() == rack_idx)
+    {
+      p->enableController(track_ctrl_id & AC_PLUGIN_CTL_ID_MASK, en);
+      return;
+    }
+  }
+}
+      
 //---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------
@@ -1524,6 +1513,39 @@ PluginIBase::~PluginIBase()
     delete _gui;
 } 
  
+//---------------------------------------------------------
+//   addScheduledControlEvent
+//   i is the specific index of the control input port
+//   Returns true if event cannot be delivered
+//---------------------------------------------------------
+
+bool PluginIBase::addScheduledControlEvent(unsigned long i, float val, unsigned frame) 
+{ 
+  if(i >= parameters())
+  {
+    printf("PluginIBase::addScheduledControlEvent param number %lu out of range of ports:%lu\n", i, parameters());
+    return true;
+  }
+  ControlEvent ce;
+  ce.unique = false;
+  ce.idx = i;
+  ce.value = val;
+  // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
+  //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
+  //  are treated when they arrive in our ALSA driver.) 
+  //ce.frame = MusEGlobal::audio->timestamp();  
+  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
+  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
+  ce.frame = frame;  
+  
+  if(_controlFifo.put(ce))
+  {
+    fprintf(stderr, "PluginIBase::addScheduledControlEvent: fifo overflow: in control number:%lu\n", i);
+    return true;
+  }
+  return false;
+}     
+
 QString PluginIBase::dssi_ui_filename() const 
 { 
   QString libr(lib());
@@ -1658,8 +1680,6 @@ void PluginI::updateControllers()
     
   for(unsigned long i = 0; i < controlPorts; ++i) 
     _track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);  // TODO A faster bulk message
-   
-  MusEGlobal::song->controllerChange(_track);
 }
   
 //---------------------------------------------------------
@@ -1698,7 +1718,7 @@ void PluginI::setChannels(int c)
                   }
             }
       
-      unsigned long curPort = 0;      // p4.0.21
+      unsigned long curPort = 0;      
       unsigned long curOutPort = 0;
       unsigned long ports   = _plugin->ports();
       for (unsigned long k = 0; k < ports; ++k) 
@@ -1733,27 +1753,7 @@ void PluginI::setChannels(int c)
 
 void PluginI::setParam(unsigned long i, float val) 
 { 
-  if(i >= _plugin->_controlInPorts)
-  {
-    printf("PluginI::setParameter param number %lu out of range of ports:%lu\n", i, _plugin->_controlInPorts);
-    return;
-  }
-  ControlEvent ce;
-  ce.unique = false;
-  ce.idx = i;
-  ce.value = val;
-  // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
-  //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
-  //  are treated when they arrive in our ALSA driver.) 
-  //ce.frame = MusEGlobal::audio->timestamp();  
-  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
-  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
-  ce.frame = MusEGlobal::audio->curFrame();  
-  
-  if(_controlFifo.put(ce))
-  {
-    fprintf(stderr, "PluginI::setParameter: fifo overflow: in control number:%lu\n", i);
-  }
+  addScheduledControlEvent(i, val, MusEGlobal::audio->curFrame());
 }     
 
 //---------------------------------------------------------
@@ -1865,7 +1865,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
         {
           if(pd & LADSPA_PORT_INPUT)
           {
-            float val = _plugin->defaultValue(k);    // p4.0.21
+            float val = _plugin->defaultValue(k);    
             controls[curPort].val    = val;
             controls[curPort].tmpVal = val;
             controls[curPort].enCtrl  = true;
@@ -1917,11 +1917,11 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
 void PluginI::connect(unsigned long ports, unsigned long offset, float** src, float** dst)
       {
-      unsigned long port = 0;  // p4.0.21
+      unsigned long port = 0;  
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioIn(k)) {
-                        _plugin->connectPort(handle[i], k, src[port] + offset);     // p4.0.21
+                        _plugin->connectPort(handle[i], k, src[port] + offset);     
                         port = (port + 1) % ports;
                         }
                   }
@@ -1930,7 +1930,7 @@ void PluginI::connect(unsigned long ports, unsigned long offset, float** src, fl
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioOut(k)) {
-                        _plugin->connectPort(handle[i], k, dst[port] + offset);     // p4.0.21
+                        _plugin->connectPort(handle[i], k, dst[port] + offset);     
                         port = (port + 1) % ports;  // overwrite output?
                         }
                   }
@@ -1979,7 +1979,7 @@ bool PluginI::setControl(const QString& s, float val)
       {
       for (unsigned long i = 0; i < controlPorts; ++i) {
             if (_plugin->portName(controls[i].idx) == s) {
-                  setParam(i, val);     // p4.0.21
+                  setParam(i, val);     
                   return false;
                   }
             }
@@ -1997,7 +1997,7 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
          Xml::xmlString(_plugin->lib()).toLatin1().constData(), Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
          
-      for (unsigned long i = 0; i < controlPorts; ++i) {          // p4.0.21
+      for (unsigned long i = 0; i < controlPorts; ++i) {          
             unsigned long idx = controls[i].idx;
             QString s("control name=\"%1\" val=\"%2\" /");
             xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).arg(controls[i].tmpVal).toLatin1().constData());
@@ -2040,7 +2040,7 @@ bool PluginI::loadControl(Xml& xml)
                         if (tag == "name")
                               name = xml.s2();
                         else if (tag == "val")
-                              val = xml.s2().toFloat();     // p4.0.21
+                              val = xml.s2().toFloat();     
                         break;
                   case Xml::TagEnd:
                         if (tag == "control") {
@@ -2102,7 +2102,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                     xml.parse1();
                                     printf("Error initializing plugin instance (%s, %s)\n",
                                        file.toLatin1().constData(), label.toLatin1().constData());
-                                    //break;      // Don't break - let it read any control tags. DELETETHIS
+                                    //break;      // Don't break - let it read any control tags. 
                                     }
                                  }    
                               }
@@ -2352,28 +2352,152 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       if(min_per > n)
         min_per = n;
       
-      // Process automation control values now.
-      // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
-      if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
+      // CtrlListList* cll = NULL;  // WIP
+      AutomationType at = AUTO_OFF;
+      if(_track)
       {
-        for(unsigned long k = 0; k < controlPorts; ++k)
-        {
-          if(controls[k].enCtrl && controls[k].en2Ctrl )
-            controls[k].tmpVal = _track->controller()->value(genACnum(_id, k), MusEGlobal::audio->pos().frame());
-        }      
+        at = _track->automationType();
+        //cll = _track->controller();  // WIP
       }
-        
+      bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
+      
       while(sample < n)
       {
         // nsamp is the number of samples the plugin->process() call will be supposed to do
         unsigned long nsamp = usefixedrate ? fixedsize : n - sample;
 
+        //
+        // Process automation control values, while also determining the maximum acceptable 
+        //  size of this run. Further processing, from FIFOs for example, can lower the size 
+        //  from there, but this section determines where the next highest maximum frame 
+        //  absolutely needs to be for smooth playback of the controller value stream...
+        //
+        if(_track && _id != -1 && ports != 0) // Don't bother if not 'running'.
+        {
+          unsigned long frame = MusEGlobal::audio->pos().frame() + sample;
+          int nextFrame;
+          //double val;  // WIP
+          for(unsigned long k = 0; k < controlPorts; ++k)
+          {
+
+            
+#if 0  // WIP - Work in progress. Tim.    
+
+            ciCtrlList icl = cll->find(genACnum(_id, k));
+            if(icl == cll->end())
+              continue;
+            CtrlList* cl = icl->second;
+            if(no_auto || !controls[k].enCtrl || !controls[k].en2Ctrl || cl->empty()) 
+            {
+              nextFrame = -1;
+              val = cl->curVal();
+            }
+            else
+            {
+              ciCtrl i = cl->upper_bound(frame); // get the index after current frame
+              if (i == cl->end()) { // if we are past all items just return the last value
+                    --i;
+                    nextFrame = -1;
+                    val = i->second.val;
+                    }
+              else if(cl->mode() == CtrlList::DISCRETE)
+              {
+                if(i == cl->begin())
+                {
+                    nextFrame = i->second.frame;
+                    val = i->second.val;
+                }  
+                else
+                {  
+                  nextFrame = i->second.frame;
+                  --i;
+                  val = i->second.val;
+                }  
+              }
+              else {                  // INTERPOLATE
+                if (i == cl->begin()) {
+                    nextFrame = i->second.frame;
+                    val = i->second.val;
+                }
+                else {
+                    int frame2 = i->second.frame;
+                    double val2 = i->second.val;
+                    --i;
+                    int frame1 = i->second.frame;
+                    double val1   = i->second.val;
+
+                    
+                    if(val2 != val1)
+                      nextFrame = 0; // Zero signifies the next frame should be determined by caller.
+                    else
+                      nextFrame = frame2;
+                    
+                    if (cl->valueType() == VAL_LOG) {
+                      val1 = 20.0*fast_log10(val1);
+                      if (val1 < MusEGlobal::config.minSlider)
+                        val1=MusEGlobal::config.minSlider;
+                      val2 = 20.0*fast_log10(val2);
+                      if (val2 < MusEGlobal::config.minSlider)
+                        val2=MusEGlobal::config.minSlider;
+                    }
+
+                    val2  -= val1;
+                    val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
+            
+                    if (cl->valueType() == VAL_LOG) {
+                      val1 = exp10(val1/20.0);
+                    }
+
+                    val = val1;
+                  }
+              }
+            }
+            
+            controls[k].tmpVal = val;
+            
+            
+#else            
+            controls[k].tmpVal = _track->controller()->value(genACnum(_id, k), frame,
+                                    no_auto || !controls[k].enCtrl || !controls[k].en2Ctrl,
+                                    &nextFrame);
+#endif            
+            
+            
+#ifdef PLUGIN_DEBUGIN_PROCESS
+            printf("PluginI::apply k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, nextFrame, nsamp);
+#endif
+            if(MusEGlobal::audio->isPlaying() && !usefixedrate && nextFrame != -1)
+            {
+              // Returned value of nextFrame can be zero meaning caller replaces with some (constant) value.
+              unsigned long samps = (unsigned long)nextFrame;
+              if(samps > frame + min_per)
+              {
+                unsigned long diff = samps - frame;
+                unsigned long mask = min_per-1;   // min_per must be power of 2
+                samps = diff & ~mask;
+                if((diff & mask) != 0)
+                  samps += min_per;
+              }
+              else
+                samps = min_per;
+              
+              if(samps < nsamp)
+                nsamp = samps;
+            }
+          }
+          
+#ifdef PLUGIN_DEBUGIN_PROCESS
+          printf("PluginI::apply sample:%lu nsamp:%lu\n", sample, nsamp);
+#endif
+        }
+        
+        //
+        // Process all control ring buffer items valid for this time period...
+        //
         bool found = false;
         unsigned long frame = 0; 
         unsigned long index = 0;
         unsigned long evframe; 
-
-        // Get all control ring buffer items valid for this time period...
         while(!_controlFifo.isEmpty())
         {
           ControlEvent v = _controlFifo.peek(); 
@@ -2398,9 +2522,10 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           // but stop after a control event was found (then process(),
           // then loop here again), but ensure that process() must process
           // at least min_per frames.
-          if(evframe >= n
-              || (found && !v.unique && (evframe - sample >= min_per))
-              || (usefixedrate && found && v.unique && v.idx == index))
+          if(evframe >= n                                                               // Next events are for a later period.
+              || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
+              || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
+              || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
             break;
           _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
@@ -2415,27 +2540,20 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           
           // Need to update the automation value, otherwise it overwrites later with the last automation value.
           if(_track && _id != -1)
-          {
-            // We're in the audio thread context: no need to send a message, just modify directly.
             _track->setPluginCtrlVal(genACnum(_id, v.idx), v.value);
-            
-            /* Recording automation is done immediately in the         *
-             * OSC control handler, because we don't want any delay.   *
-             * we might want to handle dssi-vst synthes here, however! */
-          }  
         }
 
         // Now update the actual values from the temporary values...
         for(unsigned long k = 0; k < controlPorts; ++k)
           controls[k].val = controls[k].tmpVal;
         
-        if(found && !usefixedrate)
-          nsamp = frame - sample;
+        if(found && !usefixedrate) // If a control FIFO item was found, takes priority over automation controller stream.
+          nsamp = frame - sample;  
 
-        if(sample + nsamp >= n)         // Safety check.
+        if(sample + nsamp >= n)    // Safety check.
           nsamp = n - sample; 
         
-        // Don't allow zero-length runs. This could/should be checked in the control loop instead.
+        // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
         // Note this means it is still possible to get stuck in the top loop (at least for a while).
         if(nsamp == 0)
           continue;
@@ -2563,13 +2681,8 @@ int PluginI::oscUpdate()
       usleep(300000);
 
       // Send current control values.
-      //unsigned long ports = controlPorts; DELETETHIS 2
-      //for(int i = 0; i < controlPorts; ++i) 
       for(unsigned long i = 0; i < controlPorts; ++i) 
       {
-        //unsigned long k = synth->pIdx(i); DELETETHIS 2
-        //_oscIF.oscSendControl(k, controls[i], true /*force*/);
-        //printf("PluginI::oscUpdate() sending control:%lu val:%f\n", i, controls[i].val);
         _oscif.oscSendControl(controls[i].idx, controls[i].val, true /*force*/);
         // Avoid overloading the GUI if there are lots and lots of ports. 
         if((i+1) % 50 == 0)
@@ -2638,7 +2751,6 @@ int PluginI::oscControl(unsigned long port, float value)
     }
   }
   */
-  // p4.0.21
   ControlEvent ce;
   ce.unique = _plugin->_isDssiVst;   // Special for messages from vst gui to host - requires processing every message.
   ce.idx = cport;
@@ -2693,27 +2805,6 @@ int PluginI::oscControl(unsigned long port, float value)
   }
   */
 
-// DELETETHIS 20
-#if 0
-      int port = argv[0]->i;
-      LADSPA_Data value = argv[1]->f;
-
-      if (port < 0 || port > instance->plugin->descriptor->LADSPA_Plugin->PortCount) {
-            fprintf(stderr, "MusE: OSC: %s port number (%d) is out of range\n",
-               instance->friendly_name, port);
-            return 0;
-            }
-      if (instance->pluginPortControlInNumbers[port] == -1) {
-            fprintf(stderr, "MusE: OSC: %s port %d is not a control in\n",
-               instance->friendly_name, port);
-            return 0;
-            }
-      pluginControlIns[instance->pluginPortControlInNumbers[port]] = value;
-      if (verbose) {
-            printf("MusE: OSC: %s port %d = %f\n",
-               instance->friendly_name, port, value);
-            }
-#endif
       return 0;
       }
 
@@ -2795,7 +2886,7 @@ PluginDialog::PluginDialog(QWidget* parent)
       ok_lo->addWidget(cancelB);
 
       QGroupBox* plugSelGroup = new QGroupBox(this);
-      plugSelGroup->setTitle("Show plugs:");
+      plugSelGroup->setTitle(tr("Show plugs:"));
       plugSelGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
       QGridLayout* psl = new QGridLayout;
       plugSelGroup->setLayout(psl);
@@ -2972,7 +3063,7 @@ void PluginDialog::fillPlugs()
     QString type_name;
     pList->clear();
     for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i) {
-          unsigned long ai = i->inports();       // p4.0.21
+          unsigned long ai = i->inports();       
           unsigned long ao = i->outports();
           unsigned long ci = i->controlInPorts();
           unsigned long co = i->controlOutPorts();
@@ -3115,7 +3206,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                   const char* name = ba.constData();
                   if (*name !='P')
                         continue;
-                  unsigned long parameter;                        // p4.0.21
+                  unsigned long parameter;                        
                   int rv = sscanf(name, "P%lu", &parameter);
                   if(rv != 1)
                     continue;
@@ -3126,15 +3217,17 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
             nobj = 0;
             QSignalMapper* mapper = new QSignalMapper(this);
             
-            // FIXME: There's no unsigned for gui params. We would need to limit nobj to MAXINT.    // p4.0.21
-            // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.    // p4.0.21
+            // FIXME: There's no unsigned for gui params. We would need to limit nobj to MAXINT.    
+            // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.    
             
             connect(mapper, SIGNAL(mapped(int)), SLOT(guiParamChanged(int)));
             
-            QSignalMapper* mapperPressed = new QSignalMapper(this);
-            QSignalMapper* mapperReleased = new QSignalMapper(this);
+            QSignalMapper* mapperPressed        = new QSignalMapper(this);
+            QSignalMapper* mapperReleased       = new QSignalMapper(this);
+            QSignalMapper* mapperContextMenuReq = new QSignalMapper(this);
             connect(mapperPressed, SIGNAL(mapped(int)), SLOT(guiParamPressed(int)));
             connect(mapperReleased, SIGNAL(mapped(int)), SLOT(guiParamReleased(int)));
+            connect(mapperContextMenuReq, SIGNAL(mapped(int)), SLOT(guiContextMenuReq(int)));
             
             for (it = l.begin(); it != l.end(); ++it) {
                   obj = *it;
@@ -3142,7 +3235,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                   const char* name = ba.constData();
                   if (*name !='P')
                         continue;
-                  unsigned long parameter;                         // p4.0.21
+                  unsigned long parameter;                         
                   int rv = sscanf(name, "P%lu", &parameter);
                 if(rv != 1)
                     continue;
@@ -3150,6 +3243,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                   mapper->setMapping(obj, nobj);
                   mapperPressed->setMapping(obj, nobj);
                   mapperReleased->setMapping(obj, nobj);
+                  mapperContextMenuReq->setMapping(obj, nobj);
                   
                   gw[nobj].widget = (QWidget*)obj;
                   gw[nobj].param  = parameter;
@@ -3159,15 +3253,15 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         gw[nobj].type = GuiWidgets::SLIDER;
                         ((Slider*)obj)->setId(nobj);
                         ((Slider*)obj)->setCursorHoming(true);
-                        for(unsigned long i = 0; i < nobj; i++)             // p4.0.21
+                        for(unsigned long i = 0; i < nobj; i++)             
                         {
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
                             ((DoubleLabel*)gw[i].widget)->setSlider((Slider*)obj);
                         }
-                        connect(obj, SIGNAL(sliderMoved(double,int)), mapper, SLOT(map()));
-                        connect(obj, SIGNAL(sliderPressed(int)), SLOT(guiSliderPressed(int)));
-                        connect(obj, SIGNAL(sliderReleased(int)), SLOT(guiSliderReleased(int)));
-                        connect(obj, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
+                        connect((Slider*)obj, SIGNAL(sliderMoved(double,int)), mapper, SLOT(map()));
+                        connect((Slider*)obj, SIGNAL(sliderPressed(int)), SLOT(guiSliderPressed(int)));
+                        connect((Slider*)obj, SIGNAL(sliderReleased(int)), SLOT(guiSliderReleased(int)));
+                        connect((Slider*)obj, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
                         }
                   else if (strcmp(obj->metaObject()->className(), "MusEGui::DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
@@ -3180,17 +3274,23 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                             break;  
                           }  
                         }
-                        connect(obj, SIGNAL(valueChanged(double,int)), mapper, SLOT(map()));
+                        connect((DoubleLabel*)obj, SIGNAL(valueChanged(double,int)), mapper, SLOT(map()));
                         }
                   else if (strcmp(obj->metaObject()->className(), "QCheckBox") == 0) {
                         gw[nobj].type = GuiWidgets::QCHECKBOX;
-                        connect(obj, SIGNAL(toggled(bool)), mapper, SLOT(map()));
-                        connect(obj, SIGNAL(pressed()), mapperPressed, SLOT(map()));
-                        connect(obj, SIGNAL(released()), mapperReleased, SLOT(map()));
+                        gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
+                        connect((QCheckBox*)obj, SIGNAL(toggled(bool)), mapper, SLOT(map()));
+                        connect((QCheckBox*)obj, SIGNAL(pressed()), mapperPressed, SLOT(map()));
+                        connect((QCheckBox*)obj, SIGNAL(released()), mapperReleased, SLOT(map()));
+                        connect((QCheckBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)), 
+                                mapperContextMenuReq, SLOT(map()));
                         }
                   else if (strcmp(obj->metaObject()->className(), "QComboBox") == 0) {
                         gw[nobj].type = GuiWidgets::QCOMBOBOX;
-                        connect(obj, SIGNAL(activated(int)), mapper, SLOT(map()));
+                        gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
+                        connect((QComboBox*)obj, SIGNAL(activated(int)), mapper, SLOT(map()));
+                        connect((QComboBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)), 
+                                mapperContextMenuReq, SLOT(map()));
                         }
                   else {
                         printf("unknown widget class %s\n", obj->metaObject()->className());
@@ -3201,7 +3301,6 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
               updateValues(); // otherwise the GUI won't have valid data
             }
       else {
-            // p3.4.43
             view = new QScrollArea;
             view->setWidgetResizable(true);
             setCentralWidget(view);
@@ -3212,13 +3311,13 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
             mw->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
-            unsigned long n  = plugin->parameters();   // p4.0.21
+            unsigned long n  = plugin->parameters();   
             params = new GuiParam[n];
 
             QFontMetrics fm = fontMetrics();
             int h           = fm.height() + 4;
 
-            for (unsigned long i = 0; i < n; ++i) {       // p4.0.21
+            for (unsigned long i = 0; i < n; ++i) {       
                   QLabel* label = 0;
                   LADSPA_PortRangeHint range = plugin->range(i);
                   double lower = 0.0;     // default values
@@ -3281,7 +3380,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         grid->addWidget(params[i].actuator, i, 0, 1, 3);
                         }
                   if (params[i].type == GuiParam::GUI_SLIDER) {
-                        connect(params[i].actuator, SIGNAL(sliderMoved(double,int)), SLOT(sliderChanged(double,int)));
+                        connect(params[i].actuator, SIGNAL(sliderMoved(double,int,bool)), SLOT(sliderChanged(double,int,bool)));
                         connect(params[i].label,    SIGNAL(valueChanged(double,int)), SLOT(labelChanged(double,int)));
                         connect(params[i].actuator, SIGNAL(sliderPressed(int)), SLOT(ctrlPressed(int)));
                         connect(params[i].actuator, SIGNAL(sliderReleased(int)), SLOT(ctrlReleased(int)));
@@ -3429,21 +3528,17 @@ void PluginGui::ctrlPressed(int param)
         if(track)
         {
           track->setPluginCtrlVal(id, val);
-          MusEGlobal::song->controllerChange(track);
-          
           track->startAutoRecord(id, val);
         }
       }
       else if(params[param].type == GuiParam::GUI_SWITCH)
       {
-        float val = (float)((CheckBox*)params[param].actuator)->isChecked();      // p4.0.21
+        float val = (float)((CheckBox*)params[param].actuator)->isChecked();      
         plugin->setParam(param, val);
         
         if(track)
         {
           track->setPluginCtrlVal(id, val);
-          MusEGlobal::song->controllerChange(track);
-          
           track->startAutoRecord(id, val);
         }
       }
@@ -3498,12 +3593,16 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
 //   sliderChanged
 //---------------------------------------------------------
 
-void PluginGui::sliderChanged(double val, int param)
+void PluginGui::sliderChanged(double val, int param, bool shift_pressed)
 {
       AutomationType at = AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
+      
+      if ( (at == AUTO_WRITE) ||
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
+        plugin->enableController(param, false);
       
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
             val = pow(10.0, val/20.0);
@@ -3523,9 +3622,7 @@ void PluginGui::sliderChanged(double val, int param)
       if(track)
       {
         track->setPluginCtrlVal(id, val);
-        MusEGlobal::song->controllerChange(track);
-        
-        track->recordAutomation(id, val);
+        if (!shift_pressed) track->recordAutomation(id, val); //with shift, we get straight lines :)
       }  
 }
 
@@ -3539,6 +3636,10 @@ void PluginGui::labelChanged(double val, int param)
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
+      
+      if ( (at == AUTO_WRITE) ||
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
+        plugin->enableController(param, false);
       
       double dval = val;
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
@@ -3559,8 +3660,6 @@ void PluginGui::labelChanged(double val, int param)
       if(track)
       {
         track->setPluginCtrlVal(id, val);
-        MusEGlobal::song->controllerChange(track);
-        
         track->startAutoRecord(id, val);
       }  
 }
@@ -3689,7 +3788,7 @@ void PluginGui::setOn(bool val)
 void PluginGui::updateValues()
       {
       if (params) {
-            for (unsigned long i = 0; i < plugin->parameters(); ++i) {       // p4.0.21
+            for (unsigned long i = 0; i < plugin->parameters(); ++i) {       
                   GuiParam* gp = &params[i];
                   if (gp->type == GuiParam::GUI_SLIDER) {
                         double lv = plugin->param(i);
@@ -3710,10 +3809,10 @@ void PluginGui::updateValues()
                   }
             }
       else if (gw) {
-            for (unsigned long i = 0; i < nobj; ++i) {      // p4.0.21
+            for (unsigned long i = 0; i < nobj; ++i) {      
                   QWidget* widget = gw[i].widget;
                   int type = gw[i].type;
-                  unsigned long param = gw[i].param;        // p4.0.21
+                  unsigned long param = gw[i].param;        
                   float val = plugin->param(param);
                   switch(type) {
                         case GuiWidgets::SLIDER:
@@ -3766,12 +3865,16 @@ void PluginGui::updateControls()
 
 
       if (params) {
-            for (unsigned long i = 0; i < plugin->parameters(); ++i) {      // p4.0.21
+            for (unsigned long i = 0; i < plugin->parameters(); ++i) {      
                   GuiParam* gp = &params[i];
                   if (gp->type == GuiParam::GUI_SLIDER) {
-                        if( plugin->controllerEnabled(i) && plugin->controllerEnabled2(i) )
                           {
-                            double lv = plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), i));
+                            double lv = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), i), 
+                                                                             MusEGlobal::audio->curFramePos(), 
+                                                                             !MusEGlobal::automation || 
+                                                                             plugin->track()->automationType() == AUTO_OFF || 
+                                                                             !plugin->controllerEnabled(i) || 
+                                                                             !plugin->controllerEnabled2(i));                            
                             double sv = lv;
                             if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
                                   sv = MusECore::fast_log10(lv) * 20.0;
@@ -3791,12 +3894,15 @@ void PluginGui::updateControls()
                               gp->label->blockSignals(false);
                             } 
                           }
-                          
                         }
                   else if (gp->type == GuiParam::GUI_SWITCH) {
-                        if( plugin->controllerEnabled(i) && plugin->controllerEnabled2(i) )
                           {
-                            bool v = (int)plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), i));
+                            bool v = (int)plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), i), 
+                                                                             MusEGlobal::audio->curFramePos(), 
+                                                                             !MusEGlobal::automation || 
+                                                                             plugin->track()->automationType() == AUTO_OFF || 
+                                                                             !plugin->controllerEnabled(i) || 
+                                                                             !plugin->controllerEnabled2(i));                            
                             if(((CheckBox*)(gp->actuator))->isChecked() != v)
                             {
                               ((CheckBox*)(gp->actuator))->blockSignals(true);
@@ -3808,15 +3914,19 @@ void PluginGui::updateControls()
                   }
             }
       else if (gw) {
-            for (unsigned long i = 0; i < nobj; ++i) {    // p4.0.21
+            for (unsigned long i = 0; i < nobj; ++i) {    
                   QWidget* widget = gw[i].widget;
                   int type = gw[i].type;
-                  unsigned long param = gw[i].param;      // p4.0.21
+                  unsigned long param = gw[i].param;      
                   switch(type) {
                         case GuiWidgets::SLIDER:
-                              if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               {
-                                double v = plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
+                                double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param), 
+                                                                                MusEGlobal::audio->curFramePos(), 
+                                                                                !MusEGlobal::automation || 
+                                                                                plugin->track()->automationType() == AUTO_OFF || 
+                                                                                !plugin->controllerEnabled(param) || 
+                                                                                !plugin->controllerEnabled2(param));                            
                                 if(((Slider*)widget)->value() != v)
                                 {
                                   ((Slider*)widget)->blockSignals(true);
@@ -3826,9 +3936,13 @@ void PluginGui::updateControls()
                               }
                               break;
                         case GuiWidgets::DOUBLE_LABEL:
-                              if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               {
-                                double v = plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
+                                double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param), 
+                                                                                MusEGlobal::audio->curFramePos(), 
+                                                                                !MusEGlobal::automation || 
+                                                                                plugin->track()->automationType() == AUTO_OFF || 
+                                                                                !plugin->controllerEnabled(param) || 
+                                                                                !plugin->controllerEnabled2(param));                            
                                 if(((DoubleLabel*)widget)->value() != v)
                                 {
                                   ((DoubleLabel*)widget)->blockSignals(true);
@@ -3838,9 +3952,13 @@ void PluginGui::updateControls()
                               }
                               break;
                         case GuiWidgets::QCHECKBOX:
-                              if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               { 
-                                bool b = (bool) plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
+                                bool b = (bool) plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param), 
+                                                                                MusEGlobal::audio->curFramePos(), 
+                                                                                !MusEGlobal::automation || 
+                                                                                plugin->track()->automationType() == AUTO_OFF || 
+                                                                                !plugin->controllerEnabled(param) || 
+                                                                                !plugin->controllerEnabled2(param));                            
                                 if(((QCheckBox*)widget)->isChecked() != b)
                                 {
                                   ((QCheckBox*)widget)->blockSignals(true);
@@ -3850,9 +3968,13 @@ void PluginGui::updateControls()
                               }
                               break;
                         case GuiWidgets::QCOMBOBOX:
-                              if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               { 
-                                int n = (int) plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
+                                int n = (int) plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param), 
+                                                                                MusEGlobal::audio->curFramePos(), 
+                                                                                !MusEGlobal::automation || 
+                                                                                plugin->track()->automationType() == AUTO_OFF || 
+                                                                                !plugin->controllerEnabled(param) || 
+                                                                                !plugin->controllerEnabled2(param));                            
                                 if(((QComboBox*)widget)->currentIndex() != n)
                                 {
                                   ((QComboBox*)widget)->blockSignals(true);
@@ -3873,13 +3995,17 @@ void PluginGui::updateControls()
 void PluginGui::guiParamChanged(int idx)
 {
       QWidget* w = gw[idx].widget;
-      unsigned long param  = gw[idx].param;    // p4.0.21
+      unsigned long param  = gw[idx].param;    
       int type   = gw[idx].type;
 
       AutomationType at = AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
+      
+      if ( (at == AUTO_WRITE) ||
+           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
+        plugin->enableController(param, false);
       
       double val = 0.0;
       switch(type) {
@@ -3897,7 +4023,7 @@ void PluginGui::guiParamChanged(int idx)
                   break;
             }
 
-      for (unsigned long i = 0; i < nobj; ++i) {      // p4.0.21
+      for (unsigned long i = 0; i < nobj; ++i) {      
             QWidget* widget = gw[i].widget;
             if (widget == w || param != gw[i].param)
                   continue;
@@ -3922,10 +4048,7 @@ void PluginGui::guiParamChanged(int idx)
       if(track && id != -1)
       {
           id = MusECore::genACnum(id, param);
-          
           track->setPluginCtrlVal(id, val);
-          MusEGlobal::song->controllerChange(track);
-          
           switch(type) 
           {
              case GuiWidgets::DOUBLE_LABEL:
@@ -3946,7 +4069,7 @@ void PluginGui::guiParamChanged(int idx)
 
 void PluginGui::guiParamPressed(int idx)
       {
-      unsigned long param  = gw[idx].param;     // p4.0.21
+      unsigned long param  = gw[idx].param;     
 
       AutomationType at = AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
@@ -3965,8 +4088,8 @@ void PluginGui::guiParamPressed(int idx)
       // NOTE: For this to be of any use, the freeverb gui 2142.ui
       //  would have to be used, and changed to use CheckBox and ComboBox
       //  instead of QCheckBox and QComboBox, since both of those would
-      //  need customization (Ex. QCheckBox doesn't check on click).
-      /* DELETETHIS 10 plus above
+      //  need customization (Ex. QCheckBox doesn't check on click). RECHECK: Qt4 it does?
+      /* 
       switch(type) {
             case GuiWidgets::QCHECKBOX:
                     double val = (double)((CheckBox*)w)->isChecked();
@@ -3986,7 +4109,7 @@ void PluginGui::guiParamPressed(int idx)
 
 void PluginGui::guiParamReleased(int idx)
       {
-      unsigned long param  = gw[idx].param;    // p4.0.21
+      unsigned long param  = gw[idx].param;    
       int type   = gw[idx].type;
       
       AutomationType at = AUTO_OFF;
@@ -4011,8 +4134,8 @@ void PluginGui::guiParamReleased(int idx)
       // NOTE: For this to be of any use, the freeverb gui 2142.ui
       //  would have to be used, and changed to use CheckBox and ComboBox
       //  instead of QCheckBox and QComboBox, since both of those would
-      //  need customization (Ex. QCheckBox doesn't check on click).
-      /* DELETETHIS 10 plus above
+      //  need customization (Ex. QCheckBox doesn't check on click).  // RECHECK Qt4 it does?
+      /* 
       switch(type) {
             case GuiWidgets::QCHECKBOX:
                     double val = (double)((CheckBox*)w)->isChecked();
@@ -4032,7 +4155,7 @@ void PluginGui::guiParamReleased(int idx)
 
 void PluginGui::guiSliderPressed(int idx)
       {
-      unsigned long param  = gw[idx].param;    // p4.0.21
+      unsigned long param  = gw[idx].param;    
       QWidget *w = gw[idx].widget;
       
       AutomationType at = AUTO_OFF;
@@ -4054,12 +4177,10 @@ void PluginGui::guiSliderPressed(int idx)
       plugin->setParam(param, val);
       
       track->setPluginCtrlVal(id, val);
-      MusEGlobal::song->controllerChange(track);
-      
       track->startAutoRecord(id, val);
       
       // Needed so that paging a slider updates a label or other buddy control.
-      for (unsigned long i = 0; i < nobj; ++i) {           // p4.0.21
+      for (unsigned long i = 0; i < nobj; ++i) {           
             QWidget* widget = gw[i].widget;
             if (widget == w || param != gw[i].param)
                   continue;
@@ -4124,6 +4245,15 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
   int id = plugin->id();
   if(id != -1)
     MusEGlobal::song->execAutomationCtlPopup(plugin->track(), p, MusECore::genACnum(id, param));
+}
+
+//---------------------------------------------------------
+//   guiContextMenuReq
+//---------------------------------------------------------
+
+void PluginGui::guiContextMenuReq(int idx)
+{
+  guiSliderRightClicked(QCursor().pos(), idx);
 }
 
 //---------------------------------------------------------

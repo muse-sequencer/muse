@@ -287,6 +287,18 @@ MidiSeq::MidiSeq(const char* name)
       lastTempo = 0;
       storedtimediffs = 0;
       playStateExt = false; // not playing
+
+      _clockAveragerStages = new int[16]; // Max stages is 16!
+      setSyncRecFilterPreset(MusEGlobal::syncRecFilterPreset);
+      
+      for(int i = 0; i < _clockAveragerPoles; ++i)
+      {
+        _avgClkDiffCounter[i] = 0;
+        _averagerFull[i] = false;
+      }
+      _tempoQuantizeAmount = 1.0;
+      _lastRealTempo      = 0.0;
+      
       MusEGlobal::doSetuid();
       timerFd=selectTimer();
       MusEGlobal::undoSetuid();
@@ -300,6 +312,7 @@ MidiSeq::MidiSeq(const char* name)
 MidiSeq::~MidiSeq()
     {
     delete timer;
+    delete _clockAveragerStages;
     }
 
 //---------------------------------------------------------
@@ -505,9 +518,68 @@ void MidiSeq::checkAndReportTimingResolution()
                              "Timing source frequency is %1hz, which is below the recommended minimum: 500hz!\n" \
                              "This could lead to audible timing problems for MIDI.\n" \
                              "Please see the FAQ on http://muse-sequencer.org for remedies.\n" \
-                             "Also please check console output for any further error messages\n ")).arg(freq) );
+                             "Also please check console output for any further error messages.\n ")).arg(freq) );
     }
 }
+
+//---------------------------------------------------------
+//   setSyncRecFilterPreset
+//   To be called in realtime thread only.
+//---------------------------------------------------------
+void MidiSeq::setSyncRecFilterPreset(MidiSyncInfo::SyncRecFilterPresetType type)
+{
+  _syncRecFilterPreset = type;
+  alignAllTicks();
+  
+  switch(_syncRecFilterPreset)
+  {
+    // NOTE: Max _clockAveragerPoles is 16 and maximum stages is 48 per pole !
+    case MidiSyncInfo::NONE:
+      _clockAveragerPoles = 0;    
+      _preDetect = false;
+    break;  
+    case MidiSyncInfo::TINY:
+      _clockAveragerPoles = 2;    
+      _clockAveragerStages[0] = 4; 
+      _clockAveragerStages[1] = 4; 
+      _preDetect = false;
+    break;  
+    case MidiSyncInfo::SMALL:
+      _clockAveragerPoles = 3;    
+      _clockAveragerStages[0] = 12; 
+      _clockAveragerStages[1] = 8; 
+      _clockAveragerStages[2] = 4; 
+      _preDetect = false;
+    break;  
+    case MidiSyncInfo::MEDIUM:
+      _clockAveragerPoles = 3;    
+      _clockAveragerStages[0] = 28; 
+      _clockAveragerStages[1] = 12; 
+      _clockAveragerStages[2] = 8; 
+      _preDetect = false;
+    break;  
+    case MidiSyncInfo::LARGE:
+      _clockAveragerPoles = 4;    
+      _clockAveragerStages[0] = 48; 
+      _clockAveragerStages[1] = 48; 
+      _clockAveragerStages[2] = 48; 
+      _clockAveragerStages[3] = 48; 
+      _preDetect = false;
+    break;  
+    case MidiSyncInfo::LARGE_WITH_PRE_DETECT:
+      _clockAveragerPoles = 4;    
+      _clockAveragerStages[0] = 8; 
+      _clockAveragerStages[1] = 48; 
+      _clockAveragerStages[2] = 48; 
+      _clockAveragerStages[3] = 48; 
+      _preDetect = true;
+    break;  
+    
+    default:
+      printf("MidiSeq::setSyncRecFilterPreset unknown preset type:%d\n", (int)type);
+  }
+}
+
 
 //---------------------------------------------------------
 //   processMidiClock

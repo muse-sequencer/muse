@@ -30,6 +30,7 @@
 //#include <jack/midiport.h>
 
 #include "jackmidi.h"
+#include "jackaudio.h"
 #include "song.h"
 #include "globals.h"
 #include "midi.h"
@@ -49,10 +50,6 @@
 
 // Turn on debug messages.
 //#define JACK_MIDI_DEBUG
-
-namespace MusEGlobal {
-extern unsigned int volatile lastExtMidiSyncTick;
-}
 
 namespace MusECore {
 
@@ -422,7 +419,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       
       // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
       unsigned int ch = (typ == ME_SYSEX)? MIDI_CHANNELS : event.channel();
-      if(_recordFifo[ch].put(MidiPlayEvent(event)))
+      if(_recordFifo[ch].put(event))
         printf("MidiJackDevice::recordEvent: fifo channel %d overflow\n", ch);
       }
 
@@ -446,10 +443,18 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       //               catch      process    play
       //
       
-      //int frameOffset = MusEGlobal::audio->getFrameOffset();
-      unsigned pos = MusEGlobal::audio->pos().frame();
-      
-      event.setTime(MusEGlobal::extSyncFlag.value() ? MusEGlobal::lastExtMidiSyncTick : (pos + ev->time));      // p3.3.25
+      // These Jack events arrived in the previous period, and it may not have been at the audio position before this one (after a seek).
+      // This is how our ALSA driver works, events there are timestamped asynchronous of any process, referenced to the CURRENT audio 
+      //  position, so that by the time of the NEXT process, THOSE events have also occured in the previous period.
+      // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
+      //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
+      // If ALSA works OK than this should too...
+#ifdef _AUDIO_USE_TRUE_FRAME_
+      event.setTime(MusEGlobal::audio->previousPos().frame() + ev->time);
+#else
+      event.setTime(MusEGlobal::audio->pos().frame() + ev->time);
+#endif
+      event.setTick(MusEGlobal::lastExtMidiSyncTick);    
 
       event.setChannel(*(ev->buffer) & 0xf);
       int type = *(ev->buffer) & 0xf0;
@@ -509,9 +514,20 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                           case ME_START:      
                           case ME_CONTINUE:   
                           case ME_STOP:       
-                                if(_port != -1)
-                                  MusEGlobal::midiSeq->realtimeSystemInput(_port, type);
+                          {
+                                if(MusEGlobal::audioDevice && MusEGlobal::audioDevice->deviceType() == JACK_MIDI && _port != -1)
+                                {
+                                  MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
+                                  jack_client_t* jc = jad->jackClient();
+                                  if(jc)
+                                  {
+                                    jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
+                                    double abs_ev_t = double(jack_frames_to_time(jc, abs_ft)) / 1000000.0;
+                                    MusEGlobal::midiSeq->realtimeSystemInput(_port, type, abs_ev_t);
+                                  }
+                                }
                                 return;
+                          }
                           //case ME_SYSEX_END:  
                                 //break;
                           //      return;
