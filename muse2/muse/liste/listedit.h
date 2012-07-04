@@ -61,7 +61,7 @@ class ListEdit : public MidiEditor {
       int selectedTick;
       int curPartId;
 
-      enum { CMD_DELETE };
+      enum { CMD_DELETE, CMD_INC, CMD_DEC };
 
       
       virtual void closeEvent(QCloseEvent*);
