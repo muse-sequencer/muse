@@ -162,6 +162,7 @@ bool Track::isVisible()
         return WaveTrack::visible();
     case Track::MIDI:
     case Track::DRUM:
+    case Track::NEW_DRUM:
         return MidiTrack::visible();
     case Track::AUDIO_SOFTSYNTH:
         return SynthI::visible();
