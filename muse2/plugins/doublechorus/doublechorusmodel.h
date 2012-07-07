@@ -31,7 +31,7 @@
 #define __DOUBLECHORUSMODEL_H
 
 #include "simplechorusmodel.h"
-#include "../../muse/ladspa.h"
+#include <ladspa.h>
 
 #define NBRPARAM 7
 

@@ -34,7 +34,7 @@
 #include <QUiLoader>
 
 
-#include "ladspa.h"
+#include <ladspa.h>
 #include "globals.h"
 #include "globaldefs.h"
 #include "ctrl.h"

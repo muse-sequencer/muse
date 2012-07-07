@@ -46,7 +46,7 @@
 #include "osc.h"
 #endif
 
-#include "ladspa.h"
+#include <ladspa.h>
 #include <dssi.h>
 
 #include <alsa/asoundlib.h>
