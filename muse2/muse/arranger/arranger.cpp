@@ -447,7 +447,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //---------------------------------------------------
 
       int offset = AL::sigmap.ticksMeasure(0);
-      hscroll = new ScrollScale(-1000, -10, xscale, MusEGlobal::song->len(), Qt::Horizontal, editor, -offset);
+      hscroll = new ScrollScale(-2000, -5, xscale, MusEGlobal::song->len(), Qt::Horizontal, editor, -offset);
       hscroll->setFocusPolicy(Qt::NoFocus);
       ib->setFixedHeight(hscroll->sizeHint().height());
 
@@ -1255,7 +1255,7 @@ void Arranger::horizontalZoomIn()
 {
   int mag = hscroll->mag();
   int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl < 23)
+  if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
         zoomlvl++;
 
   int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);

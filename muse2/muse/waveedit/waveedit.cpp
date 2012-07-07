@@ -221,7 +221,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
             xscale = -8000;
             }
 
-      hscroll = new ScrollScale(1, -32768, xscale, 10000, Qt::Horizontal, mainw, 0, true, 10000.0);
+      hscroll = new ScrollScale(-32768, 1, xscale, 10000, Qt::Horizontal, mainw, 0, false, 10000.0);
       view    = new WaveView(this, mainw, xscale, yscale);
       wview   = view;   // HACK!
 
@@ -510,7 +510,7 @@ void WaveEdit::horizontalZoomIn()
 {
   int mag = hscroll->mag();
   int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl < 23)
+  if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
         zoomlvl++;
 
   int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);

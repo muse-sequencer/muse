@@ -1,3 +1,8 @@
+06.07.2012:
+         - Updated Czech translation from Pavel Fric (rj)
+         - Some strings that were not translatable are now (as reported by Pavel Fric) (rj)
+         - Updated translation files, and started completing swedish translation a bit (rj)
+         - increased zoom range in arranger, reversed zoom in wave editor (rj)
 04.07.2012:
          - added inc/dec tick for events in the list editor (rj)
 03.07.2012:

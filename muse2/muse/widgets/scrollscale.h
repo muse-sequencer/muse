@@ -97,6 +97,7 @@ class ScrollScale : public QWidget {
       int pos2offset(int pos);
       static int getQuickZoomLevel(int mag);
       static int convertQuickZoomLevelToMag(int zoomlvl);
+      const static int zoomLevels = 31;
       };
 
 } // namespace MusEGui

@@ -611,7 +611,7 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       
       initShortcuts();
       
-      setWindowTitle("MusE: List Editor");
+      setWindowTitle(tr("MusE: List Editor"));
       
       finalizeInit();
       }
