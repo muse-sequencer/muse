@@ -1,3 +1,5 @@
+08.07.2012:
+         - Use cmake's own FindPythonLibs module instead of pkgconfig to detect Python (Orcan)
 06.07.2012:
          - Updated Czech translation from Pavel Fric (rj)
          - Some strings that were not translatable are now (as reported by Pavel Fric) (rj)

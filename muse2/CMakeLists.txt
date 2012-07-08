@@ -247,10 +247,12 @@ endif (ENABLE_OSC)
 ##
 
 if (ENABLE_PYTHON)
-      PKG_CHECK_MODULES(PYTHON python>=2.4)
-      if (PYTHON_FOUND)
-            set(PYTHON_SUPPORT ON)
-      endif (PYTHON_FOUND)
+      include(FindPythonLibs)
+      if (PYTHONLIBS_FOUND)
+            if (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
+                  set(PYTHON_SUPPORT ON)
+            endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
+      endif (PYTHONLIBS_FOUND)
 endif (ENABLE_PYTHON)
 
 ##
