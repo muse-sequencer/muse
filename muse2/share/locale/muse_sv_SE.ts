@@ -5740,6 +5740,14 @@ försöka fixa det senare)</translation>
         <source>Purge hidden events from selected parts</source>
         <translation>Ta bort gömda even från valda parter</translation>
     </message>
+    <message>
+        <source>Remove track(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove this track(s)?</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::AudioMixerApp</name>

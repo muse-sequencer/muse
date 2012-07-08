@@ -5619,6 +5619,14 @@ To apply the changes, please restart MusE. Sorry.
         <source>Purge hidden events from selected parts</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Remove track(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove this track(s)?</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::AudioMixerApp</name>

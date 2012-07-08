@@ -35,8 +35,6 @@
 
 namespace MusEGlobal {
 
-int recFileNumber = 1;
-
 int sampleRate   = 44100;
 unsigned segmentSize  = 1024U;    // segmentSize in frames (set by JACK)
 unsigned fifoLength =  128;       // 131072/segmentSize

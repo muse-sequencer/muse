@@ -1,4 +1,7 @@
 08.07.2012:
+         - Changed naming convention for recorded wave files to include track name and it's
+           take number. (rj)
+         - added a warning dialog for the delete track key shortcut. (rj)
          - Use cmake's own FindPythonLibs module instead of pkgconfig to detect Python (Orcan)
 06.07.2012:
          - Updated Czech translation from Pavel Fric (rj)

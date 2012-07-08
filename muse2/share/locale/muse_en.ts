@@ -6953,18 +6953,28 @@ Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="595"/>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="601"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="497"/>
+        <source>Remove track(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="497"/>
+        <source>Are you sure you want to remove this track(s)?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="605"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="611"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="752"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="762"/>
         <source>Changed Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="752"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="762"/>
         <source>Unfortunately, the changed arranger column settings
 cannot be applied while MusE is running.
 To apply the changes, please restart MusE. Sorry.
@@ -13482,174 +13492,174 @@ Robert Jonsson
 <context>
     <name>file_patterns</name>
     <message>
-        <location filename="../../muse/globals.cpp" line="122"/>
+        <location filename="../../muse/globals.cpp" line="120"/>
         <source>Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="123"/>
+        <location filename="../../muse/globals.cpp" line="121"/>
         <source>Midi (*.mid *.MID *.mid.gz *.mid.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="124"/>
+        <location filename="../../muse/globals.cpp" line="122"/>
         <source>Karaoke (*.kar *.KAR *.kar.gz *.kar.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="125"/>
-        <location filename="../../muse/globals.cpp" line="138"/>
-        <location filename="../../muse/globals.cpp" line="149"/>
-        <location filename="../../muse/globals.cpp" line="156"/>
-        <location filename="../../muse/globals.cpp" line="171"/>
-        <location filename="../../muse/globals.cpp" line="177"/>
-        <location filename="../../muse/globals.cpp" line="184"/>
-        <location filename="../../muse/globals.cpp" line="190"/>
-        <location filename="../../muse/globals.cpp" line="198"/>
-        <location filename="../../muse/globals.cpp" line="204"/>
-        <location filename="../../muse/globals.cpp" line="212"/>
-        <location filename="../../muse/globals.cpp" line="220"/>
+        <location filename="../../muse/globals.cpp" line="123"/>
+        <location filename="../../muse/globals.cpp" line="136"/>
+        <location filename="../../muse/globals.cpp" line="147"/>
+        <location filename="../../muse/globals.cpp" line="154"/>
+        <location filename="../../muse/globals.cpp" line="169"/>
+        <location filename="../../muse/globals.cpp" line="175"/>
+        <location filename="../../muse/globals.cpp" line="182"/>
+        <location filename="../../muse/globals.cpp" line="188"/>
+        <location filename="../../muse/globals.cpp" line="196"/>
+        <location filename="../../muse/globals.cpp" line="202"/>
+        <location filename="../../muse/globals.cpp" line="210"/>
+        <location filename="../../muse/globals.cpp" line="218"/>
         <source>All Files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="136"/>
+        <location filename="../../muse/globals.cpp" line="134"/>
         <source>Midi (*.mid)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="137"/>
+        <location filename="../../muse/globals.cpp" line="135"/>
         <source>Karaoke (*.kar)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="143"/>
+        <location filename="../../muse/globals.cpp" line="141"/>
         <source>all known files (*.med *.med.gz *.med.bz2 *.mid *.midi *.kar)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="144"/>
+        <location filename="../../muse/globals.cpp" line="142"/>
         <source>med Files (*.med *.med.gz *.med.bz2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/globals.cpp" line="143"/>
+        <location filename="../../muse/globals.cpp" line="151"/>
+        <location filename="../../muse/globals.cpp" line="158"/>
+        <source>Uncompressed med Files (*.med)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/globals.cpp" line="144"/>
+        <location filename="../../muse/globals.cpp" line="152"/>
+        <location filename="../../muse/globals.cpp" line="159"/>
+        <source>gzip compressed med Files (*.med.gz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/globals.cpp" line="145"/>
         <location filename="../../muse/globals.cpp" line="153"/>
         <location filename="../../muse/globals.cpp" line="160"/>
-        <source>Uncompressed med Files (*.med)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/globals.cpp" line="146"/>
-        <location filename="../../muse/globals.cpp" line="154"/>
-        <location filename="../../muse/globals.cpp" line="161"/>
-        <source>gzip compressed med Files (*.med.gz)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/globals.cpp" line="147"/>
-        <location filename="../../muse/globals.cpp" line="155"/>
-        <location filename="../../muse/globals.cpp" line="162"/>
         <source>bzip2 compressed med Files (*.med.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="148"/>
+        <location filename="../../muse/globals.cpp" line="146"/>
         <source>mid Files (*.mid *.midi *.kar *.MID *.MIDI *.KAR)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="167"/>
+        <location filename="../../muse/globals.cpp" line="165"/>
         <source>(*.jpg *.gif *.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="168"/>
+        <location filename="../../muse/globals.cpp" line="166"/>
         <source>(*.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="169"/>
+        <location filename="../../muse/globals.cpp" line="167"/>
         <source>(*.gif)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="170"/>
+        <location filename="../../muse/globals.cpp" line="168"/>
         <source>(*.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="176"/>
+        <location filename="../../muse/globals.cpp" line="174"/>
         <source>part Files (*.mpt *.mpt.gz *.mpt.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="181"/>
+        <location filename="../../muse/globals.cpp" line="179"/>
         <source>part Files (*.mpt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="182"/>
+        <location filename="../../muse/globals.cpp" line="180"/>
         <source>gzip compressed part Files (*.mpt.gz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="183"/>
+        <location filename="../../muse/globals.cpp" line="181"/>
         <source>bzip2 compressed part Files (*.mpt.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="189"/>
+        <location filename="../../muse/globals.cpp" line="187"/>
         <source>Presets (*.pre *.pre.gz *.pre.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="195"/>
+        <location filename="../../muse/globals.cpp" line="193"/>
         <source>Presets (*.pre)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="196"/>
+        <location filename="../../muse/globals.cpp" line="194"/>
         <source>gzip compressed presets (*.pre.gz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="197"/>
+        <location filename="../../muse/globals.cpp" line="195"/>
         <source>bzip2 compressed presets (*.pre.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="203"/>
+        <location filename="../../muse/globals.cpp" line="201"/>
         <source>Presets (*.map *.map.gz *.map.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="209"/>
+        <location filename="../../muse/globals.cpp" line="207"/>
         <source>Presets (*.map)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="210"/>
+        <location filename="../../muse/globals.cpp" line="208"/>
         <source>gzip compressed presets (*.map.gz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="211"/>
+        <location filename="../../muse/globals.cpp" line="209"/>
         <source>bzip2 compressed presets (*.map.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="217"/>
+        <location filename="../../muse/globals.cpp" line="215"/>
         <source>Wave/Binary (*.wav *.ogg *.bin)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="218"/>
+        <location filename="../../muse/globals.cpp" line="216"/>
         <source>Wave (*.wav *.ogg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="219"/>
+        <location filename="../../muse/globals.cpp" line="217"/>
         <source>Binary (*.bin)</source>
         <translation type="unfinished"></translation>
     </message>

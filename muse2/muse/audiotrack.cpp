@@ -102,6 +102,7 @@ AudioTrack::AudioTrack(TrackType t)
       _sendMetronome = false;
       _prefader = false;
       _efxPipe  = new Pipeline();
+      recFileNumber = 1;
       //_recFile  = 0; //unneeded, _recFile's ctor does this
       _channels = 0;
       _automationType = AUTO_OFF;
@@ -130,7 +131,8 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       _processed      = false;
       _haveData       = false;
       _efxPipe        = new Pipeline();                 // Start off with a new pipeline.
-      
+      recFileNumber = 1;
+
       // Don't allocate outBuffers here. Let internal_assign() call setTotalOutChannels to set them up.
       outBuffers = 0;
       _totalOutChannels = 0;
@@ -1881,10 +1883,11 @@ bool AudioTrack::prepareRecording()
             //
             char buffer[128];
             QFile fil;
-            for (;;++MusEGlobal::recFileNumber) {
-               sprintf(buffer, "%s/rec%d.wav",
-                  MusEGlobal::museProject.toLatin1().constData(),
-                  MusEGlobal::recFileNumber);
+            for (;;++recFileNumber) {
+               sprintf(buffer, "%s/TRACK_%s_TAKE_%d.wav",
+                  MusEGlobal::museProject.toLocal8Bit().constData(),
+                       name().simplified().replace(" ","_").toLocal8Bit().constData(),
+                  recFileNumber);
                fil.setFileName(QString(buffer));
                if (!fil.exists())
                   break;
@@ -1896,7 +1899,7 @@ bool AudioTrack::prepareRecording()
       }
 
       if (MusEGlobal::debugMsg)
-            printf("AudioNode::setRecordFlag1: init internal file %s\n", _recFile->path().toLatin1().constData());
+          printf("AudioNode::setRecordFlag1: init internal file %s\n", _recFile->path().toLatin1().constData());
 
       if(_recFile->openWrite())
             {

@@ -7332,7 +7332,17 @@ Rechtsklick, um die GUI zu zeigen.</translation>
         <translation>Benutzerdefinierte &amp;Spalten konfigurieren</translation>
     </message>
     <message>
-        <location line="+324"/>
+        <location line="+226"/>
+        <source>Remove track(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Are you sure you want to remove this track(s)?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+108"/>
         <location line="+6"/>
         <source>New</source>
         <translation>Neu</translation>
@@ -13961,7 +13971,7 @@ Robert Jonsson
 <context>
     <name>file_patterns</name>
     <message>
-        <location filename="../../muse/globals.cpp" line="+122"/>
+        <location filename="../../muse/globals.cpp" line="+120"/>
         <source>Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)</source>
         <translation>Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)</translation>
     </message>

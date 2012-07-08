@@ -44,8 +44,6 @@ namespace MusEGlobal {
 
 extern const float denormalBias;
 
-extern int recFileNumber;
-
 extern int sampleRate;
 extern unsigned segmentSize;
 extern unsigned fifoLength; // inversely proportional to segmentSize

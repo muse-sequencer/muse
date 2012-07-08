@@ -150,7 +150,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
       for (unsigned ch = 0; ch < channels(); ++ch)
             cache[ch] = new SampleV[csize];
 
-      FILE* cfile = fopen(path.toLatin1().constData(), "r");
+      FILE* cfile = fopen(path.toLocal8Bit().constData(), "r");
       if (cfile) {
             for (unsigned ch = 0; ch < channels(); ++ch)
                   fread(cache[ch], csize * sizeof(SampleV), 1, cfile);
@@ -344,7 +344,7 @@ bool SndFile::openWrite()
             return false;
             }
   QString p = path();
-      sf = sf_open(p.toLatin1().constData(), SFM_RDWR, &sfinfo);
+      sf = sf_open(p.toLocal8Bit().constData(), SFM_RDWR, &sfinfo);
       sfUI = 0;
       if (sf) {
             openFlag  = true;

@@ -513,7 +513,6 @@ void View::pdraw(QPainter& p, const QRect& r)
             int y = r.y();
             int w = r.width();
             int h = r.height();
-            printf("xmag=%d\n",xmag);
             if (xmag <= 0) {
                   // TODO These adjustments are required, otherwise gaps. Tried, unable to remove them for now.  p4.0.30
                   x -= 1;   
