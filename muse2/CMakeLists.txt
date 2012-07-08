@@ -249,6 +249,15 @@ endif (ENABLE_OSC)
 if (ENABLE_PYTHON)
       include(FindPythonLibs)
       if (PYTHONLIBS_FOUND)
+# Older cmake does not define PYTHON_INCLUDE_DIRS and PYTHONLIBS_VERSION_STRING.
+# We need to define them ourselves to do a version comparison
+            if(DEFINED PYTHON_INCLUDE_PATH AND NOT DEFINED PYTHON_INCLUDE_DIRS)
+                  set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
+            endif(DEFINED PYTHON_INCLUDE_PATH AND NOT DEFINED PYTHON_INCLUDE_DIRS)
+            if(NOT DEFINED PYTHONLIBS_VERSION_STRING)
+                  STRING(REGEX REPLACE ".*python(2\\.[0-9]+)" "\\1"
+                         PYTHONLIBS_VERSION_STRING "${PYTHON_INCLUDE_DIRS}")
+            endif(NOT DEFINED PYTHONLIBS_VERSION_STRING)
             if (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
                   set(PYTHON_SUPPORT ON)
             endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
