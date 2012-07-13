@@ -426,7 +426,7 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
     j = cl->id() & id_mask;
     if(j == id1 || j == id2)
     {
-      newcl = new CtrlList(i | (j == id1 ? id2 : id1));
+      newcl = new CtrlList(i | (j == id1 ? id2 : id1), cl->dontShow());
       newcl->setMode(cl->mode());
       newcl->setValueType(cl->valueType());
       newcl->setName(cl->name());
@@ -435,6 +435,8 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
       newcl->setRange(min, max);
       newcl->setCurVal(cl->curVal());
       newcl->setDefault(cl->getDefault());
+      newcl->setColor(cl->color());
+      newcl->setVisible(cl->isVisible());
       for(iCtrl ic = cl->begin(); ic != cl->end(); ++ic) 
       {
         cv = ic->second;

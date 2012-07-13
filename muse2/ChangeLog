@@ -1,3 +1,10 @@
+12.07.2012:
+         - Fixed controllers go wacky after moving effects rack plugins up/down. My bad! (Tim)
+           Rewrote CtrlList::operator= and several others. Tested OK.
+         - Also fixed existing problem: After moving rack plugins up/down, graphs disappear. (Tim)
+           Simple oversight in AudioTrack::swapControllerIDX: New members 'color', 'visible', 
+            and 'don't show' weren't being copied.
+         - Documentation: Some contributions to the documentation.tex file. (Tim)
 08.07.2012:
          - Changed naming convention for recorded wave files to include track name and it's
            take number. (rj)
