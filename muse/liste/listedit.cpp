@@ -517,6 +517,12 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       editSignalMapper->setMapping(deleteAction, CMD_DELETE);
       deleteAction->setShortcut(Qt::Key_Delete);
       menuEdit->addSeparator();
+      QAction *incAction = menuEdit->addAction(tr("Increase Tick"));
+      connect(incAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      editSignalMapper->setMapping(incAction, CMD_INC);
+      QAction *decAction = menuEdit->addAction(tr("Decrease Tick"));
+      connect(decAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      editSignalMapper->setMapping(decAction, CMD_DEC);
 
       menuEdit->addActions(insertItems->actions());
 
@@ -605,7 +611,7 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       
       initShortcuts();
       
-      setWindowTitle("MusE: List Editor");
+      setWindowTitle(tr("MusE: List Editor"));
       
       finalizeInit();
       }
@@ -918,61 +924,87 @@ void ListEdit::doubleClicked(QTreeWidgetItem* item)
 //---------------------------------------------------------
 
 void ListEdit::cmd(int cmd)
+{
+    bool found = false;
+    for (int row = 0; row < liste->topLevelItemCount(); ++row)
+    {
+      QTreeWidgetItem* i = liste->topLevelItem(row);
+      EventListItem *item = (EventListItem *) i;
+      if (i->isSelected() || item->event.selected())
       {
-      switch(cmd) {
-            case CMD_DELETE:
-                  bool found = false;
-                  for (int row = 0; row < liste->topLevelItemCount(); ++row) 
-                  {
+            found = true;
+            break;
+      }
+    }
+
+  switch(cmd) {
+        case CMD_DELETE:
+              {
+              if(!found)
+                break;
+
+              MusECore::Undo operations;
+
+              EventListItem *deletedEvent=NULL;
+              for (int row = 0; row < liste->topLevelItemCount(); ++row) {
                     QTreeWidgetItem* i = liste->topLevelItem(row);
                     EventListItem *item = (EventListItem *) i;
-                    if (i->isSelected() || item->event.selected()) 
-                    {
-                          found = true;
-                          break;
+                    if (i->isSelected() || item->event.selected()) {
+                          deletedEvent=item;
+                          // Port controller values and clone parts.
+                          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,item->event, item->part, true, true));
                     }
-                  }
-                  if(!found)
-                    break;
-                  
-                  MusECore::Undo operations;
-                  
-                  EventListItem *deletedEvent=NULL;
-                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
-                        QTreeWidgetItem* i = liste->topLevelItem(row);
-                        EventListItem *item = (EventListItem *) i;
+              }
 
-                        if (i->isSelected() || item->event.selected()) {
-                              deletedEvent=item;
-                              // Port controller values and clone parts. 
-                              operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,item->event, item->part, true, true));
-                              }
-                        }
-                  
-                  unsigned int nextTick=0;
-                  // find biggest tick
-                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
-                        QTreeWidgetItem* i = liste->topLevelItem(row);
-                        EventListItem *item = (EventListItem *) i;
-                        if (item->event.tick() > nextTick && item != deletedEvent)
-                            nextTick=item->event.tick();
-                  }
-                  // check if there's a tick that is "just" bigger than the deleted
-                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
-                        QTreeWidgetItem* i = liste->topLevelItem(row);
-                        EventListItem *item = (EventListItem *) i;
-                        if (item->event.tick() >= deletedEvent->event.tick() && 
-                            item->event.tick() < nextTick &&
-                            item != deletedEvent ) {
-                            nextTick=item->event.tick();
-                        }
-                  }
-                  selectedTick=nextTick;
+              unsigned int nextTick=0;
+              // find biggest tick
+              for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                    QTreeWidgetItem* i = liste->topLevelItem(row);
+                    EventListItem *item = (EventListItem *) i;
+                    if (item->event.tick() > nextTick && item != deletedEvent)
+                        nextTick=item->event.tick();
+              }
+              // check if there's a tick that is "just" bigger than the deleted
+              for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                    QTreeWidgetItem* i = liste->topLevelItem(row);
+                    EventListItem *item = (EventListItem *) i;
+                    if (item->event.tick() >= deletedEvent->event.tick() &&
+                        item->event.tick() < nextTick &&
+                        item != deletedEvent ) {
+                        nextTick=item->event.tick();
+                    }
+              }
+              selectedTick=nextTick;
 
-                  MusEGlobal::song->applyOperationGroup(operations);
-                  break;
-            }
-      }
+              MusEGlobal::song->applyOperationGroup(operations);
+              }
+              break;
+        case CMD_INC:
+        case CMD_DEC:
+              {
+              if(!found)
+                break;
+
+              MusECore::Undo operations;
+
+              for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                    QTreeWidgetItem* i = liste->topLevelItem(row);
+                    EventListItem *item = (EventListItem *) i;
+
+                    if (i->isSelected() || item->event.selected()) {
+                          MusECore::Event new_event=item->event.clone();
+                          new_event.setTick( new_event.tick() + ( cmd==CMD_INC?1:-1) );
+                          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,new_event, item->event, item->part, false, false));
+                          selectedTick=new_event.tick();
+                          break;
+                          }
+                    }
+
+              MusEGlobal::song->applyOperationGroup(operations);
+
+              }
+  }
+}
 
 //---------------------------------------------------------
 //   configChanged

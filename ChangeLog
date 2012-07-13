@@ -1,3 +1,22 @@
+12.07.2012:
+         - Fixed controllers go wacky after moving effects rack plugins up/down. My bad! (Tim)
+           Rewrote CtrlList::operator= and several others. Tested OK.
+         - Also fixed existing problem: After moving rack plugins up/down, graphs disappear. (Tim)
+           Simple oversight in AudioTrack::swapControllerIDX: New members 'color', 'visible', 
+            and 'don't show' weren't being copied.
+         - Documentation: Some contributions to the documentation.tex file. (Tim)
+08.07.2012:
+         - Changed naming convention for recorded wave files to include track name and it's
+           take number. (rj)
+         - added a warning dialog for the delete track key shortcut. (rj)
+         - Use cmake's own FindPythonLibs module instead of pkgconfig to detect Python (Orcan)
+06.07.2012:
+         - Updated Czech translation from Pavel Fric (rj)
+         - Some strings that were not translatable are now (as reported by Pavel Fric) (rj)
+         - Updated translation files, and started completing swedish translation a bit (rj)
+         - increased zoom range in arranger, reversed zoom in wave editor (rj)
+04.07.2012:
+         - added inc/dec tick for events in the list editor (rj)
 30.06.2012:
          =======================================
          * 2.0 tagged (rj)

@@ -494,17 +494,25 @@ void ArrangerView::cmd(int cmd)
             case CMD_DELETE:
                   if (!MusEGlobal::song->msgRemoveParts()) //automatically does undo if neccessary and returns true then
                   {
-                        //msgRemoveParts() returned false -> no parts to remove?
-                        MusEGlobal::song->startUndo();
-                        MusEGlobal::audio->msgRemoveTracks(); //TODO FINDME this could still be speeded up!
-                        MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
+                      QMessageBox::StandardButton btn = QMessageBox::warning(
+                          this,tr("Remove track(s)"),tr("Are you sure you want to remove this track(s)?"),
+                          QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok);
+
+                      if (btn == QMessageBox::Cancel)
+                          break;                            //msgRemoveParts() returned false -> no parts to remove?
+                      MusEGlobal::song->startUndo();
+                      MusEGlobal::audio->msgRemoveTracks(); //TODO FINDME this could still be speeded up!
+                      MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
                   }
+
                   break;
-            case CMD_DELETE_TRACK:
+            case CMD_DELETE_TRACK: // from menu
+                  {
                   MusEGlobal::song->startUndo();
                   MusEGlobal::audio->msgRemoveTracks();
                   MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
                   MusEGlobal::audio->msgUpdateSoloStates();
+                  }
                   break;
 
             case CMD_DUPLICATE_TRACK:

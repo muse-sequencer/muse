@@ -86,6 +86,14 @@ Det kan leda till hörbara timingproblem för MIDI.
 See FAQ på http://muse-sequencer.org för lösningsförslag.
 See också terminalutskrifter för eventuella fler felmeddelanden.</translation>
     </message>
+    <message>
+        <source>Add Old Style Drum Track</source>
+        <translation>Lägg till trumspår av gamla typen</translation>
+    </message>
+    <message>
+        <source>Add New Style Drum Track</source>
+        <translation>Lägg till trumspår av nya typen</translation>
+    </message>
 </context>
 <context>
     <name>AboutBox</name>
@@ -630,6 +638,14 @@ Publicerad under GNU Public License</translation>
     <message>
         <source>Alt+Z</source>
         <translation>Alt+Z</translation>
+    </message>
+    <message>
+        <source>Use new-style drum tracks</source>
+        <translation>Använd nya typen trumspår</translation>
+    </message>
+    <message>
+        <source>Use old-style drum tracks</source>
+        <translation>Använd gamla typen trumspår</translation>
     </message>
 </context>
 <context>
@@ -1973,6 +1989,10 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <source>Cancel</source>
         <translation>Avbryt</translation>
     </message>
+    <message>
+        <source>Copy drumlist</source>
+        <translation>Kopiera trumlista</translation>
+    </message>
 </context>
 <context>
     <name>EditCtrlBase</name>
@@ -2642,6 +2662,50 @@ Vanligtvis inställd på 127/127, eller genom att använda
         <comment>dont care</comment>
         <translation>av</translation>
     </message>
+    <message>
+        <source>Drummaps</source>
+        <translation>Trummappningar</translation>
+    </message>
+    <message>
+        <source>Patch Collections:</source>
+        <translation>Patch val:</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Kopiera</translation>
+    </message>
+    <message>
+        <source>&amp;Remove</source>
+        <translation>&amp;Ta bort</translation>
+    </message>
+    <message>
+        <source>&amp;Up</source>
+        <translation>&amp;Upp</translation>
+    </message>
+    <message>
+        <source>&amp;Down</source>
+        <translation>&amp;Ner</translation>
+    </message>
+    <message>
+        <source>Patch:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>from</source>
+        <translation>från</translation>
+    </message>
+    <message>
+        <source>to</source>
+        <translation>till</translation>
+    </message>
+    <message>
+        <source>Bank Hi:</source>
+        <translation>Hög bank:</translation>
+    </message>
+    <message>
+        <source>Bank Lo:</source>
+        <translation>Låg bank:</translation>
+    </message>
 </context>
 <context>
     <name>EditNoteDialogBase</name>
@@ -2705,121 +2769,85 @@ Vanligtvis inställd på 127/127, eller genom att använda
     <name>FLUIDGui</name>
     <message>
         <source>FLUID: open Soundfile</source>
-        <translation>FLUID: öppna ljudbank</translation>
+        <translation type="obsolete">FLUID: öppna ljudbank</translation>
     </message>
 </context>
 <context>
     <name>FLUIDGuiBase</name>
     <message>
         <source>Load</source>
-        <translation>Ladda</translation>
-    </message>
-    <message>
-        <source>Form1</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Soundfont</source>
-        <translation></translation>
+        <translation type="obsolete">Ladda</translation>
     </message>
 </context>
 <context>
     <name>FLUIDSynthGuiBase</name>
     <message>
         <source>Gain</source>
-        <translation>Förstärkning</translation>
+        <translation type="obsolete">Förstärkning</translation>
     </message>
     <message>
         <source>Room Size</source>
-        <translation>Rumsstorlek</translation>
+        <translation type="obsolete">Rumsstorlek</translation>
     </message>
     <message>
         <source>Damping</source>
-        <translation>Dämpning</translation>
+        <translation type="obsolete">Dämpning</translation>
     </message>
     <message>
         <source>Level</source>
-        <translation>Nivå</translation>
+        <translation type="obsolete">Nivå</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation>Bredd</translation>
+        <translation type="obsolete">Bredd</translation>
     </message>
     <message>
         <source>Speed</source>
-        <translation>Hastighet</translation>
+        <translation type="obsolete">Hastighet</translation>
     </message>
     <message>
         <source>Depth</source>
-        <translation>Djup</translation>
+        <translation type="obsolete">Djup</translation>
     </message>
     <message>
         <source>Number</source>
-        <translation>Nummer</translation>
+        <translation type="obsolete">Nummer</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation>Typ</translation>
+        <translation type="obsolete">Typ</translation>
     </message>
     <message>
         <source>Sine</source>
-        <translation>Sinus</translation>
+        <translation type="obsolete">Sinus</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation>Triangel</translation>
+        <translation type="obsolete">Triangel</translation>
     </message>
     <message>
         <source>Load</source>
-        <translation>Ladda</translation>
+        <translation type="obsolete">Ladda</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation>Ta bort</translation>
+        <translation type="obsolete">Ta bort</translation>
     </message>
     <message>
         <source>Fontname</source>
-        <translation>Fontnamn</translation>
-    </message>
-    <message>
-        <source>FLUID Synth</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Dump Info</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>ID</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Chnl</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Soundfont</source>
-        <translation></translation>
+        <translation type="obsolete">Fontnamn</translation>
     </message>
     <message>
         <source>Drum Chnl</source>
-        <translation>Trumkanal</translation>
-    </message>
-    <message>
-        <source>Reverb</source>
-        <translation></translation>
+        <translation type="obsolete">Trumkanal</translation>
     </message>
     <message>
         <source>CHANNEL SETUP</source>
-        <translation>Kanalkonfiguration</translation>
-    </message>
-    <message>
-        <source>Chorus</source>
-        <translation></translation>
+        <translation type="obsolete">Kanalkonfiguration</translation>
     </message>
     <message>
         <source>LOADED SOUNDFONTS</source>
-        <translation>Laddade soundfonts</translation>
+        <translation type="obsolete">Laddade soundfonts</translation>
     </message>
 </context>
 <context>
@@ -2855,7 +2883,7 @@ states</source>
     <name>FluidSynthGui</name>
     <message>
         <source>Choose soundfont</source>
-        <translation>Välj soundfont</translation>
+        <translation type="obsolete">Välj soundfont</translation>
     </message>
 </context>
 <context>
@@ -3398,6 +3426,46 @@ eller i annatfall, konfigurera automatiskt</translation>
     <message>
         <source>Read MIDI Ports configuration</source>
         <translation>läs midi-portkonfiguration</translation>
+    </message>
+    <message>
+        <source>Record new style drum tracks</source>
+        <translation>Spela in trumspår av nya typen</translation>
+    </message>
+    <message>
+        <source>Record all instruments</source>
+        <translation>Spela in alla instrument</translation>
+    </message>
+    <message>
+        <source>Don&apos;t record hidden instruments</source>
+        <translation>Spela inte in gömda instrument</translation>
+    </message>
+    <message>
+        <source>Don&apos;t record muted instruments</source>
+        <translation>Spela inte in tystade instrument</translation>
+    </message>
+    <message>
+        <source>Don&apos;t record hidden or muted instruments</source>
+        <translation>Spela inte in gömda eller tystade instrument</translation>
+    </message>
+    <message>
+        <source>Drum tracks</source>
+        <translation>Trumspår</translation>
+    </message>
+    <message>
+        <source>Only offer old-style drumtracks</source>
+        <translation>Föreslå bara gamla typen trumspår</translation>
+    </message>
+    <message>
+        <source>Only offer new-style drumtracks</source>
+        <translation>Föreslå bara nya typen trumspår</translation>
+    </message>
+    <message>
+        <source>Prefer old-style drumtracks</source>
+        <translation>Föredra gamla typen trumspår</translation>
+    </message>
+    <message>
+        <source>Prefer new-style drumtracks</source>
+        <translation>Föredra nya typen trumspår</translation>
     </message>
 </context>
 <context>
@@ -4347,6 +4415,51 @@ klockan skickas.</translation>
         <source>Note: Sync delay and MTC sync currently not fully implemented</source>
         <translation>Notera: Synkdelay och MTC-synk, för tillfället inte helt implementerat</translation>
     </message>
+    <message>
+        <source>Averaging applied to recorded external tempo changes.</source>
+        <translation>Utjämning applicerad på inspelade externa tempoförändringar</translation>
+    </message>
+    <message>
+        <source>External midi clock can be very jittery.
+Tempo is derived from it and recorded.
+It is usually desirable to average it and 
+ limit the number of recorded changes.
+
+Tiny: 2 section 4/4 = 8 stages.
+1/8T note averaging, may produce jitter.
+
+Small: 3 section 12/8/4 = 24 stages.
+1/4 note averaging, may still produce jitter.
+
+Medium: 3 section 28/12/8 = 48 stages.
+1/2 note averaging. Less jitter.
+
+Large: 4 section 48/48/48/48 = 192 stages.
+Use this if the song has only one tempo.
+Very low quantization values can be used. 
+
+Large pre-detect: 4 section 8/48/48/48 = 152
+ stages + first stage large step pre-detector.
+Use this if you expect sudden large tempo steps.
+
+None: Use only if high accuracy is needed for 
+ audio alignment on playback. Caution: Records 
+ thousands of tempo changes per minute. MusE 
+ may slow and the song file will be large.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tempo record averaging</source>
+        <translation>Utjämning av tempoinspelning</translation>
+    </message>
+    <message>
+        <source>bpm</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Tempo record quantization</source>
+        <translation>Kvantisering av tempoinspelning</translation>
+    </message>
 </context>
 <context>
     <name>MidiTrackInfoBase</name>
@@ -4968,6 +5081,125 @@ För över dem till master-tempolistan?</translation>
     </message>
 </context>
 <context>
+    <name>MusEGui</name>
+    <message>
+        <source>select Pointer Tool:
+with the pointer tool you can:
+  select parts
+  move parts
+  copy parts</source>
+        <translation type="obsolete">välj pek-verktyg:
+med pekverktyget kan du:
+ välja parter
+ flytta parter
+ kopiera parter</translation>
+    </message>
+    <message>
+        <source>select Pencil Tool:
+with the pencil tool you can:
+  create new parts
+  modify length of parts</source>
+        <translation type="obsolete">välj Pennverktyg:
+med pennverktyget kan du:
+  skapa parter
+  ändra längden på parter
+</translation>
+    </message>
+    <message>
+        <source>select Delete Tool:
+with the delete tool you can delete parts</source>
+        <translation type="obsolete">välj Suddverktyg:
+med suddverktyget kan du ta bort parter</translation>
+    </message>
+    <message>
+        <source>select Cut Tool:
+with the cut tool you can split a part</source>
+        <translation type="obsolete">välj Delningsverktyg: 
+med delningsverktyget kan du dela på parter</translation>
+    </message>
+    <message>
+        <source>select Glue Tool:
+with the glue tool you can glue two parts</source>
+        <translation type="obsolete">välj Limverktyg:
+med limverktyget kan du limma ihop två parter</translation>
+    </message>
+    <message>
+        <source>select Score Tool:
+</source>
+        <translation type="obsolete">välj Partiturverktyg:
+</translation>
+    </message>
+    <message>
+        <source>select Quantize Tool:
+insert display quantize event</source>
+        <translation type="obsolete">välj Kvantiseringsverktyg:
+sätt in kvantiseringshändelser</translation>
+    </message>
+    <message>
+        <source>select Drawing Tool</source>
+        <translation type="obsolete">välj Ritverktyg
+</translation>
+    </message>
+    <message>
+        <source>select Muting Tool:
+click on part to mute/unmute</source>
+        <translation type="obsolete">välj Tystningsverktyg:
+klicka på en part för att Tysta/Avtysta</translation>
+    </message>
+    <message>
+        <source>Manipulate automation</source>
+        <translation type="obsolete">Hantera automation</translation>
+    </message>
+    <message>
+        <source>Cursor tool</source>
+        <translation type="obsolete">Markörverktyg</translation>
+    </message>
+    <message>
+        <source>pointer</source>
+        <translation type="obsolete">pekare</translation>
+    </message>
+    <message>
+        <source>pencil</source>
+        <translation type="obsolete">penna</translation>
+    </message>
+    <message>
+        <source>eraser</source>
+        <translation type="obsolete">sudd</translation>
+    </message>
+    <message>
+        <source>cutter</source>
+        <translation type="obsolete">delare</translation>
+    </message>
+    <message>
+        <source>score</source>
+        <translation type="obsolete">partitur</translation>
+    </message>
+    <message>
+        <source>glue</source>
+        <translation type="obsolete">lim</translation>
+    </message>
+    <message>
+        <source>quantize</source>
+        <translation type="obsolete">kvantisering</translation>
+    </message>
+    <message>
+        <source>draw</source>
+        <translation type="obsolete">rita</translation>
+    </message>
+    <message>
+        <source>mute parts</source>
+        <translation type="obsolete">tysta parter</translation>
+    </message>
+    <message>
+        <source>edit automation</source>
+        <translation type="obsolete">Redigera automatisering</translation>
+    </message>
+    <message>
+        <source>cursor</source>
+        <translation type="obsolete">markör</translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::Appearance</name>
     <message>
         <source>Main application font, and default font for any
@@ -5320,7 +5552,7 @@ Högerklick för at visa GUI.</translation>
     </message>
     <message>
         <source>Clean selected parts</source>
-        <translation>Rensa valda parter</translation>
+        <translation type="obsolete">Rensa valda parter</translation>
     </message>
     <message>
         <source>Add Track</source>
@@ -5504,6 +5736,18 @@ i arrangeraren appliceras när MusE kör.
 För att aktivera starta om MusE. (Vi kommer att
 försöka fixa det senare)</translation>
     </message>
+    <message>
+        <source>Purge hidden events from selected parts</source>
+        <translation>Ta bort gömda even från valda parter</translation>
+    </message>
+    <message>
+        <source>Remove track(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove this track(s)?</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::AudioMixerApp</name>
@@ -5550,6 +5794,10 @@ försöka fixa det senare)</translation>
     <message>
         <source>Show Synthesizers</source>
         <translation>Visa syntspår</translation>
+    </message>
+    <message>
+        <source>Show New Style Drum Tracks</source>
+        <translation>Visa nya typen trumspår</translation>
     </message>
 </context>
 <context>
@@ -5704,7 +5952,15 @@ försöka fixa det senare)</translation>
     </message>
     <message>
         <source>Use shift + pencil or line tool to draw new events</source>
-        <translation>Använd shift + penna- eller linjeverktyg för att rita nya händelser</translation>
+        <translation type="obsolete">Använd shift + penna- eller linjeverktyg för att rita nya händelser</translation>
+    </message>
+    <message>
+        <source>Make the current part&apos;s track match the selected drumlist entry</source>
+        <translation>Låt den nuvarande partens spårtyp matcha den valda trumspårsinställningen</translation>
+    </message>
+    <message>
+        <source>Use pencil or line tool to draw new events</source>
+        <translation>Använd penna eller linjeverktyg för att rita nya event</translation>
     </message>
 </context>
 <context>
@@ -5771,6 +6027,60 @@ försöka fixa det senare)</translation>
     </message>
 </context>
 <context>
+    <name>MusEGui::DList</name>
+    <message>
+        <source>hide this instrument</source>
+        <translation>göm detta instrument</translation>
+    </message>
+    <message>
+        <source>show this instrument</source>
+        <translation>visa detta instrument</translation>
+    </message>
+    <message>
+        <source>this turns a grayed out eye into a blue eye</source>
+        <translation>denna ändrar ett utgråat öga till ett blått öga</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::DrumCanvas</name>
+    <message>
+        <source>Moving items failed</source>
+        <translation>Flyttning misslyckades</translation>
+    </message>
+    <message>
+        <source>The selection couldn&apos;t be moved, because at least one note would be moved into a track which is different from both the original track and the current part&apos;s track.
+Changing the current part with ALT+LEFT/RIGHT may help.</source>
+        <translation>Urvalet kunde inte flyttas eftersom minst en not skulle ha blivit flyttad till ett spår som skiljer sig från både originalet och den nuvarande partens spår.
+Byta den valda parten med ALT+VÄNSTER/HÖGER kanske hjälper.</translation>
+    </message>
+    <message>
+        <source>Creating event failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t create the event, because the currently selected part isn&apos;t the same track, and the selected instrument could be either on no or on multiple parts, which is ambiguous.
+Select the destination part, then try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recording event failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t record the event, because the currently selected part isn&apos;t the same track, and the instrument to be recorded could be either on no or on multiple parts, which is ambiguous.
+Select the destination part, then try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wtf, some nasty internal error which is actually impossible occurred. Check console output. Nothing recorded.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::DrumEdit</name>
     <message>
         <source>mute instrument</source>
@@ -5834,7 +6144,7 @@ försöka fixa det senare)</translation>
     </message>
     <message>
         <source>&amp;File</source>
-        <translation>&amp;Arkiv</translation>
+        <translation type="obsolete">&amp;Arkiv</translation>
     </message>
     <message>
         <source>Load Map</source>
@@ -5914,7 +6224,7 @@ försöka fixa det senare)</translation>
     </message>
     <message>
         <source>Re-order list</source>
-        <translation>Ordna om listan</translation>
+        <translation type="obsolete">Ordna om listan</translation>
     </message>
     <message>
         <source>Set Fixed Length</source>
@@ -6064,6 +6374,75 @@ försöka fixa det senare)</translation>
         <source>Reset the drum map with GM defaults?</source>
         <translation>¿Återställ kartan över slagverk i GM banken?</translation>
     </message>
+    <message>
+        <source>hide instrument</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Re-order map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Group</source>
+        <translation type="unfinished">Grupp</translation>
+    </message>
+    <message>
+        <source>Don&apos;t group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Group by channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Group maximally</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show/Hide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Also show hidden instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show all instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide all instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only show used instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only show instruments with non-empty name or used instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drum map tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cursor step:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>H</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not all parts are displayed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You selected both old-style-drumtracks and others (that is: new-style or midi tracks), but they cannot displayed in the same drum edit.
+I&apos;ll only display the old-style drumtracks in this editor, dropping the others.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::EditCAfterDialog</name>
@@ -6191,6 +6570,46 @@ Vill du spara nu?</translation>
         <source>&amp;Abort</source>
         <translation>&amp;Avbryt</translation>
     </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Namn</translation>
+    </message>
+    <message>
+        <source>Vol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E-Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Len</source>
+        <translation type="unfinished">Längd</translation>
+    </message>
+    <message>
+        <source>A-Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LV1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LV2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LV3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LV4</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::EditMetaDialog</name>
@@ -6238,7 +6657,7 @@ with the pointer tool you can:
   select parts
   move parts
   copy parts</source>
-        <translation>välj pek-verktyg:
+        <translation type="unfinished">välj pek-verktyg:
 med pekverktyget kan du:
  välja parter
  flytta parter
@@ -6249,7 +6668,7 @@ med pekverktyget kan du:
 with the pencil tool you can:
   create new parts
   modify length of parts</source>
-        <translation>välj Pennverktyg:
+        <translation type="unfinished">välj Pennverktyg:
 med pennverktyget kan du:
   skapa parter
   ändra längden på parter
@@ -6258,95 +6677,95 @@ med pennverktyget kan du:
     <message>
         <source>select Delete Tool:
 with the delete tool you can delete parts</source>
-        <translation>välj Suddverktyg:
+        <translation type="unfinished">välj Suddverktyg:
 med suddverktyget kan du ta bort parter</translation>
     </message>
     <message>
         <source>select Cut Tool:
 with the cut tool you can split a part</source>
-        <translation>välj Delningsverktyg: 
+        <translation type="unfinished">välj Delningsverktyg: 
 med delningsverktyget kan du dela på parter</translation>
     </message>
     <message>
         <source>select Glue Tool:
 with the glue tool you can glue two parts</source>
-        <translation>välj Limverktyg:
+        <translation type="unfinished">välj Limverktyg:
 med limverktyget kan du limma ihop två parter</translation>
     </message>
     <message>
         <source>select Score Tool:
 </source>
-        <translation>välj Partiturverktyg:
+        <translation type="unfinished">välj Partiturverktyg:
 </translation>
     </message>
     <message>
         <source>select Quantize Tool:
 insert display quantize event</source>
-        <translation>välj Kvantiseringsverktyg:
+        <translation type="unfinished">välj Kvantiseringsverktyg:
 sätt in kvantiseringshändelser</translation>
     </message>
     <message>
         <source>select Drawing Tool</source>
-        <translation>välj Ritverktyg
+        <translation type="unfinished">välj Ritverktyg
 </translation>
     </message>
     <message>
         <source>select Muting Tool:
 click on part to mute/unmute</source>
-        <translation>välj Tystningsverktyg:
+        <translation type="unfinished">välj Tystningsverktyg:
 klicka på en part för att Tysta/Avtysta</translation>
     </message>
     <message>
         <source>Manipulate automation</source>
-        <translation>Hantering automation</translation>
+        <translation type="unfinished">Hantering automation</translation>
     </message>
     <message>
         <source>Cursor tool</source>
-        <translation>Markören verktyg</translation>
+        <translation type="unfinished">Markören verktyg</translation>
     </message>
     <message>
         <source>pointer</source>
-        <translation>pekare</translation>
+        <translation type="unfinished">pekare</translation>
     </message>
     <message>
         <source>pencil</source>
-        <translation>penna</translation>
+        <translation type="unfinished">penna</translation>
     </message>
     <message>
         <source>eraser</source>
-        <translation>sudd</translation>
+        <translation type="unfinished">sudd</translation>
     </message>
     <message>
         <source>cutter</source>
-        <translation>delare</translation>
+        <translation type="unfinished">delare</translation>
     </message>
     <message>
         <source>score</source>
-        <translation>partitur</translation>
+        <translation type="unfinished">partitur</translation>
     </message>
     <message>
         <source>glue</source>
-        <translation>lim</translation>
+        <translation type="unfinished">lim</translation>
     </message>
     <message>
         <source>quantize</source>
-        <translation>kvantisering</translation>
+        <translation type="unfinished">kvantisering</translation>
     </message>
     <message>
         <source>draw</source>
-        <translation>rita</translation>
+        <translation type="unfinished">rita</translation>
     </message>
     <message>
         <source>mute parts</source>
-        <translation>tysta parter</translation>
+        <translation type="unfinished">tysta parter</translation>
     </message>
     <message>
         <source>edit automation</source>
-        <translation>Redigera automatisering</translation>
+        <translation type="unfinished">Redigera automatisering</translation>
     </message>
     <message>
         <source>cursor</source>
-        <translation>markör</translation>
+        <translation type="unfinished">markör</translation>
     </message>
     <message>
         <source>Edit Tools</source>
@@ -6522,7 +6941,7 @@ klicka på en part för att Tysta/Avtysta</translation>
     </message>
     <message>
         <source>MusE: List Editor</source>
-        <translation>Muse: Lista Editor</translation>
+        <translation>Muse: Listeditor</translation>
     </message>
     <message>
         <source>Input error, conversion not OK or value out of range</source>
@@ -6634,6 +7053,18 @@ klicka på en part för att Tysta/Avtysta</translation>
     <message>
         <source>Comment</source>
         <translation>Kommentar</translation>
+    </message>
+    <message>
+        <source>Increase Tick</source>
+        <translation>Öka tick</translation>
+    </message>
+    <message>
+        <source>Decrease Tick</source>
+        <translation>Minska tick</translation>
+    </message>
+    <message>
+        <source>MusE: List Editor</source>
+        <translation>Muse: Listeditor</translation>
     </message>
 </context>
 <context>
@@ -7347,6 +7778,26 @@ Aktivera synkinställningar?</translation>
     <message>
         <source>&lt;none&gt;</source>
         <translation></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Ingen</translation>
+    </message>
+    <message>
+        <source>Tiny</source>
+        <translation>Jätteliten</translation>
+    </message>
+    <message>
+        <source>Small</source>
+        <translation>Liten</translation>
+    </message>
+    <message>
+        <source>Large</source>
+        <translation>Stor</translation>
+    </message>
+    <message>
+        <source>Large with pre-detect</source>
+        <translation>Stor med fördetektering</translation>
     </message>
 </context>
 <context>
@@ -9109,6 +9560,58 @@ Den valda titeln är inte unik</translation>
     <message>
         <source>Synth</source>
         <translation>Synt</translation>
+    </message>
+    <message>
+        <source>Save track&apos;s drumlist</source>
+        <translation>Spara spårets trumlista</translation>
+    </message>
+    <message>
+        <source>Save track&apos;s drumlist differences to initial state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load track&apos;s drumlist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset track&apos;s drumlist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset track&apos;s drumlist-ordering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy track&apos;s drumlist to all selected tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy track&apos;s drumlist&apos;s differences to all selected tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drum map</source>
+        <translation type="unfinished">Karta över slagverk</translation>
+    </message>
+    <message>
+        <source>Reset the track&apos;s drum map with instrument defaults?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset the track&apos;s drum map ordering?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Muse: Load Track&apos;s Drum Map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Store Track&apos;s Drum Map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New style drum</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12013,6 +12516,10 @@ Robert Jonsson
     <message>
         <source>Goto Prev Marker</source>
         <translation>Gå till föregående markör</translation>
+    </message>
+    <message>
+        <source>Add new style drum track</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

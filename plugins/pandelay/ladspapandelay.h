@@ -31,7 +31,7 @@
 #define __LADSPAPANDELAY_H
 
 #include "pandelaymodel.h"
-#include "../../muse/ladspa.h"
+#include <ladspa.h>
 
 #ifdef NBRPARAM
 #undef NBRPARAM

@@ -309,6 +309,7 @@ class AudioTrack : public Track {
       bool _prefader;               // prefader metering
       std::vector<double> _auxSend;
       void readAuxSend(Xml& xml);
+      int recFileNumber;
       
       bool _sendMetronome;
       AutomationType _automationType;

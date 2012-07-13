@@ -338,7 +338,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       QToolBar* cursorToolbar = addToolBar(tr("cursor tools"));
       cursorToolbar->setObjectName("cursor");
-      QLabel *stepStr = new QLabel("Cursor step:");
+      QLabel *stepStr = new QLabel(tr("Cursor step:"));
       cursorToolbar->addWidget(stepStr);
       stepLenWidget = new QComboBox();
       stepLenWidget->setToolTip(tr("Set step size for cursor edit"));
@@ -1296,7 +1296,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
             int mag = hscroll->mag();
             int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl < 23)
+            if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
                   zoomlvl++;
 
             int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);

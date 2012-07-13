@@ -261,7 +261,7 @@ void MidiEditor::horizontalZoomIn()
 {
   int mag = hscroll->mag();
   int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl < 23)
+  if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
         zoomlvl++;
 
   int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
