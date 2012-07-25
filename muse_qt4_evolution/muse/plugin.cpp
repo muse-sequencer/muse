@@ -36,8 +36,10 @@ PluginList plugins;
 //---------------------------------------------------------
 
 Plugin::Plugin(const QFileInfo* f)
-   : fi(*f)
+//   : fi(*f)   // Crashes due to AuxPlugin passing zero. WTF? Why is this breaking now? It worked before, but shouldn't have. 
       {
+      if(f)  
+        fi = *f;
       _instances = 0;
       }
 

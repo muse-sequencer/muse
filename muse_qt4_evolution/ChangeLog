@@ -1,3 +1,8 @@
+07.25.2012
+      - Fixed some compile errors and runtime crashes. (Tim) 
+        Don't build awl/ltest - has undefined link refs to QDom stuff. FIXME!
+        Fixed Plugin::Plugin() crash due to null fi passed by AuxPlugin. Wha...? It worked before. 
+        Fixed compile errors: Added <sys/types.h> and <sys/stat.h> at top of dssihost.cpp
 5.7. (ws)
       - fix midi metronome output routing
 29.6. (ws)

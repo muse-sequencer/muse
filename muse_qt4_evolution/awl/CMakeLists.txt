@@ -103,10 +103,16 @@ ELSE (APPLE)
 
    install( TARGETS awlplugin DESTINATION ${QT_PLUGINS_DIR}/designer/ )
 
-   add_executable( ltest ltest.cpp )
-   target_link_libraries ( ltest
-      awlplugin
-      ${QT_LIBRARIES}
-      )
+# FIXME Fails to link: Undefined refs to QDomXXX stuff...
+# [ 23%] Building CXX object awl/CMakeFiles/ltest.dir/ltest.o
+# Linking CXX executable ltest
+# libawlplugin.so: undefined reference to `QDomElement::tagName() const'
+# libawlplugin.so: undefined reference to `QDomCharacterData::data() const'
+#
+   ## add_executable( ltest ltest.cpp )
+   ## target_link_libraries ( ltest
+   ##   awlplugin
+   ##   ${QT_LIBRARIES}
+   ##   )
 
 ENDIF (APPLE)

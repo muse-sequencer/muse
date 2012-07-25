@@ -22,6 +22,8 @@
 
 #ifdef DSSI_SUPPORT
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <signal.h>
 #include <dlfcn.h>
 #include <dssi.h>
