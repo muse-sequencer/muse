@@ -1,4 +1,5 @@
 12.07.2012:
+         - Tweaked drum editor zooming to give correct initial zoom (rj)
          - Fixed controllers go wacky after moving effects rack plugins up/down. My bad! (Tim)
            Rewrote CtrlList::operator= and several others. Tested OK.
          - Also fixed existing problem: After moving rack plugins up/down, graphs disappear. (Tim)
