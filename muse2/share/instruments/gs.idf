@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
 <muse version="1.0">
   <MidiInstrument name="GS" nullparam="32639">
+    <SysEx name="GS on">
+      <comment>Switch GS mode on</comment>
+      <data>0x41 0x10 0x42 0x12 0x40 0x00 0x7f 0x00 0x41</data>
+      </SysEx>
+    <Init>
+      </Init>
     <PatchGroup name="Piano">
       <Patch name="Grand Piano" hbank="0" lbank="0" prog="0" />
       <Patch name="Bright Piano" hbank="0" lbank="0" prog="1" />

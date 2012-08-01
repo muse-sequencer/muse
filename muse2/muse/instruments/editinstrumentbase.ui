@@ -1312,6 +1312,16 @@ Typically, set to 127/127, or an unused
               <widget class="QLineEdit" name="sysexName"/>
              </item>
              <item>
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Comment:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTextEdit" name="sysexComment"/>
+             </item>
+             <item>
               <widget class="QLabel" name="textLabel1_2">
                <property name="text">
                 <string>Hex Entry:</string>
@@ -1812,7 +1822,7 @@ Typically, set to 127/127, or an unused
      <x>0</x>
      <y>0</y>
      <width>802</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="defaultUp">

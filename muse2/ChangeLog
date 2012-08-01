@@ -1,3 +1,6 @@
+01.08.2012:
+         - Finished the Sysex Editor in the Instrument Editor. (Tim)
+           Create, delete, save named instrument sysexes. Does nothing more than that for now.
 29.07.2012:
          - Tweaked drum editor zooming to give correct initial zoom (rj)
 12.07.2012:

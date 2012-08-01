@@ -22,11 +22,12 @@
 //=========================================================
 
 #include <stdio.h>
+#include <string.h>
 
 #include <QAction>
 #include <QDir>
 #include <QFileInfo>
-#include <QMessageBox>
+#include <QString>
 
 #include "minstrument.h"
 #include "midiport.h"
@@ -52,12 +53,12 @@ static const char* gmdrumname = "GM-drums";
 
 //---------------------------------------------------------
 //   string2sysex
+//   Return -1 if cannot be converted.
 //---------------------------------------------------------
 
 int string2sysex(const QString& s, unsigned char** data)
       {
-      QByteArray ba = s.toLatin1();
-      const char* src = ba.constData();
+      const char* src = s.toLatin1().constData();
       char buffer[2048];
       char* dst = buffer;
 
@@ -66,29 +67,32 @@ int string2sysex(const QString& s, unsigned char** data)
           while (*src == ' ' || *src == '\n') {
             ++src;
           }
+          if(!(*src))  
+            break;
           char* ep;
           long val = strtol(src, &ep, 16);
           if (ep == src) {
-            QMessageBox::information(0,
-                                     QString("MusE"),
-                                     QWidget::tr("Cannot convert sysex string"));
-            return 0;
+            printf("string2sysex: Cannot convert string to sysex %s\n", src);
+            return -1;
           }
           src    = ep;
           *dst++ = val;
           if (dst - buffer >= 2048) {
-            QMessageBox::information(0,
-                                     QString("MusE"),
-                                     QWidget::tr("Hex String too long (2048 bytes limit)"));
-            return 0;
+            printf("string2sysex: Hex String too long (2048 bytes limit)\n");
+            return -1;
           }
         }
       }
       int len = dst - buffer;
-      unsigned char* b = new unsigned char[len+1];
-      memcpy(b, buffer, len);
-      b[len] = 0;
-      *data = b;
+      if(len > 0)
+      {
+        unsigned char* b = new unsigned char[len];
+        memcpy(b, buffer, len);
+        *data = b;
+      }
+      else
+        *data = 0;
+      
       return len;
       }
 
@@ -152,62 +156,6 @@ static void readEventList(Xml& xml, EventList* el, const char* name)
 
 static void loadIDF(QFileInfo* fi)
       {
-/*                                                        DELETETHIS
-      QFile qf(fi->filePath());
-      if (!qf.open(IO_ReadOnly)) {
-            printf("cannot open file %s\n", fi->fileName().toLatin1());
-            return;
-            }
-      if (MusEGlobal::debugMsg)
-            printf("   load instrument definition <%s>\n", fi->filePath().local8Bit().data());
-      QDomDocument doc;
-      int line, column;
-      QString err;
-      if (!doc.setContent(&qf, false, &err, &line, &column)) {
-            QString col, ln, error;
-            col.setNum(column);
-            ln.setNum(line);
-            error = err + " at line: " + ln + " col: " + col;
-            printf("error reading file <%s>:\n   %s\n",
-               fi->filePath().toLatin1(), error.toLatin1());
-            return;
-            }
-      QDomNode node = doc.documentElement();
-      while (!node.isNull()) {
-            QDomElement e = node.toElement();
-            if (e.isNull())
-                  continue;
-            if (e.tagName() == "muse") {
-                  QString version = e.attribute(QString("version"));
-                  for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-                        QDomElement e = n.toElement();
-                        if (e.tagName() == "MidiInstrument") {
-                              MidiInstrument* i = new MidiInstrument();
-                              i->read(n);
-                              i->setFilePath(fi->filePath());
-                              bool replaced = false;
-                              for (int idx = 0; idx < midiInstruments.size(); ++idx) {
-                                    if (midiInstruments[idx]->iname() == i->iname()) {
-                                          midiInstruments.replace(idx, i);
-                                          replaced = true;
-                                          if (MusEGlobal::debugMsg)
-                                                printf("Midi Instrument Definition <%s> overwritten\n", 
-                                                   i->iname().toLocal8Bit().data());
-                                          break;
-                                          }
-                                    }
-                              if (!replaced)
-                                    midiInstruments += i;
-                              }
-                        }
-                  }
-            else
-                  printf("MusE:laodIDF: %s not supported\n", e.tagName().toLatin1());
-            node = node.nextSibling();
-            }
-      qf.close();
-*/      
-      
       FILE* f = fopen(fi->filePath().toAscii().constData(), "r");
       if (f == 0)
             return;
@@ -281,13 +229,6 @@ void initMidiInstruments()
                   ++it;
                   }
             }
-      //else DELETETHIS
-      //{
-      //  if(usrInstrumentsDir.mkdir(MusEGlobal::museUserInstruments))
-      //    printf("Created user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1());
-      //  else
-      //    printf("Unable to create user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1());
-      //}
       
       if (MusEGlobal::debugMsg)
         printf("load instrument definitions from <%s>\n", MusEGlobal::museInstruments.toLatin1().constData());
@@ -411,40 +352,15 @@ MidiInstrument::~MidiInstrument()
       if (_initScript)
             delete _initScript;
       
+      if(!_sysex.isEmpty())
+      {
+        int j = _sysex.size();
+        for(int i = 0; i < j; ++i)
+          delete _sysex.at(i);
+      }
+      
       patch_drummap_mapping.clear();
       }
-
-
-/* DELETETHIS
-//---------------------------------------------------------
-//   uniqueCopy
-//---------------------------------------------------------
-
-MidiInstrument& MidiInstrument::uniqueCopy(const MidiInstrument& ins)
-{
-  _initScript = 0;
-  _midiInit  = new EventList();
-  _midiReset = new EventList();
-  _midiState = new EventList();
-  //---------------------------------------------------------
-  // TODO: Copy the init script, and the lists. 
-  //---------------------------------------------------------
-  _controller = new MidiControllerList(*(ins._controller));
-    
-  // Assignment
-  pg = ins.pg;
-  
-  _name = ins._name;
-  _filePath = ins._filePath;
-    
-  // Hmm, dirty, yes? But init sets it to false...
-  //_dirty = ins._dirty;
-  //_dirty = false;
-  _dirty = true;
-  
-  return *this;
-}
-*/
 
 //---------------------------------------------------------
 //   assign
@@ -469,17 +385,19 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
     _controller->add(new MidiController(*mc));
   }  
   
-//  pg.clear();
-//  for(iPatchGroup ipg = pg.begin(); ipg != pg.end(); ++ipg) DELETETHIS
-//  {
-    //ipg->patches.clear();
-    
-    //const PatchGroup& g = *ipg;
-    //for(ciPatch ip = ipg->begin(); ip != ipg->end(); ++ipg)
-    //{
-    
-    //}
-//  }
+  if(!_sysex.isEmpty())
+  {
+    int j = _sysex.size();
+    for(int i = 0; i < j; ++i)
+      delete _sysex.at(i);
+    _sysex.clear();
+  }
+  if(!ins.sysex().isEmpty())
+  {
+    int j = ins.sysex().size();
+    for(int i = 0; i < j; ++i)
+      _sysex.append(new MusECore::SysEx(*(ins.sysex().at(i))));
+  }
   
   for (ciPatchGroup g = pg.begin(); g != pg.end(); ++g) 
   {
@@ -520,8 +438,6 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   _filePath = ins._filePath;
   
   patch_drummap_mapping=ins.patch_drummap_mapping;
-  
-  
   
   // Hmm, dirty, yes? But init sets it to false... DELETETHIS
   //_dirty = ins._dirty;
@@ -660,6 +576,94 @@ void Patch::write(int level, Xml& xml)
             if(drum)
               xml.nput(" drum=\"%d\"", int(drum));
             xml.put(" />");
+      }
+
+//---------------------------------------------------------
+//   SysEx
+//---------------------------------------------------------
+
+SysEx::SysEx()
+{
+  dataLen = 0;
+  data = 0;
+}
+
+SysEx::SysEx(const SysEx& src)
+{
+  name    = src.name;
+  comment = src.comment;
+  dataLen = src.dataLen;
+  data = 0;
+  if(dataLen != 0 && src.data)
+  {
+    data = new unsigned char[dataLen];
+    memcpy(data, src.data, dataLen);
+  }
+}
+
+SysEx::~SysEx()
+{
+  if(dataLen != 0 && data)
+    delete[] data;
+}
+
+bool SysEx::read(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return false;
+                  case Xml::TagStart:
+                        if (tag == "comment") 
+                              comment = xml.parse1();
+                        else if (tag == "data") 
+                        {
+                              unsigned char*d;
+                              int len = string2sysex(xml.parse1(), &d);
+                              // Was the conversion succesful, even if empty?
+                              if(len != -1)
+                              {
+                                // Delete existing.
+                                if(dataLen != 0 && data)
+                                  delete[] data;
+                                dataLen = len;
+                                data = d;
+                              }
+                        }
+                        else
+                              xml.unknown("SysEx");
+                        break;
+                  case Xml::Attribut:
+                        if (tag == "name")
+                              name = xml.s2();
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "SysEx")
+                        {
+                          return !name.isEmpty();
+                        }
+                  default:
+                        break;
+                  }
+            }
+            
+      return false;      
+      }
+
+void SysEx::write(int level, Xml& xml)
+      {
+            xml.nput(level, "<SysEx name=\"%s\">\n", Xml::xmlString(name).toLatin1().constData());
+            
+            level++;
+            if(!comment.isEmpty())
+              xml.strTag(level, "comment", Xml::xmlString(comment).toLatin1().constData());
+            if(dataLen > 0 && data)
+              xml.strTag(level, "data", sysex2string(dataLen, data));
+            
+            xml.etag(level, "SysEx");
       }
 
 //---------------------------------------------------------
@@ -930,7 +934,16 @@ void MidiInstrument::read(Xml& xml)
                                     memcpy(_initScript, istr, len);
                                     }
                               }
-
+                        else if (tag == "SysEx") {
+                              SysEx* se = new SysEx;
+                              if(!se->read(xml))
+                              {
+                                delete se;
+                                printf("MidiInstrument::read():SysEx: reading sysex failed\n");
+                              }
+                              else
+                                _sysex.append(se);
+                              }
                         else
                               xml.unknown("MidiInstrument");
                         break;
@@ -977,11 +990,8 @@ void MidiInstrument::write(int level, Xml& xml)
       for (ciPatchGroup g = pg.begin(); g != pg.end(); ++g) {
             PatchGroup* pgp = *g;
             const PatchList& pl = pgp->patches;
-            //xml.stag(QString("PatchGroup name=\"%1\"").arg(Xml::xmlString(g->name)));
-            //xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(g->name).toLatin1().constData());
             xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(pgp->name).toLatin1().constData());
             level++;
-            //for (iPatch p = g->patches.begin(); p != g->patches.end(); ++p)
             for (ciPatch p = pl.begin(); p != pl.end(); ++p)
                   (*p)->write(level, xml);
             level--;
@@ -989,6 +999,12 @@ void MidiInstrument::write(int level, Xml& xml)
             }
       for (iMidiController ic = _controller->begin(); ic != _controller->end(); ++ic)
             ic->second->write(level, xml);
+      if(!_sysex.isEmpty())
+      {
+        int j = _sysex.size();
+        for(int i = 0; i < j; ++i)
+          _sysex.at(i)->write(level, xml);
+      }
       
       writeDrummaps(level, xml);
       

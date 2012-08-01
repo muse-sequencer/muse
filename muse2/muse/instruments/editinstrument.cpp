@@ -34,6 +34,7 @@
 #include <QWhatsThis>
 #include <QStringListModel>
 #include <QScrollBar>
+#include <QVariant>
 #include <list>
 
 #include "editinstrument.h"
@@ -48,6 +49,11 @@
 #include "dlist.h"
 #include "drummap.h"
 #include "header.h"
+
+namespace MusECore {
+extern int string2sysex(const QString& s, unsigned char** data);
+extern QString sysex2string(int len, unsigned char* data);
+}
 
 namespace MusEGui {
 
@@ -99,16 +105,6 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       instrumentList->setSelectionMode(QAbstractItemView::SingleSelection);
       if(instrumentList->item(0))
         instrumentList->setCurrentItem(instrumentList->item(0));
-      //DELETETHIS
-      //oldMidiInstrument = (MusECore::MidiInstrument*)((ListBoxData*)instrumentList->item(0))->data();
-      //oldMidiInstrument = (ListBoxData*)instrumentList->item(0);
-      //oldMidiInstrument = (ListBoxData*)instrumentList->selectedItem();
-      
-//      MusECore::MidiInstrument* wip = (MusECore::MidiInstrument*)((ListBoxData*)instrumentList->item(0))->data();
-//      if(wip)
-        // Assignment
-//        workingInstrument.assign( *wip );
-      
       
       dlist_header = new Header(dlistContainer, "header");
       dlist_header->setFixedHeight(31);
@@ -169,8 +165,6 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       
       dlist=NULL;
 
-
-      
       changeInstrument();
       
       connect(viewController, SIGNAL(itemSelectionChanged()), SLOT(controllerChanged()));
@@ -204,9 +198,10 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       connect(nullParamSpinBoxL, SIGNAL(valueChanged(int)), SLOT(ctrlNullParamLChanged(int)));
       
       connect(tabWidget3, SIGNAL(currentChanged(QWidget*)), SLOT(tabChanged(QWidget*)));
-      //connect(sysexList, SIGNAL(selectionChanged()), SLOT(sysexChanged())); DELETETHIS or is it needed later?
-      //connect(deleteSysex, SIGNAL(clicked()), SLOT(deleteSysexClicked()));
-      //connect(newSysex, SIGNAL(clicked()), SLOT(newSysexClicked()));
+      connect(sysexList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+         SLOT(sysexChanged(QListWidgetItem*, QListWidgetItem*)));
+      connect(deleteSysex, SIGNAL(clicked()), SLOT(deleteSysexClicked()));
+      connect(newSysex, SIGNAL(clicked()), SLOT(newSysexClicked()));
       }
 
 
@@ -643,16 +638,6 @@ void EditInstrument::fileSave()
 
 bool EditInstrument::fileSave(MusECore::MidiInstrument* instrument, const QString& name)
     {
-      //QFile f(name);                                  DELETETHIS
-      //if (!f.open(QIODevice::WriteOnly)) {
-      //      QString s("Creating file failed: ");
-      //      s += strerror(errno);
-      //      QMessageBox::critical(this,
-      //         tr("MusE: Create file failed"), s);
-      //      return false;
-      //      }
-      //MusECore::Xml xml(&f);
-      
       FILE* f = fopen(name.toAscii().constData(), "w");
       if(f == 0)
       {
@@ -703,18 +688,7 @@ void EditInstrument::saveAs()
       patchNameReturn();
       ctrlNameReturn();
       
-      //QListWidgetItem* item = instrumentList->currentItem();              DELETETHIS
-//      ListBoxData* item = (ListBoxData*)instrumentList->selectedItem();
-//      if (item == 0)
-//            return;
-      //MusECore::MidiInstrument* instrument = (MusECore::MidiInstrument*)item->data(Qt::UserRole).value<void*>();
-//      MusECore::MidiInstrument* instrument = (MusECore::MidiInstrument*)item->data();
-      
-      //QString path = QDir::homePath() + "/" + MusEGlobal::config.instrumentPath;
-      //QString path = QDir::homeDirPath() + "/" + MusEGlobal::museGlobalShare;
-      //QString path = MusEGlobal::museInstruments;
       QString path = MusEGlobal::museUserInstruments;
-      
       if(!QDir(MusEGlobal::museUserInstruments).exists())
       {
         printf("MusE Error! User instrument directory: %s does not exist. Should be created at startup!\n", MusEGlobal::museUserInstruments.toLatin1().constData());
@@ -740,12 +714,6 @@ void EditInstrument::saveAs()
                   // This will still allow a user instrument to override a built-in instrument with the same name.
                   if(fi.absolutePath() != MusEGlobal::museInstruments)
                   {
-                    //QMessageBox::critical(this,             DELETETHIS???
-                    //    tr("MusE: Bad instrument name"),
-                    //    tr("Please change the instrument name to a new unique name before saving, to avoid duplicates"),
-                    //    QMessageBox::Ok,
-                    //    QMessageBox::NoButton,
-                    //    QMessageBox::NoButton);
                     printf("EditInstrument::saveAs Error: Instrument name %s already used!\n", workingInstrument.iname().toLatin1().constData());
                     return;    
                   }  
@@ -821,13 +789,6 @@ void EditInstrument::fileSaveAs()
             workingInstrument.setDirty(false);
         break;
       }
-      
-      //QListWidgetItem* item = instrumentList->currentItem(); DELETETHIS
-//      ListBoxData* item = (ListBoxData*)instrumentList->selectedItem();
-//      if (item == 0)
-//            return;
-      //MusECore::MidiInstrument* instrument = (MusECore::MidiInstrument*)item->data(Qt::UserRole).value<void*>();
-//      MusECore::MidiInstrument* instrument = (MusECore::MidiInstrument*)item->data();
       
       bool isuser = false;
       QString so;
@@ -1006,15 +967,6 @@ void EditInstrument::closeEvent(QCloseEvent* ev)
       patchNameReturn();
       ctrlNameReturn();
       
-      //QListWidgetItem* item = instrumentList->currentItem(); DELETETHIS
-      
-//      ListBoxData* item = (ListBoxData*)instrumentList->selectedItem();
-      
-//      if(item)
-//      {
-        //MusECore::MidiInstrument* instrument = (MusECore::MidiInstrument*)item->data(Qt::UserRole).value<void*>();
-//        MusECore::MidiInstrument* instrument = (MusECore::MidiInstrument*)item->data();
-//        int res = checkDirty(instrument, true);
         MusECore::MidiInstrument* oi = 0;
         if(oldMidiInstrument)
           oi = (MusECore::MidiInstrument*)oldMidiInstrument->data(Qt::UserRole).value<void*>();
@@ -1116,6 +1068,19 @@ void EditInstrument::changeInstrument()
   nullParamSpinBoxH->blockSignals(false);
   nullParamSpinBoxL->blockSignals(false);
   
+  sysexList->blockSignals(true);
+  sysexList->clear();
+  foreach(const MusECore::SysEx* s, workingInstrument.sysex()) {
+        QListWidgetItem* item = new QListWidgetItem(s->name);
+        QVariant v = QVariant::fromValue((void*)s);
+        item->setData(Qt::UserRole, v);
+        sysexList->addItem(item);
+        }
+  if(sysexList->item(0))
+    sysexList->item(0)->setSelected(true);
+  sysexList->blockSignals(false);
+  sysexChanged(sysexList->item(0), 0);
+  
   MusECore::PatchGroupList* pg = workingInstrument.groups();
   for (MusECore::ciPatchGroup g = pg->begin(); g != pg->end(); ++g) {
         MusECore::PatchGroup* pgp = *g; 
@@ -1147,63 +1112,23 @@ void EditInstrument::changeInstrument()
   if(fc)
   {
     // This may cause a patchChanged call.
-    //if(patchView->selectedItem() != fc) DELETETHIS
     patchView->blockSignals(true);
     fc->setSelected(true);
     patchView->blockSignals(false);
-    //else  
-    //  patchChanged(); DELETETHIS
-
-    //patchView->firstChild()->setSelected(true); DELETETHIS
-    //patchView->triggerUpdate(true);
   }
       
   patchChanged();
   
-//      oldPatchItem = (ListViewData*)patchView->selectedItem(); DELETETHIS
-      //patchChanged();
-//      if(oldPatchItem)
-//      {
-//        if(oldPatchItem->parent())
-//          patchNameEdit->setText( ((MusECore::Patch*)oldPatchItem->data())->name );
-//        else  
-//          patchNameEdit->setText( ((MusECore::PatchGroup*)oldPatchItem->data())->name );
-//      }    
-      
-  //MusECore::MidiControllerList* cl = instrument->controller();
-  
   MusECore::MidiControllerList* cl = workingInstrument.controller();
   for (MusECore::ciMidiController ic = cl->begin(); ic != cl->end(); ++ic) {
         MusECore::MidiController* c = ic->second;
-        //QListWidgetItem* item = new QListWidgetItem(c->name()); DELETETHIS
-     //   ListBoxData* item = new ListBoxData(c->name());
-        //QVariant v = QVariant::fromValue((void*)c);
-        //item->setData(Qt::UserRole, v);
-    //    item->setData((void*)c);
-    //    listController->insertItem(item);
-        
         addControllerToView(c);
         }
   
-  
-  //listController->setItemSelected(listController->item(0), true); DELETETHIS
-  
-//  oldController = 0;
-  
-  //ListBoxData* ci = (ListBoxData*)listController->item(0);
-
   QTreeWidgetItem *ci = viewController->topLevelItem(0);
 
   if(ci)
   {
-    // This may cause a controllerChanged call. DELETETHIS
-    //if(listController->selectedItem != ci)
-  //  listController->blockSignals(true);
-  //  listController->setSelected(ci, true);
-  //  listController->blockSignals(false);
-    //else  
-    //  controllerChanged();
-    
     viewController->blockSignals(true);
     ci->setSelected(true);
     viewController->blockSignals(false);
@@ -1211,33 +1136,6 @@ void EditInstrument::changeInstrument()
   
   controllerChanged();
   
-  //oldController = (ListBoxData*)listController->selectedItem(); DELETETHIS
-  
-  
-  //controllerChanged(listController->item(0), 0);
-  //controllerChanged();
-  
-/* DELETETHIS
-      category->addItems(instrument->categories());
-
-      foreach(const SysEx* s, instrument->sysex()) {
-            QListWidgetItem* item = new QListWidgetItem(s->name);
-            QVariant v = QVariant::fromValue((void*)s);
-            item->setData(Qt::UserRole, v);
-            sysexList->addItem(item);
-            }
-
-      sysexList->setItemSelected(sysexList->item(0), true);
-      sysexChanged(sysexList->item(0), 0);
-
-      if (!cl->empty()) {
-            listController->setItemSelected(listController->item(0), true);
-            controllerChanged(listController->item(0), 0);
-            }
-*/
-
-
-
   repopulatePatchCollections();
   if (dlist)
   {
@@ -1482,36 +1380,6 @@ void EditInstrument::patchNameReturn()
   
     item->setText(0, s);
     workingInstrument.setDirty(true);
-    
-  // DELETETHIS
-  // Since the name of the patch/group in the working instrument will be updated later,
-  //  there's no need to do manually set the name here now. 
-  /*
-  // If the item has a parent, it's a patch item.
-  if(item->parent())
-  {
-    MusECore::Patch* p = item->data();
-    if(s != p->name)
-    {
-      item->setText(s);
-      p->name = s;
-      workingInstrument.setDirty(true);
-      //patchView->triggerUpdate(true);
-    }
-  }
-  else
-  // The item has no parent. It's a patch group item.
-  {
-    MusECore::PatchGroup* pg = (MusECore::PatchGroup*)item->data();
-    if(s != pg->name)
-    {
-      item->setText(s);
-      pg->name = s;
-      workingInstrument.setDirty(true);
-      //patchView->triggerUpdate(true);
-    }
-  }
-  */
 }
 
 //---------------------------------------------------------
@@ -2130,80 +1998,6 @@ void EditInstrument::ctrlTypeChanged(int idx)
           c->setInitVal(spinBoxDefault->value());
       }  
       
-      
-      /* DELETETHIS
-      
-      if(rng != 0)
-      {
-        int mn = c->minVal();
-        int mx = c->maxVal();
-        //if(val > item->text(COL_MAX).toInt())
-        if(mx > max)
-        {
-          c->setMaxVal(max);
-          spinBoxMax->blockSignals(true);
-          spinBoxMax->setValue(max);
-          spinBoxMax->blockSignals(false);
-          if(item)
-            item->setText(COL_MAX, QString().setNum(max));
-        }  
-        //else
-        if(mn < min)
-        {
-          c->setMinVal(min);
-          spinBoxMin->blockSignals(true);
-          spinBoxMin->setValue(min);
-          spinBoxMin->blockSignals(false);
-          if(item)
-            item->setText(COL_MIN, QString().setNum(min));
-        }  
-        //else
-        if(mx - mn > rng)
-        {
-          //mx = val + rng;
-          c->setMinVal(0);
-          c->setMaxVal(rng);
-          spinBoxMin->blockSignals(true);
-          spinBoxMax->blockSignals(true);
-          spinBoxMin->setValue(0);
-          spinBoxMax->setValue(rng);
-          spinBoxMin->blockSignals(false);
-          spinBoxMax->blockSignals(false);
-          if(item)
-          {
-            item->setText(COL_MIN, QString().setNum(0));
-            item->setText(COL_MAX, QString().setNum(rng));
-          }  
-        }  
-        
-        spinBoxDefault->blockSignals(true);
-        
-        spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
-        int inval = c->initVal();
-        if(inval == MusECore::CTRL_VAL_UNKNOWN)
-          spinBoxDefault->setValue(spinBoxDefault->minimum());
-        else  
-        {
-          if(inval < c->minVal())
-          {
-            c->setInitVal(c->minVal());
-            spinBoxDefault->setValue(c->minVal());
-          }
-          else  
-          if(inval > c->maxVal())
-          {  
-            c->setInitVal(c->maxVal());
-            spinBoxDefault->setValue(c->maxVal());
-          }  
-        } 
-         
-        //spinBoxDefault->setRange(c->minVal() - 1, c->maxVal());
-        spinBoxDefault->blockSignals(false);
-        
-      }
-        
-      */
-      
       workingInstrument.setDirty(true);
       }
 
@@ -2505,6 +2299,115 @@ void EditInstrument::ctrlNullParamLChanged(int nvl)
     workingInstrument.setNullSendValue((nvh << 8) | nvl);
   workingInstrument.setDirty(true);
 }
+
+//---------------------------------------------------------
+//   updateSysex
+//---------------------------------------------------------
+
+void EditInstrument::updateSysex(MusECore::MidiInstrument* instrument, MusECore::SysEx* so)
+      {
+      if (sysexName->text() != so->name) {
+            so->name = sysexName->text();
+            instrument->setDirty(true);
+            }
+      if (sysexComment->toPlainText() != so->comment) {
+            so->comment = sysexComment->toPlainText();
+            instrument->setDirty(true);
+            }
+      unsigned char* data;
+      int len = MusECore::string2sysex(sysexData->toPlainText(), &data);
+      if (len == -1) // Conversion unsuccessful?  
+      {
+        QMessageBox::information(0,
+                                  QString("MusE"),
+                                  QWidget::tr("Cannot convert sysex string"));
+        return;
+      }
+      if(so->dataLen != len || memcmp(data, so->data, len) != 0) {
+            if(so->dataLen != 0 && so->data)
+              delete[] so->data;
+            so->data = data;
+            so->dataLen = len;
+            instrument->setDirty(true);
+            }
+      }
+
+//---------------------------------------------------------
+//   sysexChanged
+//---------------------------------------------------------
+
+void EditInstrument::sysexChanged(QListWidgetItem* sel, QListWidgetItem* old)
+      {
+      if (old) {
+            MusECore::SysEx* so = (MusECore::SysEx*)old->data(Qt::UserRole).value<void*>();
+            updateSysex(&workingInstrument, so);
+            }
+      if (sel == 0) {
+            sysexName->setText("");
+            sysexComment->setText("");
+            sysexData->setText("");
+            sysexName->setEnabled(false);
+            sysexComment->setEnabled(false);
+            sysexData->setEnabled(false);
+            return;
+            }
+      sysexName->setEnabled(true);
+      sysexComment->setEnabled(true);
+      sysexData->setEnabled(true);
+
+      MusECore::SysEx* sx = (MusECore::SysEx*)sel->data(Qt::UserRole).value<void*>();
+      sysexName->setText(sx->name);
+      sysexComment->setText(sx->comment);
+      sysexData->setText(MusECore::sysex2string(sx->dataLen, sx->data));
+      }
+
+//---------------------------------------------------------
+//   deleteSysexClicked
+//---------------------------------------------------------
+
+void EditInstrument::deleteSysexClicked()
+      {
+      QListWidgetItem* item2 = sysexList->currentItem();
+      if(item2 == 0)
+        return;
+      MusECore::SysEx* sysex  = (MusECore::SysEx*)item2->data(Qt::UserRole).value<void*>();
+      workingInstrument.removeSysex(sysex);
+      delete item2;
+      workingInstrument.setDirty(true);
+      }
+
+//---------------------------------------------------------
+//   newSysexClicked
+//---------------------------------------------------------
+
+void EditInstrument::newSysexClicked()
+      {
+      QString sysexName;
+      for (int i = 1;; ++i) {
+            sysexName = QString("Sysex-%1").arg(i);
+      
+            bool found = false;
+            foreach(const MusECore::SysEx* s, workingInstrument.sysex()) {
+                  if (s->name == sysexName) {
+                        found = true;
+                        break;
+                        }
+                  }
+            if (!found)
+                  break;
+            }
+      MusECore::SysEx* nsysex = new MusECore::SysEx;
+      nsysex->name = sysexName;
+      workingInstrument.addSysex(nsysex);
+
+      QListWidgetItem* item = new QListWidgetItem(sysexName);
+      QVariant v = QVariant::fromValue((void*)nsysex);
+      item->setData(Qt::UserRole, v);
+      sysexList->addItem(item);
+      sysexList->setCurrentItem(item);
+      workingInstrument.setDirty(true);
+
+      }
 
 //---------------------------------------------------------
 //   deletePatchClicked
@@ -3002,38 +2905,6 @@ void EditInstrument::addControllerClicked()
   workingInstrument.setDirty(true);
 }
 
-/* DELETETHIS or later needed???
-//---------------------------------------------------------
-//   deleteSysexClicked
-//---------------------------------------------------------
-
-void EditInstrument::deleteSysexClicked()
-      {
-      //QListWidgetItem* item = instrumentList->currentItem();
-      //QListWidgetItem* item2 = sysexList->currentItem();
-      //if (item == 0 || item2 == 0)
-      //      return;
-      
-      //MusECore::MidiInstrument* instrument = (MusECore::MidiInstrument*)item->data(Qt::UserRole).value<void*>();
-      //SysEx* sysex  = (SysEx*)item2->data(Qt::UserRole).value<void*>();
-      //QList<SysEx*> sl = instrument->sysex();
-      //instrument->removeSysex(sysex);
-      //delete item2;
-      //instrument->setDirty(true);
-      
-      
-      
-      ListBoxData* item = (ListBoxData*)sysexList->selectedItem();
-      if(!item)
-        return;
-      
-      EventList* el = (EventList*)item->data();
-      if(!el)
-        return;
-        
-      }
-*/
-
 //---------------------------------------------------------
 //   updatePatchGroup
 //---------------------------------------------------------
@@ -3105,96 +2976,19 @@ void EditInstrument::updatePatch(MusECore::MidiInstrument* instrument, MusECore:
             }
       }
 
-/* DELETETHIS
-//---------------------------------------------------------
-//   updateController
-//---------------------------------------------------------
-
-void EditInstrument::updateController(MusECore::MidiInstrument* instrument, MusECore::MidiController* oc)
-      {
-      printf("updateController: A\n");
-      
-      int ctrlH = spinBoxHCtrlNo->value();
-      int ctrlL = spinBoxLCtrlNo->value();
-      //MusECore::MidiController::ControllerType type = (MusECore::MidiController::ControllerType)ctrlType->currentIndex();
-      MusECore::MidiController::ControllerType type = (MusECore::MidiController::ControllerType)ctrlType->currentItem();
-      int num = MusECore::MidiController::genNum(type, ctrlH, ctrlL);
-      //int num = (ctrlH << 8) & 0x7f + ctrlL & 0x7f;
-
-      printf("updateController: B\n");
-      
-      if (num != oc->num()) {
-            
-            printf("updateController: num changed, setting dirty. num:%d c->num:%d\n", num, oc->num());
-            
-            oc->setNum(num);
-            instrument->setDirty(true);
-            }
-            
-      if(type != MusECore::MidiController::Pitch && type != MusECore::MidiController::Program)
-      {
-        if (spinBoxMin->value() != oc->minVal()) {
-              
-              printf("updateController: min changed, setting dirty. min:%d c->min:%d\n", spinBoxMin->value(), oc->minVal());
-              
-              oc->setMinVal(spinBoxMin->value());
-              instrument->setDirty(true);
-              }
-        if (spinBoxMax->value() != oc->maxVal()) {
-              
-              printf("updateController: max changed, setting dirty. num:%d max:%d c->max:%d\n", num, spinBoxMax->value(), oc->maxVal());
-              
-              oc->setMaxVal(spinBoxMax->value());
-              instrument->setDirty(true);
-              }
-        
-        int dv = spinBoxDefault->value(); 
-        if(dv == oc->minVal() - 1)
-          dv = MusECore::CTRL_VAL_UNKNOWN;
-          
-        //if (spinBoxDefault->value() != oc->initVal()) {
-        if(dv != oc->initVal()) {
-              //oc->setInitVal(spinBoxDefault->value());
-              oc->setInitVal(dv);
-              
-              printf("updateController: default changed, setting dirty. def:%d c->init:%d\n", dv, oc->initVal());
-              
-              instrument->setDirty(true);
-              }
-      }
-      
-      
-      printf("updateController: C\n");
-      
-      //if (moveWithPart->isChecked() ^ oc->moveWithPart()) {
-      //      oc->setMoveWithPart(moveWithPart->isChecked());
-      //      instrument->setDirty(true);
-      //      }
-      if (ctrlName->text() != oc->name()) {
-            oc->setName(ctrlName->text());
-            
-            printf("updateController: name changed, setting dirty. name:%s c->name:%s\n", ctrlName->text().toLatin1().constData(), oc->name().toLatin1().constData());
-            
-            instrument->setDirty(true);
-            }
-      //if (ctrlComment->toPlainText() != oc->comment()) {
-      //      oc->setComment(ctrlComment->toPlainText());
-      //      instrument->setDirty(true);
-      //      }
-      
-      printf("updateController: D\n");
-      
-      }
-*/
-
 //---------------------------------------------------------
 //   updateInstrument
 //---------------------------------------------------------
 
 void EditInstrument::updateInstrument(MusECore::MidiInstrument* instrument)
       {
-      QTreeWidgetItem* patchItem = patchView->currentItem();
+      QListWidgetItem* sysexItem = sysexList->currentItem();
+      if (sysexItem) {
+            MusECore::SysEx* so = (MusECore::SysEx*)sysexItem->data(Qt::UserRole).value<void*>();
+            updateSysex(instrument, so);
+            }
 
+      QTreeWidgetItem* patchItem = patchView->currentItem();
       if (patchItem) 
       {      
         // If the item has a parent, it's a patch item.
