@@ -319,25 +319,25 @@ void MidiAudioCtrlMap::read(Xml& xml)
 //   CtrlList
 //---------------------------------------------------------
 
-CtrlList::CtrlList()
+CtrlList::CtrlList(bool dontShow)
       {
       _id      = 0;
       _default = 0.0;
       _curVal  = 0.0;
       _mode    = INTERPOLATE;
-      _dontShow = false;
+      _dontShow = dontShow;
       _visible = false;
       _guiUpdatePending = false;
       initColor(0);
       }
 
-CtrlList::CtrlList(int id)
+CtrlList::CtrlList(int id, bool dontShow)
       {
       _id      = id;
       _default = 0.0;
       _curVal  = 0.0;
       _mode    = INTERPOLATE;
-      _dontShow = false;
+      _dontShow = dontShow;
       _visible = false;
       _guiUpdatePending = false;
       initColor(id);
@@ -382,7 +382,7 @@ void CtrlList::assign(const CtrlList& l, int flags)
   
   if(flags & ASSIGN_VALUES)
   {
-    *this = l; // Let the vector assign values.
+    map::operator=(l); // Let map copy the items.
     _guiUpdatePending = true;
   }
 }
@@ -510,7 +510,20 @@ CtrlList& CtrlList::operator=(const CtrlList& cl)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::operator= id:%d\n", cl.id());  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::operator=(cl);
+  _id            = cl._id;
+  _default       = cl._default;
+  _curVal        = cl._curVal;
+  _mode          = cl._mode;
+  _name          = cl._name;
+  _min           = cl._min;
+  _max           = cl._max;
+  _valueType     = cl._valueType;
+  _dontShow      = cl._dontShow;
+  _displayColor  = cl._displayColor;
+  _visible       = cl._visible;
+  
+  // Let map copy the items.
+  map::operator=(cl);
   _guiUpdatePending = true;
   return *this;
 }
@@ -520,7 +533,7 @@ void CtrlList::swap(CtrlList& cl)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::swap id:%d\n", cl.id());  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::swap(cl);
+  map::swap(cl);
   cl.setGuiUpdatePending(true);
   _guiUpdatePending = true;
 }
@@ -530,7 +543,7 @@ std::pair<iCtrl, bool> CtrlList::insert(const std::pair<int, CtrlVal>& p)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::insert frame:%d val:%f\n", p.first, p.second.val);  
 #endif
-  std::pair<iCtrl, bool> res = std::map<int, CtrlVal, std::less<int> >::insert(p);
+  std::pair<iCtrl, bool> res = map::insert(p);
   _guiUpdatePending = true;
   return res;
 }
@@ -540,7 +553,7 @@ iCtrl CtrlList::insert(iCtrl ic, const std::pair<int, CtrlVal>& p)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::insert2 frame:%d val:%f\n", p.first, p.second.val); 
 #endif
-  iCtrl res = std::map<int, CtrlVal, std::less<int> >::insert(ic, p);
+  iCtrl res = map::insert(ic, p);
   _guiUpdatePending = true;
   return res;
 }
@@ -550,7 +563,7 @@ void CtrlList::erase(iCtrl ictl)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::erase iCtrl frame:%d val:%f\n", ictl->second.frame, ictl->second.val);  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::erase(ictl);
+  map::erase(ictl);
   _guiUpdatePending = true;
 }
 
@@ -559,7 +572,7 @@ std::map<int, CtrlVal, std::less<int> >::size_type CtrlList::erase(int frame)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::erase frame:%d\n", frame);  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::size_type res = std::map<int, CtrlVal, std::less<int> >::erase(frame);
+  size_type res = map::erase(frame);
   _guiUpdatePending = true;
   return res;
 }
@@ -571,7 +584,7 @@ void CtrlList::erase(iCtrl first, iCtrl last)
          first->second.frame, first->second.val,
          last->second.frame, last->second.val);  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::erase(first, last);
+  map::erase(first, last);
   _guiUpdatePending = true;
 }
 
@@ -580,7 +593,7 @@ void CtrlList::clear()
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::clear\n");  
 #endif
-  std::map<int, CtrlVal, std::less<int> >::clear();
+  map::clear();
   _guiUpdatePending = true;
 }
 

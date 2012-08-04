@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
 <muse version="1.0">
   <MidiInstrument name="GM" nullparam="32639">
+    <SysEx name="GM on">
+      <comment>Switch General Midi mode on</comment>
+      <data>7e 7f 09 01</data>
+      </SysEx>
+    <Init>
+      </Init>
     <PatchGroup name="Piano">
       <Patch name="Grand Piano" prog="0" />
       <Patch name="Bright Piano" prog="1" />

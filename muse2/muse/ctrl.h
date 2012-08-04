@@ -159,8 +159,8 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void initColor(int i);
 
    public:
-      CtrlList();
-      CtrlList(int id);
+      CtrlList(bool dontShow=false);
+      CtrlList(int id, bool dontShow=false);
       CtrlList(int id, QString name, double min, double max, CtrlValueType v, bool dontShow=false);
       void assign(const CtrlList& l, int flags); 
 

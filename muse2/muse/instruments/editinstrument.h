@@ -65,6 +65,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void updateInstrument(MusECore::MidiInstrument*);
       void updatePatch(MusECore::MidiInstrument*, MusECore::Patch*);
       void updatePatchGroup(MusECore::MidiInstrument*, MusECore::PatchGroup*);
+      void updateSysex(MusECore::MidiInstrument*, MusECore::SysEx*);
       void changeInstrument();
       QTreeWidgetItem* addControllerToView(MusECore::MidiController* mctrl);
       QString getPatchItemText(int);
@@ -104,9 +105,9 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void ctrlMinChanged(int);
       void ctrlMaxChanged(int);
       void ctrlDefaultChanged(int);
-      //void sysexChanged(); DELETETHIS?
-      //void deleteSysexClicked();
-      //void newSysexClicked();
+      void sysexChanged(QListWidgetItem*, QListWidgetItem*);
+      void deleteSysexClicked();
+      void newSysexClicked();
       void ctrlNullParamHChanged(int);
       void ctrlNullParamLChanged(int);
       

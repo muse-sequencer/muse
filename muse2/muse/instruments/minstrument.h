@@ -78,9 +78,13 @@ struct SysEx {
       QString comment;
       int dataLen;
       unsigned char* data;
+      bool read(Xml&);
+      void write(int level, Xml&);
+      
+      SysEx();
+      SysEx(const SysEx& src);
+      ~SysEx();
       };
-
-
 
 struct patch_collection_t
 {
@@ -262,8 +266,5 @@ extern void removeMidiInstrument(const MidiInstrument* instr);
 
 } // namespace MusECore
 
-//namespace MusEGui {
-//extern void populatePatchPopup(MusECore::MidiInstrument*, PopupMenu*, int, MType, bool); DELETETHIS
-//}
 #endif
 
