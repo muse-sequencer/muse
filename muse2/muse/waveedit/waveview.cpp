@@ -79,7 +79,7 @@ WaveView::WaveView(MidiEditor* pr, QWidget* parent, int xscale, int yscale)
 
 
       connect(MusEGlobal::song, SIGNAL(posChanged(int,unsigned,bool)), SLOT(setPos(int,unsigned,bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       songChanged(SC_SELECTION);
       }
 
@@ -254,7 +254,7 @@ QString WaveView::getCaption() const
 //   songChanged
 //---------------------------------------------------------
 
-void WaveView::songChanged(int flags)
+void WaveView::songChanged(MusECore::SongChangedFlags_t flags)
       {
       // Is it simply a midi controller value adjustment? Forget it.
       if(flags == SC_MIDI_CONTROLLER)

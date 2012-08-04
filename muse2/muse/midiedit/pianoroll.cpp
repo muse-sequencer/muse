@@ -442,7 +442,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       vscroll->setPos(KH * 30);
       info->setEnabled(false);
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged1(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged1(MusECore::SongChangedFlags_t)));
 
       setWindowTitle(canvas->getCaption());
       
@@ -492,7 +492,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 //   songChanged1
 //---------------------------------------------------------
 
-void PianoRoll::songChanged1(int bits)
+void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
       {
         if(_isDeleting)  // Ignore while while deleting to prevent crash.
           return;

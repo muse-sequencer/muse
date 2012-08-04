@@ -23,6 +23,7 @@
 #ifndef __LIST_EDIT_H__
 #define __LIST_EDIT_H__
 
+#include "type_defs.h"
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
@@ -83,7 +84,7 @@ class ListEdit : public MidiEditor {
       void configChanged();
 
    public slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void focusCanvas();
 
    signals:

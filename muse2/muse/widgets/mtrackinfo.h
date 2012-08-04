@@ -24,6 +24,7 @@
 #define __MTRACKINFO_H__
 
 #include "ui_mtrackinfobase.h"
+#include "type_defs.h"
 
 namespace MusECore {
 class Track;
@@ -78,7 +79,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
    public slots:
       void setTrack(MusECore::Track*); 
       void configChanged();
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
    
    signals:
       void returnPressed();
@@ -89,7 +90,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       MusECore::Track* track() const { return selected; }
       void setLabelText();
       void setLabelFont();
-      void updateTrackInfo(int);
+      void updateTrackInfo(MusECore::SongChangedFlags_t);
 };
 
 } // namespace MusEGui

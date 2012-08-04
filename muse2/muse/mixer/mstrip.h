@@ -25,6 +25,7 @@
 #ifndef __MSTRIP_H__
 #define __MSTRIP_H__
 
+#include "type_defs.h"
 #include "strip.h"
 #include <QLabel>
 
@@ -89,7 +90,7 @@ class MidiStrip : public Strip {
       virtual void heartBeat();
 
    public slots:
-      virtual void songChanged(int);
+      virtual void songChanged(MusECore::SongChangedFlags_t);
       virtual void configChanged();
 
    public:

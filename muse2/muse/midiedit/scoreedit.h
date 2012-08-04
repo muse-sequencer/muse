@@ -40,6 +40,7 @@
 #include <QToolButton>
 
 #include <limits.h>
+#include "type_defs.h"
 #include "noteinfo.h"
 #include "cobject.h"
 #include "event.h"
@@ -196,7 +197,7 @@ class ScoreEdit : public TopWin
 		void viewport_width_changed(int);
 		void canvas_height_changed(int);
 		void viewport_height_changed(int);
-		void song_changed(int);
+		void song_changed(MusECore::SongChangedFlags_t);
 		void focusCanvas();
 		
 	public:
@@ -794,7 +795,7 @@ class ScoreCanvas : public MusEGui::View
 	public slots:
 		void x_scroll_event(int);
 		void y_scroll_event(int);
-		void song_changed(int);
+		void song_changed(MusECore::SongChangedFlags_t);
 		void fully_recalculate();
 		void goto_tick(int,bool);
 		void pos_changed(int i, unsigned u, bool b);

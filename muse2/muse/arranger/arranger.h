@@ -29,6 +29,7 @@
 #include <QScrollBar>
 #include <QResizeEvent>
 
+#include "type_defs.h"
 #include "midieditor.h"
 #include "pcanvas.h"
 #include "trackautomationview.h"
@@ -156,7 +157,7 @@ class Arranger : public QWidget {
       void showTrackInfo(bool);
       void trackSelectionChanged();
       void trackInfoScroll(int);
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void modeChange(int);
       void setTime(unsigned);
       void globalPitchChanged(int);
@@ -184,7 +185,7 @@ class Arranger : public QWidget {
    public slots:
       void dclickPart(MusECore::Track*);
       void setTool(int);
-      void updateTrackInfo(int flags);
+      void updateTrackInfo(MusECore::SongChangedFlags_t flags);
       void configChanged();
       void controllerChanged(MusECore::Track *t, int ctrlId);
       void focusCanvas();

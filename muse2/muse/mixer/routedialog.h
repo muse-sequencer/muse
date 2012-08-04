@@ -25,6 +25,8 @@
 #define __ROUTEDIALOG_H__
 
 #include "ui_routedialogbase.h"
+#include "type_defs.h"
+
 
 class QCloseEvent;
 class QDialog;
@@ -47,7 +49,7 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       void addRoute();
       void srcSelectionChanged();
       void dstSelectionChanged();
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
 
    signals:
       void closed();

@@ -113,7 +113,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
   connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
-  connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(songChanged(int)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
 
 
 
@@ -379,7 +379,7 @@ void ArrangerView::closeEvent(QCloseEvent* e)
 //   songChanged
 //---------------------------------------------------------
 
-void ArrangerView::songChanged(int type)
+void ArrangerView::songChanged(MusECore::SongChangedFlags_t type)
 {
   // TEST Try these, may need more/less. Esp more: Originally songChanged was directly connected to updateVisibleTracksButtons, so... 
   if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 

@@ -57,7 +57,7 @@ TrackComment::TrackComment(MusECore::Track* t, QWidget* parent)
       setAttribute(Qt::WA_DeleteOnClose);
       setWindowTitle(tr("MusE: Track Comment"));
       track = t;
-      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       textentry->setText(track->comment());
       textentry->moveCursor(QTextCursor::End);
       connect(textentry, SIGNAL(textChanged()), SLOT(textChanged()));
@@ -69,7 +69,7 @@ TrackComment::TrackComment(MusECore::Track* t, QWidget* parent)
 //   songChanged
 //---------------------------------------------------------
 
-void TrackComment::songChanged(int flags)
+void TrackComment::songChanged(MusECore::SongChangedFlags_t flags)
       {
       if ((flags & (SC_TRACK_INSERTED|SC_TRACK_REMOVED|SC_TRACK_MODIFIED)) == 0)
             return;

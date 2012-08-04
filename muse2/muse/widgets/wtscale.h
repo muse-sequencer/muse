@@ -23,6 +23,7 @@
 #ifndef __MTSCALE_H__
 #define __MTSCALE_H__
 
+#include "type_defs.h"
 #include "view.h"
 
 namespace MusEGui {
@@ -40,7 +41,7 @@ class WTScale : public View {
       bool barLocator;
 
    private slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
 
    protected:
       virtual void pdraw(QPainter&, const QRect&);

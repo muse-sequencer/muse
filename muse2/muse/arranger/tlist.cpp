@@ -113,7 +113,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       //setAttribute(Qt::WA_OpaquePaintEvent);
       resizeFlag = false;
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(redraw()));
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(maybeUpdateVolatileCustomColumns()));
       }
@@ -122,7 +122,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 //   songChanged
 //---------------------------------------------------------
 
-void TList::songChanged(int flags)
+void TList::songChanged(MusECore::SongChangedFlags_t flags)
       {
       if (flags & (SC_MUTE | SC_SOLO | SC_RECFLAG | SC_TRACK_INSERTED
          | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_ROUTE | SC_CHANNELS | SC_MIDI_TRACK_PROP

@@ -26,6 +26,7 @@
 #include <QByteArray>
 
 #include <limits.h>
+#include "type_defs.h"
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
@@ -144,7 +145,7 @@ class DrumEdit : public MidiEditor {
       void follow(int);
       void newCanvasWidth(int);
       void configChanged();
-      void songChanged1(int);
+      void songChanged1(MusECore::SongChangedFlags_t);
       void setStep(QString);
 
       void updateGroupingActions();

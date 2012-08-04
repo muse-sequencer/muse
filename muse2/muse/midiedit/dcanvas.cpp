@@ -1670,7 +1670,7 @@ void DrumCanvas::rebuildOurDrumMap()
       emit ourDrumMapChanged(false);
     
     if (need_update)
-      MusEGlobal::song->update(SC_DRUMMAP, 0, true); // i know, this causes a recursion, which possibly
+      MusEGlobal::song->update(SC_DRUMMAP, true); // i know, this causes a recursion, which possibly
                                                   // isn't the most elegant solution here. but it will
                                                   // never be an infinite recursion
   }

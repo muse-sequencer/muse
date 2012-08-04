@@ -31,10 +31,10 @@ using MusEGlobal::song;
 
 TrackDrummapUpdater::TrackDrummapUpdater()
 {
-  connect(song,SIGNAL(songChanged(int, int)), this, SLOT(songChanged(int)));
+  connect(song,SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
 }
 
-void TrackDrummapUpdater::songChanged(int flags)
+void TrackDrummapUpdater::songChanged(MusECore::SongChangedFlags_t flags)
 {
   if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
                SC_PART_INSERTED  | SC_PART_REMOVED  | SC_PART_MODIFIED  |
@@ -52,7 +52,7 @@ void TrackDrummapUpdater::songChanged(int flags)
     {
       // allow recursion. there will be no more recursion, because this
       // is only executed when something other than SC_DRUMMAP happens
-      song->update(SC_DRUMMAP, 0, true); 
+      song->update(SC_DRUMMAP, true); 
     }
     
   }

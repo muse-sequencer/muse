@@ -24,6 +24,7 @@
 #define __ROUTEPOPUPMENU_H__
 
 //#include <QObject>
+#include "type_defs.h"
 #include "popupmenu.h"
 
 namespace MusECore {
@@ -67,7 +68,7 @@ class RoutePopupMenu : public PopupMenu
     
   private slots:
     void popupActivated(QAction*);
-    void songChanged(int);
+    void songChanged(MusECore::SongChangedFlags_t);
   
   public:
     RoutePopupMenu(QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);

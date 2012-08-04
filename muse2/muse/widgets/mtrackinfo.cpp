@@ -265,7 +265,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   //oRButton->setVisible(false);
   connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
   
-  connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
   connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
   
   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
@@ -594,7 +594,7 @@ void MidiTrackInfo::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void MidiTrackInfo::songChanged(int type)
+void MidiTrackInfo::songChanged(MusECore::SongChangedFlags_t type)
 {
   // Is it simply a midi controller value adjustment? Forget it.
   if(type == SC_MIDI_CONTROLLER)
@@ -1368,7 +1368,7 @@ void MidiTrackInfo::iPanDoubleClicked()
 //   updateTrackInfo
 //---------------------------------------------------------
 
-void MidiTrackInfo::updateTrackInfo(int flags)
+void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
 {
       // Is it simply a midi controller value adjustment? Forget it.
       if(flags == SC_MIDI_CONTROLLER)

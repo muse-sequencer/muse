@@ -212,7 +212,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	connect(score_canvas, SIGNAL(canvas_height_changed(int)), SLOT(canvas_height_changed(int)));
 	connect(score_canvas, SIGNAL(viewport_height_changed(int)), SLOT(viewport_height_changed(int)));
 
-	connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), score_canvas, SLOT(song_changed(int)));
+	connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), score_canvas, SLOT(song_changed(MusECore::SongChangedFlags_t)));
 
 	connect(xscroll, SIGNAL(valueChanged(int)), time_bar, SLOT(set_xpos(int)));
 	connect(score_canvas, SIGNAL(pos_add_changed()), time_bar, SLOT(pos_add_changed()));
@@ -518,7 +518,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	clipboard_changed();
 	selection_changed();
 
-	connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(song_changed(int)));	
+	connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(song_changed(MusECore::SongChangedFlags_t)));	
 	connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)));	
 
 	score_canvas->fully_recalculate();
@@ -646,7 +646,7 @@ void ScoreEdit::quant_combobox_changed(int idx)
 	focusCanvas();
 }
 
-void ScoreEdit::song_changed(int flags)
+void ScoreEdit::song_changed(MusECore::SongChangedFlags_t flags)
 {
 	if(_isDeleting)  // Ignore while while deleting to prevent crash.
 		return;
@@ -1535,7 +1535,7 @@ void ScoreCanvas::fully_recalculate()
 	song_changed(SC_EVENT_MODIFIED);
 }
 
-void ScoreCanvas::song_changed(int flags)
+void ScoreCanvas::song_changed(MusECore::SongChangedFlags_t flags)
 {
 	if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
 		return;

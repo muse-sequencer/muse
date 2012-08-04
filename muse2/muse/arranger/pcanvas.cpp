@@ -266,7 +266,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   update
 //---------------------------------------------------------
 
-void PartCanvas::updateSong(DragType t, int flags)
+void PartCanvas::updateSong(DragType t, MusECore::SongChangedFlags_t flags)
       {
       MusEGlobal::song->update(flags | ((t == MOVE_COPY || t == MOVE_CLONE)
          ? SC_PART_INSERTED : SC_PART_MODIFIED));

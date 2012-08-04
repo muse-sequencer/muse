@@ -28,6 +28,7 @@
 #include <set>
 #include <QTime>
 
+#include "type_defs.h"
 #include "song.h"
 #include "canvas.h"
 #include "trackautomationview.h"
@@ -123,7 +124,7 @@ class PartCanvas : public Canvas {
       virtual void moveCanvasItems(CItemList&, int, int, DragType);
       virtual bool moveItem(MusECore::Undo& operations, CItem*, const QPoint&, DragType);
 
-      virtual void updateSong(DragType, int);
+      virtual void updateSong(DragType, MusECore::SongChangedFlags_t);
       virtual void startDrag(CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);
       virtual void viewDropEvent(QDropEvent*);

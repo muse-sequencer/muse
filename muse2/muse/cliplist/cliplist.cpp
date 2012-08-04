@@ -146,7 +146,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       connect(editor->view, SIGNAL(itemSelectionChanged()), SLOT(clipSelectionChanged()));
       connect(editor->view, SIGNAL(itemClicked(QTreeWidgetItem*, int)), SLOT(clicked(QTreeWidgetItem*, int)));
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(editor->start, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(startChanged(const MusECore::Pos&)));
       connect(editor->len, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lenChanged(const MusECore::Pos&)));
 
@@ -186,7 +186,7 @@ void ClipListEdit::closeEvent(QCloseEvent* e)
 //   songChanged
 //---------------------------------------------------------
 
-void ClipListEdit::songChanged(int type)
+void ClipListEdit::songChanged(MusECore::SongChangedFlags_t type)
       {
       // Is it simply a midi controller value adjustment? Forget it.
       if(type == SC_MIDI_CONTROLLER)

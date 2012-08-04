@@ -23,6 +23,7 @@
 #ifndef __ECANVAS_H__
 #define __ECANVAS_H__
 
+#include "type_defs.h"
 #include "canvas.h"
 #include "noteinfo.h"
 #include <QEvent>
@@ -97,7 +98,7 @@ class EventCanvas : public Canvas {
       bool midiin() const     { return _midiin; }
       bool steprec() const    { return _steprec; }
       QString getCaption() const;
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
       void playEvents(bool flag) { _playEvents = flag; }
       void selectAtTick(unsigned int tick);

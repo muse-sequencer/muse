@@ -737,10 +737,10 @@ RoutePopupMenu::RoutePopupMenu(const QString& title, QWidget* parent, MusECore::
 void RoutePopupMenu::init()
 {
   //printf("RoutePopupMenu::init this:%p\n", this);  
-  connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
 }
 
-void RoutePopupMenu::songChanged(int val)
+void RoutePopupMenu::songChanged(MusECore::SongChangedFlags_t val)
 {
   if(val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))     
     updateRouteMenus();             

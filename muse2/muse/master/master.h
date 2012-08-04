@@ -24,6 +24,7 @@
 #ifndef __MASTER_H__
 #define __MASTER_H__
 
+#include "type_defs.h"
 #include "view.h"
 #include "song.h"
 #include "tools.h"
@@ -69,7 +70,7 @@ class Master : public MusEGui::View {
       void deleteVal(int x1, int x2);
 
    private slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
      
    signals:
       void followEvent(int);

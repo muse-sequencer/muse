@@ -262,7 +262,7 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       connect(syncDelaySpinBox, SIGNAL(valueChanged(int)), SLOT(syncChanged()));
   
       // Done in show().
-      //connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+      //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       //connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 }
 
@@ -274,7 +274,7 @@ MidiSyncConfig::~MidiSyncConfig()
 //   songChanged
 //---------------------------------------------------------
 
-void MidiSyncConfig::songChanged(int flags)
+void MidiSyncConfig::songChanged(MusECore::SongChangedFlags_t flags)
 {
       // Is it simply a midi controller value adjustment? Forget it. Otherwise, it's mainly midi port/device changes we want.
       if(flags == SC_MIDI_CONTROLLER || 
@@ -578,7 +578,7 @@ void MidiSyncConfig::cancel()
 void MidiSyncConfig::show()
 {
   songChanged(-1);
-  connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
   QDialog::show();
 }
@@ -607,7 +607,7 @@ void MidiSyncConfig::closeEvent(QCloseEvent* e)
       }
       
       disconnect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), this, SLOT(heartBeat()));
-      disconnect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(songChanged(int)));
+      disconnect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
       
       e->accept();
       }

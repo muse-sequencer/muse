@@ -24,6 +24,7 @@
 #ifndef __MIDICTRLEDIT_H__
 #define __MIDICTRLEDIT_H__
 
+#include "type_defs.h"
 #include "ccontrolbase.h"
 #include "midictrl.h"
 
@@ -59,7 +60,7 @@ class MidiControllerEditDialog : public MidiControllerEditDialogBase {
       void minChanged(int);
       void maxChanged(int);
       void portChanged(int);
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
 
    public:
       MidiControllerEditDialog(QWidget* parent = 0, const char* name = 0, bool modal = false, Qt::WFlags fl = 0);

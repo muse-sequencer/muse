@@ -26,6 +26,7 @@
 #include <list>
 
 
+#include "type_defs.h"
 #include "view.h"
 #include "tools.h"
 #include "midictrl.h"
@@ -168,7 +169,7 @@ class CtrlCanvas : public MusEGui::View {
       void updateSelections();
       
    private slots:
-      void songChanged(int type);
+      void songChanged(MusECore::SongChangedFlags_t type);
       void configChanged();    
       void setCurDrumPitch(int);
 

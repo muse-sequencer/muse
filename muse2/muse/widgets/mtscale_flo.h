@@ -23,6 +23,7 @@
 #ifndef __MTSCALE_FLO_H__
 #define __MTSCALE_FLO_H__
 
+#include "type_defs.h"
 #include "view.h"
 
 
@@ -44,7 +45,7 @@ class MTScaleFlo : public View {
       int xoffset;
 
    private slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
 
    protected:
       virtual void draw(QPainter&, const QRect&);

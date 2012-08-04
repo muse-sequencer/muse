@@ -29,6 +29,7 @@
 #include <QKeyEvent>
 
 #include <limits.h>
+#include "type_defs.h"
 #include "noteinfo.h"
 #include "cobject.h"
 #include "midieditor.h"
@@ -164,7 +165,7 @@ class PianoRoll : public MidiEditor {
       void setSpeaker(bool);
       void setTime(unsigned);
       void follow(int pos);
-      void songChanged1(int);
+      void songChanged1(MusECore::SongChangedFlags_t);
       void configChanged();
       void newCanvasWidth(int);
       void toggleTrackInfo();

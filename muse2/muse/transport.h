@@ -24,6 +24,7 @@
 #ifndef __TRANSPORT_H__
 #define __TRANSPORT_H__
 
+#include "type_defs.h"
 #include "al/sig.h"
 
 #include <QWidget>
@@ -129,7 +130,7 @@ class Transport : public QWidget
       void rposChanged(const MusECore::Pos&);
       void setRecMode(int);
       void setCycleMode(int);
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void syncChanged(bool);
       void jackSyncChanged(bool);
       void setRecord(bool flag);

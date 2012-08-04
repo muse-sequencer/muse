@@ -24,6 +24,7 @@
 #define __COMMENT_H__
 
 #include "ui_commentbase.h"
+#include "type_defs.h"
 
 class QWidget;
 
@@ -66,7 +67,7 @@ class TrackComment : public Comment {
       virtual void setText(const QString& s);
 
    private slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
 
    public:
       TrackComment(MusECore::Track*, QWidget*);

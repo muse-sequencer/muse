@@ -51,7 +51,7 @@ MTScaleFlo::MTScaleFlo(ScoreCanvas* parent_editor, QWidget* parent_widget)
       button = Qt::NoButton;
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
       
       parent=parent_editor;
@@ -64,7 +64,7 @@ MTScaleFlo::MTScaleFlo(ScoreCanvas* parent_editor, QWidget* parent_widget)
 //   songChanged
 //---------------------------------------------------------
 
-void MTScaleFlo::songChanged(int type)
+void MTScaleFlo::songChanged(MusECore::SongChangedFlags_t type)
       {
       if (type & (SC_SIG|SC_TEMPO))
             redraw();

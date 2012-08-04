@@ -33,12 +33,14 @@ namespace MusEGui
 	{
 		_raster=0;
 		setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-		connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(song_changed(int)));
+		connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(song_changed(MusECore::SongChangedFlags_t)));
 		song_changed(0);
 	}
 	
-	void SongPosToolbarWidget::song_changed(int)
+	void SongPosToolbarWidget::song_changed(MusECore::SongChangedFlags_t flags)
 	{
+          if(flags & SC_MIDI_CONTROLLER)  // TODO: Filter more stuff out
+            return;
 		if (width()!=0)
 			setXMag(-(MusEGlobal::song->len()/width()));
 	}

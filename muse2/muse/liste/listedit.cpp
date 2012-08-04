@@ -194,7 +194,7 @@ void ListEdit::closeEvent(QCloseEvent* e)
 //   songChanged
 //---------------------------------------------------------
 
-void ListEdit::songChanged(int type)
+void ListEdit::songChanged(MusECore::SongChangedFlags_t type)
       {
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
@@ -588,7 +588,7 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       mainGrid->setRowStretch(1, 100);
       mainGrid->setColumnStretch(0, 100);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
-      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
 
       if(pl->empty())
       {

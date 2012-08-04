@@ -26,6 +26,7 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 
+#include "type_defs.h"
 #include "awl/pitchedit.h"
 #include "view.h"
 
@@ -157,7 +158,7 @@ class DList : public View {
 
    public slots:
       void tracklistChanged();
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void ourDrumMapChanged(bool);
    
    public:

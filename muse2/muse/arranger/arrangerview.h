@@ -41,6 +41,7 @@
 #include <QToolButton>
 
 #include <limits.h>
+#include "type_defs.h"
 #include "noteinfo.h"
 #include "cobject.h"
 #include "event.h"
@@ -128,7 +129,7 @@ class ArrangerView : public TopWin
                 void cmd(int);
                 void addNewTrack(QAction* action);
                 void configCustomColumns();
-                void songChanged(int);
+                void songChanged(MusECore::SongChangedFlags_t);
 
 	signals:
 		void isDeleting(MusEGui::TopWin*);

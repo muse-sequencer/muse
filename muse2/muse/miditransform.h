@@ -25,6 +25,7 @@
 #define __MIDITRANSFORM_H__
 
 #include "ui_transformbase.h"
+#include "type_defs.h"
 
 class QListWidgetItem;
 class QDialog;
@@ -117,7 +118,7 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
       void insideLoopChanged(bool);
 
    public slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
 
    public:
       MidiTransformerDialog(QDialog* parent = 0, Qt::WFlags fl = 0);

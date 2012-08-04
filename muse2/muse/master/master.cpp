@@ -60,14 +60,14 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       setFocusPolicy(Qt::StrongFocus);  
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
       }
 
 //---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
-void Master::songChanged(int type)
+void Master::songChanged(MusECore::SongChangedFlags_t type)
 {
   //if(_isDeleting) return; // todo: If things get complicated don't forget some mechanism to ignore while while deleting to prevent possible crash.
   
