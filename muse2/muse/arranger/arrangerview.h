@@ -39,7 +39,7 @@
 #include <QByteArray>
 #include <QToolButton>
 
-#include <values.h>
+#include <limits.h>
 #include "noteinfo.h"
 #include "cobject.h"
 #include "event.h"
@@ -69,7 +69,7 @@ class ArrangerView : public TopWin
 			CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_DELETE,
 			CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
 			CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
-			CMD_DELETE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
+			CMD_DELETE_TRACK, CMD_DUPLICATE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
 			CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
 			CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO     };
 
@@ -89,11 +89,13 @@ class ArrangerView : public TopWin
 		QMenu* master;
 
 		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
-		QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
+    QAction *strGlobalCutSelAction, *strGlobalInsertSelAction, *strGlobalSplitSelAction;
+    QAction *trackMidiAction, *trackDrumAction, *trackNewStyleDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
 		QAction *trackAInputAction, *trackAAuxAction;
 		QAction *editCutAction, *editCopyAction, *editCopyRangeAction;
 		QAction *editPasteAction, *editPasteCloneAction, *editPasteDialogAction, *editPasteCloneDialogAction;
 		QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
+    QAction *editDuplicateSelTrackAction;
 		QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
 		QAction *masterGraphicAction, *masterListAction;
 		QAction *midiTransformerAction;
@@ -119,11 +121,15 @@ class ArrangerView : public TopWin
 		void globalCut();
 		void globalInsert();
 		void globalSplit();
-		void cmd(int);
-                void addNewTrack(QAction* action);
+    void globalCutSel();
+    void globalInsertSel();
+    void globalSplitSel();
+    void cmd(int);
+    void addNewTrack(QAction* action);
+    void configCustomColumns();
 
 	signals:
-		void deleted(MusEGui::TopWin*);
+		void isDeleting(MusEGui::TopWin*);
 		void closed();
 
 	public slots:
@@ -133,6 +139,7 @@ class ArrangerView : public TopWin
 		void selectionChanged();
 		void updateShortcuts();
 		void updateVisibleTracksButtons();
+		virtual void focusCanvas() { arranger->focusCanvas(); } 
 
 	public:
 		ArrangerView(QWidget* parent = 0);
@@ -148,7 +155,7 @@ class ArrangerView : public TopWin
 		void writeStatus(int level, MusECore::Xml& xml) const;
 		void readStatus(MusECore::Xml& xml);
 		static void readConfiguration(MusECore::Xml&);
-		static void writeConfiguration(int, MusECore::Xml&);
+		void writeConfiguration(int, MusECore::Xml&);
 };
 
 }  // namespace MusEGui

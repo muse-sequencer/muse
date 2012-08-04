@@ -26,6 +26,10 @@
 
 namespace MusEGui {
 
+int Legato::range = 1;
+int Legato::min_len = 0;
+bool Legato::allow_shortening = 0;
+  
 Legato::Legato(QWidget* parent)
 	: QDialog(parent)
 {
@@ -35,8 +39,6 @@ Legato::Legato(QWidget* parent)
 	range_group->addButton(selected_events_button,1);
 	range_group->addButton(looped_events_button,2);
 	range_group->addButton(selected_looped_button,3);
-	
-	pull_values();
 }
 
 void Legato::pull_values()

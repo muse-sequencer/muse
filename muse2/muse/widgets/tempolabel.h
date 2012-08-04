@@ -24,7 +24,7 @@
 #define __TEMPOLABEL_H__
 
 #include <QLabel>
-#include <QDoubleSpinBox>
+#include "doublespinbox.h"
 
 namespace MusEGui {
 
@@ -54,7 +54,7 @@ class TempoLabel : public QLabel {
 //   TempoEdit
 //---------------------------------------------------------
 
-class TempoEdit : public QDoubleSpinBox {
+class TempoEdit : public DoubleSpinBox {
       Q_OBJECT
 
       double curVal;

@@ -66,16 +66,19 @@ class PCItem : public CItem {
    private:
       MusECore::Part* _part;
      
+   protected:
+      int _serial;
+   
    public:
       PCItem(MusECore::Part* );
       Type type() const { return PART; } 
       const QString name() const       { return _part->name(); }
       void setName(const QString& s)   { _part->setName(s); }
       MusECore::Track* track() const   { return _part->track(); }
+      int serial() { return _serial; }
       
       bool leftBorderTouches;  // Whether the borders touch other part borders. 
       bool rightBorderTouches;
-
       bool isSelected() const          { return _part->selected(); }
       void setSelected(bool f)         { _part->setSelected(f); }
       MusECore::Part* part() const     { return _part; }
@@ -84,8 +87,7 @@ class PCItem : public CItem {
 
 enum ControllerVals { doNothing, movingController, addNewController };
 struct AutomationObject {
-  //MusECore::CtrlVal *currentCtrl;
-  int currentCtrlFrame;
+  QList<int> currentCtrlFrameList;
   bool currentCtrlValid;
   MusECore::CtrlList *currentCtrlList;
   MusECore::Track *currentTrack;
@@ -112,10 +114,8 @@ class PartCanvas : public Canvas {
 
       AutomationObject automation;
 
-      //std::vector<TrackAutomationView*> automationViews;
-      
       virtual void keyPress(QKeyEvent*);
-      virtual void mousePress(QMouseEvent*);
+      virtual bool mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);
       virtual void mouseRelease(const QPoint&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
@@ -135,7 +135,7 @@ class PartCanvas : public Canvas {
       virtual void deleteItemAtPoint(const QPoint&);
       virtual bool deleteItem(CItem*);
       virtual void moveCanvasItems(CItemList&, int, int, DragType);
-      virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType);
+      virtual bool moveItem(MusECore::Undo& operations, CItem*, const QPoint&, DragType);
       virtual void curItemChanged();
 
       virtual void updateSong(DragType, int);
@@ -154,9 +154,7 @@ class PartCanvas : public Canvas {
       enum paste_mode_t { PASTEMODE_MIX, PASTEMODE_MOVEALL, PASTEMODE_MOVESOME };
       void paste(bool clone = false, paste_mode_t paste_mode = PASTEMODE_MIX, bool to_single_track=false, int amount=1, int raster=1536);
       MusECore::Undo pasteAt(const QString&, MusECore::Track*, unsigned int, bool clone = false, bool toTrack = true, int* finalPosPtr = NULL, std::set<MusECore::Track*>* affected_tracks = NULL);
-      //MusECore::Part* readClone(MusECore::Xml&, MusECore::Track*, bool toTrack = true);
       void drawWavePart(QPainter&, const QRect&, MusECore::WavePart*, const QRect&);
-      //void drawMidiPart(QPainter&, const QRect& rect, MusECore::EventList* events, MusECore::MidiTrack*mt, const QRect& r, int pTick, int from, int to);
       void drawMidiPart(QPainter&, const QRect& rect, MusECore::EventList* events, MusECore::MidiTrack*mt, MusECore::MidiPart*pt, const QRect& r, int pTick, int from, int to);
       MusECore::Track* y2Track(int) const;
       void drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, MusECore::AudioTrack* track);
@@ -165,8 +163,8 @@ class PartCanvas : public Canvas {
 
       void checkAutomation(MusECore::Track * t, const QPoint& pointer, bool addNewCtrl);
       void processAutomationMovements(QPoint pos, bool addPoint);
-      double dbToVal(double inDb);
-      double valToDb(double inV);
+      double logToVal(double inLog, double min, double max);
+      double valToLog(double inV, double min, double max);
 
    protected:
       MusECore::Part* _curPart;
@@ -205,10 +203,11 @@ class PartCanvas : public Canvas {
       void cmd(int);
       MusECore::Part* part() const { return _curPart; }
       void setCurrentPart(MusECore::Part*); 
+      void songIsClearing();
       
    public slots:
-     void redirKeypress(QKeyEvent* e) { keyPress(e); }
-     void controllerChanged(MusECore::Track *t);
+      void redirKeypress(QKeyEvent* e) { keyPress(e); }
+      void controllerChanged(MusECore::Track *t, int CtrlId);
 };
 
 } // namespace MusEGui

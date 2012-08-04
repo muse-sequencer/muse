@@ -41,10 +41,9 @@
 #include "widgets/function_dialogs/legato.h"
 #include "widgets/pasteeventsdialog.h"
 
-#include <values.h>
+#include <limits.h>
 #include <iostream>
 #include <errno.h>
-#include <values.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -55,7 +54,7 @@
 #include <QDrag>
 #include <QMessageBox>
 #include <QClipboard>
-
+#include <QSet>
 
 
 using namespace std;
@@ -177,7 +176,7 @@ bool quantize_notes(const set<Part*>& parts)
 {
 	if (!MusEGui::quantize_dialog->exec())
 		return false;
-//  (1<<MusEGui::quantize_dialog->raster_power2)
+
   int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
   quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/raster,
 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
@@ -568,16 +567,16 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 	int tick_dest2 = tick_dest1 + raster + raster*swing/100;
 	int tick_dest3 = tick_dest1 + raster*2;
 
-	int tick_diff1 = tick_dest1 - tick;
-	int tick_diff2 = tick_dest2 - tick;
-	int tick_diff3 = tick_dest3 - tick;
+	int tick_diff1 = abs(tick_dest1 - (int)tick);
+	int tick_diff2 = abs(tick_dest2 - (int)tick);
+	int tick_diff3 = abs(tick_dest3 - (int)tick);
 	
-	if ((abs(tick_diff1) <= abs(tick_diff2)) && (abs(tick_diff1) <= abs(tick_diff3))) //tick_dest1 is the nearest tick
-		return tick_dest1;
-	else if ((abs(tick_diff2) <= abs(tick_diff1)) && (abs(tick_diff2) <= abs(tick_diff3))) //tick_dest2 is the nearest tick
+	if ((tick_diff3 <= tick_diff1) && (tick_diff3 <= tick_diff2)) //tick_dest3 is the nearest tick
+		return tick_dest3;
+	else if ((tick_diff2 <= tick_diff1) && (tick_diff2 <= tick_diff3)) //tick_dest2 is the nearest tick
 		return tick_dest2;
 	else
-		return tick_dest3;
+		return tick_dest1;
 }
 
 bool quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_len, int strength, int swing, int threshold)
@@ -832,7 +831,7 @@ bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 			Event& event1=*(it1->first);
 			Part* part1=it1->second;
 			
-			unsigned len=MAXINT;
+			unsigned len=INT_MAX;
 			// we may NOT optimize by letting it2 start at (it1 +1); this optimisation
 			// is only allowed when events was sorted by time. it is, however, sorted
 			// randomly by pointer.
@@ -851,7 +850,7 @@ bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 					len=event2.tick()-event1.tick();
 			}
 			
-			if (len==MAXINT) len=event1.lenTick(); // if no following note was found, keep the length
+			if (len==INT_MAX) len=event1.lenTick(); // if no following note was found, keep the length
 			
 			if (event1.lenTick() != len)
 			{
@@ -955,7 +954,7 @@ void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Pa
 // if nothing is selected/relevant, this function returns NULL
 QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 {
-	unsigned start_tick = MAXINT; //will be the tick of the first event or MAXINT if no events are there
+	unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
 	
 	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
@@ -963,7 +962,7 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 				if (ev->second.tick() < start_tick)
 					start_tick=ev->second.tick();
 	
-	if (start_tick == MAXINT)
+	if (start_tick == INT_MAX)
 		return NULL;
 	
 	//---------------------------------------------------
@@ -1181,7 +1180,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
 	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
-	                                         // pointer changes (by resize) screw it up
+	                                                     // pointer changes (by resize) screw it up
 	MusEGlobal::song->applyOperationGroup(operations);
 	MusEGlobal::song->update(SC_SELECTION);
 }
@@ -1278,34 +1277,22 @@ void shrink_parts(int raster)
 	MusEGlobal::song->applyOperationGroup(operations);
 }
 
-void internal_schedule_expand_part(Part* part, int raster, Undo& operations)
-{
-	EventList* events=part->events();
-	unsigned len=part->lenTick();
-	
-	for (iEvent ev=events->begin(); ev!=events->end(); ev++)
-		if (ev->second.endTick() > len)
-			len=ev->second.endTick();
-
-	if (raster) len=ceil((float)len/raster)*raster;
-					
-	if (len > part->lenTick())
-	{
-		MidiPart* new_part = new MidiPart(*(MidiPart*)part);
-		new_part->setLenTick(len);
-		operations.push_back(UndoOp(UndoOp::ModifyPart, part, new_part, true, false));
-	}
-}
 
 void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations)
 {
+	QSet<const Part*> already_done;
+	
+	for (Undo::iterator op_it=operations.begin(); op_it!=operations.end();op_it++)
+		if (op_it->type==UndoOp::ModifyPart || op_it->type==UndoOp::DeletePart)
+			already_done.insert(op_it->nPart);
+			
 	unsigned old_len=part->lenTick();
 	if (old_len!=new_len)
 	{
 		Part* part_it=part;
 		do
 		{
-			if (part_it->lenTick()==old_len)
+			if (part_it->lenTick()==old_len && !already_done.contains(part_it))
 			{
 				MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);
 				new_part->setLenTick(new_len);
@@ -1393,6 +1380,83 @@ void clean_parts()
 			}
 	
 	MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool merge_selected_parts()
+{
+	set<Part*> temp = get_all_selected_parts();
+	return merge_parts(temp);
+}
+
+bool merge_parts(const set<Part*>& parts)
+{
+	set<Track*> tracks;
+	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+		tracks.insert( (*it)->track() );
+
+	Undo operations;
+	
+	// process tracks separately
+	for (set<Track*>::iterator t_it=tracks.begin(); t_it!=tracks.end(); t_it++)
+	{
+		Track* track=*t_it;
+
+		unsigned begin=INT_MAX, end=0;
+		Part* first_part=NULL;
+		
+		// find begin of the first and end of the last part
+		for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+			if ((*it)->track()==track)
+			{
+				Part* p=*it;
+				if (p->tick() < begin)
+				{
+					begin=p->tick();
+					first_part=p;
+				}
+				
+				if (p->endTick() > end)
+					end=p->endTick();
+			}
+		
+		if (begin==INT_MAX || end==0)
+		{
+			printf("THIS SHOULD NEVER HAPPEN: begin==INT_MAX || end==0 in merge_parts()\n");
+			continue; // skip the actual work, as we cannot work under errornous conditions.
+		}
+		
+		// create and prepare the new part
+		Part* new_part = track->newPart(first_part); 
+		new_part->setTick(begin);
+		new_part->setLenTick(end-begin);
+		
+		EventList* new_el = new_part->events();
+		new_el->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
+		                     // so we must decrement it first :/
+		new_el->clear();
+		
+		// copy all events from the source parts into the new part
+		for (set<Part*>::iterator p_it=parts.begin(); p_it!=parts.end(); p_it++)
+			if ((*p_it)->track()==track)
+			{
+				EventList* old_el= (*p_it)->events();
+				for (iEvent ev_it=old_el->begin(); ev_it!=old_el->end(); ev_it++)
+				{
+					Event new_event=ev_it->second;
+					new_event.setTick( new_event.tick() + (*p_it)->tick() - new_part->tick() );
+					new_el->add(new_event);
+				}
+			}
+		
+		// delete all the source parts
+		for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+			if ((*it)->track()==track)
+				operations.push_back( UndoOp(UndoOp::DeletePart, *it) );
+		// and add the new one
+		operations.push_back( UndoOp(UndoOp::AddPart, new_part) );
+	}
+	
+	return MusEGlobal::song->applyOperationGroup(operations);
 }
 
 } // namespace MusECore

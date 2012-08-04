@@ -90,7 +90,6 @@ void MidiEventBase::dump(int n) const
 //   MidiEventBase::write
 //---------------------------------------------------------
 
-//void MidiEventBase::write(int level, Xml& xml, const Pos& offset) const
 void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePath*/) const
       {
       xml.nput(level++, "<event tick=\"%d\"", tick() + offset.tick());
@@ -120,12 +119,6 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
             xml.tag(level, "/event");
             }
       else {
-            //if (a)
-            //      xml.nput(" a=\"%d\"", a);
-            //if (b)
-            //      xml.nput(" b=\"%d\"", b);
-            //if (c)
-            //      xml.nput(" c=\"%d\"", c);
             xml.nput(" />\n");
             }
       }

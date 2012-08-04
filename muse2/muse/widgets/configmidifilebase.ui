@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>548</width>
-    <height>353</height>
+    <width>546</width>
+    <height>367</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,6 +41,27 @@
          <string>Alt+P</string>
         </property>
        </widget>
+      </item>
+      <item row="1" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QRadioButton" name="newDrumsCheckbox">
+          <property name="text">
+           <string>Use new-style drum tracks</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="oldDrumsCheckbox">
+          <property name="text">
+           <string>Use old-style drum tracks</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

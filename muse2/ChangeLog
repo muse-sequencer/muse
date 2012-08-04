@@ -1,4 +1,582 @@
-24.10.2010:
+08.07.2012:
+         - Changed naming convention for recorded wave files to include track name and it's
+           take number. (rj)
+         - added a warning dialog for the delete track key shortcut. (rj)
+         - Use cmake's own FindPythonLibs module instead of pkgconfig to detect Python (Orcan)
+06.07.2012:
+         - Updated Czech translation from Pavel Fric (rj)
+         - Some strings that were not translatable are now (as reported by Pavel Fric) (rj)
+         - Updated translation files, and started completing swedish translation a bit (rj)
+         - increased zoom range in arranger, reversed zoom in wave editor (rj)
+04.07.2012:
+         - added inc/dec tick for events in the list editor (rj)
+03.07.2012:
+         - Fixed new drum parts disappear as sson as they're drawn. (Tim)
+30.06.2012:
+         =======================================
+         * 2.0 tagged (rj)
+         =======================================
+         - Emergency crash fix: In automation popup midi control 'Clear' item. (Tim)
+           Cannot delete any actions from menu due to recent December PopupMenu fixes. 
+29.06.2012:
+         - Fixed file dialog: disable 'read configuration' for midi files. (Tim)
+         - Updated swedish translation (rj)
+         - reworked the REC button somewhat (rj)
+28.06.2012:
+         - External sync fixes: Now have user-selectable of clock filtering and quantization. (Tim)
+         - Fixed clicking tempo master does not update wave parts. Allow SC_MASTER to call canvas->partsChanged. (Tim)
+         - Fixed problems with recorded wave part and event sizes, and 'past end' indicator. (Tim)
+         - Don't resize or destroy wave events upon part resize. (Tim)
+         - Init support for controlling midi engine from Jack timebase master. Completely disabled for now. (Tim)
+26.06.2012:
+         - Added updated Czech translation from Pavel Fric[pavelfric@seznam.cz] (rj)
+23.06.2012:
+         - automation graphs: deletion with middle-click, fixed automation    (flo93)
+                              editing.
+18.06.2012:
+         - Removed printouts about no longer supported VST implementation,
+           use DSSI implementation instead (rj)
+         - Some preparations for 2.0 (rj)
+16.06.2012:
+         - MusE as Jack Timebase master: Corrected ticks_per_beat and bar_start_tick fields. (Tim) 
+         - Fixed bug by Geoff B and Flo: Changing a midi port device: We are only interested in altering 
+            tracks using the port being changed in the midi port list. And don't change channel. (Tim)
+15.06.2012:
+        * Sync fix: MusE now records tempo changes from externally clocked midi. (Tim)
+          Still experimental but non-intrusive: You will be asked at the end of recording if you  
+           want to transfer the recorded tempos to the master tempo graph. 
+          Tested OK so far with ALSA and Jack midi. Best results ATM may be when recording from 
+           position 0, not 'continuing' a recording or skipping 'fwd' or 'rew'. 
+          TODO: Record Jack timebase changes! Find patch someone sent years ago, likely still useful...
+11.06.2012:
+        - Finally! Audio controller playback has smooooth frame resolution even with large audio buffers. (Tim)
+          CtrlList::value() now accepts a nextFrame*, filled with next event frame, which the
+           plugin and dssi process use to determine the run sizes. 
+          Bonus! This processing is now guaranteed to be ALIGNED with user's chosen minimum control processing 
+           period in Settings. Before, it was occasionally going to 1, 2, 4 frame runs etc., was not good. 
+          TODO: Sorry, track audio/pan have no 'variable run length' support yet. Choppy with large buffers.
+                Tip: If a ping-pong effect is desired, try a plugin for now!
+        - Increased default minimum controller period from 64 to 256. Tests showed 256 is just fine, smooth.
+10.06.2012:
+        - Add midi-to-audio control popups to right-click automation menus. (Tim)
+        - Track list audio automation popup now can stay open, for colour and 'clear' items. (Tim)
+08.06.2012:
+        * Merge: From branch r2_0_extra. (Tim)
+        - More automation fixes. In AudioTrack::processAutomationEvents, optimize integer, bool, 
+           discrete controller types to avoid multiple dots on flat straight-line graph segments. (Tim)
+        - Replaced Song::controllerChange() with a lower-level 
+           CtrlList::guiUpdatePending()/clearGuiUpdatePending(). Checked and cleared in 
+           Song::beat() at the nice slow heartbeat rate instead of direct calls to QWidget::update().
+          This means ALL controls should update their graphs now, and at a more reasonable rate.  (Tim)
+        - ARVT_STOP automation events are also recorded now
+        - When clicking sliders in the plugin's native GUIs or the
+          mixer with SHIFT held down, straight lines are drawn (no
+          intermediate control points are recorded)
+          TODO: does not yet work for muse-native, but customized GUIs (flo)
+07.06.2012:
+        - More automation fixes. (Tim)
+06.06.2012:
+        - Another midi-to-audio mapper classes rewrite. (Tim)
+05.06.2012:
+        - Rewrote midi-to-audio control mapper classes. (Tim...)
+        - Added save and load midi-to-audio settings.
+        - Remap or remove mappers when rack items moved or removed.
+04.06.2012:
+        - Side branch r2_0_extra, copied from release_2_0:
+        * Feature: Midi control of audio paramters. (Tim)
+        - More important timing, accuracy fixes.
+03.06.2012:
+        - Merged documentation from local source to repository LaTeX document, 80% done (rj)
+27.05.2012:
+        * Timing, resolution, accuracy, and automation fixes:  (Tim)
+        - Ask audio driver for 'its' current system time instead of wallclock in utils.cpp:curTime(). 
+          Reason: Jack's clock source can be wallclock, cycle counter, HPET etc. 
+          TODO: Try more Jack time functions for accuracy in Audio::framesSinceCycleStart etc.
+        - Fixed automation 'manual' slider values: Update them from automation values at the current time 
+           when switching to automation OFF. After some recent changes by me, the 'manual' values were
+           left 'independent' of the automation values. While this had interesting effects, the value
+           would 'jump' back to the manual value when switching to OFF, which became disconcerting.
+          The best solution, in muse_evolution (from where I adopted the previous changes), was to 
+           continuously update the manual values during process, but there may be too many controllers,
+           so this was the other lesser option. 
+        - All audio/plugin GENERIC gui controls now record their automation at FRAME resolution.
+          Previously the timestamps were ticks converted to frames (lossy). Now they are true frames.
+          This means these recorded graphs can be much denser with vertices now, if needed.
+        - Querying of plugin controller values in DssiSynthIF::getData, PluginI::apply, and volume/pan 
+           controllers in AudioTrack::copyData/addData is now done at a more proper and accurate 
+           frame time instead of wallclock-based queries via AudioTrack::volume/pan/pluginCtrlVal.
+          (Sorry, this does not mean frame accuracy on playback yet.)
+        - Menu 'Take automation snapshot' now operates with frame resolution. Added a warning message as well.
+        - Menu 'Clear automation' enabled and implemented. Added a warning message as well.
+        - DSSI synths: Fixed errors with Pitch controller on playback. Removed AND'ing of 0x3FFF in
+           CTRL_PITCH section of DssiSynthIF::processEvent.
+20.05.2012:
+        - MusE can now compile with clang/llvm via -DCMAKE_CXX_COMPILER=clang++ flag to cmake. (Orcan)
+        - Update some URLs in README. (Orcan)
+18.05.2012:
+        - Added Czech translation by Pavel Fric[pavelfric@seznam.cz] (rj)
+        - fixed native GUIs not updating                            (flo93)
+                - removed _guiUpdate{Program,Control[]}
+                - OscIF now stores the native GUI's state
+                - OscIF doesn't send control changes if they don't differ from the
+                    native GUI's state (until enforced)
+08.05.2012:
+        - ladspa/dssi/simplesynth controls: Fixed logarithmic defaults. (Tim)
+           Use log not log10 in plugin.cpp:ladspaDefaultValue(). 
+        - ladspa/dssi/simplesynth controls: A better default than 1.0 if none found, compute from upper/lower. (Tim)
+           In plugin.cpp:ladspaDefaultValue(). TODO: simplesynth controls still wrong. 
+        - ladspa: TAP Reverberator built-in MusE GUI: Fixed wet/dry infinity display "---". (Tim)
+           Added DoubleLabel 'offValue' Qt property. Set in file 2142.ui 
+07.05.2012:
+        - DSSI: Fixed second of two crashes when operating controls while playing notes. (Tim)
+          Just ignore rare out-of-order events.
+06.05.2012:
+        - Added automation right-click remove point and printout with current value, also started 
+          working towards editing multiple points (rj)
+        - Fixed crash bug in pianoroll when using arrow keys on an empty part (rj)
+        - DSSI: Fixed one of two crashes when operating controls while playing notes. WIP on other (rarer) crash. (Tim)
+05.05.2012:
+        * Updated .ts translation files in repository. Updated with -no-obsolete to
+          trim away lots of unused strings (rj)
+04.05.2012:
+        *Added: -A switch: "Force inclusion of ALSA midi even if using Jack". (Tim...) 
+        - Fixed intermittent Jack crash at startup with jack <= 1.9.8. Fixed in Jack 1.9.9  
+        - Rearranged main.cpp, moved a few init items into it from app.cpp 
+        - Fixed "Jack calling while audio disconnected" errors at startup.
+        - Fixed LASH leak: Added lash_args_destroy().
+        - Fixed icons leak: Destroy all icons.
+        - Fixed function dialogs leak: Created with NULL parent.
+        - Removed QApplication::setColorSpec() call. Caused "pixmap is not an X11 class pixmap" errors.
+        - Fixed style changing problems (transparent MDI windows, other artifacts). Requires restart!
+03.05.2012:
+        - Fixed crash bug with coloring of iR button on aux strip (it does not have one) (rj)
+24.04.2012:
+        - Changed automation drawing in arranger to be more forgiving
+          shift no longer needed and it's not needed to be too close
+          to the line. TODO: some cleanup (rj)
+23.04.2012:
+        - Global Settings: Start song: Changed to allow other templates. (Tim)
+          * Please revisit this setting or start with clean config so MusE can 
+           initialize the box with the global default.med file.
+22.04.2012:
+        - Duplicate Tracks: Fixed routing bug. (Tim)
+          In tracks' ::internal_assign(), don't call msgAddRoute, push_back the route node,
+           because caller later calls msgAddTrack which 'mirrors' that single routing node.
+          Exception: Audio Input and Output still need to call msgAddRoute which connects to Jack.
+          May still cause audio processing problems ?
+        - Added colorhints to iR and oR routing buttons (rj)
+21.04.2012:
+        - Templates: File dialog: Added 'read Midi Port Configuration' box. (Tim)
+        - File dialog: Unset 'read Midi Port Configuration' box for Global folder, set for others. (Tim) 
+        - File dialog: Made side bar buttons auto-exclusive. Some fixes, cleanups. (Tim)
+19.04.2012:
+        - Reverted yesterdays description change, now shows label again (rj)
+        - Added tooltips to trackInfo which shows additional info for synths (rj)
+        - Fixed focus for tempo and signature widgets and patch selector in midi track info (rj)
+        - Fixed RJ's focus fixes. Now tempo/sig toolbar has proper Smart Focus and works in all related windows. (Tim)
+        - Removed Smart Focus restart requirement in Settings. Rewrote some silly signal connects. (Tim)
+18.04.2012:
+        - Prefer native GUI for plugins when double clicking in the rack (rj)
+        - Prefer description instead of label in synth name in track list, it's more descriptive (rj)
+        - Grayed out "copy plugins" in duplicate track dialog since it's not finished (rj)
+17.04.2012:
+        - Added gcc4.7 patch from Matthias Klose <doko@debian.org> (rj)
+        - Added -Werror=format-security from Alessio Treglia <alessio@debian.org> (rj)
+16.04.2012:
+        - Fixed some bugs in swedish translation (rj)
+14.04.2012:
+        - Optimize some QByteArray usages and use length() instead of taking strlen(). (Tim)
+12.04.2012:
+        - Add new 'type' column to LADSPA browser, add tooltips to AO, AI CO, CI, IP, ID columns. (Tim)
+09.04.2012:
+        - Feature request: Allow loading of DSSI synths (those with a run*_synth* function) in LADSPA browser. (Tim)
+07.04.2012:
+        - Fixed bug with drawing of song position toolbar (rj)
+25.03.2012:
+        - Added "beautifying" frame to the song position toolbar, hope that looks nicer
+          for all :) (rj)
+24.03.2012:
+        - Fixed memory leaks in the undo system. Removed unused ModifyTrack action (flo93)
+        - Swapped usage of oPart and nPart in the undo system. this was completely
+          braindead: oPart was assigned the nPart_-ctor-parameter and vice versa (flo93)
+        - Removed unused UndoOp-ctors (flo93)
+        - Code cleanups in undo.cpp (flo93)
+        - changed some sharing-menu-debug-messages from debugMsg to heavyDebugMsg (flo93)
+        - added a copy-ctor to Part which increases the eventlist's refcounter (flo93)
+        - NPart stores serial number (flo93)
+        - Changed locale loading to use system setting instead of keyboard setting (rj)
+23.03.2012:
+        - Changed file loading to use .toLocal8Bit instead of .toAscii seems to 
+          fix issues to load files with local chars like åäö in the name (rj)
+        - Fixed invalid reads/writes/deletes when having the cliplist editor open:
+          there was a funny mixture of reference-counting smartpointers and normal,
+          "dumb" pointers, and some pieces of the code relies on the smartpointers
+          to delete stuff automatically (which was correct), other pieces just deleted
+          stuff, regardless of the refcount.
+          now everything using SndFile uses refcounting. HOWEVER this created a MEMORY
+          LEAK: when recording to a wave track (this creates a SndFile, refcount=1),
+          then undoing this (this doesn't delete, but only stashes away the part and
+          so the smart pointer), then opening a new song (this doesn't delete the stashed
+          away part and so the smart pointer, so refcount never drops to zero) the SndFile
+          is never deleted.                                                         (flo93)
+        - Made the DidYouKnow dialog actually work, add lines to share/didyouknow.txt (rj)
+20.03.2012:
+        - arranger's part canvas now doesn't display thin slivers for
+          parts of hidden tracks (flo93)
+        - Header::write/readStatus now uses the save/restoreState functions,
+          simplifying the code and storing column widths as well (flo93)
+        - removed unused and non-working updateTListHeader function (flo93)
+        - PixmapButton (red LEDs, and Delta Mode): Eat up context menu events. (Tim)
+        - Class SpinBox, DoubleSpinBox, Dentry: Change to consistent "ctrl-double-click on/off". (Tim)
+19.03.2012:
+        - column state is now stored into the global config, not
+          into the song file (flo93)
+        - Song load: Arranger MDI window: Fixed size restoration. (Tim)
+          In TopWin::readStatus(), if mdisubwin is maximized, restore it before setting pos and height.
+        - Changed reporting of bad timing a bit to possibly make it clearer what the problem is 
+          and what to do about it (rj)
+18.03.2012:
+        - Delta/absolute mode button: Improved behaviour. (Tim)
+        - Transport and NoteInfo toolbar positional editors: Fixed not updating when tempo or sig changed. (Tim)
+          In PosEdit::setValue(), checking different value is not enough. Must check whether resultant msf or mbt values changed.
+          TODO: updateValue() is now public so it can be called externally but it is not used yet - make NoteInfo and Transport 
+           use it instead of setValue().  
+17.03.2012:
+        - Custom columns can now either affect tick0 or song->cpos() (flo)
+        - hopefully fixed a bug in the custom columns dialog (flo)
+16.03.2012:
+        - Custom columns now send their controller changes to the device
+          automatically if appropriate (flo)
+        - Drum editor:  Added missing multiple-note editing. (Tim...)
+        - Midi editors: Don't allow notes to be added before part. (Caused crash in Drum editor, odd behaviour in Pianoroll.)
+        - Midi editors: Added "Delta Mode" button to Note Info toolbar. 
+        - Code cleanups in Pianoroll, Drum editor.
+15.03.2012:
+        - Updated swedish translation with help from Cristian Ramos (rj)
+10.03.2012:
+        - Track routing: Fixed duplicate routes: Reverted usage of operation group in Song::addTrack. (Tim)
+        - Templates: Default routing: Restored default Jack out/in routes in audio.med, synti.med, default.med, monorecord.med. (Tim)
+        - Switch from LIB_PATH_SUFFIX to LIB_SUFFIX, and from CMAKE_INSTALL_LIBDIR to LIB_INSTALL_DIR in CMakeLists.txt. Still fall
+          back to CMAKE_INSTALL_LIBDIR if it is specified explicitly instead of LIB_INSTALL_DIR. (Orcan)
+        - Fix cmake warning in simpledrums when CMAKE_BUILD_TYPE is not set. (Orcan)
+09.03.2012:
+        - Track list: Popup editors: Pre-select text. (Tim)
+        - Track list channel popup editor: Eat up dbl-clcks if already open. Caused pseudo 'wrapping' if disabled arrows dbl-clicked. (Tim)
+08.03.2012:
+        * Comprehensive focus fixes: (Tim...)
+        * New: Gui behaviour option: "Smart Focus": All toolbar boxes give focus back to respective canvases. 
+          (Most boxes except Score Velo On/Off changed to StrongFocus, for non-focused wheel support.) 
+        - Focusing + tabbing fixes: Exclusions, tightening of tab sequences.
+        - !! Most spinboxes now wait until return pressed !!  For example the Song Length box. 
+        - PianoRoll toolbar: Fixed auto-repeats - optimized NoteInfo::setDeltaMode(). 
+        - Midi boxes: Fixed Ctrl-click on/off.
+        - Master Editor: Fixed can't edit if not enabled. Also Transport sig box.
+        - TracK Info panel: Fixed Scrolling. TODO: Make step sizes reasonable, same as Pianoroll ScrollBox. 
+                                             TODO: Scroll when tabbing among the Track Info controls !
+        - Track List key handling: Fixed TList::moveSelection().
+        - Visible Tracks: Drums and Synths: Fixed Track::isVisible().
+        - Track List, and Master Editor: Fixed popup editors. Sizing fixes. Use no frames. 
+        - Event List Editor: Fixed not updating when parts modified.
+        - Pianoroll and Drum Editor: Fixed not updating sometimes ex. moving part past end of song.
+          (Was returning prematurely from songChanged() coding if they got SC_SOLO.) 
+23.02.2012:
+        - Compile fix in pyapi.cpp (Orcan)
+        - Don't optimize debug builds of simpledrums (Orcan)
+14.02.2012:
+        - added customizable columns to the arranger (flo93)
+13.02.2012:
+        - CMake build system: Added cached variable LIB_PATH_SUFFIX, may be set to 64 so that installed library path is lib64 or whatever. (Tim)
+12.02.2012:
+        - Midi: Force events in play event list to be sent when playing, even if redundant. TODO: Fix sending controllers during seek. (By Tim...)
+        - Midi revert: MidiPort::setMidiDevice(): Send controllers in song to synths. Synths were not restoring vol for ex. My old bad.
+        - Fluid: Fixed pitch input: Add 8192.
+        - Fluid + Fluidsynth + SimpleDrums: ::processEvent(): Don't return true for controllers (why?). Was causing multiple send attempts.
+        - SimpleDrums: Fixed too-short plugin chooser: In ctor SS_PluginGui rem'd a couple of height-fixing lines. Hm, FIXME - was OK before.
+        - Midi ports config window: Allow default output channel column to unselect all channels ie. no default output channels at all.
+31.01.2012:
+        - Jack Midi: Added missing midi sync output functions start/stop/SPP etc.  (By Tim...) 
+           TODO: Give its own clock, currently it's driven by ALSA clock.  TODO: ALSA clock out seems badly broken.
+        - Jack Midi: Fixed Song Position Pointer sync input larger than 10 bars.  
+        - ALSA: Seek sends wrong CCs. putMidiEvent() not respecting CTRL_PROGRAM and CTRL_PITCH. (Thanks to Dennis Schulmeister).
+        - Routing popup: Fixed crash with empty ports.
+        - Jack Midi: Fixed crashes/lockups when 'Use Jack Transport' off. Completely re-wrote Jack dummy tranport sync to behave like Jack.
+        - Midi:Increased MIDI_FIFO_SIZE to 4096 and MIDI_REC_FIFO_SIZE to 256.
+        - Midi: Sustain: Fixed inhibit/re-enable on stop/play. Also added during seek to quiet things down.
+        - Midi: Don't send controllers during seek if part or track muted or off.
+        - Midi: Send controllers during seek only if a change occurred - but force sending if at position 0, or value exists at current position.
+        - ALSA Revert: Removed recent MidiAlsaDevice::playEventFifo. Hm, too cautious? 
+        - Midi sync: Removed redundant and too-early 'continue' commands. Audio::startRolling already properly does this when sync 'ready to roll'.
+        - Midi: Fixed timing error. MEvent::operator<()  Put same-time note-ons after controllers so that program comes before notes! (For example).
+        - Jack Midi: Fixed timing error: Reserve multi-events at same frame-time, NOT at successive frames. (Otherwise nightmare to sort stuff.)
+        - Midi Revert: Re-installed ALSA sequencer thread SEQM_SEEK and SEQM_STOP, and revert code to call them from audio thread. 
+          TODO: Option "Don't use ALSA midi". Midi thread gets in the way of Jack. But ironically ALSA + long-period Audio timing currently best!
+        - Midi sync: Song saving: Fixed slight typo saving MMC sync: Was using MRT not MMC.
+26.01.2012:
+        - Fixed crash with drag/drop copying plugins when their gui was open (rj)
+        - Fixed mid clicking to change aux value (rj)
+25.01.2012:
+        - Fixed some focus stealing that prevented shortcuts from working for Snap dialog and Plugin rack (rj)
+24.01.2012:
+        - Removed QT_USE_QTNSPLUGIN from CMakeLists.txt (rj)
+15.01.2012:
+        - Added instrument definitions for "KORG microSTATION" sent
+          in by Marko Nikolic (flo)
+14.01.2012:
+        - Added "write topwin state" checkbox (flo)
+12.01.2012:
+        - Added Czech translation from Pavel Fric (rj)
+11.01.2012:
+        - Complain more if timing source isn't good enough (rj)
+10.01.2012:
+        - Store default style so we can do an immediate recall when setting 'keep system style' (rj)
+07.01.2012:
+        - Added choice to keep system GUI style (rj)
+07.01.2012:
+        - Fixed compile errors if not configured for OSC or DSSI. (Tim)
+07.01.2012:
+        - MusE 2.0 release candidate 2 released (rj)
+06.01.2012:
+        - added super-glue feature (flo)
+03.01.2012:
+        - ADDED NEW STYLE DRUM TRACKS: (flo93)
+          
+          multiple tracks can be displayed in one editor
+          their drum sound columns can be reordered, mixed up, hidden.
+          drumtracks can be grouped by channel, not at all, or maximally
+          each track owns its own drummap
+          added drummap-definitions to instrument files (gs and xg.idf)
+          drumtracks' drummap can be automatically set according to
+          the currently used patch/program/bank
+          new-style-drumtracks can ignore muted, hidden or both sounds when
+          recording
+
+          KNOWN ISSUES: when having multiple drumeditors open, the mute-column
+                        may not work, because another editor is overriding this.
+                        this is not a bug.
+        
+        - Global Cut: Fixed crashes with markers. Re-did marker section in structure.cpp:adjustGlobalLists(). (Tim)
+          TODO: Still get tempo, key, and sig not found warnings.
+02.01.2012:
+        - Fixed drag and drop cloning parts - bad reference count in PartCanvas::moveItem(). (Tim) 
+        - File Open dialog: Start with song data and configuration.
+        - Don't auto-open ALSA Midi Through device. Fixes "midi write error: Resource temporarily unavailable".
+31.12.2011:
+        - 'Duplicate tracks' route copying now works, including Audio Input/Output Jack routes. (Tim)
+30.12.2011:
+        - Added 'Duplicate tracks' Edit action, and dialog. Post-cleanups. TODO: Copy plugins, fix copying parts. (Tim)
+          Class Track, and some of it descendants, have fixed copy constructors, and a new assign() method.
+          Tested copy constructors and the new assign() method using the new duplicate tracks feature: Good so far, + undo/redo.
+        - Fixed compile errors when configured without OSC. Tested OK. Reported by Philippe Macaire. (Tim)
+27.12.2011:
+        - Fixed some undo/redo/close crashes. TODO Global cut crashes from null Marker. (Tim. All marked p4.0.46)
+          Fixed some issues with track list and popup 'name edit' and 'channel spinbox'. Added to audio tracks. 
+          REPLACED Undo type ModifyTrack: Two simpler 'ModifyTrackName', 'ModifyTrackChannels' type/struct/functions.
+          Some work was done in undo/redo and a couple of slight apparent leaks were fixed in evdata.h
+21.12.2011:
+        - Fixed some mixer issues: Very slow updating with large mixer when setting visible tracks for example: Set and check 
+           Style() object name in MusE::loadTheme() so that slow mixer ScrollArea::viewportEvent() is not called every time.  (Tim...)
+          Split strips and amixer into configChanged() and songChanged() handling. Do not fully rebuild mixers upon configChanged().
+          Fixed mixer windows raising above others, even briefly: Do not raise mixer windows in MusE::focusInEvent().
+        - Fixed bigtime leak: Not destroyed. Give it a parent in MusE::showBigtime().
+20.12.2011:
+        - Litle break for some polish. Route button icons. Rebuild midi track info ui file - was 3 columns not 2. (Tim)
+        * Fixed: Hopefully, finally: Non-appearing track info scroll bar.  (Tim)
+                 Simple movement of recursive call of sb->setVisible() to end of TLLayout::setGeometry(). 
+        - Audio strip prefader now controls audio. (Tim)
+18.12.2011:
+        * Fixed: Annoying ladspa browser issues. Leak: Dialog was not destroyed. Sorting. Save complete state. (Tim)
+17.12.2011:
+        - Fixed long-time graphics corruption issue: Large areas of desktop erased to background.  (Tim...) 
+          Fixed class RoutePopupMenu. Now a subclass of PopupMenu. Changed all usages to 'short-lived' ::exe(), 
+           no more single 'long-life' pointer in class MusE. That should allow multiple instances, using ::popup(). 
+          Also fixed class PopupMenu. Tested all submenu and item destructors - OK, everything destroyed on close. 
+        - Fixed TList::ColorMenu parenting. Pass it a parent from TList::mousePressEvent. 
+        - If Jack is running but no Jack midi devices were found at start, auto-fill with ALSA just to give something.
+        * Fixed: Some relief from mixer strip and midi track info bloated size. (Tim)
+          Changed default strip font size from 8 to 7. Changed icon sizing - just let strip layout do its thing, instead of forcing size. 
+          Changed default style sheet to blank. Was causing problems with track info font size. 
+          Fixed mixer: Rebuild mixer upon config font changes.
+          Re-arranged some font usages. Updated descriptive tooltips on font entry boxes.
+          Re-claimed font#5 as a 'small bold' font for things like markers.
+16.12.2011:
+        * New: Midi routing matrix! No more clumsy routing menu items. Currently for Midi Track iR and Audio Input iR solo routes. (Tim)
+14.12.2011:
+        - Corrected FSF address in ladspa.h and vam/COPYING. (Orcan)
+12.12.2011:
+        * Improved: Midi ports list now fills automatically at start. (Marked as p4.0.41 Tim...)
+          An effort to help new users and others. If auto-filling the mid ports proves too much or unpopular, a simple change
+           will keep them out of the list, yet still auto-create and auto-connect Jack midi devices, which is still better than before.
+          Even if and when 'set and forget' configuration is added, this initial filling step may be welcome for new users.
+          NOTE: Virtually impossible to 'auto-pair' together Jack midi inputs and outputs. But I'm working on it, some code in there...
+        - When opening a song, choosing only 'Song data', without configuration, now does not upset the midi configuration at all, 
+           yet controller data was attempted to be kept - may need to remove that effort.
+        - Moved start song loading into main.cpp, with helper in app.cpp. Disabled Florian's 'hackish loader', may be fixed now - TO BE TESTED!. 
+        - List only writeable ports in track list output port column and midi track info combo box.
+        - Jack midi devices now save an additional required rwFlags xml tag.
+        - ALSA Midi fixes: (Un)subscription errors. Delete our simple port! Unsubscribe from announce port. Ignore SND_SEQ_PORT_CAP_NO_EXPORT 
+           ports like 'qjackctrl' or 'port'. TODO: Possibly auto-assign newly discovered devices to available midi ports, in alsaScanMidiPorts().
+        - Hack: "Midi Through" ALSA and Jack devices pushed to end of list, and list sorted, so useful outputs appear first. 
+        - Stopped our own ALSA client from appearing as Jack midi alsa_pcm device.
+10.12.2011:
+        - More improvements to project save dialog. And tries to suggest parent folder if saving existing project. (Tim...)
+        - Midi ports dialog: Auto dis/connect the stated default channels when selecting a device. 
+09.12.2011:
+        - Fixed popup menu behaviour with (nonstandard!) checkable submenus (flo)
+        - Fixed wrong START_DRAG when clicking on popup-columns (flo)
+06.12.2011:
+        - Fixed drawing of logarithmic values (god how I hate these conversions!..!$%) hopefully...
+          should be improved by precalulating max and min values (rj)
+05.12.2011:
+        - Complete Spanish translation from Cristian Ramos (rj)
+03.12.2011:
+        * Improved: Project save dialog: Now has quick save as Template. Separate project/result paths shown. Editable project folder. (Tim...)
+        * Added: Project directory in global settings dialog. 
+        * Added: Untitled project unique names.
+        - Fixed bug saving compressed files with spaces in name, in filedialog.cpp fileOpen().
+          More work in progress... 
+02.12.2011:
+        * Added: Project creation dialog now has file type combobox (.med, .med.gz, .med.bz2) (Tim)
+        * Fixed: Remaining bugs with Header saving and loading (ex track, drum list header). (Tim)
+                 Made two slight fixes in Header::writeStatus and readStatus. Tested thoroughly OK.
+01.12.2011:
+        - Removed global settings User Instruments dir. Now fixed to muse config. Support for old files included. (Tim...)
+        - Changed:  In File Dialog, 'User' initial prepend path changed to muse ./config path. So user files + templates are shown.
+        - Fixed: Template directory changed from /home/templates to muse config directory. Support for old files included.
+        - Moved QSocketNotifier from Audio::Audio into MusE::MusE.
+        - Fixed mixer and main geometry restoration. Moved ahead of doReadGlobalConfig check. 
+        - Work In Progress! More to follow...
+28.11.2011:
+        *Fixed: DSSI synth audio inputs. This means dssi vocoders, samplers etc. should work now. (Tim...)
+        *Re-write: Fixed audio mixing, meter processing. Audio, and meters, for all mono <-> stereo route combinations work sensibly now.
+        - Do not apply the track pan or volume to extra synth channels above 2.
+        - (Re-)fixed valgrind 'invalid read size' in node.cpp, my very-old bad. Moved temp stack buffers to top. (Thnx to Flo)
+        - Window titles of ladspa and dssi plugins now have track name prefix to help identify them.
+        
+        - Added "Unused Devices" menu to the arranger's port popupmenu for rapid device selection (flo)
+28.11.2011:
+        - MusE 2.0 release candidate 1 released (rj)
+27.11.2011:
+        - fixed invalid read problem in node.cpp: replaced the (ab-)use
+          of a temporary stacked buffer (which was deleted too soon)
+          by the use of a temporary heap buffer (new[])   (flo)
+26.11.2011:
+        - Added config properties for add-track menu, show all, show only visible and property for making visible what you add (rj)
+        - Split behaviour and style configuration to two tabs (rj)
+        - Adding invisible tracks no longer update track-info in arranger (rj)
+        - clicking the background in tracklist and arranger no longer clear focus (rj)
+        - moved configuration items for track visibility to global config (rj)
+        - Added right click quit to channel strips (rj)
+25.11.2011:
+        - fixed segfault when closing and SndFileList had more than 1 entry (flo)
+        - fixed some mismatched deletes (delete vs delete[]) (flo)
+24.11.2011:
+        - Fixed: xml song loading ignores very large text such as with Hexter-DSSI. Reported by jphaenlin. (Tim)
+          Changed all local buffers to QByteArray (for unlimited size). Test OK loading/saving large songs + Hexter-DSSI.
+        - Fixed "Invalid Read/Write"-bug with moving parts past the song's end or past the last track. (flo93)
+          The problem was: when the song was automatically enlargened / a new track has automatically been
+                           created, the song was update()d, and thus songChanged() was called. Within
+                           songChanged(), the PartCanvas clearDelete()d its items list, deleting every
+                           data pointed to by that list. However, right after that, the current loop's
+                           CItem* is still used (which has just been deleted, that is, invalidated.).
+                           In case the loop will go on, there would be even more similar errors.
+          Solution: - Added UndoOp::ModifySongLen-action, and used that one for altering song length.
+                    - changed Song::addTrack() to write into operation groups.
+                      adapted all code using Song::addTrack() accordingly
+                    - changed PartCanvas::moveItem() to support whole lists of operations.
+        - Fixed a small unused-parameter warning (flo)
+        - Updated broken (but unused) UndoOp::typeName() function (flo)
+                    
+23.11.2011:
+        - Fundamental audio engine fixes/changes together with a variety of other fixes. (Tim...)
+        - Process track and plugin dssi controls always now, even if off. Fixed problems adjusting/saving gui values. TODO: Dssi when off.
+        - User is now forbidden to do circular routing. Routing menu items are now disabled according to whether they would cause a loop.
+          Installed anti-circular routing mechanism, allows processing should a circular route actually exist (old files, bugs, deliberate? etc). 
+        - Fixed jack.cpp: Connecting routes. Some code was not checking if routes were JACK_ROUTE types, leading to errors.
+        * Fixed: Soloing system problems. Forgot to solo-chain all the way back to a midi track. Also fixed crashes if soloing a circular route.
+        * Fixed: Aux Tracks. They should 'just work' always now. Required major processing-order changes and routing path support/checking.
+          NOTE: Cannot use a track's aux sends if the track has an input route path from ANY Aux Track! Aux knobs/labels now DISABLED in that case.
+22.11.2011:
+        - Increased contrast for midi event drawing in parts (rj)
+21.11.2011:
+        - added super-glue feature (flo)
+17.11.2011:
+        - Fixed all arranger/pianoroll/drumedit keyboard scrolling. (Tim)
+          Changed PartCanvas and EventCanvas ::keyPress() key scrolling sections. Plus custom behavior tweaks in each case.
+16.11.2011:
+        - Ctrl+click or middle button now sets an absolute value for Knobs (as good as possible without advanced arithmetic) (rj)
+        - Structure operations: Split,Cut,Insert now work on audio tracks. The previous functionality with operating on selected
+          tracks have been split into separate menu items (rj)
+15.11.2011:
+        - Fixed wacky arranger part selection via KB when 'Move single armed track with selection' set. (Tim)
+          Arranger::songChanged() was way too liberal, esp calling partsChanged(). Side benefit: Arranger speed-ups.
+        - Changed internal 'undo' shortcut from ctrl-y to standard shift-ctrl-z. (Tim)
+14.11.2011:
+        - Fixed: Do not clear midi ports upon 'new' (template) or 'import midi'. (Tim)
+          Enabled some old code with which I had problems before, but that was long before 'clearing' fixes. 
+          Remaining TODOS: 'New' Synth.med template still replaces existing midi ports, and only
+           the first port appears to be auto-connected to inputs upon import midi.
+        - fixed ScoreEdit bug: names are removed from the set on close and on delete. (Flo)
+        - indentation fixes in scoreedit.cpp,h and cobject.cpp (Flo)
+        - Removed 18.06.2011 experiment. Do not allow Synths to route to midi track inputs. (Tim) 
+          It worked with MESS so far, allowed recording gui control movement. May prove useful 
+           in future, but is a big auto-routing hassle ATM. Sections marked p4.0.35.
+13.11.2011:
+        - ScoreEdit now saves some default init values (flo)
+        - seems like this fixed some valgrind bugs as well (flo)
+12.11.2011:
+        - fixed "newly created subwins aren't focussed" problem (flo)
+        - when closing a subwin, automatically another (topmost) subwin 
+          gets activated (flo)
+        - fixed "non-subwin topwin-states aren't restored when using
+          'muse2 songfile.med'. (don't know who, probably Tim)
+11.11.2011:
+        -  Fixed all template .med song files. (Tim)
+10.11.2011:
+        - Updated spanish translation by Cristian Ramos (rj)
+        - Fixed meters not updating upon vertically shrinking arranger. (Tim)
+        - Fixed TopWin xml errors such as "MusE: unknown tag <topwin [or tool or arranger] > at line xxxx". (Tim)
+          Used new TopLevelList::findType() in MusE::readToplevels() to find arranger, marker, and cliplist. Was broken !
+          So, arranger now remembers its settings (mostly).
+          TODO: Fix broken default.med file, has serious xml errors. For long time MarkerView hasn't recalled its visibility.
+09.11.2011: 
+        - Further to 02.11.2011: Automatically convert old songs to use new 'fluid_synth' name.  (Tim...)
+        - Added enum Synth::Type (MESS_SYNTH, DSSI_SYNTH etc) and used it throughout, ex. in findSynth(), also in song file.
+          Protects from name conflicts with future MESS, DSSI synths, and simplifies adding future types (say LV2 etc.)
+        - Simplified populateAddSynth(), made it agnostic. No more hard-coded synth type sorting - uses Synth::Type now. 
+        - Fixed settings synth config lists not updated when 'Remove Instance' clicked. Also now shows the type in the lists. 
+        - Fixed regression: No synthesizer patch names were listed.
+07.11.2011:
+        - fixed restore-window-state bug (flo)
+        - fixed dialog translation problem (flo)
+        - Updated spanish translation by Cristian Ramos (rj)
+06.11.2011:
+        - auto-expand fix (flo)
+        - NoteInfo-toolbar fix (flo)
+04.11.2011:
+        - more valgrind fixes (flo)
+02.11.2011:
+        - Fixed new runtime errors "undefined symbol fluid_synth_cc" and "fluid_synth_set_reverb", seen on Ubuntu 11.10 (Tim).
+          MusE "fluidsynth.so" module renamed "fluid_synth.so". Error seems due to required cmakelists LINK_FLAGS line, now removed. 
+          Also removed required LINK_FLAGS line in fluid cmakelists.  
+          PLEASE REMOVE THE OLD fluidsynth.so ! Or uninstall muse before installing again.
+01.11.2011:
+        - Fixed Shortcut translations (flo)
+        - Added a QSplitter to the shortcut dialog (flo)
+31.10.2011:
+        - Translation code fixes and added almost-complete German translation (flo)
+28.10.2011:
+        - Slight fix of midi SMF 1 export. Include meta 0x01 text event comment. (Tim)
+        - Added Automation header in Song::execMidiAutomationCtlPopup().
+        - Code comments cleanup in Song. 
+27.10.2011:
+        - Adapt context menu in arranger after what track types are currently visible there
+          Now it only allows to create the track types which are set to be visible (rj)
+        - Uninitalized value fixes in ScoreEdit (flo)
+26.10.2011:
+        - Changed visibility of utility tracks so they are not seen by default in arranger (rj)
+        - Added a default audio connection in default.med (rj)
+        - More memory access fixes (flo)
+24.10.2011:
         - Fixed bug #3293339: Midi file export SMF format 0 broken. (Tim)
           Removed erroneous extra 2 bytes. Allow metas in SMF0 in MidiFile::writeEvent().
           Fixed very weird timing issue MidiFile::write(). See comments there (hidden problems lurking still?). 
@@ -6,8 +584,11 @@
            SMF 0 grabs the track name and comment from first midi track in arranger. Iterate full tracks list 
            instead of midis list in MusE::exportMidi(), so that user can rearrange tracks on the fly before exporting. 
           Some not fully understood useage of meta 0x0F/0x01 text events in MusE::exportMidi(). Hopefully correct...
-22.10.2010:
+        - Memory access fixes (flo)
+22.10.2011:
         - Catch return in spin boxes and move focus away (rj)
+21.10.2011:
+        - rename fix (flo)
 20.10.2011:
         - Added missing triplets in quantisation dialog (rj)
 16.10.2011:
@@ -1120,7 +1701,6 @@
       * Renamed: Soft synth configuration changed to Synth configuration, as per patch from Geoff King (rj)
       * Fixed: Shortcuts with modifier keys wasn't working for global shortcuts, should be now (rj)
       * Added: Shortcuts for changing len of events, default Ctrl+Shift+Left/Right (rj)
->>>>>>> .r459
 10.08.2010
       * Fixed/Changed: Grid reacts to midi resolution change (rj)
 01.08.2010

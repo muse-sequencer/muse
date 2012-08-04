@@ -85,10 +85,12 @@ class MasterEdit : public MidiEditor {
       void posChanged(int,unsigned,bool);
       void setTime(unsigned);
       void setTempo(int);
+      void sigChange(const AL::TimeSignature&);
+      void tempoChange(double);
 
    public slots:
       void songChanged(int);
-//      void tempoChanged(double);
+      void focusCanvas();
 
    signals:
       void isDeleting(MusEGui::TopWin*);

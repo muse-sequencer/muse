@@ -4,6 +4,7 @@
 //  $Id: ./muse/widgets/projectcreateimpl.h $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -33,18 +34,29 @@ class ProjectCreateImpl : public QDialog, Ui::ProjectCreate
     Q_OBJECT
 
     QString directoryPath;
+    QString overrideDirPath;
+    QString overrideTemplDirPath;
+    QString projDirPath;
+    
 public:
     explicit ProjectCreateImpl(QWidget *parent = 0);
-    QString getProjectPath();
-    QString getSongInfo();
+    QString getProjectPath() const;
+    QString getSongInfo() const;
+    bool getWriteTopwins() const;
+    void setWriteTopwins(bool);
+    //QString getTemplatePath() const;
 
 signals:
 
-public slots:
+protected slots:
+    void updateProjectName();
     void updateDirectoryPath();
     void selectDirectory();
     void ok();
-
+    void createProjFolderChanged();
+    void browseProjDir();
+    void templateButtonChanged(bool);
+    void restorePath();
 };
 
 } // namespace MusEGui

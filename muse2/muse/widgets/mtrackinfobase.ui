@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>98</width>
-    <height>447</height>
+    <width>93</width>
+    <height>417</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -59,7 +59,7 @@
    <property name="spacing">
     <number>0</number>
    </property>
-   <item row="0" column="0" colspan="3">
+   <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="trackNameLabel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
@@ -72,7 +72,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="3">
+   <item row="1" column="0" colspan="2">
     <widget class="QComboBox" name="iOutput">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
@@ -110,7 +110,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="2">
+   <item row="2" column="1">
     <widget class="QLabel" name="TextLabel2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -140,7 +140,7 @@
      <item>
       <widget class="QToolButton" name="iRButton">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -149,33 +149,16 @@
         <string>input routing</string>
        </property>
        <property name="text">
-        <string>iR</string>
+        <string/>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QToolButton" name="oRButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>output routing</string>
-       </property>
-       <property name="text">
-        <string>oR</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="3" column="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="spacing">
-      <number>0</number>
-     </property>
      <item>
       <widget class="QLabel" name="iChanDetectLabel">
        <property name="sizePolicy">
@@ -192,6 +175,9 @@
                   program change, and pitchbend (but not sysex or realtime) events 
                   on the selected channels, on the selected midi ports.</string>
        </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
        <property name="text">
         <string>W</string>
        </property>
@@ -202,7 +188,7 @@
         <bool>false</bool>
        </property>
        <property name="margin">
-        <number>2</number>
+        <number>1</number>
        </property>
        <property name="indent">
         <number>-1</number>
@@ -212,7 +198,7 @@
      <item>
       <widget class="QToolButton" name="recEchoButton">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -223,8 +209,27 @@
        <property name="whatsThis">
         <string>Pass input events through ('thru') to output.</string>
        </property>
+       <property name="text">
+        <string/>
+       </property>
        <property name="checkable">
         <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="oRButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>output routing</string>
+       </property>
+       <property name="text">
+        <string/>
        </property>
       </widget>
      </item>
@@ -271,7 +276,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="2">
+   <item row="4" column="1" rowspan="2">
     <widget class="QLabel" name="TextLabel9">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -290,7 +295,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="5" column="0" rowspan="2">
     <widget class="MusEGui::SpinBox" name="iVerz">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -312,7 +317,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="2">
+   <item row="6" column="1">
     <widget class="QLabel" name="TextLabel10">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -331,7 +336,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
+   <item row="7" column="0">
     <widget class="MusEGui::SpinBox" name="iLen">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -356,7 +361,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="2">
+   <item row="7" column="1">
     <widget class="QLabel" name="TextLabel11">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -375,7 +380,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="0">
+   <item row="8" column="0">
     <widget class="MusEGui::SpinBox" name="iAnschl">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -403,7 +408,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="2">
+   <item row="8" column="1">
     <widget class="QLabel" name="TextLabel12">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -422,7 +427,7 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0">
+   <item row="9" column="0">
     <widget class="MusEGui::SpinBox" name="iKompr">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -450,7 +455,7 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="2">
+   <item row="9" column="1">
     <widget class="QLabel" name="TextLabel13">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -469,7 +474,7 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="0" colspan="3">
+   <item row="10" column="0" colspan="2">
     <widget class="QLabel" name="TextLabel1_2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
@@ -500,7 +505,7 @@
      </property>
     </widget>
    </item>
-   <item row="10" column="0" colspan="3">
+   <item row="11" column="0" colspan="2">
     <widget class="QPushButton" name="iPatch">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
@@ -516,7 +521,7 @@
      </property>
     </widget>
    </item>
-   <item row="11" column="0">
+   <item row="12" column="0">
     <widget class="QLabel" name="textLabel1">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -535,7 +540,7 @@
      </property>
     </widget>
    </item>
-   <item row="11" column="1" colspan="2">
+   <item row="12" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <property name="spacing">
       <number>0</number>
@@ -574,7 +579,7 @@
      </item>
     </layout>
    </item>
-   <item row="12" column="0">
+   <item row="13" column="0">
     <widget class="MusEGui::SpinBox" name="iHBank">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -583,7 +588,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Bank Select MSB. Double-click on/off.</string>
+      <string>Bank Select MSB. Ctrl-double-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -602,7 +607,7 @@
      </property>
     </widget>
    </item>
-   <item row="12" column="1" colspan="2">
+   <item row="13" column="1">
     <widget class="QLabel" name="TextLabel4">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -627,7 +632,7 @@
      </property>
     </widget>
    </item>
-   <item row="13" column="0">
+   <item row="14" column="0">
     <widget class="MusEGui::SpinBox" name="iLBank">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -636,7 +641,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Bank Select LSB. Double-click on/off.</string>
+      <string>Bank Select LSB. Ctrl-double-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -655,7 +660,7 @@
      </property>
     </widget>
    </item>
-   <item row="13" column="1" colspan="2">
+   <item row="14" column="1">
     <widget class="QLabel" name="TextLabel5">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -680,7 +685,7 @@
      </property>
     </widget>
    </item>
-   <item row="14" column="0">
+   <item row="15" column="0">
     <widget class="MusEGui::SpinBox" name="iProgram">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -689,7 +694,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Program. Double-click on/off.</string>
+      <string>Program. Ctrl-double-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -708,7 +713,7 @@
      </property>
     </widget>
    </item>
-   <item row="14" column="1" colspan="2">
+   <item row="15" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <property name="spacing">
       <number>0</number>
@@ -747,7 +752,7 @@
      </item>
     </layout>
    </item>
-   <item row="15" column="0">
+   <item row="16" column="0">
     <widget class="MusEGui::SpinBox" name="iLautst">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -756,7 +761,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Volume. Double-click on/off.</string>
+      <string>Volume. Ctrl-double-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -775,7 +780,7 @@
      </property>
     </widget>
    </item>
-   <item row="15" column="1" colspan="2">
+   <item row="16" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <property name="spacing">
       <number>0</number>
@@ -814,7 +819,7 @@
      </item>
     </layout>
    </item>
-   <item row="16" column="0">
+   <item row="17" column="0">
     <widget class="MusEGui::SpinBox" name="iPan">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -823,10 +828,10 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Change stereo position. Double-click on/off.</string>
+      <string>Change stereo position. Ctrl-double-click on/off.</string>
      </property>
      <property name="whatsThis">
-      <string>Change stereo position. Double-click on/off.</string>
+      <string>Change stereo position. Ctrl-double-click on/off.</string>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
@@ -845,7 +850,7 @@
      </property>
     </widget>
    </item>
-   <item row="16" column="1" colspan="2">
+   <item row="17" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <property name="spacing">
       <number>0</number>
@@ -884,7 +889,7 @@
      </item>
     </layout>
    </item>
-   <item row="17" column="2">
+   <item row="18" column="0">
     <spacer name="spacer5">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

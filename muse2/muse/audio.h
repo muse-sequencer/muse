@@ -31,6 +31,12 @@
 #include "route.h"
 #include "event.h"
 
+// An experiment to use true frames for time-stamping all recorded input. 
+// (All recorded data actually arrived in the previous period.)
+// TODO: Some more work needs to be done in WaveTrack::getData() in order to
+//  make everything line up and sync correctly. Cannot use this yet!
+//#define _AUDIO_USE_TRUE_FRAME_
+
 namespace MusECore {
 class AudioDevice;
 class AudioTrack;
@@ -44,7 +50,6 @@ class MidiPort;
 class MidiTrack;
 class Part;
 class PluginI;
-class SndFile;
 class SynthI;
 class Track;
 
@@ -55,7 +60,8 @@ class Track;
 //---------------------------------------------------------
 
 enum {
-      SEQM_ADD_TRACK, SEQM_REMOVE_TRACK, SEQM_CHANGE_TRACK, SEQM_MOVE_TRACK,
+      SEQM_ADD_TRACK, SEQM_REMOVE_TRACK,   //SEQM_CHANGE_TRACK,   DELETETHIS
+      SEQM_MOVE_TRACK,
       SEQM_ADD_PART, SEQM_REMOVE_PART, SEQM_CHANGE_PART,
       SEQM_ADD_EVENT, SEQM_REMOVE_EVENT, SEQM_CHANGE_EVENT,
       SEQM_ADD_TEMPO, SEQM_SET_TEMPO, SEQM_REMOVE_TEMPO, SEQM_ADD_SIG, SEQM_REMOVE_SIG,
@@ -70,20 +76,21 @@ enum {
       SEQM_SET_HW_CTRL_STATES,
       SEQM_SET_TRACK_OUT_PORT,
       SEQM_SET_TRACK_OUT_CHAN,
+      SEQM_SET_TRACK_AUTO_TYPE,
       SEQM_REMAP_PORT_DRUM_CTL_EVS,
       SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS,
       SEQM_SCAN_ALSA_MIDI_PORTS,
       SEQM_SET_AUX,
       SEQM_UPDATE_SOLO_STATES,
-      //MIDI_SHOW_INSTR_GUI,
-      //MIDI_SHOW_INSTR_NATIVE_GUI,
+      //MIDI_SHOW_INSTR_GUI,  DELETETHIS
+      //MIDI_SHOW_INSTR_NATIVE_GUI, DELETETHIS
       AUDIO_RECORD,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
-      //AUDIO_VOL, AUDIO_PAN,
+      //AUDIO_VOL, AUDIO_PAN,  DELETETHIS
       AUDIO_ADDPLUGIN,
       AUDIO_SET_SEG_SIZE,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
-      //AUDIO_SET_PLUGIN_CTRL_VAL,
+      //AUDIO_SET_PLUGIN_CTRL_VAL,  DELETETHIS
       AUDIO_SWAP_CONTROLLER_IDX,
       AUDIO_CLEAR_CONTROLLER_EVENTS,
       AUDIO_SEEK_PREV_AC_EVENT,
@@ -93,6 +100,7 @@ enum {
       AUDIO_ADD_AC_EVENT,
       AUDIO_CHANGE_AC_EVENT,
       AUDIO_SET_SOLO, AUDIO_SET_SEND_METRONOME, 
+      AUDIO_START_MIDI_LEARN,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
       SEQM_IDLE, SEQM_SEEK,
       };
@@ -105,7 +113,7 @@ extern const char* seqMsgList[];  // for debug
 
 struct AudioMsg : public ThreadMsg {   // this should be an union
       int serialNo;
-      SndFile* downmix;
+      //SndFile* downmix; // DELETETHIS this is unused and probably WRONG (all SndFiles have been replaced by SndFileRs)
       AudioTrack* snode;
       AudioTrack* dnode;
       Route sroute, droute;
@@ -146,7 +154,11 @@ class Audio {
       int _loopCount;         // Number of times we have looped so far
 
       Pos _pos;               // current play position
-
+      
+#ifdef _AUDIO_USE_TRUE_FRAME_
+      Pos _previousPos;       // previous play position
+#endif
+      
       unsigned curTickPos;   // pos at start of frame during play/record
       unsigned nextTickPos;  // pos at start of next frame during play/record
 
@@ -166,12 +178,14 @@ class Audio {
       int fromThreadFdw, fromThreadFdr;  // message pipe
 
       int sigFd;              // pipe fd for messages to gui
-
+      int sigFdr;
+      
       // record values:
       Pos startRecordPos;
       Pos endRecordPos;
-
-      //
+      unsigned startExternalRecTick;
+      unsigned endExternalRecTick;
+      
       AudioOutput* _audioMaster;
       AudioOutput* _audioMonitor;
 
@@ -189,8 +203,12 @@ class Audio {
 
    public:
       Audio();
-      virtual ~Audio() {}
+      virtual ~Audio() { } 
 
+      // Access to message pipe (like from gui namespace), otherwise audio would need to depend on gui.
+      int getFromThreadFdw() { return sigFd; } 
+      int getFromThreadFdr() { return sigFdr; }  
+      
       void process(unsigned frames);
       bool sync(int state, unsigned frame);
       void shutdown();
@@ -201,6 +219,7 @@ class Audio {
       void stop(bool);
       void seek(const Pos& pos);
 
+      bool isStarting() const   { return state == START_PLAY; }
       bool isPlaying() const    { return state == PLAY || state == LOOP1 || state == LOOP2; }
       bool isRecording() const  { return state == PLAY && recording; }
       void setRunning(bool val) { _running = val; }
@@ -215,7 +234,7 @@ class Audio {
 
       void msgRemoveTrack(Track*, bool u = true);
       void msgRemoveTracks();
-      void msgChangeTrack(Track* oldTrack, Track* newTrack, bool u = true);
+      //void msgChangeTrack(Track* oldTrack, Track* newTrack, bool u = true); DELETETHIS
       void msgMoveTrack(int idx1, int dx2, bool u = true);
       void msgAddPart(Part*, bool u = true);
       void msgRemovePart(Part*, bool u = true);
@@ -234,8 +253,8 @@ class Audio {
       void msgRemoveSig(int tick, int z, int n, bool doUndoFlag = true);
       void msgAddKey(int tick, int key, bool doUndoFlag = true);
       void msgRemoveKey(int tick, int key, bool doUndoFlag = true);
-      //void msgShowInstrumentGui(MidiInstrument*, bool);
-      //void msgShowInstrumentNativeGui(MidiInstrument*, bool);
+      //void msgShowInstrumentGui(MidiInstrument*, bool);   DELETETHIS
+      //void msgShowInstrumentNativeGui(MidiInstrument*, bool);  DELETETHIS
       void msgPanic();
       void sendMsg(AudioMsg*);
       bool sendMessage(AudioMsg* m, bool doUndo);
@@ -247,8 +266,8 @@ class Audio {
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
       void msgSetMute(AudioTrack*, bool val);
-      //void msgSetVolume(AudioTrack*, double val);
-      //void msgSetPan(AudioTrack*, double val);
+      //void msgSetVolume(AudioTrack*, double val); DELETETHIS
+      //void msgSetPan(AudioTrack*, double val);    DELETETHIS
       void msgAddSynthI(SynthI* synth);
       void msgRemoveSynthI(SynthI* synth);
       void msgSetSegSize(int, int);
@@ -263,7 +282,7 @@ class Audio {
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgBounce();
-      //void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);
+      //void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);  DELETETHIS
       void msgSwapControllerIDX(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);
@@ -277,9 +296,11 @@ class Audio {
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);
       void msgSetTrackOutChannel(MidiTrack*, int);
       void msgSetTrackOutPort(MidiTrack*, int);
+      void msgSetTrackAutomationType(Track*, int);
       void msgRemapPortDrumCtlEvents(int, int, int, int);
       void msgChangeAllPortDrumCtrlEvents(bool, bool);
       void msgSetSendMetronome(AudioTrack*, bool);
+      void msgStartMidiLearn();
 
       void msgPlayMidiEvent(const MidiPlayEvent* event);
       void rescanAlsaPorts();
@@ -287,8 +308,13 @@ class Audio {
       void midiPortsChanged();
 
       const Pos& pos() const { return _pos; }
+#ifdef _AUDIO_USE_TRUE_FRAME_
+      const Pos& previousPos() const { return _previousPos; }
+#endif
       const Pos& getStartRecordPos() const { return startRecordPos; }
       const Pos& getEndRecordPos() const { return endRecordPos; }
+      unsigned getStartExternalRecTick() const { return startExternalRecTick; }
+      unsigned getEndExternalRecTick() const { return endExternalRecTick; }
       int loopCount() { return _loopCount; }         // Number of times we have looped so far
       unsigned loopFrame() { return _loopFrame; }          
 
@@ -296,8 +322,10 @@ class Audio {
       unsigned nextTick() const   { return nextTickPos; }
       int timestamp() const;
       void processMidi();
+      unsigned framesSinceCycleStart() const;   
       unsigned curFrame() const;
       unsigned curSyncFrame() const { return syncFrame; }
+      unsigned curFramePos() const;
       void recordStop();
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);

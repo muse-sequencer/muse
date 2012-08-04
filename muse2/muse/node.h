@@ -98,11 +98,7 @@ static inline void muse_atomic_destroy(muse_atomic_t*) {}
 
 class Xml;
 class Pipeline;
-class SndFile;
 
-
-// superceeded by dynamic allocation of fifoLength
-//const int FIFO_BUFFER = 4096;//64;
 
 //---------------------------------------------------------
 //   Fifo

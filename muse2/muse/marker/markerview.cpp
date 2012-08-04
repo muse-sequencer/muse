@@ -26,10 +26,10 @@
 #include "markerview.h"
 #include "xml.h"
 #include "globals.h"
+#include "app.h"
 #include "sync.h"
 #include "icons.h"
 #include "song.h"
-///#include "posedit.h"
 #include "awl/posedit.h"
 
 #include <QCloseEvent>
@@ -120,7 +120,6 @@ void MarkerItem::setTick(unsigned v)
       QString s;
       int bar, beat;
       unsigned tick;
-      ///sigmap.tickValues(v, &bar, &beat, &tick);
       AL::sigmap.tickValues(v, &bar, &beat, &tick);
       s.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
       setText(COL_TICK, s);
@@ -157,7 +156,7 @@ void MarkerItem::setTick(unsigned v)
 
 void MarkerView::closeEvent(QCloseEvent* e)
       {
-      emit deleted(static_cast<TopWin*>(this));
+      emit isDeleting(static_cast<TopWin*>(this));
       emit closed();
       e->accept();
       }
@@ -167,10 +166,8 @@ void MarkerView::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 MarkerView::MarkerView(QWidget* parent)
-   : TopWin(TopWin::MARKER, parent, "markerview", Qt::Window /*| WDestructiveClose*/)
+   : TopWin(TopWin::MARKER, parent, "markerview", Qt::Window)
       {
-      //setAttribute(Qt::WA_DeleteOnClose);
-      
       setWindowTitle(tr("MusE: Marker"));
 
       QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("add marker"), this);
@@ -180,10 +177,6 @@ MarkerView::MarkerView(QWidget* parent)
       connect(markerDelete, SIGNAL(activated()), SLOT(deleteMarker()));
 
       //---------Pulldown Menu----------------------------
-      /* We probably don't need an empty menu - Orcan
-      QMenu* fileMenu = new QMenu(tr("&File"));
-      menuBar()->addMenu(fileMenu);
-      */
       QMenu* editMenu = menuBar()->addMenu(tr("&Edit"));
       
       editMenu->addAction(markerAdd);
@@ -197,22 +190,10 @@ MarkerView::MarkerView(QWidget* parent)
       
       
       // Toolbars ---------------------------------------------------------
-      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-      undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(MusEGlobal::undoRedo->actions());
-
       QToolBar* edit = addToolBar(tr("edit tools"));
       edit->setObjectName("marker edit tools");
       edit->addAction(markerAdd);
       edit->addAction(markerDelete);
-
-      QToolBar* panic_toolbar = addToolBar(tr("panic"));
-      panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(MusEGlobal::panicAction);
-
-      QToolBar* transport_toolbar = addToolBar(tr("transport"));
-      transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
       //---------------------------------------------------
       //    master
@@ -249,7 +230,6 @@ MarkerView::MarkerView(QWidget* parent)
       editTick->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
 
-      ///editSMPTE = new PosEdit;
       editSMPTE = new Awl::PosEdit;
       editSMPTE->setSmpte(true);
       editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
@@ -291,10 +271,11 @@ MarkerView::MarkerView(QWidget* parent)
       //    Rest
       //---------------------------------------------------
 
-      //connect(song, SIGNAL(songChanged(int)), SLOT(updateList()));
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       
       updateList();
+
+      finalizeInit();
 
       // work around for probable QT/WM interaction bug.
       // for certain window managers, e.g xfce, this window is
@@ -305,14 +286,11 @@ MarkerView::MarkerView(QWidget* parent)
       }
 
 //---------------------------------------------------------
-//   MArkerView
+//   MarkerView
 //---------------------------------------------------------
 
 MarkerView::~MarkerView()
       {
-      //printf("MarkerView::~MarkerView() before undoRedo->removeFrom(tools)\n");  
-      
-      // undoRedo->removeFrom(tools);   // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -516,9 +494,6 @@ void MarkerView::updateList()
             MusECore::Marker* m = &i->second;
             
             // Changed p3.3.43 
-            //QString tick;
-            //tick.setNum(i->first);
-            //new MarkerItem(table, m);
             MarkerItem* item = new MarkerItem(table, m);
             if(m == selm)
             {
@@ -556,8 +531,6 @@ void MarkerView::markerSelectionChanged()
             editName->setEnabled(true);
             lock->setChecked(item->lock());
             lock->setEnabled(true);
-            
-            //printf("MarkerView::markerSelectionChanged item->lock:%d\n", item->lock());
             
             editSMPTE->setEnabled(item->lock());
             editTick->setEnabled(!item->lock());
@@ -622,9 +595,6 @@ void MarkerView::lockChanged(bool lck)
 
 void MarkerView::markerChanged(int val)
 {
-      //if (val != MusECore::Song::MARKER_CUR)
-      //      return;
-      // p3.3.43
       switch(val)
       {
          // MARKER_CUR, MARKER_ADD, MARKER_REMOVE, MARKER_NAME,
@@ -682,8 +652,7 @@ void MarkerView::prevMarker()
             if (i->second.tick() < curPos && i->second.tick() > nextPos)
               nextPos = i->second.tick();
             }
-/*      if (nextPos == 0)
-          return;*/
+
       MusECore::Pos p(nextPos, true);
       MusEGlobal::song->setPos(0, p, true, true, false);
       }

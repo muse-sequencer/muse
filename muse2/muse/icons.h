@@ -87,6 +87,9 @@ extern QPixmap* homeIcon;
 extern QPixmap* backIcon;
 extern QPixmap* forwardIcon;
 extern QPixmap* muteIcon;
+extern QPixmap* eyeIcon;
+extern QPixmap* eyeCrossedIcon;
+extern QPixmap* eyeGrayIcon;
 extern QPixmap* upIcon;
 extern QPixmap* downIcon;
 extern QPixmap* boldIcon;
@@ -147,6 +150,10 @@ extern QPixmap* record_off_Icon;
 extern QPixmap* newmuteIcon;
 extern QPixmap* soloIcon;
 
+extern QPixmap* routesInIcon;
+extern QPixmap* routesOutIcon;
+extern QPixmap* routesMidiInIcon;
+extern QPixmap* routesMidiOutIcon;
 extern QPixmap* muteIconOn;
 extern QPixmap* muteIconOff;
 extern QPixmap* soloIconOn; 
@@ -156,6 +163,7 @@ extern QPixmap* soloblksqIconOff;
 //extern QIcon* soloIconSet1;
 //extern QIcon* soloIconSet2;
 
+extern QPixmap* toggle_small_Icon;
 extern QPixmap* redLedIcon;
 extern QPixmap* darkRedLedIcon;
 extern QPixmap* greendotIcon;
@@ -183,6 +191,8 @@ extern QPixmap* inputpluginSIcon;
 extern QPixmap* cliplistSIcon;
 extern QPixmap* mixerAudioSIcon;
 extern QPixmap* initSIcon;
+extern QPixmap* deltaOnIcon;
+extern QPixmap* deltaOffIcon;
 
 extern QPixmap* addtrack_addmiditrackIcon;
 extern QPixmap* addtrack_audiogroupIcon;

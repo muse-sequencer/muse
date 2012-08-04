@@ -86,6 +86,7 @@ class SliderBase : public QWidget, public DoubleRange
   void sliderPressed(int id);
   void sliderReleased(int id);
   void sliderMoved(double value, int id);
+  void sliderMoved(double value, int id, bool shift);
   void sliderRightClicked(const QPoint &p, int id);
 
  public:

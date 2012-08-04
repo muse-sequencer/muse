@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include <values.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <map>
 
@@ -39,15 +39,17 @@
 #include "synth.h"
 #include "dssihost.h"
 #include "app.h"
+#include "controlfifo.h"
 
 namespace MusECore {
 
-bool AudioAux::_isVisible=true;
-bool AudioInput::_isVisible=true;
-bool AudioOutput::_isVisible=true;
-bool AudioGroup::_isVisible = true;
+bool AudioAux::_isVisible=false;
+bool AudioInput::_isVisible=false;
+bool AudioOutput::_isVisible=false;
+bool AudioGroup::_isVisible =false;
 bool WaveTrack::_isVisible=true;
 
+// DELETETHIS 40. this caching stuff seems to be not used any more
 // By T356. For caching jack in/out routing names BEFORE file save. 
 // Jack often shuts down during file save, causing the routes to be lost in the file.
 // cacheJackRouteNames() is ONLY called from MusE::save() in app.cpp
@@ -93,42 +95,23 @@ void cacheJackRouteNames()
 //---------------------------------------------------------
 
 AudioTrack::AudioTrack(TrackType t)
-//AudioTrack::AudioTrack(TrackType t, int num_out_bufs)
    : Track(t)
       {
-      //_totalOutChannels = num_out_bufs; // Is either parameter-default MAX_CHANNELS, or custom value passed (used by syntis).
       _processed = false;
       _haveData = false;
       _sendMetronome = false;
       _prefader = false;
       _efxPipe  = new Pipeline();
-      _recFile  = 0;
+      recFileNumber = 1;
+      //_recFile  = 0; //unneeded, _recFile's ctor does this
       _channels = 0;
       _automationType = AUTO_OFF;
-      //setChannels(1);
       setChannels(2);
-      addController(new CtrlList(AC_VOLUME,"Volume",0.0,3.16 /* roughly 10 db */, VAL_LOG));
+      addController(new CtrlList(AC_VOLUME,"Volume",0.001,3.163 /* roughly 10 db */, VAL_LOG));
       addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
       addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*dont show in arranger */));
       
-      // Changed by Tim. p3.3.15
-      //outBuffers = new float*[MAX_CHANNELS];
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      outBuffers[i] = new float[MusEGlobal::segmentSize];
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * MusEGlobal::segmentSize);
-      
-      // Let's allocate it all in one block, and just point the remaining buffer pointers into the block
-      //  which allows faster one-shot buffer copying.
-      // Nope. Nice but interferes with possibility we don't know if other buffers are contiguous (jack buffers, local stack buffers etc.).
-      //posix_memalign((void**)(outBuffers), 16, sizeof(float) * MusEGlobal::segmentSize * MAX_CHANNELS);
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //  *(outBuffers + i) = sizeof(float) * MusEGlobal::segmentSize * i;
-            
-      // p3.3.38
-      // Easy way, less desirable... Start out with enough for MAX_CHANNELS. Then multi-channel syntis can re-allocate, 
-      //  via a call to (a modified!) setChannels().
-      // Hard way, more desirable... Creating a synti instance passes the total channels to this constructor, overriding MAX_CHANNELS.
+      // for a lot of considerations and failures, see revision 1402 or earlier (flo)
       _totalOutChannels = MAX_CHANNELS;
       outBuffers = new float*[_totalOutChannels];
       for (int i = 0; i < _totalOutChannels; ++i)
@@ -137,76 +120,168 @@ AudioTrack::AudioTrack(TrackType t)
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
       
-      bufferPos = MAXINT;
+      bufferPos = INT_MAX;
       
       setVolume(1.0);
       }
 
-//AudioTrack::AudioTrack(const AudioTrack& t)
-//  : Track(t)
-AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
-  : Track(t, cloneParts)
+AudioTrack::AudioTrack(const AudioTrack& t, int flags)
+  :  Track(t, flags)  
       {
-      _totalOutChannels = t._totalOutChannels; // Is either MAX_CHANNELS, or custom value (used by syntis).
       _processed      = false;
       _haveData       = false;
-      _sendMetronome  = t._sendMetronome;
-      _controller     = t._controller;
-      _prefader       = t._prefader;
-      _auxSend        = t._auxSend;
-      _efxPipe        = new Pipeline(*(t._efxPipe));
-      _automationType = t._automationType;
-      _inRoutes       = t._inRoutes;
-      _outRoutes      = t._outRoutes;
-      // Changed by Tim. p3.3.15
-      //outBuffers = new float*[MAX_CHANNELS];
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      outBuffers[i] = new float[MusEGlobal::segmentSize];
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+      _efxPipe        = new Pipeline();                 // Start off with a new pipeline.
+      recFileNumber = 1;
+
+      // Don't allocate outBuffers here. Let internal_assign() call setTotalOutChannels to set them up.
+      outBuffers = 0;
+      _totalOutChannels = 0;
+      // This is only set by multi-channel syntis...
+      _totalInChannels = 0;
       
-      // p3.3.38
-      int chans = _totalOutChannels;
-      // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
-      if(chans < MAX_CHANNELS)
-        chans = MAX_CHANNELS;
-      outBuffers = new float*[chans];
-      for (int i = 0; i < chans; ++i)
-            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
+      bufferPos = INT_MAX;
       
-      bufferPos = MAXINT;
-      _recFile  = t._recFile;
+      _recFile = NULL;
+      
+      internal_assign(t, flags | ASSIGN_PROPERTIES);  
       }
+
+void AudioTrack::internal_assign(const Track& t, int flags)
+{
+      if(t.isMidiTrack())
+        return;
+      
+      const AudioTrack& at = (const AudioTrack&)t;
+      
+      if(flags & ASSIGN_PROPERTIES)
+      {
+        _sendMetronome  = at._sendMetronome;
+        _prefader       = at._prefader;
+        _auxSend        = at._auxSend;
+        _automationType = at._automationType;
+        
+        if(!(flags & ASSIGN_STD_CTRLS))
+        {
+          _controller.clearDelete();
+          for(ciCtrlList icl = at._controller.begin(); icl != at._controller.end(); ++icl)
+          {
+            CtrlList* cl = icl->second;
+            // Copy all built-in controllers (id below AC_PLUGIN_CTL_BASE), but not plugin controllers.
+            if(cl->id() >= AC_PLUGIN_CTL_BASE)
+              continue;
+            CtrlList* new_cl = new CtrlList();
+            new_cl->assign(*cl, CtrlList::ASSIGN_PROPERTIES);  // Don't copy values.
+            addController(new_cl);
+          }
+        }
+        
+        // This will set up or reallocate the outBuffers.
+        setTotalOutChannels(at._totalOutChannels);
+        
+        // This is only set by multi-channel syntis...
+        setTotalInChannels(at._totalInChannels);
+       
+        setChannels(at.channels()); // Set track channels (max 2).
+      }    
+      
+      if(flags & ASSIGN_PLUGINS)
+      {
+        delete _efxPipe;
+        _efxPipe = new Pipeline(*(at._efxPipe));  // Make copies of the plugins. 
+      }  
+      
+      if(flags & (ASSIGN_STD_CTRLS | ASSIGN_PLUGIN_CTRLS))
+      {
+        _controller.clearDelete();
+        for(ciCtrlList icl = at._controller.begin(); icl != at._controller.end(); ++icl)
+        {
+          CtrlList* cl = icl->second;
+          // Discern between built-in controllers (id below AC_PLUGIN_CTL_BASE), and plugin controllers.
+          if(cl->id() >= AC_PLUGIN_CTL_BASE)
+          {
+            if(!(flags & ASSIGN_PLUGIN_CTRLS))
+              continue;
+          }
+          else if(!(flags & ASSIGN_STD_CTRLS))
+              continue;
+          
+          CtrlList* new_cl = new CtrlList(*cl);  // Let copy constructor handle the rest. Copy values.
+          addController(new_cl);
+        }
+      }
+      
+      if(flags & ASSIGN_ROUTES)
+      {
+        for(ciRoute ir = at._inRoutes.begin(); ir != at._inRoutes.end(); ++ir)
+        {
+          // Defer all Jack routes to Audio Input and Output copy constructors or assign !
+          if(ir->type == Route::JACK_ROUTE)
+            continue;
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+          _inRoutes.push_back(*ir);
+        }
+        
+        for(ciRoute ir = at._outRoutes.begin(); ir != at._outRoutes.end(); ++ir)
+        {
+          // Defer all Jack routes to Audio Input and Output copy constructors or assign !
+          if(ir->type == Route::JACK_ROUTE)
+            continue;
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+          _outRoutes.push_back(*ir);
+        }
+      } 
+      else if(flags & ASSIGN_DEFAULT_ROUTES)
+      {
+        //
+        //  add default route to master
+        //
+        OutputList* ol = MusEGlobal::song->outputs();
+        if (!ol->empty()) {
+              AudioOutput* ao = ol->front();
+              switch(type()) {
+                    case Track::WAVE:
+                    case Track::AUDIO_AUX:
+                          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+                          _outRoutes.push_back(Route(ao, -1));
+                          break;
+                    // It should actually never get here now, but just in case.
+                    case Track::AUDIO_SOFTSYNTH:
+                          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+                          _outRoutes.push_back(Route(ao, 0, channels()));
+                          break;
+                    default:
+                          break;
+                    }
+              }
+      }  
+      
+}  
+
+void AudioTrack::assign(const Track& t, int flags)
+{
+      Track::assign(t, flags);
+      internal_assign(t, flags);
+}
 
 AudioTrack::~AudioTrack()
 {
       delete _efxPipe;
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      delete[] outBuffers[i];
-      //delete[] outBuffers;
       
-      // p3.3.15
-      //for(int i = 0; i < MAX_CHANNELS; ++i) 
-      //{
-      //  if(outBuffers[i])
-      //    free(outBuffers[i]);
-      //}
-      
-      // p3.3.38
       int chans = _totalOutChannels;
       // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
       if(chans < MAX_CHANNELS)
         chans = MAX_CHANNELS;
-      for(int i = 0; i < chans; ++i) 
+      if(outBuffers)
       {
-        if(outBuffers[i])
-          free(outBuffers[i]);
+        for(int i = 0; i < chans; ++i) 
+        {
+          if(outBuffers[i])
+            free(outBuffers[i]);
+        }
+        delete[] outBuffers;
       }
-      delete[] outBuffers;
       
-      for(iCtrlList i = _controller.begin(); i != _controller.end(); ++i)
-        delete i->second;
-      
+      _controller.clearDelete();
 }
 
 //---------------------------------------------------------
@@ -313,6 +388,10 @@ void AudioTrack::addController(CtrlList* list)
 
 void AudioTrack::removeController(int id)
       {
+      AudioMidiCtrlStructMap amcs;
+      _controller.midiControls()->find_audio_ctrl_structs(id, &amcs);  
+      for(ciAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++ iamcs)
+        _controller.midiControls()->erase(*iamcs);
       iCtrlList i = _controller.find(id);
       if (i == _controller.end()) {
             printf("AudioTrack::removeController id %d not found\n", id);
@@ -327,20 +406,14 @@ void AudioTrack::removeController(int id)
 
 void AudioTrack::swapControllerIDX(int idx1, int idx2)
 {
-  // FIXME This code is ugly.
-  // At best we would like to modify the keys (IDXs) in-place and
-  //  do some kind of deferred re-sort, but it can't be done...
-  
-  if(idx1 == idx2)
-    return;
-    
-  if(idx1 < 0 || idx2 < 0 || idx1 >= PipelineDepth || idx2 >= PipelineDepth)
+  if(idx1 == idx2 || idx1 < 0 || idx2 < 0 || idx1 >= PipelineDepth || idx2 >= PipelineDepth)
     return;
   
   CtrlList *cl;
   CtrlList *newcl;
   int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
   int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
+  int id_mask = ~((int)AC_PLUGIN_CTL_ID_MASK);
   int i, j;
   
   CtrlListList tmpcll;
@@ -350,7 +423,7 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
   {
     cl = icl->second;
     i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    j = cl->id() & ~((unsigned long)AC_PLUGIN_CTL_ID_MASK);
+    j = cl->id() & id_mask;
     if(j == id1 || j == id2)
     {
       newcl = new CtrlList(i | (j == id1 ? id2 : id1));
@@ -388,74 +461,21 @@ void AudioTrack::swapControllerIDX(int idx1, int idx2)
     _controller.insert(std::pair<const int, CtrlList*>(newcl->id(), newcl));
   } 
   
-  
-  /*
-  unsigned int idmask = ~AC_PLUGIN_CTL_ID_MASK;
-  
-  CtrlList* cl;
-  CtrlList* ctl1 = 0;
-  CtrlList* ctl2 = 0;
-  CtrlList* newcl1 = 0;
-  CtrlList* newcl2 = 0;
-  CtrlVal cv(0, 0.0);
-  int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
-  int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
-  int i, j;
-  double min, max;
-  
-  for(ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) 
+  // Remap midi to audio controls...
+  MidiAudioCtrlMap* macm = _controller.midiControls();
+  for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end(); ++imacm)
   {
-    cl = icl->second;
-    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    j = cl->id() & idmask;
-    
-    if(j == id1)
-    {
-      ctl1 = cl;
-      newcl1 = new CtrlList( i | id2 );
-      newcl1->setMode(cl->mode());
-      newcl1->setValueType(cl->valueType());
-      newcl1->setName(cl->name());
-      cl->range(&min, &max);
-      newcl1->setRange(min, max);
-      newcl1->setCurVal(cl->curVal());
-      newcl1->setDefault(cl->getDefault());
-      for(iCtrl ic = cl->begin(); ic != cl->end(); ++ic) 
-      {
-        cv = ic->second;
-        newcl1->insert(std::pair<const int, CtrlVal>(cv.frame, cv));
-      }
-    }
-    //else  
-    if(j == id2)
-    {
-      ctl2 = cl;
-      newcl2 = new CtrlList( i | id1 );
-      newcl2->setMode(cl->mode());
-      newcl2->setValueType(cl->valueType());
-      newcl2->setName(cl->name());
-      cl->range(&min, &max);
-      newcl2->setRange(min, max);
-      newcl2->setCurVal(cl->curVal());
-      newcl2->setDefault(cl->getDefault());
-      for(iCtrl ic = cl->begin(); ic != cl->end(); ++ic) 
-      {
-        cv = ic->second;
-        newcl2->insert(std::pair<const int, CtrlVal>(cv.frame, cv));
-      }
-    }
-  }  
-  if(ctl1)
-    _controller.erase(ctl1->id());
-  if(ctl2)
-    _controller.erase(ctl2->id());
-  if(newcl1)
-    //_controller.add(newcl1);
-    _controller.insert(std::pair<const int, CtrlList*>(newcl1->id(), newcl1));
-  if(newcl2)
-    _controller.insert(std::pair<const int, CtrlList*>(newcl2->id(), newcl2));
-    //_controller.add(newcl2);
-  */  
+    int actrl = imacm->second.audioCtrlId();
+    int id = actrl & id_mask;
+    actrl &= AC_PLUGIN_CTL_ID_MASK;
+    if(id == id1)
+      actrl |= id2;
+    else if(id == id2)
+      actrl |= id1;
+    else
+      continue;
+    imacm->second.setAudioCtrlId(actrl);
+  }
 }
 
 //---------------------------------------------------------
@@ -509,7 +529,6 @@ void AudioTrack::processAutomationEvents()
       {
         // Don't bother looking for start, it's OK, just take the first one.
         // Needed for mousewheel and paging etc.
-        //if (icr->id == id && icr->type == ARVT_START) 
         if (icr->id == id) 
         {
           int start = icr->frame;
@@ -539,11 +558,7 @@ void AudioTrack::processAutomationEvents()
             if(icr->id == id && icr->type == ARVT_STOP) 
             {
               int end = icr->frame;
-              // Erase everything up to, not including, this stop event's frame.
-              // Because an event was already stored directly when slider released.
-              if(end > start)
-                --end;
-                  
+              
               iCtrl s = cl->lower_bound(start);
               iCtrl e = cl->lower_bound(end);
               
@@ -565,24 +580,26 @@ void AudioTrack::processAutomationEvents()
     //  from CtrlRecList and put into cl.
     for (iCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr) 
     {
-          if (icr->id == id && (icr->type == ARVT_VAL || icr->type == ARVT_START))
+          if (icr->id == id)
+          {
+                // Must optimize these types otherwise multiple vertices appear on flat straight lines in the graphs.
+                CtrlValueType vtype = cl->valueType();
+                if(!cl->empty() && (cl->mode() == CtrlList::DISCRETE || vtype == VAL_BOOL || vtype == VAL_INT))
+                {
+                  iCtrl icl_prev = cl->lower_bound(icr->frame);
+                  if(icl_prev != cl->begin())
+                    --icl_prev;
+                  if(icl_prev->second.val == icr->val)
+                    continue;
+                }  
+                // Now add the value.
                 cl->add(icr->frame, icr->val);
+          }
     }
   }
   
   // Done with the recorded automation event list. Clear it.
   _recEvents.clear();
-        
-  // Try muse without this, so that the user can remain in automation write mode
-  //  after a stop. 
-  /*
-  if (automationType() == AUTO_WRITE)
-    {
-        setAutomationType(AUTO_READ);
-        MusEGlobal::song->update(SC_AUTOMATION);
-    }     
-  */
-  
 }
 
 //---------------------------------------------------------
@@ -627,13 +644,11 @@ void AudioTrack::seekPrevACEvent(int id)
     if(cl->empty())
       return;
     
-    //iCtrl s = cl->lower_bound(MusEGlobal::song->cPos().frame());
-    iCtrl s = cl->lower_bound(MusEGlobal::audio->pos().frame());    // p4.0.33
+    iCtrl s = cl->lower_bound(MusEGlobal::audio->pos().frame());    
     if(s != cl->begin())
       --s;
     
-    //MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
-    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
+    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  
     return;
 }
 
@@ -651,16 +666,14 @@ void AudioTrack::seekNextACEvent(int id)
     if(cl->empty())
       return;
     
-    //iCtrl s = cl->upper_bound(MusEGlobal::song->cPos().frame());
-    iCtrl s = cl->upper_bound(MusEGlobal::audio->pos().frame());         // p4.0.33
+    iCtrl s = cl->upper_bound(MusEGlobal::audio->pos().frame());         
     
     if(s == cl->end())
     {
       --s;
     }
     
-    //MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
-    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
+    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  
     return;  
 }
 
@@ -734,7 +747,7 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
   iCtrl ic = cl->find(frame); 
   if(ic != cl->end())
     cl->erase(ic);
-  cl->insert(std::pair<const int, CtrlVal> (newframe, CtrlVal(newframe, newval)));      
+  cl->insert(std::pair<const int, CtrlVal> (newframe, CtrlVal(newframe, newval)));
 }
 
 //---------------------------------------------------------
@@ -743,15 +756,8 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
 
 double AudioTrack::volume() const
       {
-      ciCtrlList cl = _controller.find(AC_VOLUME);
-      if (cl == _controller.end())
-            return 0.0;
-      
-      if (MusEGlobal::automation && 
-          automationType() != AUTO_OFF && _volumeEnCtrl && _volumeEn2Ctrl )
-            return cl->second->value(MusEGlobal::song->cPos().frame());
-      else
-            return cl->second->curVal();
+      return _controller.value(AC_VOLUME, MusEGlobal::audio->curFramePos(), 
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_volumeEnCtrl || !_volumeEn2Ctrl);
       }
 
 //---------------------------------------------------------
@@ -775,15 +781,8 @@ void AudioTrack::setVolume(double val)
 
 double AudioTrack::pan() const
       {
-      ciCtrlList cl = _controller.find(AC_PAN);
-      if (cl == _controller.end())
-            return 0.0;
-      
-      if (MusEGlobal::automation && 
-          automationType() != AUTO_OFF && _panEnCtrl && _panEn2Ctrl )
-        return cl->second->value(MusEGlobal::song->cPos().frame());
-      else
-        return cl->second->curVal();
+      return _controller.value(AC_PAN, MusEGlobal::audio->curFramePos(), 
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_panEnCtrl || !_panEn2Ctrl);
       }
 
 //---------------------------------------------------------
@@ -806,14 +805,49 @@ void AudioTrack::setPan(double val)
 
 double AudioTrack::pluginCtrlVal(int ctlID) const
       {
-      ciCtrlList cl = _controller.find(ctlID);
-      if (cl == _controller.end())
-            return 0.0;
-      
-      if (MusEGlobal::automation && (automationType() != AUTO_OFF))
-        return cl->second->value(MusEGlobal::song->cPos().frame());
+      bool en_1 = true, en_2 = true;
+      if(ctlID < AC_PLUGIN_CTL_BASE)  
+      {
+        if(ctlID == AC_VOLUME)
+        {
+          en_1 = _volumeEnCtrl; 
+          en_2 = _volumeEn2Ctrl;
+        }
+        else
+        if(ctlID == AC_PAN)
+        {
+          en_1 = _panEnCtrl; 
+          en_2 = _panEn2Ctrl;
+        }
+      }
       else
-        return cl->second->curVal();
+      {
+        if(ctlID < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+        {
+          _efxPipe->controllersEnabled(ctlID, &en_1, &en_2); 
+        }
+        else
+        {
+          if(type() == AUDIO_SOFTSYNTH)
+          {
+            const SynthI* synth = static_cast<const SynthI*>(this);
+            if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+            {
+              SynthIF* sif = synth->sif();
+              if(sif)
+              {
+                const DssiSynthIF* dssi_sif = static_cast<const DssiSynthIF*>(sif);
+                int in_ctrl_idx = ctlID & AC_PLUGIN_CTL_ID_MASK;
+                en_1 = dssi_sif->controllerEnabled(in_ctrl_idx);
+                en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
+              }
+            }
+          }
+        }
+      }  
+            
+      return _controller.value(ctlID, MusEGlobal::audio->curFramePos(), 
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !en_1 || !en_2);
       }
 
 //---------------------------------------------------------
@@ -829,16 +863,150 @@ void AudioTrack::setPluginCtrlVal(int param, double val)
   cl->second->setCurVal(val);
 }
       
+//---------------------------------------------------------
+//   addScheduledControlEvent
+//   returns true if event cannot be delivered
+//---------------------------------------------------------
+
+bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
+{
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  // FIXME: These controllers (three so far - vol, pan, mute) have no vari-run-length support.
+  {
+    iCtrlList icl = _controller.find(track_ctrl_id);
+    if(icl == _controller.end())
+      return true;
+    icl->second->setCurVal(val);
+    return false;
+  }
+  else
+  {
+    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+      return _efxPipe->addScheduledControlEvent(track_ctrl_id, val, frame);
+    else
+    {
+      if(type() == AUDIO_SOFTSYNTH)
+      {
+        const SynthI* synth = static_cast<const SynthI*>(this);
+        if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+        {
+          SynthIF* sif = synth->sif();
+          if(sif)
+          {
+            DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
+            int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+            return dssi_sif->addScheduledControlEvent(in_ctrl_idx, val, frame);
+          }
+        }
+      }
+    }
+  }  
+  return true;
+}
+
+//---------------------------------------------------------
+//   enableController
+//   Enable or disable gui controls. 
+//   Used during automation recording to inhibit gui controls 
+//    from playback controller stream
+//---------------------------------------------------------
+
+void AudioTrack::enableController(int track_ctrl_id, bool en) 
+{
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
+  {
+    if(track_ctrl_id == AC_VOLUME)
+      enableVolumeController(en);
+    else
+    if(track_ctrl_id == AC_PAN)
+      enablePanController(en);
+  }
+  else
+  {
+    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+      _efxPipe->enableController(track_ctrl_id, en);
+    else
+    {
+      if(type() == AUDIO_SOFTSYNTH)
+      {
+        SynthI* synth = static_cast<SynthI*>(this);
+        if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+        {
+          SynthIF* sif = synth->sif();
+          if(sif)
+          {
+            DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
+            int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+            dssi_sif->enableController(in_ctrl_idx, en);
+          }
+        }
+      }
+    }
+  }  
+}
+
+//---------------------------------------------------------
+//   controllersEnabled
+//---------------------------------------------------------
+
+void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) const
+      {
+      bool en_1 = true, en_2 = true;
+      if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
+      {
+        if(track_ctrl_id == AC_VOLUME)
+        {
+          en_1 = _volumeEnCtrl; 
+          en_2 = _volumeEn2Ctrl;
+        }
+        else
+        if(track_ctrl_id == AC_PAN)
+        {
+          en_1 = _panEnCtrl; 
+          en_2 = _panEn2Ctrl;
+        }
+      }
+      else
+      {
+        if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+        {
+          _efxPipe->controllersEnabled(track_ctrl_id, &en_1, &en_2); 
+        }
+        else
+        {
+          if(type() == AUDIO_SOFTSYNTH)
+          {
+            const SynthI* synth = static_cast<const SynthI*>(this);
+            if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+            {
+              SynthIF* sif = synth->sif();
+              if(sif)
+              {
+                const DssiSynthIF* dssi_sif = static_cast<const DssiSynthIF*>(sif);
+                int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+                en_1 = dssi_sif->controllerEnabled(in_ctrl_idx);
+                en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
+              }
+            }
+          }
+        }
+      }  
+        
+      if(en1)
+        *en1 = en_1;
+      if(en2)
+        *en2 = en_2;
+      }
+
 void AudioTrack::recordAutomation(int n, double v)
       {
         if(!MusEGlobal::automation)
           return;
         if(MusEGlobal::audio->isPlaying())
-          _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
+          _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));      
         else 
         {
           if(automationType() == AUTO_WRITE)
-            _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
+            _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));    
           else 
           if(automationType() == AUTO_TOUCH)
           // In touch mode and not playing. Send directly to controller list.
@@ -847,7 +1015,7 @@ void AudioTrack::recordAutomation(int n, double v)
             if (cl == _controller.end()) 
               return;
             // Add will replace if found.
-            cl->second->add(MusEGlobal::song->cPos().frame(), v);
+            cl->second->add(MusEGlobal::audio->curFramePos(), v);   
           }  
         }
       }
@@ -859,25 +1027,26 @@ void AudioTrack::startAutoRecord(int n, double v)
         if(MusEGlobal::audio->isPlaying())
         {
           if(automationType() == AUTO_TOUCH)
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v, ARVT_START));
-          else    
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_START));
+          else
           if(automationType() == AUTO_WRITE)
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));
         } 
         else
         {
           if(automationType() == AUTO_TOUCH)
           // In touch mode and not playing. Send directly to controller list.
           {
+            // FIXME: Unsafe? Should sync by sending a message, but that'll really slow it down with large audio bufs.
             iCtrlList cl = _controller.find(n);
             if (cl == _controller.end()) 
               return;
             // Add will replace if found.
-            cl->second->add(MusEGlobal::song->cPos().frame(), v);
+            cl->second->add(MusEGlobal::audio->curFramePos(), v);                 
           }    
           else    
           if(automationType() == AUTO_WRITE)
-            _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
+            _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));    
         }   
       }
 
@@ -889,8 +1058,8 @@ void AudioTrack::stopAutoRecord(int n, double v)
         {
           if(automationType() == AUTO_TOUCH)
           {
-              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::song->cPos().frame(), v);
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v, ARVT_STOP));
+              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::audio->curFramePos(), v);
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_STOP));   
           }   
         } 
       }
@@ -908,7 +1077,6 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       if (hasAuxSend()) {
             int naux = MusEGlobal::song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
-                  //QString s("<auxSend idx=%1>%2</auxSend>\n");
                   QString s("<auxSend idx=\"%1\">%2</auxSend>\n");  // Aux fix from Remon, thanks.
                   xml.nput(level, s.arg(idx).arg(_auxSend[idx]).toAscii().constData());
                   }
@@ -917,26 +1085,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
             if (*ip)
                   (*ip)->writeConfiguration(level, xml);
             }
-      for (ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) {
-            const CtrlList* cl = icl->second;
-
-            QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(cl->id()).arg(cl->curVal()).toAscii().constData();
-            s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
-            xml.tag(level++, s.toAscii().constData());
-            int i = 0;
-            for (ciCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
-                  QString s("%1 %2, ");
-                  xml.nput(level, s.arg(ic->second.frame).arg(ic->second.val).toAscii().constData());
-                  ++i;
-                  if (i >= 4) {
-                        xml.put(level, "");
-                        i = 0;
-                        }
-                  }
-            if (i)
-                  xml.put(level, "");
-            xml.etag(level--, "controller");
-            }
+      _controller.write(level, xml);            
       }
 
 //---------------------------------------------------------
@@ -1010,10 +1159,6 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             _sendMetronome = xml.parseInt();
       else if (tag == "automation")
             setAutomationType(AutomationType(xml.parseInt()));
-      // Removed by T356
-      // "recfile" tag not saved anymore
-      //else if (tag == "recfile")
-      //      readRecfile(xml);
       else if (tag == "controller") {
             CtrlList* l = new CtrlList();
             l->read(xml);
@@ -1025,11 +1170,9 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             //  controls would all be set to zero.
             // But we will allow for the (unintended, useless) possibility of a controller 
             //  with no matching plugin control.
-            //PluginI* p = 0;
             PluginIBase* p = 0;     
             bool ctlfound = false;
-            //int m = l->id() & AC_PLUGIN_CTL_ID_MASK;
-            unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;       // p4.0.21
+            unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;       
             int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
             if(n >= 0 && n < PipelineDepth)
             {
@@ -1037,7 +1180,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
               if(p && m < p->parameters())
                   ctlfound = true;
             }
-            // Support a special block for dssi synth ladspa controllers. p4.0.20
+            // Support a special block for dssi synth ladspa controllers. 
             else if(n == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)    
             {
               SynthI* synti = dynamic_cast < SynthI* > (this);
@@ -1046,6 +1189,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                 SynthIF* sif = synti->sif();
                 if(sif)
                 {
+#ifdef DSSI_SUPPORT
                   DssiSynthIF* dsif = dynamic_cast < DssiSynthIF* > (sif);
                   if(dsif)
                   {
@@ -1053,6 +1197,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                     if(p && m < p->parameters())
                         ctlfound = true;
                   }
+#endif
                 }
               }
             }
@@ -1081,6 +1226,8 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                   l->setMode(p->ctrlMode(m));  
                 } 
             }
+      else if (tag == "midiMapper") 
+            _controller.midiControls()->read(xml);
       else
             return Track::readProperties(xml, tag);
       return false;
@@ -1179,7 +1326,6 @@ void AudioTrack::mapRackPluginsToControllers()
       l->setValueType(p->ctrlValueType(i));
       l->setMode(p->ctrlMode(i));  
       l->setCurVal(p->param(i));
-      //l->setDefault(p->defaultValue(i));
     }  
   }
   
@@ -1195,27 +1341,27 @@ void AudioTrack::mapRackPluginsToControllers()
       // Ignore volume, pan, mute etc.
       if(id < AC_PLUGIN_CTL_BASE)
         continue;
-      //int param = id & AC_PLUGIN_CTL_ID_MASK;
-      unsigned param = id & AC_PLUGIN_CTL_ID_MASK;    // p4.0.21
+        
+      unsigned param = id & AC_PLUGIN_CTL_ID_MASK;    
       int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
-      //PluginI* p = (*_efxPipe)[idx];
       
-      // p4.0.20
-      PluginIBase* p = 0;
+      const PluginIBase* p = 0;
       if(idx >= 0 && idx < PipelineDepth)
         p = (*_efxPipe)[idx];
       // Support a special block for dssi synth ladspa controllers. 
       else if(idx == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)    
       {
-        SynthI* synti = dynamic_cast < SynthI* > (this);
+        const SynthI* synti = dynamic_cast < const SynthI* > (this);
         if(synti)
         {
           SynthIF* sif = synti->sif();
           if(sif)
           {
-            DssiSynthIF* dsif = dynamic_cast < DssiSynthIF* > (sif);
+#ifdef DSSI_SUPPORT
+            const DssiSynthIF* dsif = dynamic_cast < const DssiSynthIF* > (sif);
             if(dsif)
               p = dsif;
+#endif
           }
         }
       }
@@ -1236,6 +1382,17 @@ void AudioTrack::mapRackPluginsToControllers()
   while (loop);
     
     
+    // DELETETHIS 40 i DO trust the below. some container's erase functions
+    // return an iterator to the next, so sometimes you need it=erase(it)
+    // instead of erase(it++).
+    // i'm happy with both AS LONG the above does not slow down things.
+    // when in doubt, i'd prefer the below however.
+    // so either remove the below completely (if the above works fast),
+    // or remove the above and use the below.
+    // CAUTION: the below isn't quite up-to-date! first recheck.
+    // this "not-being-up-to-date" is another reason for NOT keeping such
+    // comments!
+    
     // FIXME: Although this tested OK, and is the 'official' way to erase while iterating,
     //  I don't trust it. I'm weary of this method. The technique didn't work 
     //  in Audio::msgRemoveTracks(), see comments there.
@@ -1252,6 +1409,7 @@ void AudioTrack::mapRackPluginsToControllers()
         ++icl;
         continue;
       }  
+      
       int param = id & AC_PLUGIN_CTL_ID_MASK;
       int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
       PluginI* p = (*_efxPipe)[idx];
@@ -1267,69 +1425,6 @@ void AudioTrack::mapRackPluginsToControllers()
     */
 }
 
-/*
-//---------------------------------------------------------
-//   writeRouting
-//---------------------------------------------------------
-
-void AudioTrack::writeRouting(int level, Xml& xml) const
-{
-      QString n;
-      if (type() == Track::AUDIO_INPUT) {
-                ciJackRouteNameCache circ = jackRouteNameCache.find(this);
-                if(circ != jackRouteNameCache.end())
-                {
-                  jackRouteNameMap rm = circ->second;
-                  for(ciJackRouteNameMap cirm = rm.begin(); cirm != rm.end(); ++cirm)
-                  {
-                    n = cirm->second;
-                    if(!n.isEmpty())
-                    {
-                      Route dst(name(), true, cirm->first);
-                      xml.tag(level++, "Route");
-                      xml.strTag(level, "srcNode", n);
-                      xml.strTag(level, "dstNode", dst.name());
-                      xml.etag(level--, "Route");
-                    }  
-                  }  
-                }
-            }
-      if(type() == Track::AUDIO_OUTPUT) 
-      {
-        ciJackRouteNameCache circ = jackRouteNameCache.find(this);
-        if(circ != jackRouteNameCache.end())
-        {
-          jackRouteNameMap rm = circ->second;
-          for(ciJackRouteNameMap cirm = rm.begin(); cirm != rm.end(); ++cirm)
-          {
-            n = cirm->second;
-            if(!n.isEmpty())
-            {
-              Route src(name(), false, cirm->first);
-              xml.tag(level++, "Route");
-              xml.strTag(level, "srcNode", src.name());
-              xml.strTag(level, "dstNode", n);
-              xml.etag(level--, "Route");
-            }  
-          }  
-        }
-      }
-      else
-      {
-        const RouteList* rl = &_outRoutes;
-        for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-            if(!r->name().isEmpty())
-            {
-              xml.tag(level++, "Route");
-              xml.strTag(level, "srcNode", name());
-              xml.strTag(level, "dstNode", r->name());
-              xml.etag(level--, "Route");
-            }
-        }  
-      }  
-}
-*/       
-       
 //---------------------------------------------------------
 //   AudioInput
 //---------------------------------------------------------
@@ -1339,21 +1434,55 @@ AudioInput::AudioInput()
       {
       // set Default for Input Ports:
       _mute = true;
-      //setVolume(1.0);
       for (int i = 0; i < MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
-      //_channels = 0;
-      //setChannels(2);
       }
 
-//AudioInput::AudioInput(const AudioInput& t)
-//  : AudioTrack(t)
-AudioInput::AudioInput(const AudioInput& t, bool cloneParts)
-  : AudioTrack(t, cloneParts)
-      {
-      for (int i = 0; i < MAX_CHANNELS; ++i)
-            jackPorts[i] = t.jackPorts[i];
-      }
+AudioInput::AudioInput(const AudioInput& t, int flags)
+  : AudioTrack(t, flags)
+{
+  for (int i = 0; i < MAX_CHANNELS; ++i)
+        jackPorts[i] = 0;
+
+  // Register ports.
+  if(MusEGlobal::checkAudioDevice()) 
+  {  
+    for (int i = 0; i < channels(); ++i) 
+    {
+      char buffer[128];
+      snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
+      jackPorts[i] = MusEGlobal::audioDevice->registerInPort(buffer, false);
+    }
+  }
+  internal_assign(t, flags);
+}
+
+void AudioInput::assign(const Track& t, int flags)
+{
+  AudioTrack::assign(t, flags);
+  internal_assign(t, flags);
+} 
+
+void AudioInput::internal_assign(const Track& t, int flags)
+{
+  if(t.type() != AUDIO_INPUT)
+    return;
+  
+  const AudioInput& at = (const AudioInput&)t;
+      
+  if(flags & ASSIGN_ROUTES)
+  {
+    for(ciRoute ir = at._inRoutes.begin(); ir != at._inRoutes.end(); ++ir)
+    {
+      // Defer all Jack routes to these copy constructors or assign !
+      if(ir->type != Route::JACK_ROUTE)
+        continue;
+      // FIXME Must use msgAddRoute instead of _inRoutes.push_back, because it connects to Jack. 
+      // The track is still fresh has not been added to track lists yet. Will cause audio processing problems ?
+      MusEGlobal::audio->msgAddRoute(*ir, Route(this, ir->channel, ir->channels));  
+    }
+  } 
+}
 
 //---------------------------------------------------------
 //   ~AudioInput
@@ -1418,20 +1547,55 @@ AudioOutput::AudioOutput()
       {
       for (int i = 0; i < MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
-      //_channels = 0;
-      //setChannels(2);
       }
 
-//AudioOutput::AudioOutput(const AudioOutput& t)
-//  : AudioTrack(t)
-AudioOutput::AudioOutput(const AudioOutput& t, bool cloneParts)
-  : AudioTrack(t, cloneParts)
-      {
-      for (int i = 0; i < MAX_CHANNELS; ++i)
-            jackPorts[i] = t.jackPorts[i];
-      _nframes = t._nframes;
-      }
+AudioOutput::AudioOutput(const AudioOutput& t, int flags)
+  : AudioTrack(t, flags)
+{
+  for (int i = 0; i < MAX_CHANNELS; ++i)
+        jackPorts[i] = 0;
+  _nframes = 0;
+  
+  // Register ports. 
+  if(MusEGlobal::checkAudioDevice()) 
+  {
+    for (int i = 0; i < channels(); ++i) 
+    {
+      char buffer[128];
+      snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
+      jackPorts[i] = MusEGlobal::audioDevice->registerOutPort(buffer, false);
+    }
+  }
+  internal_assign(t, flags);
+}
 
+void AudioOutput::assign(const Track& t, int flags)
+{
+  AudioTrack::assign(t, flags);
+  internal_assign(t, flags);
+} 
+
+void AudioOutput::internal_assign(const Track& t, int flags)
+{
+  if(t.type() != AUDIO_OUTPUT)
+    return;
+  
+  const AudioOutput& at = (const AudioOutput&)t;
+      
+  if(flags & ASSIGN_ROUTES)
+  {
+    for(ciRoute ir = at._outRoutes.begin(); ir != at._outRoutes.end(); ++ir)
+    {
+      // Defer all Jack routes to these copy constructors or assign !
+      if(ir->type != Route::JACK_ROUTE)
+        continue;
+      // FIXME Must use msgAddRoute instead of _outRoutes.push_back, because it connects to Jack. 
+      // The track is still fresh has not been added to track lists yet. Will cause audio processing problems ?
+      MusEGlobal::audio->msgAddRoute(Route(this, ir->channel, ir->channels), *ir); 
+    }
+  } 
+}
+    
 //---------------------------------------------------------
 //   ~AudioOutput
 //---------------------------------------------------------
@@ -1546,11 +1710,6 @@ void AudioAux::write(int level, Xml& xml) const
 AudioAux::AudioAux()
    : AudioTrack(AUDIO_AUX)
 {
-      //_channels = 0;
-      //setChannels(2);
-      // Changed by Tim. p3.3.15
-      //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      buffer[i] = (i < channels()) ? new float[MusEGlobal::segmentSize] : 0;
       for(int i = 0; i < MAX_CHANNELS; ++i)
       {
         if(i < channels())
@@ -1560,20 +1719,28 @@ AudioAux::AudioAux()
       }  
 }
 
+AudioAux::AudioAux(const AudioAux& t, int flags)
+   : AudioTrack(t, flags)
+{
+      for(int i = 0; i < MAX_CHANNELS; ++i)
+      {
+        if(i < channels())
+          posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+        else
+          buffer[i] = 0;
+      }  
+}
 //---------------------------------------------------------
 //   AudioAux
 //---------------------------------------------------------
 
 AudioAux::~AudioAux()
-      {
-      // Changed by Tim. p3.3.15
-      //for (int i = 0; i < channels(); ++i)
-      //      delete[] buffer[i];
+{
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             if (buffer[i])
                 free(buffer[i]);
-            }
       }
+}
 
 //---------------------------------------------------------
 //   read
@@ -1610,8 +1777,30 @@ void AudioAux::read(Xml& xml)
 //   getData
 //---------------------------------------------------------
 
-bool AudioAux::getData(unsigned /*pos*/, int ch, unsigned /*samples*/, float** data)
+bool AudioAux::getData(unsigned pos, int ch, unsigned samples, float** data)
       {
+      // Make sure all the aux-supporting tracks are processed first so aux data is gathered.    
+      TrackList* tl = MusEGlobal::song->tracks();
+      AudioTrack* track;
+      for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        track = (AudioTrack*)(*it);
+        // If there are any Aux route paths to the track, defer processing until the second main track processing pass.  
+        if(!track->processed() && track->hasAuxSend() && !track->auxRefCount())
+        {
+          int chans = track->channels();
+          // Just a dummy buffer.
+          float* buff[chans];
+          float buff_data[samples * chans];
+          for (int i = 0; i < chans; ++i)
+                buff[i] = buff_data + i * samples;
+          
+          track->copyData(pos, chans, -1, -1, samples, buff);
+        }
+      }      
+  
       for (int i = 0; i < ch; ++i)
             data[i] = buffer[i % channels()];
       return true;
@@ -1625,17 +1814,11 @@ void AudioAux::setChannels(int n)
 {
   if(n > channels()) 
   {
-    // Changed by Tim. p3.3.15
-    //for (int i = channels(); i < n; ++i)
-    //      buffer[i] = new float[MusEGlobal::segmentSize];
     for(int i = channels(); i < n; ++i)
       posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
   }
   else if(n < channels()) 
   {
-    // Changed by Tim. p3.3.15
-    //for (int i = n; i < channels(); ++i)
-    //      delete[] buffer[i];
     for(int i = n; i < channels(); ++i) 
     {
       if(buffer[i])
@@ -1655,8 +1838,7 @@ bool AudioTrack::setRecordFlag1(bool f)
       if (f == _recordFlag)
             return true;
       if (f) {
-        // do nothing
-        if (_recFile == 0 && MusEGlobal::song->record()) {
+        if (_recFile.isNull() && MusEGlobal::song->record()) {
           // this rec-enables a track if the global arm already was done
           // the standard case would be that rec-enable be done there
           prepareRecording();
@@ -1672,14 +1854,11 @@ bool AudioTrack::setRecordFlag1(bool f)
               //  recording, the _recFile pointer is made into an event, 
               //  then _recFile is made zero before this function is called.
               QString s = _recFile->path();
-              // Added by Tim. p3.3.8
-              delete _recFile;
-              setRecFile(0);
+              setRecFile(NULL);
               
               remove(s.toLatin1().constData());
               if(MusEGlobal::debugMsg)
                 printf("AudioNode::setRecordFlag1: remove file %s if it exists\n", s.toLatin1().constData());
-              //_recFile = 0;
             }
           }
       return true;
@@ -1698,16 +1877,17 @@ bool AudioTrack::prepareRecording()
       if(MusEGlobal::debugMsg)
         printf("prepareRecording for track %s\n", _name.toLatin1().constData());
 
-      if (_recFile == 0) {
+      if (_recFile.isNull()) {
             //
             // create soundfile for recording
             //
             char buffer[128];
             QFile fil;
-            for (;;++MusEGlobal::recFileNumber) {
-               sprintf(buffer, "%s/rec%d.wav",
-                  MusEGlobal::museProject.toLatin1().constData(),
-                  MusEGlobal::recFileNumber);
+            for (;;++recFileNumber) {
+               sprintf(buffer, "%s/TRACK_%s_TAKE_%d.wav",
+                  MusEGlobal::museProject.toLocal8Bit().constData(),
+                       name().simplified().replace(" ","_").toLocal8Bit().constData(),
+                  recFileNumber);
                fil.setFileName(QString(buffer));
                if (!fil.exists())
                   break;
@@ -1719,7 +1899,7 @@ bool AudioTrack::prepareRecording()
       }
 
       if (MusEGlobal::debugMsg)
-            printf("AudioNode::setRecordFlag1: init internal file %s\n", _recFile->path().toLatin1().constData());
+          printf("AudioNode::setRecordFlag1: init internal file %s\n", _recFile->path().toLatin1().constData());
 
       if(_recFile->openWrite())
             {

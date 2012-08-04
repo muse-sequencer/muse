@@ -45,7 +45,6 @@
 #include <QImage>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QSpinBox>
 
 #include <stdio.h>
 #include <math.h>
@@ -69,11 +68,8 @@ using namespace std;
 #include "functions.h"
 #include "helper.h"
 #include "cmd.h"
-#include "sig.h"
 #include "song.h"
 #include "shortcuts.h"
-
-//#include "../ctrl/ctrledit.h"
 
 using MusEGlobal::debugMsg;
 using MusEGlobal::heavyDebugMsg;
@@ -86,10 +82,6 @@ QString IntToQStr(int i);
 
 #define SPLIT_NOTE 60
 
-
-
-#define APPLY_TO_SELECTED_STRING tr("Apply to selected notes:")
-#define APPLY_TO_NEW_STRING tr("Apply to new notes:")
 
 
 //PIXELS_PER_NOTEPOS must be greater or equal to 3*NOTE_XLEN + 2*NOTE_SHIFT
@@ -112,7 +104,8 @@ QString IntToQStr(int i);
 
 
 
-//do NOT put parentheses around this!
+//do NOT put parentheses around this! and always right-multiply it,
+//that is: foo * PAGESTEP, never PAGESTEP * foo!
 #define PAGESTEP 3/4
 
 
@@ -170,6 +163,15 @@ QColor* mycolors; // array [NUM_MYCOLORS]
 
 set<QString> ScoreEdit::names;
 
+int ScoreCanvas::_quant_power2_init=3;
+int ScoreCanvas::_pixels_per_whole_init=300;
+int ScoreCanvas::note_velo_init=64;
+int ScoreCanvas::note_velo_off_init=64;
+int ScoreCanvas::new_len_init=0;
+ScoreCanvas::coloring_mode_t ScoreCanvas::coloring_mode_init=COLOR_MODE_BLACK;
+bool ScoreCanvas::preamble_contains_timesig_init=true;
+bool ScoreCanvas::preamble_contains_keysig_init=true;
+
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -179,7 +181,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
    : TopWin(TopWin::SCORE, parent, name)
 {
 	setAttribute(Qt::WA_DeleteOnClose);
-	setFocusPolicy(Qt::StrongFocus);
+	setFocusPolicy(Qt::NoFocus);
 
 	mainw    = new QWidget(this);
 
@@ -223,6 +225,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	xscroll->setMinimum(0);
 	yscroll->setMinimum(0);
+	xscroll->setValue(0);
+	yscroll->setValue(0);
 
 	menu_mapper=new QSignalMapper(this);
 	connect(menu_mapper, SIGNAL(mapped(int)), SLOT(menu_command(int)));
@@ -230,17 +234,13 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 
 	// Toolbars ---------------------------------------------------------
-	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-	undo_tools->setObjectName("Undo/Redo tools");
-	undo_tools->addActions(MusEGlobal::undoRedo->actions());
-	addToolBar(undo_tools);
-
 	QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
 	steprec_tools->setObjectName("Step recording tools");
 	srec  = new QToolButton();
 	srec->setToolTip(tr("Step Record"));
 	srec->setIcon(*steprecIcon);
 	srec->setCheckable(true);
+	srec->setFocusPolicy(Qt::NoFocus);
 	steprec_tools->addWidget(srec);
 	connect(srec, SIGNAL(toggled(bool)), score_canvas, SLOT(set_steprec(bool)));
 
@@ -250,14 +250,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	edit_tools->set(MusEGui::PointerTool);
 	score_canvas->set_tool(MusEGui::PointerTool);
 	connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
-
-	QToolBar* panic_toolbar = addToolBar(tr("panic"));         
-	panic_toolbar->setObjectName("panic");
-	panic_toolbar->addAction(MusEGlobal::panicAction);
-
-	QToolBar* transport_toolbar = addToolBar(tr("transport"));
-	transport_toolbar->setObjectName("transport");
-	transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
 	addToolBarBreak();
 
@@ -295,14 +287,28 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	len_actions->addAction(n32_action);
 	len_actions->addAction(nlast_action);
 	
-	nlast_action->setChecked(true);
-	menu_command(CMD_NOTELEN_LAST);
+	switch (ScoreCanvas::new_len_init)
+	{
+		case 0: nlast_action->setChecked(true); menu_command(CMD_NOTELEN_LAST); break;
+		case 1: n1_action->setChecked(true); menu_command(CMD_NOTELEN_1); break;
+		case 2: n2_action->setChecked(true); menu_command(CMD_NOTELEN_2); break;
+		case 4: n4_action->setChecked(true); menu_command(CMD_NOTELEN_4); break;
+		case 8: n8_action->setChecked(true); menu_command(CMD_NOTELEN_8); break;
+		case 16: n16_action->setChecked(true); menu_command(CMD_NOTELEN_16); break;
+		case 32: n32_action->setChecked(true); menu_command(CMD_NOTELEN_32); break;
+		default:
+			cerr << "ERROR: THIS SHOULD NEVER HAPPEN. newLen is invalid in ScoreEdit::ScoreEdit.\n" <<
+							"       (newLen="<<ScoreCanvas::new_len_init<<"; the only valid values are 0,1,2,4,8,16 and 32)\n" <<
+							"       however, don't worry, this is no major problem, using 0 instead" << endl;
+			nlast_action->setChecked(true);
+			menu_command(CMD_NOTELEN_LAST);
+	}
 	
 	note_settings_toolbar->addSeparator();
 	
-	apply_velo_to_label = new QLabel(APPLY_TO_NEW_STRING, note_settings_toolbar);
-		int w1 = apply_velo_to_label->fontMetrics().width(APPLY_TO_NEW_STRING);
-		int w2 = apply_velo_to_label->fontMetrics().width(APPLY_TO_SELECTED_STRING);
+	apply_velo_to_label = new QLabel(tr("Apply to new notes:"), note_settings_toolbar);
+		int w1 = apply_velo_to_label->fontMetrics().width(tr("Apply to new notes:"));
+		int w2 = apply_velo_to_label->fontMetrics().width(tr("Apply to selected notes:"));
 		if (w1>w2) 
 			apply_velo_to_label->setFixedWidth(w1+5);
 		else 
@@ -310,26 +316,30 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	
 	note_settings_toolbar->addWidget(apply_velo_to_label);
 	note_settings_toolbar->addWidget(new QLabel(tr("Velocity:"), note_settings_toolbar));
-	velo_spinbox = new QSpinBox(this);
+	velo_spinbox = new SpinBox(this);
 	velo_spinbox->setRange(0, 127);
 	velo_spinbox->setSingleStep(1);
 	//we do not use the valueChanged signal, because that would generate
 	//many many undos when using the spin buttons.
 	connect(velo_spinbox, SIGNAL(editingFinished()), SLOT(velo_box_changed()));
 	connect(this,SIGNAL(velo_changed(int)), score_canvas, SLOT(set_velo(int)));
+	connect(velo_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(velo_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 	note_settings_toolbar->addWidget(velo_spinbox);
-	velo_spinbox->setValue(64);
+	velo_spinbox->setValue(ScoreCanvas::note_velo_init);
 
 	note_settings_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), note_settings_toolbar));
-	velo_off_spinbox = new QSpinBox(this);
+	velo_off_spinbox = new SpinBox(this);
 	velo_off_spinbox->setRange(0, 127);
 	velo_off_spinbox->setSingleStep(1);
 	//we do not use the valueChanged signal, because that would generate
 	//many many undos when using the spin buttons.
 	connect(velo_off_spinbox, SIGNAL(editingFinished()), SLOT(velo_off_box_changed()));
 	connect(this,SIGNAL(velo_off_changed(int)), score_canvas, SLOT(set_velo_off(int)));
+	connect(velo_off_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(velo_off_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 	note_settings_toolbar->addWidget(velo_off_spinbox);
-	velo_off_spinbox->setValue(64);
+	velo_off_spinbox->setValue(ScoreCanvas::note_velo_off_init);
 
 
 	
@@ -338,26 +348,34 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	quant_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_toolbar));
 	quant_combobox = new QComboBox(this);
 	quant_combobox->addItem("2");  // if you add or remove items from
-	quant_combobox->addItem("4");  // here, also change quant_mapper[]
-	quant_combobox->addItem("8");  // in ScoreCanvas::set_quant()!
+	quant_combobox->addItem("4");  // here, also change all code regarding
+	quant_combobox->addItem("8");  // _quant_power2 and _quant_power2_init
 	quant_combobox->addItem("16"); // and MAX_QUANT_POWER (must be log2(largest_value))
 	quant_combobox->addItem("32");
-	connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int)));
+	quant_combobox->setFocusPolicy(Qt::TabFocus);
+	quant_combobox->setCurrentIndex(score_canvas->quant_power2()-1);
+	// the above is intendedly executed BEFORE connecting. otherwise this would
+	// destroy pixels_per_whole_init!
+	//connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int))); 
+	connect(quant_combobox, SIGNAL(activated(int)), SLOT(quant_combobox_changed(int)));      // Tim
 	quant_toolbar->addWidget(quant_combobox);
-	quant_combobox->setCurrentIndex(2);
+	
 	
 	quant_toolbar->addSeparator();
 
 	quant_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_toolbar));
-	px_per_whole_spinbox = new QSpinBox(this);
+	px_per_whole_spinbox = new SpinBox(this);
+	px_per_whole_spinbox->setFocusPolicy(Qt::StrongFocus);
 	px_per_whole_spinbox->setRange(10, 1200);
 	px_per_whole_spinbox->setSingleStep(50);
 	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
 	connect(score_canvas, SIGNAL(pixels_per_whole_changed(int)), px_per_whole_spinbox, SLOT(setValue(int)));
+	connect(px_per_whole_spinbox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(px_per_whole_spinbox, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 	quant_toolbar->addWidget(px_per_whole_spinbox);
-	px_per_whole_spinbox->setValue(300);
+	px_per_whole_spinbox->setValue(ScoreCanvas::_pixels_per_whole_init);
 
-	QMenu* edit_menu = menuBar()->addMenu(tr("&Edit"));      
+	QMenu* edit_menu = menuBar()->addMenu(tr("&Edit"));
 
 		edit_menu->addActions(MusEGlobal::undoRedo->actions());
 		edit_menu->addSeparator();
@@ -415,7 +433,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 			connect(select_oloop_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
 
 
-  QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));      
+	QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));
 	
 		func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
 		func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
@@ -439,7 +457,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		menu_mapper->setMapping(func_legato_action, CMD_LEGATO);
 	
 
-	QMenu* settings_menu = menuBar()->addMenu(tr("Window &Config"));      
+	QMenu* settings_menu = menuBar()->addMenu(tr("Window &Config"));
 
 		color_menu = settings_menu->addMenu(tr("Note head &colors"));
 			color_actions = new QActionGroup(this);
@@ -456,8 +474,18 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 			menu_mapper->setMapping(color_velo_action, CMD_COLOR_VELO);
 			menu_mapper->setMapping(color_part_action, CMD_COLOR_PART);
 			
-			color_black_action->setChecked(true);
-			menu_command(CMD_COLOR_BLACK);
+			switch (ScoreCanvas::coloring_mode_init)
+			{
+				case 0: color_black_action->setChecked(true); menu_command(CMD_COLOR_BLACK); break;
+				case 1: color_velo_action->setChecked(true); menu_command(CMD_COLOR_VELO); break;
+				case 2: color_part_action->setChecked(true); menu_command(CMD_COLOR_PART); break;
+				default:
+					cerr << "ERROR: THIS SHOULD NEVER HAPPEN. noteColor is invalid in ScoreEdit::ScoreEdit.\n" <<
+									"       (noteColor="<<ScoreCanvas::coloring_mode_init<<"; the only valid values are 0,1 and 2)\n" <<
+									"       however, don't worry, this is no major problem, using 0 instead" << endl;
+					color_black_action->setChecked(true);
+					menu_command(CMD_COLOR_BLACK);
+			}
 		
 		QMenu* preamble_menu = settings_menu->addMenu(tr("Set up &preamble"));
 			preamble_keysig_action = preamble_menu->addAction(tr("Display &key signature"));
@@ -468,9 +496,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 			preamble_keysig_action->setCheckable(true);
 			preamble_timesig_action->setCheckable(true);
 			
-			preamble_keysig_action->setChecked(true);
-			preamble_timesig_action->setChecked(true);
-  
+			preamble_keysig_action->setChecked(ScoreCanvas::preamble_contains_keysig_init);
+			preamble_timesig_action->setChecked(ScoreCanvas::preamble_contains_timesig_init);
+
 		QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"), menu_mapper, SLOT(map()));
 		menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
 
@@ -478,7 +506,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	settings_menu->addAction(subwinAction);
 	settings_menu->addAction(shareAction);
 	settings_menu->addAction(fullscreenAction);
-  
+
 
 	init_shortcuts();
 	
@@ -505,6 +533,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	apply_velo=true;
 	
 	initTopwinState();
+	finalizeInit();
 }
 
 void ScoreEdit::init_shortcuts()
@@ -589,7 +618,16 @@ bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
 
 ScoreEdit::~ScoreEdit()
 {
-	
+	names.erase(name);
+}
+
+void ScoreEdit::focusCanvas()
+{
+	if(MusEGlobal::config.smartFocus)
+	{
+	  score_canvas->setFocus();
+	  score_canvas->activateWindow();
+	}
 }
 
 void ScoreEdit::velo_box_changed()
@@ -602,21 +640,27 @@ void ScoreEdit::velo_off_box_changed()
 	emit velo_off_changed(velo_off_spinbox->value());
 }
 
+void ScoreEdit::quant_combobox_changed(int idx)
+{
+	score_canvas->set_quant(idx);
+	focusCanvas();
+}
+
 void ScoreEdit::song_changed(int flags)
 {
-        if(_isDeleting)  // Ignore while while deleting to prevent crash.
-          return;
-        
+	if(_isDeleting)  // Ignore while while deleting to prevent crash.
+		return;
+	
 	if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
 	{
 		map<MusECore::Event*, MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
 		if (selection.empty())
 		{
-			apply_velo_to_label->setText(APPLY_TO_NEW_STRING);
+			apply_velo_to_label->setText(tr("Apply to new notes:"));
 		}
 		else
 		{
-			apply_velo_to_label->setText(APPLY_TO_SELECTED_STRING);
+			apply_velo_to_label->setText(tr("Apply to selected notes:"));
 			
 			int velo=-1;
 			int velo_off=-1;
@@ -662,6 +706,7 @@ void ScoreEdit::canvas_height_changed(int height)
 void ScoreEdit::viewport_height_changed(int height)
 {
 	int val=score_canvas->canvas_height() - height;
+	// FINDMICHJETZT canvas_height() is uninitalized!
 	if (val<0) val=0;
 	yscroll->setPageStep(height * PAGESTEP);
 	yscroll->setMaximum(val);
@@ -674,8 +719,9 @@ void ScoreEdit::viewport_height_changed(int height)
 
 void ScoreEdit::closeEvent(QCloseEvent* e)
 {
-        _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
-        
+	_isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+	names.erase(name);
+
 	QSettings settings("MusE", "MusE-qt");
 	//settings.setValue("ScoreEdit/geometry", saveGeometry());
 	settings.setValue("ScoreEdit/windowState", saveState());
@@ -693,8 +739,8 @@ void ScoreEdit::menu_command(int cmd)
 		{
 			bool ok;
 			QString newname = QInputDialog::getText(this, tr("Enter the new score title"),
-                                          tr("Enter the new score title"), QLineEdit::Normal,
-                                          name, &ok);
+			                                    tr("Enter the new score title"), QLineEdit::Normal,
+			                                    name, &ok);
 			if (ok)
 			{
 				if (!set_name(newname))
@@ -952,6 +998,10 @@ void ScoreCanvas::write_staves(int level, MusECore::Xml& xml) const
 
 void ScoreEdit::readStatus(MusECore::Xml& xml)
 {
+	// never "return;" inside that function.
+	// instead, goto end_of_scoreedit_read_status;
+	// (there is a command which must be executed!)
+	
 	bool apply_velo_temp=apply_velo;
 	apply_velo=false;
 	
@@ -1039,12 +1089,15 @@ void ScoreEdit::readStatus(MusECore::Xml& xml)
 
 			case MusECore::Xml::TagEnd:
 				if (tag == "scoreedit")
-					return;
+					goto end_of_scoreedit_read_status;
 					
 			default:
 				break;
 		}
 	}
+
+end_of_scoreedit_read_status:
+	
 	apply_velo=apply_velo_temp;
 }
 
@@ -1060,7 +1113,23 @@ void ScoreEdit::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "topwin")
+				if (tag=="quantPowerInit")
+					ScoreCanvas::_quant_power2_init=xml.parseInt();
+				else if (tag=="pxPerWholeInit")
+					ScoreCanvas::_pixels_per_whole_init=xml.parseInt();
+				else if (tag=="newNoteVeloInit")
+					ScoreCanvas::note_velo_init=xml.parseInt();
+				else if (tag=="newNoteVeloOffInit")
+					ScoreCanvas::note_velo_off_init=xml.parseInt();
+				else if (tag=="newLenInit")
+					ScoreCanvas::new_len_init=xml.parseInt();
+				else if (tag=="noteColorInit")
+					ScoreCanvas::coloring_mode_init=(ScoreCanvas::coloring_mode_t)xml.parseInt();
+				else if (tag=="preambleContainsKeysig")
+					ScoreCanvas::preamble_contains_keysig_init=xml.parseInt();
+				else if (tag=="preambleContainsTimesig")
+					ScoreCanvas::preamble_contains_timesig_init=xml.parseInt();
+				else if (tag == "topwin")
 					TopWin::readConfiguration(SCORE, xml);
 				else
 					xml.unknown("ScoreEdit");
@@ -1080,7 +1149,18 @@ void ScoreEdit::read_configuration(MusECore::Xml& xml)
 void ScoreEdit::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "scoreedit");
+
+	xml.intTag(level, "quantPowerInit", ScoreCanvas::_quant_power2_init);
+	xml.intTag(level, "pxPerWholeInit", ScoreCanvas::_pixels_per_whole_init);
+	xml.intTag(level, "newNoteVeloInit", ScoreCanvas::note_velo_init);
+	xml.intTag(level, "newNoteVeloOffInit", ScoreCanvas::note_velo_off_init);
+	xml.intTag(level, "newLenInit", ScoreCanvas::new_len_init);
+	xml.intTag(level, "noteColorInit", ScoreCanvas::coloring_mode_init);
+	xml.intTag(level, "preambleContainsKeysig", ScoreCanvas::preamble_contains_keysig_init);
+	xml.intTag(level, "preambleContainsTimesig", ScoreCanvas::preamble_contains_timesig_init);
+	
 	TopWin::writeConfiguration(SCORE, level, xml);
+
 	xml.etag(level, "scoreedit");
 }
 
@@ -1217,22 +1297,20 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	dragged_event_part=NULL;
 	
 	last_len=384;
-	new_len=-1;
+	new_len=-1; // will be initalized with new_len_init by ScoreEdit::ScoreEdit();
 	
-	set_quant(2); //this is actually unneccessary, as while
-	              //initalizing the quant_combobox, this gets
-	              //called again. but for safety...
-	set_pixels_per_whole(300); //same as above. but safety rocks
+	_quant_power2=_quant_power2_init; // ScoreEdit relies on this to be done!
+	_pixels_per_whole_init = _pixels_per_whole_init;
 
-	set_velo(64);
-	set_velo_off(64);
+	note_velo=note_velo_init;
+	note_velo_off=note_velo_off_init;
 	
 	dragging_staff=false;
 	
 	
-	coloring_mode=COLOR_MODE_BLACK;
-	preamble_contains_keysig=true;
-	preamble_contains_timesig=true;
+	coloring_mode=coloring_mode_init;
+	preamble_contains_keysig=preamble_contains_keysig_init;
+	preamble_contains_timesig=preamble_contains_timesig_init;
 	
 	
 	x_scroll_speed=0;
@@ -1261,6 +1339,11 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	connect(remove_staff_action, SIGNAL(triggered()), SLOT(remove_staff_slot()));
 
 	unsetCursor();
+}
+
+ScoreCanvas::~ScoreCanvas()
+{
+	delete steprec;
 }
 
 void ScoreCanvas::staffmode_treble_slot()
@@ -1454,9 +1537,9 @@ void ScoreCanvas::fully_recalculate()
 
 void ScoreCanvas::song_changed(int flags)
 {
-        if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
-          return;
-        
+	if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
+		return;
+
 	if (flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
 	{
 		update_parts();
@@ -1506,7 +1589,7 @@ int ScoreCanvas::canvas_width()
 
 int ScoreCanvas::canvas_height()
 {
-	return staves.rbegin()->y_bottom;
+	return staves.empty() ? 0 : staves.rbegin()->y_bottom;
 }
 
 int ScoreCanvas::viewport_width()
@@ -1535,7 +1618,7 @@ void color_image(QImage& img, const QColor& color)
 {
 	uchar* ptr=img.bits();
 	//int bytes=img.byteCount();
-        int bytes=img.bytesPerLine() * img.height();   // By Tim. For older Qt versions. Tested OK on Qt4.5.
+	int bytes=img.bytesPerLine() * img.height();   // By Tim. For older Qt versions. Tested OK on Qt4.5.
 	int r,g,b;
 	color.getRgb(&r,&g,&b);
 	
@@ -2078,12 +2161,19 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 
 #define NUMBER_HEIGHT (pix_num[0].height())
 
-//kann 0 oder 1 sein:
-//bei notenkollisionen mit ungerader anzahl von kollidierenden
-//wird immer so ausgewichen, dass möglichst wenige ausweichen müssen
-//wenn die anzahl aber gerade ist, gibt es keine "bessere" lösung
-//in dem fall werden immer die geraden (0) bzw. ungeraden (1)
-//ausweichen.
+// kann 0 oder 1 sein:
+// bei notenkollisionen mit ungerader anzahl von kollidierenden
+// wird immer so ausgewichen, dass möglichst wenige ausweichen müssen
+// wenn die anzahl aber gerade ist, gibt es keine "bessere" lösung
+// in dem fall werden immer die geraden (0) bzw. ungeraden (1)
+// ausweichen.
+// ROUGH TRANSLATION:
+// can be 0 or 1:
+// when there are note head collisions with an odd number of colliding
+// heads there's an unique solution for "stepping aside", so that
+// fewer notes must "step aside". but when the number of colliding
+// heads is even, there is no "better" solution. this constant
+// specifies whether the "odd" (1) or the "even" (0) heads will move.
 #define AUSWEICHEN_BEVORZUGT 0
 
 #define STEM_LEN 30
@@ -2796,6 +2886,7 @@ void ScoreCanvas::draw_note_lines(QPainter& p, int y, bool reserve_akkolade_spac
 {
 	int xbegin = reserve_akkolade_space ? AKKOLADE_LEFTMARGIN+AKKOLADE_WIDTH+AKKOLADE_RIGHTMARGIN : 0;
 	int xend=width();
+	// FINDMICHJETZT y is uninitalized!
 	
 	p.setPen(Qt::black);
 	
@@ -2806,9 +2897,11 @@ void ScoreCanvas::draw_note_lines(QPainter& p, int y, bool reserve_akkolade_spac
 
 void staff_t::calc_item_pos()
 {
-	MusECore::key_enum curr_key=MusECore::KEY_C; //this has to be KEY_C or KEY_C_B and nothing else,
-	                         //because only with these two keys the next (initial)
-	                         //key signature is properly drawn.
+	//this has to be KEY_C or KEY_C_B and nothing else,
+	//because only with these two keys the next (initial)
+	//key signature is properly drawn.
+	MusECore::key_enum curr_key=MusECore::KEY_C; 
+
 	int pos_add=0;
 	
 	max_y_coord=0;
@@ -2919,9 +3012,13 @@ void ScoreCanvas::calc_pos_add_list()
 	
 	
 	//process key changes
-	MusECore::key_enum curr_key=MusECore::KEY_C; //this has to be KEY_C or KEY_C_B and nothing else,
-	                         //because only with these two keys the next (initial)
-	                         //key signature is properly calculated.
+	
+	//this has to be KEY_C or KEY_C_B and nothing else,
+	//because only with these two keys the next (initial)
+	//key signature is properly calculated.
+	MusECore::key_enum curr_key=MusECore::KEY_C; 
+
+
 	for (MusECore::iKeyEvent it=MusEGlobal::keymap.begin(); it!=MusEGlobal::keymap.end(); it++)
 	{
 		MusECore::key_enum new_key=it->second.key;
@@ -3197,10 +3294,10 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 				list<int> aufloes_list=calc_accidentials(curr_key, staff.clef, new_key);
 				list<int> new_acc_list=calc_accidentials(new_key, staff.clef);
 				
-				// vorzeichen aus curr_key auflösen
+				// cancel accidentials from curr_key
 				draw_accidentials(p, it->x + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, y_offset, aufloes_list, pix_noacc[BLACK_PIXMAP]);
 								
-				// alle vorzeichen aus new_key zeichnen
+				// draw all accidentials from new_key
 				QPixmap* pix = is_sharp_key(new_key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
 				vorzeichen_t new_accidential = is_sharp_key(new_key) ? SHARP : B;
 
@@ -3595,9 +3692,9 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	keystate=event->modifiers();
 	bool ctrl=keystate & Qt::ControlModifier;
 
-	// den errechneten tick immer ABrunden!
-	// denn der "bereich" eines schlags geht von schlag_begin bis nächsterschlag_begin-1
-	// noten werden aber genau in die mitte dieses bereiches gezeichnet
+	// always round DOWN.
+	// because the "area" of a beat goes from "beat_begin" to "nextbeat_begin-1",
+	// but notes are drawn in the middle of that area!
 
 	list<staff_t>::iterator staff_it=staff_at_y(event->y() + y_pos);
 
@@ -3765,7 +3862,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							
 							MusEGlobal::audio->msgAddEvent(newevent, curr_part, true, false, false);
 							
-							dragged_event_part=curr_part;
+							set_dragged_event_part(curr_part);
 							dragged_event=newevent;
 							original_dragged_event=dragged_event.clone();
 
@@ -3932,7 +4029,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				}
 				
 				old_pitch=-1;
-				old_dest_tick=MAXINT;
+				old_dest_tick=INT_MAX;
 				old_len=-1;
 			}
 		}
@@ -4186,7 +4283,7 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
 		{
 			switch (MusEGlobal::song->follow())
 			{
-				case  MusECore::Song::NO: break;
+				case MusECore::Song::NO: break;
 				case MusECore::Song::JUMP:  goto_tick(tick,false);  break;
 				case MusECore::Song::CONTINUOUS:  goto_tick(tick,true);  break;
 			}
@@ -4280,16 +4377,16 @@ void ScoreCanvas::menu_command(int cmd)
 {
 	switch (cmd)
 	{
-		case CMD_COLOR_BLACK:  coloring_mode=COLOR_MODE_BLACK; redraw(); break;
-		case CMD_COLOR_PART:   coloring_mode=COLOR_MODE_PART;  redraw(); break;
-		case CMD_COLOR_VELO:   coloring_mode=COLOR_MODE_VELO;  redraw(); break;
-		case CMD_NOTELEN_1:    new_len=TICKS_PER_WHOLE/ 1; break;
-		case CMD_NOTELEN_2:    new_len=TICKS_PER_WHOLE/ 2; break;
-		case CMD_NOTELEN_4:    new_len=TICKS_PER_WHOLE/ 4; break;
-		case CMD_NOTELEN_8:    new_len=TICKS_PER_WHOLE/ 8; break;
-		case CMD_NOTELEN_16:   new_len=TICKS_PER_WHOLE/16; break;
-		case CMD_NOTELEN_32:   new_len=TICKS_PER_WHOLE/32; break;
-		case CMD_NOTELEN_LAST: new_len=-1; break;
+		case CMD_COLOR_BLACK:  coloring_mode_init=coloring_mode=COLOR_MODE_BLACK; redraw(); break;
+		case CMD_COLOR_PART:   coloring_mode_init=coloring_mode=COLOR_MODE_PART;  redraw(); break;
+		case CMD_COLOR_VELO:   coloring_mode_init=coloring_mode=COLOR_MODE_VELO;  redraw(); break;
+		case CMD_NOTELEN_1:    new_len_init= 1; new_len=TICKS_PER_WHOLE/ 1; break;
+		case CMD_NOTELEN_2:    new_len_init= 2; new_len=TICKS_PER_WHOLE/ 2; break;
+		case CMD_NOTELEN_4:    new_len_init= 4; new_len=TICKS_PER_WHOLE/ 4; break;
+		case CMD_NOTELEN_8:    new_len_init= 8; new_len=TICKS_PER_WHOLE/ 8; break;
+		case CMD_NOTELEN_16:   new_len_init=16; new_len=TICKS_PER_WHOLE/16; break;
+		case CMD_NOTELEN_32:   new_len_init=32; new_len=TICKS_PER_WHOLE/32; break;
+		case CMD_NOTELEN_LAST: new_len_init= 0; new_len=-1; break;
 		
 		default: 
 			cerr << "ERROR: ILLEGAL FUNCTION CALL: ScoreCanvas::menu_command called with unknown command ("<<cmd<<")"<<endl;
@@ -4299,23 +4396,24 @@ void ScoreCanvas::menu_command(int cmd)
 void ScoreCanvas::preamble_keysig_slot(bool state)
 {
 	preamble_contains_keysig=state;
+	preamble_contains_keysig_init=state;
 	redraw();
 }
 void ScoreCanvas::preamble_timesig_slot(bool state)
 {
 	preamble_contains_timesig=state;
+	preamble_contains_timesig_init=state;
 	redraw();
 }
 
 void ScoreCanvas::set_quant(int val)
 {
-	int quant_mapper[]={1,2,3,4,5};
-
-	if ((val>=0) && (val<signed(sizeof(quant_mapper)/sizeof(*quant_mapper))))
+	if ((val>=0) && (val<5))
 	{
 		int old_len=quant_len();
 
-		_quant_power2=quant_mapper[val];
+		_quant_power2=val+1;
+		_quant_power2_init=_quant_power2;
 		
 		set_pixels_per_whole(pixels_per_whole() * quant_len() / old_len );
 
@@ -4342,6 +4440,7 @@ void ScoreCanvas::set_pixels_per_whole(int val)
 	// zero!)
 	
 	_pixels_per_whole=val;
+	_pixels_per_whole_init=val;
 	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		it->calc_item_pos();
@@ -4383,6 +4482,7 @@ void ScoreCanvas::maybe_close_if_empty()
 void ScoreCanvas::set_velo(int velo)
 {
 	note_velo=velo;
+	note_velo_init=velo;
 
 	if (parent->get_apply_velo())
 		modify_velocity(get_all_parts(),1, 0,velo);
@@ -4391,6 +4491,7 @@ void ScoreCanvas::set_velo(int velo)
 void ScoreCanvas::set_velo_off(int velo)
 {
 	note_velo_off=velo;
+	note_velo_off_init=velo;
 
 	if (parent->get_apply_velo())
 		modify_off_velocity(get_all_parts(),1, 0,velo);
@@ -4585,26 +4686,59 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
 
 /* BUGS and potential bugs
  *   o tied notes don't work properly when there's a key-change in
- *     between, for example, when a cis is tied to a des
- *   o schedule_all_same_len_parts: if there are two clones A and B,
- *     and both A and B get scheduled to be expanded (because we
- *     have one event from A and one event from B), this causes a bug,
- *     because after A (and B) got resized, the B-resize is invalid!
- *   o when changing toolbarstate when sharing and immediately after that
+ *     between, for example, when a cis is tied to a des [ will not fix ]
+ *         (reason: this actually never happens if dealing with a sane piece)
+ * > o when changing toolbarstate when sharing and immediately after that
  *     changing "share" status, the changed state isn't stored
+ *     (could be solved by storing the current window when quitting/saving whatever)
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
- * 
- * CURRENT TODO
- * ! o fix sigedit boxes (see also "important todo")
- *   o fix valgrind problems
- * > o drum editor: channel-stuff
+ *   o test drum controllers
+ *   o test old- and new drumtrack recording, steprecording
+ *   o velo-controller doesn't work in new-style drum tracks
  *
+ * CURRENT TODO
+ *   o storing <no_toplevels /> into a template file seems to ignore
+ *     the arranger's "MDI-ness", sets is at subwin all the time!
+ * 
+ *   o add controller editor "like search-and-replace":
+ *     acts on all specified type's events, and edits the value:
+ *      - apply some MIN or MAX on it
+ *      - scale it
+ *      - offset it
+ *      - only act on values in a certain value range
+ *      - maybe do curve-mapping
+ *   o remove the silly song type!
+ *   o remove the song length spinbox
+ *   o logical/physical device mapping:
+ *     song only contains logical information: not some "synth port",
+ *       but a "synth name", like "Yamaha DX7" or "TR-808".
+ *     the global config contains physical information, like
+ *       "'Yamaha DX7' is on 'USB Midi Bridge, Output two'", 
+ *       "'TR-808' is on 'jack-midi port foo, connected to bar'"
+ *     if loading a song with unknown synth name, ask the user.
+ *   o prerecord feature.
+ *
+ *   o find and fix FINDMICHJETZT
+ *   o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
+ * 
  * IMPORTANT TODO
- * ! o fix sigedit boxes (see also "current todo")
+ *   o allow steprec-insert-rest-note to be set to "off" / "unused"
+ *   o all places where i added doubleclick-edits: only react on left-click double clicks!
+ *   o support "new style" reordering with old style drum tracks as well
+ *     (not swapping but inserting!)
+ *
+ *   o canvas editor: create clone via "alt+drag" moves window instead
+ *   o controller view in score editor
+ *   o solo button
+ *   o do partial recalculating; recalculating can take pretty long
+ *     (0,5 sec) when displaying a whole song in scores
+ *   o transpose etc. must also transpose key-pressure events
+ *   o transpose: support in-key-transpose
+ *   o thin out: remove unneeded ctrl messages
+ *   o support edge-scrolling when opening a lasso
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes
- *   o newly created windows have to be focussed!
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
@@ -4612,21 +4746,11 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     "range" setting, or they've been modified), default to "in range" or "selected in range"
  * 
  *   o rename stuff with F2 key
- *   o redo transport menu: offer "one beat" and "one bar" steps
- *                          maybe also offer scrollbar
  *
  *   o shrink a part from its beginning as well! watch out for clones!
  *
- *   o canvas editor: create clone via "alt+drag" moves window instead
- *   o controller view in score editor
- *   o solo button
- * > o do partial recalculating; recalculating can take pretty long
- *     (0,5 sec) when displaying a whole song in scores
- *   o transpose etc. must also transpose key-pressure events
- *   o transpose: support in-key-transpose
- *   o thin out: remove unneeded ctrl messages
- *
  * less important stuff
+ *   o allow "fixating" toolbars?
  *   o quantize-templates (everything is forced into a specified
  *                         rhythm)
  *   o part-templates (you specify some notes and a control-chord;
@@ -4638,8 +4762,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
- *   o support edge-scrolling when opening a lasso
- *   o save more configuration stuff (quant, color)
  * 
  * really unimportant nice-to-haves
  *   o support in-song clef-changes
@@ -4652,10 +4774,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  * 
  * 
  * stuff for the other muse developers
- *   o update translations
- *   o remove ambiguous translation: "offset"="zeitversatz"
- *     this is ambigous in mod. note len and WRONG in mod. velo dialogs
- *
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
  */

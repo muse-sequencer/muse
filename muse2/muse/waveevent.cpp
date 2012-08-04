@@ -32,7 +32,7 @@
 
 // Added by Tim. p3.3.18
 //#define USE_SAMPLERATE
-//
+
 //#define WAVEEVENT_DEBUG
 //#define WAVEEVENT_DEBUG_PRC
 
@@ -110,10 +110,8 @@ void WaveEventBase::read(Xml& xml)
                         else if (tag == "frame")
                               _spos = xml.parseInt();
                         else if (tag == "file") {
-                              SndFile* wf = getWave(xml.parse1(), true);
-                              if (wf) {
-                                    f = SndFileR(wf);
-                                    }
+                              SndFileR wf = getWave(xml.parse1(), true);
+                              if (wf) f = wf;
                               }
                         else
                               xml.unknown("Event");
@@ -141,8 +139,6 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       xml.tag(level++, "event");
       PosLen wpos(*this);
       wpos += offset;
-//      if (offset)
-//            wpos.setTick(wpos.tick() + offset);
       wpos.write(level, xml, "poslen");
       xml.intTag(level, "frame", _spos);  // offset in wave file
 
@@ -152,7 +148,6 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       //
       QString path = f.dirPath();
 
-      //if (path.contains(MusEGlobal::museProject)) {
       if (!forcePath && path.contains(MusEGlobal::museProject)) {
             // extract MusEGlobal::museProject.
             QString newName = f.path().remove(MusEGlobal::museProject+"/");
@@ -163,11 +158,6 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       xml.etag(level, "event");
       }
 
-//void WaveEventBase::read(unsigned offset, float** buffer, int channel, int n, bool overwrite)
-//void WaveEventBase::readAudio(unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
-//off_t WaveEventBase::readAudio(SRC_STATE* src_state, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
-//off_t WaveEventBase::readAudio(AudioConverter* audConv, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
-// p3.3.33
 void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
 {
   // Added by Tim. p3.3.17
@@ -175,6 +165,11 @@ void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffe
   printf("WaveEventBase::readAudio audConv:%p sfCurFrame:%ld offset:%u channel:%d n:%d\n", audConv, sfCurFrame, offset, channel, n);
   #endif
   
+  // DELETETHIS 270. all the below stuff hasn't changed since revision 462, and 
+  // will not compile, and has a TODO in it.
+  // will this ever be done, or is it completely obsolete?
+  // even if we keep the #ifdef branch, there's a huge
+  // comment in it. delete that?
   // Changed by Tim. p3.3.18 
   #ifdef USE_SAMPLERATE
   
@@ -182,7 +177,7 @@ void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffe
   >>>>>>>>>>>+++++++++++++++++++++++++++++
   // If we have a valid audio converter then use it to do the processing. Otherwise just a normal seek + read.
   if(audConv)
-    //sfCurFrame = audConv->process(f, sfCurFrame, offset + _spos, buffer, channel, n, doSeek, overwrite);
+    //sfCurFrame = audConv->process(f, sfCurFrame, offset + _spos, buffer, channel, n, doSeek, overwrite); DELETETHIS
     sfCurFrame = audConv->readAudio(f, sfCurFrame, offset, buffer, channel, n, doSeek, overwrite);
   else
   {
@@ -192,10 +187,9 @@ void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffe
       sfCurFrame += f.read(channel, buffer, n, overwrite);
     }  
   }
-  //return sfCurFrame;
   return;
   
-  /*
+  /* DELETETHIS 250
   unsigned fsrate = f.samplerate();
   int fchan       = f.channels();
   off_t frame     = offset + _spos;
@@ -451,18 +445,12 @@ void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffe
   #else
   if(f.isNull())
     return;
-    //return sfCurFrame;
   
-  //sfCurFrame = f.seek(offset + _spos, 0);
+  //sfCurFrame = f.seek(offset + _spos, 0); DELETETHIS 2
   //sfCurFrame += f.read(channel, buffer, n, overwrite);
   f.seek(offset + _spos, 0);
   f.read(channel, buffer, n, overwrite);
       
-  // p3.3.41
-  //fprintf(stderr, "WaveEventBase::readAudio data: n:%ld %e %e %e %e\n", n, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
-      
-  
-  //return sfCurFrame;
   return;
   #endif
   

@@ -25,10 +25,15 @@
 #define __TEMPO_H__
 
 #include <map>
+#include <vector>
 
 #ifndef MAX_TICK
 #define MAX_TICK (0x7fffffff/100)
 #endif
+
+// Tempo ring buffer size
+#define TEMPO_FIFO_SIZE    1024
+
 
 namespace MusECore {
 
@@ -70,8 +75,7 @@ class TempoList : public TEMPOLIST {
       int _tempo;             // tempo if not using tempo list
       int _globalTempo;       // %percent 50-200%
 
-      void normalize();
-      void add(unsigned tick, int tempo);
+      void add(unsigned tick, int tempo, bool do_normalize = true);
       void change(unsigned tick, int newTempo);
       void del(iTEvent);
       void del(unsigned tick);
@@ -79,13 +83,16 @@ class TempoList : public TEMPOLIST {
    public:
       TempoList();
       ~TempoList();
+      void normalize();
       void clear();
+      void eraseRange(unsigned stick, unsigned etick);
 
       void read(Xml&);
       void write(int, Xml&) const;
       void dump() const;
 
       int tempo(unsigned tick) const;
+      int tempoAt(unsigned tick) const;
       unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const;
       unsigned tick2frame(unsigned tick, int* sn = 0) const;
       unsigned frame2tick(unsigned frame, int* sn = 0) const;
@@ -95,18 +102,62 @@ class TempoList : public TEMPOLIST {
       
       int tempoSN() const { return _tempoSN; }
       void setTempo(unsigned tick, int newTempo);
-      void addTempo(unsigned t, int tempo);
+      void addTempo(unsigned t, int tempo, bool do_normalize = true);
       void delTempo(unsigned tick);
       void changeTempo(unsigned tick, int newTempo);
+      bool masterFlag() const { return useList; }
       bool setMasterFlag(unsigned tick, bool val);
       int globalTempo() const           { return _globalTempo; }
       void setGlobalTempo(int val);
       };
 
+//---------------------------------------------------------
+//   Tempo Record Event
+//---------------------------------------------------------
+
+struct TempoRecEvent {
+      int tempo;
+      unsigned tick;    
+      TempoRecEvent() { }
+      TempoRecEvent(unsigned tk, unsigned t) {
+            tick  = tk;
+            tempo = t;
+            }
+      };
+
+class TempoRecList : public std::vector<TempoRecEvent >
+{
+  public:
+    void addTempo(int tick, int tempo)    { push_back(TempoRecEvent(tick, tempo)); }
+    void addTempo(const TempoRecEvent& e) { push_back(e); }
+};
+
+//---------------------------------------------------------
+//   TempoFifo
+//---------------------------------------------------------
+
+class TempoFifo {
+      TempoRecEvent fifo[TEMPO_FIFO_SIZE];
+      volatile int size;
+      int wIndex;
+      int rIndex;
+
+   public:
+      TempoFifo()  { clear(); }
+      bool put(const TempoRecEvent& event);   // returns true on fifo overflow
+      TempoRecEvent get();
+      const TempoRecEvent& peek(int = 0);
+      void remove();
+      bool isEmpty() const { return size == 0; }
+      void clear()         { size = 0, wIndex = 0, rIndex = 0; }
+      int getSize() const  { return size; }
+      };
+      
 } // namespace MusECore
 
 namespace MusEGlobal {
 extern MusECore::TempoList tempomap;
+extern MusECore::TempoRecList tempo_rec_list;
 }
 
 #endif

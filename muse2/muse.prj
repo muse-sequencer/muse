@@ -358,7 +358,6 @@
   (muse/device.h (muse/r/40_device.h 1.1 644))
   (muse/icons.cpp (muse/r/41_icons.cpp 1.1 644))
   (muse/wave.h (muse/r/42_wave.h 1.1 644))
-  (muse/ladspa.h (muse/r/43_ladspa.h 1.1 644))
   (muse/stamp-h1 (muse/r/44_stamp-h1 1.1 644))
   (muse/undo.h (muse/r/45_undo.h 1.1 644))
   (muse/sync.h (muse/r/46_sync.h 1.1 644))

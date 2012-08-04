@@ -32,6 +32,7 @@
 
 namespace MusEGlobal {
 MusECore::TempoList tempomap;
+MusECore::TempoRecList tempo_rec_list;
 }
 
 namespace MusECore {
@@ -59,7 +60,7 @@ TempoList::~TempoList()
 //   add
 //---------------------------------------------------------
 
-void TempoList::add(unsigned tick, int tempo)
+void TempoList::add(unsigned tick, int tempo, bool do_normalize)
       {
       if (tick > MAX_TICK)
             tick = MAX_TICK;
@@ -74,7 +75,8 @@ void TempoList::add(unsigned tick, int tempo)
             ne->tick   = tick;
             insert(std::pair<const unsigned, TEvent*> (tick, ev));
             }
-      normalize();
+      if(do_normalize)      
+        normalize();
       }
 
 //---------------------------------------------------------
@@ -120,6 +122,33 @@ void TempoList::clear()
       }
 
 //---------------------------------------------------------
+//   eraseRange
+//---------------------------------------------------------
+
+void TempoList::eraseRange(unsigned stick, unsigned etick)
+{
+    if(stick >= etick || stick > MAX_TICK)
+      return;
+    if(etick > MAX_TICK)
+      etick = MAX_TICK;
+    
+    iTEvent se = MusEGlobal::tempomap.upper_bound(stick);
+    if(se == end() || (se->first == MAX_TICK+1))
+      return;
+
+    iTEvent ee = MusEGlobal::tempomap.upper_bound(etick);
+
+    ee->second->tempo = se->second->tempo;
+    ee->second->tick = se->second->tick;
+
+    for(iTEvent ite = se; ite != ee; ++ite)
+      delete ite->second;
+    erase(se, ee); // Erase range does NOT include the last element.
+    normalize();
+    ++_tempoSN;
+}
+      
+//---------------------------------------------------------
 //   tempo
 //---------------------------------------------------------
 
@@ -138,12 +167,26 @@ int TempoList::tempo(unsigned tick) const
       }
 
 //---------------------------------------------------------
+//   tempo
+//   Bypass the useList flag and read from the list
+//---------------------------------------------------------
+
+int TempoList::tempoAt(unsigned tick) const
+      {
+            ciTEvent i = upper_bound(tick);
+            if (i == end()) {
+                  printf("tempoAt: no TEMPO at tick %d,0x%x\n", tick, tick);
+                  return 1000;
+                  }
+            return i->second->tempo;
+      }
+
+//---------------------------------------------------------
 //   del
 //---------------------------------------------------------
 
 void TempoList::del(unsigned tick)
       {
-// printf("TempoList::del(%d)\n", tick);
       iTEvent e = find(tick);
       if (e == end()) {
             printf("TempoList::del(%d): not found\n", tick);
@@ -210,9 +253,9 @@ void TempoList::setGlobalTempo(int val)
 //   addTempo
 //---------------------------------------------------------
 
-void TempoList::addTempo(unsigned t, int tempo)
+void TempoList::addTempo(unsigned t, int tempo, bool do_normalize)
       {
-      add(t, tempo);
+      add(t, tempo, do_normalize);
       ++_tempoSN;
       }
 
@@ -270,7 +313,6 @@ unsigned TempoList::tick2frame(unsigned tick, int* sn) const
             ciTEvent i = upper_bound(tick);
             if (i == end()) {
                   printf("tick2frame(%d,0x%x): not found\n", tick, tick);
-                  // abort();
                   return 0;
                   }
             unsigned dtick = tick - i->second->tick;
@@ -525,5 +567,54 @@ int TEvent::read(Xml& xml)
       return 0;
       }
 
+//---------------------------------------------------------
+//   put
+//    return true on fifo overflow
+//---------------------------------------------------------
+
+bool TempoFifo::put(const TempoRecEvent& event)
+      {
+      if (size < TEMPO_FIFO_SIZE) {
+            fifo[wIndex] = event;
+            wIndex = (wIndex + 1) % TEMPO_FIFO_SIZE;
+            // q_atomic_increment(&size);
+            ++size;
+            return false;
+            }
+      return true;
+      }
+
+//---------------------------------------------------------
+//   get
+//---------------------------------------------------------
+
+TempoRecEvent TempoFifo::get()
+      {
+      TempoRecEvent event(fifo[rIndex]);
+      rIndex = (rIndex + 1) % TEMPO_FIFO_SIZE;
+      --size;
+      return event;
+      }
+
+//---------------------------------------------------------
+//   peek
+//---------------------------------------------------------
+
+const TempoRecEvent& TempoFifo::peek(int n)
+      {
+      int idx = (rIndex + n) % TEMPO_FIFO_SIZE;
+      return fifo[idx];
+      }
+
+//---------------------------------------------------------
+//   remove
+//---------------------------------------------------------
+
+void TempoFifo::remove()
+      {
+      rIndex = (rIndex + 1) % TEMPO_FIFO_SIZE;
+      --size;
+      }
+      
 } // namespace MusECore
 

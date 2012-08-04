@@ -80,7 +80,7 @@ void WaveEdit::closeEvent(QCloseEvent* e)
 WaveEdit::WaveEdit(MusECore::PartList* pl)
    : MidiEditor(TopWin::WAVE, 1, pl)
       {
-      setFocusPolicy(Qt::StrongFocus);
+      setFocusPolicy(Qt::NoFocus);
 
       QSignalMapper* mapper = new QSignalMapper(this);
       QAction* act;
@@ -94,23 +94,23 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
 
       menuGain = menuFunctions->addMenu(tr("&Gain"));
       
-      act = menuGain->addAction(tr("200%"));
+      act = menuGain->addAction("200%");
       mapper->setMapping(act, CMD_GAIN_200);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      act = menuGain->addAction(tr("150%"));
+      act = menuGain->addAction("150%");
       mapper->setMapping(act, CMD_GAIN_150);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      act = menuGain->addAction(tr("75%"));
+      act = menuGain->addAction("75%");
       mapper->setMapping(act, CMD_GAIN_75);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      act = menuGain->addAction(tr("50%"));
+      act = menuGain->addAction("50%");
       mapper->setMapping(act, CMD_GAIN_50);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      act = menuGain->addAction(tr("25%"));
+      act = menuGain->addAction("25%");
       mapper->setMapping(act, CMD_GAIN_25);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
@@ -175,19 +175,9 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
 
-      //---------ToolBar----------------------------------
-      tools = addToolBar(tr("Wave edit tools"));
-      tools->setObjectName("Wave edit tools");
-
-      tools->addActions(MusEGlobal::undoRedo->actions());
 
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
-      //--------------------------------------------------
-      //    Transport Bar
-      QToolBar* transport = addToolBar(tr("transport"));
-      transport->setObjectName("transport");
-      transport->addActions(MusEGlobal::transportAction->actions());
 
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2
@@ -200,6 +190,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       solo = new QToolButton();
       solo->setText(tr("Solo"));
       solo->setCheckable(true);
+      solo->setFocusPolicy(Qt::NoFocus);
       tb1->addWidget(solo);
       connect(solo,  SIGNAL(toggled(bool)), SLOT(soloChanged(bool)));
       
@@ -230,7 +221,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
             xscale = -8000;
             }
 
-      hscroll = new ScrollScale(1, -32768, xscale, 10000, Qt::Horizontal, mainw, 0, true, 10000.0);
+      hscroll = new ScrollScale(-32768, 1, xscale, 10000, Qt::Horizontal, mainw, 0, false, 10000.0);
       view    = new WaveView(this, mainw, xscale, yscale);
       wview   = view;   // HACK!
 
@@ -240,7 +231,8 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       ymag->setMaximum(256);
       ymag->setPageStep(256);
       ymag->setValue(yscale);
-       
+      ymag->setFocusPolicy(Qt::NoFocus);
+
       time                 = new MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
       connect(view, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
@@ -260,7 +252,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       mainGrid->addWidget(hscroll, 3, 0);
       mainGrid->addWidget(corner,  3, 1, Qt::AlignBottom | Qt::AlignRight);
 
-      view->setFocus();  // Tim.
+      view->setFocus();  
       
       connect(hscroll, SIGNAL(scrollChanged(int)), view, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  view, SLOT(setXMag(int)));
@@ -289,6 +281,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       }
 
       initTopwinState();
+      finalizeInit();
       }
 
 void WaveEdit::initShortcuts()
@@ -517,7 +510,7 @@ void WaveEdit::horizontalZoomIn()
 {
   int mag = hscroll->mag();
   int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl < 23)
+  if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
         zoomlvl++;
 
   int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
@@ -537,6 +530,19 @@ void WaveEdit::horizontalZoomOut()
 
   hscroll->setMag(newmag);
 
+}
+
+//---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void WaveEdit::focusCanvas()
+{
+  if(MusEGlobal::config.smartFocus)
+  {
+    view->setFocus();
+    view->activateWindow();
+  }
 }
 
 } // namespace MusEGui

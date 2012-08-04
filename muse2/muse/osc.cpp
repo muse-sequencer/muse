@@ -33,6 +33,8 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <math.h>
 
 #include <QFileInfo>
 #include <QString>
@@ -43,7 +45,6 @@
 #else
   #include <unistd.h> 
   #include <signal.h>
-  #include <errno.h>
 #endif
 
 #include <lo/lo.h>
@@ -61,8 +62,12 @@
 #include "globals.h"
 #include "globaldefs.h"
 
+#endif   // OSC_SUPPORT
+
 namespace MusECore {
 
+#ifdef OSC_SUPPORT
+  
 static lo_server_thread serverThread = 0;
 static char* url = 0;
 static bool oscServerRunning = false;
@@ -150,55 +155,102 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
     fprintf(stderr, "oscMessageHandler: got message for ladspa effect...\n");
   #endif
     
-  // FIXME: Slowdowns: Shouldn't need these retries but they are needed, only upon creation of the synth. 
-  // Need to fix the real source of the problem! The instance is taking too long to appear after creation.
-  //
-  ///for(int retry = 0; retry < 5000; ++retry) 
-  {
-    ///#ifdef OSC_DEBUG 
-    ///fprintf(stderr, "oscMessageHandler: search retry number:%d ...\n", retry);
-    ///#endif
-    
-    //if(_uiOscPath)
-    //  break;
   
-    #ifdef DSSI_SUPPORT
-    if(isSynth)
+  #ifdef DSSI_SUPPORT
+  if(isSynth)
+  {
+    // Message is meant for a dssi synth. Check dssi synth instances...
+    SynthIList* sl = MusEGlobal::song->syntis();
+    for(iSynthI si = sl->begin(); si != sl->end(); ++si) 
     {
-      // Message is meant for a dssi synth. Check dssi synth instances...
-      SynthIList* sl = MusEGlobal::song->syntis();
-      for(iSynthI si = sl->begin(); si != sl->end(); ++si) 
+      SynthI* synti = *si;
+      
+      #ifdef OSC_DEBUG 
+      fprintf(stderr, "oscMessageHandler: searching for:%s checking synth instance:%s\n", p, synti->name().toLatin1().constData());
+      #endif
+      
+      QByteArray ba = synti->name().toLatin1();
+      const char* sub = strstr(p, ba.constData());
+      if(sub == NULL) 
+        continue;
+      
+      // TODO: Fix this dynamic cast - it may be a slowdown.
+      DssiSynthIF* instance = dynamic_cast<DssiSynthIF*>(synti->sif());
+      if(!instance)
+        break;
+        
+      p = sub + ba.length();
+      if (*p != '/' || *(p + 1) == 0)
       {
-        SynthI* synti = *si;
+        fprintf(stderr, "oscMessageHandler error: synth: end of path or no /\n");
+        return oscDebugHandler(path, types, argv, argc, data, user_data);
+      }
+            
+      ++p;
+
+      #ifdef OSC_DEBUG 
+      fprintf(stderr, "oscMessageHandler: synth track:%s method:%s\n", synti->name().toLatin1().constData(), p);
+      #endif
+      
+      OscIF& oscif = instance->oscIF();
+      
+      if (!strcmp(p, "configure") && argc == 2 && !strcmp(types, "ss"))
+            return oscif.oscConfigure(argv);
+      else if (!strcmp(p, "control") && argc == 2 && !strcmp(types, "if"))
+            return oscif.oscControl(argv);
+      else if (!strcmp(p, "midi") && argc == 1 && !strcmp(types, "m"))
+            return oscif.oscMidi(argv);
+      else if (!strcmp(p, "program") && argc == 2 && !strcmp(types, "ii"))
+            return oscif.oscProgram(argv);
+      else if (!strcmp(p, "update") && argc == 1 && !strcmp(types, "s"))
+            return oscif.oscUpdate(argv);
+      else if (!strcmp(p, "exiting") && argc == 0)
+            return oscif.oscExiting(argv);
+      return oscDebugHandler(path, types, argv, argc, data, user_data);
+    }
+  }
+  else
+  #endif //DSSI_SUPPORT
+  // Message is meant for a ladspa effect. Check all ladspa effect instances...
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+  {
+    if((*it)->isMidiTrack())
+      continue;
+      
+    Pipeline* efxPipe = ((AudioTrack*)*it)->efxPipe();
+    if(efxPipe)
+    {
+      for(ciPluginI ip = efxPipe->begin(); ip != efxPipe->end(); ++ip)
+      {
+        PluginI* instance = *ip;
+        if(!instance)
+          continue;
         
         #ifdef OSC_DEBUG 
-        fprintf(stderr, "oscMessageHandler: searching for:%s checking synth instance:%s\n", p, synti->name().toLatin1().constData());
+        fprintf(stderr, "oscMessageHandler: searching for:%s checking effect instance:%s label:%s lib:%s\n", 
+                p, instance->name().toLatin1().constData(), instance->label().toLatin1().constData(), instance->lib().toLatin1().constData());
         #endif
         
-	QByteArray ba = synti->name().toLatin1();
+        QByteArray ba = instance->label().toLatin1();
         const char* sub = strstr(p, ba.constData());
         if(sub == NULL) 
           continue;
-        
-        //DssiSynthIF* instance = (DssiSynthIF*)synti->sif();
-        // TODO: Fix this dynamic cast - it may be a slowdown.
-        DssiSynthIF* instance = dynamic_cast<DssiSynthIF*>(synti->sif());
-        if(!instance)
-          break;
           
-        QByteArray ba2 = synti->name().toLatin1();
-        p = sub + strlen(ba2.constData());
+        Plugin* plugin = instance->plugin();
+        if(!plugin)
+          break;
         
+        p = sub + ba.length();
         if (*p != '/' || *(p + 1) == 0)
         {
-          fprintf(stderr, "oscMessageHandler error: synth: end of path or no /\n");
+          fprintf(stderr, "oscMessageHandler: error: effect: end of path or no /\n");
           return oscDebugHandler(path, types, argv, argc, data, user_data);
         }
               
         ++p;
   
         #ifdef OSC_DEBUG 
-        fprintf(stderr, "oscMessageHandler: synth track:%s method:%s\n", synti->name().toLatin1().constData(), p);
+        fprintf(stderr, "oscMessageHandler: effect:%s method:%s\n", instance->label().toLatin1().constData(), p);
         #endif
         
         OscIF& oscif = instance->oscIF();
@@ -218,76 +270,6 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
         return oscDebugHandler(path, types, argv, argc, data, user_data);
       }
     }
-    else
-    #endif //DSSI_SUPPORT
-    // Message is meant for a ladspa effect. Check all ladspa effect instances...
-    for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
-    {
-      if((*it)->isMidiTrack())
-        continue;
-        
-      Pipeline* efxPipe = ((AudioTrack*)*it)->efxPipe();
-      if(efxPipe)
-      {
-        for(ciPluginI ip = efxPipe->begin(); ip != efxPipe->end(); ++ip)
-        {
-          PluginI* instance = *ip;
-          if(!instance)
-            continue;
-          
-          #ifdef OSC_DEBUG 
-          fprintf(stderr, "oscMessageHandler: searching for:%s checking effect instance:%s label:%s lib:%s\n", 
-                  p, instance->name().toLatin1().constData(), instance->label().toLatin1().constData(), instance->lib().toLatin1().constData());
-          #endif
-          
-          //const char* sub = strstr(p, instance->name().toLatin1().constData());
-          ///const char* sub = strstr(p, instance->label().toLatin1().constData());
-          QByteArray ba = instance->label().toLatin1();
-          const char* sub = strstr(p, ba.constData());
-          if(sub == NULL) 
-            continue;
-            
-          Plugin* plugin = instance->plugin();
-          if(!plugin)
-            break;
-          
-          //p = sub + strlen(instance->name().toLatin1().constData());
-          QByteArray ba3 = instance->label().toLatin1();
-          p = sub + strlen(ba3.constData());
-          
-          if (*p != '/' || *(p + 1) == 0)
-          {
-            fprintf(stderr, "oscMessageHandler: error: effect: end of path or no /\n");
-            return oscDebugHandler(path, types, argv, argc, data, user_data);
-          }
-                
-          ++p;
-    
-          #ifdef OSC_DEBUG 
-          //fprintf(stderr, "oscMessageHandler: effect:%s method:%s\n", instance->name().toLatin1().constData(), p);
-          fprintf(stderr, "oscMessageHandler: effect:%s method:%s\n", instance->label().toLatin1().constData(), p);
-          #endif
-          
-          OscIF& oscif = instance->oscIF();
-          
-          if (!strcmp(p, "configure") && argc == 2 && !strcmp(types, "ss"))
-                return oscif.oscConfigure(argv);
-          else if (!strcmp(p, "control") && argc == 2 && !strcmp(types, "if"))
-                return oscif.oscControl(argv);
-          else if (!strcmp(p, "midi") && argc == 1 && !strcmp(types, "m"))
-                return oscif.oscMidi(argv);
-          else if (!strcmp(p, "program") && argc == 2 && !strcmp(types, "ii"))
-                return oscif.oscProgram(argv);
-          else if (!strcmp(p, "update") && argc == 1 && !strcmp(types, "s"))
-                return oscif.oscUpdate(argv);
-          else if (!strcmp(p, "exiting") && argc == 0)
-                return oscif.oscExiting(argv);
-          return oscDebugHandler(path, types, argv, argc, data, user_data);
-        }
-      }
-    }
-      
-    ///usleep(1000);
   }
   
   fprintf(stderr, "oscMessageHandler: timeout error: no synth or effect instance found for given path\n");
@@ -317,12 +299,6 @@ void initOSC()
     }
   }  
   
-  ///snprintf(osc_path_tmp, 31, "/dssi");
-  // Test: Clear the temp path:
-  //snprintf(osc_path_tmp, 31, "");
-  
-  ///char* tmp = lo_server_thread_get_url(serverThread);
-  
   url = lo_server_thread_get_url(serverThread);
   if(!url)
   {
@@ -330,14 +306,6 @@ void initOSC()
     printf("initOSC() Failed to get OSC server thread url !\n");
     return;
   }
-  
-  ///url = (char *)malloc(strlen(tmp) + strlen(osc_path_tmp));
-  //url = (char *)malloc(strlen(tmp));
-  
-  ///sprintf(url, "%s%s", tmp, osc_path_tmp + 1);
-  //sprintf(url, "%s", tmp, osc_path_tmp + 1);
-  
-  ///free(tmp);
   
   lo_method meth = 0;
   meth = lo_server_thread_add_method(serverThread, 0, 0, oscMessageHandler, 0);
@@ -416,6 +384,11 @@ OscIF::OscIF()
   _guiPid = -1;
 #endif
   _oscGuiVisible = false;
+  
+  old_prog=old_bank=0xDEADBEEF;
+  old_control=NULL;
+  control_port_mapper=NULL;
+  maxDssiPort=0;
 }
 
 OscIF::~OscIF()
@@ -429,19 +402,7 @@ OscIF::~OscIF()
       printf("OscIF::~OscIF terminating _oscGuiQProc\n");
       #endif
       
-      //_oscGuiQProc->kill();
-      // "This tries to terminate the process the nice way. If the process is still running after 5 seconds, 
-      //  it terminates the process the hard way. The timeout should be chosen depending on the time the 
-      //  process needs to do all its cleanup: use a higher value if the process is likely to do a lot of 
-      //  computation or I/O on cleanup."           
       _oscGuiQProc->terminate();
-      // FIXME: In Qt4 this can only be used with threads started with QThread. 
-      // Kill is bad anyway, app should check at close if all these guis closed or not 
-      //  and ask user if they really want to close, possibly with kill.
-      // Terminate might not terminate the thread. It is given a chance to prompt for saving etc.
-      //  so kill is not desirable.
-      // We could wait until terminate finished but don't think that's good here.
-      ///QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
       _oscGuiQProc->waitForFinished(3000);
     }  
     delete _oscGuiQProc;
@@ -470,6 +431,9 @@ OscIF::~OscIF()
     free(_uiOscProgramPath);
   if(_uiOscPath)
     free(_uiOscPath);
+    
+  if (old_control)
+    delete [] old_control;
 }
 
 //---------------------------------------------------------
@@ -548,6 +512,7 @@ int OscIF::oscUpdate(lo_arg **argv)
       // Send sample rate.
       lo_send(_uiOscTarget, _uiOscSampleRatePath, "i", MusEGlobal::sampleRate);
       
+      // DELETETHIS 46
       // Send project directory.
       //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
       //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
@@ -594,7 +559,7 @@ int OscIF::oscUpdate(lo_arg **argv)
       
       lo_send(_uiOscTarget, uiOscGuiPath, "");
       */
-      
+     // DELETETHIS 22  
 #if 0
       /* Send current bank/program  (-FIX- another race...) */
       if (instance->pendingProgramChange < 0) {
@@ -629,6 +594,7 @@ int OscIF::oscExiting(lo_arg**)
       // The gui is gone now, right?
       _oscGuiVisible = false;
       
+// DELETETHIS 52
 // Just an attempt to really kill the process, an attempt to fix gui not re-showing after closing. Doesn't help.
 /*
 #ifdef _USE_QPROCESS_FOR_GUI_
@@ -703,6 +669,7 @@ int OscIF::oscExiting(lo_arg**)
         free(_uiOscPath);
       _uiOscPath = 0;  
         
+      // DELETETHIS 20
       //const DSSI_Descriptor* dssi = synth->dssi;
       //const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
       //if(ld->deactivate) 
@@ -722,7 +689,8 @@ int OscIF::oscExiting(lo_arg**)
       
       lo_send(_uiOscTarget, uiOscGuiPath, "");
       */
-      
+  
+// DELETETHIS 37
 #if 0
       int i;
 
@@ -765,20 +733,29 @@ int OscIF::oscExiting(lo_arg**)
 //   oscSendProgram
 //---------------------------------------------------------
 
-void OscIF::oscSendProgram(unsigned long prog, unsigned long bank)
+void OscIF::oscSendProgram(unsigned long prog, unsigned long bank, bool force)
 {
-  if(_uiOscTarget && _uiOscProgramPath)
+  if(_uiOscTarget && _uiOscProgramPath &&
+     (bank!=old_bank || prog!=old_prog || force) )
+  {
     lo_send(_uiOscTarget, _uiOscProgramPath, "ii", bank, prog);
+    old_bank=bank;
+    old_prog=prog;
+  }
 }
 
 //---------------------------------------------------------
 //   oscSendControl
 //---------------------------------------------------------
 
-void OscIF::oscSendControl(unsigned long dssiPort, float v)
+void OscIF::oscSendControl(unsigned long dssiPort, float v, bool force)
 {
-  if(_uiOscTarget && _uiOscControlPath)
+  if(_uiOscTarget && _uiOscControlPath &&
+     ((dssiPort<maxDssiPort && old_control[control_port_mapper->at(dssiPort)]!=v) || force) )
+  {
     lo_send(_uiOscTarget, _uiOscControlPath, "if", dssiPort, v);
+    old_control[control_port_mapper->at(dssiPort)]=v;
+  }
 }
 
 //---------------------------------------------------------
@@ -796,8 +773,45 @@ void OscIF::oscSendConfigure(const char *key, const char *val)
 //---------------------------------------------------------
 
 bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QString& name, 
-                       const QString& label, const QString& filePath, const QString& guiPath)
+                       const QString& label, const QString& filePath, const QString& guiPath,
+                       const std::vector<unsigned long>* control_port_mapper_)
 {
+      if (old_control==NULL)
+      {
+        control_port_mapper=control_port_mapper_;
+        
+        unsigned long nDssiPorts=0;
+        for (unsigned i=0;i<control_port_mapper->size();i++)
+          if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
+            nDssiPorts=control_port_mapper->at(i)+1;
+        
+        old_control=new float[nDssiPorts];
+        for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
+          old_control[i]=NAN;
+
+        maxDssiPort=nDssiPorts;
+      }
+      else
+      {
+        control_port_mapper=control_port_mapper_;
+        
+        unsigned long nDssiPorts=0;
+        for (unsigned i=0;i<control_port_mapper->size();i++)
+          if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
+            nDssiPorts=control_port_mapper->at(i)+1;
+        
+        if (maxDssiPort!=nDssiPorts)
+        {
+          // this should never happen, right?
+          printf("STRANGE: nDssiPorts has changed (old=%lu, now=%lu)!\n", maxDssiPort, nDssiPorts);
+          delete [] old_control;
+          old_control=new float[nDssiPorts];
+          for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
+            old_control[i]=NAN;
+          maxDssiPort=nDssiPorts;
+        }
+      }
+      
       // Are we already running? We don't want to allow another process do we...
 #ifdef _USE_QPROCESS_FOR_GUI_
       if((_oscGuiQProc != 0) && (_oscGuiQProc->state()))
@@ -824,7 +838,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       }
             
       QString oscUrl;
-      oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TRANSLATE_NOOP("@default", url))).arg(typ).arg(baseName).arg(label);
+      oscUrl = QString("%1%2/%3/%4").arg(QString( url)).arg(typ).arg(baseName).arg(label);
       
                         
 #ifdef _USE_QPROCESS_FOR_GUI_
@@ -833,7 +847,6 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       // Using QProcess works OK. 
       // No QProcess created yet? Do it now. Only once per SynthIF instance. Exists until parent destroyed.
       if(_oscGuiQProc == 0)
-        //_oscGuiQProc = new QProcess(muse);                        
         _oscGuiQProc = new QProcess();                        
       
       QString program(guiPath);
@@ -841,7 +854,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       arguments << oscUrl
                 << filePath
                 << name
-                << QString("channel-1");
+                << (titlePrefix() + label);
 
       #ifdef OSC_DEBUG 
       fprintf(stderr, "OscIF::oscInitGui starting QProcess\n");
@@ -862,7 +875,6 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                 filePath.toLatin1().constData(),
                 name.toLatin1().constData(),
                 strerror(errno));
-        //exit(1);
       }
       
       #ifdef OSC_DEBUG 
@@ -885,7 +897,8 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                  oscUrl.toLatin1().constData(),
                  filePath.toLatin1().constData(),
                  name.toLatin1().constData(),
-                 "channel 1", (void*)0);
+                 //"channel 1", (void*)0);
+                 label.toLatin1().constData(), (void*)0);
 
         // Should not return after execlp. If so it's an error.
         fprintf(stderr, "exec %s %s %s %s %s failed: %s\n",
@@ -940,14 +953,13 @@ void OscIF::oscShowGui(bool v)
         }  
       }  
       
-      //for (int i = 0; i < 5; ++i) {
-      for (int i = 0; i < 10; ++i) {    // Give it a wee bit more time?
+      for (int i = 0; i < 20; ++i) {
             if (_uiOscPath)
                   break;
             sleep(1);
             }
       if (_uiOscPath == 0) {
-            printf("OscIF::oscShowGui(): no _uiOscPath. Error: Timeout - synth gui did not start within 10 seconds.\n");
+            printf("OscIF::oscShowGui(): no _uiOscPath. Error: Timeout - synth gui did not start within 20 seconds.\n");
             return;
             }
       
@@ -992,7 +1004,7 @@ int OscDssiIF::oscUpdate(lo_arg **argv)
       // Make sure to call base method.
       OscIF::oscUpdate(argv);
       
-      // Send sample rate. No, done in base class.
+      // Send sample rate. No, done in base class. DELETETHIS 7
       //lo_send(_uiOscTarget, _uiOscSampleRatePath, "i", sampleRate);
       
       // Send project directory. No, done in DssiSynthIF.
@@ -1001,7 +1013,7 @@ int OscDssiIF::oscUpdate(lo_arg **argv)
       
       if(_oscSynthIF)
         _oscSynthIF->oscUpdate();
-      
+// DELETETHIS 23
 #if 0
       /* Send current bank/program  (-FIX- another race...) */
       if (instance->pendingProgramChange < 0) {
@@ -1058,7 +1070,11 @@ int OscDssiIF::oscMidi(lo_arg** argv)
 int OscDssiIF::oscProgram(lo_arg** argv)
 {
   if(_oscSynthIF)
+  {
     _oscSynthIF->oscProgram(argv[1]->i, argv[0]->i);
+    old_prog=argv[1]->i;
+    old_bank=argv[0]->i;
+  }
   
   return 0;
 }
@@ -1074,7 +1090,11 @@ int OscDssiIF::oscControl(lo_arg** argv)
     return 0;
     
   if(_oscSynthIF)
+  {
     _oscSynthIF->oscControl(argv[0]->i, argv[1]->f);
+    if (port<(int)maxDssiPort)
+      old_control[control_port_mapper->at(port)]=argv[1]->f;
+  }
   
   return 0;
 }
@@ -1086,15 +1106,20 @@ bool OscDssiIF::oscInitGui()
 {
   if(!_oscSynthIF)
     return false;
-    
-  return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "dssi_synth"), _oscSynthIF->dssiSynth()->baseName(), 
+  
+  return OscIF::oscInitGui("dssi_synth", _oscSynthIF->dssiSynth()->baseName(), 
                            _oscSynthIF->dssiSynth()->name(), _oscSynthIF->dssiSynthI()->name(), 
-                           _oscSynthIF->dssiSynth()->fileName(), _oscSynthIF->dssi_ui_filename()); 
+                           _oscSynthIF->dssiSynth()->fileName(), _oscSynthIF->dssi_ui_filename(),
+                           _oscSynthIF->dssiSynth()->getRpIdx());
+}
+
+QString OscDssiIF::titlePrefix() const 
+{ 
+  return _oscSynthIF ? _oscSynthIF->titlePrefix() : QString(); 
 }
       
 #endif   // DSSI_SUPPORT
       
-
 //---------------------------------------------------------
 //   OscEffectIF::
 //   oscSetPluginI
@@ -1113,10 +1138,6 @@ int OscEffectIF::oscUpdate(lo_arg** argv)
 {
   // Make sure to call base method.
   OscIF::oscUpdate(argv);
-  
-  // Send project directory. No, done in PluginI.
-  //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-  //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
   
   if(_oscPluginI)
     _oscPluginI->oscUpdate();
@@ -1147,7 +1168,11 @@ int OscEffectIF::oscControl(lo_arg** argv)
     return 0;
     
   if(_oscPluginI)
+  {
     _oscPluginI->oscControl(argv[0]->i, argv[1]->f);
+    if (port<(int)maxDssiPort)
+      old_control[control_port_mapper->at(port)]=argv[1]->f;
+  }
   
   return 0;
 }
@@ -1160,11 +1185,17 @@ bool OscEffectIF::oscInitGui()
   if(!_oscPluginI)
     return false;
     
-  return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "ladspa_efx"), _oscPluginI->plugin()->lib(false), 
+  return OscIF::oscInitGui("ladspa_efx", _oscPluginI->plugin()->lib(false), 
                            _oscPluginI->plugin()->label(), _oscPluginI->label(), 
-                           _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename());  
+                           _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename(),
+                           _oscPluginI->plugin()->getRpIdx());  
 }
       
+QString OscEffectIF::titlePrefix() const 
+{ 
+  return _oscPluginI ? _oscPluginI->titlePrefix() : QString(); 
+}
+
 
 #else //OSC_SUPPORT
 void initOSC() {}

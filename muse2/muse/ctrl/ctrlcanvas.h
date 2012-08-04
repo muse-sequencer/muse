@@ -53,12 +53,8 @@ class MidiEditor;
 //---------------------------------------------------------
 
 class CEvent {
-   public:
-      //enum State { Normal, Selected };
-   
    private:
       MusECore::Event _event;
-      //State _state;
       int       _val;
       MusECore::MidiPart* _part;
       int ex;
@@ -67,17 +63,14 @@ class CEvent {
       CEvent(MusECore::Event e, MusECore::MidiPart* part, int v);
       MusECore::Event event() const          { return _event; }
       void setEvent(MusECore::Event& ev)     { _event = ev; }
-      //State state() { return _state; }
-      //void setState(State s) { _state = s; }
-      //bool isSelected() { return _state == Selected; }
       bool selected() const { return !_event.empty() && _event.selected(); }
       void setSelected(bool v) { if(!_event.empty()) _event.setSelected(v); }
       int val() const              { return _val;   }
       void setVal(int v)           { _val = v; }
       void setEX(int v)            { ex = v; }
       MusECore::MidiPart* part() const       { return _part;  }
-      bool contains(int /*x1*/, int /*x2*/) const;
-      bool intersects(const MusECore::MidiController*, const QRect&, const int /*tickstep*/, const int /*windowHeight*/) const;
+      bool contains(int x1, int x2) const;
+      bool intersects(const MusECore::MidiController*, const QRect&, const int tickstep, const int windowHeight) const;
       int x()                      { return ex; }
       };
 
@@ -111,16 +104,15 @@ class CtrlCanvas : public MusEGui::View {
       MusECore::MidiController* _controller;
       CtrlPanel* _panel;
       int _cnum;
-      // Current real drum controller number (anote).
-      int _dnum;
-      // Current real drum controller index.
-      int _didx;
+      int _dnum; // Current real drum controller number (anote).
+      int _didx; // Current real drum controller index.
       int line1x;
       int line1y;
       int line2x;
       int line2y;
       bool drawLineMode;
       bool noEvents;
+      bool filterTrack;
 
       void viewMousePressEvent(QMouseEvent* event);
       void viewMouseMoveEvent(QMouseEvent*);
@@ -134,7 +126,6 @@ class CtrlCanvas : public MusEGui::View {
       void changeValRamp(int x1, int x2, int y1, int y2);
       void newValRamp(int x1, int y1, int x2, int y2);
       void changeVal(int x1, int x2, int y);
-      //void newVal(int x1, int x2, int y);
       void newVal(int x1, int y);
       void newVal(int x1, int y1, int x2, int y2);
       void deleteVal(int x1, int x2, int y);
@@ -161,7 +152,7 @@ class CtrlCanvas : public MusEGui::View {
       QPoint start;
       MusEGui::Tool tool;
       unsigned pos[3];
-      int curDrumInstrument;    //Used by the drum-editor to view velocity of only one key (one drum)
+      int curDrumPitch;    //Used by the drum-editor to view velocity of only one key (one drum)
       
       void leaveEvent(QEvent*e);
       QPoint raster(const QPoint&) const;
@@ -175,18 +166,17 @@ class CtrlCanvas : public MusEGui::View {
       void setMidiController(int);
       void updateItems();
       void updateSelections();
-
-      //virtual void closeEvent(QCloseEvent*);
       
    private slots:
       void songChanged(int type);
       void configChanged();    
-      void setCurDrumInstrument(int);
+      void setCurDrumPitch(int);
 
    public slots:
       void setTool(int t);
       void setPos(int, unsigned, bool adjustScrollbar);
       void setController(int ctrl);
+      void curPartHasChanged(MusECore::Part*);
 
    signals:
       void followEvent(int);
@@ -201,6 +191,7 @@ class CtrlCanvas : public MusEGui::View {
       MusECore::MidiCtrlValList* ctrlValList() { return ctrl; }
       MusECore::MidiController* controller() { return _controller; }
       MusECore::MidiTrack* track() const { return curTrack; }
+      int getCurDrumPitch() const { return curDrumPitch; }
       };
 
 } // namespace MusEGui

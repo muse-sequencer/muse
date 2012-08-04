@@ -32,12 +32,13 @@
 #include "wave.h"
 #include "xml.h"
 #include "ui_cliplisteditorbase.h"
+#include "app.h"
 
 
 namespace MusEGui {
 
 extern int mtcType;
-enum { COL_NAME=0, COL_REFS, COL_POS, COL_LEN };
+enum { COL_NAME=0, COL_REFS, COL_SAMPLERATE, COL_LEN };
 
 //---------------------------------------------------------
 //   ClipItem
@@ -56,17 +57,17 @@ class ClipItem : public QTreeWidgetItem {
 ClipItem::ClipItem(QTreeWidget* parent, const MusECore::SndFileR& w)
    : QTreeWidgetItem(parent), _wf(w)
       {
-        setText(COL_NAME, _wf.name());
-        setText(COL_REFS, QString().setNum(_wf.getRefCount()));
-        setText(COL_POS, QString().setNum(_wf.samplerate()));
-        setText(COL_LEN, QString().setNum(_wf.samples()));
+        setText(COL_NAME,       _wf.name());
+        setText(COL_REFS,       QString().setNum(_wf.getRefCount()));
+        setText(COL_SAMPLERATE, QString().setNum(_wf.samplerate()));
+        setText(COL_LEN,        QString().setNum(_wf.samples()));
       }
 
 //---------------------------------------------------------
 //   samples2smpte
 //---------------------------------------------------------
 
-#if 0
+#if 0 // DELETETHIS ?
 static QString samples2smpte(int samples)
       {
       double time = double(samples) / double(sampleRate);
@@ -95,7 +96,7 @@ static QString samples2smpte(int samples)
       }
 #endif
 
-/*
+/* DELETETHIS
 //---------------------------------------------------------
 //   text
 //---------------------------------------------------------
@@ -125,28 +126,12 @@ QString ClipItem::text(int col) const
 ClipListEdit::ClipListEdit(QWidget* parent)
    : TopWin(TopWin::CLIPLIST, parent, "cliplist", Qt::Window)
       {
-      //setAttribute(Qt::WA_DeleteOnClose);
       setWindowTitle(tr("MusE: Clip List Editor"));
 
       editor = new ClipListEditorBaseWidget;
       setCentralWidget(editor);
 
-      //editor->view->setColumnAlignment(COL_REFS, Qt::AlignRight);
-      
-      // Toolbars ---------------------------------------------------------
-      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-      undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(MusEGlobal::undoRedo->actions());
-
-
-      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
-      panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(MusEGlobal::panicAction);
-
-      QToolBar* transport_toolbar = addToolBar(tr("transport"));
-      transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-
+            
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);      
       settingsMenu->addAction(shareAction);      
@@ -155,9 +140,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       QFontMetrics fm(editor->view->font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0
       int w  = 2 + fm.width('9') * 9 + fm.width(':') * 3 + fw * 4;
-      //editor->view->setColumnAlignment(COL_POS, Qt::AlignRight);
-      editor->view->setColumnWidth(COL_POS, w);
-      //editor->view->setColumnAlignment(COL_LEN, Qt::AlignRight);
+      editor->view->setColumnWidth(COL_SAMPLERATE, w);
       editor->view->setColumnWidth(COL_LEN, w);
 
       connect(editor->view, SIGNAL(itemSelectionChanged()), SLOT(clipSelectionChanged()));
@@ -168,6 +151,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       connect(editor->len, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lenChanged(const MusECore::Pos&)));
 
       updateList();
+      finalizeInit();
       }
 
 ClipListEdit::~ClipListEdit()
@@ -294,7 +278,7 @@ void ClipListEdit::writeConfiguration(int level, MusECore::Xml& xml)
 
 void ClipListEdit::startChanged(const MusECore::Pos& /*pos*/)//prevent compiler warning: unsused parameter
       {
-//      editor->view->triggerUpdate();
+//      editor->view->triggerUpdate(); DELETETHIS whole function?
       }
 
 //---------------------------------------------------------
@@ -303,7 +287,7 @@ void ClipListEdit::startChanged(const MusECore::Pos& /*pos*/)//prevent compiler 
 
 void ClipListEdit::lenChanged(const MusECore::Pos& /*pos*/) //prevent compiler warning: unsused parameter
       {
-//      curClip.setLenFrame(pos.frame());
+//      curClip.setLenFrame(pos.frame()); DELETETHIS whole function?
 //      editor->view->triggerUpdate();
       }
 
@@ -319,7 +303,7 @@ void ClipListEdit::clipSelectionChanged()
             editor->start->setEnabled(false);
             editor->len->setEnabled(false);
             return;
-/*
+/* DELETETHIS and the above two comments
             }
       editor->start->setEnabled(true);
       editor->len->setEnabled(true);
@@ -339,7 +323,7 @@ void ClipListEdit::clipSelectionChanged()
 
 void ClipListEdit::clicked(QTreeWidgetItem*, int)
       {
-//      printf("clicked\n");
+//      printf("clicked\n"); DELETETHIS whole function
       }
 
 } // namespace MusEGui

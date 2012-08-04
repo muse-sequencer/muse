@@ -62,6 +62,7 @@ class TopWin : public QMainWindow
       ToplevelType type() const { return _type; }
       static QString typeName(ToplevelType t);
 
+      bool initalizing() const { return _initalizing; }
       bool deleting() const { return _isDeleting; }
       
       virtual void readStatus(MusECore::Xml&);
@@ -93,6 +94,7 @@ class TopWin : public QMainWindow
       QMdiSubWindow* mdisubwin;
       bool _sharesToolsAndMenu;
       std::list<QToolBar*> _toolbars;
+      bool _initalizing;
 
       void insertToolBar(QToolBar*, QToolBar*);
       void insertToolBarBreak(QToolBar*);
@@ -124,6 +126,7 @@ class TopWin : public QMainWindow
       //  which may cause a crash while deleting.
       bool _isDeleting;  
       
+      void finalizeInit();
       void initTopwinState();
 
   private slots:
@@ -137,13 +140,22 @@ class TopWin : public QMainWindow
       void shareToolsAndMenu(bool);
       void restoreMainwinState();
       void storeInitialState() const;
-      
+      virtual void setWindowTitle (const QString&);
+      virtual void focusCanvas() { }
       };
 
 
-typedef std::list <TopWin*> ToplevelList;
-typedef ToplevelList::iterator iToplevel;
-typedef ToplevelList::const_iterator ciToplevel;
+//---------------------------------------------------------
+//   ToplevelList
+//---------------------------------------------------------
+
+typedef std::list<TopWin*>::iterator iToplevel;
+typedef std::list<TopWin*>::const_iterator ciToplevel;
+
+class ToplevelList : public std::list<TopWin* > {
+   public:
+        TopWin* findType(TopWin::ToplevelType) const;
+      };
 
 } // namespace MusEGui
 

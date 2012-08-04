@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <values.h>
+#include <limits.h>
 
 #include <QMouseEvent>
 #include <QPainter>
@@ -45,6 +45,9 @@ MTScaleFlo::MTScaleFlo(ScoreCanvas* parent_editor, QWidget* parent_widget)
 			pos[0] = MusEGlobal::song->cpos();
 			pos[1] = MusEGlobal::song->lpos();
 			pos[2] = MusEGlobal::song->rpos();
+      xpos=0;
+      xoffset=0;
+      
       button = Qt::NoButton;
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
@@ -73,10 +76,10 @@ void MTScaleFlo::songChanged(int type)
 
 void MTScaleFlo::setPos(int idx, unsigned val, bool)
       {
-      if ((val == MAXINT) || (val == pos[idx]))
+      if ((val == INT_MAX) || (val == pos[idx]))
             return;
 
-      int opos = parent->tick_to_x(pos[idx] == MAXINT ? val : pos[idx]) + xoffset - xpos;
+      int opos = parent->tick_to_x(pos[idx] == INT_MAX ? val : pos[idx]) + xoffset - xpos;
 
       pos[idx] = val;
       
@@ -191,7 +194,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
 
       int y = 12;
       p.setPen(Qt::black);
-      p.setFont(MusEGlobal::config.fonts[4]);
+      p.setFont(MusEGlobal::config.fonts[5]);
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
       tr.setHeight(12);
@@ -316,7 +319,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
                         else {
                               num = beat + 1;
                               y1  = y + 7;
-                              p.setFont(MusEGlobal::config.fonts[1]);
+                              p.setFont(MusEGlobal::config.fonts[4]);
                               r.setY(y+3);
                               }
                         s.setNum(num);

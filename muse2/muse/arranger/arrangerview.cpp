@@ -37,7 +37,6 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPushButton>
-#include <QResizeEvent>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSettings>
@@ -59,7 +58,6 @@
 #include "mtscale.h"
 #include "scoreedit.h"
 #include "shortcuts.h"
-#include "sig.h"
 #include "song.h"
 #include "structure.h"
 #include "tb1.h"
@@ -67,6 +65,7 @@
 #include "ttoolbar.h"
 #include "visibletracks.h"
 #include "xml.h"
+#include "arrangercolumns.h"
 
 namespace MusEGui {
 
@@ -77,15 +76,12 @@ namespace MusEGui {
 ArrangerView::ArrangerView(QWidget* parent)
    : TopWin(TopWin::ARRANGER, parent, "arrangerview", Qt::Window)
 {
-  using MusEGlobal::muse;
-  
-  //setAttribute(Qt::WA_DeleteOnClose);
   setWindowTitle(tr("MusE: Arranger"));
-  setFocusPolicy(Qt::StrongFocus);
+  setFocusPolicy(Qt::NoFocus);  
 
   arranger = new Arranger(this, "arranger");
   setCentralWidget(arranger);
-  setFocusProxy(arranger);
+  //setFocusProxy(arranger);
 
   scoreOneStaffPerTrackMapper = new QSignalMapper(this);
   scoreAllInOneMapper = new QSignalMapper(this);
@@ -97,19 +93,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   editSignalMapper->setMapping(sc, CMD_DELETE);
 
   // Toolbars ---------------------------------------------------------
-  QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-  undo_tools->setObjectName("Undo/Redo tools");
-  undo_tools->addActions(MusEGlobal::undoRedo->actions());
-
-
-  QToolBar* panic_toolbar = addToolBar(tr("panic"));
-  panic_toolbar->setObjectName("panic");
-  panic_toolbar->addAction(MusEGlobal::panicAction);
-
-  QToolBar* transport_toolbar = addToolBar(tr("transport"));
-  transport_toolbar->setObjectName("transport");
-  transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-
   editTools = new EditToolBar(this, arrangerTools);
   addToolBar(editTools);
   editTools->setObjectName("arrangerTools");
@@ -121,14 +104,15 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
   connect(visTracks, SIGNAL(visibilityChanged()), MusEGlobal::song, SLOT(update()) );
-  connect(arranger, SIGNAL(editPart(MusECore::Track*)), muse, SLOT(startEditor(MusECore::Track*)));
-  connect(arranger, SIGNAL(dropSongFile(const QString&)), muse, SLOT(loadProjectFile(const QString&)));
-  connect(arranger, SIGNAL(dropMidiFile(const QString&)), muse, SLOT(importMidi(const QString&)));
-  connect(arranger, SIGNAL(startEditor(MusECore::PartList*,int)),  muse, SLOT(startEditor(MusECore::PartList*,int)));
+  connect(arranger, SIGNAL(editPart(MusECore::Track*)), MusEGlobal::muse, SLOT(startEditor(MusECore::Track*)));
+  connect(arranger, SIGNAL(dropSongFile(const QString&)), MusEGlobal::muse, SLOT(loadProjectFile(const QString&)));
+  connect(arranger, SIGNAL(dropMidiFile(const QString&)), MusEGlobal::muse, SLOT(importMidi(const QString&)));
+  connect(arranger, SIGNAL(startEditor(MusECore::PartList*,int)),  MusEGlobal::muse, SLOT(startEditor(MusECore::PartList*,int)));
   connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
-  connect(muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
+  connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
   connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+  connect(MusEGlobal::song, SIGNAL(songChanged(int)), visTracks, SLOT(updateVisibleTracksButtons()));
 
 
 
@@ -145,10 +129,11 @@ ArrangerView::ArrangerView(QWidget* parent)
   editPasteCloneDialogAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste clone (show dialog)"), this);
   editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
   editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
+  editDuplicateSelTrackAction = new QAction(QIcon(*edit_track_addIcon), tr("Duplicate Selected Tracks"), this);
 
-  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this); //FINDMICH TODO tooltips!
+  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this);
   editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
-  editCleanPartsAction = new QAction(tr("Clean selected parts"), this);
+  editCleanPartsAction = new QAction(tr("Purge hidden events from selected parts"), this);
 
 
   addTrack = new QMenu(tr("Add Track"), this);
@@ -167,8 +152,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   scoreSubmenu = new QMenu(tr("Score"), this);
   scoreSubmenu->setIcon(QIcon(*scoreIconSet));
 
-  scoreAllInOneSubsubmenu = new QMenu(tr("all parts in one staff"), this);
-  scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per part"), this);
+  scoreAllInOneSubsubmenu = new QMenu(tr("all tracks in one staff"), this);
+  scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per track"), this);
 
   scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
   scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
@@ -192,6 +177,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   strGlobalCutAction = new QAction(tr("Global Cut"), this);
   strGlobalInsertAction = new QAction(tr("Global Insert"), this);
   strGlobalSplitAction = new QAction(tr("Global Split"), this);
+
+  strGlobalCutSelAction = new QAction(tr("Global Cut - selected tracks"), this);
+  strGlobalInsertSelAction = new QAction(tr("Global Insert - selected tracks"), this);
+  strGlobalSplitSelAction = new QAction(tr("Global Split - selected tracks"), this);
 
 
 
@@ -219,6 +208,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addAction(editDeleteSelectedAction);
 
   menuEdit->addMenu(addTrack);
+  menuEdit->addAction(editDuplicateSelTrackAction);
   menuEdit->addMenu(select);
     select->addAction(editSelectAllAction);
     select->addAction(editDeselectAllAction);
@@ -246,7 +236,11 @@ ArrangerView::ArrangerView(QWidget* parent)
     menuStructure->addAction(strGlobalCutAction);
     menuStructure->addAction(strGlobalInsertAction);
     menuStructure->addAction(strGlobalSplitAction);
-  
+    menuStructure->addSeparator();
+    menuStructure->addAction(strGlobalCutSelAction);
+    menuStructure->addAction(strGlobalInsertSelAction);
+    menuStructure->addAction(strGlobalSplitSelAction);
+
   
   
   QMenu* functions_menu = menuBar()->addMenu(tr("Functions"));
@@ -274,6 +268,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   
   
   QMenu* menuSettings = menuBar()->addMenu(tr("Window &Config"));
+  menuSettings->addAction(tr("Configure &custom columns"), this, SLOT(configCustomColumns()));
+  menuSettings->addSeparator();
   menuSettings->addAction(subwinAction);
   menuSettings->addAction(shareAction);
   menuSettings->addAction(fullscreenAction);
@@ -289,6 +285,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(editPasteCloneDialogAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editDuplicateSelTrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
 
   connect(editShrinkPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editExpandPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -310,6 +307,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editSignalMapper->setMapping(editPasteCloneDialogAction, CMD_PASTE_CLONE_DIALOG);
   editSignalMapper->setMapping(editInsertEMAction, CMD_INSERTMEAS);
   editSignalMapper->setMapping(editDeleteSelectedAction, CMD_DELETE_TRACK);
+  editSignalMapper->setMapping(editDuplicateSelTrackAction, CMD_DUPLICATE_TRACK);
   editSignalMapper->setMapping(editShrinkPartsAction, CMD_SHRINK_PART);
   editSignalMapper->setMapping(editExpandPartsAction, CMD_EXPAND_PART);
   editSignalMapper->setMapping(editCleanPartsAction, CMD_CLEAN_PART);
@@ -322,36 +320,39 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
 
-  connect(startPianoEditAction, SIGNAL(activated()), muse, SLOT(startPianoroll()));
-  connect(startScoreEditAction, SIGNAL(activated()), muse, SLOT(startScoreQuickly()));
-  connect(startDrumEditAction, SIGNAL(activated()), muse, SLOT(startDrumEditor()));
-  connect(startListEditAction, SIGNAL(activated()), muse, SLOT(startListEditor()));
-  connect(startWaveEditAction, SIGNAL(activated()), muse, SLOT(startWaveEditor()));
-  connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), muse, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
-  connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), muse, SLOT(openInScoreEdit_allInOne(QWidget*)));
+  connect(startPianoEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startPianoroll()));
+  connect(startScoreEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startScoreQuickly()));
+  connect(startDrumEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startDrumEditor()));
+  connect(startListEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startListEditor()));
+  connect(startWaveEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startWaveEditor()));
+  connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), MusEGlobal::muse, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
+  connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), MusEGlobal::muse, SLOT(openInScoreEdit_allInOne(QWidget*)));
 
 
-  connect(masterGraphicAction, SIGNAL(activated()), muse, SLOT(startMasterEditor()));
-  connect(masterListAction, SIGNAL(activated()), muse, SLOT(startLMasterEditor()));
+  connect(masterGraphicAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startMasterEditor()));
+  connect(masterListAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startLMasterEditor()));
 
-  connect(midiTransformerAction, SIGNAL(activated()), muse, SLOT(startMidiTransformer()));
+  connect(midiTransformerAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startMidiTransformer()));
 
 
   //-------- Structure connections
   connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
   connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
   connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
+  connect(strGlobalCutSelAction, SIGNAL(activated()), SLOT(globalCutSel()));
+  connect(strGlobalInsertSelAction, SIGNAL(activated()), SLOT(globalInsertSel()));
+  connect(strGlobalSplitSelAction, SIGNAL(activated()), SLOT(globalSplitSel()));
 
 
 
-  connect(muse, SIGNAL(configChanged()), SLOT(updateShortcuts()));
+  connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(updateShortcuts()));
 
 
   QClipboard* cb = QApplication::clipboard();
   connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
   connect(cb, SIGNAL(selectionChanged()), SLOT(clipboardChanged()));
 
-
+  finalizeInit();
 
   // work around for probable QT/WM interaction bug.
   // for certain window managers, e.g xfce, this window is
@@ -368,7 +369,7 @@ ArrangerView::~ArrangerView()
 
 void ArrangerView::closeEvent(QCloseEvent* e)
 {
-  emit deleted(static_cast<TopWin*>(this));
+  emit isDeleting(static_cast<TopWin*>(this));
   emit closed();
   e->accept();
 }
@@ -432,6 +433,8 @@ void ArrangerView::readConfiguration(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "topwin")
                               TopWin::readConfiguration(ARRANGER, xml);
+                        else if (tag == "arranger")
+                              Arranger::readConfiguration(xml);
                         else
                               xml.unknown("ArrangerView");
                         break;
@@ -452,6 +455,7 @@ void ArrangerView::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arrangerview");
       TopWin::writeConfiguration(ARRANGER, level, xml);
+      arranger->writeConfiguration(level,xml);
       xml.tag(level, "/arrangerview");
       }
 
@@ -488,19 +492,33 @@ void ArrangerView::cmd(int cmd)
                   arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
                   break;
             case CMD_DELETE:
-                  if (!MusEGlobal::song->msgRemoveParts()) //automatically does undo if neccessary and returns true then
                   {
-                        //msgRemoveParts() returned false -> no parts to remove?
-                        MusEGlobal::song->startUndo();
-                        MusEGlobal::audio->msgRemoveTracks(); //TODO FINDME this could still be speeded up!
-                        MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
+                      QMessageBox::StandardButton btn = QMessageBox::warning(
+                          this,tr("Remove track(s)"),tr("Are you sure you want to remove this track(s)?"),
+                          QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok);
+
+                      if (btn == QMessageBox::Cancel)
+                          break;
+                      if (!MusEGlobal::song->msgRemoveParts()) //automatically does undo if neccessary and returns true then
+                      {
+                            //msgRemoveParts() returned false -> no parts to remove?
+                            MusEGlobal::song->startUndo();
+                            MusEGlobal::audio->msgRemoveTracks(); //TODO FINDME this could still be speeded up!
+                            MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
+                      }
                   }
                   break;
-            case CMD_DELETE_TRACK:
+            case CMD_DELETE_TRACK: // from menu
+                  {
                   MusEGlobal::song->startUndo();
                   MusEGlobal::audio->msgRemoveTracks();
                   MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
                   MusEGlobal::audio->msgUpdateSoloStates();
+                  }
+                  break;
+
+            case CMD_DUPLICATE_TRACK:
+                  MusEGlobal::song->duplicateTracks(); 
                   break;
 
             case CMD_SELECT_ALL:
@@ -629,22 +647,22 @@ void ArrangerView::clearScoreMenuMappers()
 
 void ArrangerView::populateAddTrack()
 {
-      QActionGroup *grp = MusEGui::populateAddTrack(addTrack);
+      QActionGroup *grp = MusEGui::populateAddTrack(addTrack, true, true);
       connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
       
       trackMidiAction = grp->actions()[0];
       trackDrumAction = grp->actions()[1];
-      trackWaveAction = grp->actions()[2];
-      trackAOutputAction = grp->actions()[3];
-      trackAGroupAction = grp->actions()[4];
-      trackAInputAction = grp->actions()[5];
-      trackAAuxAction = grp->actions()[6];
+      trackNewStyleDrumAction = grp->actions()[2];
+      trackWaveAction = grp->actions()[3];
+      trackAOutputAction = grp->actions()[4];
+      trackAGroupAction = grp->actions()[5];
+      trackAInputAction = grp->actions()[6];
+      trackAAuxAction = grp->actions()[7];
 }
 
 void ArrangerView::addNewTrack(QAction* action)
 {
   MusEGlobal::song->addNewTrack(action, MusEGlobal::muse->arranger()->curTrack());  // Insert at current selected track.
-  //MusEGlobal::song->addNewTrack(action);  // Add at end.
 }
 
 void ArrangerView::updateShortcuts()
@@ -662,6 +680,7 @@ void ArrangerView::updateShortcuts()
       
       trackMidiAction->setShortcut(shortcuts[SHRT_ADD_MIDI_TRACK].key);
       trackDrumAction->setShortcut(shortcuts[SHRT_ADD_DRUM_TRACK].key);
+      trackNewStyleDrumAction->setShortcut(shortcuts[SHRT_ADD_NEW_STYLE_DRUM_TRACK].key);
       trackWaveAction->setShortcut(shortcuts[SHRT_ADD_WAVE_TRACK].key);
       trackAOutputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key);
       trackAGroupAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_GROUP].key);
@@ -728,5 +747,19 @@ void ArrangerView::updateVisibleTracksButtons()
 void ArrangerView::globalCut() { MusECore::globalCut(); }
 void ArrangerView::globalInsert() { MusECore::globalInsert(); }
 void ArrangerView::globalSplit() { MusECore::globalSplit(); }
+
+// variants only applicable for selected tracks
+void ArrangerView::globalCutSel() { MusECore::globalCut(true); }
+void ArrangerView::globalInsertSel() { MusECore::globalInsert(true); }
+void ArrangerView::globalSplitSel() { MusECore::globalSplit(true); }
+
+void ArrangerView::configCustomColumns()
+{
+  ArrangerColumns* dialog = new ArrangerColumns(this);
+  dialog->exec();
+  delete dialog;
+  
+  QMessageBox::information(this, tr("Changed Settings"), tr("Unfortunately, the changed arranger column settings\ncannot be applied while MusE is running.\nTo apply the changes, please restart MusE. Sorry.\n(we'll try to fix that)"));
+}
 
 } // namespace MusEGui

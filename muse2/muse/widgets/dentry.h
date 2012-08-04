@@ -73,6 +73,7 @@ class Dentry : public QLineEdit {
    signals:
       void valueChanged(double, int);
       void doubleClicked(int);
+      void ctrlDoubleClicked(int);
 
    public slots:
       virtual void setValue(double);

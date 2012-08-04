@@ -158,6 +158,12 @@ typedef std::vector<CItemList>::const_reverse_iterator rciCItemLayer;
 class CItemLayers: public std::vector<CItemList> {
    public:
       CItem* find(const QPoint&, int layer = -1, int type = -1) const;  
+      
+      void clearDeleteLayers() {
+            for (iCItemLayer i = begin(); i != end(); ++i)
+                  i->clearDelete();
+            //clear();
+            }
       };
 
 } // namespace MusEGui

@@ -55,13 +55,23 @@ void StepRec::timeout()
 	}
 }
 
-void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ctrl, bool shift)
+void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ctrl, bool shift, int incoming_pitch)
 {
 	unsigned tick = MusEGlobal::song->cpos();
 	unsigned lasttick=0;
 	Undo operations;
 	
-	if (pitch!=MusEGlobal::rcSteprecNote) 
+	if (tick < part->tick()) //insert note before the part to insert?
+	{
+		if (MusEGlobal::debugMsg)
+		printf("StepRec::record(): tick (%i) is before part (begin tick is %i), ignoring...\n",tick, part->tick());
+		return;
+	}
+	
+	// if incoming_pitch wasn't specified, set it to pitch
+	if (incoming_pitch == 1337) incoming_pitch=pitch;
+	
+	if (incoming_pitch!=MusEGlobal::rcSteprecNote) 
 	{
 		chord_timer->stop();
 
@@ -132,7 +142,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 		
 		goto steprec_record_foot; // this is actually unneccessary, but for clarity
 	}
-	else  // equals if (pitch==MusEGlobal::rcSteprecNote)
+	else  // equals if (incoming_pitch==MusEGlobal::rcSteprecNote)
 	{
 		bool held_notes=false;
 		if (note_held_down!=NULL)

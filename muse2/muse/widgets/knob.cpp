@@ -115,6 +115,9 @@ void Knob::setTotalAngle (double angle)
 
 void Knob::setRange(double vmin, double vmax, double vstep, int pagesize)
       {
+      //if(vmin == d_minValue && vmax == d_maxValue && vstep == d_step && pageSize == d_pageSize)    // p4.0.45
+      //  return;
+      
       // divide by zero protection. probably too cautious
       if (! (vmin == vmax || qMax(-vmin, vmax) == 0))
             {
@@ -321,6 +324,31 @@ void Knob::rangeChange()
     recalcAngle();
     resize(size());
     repaint();
+}
+
+void Knob::mousePressEvent(QMouseEvent *e)
+{
+  if (e->button() == Qt::MidButton || e->modifiers() & Qt::ControlModifier) {
+    int xpos = e->x() - width() /2;
+    double v = float(e->y()) / height() * 1.2;
+
+    double halfRange = (maxValue() - minValue())/2;
+    double midValue = minValue() + halfRange;
+    // apply to range
+    if (xpos < 0) { // left values
+     v = -v;
+    }
+    setValue(v * halfRange + midValue);
+    SliderBase::valueChange();
+    emit sliderMoved(value(),id()); // sliderMoved is used by auxChanged
+    
+    // fake a left-click to make the knob still "stick" to
+    // the mouse.
+    QMouseEvent temp(e->type(), e->pos(), Qt::LeftButton, e->buttons(), e->modifiers());
+    SliderBase::mousePressEvent(&temp);
+    return;
+  }
+  SliderBase::mousePressEvent(e);
 }
 
 //---------------------------------------------------------

@@ -146,19 +146,12 @@ void MidiControllerEditDialog::songChanged(int flags)
     return;
     
   if(flags & (SC_CONFIG | SC_MIDI_CONTROLLER))
-  //if(flags & (SC_CONFIG | SC_MIDI_CONTROLLER_ADD))
   {
-    //listController->blockSignals(true);
     midiPortsList->blockSignals(true);
-    //viewController->blockSignals(true);
     updatePredefinedList();
     updateMidiPortsList();
     updateViewController();
-    //viewController->setCurrentItem(viewController->firstChild());
-    //controllerChanged(viewController->currentItem());
-    //listController->blockSignals(false);
     midiPortsList->blockSignals(false);
-    //viewController->blockSignals(false);
   }  
 }
 
@@ -199,18 +192,11 @@ void MidiControllerEditDialog::updateMidiPortsList()
 
 void MidiControllerEditDialog::updateViewController()
 {
-      //for (iMidiController i = midiControllerList.begin();
-      //   i != midiControllerList.end(); ++i) {
-      //      addControllerToView(&*i);
       int mpidx = midiPortsList->currentItem();
       
       viewController->clear();
-      //MidiControllerList* mcl; 
       MidiInstrument* mi = midiPorts[mpidx].instrument();
-      //if(mi)
       MidiControllerList* mcl = mi->controller();
-      //else
-      //  mcl = &defaultMidiController;
       for (iMidiController i = mcl->begin(); i != mcl->end(); ++i) 
             addControllerToView(*i);
             
@@ -249,15 +235,6 @@ void MidiControllerEditDialog::setModified(bool v)
 
 void MidiControllerEditDialog::reject()
       {
-      //MidiControllerList* mcl; 
-//      MidiInstrument* mi = midiPorts[mpidx].instrument();
-      //if(mi)
-//      MidiControllerList* mcl = mi->controller();
-      //else
-      //  mcl = &defaultMidiController;
-//      for (iMidiController i = mcl->begin(); i != mcl->end(); ++i) 
-//            addControllerToView(*i);
-            
       // Restore the list before closing this dialog.
       updateViewController();      
       //setModified(false);      
@@ -272,12 +249,8 @@ void MidiControllerEditDialog::reject()
 void MidiControllerEditDialog::apply()
 {
       int mpidx = midiPortsList->currentItem();
-      //MidiControllerList* mcl; 
       MidiInstrument* mi = midiPorts[mpidx].instrument();
-      //if(mi)
       MidiControllerList* mcl = mi->controller();
-      //else
-      //  mcl = &defaultMidiController;
       mcl->clear();
       
 
@@ -336,9 +309,6 @@ void MidiControllerEditDialog::apply()
             item = item->nextSibling();
             }
             
-      // Update the list before closing this dialog.
-      //updateViewController();      
-      //setModified(false);      
       MusEGlobal::song->update(SC_CONFIG | SC_MIDI_CONTROLLER);
 }
       
@@ -442,14 +412,14 @@ void MidiControllerEditDialog::portChanged(int n)
           return;
         _lastPort = n;
           
-        //listController->blockSignals(true);
+        //listController->blockSignals(true); DELETETHIS
         //midiPortsList->blockSignals(true);
         //viewController->blockSignals(true);
         //updatePredefinedList();
         //updateMidiPortsList();
         //reject();   // populate list
         updateViewController();
-        //viewController->setCurrentItem(viewController->firstChild());
+        //viewController->setCurrentItem(viewController->firstChild()); DELETETHIS
         //controllerChanged(viewController->currentItem());
         //listController->blockSignals(false);
         //midiPortsList->blockSignals(false);

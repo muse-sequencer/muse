@@ -72,8 +72,6 @@ class MarkerView : public TopWin {
     
       QTreeWidget* table;
       QLineEdit* editName;
-      ///PosEdit* editSMPTE;
-      ///PosEdit* editTick;
       Awl::PosEdit* editSMPTE;
       Awl::PosEdit* editTick;
       QToolButton* lock;
@@ -96,7 +94,7 @@ class MarkerView : public TopWin {
       void songChanged(int);
       
    signals:
-      void deleted(MusEGui::TopWin*);
+      void isDeleting(MusEGui::TopWin*);
       void closed();
 
    public:

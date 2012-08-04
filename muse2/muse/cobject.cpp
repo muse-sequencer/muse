@@ -27,6 +27,8 @@
 #include "globals.h"
 #include "app.h"
 #include "shortcuts.h"
+#include "songpos_toolbar.h"
+#include "sig_tempo_toolbar.h"
 
 #include <QMdiSubWindow>
 #include <QToolBar>
@@ -50,15 +52,16 @@ bool TopWin::initInited=false;
 TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlags f)
                  : QMainWindow(parent, f)
 {
-        _isDeleting = false;
+	_initalizing = true;
+	
+	_isDeleting = false;
 	if (initInited==false)
 		initConfiguration();
 
 	_type=t;
 
 	setObjectName(QString(name));
-	// Allow multiple rows.	Tim.
-	//setDockNestingEnabled(true);
+	//setDockNestingEnabled(true); // Allow multiple rows.	Tim.
 	setIconSize(ICON_SIZE);
 
 	subwinAction=new QAction(tr("As subwindow"), this);
@@ -76,21 +79,70 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
 	mdisubwin=NULL;
-	_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
-	if (_defaultSubwin[_type])
+	if (!MusEGlobal::unityWorkaround)
+		_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
+	else
+		_sharesToolsAndMenu=false;
+	
+	if (_defaultSubwin[_type] && !MusEGlobal::unityWorkaround)
+	{
 		setIsMdiWin(true);
+		_savedToolbarState=_toolbarNonsharedInit[_type];
+	}
 
 	if (_sharesToolsAndMenu)
 		menuBar()->hide();
 
 	subwinAction->setChecked(isMdiWin());
 	shareAction->setChecked(_sharesToolsAndMenu);
+	if (MusEGlobal::unityWorkaround)
+	{
+		shareAction->setEnabled(false);
+		subwinAction->setEnabled(false);
+	}
 	fullscreenAction->setEnabled(!isMdiWin());
 	
 	if (mdisubwin)
 		mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
 	else
 		resize(_widthInit[_type], _heightInit[_type]);
+	
+	 
+	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+	undo_tools->setObjectName("Undo/Redo tools");
+	undo_tools->addActions(MusEGlobal::undoRedo->actions());
+
+	QToolBar* panic_toolbar = addToolBar(tr("Panic"));         
+	panic_toolbar->setObjectName("panic");
+	panic_toolbar->addAction(MusEGlobal::panicAction);
+
+	QToolBar* transport_toolbar = addToolBar(tr("Transport"));
+	transport_toolbar->setObjectName("transport");
+	transport_toolbar->addActions(MusEGlobal::transportAction->actions());
+
+	QToolBar* songpos_tb;
+	songpos_tb = addToolBar(tr("Song Position"));
+	songpos_tb->setObjectName("Song Position");
+	songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
+	songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+
+	QToolBar* tempo_tb;
+	tempo_tb = addToolBar(tr("Tempo"));
+	tempo_tb->setObjectName("Tempo");
+	MusEGui::TempoToolbarWidget* tw = new MusEGui::TempoToolbarWidget(tempo_tb);
+	tempo_tb->addWidget(tw);
+
+	QToolBar* sig_tb;
+	sig_tb = addToolBar(tr("Signature"));
+	sig_tb->setObjectName("Signature");
+	MusEGui::SigToolbarWidget* sw = new MusEGui::SigToolbarWidget(tempo_tb);
+	sig_tb->addWidget(sw);
+	
+	connect(tw, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(tw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+	connect(sw, SIGNAL(returnPressed()), SLOT(focusCanvas()));
+	connect(sw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 }
 
 
@@ -100,6 +152,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 void TopWin::readStatus(MusECore::Xml& xml)
 {
+	int x=0, y=0, width=800, height=600;
+	
 	for (;;)
 	{
 		MusECore::Xml::Token token = xml.parse();
@@ -110,17 +164,24 @@ void TopWin::readStatus(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "geometry_state")
-				{
-					if (!restoreGeometry(QByteArray::fromHex(xml.parse1().toAscii())))
-						fprintf(stderr,"ERROR: couldn't restore geometry. however, this is probably not really a problem.\n");
-				}
+				if (tag == "x")
+					x=xml.parseInt();
+				else if (tag == "y")
+					y=xml.parseInt();
+				else if (tag == "width")
+					width=xml.parseInt();
+				else if (tag == "height")
+					height=xml.parseInt();
 				else if (tag == "toolbars")
 				{
 					if (!sharesToolsAndMenu())
 					{
 						if (!restoreState(QByteArray::fromHex(xml.parse1().toAscii())))
-						 fprintf(stderr,"ERROR: couldn't restore toolbars. however, this is not really a problem.\n");
+						{
+							fprintf(stderr,"ERROR: couldn't restore toolbars. trying default configuration...\n");
+							if (!restoreState(_toolbarNonsharedInit[_type]))
+								fprintf(stderr,"ERROR: couldn't restore default toolbars. this is not really a problem.\n");
+						}
 					}
 					else
 					{
@@ -143,7 +204,22 @@ void TopWin::readStatus(MusECore::Xml& xml)
 
 			case MusECore::Xml::TagEnd:
 				if (tag == "topwin")
+				{
+					if (mdisubwin)
+					{
+						if(mdisubwin->isMaximized())
+							mdisubwin->showNormal();
+						mdisubwin->move(x, y);
+						mdisubwin->resize(width, height);
+					}
+					else
+					{
+						move(x,y);
+						resize(width,height);
+					}
+
 					return;
+				}
 	
 			default:
 				break;
@@ -163,7 +239,22 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
 	// changing it won't break muse, but it may break proper
 	// restoring of the positions
 	xml.intTag(level, "is_subwin", isMdiWin());
-	xml.strTag(level, "geometry_state", saveGeometry().toHex().data());
+
+	if (mdisubwin)
+	{
+		xml.intTag(level, "x", mdisubwin->x());
+		xml.intTag(level, "y", mdisubwin->y());
+		xml.intTag(level, "width", mdisubwin->width());
+		xml.intTag(level, "height", mdisubwin->height());
+	}
+	else
+	{
+		xml.intTag(level, "x", x());
+		xml.intTag(level, "y", y());
+		xml.intTag(level, "width", width());
+		xml.intTag(level, "height", height());
+	}
+
 	xml.intTag(level, "shares_menu", sharesToolsAndMenu());
 
 	if (!sharesToolsAndMenu())
@@ -215,6 +306,9 @@ QMdiSubWindow* TopWin::createMdiWrapper()
 
 void TopWin::setIsMdiWin(bool val)
 {
+	if (MusEGlobal::unityWorkaround)
+		return;
+	
 	if (val)
 	{
 		if (!isMdiWin())
@@ -290,7 +384,7 @@ void TopWin::addToolBar(QToolBar* toolbar)
 {
 	_toolbars.push_back(toolbar);
 	
-	if (!_sharesToolsAndMenu)
+	if (!_sharesToolsAndMenu || MusEGlobal::unityWorkaround)
 		QMainWindow::addToolBar(toolbar);
 	else
 		toolbar->hide();
@@ -308,6 +402,9 @@ QToolBar* TopWin::addToolBar(const QString& title)
 
 void TopWin::shareToolsAndMenu(bool val)
 {
+	if (MusEGlobal::unityWorkaround)
+		return;
+	
 	if (_sharesToolsAndMenu == val)
 	{
 		if (MusEGlobal::debugMsg) printf("TopWin::shareToolsAndMenu() called but has no effect\n");
@@ -476,6 +573,12 @@ void TopWin::writeConfiguration(ToplevelType t, int level, MusECore::Xml& xml)
 	xml.etag(level, "topwin");
 }
 
+void TopWin::finalizeInit()
+{
+	MusEGlobal::muse->topwinMenuInited(this);
+	_initalizing=false;
+}
+
 void TopWin::initTopwinState()
 {
 	if (sharesToolsAndMenu())
@@ -531,5 +634,23 @@ void TopWin::resize(const QSize& s)
 {
 	resize(s.width(), s.height());
 }
+
+void TopWin::setWindowTitle (const QString& title)
+{
+	QMainWindow::setWindowTitle(title);
+	muse->updateWindowMenu();
+}
+
+
+TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
+{
+	for (ciToplevel i = begin(); i != end(); ++i) 
+	{
+		if((*i)->type() == type) 
+			return (*i);
+	}  
+	return 0;
+}
+
 
 } // namespace MusEGui

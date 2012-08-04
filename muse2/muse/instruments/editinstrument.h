@@ -31,8 +31,13 @@
 class QDialog;
 class QMenu;
 class QCloseEvent;
+class QGridLayout;
+class QStringListModel;
 
 namespace MusEGui {
+
+class Header;
+class DList;
 
 //---------------------------------------------------------
 //   EditInstrument
@@ -44,6 +49,15 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       MusECore::MidiInstrument workingInstrument;
       QListWidgetItem*  oldMidiInstrument;
       QTreeWidgetItem* oldPatchItem;
+
+      Header* dlist_header;
+      DList* dlist;
+      QScrollBar* dlist_vscroll;
+      QGridLayout* dlist_grid;
+      QStringListModel* patch_coll_model;
+
+
+
       void closeEvent(QCloseEvent*);
       int checkDirty(MusECore::MidiInstrument*, bool isClose = false);
       bool fileSave(MusECore::MidiInstrument*, const QString&);
@@ -61,7 +75,6 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void setDefaultPatchControls(int);
       QString getPatchName(int);
       void deleteInstrument(QListWidgetItem*);
-      ///QMenu* patchpopup;
       
    private slots:
       virtual void fileNew();
@@ -74,7 +87,6 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void tabChanged(QWidget*);
       void patchChanged();
       void controllerChanged();
-      //void instrumentNameChanged(const QString&);
       void instrumentNameReturn();
       void patchNameReturn();
       void deletePatchClicked();
@@ -82,23 +94,33 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void newGroupClicked();
       void patchButtonClicked();
       void defPatchChanged(int);
-      //void newCategoryClicked();
       void deleteControllerClicked();
       void newControllerClicked();
       void addControllerClicked();
       void ctrlTypeChanged(int);
-      //void ctrlNameChanged(const QString&);
       void ctrlNameReturn();
       void ctrlHNumChanged(int);
       void ctrlLNumChanged(int);
       void ctrlMinChanged(int);
       void ctrlMaxChanged(int);
       void ctrlDefaultChanged(int);
-      //void sysexChanged();
+      //void sysexChanged(); DELETETHIS?
       //void deleteSysexClicked();
       //void newSysexClicked();
       void ctrlNullParamHChanged(int);
       void ctrlNullParamLChanged(int);
+      
+      void patchCollectionSpinboxChanged(int);
+      void patchCollectionCheckboxChanged(bool);
+      void patchActivated(const QModelIndex&);
+      void addPatchCollection();
+      void delPatchCollection();
+      void copyPatchCollection();
+      void patchCollectionUp();
+      void patchCollectionDown();
+      void repopulatePatchCollections();
+      void storePatchCollection();
+      void fetchPatchCollection();
 
    public:
       EditInstrument(QWidget* parent = 0, Qt::WFlags fl = Qt::Window);

@@ -136,6 +136,7 @@ class Transport : public QWidget
       void stopToggled(bool);
       void playToggled(bool);
       void configChanged();
+      void sigChange(const AL::TimeSignature&);
 
    public slots:
       void setTempo(int tempo);
@@ -150,7 +151,6 @@ class Transport : public QWidget
 
    public:
       Transport(QWidget* parent, const char* name = 0);
-      ~Transport();
       QColor getHandleColor() const { return lefthandle->palette().color(QPalette::Window); }
       };
 

@@ -11,7 +11,7 @@ Für Einzelheiten siehe COPYING.
 ,-----------------------------------------------------------------.
 | HINWEIS                                                         |
 |-----------------------------------------------------------------|
-| Viel Teile des Codes von MusE sind EXPERIMENTELL und können     |
+| Viele Teile des Codes von MusE sind EXPERIMENTELL und können    |
 | zu Programmabstürzen und wer weiß was sonst noch allem          |
 | führen.                                                         |
 | SIE BENUTZEN DIESE SOFTWARE AUF EIGENES RISIKO!                 |
@@ -26,27 +26,39 @@ Für Einzelheiten siehe COPYING.
 
       - qt 4.2.0 oder neuer
         ftp://ftp.trolltech.com/qt/source
-        MsE kompiliert nicht mit alter versionen
+        MsE kompiliert nicht mit älteren Versionen!
+
+      - gcc >= 4.x.x oder clang >= 2.9
+          http://gcc.gnu.org/
+          http://clang.llvm.org/
 
       - libsndfile >= 1.0.1
-        http://www.mega-nerd.com/libsndfile/
+          http://www.mega-nerd.com/libsndfile/
+
+      - libsamplerate
+          http://www.mega-nerd.com/SRC/
 
       - JACK >= 0.103
-        http://jackit.sourceforge.net/
-        download:
-	  http://jackit.sourceforge.net/download/
+          http://jackaudio.org/
 
-      - fluidsynth-1.0.3 (die synti früher bekannt als "iiwusynth") von
-        http://savannah.nongnu.org/download/fluid
+      - libuuid
+         e2fsprogs Paket http://e2fsprogs.sourceforge.net/
+         Einige Distros bieten das eventuell in einem anderen Paket an.
 
-      - Linux Kernel mit rtc (RealTimeClock) Treiber (device /dev/rtc)
-        ("low latency patches" für minimales timing-jitter wären fein)
+      Optional:
 
-      - ALSA von http://www.alsa-project.org/
-        Version 0.9.x oder neuer
+      - fluidsynth >= 1.0.3 (formerly known as iiwusynth) from
+        http://sourceforge.net/apps/trac/fluidsynth/
 
-      - gcc >= 4.x.x
+      - liblo           Lightweight OSC (Open Sound Control)    http://liblo.sourceforge.net/
+      - DSSI            Disposable Soft Synth Interface.        http://dssi.sourceforge.net/
+          (Both recommended - DSSI alone will have no native GUIs, OSC alone does nothing, for now.)
 
+      - dssi-vst        Unterstützung für DSSI vst plugins      http://www.breakfastquay.com/dssi-vst/
+
+      - LASH            Audio Session Handler                   http://lash.nongnu.org/
+         Seit neuerem kann LADISH es auch emulieren             http://ladish.org/
+      
       - natürlich: eine Soundkarte und/oder irgendwelche Midi Geräte
 
   =============================
@@ -67,4 +79,5 @@ Für Einzelheiten siehe COPYING.
 ====================================================================
 Aktuelle(re) Infos gibt es auf der MusE Homepage
 http://lmuse.sourceforge.net/
+und in der englischen README
 

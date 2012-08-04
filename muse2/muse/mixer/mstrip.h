@@ -90,6 +90,7 @@ class MidiStrip : public Strip {
 
    public slots:
       virtual void songChanged(int);
+      virtual void configChanged();
 
    public:
       MidiStrip(QWidget* parent, MusECore::MidiTrack*);

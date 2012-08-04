@@ -99,6 +99,7 @@ class AudioMixerApp : public QMainWindow {
 
       QAction* showMidiTracksId;
       QAction* showDrumTracksId;
+      QAction* showNewDrumTracksId;
       QAction* showInputTracksId;
       QAction* showOutputTracksId;
       QAction* showWaveTracksId;
@@ -132,6 +133,7 @@ class AudioMixerApp : public QMainWindow {
       //void showTracksChanged(QAction*);
       void showMidiTracksChanged(bool);
       void showDrumTracksChanged(bool);
+      void showNewDrumTracksChanged(bool);
       void showWaveTracksChanged(bool);
       void showInputTracksChanged(bool);
       void showOutputTracksChanged(bool);

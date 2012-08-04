@@ -37,20 +37,13 @@
 #include "siglabel.h"
 #include "globals.h"
 #include "icons.h"
-///#include "posedit.h"
 #include "sync.h"
 #include "shortcuts.h"
 #include "gconfig.h"
 #include "app.h"
+#include "audio.h"
 
 namespace MusEGui {
-
-static const char* recordTransportText   = QT_TRANSLATE_NOOP("@default", "Click this button to enable recording");
-static const char* stopTransportText     = QT_TRANSLATE_NOOP("@default", "Click this button to stop playback");
-static const char* playTransportText     = QT_TRANSLATE_NOOP("@default", "Click this button to start playback");
-static const char* startTransportText    = QT_TRANSLATE_NOOP("@default", "Click this button to rewind to start position");
-static const char* frewindTransportText  = QT_TRANSLATE_NOOP("@default", "Click this button to rewind");
-static const char* fforwardTransportText = QT_TRANSLATE_NOOP("@default", "Click this button to forward current play position");
 
 //---------------------------------------------------------
 //   toolButton
@@ -83,8 +76,7 @@ static QToolButton* newButton(const QPixmap* pm, const QString& tt,
 
 //---------------------------------------------------------
 //    Handle
-//    erlaubt das Verschieben eines Root-Windows mit der
-//    Maus
+//    allows moving a root-window with the mouse
 //---------------------------------------------------------
 
 Handle::Handle(QWidget* r, QWidget* parent)
@@ -121,7 +113,7 @@ void Handle::mousePressEvent(QMouseEvent* ev)
 
 //---------------------------------------------------------
 //   TempoSig
-//    Widget fï¿½r Tempo + Signature
+//    Widget for Tempo + Signature
 //---------------------------------------------------------
 
 TempoSig::TempoSig(QWidget* parent)
@@ -235,10 +227,6 @@ void Transport::setRecord(bool flag)
 //---------------------------------------------------------
 
 Transport::Transport(QWidget* parent, const char* name)
-  // : QWidget(0, name, WStyle_Customize | WType_TopLevel | WStyle_Tool
-  //| WStyle_NoBorder | WStyle_StaysOnTop)
-   //: QWidget(0, name, Qt::WStyle_Customize | Qt::Window | Qt::WStyle_NoBorder | Qt::WStyle_StaysOnTop)
-  //: QWidget(0, name, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
   : QWidget(parent, Qt::Window | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint )  // Possibly also Qt::X11BypassWindowManagerHint
       {
       setObjectName(name);
@@ -333,7 +321,6 @@ Transport::Transport(QWidget* parent, const char* name)
       marken->setSpacing(0);
       marken->setContentsMargins(0, 0, 0, 0);
 
-      ///tl1 = new PosEdit(0);
       tl1 = new Awl::PosEdit(0);
       tl1->setMinimumSize(105,0);
       tl1->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -346,7 +333,6 @@ Transport::Transport(QWidget* parent, const char* name)
       l5->setAlignment(Qt::AlignCenter);
       marken->addWidget(l5);
 
-      ///tl2 = new PosEdit(0);
       tl2 = new Awl::PosEdit(0);
       tl2->setMinimumSize(105,0);
       tl2->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -371,9 +357,7 @@ Transport::Transport(QWidget* parent, const char* name)
       QHBoxLayout *hbox1 = new QHBoxLayout;
       hbox1->setContentsMargins(0, 0, 0, 0);
       
-      ///time1 = new PosEdit(0);
       time1 = new Awl::PosEdit(0);
-      ///time2 = new PosEdit(0);
       time2 = new Awl::PosEdit(0);
       time2->setSmpte(true);
       time1->setMinimumSize(105,0);
@@ -401,25 +385,25 @@ Transport::Transport(QWidget* parent, const char* name)
       tb->setSpacing(0);
 
       buttons[0] = newButton(startIcon, tr("rewind to start"));
-      buttons[0]->setWhatsThis(tr(startTransportText));
+      buttons[0]->setWhatsThis(tr("Click this button to rewind to start position"));
 
       buttons[1] = newButton(frewindIcon, tr("rewind"));
       buttons[1]->setAutoRepeat(true);
-      buttons[1]->setWhatsThis(tr(frewindTransportText));
+      buttons[1]->setWhatsThis(tr("Click this button to rewind"));
 
       buttons[2] = newButton(fforwardIcon, tr("forward"));
       buttons[2]->setAutoRepeat(true);
-      buttons[2]->setWhatsThis(tr(fforwardTransportText));
+      buttons[2]->setWhatsThis(tr("Click this button to forward current play position"));
 
       buttons[3] = newButton(stopIcon, tr("stop"), true);
       buttons[3]->setChecked(true);     // set STOP
-      buttons[3]->setWhatsThis(tr(stopTransportText));
+      buttons[3]->setWhatsThis(tr("Click this button to stop playback"));
 
       buttons[4] = newButton(playIcon, tr("play"), true);
-      buttons[4]->setWhatsThis(tr(playTransportText));
+      buttons[4]->setWhatsThis(tr("Click this button to start playback"));
 
       buttons[5] = newButton(record_on_Icon, tr("record"), true);
-      buttons[5]->setWhatsThis(tr(recordTransportText));
+      buttons[5]->setWhatsThis(tr("Click this button to enable recording"));
 
       for (int i = 0; i < 6; ++i)
         {
@@ -515,8 +499,7 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(slider,SIGNAL(valueChanged(int)),  SLOT(cposChanged(int)));
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
       connect(tempo, SIGNAL(tempoChanged(int)), MusEGlobal::song, SLOT(setTempo(int)));
-      ///connect(tempo, SIGNAL(sigChanged(int, int)), MusEGlobal::song, SLOT(setSig(int, int)));
-      connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
+      connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), SLOT(sigChange(const AL::TimeSignature&)));
       connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
@@ -526,11 +509,6 @@ Transport::Transport(QWidget* parent, const char* name)
       righthandle = new Handle(this);
       hbox->addWidget(righthandle);
       }
-
-Transport::~Transport()
-{
-  //printf("Transport::~Transport\n");  
-}
 
 //---------------------------------------------------------
 //   configChanged
@@ -560,6 +538,11 @@ void Transport::setTempo(int t)
             tempo->setTempo(t);
             tempoVal = t;
             }
+      blockSignals(true);
+      // Make sure positional controls are updated
+      unsigned v = MusEGlobal::song->cpos();
+      time2->setValue(v); // time2 is SMPTE, it only need tempo updates.
+      blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -580,7 +563,19 @@ void Transport::setHandleColor(QColor c)
 
 void Transport::setTimesig(int z, int n)
       {
+      blockSignals(true);
       tempo->setTimesig(z, n);
+      
+      // Make sure positional controls are updated
+      unsigned v = MusEGlobal::song->cpos();
+      time1->setValue(v); // time2 is SMPTE. It only need tempo updates.
+      
+      v = MusEGlobal::song->lpos();      
+      tl1->setValue(v);
+      v = MusEGlobal::song->rpos();      
+      tl2->setValue(v);
+      
+      blockSignals(false);
       }
 
 //---------------------------------------------------------
@@ -813,5 +808,11 @@ void Transport::playToggled(bool val)
             buttons[4]->blockSignals(false);
             }
       }
+      
+void Transport::sigChange(const AL::TimeSignature& sig)
+{
+  MusEGlobal::audio->msgAddSig(MusEGlobal::song->cPos().tick(), sig.z, sig.n);  // Add will replace if found. 
+}
+
 
 } // namespace MusEGui

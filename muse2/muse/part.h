@@ -61,6 +61,12 @@ class Part : public PosLen {
    public:
       enum HiddenEventsType { NoEventsHidden = 0, LeftEventsHidden, RightEventsHidden };
    
+   // @@@@@@@@@@@ IMPORTANT @@@@@@@@@@@@
+   // @@ when adding member variables @@
+   // @@ here, don't forget to update @@
+   // @@ the copy-constructor!        @@
+   // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   
    private:
       static int snGen;
       int _sn;
@@ -70,17 +76,17 @@ class Part : public PosLen {
       bool _mute;
       int _colorIndex;
                    
-      int _hiddenEvents;   // Combination of HiddenEventsType.
-                   
    protected:
       Track* _track;
       EventList* _events;
       Part* _prevClone;
       Part* _nextClone;
-
+      int _hiddenEvents;   // Combination of HiddenEventsType.
+                   
    public:
       Part(Track*);
       Part(Track*, EventList*);
+      Part(const Part& p);
       virtual ~Part();
       int sn()                         { return _sn; }
       void setSn(int n)                { _sn = n; }
@@ -107,7 +113,7 @@ class Part : public PosLen {
       void setNextClone(Part* p)       { _nextClone = p; }
       
       // Returns combination of HiddenEventsType enum.
-      int hasHiddenEvents();
+      virtual int hasHiddenEvents() = 0;
       // If repeated calls to hasHiddenEvents() are desired, then to avoid re-iteration of the event list, 
       //  call this after hasHiddenEvents().
       int cachedHasHiddenEvents() const { return _hiddenEvents; }
@@ -133,7 +139,9 @@ class MidiPart : public Part {
       virtual ~MidiPart() {}
       virtual MidiPart* clone() const;
       MidiTrack* track() const   { return (MidiTrack*)Part::track(); }
-
+      // Returns combination of HiddenEventsType enum.
+      int hasHiddenEvents();
+      
       virtual void dump(int n = 0) const;
       };
 
@@ -154,6 +162,8 @@ class WavePart : public Part {
       virtual ~WavePart() {}
       virtual WavePart* clone() const;
       WaveTrack* track() const   { return (WaveTrack*)Part::track(); }
+      // Returns combination of HiddenEventsType enum.
+      int hasHiddenEvents();
 
       virtual void dump(int n = 0) const;
       };

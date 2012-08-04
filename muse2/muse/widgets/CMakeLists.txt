@@ -32,6 +32,7 @@ subdirs (${SubDirs})
 ##
 QT4_WRAP_CPP (widget_mocs
       aboutbox_impl.h 
+      arrangercolumns.h 
       action.h
       bigtime.h  
       canvas.h  
@@ -40,9 +41,11 @@ QT4_WRAP_CPP (widget_mocs
       combobox.h  
       comment.h  
       ctrlcombo.h  
+      custom_widget_actions.h
       dentry.h  
       didyouknow.h
       doublelabel.h  
+      doublespinbox.h  
       filedialog.h  
       genset.h  
       mdisettings.h  
@@ -54,6 +57,7 @@ QT4_WRAP_CPP (widget_mocs
       menutitleitem.h
       meter.h
       metronome.h  
+      midi_audio_control.h  
       midisyncimpl.h  
       mixdowndialog.h  
       mlabel.h  
@@ -66,6 +70,7 @@ QT4_WRAP_CPP (widget_mocs
       pasteeventsdialog.h
       pitchedit.h  
       pitchlabel.h  
+      pixmap_button.h
       popupmenu.h  
       # posedit.h  
       poslabel.h  
@@ -77,9 +82,11 @@ QT4_WRAP_CPP (widget_mocs
       # sigedit.h  
       siglabel.h  
       sigscale.h  
+      sig_tempo_toolbar.h 
       slider.h  
       sliderbase.h  
       songinfo.h
+      songpos_toolbar.h
       spinbox.h  
       spinboxFP.h  
       splitter.h  
@@ -87,6 +94,7 @@ QT4_WRAP_CPP (widget_mocs
       tb1.h  
       tempolabel.h  
       tools.h  
+      tracks_duplicate.h
       # ttoolbar.h  
       ttoolbutton.h  
       unusedwavefiles.h
@@ -101,6 +109,7 @@ QT4_WRAP_CPP (widget_mocs
 ##
 file (GLOB widgets_ui_files
       aboutbox.ui  
+      arrangercolumnsbase.ui 
       appearancebase.ui 
       cliplisteditorbase.ui  
       commentbase.ui  
@@ -114,6 +123,7 @@ file (GLOB widgets_ui_files
       itransformbase.ui  
       metronomebase.ui  
       midisync.ui  
+      midi_audio_control_base.ui  
       mittransposebase.ui  
       mixdowndialogbase.ui  
       mtrackinfobase.ui
@@ -124,6 +134,7 @@ file (GLOB widgets_ui_files
       shortcutconfigbase.ui  
       songinfo.ui  
       synthconfigbase.ui  
+      tracks_duplicate_base.ui
       transformbase.ui  
       unusedwavefiles.ui
       )
@@ -134,6 +145,7 @@ QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 ##
 file (GLOB widgets_source_files
       aboutbox_impl.cpp 
+      arrangercolumns.cpp 
       bigtime.cpp 
       canvas.cpp 
       checkbox.cpp 
@@ -142,9 +154,11 @@ file (GLOB widgets_source_files
       combobox.cpp  
       comment.cpp 
       ctrlcombo.cpp 
+      custom_widget_actions.cpp
       dentry.cpp 
       dimap.cpp
       doublelabel.cpp 
+      doublespinbox.cpp
       drange.cpp
       filedialog.cpp 
       genset.cpp 
@@ -157,6 +171,7 @@ file (GLOB widgets_source_files
       menutitleitem.cpp
       meter.cpp
       metronome.cpp 
+      midi_audio_control.cpp 
       midisyncimpl.cpp 
       mixdowndialog.cpp 
       mlabel.cpp 
@@ -170,6 +185,7 @@ file (GLOB widgets_source_files
       pasteeventsdialog.cpp
       pitchedit.cpp 
       pitchlabel.cpp 
+      pixmap_button.cpp
       popupmenu.cpp 
       # posedit.cpp 
       poslabel.cpp
@@ -184,8 +200,10 @@ file (GLOB widgets_source_files
       # sigedit.cpp 
       siglabel.cpp 
       sigscale.cpp 
+      sig_tempo_toolbar.cpp 
       slider.cpp 
       sliderbase.cpp 
+      songpos_toolbar.cpp 
       spinbox.cpp 
       spinboxFP.cpp 
       splitter.cpp  
@@ -193,6 +211,7 @@ file (GLOB widgets_source_files
       tb1.cpp   
       tempolabel.cpp 
       tools.cpp 
+      tracks_duplicate.cpp
       # ttoolbar.cpp 
       ttoolbutton.cpp 
       unusedwavefiles.cpp

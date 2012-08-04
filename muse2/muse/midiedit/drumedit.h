@@ -25,7 +25,7 @@
 
 #include <QByteArray>
 
-#include <values.h>
+#include <limits.h>
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
@@ -33,6 +33,7 @@
 #include "header.h"
 #include "shortcuts.h"
 #include "event.h"
+#include "dcanvas.h"
 
 class QCloseEvent;
 class QLabel;
@@ -64,18 +65,36 @@ class ScrollScale;
 class Splitter;
 class Toolbar1;
 
-
 //---------------------------------------------------------
 //   DrumEdit
 //---------------------------------------------------------
 
 class DrumEdit : public MidiEditor {
       Q_OBJECT
-    
-      MusECore::Event selEvent;
-      MusECore::MidiPart* selPart;
-      int selTick;
-      QMenu* menuEdit, *menuFunctions, *menuFile, *menuSelect;
+
+   public:
+      enum group_mode_t { DONT_GROUP, GROUP_SAME_CHANNEL, GROUP_MAX };
+  
+   private:
+      group_mode_t _group_mode;
+      bool _ignore_hide;
+      bool _old_style_drummap_mode;
+      
+      QMenu* menuEdit, *menuFunctions, *menuSelect;
+
+      int tickValue;
+      int lenValue;
+      int pitchValue;
+      int veloOnValue;
+      int veloOffValue;
+      bool firstValueSet;
+      int tickOffset;
+      int lenOffset;
+      int pitchOffset;
+      int veloOnOffset;
+      int veloOffOffset;
+      bool deltaMode;
+      int lastSelections;
 
       MusEGui::NoteInfo* info;
       QToolButton* srec;
@@ -93,13 +112,14 @@ class DrumEdit : public MidiEditor {
 
       static int _rasterInit;
       static int _dlistWidthInit, _dcanvasWidthInit;
+      static bool _ignore_hide_init;
 
       QAction *loadAction, *saveAction, *resetAction;
       QAction *cutAction, *copyAction, *copyRangeAction, *pasteAction, *pasteDialogAction, *deleteAction;
       QAction *fixedAction, *veloAction, *crescAction, *quantizeAction;
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
-
+      QAction *groupNoneAction, *groupChanAction, *groupMaxAction;
       
       void initShortcuts();
 
@@ -109,11 +129,10 @@ class DrumEdit : public MidiEditor {
 
       void setHeaderToolTips();
       void setHeaderWhatsThis();
-
+      
    private slots:
       void setRaster(int);
       void noteinfoChanged(MusEGui::NoteInfo::ValType type, int val);
-      //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void cmd(int);
       void clipboardChanged(); // enable/disable "Paste"
@@ -128,24 +147,43 @@ class DrumEdit : public MidiEditor {
       void songChanged1(int);
       void setStep(QString);
 
+      void updateGroupingActions();
+      void set_ignore_hide(bool);
+      void showAllInstruments();
+      void hideAllInstruments();
+      void hideUnusedInstruments();
+      void hideEmptyInstruments();
+      
+      void display_old_new_conflict_message();
+
+      void deltaModeChanged(bool);
+
    public slots:
-      void setSelection(int, MusECore::Event&, MusECore::Part*);
+      void setSelection(int tick, MusECore::Event&, MusECore::Part*, bool update);
       void soloChanged(bool);       // called by Solo button
       void execDeliveredScript(int);
       void execUserScript(int);
+      void focusCanvas();
       CtrlEdit* addCtrl();
-      
+      void ourDrumMapChanged(bool);
       virtual void updateHScrollRange();
+
    signals:
       void isDeleting(MusEGui::TopWin*);
 
    public:
-      DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+      DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
       virtual ~DrumEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml& xml);
       static void writeConfiguration(int, MusECore::Xml&);
+      
+      bool old_style_drummap_mode() { return _old_style_drummap_mode; }
+      group_mode_t group_mode() { return _group_mode; }
+      bool ignore_hide() { return _ignore_hide; }
+      
+      QVector<instrument_number_mapping_t>& get_instrument_map() { return static_cast<DrumCanvas*>(canvas)->get_instrument_map(); }
       };
 
 } // namespace MusEGui

@@ -47,9 +47,9 @@ class DelOverlaps : public QDialog, public Ui::DelOverlapsBase
 	public:
 		DelOverlaps(QWidget* parent = 0);
 
-		int range;
+		static int range;
 		
-		void read_configuration(MusECore::Xml& xml);
+		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
 	public slots:

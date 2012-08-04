@@ -27,6 +27,8 @@
 #include <stdarg.h>
 #include <pthread.h>
 #include <sys/poll.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "audio.h"
@@ -137,7 +139,7 @@ class DummyAudioDevice : public AudioDevice {
 //            if(DEBUG_DUMMY)
 //                printf("DummyAudioDevice::getState %d\n", state);
             return state; }
-      virtual unsigned getCurFrame() { 
+      virtual unsigned getCurFrame() const { 
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::getCurFrame %d\n", _framePos);
       
@@ -145,6 +147,13 @@ class DummyAudioDevice : public AudioDevice {
       virtual unsigned frameTime() const {
             return lrint(curTime() * MusEGlobal::sampleRate);
             }
+      virtual double systemTime() const
+      {
+        struct timeval t;
+        gettimeofday(&t, 0);
+        //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
+        return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
+      }
       virtual bool isRealtime() { return realtimeFlag; }
       //virtual int realtimePriority() const { return 40; }
       virtual int realtimePriority() const { return _realTimePriority; }

@@ -32,6 +32,7 @@
 #include "song.h"
 #include "app.h"
 #include "gconfig.h"
+#include "audio.h"
 
 namespace MusEGlobal {
 extern int mtcType;
@@ -103,7 +104,6 @@ BigTime::BigTime(QWidget* parent)
       
       setWindowTitle(tr("MusE: Bigtime"));
       }
-
 
 //---------------------------------------------------------
 //   fmtButtonToggled
@@ -230,7 +230,9 @@ bool BigTime::setString(unsigned v)
             return true;
             }
 
-      unsigned absFrame = MusEGlobal::tempomap.tick2frame(v);
+      // Quick fix: Not much to do but ignore the supplied tick: We need the exact frame here.
+      unsigned absFrame = MusEGlobal::audio->pos().frame();
+      
       int bar, beat;
       unsigned tick;
       AL::sigmap.tickValues(v, &bar, &beat, &tick);

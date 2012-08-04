@@ -89,7 +89,6 @@ HEADERS = \
 	./muse/marker/marker.h \
 	./muse/marker/markerview.h \
 	./muse/event.h \
-	./muse/ladspa.h \
 	./muse/audioprefetch.h \
 	./muse/dssihost.h \
 	./muse/fastlog.h \

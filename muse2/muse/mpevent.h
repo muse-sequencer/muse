@@ -30,13 +30,10 @@
 #include "memory.h"
 
 // Play events ring buffer size
-//#define MIDI_FIFO_SIZE    512  
-// Increased. FE/6/11 p4.0.15 Tim.
-#define MIDI_FIFO_SIZE    2100         
+#define MIDI_FIFO_SIZE    4096         
 
 // Record events ring buffer size
-//#define MIDI_REC_FIFO_SIZE  512
-#define MIDI_REC_FIFO_SIZE  160
+#define MIDI_REC_FIFO_SIZE  256
 
 namespace MusECore {
 
@@ -114,6 +111,8 @@ class MEvent {
 //---------------------------------------------------------
 
 class MidiRecordEvent : public MEvent {
+   private:
+      unsigned int _tick; // To store tick when external sync is on, required besides frame.
    public:
       MidiRecordEvent() : MEvent() {}
       MidiRecordEvent(const MEvent& e) : MEvent(e) {}
@@ -124,6 +123,9 @@ class MidiRecordEvent : public MEvent {
       MidiRecordEvent(unsigned t, int p, int type, EvData data)
         : MEvent(t, p, type, data) {}
       ~MidiRecordEvent() {}
+      
+      unsigned int tick() {return _tick;}
+      void setTick(unsigned int tick) {_tick = tick;}
       };
 
 //---------------------------------------------------------
@@ -155,13 +157,12 @@ typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioRTalloc<Midi
 
 struct MPEventList : public MPEL {
       void add(const MidiPlayEvent& ev) { MPEL::insert(ev); }
-      //iterator add(const MidiPlayEvent& ev) { return MPEL::insert(ev); }  // p4.0.15 We need the iterator.
 };
 
 typedef MPEventList::iterator iMPEvent;
 typedef MPEventList::const_iterator ciMPEvent;
 
-/*
+/* DELETETHIS 20 ??
 //---------------------------------------------------------
 //   MREventList
 //    memory allocation in midi thread domain
@@ -193,7 +194,7 @@ class MidiFifo {
 
    public:
       MidiFifo()  { clear(); }
-      bool put(const MidiPlayEvent& /*event*/);   // returns true on fifo overflow
+      bool put(const MidiPlayEvent& event);   // returns true on fifo overflow
       MidiPlayEvent get();
       const MidiPlayEvent& peek(int = 0);
       void remove();
@@ -204,20 +205,19 @@ class MidiFifo {
 
 //---------------------------------------------------------
 //   MidiRecFifo
-//   (Same as MidiFifo, but with a smaller size.)
 //---------------------------------------------------------
 
 class MidiRecFifo {
-      MidiPlayEvent fifo[MIDI_REC_FIFO_SIZE];
+      MidiRecordEvent fifo[MIDI_REC_FIFO_SIZE];
       volatile int size;
       int wIndex;
       int rIndex;
 
    public:
       MidiRecFifo()  { clear(); }
-      bool put(const MidiPlayEvent& /*event*/);   // returns true on fifo overflow
-      MidiPlayEvent get();
-      const MidiPlayEvent& peek(int = 0);
+      bool put(const MidiRecordEvent& event);   // returns true on fifo overflow
+      MidiRecordEvent get();
+      const MidiRecordEvent& peek(int = 0);
       void remove();
       bool isEmpty() const { return size == 0; }
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }

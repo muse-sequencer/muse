@@ -89,11 +89,11 @@ GlobalConfigValues config = {
       QColor(200, 192, 171),  // waveEditBackgroundColor;
       {
         QFont(QString("arial"), 10, QFont::Normal),
-        QFont(QString("arial"), 8,  QFont::Normal),
+        QFont(QString("arial"), 7,  QFont::Normal),    // Mixer strips and midi track info panel
         QFont(QString("arial"), 10, QFont::Normal),
         QFont(QString("arial"), 10, QFont::Bold),
-        QFont(QString("arial"), 8,  QFont::Bold),    // timescale numbers
-        QFont(QString("Lucidatypewriter"), 14,  QFont::Bold),
+        QFont(QString("arial"), 8,  QFont::Normal),    // Small numbers: Timescale and markers, part name overlay
+        QFont(QString("arial"), 8,  QFont::Bold),      // Small bold numbers such as marker text
         QFont(QString("arial"), 8,  QFont::Bold, true)  // Mixer strip labels. Looks and fits better with bold + italic than bold alone, 
                                                         //  at the price of only few more pixels than Normal mode.
         },
@@ -103,6 +103,7 @@ GlobalConfigValues config = {
       
       QColor(74, 150, 194),         // midiTrackLabelBg;   // Med blue
       QColor(74, 150, 194),         // drumTrackLabelBg;   // Med blue
+      QColor(74, 150, 194),         // newDrumTrackLabelBg;   // Med blue
       QColor(213, 128, 202),        // waveTrackLabelBg;   // magenta
       QColor(84, 185, 58),          // outputTrackLabelBg; // green
       QColor(199, 75, 64),          // inputTrackLabelBg;  // red
@@ -112,6 +113,7 @@ GlobalConfigValues config = {
       
       QColor(215, 220, 230),     // midiTrackBg;
       QColor(215, 220, 230),     // drumTrackBg;
+      QColor(215, 220, 230),     // newDrumTrackBg;
       QColor(220, 209, 217),     // waveTrackBg;
       QColor(197, 220, 206),     // outputTrackBg;
       QColor(220, 214, 206),     // inputTrackBg;
@@ -129,8 +131,8 @@ GlobalConfigValues config = {
       -60.0,                        // double minSlider;
       false,                        // use Jack freewheel
       20,                           // int guiRefresh;
-      QString(""),                  // userInstrumentsDir
-      //QString(""),                  // helpBrowser; // Obsolete
+      QString(""),                  // userInstrumentsDir  // Obsolete. Must keep for compatibility.
+      //QString(""),                // helpBrowser; // Obsolete
       true,                         // extendedMidi
       384,                          // division for smf export
       QString(""),                  // copyright string for smf export
@@ -138,39 +140,39 @@ GlobalConfigValues config = {
       false,                        // midi export file 2 byte timesigs instead of 4
       true,                         // optimize midi export file note offs
       true,                         // Split imported tracks into multiple parts.
+      true,                         // importMidiNewStyleDrum
       1,                            // startMode
       QString(""),                  // start song path
+      false,                        // startSongLoadConfig
       384,                          // gui division
       QRect(0, 0, 400, 300),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
-      //QRect(0, 0, 300, 500),        // GeometryMixer;  // Obsolete
       {
          QString("Mixer A"),
          QRect(0, 0, 300, 500),        // Mixer1
          true, true, true, true,
-         true, true, true, true
+         true, true, true, true, true
          },
       {
          QString("Mixer B"),
          QRect(200, 200, 300, 500),    // Mixer2
          true, true, true, true,
-         true, true, true, true
+         true, true, true, true, true
          },
       true,                         // TransportVisible;
       false,                        // BigTimeVisible;
       false,                        // mixer1Visible;
       false,                        // mixer2Visible;
-      
       false,                        // markerVisible;
-      true,                        // arrangerVisible;
+      true,                         // arrangerVisible;
       true,                         // showSplashScreen
       1,                            // canvasShowPartType 1 - names, 2 events
       5,                            // canvasShowPartEvent
-      true,                        // canvasShowGrid;
+      true,                         // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
       QStringList(),                // canvasCustomBgList
-      QString(":/style.qss"),       // default styleSheetFile
+      QString(""),                  // default styleSheetFile - For built-in set to ":/style.qss"
       QString(""),                  // style
       QString("sweep"),             // externalWavEditor
       false,                        // useOldStyleStopShortCut
@@ -184,10 +186,15 @@ GlobalConfigValues config = {
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
       true,                         // useProjectSaveDialog
-      64,                           // minControlProcessPeriod
+      256,                          // minControlProcessPeriod
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
-      false                         // rangeMarkerWithoutMMB
+      false,                        // rangeMarkerWithoutMMB
+      MusECore::DONT_REC_MUTED_OR_HIDDEN,
+      true,                         // addHiddenTracks
+      true,                         // unhideTracks
+      MusEGlobal::PREFER_NEW,       // drumTrackPreference
+      true                          // smartFocus
     };
 
 } // namespace MusEGlobal

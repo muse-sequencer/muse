@@ -24,7 +24,6 @@
 #ifndef __WAVE_EVENT_H__
 #define __WAVE_EVENT_H__
 
-//#include <samplerate.h>
 #include <sys/types.h>
 
 #include "eventbase.h"
@@ -45,8 +44,6 @@ class WaveEventBase : public EventBase {
       int _spos;        // start sample position in WaveFile
       bool deleted;
 
-      // p3.3.31
-      //virtual EventBase* clone() { return new WaveEventBase(*this); }
       virtual EventBase* clone();
 
    public:
@@ -54,7 +51,6 @@ class WaveEventBase : public EventBase {
       virtual ~WaveEventBase() {}
 
       virtual void read(Xml&);
-      //virtual void write(int, Xml&, const Pos& offset) const;
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const;
       virtual EventBase* mid(unsigned, unsigned);
       
@@ -67,15 +63,8 @@ class WaveEventBase : public EventBase {
       virtual SndFileR sndFile() const         { return f;      }
       virtual void setSndFile(SndFileR& sf)    { f = sf;        }
       
-      // Changed by Tim. p3.3.17
-      //virtual void read(unsigned offset, float** bpp, int channels, int nn, bool overwrite = true);
-      //virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
-      //virtual off_t readAudio(SRC_STATE* /*src_state*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
-      //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
-      //virtual off_t readAudio(AudioConverter* /*audConv*/, off_t /*sfCurFrame*/, unsigned /*offset*/, 
-      //                       float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
-      virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
-                             float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      virtual void readAudio(WavePart* part, unsigned offset, 
+                             float** bpp, int channels, int nn, bool doSeek, bool overwrite);
       };
       
 } // namespace MusECore

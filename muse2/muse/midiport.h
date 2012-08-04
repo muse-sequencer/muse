@@ -75,7 +75,6 @@ class MidiPort {
       int getCtrl(int ch, int tick, int ctrl) const;
       int getCtrl(int ch, int tick, int ctrl, Part* part) const;
       // Removed by T356.
-      //bool setCtrl(int ch, int tick, int ctrl, int val);
       bool setControllerVal(int ch, int tick, int ctrl, int val, Part* part);
       // Can be CTRL_VAL_UNKNOWN until a valid state is set
       int lastValidHWCtrlState(int ch, int ctrl) const;
@@ -138,6 +137,7 @@ class MidiPort {
       void sendMMCStop(int devid = -1);
       void sendMMCDeferredPlay(int devid = -1);
       
+      bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
       bool sendEvent(const MidiPlayEvent&, bool forceSend = false );
       AutomationType automationType(int channel) { return _automationType[channel]; }
       void setAutomationType(int channel, AutomationType t) {
@@ -153,7 +153,6 @@ extern void initMidiPorts();
 extern void setPortExclusiveDefOutChan(int /*port*/, int /*chan*/);
 #endif
 
-//extern QPopupMenu* midiPortsPopup(QWidget*);
 extern QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1);
 
 } // namespace MusECore

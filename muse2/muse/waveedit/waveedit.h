@@ -58,7 +58,6 @@ class WaveEdit : public MidiEditor {
     
       WaveView* view;
       QSlider* ymag;
-      QToolBar* tools;
       QToolBar* tb1;
       QToolButton* solo;
       MusEGui::PosLabel* pos1;
@@ -87,11 +86,10 @@ class WaveEdit : public MidiEditor {
 
    public slots:
       void configChanged();
-   
       virtual void updateHScrollRange();
       void horizontalZoomIn();
       void horizontalZoomOut();
-
+      void focusCanvas();
 
    signals:
       void isDeleting(MusEGui::TopWin*);

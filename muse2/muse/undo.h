@@ -37,6 +37,7 @@ class Track;
 class TEvent;
 class SigEvent;
 class Part;
+class CtrlList;
 
 extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files, for cleanup on shutdown
 //---------------------------------------------------------
@@ -45,15 +46,18 @@ extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files
 
 struct UndoOp {
       enum UndoType {
-            AddTrack, DeleteTrack, ModifyTrack,
+            AddTrack, DeleteTrack,
             AddPart,  DeletePart,  ModifyPart,
             AddEvent, DeleteEvent, ModifyEvent,
             AddTempo, DeleteTempo,
             AddSig,   DeleteSig,
             AddKey,   DeleteKey,
+            AddControllerEvent, DeleteControllerEvent, ModifyControllerEvent,
+            ModifyTrackName, ModifyTrackChannel,
             SwapTrack,
             ModifyClip,
             ModifyMarker,
+            ModifySongLen, // a = new len, b = old len
             DoNothing
             };
       UndoType type;
@@ -65,8 +69,7 @@ struct UndoOp {
                   int c;
                   };
             struct {
-                  Track* oTrack;
-                  Track* nTrack;
+                  Track* track;
                   int trackno;
                   };
             struct {
@@ -74,11 +77,7 @@ struct UndoOp {
                   Part* nPart;
                   };
             struct {
-                  Part* part;
-                  };
-            struct {
-                  SigEvent* nSignature;
-                  SigEvent* oSignature;
+                  Part* part; // this part is only relevant for EVENT operations, NOT for part ops!
                   };
             struct {
                   int channel;
@@ -96,6 +95,24 @@ struct UndoOp {
                   Marker* realMarker;
                   Marker* copyMarker;
                 };
+            struct {
+                  Track* _renamedTrack;
+                  char* _oldName;
+                  char* _newName;
+                };
+            struct {
+                  Track* _propertyTrack;
+                  int _oldPropValue;
+                  int _newPropValue;
+                };
+            struct {
+                  CtrlList* _ctrlList;
+                  int       _channel;          // Optional
+                  int       _ctrlNum;
+                  int       _eventFrame;       // Optional
+                  double    _oldCtrlVal;
+                  double    _newCtrlVal;
+                };
             };
       Event oEvent;
       Event nEvent;
@@ -107,32 +124,41 @@ struct UndoOp {
       
       UndoOp();
       UndoOp(UndoType type, int a, int b, int c=0);
-      UndoOp(UndoType type, int n, Track* oldTrack, Track* newTrack);
       UndoOp(UndoType type, int n, Track* track);
       UndoOp(UndoType type, Part* part);
       UndoOp(UndoType type, Event& oev, Event& nev, Part* part, bool doCtrls, bool doClones);
       UndoOp(UndoType type, Event& nev, Part* part, bool doCtrls, bool doClones);
       UndoOp(UndoType type, Part* oPart, Part* nPart, bool doCtrls, bool doClones);
       UndoOp(UndoType type, int c, int ctrl, int ov, int nv);
-      UndoOp(UndoType type, SigEvent* oevent, SigEvent* nevent);
       UndoOp(UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker);
+      UndoOp(UndoType type, Track* track, const char* old_name, const char* new_name);
+      UndoOp(UndoType type, Track* track, int old_chan, int new_chan);
+      UndoOp(UndoType type, CtrlList* ctrlList_, int channel_, int eventFrame_, double oldCtrlVal_, double newCtrlVal_);
+      // REMOVE Tim.
+      //UndoOp(UndoType type, CtrlList* ctrlList_, int channel_, int eventFrame_, double newCtrlVal_);
+      //UndoOp(UndoType type, CtrlList* ctrlList_, int channel_, int eventFrame_);
       UndoOp(UndoType type);
-      };
+};
 
 class Undo : public std::list<UndoOp> {
-      void undoOp(UndoOp::UndoType, int data);
-      };
+   public:
+      bool empty() const;
+};
 
 typedef Undo::iterator iUndoOp;
 typedef Undo::reverse_iterator riUndoOp;
 
 class UndoList : public std::list<Undo> {
+   protected:
+      bool isUndo;
    public:
       void clearDelete();
-      };
+      UndoList(bool _isUndo) : std::list<Undo>() { isUndo=_isUndo; }
+};
 
 typedef UndoList::iterator iUndo;
+typedef UndoList::reverse_iterator riUndo;
 
 } // namespace MusECore
 

@@ -48,12 +48,9 @@ namespace MusECore {
 
 static void addController(MPEventList* l, int tick, int port, int channel, int a, int b)
       {
-      // p3.3.37
-      //if (a < 0x1000) {          // 7 Bit Controller
       if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, a, b));
             }
-      //else if (a < 0x20000) {     // 14 Bit Controller
       else if (a < CTRL_RPN_OFFSET) {     // 14 Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
@@ -62,7 +59,6 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, ctrlH, dataH));
             l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, ctrlL, dataL));
             }
-      //else if (a < 0x30000) {     // RPN 7-Bit Controller
       else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
@@ -70,7 +66,6 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
             l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, b));
             }
-      //else if (a < 0x40000) {     // NRPN 7-Bit Controller
       else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
@@ -106,7 +101,6 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
                   }
             l->add(MidiPlayEvent(tick+tickoffset, port, channel, ME_PROGRAM, pr, 0));
             }
-      //else if (a < 0x60000) {     // RPN14 Controller
       else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
@@ -117,7 +111,6 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
             l->add(MidiPlayEvent(tick+3, port, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
             }
-      //else if (a < 0x70000) {     // NRPN14 Controller
       else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
@@ -142,21 +135,17 @@ void MusE::exportMidi()
       {
       MusEGui::MFile file(QString("midis"), QString(".mid"));
 
-      //FILE* fp = file.open("w", midi_file_pattern, this, false, true,
       FILE* fp = file.open("w", MusEGlobal::midi_file_save_pattern, this, false, true,
          tr("MusE: Export Midi"));
       if (fp == 0)
             return;
       MusECore::MidiFile mf(fp);
 
-      //MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
       MusECore::TrackList* tl = MusEGlobal::song->tracks();       // Changed to full track list so user can rearrange tracks.
-      //int ntracks = tl->size();
       MusECore::MidiFileTrackList* mtl = new MusECore::MidiFileTrackList;
 
       int i = 0;
       MusECore::MidiFileTrack* mft = 0;
-      //for (MusECore::iMidiTrack im = tl->begin(); im != tl->end(); ++im, ++i) {
       for (MusECore::ciTrack im = tl->begin(); im != tl->end(); ++im) {
         
             if(!(*im)->isMidiTrack())
@@ -164,7 +153,6 @@ void MusE::exportMidi()
               
             MusECore::MidiTrack* track = (MusECore::MidiTrack*)(*im);
 
-            //MusECore::MidiFileTrack* mft = new MusECore::MidiFileTrack;
             if (i == 0 || (i != 0 && MusEGlobal::config.smfFormat != 0))    // Changed to single track. Tim
             {  
               mft = new MusECore::MidiFileTrack;
@@ -192,7 +180,7 @@ void MusE::exportMidi()
                   for (MusECore::ciMarker m = ml->begin(); m != ml->end(); ++m) {
                         QByteArray ba = m->second.name().toLatin1();
                         const char* name = ba.constData();
-                        int len = strlen(name);
+                        int len = ba.length();
                         MusECore::MidiPlayEvent ev(m->first, port, MusECore::ME_META, (unsigned char*)name, len);
                         ev.setA(0x6);
                         l->add(ev);
@@ -204,16 +192,16 @@ void MusE::exportMidi()
                   QByteArray ba = MusEGlobal::config.copyright.toLatin1();
                   const char* copyright = ba.constData();
                   if (copyright && *copyright) {
-                        int len = strlen(copyright);
+                        int len = ba.length();
                         MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)copyright, len);
                         ev.setA(0x2);
                         l->add(ev);
                         }
 
                   //---------------------------------------------------
-                  //    Write Coment
+                  //    Write Comment
                   //
-                  if (MusEGlobal::config.smfFormat == 0)  // Only for smf 0 added by Tim. FIXME: Is this correct? See below.
+                  //if (MusEGlobal::config.smfFormat == 0)  // Only for smf 0 added by Tim. FIXME: Is this correct? See below.
                   {
                     QString comment = track->comment();
                     if (!comment.isEmpty()) {
@@ -263,11 +251,8 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Signatures
                   //
-                  ///const SigList* sl = &sigmap;
                   const AL::SigList* sl = &AL::sigmap;
-                  ///for (ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
                   for (AL::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
-                        ///SigEvent* event = e->second;
                         AL::SigEvent* event = e->second;
                         int sz = (MusEGlobal::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
                         unsigned char data[sz];
@@ -281,7 +266,7 @@ void MusE::exportMidi()
                               case 32: data[1] = 5; break;
                               case 64: data[1] = 6; break;
                               default:
-                                    fprintf(stderr, "falsche Signatur; nenner %d\n", event->sig.n);
+                                    fprintf(stderr, "wrong Signature; denominator is %d\n", event->sig.n);
                                     break;
                               }
                         // By T356. In muse the metronome pulse is fixed at 24 (once per quarter-note).
@@ -308,7 +293,7 @@ void MusE::exportMidi()
               if (!track->name().isEmpty()) {
                     QByteArray ba = track->name().toLatin1();
                     const char* name = ba.constData();
-                    int len = strlen(name);
+                    int len = ba.length();
                     MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)name, len+1);
                     ev.setA(0x3);    // Meta Sequence/Track Name
                     l->add(ev);
@@ -319,16 +304,12 @@ void MusE::exportMidi()
             //   track comment
             //-----------------------------------
 
-            // FIXME: What are these 0x0F? All I found was that they are unspecified part of the sixteen text meta events.
-            //        So why not use 0x01? And do we include it for all tracks, or only above 1?   Tim.
-            //if (i == 0 || (i != 0 && MusEGlobal::config.smfFormat != 0))
-            //if (i != 0 && MusEGlobal::config.smfFormat != 0)
             if (MusEGlobal::config.smfFormat != 0)
             {
               if (!track->comment().isEmpty()) {
                     QByteArray ba = track->comment().toLatin1();
                     const char* comment = ba.constData();
-                    int len = strlen(comment);
+                    int len = ba.length();
                     MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)comment, len+1);
                     ev.setA(0xf);    // Meta Text
                     l->add(ev);
@@ -351,13 +332,9 @@ void MusE::exportMidi()
                                           }
                                     int pitch;
                                     if (track->type() == MusECore::Track::DRUM) {
-                                          //
                                           // Map drum-notes to the drum-map values
-                                          //
                                           int instr = ev.pitch();
                                           pitch = MusEGlobal::drumMap[instr].anote;
-                                          // port  = MusEGlobal::drumMap[instr].port;
-                                          // channel = MusEGlobal::drumMap[instr].channel;
                                           }
                                     else
                                           pitch = ev.pitch();
@@ -431,10 +408,10 @@ void MusE::exportMidi()
             }
       mf.setDivision(MusEGlobal::config.midiDivision);
       mf.setMType(MusEGlobal::song->mtype());
-      //mf.setTrackList(mtl, ntracks);
       mf.setTrackList(mtl, i);
       mf.write();
       
+      // DELETETHIS 4 ??? or is this still an issue?
       // TESTING: Cleanup. I did not valgrind this feature in last memleak fixes, but I suspect it leaked. 
       //for(MusECore::iMidiFileTrack imft = mtl->begin(); imft != mtl->end(); ++imft)
       //  delete *imft;

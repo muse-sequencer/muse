@@ -1,12 +1,12 @@
-  //=========================================================
-  //  MusE
-  //  Linux Music Editor
-  //  $Id: rtctimer.cpp,v 1.1.2.11 2009/03/09 02:05:18 terminator356 Exp $
-  //
-  //  Most code moved from midiseq.cpp by Werner Schweer.
-  //
-  //  (C) Copyright -2004 Werner Schweer (werner@seh.de)
-  //  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: rtctimer.cpp,v 1.1.2.11 2009/03/09 02:05:18 terminator356 Exp $
+//
+//  Most code moved from midiseq.cpp by Werner Schweer.
+//
+//  (C) Copyright -2004 Werner Schweer (werner@seh.de)
+//  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-  //=========================================================
+//=========================================================
 
 #include <linux/version.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
@@ -99,9 +99,9 @@ unsigned int RtcTimer::setTimerFreq(unsigned int freq)
     {
     int rc = ioctl(timerFd, RTC_IRQP_SET, freq);
     if (rc == -1) {
-            fprintf(stderr, "RtcTimer::setTimerFreq(): cannot set tick on /dev/rtc: %s\n",
+            fprintf(stderr, "RtcTimer::setTimerFreq(): cannot set freq %d on /dev/rtc: %s\n", freq,
                strerror(errno));
-            fprintf(stderr, "  precise timer not available\n");
+            fprintf(stderr, "  precise timer not available, check file permissions and allowed RTC freq (/sys/class/rtc/rtc0/max_user_freq)\n");
             return 0;
             }
     return freq;
@@ -119,7 +119,7 @@ unsigned int RtcTimer::getTimerFreq()
     {
     unsigned int freq;
     int rv = ioctl(timerFd, RTC_IRQP_READ, &freq);
-    if (rv < 1)
+    if (rv < 0)
       return 0;
     return freq;
     }

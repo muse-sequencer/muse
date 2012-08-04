@@ -29,27 +29,6 @@
 //	central point of tweaking the gui
 //
 
-/*
-// size of horizontal and vertical splitter
-//
-static const int splitWidth = 6;
-
-// arranger:
-static const int trackRowHeight = 24;
-static const int minTrackHeight = trackRowHeight + splitWidth + 1;
-static const int defaultTrackHeight = minTrackHeight;
-static const int infoHeight     = 20;
-static const int infoWidth      = 140;
-static const int trackSeparator = 1;
-static const int yTrackOffset   = -2; // -4;
-
-//  mixer:
-static const int STRIP_WIDTH  = 60;
-static const int LABEL_HEIGHT = 20;
-static const int BUTTON_HEIGHT = STRIP_WIDTH / 3;
-static const int ENTRY_HEIGHT = 17;
-*/
-
 static const int ICON_WIDTH = 18;
 static const QSize ICON_SIZE(ICON_WIDTH, ICON_WIDTH);
 

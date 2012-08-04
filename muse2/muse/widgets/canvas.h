@@ -113,7 +113,7 @@ class Canvas : public View {
       virtual void draw(QPainter&, const QRect&);
       virtual void wheelEvent(QWheelEvent* e);
 
-      virtual void mousePress(QMouseEvent*) {}
+      virtual bool mousePress(QMouseEvent*) { return true; }
       virtual void keyPress(QKeyEvent*);
       virtual void mouseMove(QMouseEvent* event) = 0;
       virtual void mouseRelease(const QPoint&) {}
@@ -191,7 +191,8 @@ class Canvas : public View {
       virtual void itemReleased(const CItem*, const QPoint&) {}
       virtual void itemMoved(const CItem*, const QPoint&) {}
       virtual void curItemChanged() {}
-      virtual void curPartChanged() {}
+      virtual void curPartChanged() {}     // TODO Try to eliminate this base method - minimum base will then be in EventCanvas
+      // virtual void curPartChanged() { emit curPartHasChanged(curPart); } // REMOVE Tim.
 
    public slots:
       void setTool(int t);
@@ -207,6 +208,8 @@ class Canvas : public View {
       void horizontalScrollNoLimit(unsigned);
       void horizontalZoomIn();
       void horizontalZoomOut();
+      //void curPartHasChanged(MusECore::Part*);  // REMOVE Tim.
+      
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
       virtual ~Canvas();

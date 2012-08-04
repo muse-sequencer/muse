@@ -33,6 +33,7 @@
 #include "filedialog.h"
 #include "../globals.h"
 #include "gconfig.h"
+#include "helper.h"
 
 namespace MusEGui {
 
@@ -100,12 +101,11 @@ static bool testDirCreate(QWidget* parent, const QString& path)
 void MFileDialog::globalToggled(bool flag)
       {
       if (flag) {
-            buttons.userButton->setChecked(!flag);
-            buttons.projectButton->setChecked(!flag);
+            buttons.readMidiPortsButton->setChecked(false);
+            readMidiPortsSaved = false;
             if (lastGlobalDir.isEmpty())
                   lastGlobalDir = MusEGlobal::museGlobalShare + QString("/") + baseDir; // Initialize if first time
-            QString dir = lastGlobalDir;
-            setDirectory(dir);
+            setDirectory(lastGlobalDir);
             lastViewUsed = GLOBAL_VIEW;
             }
       }
@@ -117,16 +117,16 @@ void MFileDialog::globalToggled(bool flag)
 void MFileDialog::userToggled(bool flag)
       {
       if (flag) {
-            buttons.globalButton->setChecked(!flag);
-            buttons.projectButton->setChecked(!flag);
-
-
+            buttons.readMidiPortsButton->setChecked(true);
+            readMidiPortsSaved = true;
             if (lastUserDir.isEmpty()) {
-                  lastUserDir = MusEGlobal::museUser + QString("/") + baseDir; // Initialize if first time
+                  //lastUserDir = MusEGlobal::museUser + QString("/") + baseDir; // Initialize if first time
+                  lastUserDir = MusEGlobal::configPath + QString("/") + baseDir; // Initialize if first time    // p4.0.39
                   }
 
             if (testDirCreate(this, lastUserDir))
-                  setDirectory(MusEGlobal::museUser);
+                  //setDirectory(MusEGlobal::museUser);
+                  setDirectory(MusEGlobal::configPath);  // p4.0.39
             else
                   setDirectory(lastUserDir);
 
@@ -141,9 +141,8 @@ void MFileDialog::userToggled(bool flag)
 void MFileDialog::projectToggled(bool flag)
       {
       if (flag) {
-            buttons.globalButton->setChecked(!flag);
-            buttons.userButton->setChecked(!flag);
-
+            buttons.readMidiPortsButton->setChecked(true);
+            readMidiPortsSaved = true;
             QString s;
             if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) {
                   // if project path is uninitialized, meaning it is still set to museProjectInitPath.
@@ -162,6 +161,29 @@ void MFileDialog::projectToggled(bool flag)
             }
       }
 
+void MFileDialog::fileChanged(const QString& path)
+{
+  bool is_mid = path.endsWith(".mid", Qt::CaseInsensitive) ||
+                path.endsWith(".midi", Qt::CaseInsensitive) ||
+                path.endsWith(".kar", Qt::CaseInsensitive);
+  
+  if (is_mid)
+  {
+    readMidiPortsSaved=buttons.readMidiPortsButton->isChecked();
+    buttons.readMidiPortsButton->setEnabled(false);
+    buttons.readMidiPortsButton->setChecked(false);
+  }
+  else
+  {
+    if (!buttons.readMidiPortsButton->isEnabled())
+    {
+      buttons.readMidiPortsButton->setEnabled(true);
+      buttons.readMidiPortsButton->setChecked(readMidiPortsSaved);
+    }
+  }
+  
+}
+
 
 //---------------------------------------------------------
 //   MFileDialog
@@ -171,6 +193,7 @@ MFileDialog::MFileDialog(const QString& dir,
    const QString& filter, QWidget* parent, bool writeFlag)
   : QFileDialog(parent, QString(), QString("."), filter)
       {
+      readMidiPortsSaved = true;
       showButtons = false;
       lastUserDir = "";
       lastGlobalDir = "";
@@ -201,10 +224,15 @@ MFileDialog::MFileDialog(const QString& dir,
             buttons.projectButton->setIcon(style()->standardIcon(QStyle::SP_DirOpenIcon));
 #endif	    
 
+            buttons.globalButton->setAutoExclusive(true);
+            buttons.userButton->setAutoExclusive(true);
+            buttons.projectButton->setAutoExclusive(true);
+
             connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
             connect(buttons.userButton, SIGNAL(toggled(bool)), this, SLOT(userToggled(bool)));
             connect(buttons.projectButton, SIGNAL(toggled(bool)), this, SLOT(projectToggled(bool)));
             connect(this, SIGNAL(directoryEntered(const QString&)), SLOT(directoryChanged(const QString&)));
+            connect(this, SIGNAL(currentChanged(const QString&)), SLOT(fileChanged(const QString&)));
 
             if (writeFlag) {
                   setAcceptMode(QFileDialog::AcceptSave);
@@ -212,31 +240,32 @@ MFileDialog::MFileDialog(const QString& dir,
                   switch (lastViewUsed) {
                            case GLOBAL_VIEW:
                            case PROJECT_VIEW:
-                                 buttons.projectButton->setChecked(true);
+                                 buttons.globalButton->setChecked(true); // Let toggled be called. Don't block these...
                                  break;
 
                            case USER_VIEW:
-                                 buttons.userButton->setChecked(true);
+                                 buttons.userButton->setChecked(true); 
                                  break;
                         }
                   }
             else {
                   switch (lastViewUsed) {
                         case GLOBAL_VIEW:
-                              buttons.globalButton->setChecked(true);
+                              buttons.globalButton->setChecked(true); 
                               break;
 
                         case PROJECT_VIEW:
-                              buttons.projectButton->setChecked(true);
+                              buttons.projectButton->setChecked(true); 
                               break;
 
                         case USER_VIEW:
-                              buttons.userButton->setChecked(true);
+                              buttons.userButton->setChecked(true); 
                               break;
                         }
 
 	          }
-            buttons.loadAllGroup->setVisible(false);
+            buttons.readMidiPortsGroup->setVisible(false);
+            buttons.writeWinStateGroup->setVisible(false);
             }
       }
 
@@ -269,89 +298,68 @@ void MFileDialog::directoryChanged(const QString&)
             }
       }
 
-
-//---------------------------------------------------------
-//   getFilterExtension
-//---------------------------------------------------------
-
-QString getFilterExtension(const QString &filter)
-{
-  //
-  // Return the first extension found. Must contain at least one * character.
-  //
-  
-  int pos = filter.indexOf('*');
-  if(pos == -1)
-    return QString(); 
-  
-  QString filt;
-  int len = filter.length();
-  ++pos;
-  for( ; pos < len; ++pos)
-  {
-    QChar c = filter[pos];
-    if((c == ')') || (c == ';') || (c == ',') || (c == ' '))
-      break; 
-    filt += filter[pos];
-  }
-  return filt;
-}
-
 //---------------------------------------------------------
 //   getOpenFileName
 //---------------------------------------------------------
-QString getOpenFileName(const QString &startWith,
-                        const QStringList& filters, QWidget* parent, const QString& name, bool* all, MFileDialog::ViewType viewType)
+QString getOpenFileName(const QString &startWith, const char** filters_chararray,
+            QWidget* parent, const QString& name, bool* doReadMidiPorts, MFileDialog::ViewType viewType)
       {
-      QString initialSelection;  // FIXME Tim.
+      QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
+      
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
+      if (doReadMidiPorts)
+            dlg->buttons.readMidiPortsGroup->setVisible(true);
+      // Allow overrides. FIXME - some redundancy in MFileDialog ctor. Make this better.
       if (viewType == MFileDialog::GLOBAL_VIEW)
-        dlg->globalToggled(true);
+        dlg->buttons.globalButton->setChecked(true); // Let toggled be called. Don't block these...
       else if (viewType == MFileDialog::PROJECT_VIEW)
-        dlg->projectToggled(true);
+        dlg->buttons.projectButton->setChecked(true);
       else if (viewType == MFileDialog::USER_VIEW)
-        dlg->userToggled(true);
-      if (all) {
-            dlg->buttons.loadAllGroup->setVisible(true);
-            //dlg->buttons.globalButton->setVisible(false);
-      }
-      if (!initialSelection.isEmpty())
-            dlg->selectFile(initialSelection);
+        dlg->buttons.userButton->setChecked(true);
+
       dlg->setFileMode(QFileDialog::ExistingFile);
       QStringList files;
       QString result;
       if (dlg->exec() == QDialog::Accepted) {
-            files = dlg->selectedFiles();
-	    if (!files.isEmpty())
-                  result = files[0];
-            if (all) {
-                  *all = dlg->buttons.loadAllButton->isChecked();
-                  }
-            }
+          files = dlg->selectedFiles();
+          if (!files.isEmpty())
+              result = files[0];
+          if (doReadMidiPorts)
+              *doReadMidiPorts = dlg->buttons.readMidiPortsButton->isChecked();
+      }
       delete dlg;
       return result;
-      }
+}
 
 //---------------------------------------------------------
 //   getSaveFileName
 //---------------------------------------------------------
 
 QString getSaveFileName(const QString &startWith,
-   //const char** filters, QWidget* parent, const QString& name)
-   const QStringList& filters, QWidget* parent, const QString& name)
+   const char** filters_chararray, QWidget* parent, const QString& name, bool* writeWinState)
       {
+      QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
+      
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, true);
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
       dlg->setFileMode(QFileDialog::AnyFile);
+      if (writeWinState)
+      {
+        dlg->buttons.writeWinStateGroup->setVisible(true);
+        dlg->buttons.writeWinStateButton->setChecked(*writeWinState);
+      }
+
       QStringList files;
       QString result;
       if (dlg->exec() == QDialog::Accepted) {
             files = dlg->selectedFiles();
             if (!files.isEmpty())
                   result = files[0];
+          if (writeWinState)
+              *writeWinState = dlg->buttons.writeWinStateButton->isChecked();
       }
                   
       // Added by T356.
@@ -404,9 +412,9 @@ QString getSaveFileName(const QString &startWith,
 //---------------------------------------------------------
 
 QString getImageFileName(const QString& startWith,
-   //const char** filters, QWidget* parent, const QString& name)
-   const QStringList& filters, QWidget* parent, const QString& name)
+   const char** filters_chararray, QWidget* parent, const QString& name)
       {
+      QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
       QString initialSelection;
 	QString* workingDirectory = new QString(QDir::currentPath());
       if (!startWith.isEmpty() ) {
@@ -505,14 +513,16 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
       FILE* fp = 0;
       if (popenFlag) {
             if (strcmp(mode, "r") == 0)
-                  zip += QString(" -d < ");
+                  //zip += QString(" -d < ");
+                  zip += QString(" -d < \"");    // p4.0.40
             else
-                  zip += QString(" > ");
-            zip += name;
-            fp  = popen(zip.toAscii().data(), mode);
+                  zip += QString(" > \"");
+            //zip += name;
+            zip = zip + name + QString("\"");    // p4.0.40
+            fp  = popen(zip.toLocal8Bit().data(), mode);
             }
       else {
-            fp = fopen(name.toAscii().data(), mode);
+            fp = fopen(name.toLocal8Bit().data(), mode);
             }
       if (fp == 0 && !noError) {
             QString s(QWidget::tr("Open File\n%1\nfailed: %2").arg(name).arg(strerror(errno)));
@@ -547,15 +557,14 @@ MFile::~MFile()
 //   open
 //---------------------------------------------------------
 
-//FILE* MFile::open(const char* mode, const char** pattern,
-FILE* MFile::open(const char* mode, const QStringList& pattern,
+FILE* MFile::open(const char* mode, const char** patterns_chararray,
    QWidget* parent, bool noError, bool warnIfOverwrite, const QString& caption)
       {
       QString name;
       if (strcmp(mode, "r") == 0)
-           name = getOpenFileName(path, pattern, parent, caption, 0);
+           name = getOpenFileName(path, patterns_chararray, parent, caption, 0);
       else
-           name = getSaveFileName(path, pattern, parent, caption);
+           name = getSaveFileName(path, patterns_chararray, parent, caption);
       if (name.isEmpty())
             return 0;
       f = fileOpen(parent, name, ext, mode, isPopen, noError,

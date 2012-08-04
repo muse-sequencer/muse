@@ -31,6 +31,7 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QStyle>
+#include <QString>
 
 namespace MusEGlobal {
 extern int mtcType;
@@ -48,6 +49,10 @@ namespace Awl {
 PosEdit::PosEdit(QWidget* parent)
    : QAbstractSpinBox(parent)
       {
+      _returnMode = false; 
+      cur_minute = cur_sec = cur_frame = cur_subframe = 0;
+      cur_bar = cur_beat = cur_tick = 0;
+      
       validator = new QIntValidator(this);
       
       initialized = false;
@@ -56,20 +61,6 @@ PosEdit::PosEdit(QWidget* parent)
       
       //connect(this, SIGNAL(editingFinished()), SLOT(finishEdit()));
       //connect(this, SIGNAL(returnPressed()), SLOT(enterPressed()));
-      }
-
-// What was this for? Tim.
-/*
-void* PosEdit::operator new(size_t n)
-      {
-      void* p = new char[n];
-      memset(p, 0, n);
-      return p;
-      }
-*/
-
-PosEdit::~PosEdit()
-      {
       }
 
 QSize PosEdit::sizeHint() const
@@ -100,7 +91,11 @@ bool PosEdit::event(QEvent* event)
             {
               //printf("key press event Return\n");   
               //enterPressed();
-              finishEdit();
+              bool changed = finishEdit();
+              if(changed || _returnMode)   // Force valueChanged if return mode set, even if not modified.
+              {
+                emit valueChanged(_pos);
+              }
               emit returnPressed();
               emit editingFinished();
               return true;
@@ -115,6 +110,7 @@ bool PosEdit::event(QEvent* event)
               //   choose to clear it in their constructor."
               // Just to be sure. Otherwise escape will close a midi editor for example, which is annoying.
               ke->setAccepted(true);
+              emit escapePressed();
               return true;
             }
             
@@ -190,7 +186,8 @@ bool PosEdit::event(QEvent* event)
       {
           QFocusEvent* fe = static_cast<QFocusEvent*>(event);
           QAbstractSpinBox::focusOutEvent(fe);
-          finishEdit();
+          if(finishEdit())
+            emit valueChanged(_pos);
           emit lostFocus();        
           emit editingFinished();  
           return true;
@@ -220,12 +217,29 @@ void PosEdit::setSmpte(bool f)
 //---------------------------------------------------------
 
 void PosEdit::setValue(const MusECore::Pos& time)
-      {
+{
       if(_pos == time)
-        return;
-      _pos = time;
-      updateValue();
+      {
+        // Must check whether actual values dependent on tempo or sig changed...
+        if (_smpte) {
+              int minute, sec, frame, subframe;
+              time.msf(&minute, &sec, &frame, &subframe);
+              if(minute != cur_minute || sec != cur_sec || frame != cur_frame || subframe != cur_subframe)
+                updateValue();
+              }
+        else {
+              int bar, beat, tick;
+              time.mbt(&bar, &beat, &tick);
+              if(bar != cur_bar || beat != cur_beat || tick != cur_tick)
+                updateValue();
+              }
+      }      
+      else
+      {
+        _pos = time;
+        updateValue();
       }
+}
 
 void PosEdit::setValue(const QString& s)
       {
@@ -247,15 +261,12 @@ void PosEdit::updateValue()
       {
       char buffer[64];
       if (_smpte) {
-            int minute, sec, frame, subframe;
-            _pos.msf(&minute, &sec, &frame, &subframe);
-            sprintf(buffer, "%03d:%02d:%02d:%02d", minute, sec, frame, subframe);
+            _pos.msf(&cur_minute, &cur_sec, &cur_frame, &cur_subframe);
+            sprintf(buffer, "%03d:%02d:%02d:%02d", cur_minute, cur_sec, cur_frame, cur_subframe);
             }
       else {
-            int bar, beat;
-            int tick;
-            _pos.mbt(&bar, &beat, &tick);
-            sprintf(buffer, "%04d.%02d.%03d", bar+1, beat+1, tick);
+            _pos.mbt(&cur_bar, &cur_beat, &cur_tick);
+            sprintf(buffer, "%04d.%02d.%03d", cur_bar+1, cur_beat+1, cur_tick);
             }
       lineEdit()->setText(buffer);
       }
@@ -357,9 +368,9 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
 //   fixup
 //---------------------------------------------------------
 
-void PosEdit::fixup(QString& input) const
+void PosEdit::fixup(QString& /*input*/) const
       {
-      printf("fixup <%s>\n", input.toLatin1().constData()); // REMOVE Tim.
+      //printf("fixup <%s>\n", input.toLatin1().constData()); 
       }
 
 //---------------------------------------------------------
@@ -652,9 +663,10 @@ void PosEdit::paintEvent(QPaintEvent* event)
 
 //---------------------------------------------------------
 //   finishEdit
+//   Return true if position changed.
 //---------------------------------------------------------
 
-void PosEdit::finishEdit()
+bool PosEdit::finishEdit()
 {
       // If our validator did its job correctly, the entire line edit text should be valid now...
       
@@ -665,7 +677,7 @@ void PosEdit::finishEdit()
         if(sl.size() != 4)
         {
           printf("finishEdit smpte string:%s sections:%d != 4\n", text().toLatin1().data(), sl.size());  
-          return;
+          return false;
         }  
         
         MusECore::Pos newPos(sl[0].toInt(), sl[1].toInt(), sl[2].toInt(), sl[3].toInt());
@@ -680,7 +692,7 @@ void PosEdit::finishEdit()
         if(sl.size() != 3)
         {
           printf("finishEdit bbt string:%s sections:%d != 3\n", text().toLatin1().data(), sl.size());  
-          return;
+          return false;
         }
           
         MusECore::Pos newPos(sl[0].toInt() - 1, sl[1].toInt() - 1, sl[2].toInt());
@@ -691,11 +703,7 @@ void PosEdit::finishEdit()
         }
       }
   
-  if (changed) 
-  {
-    //updateValue();
-    emit valueChanged(_pos);
-  }
+  return changed;
 }
 
 

@@ -44,15 +44,14 @@ class VstSynth : public Synth {
       _FSTHandle* fstHandle;
 
    public:
-      //VstSynth(const QFileInfo& fi) : Synth(fi) { fstHandle = 0; }
       VstSynth(const QFileInfo& fi) : Synth(fi, fi->baseName()) {
             fstHandle = 0;
             }
       
       virtual ~VstSynth() {}
+      virtual Type synthType() const { return VST_SYNTH; }
       virtual void incInstances(int val);
       virtual void* instantiate();
-      //virtual SynthIF* createSIF() const;
       virtual SynthIF* createSIF(SynthI*) const;
       };
 
@@ -67,7 +66,6 @@ class VstSynthIF : public SynthIF
       bool _guiVisible;
 
    public:
-      //VstSynthIF() { _fst = 0; _guiVisible = false; }
       VstSynthIF(SynthI* s) : SynthIF(s) {
             _fst = 0;
             _guiVisible = false;
@@ -97,7 +95,6 @@ class VstSynthIF : public SynthIF
       virtual void deactivate3();
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
-      //virtual void populatePatchPopup(QMenu*, int, MType, bool) {};
       virtual void populatePatchPopup(PopupMenu*, int, MType, bool) {};
       virtual void write(int level, Xml& xml) const;
       virtual float getParameter(unsigned long idx) const;

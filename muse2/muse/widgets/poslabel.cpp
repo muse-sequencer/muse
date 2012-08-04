@@ -138,7 +138,11 @@ void PosLabel::setTickValue(unsigned val)
       if (val == _tickValue)
             return;
       if (val >= MAX_TICK)
-            abort();
+      {
+            printf("THIS SHOULD NEVER HAPPEN: val=%u > MAX_TICK=%u in PosLabel::setTickValue()!\n",val, MAX_TICK);
+            val=MAX_TICK-1;
+      }
+      
       _tickValue = val;
       updateValue();
       }

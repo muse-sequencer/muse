@@ -52,13 +52,14 @@ class VisibleTracks : public QToolBar {
 
    private slots:
       void visibilityChanged(QAction* action);
+   public slots:
+      void updateVisibleTracksButtons();
 
    signals:
       void visibilityChanged();
 
    public:
       VisibleTracks(QWidget* /*parent*/, const char* name = 0);  // Needs a parent !
-      void updateVisibleTracksButtons();
       ~VisibleTracks();
       };
 

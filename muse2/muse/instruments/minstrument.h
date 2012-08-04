@@ -27,8 +27,7 @@
 #include "globaldefs.h"
 #include <list>
 #include <vector>
-
-class QString;
+#include <QString>
 
 namespace MusEGui {
 class PopupMenu;
@@ -40,6 +39,7 @@ class MidiControllerList;
 class MidiPort;
 class MidiPlayEvent;
 class Xml;
+class DrumMap;
 
 
 //---------------------------------------------------------
@@ -80,6 +80,86 @@ struct SysEx {
       unsigned char* data;
       };
 
+
+
+struct patch_collection_t
+{
+  int first_program;
+  int last_program;
+  int first_hbank;
+  int last_hbank;
+  int first_lbank;
+  int last_lbank;
+  
+  patch_collection_t(int p1=0, int p2=127, int l1=0, int l2=127, int h1=0, int h2=127)
+  {
+    first_program=p1;
+    last_program=p2;
+    first_lbank=l1;
+    last_lbank=l2;
+    first_hbank=h1;
+    last_hbank=h2;
+  }
+  
+  QString to_string();
+};
+
+struct patch_drummap_mapping_t
+{
+  patch_collection_t affected_patches;
+  DrumMap* drummap;
+  
+  patch_drummap_mapping_t(const patch_collection_t& a, DrumMap* d)
+  {
+    affected_patches=a;
+    drummap=d;
+  }
+  
+  patch_drummap_mapping_t(const patch_drummap_mapping_t& that);
+  patch_drummap_mapping_t();
+  ~patch_drummap_mapping_t();
+  
+  patch_drummap_mapping_t& operator=(const patch_drummap_mapping_t& that);
+};
+
+struct dumb_patchlist_entry_t
+{
+  int prog;
+  int lbank;
+  int hbank; // "-1" means "unused"
+  
+  dumb_patchlist_entry_t(int p, int l, int h)
+  {
+    prog=p;
+    lbank=l;
+    hbank=h;
+  }
+  
+  bool operator<(const dumb_patchlist_entry_t& other) const
+  {
+    if (hbank < other.hbank) return true;
+    if (hbank > other.hbank) return false;
+    if (lbank < other.lbank) return true;
+    if (lbank > other.lbank) return false;
+    return (prog < other.prog);
+  }
+  
+  bool operator>(const dumb_patchlist_entry_t& other) const
+  {
+    return other < *this;
+  }
+  
+  bool operator==(const dumb_patchlist_entry_t& other) const
+  {
+    return (prog==other.prog && lbank==other.lbank && hbank==other.hbank);
+  }
+  
+  bool operator!=(const dumb_patchlist_entry_t& other) const
+  {
+    return (!(*this==other));
+  }
+};
+
 //---------------------------------------------------------
 //   MidiInstrument
 //---------------------------------------------------------
@@ -88,6 +168,7 @@ class MidiInstrument {
       PatchGroupList pg;
       MidiControllerList* _controller;
       QList<SysEx*> _sysex;
+      std::list<patch_drummap_mapping_t> patch_drummap_mapping;
       bool _dirty;
       int _nullvalue;
 
@@ -103,6 +184,11 @@ class MidiInstrument {
       char* _initScript;
       QString _name;
       QString _filePath;
+      
+      void writeDrummaps(int level, Xml& xml) const;
+      void readDrummaps(Xml& xml);
+      patch_drummap_mapping_t readDrummapsEntry(Xml& xml);
+      patch_collection_t readDrummapsEntryPatchCollection(Xml& xml);
 
    public:
       MidiInstrument();
@@ -123,6 +209,11 @@ class MidiInstrument {
       void removeSysex(SysEx* sysex)         { _sysex.removeAll(sysex); }
       void addSysex(SysEx* sysex)            { _sysex.append(sysex); }
       
+      const DrumMap* drummap_for_patch(int patch) const;
+      QList<dumb_patchlist_entry_t> getPatches(int channel, MType songType, bool drum);
+      unsigned getNextPatch(int channel, unsigned patch, MType songType, bool drum);
+      unsigned getPrevPatch(int channel, unsigned patch, MType songType, bool drum);
+      
       EventList* midiInit() const            { return _midiInit; }
       EventList* midiReset() const           { return _midiReset; }
       EventList* midiState() const           { return _midiState; }
@@ -142,12 +233,12 @@ class MidiInstrument {
 
       virtual void reset(int, MType);
       virtual QString getPatchName(int,int,MType,bool);
-      //virtual void populatePatchPopup(QMenu*, int, MType, bool);
-      //virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);
       void read(Xml&);
       void write(int level, Xml&);
       
       PatchGroupList* groups()        { return &pg; }
+      std::list<patch_drummap_mapping_t>* get_patch_drummap_mapping() { return &patch_drummap_mapping; }
       };
 
 //---------------------------------------------------------
@@ -171,8 +262,8 @@ extern void removeMidiInstrument(const MidiInstrument* instr);
 
 } // namespace MusECore
 
-namespace MusEGui {
-extern void populatePatchPopup(MusECore::MidiInstrument*, PopupMenu*, int, MType, bool);
-}
+//namespace MusEGui {
+//extern void populatePatchPopup(MusECore::MidiInstrument*, PopupMenu*, int, MType, bool); DELETETHIS
+//}
 #endif
 

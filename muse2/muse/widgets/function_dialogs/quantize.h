@@ -48,14 +48,14 @@ class Quantize : public QDialog, public Ui::QuantBase
 	public:
 		Quantize(QWidget* parent = 0);
 
-		int range;
-		int strength;
-		int threshold;
-    int raster_index;
-		int swing;
-		bool quant_len;
+		static int range;
+		static int strength;
+		static int threshold;
+		static int raster_index;
+		static int swing;
+		static bool quant_len;
 		
-		void read_configuration(MusECore::Xml& xml);
+		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
 	public slots:

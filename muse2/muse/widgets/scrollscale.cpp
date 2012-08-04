@@ -39,14 +39,14 @@ namespace MusEGui {
 
 //---------------------------------------------------------
 //   setScale
-//    "val" - slider value in range 0-1024
+//    "val" - slider value in range 0-convertQuickZoomLevelToMag(zoomLevels-1)
 //---------------------------------------------------------
 
 void ScrollScale::setScale ( int val )
 {
 	int off = offset();
 	if ( invers )
-		val = 1024 - val;
+        val = convertQuickZoomLevelToMag(zoomLevels-1) - val;
 	double min, max;
 	if ( scaleMin < 0 )
 		min = 1.0/ ( -scaleMin );
@@ -59,7 +59,7 @@ void ScrollScale::setScale ( int val )
 		max = double ( scaleMax );
 
 	double diff = max-min;
-	double fkt  = double ( val ) /1024.0;
+    double fkt  = double ( val ) /double(convertQuickZoomLevelToMag(zoomLevels-1));
 	double v = ( pow ( logbase, fkt )-1 ) / ( logbase-1 );
 	double scale;
 	if ( invers )
@@ -90,7 +90,7 @@ void ScrollScale::setScale ( int val )
 			scale = scaleMin;
 	}
 #endif
-
+//    printf("scaleMin %d scaleMax %d val=%d emit scaleVal=%d\n", scaleMin, scaleMax, val, scaleVal);
 	emit scaleChanged ( scaleVal );
 	if ( !noScale )
 		setRange ( minVal, maxVal );
@@ -219,7 +219,7 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	scaleMin    = s1;
 	scaleMax    = s2;
 	minVal      = min_;
-	maxVal      = max_;
+    maxVal      = max_;
 	up          = 0;
 	down        = 0;
 	logbase     = bas;
@@ -247,8 +247,8 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	int delta = 256;
 	for ( int i = 0; i < 8; ++i )
 	{
-		int tryVal   = invers ? 1025 - cur : cur;
-		double fkt   = double ( tryVal ) /1024.0;
+        int tryVal   = invers ? convertQuickZoomLevelToMag(zoomLevels-1)+1 - cur : cur;
+        double fkt   = double ( tryVal ) /double(convertQuickZoomLevelToMag(zoomLevels-1));
 		double v     = ( pow ( logbase, fkt )-1 ) / ( logbase-1 );
 		double scale = invers ? ( max - v * diff ) : ( min + v * diff );
 		if ( scale == cmag ) // not very likely
@@ -256,7 +256,7 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
  //printf("iteration %d invers:%d soll %f(cur:%d) - ist %f\n", i, invers, scale, cur, cmag);
 		int dd = invers ? -delta : delta;
 		cur += ( scale < cmag ) ? dd : -dd;
-		delta/=2;
+        delta/=2;
 	}
 
 	scale  = new QSlider (o);
@@ -264,7 +264,7 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
         // It messes up tabbing, and really should have a shortcut instead.
         scale->setFocusPolicy(Qt::NoFocus);  
         scale->setMinimum(0);
-        scale->setMaximum(1024);
+        scale->setMaximum(convertQuickZoomLevelToMag(zoomLevels-1));
 	scale->setPageStep(1);
 	scale->setValue(cur);	
 
@@ -504,7 +504,7 @@ int ScrollScale::getQuickZoomLevel(int mag)
       if (mag == 0)
             return 0;
 
-      for (int i=0; i<24; i++) {
+      for (int i=0; i<zoomLevels-1; i++) {
             int val1 = ScrollScale::convertQuickZoomLevelToMag(i);
             int val2 = ScrollScale::convertQuickZoomLevelToMag(i + 1);
             if (mag > val1 && mag <= val2)
@@ -521,9 +521,11 @@ int ScrollScale::getQuickZoomLevel(int mag)
  */
 int ScrollScale::convertQuickZoomLevelToMag(int zoomlevel)
 {
-      int vals[] = { 0, 1, 15, 30, 46, 62, 80, 99, 119, 140, 163, 
-            187, 214, 242, 274, 308, 346, 388, 436, 491, 555, 631, 
-            726, 849, 1024 };
+      int vals[] = {
+            0,   1,   15,  30,  46,  62,  80,  99,  119, 140,
+            163, 187, 214, 242, 274, 308, 346, 388, 436, 491,
+            555, 631, 726, 849, 1024, 1200, 1400, 1500, 1800,
+            2100, 2500 };
 
       return vals[zoomlevel];
 }

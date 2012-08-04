@@ -217,6 +217,9 @@ void Meter::resetPeaks()
 
 void Meter::setRange(double min, double max)
       {
+      if(min == minScale && max == maxScale)   // p4.0.45
+        return;
+      
       minScale = min;
       maxScale = max;
       cur_yv = -1;  // Force re-initialization.
@@ -229,6 +232,8 @@ void Meter::setRange(double min, double max)
 
 void Meter::paintEvent(QPaintEvent* ev)
       {
+      // For some reason upon resizing we get double calls here and in resizeEvent.
+
       QPainter p(this);
       p.setRenderHint(QPainter::Antialiasing);  
 
@@ -534,8 +539,11 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
 
 void Meter::resizeEvent(QResizeEvent* ev)
     {  
-      QFrame::resizeEvent(ev);
+      // For some reason upon resizing we get double calls here and in paintEvent.
+      //printf("Meter::resizeEvent w:%d h:%d\n", ev->size().width(), ev->size().height());  
       cur_yv = -1;  // Force re-initialization.
+      QFrame::resizeEvent(ev);
+      update();
     }
 
 //---------------------------------------------------------

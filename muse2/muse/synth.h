@@ -40,8 +40,6 @@
 // Current version of saved midistate data.
 #define SYNTH_MIDI_STATE_SAVE_VERSION 2
 
-//class QMenu;
-
 class Mess;
 struct MESS;
 
@@ -50,9 +48,6 @@ class PopupMenu;
 }
 
 namespace MusECore {
-
-//class MidiEvent;
-//class MidiPlayEvent;
 
 class SynthI;
 class SynthIF;
@@ -72,18 +67,17 @@ class Synth {
       QString _version;
 
    public:
-      //Synth(const QFileInfo& fi);
-      //Synth(const QFileInfo& fi, QString label);
+      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, SYNTH_TYPE_END };
+
       Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver);
       
       virtual ~Synth() {}
-      //virtual const char* description() const { return ""; }
-      //virtual const char* version() const { return ""; }
 
+      virtual Type synthType() const = 0;
       int instances() const                            { return _instances; }
       virtual void incInstances(int val)               { _instances += val; }
-      QString completeBaseName()             /*const*/ { return info.completeBaseName(); } // ddskrjo
-      QString baseName()                     /*const*/ { return info.baseName(); } // ddskrjo
+      QString completeBaseName()                       { return info.completeBaseName(); } // ddskrjo
+      QString baseName()                               { return info.baseName(); } // ddskrjo
       QString name() const                             { return _name; }
       QString absolutePath() const                     { return info.absolutePath(); }
       QString path() const                             { return info.path(); }
@@ -91,12 +85,8 @@ class Synth {
       QString fileName() const                         { return info.fileName(); }
       QString description() const                      { return _description; }
       QString version() const                          { return _version; }
-      //QString maker() const                            { return _version; } ??
       QString maker() const                            { return _maker; }
       
-      //virtual void* instantiate() = 0;
-      
-      //virtual SynthIF* createSIF() const = 0;
       virtual SynthIF* createSIF(SynthI*) = 0;
       };
 
@@ -108,19 +98,14 @@ class MessSynth : public Synth {
       const MESS* _descr;
 
    public:
-      //MessSynth(const QFileInfo& fi) : Synth(fi) { descr = 0; }
-      //MessSynth(const QFileInfo& fi) : Synth(fi, fi.baseName()) { descr = 0; }
       MessSynth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver) : 
                Synth(fi, label, descr, maker, ver) { _descr = 0; }
       
       virtual ~MessSynth() {}
-      //virtual const char* description() const;
-      //virtual const char* version() const;
-      
-      //virtual void* instantiate();
+      virtual Type synthType() const { return MESS_SYNTH; }
+
       virtual void* instantiate(const QString&);
       
-      //virtual SynthIF* createSIF() const;
       virtual SynthIF* createSIF(SynthI*);
       };
 
@@ -140,7 +125,6 @@ class SynthIF {
       SynthI* synti;
       
    public:
-      //SynthIF() {}
       SynthIF(SynthI* s) { synti = s; }
       virtual ~SynthIF() {}
 
@@ -152,15 +136,9 @@ class SynthIF {
       virtual bool guiVisible() const = 0;
       virtual void showGui(bool v) = 0;
       virtual bool hasGui() const = 0;
-      //virtual bool guiVisible() const { return false; }
-      //virtual void showGui(bool v)    { };
-      //virtual bool hasGui() const     { return false; }
       virtual bool nativeGuiVisible() const = 0;
       virtual void showNativeGui(bool v) = 0;
       virtual bool hasNativeGui() const = 0;
-      //virtual bool nativeGuiVisible() const { return false; }
-      //virtual void showNativeGui(bool v) { };
-      //virtual bool hasNativeGui() const { return false; }
       virtual void getGeometry(int*, int*, int*, int*) const = 0;
       virtual void setGeometry(int, int, int, int) = 0;
       virtual void getNativeGeometry(int*, int*, int*, int*) const = 0;
@@ -171,15 +149,12 @@ class SynthIF {
       virtual MidiPlayEvent receiveEvent() = 0;
       virtual int eventsPending() const = 0;
       
-      //virtual bool init(Synth* s) = 0;
-      
       virtual int channels() const = 0;
       virtual int totalOutChannels() const = 0;
       virtual int totalInChannels() const = 0;
       virtual void deactivate3() = 0;
       virtual const char* getPatchName(int, int, int, bool) const = 0;
       virtual const char* getPatchName(int, int, MType, bool) = 0;
-      //virtual void populatePatchPopup(QMenu*, int, MType, bool) = 0;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
       virtual float getParameter(unsigned long idx) const = 0;        
@@ -208,12 +183,10 @@ class SynthI : public AudioTrack, public MidiDevice,
       // List of initial floating point parameters, for synths which use them. 
       // Used once upon song reload, then discarded.
       std::vector<float> initParams;
-      // List of gui controls to update upon heartbeat.
-      std::vector<bool> _guiUpdateControls;  
-      // Update gui program upon heartbeat.
-      bool _guiUpdateProgram;
+
       // Initial, and running, string parameters for synths which use them, like dssi.
       StringParamMap _stringParamMap; 
+
       // Current bank and program for synths which use them, like dssi. 
       // In cases like dssi which have no 'hi' and 'lo' bank, just use _curBankL.
       unsigned long _curBankH;
@@ -223,13 +196,10 @@ class SynthI : public AudioTrack, public MidiDevice,
       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
       
-      //bool putEvent(const MidiPlayEvent& ev);
-
       virtual QString open();
       virtual void close();
       
       virtual bool putMidiEvent(const MidiPlayEvent&) {return true;}
-      //bool putMidiEvent(const MidiEvent&); 
       
       virtual Track* newTrack() const { return 0; }
 
@@ -241,8 +211,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       
       SynthI();
       virtual ~SynthI();
-      //SynthI* clone() const { return new SynthI(*this); }
-      SynthI* clone(bool /*cloneParts*/) const { return new SynthI(*this); }
+      SynthI* clone(int /*flags*/) const { return new SynthI(*this); }
 
       virtual inline int deviceType() const { return SYNTH_MIDI; } 
       
@@ -259,19 +228,15 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synth() const          { return synthesizer; }
       virtual bool isSynti() const  { return true; }
 
-      //virtual const char* getPatchName(int ch, int prog, MType t, bool dr) {
       virtual QString getPatchName(int ch, int prog, MType t, bool dr) {
             return _sif->getPatchName(ch, prog, t, dr);
             }
             
-      //virtual void populatePatchPopup(QMenu* m, int i, MType t, bool d) {
       virtual void populatePatchPopup(MusEGui::PopupMenu* m, int i, MType t, bool d) {
             _sif->populatePatchPopup(m, i, t, d);
             }
       
-      // void setParameter(const char* name, const char* value) const;   // Not required
-      //StringParamMap& stringParameters() { return _stringParamMap; }   // Not required
-      void currentProg(unsigned long */*prog*/, unsigned long */*bankL*/, unsigned long */*bankH*/);
+      void currentProg(unsigned long *prog, unsigned long *bankL, unsigned long *bankH);
 
       void guiHeartBeat()     { return _sif->guiHeartBeat(); }
       bool initGui()    const { return _sif->initGui(); }
@@ -322,7 +287,6 @@ class MessSynthIF : public SynthIF {
       Mess* _mess;
 
    public:
-      //MessSynthIF() { _mess = 0; }
       MessSynthIF(SynthI* s) : SynthIF(s) { _mess = 0; }
       virtual ~MessSynthIF() { }
 
@@ -346,7 +310,6 @@ class MessSynthIF : public SynthIF {
       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const;
-      //virtual bool init(Synth* s);
       bool init(Synth* s, SynthI* si);
       
       virtual int channels() const;
@@ -355,7 +318,6 @@ class MessSynthIF : public SynthIF {
       virtual void deactivate3();
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool);
-      //virtual void populatePatchPopup(QMenu*, int, MType, bool);
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);
       virtual void write(int level, Xml& xml) const;
       virtual float getParameter(unsigned long) const { return 0.0; }
@@ -363,6 +325,9 @@ class MessSynthIF : public SynthIF {
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval);
       };
 
+extern QString synthType2String(Synth::Type);
+extern Synth::Type string2SynthType(const QString&); 
+      
 } // namespace MusECore
 
 namespace MusEGlobal {

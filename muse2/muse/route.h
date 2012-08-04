@@ -4,6 +4,7 @@
 //  $Id: route.h,v 1.5.2.1 2008/05/21 00:28:52 terminator356 Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -43,17 +44,15 @@ class Xml;
 //---------------------------------------------------------
 
 struct Route {
-      enum { TRACK_ROUTE=0, JACK_ROUTE=1, MIDI_DEVICE_ROUTE=2, MIDI_PORT_ROUTE=3 }; // p3.3.49
+      enum { TRACK_ROUTE=0, JACK_ROUTE=1, MIDI_DEVICE_ROUTE=2, MIDI_PORT_ROUTE=3 }; 
       
       union {
-            //AudioTrack* track;
             Track* track;
-            //MidiJackDevice* device;
             MidiDevice* device;      
             void* jackPort;
             };
       
-      int midiPort;              // p3.3.49 Midi port number. Best not to put this in the union to avoid problems?
+      int midiPort;              // Midi port number. Best not to put this in the union to avoid problems?
       
       //snd_seq_addr_t alsaAdr;
       
@@ -75,7 +74,7 @@ struct Route {
       Route(void* t, int ch=-1);
       Route(Track* t, int ch = -1, int chans = -1);
       Route(MidiDevice* d, int ch);  
-      Route(int port, int ch);         // p3.3.49
+      Route(int port, int ch);         
       Route(const QString&, bool dst, int ch, int rtype = -1);
       Route();
       
@@ -84,7 +83,7 @@ struct Route {
       bool isValid() const {
             return ((type == TRACK_ROUTE) && (track != 0)) || ((type == JACK_ROUTE) && (jackPort != 0)) || 
                    ((type == MIDI_DEVICE_ROUTE) && (device != 0)) ||
-                   ((type == MIDI_PORT_ROUTE) && (midiPort >= 0) && (midiPort < MIDI_PORTS));   // p3.3.49
+                   ((type == MIDI_PORT_ROUTE) && (midiPort >= 0) && (midiPort < MIDI_PORTS));   
             }
       void read(Xml& xml);
       void dump() const;
@@ -106,16 +105,7 @@ extern void removeRoute(Route, Route);
 extern void removeAllRoutes(Route, Route);  // p3.3.55
 extern Route name2route(const QString&, bool dst, int rtype = -1);
 extern bool checkRoute(const QString&, const QString&);
-
-//---------------------------------------------------------
-//   RouteMenuMap
-//---------------------------------------------------------
-
-//typedef std::map<int, Route, std::less<int> >::iterator iRouteMenuMap;
-//typedef std::map<int, Route, std::less<int> >::const_iterator ciRouteMenuMap;
-//typedef std::map<int, Route, std::less<int> > RouteMenuMap;
-//typedef std::pair<int, Route> pRouteMenuMap;
-//typedef std::pair<iRouteMenuMap, bool > rpRouteMenuMap;
+//extern bool isCircularRoutePath(Track* src, Track* dst);  // Recursive. DELETETHIS
 
 } // namespace MusECore
 

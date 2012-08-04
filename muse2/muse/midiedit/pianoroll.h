@@ -28,7 +28,7 @@
 #include <QLabel>
 #include <QKeyEvent>
 
-#include <values.h>
+#include <limits.h>
 #include "noteinfo.h"
 #include "cobject.h"
 #include "midieditor.h"
@@ -72,15 +72,6 @@ class Toolbar1;
 class PianoRoll : public MidiEditor {
       Q_OBJECT
     
-      MusECore::Event selEvent;
-      MusECore::MidiPart* selPart;
-      int selTick;
-
-      //enum { CMD_EVENT_COLOR, CMD_CONFIG_QUANT, CMD_LAST };
-      //int menu_ids[CMD_LAST];
-      //Q3PopupMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *menuPlugins;
-
-      
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
       MusEGui::MidiTrackInfo *midiTrackInfo;
       MusECore::Track* selected;
@@ -115,12 +106,19 @@ class PianoRoll : public MidiEditor {
       QAction* funcDelOverlapsAction;
       
       
+      int tickValue;
+      int lenValue;
+      int pitchValue;
+      int veloOnValue;
+      int veloOffValue;
+      bool firstValueSet;
       int tickOffset;
       int lenOffset;
       int pitchOffset;
       int veloOnOffset;
       int veloOffOffset;
       bool deltaMode;
+      int lastSelections;
 
       MusEGui::NoteInfo* info;
       QToolButton* srec;
@@ -143,7 +141,6 @@ class PianoRoll : public MidiEditor {
 
       bool _playEvents;
 
-      //QScrollBar* infoScroll;
       QScrollArea* infoScroll;
 
       
@@ -154,12 +151,10 @@ class PianoRoll : public MidiEditor {
       virtual void keyPressEvent(QKeyEvent*);
 
    private slots:
-      void setSelection(int, MusECore::Event&, MusECore::Part*);
+      void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);
       void noteinfoChanged(MusEGui::NoteInfo::ValType, int);
-      //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);
-      //void trackInfoScroll(int);
       void setRaster(int);
       void cmd(int);
       void setSteprec(bool);
@@ -174,6 +169,7 @@ class PianoRoll : public MidiEditor {
       void newCanvasWidth(int);
       void toggleTrackInfo();
       void updateTrackInfo();
+      void deltaModeChanged(bool);
 
    signals:
       void isDeleting(MusEGui::TopWin*);
@@ -182,10 +178,11 @@ class PianoRoll : public MidiEditor {
       virtual void updateHScrollRange();
       void execDeliveredScript(int id);
       void execUserScript(int id);
+      void focusCanvas();
       CtrlEdit* addCtrl();
       
    public:
-      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
       ~PianoRoll();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

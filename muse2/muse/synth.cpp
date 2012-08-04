@@ -32,7 +32,7 @@
 #include <dlfcn.h>
 
 #include <QDir>
-//#include <QMenu>
+#include <QString>
 
 #include "app.h"
 #include "arranger.h"
@@ -49,7 +49,6 @@
 #include "audio.h"
 #include "midiseq.h"
 #include "midictrl.h"
-//#include "stringparam.h"
 #include "popupmenu.h"
 #include "globaldefs.h"
 
@@ -60,27 +59,20 @@ std::vector<MusECore::Synth*> synthis;  // array of available MusEGlobal::synthi
 namespace MusECore {
 
 extern void connectNodes(AudioTrack*, AudioTrack*);
-bool SynthI::_isVisible=true;
+bool SynthI::_isVisible=false;
 
-/*
-//---------------------------------------------------------
-//   description
-//---------------------------------------------------------
+const char* synthTypes[] = { "METRONOME", "MESS", "DSSI", "VST", "UNKNOWN" };
+QString synthType2String(Synth::Type type) { return QString(synthTypes[type]); } 
 
-const char* MessSynth::description() const
-      {
-      return _descr ? _descr->description : "";
-      }
-
-//---------------------------------------------------------
-//   version
-//---------------------------------------------------------
-
-const char* MessSynth::version() const
-      {
-      return _descr ? _descr->version : "";
-      }
-*/
+Synth::Type string2SynthType(const QString& type) 
+{ 
+  for(int i = 0; i < Synth::SYNTH_TYPE_END; ++i)
+  {  
+    if(synthType2String((Synth::Type)i) == type)
+      return (Synth::Type)i; 
+  }  
+  return Synth::SYNTH_TYPE_END;
+} 
 
 bool MessSynthIF::nativeGuiVisible() const
       {
@@ -145,19 +137,17 @@ void MessSynthIF::setNativeGeometry(int x, int y, int w, int h)
 //    search for synthesizer base class
 //---------------------------------------------------------
 
-//static Synth* findSynth(const QString& sclass)
-static Synth* findSynth(const QString& sclass, const QString& label)
+static Synth* findSynth(const QString& sclass, const QString& label, Synth::Type type = Synth::SYNTH_TYPE_END)
       {
       for (std::vector<Synth*>::iterator i = MusEGlobal::synthis.begin();
          i != MusEGlobal::synthis.end(); ++i) 
          {
-            //if ((*i)->baseName() == sclass)
-            //if ((*i)->name() == sclass)
-            if ( ((*i)->baseName() == sclass) && (label.isEmpty() || ((*i)->name() == label)) )
-                  
-                  return *i;
+            if( ((*i)->baseName() == sclass) && 
+                (label.isEmpty() || ((*i)->name() == label)) &&
+                (type == Synth::SYNTH_TYPE_END || type == (*i)->synthType()) )
+              return *i;
          }
-      printf("synthi class:%s label:%s not found\n", sclass.toLatin1().constData(), label.toLatin1().constData());
+      printf("synthi type:%d class:%s label:%s not found\n", type, sclass.toLatin1().constData(), label.toLatin1().constData());
       return 0;
       }
 
@@ -166,18 +156,15 @@ static Synth* findSynth(const QString& sclass, const QString& label)
 //    create a synthesizer instance of class "label"
 //---------------------------------------------------------
 
-static SynthI* createSynthInstance(const QString& sclass, const QString& label)
+static SynthI* createSynthInstance(const QString& sclass, const QString& label, Synth::Type type = Synth::SYNTH_TYPE_END)
       {
-      //Synth* s = findSynth(sclass);
-      Synth* s = findSynth(sclass, label);
+      Synth* s = findSynth(sclass, label, type);
       SynthI* si = 0;
       if (s) {
             si = new SynthI();
             QString n;
             n.setNum(s->instances());
-            //QString instance_name = s->baseName() + "-" + n;
             QString instance_name = s->name() + "-" + n;
-            
             if (si->initInstance(s, instance_name)) {
                   delete si;
                   return 0;
@@ -192,10 +179,6 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label)
 //   Synth
 //---------------------------------------------------------
 
-//Synth::Synth(const QFileInfo& fi)
-//   : info(fi)
-//Synth::Synth(const QFileInfo& fi, QString label)
-//   : info(fi), _name(label)
 Synth::Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver)
    : info(fi), _name(label), _description(descr), _maker(maker), _version(ver)
       {
@@ -206,14 +189,9 @@ Synth::Synth(const QFileInfo& fi, QString label, QString descr, QString maker, Q
 //   instantiate
 //---------------------------------------------------------
 
-//void* MessSynth::instantiate()
 void* MessSynth::instantiate(const QString& instanceName)
       {
       ++_instances;
-      
-      //QString n;
-      //n.setNum(_instances);
-      //QString instanceName = baseName() + "-" + n;
       
       MusEGlobal::doSetuid();
       QByteArray ba = info.filePath().toLatin1();
@@ -315,13 +293,17 @@ void SynthI::close()
 //---------------------------------------------------------
 
 bool SynthI::putEvent(const MidiPlayEvent& ev) 
-//bool SynthI::putMidiEvent(const MidiPlayEvent& ev) 
 {
   if(_writeEnable)
+  {
+    if (MusEGlobal::midiOutputTrace)
+    {
+          printf("MidiOut: Synth: <%s>: ", name().toLatin1().constData());
+          ev.dump();
+    }
     return _sif->putEvent(ev);
-  
-  // Hmm, act as if the event went through? 
-  //return true;  
+  }
+
   return false;  
 }
 
@@ -362,10 +344,8 @@ void SynthI::currentProg(unsigned long *prog, unsigned long *bankL, unsigned lon
 //   init
 //---------------------------------------------------------
 
-//bool MessSynthIF::init(Synth* s)
 bool MessSynthIF::init(Synth* s, SynthI* si)
       {
-      //_mess = (Mess*)s->instantiate();
       _mess = (Mess*)((MessSynth*)s)->instantiate(si->name());
       
       return (_mess == 0);
@@ -386,11 +366,8 @@ int MessSynthIF::totalInChannels() const
       return 0;
       }
 
-//SynthIF* MessSynth::createSIF() const
 SynthIF* MessSynth::createSIF(SynthI* si)
       {
-      //return new MessSynthIF(si);
-      
       MessSynthIF* sif = new MessSynthIF(si);
       sif->init(this, si);
       return sif;
@@ -404,17 +381,11 @@ SynthIF* MessSynth::createSIF(SynthI* si)
 bool SynthI::initInstance(Synth* s, const QString& instanceName)
       {
       synthesizer = s;
-      //sif         = s->createSIF();
-      //_sif        = s->createSIF(this);
-      
-      //sif->init(s);
 
       setName(instanceName);    // set midi device name
       setIName(instanceName);   // set instrument name
       _sif        = s->createSIF(this);
       
-      // p3.3.38
-      //AudioTrack::setChannels(_sif->channels());
       AudioTrack::setTotalOutChannels(_sif->totalOutChannels());
       AudioTrack::setTotalInChannels(_sif->totalInChannels());
       
@@ -431,10 +402,8 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
             int max;
             int initval = CTRL_VAL_UNKNOWN;
             id = _sif->getControllerInfo(id, &name, &ctrl, &min, &max, &initval);
-//            printf("looking for params\n");
             if (id == 0)
                   break;
-//             printf("got parameter:: %s\n", name);
             
             
             // Added by T356. Override existing program controller.
@@ -532,8 +501,8 @@ void SynthI::deactivate2()
 void SynthI::deactivate3()
       {
       _sif->deactivate3();
-      // Moved below by Tim. p3.3.14
-      //synthesizer->incInstances(-1);
+      
+      //synthesizer->incInstances(-1); // Moved below by Tim. p3.3.14
       
       if(MusEGlobal::debugMsg)
         printf("SynthI::deactivate3 deleting _sif...\n");
@@ -585,17 +554,13 @@ void initMidiSynth()
             while(it!=list.end()) {
                   fi = &*it;
             
-                  //MusEGlobal::doSetuid();
                   QByteArray ba = fi->filePath().toLatin1();
                   const char* path = ba.constData();
             
                   // load Synti dll
-                  //printf("initMidiSynth: dlopen file:%s name:%s desc:%s\n", fi->filePath().toLatin1().constData(), QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
                   void* handle = dlopen(path, RTLD_NOW);
                   if (handle == 0) {
                         fprintf(stderr, "initMidiSynth: MESS dlopen(%s) failed: %s\n", path, dlerror());
-                        //MusEGlobal::undoSetuid();
-                        //return 0;
                         ++it;
                         continue;
                         }
@@ -611,8 +576,6 @@ void initMidiSynth()
                                 "library file \"%s\": %s.\n"
                                 "Are you sure this is a MESS plugin file?\n",
                                 path, txt);
-                              //MusEGlobal::undoSetuid();
-                              //return 0;
                               }
                         #endif      
                           dlclose(handle);
@@ -622,19 +585,11 @@ void initMidiSynth()
                   const MESS* descr = msynth();
                   if (descr == 0) {
                         fprintf(stderr, "initMidiSynth: no MESS descr found in %s\n", path);
-                        //MusEGlobal::undoSetuid();
-                        //return 0;
                         dlclose(handle);
                         ++it;
                         continue;
                         }
-                  //Mess* mess = descr->instantiate(MusEGlobal::sampleRate, muse, &museProject, instanceName.toLatin1().constData());
-                  //MusEGlobal::undoSetuid();
                   
-            
-            
-            
-                  //MusEGlobal::synthis.push_back(new MessSynth(*fi));
                   MusEGlobal::synthis.push_back(new MessSynth(*fi, QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
                   
                   dlclose(handle);
@@ -652,42 +607,31 @@ void initMidiSynth()
 //    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
-SynthI* Song::createSynthI(const QString& sclass, const QString& label, Track* insertAt)
+SynthI* Song::createSynthI(const QString& sclass, const QString& label, Synth::Type type, Track* insertAt)
       {
-      //printf("Song::createSynthI calling ::createSynthI class:%s\n", sclass.toLatin1().constData());
-      
-      //SynthI* si = ::createSynthI(sclass);
-      //SynthI* si = ::createSynthI(sclass, label);
-      SynthI* si = createSynthInstance(sclass, label);
+      SynthI* si = createSynthInstance(sclass, label, type);
       if(!si)
         return 0;
-      //printf("Song::createSynthI created SynthI. Before insertTrack1...\n");
       
       int idx = insertAt ? _tracks.index(insertAt) : -1;
       
       insertTrack1(si, idx);
-      //printf("Song::createSynthI after insertTrack1. Before msgInsertTrack...\n");
       
       msgInsertTrack(si, idx, true);       // add to instance list
-      //printf("Song::createSynthI after msgInsertTrack. Before insertTrack3...\n");
       
       insertTrack3(si, idx);
 
-      //printf("Song::createSynthI after insertTrack3. Adding default routes...\n");
-      
       OutputList* ol = MusEGlobal::song->outputs();
       // add default route to master (first audio output)
       if (!ol->empty()) {
             AudioOutput* ao = ol->front();
-            // p3.3.38
-            //MusEGlobal::audio->msgAddRoute(Route(si, -1), Route(ao, -1));
-            //MusEGlobal::audio->msgAddRoute(Route((AudioTrack*)si, -1), Route(ao, -1));
             // Make sure the route channel and channels are valid.
             MusEGlobal::audio->msgAddRoute(Route((AudioTrack*)si, 0, ((AudioTrack*)si)->channels()), Route(ao, 0, ((AudioTrack*)si)->channels()));
             
             MusEGlobal::audio->msgUpdateSoloStates();
             }
       
+      // DELETETHIS 5
       // Now that the track has been added to the lists in insertTrack2(),
       //  if it's a dssi synth, OSC can find the synth, and initialize (and show) its native gui.
       // No, initializing OSC without actually showing the gui doesn't work, at least for 
@@ -705,6 +649,8 @@ void SynthI::write(int level, Xml& xml) const
       {
       xml.tag(level++, "SynthI");
       AudioTrack::writeProperties(level, xml);
+      xml.strTag(level, "synthType", synthType2String(synth()->synthType()));
+
       xml.strTag(level, "class", synth()->baseName());
       
       // To support plugins like dssi-vst where all the baseNames are the same 'dssi-vst' and the label is the name of the dll file.
@@ -727,7 +673,6 @@ void SynthI::write(int level, Xml& xml) const
             getGeometry(&x, &y, &w, &h);
             if (h || w)
                   xml.qrectTag(level, "geometry", QRect(x, y, w, h));
-            //xml.geometryTag(level, "geometry", _gui);
             }
 
       if (hasNativeGui()) {
@@ -823,7 +768,8 @@ void SynthI::read(Xml& xml)
       {
       QString sclass;
       QString label;
-      
+      Synth::Type type = Synth::SYNTH_TYPE_END;
+
       int port = -1;
       bool startgui = false;
       bool startngui = false;
@@ -837,7 +783,9 @@ void SynthI::read(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (tag == "class")
+                        if (tag == "synthType")
+                              type = string2SynthType(xml.parse1());
+                        else if (tag == "class")
                               sclass = xml.parse1();
                         else if (tag == "label")
                               label  = xml.parse1();
@@ -866,8 +814,15 @@ void SynthI::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "SynthI") {
-                              //Synth* s = findSynth(sclass);
-                              Synth* s = findSynth(sclass, label);
+                              
+                              // NOTICE: This is a hack to quietly change songs to use the new 'fluid_synth' name instead of 'fluidsynth'.
+                              //         Recent linker changes required the name change in fluidsynth's cmakelists. Nov 8, 2011 By Tim.
+                              if(sclass == QString("fluidsynth") && 
+                                 (type == Synth::SYNTH_TYPE_END || type == Synth::MESS_SYNTH) &&
+                                 (label.isEmpty() || label == QString("FluidSynth")) )
+                                sclass = QString("fluid_synth");
+                              
+                              Synth* s = findSynth(sclass, label, type);
                               if (s == 0)
                                     return;
                               if (initInstance(s, name()))
@@ -877,6 +832,7 @@ void SynthI::read(Xml& xml)
                               if (port != -1 && port < MIDI_PORTS)
                                     MusEGlobal::midiPorts[port].setMidiDevice(this);
                               
+                              // DELETETHIS 5
                               // Now that the track has been added to the lists in insertTrack2(),
                               //  if it's a dssi synth, OSC can find the synth, and initialize (and show) its native gui.
                               // No, initializing OSC without actually showing the gui doesn't work, at least for 
@@ -911,7 +867,6 @@ const char* MessSynthIF::getPatchName(int channel, int prog, MType type, bool dr
       {
         if (_mess)
         {
-              //return _mess->getPatchName(channel, prog, type, drum);
               const char* s = _mess->getPatchName(channel, prog, type, drum);
               if(s)
                 return s;
@@ -930,7 +885,7 @@ void MessSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int ch, MType, bo
       while (mp) {
             int id = ((mp->hbank & 0xff) << 16)
                       + ((mp->lbank & 0xff) << 8) + mp->prog;
-            /*
+            /* DELETETHIS 9
             int pgid = ((mp->hbank & 0xff) << 8) | (mp->lbank & 0xff) | 0x40000000;          
             int itemnum = menu->indexOf(pgid);
             if(itemnum == -1)
@@ -974,10 +929,10 @@ void SynthI::preProcessAlways()
   if(off())
   {
     // Clear any accumulated play events.
-    //playEvents()->clear();
+    //playEvents()->clear(); DELETETHIS
     _playEvents.clear();
     // Eat up any fifo events.
-    //while(!eventFifo.isEmpty()) 
+    //while(!eventFifo.isEmpty())  DELETETHIS
     //  eventFifo.get();  
     eventFifo.clear();  // Clear is the same but faster AND safer, right?
   }
@@ -1000,26 +955,18 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
 
       int p = midiPort();
       MidiPort* mp = (p != -1) ? &MusEGlobal::midiPorts[p] : 0;
-      //MPEventList* el = playEvents();
                
-      ///iMPEvent ie = nextPlayEvent();
-      //iMPEvent ie = el->begin();      // p4.0.15 Tim.
       iMPEvent ie = _playEvents.begin();      
       
-      
-      //ie = _sif->getData(mp, el, ie, pos, ports, n, buffer);
       ie = _sif->getData(mp, &_playEvents, ie, pos, ports, n, buffer);
       
-      ///setNextPlayEvent(ie);
       // p4.0.15 We are done with these events. Let us erase them here instead of Audio::processMidi.
       // That way we can simply set the next play event to the beginning.
       // This also allows other events to be inserted without the problems caused by the next play event 
       //  being at the 'end' iterator and not being *easily* set to some new place beginning of the newer insertions. 
       // The way that MPEventList sorts made it difficult to predict where the iterator of the first newly inserted items was.
       // The erasure in Audio::processMidi was missing some events because of that.
-      //el->erase(el->begin(), ie);
       _playEvents.erase(_playEvents.begin(), ie);
-      // setNextPlayEvent(el->begin());   // Removed p4.0.15
       
       return true;
       }
@@ -1034,22 +981,17 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
 
       for (; i != el->end(); ++i) {
           int evTime = i->time(); 
-          if (evTime == 0) {
-          //      printf("MessSynthIF::getData - time is 0!\n");
-          //      continue;
+          if (evTime == 0)
                 evTime=abs(frameOffset); // will cause frame to be zero, problem?
-                }
+
           int frame = evTime - abs(frameOffset);
 
-               if (frame >= endPos) {
-                   printf("frame > endPos!! frame = %d >= endPos %d, i->time() %d, frameOffset %d curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
-                   continue;
-                   }
+            if (frame >= endPos) {
+                printf("frame > endPos!! frame = %d >= endPos %d, i->time() %d, frameOffset %d curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
+                continue;
+                }
 
             if (frame > curPos) {
-                //willyfoobar-2011-02-13
-                //!!! comparison of signed with unsigened 
-                //old code//if (frame < pos)
                   if (frame < (int) pos)
                         printf("should not happen: missed event %d\n", pos -frame);
                   else 
@@ -1062,14 +1004,16 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
                         }      
                   }
                   curPos = frame;
-                  }
+            }
+            
             if (mp)
                   mp->sendEvent(*i);
             else {
                   if (putEvent(*i))
                         break;
-                  }
             }
+      }
+      
       if (endPos - curPos) 
       {
             if (!_mess)
@@ -1089,14 +1033,17 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
 
 bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
       {
-      if (MusEGlobal::midiOutputTrace)
-            ev.dump();
+      //if (MusEGlobal::midiOutputTrace) DELETETHIS or re-enable?
+      //{
+      //      printf("MidiOut: MESS: <%s>: ", synti->name().toLatin1().constData());
+      //      ev.dump();
+      //}
       if (_mess)
             return _mess->processEvent(ev);
       return true;
       }
 
-//unsigned long MessSynthIF::uniqueID() const 
+//unsigned long MessSynthIF::uniqueID() const  DELETETHIS
 //{ 
 //  return _mess ? _mess->uniqueID() : 0; 
 //}

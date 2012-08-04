@@ -31,11 +31,12 @@
 namespace MusECore {
 
 class Xml;
-//class MidiDevice;
 
-//class MidiSyncPort
 class MidiSyncInfo
 {
+  public:
+    enum SyncRecFilterPresetType { NONE=0, TINY, SMALL, MEDIUM, LARGE, LARGE_WITH_PRE_DETECT, TYPE_END };
+    
   private:
     int _port;
     
@@ -54,7 +55,6 @@ class MidiSyncInfo
     int _recMTCtype;
     
     bool _recRewOnStart;
-    //bool _sendContNotStart;
     
     double   _lastClkTime;
     double   _lastTickTime;
@@ -113,8 +113,6 @@ class MidiSyncInfo
     
     bool recRewOnStart() const            { return _recRewOnStart; }
     void setRecRewOnStart(const bool v)   { _recRewOnStart = v; }
-    //bool sendContNotStart() const           { return _sendContNotStart; }
-    //void setSendContNotStart(const bool v)  { _sendContNotStart = v; }
     
     bool MCSyncDetect() const             { return _clockDetect; }          
     void trigMCSyncDetect();
@@ -139,7 +137,6 @@ class MidiSyncInfo
     
     bool isDefault() const;
     void read(Xml& xml);
-    //void write(int level, Xml& xml, MidiDevice* md);
     void write(int level, Xml& xml);
 };
 
@@ -147,28 +144,18 @@ class MidiSyncInfo
 
 namespace MusEGlobal {
 
-//extern MidiSync midiSyncPorts[MIDI_PORTS];
-
 extern bool debugSync;
-
-//extern int rxSyncPort;
-//extern int txSyncPort;
-//extern int rxDeviceId;
-//extern int txDeviceId;
 
 extern int mtcType;
 extern MusECore::MTC mtcOffset;
 extern MusECore::BValue extSyncFlag;
-//extern bool genMTCSync;       // output MTC Sync
-//extern bool genMCSync;        // output MidiClock Sync
-//extern bool genMMC;           // output Midi Machine Control
-//extern bool acceptMTC;
-//extern bool acceptMC;
-//extern bool acceptMMC;
 extern int volatile curMidiSyncInPort;
 extern MusECore::BValue useJackTransport;
 extern bool volatile jackTransportMaster;
 extern unsigned int syncSendFirstClockDelay; // In milliseconds.
+extern unsigned int volatile lastExtMidiSyncTick;
+extern MusECore::MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset;
+extern double syncRecTempoValQuant;
 
 } // namespace MusEGlobal
 

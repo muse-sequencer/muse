@@ -37,7 +37,6 @@
 #include "xml.h"
 #include "globals.h"
 #include "comboQuant.h"
-//#include "pitchedit.h"
 #include "audio.h"
 #include "gconfig.h"
 #include "midictrl.h"
@@ -467,9 +466,6 @@ void MidiTransformerDialog::updatePresetList()
             presetList->setCurrentItem(0);
             }
       
-      //data->cindex = 0;
-      //presetList->setCurrentItem(0);
-      
 }
 
 //---------------------------------------------------------
@@ -683,13 +679,11 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
                   // Indicate do clone parts. 
                   addPortCtrlEvents(newEvent, part, true);
                   // Indicate do port controller values and clone parts. 
-                  //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part));
                   MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, true, true));
                   MusEGlobal::song->addUpdateFlags(SC_EVENT_MODIFIED);
                   break;
             case MusECore::Insert:
                   // Indicate do port controller values and clone parts. 
-                  //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::AddEvent, dummy, newEvent, part));
                   MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::AddEvent, dummy, newEvent, part, true, true));
                   MusEGlobal::song->addEvent(newEvent, part);
                   // Indicate do clone parts. 
@@ -698,7 +692,6 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
                   break;
             case MusECore::Extract:
                   // Indicate do port controller values and clone parts. 
-                  //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, dummy, event, part));
                   MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, dummy, event, part, true, true));
                   // Indicate do clone parts. 
                   removePortCtrlEvents(event, part, true);
@@ -734,7 +727,6 @@ void MidiTransformerDialog::processEvent(MusECore::Event& event, MusECore::MidiP
                         // Indicate do clone parts. 
                         addPortCtrlEvents(newEvent, part, true);
                         // Indicate do port controller values and clone parts. 
-                        //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part));
                         MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, true, true));
                         MusEGlobal::song->addUpdateFlags(SC_EVENT_MODIFIED);
                         }
@@ -744,7 +736,6 @@ void MidiTransformerDialog::processEvent(MusECore::Event& event, MusECore::MidiP
                   {
                   MusECore::Event ev;
                   // Indicate do port controller values and clone parts. 
-                  //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, ev, event, part, true, true));
                   MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, ev, event, part, true, true));
                   // Indicate do clone parts. 
                   removePortCtrlEvents(event, part, true);

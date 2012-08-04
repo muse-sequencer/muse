@@ -4,6 +4,7 @@
 //  $Id: genset.h,v 1.3 2004/01/25 09:55:17 wschweer Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -53,8 +54,9 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void bigtimeCurrent();
       void mainCurrent();
       void transportCurrent();
-      void selectInstrumentsPath();
-      void defaultInstrumentsPath();
+      void browseProjDir();
+      void browseStartSongFile();
+      void startSongReset();
       void traditionalPreset();
       void mdiPreset();
       void borlandPreset();
@@ -62,6 +64,7 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
     protected:
       void showEvent(QShowEvent*);
       QButtonGroup *startSongGroup;
+      QButtonGroup *recDrumGroup;
       std::list<MdiSettings*> mdisettings;
       
    public:

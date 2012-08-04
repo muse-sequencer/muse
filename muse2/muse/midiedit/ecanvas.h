@@ -60,9 +60,9 @@ class MidiEditor;
 
 class EventCanvas : public Canvas {
       Q_OBJECT
+      
       virtual void leaveEvent(QEvent*e);
       virtual void enterEvent(QEvent*e);
-      
       virtual void mouseMove(QMouseEvent* event);
 
    protected:
@@ -74,17 +74,19 @@ class EventCanvas : public Canvas {
       bool _midiin;
       MusECore::Part* _curPart;
       int _curPartId;
+      bool _setCurPartIfOnlyOneEventIsSelected;
 
       void updateSelection();
-      virtual void addItem(MusECore::Part*, MusECore::Event&) = 0;
+      virtual CItem* addItem(MusECore::Part*, MusECore::Event&) = 0;
       virtual void deleteItemAtPoint(const QPoint&);
       virtual void selectLasso(bool);
       virtual void selectItemRow(bool);
       virtual QPoint raster(const QPoint&) const;
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType) = 0;
-      virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType) = 0;
+      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir);
       virtual void curItemChanged();
+      virtual void curPartChanged();  
       //virtual void sortLayerItem(CItem* item);
       virtual void drawItemLayer(QPainter& p, const QRect& r, int layer); 
 
@@ -96,8 +98,9 @@ class EventCanvas : public Canvas {
    signals:
       void pitchChanged(int);       // current cursor position
       void timeChanged(unsigned);
-      void selectionChanged(int, MusECore::Event&, MusECore::Part*);
+      void selectionChanged(int /*tick*/ , MusECore::Event&, MusECore::Part*, bool /*update*/);
       void enterCanvas();
+      void curPartHasChanged(MusECore::Part*);
 
    public:
       EventCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0);
@@ -112,7 +115,7 @@ class EventCanvas : public Canvas {
       void playEvents(bool flag) { _playEvents = flag; }
       void selectAtTick(unsigned int tick);
       void viewDropEvent(QDropEvent* event);
-      virtual void modifySelected(NoteInfo::ValType, int) {}
+      virtual void modifySelected(NoteInfo::ValType, int /*val*/, bool /*delta_mode*/ = true) {}
       virtual void keyPress(QKeyEvent*);
       MusECore::Part* part() const { return _curPart; }
       void setCurrentPart(MusECore::Part*); 

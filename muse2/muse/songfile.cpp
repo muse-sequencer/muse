@@ -21,7 +21,6 @@
 //
 //=========================================================
 
-#include <assert.h>
 #include <uuid/uuid.h>
 #include <QProgressDialog>
 #include <QMessageBox>
@@ -30,23 +29,18 @@
 #include "song.h"
 #include "arranger.h"
 #include "arrangerview.h"
-//#include "arranger/arranger.h"  // p4.0.2
 #include "cobject.h"
 #include "drumedit.h"
-//#include "midiedit/drumedit.h"  // p4.0.2
 #include "pianoroll.h"
 #include "scoreedit.h"
-//#include "midiedit/pianoroll.h"  // p4.0.2
 #include "globals.h"
 #include "xml.h"
 #include "drummap.h"
-//#include "midiedit/drummap.h"    // p4.0.2
 #include "event.h"
 #include "marker/marker.h"
 #include "midiport.h"
 #include "audio.h"
 #include "mitplugin.h"
-//#include "mplugins/mitplugin.h"           // p4.0.2
 #include "wave.h"
 #include "midictrl.h"
 #include "amixer.h"
@@ -56,38 +50,13 @@
 #include "keyevent.h"
 
 namespace MusEGlobal {
-//static CloneList cloneList;
-//static CloneList copyCloneList;
 MusECore::CloneList cloneList;
-//CloneList copyCloneList;
 }
 
 namespace MusECore {
 
-//struct ClonePart {
-      //const EventList* el;
-//      const Part* cp;
-//      int id;
-      //ClonePart(const EventList* e, int i) : el(e), id(i) {}
-//      ClonePart(const Part* p, int i) : cp(p), id(i) {}
-//      };
 
-//typedef std::list<ClonePart> CloneList;
-//typedef CloneList::iterator iClone;
-
-//---------------------------------------------------------
-//   ClonePart
-//---------------------------------------------------------
-
-ClonePart::ClonePart(const Part* p, int i) 
-{
-  cp = p;
-  id = i;
-  uuid_generate(uuid);
-}
-
-
-/*
+/* DELETETHIS 42
 //---------------------------------------------------------
 //   updateCloneList
 //---------------------------------------------------------
@@ -220,41 +189,28 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                   case Xml::End:
                         return npart;
                   case Xml::TagStart:
-                        // If the part has not been created yet...
-                        if(!npart)
+                        if(!npart) // If the part has not been created yet...
                         {
-                          // If an id was found...
-                          if(id != -1)
+                          if(id != -1) // If an id was found...
                           {
                             for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
                             {
-                              // Is a matching part found in the clone list?
-                              if(i->id == id) 
+                              if(i->id == id) // Is a matching part found in the clone list?
                               {
-                                // If it's a regular paste (not paste clone), and the original part is
-                                //  not a clone, defer so that a new copy is created in TagStart above.
-                                //if(!doClone && i->cp->cevents()->arefCount() <= 1)
-                                //if(!doClone && !isclone)
-                                //  break;
-                                  
                                 // This makes a clone, chains the part, and increases ref counts.
                                 npart = track->newPart((Part*)i->cp, true);
                                 break;
                               }
                             }
                           }  
-                          else
-                          // If a uuid was found...
-                          if(uuidvalid)
+                          else if(uuidvalid) // If a uuid was found...
                           {
                             for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
                             {
-                              // Is a matching part found in the clone list?
-                              if(uuid_compare(uuid, i->uuid) == 0) 
+                              if(uuid_compare(uuid, i->uuid) == 0) // Is a matching part found in the clone list?
                               {
                                 Track* cpt = i->cp->track();
-                                // If we want to paste to the given track...
-                                if(toTrack)
+                                if(toTrack) // If we want to paste to the given track...
                                 {
                                   // If the given track type is not the same as the part's 
                                   //  original track type, we can't continue. Just return.
@@ -264,15 +220,13 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                     return 0;
                                   }  
                                 }
-                                else
-                                // ...else we want to paste to the part's original track.
+                                else // ...else we want to paste to the part's original track.
                                 {
                                   // Make sure the track exists (has not been deleted).
                                   if((cpt->isMidiTrack() && MusEGlobal::song->midis()->find(cpt) != MusEGlobal::song->midis()->end()) || 
                                       (cpt->type() == Track::WAVE && MusEGlobal::song->waves()->find(cpt) != MusEGlobal::song->waves()->end()))
                                     track = cpt;   
-                                  else
-                                  // Track was not found. Try pasting to the given track, as above...
+                                  else // Track was not found. Try pasting to the given track, as above...
                                   {
                                     if(!track || cpt->type() != track->type())
                                     {
@@ -285,7 +239,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 
                                 // If it's a regular paste (not paste clone), and the original part is
                                 //  not a clone, defer so that a new copy is created in TagStart above.
-                                //if(!doClone && i->cp->cevents()->arefCount() <= 1)
                                 if(!doClone && !isclone)
                                   break;
                                   
@@ -296,12 +249,11 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                             }  
                           }
                         
-                          // If the part still has not been created yet...
-                          if(!npart)
+                          if(!npart) // If the part still has not been created yet...
                           {
-                            // A clone was not created from any matching part. Create a non-clone part now.
-                            if(!track)
-                            {
+                            
+                            if(!track) // A clone was not created from any matching
+                            {          // part. Create a non-clone part now.
                               xml.skip("part");
                               return 0;
                             }  
@@ -388,6 +340,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 e.move( -npart->tick() );
                                 int tick = e.tick();  
                                 
+                                // DELETETHIS 7
                                 // Do not discard events belonging to clone parts,
                                 //  at least not yet. A later clone might have a longer, 
                                 //  fully accommodating part length!
@@ -397,7 +350,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 // No choice but to accept all events past 0.
                                 if(tick < 0) 
                                 {
-                                  //printf("readClone: warning: event not in part: %d - %d -%d, discarded\n",
                                   printf("readClone: warning: event at tick:%d not in part:%s, discarded\n",
                                     tick, npart->name().toLatin1().constData());
                                 }
@@ -406,8 +358,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                   npart->events()->add(e);
                                 }      
                               }
-                              else
-                                // ...Otherwise a clone was created, so we don't need the events.
+                              else // ...Otherwise a clone was created, so we don't need the events.
                                 xml.skip(tag);
                         }
                         else
@@ -422,7 +373,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                         else if (tag == "cloneId")
                         {
                           id = xml.s2().toInt();
-                          //if(id != -1)
+                          //if(id != -1) DELETETHIS 19
                           //{
                           //  for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
                           //  {
@@ -448,7 +399,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                           if(!uuid_is_null(uuid))
                           {
                             uuidvalid = true;
-                            /*
+                            /* DELETETHIS 50
                             for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
                             {
                               // Is a matching part found in the clone list?
@@ -518,7 +469,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
 //    we can have 'Paste Clone' feature. 
 //---------------------------------------------------------
 
-//void Part::write(int level, Xml& xml) const
 void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       {
       const EventList* el = cevents();
@@ -530,28 +480,19 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       
       if(isCopy)
       {
-        //for(iClone i = copyCloneList.begin(); i != copyCloneList.end(); ++i) 
         for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
         {
-          //if(i->el == el) {
           if(i->cp->cevents() == el) 
           {
-            //id = i->id;
             uuid_copy(uuid, i->uuid);
             dumpEvents = false;
             break;
           }
         }
-        //if(id == -1) 
         if(uuid_is_null(uuid)) 
         {
-          //id = copyCloneList.size();
-          //id = MusEGlobal::cloneList.size();
-          //ClonePart cp(el, id);
-          //ClonePart cp(this, id);
           ClonePart cp(this);
           uuid_copy(uuid, cp.uuid);
-          //copyCloneList.push_back(cp);
           MusEGlobal::cloneList.push_back(cp);
         }
       }  
@@ -561,22 +502,17 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
         {
           for (iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
           {
-            //if (i->el == el) {
             if (i->cp->cevents() == el) 
             {
               id = i->id;
-              //uuid_copy(id, i->uid);
               dumpEvents = false;
               break;
             }
           }
           if (id == -1) 
-          //if(uuid_is_null(id)) 
           {
             id = MusEGlobal::cloneList.size();
-            //ClonePart cp(el, id);
             ClonePart cp(this, id);
-            //ClonePart cp(this);
             MusEGlobal::cloneList.push_back(cp);
           }
         }
@@ -589,9 +525,7 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
         char sid[40]; // uuid string is 36 chars. Try 40 for good luck.
         sid[0] = 0;
         uuid_unparse_lower(uuid, sid);
-        //if(midi)
-        //  xml.nput(level, "<midipart uuid=\"%s\"", sid);
-        //else  
+
         if(wave)
           xml.nput(level, "<part type=\"wave\" uuid=\"%s\"", sid);
         else  
@@ -604,22 +538,14 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       }
       else
       if (id != -1)
-      //if(!uuid_is_null(id))
       {
         xml.tag(level++, "part cloneId=\"%d\"", id);
-        //char sid[40]; // uuid string is 36 chars. Try 40 for good luck.
-        //sid[0] = 0;
-        //uuid_unparse_lower(id, sid);
-        //xml.tag(level++, "part cloneId=\"%s\"", sid);
       }      
       else
         xml.tag(level++, "part");
       
       xml.strTag(level, "name", _name);
 
-//      PosLen poslen(*this);
-//      int tickpos = tick();
-//      poslen.setTick(tickpos);
       PosLen::write(level, xml, "poslen");
       xml.intTag(level, "selected", _selected);
       xml.intTag(level, "color", _colorIndex);
@@ -627,12 +553,12 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
             xml.intTag(level, "mute", _mute);
       if (dumpEvents) {
             for (ciEvent e = el->begin(); e != el->end(); ++e)
-                  //e->second.write(level, xml, *this);
                   e->second.write(level, xml, *this, forceWavePaths);
             }
       xml.etag(level, "part");
       }
 
+// DELETETHIS 280! whoa!
 /*
 //---------------------------------------------------------
 //   Part::read
@@ -921,7 +847,6 @@ void Song::writeFont(int level, Xml& xml, const char* name,
    const QFont& font) const
       {
       xml.nput(level, "<%s family=\"%s\" size=\"%d\"",
-         //name, font.family().toLatin1().constData(), font.pointSize());
          name, Xml::xmlString(font.family()).toLatin1().constData(), font.pointSize());
       if (font.weight() != QFont::Normal)
             xml.nput(" weight=\"%d\"", font.weight());
@@ -1051,6 +976,12 @@ void Song::read(Xml& xml, bool isTemplate)
                               track->read(xml);
                               insertTrack0(track, -1);
                               }
+                        else if (tag == "newdrumtrack") {
+                              MidiTrack* track = new MidiTrack();
+                              track->setType(Track::NEW_DRUM);
+                              track->read(xml);
+                              insertTrack0(track, -1);
+                              }
                         else if (tag == "wavetrack") {
                               MusECore::WaveTrack* track = new MusECore::WaveTrack();
                               track->read(xml);
@@ -1116,6 +1047,8 @@ void Song::read(Xml& xml, bool isTemplate)
                               }
                         else if (tag == "drummap")
                               readDrumMap(xml, false);
+                        else if (tag == "drum_ordering")
+                              MusEGlobal::global_drum_ordering.read(xml);
                         else
                               xml.unknown("Song");
                         break;
@@ -1176,38 +1109,24 @@ void Song::write(int level, Xml& xml) const
             (*i)->write(level, xml);
 
       // write routing
-      for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-            
-            // p3.3.38 Changed
-            //if ((*i)->isMidiTrack())
-            //      continue;
-            //MusECore::WaveTrack* track = (MusECore::WaveTrack*)(*i);
-            //track->writeRouting(level, xml);
-            
+      for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i)
             (*i)->writeRouting(level, xml);
-            }
 
       // Write midi device routing.
-      for (iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) {
-            //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(*i);
-            //if (!mjd)
-            //  continue;
-            //mjd->writeRouting(level, xml);
+      for (iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i)
             (*i)->writeRouting(level, xml);
-            }
       
-      // p3.3.49 Write midi port routing.
-      for (int i = 0; i < MIDI_PORTS; ++i) {
+      // Write midi port routing.
+      for (int i = 0; i < MIDI_PORTS; ++i)
             MusEGlobal::midiPorts[i].writeRouting(level, xml);
-            }
       
       MusEGlobal::tempomap.write(level, xml);
-      ///sigmap.write(level, xml);
       AL::sigmap.write(level, xml);
       MusEGlobal::keymap.write(level, xml);
       _markerList->write(level, xml);
 
       writeDrumMap(level, xml, false);
+      MusEGlobal::global_drum_ordering.write(level, xml);
       xml.tag(level, "/song");
       
       // Restore backup of the clone list, to retain any 'copy' items,
@@ -1294,10 +1213,10 @@ void MusE::readToplevels(MusECore::Xml& xml)
                               }
                         else if (tag == "scoreedit") {
                                 MusEGui::ScoreEdit* score = new MusEGui::ScoreEdit(this, 0, _arranger->cursorValue());
-                                score->show();
                                 toplevels.push_back(score);
                                 connect(score, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
                                 connect(score, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
+                                score->show();
                                 score->readStatus(xml);
                               }
                         else if (tag == "drumedit") {
@@ -1326,13 +1245,19 @@ void MusE::readToplevels(MusECore::Xml& xml)
                               }
                         else if (tag == "marker") {
                               showMarker(true);
-                              if (toplevels.back()->type()==MusEGui::TopWin::MARKER)
-                                toplevels.back()->readStatus(xml);
+                              TopWin* tw = toplevels.findType(TopWin::MARKER);
+                              if(!tw)
+                                xml.skip("marker");
+                              else
+                                tw->readStatus(xml);
                               }
                         else if (tag == "arrangerview") {
                               showArranger(true);
-                              if (toplevels.back()->type()==MusEGui::TopWin::ARRANGER)
-                                toplevels.back()->readStatus(xml);
+                              TopWin* tw = toplevels.findType(TopWin::ARRANGER);
+                              if(!tw)
+                                xml.skip("arrangerview");
+                              else
+                                tw->readStatus(xml);
                               }
                         else if (tag == "waveedit") {
                               if(!pl->empty())
@@ -1344,8 +1269,11 @@ void MusE::readToplevels(MusECore::Xml& xml)
                               }
                         else if (tag == "cliplist") {
                               startClipList(true);
-                              if (toplevels.back()->type()==MusEGui::TopWin::CLIPLIST)
-                                toplevels.back()->readStatus(xml);
+                              TopWin* tw = toplevels.findType(TopWin::CLIPLIST);
+                              if(!tw)
+                                xml.skip("cliplist");
+                              else
+                                tw->readStatus(xml);
                               }
                         else
                               xml.unknown("MusE");
@@ -1369,7 +1297,7 @@ void MusE::readToplevels(MusECore::Xml& xml)
 
 void MusE::readCtrl(MusECore::Xml&, int /*prt*/, int /*channel*/)
       {
-#if 0
+#if 0 // DELETETHIS 30. delete the whole function?
       ChannelState* iState = MusEGlobal::midiPorts[prt].iState(channel);
 
       int idx = 0;
@@ -1393,7 +1321,6 @@ void MusE::readCtrl(MusECore::Xml&, int /*prt*/, int /*channel*/)
                   case MusECore::Xml::TagEnd:
                         if (xml.s1() == "ctrl") {
                               iState->controller[idx] = val;
-// printf("%d %d ctrl %d val %d\n", prt, channel, idx, val);
                               return;
                               }
                   default:
@@ -1410,7 +1337,6 @@ void MusE::readCtrl(MusECore::Xml&, int /*prt*/, int /*channel*/)
 void MusE::readMidichannel(MusECore::Xml& xml, int prt)
       {
       int channel = 0;
-//      MidiPort* port = &MusEGlobal::midiPorts[prt];
 
       for (;;) {
             MusECore::Xml::Token token = xml.parse();
@@ -1421,7 +1347,7 @@ void MusE::readMidichannel(MusECore::Xml& xml, int prt)
                         return;
                   case MusECore::Xml::TagStart:
                         if (tag == "pitch") {
-//TODO                              port->setCtrl(channel, 0, CTRL_PITCH, xml.parseInt());
+//TODO                              port->setCtrl(channel, 0, CTRL_PITCH, xml.parseInt()); DELETETHIS? and below
                               }
                         else if (tag == "program") {
 //TODO                              port->setCtrl(channel, 0, CTRL_PROGRAM, xml.parseInt());
@@ -1487,9 +1413,12 @@ void MusE::readMidiport(MusECore::Xml& xml)
 //    read song
 //---------------------------------------------------------
 
-void MusE::read(MusECore::Xml& xml, bool skipConfig, bool isTemplate)
+void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
       {
       bool skipmode = true;
+      
+      writeTopwinState=true;
+      
       for (;;) {
             if (progress)
                 progress->setValue(progress->value()+1);
@@ -1505,11 +1434,31 @@ void MusE::read(MusECore::Xml& xml, bool skipConfig, bool isTemplate)
                         else if (skipmode)
                               break;
                         else if (tag == "configuration")
-                              if (skipConfig)
-                                    //xml.skip(tag);
-                                    readConfiguration(xml,true /* only read sequencer settings */, false /* do NOT read global settings */);
-                              else
-                                    readConfiguration(xml, false, false /* do NOT read global settings */);
+                              readConfiguration(xml, doReadMidiPorts, false /* do NOT read global settings, see below */);
+                        /* Explanation for why "do NOT read global settings":
+                         * if you would use true here, then muse would overwrite certain global config stuff
+                         * by the settings stored in the song. but you don't want this. imagine that you
+                         * send a friend a .med file. your friend opens it and baaam, his configuration is
+                         * garbled. why? well, because these readConfigurations here would have overwritten
+                         * parts (but not all) of his global config (like MDI/SDI, toolbar states etc.)
+                         * with the data stored in the song. (it IS stored there. dunny why, i find it pretty
+                         * senseless.)
+                         * 
+                         * If you've a problem which seems to be solved by replacing "false" with "true", i've
+                         * a better solution for you: go into conf.cpp, in void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig)
+                         * (around line 525), look for a comment like this:
+                         * "Global and/or per-song config stuff ends here" (alternatively just search for
+                         * "----"). Your problem is probably that some non-global setting should be loaded but
+                         * is not. Fix it by either placing the else if (foo)... clause responsible for that
+                         * setting to be loaded into the first part, that is, before "else if (!doReadGlobalConfig)"
+                         * or (if the settings actually IS global and not per-song), ensure that the routine
+                         * which writes the global (and not the song-)configuration really writes that setting.
+                         * (it might happen that it formerly worked because it was written to the song instead
+                         *  of the global config by mistake, and now isn't loaded anymore. write it to the
+                         *  correct location.)
+                         * 
+                         *                                                                                -- flo93
+                         */
                         else if (tag == "song")
                         {
                               MusEGlobal::song->read(xml, isTemplate);
@@ -1526,6 +1475,14 @@ void MusE::read(MusECore::Xml& xml, bool skipConfig, bool isTemplate)
                               readStatusMidiInputTransformPlugin(xml);
                         else if (tag == "toplevels")
                               readToplevels(xml);
+                        else if (tag == "no_toplevels")
+                        {     
+                              if (!isTemplate)
+                                writeTopwinState=false;
+                              
+                              xml.skip("no_toplevels");
+                        }
+                              
                         else
                               xml.unknown("muse");
                         break;
@@ -1551,7 +1508,7 @@ void MusE::read(MusECore::Xml& xml, bool skipConfig, bool isTemplate)
 //    write song
 //---------------------------------------------------------
 
-void MusE::write(MusECore::Xml& xml) const
+void MusE::write(MusECore::Xml& xml, bool writeTopwins) const
       {
       xml.header();
 
@@ -1563,7 +1520,7 @@ void MusE::write(MusECore::Xml& xml) const
 
       MusEGlobal::song->write(level, xml);
 
-      if (!toplevels.empty()) {
+      if (writeTopwins && !toplevels.empty()) {
             xml.tag(level++, "toplevels");
             for (MusEGui::ciToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
                   if ((*i)->isVisible())
@@ -1571,6 +1528,11 @@ void MusE::write(MusECore::Xml& xml) const
                   }
             xml.tag(level--, "/toplevels");
             }
+      else if (!writeTopwins)
+      {
+            xml.tag(level, "no_toplevels");
+            xml.etag(level, "no_toplevels");
+      }
 
       xml.tag(level, "/muse");
       }

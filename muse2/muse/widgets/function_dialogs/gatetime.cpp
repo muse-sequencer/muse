@@ -30,6 +30,10 @@
 
 namespace MusEGui {
 
+int GateTime::range = 1;
+int GateTime::rateVal = 100;
+int GateTime::offsetVal = 0;
+      
 //---------------------------------------------------------
 //   GateTime
 //---------------------------------------------------------
@@ -44,8 +48,6 @@ GateTime::GateTime(QWidget* parent)
       rangeGroup->addButton(loopButton, 2);
       rangeGroup->addButton(sloopButton, 3);
       rangeGroup->setExclusive(true);
-      
-      pullValues();
       }
 
 //---------------------------------------------------------

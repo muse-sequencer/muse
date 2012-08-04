@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: ecanvas.cpp,v 1.8.2.6 2009/05/03 04:14:00 terminator356 Exp $
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,8 +21,9 @@
 //
 //=========================================================
 
+#include <stdio.h>
 #include <errno.h>
-#include <values.h>
+#include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -41,6 +43,7 @@
 #include "shortcuts.h"
 #include "audio.h"
 #include "functions.h"
+#include "pcanvas.h"
 
 // Item drawing layer indices:
 #define _NONCUR_PART_UNSEL_EVENT_LAYER_  0
@@ -64,6 +67,7 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       _steprec    = false;
       _midiin     = false;
       _playEvents = false;
+      _setCurPartIfOnlyOneEventIsSelected = true;
       curVelo     = 70;
 
       // Create one item layer for notes.
@@ -94,9 +98,7 @@ QString EventCanvas::getCaption() const
       {
       int bar1, bar2, xx;
       unsigned x;
-      ///sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
       AL::sigmap.tickValues(_curPart->tick(), &bar1, &xx, &x);
-      ///sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
       AL::sigmap.tickValues(_curPart->tick() + _curPart->lenTick(), &bar2, &xx, &x);
 
       return QString("MusE: Part <") + _curPart->name()
@@ -110,7 +112,7 @@ QString EventCanvas::getCaption() const
 void EventCanvas::leaveEvent(QEvent*)
       {
       emit pitchChanged(-1);
-      emit timeChanged(MAXINT);
+      emit timeChanged(INT_MAX);
       }
 
 //---------------------------------------------------------
@@ -168,9 +170,33 @@ void EventCanvas::songChanged(int flags)
         return;
     
       if (flags & ~SC_SELECTION) {
-            //items.clear();
+            // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
+            //             (same in waveview.cpp)
+            bool curItemNeedsRestore=false;
+            MusECore::Event storedEvent;
+            int partSn;
+
+// REMOVE Tim. TEST: Flo's original addition:
+//             if (curItem)
+//             {
+//               curItemNeedsRestore=true;
+//               storedEvent=curItem->event();
+//               partSn=curItem->part()->sn();
+//             }
+//             curItem=NULL;
+//            
+            // Only handle midi items for now. p4.1.0 
+            if (curItem && (curItem->type() == CItem::MEVENT || curItem->type() == CItem::DEVENT))
+            {
+              curItemNeedsRestore=true;
+              MCItem* mci = static_cast<MCItem*>(curItem);
+              storedEvent = mci->event();
+              partSn      = mci->part()->sn();
+              curItem=NULL;
+            }
+            
             items[_ECANVAS_EVENT_ITEMS_].clearDelete();
-            start_tick  = MAXINT;
+            start_tick  = INT_MAX;
             end_tick    = 0;
             _curPart = 0;
             for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
@@ -188,14 +214,20 @@ void EventCanvas::songChanged(int flags)
                   MusECore::EventList* el = part->events();
                   for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
                         MusECore::Event e = i->second;
-                        // Added by T356. Do not add events which are either past, or extend past the end of the part.
-                        // Reverted to just events which are past. p4.0.24 
+                        // Do not add events which are past the end of the part.
                         if(e.tick() > len)      
-                        //if(e.endTick() > len)
                           break;
                         
                         if (e.isNote()) {
-                              addItem(part, e);
+                              CItem* temp = addItem(part, e);
+                              
+                              if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
+                              {
+                                  if (curItem!=NULL)
+                                    printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
+                                  
+                                  curItem=temp;
+                                  }
                               }
                         }
                   }
@@ -227,17 +259,26 @@ void EventCanvas::songChanged(int flags)
       start_tick = MusEGlobal::song->roundDownBar(start_tick);
       end_tick   = MusEGlobal::song->roundUpBar(end_tick);
 
-      if (n == 1) {
+      if (n >= 1)    
+      {
             x     = nevent->x();
             event = nevent->event();
             part  = (MusECore::MidiPart*)nevent->part();
-            if (_curPart != part) {
+            if (_setCurPartIfOnlyOneEventIsSelected && n == 1 && _curPart != part) {
                   _curPart = part;
                   _curPartId = _curPart->sn();
                   curPartChanged();
                   }
-            }
-      emit selectionChanged(x, event, part);
+      }
+      
+      bool f1 = flags & (SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED | 
+                         SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
+                         SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+                         SC_SIG | SC_TEMPO | SC_KEY | SC_MASTER | SC_CONFIG | SC_DRUMMAP); 
+      bool f2 = flags & SC_SELECTION;
+      if(f1 || f2)   // Try to avoid all unnecessary emissions.
+        emit selectionChanged(x, event, part, !f1);
+      
       if (_curPart == 0)
             _curPart = (MusECore::MidiPart*)(editor->parts()->begin()->second);
       redraw();
@@ -305,13 +346,10 @@ MusECore::MidiTrack* EventCanvas::track() const
 void EventCanvas::keyPress(QKeyEvent* event)
       {
       int key = event->key();
-      ///if (event->state() & Qt::ShiftButton)
       if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
             key += Qt::SHIFT;
-      ///if (event->state() & Qt::AltButton)
       if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
             key += Qt::ALT;
-      ///if (event->state() & Qt::ControlButton)
       if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
             key+= Qt::CTRL;
 
@@ -354,63 +392,172 @@ void EventCanvas::keyPress(QKeyEvent* event)
             }
       // Select items by key (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
-            iCItem i, iRightmost;
-	    CItem* rightmost = NULL;
-            //Get the rightmost selected note (if any)
-            for (i = items[_ECANVAS_EVENT_ITEMS_].begin(); i != items[_ECANVAS_EVENT_ITEMS_].end(); ++i) {
-                  // p4.1.0 Only handle notes for now. 
-                  if(i->second->type() != CItem::MEVENT && i->second->type() != CItem::DEVENT)
-                    continue;
-                  
-		  if (i->second->isSelected()) {
-                        iRightmost = i; rightmost = i->second;
-                        }
-                  }
-               if (rightmost) {
-                     iCItem temp = iRightmost; temp++;
-                     //If so, deselect current note and select the one to the right
-                     if (temp != items[_ECANVAS_EVENT_ITEMS_].end()) {
-                           if (key != shortcuts[SHRT_SEL_RIGHT_ADD].key)
-                                 deselectAll();
+// <<<<<<< .working
+//             iCItem i, iRightmost;
+// 	    CItem* rightmost = NULL;
+//             //Get the rightmost selected note (if any)
+//             for (i = items[_ECANVAS_EVENT_ITEMS_].begin(); i != items[_ECANVAS_EVENT_ITEMS_].end(); ++i) {
+//                   // p4.1.0 Only handle notes for now. 
+//                   if(i->second->type() != CItem::MEVENT && i->second->type() != CItem::DEVENT)
+//                     continue;
+//                   
+// 		  if (i->second->isSelected()) {
+//                         iRightmost = i; rightmost = i->second;
+//                         }
+//                   }
+//                if (rightmost) {
+//                      iCItem temp = iRightmost; temp++;
+//                      //If so, deselect current note and select the one to the right
+//                      if (temp != items[_ECANVAS_EVENT_ITEMS_].end()) {
+//                            if (key != shortcuts[SHRT_SEL_RIGHT_ADD].key)
+//                                  deselectAll();
+// =======
+              rciCItem i;
+// >>>>>>> .merge-right.r1557
 
-                           iRightmost++;
-                           iRightmost->second->setSelected(true);
-                           updateSelection();
-                           }
-                     }
-               //if (rightmost && mapx(rightmost->event().tick()) > width()) for some reason this doesn't this doesnt move the event in view
-               //   emit followEvent(rightmost->x());
+// REMOVE Tim. This is the merged part. Reworked.              
+//               if (items.empty())
+//                   return;
+//               for (i = items.rbegin(); i != items.rend(); ++i) 
+//                 if (i->second->isSelected()) 
+//                   break;
+// 
+//               if(i == items.rend())
+//                 i = items.rbegin();
+//               
+//               if(i != items.rbegin())
+//                 --i;
+//               if(i->second)
+//               {
+//                 if (key != shortcuts[SHRT_SEL_RIGHT_ADD].key)
+//                       deselectAll();
+//                 CItem* sel = i->second;
+//                 sel->setSelected(true);
+//                 updateSelection();
+//                 if (sel->x() + sel->width() > mapxDev(width())) 
+//                 {  
+//                   int mx = rmapx(sel->x());  
+//                   int newx = mx + rmapx(sel->width()) - width();
+//                   // Leave a bit of room for the specially-drawn drum notes. But good for piano too.
+//                   emit horizontalScroll( (newx > mx ? mx - 10: newx + 10) - rmapx(xorg) );
+//                 }  
+//               }
+//             }
+//             
+//             
+              //TEST Tim: Hm, is this correct and how we want it? Esp deselectAll? Maybe deselect only notes.
+              // p4.1.0 Only handle notes for now.  
+              if (items[_ECANVAS_EVENT_ITEMS_].empty())
+                  return;
+              for (i = items[_ECANVAS_EVENT_ITEMS_].rbegin(); i != items[_ECANVAS_EVENT_ITEMS_].rend(); ++i) 
+                if (i->second->isSelected()) 
+                  break;
 
+              if(i == items[_ECANVAS_EVENT_ITEMS_].rend())
+                i = items[_ECANVAS_EVENT_ITEMS_].rbegin();
+              
+              if(i != items[_ECANVAS_EVENT_ITEMS_].rbegin())
+                --i;
+              if(i->second)
+              {
+                if (key != shortcuts[SHRT_SEL_RIGHT_ADD].key)
+                      deselectAll();
+                CItem* sel = i->second;
+                sel->setSelected(true);
+                updateSelection();
+                if (sel->x() + sel->width() > mapxDev(width())) 
+                {  
+                  int mx = rmapx(sel->x());  
+                  int newx = mx + rmapx(sel->width()) - width();
+                  // Leave a bit of room for the specially-drawn drum notes. But good for piano too.
+                  emit horizontalScroll( (newx > mx ? mx - 10: newx + 10) - rmapx(xorg) );
+                }  
+              }
             }
+            
       //Select items by key: (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key) {
-            iCItem i, iLeftmost;
-            CItem* leftmost = NULL;
-            //if (items.size() > 0 ) {        // I read that this may be much slower than empty().
-            if (!items[_ECANVAS_EVENT_ITEMS_].empty() ) {       
-                  for (i = items[_ECANVAS_EVENT_ITEMS_].end(), i--; i != items[_ECANVAS_EVENT_ITEMS_].begin(); i--) {
-			// p4.1.0 Only handle notes for now. 
-			if(i->second->type() != CItem::MEVENT && i->second->type() != CItem::DEVENT)
-			  continue;
-                        
-			if (i->second->isSelected()) {
-                              iLeftmost = i; leftmost = i->second;
-                              }
-                        }
-                    if (leftmost) {
-                          if (iLeftmost != items[_ECANVAS_EVENT_ITEMS_].begin()) {
-                                //Add item
-                                if (key != shortcuts[SHRT_SEL_LEFT_ADD].key)
-                                      deselectAll();
-      
-                                iLeftmost--;
-                                iLeftmost->second->setSelected(true);
-                                updateSelection();
-                                }
-                          }
-                    //if (leftmost && mapx(leftmost->event().tick())< 0 ) for some reason this doesn't this doesnt move the event in view
-                    //  emit followEvent(leftmost->x());
-                  }
+// <<<<<<< .working
+//             iCItem i, iLeftmost;
+//             CItem* leftmost = NULL;
+//             //if (items.size() > 0 ) {        // I read that this may be much slower than empty().
+//             if (!items[_ECANVAS_EVENT_ITEMS_].empty() ) {       
+//                   for (i = items[_ECANVAS_EVENT_ITEMS_].end(), i--; i != items[_ECANVAS_EVENT_ITEMS_].begin(); i--) {
+// 			// p4.1.0 Only handle notes for now. 
+// 			if(i->second->type() != CItem::MEVENT && i->second->type() != CItem::DEVENT)
+// 			  continue;
+//                         
+// 			if (i->second->isSelected()) {
+//                               iLeftmost = i; leftmost = i->second;
+//                               }
+//                         }
+//                     if (leftmost) {
+//                           if (iLeftmost != items[_ECANVAS_EVENT_ITEMS_].begin()) {
+//                                 //Add item
+//                                 if (key != shortcuts[SHRT_SEL_LEFT_ADD].key)
+//                                       deselectAll();
+//       
+//                                 iLeftmost--;
+//                                 iLeftmost->second->setSelected(true);
+//                                 updateSelection();
+//                                 }
+//                           }
+//                     //if (leftmost && mapx(leftmost->event().tick())< 0 ) for some reason this doesn't this doesnt move the event in view
+//                     //  emit followEvent(leftmost->x());
+//                   }
+// =======
+
+// REMOVE Tim. This is the merged part. Reworked.              
+//               ciCItem i;
+//               if (items.empty())
+//                   return;
+//               for (i = items.begin(); i != items.end(); ++i)
+//                 if (i->second->isSelected()) 
+//                   break;
+// 
+//               if(i == items.end())
+//                 i = items.begin();
+//               
+//               if(i != items.begin())
+//                 --i;
+//               if(i->second)
+//               {
+//                 if (key != shortcuts[SHRT_SEL_LEFT_ADD].key)
+//                       deselectAll();
+//                 CItem* sel = i->second;
+//                 sel->setSelected(true);
+//                 updateSelection();
+//                 if (sel->x() <= mapxDev(0)) 
+//                   emit horizontalScroll(rmapx(sel->x() - xorg) - 10);  // Leave a bit of room.
+//               }
+// >>>>>>> .merge-right.r1557
+
+
+              //TEST Tim: Hm, is this correct and how we want it? Esp deselectAll? Maybe deselect only notes.
+              // p4.1.0 Only handle notes for now.  
+              ciCItem i;
+              if (items[_ECANVAS_EVENT_ITEMS_].empty())
+                  return;
+              for (i = items[_ECANVAS_EVENT_ITEMS_].begin(); i != items[_ECANVAS_EVENT_ITEMS_].end(); ++i)
+                if (i->second->isSelected()) 
+                  break;
+
+              if(i == items[_ECANVAS_EVENT_ITEMS_].end())
+                i = items[_ECANVAS_EVENT_ITEMS_].begin();
+              
+              if(i != items[_ECANVAS_EVENT_ITEMS_].begin())
+                --i;
+              if(i->second)
+              {
+                if (key != shortcuts[SHRT_SEL_LEFT_ADD].key)
+                      deselectAll();
+                CItem* sel = i->second;
+                sel->setSelected(true);
+                updateSelection();
+                if (sel->x() <= mapxDev(0)) 
+                  emit horizontalScroll(rmapx(sel->x() - xorg) - 10);  // Leave a bit of room.
+              }
+
             }
       else if (key == shortcuts[SHRT_INC_PITCH].key) {
             modifySelected(NoteInfo::VAL_PITCH, 1);
@@ -539,6 +686,8 @@ void EventCanvas::curItemChanged()
             _curPartId = _curPart->sn();
             curPartChanged();
             }
+      // TEST: This is Flo's line, I moved it here from canvas.cpp REMOVE Tim. Or not...
+      emit curPartHasChanged(_curPart);
     }
     break;
 
@@ -547,6 +696,54 @@ void EventCanvas::curItemChanged()
   }      
 }
 
+//---------------------------------------------------------
+//   curPartChanged
+//---------------------------------------------------------
+
+void EventCanvas::curPartChanged()
+{
+
+// REMOVE Tim. TEST Tim:
+// This was an attempt to move Flo's code from canvas.cpp
+//  to here. But I think it is redundant since I already
+//  added curItemChanged.
+  
+// // REMOVE Tim.   
+// //       if (curItem->part() != curPart) {
+// //             curPart = curItem->part();
+// //             curPartId = curPart->sn();
+// //             curPartChanged();
+// //             }
+// //       emit curPartHasChanged(curPart);
+// //       
+//       
+//   if(!curItem)
+//   {  
+//     //_curPart = NULL;
+//     //_curPartId = -1;
+//     return;
+//   }
+//   
+//   switch(curItem->type())
+//   {
+//     case CItem::MEVENT:
+//     {  
+//       MCItem* i = (MCItem*)curItem;
+//       if (i->part() != _curPart) {
+//             _curPart = i->part();
+//             _curPartId = _curPart->sn();
+//             curPartChanged();
+//             }
+//       emit curPartHasChanged(curPart);
+//     }
+//     break;
+// 
+//     default:
+//     return;  
+//   }      
+      
+}
+      
 //---------------------------------------------------------
 //   selectLasso
 //---------------------------------------------------------

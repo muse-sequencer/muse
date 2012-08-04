@@ -562,6 +562,9 @@ void Canvas::viewKeyPressEvent(QKeyEvent* event)
 
 void Canvas::viewMousePressEvent(QMouseEvent* event)
       {
+      if (!mousePress(event))
+          return;
+
       ///keyState = event->state();
       keyState = ((QInputEvent*)event)->modifiers();
       button = event->button();
@@ -692,7 +695,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
             switch (_tool) {
                   case PointerTool:
                         if (curItem) {
-                              //if (curItem->part() != curPart) {
+                              //if (curItem->part() != curPart) {  // REMOVE Tim. ?
                               //      curPart = curItem->part();
                               //      curPartId = curPart->sn();
                               //      curPartChanged();
@@ -751,7 +754,6 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         break;
                   }
             }
-      mousePress(event);
       }
 
 void Canvas::scrollTimerDone()
@@ -1170,6 +1172,15 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_MOVE_START:
             case DRAG_COPY_START:
             case DRAG_CLONE_START:
+              
+// REMOVE Tim. TEST: This was added by Flo in trunk.  
+//                   I think we still need this. Try to move it out of here.
+//                   if (curItem->part() != curPart) {
+//                         curPart = curItem->part();
+//                         curPartId = curPart->sn();
+//                         curPartChanged();
+//                         }
+
                   if (!ctrl)
                         deselectAll();
                         

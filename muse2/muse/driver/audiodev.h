@@ -52,6 +52,7 @@ class AudioDevice {
       virtual void stop () = 0;
       virtual int framePos() const = 0;
       virtual unsigned frameTime() const = 0;
+      virtual double systemTime() const = 0;
 
       virtual float* getBuffer(void* port, unsigned long nframes) = 0;
 
@@ -75,7 +76,7 @@ class AudioDevice {
       virtual void* findPort(const char* name) = 0;
       virtual QString portName(void* port) = 0;
       virtual int getState() = 0;
-      virtual unsigned getCurFrame() = 0;
+      virtual unsigned getCurFrame() const = 0;
       virtual bool isRealtime() = 0;
       virtual int realtimePriority() const = 0; // return zero if not realtime
       virtual void startTransport() = 0;

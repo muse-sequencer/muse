@@ -45,10 +45,8 @@ class MidiAlsaDevice : public MidiDevice {
    private:
       // Special for ALSA midi device: Play event list is processed in the ALSA midi sequencer thread.
       // Need this FIFO, to decouple from audio thread which adds events to the list.       
-      MidiFifo playEventFifo;  
-      MidiFifo stuckNotesFifo;  
-      volatile bool stopPending;         
-      volatile bool seekPending;
+      //MidiFifo playEventFifo;  
+      //MidiFifo stuckNotesFifo;  
       
       virtual QString open();
       virtual void close();
@@ -69,13 +67,13 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void writeRouting(int, Xml&) const;
       virtual inline int deviceType() const { return ALSA_MIDI; } 
       // Schedule an event for playback. Returns false if event cannot be delivered.
-      virtual bool addScheduledEvent(const MidiPlayEvent& ev) { return !playEventFifo.put(ev); }
+      //virtual bool addScheduledEvent(const MidiPlayEvent& ev) { return !playEventFifo.put(ev); }
       // Add a stuck note. Returns false if event cannot be delivered.
-      virtual bool addStuckNote(const MidiPlayEvent& ev) { return !stuckNotesFifo.put(ev); }
+      //virtual bool addStuckNote(const MidiPlayEvent& ev) { return !stuckNotesFifo.put(ev); }
       // Play all events up to current frame.
       virtual void processMidi();
-      virtual void handleStop();
-      virtual void handleSeek();
+      //virtual void handleStop();
+      //virtual void handleSeek();
       };
 
 extern bool initMidiAlsa();
@@ -84,6 +82,7 @@ extern int alsaSelectRfd();
 extern int alsaSelectWfd();
 extern void alsaProcessMidiInput();
 extern void alsaScanMidiPorts();
+extern void setAlsaClientName(const char*);
 
 } // namespace MusECore
 

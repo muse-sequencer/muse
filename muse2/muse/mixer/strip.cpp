@@ -29,6 +29,8 @@
 #include <QColor>
 #include <QVBoxLayout>
 #include <QFrame>
+#include <QMouseEvent>
+#include <QMenu>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -99,7 +101,6 @@ void Strip::heartBeat()
 //---------------------------------------------------------
 //   setLabelFont
 //---------------------------------------------------------
-// Added by Tim. p3.3.9
 
 void Strip::setLabelFont()
 {
@@ -150,6 +151,10 @@ void Strip::setLabelText()
                   //c = QColor(0, 160, 255); // Med blue
                   c = MusEGlobal::config.drumTrackLabelBg;
                   break;
+            case MusECore::Track::NEW_DRUM:
+                  //c = QColor(0, 160, 255); // Med blue
+                  c = MusEGlobal::config.newDrumTrackLabelBg;
+                  break;
             default:
                   return;      
             }
@@ -161,7 +166,8 @@ void Strip::setLabelText()
       //gradient.setColorAt(0, c.darker());
       //gradient.setColorAt(0, c);
       //gradient.setColorAt(1, c.darker());
-      gradient.setColorAt(0, c.lighter());
+      gradient.setColorAt(0, c);
+      gradient.setColorAt(0.5, c.lighter());
       gradient.setColorAt(1, c);
       //palette.setBrush(QPalette::Button, gradient);
       //palette.setBrush(QPalette::Window, gradient);
@@ -291,10 +297,23 @@ Strip::~Strip()
 //---------------------------------------------------------
 
 void Strip::setAutomationType(int t)
-      {
-      track->setAutomationType(AutomationType(t));
-      MusEGlobal::song->update(SC_AUTOMATION);
-      }
+{
+  // If going to OFF mode, need to update current 'manual' values from the automation values at this time...   
+  if(t == AUTO_OFF && track->automationType() != AUTO_OFF) // && track->automationType() != AUTO_WRITE)
+  {
+    // May have a lot to do in updateCurValues, so try using idle.
+    MusEGlobal::audio->msgIdle(true);
+    track->setAutomationType(AutomationType(t));
+    if(!track->isMidiTrack())
+      (static_cast<MusECore::AudioTrack*>(track))->controller()->updateCurValues(MusEGlobal::audio->curFramePos());
+    MusEGlobal::audio->msgIdle(false);
+  }
+  else
+    // Try it within one message.
+    MusEGlobal::audio->msgSetTrackAutomationType(track, t);   
+  
+  MusEGlobal::song->update(SC_AUTOMATION);
+}
       
 void Strip::resizeEvent(QResizeEvent* ev)
 {
@@ -303,6 +322,27 @@ void Strip::resizeEvent(QResizeEvent* ev)
   setLabelText();  
   setLabelFont();
 }  
-      
+
+void Strip::mousePressEvent(QMouseEvent* ev)
+{
+  if (ev->button() == Qt::RightButton) {
+    QMenu* menu = new QMenu;
+    menu->addAction(tr("Remove track?"));
+    QPoint pt = QCursor::pos();
+    QAction* act = menu->exec(pt, 0);
+    if (!act)
+    {
+      delete menu;
+      QFrame::mousePressEvent(ev);
+      return;
+    }
+    MusEGlobal::song->removeTrack0(track);
+    MusEGlobal::audio->msgUpdateSoloStates();
+    ev->accept();
+    return;
+  }
+  QFrame::mousePressEvent(ev);
+}
+
 
 } // namespace MusEGui

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>556</width>
-    <height>527</height>
+    <width>525</width>
+    <height>549</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,7 +30,39 @@
        <string>Application</string>
       </attribute>
       <layout class="QGridLayout">
-       <item row="1" column="0">
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="projDirGroupBox">
+         <property name="title">
+          <string>Project directory</string>
+         </property>
+         <layout class="QHBoxLayout" name="qhboxProjDir">
+          <property name="spacing">
+           <number>-1</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="textLabel_ProjDir">
+            <property name="text">
+             <string>Projects:</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="projDirEntry"/>
+          </item>
+          <item>
+           <widget class="QToolButton" name="projDirOpenToolButton">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
         <widget class="QGroupBox" name="groupBox4">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -413,53 +445,47 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="0">
+       <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox3">
          <property name="title">
           <string>Start Muse</string>
          </property>
          <layout class="QGridLayout">
           <item row="0" column="0">
-           <layout class="QGridLayout">
-            <item row="1" column="0">
-             <spacer name="spacer7_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Expanding</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>51</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="2" column="0" colspan="2">
-             <layout class="QHBoxLayout">
+           <layout class="QGridLayout" name="gridLayout11">
+            <item row="3" column="0" colspan="2">
+             <layout class="QHBoxLayout" name="qhboxStartSong">
               <item>
-               <widget class="QLabel" name="textLabel1_2">
-                <property name="text">
-                 <string>start song:</string>
+               <widget class="QLineEdit" name="startSongEntry"/>
+              </item>
+              <item>
+               <widget class="QToolButton" name="startSongFileOpenToolButton">
+                <property name="toolTip">
+                 <string>Choose start song or template</string>
                 </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
+                <property name="text">
+                 <string>...</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="startSongEntry"/>
+               <widget class="QToolButton" name="startSongResetToolButton">
+                <property name="toolTip">
+                 <string>Reset to default</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
-            <item row="0" column="0">
+            <item row="1" column="0" colspan="2">
              <widget class="QGroupBox" name="startSongBox">
               <property name="title">
                <string>Start song</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout">
+              <layout class="QHBoxLayout" name="hLayout_1">
                <item>
                 <widget class="QRadioButton" name="startLastButton">
                  <property name="text">
@@ -479,7 +505,7 @@
                   </sizepolicy>
                  </property>
                  <property name="text">
-                  <string>start with template: default.med</string>
+                  <string>start with template</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>
@@ -496,12 +522,12 @@
               </layout>
              </widget>
             </item>
-            <item row="0" column="1">
+            <item row="0" column="0" colspan="2">
              <widget class="QGroupBox" name="startUpBox">
               <property name="title">
                <string>On Launch</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_2">
+              <layout class="QHBoxLayout" name="hLayout_2">
                <item>
                 <widget class="QCheckBox" name="showSplash">
                  <property name="text">
@@ -519,18 +545,26 @@
               </layout>
              </widget>
             </item>
-            <item row="1" column="1">
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
+            <item row="2" column="0">
+             <widget class="QLabel" name="textLabel1_2">
+              <property name="text">
+               <string>Start template or song:</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
+              <property name="wordWrap">
+               <bool>false</bool>
               </property>
-             </spacer>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="readMidiConfigFromSongCheckBox">
+              <property name="toolTip">
+               <string>Read MIDI Ports configuration from file, 
+ or else automatically configure</string>
+              </property>
+              <property name="text">
+               <string>Read MIDI Ports configuration</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -811,9 +845,9 @@ Adjusts responsiveness of audio controls and
            <number>2</number>
           </property>
           <item row="0" column="0">
-           <layout class="QGridLayout">
+           <layout class="QGridLayout" name="gridLayoutwaveEditor">
             <item row="0" column="0">
-             <layout class="QHBoxLayout">
+             <layout class="QHBoxLayout" name="qhboxLayoutWaveEditor">
               <item>
                <widget class="QLabel" name="textLabel2_2">
                 <property name="sizePolicy">
@@ -995,13 +1029,7 @@ Adjusts responsiveness of audio controls and
       <attribute name="title">
        <string>Midi</string>
       </attribute>
-      <layout class="QVBoxLayout">
-       <property name="spacing">
-        <number>6</number>
-       </property>
-       <property name="margin">
-        <number>11</number>
-       </property>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
         <widget class="QGroupBox" name="GroupBox2">
          <property name="title">
@@ -1179,51 +1207,64 @@ Adjusts responsiveness of audio controls and
             </item>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="TextLabel3_4">
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Record new style drum tracks</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QRadioButton" name="recordAllButton">
             <property name="text">
-             <string>Instruments Directory</string>
+             <string>Record all instruments</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="userInstrumentsPath"/>
-          </item>
-          <item row="3" column="2">
-           <widget class="QPushButton" name="selectInstrumentsDirButton">
+          <item>
+           <widget class="QRadioButton" name="dontRecHiddenButton">
             <property name="text">
-             <string/>
+             <string>Don't record hidden instruments</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="3">
-           <widget class="QPushButton" name="defaultInstrumentsDirButton">
+          <item>
+           <widget class="QRadioButton" name="dontRecMutedButton">
             <property name="text">
-             <string/>
+             <string>Don't record muted instruments</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+          <item>
+           <widget class="QRadioButton" name="dontRecBothButton">
+            <property name="text">
+             <string>Don't record hidden or muted instruments</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
+           </widget>
           </item>
          </layout>
         </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>191</width>
+           <height>166</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab3">
       <attribute name="title">
-       <string>GUI</string>
+       <string>GUI Behaviour</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <property name="spacing">
@@ -1406,10 +1447,138 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
+          <item row="7" column="1">
+           <widget class="QCheckBox" name="addHiddenCheckBox">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Allow adding hidden tracks in track list menu</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Unhide tracks when adding hidden tracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QCheckBox" name="unhideTracksCheckBox">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label5">
+            <property name="text">
+             <string>Smart focus</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QCheckBox" name="smartFocusCheckBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Smart focus</string>
+            </property>
+            <property name="whatsThis">
+             <string>After editing, controls will return
+ focus to their respective canvas</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
          </layout>
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Drum tracks</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="QRadioButton" name="onlyOldDrumBtn">
+            <property name="text">
+             <string>Only offer old-style drumtracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QRadioButton" name="onlyNewDrumBtn">
+            <property name="text">
+             <string>Only offer new-style drumtracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="preferOldDrumBtn">
+            <property name="text">
+             <string>Prefer old-style drumtracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QRadioButton" name="preferNewDrumBtn">
+            <property name="text">
+             <string>Prefer new-style drumtracks</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>GUI Style</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayoutTab2">
+       <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
           <string>MDI-subwindowness and sharing menus</string>
@@ -1460,8 +1629,8 @@ left button behave like the middle button in such areas.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>482</width>
-               <height>143</height>
+               <width>481</width>
+               <height>386</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -1478,6 +1647,22 @@ left button behave like the middle button in such areas.</string>
       </layout>
      </widget>
     </widget>
+   </item>
+   <item>
+    <spacer name="spacer7_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>51</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

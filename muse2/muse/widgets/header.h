@@ -25,6 +25,7 @@
 
 #include <QHeaderView>
 #include <QAction>
+#include <QString>
 
 class QStandardItemModel;
 

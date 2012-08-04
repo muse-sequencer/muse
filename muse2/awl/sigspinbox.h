@@ -16,6 +16,7 @@ public:
 
 signals:
     void returnPressed();
+    void escapePressed();
     void moveFocus();
 
 public slots:

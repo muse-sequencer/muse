@@ -21,14 +21,16 @@
 //
 //=========================================================
 
-///#include "sig.h"
-#include "al/sig.h"  // Tim.
+//#include "sig.h"
+#include "al/sig.h"  
 #include "keyevent.h"
 
 #include "undo.h"
 #include "song.h"
 #include "globals.h"
+#include "audio.h"  
 
+#include <string.h>
 #include <QAction>
 #include <set>
 
@@ -47,11 +49,16 @@ std::list<QString> temporaryWavFiles;
 const char* UndoOp::typeName()
       {
       static const char* name[] = {
-            "AddTrack", "DeleteTrack", "ModifyTrack",
+            "AddTrack", "DeleteTrack", 
             "AddPart",  "DeletePart",  "ModifyPart",
             "AddEvent", "DeleteEvent", "ModifyEvent",
-            "AddTempo", "DeleteTempo", "AddSig", "DeleteSig",
-            "SwapTrack", "ModifyClip"
+            "AddTempo", "DeleteTempo",
+            "AddSig", "DeleteSig",
+            "AddKey", "DeleteKey",
+            "ModifyTrackName", "ModifyTrackChannel",
+            "SwapTrack", 
+            "ModifyClip", "ModifyMarker",
+            "ModifySongLen", "DoNothing"
             };
       return name[type];
       }
@@ -66,10 +73,7 @@ void UndoOp::dump()
       switch(type) {
             case AddTrack:
             case DeleteTrack:
-                  printf("%d %s\n", trackno, oTrack->name().toLatin1().constData());
-                  break;
-            case ModifyTrack:
-                  printf("%d <%s>-<%s>\n", trackno, oTrack->name().toLatin1().constData(), nTrack->name().toLatin1().constData());
+                  printf("%d %s\n", trackno, track->name().toLatin1().constData());
                   break;
             case AddPart:
             case DeletePart:
@@ -85,6 +89,12 @@ void UndoOp::dump()
                   if (part)
                         part->dump(5);
                   break;
+            case ModifyTrackName:
+                  printf("<%s>-<%s>\n", _oldName, _newName);
+                  break;
+            case ModifyTrackChannel:
+                  printf("<%d>-<%d>\n", _oldPropValue, _newPropValue);
+                  break;
             case ModifyEvent:
             case AddTempo:
             case DeleteTempo:
@@ -95,7 +105,10 @@ void UndoOp::dump()
             case ModifyMarker:
             case AddKey:
             case DeleteKey:
+            case ModifySongLen:
             case DoNothing:
+                  break;
+            default:      
                   break;
             }
       }
@@ -108,91 +121,85 @@ void UndoList::clearDelete()
 {
   if(!empty())
   {
-    for(iUndo iu = begin(); iu != end(); ++iu)
+    if (this->isUndo)
     {
-      Undo& u = *iu;
-      for(riUndoOp i = u.rbegin(); i != u.rend(); ++i)
+      for(iUndo iu = begin(); iu != end(); ++iu)
       {
-        switch(i->type)
+        Undo& u = *iu;
+        for(iUndoOp i = u.begin(); i != u.end(); ++i)
         {
-          case UndoOp::DeleteTrack:
-                if(i->oTrack)
-                {
-                  delete i->oTrack;
-                  iUndo iu2 = iu;
-                  ++iu2;
-                  for(; iu2 != end(); ++iu2)
-                  {
-                    Undo& u2 = *iu2;
-                    for(riUndoOp i2 = u2.rbegin(); i2 != u2.rend(); ++i2)
-                    {
-                      if(i2->type == UndoOp::DeleteTrack)
-                      {
-                        if(i2->oTrack == i->oTrack)
-                          i2->oTrack = 0;
-                      }
-                    }
-                  }
-                }
-                break;
-          case UndoOp::ModifyTrack:
-                if(i->oTrack)
-                {
-                  // Prevent delete i->oTrack from crashing.
-                  switch(i->oTrack->type())
-                  {
-                        case Track::AUDIO_OUTPUT:
-                                {
-                                AudioOutput* ao = (AudioOutput*)i->oTrack;
-                                for(int ch = 0; ch < ao->channels(); ++ch)
-                                  ao->setJackPort(ch, 0);
-                                }
-                              break;
-                        case Track::AUDIO_INPUT:
-                                {
-                                AudioInput* ai = (AudioInput*)i->oTrack;
-                                for(int ch = 0; ch < ai->channels(); ++ch)
-                                  ai->setJackPort(ch, 0);
-                                }
-                              break;
-                        default:
-                              break;
-                  }
-                  if(!i->oTrack->isMidiTrack())
-                    ((AudioTrack*)i->oTrack)->clearEfxList();
-                  delete i->oTrack;
+          switch(i->type)
+          {
+            case UndoOp::DeleteTrack:
+                  if(i->track)
+                    delete i->track;
+                  break;
+                  
+            case UndoOp::DeletePart:
+                  delete i->oPart;
+                  break;
 
-                  iUndo iu2 = iu;
-                  ++iu2;
-                  for(; iu2 != end(); ++iu2)
-                  {
-                    Undo& u2 = *iu2;
-                    for(riUndoOp i2 = u2.rbegin(); i2 != u2.rend(); ++i2)
-                    {
-                      if(i2->type == UndoOp::ModifyTrack)
-                      {
-                        if(i2->oTrack == i->oTrack)
-                          i2->oTrack = 0;
-                      }
-                    }
-                  }
-                }
-                break;
-          //case UndoOp::DeletePart:
-                //delete i->oPart;
-          //      break;
-          //case UndoOp::DeleteTempo:
-          //      break;
-          //case UndoOp::DeleteSig:
-          //      break;
+            case UndoOp::ModifyPart:
+                  delete i->oPart;
+                  break;
+
             case UndoOp::ModifyMarker:
-                if (i->copyMarker)
-                  delete i->copyMarker;
-          default:
-                break;
+                  if (i->copyMarker)
+                    delete i->copyMarker;
+                  break;
+                  
+            case UndoOp::ModifyTrackName:
+                  if (i->_oldName)
+                    delete [] i->_oldName;
+                  if (i->_newName)
+                    delete [] i->_newName;
+                  break;
+            
+            default:
+                  break;
+          }
         }
+        u.clear();
       }
-      u.clear();
+    }
+    else
+    {
+      for(riUndo iu = rbegin(); iu != rend(); ++iu)
+      {
+        Undo& u = *iu;
+        for(riUndoOp i = u.rbegin(); i != u.rend(); ++i)
+        {
+          switch(i->type)
+          {
+            case UndoOp::AddTrack:
+                  delete i->track;
+                  break;
+                  
+            case UndoOp::AddPart:
+                  delete i->oPart;
+                  break;
+
+            case UndoOp::ModifyPart:
+                  delete i->nPart;
+                  break;
+            case UndoOp::ModifyMarker:
+                  if (i->realMarker)
+                    delete i->realMarker;
+                  break;
+                  
+            case UndoOp::ModifyTrackName:
+                  if (i->_oldName)
+                    delete [] i->_oldName;
+                  if (i->_newName)
+                    delete [] i->_newName;
+                  break;
+            
+            default:
+                  break;
+          }
+        }
+        u.clear();
+      }
     }
   }
 
@@ -205,8 +212,8 @@ void UndoList::clearDelete()
 
 void Song::startUndo()
       {
-      redoList->clear(); // added by flo93: redo must be invalidated when
-			MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
+      redoList->clearDelete(); // redo must be invalidated when a new undo is started
+			MusEGlobal::redoAction->setEnabled(false);
 			
       undoList->push_back(Undo());
       updateFlags = 0;
@@ -237,12 +244,12 @@ void cleanOperationGroup(Undo& group)
 		iUndoOp op_=op;
 		op_++;
 		
-		if ((op->type==UndoOp::ModifyTrack) || (op->type==UndoOp::DeleteTrack))
+		if (op->type==UndoOp::DeleteTrack)
 		{
-			if (processed_tracks.find(op->oTrack)!=processed_tracks.end())
+			if (processed_tracks.find(op->track)!=processed_tracks.end())
 				group.erase(op);
 			else
-				processed_tracks.insert(op->oTrack);
+				processed_tracks.insert(op->track);
 		}
 		else if ((op->type==UndoOp::ModifyPart) || (op->type==UndoOp::DeletePart))
 		{
@@ -273,8 +280,8 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
             }
             else
             {
-                  redoList->clear(); // added by flo93: redo must be invalidated when
-                  MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
+                  redoList->clearDelete(); // redo must be invalidated when a new undo is started
+                  MusEGlobal::redoAction->setEnabled(false);
 						}
             
             return doUndo;
@@ -296,151 +303,15 @@ void Song::doUndo2()
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        removeTrack2(i->oTrack);
+                        removeTrack2(i->track);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
                   case UndoOp::DeleteTrack:
-                        insertTrack2(i->oTrack, i->trackno);
-                        // Added by T356.
-                        chainTrackParts(i->oTrack, true);
+                        insertTrack2(i->track, i->trackno);
+                        chainTrackParts(i->track, true);
                         
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
-                  case UndoOp::ModifyTrack:
-                        {
-                        // Added by Tim. p3.3.6
-                        //printf("Song::doUndo2 ModifyTrack #1 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
-                        
-                        // Unchain the track parts, but don't touch the ref counts.
-                        unchainTrackParts(i->nTrack, false);
-                        
-                        //Track* track = i->nTrack->clone();
-                        Track* track = i->nTrack->clone(false);
-                        
-                        // A Track custom assignment operator was added by Tim. 
-                        *(i->nTrack) = *(i->oTrack);
-                        
-                        // Added by Tim. p3.3.6
-                        //printf("Song::doUndo2 ModifyTrack #2 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
-                        
-                        // Prevent delete i->oTrack from crashing.
-                        switch(i->oTrack->type())
-                        {
-                              case Track::AUDIO_OUTPUT:
-                                      {
-                                      AudioOutput* ao = (AudioOutput*)i->oTrack;
-                                      for(int ch = 0; ch < ao->channels(); ++ch)
-                                        ao->setJackPort(ch, 0);
-                                      }
-                                    break;
-                              case Track::AUDIO_INPUT:
-                                      {
-                                      AudioInput* ai = (AudioInput*)i->oTrack;
-                                      for(int ch = 0; ch < ai->channels(); ++ch)
-                                        ai->setJackPort(ch, 0);
-                                      }
-                                    break;
-                              default:
-                                    break;
-                        }
-                        if(!i->oTrack->isMidiTrack())
-                          ((AudioTrack*)i->oTrack)->clearEfxList();
-
-                        delete i->oTrack;
-                        i->oTrack = track;
-                        
-                        // Chain the track parts, but don't touch the ref counts.
-                        chainTrackParts(i->nTrack, false);
-
-                        // Added by Tim. p3.3.6
-                        //printf("Song::doUndo2 ModifyTrack #3 oTrack %p %s nTrack %p %s\n", i->oTrack, i->oTrack->name().toLatin1().constData(), i->nTrack, i->nTrack->name().toLatin1().constData());
-                        
-                        // Connect and register ports.
-                        switch(i->nTrack->type())
-                        {
-                          case Track::AUDIO_OUTPUT:
-                              {
-                              AudioOutput* ao = (AudioOutput*)i->nTrack;
-                              ao->setName(ao->name());
-                              }
-                            break;
-                          case Track::AUDIO_INPUT:
-                              {
-                              AudioInput* ai = (AudioInput*)i->nTrack;
-                              ai->setName(ai->name());
-                              }
-                            break;
-                          default:
-                            break;
-                        }
-
-                        // Update solo states, since the user may have changed soloing on other tracks.
-                        updateSoloStates();
-
-                        updateFlags |= SC_TRACK_MODIFIED;
-                        }
-                        break;
-                        
-                        /*
-                        switch(i->nTrack->type())
-                        {
-                              case Track::AUDIO_OUTPUT:
-                                      {
-                                      AudioOutput* ao = (AudioOutput*)i->nTrack;
-                                      for(int ch = 0; ch < ao->channels(); ++ch)
-                                        ao->setJackPort(ch, 0);
-                                      }
-                                    break;
-                              case Track::AUDIO_INPUT:
-                                      {
-                                      AudioInput* ai = (AudioInput*)i->nTrack;
-                                      for(int ch = 0; ch < ai->channels(); ++ch)
-                                        ai->setJackPort(ch, 0);
-                                      }
-                                    break;
-                              default:
-                                    break;
-                        }
-                        if(!i->nTrack->isMidiTrack())
-                          ((AudioTrack*)i->nTrack)->clearEfxList();
-
-                        //delete i->oTrack;
-                        //i->oTrack = track;
-                        
-                        // Remove the track. removeTrack2 takes care of unchaining the new track.
-                        removeTrack2(i->nTrack);
-                        
-                        // Connect and register ports.
-                        switch(i->oTrack->type())
-                        {
-                          case Track::AUDIO_OUTPUT:
-                              {
-                              AudioOutput* ao = (AudioOutput*)i->oTrack;
-                              ao->setName(ao->name());
-                              }
-                            break;
-                          case Track::AUDIO_INPUT:
-                              {
-                              AudioInput* ai = (AudioInput*)i->oTrack;
-                              ai->setName(ai->name());
-                              }
-                            break;
-                          default:
-                            break;
-                        }
-
-                        // Insert the old track.
-                        insertTrack2(i->oTrack, i->trackno);
-                        // Chain the old track parts. (removeTrack2, above, takes care of unchaining the new track).
-                        chainTrackParts(i->oTrack, true);
-                        
-                        // Update solo states, since the user may have changed soloing on other tracks.
-                        updateSoloStates();
-
-                        updateFlags |= SC_TRACK_MODIFIED;
-                        }
-                        break;
-                        */
                         
                   case UndoOp::SwapTrack:
                         {
@@ -457,7 +328,6 @@ void Song::doUndo2()
                         removePart(part);
                         updateFlags |= SC_PART_REMOVED;
                         i->oPart->events()->incARef(-1);
-                        //i->oPart->unchainClone();
                         unchainClone(i->oPart);
                         }
                         break;
@@ -465,19 +335,17 @@ void Song::doUndo2()
                         addPart(i->oPart);
                         updateFlags |= SC_PART_INSERTED;
                         i->oPart->events()->incARef(1);
-                        //i->oPart->chainClone();
                         chainClone(i->oPart);
                         break;
                   case UndoOp::ModifyPart:
                         if(i->doCtrls)
-                          removePortCtrlEvents(i->oPart, i->doClones);
-                        changePart(i->oPart, i->nPart);
-                        i->oPart->events()->incARef(-1);
-                        i->nPart->events()->incARef(1);
-                        //i->oPart->replaceClone(i->nPart);
-                        replaceClone(i->oPart, i->nPart);
+                          removePortCtrlEvents(i->nPart, i->doClones);
+                        changePart(i->nPart, i->oPart);
+                        i->nPart->events()->incARef(-1);
+                        i->oPart->events()->incARef(1);
+                        replaceClone(i->nPart, i->oPart);
                         if(i->doCtrls)
-                          addPortCtrlEvents(i->nPart, i->doClones);
+                          addPortCtrlEvents(i->oPart, i->doClones);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::AddEvent:
@@ -500,23 +368,33 @@ void Song::doUndo2()
                           addPortCtrlEvents(i->nEvent, i->part, i->doClones);
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
+                        
+                  case UndoOp::AddControllerEvent:
+                        i->_ctrlList->del(i->_eventFrame);
+                        updateFlags |= SC_EVENT_REMOVED;  // TODO Tim. Make new flag or use dedicated signals
+                        break;
+                  case UndoOp::DeleteControllerEvent:
+                        i->_ctrlList->add(i->_eventFrame, i->_newCtrlVal);
+                        updateFlags |= SC_EVENT_INSERTED;  // TODO Tim. Make new flag or use dedicated signals
+                        break;
+                  case UndoOp::ModifyControllerEvent:
+                        i->_ctrlList->add(i->_eventFrame, i->_oldCtrlVal);
+                        updateFlags |= SC_EVENT_MODIFIED;  // TODO Tim. Make new flag or use dedicated signals
+                        break;
+                        
                   case UndoOp::AddTempo:
-                        //printf("doUndo2: UndoOp::AddTempo. deleting tempo at: %d\n", i->a);
                         MusEGlobal::tempomap.delTempo(i->a);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::DeleteTempo:
-                        //printf("doUndo2: UndoOp::DeleteTempo. adding tempo at: %d, tempo=%d\n", i->a, i->b);
                         MusEGlobal::tempomap.addTempo(i->a, i->b);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::AddSig:
-                        ///sigmap.del(i->a);
                         AL::sigmap.del(i->a);
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::DeleteSig:
-                        ///sigmap.add(i->a, i->b, i->c);
                         AL::sigmap.add(i->a, AL::TimeSignature(i->b, i->c));
                         updateFlags |= SC_SIG;
                         break;
@@ -530,9 +408,15 @@ void Song::doUndo2()
                         MusEGlobal::keymap.addKey(i->a, (key_enum)i->b);
                         updateFlags |= SC_KEY;
                         break;
+                  case UndoOp::ModifySongLen:
+                        _len=i->b;
+                        updateFlags = -1; // set all flags
+                        break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:
                   case UndoOp::DoNothing:
+                        break;
+                  default:      
                         break;
                   }
             }
@@ -548,143 +432,17 @@ void Song::doRedo2()
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        insertTrack2(i->oTrack, i->trackno);
-                        // Added by T356.
-                        chainTrackParts(i->oTrack, true);
+                        insertTrack2(i->track, i->trackno);
+                        chainTrackParts(i->track, true);
                         
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
                   case UndoOp::DeleteTrack:
-                        removeTrack2(i->oTrack);
+                        removeTrack2(i->track);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
-                  case UndoOp::ModifyTrack:
-                        {
-                        // Unchain the track parts, but don't touch the ref counts.
-                        unchainTrackParts(i->nTrack, false);
                         
-                        //Track* track = i->nTrack->clone();
-                        Track* track = i->nTrack->clone(false);
                         
-                        *(i->nTrack) = *(i->oTrack);
-
-                        // Prevent delete i->oTrack from crashing.
-                        switch(i->oTrack->type())
-                        {
-                              case Track::AUDIO_OUTPUT:
-                                      {
-                                      AudioOutput* ao = (AudioOutput*)i->oTrack;
-                                      for(int ch = 0; ch < ao->channels(); ++ch)
-                                        ao->setJackPort(ch, 0);
-                                      }
-                                    break;
-                              case Track::AUDIO_INPUT:
-                                      {
-                                      AudioInput* ai = (AudioInput*)i->oTrack;
-                                      for(int ch = 0; ch < ai->channels(); ++ch)
-                                        ai->setJackPort(ch, 0);
-                                      }
-                                    break;
-                              default:
-                                    break;
-                        }
-                        if(!i->oTrack->isMidiTrack())
-                          ((AudioTrack*)i->oTrack)->clearEfxList();
-
-                        delete i->oTrack;
-                        i->oTrack = track;
-
-                        // Chain the track parts, but don't touch the ref counts.
-                        chainTrackParts(i->nTrack, false);
-
-                        // Connect and register ports.
-                        switch(i->nTrack->type())
-                        {
-                          case Track::AUDIO_OUTPUT:
-                              {
-                              AudioOutput* ao = (AudioOutput*)i->nTrack;
-                              ao->setName(ao->name());
-                              }
-                            break;
-                          case Track::AUDIO_INPUT:
-                              {
-                              AudioInput* ai = (AudioInput*)i->nTrack;
-                              ai->setName(ai->name());
-                              }
-                            break;
-                          default:
-                            break;
-                        }
-
-                        // Update solo states, since the user may have changed soloing on other tracks.
-                        updateSoloStates();
-
-                        updateFlags |= SC_TRACK_MODIFIED;
-                        }
-                        break;
-                  
-                        /*
-                        // Prevent delete i->oTrack from crashing.
-                        switch(i->oTrack->type())
-                        {
-                              case Track::AUDIO_OUTPUT:
-                                      {
-                                      AudioOutput* ao = (AudioOutput*)i->oTrack;
-                                      for(int ch = 0; ch < ao->channels(); ++ch)
-                                        ao->setJackPort(ch, 0);
-                                      }
-                                    break;
-                              case Track::AUDIO_INPUT:
-                                      {
-                                      AudioInput* ai = (AudioInput*)i->oTrack;
-                                      for(int ch = 0; ch < ai->channels(); ++ch)
-                                        ai->setJackPort(ch, 0);
-                                      }
-                                    break;
-                              default:
-                                    break;
-                        }
-                        if(!i->oTrack->isMidiTrack())
-                          ((AudioTrack*)i->oTrack)->clearEfxList();
-
-                        //delete i->oTrack;
-                        //i->oTrack = track;
-
-                        // Remove the track. removeTrack2 takes care of unchaining the old track.
-                        removeTrack2(i->oTrack);
-                        
-                        // Connect and register ports.
-                        switch(i->nTrack->type())
-                        {
-                          case Track::AUDIO_OUTPUT:
-                              {
-                              AudioOutput* ao = (AudioOutput*)i->nTrack;
-                              ao->setName(ao->name());
-                              }
-                            break;
-                          case Track::AUDIO_INPUT:
-                              {
-                              AudioInput* ai = (AudioInput*)i->nTrack;
-                              ai->setName(ai->name());
-                              }
-                            break;
-                          default:
-                            break;
-                        }
-
-                        // Insert the new track.
-                        insertTrack2(i->nTrack, i->trackno);
-                        // Chain the new track parts. (removeTrack2, above, takes care of unchaining the old track).
-                        chainTrackParts(i->nTrack, true);
-                        
-                        // Update solo states, since the user may have changed soloing on other tracks.
-                        updateSoloStates();
-
-                        updateFlags |= SC_TRACK_MODIFIED;
-                        }
-                        break;
-                        */
-                  
                   case UndoOp::SwapTrack:
                         {
                         Track* track  = _tracks[i->a];
@@ -697,26 +455,23 @@ void Song::doRedo2()
                         addPart(i->oPart);
                         updateFlags |= SC_PART_INSERTED;
                         i->oPart->events()->incARef(1);
-                        //i->oPart->chainClone();
                         chainClone(i->oPart);
                         break;
                   case UndoOp::DeletePart:
                         removePart(i->oPart);
                         updateFlags |= SC_PART_REMOVED;
                         i->oPart->events()->incARef(-1);
-                        //i->oPart->unchainClone();
                         unchainClone(i->oPart);
                         break;
                   case UndoOp::ModifyPart:
                         if(i->doCtrls)
-                          removePortCtrlEvents(i->nPart, i->doClones);
-                        changePart(i->nPart, i->oPart);
-                        i->oPart->events()->incARef(1);
-                        i->nPart->events()->incARef(-1);
-                        //i->nPart->replaceClone(i->oPart);
-                        replaceClone(i->nPart, i->oPart);
+                          removePortCtrlEvents(i->oPart, i->doClones);
+                        changePart(i->oPart, i->nPart);
+                        i->nPart->events()->incARef(1);
+                        i->oPart->events()->incARef(-1);
+                        replaceClone(i->oPart, i->nPart);
                         if(i->doCtrls)
-                          addPortCtrlEvents(i->oPart, i->doClones);
+                          addPortCtrlEvents(i->nPart, i->doClones);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::AddEvent:
@@ -739,23 +494,33 @@ void Song::doRedo2()
                           addPortCtrlEvents(i->oEvent, i->part, i->doClones);
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
+                        
+                  case UndoOp::AddControllerEvent:
+                        i->_ctrlList->add(i->_eventFrame, i->_newCtrlVal);
+                        updateFlags |= SC_EVENT_INSERTED;  // TODO Tim. Make new flag or use dedicated signals
+                        break;
+                  case UndoOp::DeleteControllerEvent:
+                        i->_ctrlList->del(i->_eventFrame);
+                        updateFlags |= SC_EVENT_REMOVED;  // TODO Tim. Make new flag or use dedicated signals
+                        break;
+                  case UndoOp::ModifyControllerEvent:
+                        i->_ctrlList->add(i->_eventFrame, i->_newCtrlVal);
+                        updateFlags |= SC_EVENT_MODIFIED;  // TODO Tim. Make new flag or use dedicated signals
+                        break;
+                        
                   case UndoOp::AddTempo:
-                        //printf("doRedo2: UndoOp::AddTempo. adding tempo at: %d with tempo=%d\n", i->a, i->b);
                         MusEGlobal::tempomap.addTempo(i->a, i->b);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::DeleteTempo:
-                        //printf("doRedo2: UndoOp::DeleteTempo. deleting tempo at: %d with tempo=%d\n", i->a, i->b);
                         MusEGlobal::tempomap.delTempo(i->a);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::AddSig:
-                        ///sigmap.add(i->a, i->b, i->c);
                         AL::sigmap.add(i->a, AL::TimeSignature(i->b, i->c));
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::DeleteSig:
-                        ///sigmap.del(i->a);
                         AL::sigmap.del(i->a);
                         updateFlags |= SC_SIG;
                         break;
@@ -767,9 +532,15 @@ void Song::doRedo2()
                         MusEGlobal::keymap.delKey(i->a);
                         updateFlags |= SC_KEY;
                         break;
+                  case UndoOp::ModifySongLen:
+                        _len=i->a;
+                        updateFlags = -1; // set all flags
+                        break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:
                   case UndoOp::DoNothing:
+                        break;
+                  default:      
                         break;
                   }
             }
@@ -777,6 +548,7 @@ void Song::doRedo2()
 
 UndoOp::UndoOp()
 {
+  type=UndoOp::DoNothing;
 }
 
 UndoOp::UndoOp(UndoType type_)
@@ -792,19 +564,12 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
       c  = c_;
       }
 
-UndoOp::UndoOp(UndoType type_, int n, Track* oldTrack, Track* newTrack)
-      {
-      type    = type_;
-      trackno = n;
-      oTrack  = oldTrack;
-      nTrack  = newTrack;
-      }
 
-UndoOp::UndoOp(UndoType type_, int n, Track* track)
+UndoOp::UndoOp(UndoType type_, int n, Track* track_)
       {
       type    = type_;
       trackno = n;
-      oTrack  = track;
+      track  = track_;
       }
 
 UndoOp::UndoOp(UndoType type_, Part* part)
@@ -835,8 +600,8 @@ UndoOp::UndoOp(UndoType type_, Event& nev, Part* part_, bool doCtrls_, bool doCl
 UndoOp::UndoOp(UndoType type_, Part* oPart_, Part* nPart_, bool doCtrls_, bool doClones_)
       {
       type  = type_;
-      oPart = nPart_;
-      nPart = oPart_;
+      oPart = oPart_;
+      nPart = nPart_;
       doCtrls = doCtrls_;
       doClones = doClones_;
       }
@@ -850,12 +615,6 @@ UndoOp::UndoOp(UndoType type_, int c, int ctrl_, int ov, int nv)
       nVal    = nv;
       }
 
-UndoOp::UndoOp(UndoType type_, SigEvent* oevent, SigEvent* nevent)
-      {
-      type       = type_;
-      oSignature = oevent;
-      nSignature = nevent;
-      }
 UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_)
       {
       type    = type_;
@@ -871,6 +630,47 @@ UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, 
       startframe = startframe_;
       endframe   = endframe_;
       }
+
+UndoOp::UndoOp(UndoOp::UndoType type_, Track* track_, const char* old_name, const char* new_name)
+{
+  type = type_;
+  _renamedTrack = track_;
+  _oldName = new char[strlen(old_name) + 1];
+  _newName = new char[strlen(new_name) + 1];
+  strcpy(_oldName, old_name);
+  strcpy(_newName, new_name);
+}
+
+UndoOp::UndoOp(UndoOp::UndoType type_, Track* track_, int old_chan, int new_chan)
+{
+  type = type_;
+  _propertyTrack = track_;
+  _oldPropValue = old_chan;
+  _newPropValue = new_chan;
+}
+
+UndoOp::UndoOp(UndoOp::UndoType type_, CtrlList* ctrlList_, int channel_, int eventFrame_, double oldCtrlVal_, double newCtrlVal_)
+{
+  type        = type_;
+  _ctrlList   = ctrlList_;
+  _channel    = channel_;      // Optional
+  _eventFrame = eventFrame_;   // Optional
+  _oldCtrlVal = oldCtrlVal_;
+  _newCtrlVal = newCtrlVal_;
+}
+
+// REMOVE Tim.
+// UndoOp::UndoOp(UndoOp::UndoType type_, CtrlList* ctrlList_, int channel_, int eventFrame_, double newCtrlVal_)
+// {
+//   
+// }
+// 
+// UndoOp::UndoOp(UndoOp::UndoType type_, CtrlList* ctrlList_, int channel_, int eventFrame_)
+// {
+//   
+// }
+
+
 
 void Song::undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe)
       {
@@ -906,24 +706,24 @@ bool Song::doUndo1()
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        removeTrack1(i->oTrack);
+                        removeTrack1(i->track);
                         break;
                   case UndoOp::DeleteTrack:
-                        insertTrack1(i->oTrack, i->trackno);
+                        insertTrack1(i->track, i->trackno);
 
                         // FIXME: Would like to put this part in Undo2, but indications
                         //  elsewhere are that (dis)connecting jack routes must not be
                         //  done in the realtime thread. The result is that we get a few
                         //  "PANIC Process init: No buffer from audio device" messages
                         //  before the routes are (dis)connected. So far seems to do no harm though...
-                        switch(i->oTrack->type())
+                        switch(i->track->type())
                         {
                               case Track::AUDIO_OUTPUT:
                               case Track::AUDIO_INPUT:
-                                      connectJackRoutes((AudioTrack*)i->oTrack, false);
+                                      connectJackRoutes((AudioTrack*)i->track, false);
                                     break;
-                              //case Track::AUDIO_SOFTSYNTH:
-                                      //SynthI* si = (SynthI*)i->oTrack;
+                              //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
+                                      //SynthI* si = (SynthI*)i->track;
                                       //si->synth()->init(
                               //      break;
                               default:
@@ -931,8 +731,47 @@ bool Song::doUndo1()
                         }
 
                         break;
+                  case UndoOp::ModifyTrackName:
+                          i->_renamedTrack->setName(i->_oldName);
+                          updateFlags |= SC_TRACK_MODIFIED;
+                        break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
+                        break;
+                  case UndoOp::ModifyTrackChannel:
+                        if (i->_propertyTrack->isMidiTrack()) 
+                        {
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
+                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
+                            break;
+                          if (i->_oldPropValue != mt->outChannel()) 
+                          {
+                                MusEGlobal::audio->msgIdle(true);
+                                mt->setOutChanAndUpdate(i->_oldPropValue);
+                                MusEGlobal::audio->msgIdle(false);
+                                // DELETETHIS 6
+                                //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
+                                //      for (int i=0; i<DRUM_MAPSIZE; i++)
+                                //            MusEGlobal::drumMap[i].channel = i->_oldPropValue;
+                                //      }
+                                //updateFlags |= SC_CHANNELS;
+                                MusEGlobal::audio->msgUpdateSoloStates();                   
+                                updateFlags |= SC_MIDI_TRACK_PROP;               
+                          }
+                        }
+                        else
+                        {
+                            if(i->_propertyTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            {
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_propertyTrack);
+                              if (at == 0)
+                                break;
+                              if (i->_oldPropValue != at->channels()) {
+                                    MusEGlobal::audio->msgSetChannels(at, i->_oldPropValue);
+                                    updateFlags |= SC_CHANNELS;
+                                    }
+                            }         
+                        }      
                         break;
 
                   default:
@@ -953,25 +792,19 @@ void Song::doUndo3()
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        removeTrack3(i->oTrack);
+                        removeTrack3(i->track);
                         break;
                   case UndoOp::DeleteTrack:
-                        insertTrack3(i->oTrack, i->trackno);
+                        insertTrack3(i->track, i->trackno);
                         break;
-                  case UndoOp::ModifyTrack:
-                        // Not much choice but to do this - Tim.
-                        //clearClipboardAndCloneList();
-                        break;      
                   case UndoOp::ModifyMarker:
                         {
-                          //printf("performing undo for one marker at copy %d real %d\n", i->copyMarker, i->realMarker);
                           if (i->realMarker) {
                             Marker tmpMarker = *i->realMarker;
                             *i->realMarker = *i->copyMarker; // swap them
                             *i->copyMarker = tmpMarker;
                           }
                           else {
-                            //printf("flipping marker\n");
                             i->realMarker = _markerList->add(*i->copyMarker);
                             delete i->copyMarker;
                             i->copyMarker = 0;
@@ -1001,17 +834,17 @@ bool Song::doRedo1()
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        insertTrack1(i->oTrack, i->trackno);
+                        insertTrack1(i->track, i->trackno);
 
                         // FIXME: See comments in Undo1.
-                        switch(i->oTrack->type())
+                        switch(i->track->type())
                         {
                               case Track::AUDIO_OUTPUT:
                               case Track::AUDIO_INPUT:
-                                      connectJackRoutes((AudioTrack*)i->oTrack, false);
+                                      connectJackRoutes((AudioTrack*)i->track, false);
                                     break;
-                              //case Track::AUDIO_SOFTSYNTH:
-                                      //SynthI* si = (SynthI*)i->oTrack;
+                              //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
+                                      //SynthI* si = (SynthI*)i->track;
                                       //si->synth()->init(
                               //      break;
                               default:
@@ -1020,11 +853,51 @@ bool Song::doRedo1()
 
                         break;
                   case UndoOp::DeleteTrack:
-                        removeTrack1(i->oTrack);
+                        removeTrack1(i->track);
+                        break;
+                  case UndoOp::ModifyTrackName:
+                          i->_renamedTrack->setName(i->_newName);
+                          updateFlags |= SC_TRACK_MODIFIED;
                         break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
+                  case UndoOp::ModifyTrackChannel:
+                        if (i->_propertyTrack->isMidiTrack()) 
+                        {
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
+                          if (mt == 0 || mt->type() == MusECore::Track::DRUM)
+                            break;
+                          if (i->_newPropValue != mt->outChannel()) 
+                          {
+                                MusEGlobal::audio->msgIdle(true);
+                                mt->setOutChanAndUpdate(i->_newPropValue);
+                                MusEGlobal::audio->msgIdle(false);
+                                // DELETETHIS 5
+                                //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
+                                //      for (int i=0; i<DRUM_MAPSIZE; i++)
+                                //            MusEGlobal::drumMap[i].channel = i->_newPropValue;
+                                //      }
+                                //updateFlags |= SC_CHANNELS;
+                                MusEGlobal::audio->msgUpdateSoloStates();                   
+                                updateFlags |= SC_MIDI_TRACK_PROP;               
+                          }
+                        }
+                        else
+                        {
+                            if(i->_propertyTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            {
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_propertyTrack);
+                              if (at == 0)
+                                break;
+                              if (i->_newPropValue != at->channels()) {
+                                    MusEGlobal::audio->msgSetChannels(at, i->_newPropValue);
+                                    updateFlags |= SC_CHANNELS;
+                                    }
+                            }         
+                        }      
+                        break;
+                        
                   default:
                         break;
                   }
@@ -1043,18 +916,13 @@ void Song::doRedo3()
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        insertTrack3(i->oTrack, i->trackno);
+                        insertTrack3(i->track, i->trackno);
                         break;
                   case UndoOp::DeleteTrack:
-                        removeTrack3(i->oTrack);
+                        removeTrack3(i->track);
                         break;
-                  case UndoOp::ModifyTrack:
-                        // Not much choice but to do this - Tim.
-                        //clearClipboardAndCloneList();
-                        break;      
                   case UndoOp::ModifyMarker:
                         {
-                          //printf("performing redo for one marker at copy %d real %d\n", i->copyMarker, i->realMarker);
                           if (i->copyMarker) {
                             Marker tmpMarker = *i->realMarker;
                             *i->realMarker = *i->copyMarker; // swap them
@@ -1074,5 +942,17 @@ void Song::doRedo3()
       redoList->pop_back();
       dirty = true;
       }
+
+
+bool Undo::empty() const
+{
+  if (std::list<UndoOp>::empty()) return true;
+  
+  for (const_iterator it=begin(); it!=end(); it++)
+    if (it->type!=UndoOp::DoNothing)
+      return false;
+  
+  return true;
+}
 
 } // namespace MusECore

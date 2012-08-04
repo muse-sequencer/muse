@@ -73,7 +73,6 @@ set (FILES_TO_TRANSLATE
 set_target_properties ( fluid
       PROPERTIES PREFIX ""
       COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
-      LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
       )
 
 ##
@@ -82,12 +81,7 @@ set_target_properties ( fluid
 target_link_libraries(fluid
       synti
       ${QT_LIBRARIES}
-      # Can't do this. FLUIDSYN_LIBRARIES = fluidsynth, which is the name 
-      # of our fluidsynth.so shared synthesizer library.
-      # This caused ../fluidsynth/fluidsynth.so to appear in the link line.
-      # ${FLUIDSYN_LIBRARIES}
-      # Try giving full path: Nope, path is empty!
-      # ${FLUIDSYN_LIBRARY_DIRS}/${FLUIDSYN_LIBRARIES}
+      ${FLUIDSYN_LIBRARIES}
       )
 
 ##

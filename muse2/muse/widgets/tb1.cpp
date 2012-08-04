@@ -20,9 +20,8 @@
 //
 //=========================================================
 
-//#include <assert.h>
 #include <stdio.h>
-#include <values.h>
+#include <limits.h>
 
 #include <QHeaderView>
 #include <QTableWidget>    
@@ -45,9 +44,9 @@ static int rasterTable[] = {
       };
 
 static const char* rasterStrings[] = {
-      QT_TRANSLATE_NOOP("@default", "Off"), "2pp", "5pp", "64T", "32T", "16T", "8T", "4T", "2T", "1T",
-      QT_TRANSLATE_NOOP("@default", "Off"), "3pp", "6pp", "64",  "32",  "16",  "8",  "4",  "2",  "1",
-      QT_TRANSLATE_NOOP("@default", "Off"), "4pp", "7pp", "64.", "32.", "16.", "8.", "4.", "2.", "1."
+      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "2pp", "5pp", "64T", "32T", "16T", "8T", "4T", "2T", "1T",
+      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "3pp", "6pp", "64",  "32",  "16",  "8",  "4",  "2",  "1",
+      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "4pp", "7pp", "64.", "32.", "16.", "8.", "4.", "2.", "1."
       };
 
 
@@ -70,6 +69,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       solo = new QToolButton();    
       solo->setText(tr("Solo"));
       solo->setCheckable(true);
+      solo->setFocusPolicy(Qt::NoFocus);
       addWidget(solo);
 
       //---------------------------------------------------
@@ -81,12 +81,12 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       label->setIndent(3);
       addWidget(label);
       pos   = new PosLabel(0, "pos");
-      pos->setFixedHeight(22);
+      ///pos->setFixedHeight(22);
       addWidget(pos);
       if (showPitch) {
             pitch = new PitchLabel(0);
             pitch->setEnabled(false);
-            pitch->setFixedHeight(22);
+            ///pitch->setFixedHeight(22);
             addWidget(pitch);
             }
 
@@ -95,6 +95,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       //---------------------------------------------------
 
       raster = new LabelCombo(tr("Snap"), 0);
+      raster->setFocusPolicy(Qt::TabFocus);
 
       rlist = new QTableWidget(10, 3);    
       rlist->verticalHeader()->setDefaultSectionSize(22);                      
@@ -116,7 +117,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       addWidget(raster);
       
       // FIXME: Not working right.
-      raster->setFixedHeight(38);
+      ///raster->setFixedHeight(38);
       
       connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
       connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));
@@ -131,6 +132,7 @@ void Toolbar1::_rasterChanged(int /*i*/)
 //void Toolbar1::_rasterChanged(int r, int c)
       {
       emit rasterChanged(rasterTable[rlist->currentRow() + rlist->currentColumn() * 10]);
+      //parentWidget()->setFocus();
       //emit rasterChanged(rasterTable[r + c * 10]);
       }
 
@@ -165,7 +167,7 @@ void Toolbar1::setTime(unsigned val)
             //printf("NOT visible\n");
             return;
             }
-      if (val == MAXINT)
+      if (val == INT_MAX)
             pos->setEnabled(false);
       else {
             pos->setEnabled(true);

@@ -149,7 +149,8 @@ bool ScrollArea::viewportEvent(QEvent* event)
   if(event->type() == QEvent::LayoutRequest)       
     emit layoutRequest();
          
-  return false;       
+  //return false;       
+  return true;       
 }
 
 //---------------------------------------------------------
@@ -169,7 +170,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       setWindowIcon(*museIcon);
 
       QMenu* menuConfig = menuBar()->addMenu(tr("&Create"));
-      MusEGui::populateAddTrack(menuConfig);
+      MusEGui::populateAddTrack(menuConfig,true);
       connect(menuConfig, SIGNAL(triggered(QAction *)), MusEGlobal::song, SLOT(addNewTrack(QAction *)));
       
       QMenu* menuView = menuBar()->addMenu(tr("&View"));
@@ -183,6 +184,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       showMidiTracksId = new QAction(tr("Show Midi Tracks"), actionItems);
       showDrumTracksId = new QAction(tr("Show Drum Tracks"), actionItems);
+      showNewDrumTracksId = new QAction(tr("Show New Style Drum Tracks"), actionItems);
       showWaveTracksId = new QAction(tr("Show Wave Tracks"), actionItems);
 
       QAction *separator = new QAction(this);
@@ -197,6 +199,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
 
       showMidiTracksId->setCheckable(true);
       showDrumTracksId->setCheckable(true);
+      showNewDrumTracksId->setCheckable(true);
       showWaveTracksId->setCheckable(true);
       showInputTracksId->setCheckable(true);
       showOutputTracksId->setCheckable(true);
@@ -208,6 +211,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       //connect(actionItems, SIGNAL(selected(QAction*)), this, SLOT(showTracksChanged(QAction*)));
       connect(showMidiTracksId, SIGNAL(triggered(bool)), SLOT(showMidiTracksChanged(bool)));
       connect(showDrumTracksId, SIGNAL(triggered(bool)), SLOT(showDrumTracksChanged(bool)));      
+      connect(showNewDrumTracksId, SIGNAL(triggered(bool)), SLOT(showNewDrumTracksChanged(bool)));      
       connect(showWaveTracksId, SIGNAL(triggered(bool)), SLOT(showWaveTracksChanged(bool)));      
       connect(showInputTracksId, SIGNAL(triggered(bool)), SLOT(showInputTracksChanged(bool)));      
       connect(showOutputTracksId, SIGNAL(triggered(bool)), SLOT(showOutputTracksChanged(bool)));      
@@ -219,7 +223,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       ///view = new QScrollArea();
       view = new ScrollArea();
-      view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//      view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(view);
       
       central = new QWidget(view);
@@ -236,7 +240,9 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
-      MusEGlobal::song->update();  // calls update mixer
+      
+      //MusEGlobal::song->update();  // calls update mixer
+      updateMixer(UPDATE_ALL);       // Build the mixer, add the strips.   p4.0.45  
       }
 
 /*
@@ -349,6 +355,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       
       showMidiTracksId->setChecked(cfg->showMidiTracks);
       showDrumTracksId->setChecked(cfg->showDrumTracks);
+      showNewDrumTracksId->setChecked(cfg->showNewDrumTracks);
       showInputTracksId->setChecked(cfg->showInputTracks);
       showOutputTracksId->setChecked(cfg->showOutputTracks);
       showWaveTracksId->setChecked(cfg->showWaveTracks);
@@ -392,7 +399,6 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   
             return;
       }
-      // Added by Tim. p3.3.7
       else if (action == UPDATE_MIDI) 
       {
             int i = 0;
@@ -428,7 +434,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             for (MusECore::iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
             {
               MusECore::MidiTrack* mt = *i;
-              if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks)) 
+              if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks) || (mt->type() == MusECore::Track::NEW_DRUM && cfg->showNewDrumTracks)) 
                 addStrip(*i, idx++);
             }
       
@@ -485,7 +491,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       for (MusECore::iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
       {
         MusECore::MidiTrack* mt = *i;
-        if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks)) 
+        if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks) || (mt->type() == MusECore::Track::NEW_DRUM && cfg->showNewDrumTracks)) 
           addStrip(*i, idx++);
       }
 
@@ -538,7 +544,10 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
 void AudioMixerApp::configChanged()    
 { 
-  songChanged(SC_CONFIG); 
+  //songChanged(-1); // SC_CONFIG // Catch when fonts change, do full rebuild. 
+  StripList::iterator si = stripList.begin();  // Catch when fonts change, viewable tracks, etc. No full rebuild.  p4.0.45
+  for (; si != stripList.end(); ++si) 
+        (*si)->configChanged();
 }
 
 //---------------------------------------------------------
@@ -552,7 +561,8 @@ void AudioMixerApp::songChanged(int flags)
         return;
     
       UpdateAction action = NO_UPDATE;
-      if (flags == -1)
+      
+      if (flags == -1)                   
             action = UPDATE_ALL;
       else if (flags & SC_TRACK_REMOVED)
             action = STRIP_REMOVED;
@@ -560,15 +570,18 @@ void AudioMixerApp::songChanged(int flags)
             action = STRIP_INSERTED;
       else if (flags & SC_MIDI_TRACK_PROP)
             action = UPDATE_MIDI;
+      
       //if (action != NO_UPDATE)
-      if (action != NO_UPDATE && action != UPDATE_MIDI)  // p4.0.14 Fix for very slow track prop adjusting. 
+      if (action != NO_UPDATE && action != UPDATE_MIDI)  // Fix for very slow track prop adjusting. 
             updateMixer(action);
-      if (action != UPDATE_ALL) {
+      
+      if (action != UPDATE_ALL)                        
+      {
             StripList::iterator si = stripList.begin();
             for (; si != stripList.end(); ++si) {
                   (*si)->songChanged(flags);
                   }
-            }
+      }
       }
 
 //---------------------------------------------------------
@@ -627,6 +640,8 @@ void AudioMixerApp::showTracksChanged(QAction* id)
             cfg->showMidiTracks = val;
       else if (id == showDrumTracksId)
             cfg->showDrumTracks = val;
+      else if (id == showNewDrumTracksId)
+            cfg->showNewDrumTracks = val;
       else if (id == showInputTracksId)
             cfg->showInputTracks = val;
       else if (id == showOutputTracksId)
@@ -652,6 +667,12 @@ void AudioMixerApp::showMidiTracksChanged(bool v)
 void AudioMixerApp::showDrumTracksChanged(bool v)
 {
       cfg->showDrumTracks = v;
+      updateMixer(UPDATE_ALL);
+}
+
+void AudioMixerApp::showNewDrumTracksChanged(bool v)
+{
+      cfg->showNewDrumTracks = v;
       updateMixer(UPDATE_ALL);
 }
 
@@ -710,6 +731,7 @@ void AudioMixerApp::write(int level, MusECore::Xml& xml)
       
       xml.intTag(level, "showMidiTracks",   cfg->showMidiTracks);
       xml.intTag(level, "showDrumTracks",   cfg->showDrumTracks);
+      xml.intTag(level, "showNewDrumTracks",   cfg->showNewDrumTracks);
       xml.intTag(level, "showInputTracks",  cfg->showInputTracks);
       xml.intTag(level, "showOutputTracks", cfg->showOutputTracks);
       xml.intTag(level, "showWaveTracks",   cfg->showWaveTracks);

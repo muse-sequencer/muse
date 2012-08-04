@@ -73,6 +73,7 @@ class Strip : public QFrame {
       MusEGui::ComboBox* autoType;
       void setLabelText();
       virtual void resizeEvent(QResizeEvent*);
+      virtual void mousePressEvent(QMouseEvent *);
 
    private slots:
       void recordToggled(bool);
@@ -86,6 +87,7 @@ class Strip : public QFrame {
    public slots:
       void resetPeaks();
       virtual void songChanged(int) = 0;
+      virtual void configChanged() = 0;
 
    public:
       Strip(QWidget* parent, MusECore::Track* t);

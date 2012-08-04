@@ -8,8 +8,7 @@
 class MyLineEdit : public QLineEdit
 {
   public:
-    MyLineEdit() : QLineEdit() {};
-    MyLineEdit(QWidget* parent) : QLineEdit(parent) {};
+    MyLineEdit(QWidget* parent = 0) : QLineEdit(parent) {};
     
   protected:
     virtual void mousePressEvent (QMouseEvent* e)
@@ -19,10 +18,10 @@ class MyLineEdit : public QLineEdit
     }
 };
 
-
 SigSpinBox::SigSpinBox(QWidget *parent) :
     QSpinBox(parent)
 {
+  setKeyboardTracking(false);
   _denominator=false;
   setLineEdit(new MyLineEdit(this));
 }
@@ -31,7 +30,12 @@ void SigSpinBox::keyPressEvent(QKeyEvent* ev)
 {
     switch (ev->key()) {
       case Qt::Key_Return:
+        QSpinBox::keyPressEvent(ev);
         emit returnPressed();
+        return;
+        break;
+      case Qt::Key_Escape:
+        emit escapePressed();
         return;
         break;
       case Qt::Key_Left:

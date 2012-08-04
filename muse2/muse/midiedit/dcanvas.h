@@ -26,6 +26,9 @@
 #include "ecanvas.h"
 #include "song.h"
 #include "steprec.h"
+#include <map>
+#include <QList>
+#include <QSet>
 
 #define TH 18
 
@@ -35,11 +38,11 @@ class QDropEvent;
 class QDragMoveEvent;
 class QDragLeaveEvent;
 
+class DrumMap;
 namespace MusEGui {
 
 class MidiEditor;
-class PianoRoll;
-class ScrollScale;
+class DrumEdit;
 
 //---------------------------------------------------------
 //   DCItem
@@ -48,9 +51,38 @@ class ScrollScale;
 
 class DCItem : public MusEGui::MCItem {
   public:
-      DCItem(const MusECore::Event& e, MusECore::Part* p);
+      DCItem(const MusECore::Event& e, MusECore::Part* p, int instr);
       Type type() const { return DEVENT; } 
       };
+
+
+struct instrument_number_mapping_t //FINDMICH TODO move into a suitable namespace!
+{
+  QSet<MusECore::Track*> tracks;
+  int pitch;
+  
+  instrument_number_mapping_t()
+  {
+    pitch=-1;
+    tracks.clear();
+  }
+  
+  instrument_number_mapping_t(const QSet<MusECore::Track*>& tr, int p)
+  {
+    tracks=tr;
+    pitch=p;
+  }
+  
+  bool operator==(const instrument_number_mapping_t& that) //TODO maybe compare the Track* serial numbers, not the pointers themselves?
+  {
+    return (this->tracks == that.tracks && this->pitch==that.pitch);
+  }
+  
+  bool operator!=(const instrument_number_mapping_t& that)
+  {
+    return !operator==(that);
+  }
+};
 
 //---------------------------------------------------------
 //   DrumCanvas
@@ -58,6 +90,13 @@ class DCItem : public MusEGui::MCItem {
 
 class DrumCanvas : public EventCanvas {
       Q_OBJECT
+      
+      bool old_style_drummap_mode;
+      MusECore::DrumMap* ourDrumMap;
+      bool must_delete_our_drum_map; //FINDMICH really delete it!
+      QVector<instrument_number_mapping_t> instrument_map;
+      
+      DrumEdit* drumEditor;
       
       MusECore::StepRec* steprec;
       
@@ -72,7 +111,7 @@ class DrumCanvas : public EventCanvas {
       void drawTopItem(QPainter& p, const QRect& rect);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType);
-      virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType);
+      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool, bool);
       virtual void newItem(CItem*, bool);
@@ -85,16 +124,17 @@ class DrumCanvas : public EventCanvas {
       void dragEnterEvent(QDragEnterEvent* event);
       void dragMoveEvent(QDragMoveEvent*);
       void dragLeaveEvent(QDragLeaveEvent*);
-      virtual void addItem(MusECore::Part*, MusECore::Event&);
+      virtual CItem* addItem(MusECore::Part*, MusECore::Event&);
       virtual void resizeEvent(QResizeEvent*);
       virtual void curPartChanged();
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
-
+      
    protected:
       virtual bool deleteItem(CItem*);
       
    signals:
       void newWidth(int);
+      void ourDrumMapChanged(bool /*instrumentMap changed as well?*/);
 
    private slots:
       void midiNote(int pitch, int velo);
@@ -114,17 +154,25 @@ class DrumCanvas : public EventCanvas {
          CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
          CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART, 
          CMD_DEL, CMD_FIXED_LEN, CMD_RIGHT, CMD_LEFT, CMD_RIGHT_NOSNAP, CMD_LEFT_NOSNAP, CMD_MODIFY_VELOCITY, CMD_CRESCENDO,
-         CMD_QUANTIZE, CMD_ERASE_EVENT, CMD_NOTE_SHIFT, CMD_DELETE_OVERLAPS, CMD_REORDER_LIST
+         CMD_QUANTIZE, CMD_ERASE_EVENT, CMD_NOTE_SHIFT, CMD_DELETE_OVERLAPS, CMD_REORDER_LIST,
+         CMD_GROUP_NONE, CMD_GROUP_CHAN, CMD_GROUP_MAX
          };
       DrumCanvas(MidiEditor*, QWidget*, int, int,
          const char* name = 0);
       virtual ~DrumCanvas();
       void cmd(int);
-      virtual void modifySelected(NoteInfo::ValType type, int delta);
+      virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);
       virtual void keyPress(QKeyEvent* event);
       MusECore::Event *getEventAtCursorPos();
       void selectCursorEvent(MusECore::Event *ev);
 
+      int pitch_and_track_to_instrument(int pitch, MusECore::Track* track);
+
+      MusECore::DrumMap* getOurDrumMap() { return ourDrumMap; }
+      int getOurDrumMapSize() { return instrument_map.size(); }
+      QVector<instrument_number_mapping_t>& get_instrument_map() { return instrument_map; }
+      void propagate_drummap_change(int instrument, bool update_druminmap);
+      void rebuildOurDrumMap();
       };
 
 } // namespace MusEGui

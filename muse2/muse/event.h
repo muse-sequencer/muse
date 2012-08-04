@@ -27,9 +27,9 @@
 #include <map>
 #include <sys/types.h>
 
-#include "wave.h"   // wg. SndFile
 #include "pos.h"
 #include "evdata.h"
+#include "wave.h" // for SndFileR
 
 class QString;
 
@@ -103,7 +103,7 @@ class Event {
       MusECore::SndFileR sndFile() const;
       virtual void setSndFile(MusECore::SndFileR& sf);
       
-      virtual void readAudio(MusECore::WavePart* /*part*/, unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      virtual void readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite);
       
       void setTick(unsigned val);
       unsigned tick() const;

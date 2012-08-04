@@ -1,3 +1,5 @@
+// THIS FILE IS ORPHANED: nothing uses its functions
+
 //=========================================================
 //  MusE
 //  Linux Music Editor
@@ -39,8 +41,8 @@ class Xml;
 //---------------------------------------------------------
 
 struct SigEvent {
-      int z, n;            // takt signatur
-      unsigned tick;       // ab dieser Position gilt signatur
+      int z, n;            // beat signature
+      unsigned tick;       // valid from this position
       int bar;             // precomputed
 
       int read(Xml&);

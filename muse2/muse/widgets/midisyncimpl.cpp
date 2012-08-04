@@ -28,6 +28,7 @@
 #include <QTimer>
 #include <QTreeWidgetItem>
 #include <QHeaderView>
+#include <QComboBox>
 
 #include "app.h"
 #include "song.h"
@@ -137,32 +138,12 @@ void MidiSyncConfig::addDevice(QTreeWidgetItem *item, QTreeWidget *tree)
   tree->addTopLevelItem(item);
 }
 
-/*
-//---------------------------------------------------------
-//   MidiSyncLViewItem
-//    setDevice
-//---------------------------------------------------------
-
-void MidiSyncLViewItem::setDevice(MusECore::MidiDevice* d)
-{ 
-  _device = d; 
-  if(_device)
-    _syncInfo.copyParams(_device->syncInfo());
-}
-*/
-
-//---------------------------------------------------------
-//   MidiSyncLViewItem
-//    setPort
-//---------------------------------------------------------
-
 void MidiSyncLViewItem::setPort(int port)
 { 
   _port = port; 
   if(_port < 0 || port > MIDI_PORTS)
     return;
     
-  //_syncInfo.copyParams(MusEGlobal::midiPorts[port].syncInfo());
   copyFromSyncInfo(MusEGlobal::midiPorts[port].syncInfo());
 }
 
@@ -221,41 +202,6 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       _dirty = false;
       applyButton->setEnabled(false);
       
-      //inHeartBeat = true;
-      
-      //for(int i = 0; i < MIDI_PORTS; ++i)
-      //  tmpMidiSyncPorts[i] = midiSyncPorts[i];
-        
-      //bool ext = MusEGlobal::extSyncFlag.value();
-      //syncMode->setButton(int(ext));
-      //syncChanged(ext);
-//      extSyncCheckbox->setChecked(MusEGlobal::extSyncFlag.value());
-
-//      dstDevId->setValue(txDeviceId);
-//      srcDevId->setValue(rxDeviceId);
-//      srcSyncPort->setValue(rxSyncPort + 1);
-//      dstSyncPort->setValue(txSyncPort + 1);
-
-//      mtcSync->setChecked(genMTCSync);
-//      mcSync->setChecked(genMCSync);
-//      midiMachineControl->setChecked(genMMC);
-
-//      acceptMTCCheckbox->setChecked(acceptMTC);
-      //acceptMTCCheckbox->setChecked(false);
-//      acceptMCCheckbox->setChecked(acceptMC);
-//      acceptMMCCheckbox->setChecked(acceptMMC);
-
-//      mtcSyncType->setCurrentItem(MusEGlobal::mtcType);
-
-//      mtcOffH->setValue(MusEGlobal::mtcOffset.h());
-//      mtcOffM->setValue(MusEGlobal::mtcOffset.m());
-//      mtcOffS->setValue(MusEGlobal::mtcOffset.s());
-//      mtcOffF->setValue(MusEGlobal::mtcOffset.f());
-//      mtcOffSf->setValue(MusEGlobal::mtcOffset.sf());
-
-      
-      
-      
       devicesListView->setAllColumnsShowFocus(true);
       QStringList columnnames;
       columnnames << tr("Port")
@@ -284,9 +230,11 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       setToolTips(devicesListView->headerItem());
       devicesListView->setFocusPolicy(Qt::NoFocus);
 
-      //MSyncHeaderTip::add(devicesListView->header(), QString("Midi sync ports"));
-
-//      updateSyncInfoLV();
+      syncRecFilterPreset->addItem(tr("None"), MusECore::MidiSyncInfo::NONE);
+      syncRecFilterPreset->addItem(tr("Tiny"), MusECore::MidiSyncInfo::TINY);
+      syncRecFilterPreset->addItem(tr("Small"), MusECore::MidiSyncInfo::SMALL);
+      syncRecFilterPreset->addItem(tr("Large"), MusECore::MidiSyncInfo::LARGE);
+      syncRecFilterPreset->addItem(tr("Large with pre-detect"), MusECore::MidiSyncInfo::LARGE_WITH_PRE_DETECT);
       
       songChanged(-1);
       
@@ -308,14 +256,14 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       connect(mtcSyncType, SIGNAL(activated(int)), SLOT(syncChanged()));
       connect(useJackTransportCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(jackTransportMasterCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
+      connect(syncRecFilterPreset, SIGNAL(currentIndexChanged(int)), SLOT(syncChanged()));
+      connect(syncRecTempoValQuant, SIGNAL(valueChanged(double)), SLOT(syncChanged()));
       connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(extSyncChanged(bool)));
       connect(syncDelaySpinBox, SIGNAL(valueChanged(int)), SLOT(syncChanged()));
   
       // Done in show().
       //connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       //connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
-      
-      //inHeartBeat = false;
 }
 
 MidiSyncConfig::~MidiSyncConfig()
@@ -356,6 +304,17 @@ void MidiSyncConfig::songChanged(int flags)
       jackTransportMasterCheckbox->blockSignals(false);
       useJackTransportCheckbox->blockSignals(false);
       extSyncCheckbox->blockSignals(false);
+
+      int fp_idx = syncRecFilterPreset->findData(MusEGlobal::syncRecFilterPreset);
+      if(fp_idx != -1)
+      {
+        syncRecFilterPreset->blockSignals(true);
+        syncRecFilterPreset->setCurrentIndex(fp_idx);
+        syncRecFilterPreset->blockSignals(false);
+      }
+      syncRecTempoValQuant->blockSignals(true);
+      syncRecTempoValQuant->setValue(MusEGlobal::syncRecTempoValQuant);
+      syncRecTempoValQuant->blockSignals(false);
       
       mtcSyncType->setCurrentIndex(MusEGlobal::mtcType);
 
@@ -400,9 +359,6 @@ void MidiSyncConfig::heartBeat()
             {
               if(!lvi->_curDet)
               {
-                // Added by Tim. p3.3.6
-                //printf("MidiSyncConfig::heartBeat setting current red icon\n");
-            
                 lvi->_curDet = true;
                 lvi->_inDet = false;
                 lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
@@ -411,9 +367,6 @@ void MidiSyncConfig::heartBeat()
             else
             if(!lvi->_inDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting non-current green icon\n");
-          
               lvi->_inDet = true;
               lvi->_curDet = false;
               lvi->setIcon(DEVCOL_IN, QIcon( *dotIcon));
@@ -423,9 +376,6 @@ void MidiSyncConfig::heartBeat()
           {
             if(lvi->_curDet || lvi->_inDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting off icon\n");
-          
               lvi->_curDet = false;
               lvi->_inDet = false;
               lvi->setIcon(DEVCOL_IN, QIcon( *dothIcon));
@@ -437,9 +387,6 @@ void MidiSyncConfig::heartBeat()
           {
             if(!lvi->_tickDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting tick on icon\n");
-          
               lvi->_tickDet = true;
               lvi->setIcon(DEVCOL_TICKIN, QIcon( *dotIcon));
             }  
@@ -448,9 +395,6 @@ void MidiSyncConfig::heartBeat()
           {
             if(lvi->_tickDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting tick off icon\n");
-          
               lvi->_tickDet = false;
               lvi->setIcon(DEVCOL_TICKIN, QIcon( *dothIcon));
             }  
@@ -461,9 +405,6 @@ void MidiSyncConfig::heartBeat()
           {
             if(!lvi->_MRTDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting MRT on icon\n");
-          
               lvi->_MRTDet = true;
               lvi->setIcon(DEVCOL_MRTIN, QIcon( *dotIcon));
             }  
@@ -472,9 +413,6 @@ void MidiSyncConfig::heartBeat()
           {
             if(lvi->_MRTDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting MRT off icon\n");
-          
               lvi->_MRTDet = false;
               lvi->setIcon(DEVCOL_MRTIN, QIcon( *dothIcon));
             }  
@@ -487,9 +425,6 @@ void MidiSyncConfig::heartBeat()
           {
             if(!lvi->_MMCDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting MMC on icon\n");
-          
               lvi->_MMCDet = true;
               lvi->setIcon(DEVCOL_MMCIN, QIcon( *dotIcon));
             }
@@ -521,9 +456,6 @@ void MidiSyncConfig::heartBeat()
           {
             if(lvi->_MMCDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting MMC off icon\n");
-          
               lvi->_MMCDet = false;
               lvi->setIcon(DEVCOL_MMCIN, QIcon( *dothIcon));
             }  
@@ -535,9 +467,6 @@ void MidiSyncConfig::heartBeat()
             {
               if(!lvi->_curMTCDet)
               {
-                // Added by Tim. p3.3.6
-                //printf("MidiSyncConfig::heartBeat setting current red icon\n");
-            
                 lvi->_curMTCDet = true;
                 lvi->_MTCDet = false;
                 lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
@@ -546,9 +475,6 @@ void MidiSyncConfig::heartBeat()
             else
             if(!lvi->_MTCDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting MTC on icon\n");
-          
               lvi->_MTCDet = true;
               lvi->_curMTCDet = false;
               lvi->setIcon(DEVCOL_MTCIN, QIcon( *dotIcon));
@@ -581,9 +507,6 @@ void MidiSyncConfig::heartBeat()
           {
             if(lvi->_curMTCDet || lvi->_MTCDet)
             {
-              // Added by Tim. p3.3.6
-              //printf("MidiSyncConfig::heartBeat setting MTC off icon\n");
-          
               lvi->_MTCDet = false;
               lvi->_curMTCDet = false;
               lvi->setIcon(DEVCOL_MTCIN, QIcon( *dothIcon));
@@ -610,13 +533,6 @@ void MidiSyncConfig::heartBeat()
 void MidiSyncConfig::syncChanged()
       {
       setDirty();
-      
-      //MusEGlobal::jackTransportMasterCheckbox->setEnabled(MusEGlobal::useJackTransport);
-      
-      //acceptMTCCheckbox->setEnabled(val);
-//      acceptMTCCheckbox->setEnabled(false);
-//      acceptMCCheckbox->setEnabled(val);
-//      acceptMMCCheckbox->setEnabled(val);
       }
 
 //---------------------------------------------------------
@@ -702,24 +618,14 @@ void MidiSyncConfig::closeEvent(QCloseEvent* e)
 
 void MidiSyncConfig::apply()
 {
-//      txDeviceId  = dstDevId->value();
-//      rxDeviceId  = srcDevId->value();
-//      rxSyncPort  = srcSyncPort->value() - 1;
-//      txSyncPort  = dstSyncPort->value() - 1;
-
-//      genMTCSync  = mtcSync->isChecked();
-//      genMCSync   = mcSync->isChecked();
-//      genMMC      = midiMachineControl->isChecked();
+      // Protect all structures.
+      if(MusEGlobal::audio && MusEGlobal::audio->isRunning())
+        MusEGlobal::audio->msgIdle(true);
 
       MusEGlobal::syncSendFirstClockDelay = syncDelaySpinBox->value();
       
       MusEGlobal::mtcType     = mtcSyncType->currentIndex();
-      //MusEGlobal::extSyncFlag.setValue(syncMode->id(syncMode->selected()));
-      //MusEGlobal::extSyncFlag.blockSignals(true);
       MusEGlobal::extSyncFlag.setValue(extSyncCheckbox->isChecked());
-//      if(MusEGlobal::extSyncFlag.value())
-//        MusEGlobal::song->setMasterFlag(false);
-      //MusEGlobal::extSyncFlag.blockSignals(false);
       MusEGlobal::useJackTransport.setValue(useJackTransportCheckbox->isChecked());
 //      if(MusEGlobal::useJackTransport)
         MusEGlobal::jackTransportMaster = jackTransportMasterCheckbox->isChecked();
@@ -729,32 +635,37 @@ void MidiSyncConfig::apply()
       if(MusEGlobal::audioDevice)
         MusEGlobal::audioDevice->setMaster(MusEGlobal::jackTransportMaster);      
 
+      if(syncRecFilterPreset->currentIndex() != -1)
+      {
+        int fp_idx = syncRecFilterPreset->itemData(syncRecFilterPreset->currentIndex()).toInt();
+        if(fp_idx >= 0 && fp_idx < MusECore::MidiSyncInfo::TYPE_END)
+        {
+          MusEGlobal::syncRecFilterPreset = MusECore::MidiSyncInfo::SyncRecFilterPresetType(fp_idx);
+          if(MusEGlobal::midiSeq)
+            MusEGlobal::midiSeq->setSyncRecFilterPreset(MusEGlobal::syncRecFilterPreset);
+        }
+      }
+      MusEGlobal::syncRecTempoValQuant = syncRecTempoValQuant->value();
+      if(MusEGlobal::midiSeq)
+        MusEGlobal::midiSeq->setRecTempoValQuant(MusEGlobal::syncRecTempoValQuant);
+      
       MusEGlobal::mtcOffset.setH(mtcOffH->value());
       MusEGlobal::mtcOffset.setM(mtcOffM->value());
       MusEGlobal::mtcOffset.setS(mtcOffS->value());
       MusEGlobal::mtcOffset.setF(mtcOffF->value());
       MusEGlobal::mtcOffset.setSf(mtcOffSf->value());
 
-//      acceptMC  = acceptMCCheckbox->isChecked();
-//      acceptMMC = acceptMMCCheckbox->isChecked();
-//      acceptMTC = acceptMTCCheckbox->isChecked();
-
-      
-	  //MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->firstChild();
-	  //while(lvi) 
       for (int i = MIDI_PORTS-1; i >= 0; --i)	    
       {
 	MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->topLevelItem(i);
-        //MusECore::MidiDevice* dev = lvi->device();
-        // Does the device really exist?
-        //if(midiDevices.find(dev) != midiDevices.end())
-        //  dev->syncInfo().copyParams(lvi->syncInfo());
         int port = lvi->port();
         if(port >= 0 && port < MIDI_PORTS)
-          //MusEGlobal::midiPorts[port].syncInfo().copyParams(lvi->syncInfo());
           lvi->copyToSyncInfo(MusEGlobal::midiPorts[port].syncInfo());
         
       }
+  
+  if(MusEGlobal::audio && MusEGlobal::audio->isRunning())
+    MusEGlobal::audio->msgIdle(false);
   
   //muse->changeConfig(true);    // save settings
   
@@ -777,7 +688,6 @@ void MidiSyncConfig::updateSyncInfoLV()
       {
             MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* dev = port->device();
-            // p3.3.31
             // Don't show if it is a synthesizer device.
             // Hmm, some synths might support transport commands or even sync?
             // If anything, the DSSI or VST synths just might... 
@@ -791,9 +701,6 @@ void MidiSyncConfig::updateSyncInfoLV()
             s.setNum(i+1);
             MidiSyncLViewItem* lvi = new MidiSyncLViewItem(devicesListView);
             lvi->setPort(i); // setPort will copy parameters.
-            //MusECore::MidiSyncInfo& si = lvi->syncInfo();
-            //si.copyParams(port->syncInfo());
-            //lvi.copyFromSyncInfo(port->syncInfo());
             MusECore::MidiSyncInfo& portsi = port->syncInfo();
             
             lvi->setText(DEVCOL_NO, s);
@@ -925,11 +832,6 @@ void MidiSyncConfig::updateSyncInfoLV()
               //lvi->setText(DEVCOL_MTCTYPE, "--");
             }
 
-            //lvi->setText(DEVCOL_RID,    QString().setNum(si.idIn()) );
-            //lvi->setRenameEnabled(DEVCOL_RID, true);
-            //lvi->setIcon(DEVCOL_RCLK, QIcon( si.MCIn() ? *dotIcon : *dothIcon));
-            //lvi->setIcon(DEVCOL_RMMC, QIcon( si.MMCIn() ? *dotIcon : *dothIcon));
-            //lvi->setIcon(DEVCOL_RMTC, QIcon( si.MTCIn() ? *dotIcon : *dothIcon));
             lvi->setText(DEVCOL_RID,    QString().setNum(lvi->_idIn) );
             lvi->setIcon(DEVCOL_RCLK, QIcon( lvi->_recMC ? *dotIcon : *dothIcon));
             lvi->setIcon(DEVCOL_RMRT, QIcon( lvi->_recMRT ? *dotIcon : *dothIcon));
@@ -937,11 +839,6 @@ void MidiSyncConfig::updateSyncInfoLV()
             lvi->setIcon(DEVCOL_RMTC, QIcon( lvi->_recMTC ? *dotIcon : *dothIcon));
             lvi->setIcon(DEVCOL_RREWSTART, QIcon( lvi->_recRewOnStart ? *dotIcon : *dothIcon));
             
-            //lvi->setText(DEVCOL_TID,    QString().setNum(si.idOut()) );
-            //lvi->setRenameEnabled(DEVCOL_TID, true);
-            //lvi->setIcon(DEVCOL_TCLK, QIcon( si.MCOut() ? *dotIcon : *dothIcon));
-            //lvi->setIcon(DEVCOL_TMMC, QIcon( si.MMCOut() ? *dotIcon : *dothIcon));
-            //lvi->setIcon(DEVCOL_TMTC, QIcon( si.MTCOut() ? *dotIcon : *dothIcon));
             lvi->setText(DEVCOL_TID,          QString().setNum(lvi->_idOut) );
             lvi->setIcon(DEVCOL_TCLK, QIcon(lvi->_sendMC ? *dotIcon : *dothIcon));
             lvi->setIcon(DEVCOL_TMRT, QIcon(lvi->_sendMRT ? *dotIcon : *dothIcon));
@@ -988,38 +885,6 @@ void MidiSyncConfig::updateSyncInfoLV()
 	    devicesListView->header()->setResizeMode(DEVCOL_TMRT, QHeaderView::Fixed);
 	    devicesListView->header()->setResizeMode(DEVCOL_TMMC, QHeaderView::Fixed);
 
-      
-      /*
-      for(MusECore::iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
-      {
-            MusECore::MidiDevice* dev = *id;
-      
-            //MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
-            //MusECore::MidiDevice* dev = port->device();
-            MidiSyncLViewItem* lvi = new MidiSyncLViewItem(devicesListView);
-            //lvi->setPort(i);
-            // setDevice will copy parameters.
-            lvi->setDevice(dev);
-            MusECore::MidiSyncInfo& si = lvi->syncInfo();
-            //si.copyParams(dev->syncInfo());
-            
-            lvi->setText(DEVCOL_NAME, dev->name());
-            
-            lvi->setIcon(DEVCOL_IN, QIcon(   si.MCSyncDetect() ? *dotIcon : *dothIcon));
-            
-            lvi->setText(DEVCOL_RID,    QString().setNum(si.idIn()) );
-            lvi->setIcon(DEVCOL_RCLK, QIcon( si.MCIn() ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_RMMC, QIcon( si.MMCIn() ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_RMTC, QIcon( si.MTCIn() ? *dotIcon : *dothIcon));
-            
-            lvi->setText(DEVCOL_TID,    QString().setNum(si.idOut()) );
-            lvi->setIcon(DEVCOL_TCLK, QIcon( si.MCOut() ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_TMMC, QIcon( si.MMCOut() ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_TMTC, QIcon( si.MTCOut() ? *dotIcon : *dothIcon));
-            
-            devicesListView->insertItem(lvi);
-      }
-      */
       }
 
 
@@ -1027,7 +892,6 @@ void MidiSyncConfig::updateSyncInfoLV()
 //   dlvClicked
 //---------------------------------------------------------
 
-//void MidiSyncConfig::dlvClicked(QListViewItem* item, const QPoint&, int col)
 void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
 {
       if (item == 0)
@@ -1042,14 +906,6 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
       //if(midiDevices.find(dev) == midiDevices.end())
       //  return;
       
-      //int n;
-      //MusECore::MidiPort* port      = &MusEGlobal::midiPorts[no];
-      //MusECore::MidiDevice* dev     = port->device();
-      //int rwFlags         = dev ? dev->rwFlags() : 0;
-      //int openFlags       = dev ? dev->openFlags() : 0;
-      //MusECore::MidiSyncInfo& si    = lvi->syncInfo();
-      //MusECore::MidiSyncInfo& portsi  = MusEGlobal::midiPorts[no].syncInfo();
-
       switch (col) 
       {
             case DEVCOL_NO:
@@ -1060,8 +916,6 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   // If this is not the current midi sync in port, and sync in from this port is enabled,
                   //  and sync is in fact detected on this port, allow the user to force this port to now be the
                   //  current sync in port. 
-                  //if(no != MusEGlobal::curMidiSyncInPort && si.MCIn() && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
-                  //if(no != MusEGlobal::curMidiSyncInPort && lvi->_recMC && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
                   if(no != MusEGlobal::curMidiSyncInPort)
                   {
                     if(lvi->_recMC && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
@@ -1084,8 +938,6 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   // If this is not the current midi sync in port, and sync in from this port is enabled,
                   //  and sync is in fact detected on this port, allow the user to force this port to now be the
                   //  current sync in port. 
-                  //if(no != MusEGlobal::curMidiSyncInPort && si.MTCIn() && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
-                  //if(no != MusEGlobal::curMidiSyncInPort && lvi->_recMTC && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
                   if(no != MusEGlobal::curMidiSyncInPort)
                   {
                     if(lvi->_recMTC && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
@@ -1105,8 +957,6 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
             case DEVCOL_RID:
                   break;
             case DEVCOL_RCLK:
-                  //si.setMCIn(si.MCIn() ? false : true);
-                  //lvi->setIcon(DEVCOL_RCLK, QIcon( si.MCIn() ? *dotIcon : *dothIcon));
                   lvi->_recMC = (lvi->_recMC ? false : true);
                   lvi->setIcon(DEVCOL_RCLK, QIcon( lvi->_recMC ? *dotIcon : *dothIcon));
                   setDirty();
@@ -1117,15 +967,11 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   setDirty();
                   break;
             case DEVCOL_RMMC:
-                  //si.setMMCIn(si.MMCIn() ? false : true);
-                  //lvi->setIcon(DEVCOL_RMMC, QIcon( si.MMCIn() ? *dotIcon : *dothIcon));
                   lvi->_recMMC = (lvi->_recMMC ? false : true);
                   lvi->setIcon(DEVCOL_RMMC, QIcon( lvi->_recMMC ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_RMTC:
-                  //si.setMTCIn(si.MTCIn() ? false : true);
-                  //lvi->setIcon(DEVCOL_RMTC, QIcon( si.MTCIn() ? *dotIcon : *dothIcon));
                   lvi->_recMTC = (lvi->_recMTC ? false : true);
                   lvi->setIcon(DEVCOL_RMTC, QIcon( lvi->_recMTC ? *dotIcon : *dothIcon));
                   setDirty();
@@ -1138,8 +984,6 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
             case DEVCOL_TID:
                   break;
             case DEVCOL_TCLK:
-                  //si.setMCOut(si.MCOut() ? false : true);
-                  //lvi->setIcon(DEVCOL_TCLK, QIcon( si.MCOut() ? *dotIcon : *dothIcon));
                   lvi->_sendMC = (lvi->_sendMC ? false : true);
                   lvi->setIcon(DEVCOL_TCLK, QIcon( lvi->_sendMC ? *dotIcon : *dothIcon));
                   setDirty();
@@ -1150,15 +994,11 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   setDirty();
                   break;
             case DEVCOL_TMMC:
-                  //si.setMMCOut(si.MMCOut() ? false : true);
-                  //lvi->setIcon(DEVCOL_TMMC, QIcon( si.MMCOut() ? *dotIcon : *dothIcon));
                   lvi->_sendMMC = (lvi->_sendMMC ? false : true);
                   lvi->setIcon(DEVCOL_TMMC, QIcon( lvi->_sendMMC ? *dotIcon : *dothIcon));
                   setDirty();
                   break;
             case DEVCOL_TMTC:
-                  //si.setMTCOut(si.MTCOut() ? false : true);
-                  //lvi->setIcon(DEVCOL_TMTC, QIcon( si.MTCOut() ? *dotIcon : *dothIcon));
                   lvi->_sendMTC = (lvi->_sendMTC ? false : true);
                   lvi->setIcon(DEVCOL_TMTC, QIcon( lvi->_sendMTC ? *dotIcon : *dothIcon));
                   setDirty();
@@ -1183,21 +1023,13 @@ void MidiSyncConfig::dlvDoubleClicked(QTreeWidgetItem* item, int col)
       
       MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)item;
       
-      //if(col == DEVCOL_RID)
-      //  lvi->startRename(DEVCOL_RID); 
-      //else
-      //if(col == DEVCOL_TID)
-      //  lvi->startRename(DEVCOL_TID); 
-      
       bool ok = false;
       if(col == DEVCOL_RID)
       {
-        //int val = lvi->syncInfo().idIn();
         int val = lvi->_idIn;
         int newval = QInputDialog::getInteger(this, "Muse: Sync info" , "Enter new id number (127 = all):", val, 0, 127, 1, &ok);
         if(ok)
         {
-          //lvi->syncInfo().setIdIn(newval);
           lvi->_idIn = newval;
           lvi->setText(DEVCOL_RID, QString().setNum(newval)); 
         }  
@@ -1205,12 +1037,10 @@ void MidiSyncConfig::dlvDoubleClicked(QTreeWidgetItem* item, int col)
       else
       if(col == DEVCOL_TID)
       {
-        //int val = lvi->syncInfo().idOut();
         int val = lvi->_idOut;
         int newval = QInputDialog::getInteger(this, "Muse: Sync info" , "Enter new id number (127 = global):", val, 0, 127, 1, &ok);
         if(ok)
         {
-          //lvi->syncInfo().setIdOut(newval);
           lvi->_idOut = newval;
           lvi->setText(DEVCOL_TID, QString().setNum(newval)); 
         }  
@@ -1219,41 +1049,6 @@ void MidiSyncConfig::dlvDoubleClicked(QTreeWidgetItem* item, int col)
       if(ok)
         setDirty();
 }
-
-/*
-//---------------------------------------------------------
-//   renameOk
-//---------------------------------------------------------
-//void MidiSyncConfig::renameOk(QListViewItem* item, int col)
-void MidiSyncConfig::renameOk(QListViewItem* item, int col, const QString & text)
-{
-      if(!item)
-        return;
-      
-      MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)item;
-      QString t = text;
-      bool ok;
-      int id = text.toInt(&ok);
-      if(!ok)
-      {
-        lvi->setText(t);
-        return;
-      }  
-      if(col == DEVCOL_RID)
-      {
-        //lvi->syncInfo().setIdIn(id);
-        lvi->_idIn = id;
-        setDirty();
-      }  
-      else
-      if(col == DEVCOL_TID)
-      {
-        //lvi->syncInfo().setIdOut(id);
-        lvi->_idOut = id;
-        setDirty();
-      }  
-}
-*/
 
 //---------------------------------------------------------
 //   MidiSyncConfig::setDirty

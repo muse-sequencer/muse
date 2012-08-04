@@ -21,6 +21,7 @@
 //
 //=========================================================
 
+#include <stdlib.h>
 #include <cmath>
 #include "sync.h"
 #include "song.h"
@@ -31,18 +32,12 @@
 #include "midiseq.h"
 #include "audio.h"
 #include "audiodev.h"
-//#include "driver/audiodev.h"  // p4.0.2
 #include "gconfig.h"
 #include "xml.h"
 #include "midi.h"
 
 namespace MusEGlobal {
 
-//int rxSyncPort = -1;         // receive from all ports
-//int txSyncPort = 1;
-//int rxDeviceId = 0x7f;       // any device
-//int txDeviceId = 0x7f;       // any device
-//MidiSyncPort midiSyncPorts[MIDI_PORTS];
 int volatile curMidiSyncInPort = -1;
 
 bool debugSync = false;
@@ -50,12 +45,6 @@ bool debugSync = false;
 int mtcType     = 1;
 MusECore::MTC mtcOffset;
 MusECore::BValue extSyncFlag(0, "extSync");       // false - MASTER, true - SLAVE
-//bool genMTCSync = false;      // output MTC Sync
-//bool genMCSync  = false;      // output MidiClock Sync
-//bool genMMC     = false;      // output Midi Machine Control
-//bool acceptMTC  = false;
-//bool acceptMC   = true;
-//bool acceptMMC  = true;
 MusECore::BValue useJackTransport(0,"useJackTransport");
 bool volatile jackTransportMaster = true;
 
@@ -65,20 +54,19 @@ static bool mtcValid;
 static int mtcLost;
 static bool mtcSync;    // receive complete mtc frame?
 
-// p3.3.28
 static bool playPendingFirstClock = false;
 unsigned int syncSendFirstClockDelay = 1; // In milliseconds.
-//static int lastStoppedBeat = 0;
 static unsigned int curExtMidiSyncTick = 0;
 unsigned int volatile lastExtMidiSyncTick = 0;
 double volatile curExtMidiSyncTime = 0.0;
 double volatile lastExtMidiSyncTime = 0.0;
+MusECore::MidiSyncInfo::SyncRecFilterPresetType syncRecFilterPreset = MusECore::MidiSyncInfo::SMALL;
+double syncRecTempoValQuant = 1.0;
 
-// Not used yet.
+// Not used yet. DELETETHIS?
 // static bool mcStart = false;
 // static int mcStartTick;
 
-// p3.3.25
 // From the "Introduction to the Volatile Keyword" at Embedded dot com
 /* A variable should be declared volatile whenever its value could change unexpectedly. 
  ... <such as> global variables within a multi-threaded application    
@@ -124,7 +112,6 @@ MidiSyncInfo::MidiSyncInfo()
   _MTCDetect     = false;
   _recMTCtype    = 0;
   _recRewOnStart  = true;
-  //_sendContNotStart = false;
   _actDetectBits = 0;
   for(int i = 0; i < MIDI_CHANNELS; ++i)
   {
@@ -140,8 +127,6 @@ MidiSyncInfo::MidiSyncInfo()
 
 MidiSyncInfo& MidiSyncInfo::operator=(const MidiSyncInfo &sp)
 {
-  //_port          = sp._port;
-  
   copyParams(sp);
   
   _lastClkTime   = sp._lastClkTime;
@@ -175,8 +160,6 @@ MidiSyncInfo& MidiSyncInfo::operator=(const MidiSyncInfo &sp)
 
 MidiSyncInfo& MidiSyncInfo::copyParams(const MidiSyncInfo &sp)
 {
-  //_port          = sp._port;
-  
   _idOut         = sp._idOut;
   _idIn          = sp._idIn;
   _sendMC        = sp._sendMC;
@@ -188,7 +171,6 @@ MidiSyncInfo& MidiSyncInfo::copyParams(const MidiSyncInfo &sp)
   _recMMC        = sp._recMMC;
   _recMTC        = sp._recMTC;
   _recRewOnStart = sp._recRewOnStart;
-  //_sendContNotStart = sp._sendContNotStart;
   return *this;
 }
 
@@ -235,7 +217,7 @@ void MidiSyncInfo::setTime()
   if(_MRTDetect && (t - _lastMRTTime) >= 1.0) // Set detect indicator timeout to about 1 second.
   {
     _MRTDetect = false;
-    // Give up the current midi sync in port number if we took it...
+    // Give up the current midi sync in port number if we took it... DELETETHIS 3
     //if(MusEGlobal::curMidiSyncInPort == _port)
     //  MusEGlobal::curMidiSyncInPort = -1;
   }
@@ -249,7 +231,7 @@ void MidiSyncInfo::setTime()
   if(_MMCDetect && (t - _lastMMCTime) >= 1.0) // Set detect indicator timeout to about 1 second.
   {
     _MMCDetect = false;
-    // Give up the current midi sync in port number if we took it...
+    // Give up the current midi sync in port number if we took it... DELETETHIS 3
     //if(MusEGlobal::curMidiSyncInPort == _port)
     //  MusEGlobal::curMidiSyncInPort = -1;
   }
@@ -279,7 +261,6 @@ void MidiSyncInfo::setTime()
     if(_actDetect[i] && (t - _lastActTime[i]) >= 1.0) // Set detect indicator timeout to about 1 second.
     {
       _actDetect[i] = false;
-      //_actDetectBits &= ~bitShiftLU[i];
       _actDetectBits &= ~(1 << i);
     }  
   }
@@ -304,6 +285,7 @@ void MidiSyncInfo::setMCIn(const bool v)
 void MidiSyncInfo::setMRTIn(const bool v) 
 { 
   _recMRT = v; 
+  // DELETETHIS 4
   // If sync receive was turned off, clear the current midi sync in port number so another port can grab it.
   //if(!_recMRT && _port != -1 && MusEGlobal::curMidiSyncInPort == _port)
   //  MusEGlobal::curMidiSyncInPort = -1;
@@ -316,6 +298,7 @@ void MidiSyncInfo::setMRTIn(const bool v)
 void MidiSyncInfo::setMMCIn(const bool v) 
 { 
   _recMMC = v; 
+  // DELETETHIS 4
   // If sync receive was turned off, clear the current midi sync in port number so another port can grab it.
   //if(!_recMMC && _port != -1 && MusEGlobal::curMidiSyncInPort == _port)
   //  MusEGlobal::curMidiSyncInPort = -1;
@@ -364,7 +347,7 @@ void MidiSyncInfo::trigMRTDetect()
 { 
   _MRTDetect = true;
   _MRTTrig = true;
-  // Set the current midi sync in port number if it's not taken...
+  // Set the current midi sync in port number if it's not taken... //DELETETHIS 3
   //if(_recMRT && MusEGlobal::curMidiSyncInPort == -1)
   //  MusEGlobal::curMidiSyncInPort = _port;
 }
@@ -377,7 +360,7 @@ void MidiSyncInfo::trigMMCDetect()
 { 
   _MMCDetect = true;
   _MMCTrig = true;
-  // Set the current midi sync in port number if it's not taken...
+  // Set the current midi sync in port number if it's not taken... DELETETHIS 3
   //if(_recMMC && MusEGlobal::curMidiSyncInPort == -1)
   //  MusEGlobal::curMidiSyncInPort = _port;
 }
@@ -416,7 +399,6 @@ void MidiSyncInfo::trigActDetect(const int ch)
   if(ch < 0 || ch >= MIDI_CHANNELS)
     return;
     
-  //_actDetectBits |= bitShiftLU[ch];
   _actDetectBits |= (1 << ch);
   _actDetect[ch] = true;
   _actTrig[ch] = true;
@@ -429,7 +411,7 @@ void MidiSyncInfo::trigActDetect(const int ch)
 bool MidiSyncInfo::isDefault() const
 {
   return(_idOut == 127 && _idIn == 127 && !_sendMC && !_sendMRT && !_sendMMC && !_sendMTC && 
-     /* !_sendContNotStart && */ !_recMC && !_recMRT && !_recMMC && !_recMTC && _recRewOnStart);
+     !_recMC && !_recMRT && !_recMMC && !_recMTC && _recRewOnStart);
 }
 
 //---------------------------------------------------------
@@ -458,8 +440,6 @@ void MidiSyncInfo::read(Xml& xml)
                               _sendMMC = xml.parseInt();
                         else if (tag == "sendMTC")
                               _sendMTC = xml.parseInt();
-                        //else if (tag == "sendContNotStart")
-                        //      _sendContNotStart = xml.parseInt();
                         else if (tag == "recMC")
                               _recMC = xml.parseInt();
                         else if (tag == "recMRT")
@@ -486,26 +466,13 @@ void MidiSyncInfo::read(Xml& xml)
 //  write
 //---------------------------------------------------------
 
-//void MidiSyncInfo::write(int level, Xml& xml, MidiDevice* md)
 void MidiSyncInfo::write(int level, Xml& xml)
 {
-  //if(!md)
-  //  return;
-  
-  // All defaults? Nothing to write.
-  //if(_idOut == 127 && _idIn == 127 && !_sendMC && !_sendMRT && !_sendMMC && !_sendMTC && 
-  //   /* !_sendContNotStart && */ !_recMC && !_recMRT && !_recMMC && !_recMTC && _recRewOnStart)
-  //  return;
   if(isDefault())  
     return;
   
   xml.tag(level++, "midiSyncInfo");
-  //xml.intTag(level, "idx", idx);
-  //xml.intTag(level++, "midiSyncPort", idx);
-  //xml.tag(level++, "midiSyncInfo idx=\"%d\"", idx);
-  
-  //xml.strTag(level, "device", md->name());
-  
+
   if(_idOut != 127)
     xml.intTag(level, "idOut", _idOut);
   if(_idIn != 127)
@@ -515,12 +482,10 @@ void MidiSyncInfo::write(int level, Xml& xml)
     xml.intTag(level, "sendMC", true);
   if(_sendMRT)
     xml.intTag(level, "sendMRT", true);
-  if(_sendMRT)
+  if(_sendMMC)
     xml.intTag(level, "sendMMC", true);
   if(_sendMTC)
     xml.intTag(level, "sendMTC", true);
-  //if(_sendContNotStart)
-  //  xml.intTag(level, "sendContNotStart", true);
   
   if(_recMC)
     xml.intTag(level, "recMC", true);
@@ -541,7 +506,6 @@ void MidiSyncInfo::write(int level, Xml& xml)
 //    Midi Machine Control Input received
 //---------------------------------------------------------
 
-//void MidiSeq::mmcInput(const unsigned char* p, int n)
 void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
       {
       if (MusEGlobal::debugSync)
@@ -560,10 +524,6 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
       if(!msync.MMCIn())
         return;
       
-      //if (!(MusEGlobal::extSyncFlag.value() && acceptMMC))
-      //if(!MusEGlobal::extSyncFlag.value())
-      //      return;
-      
       switch(p[3]) {
             case 1:
                   if (MusEGlobal::debugSync)
@@ -571,12 +531,10 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
                   
                   MusEGlobal::playPendingFirstClock = false;
                   
-                  //if ((state == PLAY || state == PRECOUNT))
                   if (MusEGlobal::audio->isPlaying())
                         MusEGlobal::audio->msgPlay(false);
                         playStateExt = false;
                         alignAllTicks();
-                        //stopPlay();
                   break;
             case 2:
                   if (MusEGlobal::debugSync)
@@ -588,7 +546,6 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
                   MusEGlobal::mtcValid = false;
                   MusEGlobal::mtcLost  = 0;
                   MusEGlobal::mtcSync  = false;
-                  //startPlay();
                   alignAllTicks();
                   MusEGlobal::audio->msgPlay(true);
                   playStateExt = true;
@@ -623,23 +580,16 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
                         if (!MusEGlobal::checkAudioDevice()) return;
                         MTC mtc(p[6] & 0x1f, p[7], p[8], p[9], p[10]);
                         int type = (p[6] >> 5) & 3;
-                        //int mmcPos = MusEGlobal::tempomap.frame2tick(lrint(mtc.time()*MusEGlobal::sampleRate));
-                        //int mmcPos = lrint(mtc.time()*MusEGlobal::sampleRate);
                         int mmcPos = lrint(mtc.time(type) * MusEGlobal::sampleRate);
 
-                        //Pos tp(mmcPos, true);
                         Pos tp(mmcPos, false);
-                        //MusEGlobal::audioDevice->seekTransport(tp.frame());
                         MusEGlobal::audioDevice->seekTransport(tp);
                         alignAllTicks();
-                        //seek(tp);
                         if (MusEGlobal::debugSync) {
-                              //printf("MMC: %f %d seek ", mtc.time(), mmcPos);
                               printf("MMC: LOCATE mtc type:%d time:%lf frame:%d mtc: ", type, mtc.time(), mmcPos);
                               mtc.print();
                               printf("\n");
                               }
-                        //write(sigFd, "G", 1);
                         break;
                         }
                   // fall through
@@ -653,12 +603,9 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
 //    process Quarter Frame Message
 //---------------------------------------------------------
 
-//void MidiSeq::mtcInputQuarter(int, unsigned char c)
 void MidiSeq::mtcInputQuarter(int port, unsigned char c)
       {
       static int hour, min, sec, frame;
-
-      //printf("MidiSeq::mtcInputQuarter c:%h\n", c);
       
       int valL = c & 0xf;
       int valH = valL << 4;
@@ -727,9 +674,7 @@ void MidiSeq::mtcInputQuarter(int port, unsigned char c)
       }      
       else if (MusEGlobal::mtcValid && (MusEGlobal::mtcLost == 0)) 
       {
-            //MusEGlobal::mtcCurTime.incQuarter();
             MusEGlobal::mtcCurTime.incQuarter(type);
-            //MusEGlobal::mtcSyncMsg(MusEGlobal::mtcCurTime, type, false);
       }
     }
 
@@ -738,13 +683,10 @@ void MidiSeq::mtcInputQuarter(int port, unsigned char c)
 //    process Frame Message
 //---------------------------------------------------------
 
-//void MidiSeq::mtcInputFull(const unsigned char* p, int n)
 void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
       {
       if (MusEGlobal::debugSync)
             printf("mtcInputFull\n");
-      //if (!MusEGlobal::extSyncFlag.value())
-      //      return;
 
       if (p[3] != 1) {
             if (p[3] != 2) {   // silently ignore user bits
@@ -779,10 +721,8 @@ void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
         msync.setRecMTCtype(type);
         msync.trigMTCDetect();
         // MTC in not turned on? Forget it.
-        //if(MusEGlobal::extSyncFlag.value() && msync.MTCIn())
         if(msync.MTCIn())
         {
-          //Pos tp(lrint(MusEGlobal::mtcCurTime.time() * MusEGlobal::sampleRate), false);
           Pos tp(lrint(MusEGlobal::mtcCurTime.time(type) * MusEGlobal::sampleRate), false);
           MusEGlobal::audioDevice->seekTransport(tp);
           alignAllTicks();
@@ -794,10 +734,8 @@ void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
 //   nonRealtimeSystemSysex
 //---------------------------------------------------------
 
-//void MidiSeq::nonRealtimeSystemSysex(const unsigned char* p, int n)
 void MidiSeq::nonRealtimeSystemSysex(int /*port*/, const unsigned char* p, int n)
       {
-//      int chan = p[2];
       switch(p[3]) {
             case 4:
                   printf("NRT Setup\n");
@@ -822,30 +760,23 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
       if (MusEGlobal::midiInputTrace)
             printf("set song position port:%d %d\n", port, midiBeat);
       
-      //MusEGlobal::midiPorts[port].syncInfo().trigMCSyncDetect();
       MusEGlobal::midiPorts[port].syncInfo().trigMRTDetect();
       
-      //if (!MusEGlobal::extSyncFlag.value())
-      // External sync not on? Clock in not turned on? 
-      //if(!MusEGlobal::extSyncFlag.value() || !MusEGlobal::midiPorts[port].syncInfo().MCIn())
       if(!MusEGlobal::extSyncFlag.value() || !MusEGlobal::midiPorts[port].syncInfo().MRTIn())
             return;
             
       // Re-transmit song position to other devices if clock out turned on.
       for(int p = 0; p < MIDI_PORTS; ++p)
-        //if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
         if(p != port && MusEGlobal::midiPorts[p].syncInfo().MRTOut())
           MusEGlobal::midiPorts[p].sendSongpos(midiBeat);
                   
       MusEGlobal::curExtMidiSyncTick = (MusEGlobal::config.division * midiBeat) / 4;
       MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
       
-      //Pos pos((MusEGlobal::config.division * midiBeat) / 4, true);
       Pos pos(MusEGlobal::curExtMidiSyncTick, true);
       
       if (!MusEGlobal::checkAudioDevice()) return;
 
-      //MusEGlobal::audioDevice->seekTransport(pos.frame());
       MusEGlobal::audioDevice->seekTransport(pos);
       alignAllTicks(pos.frame());
       if (MusEGlobal::debugSync)
@@ -859,8 +790,6 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
 //---------------------------------------------------------
 void MidiSeq::alignAllTicks(int frameOverride)
       {
-      //printf("alignAllTicks audioDriver->framePos=%d, audio->pos().frame()=%d\n", 
-      //        MusEGlobal::audioDevice->framePos(), audio->pos().frame());
       unsigned curFrame;
       if (!frameOverride)
         curFrame = MusEGlobal::audio->pos().frame();
@@ -893,26 +822,26 @@ void MidiSeq::alignAllTicks(int frameOverride)
         recTick2 = 0;
       if (MusEGlobal::debugSync)
         printf("alignAllTicks curFrame=%d recTick=%d tempo=%.3f frameOverride=%d\n",curFrame,recTick,(float)((1000000.0 * 60.0)/tempo), frameOverride);
-
+      
+      lastTempo = 0;
+      for(int i = 0; i < _clockAveragerPoles; ++i)
+      {
+        _avgClkDiffCounter[i] = 0;
+        _averagerFull[i] = false;
+      }
+      _lastRealTempo = 0.0;
       }
 
 //---------------------------------------------------------
 //   realtimeSystemInput
 //    real time message received
 //---------------------------------------------------------
-void MidiSeq::realtimeSystemInput(int port, int c)
+void MidiSeq::realtimeSystemInput(int port, int c, double time)
       {
 
       if (MusEGlobal::midiInputTrace)
-            printf("realtimeSystemInput port:%d 0x%x\n", port+1, c);
+            printf("realtimeSystemInput port:%d 0x%x time:%f\n", port+1, c, time);
 
-      //if (MusEGlobal::midiInputTrace && (rxSyncPort != port) && rxSyncPort != -1) {
-      //      if (MusEGlobal::debugSync)
-      //            printf("rxSyncPort configured as %d; received sync from port %d\n",
-      //               rxSyncPort, port);
-      //      return;
-      //      }
-      
       MidiPort* mp = &MusEGlobal::midiPorts[port];
       
       // Trigger on any tick, clock, or realtime command. 
@@ -944,8 +873,6 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if(port != MusEGlobal::curMidiSyncInPort)
                     break;
                   
-                  //printf("midi clock:%f\n", curTime());
-                  
                   // Re-transmit clock to other devices if clock out turned on.
                   // Must be careful not to allow more than one clock input at a time.
                   // Would re-transmit mixture of multiple clocks - confusing receivers.
@@ -955,7 +882,9 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
                       MusEGlobal::midiPorts[p].sendClock();
                   
-                  // p3.3.28
+                  MusEGlobal::lastExtMidiSyncTime = MusEGlobal::curExtMidiSyncTime;
+                  MusEGlobal::curExtMidiSyncTime = time;
+                  
                   if(MusEGlobal::playPendingFirstClock)
                   {
                     MusEGlobal::playPendingFirstClock = false;
@@ -965,21 +894,166 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     if(!MusEGlobal::audio->isPlaying())
                       MusEGlobal::audioDevice->startTransport();
                   }
-                  //else
+                  //else DELETETHIS?
                   // This part will be run on the second and subsequent clocks, after start.
                   // Can't check audio state, might not be playing yet, we might miss some increments.
-                  //if(MusEGlobal::audio->isPlaying())
                   if(playStateExt)
                   {
-                    MusEGlobal::lastExtMidiSyncTime = MusEGlobal::curExtMidiSyncTime;
-                    MusEGlobal::curExtMidiSyncTime = curTime();
                     int div = MusEGlobal::config.division/24;
                     MusEGlobal::midiExtSyncTicks += div;
                     MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
                     MusEGlobal::curExtMidiSyncTick += div;
+                    
+                    if(MusEGlobal::song->record() && MusEGlobal::lastExtMidiSyncTime > 0.0)
+                    {
+                      double diff = MusEGlobal::curExtMidiSyncTime - MusEGlobal::lastExtMidiSyncTime;
+                      if(diff != 0.0)
+                      {
+                        if(_clockAveragerPoles == 0)
+                        {
+                          double real_tempo = 60.0/(diff * 24.0);
+                          if(_tempoQuantizeAmount > 0.0)
+                          {
+                            double f_mod = fmod(real_tempo, _tempoQuantizeAmount);
+                            if(f_mod < _tempoQuantizeAmount/2.0)
+                              real_tempo -= f_mod;
+                            else
+                              real_tempo += _tempoQuantizeAmount - f_mod;
+                          }
+                          int new_tempo = ((1000000.0 * 60.0) / (real_tempo));
+                          if(new_tempo != lastTempo)
+                          {
+                            lastTempo = new_tempo;
+                            // Compute tick for this tempo - it is one step back in time. 
+                            int add_tick = MusEGlobal::curExtMidiSyncTick - div;
+                            if(MusEGlobal::debugSync)
+                              printf("adding new tempo tick:%d curExtMidiSyncTick:%d avg_diff:%f real_tempo:%f new_tempo:%d = %f\n", add_tick, MusEGlobal::curExtMidiSyncTick, diff, real_tempo, new_tempo, (double)((1000000.0 * 60.0)/new_tempo));
+                            MusEGlobal::song->addExternalTempo(TempoRecEvent(add_tick, new_tempo));
+                          }  
+                        }
+                        else
+                        {
+                          double avg_diff = diff;
+                          for(int pole = 0; pole < _clockAveragerPoles; ++pole)
+                          {
+                            timediff[pole][_avgClkDiffCounter[pole]] = avg_diff;
+                            ++_avgClkDiffCounter[pole];
+                            if(_avgClkDiffCounter[pole] >= _clockAveragerStages[pole])
+                            {
+                              _avgClkDiffCounter[pole] = 0;
+                              _averagerFull[pole] = true;
+                            }
+                            
+                            // Each averager needs to be full before we can pass the data to 
+                            //  the next averager or use the data if all averagers are full...
+                            if(!_averagerFull[pole])  
+                              break;
+                            else
+                            {
+                              avg_diff = 0.0;
+                              for(int i = 0; i < _clockAveragerStages[pole]; ++i) 
+                                avg_diff += timediff[pole][i];
+                              avg_diff /= _clockAveragerStages[pole];
+                              
+                              int fin_idx = _clockAveragerPoles - 1;
+                                
+                              // On the first pole? Check for large differences.
+                              if(_preDetect && pole == 0)
+                              {
+                                double real_tempo = 60.0/(avg_diff * 24.0);
+                                double real_tempo_diff = abs(real_tempo - _lastRealTempo);
+                                
+                                // If the tempo changed a large amount, reset.
+                                if(real_tempo_diff >= 10.0)  // TODO: User-adjustable?
+                                {
+                                  if(_tempoQuantizeAmount > 0.0)
+                                  {
+                                    double f_mod = fmod(real_tempo, _tempoQuantizeAmount);
+                                    if(f_mod < _tempoQuantizeAmount/2.0)
+                                      real_tempo -= f_mod;
+                                    else
+                                      real_tempo += _tempoQuantizeAmount - f_mod;
+                                  }
+                                  _lastRealTempo = real_tempo;
+                                  int new_tempo = ((1000000.0 * 60.0) / (real_tempo));
+                                  
+                                  if(new_tempo != lastTempo)
+                                  {
+                                    lastTempo = new_tempo;
+                                    // Compute tick for this tempo - it is way back in time. 
+                                    int add_tick = MusEGlobal::curExtMidiSyncTick - _clockAveragerStages[0] * div;
+                                    if(add_tick < 0) 
+                                    {
+                                      printf("FIXME sync: adding restart tempo curExtMidiSyncTick:%d: add_tick:%d < 0 !\n", MusEGlobal::curExtMidiSyncTick, add_tick);
+                                      add_tick = 0;
+                                    }
+                                    if(MusEGlobal::debugSync)
+                                      printf("adding restart tempo tick:%d curExtMidiSyncTick:%d tick_idx_sub:%d avg_diff:%f real_tempo:%f real_tempo_diff:%f new_tempo:%d = %f\n", add_tick, MusEGlobal::curExtMidiSyncTick, _clockAveragerStages[0], avg_diff, real_tempo, real_tempo_diff, new_tempo, (double)((1000000.0 * 60.0)/new_tempo));
+                                    MusEGlobal::song->addExternalTempo(TempoRecEvent(add_tick, new_tempo));
+                                  }  
+                                  
+                                  // Reset all the poles.
+                                  //for(int i = 0; i < clockAveragerPoles; ++i)
+                                  // We have a value for this pole, let's keep it but reset the other poles.
+                                  for(int i = 1; i < _clockAveragerPoles; ++i)
+                                  {
+                                    _avgClkDiffCounter[i] = 0;
+                                    _averagerFull[i] = false;
+                                  }
+                                  break;
+                                }
+                              }
+                              
+                              // On the last pole? 
+                              // All averagers need to be full before we can use the data...
+                              if(pole == fin_idx)
+                              {
+                                double real_tempo = 60.0/(avg_diff * 24.0);
+                                double real_tempo_diff = abs(real_tempo - _lastRealTempo);
+                                
+                                if(real_tempo_diff >= _tempoQuantizeAmount/2.0) // Anti-hysteresis
+                                {
+                                  if(_tempoQuantizeAmount > 0.0)
+                                  {
+                                    double f_mod = fmod(real_tempo, _tempoQuantizeAmount);
+                                    if(f_mod < _tempoQuantizeAmount/2.0)
+                                      real_tempo -= f_mod;
+                                    else
+                                      real_tempo += _tempoQuantizeAmount - f_mod;
+                                  }
+                                  _lastRealTempo = real_tempo;
+                                  int new_tempo = ((1000000.0 * 60.0) / (real_tempo));
+                                  
+                                  if(new_tempo != lastTempo)
+                                  {
+                                    lastTempo = new_tempo;
+                                    // Compute tick for this tempo - it is way back in time. 
+                                    int tick_idx_sub = 0;
+                                    for(int i = 0; i <= pole; ++i)
+                                      tick_idx_sub += _clockAveragerStages[i];
+                                    // Compensate: Each pole > 0 has a delay one less than its number of stages. 
+                                    // For example three pole {8, 8, 8} has a delay of 22 not 24.
+                                    tick_idx_sub -= pole;
+                                    int add_tick = MusEGlobal::curExtMidiSyncTick - tick_idx_sub * div;
+                                    if(add_tick < 0) 
+                                    {
+                                      printf("FIXME sync: adding new tempo curExtMidiSyncTick:%d: add_tick:%d < 0 !\n", MusEGlobal::curExtMidiSyncTick, add_tick);
+                                      add_tick = 0;
+                                    }
+                                    if(MusEGlobal::debugSync)
+                                      printf("adding new tempo tick:%d curExtMidiSyncTick:%d tick_idx_sub:%d avg_diff:%f real_tempo:%f new_tempo:%d = %f\n", add_tick, MusEGlobal::curExtMidiSyncTick, tick_idx_sub, avg_diff, real_tempo, new_tempo, (double)((1000000.0 * 60.0)/new_tempo));
+                                    MusEGlobal::song->addExternalTempo(TempoRecEvent(add_tick, new_tempo));
+                                  }  
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
                   }
                   
-//BEGIN : Original code:
+//BEGIN : Original code: DELETETHIS 250
                   /*
                   double mclock0 = curTime();
                   // Difference in time last 2 rounds:
@@ -1230,6 +1304,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   }
                   break;
             case ME_TICK:  // midi tick  (every 10 msec)
+                  //DELETETHIS 6
                   // FIXME: Unfinished? mcStartTick is uninitialized and Song::setPos doesn't set it either. Dangerous to allow this.
                   //if (mcStart) {
                   //      song->setPos(0, mcStartTick);
@@ -1240,10 +1315,8 @@ void MidiSeq::realtimeSystemInput(int port, int c)
             case ME_START:  // start
                   // Re-transmit start to other devices if clock out turned on.
                   for(int p = 0; p < MIDI_PORTS; ++p)
-                    //if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
                     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MRTOut())
                     {
-                      // p3.3.31
                       // If we aren't rewinding on start, there's no point in re-sending start.
                       // Re-send continue instead, for consistency.
                       if(MusEGlobal::midiPorts[port].syncInfo().recRewOnStart())
@@ -1254,34 +1327,24 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if (MusEGlobal::debugSync)
                         printf("   start\n");
                   
-                  //printf("midi start:%f\n", curTime());
                   
+                  // DELETETHIS, remove the wrapping if(true)
                   if (1 /* !MusEGlobal::audio->isPlaying()*/ /*state == IDLE*/) {
                         if (!MusEGlobal::checkAudioDevice()) return;
                         
-                        // p3.3.31
                         // Rew on start option.
                         if(MusEGlobal::midiPorts[port].syncInfo().recRewOnStart())
                         {
                           MusEGlobal::curExtMidiSyncTick = 0;
                           MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
-                          //MusEGlobal::audioDevice->seekTransport(0);
                           MusEGlobal::audioDevice->seekTransport(Pos(0, false));
                         }  
 
-                        //unsigned curFrame = MusEGlobal::audio->curFrame();
-                        //if (MusEGlobal::debugSync)
-                        //      printf("       curFrame=%d\n", curFrame);
-                        
                         alignAllTicks();
-                        //if (MusEGlobal::debugSync)
-                        //      printf("   curFrame: %d curTick: %d tempo: %d\n", curFrame, recTick, MusEGlobal::tempomap.tempo(0));
 
                         storedtimediffs = 0;
-                        for (int i=0; i<24; i++)
-                              timediff[i] = 0.0;
                         
-                        // p3.3.26 1/23/10
+                        // p3.3.26 1/23/10 DELETETHIS 6
                         // Changed because msgPlay calls MusEGlobal::audioDevice->seekTransport(song->cPos())
                         //  and song->cPos() may not be changed to 0 yet, causing tranport not to go to 0.
                         //MusEGlobal::audio->msgPlay(true);
@@ -1296,7 +1359,6 @@ void MidiSeq::realtimeSystemInput(int port, int c)
             case ME_CONTINUE:  // continue
                   // Re-transmit continue to other devices if clock out turned on.
                   for(int p = 0; p < MIDI_PORTS; ++p)
-                    //if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
                     if(p != port && MusEGlobal::midiPorts[p].syncInfo().MRTOut())
                       MusEGlobal::midiPorts[p].sendContinue();
                   
@@ -1321,7 +1383,6 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   break;
             case ME_STOP:  // stop
                   {
-                    // p3.3.35
                     // Stop the increment right away.
                     MusEGlobal::midiExtSyncTicks = 0;
                     playStateExt = false;
@@ -1329,25 +1390,17 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     
                     // Re-transmit stop to other devices if clock out turned on.
                     for(int p = 0; p < MIDI_PORTS; ++p)
-                      //if(p != port && MusEGlobal::midiPorts[p].syncInfo().MCOut())
                       if(p != port && MusEGlobal::midiPorts[p].syncInfo().MRTOut())
                         MusEGlobal::midiPorts[p].sendStop();
                     
-                    //MusEGlobal::playPendingFirstClock = false;
                     
-                    //lastStoppedBeat = (MusEGlobal::audio->tickPos() * 4) / MusEGlobal::config.division;
-                    //MusEGlobal::curExtMidiSyncTick = (MusEGlobal::config.division * lastStoppedBeat) / 4;
-                    
-                    //printf("stop:%f\n", curTime());
-                    
-                    if (MusEGlobal::audio->isPlaying() /*state == PLAY*/) {
+                    if (MusEGlobal::audio->isPlaying())
                           MusEGlobal::audio->msgPlay(false);
-                          //playStateExt = false;
-                          }
                     
                     if (MusEGlobal::debugSync)
                           printf("realtimeSystemInput stop\n");
-                    
+
+                    //DELETETHIS 7
                     // Just in case the process still runs a cycle or two and causes the 
                     //  audio tick position to increment, reset the incrementer and force 
                     //  the transport position to what the hardware thinks is the current position.
@@ -1358,7 +1411,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   }
                   
                   break;
-            //case 0xfd:  // unknown
+            //case 0xfd:  // unknown DELETETHIS 3
             //case ME_SENSE:  // active sensing
             //case ME_META:  // system reset (reset is 0xff same enumeration as file meta event)
             default:
@@ -1381,10 +1434,7 @@ void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
       if (MusEGlobal::debugSync)
             printf("MidiSeq::MusEGlobal::mtcSyncMsg time:%lf stime:%lf seekFlag:%d\n", time, stime, seekFlag);
 
-      if (seekFlag && MusEGlobal::audio->isRunning() /*state == START_PLAY*/) {
-//            int tick = MusEGlobal::tempomap.time2tick(time);
-            //state = PLAY;
-            //write(sigFd, "1", 1);  // say PLAY to gui
+      if (seekFlag && MusEGlobal::audio->isRunning()) {
             if (!MusEGlobal::checkAudioDevice()) return;
             if (MusEGlobal::debugSync)
               printf("MidiSeq::MusEGlobal::mtcSyncMsg starting transport.\n");
@@ -1392,7 +1442,7 @@ void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
             return;
             }
 
-      /*if (tempoSN != MusEGlobal::tempomap.tempoSN()) {
+      /*if (tempoSN != MusEGlobal::tempomap.tempoSN()) { DELETETHIS 13
             double cpos    = MusEGlobal::tempomap.tick2time(_midiTick, 0);
             samplePosStart = samplePos - lrint(cpos * MusEGlobal::sampleRate);
             rtcTickStart   = rtcTick - lrint(cpos * realRtcTicks);

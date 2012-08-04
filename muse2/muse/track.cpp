@@ -4,6 +4,7 @@
 //  $Id: track.cpp,v 1.34.2.11 2009/11/30 05:05:49 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -32,18 +33,22 @@
 #include "audio.h"
 #include "globaldefs.h"
 #include "route.h"
+#include "drummap.h"
+#include "midictrl.h"
+#include "helper.h"
+#include "limits.h"
+#include "dssihost.h"
 
 namespace MusECore {
 
-//bool Track::_isVisible=true;
-unsigned int Track::_soloRefCnt = 0;
+unsigned int Track::_soloRefCnt  = 0;
 Track* Track::_tmpSoloChainTrack = 0;
 bool Track::_tmpSoloChainDoIns   = false;
 bool Track::_tmpSoloChainNoDec   = false;
 
 const char* Track::_cname[] = {
-      "Midi", "Drum", "Wave", "AudioOut", "AudioIn", "AudioGroup", 
-      "AudioAux", "AudioSynth"
+      "Midi", "Drum", "NewStyleDrum", "Wave",
+      "AudioOut", "AudioIn", "AudioGroup", "AudioAux", "AudioSynth"
       };
 
 
@@ -107,15 +112,9 @@ void removePortCtrlEvents(MidiTrack* t)
   {
     Part* part = ip->second;
     const EventList* el = part->cevents();
-    //unsigned len = part->lenTick();
     for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
     {
       const Event& ev = ie->second;
-      // Added by T356. Do not remove events which are past the end of the part.
-      // No, actually, do remove ALL of them belonging to the part.
-      // Just in case there are stray values left after the part end.
-      //if(ev.tick() >= len)
-      //  break;
                     
       if(ev.type() == Controller)
       {
@@ -153,7 +152,6 @@ bool Track::isVisible()
   {
     case Track::AUDIO_AUX:
         return AudioAux::visible();
-        break;
     case Track::AUDIO_GROUP:
         return AudioGroup::visible();
     case Track::AUDIO_INPUT:
@@ -163,9 +161,11 @@ bool Track::isVisible()
     case Track::WAVE:
         return WaveTrack::visible();
     case Track::MIDI:
+    case Track::DRUM:
+    case Track::NEW_DRUM:
         return MidiTrack::visible();
     case Track::AUDIO_SOFTSYNTH:
-        return AudioAux::visible();
+        return SynthI::visible();
   default:
     break;
   }
@@ -199,6 +199,8 @@ int Track::y() const
 
 void Track::init()
       {
+      _auxRouteCount = 0;  
+      _nodeTraversed = false;
       _activity      = 0;
       _lastActivity  = 0;
       _recordFlag    = false;
@@ -217,45 +219,86 @@ void Track::init()
       _height        = 20;
       _locked        = false;
       for (int i = 0; i < MAX_CHANNELS; ++i) {
-            //_meter[i] = 0;
-            //_peak[i]  = 0;
             _meter[i] = 0.0;
             _peak[i]  = 0.0;
             }
       }
 
 Track::Track(Track::TrackType t)
-      {
+{
       init();
       _type = t;
+}
+
+Track::Track(const Track& t, int flags)
+{
+      internal_assign(t, flags | ASSIGN_PROPERTIES);  
+      for (int i = 0; i < MAX_CHANNELS; ++i) {
+            _meter[i] = 0.0;
+            _peak[i]  = 0.0;
+            }
+}
+
+Track::~Track()
+{
+  _parts.clearDelete();
+}
+
+//---------------------------------------------------------
+//   assign 
+//---------------------------------------------------------
+
+void Track::assign(const Track& t, int flags) 
+{
+  internal_assign(t, flags);
+}
+
+void Track::internal_assign(const Track& t, int flags)
+{
+      if(flags & ASSIGN_PROPERTIES)
+      {
+        _auxRouteCount = t._auxRouteCount;
+        _nodeTraversed = t._nodeTraversed;
+        _activity     = t._activity;
+        _lastActivity = t._lastActivity;
+        _recordFlag   = t._recordFlag;
+        _mute         = t._mute;
+        _solo         = t._solo;
+        _internalSolo = t._internalSolo;
+        _off          = t._off;
+        _channels     = t._channels;
+        
+        _volumeEnCtrl  = t._volumeEnCtrl;
+        _volumeEn2Ctrl = t._volumeEn2Ctrl;
+        _panEnCtrl     = t._panEnCtrl;
+        _panEn2Ctrl    = t._panEn2Ctrl;
+        
+        _selected     = t.selected();
+        _y            = t._y;
+        _height       = t._height;
+        _comment      = t.comment();
+        _type         = t.type();
+        _locked       = t.locked();
+
+        _name =  t.name() + " #";
+        for(int i = 2; true; ++i) 
+        {
+          QString n;
+          n.setNum(i);
+          QString s = _name + n;
+          Track* track = MusEGlobal::song->findTrack(s);
+          if(track == 0) 
+          {
+            // Do not call setName here. Audio Input and Output override it and try to set 
+            //  Jack ports, which have not been initialized yet here. Must wait until 
+            // .Audio Input and Output copy constructors or assign are called.
+            _name = s;
+            break;
+          }
+        }
       }
 
-//Track::Track(const Track& t)
-Track::Track(const Track& t, bool cloneParts)
-      {
-      _activity     = t._activity;
-      _lastActivity = t._lastActivity;
-      _recordFlag   = t._recordFlag;
-      _mute         = t._mute;
-      _solo         = t._solo;
-      _internalSolo = t._internalSolo;
-      _off          = t._off;
-      _channels     = t._channels;
-      
-      _volumeEnCtrl  = t._volumeEnCtrl;
-      _volumeEn2Ctrl = t._volumeEn2Ctrl;
-      _panEnCtrl     = t._panEnCtrl;
-      _panEn2Ctrl    = t._panEn2Ctrl;
-      
-      _selected     = t.selected();
-      _y            = t._y;
-      _height       = t._height;
-      _comment      = t.comment();
-      _name         = t.name();
-      _type         = t.type();
-      _locked       = t.locked();
-
-      if(cloneParts)
+      if(flags & ASSIGN_PARTS)
       {
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
@@ -264,72 +307,6 @@ Track::Track(const Track& t, bool cloneParts)
               _parts.add(newPart);
               }
       }
-      else
-      {
-        _parts = *(t.cparts());
-        // NOTE: We can't do this because of the way clipboard, cloneList, and undoOp::ModifyTrack, work.
-        // A couple of schemes were conceived to deal with cloneList being invalid, but the best way is
-        //  to not alter the part list here. It's a big headache because: Either the parts in the cloneList
-        //  need to be reliably looked up replaced with the new ones, or the clipboard and cloneList must be cleared.
-        // Fortunately the ONLY part of muse using this function is track rename (in TrackList and TrackInfo).
-        // So we can get away with leaving this out: 
-        //for (iPart ip = _parts.begin(); ip != _parts.end(); ++ip) 
-        //      ip->second->setTrack(this);
-      }
-              
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
-            //_meter[i] = 0;
-            //_peak[i]  = 0;
-            _meter[i] = 0.0;
-            _peak[i]  = 0.0;
-            }
-      }
-
-Track::~Track()
-{
-  _parts.clearDelete();
-}
-
-//---------------------------------------------------------
-//   operator =
-//   Added by Tim. Parts' track members MUST point to this track, 
-//    not some other track, so simple assignment operator won't do!
-//---------------------------------------------------------
-
-Track& Track::operator=(const Track& t) 
-{
-      _activity     = t._activity;
-      _lastActivity = t._lastActivity;
-      _recordFlag   = t._recordFlag;
-      _mute         = t._mute;
-      _solo         = t._solo;
-      _internalSolo = t._internalSolo;
-      _off          = t._off;
-      _channels     = t._channels;
-      
-      _volumeEnCtrl  = t._volumeEnCtrl;
-      _volumeEn2Ctrl = t._volumeEn2Ctrl;
-      _panEnCtrl     = t._panEnCtrl;
-      _panEn2Ctrl    = t._panEn2Ctrl;
-      
-      _selected     = t.selected();
-      _y            = t._y;
-      _height       = t._height;
-      _comment      = t.comment();
-      _name         = t.name();
-      _type         = t.type();
-      _locked       = t.locked();
-
-      _parts = *(t.cparts());
-      // NOTE: Can't do this. See comments in copy constructor.
-      //for (iPart ip = _parts.begin(); ip != _parts.end(); ++ip) 
-      //      ip->second->setTrack(this);
-      
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
-            _meter[i] = t._meter[i];
-            _peak[i]  = t._peak[i];
-            }
-     return *this;       
 }
 
 //---------------------------------------------------------
@@ -337,33 +314,43 @@ Track& Track::operator=(const Track& t)
 //    generate unique name for track
 //---------------------------------------------------------
 
-void Track::setDefaultName()
+void Track::setDefaultName(QString base)
       {
-      QString base;
-      switch(_type) {
-            case MIDI:
-            case DRUM:
-            case WAVE:
-                  base = QString("Track");
-                  break;
-            case AUDIO_OUTPUT:
-                  base = QString("Out");
-                  break;
-            case AUDIO_GROUP:
-                  base = QString("Group");
-                  break;
-            case AUDIO_AUX:
-                  base = QString("Aux");
-                  break;
-            case AUDIO_INPUT:
-                  base = QString("Input");
-                  break;
-            case AUDIO_SOFTSYNTH:
-                  base = QString("Synth");
-                  break;
-            };
-      base += " ";
-      for (int i = 1; true; ++i) {
+      int num_base = 1;  
+      if(base.isEmpty())
+      {  
+        switch(_type) {
+              case MIDI:
+              case DRUM:
+              case NEW_DRUM:
+              case WAVE:
+                    base = QString("Track");
+                    break;
+              case AUDIO_OUTPUT:
+                    base = QString("Out");
+                    break;
+              case AUDIO_GROUP:
+                    base = QString("Group");
+                    break;
+              case AUDIO_AUX:
+                    base = QString("Aux");
+                    break;
+              case AUDIO_INPUT:
+                    base = QString("Input");
+                    break;
+              case AUDIO_SOFTSYNTH:
+                    base = QString("Synth");
+                    break;
+              };
+        base += " ";
+      }        
+      else 
+      {
+        num_base = 2;  
+        base += " #";
+      }
+      
+      for (int i = num_base; true; ++i) {
             QString n;
             n.setNum(i);
             QString s = base + n;
@@ -399,7 +386,21 @@ void Track::clearRecAutomation(bool clearList)
         continue;
       p->enableAllControllers(true);
     }
-      
+
+    if(type() == AUDIO_SOFTSYNTH)
+    {
+      SynthI* synth = static_cast<SynthI*>(this);
+      if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+      {
+        SynthIF* sif = synth->sif();
+        if(sif)
+        {
+          DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
+          dssi_sif->enableAllControllers(true);
+        }
+      }
+    }
+    
     if(clearList)
       t->recEvents()->clear();
 }
@@ -414,6 +415,93 @@ void Track::dump() const
          _name.toLatin1().constData(), _type, _parts.size(), _selected);
       }
 
+//---------------------------------------------------------
+//   updateAuxRoute
+//   Internal use. Update all the Aux ref counts of tracks dst is connected to.
+//   If dst is valid, start traversal from there, not from this track.
+//---------------------------------------------------------
+
+void Track::updateAuxRoute(int refInc, Track* dst)
+{
+  if(isMidiTrack())
+    return;
+  
+  if(dst)
+  {  
+    _nodeTraversed = true;
+    dst->updateAuxRoute(refInc, NULL);
+    _nodeTraversed = false;
+    return;
+  }  
+  
+  if(_type == AUDIO_AUX)
+    return;
+  
+  if(_nodeTraversed)
+  {
+    fprintf(stderr, "Track::updateAuxRoute %s _auxRouteCount:%d refInc:%d :\n", name().toLatin1().constData(), _auxRouteCount, refInc); 
+    if(refInc >= 0)
+      fprintf(stderr, "  MusE Warning: Please check your routes: Circular path found!\n"); 
+    else
+      fprintf(stderr, "  MusE: Circular path removed.\n"); 
+    return;
+  }
+  
+  _nodeTraversed = true;
+  
+  _auxRouteCount += refInc;
+  if(_auxRouteCount < 0)
+  {
+    fprintf(stderr, "Track::updateAuxRoute Ref underflow! %s _auxRouteCount:%d refInc:%d\n", name().toLatin1().constData(), _auxRouteCount, refInc); 
+  }
+  
+  for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) 
+  {
+    if( !(*i).isValid() || (*i).type != Route::TRACK_ROUTE )
+      continue;
+    Track* t = (*i).track;
+    t->updateAuxRoute(refInc, NULL);
+  }
+  
+  _nodeTraversed = false;
+}
+
+//---------------------------------------------------------
+//   isCircularRoute
+//   If dst is valid, start traversal from there, not from this track.
+//   Returns true if circular.
+//---------------------------------------------------------
+
+bool Track::isCircularRoute(Track* dst)
+{
+  bool rv = false;
+  
+  if(dst)
+  {  
+    _nodeTraversed = true;
+    rv = dst->isCircularRoute(NULL);
+    _nodeTraversed = false;
+    return rv;
+  }
+  
+  if(_nodeTraversed)
+    return true;
+  
+  _nodeTraversed = true;
+  
+  for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) 
+  {
+    if( !(*i).isValid() || (*i).type != Route::TRACK_ROUTE )
+      continue;
+    Track* t = (*i).track;
+    rv = t->isCircularRoute(NULL);
+    if(rv)
+      break; 
+  }
+  
+  _nodeTraversed = false;
+  return rv;
+}
 
 //---------------------------------------------------------
 //   MidiTrack
@@ -426,33 +514,147 @@ MidiTrack::MidiTrack()
       _events = new EventList;
       _mpevents = new MPEventList;
       clefType=trebleClef;
+      
+      _drummap=new DrumMap[128];
+      _drummap_hidden=new bool[128];
+      
+      init_drummap(true /* write drummap ordering information as well */);
       }
 
-//MidiTrack::MidiTrack(const MidiTrack& mt)
-//   : Track(mt)
-MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
-   : Track(mt, cloneParts)
+MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
+  : Track(mt, flags)
+{
+      _events   = new EventList;
+      _mpevents = new MPEventList;
+
+      _drummap=new DrumMap[128];
+      _drummap_hidden=new bool[128];
+      
+      init_drummap(true /* write drummap ordering information as well */);
+
+      internal_assign(mt, flags | Track::ASSIGN_PROPERTIES);  
+}
+
+void MidiTrack::internal_assign(const Track& t, int flags)
+{
+      if(!t.isMidiTrack())
+        return;
+      
+      const MidiTrack& mt = (const MidiTrack&)t; 
+      
+      if(flags & ASSIGN_PROPERTIES)
       {
-      _outPort       = mt.outPort();
-      _outChannel    = mt.outChannel();
-      ///_inPortMask    = mt.inPortMask();
-      ///_inChannelMask = mt.inChannelMask();
-      _events        = new EventList;
-      _mpevents      = new MPEventList;
-      transposition  = mt.transposition;
-      velocity       = mt.velocity;
-      delay          = mt.delay;
-      len            = mt.len;
-      compression    = mt.compression;
-      _recEcho       = mt.recEcho();
-      clefType=trebleClef;
+        _outPort       = mt.outPort();
+        _outChannel    = mt.outChannel();
+        transposition  = mt.transposition;
+        velocity       = mt.velocity;
+        delay          = mt.delay;
+        len            = mt.len;
+        compression    = mt.compression;
+        _recEcho       = mt.recEcho();
+        clefType       = mt.clefType;
+      }  
+      
+      if(flags & ASSIGN_ROUTES)
+      {
+        for(ciRoute ir = mt._inRoutes.begin(); ir != mt._inRoutes.end(); ++ir)
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+          _inRoutes.push_back(*ir); 
+        
+        for(ciRoute ir = mt._outRoutes.begin(); ir != mt._outRoutes.end(); ++ir)
+          // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+         _outRoutes.push_back(*ir); 
+
+      for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end(); it++)
+        if (it->first == &mt)
+        {
+          it=MusEGlobal::global_drum_ordering.insert(it, *it); // duplicates the entry at it, set it to the first entry of both
+          it++;                                                // make it point to the second entry
+          it->first=this;
+        }
       }
+      else if(flags & ASSIGN_DEFAULT_ROUTES)
+      {
+        // Add default track <-> midiport routes. 
+        int c, cbi, ch;
+        bool defOutFound = false;                /// TODO: Remove this if and when multiple output routes supported.
+        for(int i = 0; i < MIDI_PORTS; ++i)
+        {
+          MidiPort* mp = &MusEGlobal::midiPorts[i];
+          
+          if(mp->device())  // Only if device is valid. 
+          {
+            c = mp->defaultInChannels();
+            if(c)
+              // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+              _inRoutes.push_back(Route(i, c)); 
+          }  
+          
+          if(!defOutFound)
+          {
+            c = mp->defaultOutChannels();
+            if(c)
+            {
+              
+        /// TODO: Switch if and when multiple output routes supported.
+        #if 0
+              // Don't call msgAddRoute. Caller later calls msgAddTrack which 'mirrors' this routing node.
+              _outRoutes.push_back(Route(i, c)); 
+        #else 
+              for(ch = 0; ch < MIDI_CHANNELS; ++ch)   
+              {
+                cbi = 1 << ch;
+                if(c & cbi)
+                {
+                  defOutFound = true;
+                  _outPort = i;
+                  if(type() != Track::DRUM)  // Leave drum tracks at channel 10.
+                    _outChannel = ch;
+                  break;               
+                }
+              }
+        #endif
+            }
+          }  
+        }
+      }
+      
+      if (flags & ASSIGN_DRUMLIST)
+      {
+        for (int i=0;i<128;i++) // no memcpy allowed here. dunno exactly why,
+          _drummap[i]=mt._drummap[i]; // seems QString-related.
+        memcpy(_drummap_hidden, mt._drummap_hidden, 128*sizeof(bool));
+        update_drum_in_map();
+        _drummap_tied_to_patch=mt._drummap_tied_to_patch;
+        _drummap_ordering_tied_to_patch=mt._drummap_ordering_tied_to_patch;
+        // TODO FINDMICH "assign" ordering as well
+      }
+}
+
+void MidiTrack::assign(const Track& t, int flags)
+{
+      Track::assign(t, flags);
+      internal_assign(t, flags);
+}
 
 MidiTrack::~MidiTrack()
       {
       delete _events;
       delete _mpevents;
+      delete [] _drummap;
+      delete [] _drummap_hidden;
+      
+      remove_ourselves_from_drum_ordering();
       }
+
+void MidiTrack::remove_ourselves_from_drum_ordering()
+{
+  for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end();)
+    if (it->first == this)
+      it=MusEGlobal::global_drum_ordering.erase(it);
+    else
+      it++;
+}
 
 //---------------------------------------------------------
 //   init
@@ -461,12 +663,8 @@ MidiTrack::~MidiTrack()
 void MidiTrack::init()
       {
       _outPort       = 0;
-      _outChannel    = 0;
-      // Changed by Tim. p3.3.8
-      //_inPortMask    = 0xffff;
-      ///_inPortMask    = 0xffffffff;
-      
-      ///_inChannelMask = 0xffff;      // "ALL"
+      _outChannel    = (type()==NEW_DRUM) ? 9 : 0;
+
       transposition  = 0;
       velocity       = 0;
       delay          = 0;
@@ -474,6 +672,44 @@ void MidiTrack::init()
       compression    = 100;          // percent
       _recEcho       = true;
       }
+
+void MidiTrack::init_drum_ordering()
+{
+  // first display entries with non-empty names, then with empty names.
+
+  remove_ourselves_from_drum_ordering();
+
+  for (int i=0;i<128;i++)
+    if (_drummap[i].name!="" && _drummap[i].name!="?") // non-empty name?
+      MusEGlobal::global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,i));
+
+  for (int i=0;i<128;i++)
+    if (!(_drummap[i].name!="" && _drummap[i].name!="?")) // empty name?
+      MusEGlobal::global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,i));
+}
+
+void MidiTrack::init_drummap(bool write_ordering)
+{
+  for (int i=0;i<128;i++)
+    _drummap[i]=iNewDrumMap[i];
+
+  if (write_ordering)
+    init_drum_ordering();
+  
+  update_drum_in_map();
+  
+  for (int i=0;i<128;i++)
+    _drummap_hidden[i]=false;
+
+  _drummap_tied_to_patch=true;
+  _drummap_ordering_tied_to_patch=true;
+}
+
+void MidiTrack::update_drum_in_map()
+{
+  for (int i=0;i<127;i++)
+    drum_in_map[(int)_drummap[i].enote]=i;
+}
 
 //---------------------------------------------------------
 //   height
@@ -494,10 +730,8 @@ void MidiTrack::setOutChanAndUpdate(int i)
   if(_outChannel == i)
     return;
     
-  //removePortCtrlEvents();
   removePortCtrlEvents(this);
   _outChannel = i; 
-  //addPortCtrlEvents();
   addPortCtrlEvents(this);
 }
 
@@ -510,10 +744,8 @@ void MidiTrack::setOutPortAndUpdate(int i)
   if(_outPort == i)
     return;
   
-  //removePortCtrlEvents();
   removePortCtrlEvents(this);
   _outPort = i; 
-  //addPortCtrlEvents();
   addPortCtrlEvents(this);
 }
 
@@ -526,82 +758,53 @@ void MidiTrack::setOutPortAndChannelAndUpdate(int port, int ch)
   if(_outPort == port && _outChannel == ch)
     return;
   
-  //removePortCtrlEvents();
   removePortCtrlEvents(this);
   _outPort = port; 
   _outChannel = ch;
-  //addPortCtrlEvents();
   addPortCtrlEvents(this);
 }
 
 //---------------------------------------------------------
 //   setInPortAndChannelMask
 //   For old song files with port mask (max 32 ports) and channel mask (16 channels), 
-//    before midi routing was added (the iR button). p3.3.48
+//    before midi routing was added (the iR button). 
 //---------------------------------------------------------
 
 void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask) 
 { 
-  //if(!portmask || !chanmask)
-  //  return;
-     
-  //RouteList* rl = inRoutes();
   bool changed = false;
   
   for(int port = 0; port < 32; ++port)  // 32 is the old maximum number of ports.
   {
-    // p3.3.50 If the port was not used in the song file to begin with, just ignore it.
+    // If the port was not used in the song file to begin with, just ignore it.
     // This saves from having all of the first 32 ports' channels connected.
     if(!MusEGlobal::midiPorts[port].foundInSongFile())
       continue;
       
-    //if(!(portmask & (1 << port)))
+    //if(!(portmask & (1 << port))) DELETETHIS 8
     //  continue;
     
-    // p3.3.50 Removed. Allow to connect to port with no device so user can change device later.
+    // Removed. Allow to connect to port with no device so user can change device later.
     //MidiPort* mp = &MusEGlobal::midiPorts[port];
     //MidiDevice* md = mp->device();
     //if(!md)
     //  continue;
         
-    //for(int ch = 0; ch < MIDI_CHANNELS; ++ch)  // p3.3.50 Removed.
-    //{
-      //if(!(chanmask & (1 << ch)))
-      //  continue;
-    
-      //Route aRoute(md, ch);
-      //Route bRoute(this, ch);
-      Route aRoute(port, chanmask);     // p3.3.50
+      Route aRoute(port, chanmask);     
       Route bRoute(this, chanmask);
     
-      // p3.3.50 Removed.
-      //iRoute iir = rl->begin();
-      //for(; iir != rl->end(); ++iir) 
-      //{
-        //if(*iir == aRoute)
-      //  if(iir->type == Route::MIDI_PORT_ROUTE && iir->midiPort == port)      // p3.3.50
-      //    break;
-      //}
-      
       // Route wanted?
-      //if((portmask & (1 << port)) && (chanmask & (1 << ch)))
-      if(portmask & (1 << port))                                          // p3.3.50
+      if(portmask & (1 << port))                                          
       {
-        // Route already exists?
-        //if(iir != rl->end()) 
-        //  continue;
         MusEGlobal::audio->msgAddRoute(aRoute, bRoute);
         changed = true;
       }
       else
       {
-        // Route does not exist?
-        //if(iir == rl->end()) 
-        //  continue;
         MusEGlobal::audio->msgRemoveRoute(aRoute, bRoute);
         changed = true;
       }
-    //}
+    //} DELETETHIS
   }
    
   if(changed)
@@ -611,7 +814,7 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
   }  
 }
 
-/*
+/* DELETETHIS 84
 //---------------------------------------------------------
 //   addPortCtrlEvents
 //---------------------------------------------------------
@@ -748,16 +951,18 @@ void MidiTrack::write(int level, Xml& xml) const
 
       if (type() == DRUM)
             tag = "drumtrack";
-      else
+      else if (type() == MIDI)
             tag = "miditrack";
+      else if (type() == NEW_DRUM)
+            tag = "newdrumtrack";
+      else
+            printf("THIS SHOULD NEVER HAPPEN: non-midi-type in MidiTrack::write()\n");
+      
       xml.tag(level++, tag);
       Track::writeProperties(level, xml);
 
       xml.intTag(level, "device", outPort());
       xml.intTag(level, "channel", outChannel());
-      //xml.intTag(level, "inportMap", inPortMask());
-      ///xml.uintTag(level, "inportMap", inPortMask());       // Obsolete
-      ///xml.intTag(level, "inchannelMap", inChannelMask());  // Obsolete
       xml.intTag(level, "locked", _locked);
       xml.intTag(level, "echo", _recEcho);
 
@@ -772,8 +977,28 @@ void MidiTrack::write(int level, Xml& xml) const
       const PartList* pl = cparts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
             p->second->write(level, xml);
+      
+      writeOurDrumSettings(level, xml);
+      
       xml.etag(level, tag);
       }
+
+void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
+{
+  xml.tag(level++, "our_drum_settings");
+  
+  writeOurDrumMap(level, xml, false);
+  
+  xml.intTag(level, "tied", _drummap_tied_to_patch);
+  xml.intTag(level, "ordering_tied", _drummap_ordering_tied_to_patch);
+  
+  xml.etag(level, "our_drum_settings");
+}
+
+void MidiTrack::writeOurDrumMap(int level, Xml& xml, bool full) const
+{
+  write_new_style_drummap(level, xml, "our_drummap", _drummap, _drummap_hidden, full);
+}
 
 //---------------------------------------------------------
 //   MidiTrack::read
@@ -815,14 +1040,9 @@ void MidiTrack::read(Xml& xml)
                         else if (tag == "channel")
                               setOutChannel(xml.parseInt());
                         else if (tag == "inportMap")
-                              //setInPortMask(xml.parseInt());
-                              ///setInPortMask(xml.parseUInt());
-                              //xml.skip(tag);                      // Obsolete. 
-                              portmask = xml.parseUInt();           // p3.3.48: Support old files.
+                              portmask = xml.parseUInt();           // Obsolete but support old files.
                         else if (tag == "inchannelMap")
-                              ///setInChannelMask(xml.parseInt());
-                              //xml.skip(tag);                      // Obsolete.
-                              chanmask = xml.parseInt();            // p3.3.48: Support old files.
+                              chanmask = xml.parseInt();            // Obsolete but support old files.
                         else if (tag == "locked")
                               _locked = xml.parseInt();
                         else if (tag == "echo")
@@ -831,6 +1051,8 @@ void MidiTrack::read(Xml& xml)
                               setAutomationType(AutomationType(xml.parseInt()));
                         else if (tag == "clef")
                               clefType = (clefTypes)xml.parseInt();
+                        else if (tag == "our_drum_settings")
+                              readOurDrumSettings(xml);
                         else if (Track::readProperties(xml, tag)) {
                               // version 1.0 compatibility:
                               if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
@@ -841,9 +1063,9 @@ void MidiTrack::read(Xml& xml)
                   case Xml::Attribut:
                         break;
                   case Xml::TagEnd:
-                        if (tag == "miditrack" || tag == "drumtrack") 
+                        if (tag == "miditrack" || tag == "drumtrack" || tag == "newdrumtrack") 
                         {
-                          setInPortAndChannelMask(portmask, chanmask); // p3.3.48: Support old files.
+                          setInPortAndChannelMask(portmask, chanmask); // Support old files.
                           return;
                         }
                   default:
@@ -851,6 +1073,46 @@ void MidiTrack::read(Xml& xml)
                   }
             }
       }
+
+void MidiTrack::readOurDrumSettings(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "tied") 
+					_drummap_tied_to_patch = xml.parseInt();
+				else if (tag == "ordering_tied") 
+					_drummap_ordering_tied_to_patch = xml.parseInt();
+				else if (tag == "our_drummap")
+					readOurDrumMap(xml);
+				else
+					xml.unknown("MidiTrack::readOurDrumSettings");
+				break;
+
+			case Xml::TagEnd:
+				if (tag == "our_drum_settings")
+					return;
+
+			default:
+				break;
+		}
+	}
+}
+
+void MidiTrack::readOurDrumMap(Xml& xml, bool dont_init)
+{
+  if (!dont_init) init_drummap(false);
+  _drummap_tied_to_patch=false;
+  _drummap_ordering_tied_to_patch=false;
+  read_new_style_drummap(xml, "our_drummap", _drummap, _drummap_hidden);
+  update_drum_in_map();
+}
 
 
 //---------------------------------------------------------
@@ -950,15 +1212,15 @@ void Track::writeRouting(int level, Xml& xml) const
           // Support Midi Port to Audio Input track routes. p4.0.14 Tim. 
           if(r->type == Route::MIDI_PORT_ROUTE)
           {
-            s = QT_TRANSLATE_NOOP("@default", "Route");
+            s = "Route";
             if(r->channel != -1 && r->channel != 0)  
-              s += QString(QT_TRANSLATE_NOOP("@default", " channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
+              s += QString(" channelMask=\"%1\"").arg(r->channel);  // Use new channel mask.
             xml.tag(level++, s.toLatin1().constData());
             
             xml.tag(level, "source mport=\"%d\"/", r->midiPort);
             
-            s = QT_TRANSLATE_NOOP("@default", "dest");
-            s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(name()));
+            s = "dest";
+            s += QString(" name=\"%1\"/").arg(Xml::xmlString(name()));
             xml.tag(level, s.toLatin1().constData());
             
             xml.etag(level--, "Route");
@@ -966,17 +1228,17 @@ void Track::writeRouting(int level, Xml& xml) const
           else
           if(!r->name().isEmpty())
           {
-            s = QT_TRANSLATE_NOOP("@default", "Route");
+            s = "Route";
             if(r->channel != -1)
-              s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
+              s += QString(" channel=\"%1\"").arg(r->channel);
             
             xml.tag(level++, s.toAscii().constData());
             
-            // p3.3.38 New routing scheme.
-            s = QT_TRANSLATE_NOOP("@default", "source");
+            // New routing scheme.
+            s = "source";
             if(r->type != Route::TRACK_ROUTE)
-              s += QString(QT_TRANSLATE_NOOP("@default", " type=\"%1\"")).arg(r->type);
-            s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+              s += QString(" type=\"%1\"").arg(r->type);
+            s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
             xml.tag(level, s.toAscii().constData());
             
             xml.tag(level, "dest name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
@@ -994,48 +1256,159 @@ void Track::writeRouting(int level, Xml& xml) const
         if(r->type == Route::TRACK_ROUTE && r->track && r->track->type() == Track::AUDIO_INPUT) 
           continue;
             
-        if(r->midiPort != -1 || !r->name().isEmpty()) // p3.3.49
+        if(r->midiPort != -1 || !r->name().isEmpty()) 
         {
-          s = QT_TRANSLATE_NOOP("@default", "Route");
-          if(r->type == Route::MIDI_PORT_ROUTE)  // p3.3.50
+          s = "Route";
+          if(r->type == Route::MIDI_PORT_ROUTE)  
           {
             if(r->channel != -1 && r->channel != 0)
-              s += QString(QT_TRANSLATE_NOOP("@default", " channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
+              s += QString(" channelMask=\"%1\"").arg(r->channel);  // Use new channel mask.
           }
           else
           {
             if(r->channel != -1)
-              s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
+              s += QString(" channel=\"%1\"").arg(r->channel);
           }    
           if(r->channels != -1)
-            s += QString(QT_TRANSLATE_NOOP("@default", " channels=\"%1\"")).arg(r->channels);
+            s += QString(" channels=\"%1\"").arg(r->channels);
           if(r->remoteChannel != -1)
-            s += QString(QT_TRANSLATE_NOOP("@default", " remch=\"%1\"")).arg(r->remoteChannel);
+            s += QString(" remch=\"%1\"").arg(r->remoteChannel);
           
           xml.tag(level++, s.toAscii().constData());
           
           // Allow for a regular mono or stereo track to feed a multi-channel synti. 
           xml.tag(level, "source name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
           
-          s = QT_TRANSLATE_NOOP("@default", "dest");
+          s = "dest";
           
-          //if(r->type == Route::MIDI_DEVICE_ROUTE)                                      // p3.3.49 Obsolete since 1.1-RC2    
-          //  s += QString(QT_TRANSLATE_NOOP("@default", " devtype=\"%1\"")).arg(r->device->deviceType());  //
-          //if(r->type != Route::TRACK_ROUTE)                                            //
           if(r->type != Route::TRACK_ROUTE && r->type != Route::MIDI_PORT_ROUTE)
-            s += QString(QT_TRANSLATE_NOOP("@default", " type=\"%1\"")).arg(r->type);
+            s += QString(" type=\"%1\"").arg(r->type);
 
-          //s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(r->name());
-          if(r->type == Route::MIDI_PORT_ROUTE)                                          // p3.3.49 
-            s += QString(QT_TRANSLATE_NOOP("@default", " mport=\"%1\"/")).arg(r->midiPort);
+          if(r->type == Route::MIDI_PORT_ROUTE)                                          
+            s += QString(" mport=\"%1\"/").arg(r->midiPort);
           else  
-            s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+            s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
             
           xml.tag(level, s.toAscii().constData());
           
           xml.etag(level--, "Route");
         }
       }
+}
+
+int MidiTrack::getFirstControllerValue(int ctrl, int def)
+{
+  int val=def;
+  unsigned tick=-1; // maximum integer
+  
+  for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
+  {
+    Part* part=pit->second;
+    if (part->tick() > tick) break; // ignore this and the rest. we won't find anything new.
+    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    {
+      if (eit->first+part->tick() >= tick) break;
+      if (eit->first > part->lenTick()) break; // ignore events past the end of the part
+      // else if (eit->first+part->tick() < tick) and
+      if (eit->second.type()==Controller && eit->second.dataA()==ctrl)
+      {
+        val = eit->second.dataB();
+        tick = eit->first+part->tick();
+        break;
+      }
+    }
+  }
+
+  return val;
+}
+
+int MidiTrack::getControllerChangeAtTick(unsigned tick, int ctrl, int def)
+{
+  for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
+  {
+    Part* part=pit->second;
+    if (part->tick() > tick) break; // ignore this and the rest. we'd find nothing any more
+    if (part->endTick() < tick) continue; // ignore only this.
+    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    {
+      if (eit->first+part->tick() > tick) break; // we won't find anything in this part from now on.
+      if (eit->first > part->lenTick()) break; // ignore events past the end of the part
+      if (eit->first+part->tick() < tick) continue; // ignore only this
+      
+      // else if (eit->first+part->tick() == tick) and
+      if (eit->second.type()==Controller && eit->second.dataA()==ctrl)
+        return eit->second.dataB();
+    }
+  }
+
+  return def;
+}
+
+// returns the tick where this CC gets overriden by a new one
+// returns UINT_MAX for "never"
+unsigned MidiTrack::getControllerValueLifetime(unsigned tick, int ctrl) 
+{
+  unsigned result=UINT_MAX;
+  
+  for (iPart pit=parts()->begin(); pit!=parts()->end(); pit++)
+  {
+    Part* part=pit->second;
+    if (part->tick() > result) break; // ignore this and the rest. we won't find anything new.
+    if (part->endTick() < tick) continue; // ignore only this part, we won't find anything there.
+    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    {
+      if (eit->first+part->tick() >= result) break;
+      if (eit->first > part->lenTick()) break; // ignore events past the end of the part
+      // else if (eit->first+part->tick() < result) and
+      if (eit->first+part->tick() > tick &&
+          eit->second.type()==Controller && eit->second.dataA()==ctrl)
+      {
+        result = eit->first+part->tick();
+        break;
+      }
+    }
+  }
+
+  return result;
+}
+
+// returns true if the autoupdate changed something
+bool MidiTrack::auto_update_drummap()
+{
+  if (_drummap_tied_to_patch)
+  {
+    int patch = getFirstControllerValue(CTRL_PROGRAM,0);
+    const DrumMap* new_drummap = MusEGlobal::midiPorts[_outPort].instrument()->drummap_for_patch(patch);
+    
+    if (!drummaps_almost_equal(new_drummap, this->drummap(), 128))
+    {
+      for (int i=0;i<128;i++)
+      {
+        bool temp_mute=_drummap[i].mute;
+        _drummap[i]=new_drummap[i];
+        _drummap[i].mute=temp_mute;
+      }
+      
+      if (_drummap_ordering_tied_to_patch)
+        init_drum_ordering();
+      
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+void MidiTrack::set_drummap_tied_to_patch(bool val)
+{
+  _drummap_tied_to_patch=val;
+  if (val) auto_update_drummap();
+}
+
+void MidiTrack::set_drummap_ordering_tied_to_patch(bool val)
+{
+  _drummap_ordering_tied_to_patch=val;
+  if (val && _drummap_tied_to_patch) init_drum_ordering();
 }
 
 } // namespace MusECore

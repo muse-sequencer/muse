@@ -47,11 +47,11 @@ class Legato : public QDialog, public Ui::LegatoBase
 	public:
 		Legato(QWidget* parent = 0);
 
-		int range;
-		int min_len;
-		bool allow_shortening;
+		static int range;
+		static int min_len;
+		static bool allow_shortening;
 		
-		void read_configuration(MusECore::Xml& xml);
+		static void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
 		

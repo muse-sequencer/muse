@@ -26,12 +26,8 @@
 
 namespace Awl {
       class PosEdit;
-      //class PitchEdit;
       };
 
-class QSpinBox;
-
-///class PosEdit;
 namespace MusECore {
 class Pos;
 }
@@ -39,6 +35,9 @@ class Pos;
 namespace MusEGui {
 
 class PitchEdit;
+class SpinBox;
+class PixmapButton;
+
 
 //---------------------------------------------------------
 //   NoteInfo
@@ -46,36 +45,45 @@ class PitchEdit;
 
 class NoteInfo : public QToolBar {
       Q_OBJECT
-    
-      ///PosEdit* selTime;
-      Awl::PosEdit* selTime;
-      QSpinBox* selLen;
-      PitchEdit* selPitch;
-      QSpinBox* selVelOn;
-      QSpinBox* selVelOff;
-      bool deltaMode;
-
       
-
+      Awl::PosEdit* selTime;
+      SpinBox* selLen;
+      PitchEdit* selPitch;
+      SpinBox* selVelOn;
+      SpinBox* selVelOff;
+      PixmapButton* deltaButton;
+      bool _returnMode;
+      bool deltaMode;
+      bool _enabled;
+      void set_mode();
+      
+      
    public:
       enum ValType {VAL_TIME, VAL_LEN, VAL_VELON, VAL_VELOFF, VAL_PITCH };
-      //NoteInfo(QMainWindow* parent);
       NoteInfo(QWidget* parent = 0);
       void setValues(unsigned, int, int, int, int);
       void setDeltaMode(bool);
-
+      bool isEnabled() const { return _enabled; }
+      void setReturnMode(bool v);
+      bool returnMode() const    { return _returnMode; }
+      
    private slots:
       void lenChanged(int);
       void velOnChanged(int);
       void velOffChanged(int);
       void pitchChanged(int);
       void timeChanged(const MusECore::Pos&);
+      void deltaModeClicked(bool);
 
    public slots:
       void setValue(ValType, int);
+      void setEnabled(bool);
 
    signals:
       void valueChanged(MusEGui::NoteInfo::ValType, int);
+      void returnPressed();
+      void escapePressed();
+      void deltaModeChanged(bool);
       };
 
 } // namespace MusEGui

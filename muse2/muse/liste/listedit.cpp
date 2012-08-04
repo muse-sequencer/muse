@@ -45,6 +45,8 @@
 #include "event.h"
 #include "midiport.h"
 #include "midictrl.h"
+#include "app.h"
+#include "gconfig.h"
 
 namespace MusEGui {
 
@@ -196,13 +198,13 @@ void ListEdit::songChanged(int type)
       {
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
-        
+       
       if (type == 0)
             return;
       if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
          | SC_PART_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
          | SC_EVENT_INSERTED | SC_SELECTION)) {
-            if (type & (SC_PART_REMOVED | SC_PART_INSERTED))
+            if (type & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
                   genPartlist();
             // close window if editor has no parts anymore
             if (parts()->empty()) {
@@ -212,6 +214,8 @@ void ListEdit::songChanged(int type)
             liste->setSortingEnabled(false);
             if (type == SC_SELECTION) {
                   
+                  
+                  // DELETETHIS or clean up or whatever?
                   // BUGFIX: I found the keyboard modifier states affect how QTreeWidget::setCurrentItem() operates.
                   //         So for example (not) holding shift while lassoo-ing notes in piano roll affected 
                   //          whether multiple items were selected in this event list editor! 
@@ -243,12 +247,10 @@ void ListEdit::songChanged(int type)
                   // Go backwards to avoid QTreeWidget::setCurrentItem() dependency on KB modifiers!
                   for (int row = liste->topLevelItemCount() -1; row >= 0 ; --row) 
                   {
-                    //printf("ListEdit::songChanged row:%d\n", row);   
                     QTreeWidgetItem* i = liste->topLevelItem(row);
                     bool sel = ((EventListItem*)i)->event.selected();
                     if (i->isSelected() ^ sel) 
                     {
-                      //printf("ListEdit::songChanged changing row:%d sel:%d\n", row, sel);   
                       // Do setCurrentItem() before setSelected().
                       if(sel && !ci_done)
                       {
@@ -469,6 +471,8 @@ QString EventListItem::text(int col) const
 ListEdit::ListEdit(MusECore::PartList* pl)
    : MidiEditor(TopWin::LISTE, 0, pl)
       {
+      selectedTick=0;
+      
       insertItems = new QActionGroup(this);
       insertItems->setExclusive(false);
       insertNote = new QAction(QIcon(*note1Icon), tr("insert Note"), insertItems);
@@ -493,7 +497,7 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       menuEdit->addActions(MusEGlobal::undoRedo->actions());
 
       menuEdit->addSeparator();
-#if 0
+#if 0 // DELETETHIS or implement?
       QAction *cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
       connect(cutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       editSignalMapper->setMapping(cutAction, EList::CMD_CUT);
@@ -513,6 +517,12 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       editSignalMapper->setMapping(deleteAction, CMD_DELETE);
       deleteAction->setShortcut(Qt::Key_Delete);
       menuEdit->addSeparator();
+      QAction *incAction = menuEdit->addAction(tr("Increase Tick"));
+      connect(incAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      editSignalMapper->setMapping(incAction, CMD_INC);
+      QAction *decAction = menuEdit->addAction(tr("Decrease Tick"));
+      connect(decAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      editSignalMapper->setMapping(decAction, CMD_DEC);
 
       menuEdit->addActions(insertItems->actions());
 
@@ -525,21 +535,9 @@ ListEdit::ListEdit(MusECore::PartList* pl)
 
 
       // Toolbars ---------------------------------------------------------
-      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-      undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(MusEGlobal::undoRedo->actions());
-
       QToolBar* insertTools = addToolBar(tr("Insert tools"));
       insertTools->setObjectName("list insert tools");
       insertTools->addActions(insertItems->actions());
-
-      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
-      panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(MusEGlobal::panicAction);
-
-      QToolBar* transport_toolbar = addToolBar(tr("transport"));
-      transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
       
       //
       //---------------------------------------------------
@@ -591,7 +589,6 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       mainGrid->setColumnStretch(0, 100);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      songChanged(-1);
 
       if(pl->empty())
       {
@@ -609,10 +606,14 @@ ListEdit::ListEdit(MusECore::PartList* pl)
           curPartId = -1;
         }
       }
+
+      songChanged(-1);
       
       initShortcuts();
       
-      setWindowTitle("MusE: List Editor");
+      setWindowTitle(tr("MusE: List Editor"));
+      
+      finalizeInit();
       }
 
 //---------------------------------------------------------
@@ -621,7 +622,6 @@ ListEdit::ListEdit(MusECore::PartList* pl)
 
 ListEdit::~ListEdit()
       {
-      // MusEGlobal::undoRedo->removeFrom(listTools);  // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -924,61 +924,87 @@ void ListEdit::doubleClicked(QTreeWidgetItem* item)
 //---------------------------------------------------------
 
 void ListEdit::cmd(int cmd)
+{
+    bool found = false;
+    for (int row = 0; row < liste->topLevelItemCount(); ++row)
+    {
+      QTreeWidgetItem* i = liste->topLevelItem(row);
+      EventListItem *item = (EventListItem *) i;
+      if (i->isSelected() || item->event.selected())
       {
-      switch(cmd) {
-            case CMD_DELETE:
-                  bool found = false;
-                  for (int row = 0; row < liste->topLevelItemCount(); ++row) 
-                  {
+            found = true;
+            break;
+      }
+    }
+
+  switch(cmd) {
+        case CMD_DELETE:
+              {
+              if(!found)
+                break;
+
+              MusECore::Undo operations;
+
+              EventListItem *deletedEvent=NULL;
+              for (int row = 0; row < liste->topLevelItemCount(); ++row) {
                     QTreeWidgetItem* i = liste->topLevelItem(row);
                     EventListItem *item = (EventListItem *) i;
-                    if (i->isSelected() || item->event.selected()) 
-                    {
-                          found = true;
-                          break;
+                    if (i->isSelected() || item->event.selected()) {
+                          deletedEvent=item;
+                          // Port controller values and clone parts.
+                          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,item->event, item->part, true, true));
                     }
-                  }
-                  if(!found)
-                    break;
-                  
-                  MusECore::Undo operations;
-                  
-                  EventListItem *deletedEvent=NULL;
-                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
-                        QTreeWidgetItem* i = liste->topLevelItem(row);
-                        EventListItem *item = (EventListItem *) i;
+              }
 
-                        if (i->isSelected() || item->event.selected()) {
-                              deletedEvent=item;
-                              // Port controller values and clone parts. 
-                              operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,item->event, item->part, true, true));
-                              }
-                        }
-                  
-                  unsigned int nextTick=0;
-                  // find biggest tick
-                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
-                        QTreeWidgetItem* i = liste->topLevelItem(row);
-                        EventListItem *item = (EventListItem *) i;
-                        if (item->event.tick() > nextTick && item != deletedEvent)
-                            nextTick=item->event.tick();
-                  }
-                  // check if there's a tick that is "just" bigger than the deleted
-                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
-                        QTreeWidgetItem* i = liste->topLevelItem(row);
-                        EventListItem *item = (EventListItem *) i;
-                        if (item->event.tick() >= deletedEvent->event.tick() && 
-                            item->event.tick() < nextTick &&
-                            item != deletedEvent ) {
-                            nextTick=item->event.tick();
-                        }
-                  }
-                  selectedTick=nextTick;
+              unsigned int nextTick=0;
+              // find biggest tick
+              for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                    QTreeWidgetItem* i = liste->topLevelItem(row);
+                    EventListItem *item = (EventListItem *) i;
+                    if (item->event.tick() > nextTick && item != deletedEvent)
+                        nextTick=item->event.tick();
+              }
+              // check if there's a tick that is "just" bigger than the deleted
+              for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                    QTreeWidgetItem* i = liste->topLevelItem(row);
+                    EventListItem *item = (EventListItem *) i;
+                    if (item->event.tick() >= deletedEvent->event.tick() &&
+                        item->event.tick() < nextTick &&
+                        item != deletedEvent ) {
+                        nextTick=item->event.tick();
+                    }
+              }
+              selectedTick=nextTick;
 
-                  MusEGlobal::song->applyOperationGroup(operations);
-                  break;
-            }
-      }
+              MusEGlobal::song->applyOperationGroup(operations);
+              }
+              break;
+        case CMD_INC:
+        case CMD_DEC:
+              {
+              if(!found)
+                break;
+
+              MusECore::Undo operations;
+
+              for (int row = 0; row < liste->topLevelItemCount(); ++row) {
+                    QTreeWidgetItem* i = liste->topLevelItem(row);
+                    EventListItem *item = (EventListItem *) i;
+
+                    if (i->isSelected() || item->event.selected()) {
+                          MusECore::Event new_event=item->event.clone();
+                          new_event.setTick( new_event.tick() + ( cmd==CMD_INC?1:-1) );
+                          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,new_event, item->event, item->part, false, false));
+                          selectedTick=new_event.tick();
+                          break;
+                          }
+                    }
+
+              MusEGlobal::song->applyOperationGroup(operations);
+
+              }
+  }
+}
 
 //---------------------------------------------------------
 //   configChanged
@@ -1009,11 +1035,24 @@ void ListEdit::initShortcuts()
 
 void ListEdit::keyPressEvent(QKeyEvent* event)
       {
-int key = event->key();
-if (key == Qt::Key_Escape) {
+      int key = event->key();
+      if (key == Qt::Key_Escape) {
             close();
             return;
             }
       }
+
+//---------------------------------------------------------
+//   focusCanvas
+//---------------------------------------------------------
+
+void ListEdit::focusCanvas()
+{
+  if(MusEGlobal::config.smartFocus)
+  {
+    liste->setFocus();
+    liste->activateWindow();
+  }
+}
 
 } // namespace MusEGui

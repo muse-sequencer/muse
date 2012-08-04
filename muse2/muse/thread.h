@@ -70,7 +70,6 @@ struct ThreadMsg {
 class Thread {
       const char* _name;
       volatile bool _running;
-      //int realTimePriority;
       int _pollWait;    // poll timeout in msec (-1 = infinite)
 
       pthread_t thread;
@@ -78,7 +77,7 @@ class Thread {
       int toThreadFdw;     // message to thread (app write)
 
       PollList plist;
-//      pthread_mutex_t lock;
+//      pthread_mutex_t lock; DELETETHIS 2
 //      pthread_cond_t ready;
       void* userPtr;
 
@@ -95,13 +94,11 @@ class Thread {
       virtual void defaultTick() {}
 
    public:
-      //Thread(int prio, const char* name);
       Thread(const char* name);
       
       virtual ~Thread();
       const char* name() const { return _name; }
       
-      //virtual void start(void* ptr=0);
       virtual void start(int priority, void* ptr=0);
       
       void stop(bool);

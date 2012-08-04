@@ -24,6 +24,10 @@
 #define __ARRANGER_H__
 
 #include <vector>
+#include <QString>
+
+#include <QScrollBar>
+#include <QResizeEvent>
 
 #include "midieditor.h"
 #include "pcanvas.h"
@@ -33,11 +37,9 @@ class QAction;
 class QCheckBox;
 class QMainWindow;
 class QMenu;
-class QScrollBar;
 class QToolButton;
 class QWheelEvent;
 class QKeyEvent;
-//class QStackedWidget;
 
 namespace MusECore {
 class Track;
@@ -59,6 +61,7 @@ class TLLayout;
 class TList;
 class WidgetStack;
 
+
 //---------------------------------------------------------
 //   WidgetStack
 //---------------------------------------------------------
@@ -68,6 +71,12 @@ class WidgetStack : public QWidget {
       std::vector<QWidget*> stack;
       int top;
 
+   protected:
+      virtual void wheelEvent(QWheelEvent* e);
+      
+   signals:
+      void redirectWheelEvent(QWheelEvent*);
+      
    public:
       WidgetStack(QWidget* parent, const char* name = 0);
       void raiseWidget(int idx);
@@ -76,9 +85,25 @@ class WidgetStack : public QWidget {
       QWidget* visibleWidget() const;
       int curIdx() const { return top; }
       virtual QSize minimumSizeHint() const;
-      //QSize minimumSize() const;
-      //int minimumHeight() const;
       };
+
+//---------------------------------------------------------
+//   ScrollBar
+//---------------------------------------------------------
+
+class ScrollBar : public QScrollBar {
+      Q_OBJECT
+      
+  public slots:
+      void redirectedWheelEvent(QWheelEvent*);
+      
+  protected:
+      virtual void resizeEvent(QResizeEvent* e) { setPageStep(e->size().height()); }
+      
+  public:    
+    ScrollBar(Qt::Orientation orientation, QWidget * parent = 0 ) : QScrollBar(orientation, parent) {};  
+};
+
 
 //---------------------------------------------------------
 //   Arranger
@@ -86,6 +111,8 @@ class WidgetStack : public QWidget {
 
 class Arranger : public QWidget {
       Q_OBJECT
+
+      static QByteArray header_state;
 
       int _quant, _raster;
       PartCanvas* canvas;
@@ -97,12 +124,11 @@ class Arranger : public QWidget {
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
       WidgetStack* trackInfo;
-      //QStackedWidget* trackInfo;
-      QScrollBar* infoScroll;
-      //MidiTrackInfoBase* midiTrackInfo;
+      ScrollBar* infoScroll;
       MidiTrackInfo* midiTrackInfo;
       AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
+      QWidget* tracklist;
       TLLayout* tgrid;
 
       MusECore::Track* selected;
@@ -111,7 +137,6 @@ class Arranger : public QWidget {
       QToolButton* ib;
       int trackInfoType;
       Splitter* split;
-      ///QMenu* pop;
       int songType;
       PosLabel* cursorPos;
       SpinBox* globalTempoSpinBox;
@@ -134,31 +159,26 @@ class Arranger : public QWidget {
       void songChanged(int);
       void modeChange(int);
       void setTime(unsigned);
-      void headerMoved();
       void globalPitchChanged(int);
       void globalTempoChanged(int);
       void setTempo50();
       void setTempo100();
       void setTempo200();
-      //void seek();
       void verticalScrollSetYpos(unsigned);
       void horizontalZoomIn();
       void horizontalZoomOut();
       
    signals:
-      void redirectWheelEvent(QWheelEvent*);
       void editPart(MusECore::Track*);
       void selectionChanged();
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
       void startEditor(MusECore::PartList*, int);
       void toolChanged(int);
-      //void addMarker(int);
       void setUsedTool(int);
 
 
    protected:
-      virtual void wheelEvent(QWheelEvent* e);
       virtual void keyPressEvent(QKeyEvent* event);
 
    public slots:
@@ -166,11 +186,30 @@ class Arranger : public QWidget {
       void setTool(int);
       void updateTrackInfo(int flags);
       void configChanged();
-      void controllerChanged(MusECore::Track *t);
+      void controllerChanged(MusECore::Track *t, int ctrlId);
+      void focusCanvas();
 
    public:
       enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
              CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_INSERT_EMPTYMEAS };
+      
+      struct custom_col_t
+      {
+        enum affected_pos_t {AFFECT_BEGIN, AFFECT_CPOS};
+
+        int ctrl;
+        QString name;
+        affected_pos_t affected_pos;
+        
+        custom_col_t(int c, QString n, affected_pos_t a=AFFECT_BEGIN)
+        {
+          ctrl=c;
+          name=n;
+          affected_pos=a;
+        }
+      };
+      static std::vector<custom_col_t> custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns
+      static std::vector<custom_col_t> new_custom_columns; //and instead let the arranger update without restarting muse!
 
       Arranger(ArrangerView* parent, const char* name = 0);
 
@@ -180,6 +219,11 @@ class Arranger : public QWidget {
       
       void writeStatus(int level, MusECore::Xml&);
       void readStatus(MusECore::Xml&);
+      void writeConfiguration(int level, MusECore::Xml&);
+      static void readConfiguration(MusECore::Xml&);
+      static void writeCustomColumns(int level, MusECore::Xml&);
+      static void readCustomColumns(MusECore::Xml&);
+      static custom_col_t readOneCustomColumn(MusECore::Xml&);
 
       MusECore::Track* curTrack() const { return selected; }
       void cmd(int);
@@ -187,6 +231,7 @@ class Arranger : public QWidget {
       int selectionSize() { return canvas->selectionSize(); }
       void setGlobalTempo(int);
       void clear();
+      void songIsClearing() { canvas->songIsClearing(); }
       
       unsigned cursorValue() { return cursVal; }
       

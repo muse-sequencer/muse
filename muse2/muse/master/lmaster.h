@@ -28,7 +28,6 @@
 #include "cobject.h"
 #include "tempo.h"
 #include "keyevent.h"
-///#include "sig.h"
 #include "al/sig.h"
 
 #include <QTreeWidgetItem>
@@ -154,9 +153,6 @@ class LMaster : public MidiEditor {
 
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
 
-//   protected:
-//      virtual void keyPressEvent(QKeyEvent*);
-
    private slots:
       void select(QTreeWidgetItem*, QTreeWidgetItem*);
       void itemDoubleClicked(QTreeWidgetItem* item);
@@ -171,6 +167,7 @@ class LMaster : public MidiEditor {
    public slots:
       void songChanged(int);
       void configChanged();
+      void focusCanvas();
 
    signals:
       void isDeleting(MusEGui::TopWin*);

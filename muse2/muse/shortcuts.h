@@ -4,10 +4,10 @@
 //  $Id: ./muse/shortcuts.h $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//
 // Author: Mathias Lundgren <lunar_shuttle@users.sourceforge.net>, (C) 2003
 //
 // Copyright: Mathias Lundgren (lunar_shuttle@users.sourceforge.net) (C) 2003
-//
 //
 //
 //  This program is free software; you can redistribute it and/or
@@ -174,6 +174,7 @@ enum {
 
       SHRT_ADD_MIDI_TRACK, //Default: Ctrl+J
       SHRT_ADD_DRUM_TRACK, //Default: undefined
+      SHRT_ADD_NEW_STYLE_DRUM_TRACK, //Default: undefined
       SHRT_ADD_WAVE_TRACK, //Default: undefined
       SHRT_ADD_AUDIO_OUTPUT, //Default: undefined
       SHRT_ADD_AUDIO_GROUP, //Default: undefined

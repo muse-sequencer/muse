@@ -33,10 +33,10 @@
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
-///#include "sig.h"
 #include "al/sig.h"
 #include "undo.h"
 #include "track.h"
+#include "synth.h"
 
 class QAction;
 class QFont;
@@ -126,6 +126,8 @@ class Song : public QObject {
       int noteFifoWindex;
       int noteFifoRindex;
 
+      TempoFifo _tempoFifo; // External tempo changes, processed in heartbeat.
+      
       int updateFlags;
 
       TrackList _tracks;      // tracklist as seen by arranger
@@ -263,8 +265,7 @@ class Song : public QObject {
       //   event manipulations
       //-----------------------------------------
 
-      //void cmdAddRecordedWave(WaveTrack* track, const Pos&, const Pos&);
-      void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);
+      void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);  
       void cmdAddRecordedEvents(MidiTrack*, EventList*, unsigned);
       bool addEvent(Event&, Part*);
       void changeEvent(Event&, Event&, Part*);
@@ -275,8 +276,8 @@ class Song : public QObject {
       
       void addACEvent(AudioTrack* t, int acid, int frame, double val);
       void changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val);
-      void controllerChange(Track* t);
-
+      void addExternalTempo(const TempoRecEvent& e) { _tempoFifo.put(e); }
+      
       //-----------------------------------------
       //   part manipulations
       //-----------------------------------------
@@ -292,7 +293,6 @@ class Song : public QObject {
       PartList* getSelectedWaveParts() const;
       bool msgRemoveParts();
 
-      //void cmdChangePart(Part* oldPart, Part* newPart);
       void cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones);
       void cmdRemovePart(Part* part);
       void cmdAddPart(Part* part);
@@ -318,7 +318,7 @@ class Song : public QObject {
       void removeTrack2(Track* track);
       void removeTrack3(Track* track);
       void removeMarkedTracks();
-      void changeTrack(Track* oldTrack, Track* newTrack);
+      //void changeTrack(Track* oldTrack, Track* newTrack); DELETETHIS
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
       void swapTracks(int i1, int i2);
@@ -334,11 +334,11 @@ class Song : public QObject {
       void msgInsertTrack(Track* track, int idx, bool u = true);
       void clearRecAutomation(bool clearList);
       void processAutomationEvents();
+      void processMasterRec();
       int execAutomationCtlPopup(AudioTrack*, const QPoint&, int);
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
       void connectJackRoutes(AudioTrack* track, bool disconnect);
       void updateSoloStates();
-      //void chooseMidiRoutes(QButton* /*parent*/, MidiTrack* /*track*/, bool /*dst*/);
 
       //-----------------------------------------
       //   undo, redo
@@ -362,7 +362,7 @@ class Song : public QObject {
       //   Configuration
       //-----------------------------------------
 
-      SynthI* createSynthI(const QString& sclass, const QString& label = QString(), Track* insertAt = 0);
+      SynthI* createSynthI(const QString& sclass, const QString& label = QString(), Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
       
       void rescanAlsaPorts();
 
@@ -383,7 +383,9 @@ class Song : public QObject {
 
    public slots:
       void seekTo(int tick);
-      void update(int flags = -1);
+      void update(int flags = -1, bool allowRecursion=false); // use allowRecursion with care! this
+                                                              // could lock up muse if you aren't sure
+                                                              // that your recursion will be finite!
       void beat();
 
       void undo();
@@ -410,8 +412,9 @@ class Song : public QObject {
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);
-      Track* addTrack(Track::TrackType type, Track* insertAt = 0);
+      Track* addTrack(Undo& operations, Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
+      void duplicateTracks();
       QString getScriptPath(int id, bool delivered);
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
 
@@ -428,7 +431,7 @@ class Song : public QObject {
       void markerChanged(int);
       void midiPortsChanged();
       void midiNote(int pitch, int velo);  
-      void controllerChanged(MusECore::Track* t); 
+      void controllerChanged(MusECore::Track*, int); 
       void newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
       };
 

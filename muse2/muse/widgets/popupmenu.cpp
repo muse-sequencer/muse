@@ -33,7 +33,7 @@
 #include <QApplication>
 //#include <QTimer>
 
-#include <stdio.h>
+//#include <stdio.h>
 //#include <QStandardItemModel>
 
 #include "popupmenu.h"
@@ -70,13 +70,10 @@ PopupMenu::PopupMenu(const QString& title, QWidget* parent, bool stayOpen)
   init();        
 }
 
-PopupMenu::~PopupMenu()
-{
-  //printf("PopupMenu::~PopupMenu\n");  
-}
-
 void PopupMenu::init()
 {
+  //printf("PopupMenu::init this:%p\n", this);   
+
   // Menus will trigger! Set to make sure our trigger handlers ignore menus.
   menuAction()->setData(-1);
   
@@ -92,8 +89,14 @@ void PopupMenu::init()
   #endif   // POPUP_MENU_DISABLE_AUTO_SCROLL
 }
 
+// NOTE: Tested all RoutePopupMenu and PopupMenu dtors and a couple of action dtors from our 
+//  PixmapButtonsHeaderWidgetAction and PixmapButtonsWidgetAction: 
+// This does not appear to be required any more. All submenus and actions are being deleted now.  p4.0.43 
+/*
 void PopupMenu::clear()
 {
+  //printf("PopupMenu::clear this:%p\n", this); 
+
   QList<QAction*> list = actions();
   for(int i = 0; i < list.size(); ++i)
   {
@@ -103,6 +106,7 @@ void PopupMenu::clear()
     {
       menu->clear();    // Recursive.
       act->setMenu(0);  // CHECK: Is this OK?
+      //printf("  deleting menu:%p\n", menu); 
       delete menu;
     }
   }
@@ -115,6 +119,7 @@ void PopupMenu::clear()
   connect(timer, SIGNAL(timeout()), SLOT(timerHandler()));
   #endif    // POPUP_MENU_DISABLE_AUTO_SCROLL
 }
+*/
 
 void PopupMenu::clearAllChecks() const
 {
@@ -341,21 +346,38 @@ void PopupMenu::popHovered(QAction* action)
 
 void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
 {
-    #ifdef POPUP_MENU_DISABLE_STAY_OPEN    
+    QAction* action = actionAt(e->pos());
+    if (!(action && action == activeAction() && !action->isSeparator() && action->isEnabled()))
+      action=NULL;
+
+    #ifdef POPUP_MENU_DISABLE_STAY_OPEN
+    if (action && action->menu() != NULL  &&  action->isCheckable())
+      action->activate(QAction::Trigger);
+
     QMenu::mouseReleaseEvent(e);
+    
+    if (action && action->menu() != NULL  &&  action->isCheckable())
+      close();
+      
     return;
     
     #else
     // Check for Ctrl to stay open.
     if(!_stayOpen || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))  
     {
+      if (action && action->menu() != NULL  &&  action->isCheckable())
+        action->activate(QAction::Trigger);
+
       QMenu::mouseReleaseEvent(e);
+
+      if (action && action->menu() != NULL  &&  action->isCheckable())
+        close();
+
       return;
     }  
     
     //printf("PopupMenu::mouseReleaseEvent\n");  
-    QAction *action = actionAt(e->pos());
-    if (action && action == activeAction() && !action->isSeparator() && action->isEnabled()) 
+    if (action) 
       action->activate(QAction::Trigger);
     else 
       QMenu::mouseReleaseEvent(e);

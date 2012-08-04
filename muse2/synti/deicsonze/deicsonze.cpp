@@ -1318,7 +1318,7 @@ void DeicsOnze::loadSutulaPresets()
     file = fopen (presetPath.toLatin1().constData(), "rt");
     if (file == NULL) {
 	printf("can't open ");
-	printf(presetPath.toLatin1().constData());
+	printf("%s", presetPath.toLatin1().constData());
 	printf("\n");
     }
     else

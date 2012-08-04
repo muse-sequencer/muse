@@ -366,7 +366,8 @@ bool SimpleSynth::processEvent(const MusECore::MidiPlayEvent& ev)
                               printf("%x ", ev.data()[i]);
                         }
                   setController(ev.channel(), ev.dataA(), ev.dataB(), false);
-                  return true;
+                  //return true;  // ??
+                  return false;   
             case MusECore::ME_NOTEON:
                   return playNote(ev.channel(), ev.dataA(), ev.dataB());
             case MusECore::ME_NOTEOFF:
@@ -663,10 +664,10 @@ const char* SimpleSynth::getPatchName(int /*index*/, int, int) const
     \return MidiPatch with patch info for host
  */
 //---------------------------------------------------------
-const MidiPatch* SimpleSynth::getPatchInfo(int index, const MidiPatch* patch) const
+const MidiPatch* SimpleSynth::getPatchInfo(int /*index*/, const MidiPatch* /*patch*/) const
       {
       SS_TRACE_IN
-      index = 0; patch = 0;
+      //index = 0; patch = 0;
       SS_TRACE_OUT
       return 0;
       }
@@ -1432,7 +1433,9 @@ static void* loadSampleThread(void* p)
                   // arg2 :sfi.frames is of type sf_count_t (== 64 bit)  (long long)  
                   // this requires format %lld (twice 'l' in format string (arg1)
                   // old code//printf("Resampling from %ld frames to %ld frames - srcration: %lf\n", sfi.frames, smp->frames, srcratio);
-                  printf("Resampling from %lld frames to %ld frames - srcration: %lf\n", sfi.frames, smp->frames, srcratio);
+                  //printf("Resampling from %lld frames to %ld frames - srcration: %lf\n", sfi.frames, smp->frames, srcratio);
+                  // Changed by Tim. Just avoid the hassle for now. Need to determine 32/64 bit and provide two different printf lines.
+                  printf("Resampling to %ld frames - srcration: %lf\n", smp->frames, srcratio);
                   printf("Nr of new samples: %ld\n", smp->samples);
                   }
 
@@ -1767,8 +1770,8 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
             QString errorString = "Error loading plugin \"" + plugin->label() + "\"";
             guiSendError(errorString.toLatin1().constData());
             }
-      return success;
       SS_TRACE_OUT
+      return success;
       }
 
 

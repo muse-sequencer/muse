@@ -200,7 +200,8 @@ void MidiEditor::songChanged(int type)
             if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
                   
-                    updateHScrollRange();
+                  updateHScrollRange();
+                  
                   if (canvas)
                         setWindowTitle(canvas->getCaption());
                   else if (wview)
@@ -260,7 +261,7 @@ void MidiEditor::horizontalZoomIn()
 {
   int mag = hscroll->mag();
   int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl < 23)
+  if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
         zoomlvl++;
 
   int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);

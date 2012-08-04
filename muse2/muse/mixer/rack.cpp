@@ -182,6 +182,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       setSpacing(0);
 
       setAcceptDrops(true);
+      setFocusPolicy(Qt::NoFocus);
       }
 
 void EffectRack::updateContents()
@@ -410,8 +411,17 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
             return;
             }
       if (pipe) {
-            bool flag = !pipe->guiVisible(idx);
-            pipe->showGui(idx, flag);
+            bool flag;
+            if (pipe->has_dssi_ui(idx))
+            {
+              flag = !pipe->nativeGuiVisible(idx);
+              pipe->showNativeGui(idx, flag);
+
+            }
+            else {
+              flag = !pipe->guiVisible(idx);
+              pipe->showGui(idx, flag);
+            }
             }
       }
 
@@ -507,6 +517,8 @@ void EffectRack::startDrag(int idx)
       
       QString xmlconf;
       xml.dump(xmlconf);
+      printf("[%s]\n", xmlconf.toLatin1().constData());
+
       
       QByteArray data(xmlconf.toLatin1().constData());
       //printf("sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
@@ -683,6 +695,8 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
                                   //printf("instantiated!\n");
                                   MusEGlobal::audio->msgAddPlugin(track, idx, plugi);
                                   MusEGlobal::song->update(SC_RACK);
+                                  if (plugi->guiVisible())
+                                    plugi->gui()->setWindowTitle(plugi->titlePrefix() + plugi->name());
                                   return;
                                   }
                               }

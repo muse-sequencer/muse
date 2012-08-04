@@ -697,7 +697,8 @@ PyObject* getAudioTrackVolume(PyObject*, PyObject* args)
       if (t == NULL)
             return NULL;
 
-      if (t->type() == Track::DRUM || t->type() == Track::MIDI)
+      //if (t->type() == Track::DRUM || t->type() == Track::MIDI || t->type() == Track::NEW_DRUM)
+        if (t->isMidiTrack()) // changed by flo. should do the same thing and is better maintainable
             return NULL;
 
       AudioTrack* track = (AudioTrack*) t;
@@ -1091,7 +1092,8 @@ bool Song::event(QEvent* _e)
                   if (t == NULL)
                         return false;
 
-                  if (t->type() == Track::DRUM || t->type() == Track::MIDI)
+                  if (t->isMidiTrack()) // changed by flo. is better maintainable
+                  //if (t->type() == Track::DRUM || t->type() == Track::NEW_DRUM || t->type() == Track::MIDI)
                         return false;
 
                   AudioTrack* track = (AudioTrack*) t;
@@ -1128,9 +1130,12 @@ bool Song::event(QEvent* _e)
                   pipeline->setOn(fxid, onoff);
                   break;
                   }
-            case QPybridgeEvent::SONG_ADD_TRACK:
-                  MusEGlobal::song->addTrack((Track::TrackType)e->getP1());  // Add at end of list.
+            case QPybridgeEvent::SONG_ADD_TRACK: {
+                  MusECore::Undo operations;
+                  MusEGlobal::song->addTrack(operations, (Track::TrackType)e->getP1());  // Add at end of list.
+                  MusEGlobal::song->applyOperationGroup(operations);
                   break;
+                  }
             case QPybridgeEvent::SONG_CHANGE_TRACKNAME: {
                   Track* t = this->findTrack(e->getS1());
                   if (t == NULL)

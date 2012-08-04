@@ -26,6 +26,10 @@
 
 namespace MusEGui {
 
+int Velocity::range = 1;
+int Velocity::rateVal = 100;
+int Velocity::offsetVal = 0;
+      
 //---------------------------------------------------------
 //   Velocity
 //---------------------------------------------------------
@@ -39,8 +43,6 @@ Velocity::Velocity(QWidget* parent)
       rangeGroup->addButton(selectedEvents,1);
       rangeGroup->addButton(loopedEvents,2);
       rangeGroup->addButton(selectedLooped,3);
-      
-      pullValues();
       }
 
 //---------------------------------------------------------

@@ -31,10 +31,22 @@ if (COMMAND cmake_policy)
       cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-# set libdir if not use -DCMAKE_INSTALL_LIBDIR
-if (NOT CMAKE_INSTALL_LIBDIR)
-	SET(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib")
-endif (NOT CMAKE_INSTALL_LIBDIR)
+if (NOT DEFINED LIB_SUFFIX)
+        SET(LIB_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
+endif (NOT DEFINED LIB_SUFFIX)
+
+# set libdir if not use -DLIB_INSTALL_DIR
+if (NOT LIB_INSTALL_DIR)
+        if(CMAKE_INSTALL_LIBDIR)
+                SET(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+        else(CMAKE_INSTALL_LIBDIR)
+                SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
+        endif(CMAKE_INSTALL_LIBDIR)
+endif (NOT LIB_INSTALL_DIR)
+
+if (LIB_SUFFIX)
+        message(" Install libraries to: " ${LIB_INSTALL_DIR} )          
+endif (LIB_SUFFIX)
 
 IF(NOT DEFINED SHARE_INSTALL_PREFIX)
         SET(SHARE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share")
@@ -66,19 +78,19 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 SET(MusE_VERSION_MAJOR 2)
 SET(MusE_VERSION_MINOR 0)
 SET(MusE_VERSION_PATCH 0)
-SET(MusE_VERSION       "2.0beta2")
-SET(MusE_VERSION_FULL  "2.0beta2")
-SET(MusE_INSTALL_NAME  "muse-2.0beta")
+SET(MusE_VERSION       "2.0")
+SET(MusE_VERSION_FULL  "2.0")
+SET(MusE_INSTALL_NAME  "muse-2.0")
 SET(MusE_EXEC_NAME     "muse2")
 
 ## The directory where we will install the shared components:
-SET(MusE_MODULES_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/modules)
+SET(MusE_MODULES_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/modules)
 
 ## Synthesizers directory
-SET(MusE_SYNTHI_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi)
+SET(MusE_SYNTHI_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/synthi)
 
 ## Plugins directory
-SET(MusE_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins)
+SET(MusE_PLUGINS_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME}/plugins)
 
 ## Top documentation dir
 IF(NOT DEFINED MusE_DOC_DIR)
@@ -89,7 +101,7 @@ ENDIF(NOT DEFINED MusE_DOC_DIR)
 SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
 
 ## Lib directory
-SET(MusE_LIB_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME})
+SET(MusE_LIB_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME})
 
 FIND_PROGRAM(SVNVER svnversion)
 if (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
@@ -106,7 +118,7 @@ endif (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
 option ( ENABLE_LASH        "enable LASH Audio Session Handler"                              ON)
 option ( ENABLE_OSC         "enable Open Sound Control (DSSI also recommended)"              ON)   
 option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface (OSC also recommended)"  ON)
-option ( ENABLE_VST         "enable VST/win support"                                         OFF)
+option ( ENABLE_VST         "enable VST/win support (deprecated)"                            OFF)
 option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"                            ON)
 option ( ENABLE_EXPERIMENTAL "enable building experimental features"                         OFF)
 option ( ENABLE_PYTHON      "enable Python control support"                                  OFF)
@@ -141,7 +153,7 @@ endif (APPLE)
 set(QT_MIN_VERSION "4.3.0")
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
-set(QT_USE_QTNSPLUGIN TRUE)
+#set(QT_USE_QTNSPLUGIN TRUE)
 set(QT_USE_QTSVG TRUE)
 
 find_package(Qt4)
@@ -235,10 +247,21 @@ endif (ENABLE_OSC)
 ##
 
 if (ENABLE_PYTHON)
-      PKG_CHECK_MODULES(PYTHON python>=2.4)
-      if (PYTHON_FOUND)
-            set(PYTHON_SUPPORT ON)
-      endif (PYTHON_FOUND)
+      include(FindPythonLibs)
+      if (PYTHONLIBS_FOUND)
+# Older cmake does not define PYTHON_INCLUDE_DIRS and PYTHONLIBS_VERSION_STRING.
+# We need to define them ourselves to do a version comparison
+            if(DEFINED PYTHON_INCLUDE_PATH AND NOT DEFINED PYTHON_INCLUDE_DIRS)
+                  set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
+            endif(DEFINED PYTHON_INCLUDE_PATH AND NOT DEFINED PYTHON_INCLUDE_DIRS)
+            if(NOT DEFINED PYTHONLIBS_VERSION_STRING)
+                  STRING(REGEX REPLACE ".*python(2\\.[0-9]+)" "\\1"
+                         PYTHONLIBS_VERSION_STRING "${PYTHON_INCLUDE_DIRS}")
+            endif(NOT DEFINED PYTHONLIBS_VERSION_STRING)
+            if (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
+                  set(PYTHON_SUPPORT ON)
+            endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
+      endif (PYTHONLIBS_FOUND)
 endif (ENABLE_PYTHON)
 
 ##
@@ -256,10 +279,10 @@ else (ENABLE_DSSI)
 endif (ENABLE_DSSI)
 
 if (ENABLE_VST)
-      message("VST support enabled")
+      message("deprecated VST support enabled")
       set (VST_SUPPORT TRUE)
 else (ENABLE_VST)
-      message("VST support disabled")
+      #message("VST support disabled")
       set (VST_SUPPORT FALSE)
 endif (ENABLE_VST)
 
@@ -414,7 +437,7 @@ summary_add("Lash support" HAVE_LASH)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
-summary_add("VST support" VST_SUPPORT)
+#summary_add("VST support" VST_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()

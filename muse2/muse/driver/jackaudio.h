@@ -40,16 +40,20 @@ class MidiPlayEvent;
 class JackAudioDevice : public AudioDevice {
 
       jack_client_t* _client;
-      double sampleTime;
-      int samplePos;
+      //double sampleTime;
+      //int samplePos;
+      float _syncTimeout;
       jack_transport_state_t transportState;
       jack_position_t pos;
       char jackRegisteredName[16];
       int dummyState;
       int dummyPos;
+      volatile int _dummyStatePending;
+      volatile int _dummyPosPending;
       // Free-running frame counter incremented always in process.
       jack_nframes_t _frameCounter; 
       
+      void getJackPorts(const char** ports, std::list<QString>& name_list, bool midi, bool physical, int aliases);
       static int processAudio(jack_nframes_t frames, void*);
 
    public:
@@ -57,17 +61,17 @@ class JackAudioDevice : public AudioDevice {
       virtual ~JackAudioDevice();
       virtual void nullify_client() { _client = 0; }
       
-      virtual inline int deviceType() const { return JACK_AUDIO; }   // p3.3.52
+      virtual inline int deviceType() const { return JACK_AUDIO; }   
       
       void scanMidiPorts();
       
       //virtual void start();
       virtual void start(int);
       virtual void stop ();
-      virtual bool dummySync(int state); // Artificial sync when not using Jack transport.
       
       virtual int framePos() const;
       virtual unsigned frameTime() const     { return _frameCounter; }  
+      virtual double systemTime() const;
 
       virtual float* getBuffer(void* port, unsigned long nframes) {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
@@ -76,11 +80,10 @@ class JackAudioDevice : public AudioDevice {
       virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1);
       virtual std::list<QString> inputPorts(bool midi = false, int aliases = -1);
 
+      jack_client_t* jackClient() const { return _client; }
       virtual void registerClient();
       virtual const char* clientName() { return jackRegisteredName; }
 
-      //virtual void* registerOutPort(const char* name);
-      //virtual void* registerInPort(const char* name);
       virtual void* registerOutPort(const char* /*name*/, bool /*midi*/);
       virtual void* registerInPort(const char* /*name*/, bool /*midi*/);
 
@@ -94,7 +97,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void* findPort(const char* name);
       virtual QString portName(void* port);
       virtual int getState();
-      virtual unsigned int getCurFrame();
+      virtual unsigned int getCurFrame() const;
       virtual bool isRealtime()          { return jack_is_realtime(_client); }
       virtual int realtimePriority() const;
       virtual void startTransport();
@@ -103,6 +106,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void seekTransport(const Pos &p);
       virtual void setFreewheel(bool f);
       jack_transport_state_t transportQuery(jack_position_t* pos);
+      bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
       void graphChanged();
       void registrationChanged();
       void connectJackMidiPorts();

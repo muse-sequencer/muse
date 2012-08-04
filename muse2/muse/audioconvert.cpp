@@ -114,7 +114,6 @@ AudioConverter* AudioConverter::release(AudioConverter* cv)
 {
   if(!cv)
     return 0;
-  //if(cv->incRefCount(-1) <= 0)
   cv->_refCount -= 1;
   #ifdef AUDIOCONVERT_DEBUG
   printf("AudioConverter::release converter:%p current refcount:%d\n", cv, cv->_refCount);
@@ -130,13 +129,12 @@ AudioConverter* AudioConverter::release(AudioConverter* cv)
   return cv;  
 }
 
-//off_t AudioConverter::readAudio(SndFileR& f, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
 off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
 {
   if(f.isNull())
     return _sfCurFrame;
   
-  // Added by Tim. p3.3.17
+  // Added by Tim. p3.3.17 DELETETHIS or comment it in again. it's disabled anyway
   //#ifdef AUDIOCONVERT_DEBUG_PRC
   //printf("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
   //        f.name().toLatin1(), this, sfCurFrame, offset, channel, f.channels(), n);
@@ -162,12 +160,12 @@ off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** 
     // Sample rates are different. Seek to a calculated 'sample rate ratio factored' position.
     
     double srcratio = (double)fsrate / (double)MusEGlobal::sampleRate;
-    //long inSize = long((double)frames * _src_ratio) + 1     // From MusE-2 file converter.
+    //long inSize = long((double)frames * _src_ratio) + 1     // From MusE-2 file converter. DELETETHIS ???
     off_t newfr = (off_t)floor(((double)frame * srcratio));    // From simplesynth.
   
     _sfCurFrame = f.seek(newfr, 0);
     
-    // Added by Tim. p3.3.17
+    // Added by Tim. p3.3.17 DELETETHIS 3 or comment it in
     //#ifdef AUDIOCONVERT_DEBUG_PRC
     //printf("AudioConverter::process Seek frame:%ld converted to frame:%ld sfCurFrame:%ld\n", frame, newfr, sfCurFrame);
     //#endif
@@ -178,7 +176,7 @@ off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** 
   else  
   {
     // No seek requested. 
-    // Added by Tim. p3.3.17
+    // Added by Tim. p3.3.17 DELETETHIS 3 or comment it in
     //#ifdef AUDIOCONVERT_DEBUG_PRC
     //printf("AudioConverter::process No 'transport' seek, rates different. Seeking to sfCurFrame:%ld\n", sfCurFrame);
     //#endif
@@ -189,19 +187,20 @@ off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** 
     _sfCurFrame = f.seek(_sfCurFrame, 0);
   }
   
-  /*
+  /* DELETETHIS 5
   int   fchan              = f.channels();
   long  outFrames          = n;  
   long  outSize            = outFrames * fchan;
   float outbuffer[outSize];
   */
   
+  // DELETETHIS 4
   //sfCurFrame = process(f, sfCurFrame, offset, &outbuffer[0], channel, n);
 //  sfCurFrame = process(f, sfCurFrame, outbuffer, channel, n);
   //sfCurFrame = process(f, sfCurFrame, buffer, channel, n, overwrite);
   _sfCurFrame = process(f, buffer, channel, n, overwrite);
   
-  /*
+  /* DELETETHIS 58 (whoa!)
   float*  poutbuf = &outbuffer[0];
   if(fchan == channel) 
   {
@@ -328,24 +327,22 @@ void SRCAudioConverter::reset()
   return;  
 }
 
-//off_t SRCAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, int channel, int n, bool overwrite)
 off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int channel, int n, bool overwrite)
 {
-  //return src_process(_src_state, sd);
+  //return src_process(_src_state, sd); DELETETHIS
   
   if(f.isNull())
-    //return;
     return _sfCurFrame;
   
-  // Added by Tim. p3.3.17
+  // Added by Tim. p3.3.17 DELETETHIS 4
   //#ifdef AUDIOCONVERT_DEBUG_PRC
   //printf("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
   //        f.name().toLatin1(), this, sfCurFrame, offset, channel, f.channels(), n);
   //#endif
   
-//  off_t frame     = offset;  // _spos is added before the call.
+//  off_t frame     = offset;  // _spos is added before the call. DELETETHIS
   unsigned fsrate = f.samplerate();
-  //bool resample   = src_state && ((unsigned)MusEGlobal::sampleRate != fsrate);  
+  //bool resample   = src_state && ((unsigned)MusEGlobal::sampleRate != fsrate);   DELETETHIS 2
 //  bool resample   = isValid() && ((unsigned)MusEGlobal::sampleRate != fsrate);  
   
   if((MusEGlobal::sampleRate == 0) || (fsrate == 0))
@@ -364,29 +361,30 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
   long inComp = 1;
   
   long outFrames  = n;  
-  //long outSize   = outFrames * channel;
+  //long outSize   = outFrames * channel; DELETETHIS
   long outSize    = outFrames * fchan;
   
-  //long inSize = long(outSize * srcratio) + 1                      // From MusE-2 file converter.
+  //long inSize = long(outSize * srcratio) + 1                      // From MusE-2 file converter. DELETETHIS3
   //long inSize = (long)floor(((double)outSize / srcratio));        // From simplesynth.
   //long inFrames = (long)floor(((double)outFrames / srcratio));    // From simplesynth.
   long inFrames = (long)ceil(((double)outFrames / srcratio)) + inComp;    // From simplesynth.
+  // DELETETHIS
   //long inFrames = (long)floor(double(outFrames * sfinfo.samplerate) / double(MusEGlobal::sampleRate));    // From simplesynth.
   
   long inSize = inFrames * fchan;
-  //long inSize = inFrames * channel;
+  //long inSize = inFrames * channel; DELETETHIS
   
   // Start with buffers at expected sizes. We won't need anything larger than this, but add 4 for good luck.
   float inbuffer[inSize + 4];
   float outbuffer[outSize];
       
-  //size_t sfTotalRead  = 0;
+  //size_t sfTotalRead  = 0; DELETETHIS
   size_t rn           = 0;
   long totalOutFrames = 0;
   
   srcdata.data_in       = inbuffer;
   srcdata.data_out      = outbuffer;
-//  srcdata.data_out      = buffer;
+//  srcdata.data_out      = buffer; DELETETHIS
   
   // Set some kind of limit on the number of attempts to completely fill the output buffer, 
   //  in case something is really screwed up - we don't want to get stuck in a loop here.
@@ -394,10 +392,10 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
   for(int attempt = 0; attempt < attempts; ++attempt)
   {
     rn = f.readDirect(inbuffer, inFrames);
-    //sfTotalRead += rn;
+    //sfTotalRead += rn; DELETETHIS
     
     // convert
-    //srcdata.data_in       = inbuffer;
+    //srcdata.data_in       = inbuffer; DELETETHIS 4
     //srcdata.data_out      = outbuffer;
     //srcdata.data_out      = poutbuf;
     //srcdata.input_frames  = inSize;
@@ -406,7 +404,7 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
     srcdata.end_of_input  = ((long)rn != inFrames);
     srcdata.src_ratio     = srcratio;
   
-    //#ifdef AUDIOCONVERT_DEBUG_PRC
+    //#ifdef AUDIOCONVERT_DEBUG_PRC DELETETHIS or comment it in, or maybe add an additional if (heavyDebugMsg)?
     //printf("AudioConverter::process attempt:%d inFrames:%ld outFrames:%ld rn:%d data in:%p out:%p", 
     //  attempt, inFrames, outFrames, rn, srcdata.data_in, srcdata.data_out);
     //#endif
@@ -420,7 +418,7 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
     
     totalOutFrames += srcdata.output_frames_gen;
     
-    //#ifdef AUDIOCONVERT_DEBUG_PRC
+    //#ifdef AUDIOCONVERT_DEBUG_PRC DELETETHIS or comment in or heavyDebugMsg
     //printf(" frames used in:%ld out:%ld totalOutFrames:%ld data in:%p out:%p\n", srcdata.input_frames_used, srcdata.output_frames_gen, totalOutFrames, srcdata.data_in, srcdata.data_out);
     //#endif
     
@@ -484,7 +482,7 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
       #endif
       
       // We've reached the end of the file. Convert the number of frames read.
-      //rn = (double)rn * srcratio + 1; 
+      //rn = (double)rn * srcratio + 1;   DELETETHIS 5
       //rn = (long)floor((double)rn * srcratio); 
       //if(rn > (size_t)outFrames)
       //  rn = outFrames;  
@@ -505,22 +503,18 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
     long e = n * channel;
     for(long i = b; i < e; ++i)
       outbuffer[i] = 0.0f;
-      //buffer[i] = 0.0f;
   }
   
-  //float*  poutbuf = &outbuffer[0];
   float*  poutbuf = outbuffer;
   if(fchan == channel) 
   {
     if(overwrite)
-      //for (size_t i = 0; i < rn; ++i) 
       for (int i = 0; i < n; ++i) 
       {
         for(int ch = 0; ch < channel; ++ch)
           *(buffer[ch] + i) = *poutbuf++;
       }
     else
-      //for(size_t i = 0; i < rn; ++i) 
       for(int i = 0; i < n; ++i) 
       {
         for(int ch = 0; ch < channel; ++ch)
@@ -531,11 +525,9 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
   {
     // stereo to mono
     if(overwrite)
-      //for(size_t i = 0; i < rn; ++i)
       for(int i = 0; i < n; ++i)
         *(buffer[0] + i) = poutbuf[i + i] + poutbuf[i + i + 1];
     else  
-      //for(size_t i = 0; i < rn; ++i)
       for(int i = 0; i < n; ++i)
         *(buffer[0] + i) += poutbuf[i + i] + poutbuf[i + i + 1];
   }
@@ -543,7 +535,6 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
   {
     // mono to stereo
     if(overwrite)
-      //for(size_t i = 0; i < rn; ++i) 
       for(int i = 0; i < n; ++i) 
       {
         float data = *poutbuf++;
@@ -551,7 +542,6 @@ off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int chan
         *(buffer[1]+i) = data;
       }
     else  
-      //for(size_t i = 0; i < rn; ++i) 
       for(int i = 0; i < n; ++i) 
       {
         float data = *poutbuf++;
@@ -585,7 +575,7 @@ RubberBandAudioConverter::RubberBandAudioConverter(int channels, int options) : 
   _rbs = 0;
   _channels = channels;
   
-  _rbs = new RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);  // , initialTimeRatio = 1.0, initialPitchScale = 1.0
+  _rbs = new RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);  // , initialTimeRatio = 1.0, initialPitchScale = 1.0 DELETETHIS
 }
 
 RubberBandAudioConverter::~RubberBandAudioConverter()
@@ -624,24 +614,23 @@ void RubberBandAudioConverter::reset()
 /////////////////////////////////
 // TODO: Not finished yet..
 ////////////////////////////////
-//off_t RubberBandAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, int channel, int n, bool overwrite)
+// DELETETHIS well then... but maybe we can clean it up anyway? remove the below for example ;)?
 off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, int channel, int n, bool overwrite)
 {
-  //return src_process(_src_state, sd);
+  //return src_process(_src_state, sd); DELETETHIS
   
   if(f.isNull())
-    //return;
     return _sfCurFrame;
   
-  // Added by Tim. p3.3.17
+  // Added by Tim. p3.3.17 DELETETHIS 4
   //#ifdef AUDIOCONVERT_DEBUG_PRC
   //printf("AudioConverter::process %s audConv:%p sfCurFrame:%ld offset:%u channel:%d fchan:%d n:%d\n", 
   //        f.name().toLatin1(), this, sfCurFrame, offset, channel, f.channels(), n);
   //#endif
   
-//  off_t frame     = offset;  // _spos is added before the call.
+//  off_t frame     = offset;  // _spos is added before the call. DELETETHIS
   unsigned fsrate = f.samplerate();
-  //bool resample   = src_state && ((unsigned)MusEGlobal::sampleRate != fsrate);  
+  //bool resample   = src_state && ((unsigned)MusEGlobal::sampleRate != fsrate);   DELETETHIS 2
 //  bool resample   = isValid() && ((unsigned)MusEGlobal::sampleRate != fsrate);  
   
   if((MusEGlobal::sampleRate == 0) || (fsrate == 0))
@@ -660,23 +649,24 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
   long inComp = 1;
   
   long outFrames  = n;  
-  //long outSize   = outFrames * channel;
+  //long outSize   = outFrames * channel; DELETETHIS
   long outSize    = outFrames * fchan;
   
-  //long inSize = long(outSize * srcratio) + 1                      // From MusE-2 file converter.
+  //long inSize = long(outSize * srcratio) + 1                      // From MusE-2 file converter.  DELETETHIS 3
   //long inSize = (long)floor(((double)outSize / srcratio));        // From simplesynth.
   //long inFrames = (long)floor(((double)outFrames / srcratio));    // From simplesynth.
   long inFrames = (long)ceil(((double)outFrames / srcratio)) + inComp;    // From simplesynth.
+  // DELETETHIS
   //long inFrames = (long)floor(double(outFrames * sfinfo.samplerate) / double(MusEGlobal::sampleRate));    // From simplesynth.
   
   long inSize = inFrames * fchan;
-  //long inSize = inFrames * channel;
+  //long inSize = inFrames * channel; DELETETHIS
   
   // Start with buffers at expected sizes. We won't need anything larger than this, but add 4 for good luck.
   float inbuffer[inSize]; // +4
-//  float outbuffer[outSize];
+//  float outbuffer[outSize]; DELETETHIS
       
-  //float* rbinbuffer[fchan];
+  //float* rbinbuffer[fchan]; DELETETHIS 4
   //float rbindata[inSize];
   //for (int i = 0; i < fchan; ++i)
   //      rbinbuffer[i] = rbindata + i * inFrames;
@@ -686,11 +676,11 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
   for (int i = 0; i < fchan; ++i)
         rboutbuffer[i] = rboutdata + i * outFrames;
       
-  //size_t sfTotalRead  = 0;
+  //size_t sfTotalRead  = 0; DELETETHIS
   size_t rn           = 0;
   long totalOutFrames = 0;
   
-//  srcdata.data_in       = inbuffer;
+//  srcdata.data_in       = inbuffer; DELETETHIS 3
   //srcdata.data_out      = outbuffer;
 //  srcdata.data_out      = buffer;
   float** data_out       = rboutbuffer;
@@ -712,9 +702,9 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
     for(int i = 0; i < fchan; ++i)
       rbinbuffer[i] = rbindata + i * sreq;
     
-//    rn = f.readDirect(inbuffer, inFrames);
+//    rn = f.readDirect(inbuffer, inFrames); DELETETHIS
     rn = f.readDirect(inbuffer, sreq);
-    //sfTotalRead += rn;
+    //sfTotalRead += rn; DELETETHIS
     
     // Must de-interleave soundfile data to feed to rubberband.
     for(size_t i = 0; i < rn; ++i) 
@@ -730,7 +720,7 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
     
     
     // convert
-    //srcdata.data_in       = inbuffer;
+    //srcdata.data_in       = inbuffer; DELETETHIS 4
     //srcdata.data_out      = outbuffer;
     //srcdata.data_out      = poutbuf;
     //srcdata.input_frames  = inSize;
@@ -739,7 +729,7 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
     srcdata.end_of_input  = ((long)rn != inFrames);
     srcdata.src_ratio     = srcratio;
   
-    //#ifdef AUDIOCONVERT_DEBUG_PRC
+    //#ifdef AUDIOCONVERT_DEBUG_PRC DELETETHIS or comment in
     //printf("AudioConverter::process attempt:%d inFrames:%ld outFrames:%ld rn:%d data in:%p out:%p", 
     //  attempt, inFrames, outFrames, rn, srcdata.data_in, srcdata.data_out);
     //#endif
@@ -753,7 +743,7 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
     
     totalOutFrames += srcdata.output_frames_gen;
     
-    //#ifdef AUDIOCONVERT_DEBUG_PRC
+    //#ifdef AUDIOCONVERT_DEBUG_PRC DELETETHIS or comment in
     //printf(" frames used in:%ld out:%ld totalOutFrames:%ld data in:%p out:%p\n", srcdata.input_frames_used, srcdata.output_frames_gen, totalOutFrames, srcdata.data_in, srcdata.data_out);
     //#endif
     
@@ -817,7 +807,7 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
       #endif
       
       // We've reached the end of the file. Convert the number of frames read.
-      //rn = (double)rn * srcratio + 1; 
+      //rn = (double)rn * srcratio + 1;  DELETETHIS 5
       //rn = (long)floor((double)rn * srcratio); 
       //if(rn > (size_t)outFrames)
       //  rn = outFrames;  
@@ -837,23 +827,19 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
     long b = totalOutFrames * channel;
     long e = n * channel;
     for(long i = b; i < e; ++i)
-      //outbuffer[i] = 0.0f;
       buffer[i] = 0.0f;
   }
   
-  //float*  poutbuf = &outbuffer[0];
   float*  poutbuf = outbuffer;
   if(fchan == channel) 
   {
     if(overwrite)
-      //for (size_t i = 0; i < rn; ++i) 
       for (int i = 0; i < n; ++i) 
       {
         for(int ch = 0; ch < channel; ++ch)
           *(buffer[ch] + i) = *poutbuf++;
       }
     else
-      //for(size_t i = 0; i < rn; ++i) 
       for(int i = 0; i < n; ++i) 
       {
         for(int ch = 0; ch < channel; ++ch)
@@ -864,11 +850,9 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
   {
     // stereo to mono
     if(overwrite)
-      //for(size_t i = 0; i < rn; ++i)
       for(int i = 0; i < n; ++i)
         *(buffer[0] + i) = poutbuf[i + i] + poutbuf[i + i + 1];
     else  
-      //for(size_t i = 0; i < rn; ++i)
       for(int i = 0; i < n; ++i)
         *(buffer[0] + i) += poutbuf[i + i] + poutbuf[i + i + 1];
   }
@@ -876,7 +860,6 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
   {
     // mono to stereo
     if(overwrite)
-      //for(size_t i = 0; i < rn; ++i) 
       for(int i = 0; i < n; ++i) 
       {
         float data = *poutbuf++;
@@ -884,7 +867,6 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
         *(buffer[1]+i) = data;
       }
     else  
-      //for(size_t i = 0; i < rn; ++i) 
       for(int i = 0; i < n; ++i) 
       {
         float data = *poutbuf++;
