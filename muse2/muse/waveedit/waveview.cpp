@@ -143,7 +143,7 @@ void WaveView::pdraw(QPainter& p, const QRect& rr)
 
                   int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
                   
-                  //printf("pos=%d xpos=%d sx=%d ex=%d xScale=%d event.spos=%d event.frame=%d px=%d\n",
+                  //printf("pos=%d xpos=%d sx=%d ex=%d xScale=%d event.spos=%d event.frame=%d px=%d\n",   
                   //      pos, xpos, sx, ex, xScale, event.spos(), event.frame(), px);
                   
                   h       = hh / (channels * 2);

@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //  arrangerview.h
 //  (C) Copyright 2011 Florian Jung (flo93@users.sourceforge.net)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -121,12 +122,13 @@ class ArrangerView : public TopWin
 		void globalCut();
 		void globalInsert();
 		void globalSplit();
-    void globalCutSel();
-    void globalInsertSel();
-    void globalSplitSel();
-    void cmd(int);
-    void addNewTrack(QAction* action);
-    void configCustomColumns();
+                void globalCutSel();
+                void globalInsertSel();
+                void globalSplitSel();
+                void cmd(int);
+                void addNewTrack(QAction* action);
+                void configCustomColumns();
+                void songChanged(int);
 
 	signals:
 		void isDeleting(MusEGui::TopWin*);

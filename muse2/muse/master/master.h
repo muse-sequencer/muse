@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: master.h,v 1.3 2004/04/11 13:03:32 wschweer Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -67,6 +68,9 @@ class Master : public MusEGui::View {
       bool deleteVal1(unsigned int x1, unsigned int x2);
       void deleteVal(int x1, int x2);
 
+   private slots:
+      void songChanged(int);
+     
    signals:
       void followEvent(int);
       void xposChanged(int);

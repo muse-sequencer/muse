@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //  arrangerview.cpp
 //  (C) Copyright 2011 Florian Jung (flo93@users.sourceforge.net)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -112,7 +113,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
   connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
-  connect(MusEGlobal::song, SIGNAL(songChanged(int)), visTracks, SLOT(updateVisibleTracksButtons()));
+  connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
 
 
 
@@ -374,6 +375,24 @@ void ArrangerView::closeEvent(QCloseEvent* e)
   e->accept();
 }
 
+//---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void ArrangerView::songChanged(int type)
+{
+  // TEST Try these, may need more/less. Esp more: Originally songChanged was directly connected to updateVisibleTracksButtons, so... 
+  if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+             SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
+             //SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
+             //SC_SIG | SC_TEMPO | SC_MASTER |
+             //SC_MIDI_TRACK_PROP |
+             SC_CONFIG | 
+             SC_DRUMMAP| 
+             SC_SONG_TYPE)) 
+    visTracks->updateVisibleTracksButtons();
+}
+      
 
 
 void ArrangerView::writeStatus(int level, MusECore::Xml& xml) const

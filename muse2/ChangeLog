@@ -1,3 +1,5 @@
+04.08.2012:
+         - Optimizations: Added Master::songChanged and ArrangerView::songChanged to filter some SCs. (Tim)
 01.08.2012:
          - Finished the Sysex Editor in the Instrument Editor. (Tim)
            Create, delete, save named instrument sysexes. Does nothing more than that for now.
