@@ -113,7 +113,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       //setAttribute(Qt::WA_OpaquePaintEvent);
       resizeFlag = false;
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(redraw()));
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(maybeUpdateVolatileCustomColumns()));
       }

@@ -1,4 +1,13 @@
 04.08.2012:
+         * Introducing: More bits for Song Changed SC_* flags. (Tim)
+           Added member Song::updateFlags2. (Various song commands and undo/redo use the update flags).
+           Song::update() now takes an extra 'flags2' param, default is zero, with a HACK: If flags is -1
+            (as in a call to update() with no params), it is highly unlikely someone actually wanted 
+            all 32 flags bits set but not flags2, so flags2 is also forced to -1 in that case. 
+         - Please beware these possible extra flags when writing songChanged handlers and setting updateFlags. 
+           No place uses them yet. We can recognize them as necessary, as we go, by adding an extra flags2 
+            param to the various songChanged handlers.
+04.08.2012:
          - Optimizations: Added Master::songChanged and ArrangerView::songChanged to filter some SCs. (Tim)
 01.08.2012:
          - Finished the Sysex Editor in the Instrument Editor. (Tim)

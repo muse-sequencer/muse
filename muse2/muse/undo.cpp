@@ -217,6 +217,7 @@ void Song::startUndo()
 			
       undoList->push_back(Undo());
       updateFlags = 0;
+      updateFlags2 = 0;
       undoMode = true;
       }
 
@@ -224,9 +225,10 @@ void Song::startUndo()
 //   endUndo
 //---------------------------------------------------------
 
-void Song::endUndo(int flags)
+void Song::endUndo(int flags, int flags2)
       {
       updateFlags |= flags;
+      updateFlags2 |= flags2;
       endMsgCmd();
       undoMode = false;
       }
@@ -396,7 +398,8 @@ void Song::doUndo2()
                         break;
                   case UndoOp::ModifySongLen:
                         _len=i->b;
-                        updateFlags = -1; // set all flags
+                        updateFlags = -1; // set all flags     // TODO Refine this! Too many flags.  // REMOVE Tim.
+                        updateFlags2 = -1; // set all flags
                         break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:
@@ -506,7 +509,8 @@ void Song::doRedo2()
                         break;
                   case UndoOp::ModifySongLen:
                         _len=i->a;
-                        updateFlags = -1; // set all flags
+                        updateFlags = -1; // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
+                        updateFlags2 = -1; // set all flags   
                         break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:

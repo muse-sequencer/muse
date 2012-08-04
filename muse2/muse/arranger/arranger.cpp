@@ -524,7 +524,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(dclickPart(MusECore::Track*)), SIGNAL(editPart(MusECore::Track*)));
       connect(canvas, SIGNAL(startEditor(MusECore::PartList*,int)),   SIGNAL(startEditor(MusECore::PartList*, int)));
 
-      connect(MusEGlobal::song,   SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song,   SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
       connect(canvas, SIGNAL(dropSongFile(const QString&)), SIGNAL(dropSongFile(const QString&)));
@@ -1198,7 +1198,7 @@ void Arranger::switchInfo(int n)
                         delete w;
                   w = new AudioStrip(trackInfo, (MusECore::AudioTrack*)selected);
                   //w->setFocusPolicy(Qt::TabFocus);  // p4.0.9
-                  connect(MusEGlobal::song, SIGNAL(songChanged(int)), w, SLOT(songChanged(int)));
+                  connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), w, SLOT(songChanged(int)));
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
                   trackInfo->addWidget(w, 2);

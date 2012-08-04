@@ -267,7 +267,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       connect(view,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged1(int)));
 
       initShortcuts();
       

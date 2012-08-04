@@ -262,7 +262,7 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       connect(syncDelaySpinBox, SIGNAL(valueChanged(int)), SLOT(syncChanged()));
   
       // Done in show().
-      //connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      //connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       //connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 }
 
@@ -578,7 +578,7 @@ void MidiSyncConfig::cancel()
 void MidiSyncConfig::show()
 {
   songChanged(-1);
-  connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
   QDialog::show();
 }
@@ -607,7 +607,7 @@ void MidiSyncConfig::closeEvent(QCloseEvent* e)
       }
       
       disconnect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), this, SLOT(heartBeat()));
-      disconnect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
+      disconnect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(songChanged(int)));
       
       e->accept();
       }

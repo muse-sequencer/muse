@@ -113,7 +113,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
   connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
-  connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(songChanged(int)));
 
 
 

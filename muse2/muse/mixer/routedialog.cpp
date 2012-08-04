@@ -47,7 +47,7 @@ RouteDialog::RouteDialog(QWidget* parent)
       connect(newDstList, SIGNAL(itemSelectionChanged()), SLOT(dstSelectionChanged()));
       connect(removeButton, SIGNAL(clicked()), SLOT(removeRoute()));
       connect(connectButton, SIGNAL(clicked()), SLOT(addRoute()));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       routingChanged();
       }
 

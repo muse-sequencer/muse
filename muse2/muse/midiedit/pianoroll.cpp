@@ -442,7 +442,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       vscroll->setPos(KH * 30);
       info->setEnabled(false);
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged1(int)));
 
       setWindowTitle(canvas->getCaption());
       

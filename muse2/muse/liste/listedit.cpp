@@ -588,7 +588,7 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       mainGrid->setRowStretch(1, 100);
       mainGrid->setColumnStretch(0, 100);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
 
       if(pl->empty())
       {

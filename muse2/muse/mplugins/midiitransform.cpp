@@ -918,7 +918,7 @@ MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WFlags f
       updatePresetList();
       presetList->setCurrentItem(presetList->item(0));
       presetChanged(presetList->item(0));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       }
 
 //---------------------------------------------------------

@@ -54,7 +54,7 @@ WTScale::WTScale(int* r, QWidget* parent, int xs)
       button = Qt::NoButton;
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
       setFixedHeight(28);
       setBg(QColor(0xe0, 0xe0, 0xe0));
@@ -254,7 +254,7 @@ void WTScale::pdraw(QPainter& p, const QRect& r)
             int b = MusEGlobal::song->tick2samples(stick);
             int tpix  = rmapx(a - b);
             if (tpix < 64) {
-                  // don´t show beats if measure is this small
+                  // donï¿½t show beats if measure is this small
                   int n = 1;
                   if (tpix < 32)
                         n = 2;

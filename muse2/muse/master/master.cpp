@@ -60,7 +60,7 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       setFocusPolicy(Qt::StrongFocus);  
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(songChanged(int)));
       }
 
 //---------------------------------------------------------

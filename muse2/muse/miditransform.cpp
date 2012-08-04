@@ -421,7 +421,7 @@ MidiTransformerDialog::MidiTransformerDialog(QDialog* parent, Qt::WFlags fl)
       //---------------------------------------------------
 
       updatePresetList();
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       }
 
 //---------------------------------------------------------

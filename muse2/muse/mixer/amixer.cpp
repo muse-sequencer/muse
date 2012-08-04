@@ -238,7 +238,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       ///connect(this, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
       //MusEGlobal::song->update();  // calls update mixer

@@ -737,7 +737,7 @@ RoutePopupMenu::RoutePopupMenu(const QString& title, QWidget* parent, MusECore::
 void RoutePopupMenu::init()
 {
   //printf("RoutePopupMenu::init this:%p\n", this);  
-  connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
 }
 
 void RoutePopupMenu::songChanged(int val)

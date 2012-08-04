@@ -265,7 +265,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   //oRButton->setVisible(false);
   connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
   
-  connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
   connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
   
   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));

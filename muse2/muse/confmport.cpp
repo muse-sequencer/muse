@@ -1107,7 +1107,7 @@ MPConfig::MPConfig(QWidget* parent)
          this, SLOT(rbClicked(QTableWidgetItem*)));
       connect(mdevView, SIGNAL(itemChanged(QTableWidgetItem*)),
          this, SLOT(mdevViewItemRenamed(QTableWidgetItem*)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
 
       connect(synthList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
       connect(instanceList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));

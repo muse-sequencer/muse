@@ -1370,17 +1370,22 @@ void Song::rewindStart()
 //   update
 //---------------------------------------------------------
 
-void Song::update(int flags, bool allowRecursion)
+void Song::update(int flags, int flags2, bool allowRecursion)
       {
+      // HACK: If flags is -1, it is very highly likely the caller wanted flags2 = -1 as well.
+      //       Highly improbable someone only wanted all 32 flags set and not flags2.
+      if(flags == -1)
+        flags2 = -1;
+      
       static int level = 0;         // DEBUG
       if (level && !allowRecursion) {
-            printf("THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08x), level %d!\n"
+            printf("THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08x %08x), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
-                   "                          probably cause windows being not up-to-date.\n", flags, level);
+                   "                          probably cause windows being not up-to-date.\n", flags, flags2, level);
             return;
             }
       ++level;
-      emit songChanged(flags);
+      emit songChanged(flags, flags2);
       --level;
       }
 
@@ -1774,11 +1779,11 @@ void Song::rescanAlsaPorts()
 
 void Song::endMsgCmd()
       {
-      if (updateFlags) {
+      if (updateFlags || updateFlags2) {
             redoList->clearDelete();
             MusEGlobal::undoAction->setEnabled(true);
             MusEGlobal::redoAction->setEnabled(false);
-            emit songChanged(updateFlags);
+            emit songChanged(updateFlags, updateFlags2);
             }
       }
 
@@ -1789,6 +1794,7 @@ void Song::endMsgCmd()
 void Song::undo()
       {
       updateFlags = 0;
+      updateFlags2 = 0;
       if (doUndo1())
             return;
       MusEGlobal::audio->msgUndo();
@@ -1799,7 +1805,7 @@ void Song::undo()
       if(updateFlags && (SC_TRACK_REMOVED | SC_TRACK_INSERTED))
         MusEGlobal::audio->msgUpdateSoloStates();
 
-      emit songChanged(updateFlags);
+      emit songChanged(updateFlags, updateFlags2);
       }
 
 //---------------------------------------------------------
@@ -1809,6 +1815,7 @@ void Song::undo()
 void Song::redo()
       {
       updateFlags = 0;
+      updateFlags2 = 0;
       if (doRedo1())
             return;
       MusEGlobal::audio->msgRedo();
@@ -1819,7 +1826,7 @@ void Song::redo()
       if(updateFlags && (SC_TRACK_REMOVED | SC_TRACK_INSERTED))
         MusEGlobal::audio->msgUpdateSoloStates();
 
-      emit songChanged(updateFlags);
+      emit songChanged(updateFlags, updateFlags2);
       }
 
 //---------------------------------------------------------
@@ -1851,15 +1858,20 @@ void Song::processMsg(AudioMsg* msg)
                               }
                         }
                   updateFlags = SC_TRACK_MODIFIED;
+                  updateFlags2 = 0;
                   break;
             case SEQM_ADD_EVENT:
                   updateFlags = SC_EVENT_INSERTED;
+                  updateFlags2 = 0;
                   if (addEvent(msg->ev1, (MidiPart*)msg->p2)) {
                         Event ev;
                         addUndo(UndoOp(UndoOp::AddEvent, ev, msg->ev1, (Part*)msg->p2, msg->a, msg->b));
                         }
                   else
+                  {
                         updateFlags = 0;
+                        updateFlags2 = 0;
+                  }
                   if(msg->a)
                     addPortCtrlEvents(msg->ev1, (Part*)msg->p2, msg->b);
                   break;
@@ -1873,6 +1885,7 @@ void Song::processMsg(AudioMsg* msg)
                   addUndo(UndoOp(UndoOp::DeleteEvent, e, event, (Part*)part, msg->a, msg->b));
                   deleteEvent(event, part);
                   updateFlags = SC_EVENT_REMOVED;
+                  updateFlags2 = 0;
                   }
                   break;
             case SEQM_CHANGE_EVENT:
@@ -1883,6 +1896,7 @@ void Song::processMsg(AudioMsg* msg)
                     addPortCtrlEvents(msg->ev2, (Part*)msg->p3, msg->b);
                   addUndo(UndoOp(UndoOp::ModifyEvent, msg->ev2, msg->ev1, (Part*)msg->p3, msg->a, msg->b));
                   updateFlags = SC_EVENT_MODIFIED;
+                  updateFlags2 = 0;
                   break;
             
             // Moved here from MidiSeq::processMsg   p4.0.34
@@ -1909,12 +1923,14 @@ void Song::processMsg(AudioMsg* msg)
                   addUndo(UndoOp(UndoOp::AddTempo, msg->a, msg->b));
                   MusEGlobal::tempomap.addTempo(msg->a, msg->b);
                   updateFlags = SC_TEMPO;
+                  updateFlags2 = 0;
                   break;
 
             case SEQM_SET_TEMPO:
                   addUndo(UndoOp(UndoOp::AddTempo, msg->a, msg->b));
                   MusEGlobal::tempomap.setTempo(msg->a, msg->b);
                   updateFlags = SC_TEMPO;
+                  updateFlags2 = 0;
                   break;
 
             case SEQM_SET_GLOBAL_TEMPO:
@@ -1925,30 +1941,35 @@ void Song::processMsg(AudioMsg* msg)
                   addUndo(UndoOp(UndoOp::DeleteTempo, msg->a, msg->b));
                   MusEGlobal::tempomap.delTempo(msg->a);
                   updateFlags = SC_TEMPO;
+                  updateFlags2 = 0;
                   break;
 
             case SEQM_ADD_SIG:
                   addUndo(UndoOp(UndoOp::AddSig, msg->a, msg->b, msg->c));
                   AL::sigmap.add(msg->a, AL::TimeSignature(msg->b, msg->c));
                   updateFlags = SC_SIG;
+                  updateFlags2 = 0;
                   break;
 
             case SEQM_REMOVE_SIG:
                   addUndo(UndoOp(UndoOp::DeleteSig, msg->a, msg->b, msg->c));
                   AL::sigmap.del(msg->a);
                   updateFlags = SC_SIG;
+                  updateFlags2 = 0;
                   break;
 
             case SEQM_ADD_KEY:
                   addUndo(UndoOp(UndoOp::AddKey, msg->a, msg->b));
                   MusEGlobal::keymap.addKey(msg->a, (key_enum) msg->b);
                   updateFlags = SC_KEY;
+                  updateFlags2 = 0;
                   break;
 
             case SEQM_REMOVE_KEY:
                   addUndo(UndoOp(UndoOp::DeleteKey, msg->a, msg->b));
                   MusEGlobal::keymap.delKey(msg->a);
                   updateFlags = SC_KEY;
+                  updateFlags2 = 0;
                   break;
 
             default:
@@ -1966,6 +1987,7 @@ void Song::cmdAddPart(Part* part)
       addPart(part);
       addUndo(UndoOp(UndoOp::AddPart, part));
       updateFlags = SC_PART_INSERTED;
+      updateFlags2 = 0;
       }
 
 //---------------------------------------------------------
@@ -1979,6 +2001,7 @@ void Song::cmdRemovePart(Part* part)
       part->events()->incARef(-1);
       unchainClone(part);
       updateFlags = SC_PART_REMOVED;
+      updateFlags2 = 0;
       }
 
 //---------------------------------------------------------
@@ -2005,6 +2028,7 @@ void Song::cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClon
         addPortCtrlEvents(newPart, doClones);
       
       updateFlags = SC_PART_MODIFIED;
+      updateFlags2 = 0;
       }
 
 //---------------------------------------------------------
@@ -2139,7 +2163,7 @@ void Song::clear(bool signal, bool clear_all)
       if (signal) {
             emit loopChanged(false);
             recordChanged(false);
-            emit songChanged(-1);
+            emit songChanged(-1, -1);  
             }
       }
 

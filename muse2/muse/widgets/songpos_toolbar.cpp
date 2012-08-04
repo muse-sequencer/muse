@@ -33,7 +33,7 @@ namespace MusEGui
 	{
 		_raster=0;
 		setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-		connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(song_changed(int)));
+		connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(song_changed(int)));
 		song_changed(0);
 	}
 	

@@ -132,7 +132,7 @@ MidiControllerEditDialog::MidiControllerEditDialog(QWidget* parent, const char* 
       updateViewController();
       _modified = false;
       buttonApply->setEnabled(false);
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       }
 
 //---------------------------------------------------------

@@ -212,7 +212,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	connect(score_canvas, SIGNAL(canvas_height_changed(int)), SLOT(canvas_height_changed(int)));
 	connect(score_canvas, SIGNAL(viewport_height_changed(int)), SLOT(viewport_height_changed(int)));
 
-	connect(MusEGlobal::song, SIGNAL(songChanged(int)), score_canvas, SLOT(song_changed(int)));
+	connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), score_canvas, SLOT(song_changed(int)));
 
 	connect(xscroll, SIGNAL(valueChanged(int)), time_bar, SLOT(set_xpos(int)));
 	connect(score_canvas, SIGNAL(pos_add_changed()), time_bar, SLOT(pos_add_changed()));
@@ -518,7 +518,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	clipboard_changed();
 	selection_changed();
 
-	connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(song_changed(int)));	
+	connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(song_changed(int)));	
 	connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)));	
 
 	score_canvas->fully_recalculate();

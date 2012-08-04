@@ -246,7 +246,7 @@ MasterEdit::MasterEdit()
 
       connect(tscale, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
       connect(canvas, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       connect(MusEGlobal::song, SIGNAL(posChanged(int,unsigned,bool)), SLOT(posChanged(int,unsigned,bool)));
 
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));

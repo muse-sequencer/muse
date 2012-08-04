@@ -46,7 +46,7 @@ namespace MusEGui
 		layout->addWidget(label);
 		layout->addWidget(tempo_edit);
 		
-		connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(song_changed(int)));
+		connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(song_changed(int)));
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
 		
 		connect(tempo_edit, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
@@ -92,7 +92,7 @@ namespace MusEGui
 		layout->addWidget(label);
 		layout->addWidget(sig_edit);
 		
-		connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(song_changed(int)));
+		connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), this, SLOT(song_changed(int)));
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
 		
 		connect(sig_edit, SIGNAL(valueChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));

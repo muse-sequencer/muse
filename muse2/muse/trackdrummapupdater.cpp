@@ -31,7 +31,7 @@ using MusEGlobal::song;
 
 TrackDrummapUpdater::TrackDrummapUpdater()
 {
-  connect(song,SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
+  connect(song,SIGNAL(songChanged(int, int)), this, SLOT(songChanged(int)));
 }
 
 void TrackDrummapUpdater::songChanged(int flags)
@@ -52,7 +52,7 @@ void TrackDrummapUpdater::songChanged(int flags)
     {
       // allow recursion. there will be no more recursion, because this
       // is only executed when something other than SC_DRUMMAP happens
-      song->update(SC_DRUMMAP, true); 
+      song->update(SC_DRUMMAP, 0, true); 
     }
     
   }

@@ -58,7 +58,7 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
       button = Qt::NoButton;
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int, int)), SLOT(songChanged(int)));
       connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
 	
       setFixedHeight(28);
