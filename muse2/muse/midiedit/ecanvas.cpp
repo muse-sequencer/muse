@@ -163,7 +163,7 @@ void EventCanvas::updateSelection()
 //   songChanged(type)
 //---------------------------------------------------------
 
-void EventCanvas::songChanged(int flags)
+void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
       {
       // Is it simply a midi controller value adjustment? Forget it.
       if(flags == SC_MIDI_CONTROLLER)

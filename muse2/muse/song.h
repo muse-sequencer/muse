@@ -30,6 +30,7 @@
 #include <map>
 #include <set>
 
+#include "type_defs.h"
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
@@ -128,7 +129,7 @@ class Song : public QObject {
 
       TempoFifo _tempoFifo; // External tempo changes, processed in heartbeat.
       
-      int updateFlags;
+      MusECore::SongChangedFlags_t updateFlags;
 
       TrackList _tracks;      // tracklist as seen by arranger
       MidiTrackList  _midis;
@@ -345,7 +346,7 @@ class Song : public QObject {
       //-----------------------------------------
 
       void startUndo();
-      void endUndo(int);
+      void endUndo(MusECore::SongChangedFlags_t);
 
       void undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
 
@@ -371,7 +372,7 @@ class Song : public QObject {
       //-----------------------------------------
 
       void dumpMaster();
-      void addUpdateFlags(int f)  { updateFlags |= f; }
+      void addUpdateFlags(MusECore::SongChangedFlags_t f)  { updateFlags |= f; }
 
       //-----------------------------------------
       //   Python bridge related
@@ -383,9 +384,9 @@ class Song : public QObject {
 
    public slots:
       void seekTo(int tick);
-      void update(int flags = -1, bool allowRecursion=false); // use allowRecursion with care! this
-                                                              // could lock up muse if you aren't sure
-                                                              // that your recursion will be finite!
+      // use allowRecursion with care! this could lock up muse if you 
+      //  aren't sure that your recursion will be finite!
+      void update(MusECore::SongChangedFlags_t flags = -1, bool allowRecursion=false); 
       void beat();
 
       void undo();
@@ -419,7 +420,7 @@ class Song : public QObject {
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
 
    signals:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t); 
       void posChanged(int, unsigned, bool);
       void loopChanged(bool);
       void recordChanged(bool);

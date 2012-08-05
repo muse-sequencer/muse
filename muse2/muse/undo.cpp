@@ -55,6 +55,7 @@ const char* UndoOp::typeName()
             "AddTempo", "DeleteTempo",
             "AddSig", "DeleteSig",
             "AddKey", "DeleteKey",
+            "AddControllerEvent", "DeleteControllerEvent", "ModifyControllerEvent",
             "ModifyTrackName", "ModifyTrackChannel",
             "SwapTrack", 
             "ModifyClip", "ModifyMarker",
@@ -224,7 +225,7 @@ void Song::startUndo()
 //   endUndo
 //---------------------------------------------------------
 
-void Song::endUndo(int flags)
+void Song::endUndo(SongChangedFlags_t flags)
       {
       updateFlags |= flags;
       endMsgCmd();
@@ -378,7 +379,7 @@ void Song::doUndo2()
                         updateFlags |= SC_EVENT_INSERTED;  // TODO Tim. Make new flag or use dedicated signals
                         break;
                   case UndoOp::ModifyControllerEvent:
-                        i->_ctrlList->add(i->_eventFrame, i->_oldCtrlVal);
+                        i->_ctrlList->add(i->_eventFrame, i->_oldCtrlVal);   // Add will replace if found.
                         updateFlags |= SC_EVENT_MODIFIED;  // TODO Tim. Make new flag or use dedicated signals
                         break;
                         
@@ -410,7 +411,7 @@ void Song::doUndo2()
                         break;
                   case UndoOp::ModifySongLen:
                         _len=i->b;
-                        updateFlags = -1; // set all flags
+                        updateFlags = -1; // set all flags     // TODO Refine this! Too many flags.  // REMOVE Tim.
                         break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:
@@ -504,7 +505,7 @@ void Song::doRedo2()
                         updateFlags |= SC_EVENT_REMOVED;  // TODO Tim. Make new flag or use dedicated signals
                         break;
                   case UndoOp::ModifyControllerEvent:
-                        i->_ctrlList->add(i->_eventFrame, i->_newCtrlVal);
+                        i->_ctrlList->add(i->_eventFrame, i->_newCtrlVal);   // Add will replace if found.
                         updateFlags |= SC_EVENT_MODIFIED;  // TODO Tim. Make new flag or use dedicated signals
                         break;
                         
@@ -534,7 +535,7 @@ void Song::doRedo2()
                         break;
                   case UndoOp::ModifySongLen:
                         _len=i->a;
-                        updateFlags = -1; // set all flags
+                        updateFlags = -1; // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                         break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:

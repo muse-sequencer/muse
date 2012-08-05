@@ -25,6 +25,7 @@
 #define __RACK_H__
 
 #include <QListWidget>
+#include "type_defs.h"
 
 class QDragEnterEvent;
 class QDragLeaveEvent;
@@ -62,7 +63,7 @@ class EffectRack : public QListWidget {
    private slots:
       void menuRequested(QListWidgetItem*);
       void doubleClicked(QListWidgetItem*);
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void updateContents();
 
    protected:

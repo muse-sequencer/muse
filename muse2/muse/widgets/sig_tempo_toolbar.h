@@ -24,6 +24,7 @@
 #define __SIG_TEMPO_TOOLBAR_H__
 
 #include <QWidget>
+#include "type_defs.h"
 
 namespace Awl
 {
@@ -55,7 +56,7 @@ namespace MusEGui
 		
 		private slots:
 			void pos_changed(int,unsigned,bool);
-			void song_changed(int);
+			void song_changed(MusECore::SongChangedFlags_t);
   };
 
 	class TempoToolbarWidget : public QWidget
@@ -76,7 +77,7 @@ namespace MusEGui
 			
 		private slots:
 			void pos_changed(int,unsigned,bool);
-			void song_changed(int);
+			void song_changed(MusECore::SongChangedFlags_t);
   };
 }
 

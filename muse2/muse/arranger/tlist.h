@@ -23,6 +23,7 @@
 #ifndef __TLIST_H__
 #define __TLIST_H__
 
+#include "type_defs.h"
 #include "track.h"
 #include <map>
 #include <QWidget>
@@ -123,7 +124,7 @@ class TList : public QWidget {
       void chanValueFinished();
       void ctrlValueFinished();
       void instrPopupActivated(QAction*);
-      void songChanged(int flags);
+      void songChanged(MusECore::SongChangedFlags_t flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);
       void loadTrackDrummap(MusECore::MidiTrack*, const char* filename=NULL);

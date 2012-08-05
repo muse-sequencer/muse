@@ -1107,7 +1107,7 @@ MPConfig::MPConfig(QWidget* parent)
          this, SLOT(rbClicked(QTableWidgetItem*)));
       connect(mdevView, SIGNAL(itemChanged(QTableWidgetItem*)),
          this, SLOT(mdevViewItemRenamed(QTableWidgetItem*)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
 
       connect(synthList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
       connect(instanceList, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));
@@ -1138,7 +1138,7 @@ void MPConfig::selectionChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void MPConfig::songChanged(int flags)
+void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
       {
       if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED)))
         return;

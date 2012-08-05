@@ -969,7 +969,7 @@ void DList::tracklistChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void DList::songChanged(int flags)
+void DList::songChanged(MusECore::SongChangedFlags_t flags)
       {
       if (flags & SC_DRUMMAP) {
             redraw();

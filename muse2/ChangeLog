@@ -1,3 +1,13 @@
+04.08.2012:
+         * Introducing: More bits for Song Changed SC_* flags. (Tim)
+           Added MusECore::SongChangedFlags_t (in new type_defs.h file). Declared as int64 type.
+           All Song Changed parameters, handlers, connections, calls, colateral operations etc. now use 
+            this new SongChangedFlags_t. 
+           All the handlers are now ready for the code bodies to accept any extra flags, devs need not
+            do anything more than define new SC_* flags and write support inside the handlers.
+           Please beware these possible extra flags when writing songChanged handlers and setting updateFlags. 
+04.08.2012:
+         - Optimizations: Added Master::songChanged and ArrangerView::songChanged to filter some SCs. (Tim)
 01.08.2012:
          - Finished the Sysex Editor in the Instrument Editor. (Tim)
            Create, delete, save named instrument sysexes. Does nothing more than that for now.

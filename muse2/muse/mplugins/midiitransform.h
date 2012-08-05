@@ -27,6 +27,7 @@
 #include "ui_itransformbase.h"
 
 #include <QCloseEvent>
+#include "type_defs.h"
 
 class QButtonGroup;
 class Xml;
@@ -114,7 +115,7 @@ class MidiInputTransformDialog : public QDialog, public Ui::MidiInputTransformDi
       void procChannelValbChanged(int);
 
    public slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
 
    public:
       MidiInputTransformDialog(QDialog* parent = 0, Qt::WFlags fl = 0);

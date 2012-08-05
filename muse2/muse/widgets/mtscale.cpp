@@ -58,7 +58,7 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
       button = Qt::NoButton;
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
 	
       setFixedHeight(28);
@@ -69,7 +69,7 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
 //   songChanged
 //---------------------------------------------------------
 
-void MTScale::songChanged(int type)
+void MTScale::songChanged(MusECore::SongChangedFlags_t type)
       {
       if (type & (SC_SIG|SC_TEMPO)) {
            if ((type & SC_TEMPO) && waveMode) {

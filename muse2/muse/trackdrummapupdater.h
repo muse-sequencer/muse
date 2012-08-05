@@ -25,6 +25,7 @@
 #define __TRACKDRUMMAPUPDATER_H__
 
 #include <QObject>
+#include "type_defs.h"
 
 namespace MusECore {
 
@@ -36,7 +37,7 @@ class TrackDrummapUpdater : public QObject
     TrackDrummapUpdater();
     
   private slots:
-    void songChanged(int flags);
+    void songChanged(MusECore::SongChangedFlags_t flags);
 };
 
 } //namespace MusECore

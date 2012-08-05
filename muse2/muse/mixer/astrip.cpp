@@ -170,7 +170,7 @@ void AudioStrip::updateRouteButtons()
 //   songChanged
 //---------------------------------------------------------
 
-void AudioStrip::songChanged(int val)
+void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
       {
       // Is it simply a midi controller value adjustment? Forget it.
       if (val == SC_MIDI_CONTROLLER)

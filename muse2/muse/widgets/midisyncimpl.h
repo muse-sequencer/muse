@@ -25,6 +25,7 @@
 #define __MIDISYNCIMPL_H__
 
 #include "ui_midisync.h"
+#include "type_defs.h"
 #include "sync.h"
 
 class QCloseEvent;
@@ -119,7 +120,7 @@ class MidiSyncConfig : public QDialog, public Ui::MidiSyncConfigBase {
       void dlvClicked(QTreeWidgetItem*, int);
       void dlvDoubleClicked(QTreeWidgetItem*, int);
       //void renameOk(QListViewItem*, int, const QString&);
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
 
    public:
       MidiSyncConfig(QWidget* parent=0);

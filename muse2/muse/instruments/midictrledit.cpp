@@ -132,14 +132,14 @@ MidiControllerEditDialog::MidiControllerEditDialog(QWidget* parent, const char* 
       updateViewController();
       _modified = false;
       buttonApply->setEnabled(false);
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       }
 
 //---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
-void MidiControllerEditDialog::songChanged(int flags)
+void MidiControllerEditDialog::songChanged(MusECore::SongChangedFlags_t flags)
 {
   // Is it simply a midi controller value adjustment? Forget it.
   if(flags == SC_MIDI_CONTROLLER)

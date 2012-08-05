@@ -524,7 +524,7 @@ void Song::duplicateTracks()
     --trackno;
   }
   
-  int update_flags = SC_TRACK_INSERTED;
+  MusECore::SongChangedFlags_t update_flags = SC_TRACK_INSERTED;
   if(flags & (Track::ASSIGN_ROUTES | Track::ASSIGN_DEFAULT_ROUTES))
     update_flags |= SC_ROUTE;
   MusEGlobal::song->endUndo(update_flags);
@@ -1370,7 +1370,7 @@ void Song::rewindStart()
 //   update
 //---------------------------------------------------------
 
-void Song::update(int flags, bool allowRecursion)
+void Song::update(MusECore::SongChangedFlags_t flags, bool allowRecursion)
       {
       static int level = 0;         // DEBUG
       if (level && !allowRecursion) {
@@ -2139,7 +2139,7 @@ void Song::clear(bool signal, bool clear_all)
       if (signal) {
             emit loopChanged(false);
             recordChanged(false);
-            emit songChanged(-1);
+            emit songChanged(-1);  
             }
       }
 

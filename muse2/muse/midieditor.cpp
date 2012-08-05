@@ -179,7 +179,7 @@ void MidiEditor::writeStatus(int level, MusECore::Xml& xml) const
 //   songChanged
 //---------------------------------------------------------
 
-void MidiEditor::songChanged(int type)
+void MidiEditor::songChanged(MusECore::SongChangedFlags_t type)
       {
       
       if (type) {

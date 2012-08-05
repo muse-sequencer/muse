@@ -562,8 +562,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)),      dlist, SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged1(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)),      dlist, SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  dlist, SLOT(setYMag(int)));
@@ -632,7 +632,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 //   songChanged1
 //---------------------------------------------------------
 
-void DrumEdit::songChanged1(int bits)
+void DrumEdit::songChanged1(MusECore::SongChangedFlags_t bits)
       {
         if(_isDeleting)  // Ignore while deleting to prevent crash.
           return;

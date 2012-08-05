@@ -238,7 +238,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       ///connect(this, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
       //MusEGlobal::song->update();  // calls update mixer
@@ -554,7 +554,7 @@ void AudioMixerApp::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void AudioMixerApp::songChanged(int flags)
+void AudioMixerApp::songChanged(MusECore::SongChangedFlags_t flags)
       {
       // Is it simply a midi controller value adjustment? Forget it.
       if(flags == SC_MIDI_CONTROLLER)

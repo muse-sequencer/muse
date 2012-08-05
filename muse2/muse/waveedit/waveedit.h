@@ -31,6 +31,7 @@
 #include <QCloseEvent>
 #include <QByteArray>
 
+#include "type_defs.h"
 #include "midieditor.h"
 
 class QAction;
@@ -80,7 +81,7 @@ class WaveEdit : public MidiEditor {
    private slots:
       void cmd(int);
       void setTime(unsigned t);
-      void songChanged1(int);
+      void songChanged1(MusECore::SongChangedFlags_t);
       void soloChanged(bool flag);
       void moveVerticalSlider(int val);
 

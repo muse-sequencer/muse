@@ -216,7 +216,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       if (!editor->parts()->empty())
             setCurTrackAndPart();
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
       setCurDrumPitch(editor->curDrumInstrument());
@@ -440,7 +440,7 @@ void CtrlCanvas::configChanged()
 //    all marked parts are added to the internal event list
 //---------------------------------------------------------
 
-void CtrlCanvas::songChanged(int type)
+void CtrlCanvas::songChanged(MusECore::SongChangedFlags_t type)
 {
   if(editor->deleting())  // Ignore while while deleting to prevent crash.
     return; 

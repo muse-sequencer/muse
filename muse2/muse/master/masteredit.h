@@ -26,6 +26,7 @@
 #include <QByteArray>
 #include <QResizeEvent>
 
+#include "type_defs.h"
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
@@ -89,7 +90,7 @@ class MasterEdit : public MidiEditor {
       void tempoChange(double);
 
    public slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void focusCanvas();
 
    signals:

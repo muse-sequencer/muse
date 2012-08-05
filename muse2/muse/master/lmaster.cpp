@@ -132,7 +132,7 @@ void LMaster::closeEvent(QCloseEvent* e)
 //   songChanged
 //---------------------------------------------------------
 
-void LMaster::songChanged(int type)
+void LMaster::songChanged(MusECore::SongChangedFlags_t type)
       {
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
@@ -267,7 +267,7 @@ LMaster::LMaster()
       connect(view, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(select(QTreeWidgetItem*, QTreeWidgetItem*)));
       connect(view, SIGNAL(itemPressed(QTreeWidgetItem*, int)), SLOT(itemPressed(QTreeWidgetItem*, int)));
       connect(view, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(itemDoubleClicked(QTreeWidgetItem*)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(this, SIGNAL(seekTo(int)), MusEGlobal::song, SLOT(seekTo(int)));
       connect(tempoButton, SIGNAL(clicked()), SLOT(tempoButtonClicked()));
       connect(timeSigButton, SIGNAL(clicked()), SLOT(timeSigButtonClicked()));

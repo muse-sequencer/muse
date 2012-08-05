@@ -46,7 +46,7 @@ namespace MusEGui
 		layout->addWidget(label);
 		layout->addWidget(tempo_edit);
 		
-		connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(song_changed(int)));
+		connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(song_changed(MusECore::SongChangedFlags_t)));
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
 		
 		connect(tempo_edit, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
@@ -61,7 +61,7 @@ namespace MusEGui
 		song_changed(SC_TEMPO);
 	}
 
-	void TempoToolbarWidget::song_changed(int type)
+	void TempoToolbarWidget::song_changed(MusECore::SongChangedFlags_t type)
 	{
 		if (type & SC_TEMPO)
 		{
@@ -92,7 +92,7 @@ namespace MusEGui
 		layout->addWidget(label);
 		layout->addWidget(sig_edit);
 		
-		connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(song_changed(int)));
+		connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(song_changed(MusECore::SongChangedFlags_t)));
 		connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(pos_changed(int,unsigned,bool)));
 		
 		connect(sig_edit, SIGNAL(valueChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
@@ -107,7 +107,7 @@ namespace MusEGui
 		song_changed(SC_SIG);
 	}
 	
-	void SigToolbarWidget::song_changed(int type)
+	void SigToolbarWidget::song_changed(MusECore::SongChangedFlags_t type)
 	{
 		if (type & SC_SIG)
 		{

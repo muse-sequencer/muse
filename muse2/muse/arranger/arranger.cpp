@@ -524,7 +524,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(dclickPart(MusECore::Track*)), SIGNAL(editPart(MusECore::Track*)));
       connect(canvas, SIGNAL(startEditor(MusECore::PartList*,int)),   SIGNAL(startEditor(MusECore::PartList*, int)));
 
-      connect(MusEGlobal::song,   SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song,   SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
       connect(canvas, SIGNAL(dropSongFile(const QString&)), SIGNAL(dropSongFile(const QString&)));
@@ -643,7 +643,7 @@ void Arranger::songlenChanged(int n)
 //   songChanged
 //---------------------------------------------------------
 
-void Arranger::songChanged(int type)
+void Arranger::songChanged(MusECore::SongChangedFlags_t type)
       {
       // Is it simply a midi controller value adjustment? Forget it.
       if(type != SC_MIDI_CONTROLLER)
@@ -1160,7 +1160,7 @@ void Arranger::genTrackInfo(QWidget* parent)
 //   updateTrackInfo
 //---------------------------------------------------------
 
-void Arranger::updateTrackInfo(int flags)
+void Arranger::updateTrackInfo(MusECore::SongChangedFlags_t flags)
       {
       if (!showTrackinfoFlag) {
             switchInfo(-1);
@@ -1198,7 +1198,7 @@ void Arranger::switchInfo(int n)
                         delete w;
                   w = new AudioStrip(trackInfo, (MusECore::AudioTrack*)selected);
                   //w->setFocusPolicy(Qt::TabFocus);  // p4.0.9
-                  connect(MusEGlobal::song, SIGNAL(songChanged(int)), w, SLOT(songChanged(int)));
+                  connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
                   trackInfo->addWidget(w, 2);

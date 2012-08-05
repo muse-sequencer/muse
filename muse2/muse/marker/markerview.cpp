@@ -271,7 +271,7 @@ MarkerView::MarkerView(QWidget* parent)
       //    Rest
       //---------------------------------------------------
 
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       
       updateList();
 
@@ -411,7 +411,7 @@ void MarkerView::deleteMarker()
 //   songChanged
 //---------------------------------------------------------
 
-void MarkerView::songChanged(int flags)
+void MarkerView::songChanged(MusECore::SongChangedFlags_t flags)
 {
   // Is it simply a midi controller value adjustment? Forget it.
   if(flags == SC_MIDI_CONTROLLER)

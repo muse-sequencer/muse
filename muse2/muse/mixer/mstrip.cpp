@@ -459,7 +459,7 @@ void MidiStrip::configChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void MidiStrip::songChanged(int val)
+void MidiStrip::songChanged(MusECore::SongChangedFlags_t val)
       {
       if (mute && (val & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);

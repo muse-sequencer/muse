@@ -31,6 +31,7 @@
 #include <QGridLayout>
 #include <QLabel>
 
+#include "type_defs.h"
 #include "globaldefs.h"
 //#include "route.h"
 
@@ -86,7 +87,7 @@ class Strip : public QFrame {
 
    public slots:
       void resetPeaks();
-      virtual void songChanged(int) = 0;
+      virtual void songChanged(MusECore::SongChangedFlags_t) = 0;
       virtual void configChanged() = 0;
 
    public:

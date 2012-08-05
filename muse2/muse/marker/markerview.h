@@ -23,6 +23,7 @@
 #ifndef __MARKERVIEW_H__
 #define __MARKERVIEW_H__
 
+#include "type_defs.h"
 #include "cobject.h"
 
 #include <QTreeWidgetItem>
@@ -91,7 +92,7 @@ class MarkerView : public TopWin {
       void markerChanged(int);
       void clicked(QTreeWidgetItem*);
       void updateList();
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       
    signals:
       void isDeleting(MusEGui::TopWin*);

@@ -26,6 +26,7 @@
 
 #include <QScrollArea>
 
+#include "type_defs.h"
 #include "cobject.h"
 #include "synth.h"
 #include "node.h"
@@ -123,7 +124,7 @@ class AudioMixerApp : public QMainWindow {
       //void layoutRequest();
 
    private slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       //void configChanged()    { songChanged(-1); }
       void configChanged();
       //void addNewTrack(QAction*);

@@ -23,6 +23,7 @@
 #ifndef __LMASTER_EDIT_H__
 #define __LMASTER_EDIT_H__
 
+#include "type_defs.h"
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
@@ -165,7 +166,7 @@ class LMaster : public MidiEditor {
       void comboboxTimerSlot();
 
    public slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void configChanged();
       void focusCanvas();
 

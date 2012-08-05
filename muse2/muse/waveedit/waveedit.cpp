@@ -267,7 +267,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       connect(view,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged1(MusECore::SongChangedFlags_t)));
 
       initShortcuts();
       
@@ -451,7 +451,7 @@ void WaveEdit::readStatus(MusECore::Xml& xml)
 //    signal from "song"
 //---------------------------------------------------------
 
-void WaveEdit::songChanged1(int bits)
+void WaveEdit::songChanged1(MusECore::SongChangedFlags_t bits)
       {
         if(_isDeleting)  // Ignore while while deleting to prevent crash.
           return;

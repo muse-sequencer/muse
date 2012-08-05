@@ -47,7 +47,7 @@ RouteDialog::RouteDialog(QWidget* parent)
       connect(newDstList, SIGNAL(itemSelectionChanged()), SLOT(dstSelectionChanged()));
       connect(removeButton, SIGNAL(clicked()), SLOT(removeRoute()));
       connect(connectButton, SIGNAL(clicked()), SLOT(addRoute()));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       routingChanged();
       }
 
@@ -118,7 +118,7 @@ void RouteDialog::routingChanged()
 //   songChanged
 //---------------------------------------------------------
 
-void RouteDialog::songChanged(int v)
+void RouteDialog::songChanged(MusECore::SongChangedFlags_t v)
       {
       if (v & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_ROUTE)) {
             routingChanged();

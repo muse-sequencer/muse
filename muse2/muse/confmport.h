@@ -28,6 +28,7 @@
 #include <QToolTip>
 
 #include "ui_synthconfigbase.h"
+#include "type_defs.h"
 
 class QTreeWidget;
 class QTableWidget;
@@ -61,7 +62,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
    private slots:
       void rbClicked(QTableWidgetItem*);
       void mdevViewItemRenamed(QTableWidgetItem*);
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void selectionChanged();
       void addInstanceClicked();
       void removeInstanceClicked();

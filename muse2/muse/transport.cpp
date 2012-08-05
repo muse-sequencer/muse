@@ -501,7 +501,7 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(tempo, SIGNAL(tempoChanged(int)), MusEGlobal::song, SLOT(setTempo(int)));
       connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), SLOT(sigChange(const AL::TimeSignature&)));
       connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
 
@@ -722,7 +722,7 @@ void Transport::setCycleMode(int id)
 //   songChanged
 //---------------------------------------------------------
 
-void Transport::songChanged(int flags)
+void Transport::songChanged(MusECore::SongChangedFlags_t flags)
       {
       // Is it simply a midi controller value adjustment? Forget it.
       if(flags == SC_MIDI_CONTROLLER)

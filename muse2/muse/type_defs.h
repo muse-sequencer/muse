@@ -1,8 +1,9 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  songpos_toolbar.h
-//  (C) Copyright 2012 Florian Jung (flo93@users.sourceforge.net)
+//
+//  type_defs.h
+//  Copyright (C) 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,33 +21,15 @@
 //
 //=========================================================
 
-#ifndef __SONGPOS_TOOLBAR_H__
-#define __SONGPOS_TOOLBAR_H__
+#ifndef __TYPE_DEFS_H__
+#define __TYPE_DEFS_H__
 
-#include "type_defs.h"
-#include "mtscale.h"
+#include "stdint.h"
 
-namespace MusEGui
-{
-	class SongPosToolbarWidget : public MTScale
-	{
-		Q_OBJECT
-		
-		private:
-			int _raster;
-    protected:
-      virtual void paintEvent(QPaintEvent* ev);
+namespace MusECore {
 
-		public:
-			SongPosToolbarWidget(QWidget* parent);
-			
-			virtual QSize	sizeHint() const;
-			virtual void resizeEvent(QResizeEvent*);
-		
-		private slots:
-			void song_changed(MusECore::SongChangedFlags_t);
-		
-	};
-}
+typedef int64_t SongChangedFlags_t;
+
+}   // namespace MusECore
 
 #endif

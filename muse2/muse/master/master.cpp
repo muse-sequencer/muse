@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: master.cpp,v 1.3 2004/04/11 13:03:32 wschweer Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -56,11 +57,23 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       pos[2]  = 0;
       drag = DRAG_OFF;
       tool = MusEGui::PointerTool; // should be overridden soon anyway, but to be sure...
-      setFocusPolicy(Qt::StrongFocus);  // Tim.
+      setFocusPolicy(Qt::StrongFocus);  
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(redraw()));
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
       }
+
+//---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void Master::songChanged(MusECore::SongChangedFlags_t type)
+{
+  //if(_isDeleting) return; // todo: If things get complicated don't forget some mechanism to ignore while while deleting to prevent possible crash.
+  
+  if (type & (SC_SIG | SC_TEMPO | SC_KEY ))  // TEST: Reasonable to start with, may need more.
+    redraw();
+}
 
 //---------------------------------------------------------
 //   setPos

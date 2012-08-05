@@ -23,6 +23,7 @@
 #ifndef __MIDIEDITOR_H__
 #define __MIDIEDITOR_H__
 
+#include "type_defs.h"
 #include "al/sig.h"
 #include "cobject.h"
 
@@ -78,7 +79,7 @@ class MidiEditor : public TopWin  {
       void addNewParts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
 
    public slots:
-      void songChanged(int type);
+      void songChanged(MusECore::SongChangedFlags_t type);
       void setCurDrumInstrument(int instr);
       void horizontalZoomIn();
       void horizontalZoomOut();

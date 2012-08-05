@@ -27,6 +27,7 @@
 
 #include <vector>
 
+#include "type_defs.h"
 #include "strip.h"
 //#include "route.h"
 
@@ -111,7 +112,7 @@ class AudioStrip : public Strip {
 
    public slots:
       virtual void configChanged();
-      virtual void songChanged(int);
+      virtual void songChanged(MusECore::SongChangedFlags_t);
 
    public:
       AudioStrip(QWidget* parent, MusECore::AudioTrack*);

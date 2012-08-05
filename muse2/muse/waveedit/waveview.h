@@ -23,6 +23,7 @@
 #ifndef WAVE_VIEW_H
 #define WAVE_VIEW_H
 
+#include "type_defs.h"
 #include "view.h"
 #include <QWidget>
 #include <QMouseEvent>
@@ -105,7 +106,7 @@ class WaveView : public View {
 
    public slots:
       void setYScale(int);
-      void songChanged(int type);
+      void songChanged(MusECore::SongChangedFlags_t type);
 
    signals:
       void followEvent(int);

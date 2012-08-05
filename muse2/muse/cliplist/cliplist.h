@@ -24,6 +24,7 @@
 #ifndef __CLIPLIST_H__
 #define __CLIPLIST_H__
 
+#include "type_defs.h"
 #include "../cobject.h"
 #include "event.h"
 
@@ -66,7 +67,7 @@ class ClipListEdit : public TopWin {
       void updateList();
 
    private slots:
-      void songChanged(int);
+      void songChanged(MusECore::SongChangedFlags_t);
       void startChanged(const MusECore::Pos&);
       void lenChanged(const MusECore::Pos&);
       void clipSelectionChanged();
