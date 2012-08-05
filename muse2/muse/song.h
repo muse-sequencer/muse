@@ -100,6 +100,11 @@ class AudioDevice;
 #define SC_SONG_TYPE           0x20000000   // the midi song type (mtype) changed
 #define SC_KEY                 0x40000000   // key map changed
 
+// 64-bit flags:
+#define SC_CTRL_EVENT_INSERTED 0x100000000   // Controller event inserted  
+#define SC_CTRL_EVENT_REMOVED  0x200000000   // Controller event removed
+#define SC_CTRL_EVENT_MODIFIED 0x400000000   // Controller event modified
+
 #define REC_NOTE_FIFO_SIZE    16
 
 //---------------------------------------------------------

@@ -372,15 +372,15 @@ void Song::doUndo2()
                         
                   case UndoOp::AddControllerEvent:
                         i->_ctrlList->del(i->_eventFrame);
-                        updateFlags |= SC_EVENT_REMOVED;  // TODO Tim. Make new flag or use dedicated signals
+                        updateFlags |= SC_CTRL_EVENT_REMOVED;  
                         break;
                   case UndoOp::DeleteControllerEvent:
                         i->_ctrlList->add(i->_eventFrame, i->_newCtrlVal);
-                        updateFlags |= SC_EVENT_INSERTED;  // TODO Tim. Make new flag or use dedicated signals
+                        updateFlags |= SC_CTRL_EVENT_INSERTED;  
                         break;
                   case UndoOp::ModifyControllerEvent:
                         i->_ctrlList->add(i->_eventFrame, i->_oldCtrlVal);   // Add will replace if found.
-                        updateFlags |= SC_EVENT_MODIFIED;  // TODO Tim. Make new flag or use dedicated signals
+                        updateFlags |= SC_CTRL_EVENT_MODIFIED;  
                         break;
                         
                   case UndoOp::AddTempo:
@@ -498,15 +498,15 @@ void Song::doRedo2()
                         
                   case UndoOp::AddControllerEvent:
                         i->_ctrlList->add(i->_eventFrame, i->_newCtrlVal);
-                        updateFlags |= SC_EVENT_INSERTED;  // TODO Tim. Make new flag or use dedicated signals
+                        updateFlags |= SC_CTRL_EVENT_INSERTED;  
                         break;
                   case UndoOp::DeleteControllerEvent:
                         i->_ctrlList->del(i->_eventFrame);
-                        updateFlags |= SC_EVENT_REMOVED;  // TODO Tim. Make new flag or use dedicated signals
+                        updateFlags |= SC_CTRL_EVENT_REMOVED;  
                         break;
                   case UndoOp::ModifyControllerEvent:
                         i->_ctrlList->add(i->_eventFrame, i->_newCtrlVal);   // Add will replace if found.
-                        updateFlags |= SC_EVENT_MODIFIED;  // TODO Tim. Make new flag or use dedicated signals
+                        updateFlags |= SC_CTRL_EVENT_MODIFIED;  
                         break;
                         
                   case UndoOp::AddTempo:
