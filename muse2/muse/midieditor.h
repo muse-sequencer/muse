@@ -46,7 +46,7 @@ class CtrlEdit;
 class EventCanvas;
 class MTScale;
 class ScrollScale;
-class WaveView;
+//class WaveView;
 
 //---------------------------------------------------------
 //   MidiEditor
@@ -64,7 +64,7 @@ class MidiEditor : public TopWin  {
       MusEGui::ScrollScale* vscroll;
       MusEGui::MTScale* time;
       EventCanvas* canvas;
-      WaveView* wview;
+      //WaveView* wview;
 
       std::list<CtrlEdit*> ctrlEditList;
       int _raster;
@@ -102,7 +102,6 @@ class MidiEditor : public TopWin  {
       MusECore::PartList* parts()            { return _pl;  }
       int curDrumInstrument() const  { return _curDrumInstrument; }
       MusECore::Part* curCanvasPart();
-      MusECore::WavePart* curWavePart();
       void setCurCanvasPart(MusECore::Part*); 
       void addPart(MusECore::Part*);
       };

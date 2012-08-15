@@ -1,3 +1,8 @@
+14.08.2012:
+         * Introducing: Improved Wave Editor. (Tim)
+           Class WaveView is replaced by WaveCanvas. 
+           Wave Events can be selected, added, moved and deleted.
+           TODO: Bunch o' stuff, but currently it should be as good or better than the old editor.
 04.08.2012:
          * Introducing: More bits for Song Changed SC_* flags. (Tim)
            Added MusECore::SongChangedFlags_t (in new type_defs.h file). Declared as int64 type.

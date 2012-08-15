@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: waveedit.cpp,v 1.5.2.12 2009/04/06 01:24:54 terminator356 Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -19,6 +20,8 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 //=========================================================
+
+#include <limits.h>
 
 #include <QMenu>
 #include <QSignalMapper>
@@ -41,7 +44,8 @@
 #include "waveedit.h"
 #include "mtscale.h"
 #include "scrollscale.h"
-#include "waveview.h"
+//#include "waveview.h"
+#include "wavecanvas.h"
 #include "ttoolbar.h"
 #include "globals.h"
 #include "audio.h"
@@ -51,6 +55,7 @@
 #include "gconfig.h"
 #include "icons.h"
 #include "shortcuts.h"
+#include "cmd.h"
 
 namespace MusECore {
 extern QColor readColor(MusECore::Xml& xml);
@@ -58,6 +63,12 @@ extern QColor readColor(MusECore::Xml& xml);
 
 namespace MusEGui {
 
+static int waveEditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | 
+                           MusEGui::CutTool | MusEGui::CursorTool;
+
+int WaveEdit::_rasterInit = 96;
+int WaveEdit::colorModeInit = 0;
+  
 //---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
@@ -81,8 +92,10 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
    : MidiEditor(TopWin::WAVE, 1, pl)
       {
       setFocusPolicy(Qt::NoFocus);
+      colorMode      = colorModeInit;
 
       QSignalMapper* mapper = new QSignalMapper(this);
+      QSignalMapper* colorMapper = new QSignalMapper(this);
       QAction* act;
       
       //---------Pulldown Menu----------------------------
@@ -95,27 +108,27 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       menuGain = menuFunctions->addMenu(tr("&Gain"));
       
       act = menuGain->addAction("200%");
-      mapper->setMapping(act, CMD_GAIN_200);
+      mapper->setMapping(act, WaveCanvas::CMD_GAIN_200);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction("150%");
-      mapper->setMapping(act, CMD_GAIN_150);
+      mapper->setMapping(act, WaveCanvas::CMD_GAIN_150);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction("75%");
-      mapper->setMapping(act, CMD_GAIN_75);
+      mapper->setMapping(act, WaveCanvas::CMD_GAIN_75);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction("50%");
-      mapper->setMapping(act, CMD_GAIN_50);
+      mapper->setMapping(act, WaveCanvas::CMD_GAIN_50);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction("25%");
-      mapper->setMapping(act, CMD_GAIN_25);
+      mapper->setMapping(act, WaveCanvas::CMD_GAIN_25);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuGain->addAction(tr("Other"));
-      mapper->setMapping(act, CMD_GAIN_FREE);
+      mapper->setMapping(act, WaveCanvas::CMD_GAIN_FREE);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
@@ -123,58 +136,89 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       menuFunctions->addSeparator();
 
       copyAction = menuEdit->addAction(tr("&Copy"));
-      mapper->setMapping(copyAction, CMD_EDIT_COPY);
+      mapper->setMapping(copyAction, WaveCanvas::CMD_EDIT_COPY);
       connect(copyAction, SIGNAL(triggered()), mapper, SLOT(map()));
 
       cutAction = menuEdit->addAction(tr("C&ut"));
-      mapper->setMapping(cutAction, CMD_EDIT_CUT);
+      mapper->setMapping(cutAction, WaveCanvas::CMD_EDIT_CUT);
       connect(cutAction, SIGNAL(triggered()), mapper, SLOT(map()));
 
       pasteAction = menuEdit->addAction(tr("&Paste"));
-      mapper->setMapping(pasteAction, CMD_EDIT_PASTE);
+      mapper->setMapping(pasteAction, WaveCanvas::CMD_EDIT_PASTE);
       connect(pasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
 
 
       act = menuEdit->addAction(tr("Edit in E&xternal Editor"));
-      mapper->setMapping(act, CMD_EDIT_EXTERNAL);
+      mapper->setMapping(act, WaveCanvas::CMD_EDIT_EXTERNAL);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Mute Selection"));
-      mapper->setMapping(act, CMD_MUTE);
+      mapper->setMapping(act, WaveCanvas::CMD_MUTE);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Normalize Selection"));
-      mapper->setMapping(act, CMD_NORMALIZE);
+      mapper->setMapping(act, WaveCanvas::CMD_NORMALIZE);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Fade In Selection"));
-      mapper->setMapping(act, CMD_FADE_IN);
+      mapper->setMapping(act, WaveCanvas::CMD_FADE_IN);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Fade Out Selection"));
-      mapper->setMapping(act, CMD_FADE_OUT);
+      mapper->setMapping(act, WaveCanvas::CMD_FADE_OUT);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Reverse Selection"));
-      mapper->setMapping(act, CMD_REVERSE);
+      mapper->setMapping(act, WaveCanvas::CMD_REVERSE);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
       select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
       
       selectAllAction = select->addAction(QIcon(*select_allIcon), tr("Select &All"));
-      mapper->setMapping(selectAllAction, CMD_SELECT_ALL);
+      mapper->setMapping(selectAllAction, WaveCanvas::CMD_SELECT_ALL);
       connect(selectAllAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       selectNoneAction = select->addAction(QIcon(*select_allIcon), tr("&Deselect All"));
-      mapper->setMapping(selectNoneAction, CMD_SELECT_NONE);
+      mapper->setMapping(selectNoneAction, WaveCanvas::CMD_SELECT_NONE);
       connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
+      select->addSeparator();
+      
+      selectPrevPartAction = select->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
+      mapper->setMapping(selectPrevPartAction, WaveCanvas::CMD_SELECT_PREV_PART);
+      connect(selectPrevPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      
+      selectNextPartAction = select->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
+      mapper->setMapping(selectNextPartAction, WaveCanvas::CMD_SELECT_NEXT_PART);
+      connect(selectNextPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
+
       
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+
+      eventColor = settingsMenu->addMenu(tr("&Event Color"));      
+      
+      QActionGroup* actgrp = new QActionGroup(this);
+      actgrp->setExclusive(true);
+      
+      evColorNormalAction = actgrp->addAction(tr("&Part colors"));
+      evColorNormalAction->setCheckable(true);
+      colorMapper->setMapping(evColorNormalAction, 0);
+      
+      evColorPartsAction = actgrp->addAction(tr("&Gray"));
+      evColorPartsAction->setCheckable(true);
+      colorMapper->setMapping(evColorPartsAction, 1);
+      
+      connect(evColorNormalAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      connect(evColorPartsAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      
+      eventColor->addActions(actgrp->actions());
+      
+      connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(eventColorModeChanged(int)));
+      
+      settingsMenu->addSeparator();
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
-
 
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
@@ -182,6 +226,9 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2
 
+      tools2 = new MusEGui::EditToolBar(this, waveEditTools);
+      addToolBar(tools2);
+      
       addToolBarBreak();
       tb1 = addToolBar(tr("WaveEdit tools"));
       tb1->setObjectName("WaveEdit tools");
@@ -222,8 +269,9 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
             }
 
       hscroll = new ScrollScale(-32768, 1, xscale, 10000, Qt::Horizontal, mainw, 0, false, 10000.0);
-      view    = new WaveView(this, mainw, xscale, yscale);
-      wview   = view;   // HACK!
+      //view    = new WaveView(this, mainw, xscale, yscale);
+      canvas    = new WaveCanvas(this, mainw, xscale, yscale);
+      //wview   = canvas;   // HACK!
 
       QSizeGrip* corner    = new QSizeGrip(mainw);
       ymag                 = new QSlider(Qt::Vertical, mainw);
@@ -235,10 +283,10 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
 
       time                 = new MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
-      connect(view, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
-      connect(ymag, SIGNAL(valueChanged(int)), view, SLOT(setYScale(int)));
-      connect(view, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
-      connect(view, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+      connect(canvas, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
+      connect(ymag, SIGNAL(valueChanged(int)), canvas, SLOT(setYScale(int)));
+      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
+      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
 
       time->setOrigin(0, 0);
 
@@ -247,28 +295,38 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
 
       mainGrid->addWidget(time,   0, 0, 1, 2);
       mainGrid->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
-      mainGrid->addWidget(view,    2, 0);
+      mainGrid->addWidget(canvas,    2, 0);
       mainGrid->addWidget(ymag,    2, 1);
       mainGrid->addWidget(hscroll, 3, 0);
       mainGrid->addWidget(corner,  3, 1, Qt::AlignBottom | Qt::AlignRight);
 
-      view->setFocus();  
+      canvas->setFocus();  
       
-      connect(hscroll, SIGNAL(scrollChanged(int)), view, SLOT(setXPos(int)));
-      connect(hscroll, SIGNAL(scaleChanged(int)),  view, SLOT(setXMag(int)));
-      setWindowTitle(view->getCaption());
-      connect(view, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
+      connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
+      connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
+      
+      connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
+      connect(hscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setXMag(int)));
+      setWindowTitle(canvas->getCaption());
+      connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
 
       connect(hscroll, SIGNAL(scrollChanged(int)), time,  SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  time,  SLOT(setXMag(int)));
-//      connect(time,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
-      connect(view,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
+      connect(time,    SIGNAL(timeChanged(unsigned)),  SLOT(timeChanged(unsigned)));
+      connect(canvas,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
 
-      connect(view,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
+      connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
+      connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged1(MusECore::SongChangedFlags_t)));
 
+      // For the wave editor, let's start with the operation range selection tool.
+      canvas->setTool(MusEGui::CursorTool);
+      tools2->set(MusEGui::CursorTool);
+      
+      setEventColorMode(colorMode);
+      
       initShortcuts();
       
       updateHScrollRange();
@@ -291,6 +349,17 @@ void WaveEdit::initShortcuts()
       pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
       selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
+      
+      //selectInvertAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
+      //selectInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
+      //selectOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
+      selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
+      selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
+      
+      eventColor->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
+      //evColorNormalAction->setShortcut(shortcuts[  ].key);
+      //evColorPartsAction->setShortcut(shortcuts[  ].key);
+      
       }
 
 //---------------------------------------------------------
@@ -299,9 +368,15 @@ void WaveEdit::initShortcuts()
 
 void WaveEdit::configChanged()
       {
-      view->setBg(MusEGlobal::config.waveEditBackgroundColor);
-      selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
-      selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
+      if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
+            canvas->setBg(MusEGlobal::config.waveEditBackgroundColor);
+            canvas->setBg(QPixmap());
+      }
+      else {
+            canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
+      }
+      
+      initShortcuts();
       }
 
 //---------------------------------------------------------
@@ -310,17 +385,39 @@ void WaveEdit::configChanged()
 void WaveEdit::updateHScrollRange()
 {
       int s, e;
-      wview->range(&s, &e);
-      // Show one more measure.
-      e += AL::sigmap.ticksMeasure(e);  
-      // Show another quarter measure due to imprecise drawing at canvas end point.
-      e += AL::sigmap.ticksMeasure(e) / 4;
+      canvas->range(&s, &e);   // Range in frames
+      unsigned tm = AL::sigmap.ticksMeasure(MusEGlobal::tempomap.frame2tick(e));
+      
+      // Show one more measure, and show another quarter measure due to imprecise drawing at canvas end point.
+      //e += MusEGlobal::tempomap.tick2frame(tm + tm / 4);  // TODO: Try changing scrollbar to use units of frames?
+      e += (tm + tm / 4);
+      
       // Compensate for the vscroll width. 
       //e += wview->rmapxDev(-vscroll->width()); 
       int s1, e1;
-      hscroll->range(&s1, &e1);
+      hscroll->range(&s1, &e1);                             //   ...
       if(s != s1 || e != e1) 
-        hscroll->setRange(s, e);
+        hscroll->setRange(s, e);                            //   ...
+}
+
+//---------------------------------------------------------
+//   timeChanged
+//---------------------------------------------------------
+
+void WaveEdit::timeChanged(unsigned t)
+{
+      if(t == INT_MAX)
+      {
+        // Let the PosLabels disable themselves with INT_MAX.
+        pos1->setValue(t);
+        pos2->setValue(t);
+        return;
+      }
+     
+      unsigned frame = MusEGlobal::tempomap.tick2frame(t);
+      pos1->setValue(t);
+      pos2->setValue(frame);
+      time->setPos(3, t, false);
 }
 
 //---------------------------------------------------------
@@ -329,10 +426,16 @@ void WaveEdit::updateHScrollRange()
 
 void WaveEdit::setTime(unsigned samplepos)
       {
-//    printf("setTime %d %x\n", samplepos, samplepos);
+      if(samplepos == INT_MAX)
+      {
+        // Let the PosLabels disable themselves with INT_MAX.
+        pos1->setValue(samplepos);
+        pos2->setValue(samplepos);
+        return;
+      }
+     
       unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos);
       pos1->setValue(tick);
-      //pos2->setValue(tick);
       pos2->setValue(samplepos);
       time->setPos(3, tick, false);
       }
@@ -343,7 +446,6 @@ void WaveEdit::setTime(unsigned samplepos)
 
 WaveEdit::~WaveEdit()
       {
-      // MusEGlobal::undoRedo->removeFrom(tools); // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -352,7 +454,7 @@ WaveEdit::~WaveEdit()
 
 void WaveEdit::cmd(int n)
       {
-      view->cmd(n);
+      ((WaveCanvas*)canvas)->cmd(n);
       }
 
 //---------------------------------------------------------
@@ -368,6 +470,10 @@ void WaveEdit::readConfiguration(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "bgcolor")
                               MusEGlobal::config.waveEditBackgroundColor = readColor(xml);
+                        else if (tag == "raster")
+                              _rasterInit = xml.parseInt();
+                        else if (tag == "colormode")
+                              colorModeInit = xml.parseInt();
                         else if (tag == "topwin")
                               TopWin::readConfiguration(WAVE, xml);
                         else
@@ -393,6 +499,8 @@ void WaveEdit::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "waveedit");
       xml.colorTag(level, "bgcolor", MusEGlobal::config.waveEditBackgroundColor);
+      xml.intTag(level, "raster", _rasterInit);
+      xml.intTag(level, "colormode", colorModeInit);
       TopWin::writeConfiguration(WAVE, level,xml);
       xml.tag(level, "/waveedit");
       }
@@ -406,6 +514,7 @@ void WaveEdit::writeStatus(int level, MusECore::Xml& xml) const
       writePartList(level, xml);
       xml.tag(level++, "waveedit");
       MidiEditor::writeStatus(level, xml);
+      xml.intTag(level, "tool", int(canvas->tool()));
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
       xml.intTag(level, "ymag", ymag->value());
@@ -427,6 +536,11 @@ void WaveEdit::readStatus(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "midieditor")
                               MidiEditor::readStatus(xml);
+                        else if (tag == "tool") {
+                              int tool = xml.parseInt();
+                              canvas->setTool(tool);
+                              tools2->set(tool);
+                              }
                         else if (tag == "xmag")
                               hscroll->setMag(xml.parseInt());
                         else if (tag == "ymag")
@@ -486,14 +600,170 @@ void WaveEdit::soloChanged(bool flag)
 
 void WaveEdit::keyPressEvent(QKeyEvent* event)
       {
+// TODO: Raster:
+//       int index;
+//       int n = sizeof(rasterTable)/sizeof(*rasterTable);
+//       for (index = 0; index < n; ++index)
+//             if (rasterTable[index] == raster())
+//                   break;
+//       if (index == n) {
+//             index = 0;
+//             // raster 1 is not in table
+//             }
+//       int off = (index / 9) * 9;
+//       index   = index % 9;
+
+//       int val = 0;
+
+      WaveCanvas* wc = (WaveCanvas*)canvas;
       int key = event->key();
+
+      if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
+            key += Qt::SHIFT;
+      if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
+            key += Qt::ALT;
+      if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
+            key+= Qt::CTRL;
+
       if (key == Qt::Key_Escape) {
             close();
             return;
             }
-      else {
-            event->ignore();
+            
+      else if (key == shortcuts[SHRT_POS_INC].key) {
+            wc->waveCmd(CMD_RIGHT);
+            return;
             }
+      else if (key == shortcuts[SHRT_POS_DEC].key) {
+            wc->waveCmd(CMD_LEFT);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
+            wc->waveCmd(CMD_RIGHT_NOSNAP);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
+            wc->waveCmd(CMD_LEFT_NOSNAP);
+            return;
+            }
+      else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
+            wc->waveCmd(CMD_INSERT);
+            return;
+            }
+      else if (key == Qt::Key_Backspace) {
+            wc->waveCmd(CMD_BACKSPACE);
+            return;
+            }
+            
+      else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
+            tools2->set(MusEGui::PointerTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
+            tools2->set(MusEGui::PencilTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
+            tools2->set(MusEGui::RubberTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_SCISSORS].key) {
+            tools2->set(MusEGui::CutTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_CURSOR].key) {
+            tools2->set(MusEGui::CursorTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
+            if (colorMode == 0)
+                  colorMode = 1;
+            else if (colorMode == 1)
+                  colorMode = 0;
+            setEventColorMode(colorMode);
+            return;
+            }
+            
+      // TODO: New WaveCanvas: Convert some of these to use frames.
+      else if (key == shortcuts[SHRT_ZOOM_IN].key) {
+            int mag = hscroll->mag();
+            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
+            if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
+                  zoomlvl++;
+
+            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+            hscroll->setMag(newmag);
+            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            return;
+            }
+      else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
+            int mag = hscroll->mag();
+            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
+            if (zoomlvl > 1)
+                  zoomlvl--;
+
+            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+            hscroll->setMag(newmag);
+            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            return;
+            }
+      else if (key == shortcuts[SHRT_GOTO_CPOS].key) {
+            MusECore::PartList* p = this->parts();
+            MusECore::Part* first = p->begin()->second;
+            hscroll->setPos(MusEGlobal::song->cpos() - first->tick() );
+            return;
+            }
+      else if (key == shortcuts[SHRT_SCROLL_LEFT].key) {
+            int pos = hscroll->pos() - MusEGlobal::config.division;
+            if (pos < 0)
+                  pos = 0;
+            hscroll->setPos(pos);
+            return;
+            }
+      else if (key == shortcuts[SHRT_SCROLL_RIGHT].key) {
+            int pos = hscroll->pos() + MusEGlobal::config.division;
+            hscroll->setPos(pos);
+            return;
+            }
+            
+// TODO: Raster:            
+//       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
+//             val = rasterTable[8 + off];
+//       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
+//             val = rasterTable[7 + off];
+//       else if (key == shortcuts[SHRT_SET_QUANT_3].key)
+//             val = rasterTable[6 + off];
+//       else if (key == shortcuts[SHRT_SET_QUANT_4].key)
+//             val = rasterTable[5 + off];
+//       else if (key == shortcuts[SHRT_SET_QUANT_5].key)
+//             val = rasterTable[4 + off];
+//       else if (key == shortcuts[SHRT_SET_QUANT_6].key)
+//             val = rasterTable[3 + off];
+//       else if (key == shortcuts[SHRT_SET_QUANT_7].key)
+//             val = rasterTable[2 + off];
+//       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
+//             val = rasterTable[index + ((off == 0) ? 9 : 0)];
+//       else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
+//             val = rasterTable[index + ((off == 18) ? 9 : 18)];
+//       else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key) {//CDW
+//             if ((off == 18) && (index > 2)) {
+//                   val = rasterTable[index + 9 - 1];
+//                   }
+//             else if ((off == 9) && (index < 8)) {
+//                   val = rasterTable[index + 18 + 1];
+//                   }
+//             else
+//                   return;
+//             }
+            
+      else { //Default:
+            event->ignore();
+            return;
+            }
+        
+      // TODO: Raster:  
+      //setRaster(val);
+      //toolbar->setRaster(_raster);
       }
 
 //---------------------------------------------------------
@@ -540,9 +810,38 @@ void WaveEdit::focusCanvas()
 {
   if(MusEGlobal::config.smartFocus)
   {
-    view->setFocus();
-    view->activateWindow();
+    canvas->setFocus();
+    canvas->activateWindow();
   }
 }
+
+//---------------------------------------------------------
+//   eventColorModeChanged
+//---------------------------------------------------------
+
+void WaveEdit::eventColorModeChanged(int mode)
+      {
+      colorMode = mode;
+      colorModeInit = colorMode;
+      
+      ((WaveCanvas*)(canvas))->setColorMode(colorMode);
+      }
+
+//---------------------------------------------------------
+//   setEventColorMode
+//---------------------------------------------------------
+
+void WaveEdit::setEventColorMode(int mode)
+      {
+      colorMode = mode;
+      colorModeInit = colorMode;
+      
+      evColorNormalAction->setChecked(mode == 0);
+      evColorPartsAction->setChecked(mode == 1);
+      
+      ((WaveCanvas*)(canvas))->setColorMode(colorMode);
+      }
+
+
 
 } // namespace MusEGui

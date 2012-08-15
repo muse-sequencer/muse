@@ -374,7 +374,7 @@ void Canvas::draw(QPainter& p, const QRect& rect)
                   // Draw unselected parts.
                   list2.push_back(ci);
               }  
-            }  
+            }
             int i;
             int sz = list1.size();
             for(i = 0; i != sz; ++i) 

@@ -50,7 +50,7 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
                   _parts.insert(i->second->sn());
       _raster  = r;
       canvas   = 0;
-      wview    = 0;
+      //wview    = 0;
       _curDrumInstrument = -1;
       mainw    = new QWidget(this);
       
@@ -194,8 +194,8 @@ void MidiEditor::songChanged(MusECore::SongChangedFlags_t type)
                   }
             if (canvas)
                   canvas->songChanged(type);
-            else if (wview)
-                  wview->songChanged(type);
+            //else if (wview)
+            //      wview->songChanged(type);
 
             if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
@@ -204,8 +204,8 @@ void MidiEditor::songChanged(MusECore::SongChangedFlags_t type)
                   
                   if (canvas)
                         setWindowTitle(canvas->getCaption());
-                  else if (wview)
-                        setWindowTitle(wview->getCaption());
+                  //else if (wview)
+                  //      setWindowTitle(wview->getCaption());
                   if (type & SC_SIG)
                         time->update();
                         
@@ -231,18 +231,6 @@ MusECore::Part* MidiEditor::curCanvasPart()
 { 
   if(canvas) 
     return canvas->part(); 
-  else 
-    return 0; 
-}
-
-//---------------------------------------------------------
-//   curWavePart
-//---------------------------------------------------------
-
-MusECore::WavePart* MidiEditor::curWavePart() 
-{ 
-  if(wview) 
-    return wview->part(); 
   else 
     return 0; 
 }

@@ -176,7 +176,7 @@ class Canvas : public View {
 
    public slots:
       void setTool(int t);
-      void setPos(int, unsigned, bool adjustScrollbar);
+      virtual void setPos(int, unsigned, bool adjustScrollbar);
       void scrollTimerDone(void);
       void redirectedWheelEvent(QWheelEvent*);
 

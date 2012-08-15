@@ -27,7 +27,7 @@
 QT4_WRAP_CPP ( waveedit_mocs
       editgain.h
       waveedit.h
-      waveview.h
+      wavecanvas.h
       )
 
 ##
@@ -44,7 +44,7 @@ QT4_WRAP_UI (waveedit_ui_headers ${waveedit_ui_files} )
 file (GLOB waveedit_source_files
       editgain.cpp
       waveedit.cpp
-      waveview.cpp
+      wavecanvas.cpp
       )
 
 ##

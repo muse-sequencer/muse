@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: waveedit.h,v 1.3.2.8 2008/01/26 07:23:21 terminator356 Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -33,6 +34,7 @@
 
 #include "type_defs.h"
 #include "midieditor.h"
+#include "tools.h"
 
 class QAction;
 class QResizeEvent;
@@ -48,7 +50,7 @@ namespace MusEGui {
 class PosLabel;
 class ScrollScale;
 class SNode;
-class WaveView;
+class WaveCanvas;
 
 //---------------------------------------------------------
 //   WaveEdit
@@ -57,7 +59,6 @@ class WaveView;
 class WaveEdit : public MidiEditor {
       Q_OBJECT
     
-      WaveView* view;
       QSlider* ymag;
       QToolBar* tb1;
       QToolButton* solo;
@@ -68,22 +69,32 @@ class WaveEdit : public MidiEditor {
       QAction* cutAction;
       QAction* copyAction;
       QAction* pasteAction;
-      
+      QAction* selectPrevPartAction;
+      QAction* selectNextPartAction;
 
+      QAction* evColorNormalAction;
+      QAction* evColorPartsAction;
       
+      MusEGui::EditToolBar* tools2;
+      QMenu* menuFunctions, *select, *menuGain, *eventColor;
+      int colorMode;
+      static int _rasterInit;
+      static int colorModeInit;
+
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
 
-      QMenu* menuFunctions, *select, *menuGain;
-
       void initShortcuts();
+      void setEventColorMode(int);
 
    private slots:
       void cmd(int);
+      void timeChanged(unsigned t);
       void setTime(unsigned t);
       void songChanged1(MusECore::SongChangedFlags_t);
       void soloChanged(bool flag);
       void moveVerticalSlider(int val);
+      void eventColorModeChanged(int);
 
    public slots:
       void configChanged();
@@ -102,12 +113,6 @@ class WaveEdit : public MidiEditor {
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml&);
       static void writeConfiguration(int, MusECore::Xml&);
-
-      enum { CMD_MUTE=0, CMD_NORMALIZE, CMD_FADE_IN, CMD_FADE_OUT, CMD_REVERSE,
-             CMD_GAIN_FREE, CMD_GAIN_200, CMD_GAIN_150, CMD_GAIN_75, CMD_GAIN_50, CMD_GAIN_25,
-             CMD_EDIT_COPY, CMD_EDIT_CUT, CMD_EDIT_PASTE,
-             CMD_EDIT_EXTERNAL,
-             CMD_SELECT_ALL, CMD_SELECT_NONE };
       };
 
 } // namespace MusEGui

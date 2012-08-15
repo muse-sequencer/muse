@@ -87,22 +87,22 @@ class EventCanvas : public Canvas {
    signals:
       void pitchChanged(int);       // current cursor position
       void timeChanged(unsigned);
-      void selectionChanged(int /*tick*/ , MusECore::Event&, MusECore::Part*, bool /*update*/);
+      void selectionChanged(int /*tick or frame*/ , MusECore::Event&, MusECore::Part*, bool /*update*/);
       void enterCanvas();
 
    public:
       EventCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0);
       MusECore::MidiTrack* track() const;
-      unsigned start() const       { return start_tick; }
-      unsigned end() const         { return end_tick; }
+      virtual unsigned start() const       { return start_tick; }
+      virtual unsigned end() const         { return end_tick; }
       bool midiin() const     { return _midiin; }
       bool steprec() const    { return _steprec; }
-      QString getCaption() const;
-      void songChanged(MusECore::SongChangedFlags_t);
-      void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
+      virtual QString getCaption() const;
+      virtual void songChanged(MusECore::SongChangedFlags_t);
+      virtual void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
       void playEvents(bool flag) { _playEvents = flag; }
-      void selectAtTick(unsigned int tick);
-      void viewDropEvent(QDropEvent* event);
+      virtual void selectAtTick(unsigned int tick);
+      virtual void viewDropEvent(QDropEvent* event);
       virtual void modifySelected(NoteInfo::ValType, int /*val*/, bool /*delta_mode*/ = true) {}
       virtual void keyPress(QKeyEvent*);
       };

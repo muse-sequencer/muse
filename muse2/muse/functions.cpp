@@ -1286,12 +1286,22 @@ void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo
 		if (op_it->type==UndoOp::ModifyPart || op_it->type==UndoOp::DeletePart)
 			already_done.insert(op_it->nPart);
 			
-	unsigned old_len=part->lenTick();
+	unsigned old_len= part->type() == Pos::FRAMES ? part->lenFrame() : part->lenTick();
 	if (old_len!=new_len)
 	{
 		Part* part_it=part;
 		do
 		{
+			if (part->type() == Pos::FRAMES)
+			{
+			  if (part_it->lenFrame()==old_len && !already_done.contains(part_it))
+			  {
+				  WavePart* new_part = new WavePart(*(WavePart*)part_it);
+				  new_part->setLenFrame(new_len);
+				  operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
+			  }
+			}
+			else
 			if (part_it->lenTick()==old_len && !already_done.contains(part_it))
 			{
 				MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);

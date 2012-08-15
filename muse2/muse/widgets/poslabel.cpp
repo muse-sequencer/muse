@@ -123,6 +123,14 @@ void PosLabel::updateValue()
 
 void PosLabel::setSampleValue(unsigned val)
       {
+      if (val == INT_MAX)
+      {
+        setEnabled(false);
+        return;
+      }
+      if(!isEnabled())
+        setEnabled(true);
+            
       if (val == _sampleValue)
             return;
       _sampleValue = val;
@@ -135,6 +143,14 @@ void PosLabel::setSampleValue(unsigned val)
 
 void PosLabel::setTickValue(unsigned val)
       {
+      if (val == INT_MAX)
+      {
+        setEnabled(false);
+        return;
+      }
+      if(!isEnabled())
+        setEnabled(true);
+            
       if (val == _tickValue)
             return;
       if (val >= MAX_TICK)
@@ -153,6 +169,14 @@ void PosLabel::setTickValue(unsigned val)
 
 void PosLabel::setValue(unsigned val)
       {
+      if (val == INT_MAX)
+      {
+        setEnabled(false);
+        return;
+      }
+      if(!isEnabled())
+        setEnabled(true);
+            
       unsigned oval = _smpte ? _sampleValue : _tickValue;
       if (val == oval)
             return;
