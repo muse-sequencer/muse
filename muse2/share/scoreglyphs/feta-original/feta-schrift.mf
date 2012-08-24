@@ -1,0 +1,1560 @@
+% -*- Fundamental -*-  (emacs-20 mf mode mucks
+% feta-schrift.mf --  implement scripts
+%
+% source file of the Feta (defintively not an abbreviation for Font-En-Tja)
+% music font
+%
+% (c) 1997--2009 Han-Wen Nienhuys <hanwen@xs4all.nl>
+%	Jan Nieuwenhuizen <janneke@gnu.org>
+%
+
+
+fet_begingroup ("scripts");
+
+def draw_fermata =
+	save alpha, radius, crook_thinness, crook_fatness, dot_size;
+	save pat;
+	path pat;
+
+	% [Wanske] and some Baerenreiter editions
+	% suggest about 80 degrees instead of a half-circle
+	alpha := 10;
+
+	radius# = 1.25 staff_space#;
+	crook_thinness# = 1.5 linethickness#;
+	crook_fatness# = 0.25 staff_space# + 1.5 linethickness#;
+
+	radius# + crook_fatness# / 2 = h#;
+	radius# + crook_thinness# / 2 = w#;
+
+	set_char_box (w#, w#, crook_thinness# / 2, h#);
+
+	define_pixels (radius, crook_thinness, crook_fatness);
+
+	dot_size# = 8/6 crook_fatness#;
+	define_whole_blacker_pixels (dot_size);
+
+	penpos1 (crook_thinness, 0);
+	penpos2 (crook_fatness, -90);
+	z1 = (-radius, 0);
+	z2 = (0, radius);
+
+	pat := z2l{left}
+	       .. z1l{dir (-alpha - 90)}
+	       .. {dir (90 - alpha)}z1r
+	       .. {right}z2r;
+	pat := pat
+	       -- reverse pat xscaled -1 shifted (-feta_eps, 0)
+	       -- cycle;
+	fill pat;
+
+	pickup pencircle scaled dot_size;
+	x4 = 0;
+	bot y4 = vround (-crook_thinness / 2);
+	drawdot z4;
+enddef;
+
+
+fet_beginchar ("fermata up", "ufermata");
+	draw_fermata;
+	penlabels (1, 2, 4);
+fet_endchar;
+
+
+fet_beginchar ("fermata down", "dfermata");
+	draw_fermata;
+	y_mirror_char;
+fet_endchar;
+
+
+def draw_short_fermata =
+	save fat_factor, thinness, dot_size;
+	save left_dist, right_dist, se, ne;
+	pair left_dist, right_dist, se, ne;
+
+	set_char_box (staff_space#, staff_space#, 0, 2.2 staff_space#);
+
+	dot_size# = 0.266 staff_space# + 2.666 linethickness#;
+	define_whole_blacker_pixels (dot_size);
+
+	fat_factor = .11;
+	thinness = 1.5 linethickness;
+
+	pickup pencircle scaled thinness;
+
+	rt x2 = w;
+	lft x5 = -b;
+	bot y5 = 0;
+	top y3 = h;
+	y1 = y2 = y5;
+
+	x3 = 0;
+	z1 - z4 = whatever * (charwd, -charht);
+	z4 = fat_factor [z3, z5];
+
+	ne = unitvector (z3 - z5);
+	se = unitvector (z2 - z3);
+
+	left_dist = (ne rotated 90) * 0.5 thinness;
+	right_dist = (se rotated 90) * 0.5 thinness;
+
+	fill bot z5{right}
+	     .. (z5 - left_dist){ne}
+	     -- (((z5 - left_dist) -- (z3 - left_dist)) intersectionpoint
+		  ((z1 - right_dist) -- (z4 - right_dist)))
+	     -- (z1 - right_dist){se}
+	     .. bot z1{right}
+	     -- bot z2{right}
+	     .. (z2 + right_dist){-se}
+	     -- (z3 + right_dist){-se}
+	     .. top z3
+	     .. (z3 + left_dist){-ne}
+	     -- (z5 + left_dist){-ne}
+	     .. cycle;
+
+	pickup pencircle scaled dot_size;
+
+	x1 - 2 x6 = x2;
+	x6 := vround (x6);
+	bot y6 = -d;
+
+	drawdot z6;
+enddef;
+
+fet_beginchar ("short fermata up", "ushortfermata");
+	draw_short_fermata;
+	labels (1, 2, 3, 4, 5, 6);
+fet_endchar;
+
+
+fet_beginchar ("short fermata down", "dshortfermata");
+	draw_short_fermata;
+	xy_mirror_char;
+fet_endchar;
+
+
+def draw_long_fermata =
+	save stemthick, beamheight, dot_size, wd;
+	save pat;
+	path pat;
+
+	wd# = 2.5 staff_space#;
+	stemthick = hround (1.5 linethickness);
+	beamheight = 0.3 staff_space + linethickness;
+	dot_size# = 0.266 staff_space# + 2.666 * linethickness#;
+	define_pixels (wd);
+	define_whole_blacker_pixels (dot_size);
+
+	set_char_box (wd# / 2, wd# / 2, 0, 3/2 staff_space#);
+
+	pickup pencircle scaled blot_diameter;
+
+	top y1 = h;
+	lft x1 = -b;
+
+	pat := top z1{left}
+	       .. {down}lft z1;
+
+	pickup pencircle scaled stemthick;
+
+	x2 = -b + stemthick;
+	y2 = h - beamheight;
+	lft x3 = -b;
+	bot y3 = -d;
+
+	pat := pat
+	       -- lft z3
+	       .. bot z3
+	       .. rt z3
+	       -- z2;
+	pat := pat
+	       -- reverse pat xscaled -1 shifted (-feta_eps, 0)
+	       -- cycle;
+
+	fill pat;
+
+	pickup pencircle scaled dot_size;
+
+	x4 = 0;
+	bot y4 = -d;
+
+	drawdot z4;
+enddef;
+
+
+fet_beginchar ("long fermata up", "ulongfermata");
+	draw_long_fermata;
+	labels (1, 2, 3, 4);
+fet_endchar;
+
+
+fet_beginchar ("long fermata down", "dlongfermata");
+	draw_long_fermata;
+	y_mirror_char;
+fet_endchar;
+
+
+def draw_very_long_fermata =
+	save ibeamheight, obeamheight;
+	save ihwd, ohwd, iht, oht;	% inner/outer half_width/height
+	save stemthick, dot_size;
+	save opat, ipat;
+	path opat, ipat;
+
+	ihwd# = 1.0 staff_space#;
+	ohwd# = 1.5 staff_space#;
+	iht# = 0.9 staff_space#;
+	oht# = 1.6 staff_space#;
+	define_pixels (ihwd, ohwd, iht, oht)
+
+	stemthick = hround (1.5 linethickness);
+	ibeamheight# = 0.3 staff_space#;
+	obeamheight# = 0.5 staff_space#;
+	define_pixels (ibeamheight, obeamheight);
+
+	dot_size# = (iht# - ibeamheight#) * 8/10;
+	define_whole_blacker_pixels (dot_size);
+
+	set_char_box (ohwd#, ohwd#, 0, oht#);
+
+	pickup pencircle scaled blot_diameter;
+
+	top y1 = oht;
+	lft x1 = -ohwd;
+	top y11 = iht;
+	lft x11 = -ihwd;
+
+	opat := top z1{left}
+		.. {down}lft z1;
+	ipat := top z11{left}
+		.. {down}lft z11;
+
+	pickup pencircle scaled stemthick;
+
+	x2 = -ohwd + stemthick;
+	y2 = oht - obeamheight;
+	lft x3 = -ohwd;
+	bot y3 = 0;
+	x12 = -ihwd + stemthick;
+	y12 = iht - ibeamheight;
+	lft x13 = -ihwd;
+	bot y13 = 0;
+
+	opat := opat
+		-- lft z3
+		.. bot z3
+		.. rt z3
+		-- z2;
+	opat := opat
+		-- reverse opat xscaled -1 shifted (-feta_eps, 0)
+		-- cycle;
+	ipat := ipat
+		-- lft z13
+		.. bot z13
+		.. rt z13
+		-- z12;
+	ipat := ipat
+		-- reverse ipat xscaled -1 shifted (-feta_eps, 0)
+		-- cycle;
+
+	fill opat;
+	fill ipat;
+
+	pickup pencircle scaled dot_size;
+
+	x4 = 0;
+	bot y4 = -d;
+
+	drawdot z4;
+enddef;
+
+
+fet_beginchar ("very long fermata up", "uverylongfermata");
+	draw_very_long_fermata;
+	labels (1, 2, 3, 11, 12, 13, 4);
+fet_endchar;
+
+
+fet_beginchar ("very long fermata down", "dverylongfermata");
+	draw_very_long_fermata;
+	y_mirror_char;
+fet_endchar;
+
+
+%
+% Thumbs are used in cello music.
+% TODO : thumbs should look like the finger-font and should be placed in
+% the same way in the score.
+%
+
+fet_beginchar ("Thumb", "thumb");
+	save thin, height, width, thick, depth;
+	height# = 5/4 width#;
+	height# = staff_space#;
+	depth# = 1.6 (height# / 2);
+
+	set_char_box (width# / 2, width# / 2, depth#, height# / 2);
+
+	define_pixels (height, width);
+
+	thin = .6 linethickness + 0.06 staff_space;
+	2 thick + 0.5 (height - 2 thin) = width;
+
+	penpos1 (thick, 0);
+	penpos2 (thin, 90);
+	penpos3 (thick, 180);
+	penpos4 (thin, 270);
+	z1r = (w, 0);
+	z2r = (0, h);
+	z3r = (-w, 0);
+	z4r = (0, -h);
+
+	penlabels (1, 2, 3, 4);
+
+	penstroke z1e{up}
+		  .. z2e{left}
+		  .. z3e{down}
+		  .. z4e{right}
+		  .. cycle;
+
+	save brush_thick;
+	y5 = -d + brush_thick / 2;
+	brush_thick = 0.9 thick;
+	x5 = 0;
+
+	labels (5);
+
+	draw_brush (z4r, 1.4 thin, z5, brush_thick);
+fet_endchar;
+
+
+%
+% `\accent' is TeX reserved.
+%
+
+def draw_accent (expr bottom_left, top_right, thickness, diminish) =
+	save thinning_start;
+	thinning_start = 0.4;
+	pickup pencircle scaled thickness;
+
+	lft x1 = xpart bottom_left;
+	top y1 = ypart top_right;
+	lft x6 = xpart bottom_left;
+	bot y6 = ypart bottom_left;
+
+	rt z4 = (xpart top_right, (ypart top_right + ypart bottom_left) / 2);
+	x5 = x3 = thinning_start [xpart top_right, xpart bottom_left]
+		  - linethickness + 0.1 staff_space;
+	z3 = whatever [z1, z4];
+	z5 = whatever [z6, z4];
+
+	penpos1 (thickness, angle (z3 - z1) + 90);
+	penpos3 (thickness, angle (z3 - z1) + 90);
+	penpos4 (thickness, 90);
+	penpos5 (thickness, angle (z6 - z5) + 90);
+	penpos6 (thickness, angle (z6 - z5) + 90);
+
+	x4 - x7 = diminish * thickness;
+	y7 = y4;
+
+	fill z1l
+	     -- z3l
+	     -- z7
+	     -- z5l
+	     -- z6l
+	     .. lft z6{down}
+	     .. bot z6
+	     .. z6r
+	     -- z4l
+	     ..tension 0.8.. rt z4
+	     ..tension 0.8.. z4r
+	     -- z1r
+	     .. top z1
+	     .. lft z1{down}
+	     .. cycle;
+enddef;
+
+
+fet_beginchar ("> accent", "sforzato");
+	set_char_box (.9 staff_space#, .9 staff_space#,
+		      .5 staff_space#, .5 staff_space#);
+
+	draw_accent ((-w, -d), (w, h),
+		     0.05 staff_space + linethickness, 0.7);
+	penlabels (1, 3, 4, 5, 6);
+	labels (7);
+fet_endchar;
+
+
+fet_beginchar ("espr", "espr");
+	set_char_box (1.9 staff_space#, 1.9 staff_space#,
+		      .5 staff_space#, .5 staff_space#);
+
+	draw_accent ((w - 1.78 staff_space, -d), (w, h),
+		     0.05 staff_space + linethickness, 0.6);
+	addto currentpicture also currentpicture xscaled -1;
+fet_endchar;
+
+
+fet_beginchar ("staccato dot", "staccato");
+	save radius;
+	radius# = 0.20 * staff_space#;
+	define_whole_pixels (radius);
+
+	pickup pencircle scaled 2 radius;
+	drawdot (0, 0);
+
+	set_char_box (radius#, radius#, radius#, radius#);
+fet_endchar;
+
+
+def draw_staccatissimo =
+	save radius, height;
+	height# = .8 staff_space#;
+	radius# = linethickness# + .1 staff_space#;
+	define_whole_blacker_pixels (radius);
+	define_pixels (height);
+
+	draw_brush ((0, 0), linethickness, (0, height), 2 radius);
+
+	set_char_box (radius#, radius#,
+		      blot_diameter# / 2, height# + radius#);
+enddef;
+
+
+fet_beginchar ("staccatissimo/martellato up", "ustaccatissimo");
+	draw_staccatissimo;
+fet_endchar;
+
+
+fet_beginchar ("staccatissimo/martellato down", "dstaccatissimo");
+	draw_staccatissimo;
+	y_mirror_char;
+fet_endchar;
+
+
+fet_beginchar ("portato/single tenuto", "tenuto");
+	save thick;
+	thick# = 1.6 linethickness#;
+	define_whole_blacker_pixels (thick);
+
+	set_char_box (.6 staff_space#, .6 staff_space#,
+		      thick# / 2, thick# / 2);
+
+	draw_rounded_block ((-b, -thick / 2), (w, thick / 2), thick);
+fet_endchar;
+
+
+def draw_portato =
+	save thick, dot_size;
+	thick# = 1.4 linethickness#;
+	dot_size# = 2.4 linethickness# + 0.08 staff_space#;
+	define_whole_blacker_pixels (thick, dot_size);
+
+	set_char_box (.6 staff_space#, .6 staff_space#,
+		      thick# / 2, .5 staff_space# + .5 dot_size#);
+
+	draw_rounded_block ((-b, -thick / 2), (w, thick / 2), thick);
+
+	pickup pencircle scaled dot_size;
+	drawdot (0, h);
+enddef;
+
+
+fet_beginchar ("portato/tenuto with staccato", "uportato");
+	draw_portato;
+fet_endchar;
+
+
+fet_beginchar ("portato/tenuto with staccato", "dportato");
+	draw_portato;
+	y_mirror_char
+fet_endchar;
+
+
+def draw_marcato =
+	save fat_factor, thinness;
+	save left_dist, right_dist, ne, se;
+	pair left_dist, right_dist, ne, se;
+
+	set_char_box (staff_space# / 2, staff_space# / 2,
+		      0, 1.1 staff_space#);
+
+	fat_factor = .3;
+	thinness = linethickness;
+
+	pickup pencircle scaled thinness;
+
+	rt x2 = w;
+	lft x5 = -b;
+	bot y5 = 0;
+	top y3 = h;
+	y1 = y2 = y5;
+
+	x3 =0;
+	z1 - z4 = whatever * (charwd, -charht);
+	z4 = fat_factor [z3, z5];
+
+	ne = unitvector (z3 - z5);
+	se = unitvector (z2 - z3);
+
+	left_dist = (ne rotated 90) * 0.5 thinness;
+	right_dist = (se rotated 90) * 0.5 thinness;
+
+	fill bot z5{right}
+	     .. (z5 - left_dist){ne}
+	     -- (((z5 - left_dist) -- (z3 - left_dist)) intersectionpoint
+		  ((z1 - right_dist) -- (z4 - right_dist)))
+	     -- (z1 - right_dist){se}
+	     .. bot z1{right}
+	     -- bot z2{right}
+	     .. (z2 + right_dist){-se}
+	     -- (z3 + right_dist){-se}
+	     .. top z3
+	     .. (z3 + left_dist){-ne}
+	     -- (z5 + left_dist){-ne}
+	     .. cycle;
+enddef;
+
+
+fet_beginchar ("marcato up", "umarcato");
+	draw_marcato;
+	labels (1, 2, 3, 4, 5);
+fet_endchar;
+
+
+%
+% The down marcato char (not very much used).
+% Contrary to what some MF/TeX `gurus' believe
+% it is *point*-symmetric with the "up" version
+%
+
+fet_beginchar ("marcato down", "dmarcato");
+	draw_marcato;
+	xy_mirror_char;
+fet_endchar;
+
+
+%
+% used in french horn music todo
+%
+% TODO: too light at 20pt
+%
+
+fet_beginchar ("open (unstopped)", "open");
+	save thin, height, width, thick;
+
+	height# = 5/4 width#;
+	height# = staff_space#;
+	thin = .6 linethickness + 0.06 staff_space;
+
+	set_char_box (width# / 2, width# / 2, height# / 2, height# / 2);
+
+	define_pixels (width, height);
+
+	2 thick + 0.6 (height - 2 thin) = width;
+
+	penpos1 (thick, 0);
+	penpos2 (thin, 90);
+	penpos3 (thick, 180);
+	penpos4 (thin, 270);
+	z1r = (w, 0);
+	z2r = (0, h);
+	z3r = (-w, 0);
+	z4r = (0, -h);
+
+	penlabels (1, 2, 3, 4);
+
+	penstroke z1e{up}
+		  .. z2e{left}
+		  .. z3e{down}
+		  .. z4e{right}
+		  .. cycle;
+fet_endchar;
+
+
+fet_beginchar ("plus (stopped)", "stopped");
+	save hthick, vthick, size, outer_hsize, outer_vsize;
+
+	hthick# = vthick# = 2 linethickness#;
+	size# = 1.1 staff_space#;
+	define_whole_blacker_pixels (vthick);
+	define_whole_vertical_blacker_pixels (hthick);
+
+	set_char_box (size# / 2, size# / 2, size# / 2, size# / 2);
+
+	outer_hsize = hround ((b + w - vthick) / 2);
+	outer_vsize = vround ((h + d - hthick) / 2);
+	w := b := (2 outer_hsize + vthick) / 2;
+	h := d := (2 outer_vsize + hthick) / 2;
+
+	draw_rounded_block ((-b, -d + outer_vsize),
+			    (w, -d + outer_vsize + hthick), hthick);
+	draw_rounded_block ((-b + outer_hsize, -d),
+			    (-b + outer_hsize + vthick, h), vthick);
+fet_endchar;
+
+
+fet_beginchar ("Upbow", "upbow");
+	save ht, wd, thick;
+
+	thick = 1.4 linethickness;
+	wd# = 1.3 staff_space#;
+	ht# = 1.6 wd#;
+
+	set_char_box (wd# / 2, wd# / 2, 0, ht#);
+
+	draw_accent ((-h, -w), (0, w), thick, 0.9);
+	currentpicture := currentpicture rotated -90;
+fet_endchar;
+
+
+fet_beginchar ("Downbow", "downbow");
+	save stemthick, beamheight, wd;
+	save pat;
+	path pat;
+
+	wd# = 1.5 staff_space#;
+	define_pixels (wd);
+
+	stemthick = hround (1.2 linethickness);
+
+	set_char_box (wd# / 2, wd# / 2, 0, 4/3 staff_space#);
+
+	beamheight = 4/10 h;
+
+	pickup pencircle scaled blot_diameter;
+
+	top y1 = h;
+	lft x1 = -b;
+
+	pat := top z1{left}
+	       .. {down}lft z1;
+
+	pickup pencircle scaled stemthick;
+
+	x2 = -b + stemthick;
+	y2 = h - beamheight;
+	lft x3 = -b;
+	bot y3 = -d;
+
+	pat := pat
+	       -- lft z3
+	       .. bot z3
+	       .. rt z3
+	       -- z2;
+	pat := pat
+	       -- reverse pat xscaled -1 shifted (-feta_eps, 0)
+	       -- cycle;
+
+	fill pat;
+
+	labels (1, 2, 3);
+fet_endchar;
+
+%
+% Inspired by a computer-set version of Auf dem Strom by Baerenreiter.
+%
+
+def draw_turn =
+	save thin, thick, ball_diam, darkness;
+	save wd, ht, thick_nibangle, ball_nib_thick;
+	save turndir;
+	pair turndir;
+
+	wd# = 35/16 staff_space#;
+	ht# = 18/17 staff_space#;
+	darkness = 0.3 linethickness + 0.09 staff_space;
+
+	set_char_box (wd# / 2, wd# / 2, ht# / 2, ht# / 2);
+
+	thick_nibangle = 60;
+	thick = 3 darkness;
+	thin = darkness;
+	ball_nib_thick = 2.7 darkness;
+	ball_diam = ball_nib_thick + (h - ball_nib_thick) / 10;
+
+	x3l = w;
+	y3 = 0;
+	y4l = h;
+	x4 = x2;
+	x2l = w / 2;
+	y2l = -d;
+	z1 = (0,0);
+
+	penpos1 (1.1 thick, thick_nibangle);
+	penpos2 (thick, thick_nibangle);
+	penpos3 (thin, 180);
+	penpos4 (ball_nib_thick, -90);
+
+	path swoosh, ploop;
+	swoosh := z1l{curl 0}
+		  .. z2l
+		  .. z3l{up}
+		  .. {left}z4l
+		  -- z4r
+		  .. z3r{down}
+		  .. z2r{left};
+	fill swoosh
+	     .. swoosh scaled -1 shifted (-feta_eps, -feta_eps)
+	     .. cycle;
+
+	x5r = x4;
+	y5r = y4l - ball_diam / 2;
+	z6r = z5r;
+
+	penpos5 (1.6 ball_diam / 2, 10);
+	penpos6 (ball_diam / 2, 150);
+
+	ploop := z4l{left}
+		 .. z5l
+		 .. z6l
+		 -- cycle;
+	fill ploop;
+	fill ploop scaled -1 shifted (-feta_eps, -feta_eps);
+enddef;
+
+
+fet_beginchar ("Reverse turn", "reverseturn");
+	draw_turn;
+	currentpicture := currentpicture yscaled -1;
+fet_endchar;
+
+
+fet_beginchar ("Turn", "turn");
+	draw_turn;
+	penlabels (1, 2, 3, 4, 5, 6, 7);
+fet_endchar;
+
+
+%
+% Inspired by a (by now) PD edition of Durand & C'ie edition of
+% Saint-Saens' Celloconcerto no. 1
+%
+% FIXME take out hardcoded vars.
+% FIXME the two loops on the `t' should be smoother (and the left one bigger).
+% FIXME generic macros for serifs: top of the t and bottom of r
+%
+
+fet_beginchar ("Trill (`tr')", "trill");
+	save start_nib_angle, ascender_extra, ex, hair_thick, fatness;
+	save slant, t_fatness, r_fatness, kerning, t_overshoot;
+	save uitschieter, bulb_size, krul_ang;
+	save u, v;
+
+	ascender_extra# = 1/2 ex#;
+	ascender# = ascender_extra# + ex#;
+	ex# = 1.4 staff_space#;
+	kerning# = 0.6 ex#;
+	start_nib_angle = 20;
+	bulb_size = 0.8;
+	define_pixels (ex, ascender_extra, ascender, kerning);
+
+	t_overshoot = 0.03 ex;
+	fatness = 12/40 ex;
+	t_fatness = 0.78 fatness;
+	t_width =  1.9 t_fatness;
+	r_fatness = 0.78 fatness;
+	uitschieter = 0.48 ex;
+	hair_thick = linethickness;
+	r_flare = .5 hair_thick + 0.25 r_fatness;
+	r_width =  2 r_fatness + 0.25 kerning;
+	slant = .2;
+
+	local_copy (transform)(currenttransform);
+	currenttransform := currenttransform slanted slant
+					     shifted (-staff_space, 0);
+
+	set_char_box (.85 staff_space#, .85 staff_space#, 0, ascender#);
+
+	y1 = ascender;
+
+	% try to position in such a way that the center is the visual
+	% center
+
+	x1l = 0.2 staff_space;
+	x1r - x1l = t_fatness;
+	penpos1 (start_nib_wid, start_nib_angle);
+
+	z2 = (x1, 7/18 ex);
+	penpos2 (start_nib_wid, start_nib_angle);
+
+	z3l = (x2l + 0.5 t_width, - t_overshoot);
+
+	z4l = (x2l + t_width, 0.23 ex);
+	penpos4 (whatever, 180);	% 200
+	x4l - x4r = hair_thick;
+
+	x3r = 0.5 [x4r, x2r];
+%	1.7 [x3l, x3r] = x4r;
+	y3r - y3l = 0.6 t_fatness;
+
+	save krul_p;
+	path krul_p;
+
+	krul_ang = 32;
+
+	pickup pencircle scaled hair_thick;
+
+	z5 = (x2l + t_fatness / 2, 2/3 ex);
+	lft x6 = x2l - uitschieter;
+	y6 = y5;				% - 1/20 ex;
+	z7 = z5 + whatever * dir krul_ang;
+	up_angle = krul_ang;			% = angle (z7-z5)
+	x7 = 5/10 kerning + x5;
+
+	krul_p := z4{up}
+		  ..tension 0.98.. z5
+		  .. z6
+		  .. z5{z7 - z5}
+		  -- z7;
+
+	z4' = point 0.85 of krul_p;
+	penpos4' (hair_thick, angle (direction 0.85 of krul_p) + 90);
+
+	% the body of the `t' and the bottom loop
+	fill z1r{dir (angle (z1l - z1r) + 30)}
+	     .. z1l{-dir (angle (z1r - z1l) - 45)}
+	     -- z2l{down}
+	     ..tension (1 + .5 slant).. z3l{right}
+	     .. z4l{up}
+	     .. z4'l{direction 0.85 of krul_p}
+	     -- z4'r{-direction 0.85 of krul_p}
+	     .. z4r{down}
+	     .. z3r{left}
+	     ..tension (1.5 + .7 slant).. z2r{up}
+	     -- cycle;
+
+	z5' = point 1.1 of krul_p;
+	penpos5' (hair_thick, angle (direction 1.1 of krul_p) + 90);
+	z5'' = point 1.5 of krul_p;
+	penpos5'' (hair_thick, angle (direction 1.5 of krul_p) + 90);
+	z5''' = point 1.8 of krul_p;
+	penpos5''' (hair_thick, angle (direction 1.8 of krul_p) + 90);
+	z6 = point 2 of krul_p;
+	penpos6 (hair_thick, angle (direction 2 of krul_p) + 90);
+	z6' = point 2.3 of krul_p;
+	penpos6' (hair_thick, angle (direction 2.3 of krul_p) + 90);
+	z6'' = point 2.6 of krul_p;
+	penpos6'' (hair_thick, angle (direction 2.6 of krul_p) + 90);
+	z6''' = point 2.9 of krul_p;
+	penpos6''' (hair_thick, angle (direction 2.9 of krul_p) + 90);
+	penpos7 (hair_thick, up_angle + 90);
+	z7' = point 3.2 of krul_p;
+	penpos7' (hair_thick, angle (direction 3.2 of krul_p) + 90);
+
+	% the left loop
+	penstroke z5'e{direction 1.1 of krul_p}
+		  .. z5''e{direction 1.5 of krul_p}
+		  .. z5'''e{direction 1.8 of krul_p}
+		  .. z6e{direction 2 of krul_p}
+		  .. z6'e{direction 2.3 of krul_p}
+		  .. z6''e{direction 2.6 of krul_p}
+		  .. {direction 2.9 of krul_p}z6'''e;
+
+	y9 = 3/4 ex;
+	x9 = x1 + kerning;
+	penpos9 (r_fatness, 0);
+
+	x10 = x9;
+	y10 = -0.3 linethickness;
+	penpos10 (r_fatness, 0);
+
+	penpos11 (hair_thick, -4);
+	z11r = z9r;
+
+	z13l = (x9l + r_width, y11 - linethickness);
+	penpos13 (r_flare, 180);
+
+	z15 = z13r - (bulb_size * r_fatness, 0);
+	z14 = 0.5 [z13l, z15] - (0, bulb_size * r_fatness);
+
+	save before, after;
+	path before, after;
+	before := z13l{up}
+		  .. {down}z11l;
+	after := z9r{up}
+		 .. z7r{z7' - z7}
+		 -- z7'r;
+	(u, v) = before intersectiontimes after;
+
+	save before_bulb, after_bulb;
+	path before_bulb, after_bulb;
+	before_bulb := z9r{up}
+		       ..tension 0.94.. z13r{down};
+	after_bulb := z13l{up}
+		      ..tension 1.06.. z15{down};
+	(u_bulb, v_bulb) = before_bulb intersectiontimes after_bulb;
+
+	% the connection between `t' and `r', the body of the `r',
+	% and the bulb
+	fill z7'l
+	     -- z7l{z7 - z7'}
+	     .. z9l{down}
+	     -- simple_serif (z10l, z10r, -30)
+	     -- z9r{up}
+	     .. subpath (0, u_bulb) of before_bulb
+	     .. subpath (v_bulb, infinity) of after_bulb
+	     .. z14
+	     .. z13l{up}
+	     .. subpath (0, u) of before
+	     .. subpath (v, infinity) of after
+	     -- cycle;
+
+	penlabels (range 1 thru 15);
+	penlabels (4', 5', 5'', 5''', 6', 6'', 6''', 7');
+fet_endchar;
+
+
+def draw_heel =
+	save radius, thickness;
+	save pat;
+	path pat;
+
+	radius# := .5 staff_space#;
+
+	set_char_box (radius#, radius#, radius#, 2/3 staff_space#);
+
+	thickness := hround (1.5 linethickness);
+
+	pickup pencircle scaled thickness;
+
+	rt x1 = b;
+	top y1 = h;
+
+	x2 =x1;
+	y2 = 0;
+
+	x3 = 0;
+	bot y3 = -d;
+
+	pat := top z3{right}
+	       .. lft z2{up}
+	       -- lft z1
+	       .. top z1
+	       .. rt z1
+	       -- rt z2{down}
+	       .. bot z3{left};
+	pat := pat
+	       -- reverse pat xscaled -1 shifted (-feta_eps, 0)
+	       -- cycle;
+	fill pat;
+enddef;
+
+
+fet_beginchar ("left heel", "upedalheel");
+	draw_heel;
+	labels (1, 2, 3);
+fet_endchar;
+
+
+fet_beginchar ("right heel", "dpedalheel");
+	draw_heel;
+	y_mirror_char;
+fet_endchar;
+
+
+def draw_toe =
+	save ht, wd, thickness;
+
+	thickness := 1.5 linethickness;
+	ht# := 1.5 staff_space#;
+	wd# := 1/3 ht#;
+	define_pixels (ht, wd);
+
+	set_char_box (wd#, wd#, 0, ht#);
+	draw_accent ((-h, -w), (0, w), thickness, 0.9);
+	currentpicture := currentpicture rotated -90;
+enddef;
+
+
+fet_beginchar ("left toe", "upedaltoe");
+	draw_toe;
+fet_endchar;
+
+
+fet_beginchar ("right toe", "dpedaltoe");
+	draw_toe;
+	y_mirror_char;
+fet_endchar;
+
+
+fet_beginchar ("Flageolet", "flageolet");
+	save height, width, thickness, superness;
+
+	height# = 4/15 staffsize#;
+	width# = height#;
+	thickness# = blot_diameter#;
+	define_pixels (height, width);
+	define_whole_blacker_pixels (thickness);
+
+	set_char_box (width# / 2, width# / 2, height# / 2, height# / 2);
+
+	penpos1 (thickness, 90);
+	penpos2 (thickness, 180);
+	penpos3 (thickness, 270);
+	penpos4 (thickness, 0);
+
+	x1 = 0;
+	y1r = h;
+	x4r = w;
+	x2r = -x4r;
+	y2 = 0;
+	y4 = y2;
+	x3 = x1;
+	y3r = -y1r;
+
+	penlabels (1, 2, 3, 4);
+
+	% mf doesn't handle pixel dropouts in outline objects, so we use
+	% `draw' if not called by mpost
+	if known miterlimit:
+		penstroke z1e
+			  .. z2e
+			  .. z3e
+			  .. z4e
+			  .. cycle;
+	else:
+		pickup pencircle scaled thickness;
+		draw z1
+		     .. z2
+		     .. z3
+		     .. z4
+		     .. cycle;
+	fi;
+fet_endchar;
+
+
+%
+% TODO:  ARGRGHGH code dup.
+%
+
+fet_beginchar ("Segno", "segno");
+	save thin, thick, ball_diam, darkness, pointheight;
+	save wd, ht, thick_nibangle, ball_nib_thick;
+	save turndir;
+	pair turndir;
+
+	ht# = 3 staff_space#;
+	wd# = 2 staff_space#;
+	darkness = .08 staff_space + 0.4 linethickness;
+
+	set_char_box (wd# / 2, wd# / 2, ht# / 2, ht# / 2);
+
+	thick_nibangle = 30;
+	thick = 3 darkness;
+	thin = darkness;
+	ball_nib_thick = 2.7 darkness;
+	ball_diam = ball_nib_thick + (w - ball_nib_thick) / 10;
+	pointheight = 2 linethickness;
+
+	y3l = h;
+	2 x3 = x2 + x4;
+	x4 = 0;
+	y4 = y2;
+	y2l = .6 h;
+	x2l = -b;
+	z1 = (0, 0);
+
+	penpos1 (thick, 2 thick_nibangle);
+	penpos2 (thick, thick_nibangle);
+	penpos3 (thin, -90);
+	penpos4 (ball_nib_thick, 180 - thick_nibangle);
+
+	save swoosh, ploop;
+	path swoosh, ploop;
+
+	swoosh := z1l{curl 0}
+		  .. z2l
+		  .. z3l{right}
+		  .. {down}z4l
+		  -- z4r
+		  .. z3r{left}
+		  .. z2r{down};
+	fill swoosh
+	     .. (swoosh scaled -1)
+	     .. cycle;
+
+	y5r = y4;
+	x5r = x4l - ball_diam / 2;
+	z6r = z5r;
+
+	penpos5 (1.6 ball_diam / 2, 100);
+	penpos6 (ball_diam / 2, 240);
+
+	ploop := z4l{down}
+		 .. z5l
+		 .. z6l
+		 -- cycle;
+	fill ploop;
+	fill ploop scaled -1;
+
+	penpos7 (2 thin, 0);
+	z7l = (-b, -d);
+	penpos8 (2 thin, 0);
+	z8r = (w, h);
+
+	penstroke z7e
+		  -- z8e;
+
+	pickup pencircle scaled 2 thin;
+	drawdot (-x2r, pointheight);
+	drawdot (x2r, -pointheight);
+
+	penlabels (range 1 thru 8);
+fet_endchar;
+
+
+fet_beginchar ("Coda", "coda");
+	save stickout, thin, thick, codawidth, codaheight;
+
+	stickout# = 0.35 staff_space#;
+	codawidth# = 2/3 staff_space#;
+	codaheight# = staff_space#;
+	define_pixels (codawidth, codaheight);
+
+	set_char_box (codawidth# + stickout#, codawidth# + stickout#,
+		      codaheight# + stickout#, codaheight# + stickout#);
+
+	thin = 1.2 linethickness;
+	0.1 (codaheight - 2 thin) = (codawidth - 2 thick);
+
+	penpos1 (thick, 0);
+	penpos2 (thin, -90);
+	penpos3 (thick, -180);
+	penpos4 (thin, -270);
+
+	x1l = -codawidth;
+	y2l = codaheight;
+	y1 = 0;
+	x2 = 0;
+	z3 = -z1;
+	z4 = -z2;
+
+	penlabels (1, 2, 3, 4);
+
+	fill z1l{up}
+	     .. z2l{right}
+	     .. z3l{down}
+	     .. z4l{left}
+	     .. cycle;
+	unfill z1r{up}
+	       .. z2r{right}
+	       .. z3r{down}
+	       .. z4r{left}
+	       .. cycle;
+
+	draw_gridline ((0, -h), (0, h), thin);
+	draw_gridline ((-w, 0), (w, 0), thin);
+fet_endchar;
+
+
+fet_beginchar ("Varied Coda", "varcoda");
+	save thin, thick, codawidth, codaheight;
+	thin# = 1.2 linethickness#;
+	thick# = 1.0 linethickness# + 0.25 staff_space#;
+	codawidth# = 2/3 staff_space#;
+	codaheight# = staff_space#;
+	define_pixels (thin, thick, codawidth, codaheight);
+
+	set_char_box (codawidth# + thick#, codawidth# + thick#,
+		      codaheight# + thick#, codaheight# + thick#);
+
+	x1 = -codawidth + thick - .5 blot_diameter;
+	y1 = y2 - thin;
+	x2 = codawidth - thick + .5 blot_diameter;
+	y2 = codaheight;
+	draw_square_block (z1, z2);
+
+	x3 = -codawidth;
+	y3 = -codaheight;
+	x4 = x3 + thick;
+	y4 = y2;
+	draw_block (z3, z4);
+
+	labels (1, 2, 3, 4);
+
+	addto currentpicture also currentpicture scaled -1;
+
+	draw_gridline ((0, -h), (0, h), thin);
+	draw_gridline ((-w, 0), (w, 0), thin);
+fet_endchar;
+
+
+def draw_comma =
+	save alpha, thick, thin, ht;
+
+	alpha := 35;
+	thin# = 1.2 linethickness#;
+	thick# = 3 linethickness#;
+	ht# = .6 staff_space#;
+	define_pixels (thin, thick, ht);
+
+	set_char_box (0, .5 staff_space#, ht#, ht#);
+
+	penpos1 (thick, alpha);
+	penpos2 (thick, alpha + 90);
+	penpos3 (thin, 180 - alpha);
+	penpos4 (thin, 90 - alpha);
+
+	x3r = 0;
+	x1l = x3l;
+	y2r = -y4l = h;
+	z1 = z2;
+	z3 = z4;
+
+	fill z1l{dir (alpha + 90)}
+	     .. z2r{dir alpha}
+	     .. z1r{dir (alpha - 90)}
+	     .. z3l{dir (270 - alpha)}
+	     .. z4l{dir (180 - alpha)}
+	     ..	z3r{dir (90-alpha)}
+	     .. cycle;
+enddef;
+
+
+fet_beginchar ("Right Comma", "rcomma");
+	draw_comma;
+	penlabels (1, 2, 3, 4);
+fet_endchar;
+
+
+fet_beginchar ("Left Comma", "lcomma");
+	draw_comma;
+	xy_mirror_char;
+fet_endchar;
+
+
+def draw_varcomma =
+	save thick, thin, ht, wd, alpha;
+
+	alpha := 35;
+	thin# = 1.2 linethickness#;
+	thick# = 3 linethickness#;
+	ht# = .6 staff_space#;
+	wd# = .25 staff_space#;
+	define_pixels (thin, thick, ht, alpha);
+
+	set_char_box (wd#, wd#, ht#, ht#);
+
+	z1 = (-b, -d);
+	z2 = (w, h);
+
+	draw_brush (z1, thin, z2, thick);
+enddef;
+
+
+fet_beginchar ("Right Varied Comma", "rvarcomma");
+	draw_varcomma;
+	labels (1, 2);
+fet_endchar;
+
+
+fet_beginchar ("Left Varied Comma", "lvarcomma");
+	draw_varcomma;
+	xy_mirror_char;
+fet_endchar;
+
+
+thick# := 1/24 designsize;
+define_blacker_pixels (thick);
+
+rthin := 0.075 * staff_space + 0.5 linethickness;
+rthick := 2 thick + rthin;
+
+
+def draw_arpeggio =
+	save alpha;
+	save ne, nw, se, sw;
+	save x, y;
+	pair ne, nw, se, sw;
+
+	alpha := -40;
+
+	nw = dir (alpha + 180);
+	ne = dir (alpha + 90);
+	se = dir alpha;
+	sw = dir (alpha - 90);
+
+	penpos1 (rthin, alpha + 90);
+	penpos2 (5/4 rthick, alpha);
+	penpos3 (3/4 rthick, alpha);
+	penpos4 (5/4 rthick, alpha);
+	penpos5 (rthin, alpha + 90);
+
+	z1 = (width / 2, height) - overshoot * se;
+	z2 = 2 [z4, (width / 2, height / 2)];
+	z3 = 1/2 [z2, z4];
+	x4 = 2/8 staff_space;
+	y4 = rthin;
+
+	z5 = 2 [z1, (width / 2, height / 2)];
+	z6 = z2l + 1/2 rthin * sw;
+	z7 = z4l + 1/2 rthin * sw + 1/2 rthin * se;
+	z8 = 2 [z6, (width / 2, height / 2)];
+	z9 = 2 [z7, (width / 2, height / 2)];
+
+	fill z1l{se}
+	     -- z6
+	     .. z3l
+	     .. z7{se}
+	     -- z5l
+	     .. z5r{nw}
+	     -- z8
+	     .. z3r
+	     .. z9{nw}
+	     -- z1r
+	     .. cycle;
+enddef;
+
+
+fet_beginchar ("Arpeggio", "arpeggio");
+	save height, overshoot, width;
+	height# = staff_space#;
+	width# = 0.8 height#;
+	overshoot# = 0.25 staff_space#;
+	define_pixels (height, overshoot, width);
+
+	set_char_box (0, width#, 0, height#);
+	draw_arpeggio;
+	penlabels (range 1 thru 9);
+
+	draw_staff (-2, 2, 0.0);
+fet_endchar;
+
+
+%
+% Extendable Trill symbol.
+% Not yet used
+% Rename me to Trill, rename Trill to Tr?
+%
+
+fet_beginchar ("Trill_element", "trill_element");
+	save height, overshoot;
+	height# = staff_space#;
+	width# = 0.8 height#;
+	overshoot# = 0.25 staff_space#;
+	define_pixels (height, overshoot, width);
+
+	set_char_box (0, height#, 0, width#);
+	draw_arpeggio;
+
+	currentpicture := currentpicture shifted -(width / 2, height / 2);
+	currentpicture := currentpicture rotated 90;
+	currentpicture := currentpicture shifted (height / 2, width / 2);
+fet_endchar;
+
+
+%
+% Arpeggio arrow by Chris Jackson <chris@fluffhouse.org.uk>
+%
+
+def draw_arpeggio_arrow =
+	save thinness, height, width, overshoot;
+	save nw, ne, se, sw;
+	save alpha;
+	save before_left, before_right, after_left, after_right;
+	save u_left, v_left, u_right, v_right;
+	pair nw, ne, se, sw;
+	path before_left, before_right, after_left, after_right;
+
+	height# = staff_space#;
+	width# = 0.8 height#;
+	overshoot# = 0.25 staff_space#;
+	define_pixels (height, overshoot, width);
+
+	set_char_box (0, width#, 0, height#);
+
+	alpha := -40;
+	nw = dir (alpha + 180);
+	ne = dir (alpha + 90);
+	se = dir alpha;
+	sw = dir (alpha - 90);
+
+	penpos1 (rthin, alpha + 90);
+	penpos2 (5/4 rthick, alpha);
+	penpos3 (5/4 rthick, 0);
+
+	z1 = (width / 2, height) - overshoot * se; % numbering is consistent
+						   % with the arpeggio symbol
+	z2 = 2 [z4, (width / 2, height / 2)];
+	z3 = (0.5 width, 0.5 height);
+	z4 = (0.25 staff_space, rthin);
+	z6 = z2l + 1/2 rthin * sw;
+	z9 = (width / 2, height) + overshoot * se;
+
+	pickup pencircle scaled vround (0.5 rthin);
+
+	bot z10 = (0.5 w, 0);
+	lft z11 = (0.5 w - hround (0.8 w), 0.8 h);
+	rt z12 = (0.5 w + hround (0.8 w), 0.8 h);
+
+	before_left := z1l
+		       -- z6{z6 - z1l}
+		       .. {down}z3l;
+	after_left := (z3 + (0, -0.25 rthin / cosd (angle (nw))))
+		      -- (z11 + 0.25 rthin * ne);
+	(u_left, v_left) = before_left intersectiontimes after_left;
+
+	before_right := (z12 + 0.25 rthin * nw)
+			-- (z3 + (0, -0.25 rthin / cosd (angle (nw))));
+	after_right := z3r{up}
+		       .. z9{z1r - z9}
+		       -- z1r;
+	(u_right, v_right) = before_right intersectiontimes after_right;
+
+	fill subpath (0, u_left) of before_left
+	     .. subpath (v_left, infinity) of after_left
+	     .. top z11
+	     .. lft z11
+	     .. {dir -50}(z11 + 0.25 rthin * sw)
+	     .. (z10 + 0.25 rthin * sw){dir -70}
+	     .. bot z10
+	     .. {dir 70}(z10 + 0.25 rthin * se)
+	     .. (z12 + 0.25 rthin * se){dir 50}
+	     .. rt z12
+	     .. top z12
+	     .. subpath (0, u_right) of before_right
+	     .. subpath (v_right, infinity) of after_right
+	     .. cycle;
+
+	% mf doesn't handle pixel dropouts in outline objects, so we use
+	% `draw' if not called by mpost
+	if not known miterlimit:
+		pickup pencircle scaled 0.7 rthin;
+		draw z1
+		     -- (z9 + 0.5 rthin * dir (alpha - 90));
+	fi;
+enddef;
+
+
+fet_beginchar ("Arpeggio arrow down", "arpeggio.arrow.M1");
+	draw_arpeggio_arrow;
+	penlabels (range 1 thru 12);
+fet_endchar;
+
+
+fet_beginchar ("Arpeggio arrow up", "arpeggio.arrow.1");
+	draw_arpeggio_arrow;
+	currentpicture := currentpicture scaled -1
+					 shifted (w - feta_eps, h - feta_eps);
+fet_endchar;
+
+
+% Hmm
+input feta-slag;
+
+
+%
+% Railroad tracks.  We define two variants of these -- both as slightly
+% tapered, comma-shaped curves and as two straight parallel slashes.
+%
+
+fet_beginchar ("Curved caesura", "caesura.curved");
+	save slant, space_between, clearance;
+	save alpha, pat;
+	save botthick, topthick;
+	save krom;
+	path pat;
+
+	botthick = 1.5 linethickness;
+	topthick = 2.5 linethickness;
+
+	pickup pencircle scaled botthick;
+
+	slant = 3.5;
+	space_between# = 0.6 staff_space#;
+	clearance# = 0.2 staff_space#;
+	height# = 1.2 staff_space#;
+
+	set_char_box (0, 2.0 staff_space#,
+		      staff_space# - clearance#, height#);
+	define_pixels (clearance, height);
+	define_whole_pixels (space_between);
+
+	bot y1 = -d;
+	top y2 = h;
+
+	lft x1 = 0;
+	x2 = (y2 - y1) / slant;
+
+	krom = 10;
+
+	alpha = angle (z2 - z1);
+	penpos1 (botthick, alpha - krom);
+	penpos3 (botthick, alpha - krom + 90);
+
+	penpos2 (topthick, alpha + krom);
+	penpos4 (topthick, alpha + krom + 90);
+
+	z3 = z1;
+	z4 = z2;
+
+	penlabels (1, 2, 3, 4);
+
+	pat := z3r{(z1r - z1l)}
+	       .. z4r{z2r-z2l}
+	       .. z2r{z4l-z4r}
+	       .. z4l{z2l-z2r}
+	       .. z3l{z1l-z1r}
+	       .. z1l{z3r-z3l}
+	       .. cycle;
+	fill pat;
+	fill pat shifted (space_between, 0);
+fet_endchar;
+
+
+fet_beginchar ("Straight caesura", "caesura.straight");
+	save slant, space_between, clearance;
+	save thick, ne, pat;
+	path pat;
+	pair ne;
+
+	slant = 2.0;
+	thick = 2.88 linethickness;
+
+	space_between# = 0.56 staff_space#;
+	clearance# = 0.2 staff_space#;
+
+	set_char_box (0, 2.0 staff_space#,
+	              staff_space# - clearance#, 1.2 staff_space#);
+	define_whole_pixels (space_between);
+
+	x1 = 0;
+	x2 = x1 + thick;
+	y1 = y2 = -d;
+
+	x3 = x4 + thick;
+	x4 = x1 + (h + d) / slant;
+	y3 = y4 = h;
+
+	ne = unitvector (z4 - z1);
+	
+	z1a = z1 + blot_diameter * ne;
+	z1b = z1 + blot_diameter * right;
+	z2a = z2 + blot_diameter * ne;
+	z2b = z2 + blot_diameter * left;
+
+	z3a = z3 - blot_diameter * ne;
+	z3b = z3 + blot_diameter * left;
+	z4a = z4 - blot_diameter * ne;
+	z4b = z4 + blot_diameter * right;
+
+	pat = z1a{-ne}
+	      .. {right}z1b
+	      -- z2b{right}
+	      .. {ne}z2a
+	      -- z3a{ne}
+	      .. {left}z3b
+	      -- z4b{left}
+	      .. {-ne}z4a
+	      -- cycle;
+
+	fill pat;
+	fill pat shifted (space_between, 0);
+
+	labels(range 1 thru 4);
+	labels(1a, 1b, 2a, 2b, 3a, 3b, 4a, 4b);
+fet_endchar;
+
+fet_endgroup ("scripts");

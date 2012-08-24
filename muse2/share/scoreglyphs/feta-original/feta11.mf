@@ -1,0 +1,13 @@
+% feta11.mf
+% part of LilyPond's pretty-but-neat music font
+
+input feta-autometric;
+
+design_size := 11.22;
+test := 0;
+
+
+input feta-generic;
+
+end.
+

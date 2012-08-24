@@ -1,0 +1,1170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MidiInputTransformDialogBase</class>
+ <widget class="QDialog" name="MidiInputTransformDialogBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>832</width>
+    <height>587</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MusE: Midi Input Transformator</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <layout class="QGridLayout">
+   <property name="margin">
+    <number>11</number>
+   </property>
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <item row="0" column="1" colspan="3">
+    <widget class="QGroupBox" name="GroupBox3">
+     <property name="title">
+      <string>Filter</string>
+     </property>
+     <layout class="QGridLayout">
+      <property name="margin">
+       <number>11</number>
+      </property>
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item row="1" column="0">
+       <widget class="QComboBox" name="selEventOp">
+        <item>
+         <property name="text">
+          <string>All</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Equal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Unequal</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QComboBox" name="selType">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>Note</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Poly Pressure</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Control Change</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Aftertouch</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Pitch Bend</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>NRPN</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>RPN</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="TextLabel3">
+        <property name="text">
+         <string>Value 2</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="TextLabel2">
+        <property name="text">
+         <string>Value 1</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="TextLabel1">
+        <property name="text">
+         <string>Event Type</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="selVal1Op">
+        <item>
+         <property name="text">
+          <string>Ignore</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Equal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Unequal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Higher</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Lower</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Inside</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Outside</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="selVal1b">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QSpinBox" name="selVal2b">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="selVal1a">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QComboBox" name="selVal2Op">
+        <item>
+         <property name="text">
+          <string>Ignore</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Equal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Unequal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Higher</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Lower</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Inside</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Outside</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QComboBox" name="selPortOp">
+        <item>
+         <property name="text">
+          <string>Ignore</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Equal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Unequal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Higher</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Lower</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Inside</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Outside</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="4">
+       <widget class="QComboBox" name="selChannelOp">
+        <item>
+         <property name="text">
+          <string>Ignore</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Equal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Unequal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Higher</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Lower</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Inside</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Outside</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QLabel" name="TextLabel2_2">
+        <property name="text">
+         <string>Channel</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLabel" name="TextLabel1_3">
+        <property name="text">
+         <string>Port</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QSpinBox" name="selVal2a">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QSpinBox" name="selChannelVala">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QSpinBox" name="selPortVala">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
+       <widget class="QSpinBox" name="selChannelValb">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QSpinBox" name="selPortValb">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="3">
+    <widget class="QGroupBox" name="GroupBox5">
+     <property name="title">
+      <string>Processing</string>
+     </property>
+     <layout class="QGridLayout">
+      <property name="margin">
+       <number>11</number>
+      </property>
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="TextLabel5">
+        <property name="text">
+         <string>Event Type</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QComboBox" name="procEventOp">
+        <item>
+         <property name="text">
+          <string>Keep</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Fix</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QComboBox" name="procType">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>Poly Pressure</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Control Change</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Aftertouch</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Pitch Bend</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>NRPN</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>RPN</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="procVal1Op">
+        <item>
+         <property name="text">
+          <string>Keep</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Plus</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Minus</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Multiply</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Divide</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Fix</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Value 2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Invert</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ScaleMap</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Flip</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Dyn</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Random</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="TextLabel6">
+        <property name="text">
+         <string>Value 1</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="TextLabel7">
+        <property name="text">
+         <string>Value 2</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="procVal1b">
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QSpinBox" name="procVal2b">
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="MusEGui::SpinBoxFP" name="procVal1a">
+         <property name="maximum" stdset="0">
+         <number>99999999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
+       <widget class="QSpinBox" name="procChannelValb">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QSpinBox" name="procPortValb">
+        <property name="maximum">
+         <number>127</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLabel" name="TextLabel1_3_2">
+        <property name="text">
+         <string>Port</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QComboBox" name="procVal2Op">
+        <item>
+         <property name="text">
+          <string>Keep</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Plus</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Minus</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Multiply</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Divide</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Fix</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Value 1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Invert</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Dyn</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Random</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="4">
+       <widget class="QComboBox" name="procChannelOp">
+        <item>
+         <property name="text">
+          <string>Keep</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Plus</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Minus</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Multiply</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Divide</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Fix</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Value 1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Invert</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Dyn</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Random</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QComboBox" name="procPortOp">
+        <item>
+         <property name="text">
+          <string>Keep</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Plus</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Minus</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Multiply</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Divide</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Fix</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Value 1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Invert</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Dyn</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Random</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QLabel" name="TextLabel2_2_2">
+        <property name="text">
+         <string>Channel</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+        <widget class="MusEGui::SpinBoxFP" name="procVal2a">
+          <property name="maximum" stdset="0">
+         <number>99999999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+        <widget class="MusEGui::SpinBoxFP" name="procPortVala">
+          <property name="maximum" stdset="0">
+         <number>99999999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+        <widget class="MusEGui::SpinBoxFP" name="procChannelVala">
+          <property name="maximum" stdset="0">
+         <number>99999999</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QGroupBox" name="GroupBox5_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Modules</string>
+     </property>
+     <layout class="QGridLayout">
+      <property name="margin">
+       <number>11</number>
+      </property>
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item row="0" column="0" rowspan="4">
+       <widget class="QGroupBox" name="modulBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+        <property name="lineWidth" stdset="0">
+         <number>0</number>
+        </property>
+        <property name="exclusive" stdset="0">
+         <bool>true</bool>
+        </property>
+        <layout class="QVBoxLayout">
+         <item>
+          <widget class="QToolButton" name="modul1select">
+           <property name="text">
+            <string>1</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="modul2select">
+           <property name="text">
+            <string>2</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="modul3select">
+           <property name="text">
+            <string>3</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="modul4select">
+           <property name="text">
+            <string>4</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="modul1enable">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>enable modul 1</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="modul2enable">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>enable modul 2</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="modul3enable">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>enable modul 3</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="modul4enable">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>enable modul 4</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QGroupBox" name="GroupBox6_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Preset</string>
+     </property>
+     <layout class="QVBoxLayout">
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <property name="margin">
+       <number>11</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="TextLabel13_2">
+          <property name="text">
+           <string>Name:</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="nameEntry">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="TextLabel14_2">
+        <property name="text">
+         <string>Comment:</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="commentEntry">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QGroupBox" name="GroupBox7_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Function</string>
+     </property>
+     <layout class="QVBoxLayout">
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <property name="margin">
+       <number>11</number>
+      </property>
+      <item>
+       <widget class="QComboBox" name="funcOp"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="4">
+    <layout class="QHBoxLayout">
+     <property name="spacing">
+      <number>6</number>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="buttonNew">
+       <property name="toolTip">
+        <string>create new preset</string>
+       </property>
+       <property name="text">
+        <string>&amp;New</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonDelete">
+       <property name="toolTip">
+        <string>delete preset</string>
+       </property>
+       <property name="text">
+        <string>&amp;Delete</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="Horizontal Spacing2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonOk">
+       <property name="text">
+        <string>&amp;Dismiss</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0" rowspan="3">
+    <layout class="QVBoxLayout">
+     <property name="spacing">
+      <number>6</number>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="TextLabel1_2">
+       <property name="text">
+        <string>PresetList</string>
+       </property>
+       <property name="wordWrap">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="presetList">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+   <customwidget>
+     <class>MusEGui::SpinBoxFP</class>
+     <extends>QDoubleSpinBox</extends>
+     <header>spinboxFP.h</header>
+   </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>selEventOp</tabstop>
+  <tabstop>selType</tabstop>
+  <tabstop>selVal1Op</tabstop>
+  <tabstop>selVal1a</tabstop>
+  <tabstop>selVal1b</tabstop>
+  <tabstop>selVal2Op</tabstop>
+  <tabstop>selVal2a</tabstop>
+  <tabstop>selVal2b</tabstop>
+  <tabstop>selPortOp</tabstop>
+  <tabstop>selPortVala</tabstop>
+  <tabstop>selPortValb</tabstop>
+  <tabstop>selChannelOp</tabstop>
+  <tabstop>selChannelVala</tabstop>
+  <tabstop>selChannelValb</tabstop>
+  <tabstop>procEventOp</tabstop>
+  <tabstop>procType</tabstop>
+  <tabstop>procVal1Op</tabstop>
+  <tabstop>procVal1b</tabstop>
+  <tabstop>procVal2Op</tabstop>
+  <tabstop>procVal2b</tabstop>
+  <tabstop>procPortOp</tabstop>
+  <tabstop>procPortValb</tabstop>
+  <tabstop>procChannelOp</tabstop>
+  <tabstop>procChannelValb</tabstop>
+  <tabstop>modul1enable</tabstop>
+  <tabstop>modul2enable</tabstop>
+  <tabstop>modul3enable</tabstop>
+  <tabstop>modul4enable</tabstop>
+  <tabstop>funcOp</tabstop>
+  <tabstop>nameEntry</tabstop>
+  <tabstop>commentEntry</tabstop>
+  <tabstop>presetList</tabstop>
+  <tabstop>buttonNew</tabstop>
+  <tabstop>buttonDelete</tabstop>
+  <tabstop>buttonOk</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonOk</sender>
+   <signal>clicked()</signal>
+   <receiver>MidiInputTransformDialogBase</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

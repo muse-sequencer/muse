@@ -1,0 +1,71 @@
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2007 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#=============================================================================
+
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all.h
+      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all.h
+      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h
+      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h
+      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+
+# Disable precompilation of this header file for now since it is empty - Orcan 2012-05-20
+if(0)
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all.h.pch
+      COMMAND ${CMAKE_CXX_COMPILER}
+         -g -Wextra -fno-exceptions -Wall
+         -I${QT_INCLUDE_DIR}
+         -I${QT_QTCORE_INCLUDE_DIR}
+         -I${QT_QTGUI_INCLUDE_DIR}
+         -o all.h.pch all.h
+      DEPENDS ${PROJECT_BINARY_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h.pch
+      COMMAND ${CMAKE_CXX_COMPILER}
+         -fPIC
+         -Dawlplugin_EXPORTS -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB
+         -DQT_PLUGIN -DQT_SHARED -DQT_NO_DEBUG
+         -g -Wextra -fno-exceptions -Wall
+         -I${QT_INCLUDE_DIR}
+         -I${QT_QTCORE_INCLUDE_DIR}
+         -I${QT_QTGUI_INCLUDE_DIR}
+         -o all-pic.h.pch all-pic.h
+      DEPENDS ${PROJECT_BINARY_DIR}/all-pic.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+endif(0)
+
+set_source_files_properties(
+      ${PROJECT_BINARY_DIR}/all.h
+      ${PROJECT_BINARY_DIR}/all.h.pch
+      ${PROJECT_BINARY_DIR}/all-pic.h.pch
+      PROPERTIES generated true
+      )
+

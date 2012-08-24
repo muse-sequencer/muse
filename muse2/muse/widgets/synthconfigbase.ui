@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SynthConfigBase</class>
+ <widget class="QDialog" name="SynthConfigBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>810</width>
+    <height>492</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Midi Port and Soft Synth Configuration</string>
+  </property>
+  <layout class="QGridLayout">
+   <item row="1" column="1">
+    <widget class="QGroupBox" name="GroupBox3">
+     <property name="title">
+      <string>Instances</string>
+     </property>
+     <layout class="QGridLayout">
+      <item row="0" column="0">
+       <widget class="QTreeWidget" name="instanceList">
+        <property name="allColumnsShowFocus">
+         <bool>true</bool>
+        </property>
+        <column>
+         <property name="text">
+          <string>Name</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Type</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Midi Port</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QPushButton" name="removeInstance">
+          <property name="text">
+           <string>Remove Instance</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="Spacer2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>113</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QGroupBox" name="groupBox10">
+     <property name="title">
+      <string>Midi connections</string>
+     </property>
+     <layout class="QVBoxLayout">
+      <item>
+       <widget class="QTableWidget" name="mdevView">
+        <attribute name="verticalHeaderDefaultSectionSize">
+         <number>18</number>
+        </attribute>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="GroupBox2">
+     <property name="title">
+      <string>Soft Synthesizer</string>
+     </property>
+     <layout class="QGridLayout">
+      <item row="1" column="0">
+       <layout class="QHBoxLayout">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="addInstance">
+          <property name="text">
+           <string>Add Instance</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="Spacer1">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="0">
+       <widget class="QTreeWidget" name="synthList">
+        <property name="toolTip">
+         <string>list of available software synthesizers</string>
+        </property>
+        <property name="allColumnsShowFocus">
+         <bool>true</bool>
+        </property>
+        <column>
+         <property name="text">
+          <string>File</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Type</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Inst</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Name</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Version</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Description</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="Kurzweil SP2X">
+    <PatchGroup name="Bank 00">
+      <Patch name="Stereo Grand" hbank="0" lbank="0" prog="0" />
+      <Patch name="Classic Grand" hbank="0" lbank="0" prog="1" />
+      <Patch name="Dynamic Grand" hbank="0" lbank="0" prog="2" />
+      <Patch name="Concert Grand" hbank="0" lbank="0" prog="3" />
+      <Patch name="Yearning" hbank="0" lbank="0" prog="4" />
+      <Patch name="Piano for layers" hbank="0" lbank="0" prog="5" />
+      <Patch name="Hard Rock Piano" hbank="0" lbank="0" prog="6" />
+      <Patch name="Rag Time Piano" hbank="0" lbank="0" prog="7" />
+      <Patch name="Studio Rhds" hbank="0" lbank="0" prog="8" />
+      <Patch name="Fagen Phaser" hbank="0" lbank="0" prog="9" />
+      <Patch name="Old Sly Rhds" hbank="0" lbank="0" prog="10" />
+      <Patch name="Dyno My E Pno" hbank="0" lbank="0" prog="11" />
+      <Patch name="Digital E Piano" hbank="0" lbank="0" prog="12" />
+      <Patch name="FantAsmAtron" hbank="0" lbank="0" prog="13" />
+      <Patch name="90\s FM Ballad" hbank="0" lbank="0" prog="14" />
+      <Patch name="Big Red Wurly" hbank="0" lbank="0" prog="15" />
+      <Patch name="Pipe 16\8_reed" hbank="0" lbank="0" prog="16" />
+      <Patch name="Orgiano" hbank="0" lbank="0" prog="17" />
+      <Patch name="Pipe Organ" hbank="0" lbank="0" prog="18" />
+      <Patch name="Ballad of 3 Bar" hbank="0" lbank="0" prog="19" />
+      <Patch name="Prog Rocker\s B" hbank="0" lbank="0" prog="20" />
+      <Patch name="Clav Classic" hbank="0" lbank="0" prog="21" />
+      <Patch name="Dual Wah Clav" hbank="0" lbank="0" prog="22" />
+      <Patch name="Harpsichord" hbank="0" lbank="0" prog="23" />
+      <Patch name="Film String" hbank="0" lbank="0" prog="24" />
+      <Patch name="Touch Strings" hbank="0" lbank="0" prog="25" />
+      <Patch name="Fast Strings" hbank="0" lbank="0" prog="26" />
+      <Patch name="Octave Strings 2" hbank="0" lbank="0" prog="27" />
+      <Patch name="Kupiter" hbank="0" lbank="0" prog="28" />
+      <Patch name="Orch Pad" hbank="0" lbank="0" prog="29" />
+      <Patch name="U Say Tomita---" hbank="0" lbank="0" prog="30" />
+      <Patch name="Spider\s Web" hbank="0" lbank="0" prog="31" />
+      <Patch name="Williams Brass" hbank="0" lbank="0" prog="32" />
+      <Patch name="Synth Brass" hbank="0" lbank="0" prog="33" />
+      <Patch name="Brass Section" hbank="0" lbank="0" prog="34" />
+      <Patch name="saxes X trumpets" hbank="0" lbank="0" prog="35" />
+      <Patch name="Indy lead" hbank="0" lbank="0" prog="36" />
+      <Patch name="Alazawi" hbank="0" lbank="0" prog="37" />
+      <Patch name="Hybrid Pan" hbank="0" lbank="0" prog="38" />
+      <Patch name="Old lead" hbank="0" lbank="0" prog="39" />
+      <Patch name="Scatman" hbank="0" lbank="0" prog="40" />
+      <Patch name="Bright Voices" hbank="0" lbank="0" prog="41" />
+      <Patch name="Doo--Daa" hbank="0" lbank="0" prog="42" />
+      <Patch name="The Croons" hbank="0" lbank="0" prog="43" />
+      <Patch name="Eurythm" hbank="0" lbank="0" prog="44" />
+      <Patch name="FLG Strings" hbank="0" lbank="0" prog="45" />
+      <Patch name="Solar Lead" hbank="0" lbank="0" prog="46" />
+      <Patch name="Attack Stack" hbank="0" lbank="0" prog="47" />
+      <Patch name="Acoustic Guitar" hbank="0" lbank="0" prog="48" />
+      <Patch name="Chorus Elec Gtr" hbank="0" lbank="0" prog="49" />
+      <Patch name="Lead Rock Gtr" hbank="0" lbank="0" prog="50" />
+      <Patch name="Jazzy Frets" hbank="0" lbank="0" prog="51" />
+      <Patch name="Round and Wound" hbank="0" lbank="0" prog="52" />
+      <Patch name="Two Finger Bass" hbank="0" lbank="0" prog="53" />
+      <Patch name="Slap Bass" hbank="0" lbank="0" prog="54" />
+      <Patch name="Upright Bass" hbank="0" lbank="0" prog="55" />
+      <Patch name="Studio Drums 1+2" hbank="0" lbank="0" prog="56" />
+      <Patch name="Radio Kings\Rods" hbank="0" lbank="0" prog="57" />
+      <Patch name="Dirt\Triphop Kit" hbank="0" lbank="0" prog="58" />
+      <Patch name="Electro kit" hbank="0" lbank="0" prog="59" />
+      <Patch name="Virtuoso Perc" hbank="0" lbank="0" prog="60" />
+      <Patch name="Rhythm Maker" hbank="0" lbank="0" prog="61" />
+      <Patch name="Dual Marimba" hbank="0" lbank="0" prog="62" />
+      <Patch name="Vibes" hbank="0" lbank="0" prog="63" />
+    </PatchGroup>
+    <Controller name="Mod Wheel" l="1" />
+    <Controller name="Breath" l="2" />
+    <Controller name="Foot Control" l="4" />
+    <Controller name="Port Time" l="5" />
+    <Controller name="Knob A" l="6" />
+    <Controller name="Volume" l="7" init="100" />
+    <Controller name="Balance" l="8" init="64" />
+    <Controller name="Pan" l="10" init="64" />
+    <Controller name="Expression" l="11" init="127" />
+    <Controller name="EfxCt 1" l="12" init="0" />
+    <Controller name="EfxCt 2\Knob B" l="13" init="0" />
+    <Controller name="AuxBnd2" l="15" init="0" />
+    <Controller name="AuxBnd2" l="15" init="0" />
+    <Controller name="Gen 1" l="16" />
+    <Controller name="Gen 2" l="17" />
+    <Controller name="Gen 3" l="18" />
+    <Controller name="Gen 4" l="19" />
+    <Controller name="Knob C" l="23" />
+    <Controller name="Knob D" l="24" />
+    <Controller name="Sustain" l="64" />
+    <Controller name="Port Switch" l="65" />
+    <Controller name="Sosten" l="66" />
+    <Controller name="Soft" l="67" />
+    <Controller name="Legato" l="68" />
+    <Controller name="Hold2" l="69" />
+    <Controller name="SndCtl1" l="70" />
+    <Controller name="SndCtl2" l="71" />
+    <Controller name="SndCtl3" l="72" />
+    <Controller name="SndCtl4" l="73" />
+    <Controller name="SndCtl5" l="74" />
+    <Controller name="SndCtl6" l="75" />
+    <Controller name="SndCtl7" l="76" />
+    <Controller name="SndCtl8" l="77" />
+    <Controller name="SndCtl9" l="78" />
+    <Controller name="SndCtl10" l="79" />
+    <Controller name="Gen 5" l="80" />
+    <Controller name="Gen 6" l="81" />
+    <Controller name="Gen 7" l="82" />
+    <Controller name="Gen 8" l="83" />
+    <Controller name="PortCtl" l="84" />
+    <Controller name="FXBWet" l="91" />
+    <Controller name="FXAWet" l="93" />
+    <Controller name="SndOff" l="120" />
+    <Controller name="RstCtl" l="121" />
+    <Controller name="LclCtl" l="122" />
+    <Controller name="NtsOff" l="123" />
+    <Controller name="OmniOf" l="124" />
+    <Controller name="OmniOn" l="125" />
+    <Controller name="MonoOn" l="126" />
+    <Controller name="PolyOn" l="127" />
+  </MidiInstrument>
+</muse>

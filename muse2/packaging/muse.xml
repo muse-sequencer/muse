@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+        <mime-type type="application/x-muse">
+                <comment>MusE file</comment>
+                <glob pattern="*.med"/>
+                <glob pattern="*.med.bz2"/>
+                <glob pattern="*.med.gz"/>
+        </mime-type>
+</mime-info>

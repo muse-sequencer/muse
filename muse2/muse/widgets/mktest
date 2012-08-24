@@ -1,0 +1,5 @@
+CPPFLAGS = -I/usr/qt/include -I..
+
+mops: mops.o musewidgetsplug.o
+	g++ -o mops mops.o musewidgetsplug.o -L . -l musewidgetsplugin -L /usr/qt/lib -l qt-mt
+

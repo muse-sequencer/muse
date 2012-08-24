@@ -1,0 +1,805 @@
+<?xml version="1.0"?>
+<muse version="2.0">
+  <configuration>
+    <midiInputDevice>0</midiInputDevice>
+    <midiInputChannel>0</midiInputChannel>
+    <midiRecordType>0</midiRecordType>
+    <midiThruType>0</midiThruType>
+    <midiFilterCtrl1>0</midiFilterCtrl1>
+    <midiFilterCtrl2>0</midiFilterCtrl2>
+    <midiFilterCtrl3>0</midiFilterCtrl3>
+    <midiFilterCtrl4>0</midiFilterCtrl4>
+    <mtctype>1</mtctype>
+    <mtcoffset>00:00:00:00:00</mtcoffset>
+    <sendClockDelay>1</sendClockDelay>
+    <useJackTransport>1</useJackTransport>
+    <jackTransportMaster>1</jackTransportMaster>
+    <extSync>0</extSync>
+    <bigtimeVisible>0</bigtimeVisible>
+    <transportVisible>0</transportVisible>
+    <geometryMain x="0" y="0" w="1024" h="695"></geometryMain>
+    <geometryTransport x="0" y="0" w="0" h="0"></geometryTransport>
+    <arrangerVisible>1</arrangerVisible>
+    <markerVisible>0</markerVisible>
+    <mixer1Visible>0</mixer1Visible>
+    <mixer2Visible>0</mixer2Visible>
+    <sequencer>
+      <metronom>
+        <premeasures>2</premeasures>
+        <measurepitch>63</measurepitch>
+        <measurevelo>127</measurevelo>
+        <beatpitch>63</beatpitch>
+        <beatvelo>70</beatvelo>
+        <channel>9</channel>
+        <port>0</port>
+        <precountEnable>0</precountEnable>
+        <fromMastertrack>0</fromMastertrack>
+        <signatureZ>4</signatureZ>
+        <signatureN>4</signatureN>
+        <prerecord>0</prerecord>
+        <preroll>0</preroll>
+        <midiClickEnable>1</midiClickEnable>
+        <audioClickEnable>0</audioClickEnable>
+        <audioClickVolume>0.5</audioClickVolume>
+        </metronom>
+      <rcEnable>0</rcEnable>
+      <rcStop>28</rcStop>
+      <rcRecord>31</rcRecord>
+      <rcGotoLeft>33</rcGotoLeft>
+      <rcPlay>29</rcPlay>
+      <rcSteprec>36</rcSteprec>
+      <midiport idx="0">
+        <defaultOutChans>1</defaultOutChans>
+        <channel idx="0">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="1">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="2">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="3">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="4">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="5">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="6">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="7">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="8">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="9">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="10">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="11">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="12">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="13">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="14">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="15">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="11">
+            </controller>
+          <controller id="71">
+            </controller>
+          <controller id="72">
+            </controller>
+          <controller id="73">
+            </controller>
+          <controller id="74">
+            </controller>
+          <controller id="75">
+            </controller>
+          <controller id="76">
+            </controller>
+          <controller id="77">
+            </controller>
+          <controller id="78">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="94">
+            </controller>
+          <controller id="131072">
+            </controller>
+          <controller id="131073">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        </midiport>
+      </sequencer>
+    <dialogs>
+      <mod_len>
+        <range>1</range>
+        <offset>0</offset>
+        <rate>100</rate>
+        </mod_len>
+      <mod_velo>
+        <range>1</range>
+        <offset>0</offset>
+        <rate>100</rate>
+        </mod_velo>
+      <quantize>
+        <range>1</range>
+        <strength>90</strength>
+        <threshold>0</threshold>
+        <raster>2</raster>
+        <swing>0</swing>
+        <quant_len>1</quant_len>
+        </quantize>
+      <erase>
+        <range>1</range>
+        <velo_threshold>16</velo_threshold>
+        <velo_thres_used>0</velo_thres_used>
+        <len_threshold>12</len_threshold>
+        <len_thres_used>0</len_thres_used>
+        </erase>
+      <del_overlaps>
+        <range>1</range>
+        </del_overlaps>
+      <setlen>
+        <range>1</range>
+        <len>384</len>
+        </setlen>
+      <move>
+        <range>1</range>
+        <amount>0</amount>
+        </move>
+      <transpose>
+        <range>1</range>
+        <amount>0</amount>
+        </transpose>
+      <crescendo>
+        <range>3</range>
+        <start>80</start>
+        <end>130</end>
+        <absolute>0</absolute>
+        </crescendo>
+      <legato>
+        <range>1</range>
+        <min_len>0</min_len>
+        <allow_shortening>0</allow_shortening>
+        </legato>
+      <pastedialog>
+        <insert_method>0</insert_method>
+        <number>1</number>
+        <raster>1536</raster>
+        <clone>0</clone>
+        <all_in_one_track>0</all_in_one_track>
+        </pastedialog>
+      <pasteeventsdialog>
+        <number>1</number>
+        <raster>384</raster>
+        <always_new_part>0</always_new_part>
+        <never_new_part>0</never_new_part>
+        <max_distance>3072</max_distance>
+        <into_single_part>0</into_single_part>
+        </pasteeventsdialog>
+      </dialogs>
+    </configuration>
+  <song>
+    <info></info>
+    <showinfo>1</showinfo>
+    <automation>1</automation>
+    <cpos>0</cpos>
+    <rpos>0</rpos>
+    <lpos>0</lpos>
+    <master>1</master>
+    <loop>0</loop>
+    <punchin>0</punchin>
+    <punchout>0</punchout>
+    <record>0</record>
+    <solo>0</solo>
+    <type>1</type>
+    <recmode>0</recmode>
+    <cycle>0</cycle>
+    <click>0</click>
+    <quantize>0</quantize>
+    <len>0</len>
+    <follow>1</follow>
+    <sampleRate>44100</sampleRate>
+    <AudioOutput>
+      <name>Out 1</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>2</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <selected>1</selected>
+      <prefader>0</prefader>
+      <sendMetronome>0</sendMetronome>
+      <automation>0</automation>
+      <controller id="0" cur="1" color="#ff0000" visible="0">
+        </controller>
+      <controller id="1" cur="0" color="#ff0000" visible="0">
+        </controller>
+      <controller id="2" cur="0" color="#ff0000" visible="0">
+        </controller>
+      </AudioOutput>
+    <Route channel="0">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_1"/>
+      </Route>
+    <Route channel="1">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_2"/>
+      </Route>
+    <tempolist fix="500000">
+      <tempo at="21474837">
+        <tick>0</tick>
+        <val>500000</val>
+        </tempo>
+      </tempolist>
+    <siglist>
+      <sig at="21474836">
+        <tick>0</tick>
+        <nom>4</nom>
+        <denom>4</denom>
+        </sig>
+      </siglist>
+    <keylist>
+    <key at="21474837">
+      <tick>0</tick>
+      <val>1</val>
+      </key>
+    </keylist>
+    <drummap>
+      </drummap>
+    </song>
+  <no_toplevels>
+  </no_toplevels>
+  </muse>

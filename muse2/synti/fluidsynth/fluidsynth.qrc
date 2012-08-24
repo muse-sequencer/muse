@@ -1,0 +1,8 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+   <qresource>
+      <file>fluidsynth0.png</file>
+      <file>fluidsynth1.png</file>      
+   </qresource>
+</RCC>
+

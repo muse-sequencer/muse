@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>werner schweer</author>
+ <comment>midi sync
+configuration dialog</comment>
+ <class>MidiSyncConfigBase</class>
+ <widget class="QDialog" name="MidiSyncConfigBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>655</width>
+    <height>445</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MusE: Midi Sync</string>
+  </property>
+  <layout class="QGridLayout">
+   <item row="2" column="0">
+    <layout class="QHBoxLayout">
+     <property name="spacing">
+      <number>6</number>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <spacer name="Spacer1_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="applyButton">
+       <property name="text">
+        <string>Apply</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="okButton">
+       <property name="text">
+        <string>Ok</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancelButton">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="GroupBox13">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="title">
+      <string>MTC</string>
+     </property>
+     <layout class="QVBoxLayout">
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <property name="margin">
+       <number>11</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="textLabel2">
+          <property name="text">
+           <string>Type:</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="mtcSyncType">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <item>
+           <property name="text">
+            <string>24</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>25</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>30D</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>30N</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="spacer4">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="textLabel1">
+          <property name="text">
+           <string>Offset:</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="mtcOffH">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>hour</string>
+          </property>
+          <property name="maximum">
+           <number>23</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="TextLabel2">
+          <property name="text">
+           <string>h</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="mtcOffM">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>minute</string>
+          </property>
+          <property name="maximum">
+           <number>59</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="TextLabel3">
+          <property name="text">
+           <string>m</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="mtcOffS">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>second</string>
+          </property>
+          <property name="maximum">
+           <number>59</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="TextLabel4">
+          <property name="text">
+           <string>s</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="mtcOffF">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>frame</string>
+          </property>
+          <property name="maximum">
+           <number>30</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="TextLabel5">
+          <property name="text">
+           <string>f</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="mtcOffSf">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>subframe</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="syncGen">
+     <property name="title">
+      <string>Sync receiving and sending</string>
+     </property>
+     <layout class="QGridLayout">
+      <item row="0" column="0" colspan="2">
+       <widget class="QCheckBox" name="useJackTransportCheckbox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Send and receive Jack transport</string>
+        </property>
+        <property name="whatsThis">
+         <string>Send and receive Jack transport information,
+ including stop, start and position.</string>
+        </property>
+        <property name="text">
+         <string>Use Jack transport</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QCheckBox" name="jackTransportMasterCheckbox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Make MusE the Jack transport Timebase Master</string>
+        </property>
+        <property name="whatsThis">
+         <string>Make MusE the Jack transport Timebase Master.
+Allows Jack to show time as 
+ MusE Bars, Beats, and Ticks. 
+MusE will try to become master, but other 
+ Jack clients can also take over later.
+You can always click here again for Master.</string>
+        </property>
+        <property name="text">
+         <string>Jack transport Timebase Master</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QCheckBox" name="extSyncCheckbox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Control MusE timing by external midi clock or MTC sync</string>
+        </property>
+        <property name="whatsThis">
+         <string>When in slave mode, tempo is
+ controlled externally.
+MusE can sync to midi clock, or MTC quarter frame sync. 
+Enabled inputs in the list will
+ be in effect (RMC, RMMC, RMTC).</string>
+        </property>
+        <property name="text">
+         <string>Slave to external sync</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QComboBox" name="syncRecFilterPreset">
+          <property name="toolTip">
+           <string>Averaging applied to recorded external tempo changes.</string>
+          </property>
+          <property name="whatsThis">
+           <string>External midi clock can be very jittery.
+Tempo is derived from it and recorded.
+It is usually desirable to average it and 
+ limit the number of recorded changes.
+
+Tiny: 2 section 4/4 = 8 stages.
+1/8T note averaging, may produce jitter.
+
+Small: 3 section 12/8/4 = 24 stages.
+1/4 note averaging, may still produce jitter.
+
+Medium: 3 section 28/12/8 = 48 stages.
+1/2 note averaging. Less jitter.
+
+Large: 4 section 48/48/48/48 = 192 stages.
+Use this if the song has only one tempo.
+Very low quantization values can be used. 
+
+Large pre-detect: 4 section 8/48/48/48 = 152
+ stages + first stage large step pre-detector.
+Use this if you expect sudden large tempo steps.
+
+None: Use only if high accuracy is needed for 
+ audio alignment on playback. Caution: Records 
+ thousands of tempo changes per minute. MusE 
+ may slow and the song file will be large.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="syncRecFilterLabel">
+          <property name="text">
+           <string>Tempo record averaging</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="0">
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QDoubleSpinBox" name="syncRecTempoValQuant">
+          <property name="toolTip">
+           <string/>
+          </property>
+          <property name="whatsThis">
+           <string/>
+          </property>
+          <property name="suffix">
+           <string>bpm</string>
+          </property>
+          <property name="minimum">
+           <double>0.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.010000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="syncRecTempoValQuantLabel">
+          <property name="text">
+           <string>Tempo record quantization</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="5" column="0">
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QSpinBox" name="syncDelaySpinBox">
+          <property name="toolTip">
+           <string>Send start to first clock delay</string>
+          </property>
+          <property name="whatsThis">
+           <string>Allows 'slow sync' devices time
+ to synchronize to MusE. This value is the
+ delay from sending start to sending
+ the first clock.</string>
+          </property>
+          <property name="suffix">
+           <string>ms</string>
+          </property>
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>60000</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="syncDelayLabel">
+          <property name="text">
+           <string>Send sync delay</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="6" column="0">
+       <widget class="QTreeWidget" name="devicesListView">
+        <column>
+         <property name="text">
+          <string notr="true">1</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="toBeDoneLabel">
+        <property name="text">
+         <string>Note: Sync delay and MTC sync currently not fully implemented</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>mtcOffH</tabstop>
+  <tabstop>mtcOffM</tabstop>
+  <tabstop>mtcOffS</tabstop>
+  <tabstop>mtcOffF</tabstop>
+  <tabstop>mtcOffSf</tabstop>
+  <tabstop>applyButton</tabstop>
+  <tabstop>okButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

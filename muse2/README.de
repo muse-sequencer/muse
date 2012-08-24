@@ -1,0 +1,83 @@
+====================================================================
+      MusE  ---  Linux (Midi) Music Editor
+====================================================================
+
+Guten Tag!
+dies ist MusE, der Open Source MIDI/Audio Sequencer.
+
+MusE steht unter der GNU General Public Licence (GPL).
+Für Einzelheiten siehe COPYING.
+
+,-----------------------------------------------------------------.
+| HINWEIS                                                         |
+|-----------------------------------------------------------------|
+| Viele Teile des Codes von MusE sind EXPERIMENTELL und können    |
+| zu Programmabstürzen und wer weiß was sonst noch allem          |
+| führen.                                                         |
+| SIE BENUTZEN DIESE SOFTWARE AUF EIGENES RISIKO!                 |
+`-----------------------------------------------------------------'
+
+  =============================
+      Voraussetzungen
+  =============================
+
+      - CMake >= 2.4
+        http:/www.cmake.org/HTML/Download.html
+
+      - qt 4.2.0 oder neuer
+        ftp://ftp.trolltech.com/qt/source
+        MsE kompiliert nicht mit älteren Versionen!
+
+      - gcc >= 4.x.x oder clang >= 2.9
+          http://gcc.gnu.org/
+          http://clang.llvm.org/
+
+      - libsndfile >= 1.0.1
+          http://www.mega-nerd.com/libsndfile/
+
+      - libsamplerate
+          http://www.mega-nerd.com/SRC/
+
+      - JACK >= 0.103
+          http://jackaudio.org/
+
+      - libuuid
+         e2fsprogs Paket http://e2fsprogs.sourceforge.net/
+         Einige Distros bieten das eventuell in einem anderen Paket an.
+
+      Optional:
+
+      - fluidsynth >= 1.0.3 (formerly known as iiwusynth) from
+        http://sourceforge.net/apps/trac/fluidsynth/
+
+      - liblo           Lightweight OSC (Open Sound Control)    http://liblo.sourceforge.net/
+      - DSSI            Disposable Soft Synth Interface.        http://dssi.sourceforge.net/
+          (Both recommended - DSSI alone will have no native GUIs, OSC alone does nothing, for now.)
+
+      - dssi-vst        Unterstützung für DSSI vst plugins      http://www.breakfastquay.com/dssi-vst/
+
+      - LASH            Audio Session Handler                   http://lash.nongnu.org/
+         Seit neuerem kann LADISH es auch emulieren             http://ladish.org/
+      
+      - natürlich: eine Soundkarte und/oder irgendwelche Midi Geräte
+
+  =============================
+      Kompilierung
+  =============================
+
+      - download source von http://lmuse.sourceforge.net/
+      - untar source:
+            tar xvofj muse-current-tar.bz2
+      - konfigurieren:
+            cmake -DCMAKE_BUILD_TYPE=release [-DCMAKE_INSTALL_PREFIX=<prefix>] ../
+      - kompilieren:
+            make
+      - installieren (als root)
+            make install
+      - Test
+
+====================================================================
+Aktuelle(re) Infos gibt es auf der MusE Homepage
+http://lmuse.sourceforge.net/
+und in der englischen README
+

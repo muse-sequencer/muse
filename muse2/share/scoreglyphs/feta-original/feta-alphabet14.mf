@@ -1,0 +1,6 @@
+% part of LilyPond's pretty-but-neat music font
+
+design_size := 14.14;
+input feta-alphabet;
+end.
+

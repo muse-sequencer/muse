@@ -1,0 +1,4 @@
+To get started with MusE why don't you visit the tutorials at <br><a href="http://muse-sequencer.org/index.php/Support">http://muse-sequencer.org</a>
+MusE can add effects in realtime for audio tracks,<br>check the effect rack on the mixer strip
+For routing and selection dialogs that allow multiple selections<br>use ctrl when clicking to keep the dialog open
+What are you waiting for? Make music! :)

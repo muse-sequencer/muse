@@ -1,0 +1,14 @@
+% feta20.mf
+% part of LilyPond's pretty-but-neat music font
+
+design_size := 20;
+
+input feta-autometric;
+
+
+% use feta-test for debugging.
+test := 0;
+input feta-generic;
+
+
+end.

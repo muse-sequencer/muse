@@ -1,0 +1,222 @@
+====================================================================
+      MusE  ---  Linux Music Editor
+====================================================================
+
+Welcome to MusE, the open source MIDI/Audio sequencer.
+
+MusE is distributed under the GNU General Public License (GPL).
+Please check out the file COPYING in this directory for more
+details.
+
+,-----------------------------------------------------------------.
+| NOTICE                                                          |
+|-----------------------------------------------------------------|
+| Some parts of MusE code are EXPERIMENTAL, and may well result   |
+| in a CRASH, and who knows what other ill effects.               |
+| RUN THIS SOFTWARE AT YOUR OWN RISK.                             |
+`-----------------------------------------------------------------'
+
+  =============================
+      Requirements:
+  =============================
+      
+
+      - CMake >= 2.4 
+          http:/www.cmake.org/HTML/Download.html
+
+      - QT: Qt >= 4.2.0 
+          http://qt.nokia.com/products/
+          MusE does _not_ compile with older versions
+
+      - gcc >= 4.x.x or clang >= 2.9
+          http://gcc.gnu.org/
+          http://clang.llvm.org/
+
+      - libsndfile >= 1.0.1
+          http://www.mega-nerd.com/libsndfile/
+
+      - libsamplerate
+          http://www.mega-nerd.com/SRC/
+
+      - JACK >= 0.103
+          http://jackaudio.org/
+
+      - libuuid
+         e2fsprogs package http://e2fsprogs.sourceforge.net/
+         Some distros may include it in another package, offering a choice.
+
+      Optional:
+
+      - fluidsynth >= 1.0.3 (formerly known as iiwusynth) from
+        http://sourceforge.net/apps/trac/fluidsynth/
+
+      - liblo           Lightweight OSC (Open Sound Control)    http://liblo.sourceforge.net/
+      - DSSI            Disposable Soft Synth Interface.        http://dssi.sourceforge.net/
+          (Both recommended - DSSI alone will have no native GUIs, OSC alone does nothing, for now.)
+
+      - dssi-vst        Support for DSSI vst plugins            http://www.breakfastquay.com/dssi-vst/
+
+      - LASH            Audio Session Handler                   http://lash.nongnu.org/
+         Recently LADISH has been emulating it instead.         http://ladish.org/
+      
+      - ConTeXt (for building documentation, by default the build
+               script tries to build documentation, can be
+               disabled by setting ENABLE_DOCUMENTATION to OFF)
+
+  =============================
+      Building MusE:
+  =============================
+
+      - Download source from http://lmuse.sourceforge.net/
+
+      - Unpack the source somewhere.  
+
+        You may also try the various MusE development SVN branches for 
+         up-to-the-minute features and fixes, but they may be less stable. 
+
+      - To compile MusE, run the following commands from the 
+         top level directory where the source code was unpacked
+         (the directory where THIS README FILE is found): 
+       
+	******************************************************
+        *                      Notice:                       *
+        * A quick way is to run the ./compile_muse.sh        *
+        * script in the same dir, it should perform the same *
+        * steps for a basic setup without asking any         *
+        * questions. If it fails you may be better off using *
+        * the instructions below.                            *
+        ******************************************************
+ 
+        The build directory:
+        --------------------
+          Building in a subdirectory is recommended to keep the build directory separate from the source tree. 
+          So create a new subdirectory with a useful name like "build" or "debug" or "release": 
+            mkdir build
+          Change directory (cd) to the new directory: 
+            cd build  
+
+        Configuration:
+        --------------
+          There are a few different ways to configure (notice the two dots):
+
+          Type "cmake -i .." to run in step-by-step 'Wizard' mode, this is the RECOMMENDED way to
+          setup the build environment.
+
+          Or type "cmake -L .." to see options, then compose "cmake <options>" yourself. 
+          Some <options> are:
+
+            -DCMAKE_BUILD_TYPE=<type>
+               <type> can be blank (to reset a previous cached type to 'empty'), 
+                debug, release, RelWithDebInfo and MinSizeRel.
+               Release is recommended, to get optimizations.
+               If no CMAKE_BUILD_TYPE is given at all, cmake uses either the previous 
+                cached value, or else 'empty' (plain or default system optimizations).
+
+            -DCMAKE_INSTALL_PREFIX=<prefix>
+               The installation <prefix> where the program is installed.
+               The default is to install in /usr/local.
+
+          Or type "ccmake .." (if you have it - text-mode GUI). It may be blank so hit  
+           'C' to first-time configure. Fiddle with yer options if ye so desire, then hit 
+           'C' to configure then 'G' to generate and exit, or 'Q' to quit without 
+           generating. 
+
+          Or there is also a desktop GUI for cmake called cmake-gui.
+
+        Compiling:
+        ----------  
+          After configuration, while still in the build directory,type:
+            make 
+
+        Installing:
+        ----------  
+          After compiling, type:
+            make install (as root) 
+           or
+            sudo make install
+
+  =============================
+      Running MusE:
+  =============================
+
+      Recommended setup:
+      ------------------
+        MusE is a realtime program which requires special rights to work properly.
+
+      - Check if you are running a sufficiently new linux kernel > 2.6.x
+        A modern, standard destop kernel might suit your needs.
+        However, for the best performance a so-called 'low latency' or 'realtime' 
+         kernel may be required. Check your distro's packages for availability. 
+
+      - create an "audio" group if it does not already exists
+        and put yourself into this group
+
+      - For realtime priority, you may want to ensure either the file:
+           /etc/security/limits.conf
+         or
+           /etc/security/limits.d/audio.conf
+         contains:
+           @audio   -  rtprio     95
+           @audio   -  memlock    unlimited
+
+      - make sure you can acces the realtime clock (RTC)
+            chmod 660 /dev/rtc
+            chgrp audio /dev/rtc
+
+      - make sure MusE can set the rtc clock:
+            echo 8192 > /proc/sys/dev/rtc/max-user-freq
+            inspect with:
+            cat /proc/sys/dev/rtc/max-user-freq
+
+      - some distros do not load the alsa sequencer module by default.
+        if necessary, load the alsa sequencer module with:
+            /sbin/modprobe snd-seq
+
+      - Start jack, typically by using the qjackctl application.
+        MusE can also be run without Jack. MusE will use a dummy audio 
+         driver if Jack is not detected, or the -a option is given.
+
+
+      Running:
+      ------------------
+        start MusE by typing:
+            muse2 <options>
+
+          Some <options> are:
+            -h       help
+            -v       print version
+            -d       debug mode: no threads, no RT
+            -D       debug mode: enable some debug messages
+                                  specify twice for lots of debug messages
+                                  this may slow down MusE massively!
+            -m       debug mode: trace midi Input
+            -M       debug mode: trace midi Output
+            -s       debug mode: trace sync
+            -a       no audio
+            -P  n    set audio driver real time priority to n
+                      (Dummy only, default 40. Else fixed by Jack.)
+            -Y  n    force midi real time priority to n (default: audio driver prio +2)
+            -p       don't load LADSPA plugins
+            -I       don't load DSSI plugins
+            -L       don't use LASH
+            -l  xx   force locale to the given language/country code
+                      (xx = de,en,es,fr,pl,ru,sv_SE)
+
+      (JACK and all its clients (qjackctl & MusE) must run with the
+      same user id)
+
+
+  =============================
+      known bugs
+  =============================
+
+      - not so many: only some usability quirks we're working on currently
+      - automation recording displays odd things in the arranger
+        while recording; the display is corrected once recording is
+        complete.
+
+====================================================================
+Let us know whether MusE works for you !!!
+Have a look at the webpage http://www.muse-sequencer.org for details.
+
+

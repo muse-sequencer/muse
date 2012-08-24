@@ -1,0 +1,1308 @@
+%
+% feta-toevallig.mf -- implement Accidentals
+%
+% (c) 1997--2009 Han-Wen Nienhuys <hanwen@xs4all.nl>
+%
+
+
+%
+% also show in other configuration wrt staff lines.
+%
+def draw_shifted_too =
+if test > 0:
+	fet_beginchar ("shifted too", "");
+		set_char_box (0, 0, 0, 0);
+		currentpicture := remember_pic;
+
+		draw_staff (-2, 2, 0.5);
+	fet_endchar;
+fi;
+enddef;
+
+
+%
+% Accidentals from various sources, notably
+%
+%   Baerenreiter edition of Schuberts `Auf dem Strom' (sharp, natural)
+%   F Hofmeister edition of Muellers `Etueden fuer Horn' (double sharp, flat)
+%
+
+
+%
+% Naming for accidentals (including microtonal variants):
+%
+%   SHARPBASE[.SLASHES.STEMS]
+%   FLATBASE[.MODIFIER]
+%  
+% Examples:
+%
+%   sharp.slashslash.stem
+%   mirroredflat.flat
+%
+%
+
+
+fet_begingroup ("accidentals");
+
+%
+% Draw an arrow
+%
+% * `stemslant' gives the direction of the stem's left boundary
+%   (needed for brushed stems, equals "up" for straight stems)
+% * `extend' is used to make the stem longer or shorter (if negative);
+%   different kinds of accidentals need different values here
+%
+def draw_arrow (expr attach, stemwidth, stemslant, extend, pointingdown) =
+begingroup;
+	save htip;  % tip height
+	save wwing; % wing `radius'
+	save angle_wing_bot, angle_wing_top, angle_tip;
+	save upshift;
+	clearxy;
+
+	wwing := 0.26 stemwidth;
+	htip := staff_space * 0.85 + stafflinethickness - wwing;
+
+	% `flip' is used to reflect the arrow vertically
+	% if arrow points downward
+	transform flip;
+	if pointingdown:
+		flip = identity reflectedabout (origin, right);
+	else:
+		flip = identity;
+	fi;
+
+	z1 = attach shifted (-stemwidth / 2, 0);
+	upshift := max (0, wwing + 0.1 staff_space + extend);
+	z2 = z1 shifted (((unitvector stemslant)
+			  scaled upshift) transformed flip);
+
+	z7 = attach shifted ((stemwidth/2),0);
+	z6 = z7 shifted (((unitvector (-xpart stemslant, ypart stemslant))
+			  scaled upshift) transformed flip);
+	z2 - z3 = ( 0.38 staff_space, 0.05 htip) transformed flip;
+	z6 - z5 = (-0.38 staff_space, 0.05 htip) transformed flip;
+
+	z4 = attach shifted ((-0.2 stemwidth, upshift + htip)
+			     transformed flip);
+	z4'= attach shifted (( 0.2 stemwidth, upshift + htip)
+			     transformed flip);
+
+	% `angle_wing_bot' is the angle at which the arc
+	% from z2 to z3a enters z3a
+	% `angle_wing_top' is the angle at which the arc
+	% from z3b to z4 leaves z3b
+	% `angle_tip' is the angle at which the arc
+	% from z4 to z4' leaves z4
+	angle_wing_bot = 30;
+	angle_wing_top = 55;
+	angle_tip = 68;
+
+	z3a = z3 shifted ((((dir angle_wing_bot) rotated -90)
+			   scaled wwing) transformed flip);
+	z3b = z3 shifted ((((dir angle_wing_top) rotated 90)
+			   scaled wwing) transformed flip);
+
+	z5a = z5 shifted ((((dir (180 - angle_wing_bot)) rotated 90)
+			   scaled wwing) transformed flip);
+	z5b = z5 shifted ((((dir (180 - angle_wing_top)) rotated -90)
+			   scaled wwing) transformed flip);
+
+	% Draw the arrow
+	pickup pencircle scaled 1;
+	fill z1
+	     -- z2{stemslant transformed flip}
+	     .. {(-dir angle_wing_bot) transformed flip}z3a
+	     .. z3b{(dir angle_wing_top) transformed flip}
+	     .. z4{(dir angle_tip) transformed flip}
+	     .. z4'{(dir (-angle_tip)) transformed flip}
+	     .. {(dir (-angle_wing_top)) transformed flip}z5b
+	     .. z5a{(-dir (-angle_wing_bot)) transformed flip}
+	     .. z6{((-stemslant) reflectedabout (origin, up)) transformed flip}
+	     -- z7
+	     -- cycle;
+
+	labels (range 0 thru 7, 4', 3a, 3b, 5a, 5b);
+endgroup;
+enddef;
+
+save remember_pic;
+picture remember_pic;
+
+save sharp_beamheight;
+sharp_beamheight# := 0.3 staff_space# + stafflinethickness#;
+
+%
+% The beams of most sharps have horizontal endings (as if drawn with
+% a square pen).  [Wanske] does not mention this, so we'll just ignore
+% this fact.
+%
+
+def draw_meta_sharp (expr width, offset) =
+	save beamwidth, beamslope;
+	save ne, nw_dist;
+	pair ne, nw_dist;
+
+	beamwidth := width;
+
+	define_whole_vertical_blacker_pixels (sharp_beamheight);
+
+	clearxy;
+
+	beamslope = sharp_beamheight / beamwidth;
+
+	pickup pencircle scaled 2 blot_diameter;
+
+	rt x2 - lft x1 = beamwidth;
+	z2 = z1 + whatever * (beamwidth, sharp_beamheight);
+	.5 [z1, z3] = (.5 w, offset);
+	x3 = x2;
+	top y2 - bot y3 = sharp_beamheight;
+	x4 = x1;
+	top y1 - bot y4 = sharp_beamheight;
+
+	ne = unitvector (z2 - z1);
+	nw_dist = (ne rotated 90) * blot_diameter;
+
+	fill lft z1{up}
+	     ... (z1 + nw_dist){ne}
+	     -- (z2 + nw_dist){ne}
+	     ... rt z2{down}
+	     -- rt z3{down}
+	     ... (z3 - nw_dist){-ne}
+	     -- (z4 - nw_dist){-ne}
+	     ... lft z4{up}
+	     -- cycle;
+
+	labels (1, 2, 3, 4);
+enddef;
+
+
+def draw_sharp(expr arrowup, arrowdown) =
+	save stem, stemx, stemwidth;
+	save outer_space, interbeam;
+	save stemlength, extendleft, extendright, height, depth;
+
+	stemwidth# := stafflinethickness# + .05 staff_space#;
+	define_whole_blacker_pixels (stemwidth);
+
+	interbeam := 1.05 staff_space_rounded;
+
+	stemlength# := 1.5 staff_space#;
+	define_pixels (stemlength);
+
+	height# = stemlength#;
+	depth# = stemlength#;
+	extendright# = 0;
+	extendleft# = 0;
+	if arrowup:
+		height# := height# + 1.2 staff_space#;
+		extendright# := extendright# + 1.5 stafflinethickness#;
+	fi;
+	if arrowdown:
+		depth# := depth# + 1.2 staff_space#;
+		extendleft# := extendleft# + 1.5 stafflinethickness#;
+	fi;
+	define_pixels (extendleft, extendright);
+	set_char_box (extendleft#, 1.1 staff_space#, depth#, height#);
+
+	stem := 7 / 16 * w;
+	stemx := hround stem;
+	outer_space := hround ((w - stemx - stemwidth) / 2);
+
+	w := 2 outer_space + stemx + stemwidth;
+	d := d - feta_space_shift;
+
+	draw_meta_sharp (w, -.5 interbeam);
+	draw_meta_sharp (w, -.5 interbeam + vround interbeam);
+
+	% expand the charbox so that it encloses the whole arrow;
+	% this must not happen earlier because some commands above
+	% still rely on the old width
+	w := w + extendright;
+
+	pickup pencircle scaled stemwidth;
+
+	lft x5 = lft x6 = outer_space;
+	lft x7 = lft x8 = outer_space + stemx;
+	bot y5 = -stemlength;
+	top y6 = vround (1.5 staff_space - stem * beamslope);
+	bot y7 = -top y6 + feta_space_shift;
+	top y8 = stemlength;
+
+	labels (5, 6, 7, 8);
+
+	draw_gridline (z5, z6, stemwidth);
+	draw_gridline (z7, z8, stemwidth);
+
+	if arrowup:
+		draw_arrow (z8, stemwidth, up,
+			    stafflinethickness / 2 + stemwidth / 2, false);
+	fi;
+	if arrowdown:
+		draw_arrow (z5, stemwidth, up,
+			    stafflinethickness / 2 + stemwidth / 2, true);
+	fi;
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+enddef;
+
+
+fet_beginchar ("Sharp", "sharp");
+	draw_sharp (false, false);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Arrowed Sharp (arrow up)", "sharp.arrowup");
+	draw_sharp (true, false);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Arrowed Sharp (arrow down)", "sharp.arrowdown");
+	draw_sharp (false, true);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Arrowed Sharp (arrows up and down)", "sharp.arrowboth");
+	draw_sharp (true, true);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("1/2 Sharp", "sharp.slashslash.stem");
+	save stem, stemwidth;
+	save outer_space, interbeam;
+
+	stemwidth# := stafflinethickness# + .05 staff_space#;
+	define_whole_blacker_pixels (stemwidth);
+
+	interbeam := 1.05 staff_space_rounded;
+
+	set_char_box (0, 0.7 staff_space#,
+		      1.5 staff_space#, 1.5 staff_space#);
+
+	stem := 7 / 16 * w;
+	outer_space := hround ((w - stemwidth) / 2);
+
+	w := 2 outer_space + stemwidth;
+	d := d - feta_space_shift;
+
+	draw_meta_sharp (w, -.5 interbeam);
+	draw_meta_sharp (w, -.5 interbeam + vround interbeam);
+
+	pickup pencircle scaled stemwidth;
+
+	lft x5 = lft x6 = outer_space;
+	top y6 = vround (1.5 staff_space - .5 stem);
+	bot y5 = -top y6 + feta_space_shift;
+
+	labels (5, 6);
+
+	draw_gridline (z5, z6, stemwidth);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Sharp (3 beams)", "sharp.slashslashslash.stemstem");
+	save stem, stemx, stemwidth;
+	save outer_space, interbeam;
+	save sharp_beamheight;
+
+	sharp_beamheight# := 0.22 staff_space# + stafflinethickness#;
+
+	stemwidth# := stafflinethickness# + .05 staff_space#;
+	define_whole_blacker_pixels (stemwidth);
+
+	interbeam := 1.2 staff_space_rounded;
+
+	set_char_box (0, 1.1 staff_space#,
+		      1.5 staff_space#, 1.5 staff_space#);
+
+	stem := 7 / 16 * w;
+	stemx := hround stem;
+	outer_space := hround ((w - stemx - stemwidth) / 2);
+
+	w := 2 outer_space + stemx + stemwidth;
+	d := d - feta_space_shift;
+
+	draw_meta_sharp (.88 w, -.5 interbeam);
+	draw_meta_sharp (.88 w, -.5 interbeam + vround interbeam);
+	sharp_beamheight# := 1/.88 sharp_beamheight#;
+	draw_meta_sharp (w, 0);
+
+	pickup pencircle scaled stemwidth;
+
+	lft x5 = lft x6 = outer_space;
+	lft x7 = lft x8 = outer_space + stemx;
+	bot y5 = -d;
+	top y6 = vround (1.5 staff_space - stem * beamslope);
+	bot y7 = -top y6 + feta_space_shift;
+	top y8 = h;
+
+	labels (5, 6, 7, 8);	
+
+	draw_gridline (z5, z6, stemwidth);
+	draw_gridline (z7, z8, stemwidth);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("1/2 Sharp (3 beams)", "sharp.slashslashslash.stem");
+	save stem, stemx, stemwidth;
+	save outer_space, interbeam;
+	save sharp_beamheight;
+
+	sharp_beamheight# := 0.22 staff_space# + stafflinethickness#;
+
+	stemwidth# := stafflinethickness# + .05 staff_space#;
+	define_whole_blacker_pixels (stemwidth);
+
+	interbeam := 1.2 staff_space_rounded;
+
+	set_char_box (0, 0.95 staff_space#,
+		      1.3 staff_space#, 1.3 staff_space#);
+
+	stem := 7 / 16 * w;
+	outer_space := hround ((w - stemwidth) / 2);
+
+	w := 2 outer_space + stemwidth;
+	d := d - feta_space_shift;
+
+	draw_meta_sharp (.8 w, -.5 interbeam);
+	draw_meta_sharp (.8 w, -.5 interbeam + vround interbeam);
+	sharp_beamheight# := 1/.8 sharp_beamheight#;
+	draw_meta_sharp (w, 0);
+
+	pickup pencircle scaled stemwidth;
+
+	lft x5 = lft x6 = outer_space;
+	top y6 = vround (1.5 staff_space - .5 stem);
+	bot y5 = -top y6 + feta_space_shift;
+	labels (5, 6);
+
+	draw_gridline (z5, z6, stemwidth);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("3/4 Sharp", "sharp.slashslash.stemstemstem");
+	save stem, stemx, stemwidth;
+	save outer_space, interbeam;
+
+	stemwidth# := stafflinethickness# + .05 staff_space#;
+	define_whole_blacker_pixels (stemwidth);
+
+	interbeam := 1.05 staff_space_rounded;
+
+	set_char_box (0, 1.6 staff_space#,
+		      1.5 staff_space#, 1.5 staff_space#);
+
+	stem := 9 / 32 * w;
+	stemx := hround stem;
+	outer_space := hround ((w - 2 stemx - stemwidth) / 2);
+
+	w := 2 outer_space + 2 stemx + stemwidth;
+	d := d - feta_space_shift;
+
+	draw_meta_sharp (w, -.5 interbeam);
+	draw_meta_sharp (w, -.5 interbeam + vround interbeam);
+
+	pickup pencircle scaled stemwidth;
+
+	lft x5 = lft x6 = outer_space;
+	lft x7 = lft x8 = outer_space + stemx;
+	lft x9 = lft x10 = outer_space + 2 stemx;
+	bot y5 = -d;
+	top y6 = vround (1.5 staff_space - 2 stem * beamslope);
+	bot y9 = -top y6 + feta_space_shift;
+	top y10 = h;
+	y7 = .5 [y5, y9];
+	y8 = .5 [y6, y10];
+
+	labels (5, 6, 7, 8, 9, 10);
+
+	draw_gridline (z5, z6, stemwidth);
+	draw_gridline (z7, z8, stemwidth);
+	draw_gridline (z9, z10, stemwidth);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+%
+% The stems of the natural are brushed (at least, in Barenreiter SCS)
+%
+
+def draw_natural (expr arrowup, arrowdown) =
+	save stemwidth, top_stem_thick;
+	save ne, pat_top, pat_bottom;
+	save depth, height, extendleft, extendright, stemlength;
+	save brush_scale_up, brush_scale_down;
+	pair ne;
+	path pat_top, pat_bottom;
+
+	top_stem_thick# = stafflinethickness# + .10 staff_space#;
+	stemwidth# = 0.09 staff_space# + .5 stafflinethickness#;
+	define_whole_blacker_pixels (top_stem_thick, stemwidth);
+
+	stemlength# = 1.5 staff_space#;
+	define_pixels (stemlength);
+
+	height# = stemlength#;
+	depth# = stemlength#;
+	extendleft# = 0;
+	extendright# = 0;
+	if arrowup:
+		extendleft# := 3 stafflinethickness#;
+		height# := height# + 1.2 staff_space#;
+	fi;
+	if arrowdown:
+		extendright# := 3.15 stafflinethickness#;
+		depth# := depth# + 1.2 staff_space#;
+	fi;
+	define_pixels (extendright);
+
+	set_char_box (extendleft#, 2/3 staff_space#, depth#, height#);
+
+	d := d - feta_space_shift;
+
+	pickup pencircle scaled stemwidth;
+
+	brush_scale_up := 1.0;
+	brush_scale_down := 1.0;
+	% to look nice, arrowed stems must be less brushed
+	if arrowup:
+		brush_scale_up := 0.85;
+	fi;
+	if arrowdown:
+		brush_scale_down := 0.85;
+	fi;
+
+	penpos1 (top_stem_thick, 0);
+	penpos3 (top_stem_thick, 0);
+	penpos2 (stemwidth, 0);
+	penpos4 (stemwidth, 0);
+	% z1' and z3' are needed for the arrowed accidentals
+	penpos1' (top_stem_thick * brush_scale_up, 0);
+	penpos3' (top_stem_thick * brush_scale_down, 0);
+
+	x2r = w;
+	x4l = 0;
+	x3 = x3' = x2;
+	x1 = x1' = x4;
+
+	y1 = y1' = stemlength;
+	y3 = y3' = -stemlength;
+	top y2 = vround (staff_space - 3/2 stafflinethickness);
+	y4 = -y2 + feta_space_shift;
+
+	pat_bottom := z4r{z4r - z1r}
+		      .. bot z4
+		      .. z4l{z1l - z4l};
+	fill simple_serif (z1'l, z1'r, -30)
+	     -- pat_bottom
+	     -- cycle;
+
+	pat_top := z2r{z2r - z3r}
+		   .. top z2
+		   .. z2l{z3l - z2l};
+	fill simple_serif (z3'l, z3'r, 30)
+	     -- pat_top
+	     -- cycle;
+
+	ne = (x2 - x4, stafflinethickness);
+
+	z11' = z3l + whatever * (z2l - z3l);
+	y11' = vround (.5 (staff_space - stafflinethickness));
+	z11 = z11' + whatever * ne;
+	x11 = x12;
+	z12 = directionpoint -ne of pat_top;
+	z13 = z12 + whatever * ne;
+	x13 = x1;
+	z14 = z11 + whatever * ne;
+	x14 = x1;
+
+	z21' = z4r + whatever * (z1r - z4r);
+	y21' = -y11' + feta_space_shift;
+	z21 = z21' + whatever * ne;
+	x21 = x22;
+	z22 = directionpoint -ne of pat_bottom;
+	z23 = z22 + whatever * ne;
+	x23 = x3;
+	z24 = z21 + whatever * ne;
+	x24 = x3;
+
+	fill z11
+	     -- z12
+	     -- z13
+	     -- z14
+	     -- cycle;
+	fill z21
+	     -- z22
+	     -- z23
+	     -- z24
+	     -- cycle;
+
+	penlabels (1, 1', 2, 3, 3', 4);
+	labels (11, 11', 12, 13, 14, 21, 21', 22, 23, 24);
+
+	if arrowup:
+		draw_arrow (z1, top_stem_thick * brush_scale_up,
+			    z1'l - z4l, stafflinethickness / 2, false);
+	fi;
+	if arrowdown:
+		draw_arrow (z3, top_stem_thick * brush_scale_down,
+			    z2r - z3'r, stafflinethickness / 2, true);
+		w := w + extendright;
+	fi;
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+enddef;
+
+
+fet_beginchar ("Natural", "natural");
+	draw_natural (false, false);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Arrowed Natural (arrow up)", "natural.arrowup");
+	draw_natural (true, false);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Arrowed Natural (arrow down)", "natural.arrowdown");
+	draw_natural (false, true);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Arrowed Natural (arrows up and down)", "natural.arrowboth");
+	draw_natural (true, true);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+%
+% Dedicated to my mom.    (3/10/97)
+%
+% Mamma, ik hou van je; kom je alsjeblieft terug?
+%    -- HW
+%
+%
+% TODO: remove crook_fatness
+% TODO: document, simplify!
+%
+
+def draw_meta_flat (expr xcenter, w, crook_fatness, arrowup, arrowdown) =
+	save crook_thinness;
+	save bottom_overshoot, bot_crook_dir;
+	save top_stem_thick, top_stem_thick_orig;
+	save bottom_stem_thick, hair, smaller_hole;
+	save top_crook_thinness;
+	save zwiep;
+	save center;
+	pair center, bot_crook_dir;
+	save clearing, clearing_orig;
+
+	clearxy;
+
+	% the stem shouldn't reach the top staff line.
+	%% TODO: should take from height.
+	%
+	% TODO: parameterize this
+	%
+	if w >= 0.75 staff_space:
+		smaller_hole = 0.35 stafflinethickness;
+	else:
+		smaller_hole = 0;
+	fi;
+	crook_thinness = .7 stafflinethickness + .06 staff_space;
+	top_crook_thinness = 1 stafflinethickness + .065 staff_space;
+	clearing = 1.7 stafflinethickness;
+	clearing_orig = clearing;
+	if arrowup:
+		clearing := 0.5 staff_space;
+	fi;
+	bottom_overshoot = stafflinethickness;
+
+	bottom_stem_thick# = 0.06 staff_space# + 0.6 stafflinethickness#;
+	top_stem_thick# = 0.1 staff_space# + 1.2 stafflinethickness#;
+	top_stem_thick_orig# = top_stem_thick#;
+	if arrowup:
+		% to look nice, arrowed stems should be less brushed
+		top_stem_thick# := top_stem_thick# * 0.8;
+	fi;
+	define_whole_blacker_pixels (bottom_stem_thick, top_stem_thick,
+				     top_stem_thick_orig);
+
+	if odd (top_stem_thick - bottom_stem_thick):
+		top_stem_thick := top_stem_thick - 1;
+	fi;
+	if odd (top_stem_thick_orig - bottom_stem_thick):
+		top_stem_thick_orig := top_stem_thick_orig - 1;
+	fi;
+
+	center = (xcenter, 0);
+
+	x1l = hround (xcenter - .5 top_stem_thick);
+	y1 = vround (2 staff_space - clearing);
+	x2l = hround (xcenter - .5 bottom_stem_thick);
+	y2 = -.5 staff_space - .5 stafflinethickness;
+	% z16 and the `*_orig' variables are needed for arrowed accidentals
+	% because their inner part should be unchanged from plain ones but
+	% the points z3l, z3r, and z10 depend on values that are different
+	% for arrowed accidentals
+	x16l = hround (xcenter -.5 top_stem_thick_orig);
+	y16 = vround (2 staff_space - clearing_orig);
+
+	penpos1 (top_stem_thick, 0);
+	penpos16 (top_stem_thick_orig, 0);
+	penpos2 (bottom_stem_thick, 0);
+
+	y3l = vfloor ((staff_space - stafflinethickness) / 2);
+	z3l = whatever [z2r, z1r];
+	z3r = .3 [z2r,
+		  (z16r shifted (0, clearing_orig - 1.7 stafflinethickness))]
+	      + (smaller_hole, 0);
+	x3r := hceiling x3r;
+
+	% we insert z3l to get better conversion with mf2pt1
+	fill simple_serif (z1r, z1l, 30)
+	     -- z2l
+	     -- z2r
+	     -- z3l
+	     -- cycle;
+
+	z10 = whatever [z2r, z16r] + (smaller_hole, 0);
+	y10 = -1/10 staff_space;
+	x10 := hceiling x10;
+
+	x11 = xcenter + bottom_overshoot / 3;
+	y11 = -vround (.5 (staff_space + stafflinethickness)
+		       + bottom_overshoot);
+
+	x2a = 0.2[x2r, x7];
+	y2a = 1.5[y2, y11];
+
+	penpos4 (whatever, 53);
+
+	y4l - y4r = top_crook_thinness;
+	y5r = .15 staff_space;
+	x5l = hround (w + xcenter);
+	y4 = staff_space / 2;
+	x4r = .45 [x5r, x3r];
+	y4l := vround y4l;
+
+	penpos5 (crook_fatness, -175);
+
+	bot_crook_dir = unitvector ((x5l, 0) - z11);
+	z8 = z11 + whatever * bot_crook_dir;
+	y8 = -staff_space / 2;
+
+	z7 = z8
+	     + whatever * bot_crook_dir
+	     + crook_thinness * (bot_crook_dir rotated 90);
+	x7 = .1 [x3r, x8];
+
+	unfill z3r{z3r - z10}
+	       .. z4r{right}
+	       .. z5r{down}
+	       .. z7{-bot_crook_dir}
+	       & z7
+	       .. z10{z3r - z10}
+	       -- cycle;
+
+	if arrowdown:
+		fill z2l{down}
+		     .. z2a{up}
+		     .. z8{bot_crook_dir}
+		     .. z5l{up}
+		     .. z4l{left}
+		     .. z3l
+		     -- cycle;
+	else:
+		fill z2l{down}
+		     .. z11{right}
+		     .. z8{bot_crook_dir}
+		     .. z5l{up}
+		     .. z4l{left}
+		     .. z3l
+		     -- cycle;
+	fi;
+
+	if arrowup:
+		draw_arrow (z1, top_stem_thick, z1l - z2l,
+			    0.5 stafflinethickness, false);
+	fi;
+	if arrowdown:
+		draw_arrow ((0.5 [x2l, x2a], y2), x2a - x2l, up,
+			    staff_space / 2, true);
+	fi;
+enddef;
+
+
+def draw_arrowed_meta_flat (expr xcenter, width, crook_fatness,
+				 arrowup, arrowdown) =
+	save depth, height, extendleft;
+
+	depth# = 0.6 staff_space#;
+	height# = 1.9 staff_space#;
+	extendleft# := 1.2 stafflinethickness#;
+	if arrowup:
+		extendleft# := 3.45 stafflinethickness#;
+		height# := height# + 0.8 staff_space#;
+	fi;
+	if arrowdown:
+		extendleft# := 3.45 stafflinethickness#;
+		depth# := depth# + 1.6 staff_space#;
+	fi;
+
+	set_char_box (extendleft#, width, depth#, height#);
+	draw_meta_flat(xcenter, w, crook_fatness, arrowup, arrowdown);
+enddef;
+
+%
+% unfortunately, 600dpi is not enough to show the brush of the stem.
+%
+
+fet_beginchar ("Flat", "flat");
+	draw_arrowed_meta_flat (0, 0.8 staff_space#, 0.31 staff_space,
+				false, false);
+	penlabels (range 0 thru 11);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Arrowed Flat (arrow up)", "flat.arrowup");
+	draw_arrowed_meta_flat (0, 0.8 staff_space#, 0.31 staff_space,
+				true, false);
+	penlabels (range 0 thru 23);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Arrowed Flat (arrow down)", "flat.arrowdown");
+	draw_arrowed_meta_flat (0, 0.8 staff_space#, 0.31 staff_space,
+				false, true);
+	penlabels (range 0 thru 23);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Arrowed Flat (arrow up and down)", "flat.arrowboth");
+	draw_arrowed_meta_flat (0, 0.8 staff_space#, 0.31 staff_space,
+				true, true);
+	penlabels (range 0 thru 23);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Flat (slashed)", "flat.slash");
+	set_char_box (.4 staff_space#, .8 staff_space#,
+		      0.6 staff_space#, 1.9 staff_space#);
+
+	draw_meta_flat (0, w, 0.31 staff_space, false, false);
+
+	clearxy;
+
+	save slope, slash_width;
+	slope = 0.5;
+	slash_width = w;
+
+	z11 = (0, h / 2);
+	z12 = z11 - (slash_width, slash_width * slope) / 2;
+	z13 = z11 + (slash_width, slash_width * slope) / 2;
+	penpos12 (1.5 stafflinethickness, angle (z13 - z12) - 90);
+	penpos13 (1.5 stafflinethickness, angle (z13 - z12) - 90);
+
+	z14 = z12 - .75 stafflinethickness * unitvector (z13 - z12);
+	z15 = z13 + .75 stafflinethickness * unitvector (z13 - z12);
+
+	fill z13r
+	     .. z15
+	     .. z13l
+	     -- z12l
+	     .. z14
+	     .. z12r
+	     -- z13r
+	     .. cycle;
+
+	penlabels (12, 13);
+	labels (14, 15);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+fet_beginchar ("Flat (slashed twice)", "flat.slashslash");
+	set_char_box (.4 staff_space#, .8 staff_space#,
+		      0.6 staff_space#, 1.9 staff_space#);
+
+	draw_meta_flat (0, w, 0.31 staff_space, false, false);
+
+	clearxy;
+
+	save slope, slash_width;
+	slope = 0.5;
+	slash_width = w;
+
+	z11 = (0, 5/12 h);
+	z12 = z11 - (slash_width, slash_width * slope) / 2;
+	z13 = z11 + (slash_width, slash_width * slope) / 2;
+	penpos12 (1.5 stafflinethickness, angle (z13 - z12) - 90);
+	penpos13 (1.5 stafflinethickness, angle (z13 - z12) - 90);
+
+	z14 = z12 - .75 stafflinethickness * unitvector (z13 - z12);
+	z15 = z13 + .75 stafflinethickness * unitvector (z13 - z12);
+
+	fill z13r
+	     .. z15
+	     .. z13l
+	     -- z12l
+	     .. z14
+	     .. z12r
+	     -- z13r
+	     .. cycle;
+
+	penlabels (12, 13);
+	labels (14, 15);
+
+	z21 = (0, 2/3 h);
+	z22 = z21 - (slash_width, slash_width * slope) / 2;
+	z23 = z21 + (slash_width, slash_width * slope) / 2;
+	penpos22 (1.5 stafflinethickness, angle (z23 - z22) - 90);
+	penpos23 (1.5 stafflinethickness, angle (z23 - z22) - 90);
+
+	z24 = z22 - .75 stafflinethickness * unitvector (z23 - z22);
+	z25 = z23 + .75 stafflinethickness * unitvector (z23 - z22);
+
+	fill z23r
+	     .. z25
+	     .. z23l
+	     -- z22l
+	     .. z24
+	     .. z22r
+	     -- z23r
+	     .. cycle;
+
+	penlabels (22, 23);
+	labels (24, 25);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+fet_beginchar ("Flatflat (mirrored)", "mirroredflat.flat");
+	set_char_box (0, 1.6 staff_space#, 
+		      0.6 staff_space#, 1.9 staff_space#);
+
+	% This is a modified version of `draw_meta_flat'.
+
+	save crook_thinness, crook_fatness;
+	save bottom_overshoot, bot_crook_dir;
+	save top_stem_thick, bottom_stem_thick, hair, smaller_hole;
+	save top_crook_thinness;
+	save zwiep;
+	save center;
+	pair center, bot_crook_dir;
+	save clearing, wid;
+	save pat;
+	path pat;
+
+	clearxy;
+
+	wid = w / 2;
+
+	% the stem shouldn't reach the top staff line.
+	%% TODO: should take from height.
+	%
+	% TODO: parameterize this
+	%
+	if wid >= 0.75 staff_space:
+		smaller_hole = 0.35 stafflinethickness;
+	else:
+		smaller_hole = 0;
+	fi;
+	clearing = 1.7 stafflinethickness;
+	crook_thinness = .7 stafflinethickness + .06 staff_space;
+	crook_fatness = 0.31 staff_space;
+	top_crook_thinness = 1 stafflinethickness + .065 staff_space;
+	bottom_overshoot = stafflinethickness;
+
+	bottom_stem_thick# = 0.06 staff_space# + 0.6 stafflinethickness#;
+	top_stem_thick# = 0.1 staff_space# + 1.2 stafflinethickness#;
+	define_whole_blacker_pixels (bottom_stem_thick, top_stem_thick);
+
+	if odd (top_stem_thick - bottom_stem_thick):
+		top_stem_thick := top_stem_thick - 1;
+	fi;
+
+	center = (0, 0);
+
+	x1l = hround (-.5 top_stem_thick);
+	y1 = vround (2 staff_space - clearing);
+	x2l = hround (-.5 bottom_stem_thick);
+	y2 = -.5 staff_space - .5 stafflinethickness;
+
+	penpos1 (top_stem_thick, 0);
+	penpos2 (bottom_stem_thick, 0);
+
+	y3l = vfloor ((staff_space - stafflinethickness) / 2);
+	z3l = whatever [z2r, z1r];
+	z3r = .3 [z2r, z1r] + (smaller_hole, 0);
+	x3r := hceiling x3r;
+
+	z10 = whatever [z2r, z1r] + (smaller_hole, 0);
+	y10 = -1/10 staff_space;
+	x10 := hceiling x10;
+
+	x11 = bottom_overshoot / 3;
+	y11 = -vround (.5 (staff_space + stafflinethickness)
+		       + bottom_overshoot);
+
+	penpos4 (whatever, 53);
+
+	y4l - y4r = top_crook_thinness;
+	y5r = .15 staff_space;
+	x5l = hround (wid);
+	y4 = staff_space / 2;
+	x4r = .45 [x5r, x3r];
+	y4l := vround y4l;
+
+	penpos5 (crook_fatness, -175);
+
+	bot_crook_dir = unitvector ((x5l, 0) - z11);
+	z8 = z11 + whatever * bot_crook_dir;
+	y8 = -staff_space / 2;
+
+	z7 = z8
+	     + whatever * bot_crook_dir
+	     + crook_thinness * (bot_crook_dir rotated 90);
+	x7 = .1 [x3r, x8];
+
+	pat := z3r{z3r - z10}
+	       .. z4r{right}
+	       .. z5r{down}
+	       .. z7{-bot_crook_dir}
+	       & z7
+	       .. z10{z3r - z10}
+	       -- cycle;
+	unfill pat;
+	unfill pat xscaled -1;
+
+	pat := z11{right}
+	       .. z8{bot_crook_dir}
+	       .. z5l{up}
+	       .. z4l{left}
+	       .. z3l;
+	fill pat
+	     -- simple_serif (z1r, z1l, 30)
+	     -- reverse pat xscaled -1 shifted (-feta_eps, 0)
+	     -- cycle;
+
+	currentpicture := currentpicture shifted (w/2, 0);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Semi flat", "mirroredflat");
+	set_char_box (1.2 stafflinethickness#, .8 staff_space#,
+		      0.6 staff_space#, 1.9 staff_space#);
+
+	draw_meta_flat (0, w, 0.31 staff_space, false, false);
+	currentpicture := currentpicture xscaled -1 shifted (w - b, 0);
+fet_endchar;
+
+
+fet_beginchar ("Semi flat", "mirroredflat.backslash");
+	set_char_box (.4 staff_space#, .8 staff_space#,
+		      0.6 staff_space#, 1.9 staff_space#);
+
+	draw_meta_flat (0, w, 0.31 staff_space, false, false);
+
+	clearxy;
+
+	save slope, slash_width;
+	slope = 0.5;
+	slash_width = w;
+
+	z11 = (0, h / 2);
+	z12 = z11 - (slash_width, slash_width * slope) / 2;
+	z13 = z11 + (slash_width, slash_width * slope) / 2;
+	penpos12 (1.5 stafflinethickness, angle (z13 - z12) - 90);
+	penpos13 (1.5 stafflinethickness, angle (z13 - z12) - 90);
+
+	z14 = z12 - .75 stafflinethickness * unitvector (z13 - z12);
+	z15 = z13 + .75 stafflinethickness * unitvector (z13 - z12);
+
+	fill z13r
+	     .. z15
+	     .. z13l
+	     -- z12l
+	     .. z14
+	     .. z12r
+	     -- z13r
+	     .. cycle;
+
+	currentpicture := currentpicture xscaled -1 shifted (w - b, 0);
+
+	labels (1, 2, 3);
+fet_endchar;
+
+
+fet_beginchar ("Double Flat", "flatflat");
+	save left_wid, overlap, right_wid;
+
+	left_wid = .7;
+	right_wid = .8;
+	overlap = .05;
+
+	set_char_box (1.2 stafflinethickness#,
+		      (left_wid + right_wid - overlap) * staff_space#,
+		      .6 staff_space#, 1.9 staff_space#);
+	draw_meta_flat (0, left_wid * staff_space, 1/3 staff_space,
+			false, false);
+	draw_meta_flat (hround ((left_wid - overlap) * staff_space),
+			right_wid * staff_space, 1/3 staff_space,
+			false, false);
+fet_endchar;
+
+
+fet_beginchar ("3/4 Flat", "flatflat.slash");
+	save left_wid, overlap, right_wid;
+
+	left_wid = .7;
+	right_wid = .8;
+	overlap = .05;
+
+	set_char_box (1.2 stafflinethickness#,
+		      (left_wid + right_wid - overlap) * staff_space#,
+		      .6 staff_space#, 1.9 staff_space#);
+	draw_meta_flat (0, left_wid * staff_space, 1/3 staff_space,
+			false, false);
+	draw_meta_flat (hround ((left_wid - overlap) * staff_space),
+			right_wid * staff_space, 1/3 staff_space,
+			false, false);
+
+	%% maybe we should clip part of the stems?
+	%% or make the 1st flat smaller?
+	%% or reverse it?
+	pickup pencircle scaled 2 stafflinethickness;
+
+	z12 = round (-.25 w - b, .55 staff_space) + feta_offset;
+	z13 = round (.75 w, 1.45 staff_space) + feta_offset;
+	penpos12 (2 stafflinethickness, angle (z13 - z12) - 90);
+	penpos13 (2 stafflinethickness, angle (z13 - z12) - 90);
+
+	z14 = z12 - stafflinethickness * unitvector (z13 - z12);
+	z15 = z13 + stafflinethickness * unitvector (z13 - z12);
+
+	fill z13r
+	     .. z15
+	     .. z13l
+	     -- z12l
+	     .. z14
+	     .. z12r
+	     -- z13r
+	     .. cycle;
+
+	penlabels (12, 13);
+	labels (14, 15);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Double Sharp", "doublesharp");
+	save klaverblad, klaversteel;
+	save pat;
+	path pat;
+
+	klaversteel = 1/15 staff_space;
+	klaverblad = .4 staff_space - .5 stafflinethickness;
+
+	set_char_box (0, staff_space#, .5 staff_space#, .5 staff_space#);
+
+	z1 = (klaversteel, 0);
+	z2 = (w / 2 - klaverblad / 10, h - klaverblad);
+	z3 = (w / 2, h);
+	z4 = z2 reflectedabout ((0, 0), (1, 1));
+	z5 = z1 reflectedabout ((0, 0), (1, 1));
+
+	labels (1, 2, 3, 4, 5);
+
+	pickup pencircle scaled blot_diameter;
+
+	x2 := hfloor (rt x2) - blot_diameter / 2;
+	x3 := hfloor (rt x3) - blot_diameter / 2;
+	y3 := vfloor (top y3) - blot_diameter / 2;
+	y4 := vfloor (top y4) - blot_diameter / 2;
+
+	pat = (rt z1){dir45}
+	      .. {right}(bot z2)
+	      .. rt z2
+	      -- rt z3{z3 - z2}
+	      .. top z3{z4 - z3}
+	      -- top z4{z4 - z3}
+	      .. (lft z4){down}
+	      .. {dir 225}(top z5);
+	pat := pat
+	       -- reverse pat xscaled -1 shifted (-feta_eps, 0);
+
+	% assure symmetry -- it's more important to center the glyph on the
+	% staff line than centering it between staff lines, so we use
+	% feta_shift, not feta_space_shift.
+	h := h + feta_shift;
+
+	fill pat shifted (0, feta_shift)
+	     -- reverse pat yscaled -1 shifted (0, -feta_eps)
+	     -- cycle;
+
+	% ugh
+	currentpicture := currentpicture shifted (hround (w / 2), 0);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+def draw_paren =
+	save leftindent;
+
+	leftindent := .2 staff_space;
+
+	set_char_box (0, .5 staff_space# + stafflinethickness#,
+		      staff_space#, staff_space#);
+
+	d := d - feta_shift;
+
+	z1 = (leftindent, h);
+	z2 = (w - stafflinethickness, .5 (h - d));
+	z3 = (leftindent, -d);
+
+	penpos1 (stafflinethickness, 35);
+	penpos2 (.1 staff_space + stafflinethickness, 0);
+	penpos3 (stafflinethickness, -35);
+
+	fill z2l{down}
+	     .. simple_serif (z3l, z3r, 90)
+	     .. z2r{up}
+	     .. simple_serif (z1r, z1l, 90)
+	     .. z2l{down}
+	     -- cycle;
+enddef;
+
+
+fet_beginchar ("Right Parenthesis", "rightparen");
+	draw_paren;
+	penlabels (1, 2, 3);
+
+	remember_pic := currentpicture;
+
+	draw_staff (-2, 2, 0);
+fet_endchar;
+
+
+draw_shifted_too;
+
+
+fet_beginchar ("Left Parenthesis", "leftparen");
+	draw_paren;
+
+	currentpicture := currentpicture xscaled -1;
+
+	set_char_box (charwd, charbp, chardp, charht);
+fet_endchar;
+
+fet_endgroup ("accidentals");

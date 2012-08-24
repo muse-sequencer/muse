@@ -1,0 +1,1097 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RhythmBase</class>
+ <widget class="QMainWindow" name="RhythmBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>465</width>
+    <height>605</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MusE: Random Rhythm Generator</string>
+  </property>
+  <widget class="QWidget" name="widget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>59</y>
+     <width>465</width>
+     <height>546</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout">
+    <property name="margin">
+     <number>6</number>
+    </property>
+    <property name="spacing">
+     <number>6</number>
+    </property>
+    <item row="1" column="0">
+     <widget class="QGroupBox" name="GroupBox1">
+      <property name="title">
+       <string>Instrument Properties</string>
+      </property>
+      <layout class="QVBoxLayout">
+       <property name="spacing">
+        <number>6</number>
+       </property>
+       <property name="margin">
+        <number>11</number>
+       </property>
+       <item>
+        <layout class="QGridLayout">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <item row="1" column="2">
+          <widget class="QLabel" name="TextLabel2_3_2">
+           <property name="text">
+            <string>counts/bar</string>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLabel" name="TextLabel3_2">
+           <property name="text">
+            <string>steps/count</string>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QLabel" name="TextLabel1_2_2">
+           <property name="text">
+            <string># bars</string>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineInstrument_2">
+           <property name="text">
+            <string>test</string>
+           </property>
+           <property name="dragEnabled">
+            <bool>false</bool>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="5">
+          <widget class="QSpinBox" name="spinboxContrib_2">
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4">
+          <widget class="QLabel" name="labelContrib_2">
+           <property name="text">
+            <string>contrib</string>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" colspan="2">
+          <widget class="QCheckBox" name="checkRandomize_2">
+           <property name="text">
+            <string>randomize</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboGroupSel_2">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Group 1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Group 2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Group 3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Group 4</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Group 5</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QSpinBox" name="spinBoxSteps_2">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>16</number>
+           </property>
+           <property name="value">
+            <number>4</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <widget class="QSpinBox" name="spinboxBars_2">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>16</number>
+           </property>
+           <property name="value">
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <widget class="QLabel" name="labelListen_2">
+           <property name="text">
+            <string>listen</string>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="TextLabel1_4">
+           <property name="text">
+            <string>Instrument</string>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <widget class="QSpinBox" name="spinboxCounts_2">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>16</number>
+           </property>
+           <property name="value">
+            <number>4</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="5">
+          <widget class="QSpinBox" name="spinboxListen_2">
+           <property name="minimum">
+            <number>-100</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="TextLabel1_3_2">
+           <property name="text">
+            <string>Group</string>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="buttonNew_2">
+           <property name="toolTip">
+            <string>create new entry</string>
+           </property>
+           <property name="whatsThis">
+            <string>pressing the New button you create a new entry
+in the MusE list of defined controllers</string>
+           </property>
+           <property name="text">
+            <string>&amp;New</string>
+           </property>
+           <property name="autoDefault">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buttonDelete_2">
+           <property name="toolTip">
+            <string>delete selected entry</string>
+           </property>
+           <property name="text">
+            <string>&amp;Delete</string>
+           </property>
+           <property name="autoDefault">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="Spacer1_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buttonUp_2">
+           <property name="text">
+            <string>Up</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buttonDown_2">
+           <property name="text">
+            <string>Down</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QTreeWidget" name="viewInstrument">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>150</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>32767</width>
+        <height>150</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>list of defined controllers</string>
+      </property>
+      <property name="whatsThis">
+       <string>This is the MusE list of defined controllers.</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+      <column>
+       <property name="text">
+        <string>Instrument              </string>
+       </property>
+       <property name="clickable">
+        <bool>true</bool>
+       </property>
+       <property name="resizable">
+        <bool>true</bool>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Group</string>
+       </property>
+       <property name="clickable">
+        <bool>true</bool>
+       </property>
+       <property name="resizable">
+        <bool>true</bool>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>steps/count      </string>
+       </property>
+       <property name="clickable">
+        <bool>true</bool>
+       </property>
+       <property name="resizable">
+        <bool>true</bool>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>counts/bar</string>
+       </property>
+       <property name="clickable">
+        <bool>true</bool>
+       </property>
+       <property name="resizable">
+        <bool>true</bool>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string># bars</string>
+       </property>
+       <property name="clickable">
+        <bool>true</bool>
+       </property>
+       <property name="resizable">
+        <bool>true</bool>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>contrib</string>
+       </property>
+       <property name="clickable">
+        <bool>true</bool>
+       </property>
+       <property name="resizable">
+        <bool>true</bool>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>listen</string>
+       </property>
+       <property name="clickable">
+        <bool>true</bool>
+       </property>
+       <property name="resizable">
+        <bool>true</bool>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QSplitter" name="Splitter3">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QSplitter" name="Splitter2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QFrame" name="Frame3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>50</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+       </widget>
+       <widget class="QFrame" name="Frame4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>50</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QFrame" name="Frame5">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>150</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <widget class="QLabel" name="textLabel1">
+        <property name="geometry">
+         <rect>
+          <x>64</x>
+          <y>26</y>
+          <width>250</width>
+          <height>90</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>&lt;b&gt;Notice!&lt;/b&gt;&lt;br&gt;
+Random Rhythm Generator is not enabled yet!</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>111</width>
+     <height>38</height>
+    </rect>
+   </property>
+   <widget class="QLabel">
+     <property name="text">
+       <string>Tools</string>
+     </property>
+   </widget>
+   <addaction name="fileNewAction"/>
+   <addaction name="fileOpenAction"/>
+   <addaction name="fileSaveAction"/>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>465</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="fileNewAction"/>
+    <addaction name="fileOpenAction"/>
+    <addaction name="fileSaveAction"/>
+    <addaction name="fileSaveAsAction"/>
+    <addaction name="separator"/>
+    <addaction name="filePrintAction"/>
+    <addaction name="separator"/>
+    <addaction name="fileExitAction"/>
+   </widget>
+   <widget class="QMenu" name="editMenu">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="editUndoAction"/>
+    <addaction name="editRedoAction"/>
+    <addaction name="separator"/>
+    <addaction name="editCutAction"/>
+    <addaction name="editCopyAction"/>
+    <addaction name="editPasteAction"/>
+    <addaction name="separator"/>
+    <addaction name="editFindAction"/>
+   </widget>
+   <widget class="QMenu" name="helpMenu">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="helpContentsAction"/>
+    <addaction name="helpIndexAction"/>
+    <addaction name="separator"/>
+    <addaction name="helpAboutAction"/>
+   </widget>
+   <addaction name="fileMenu"/>
+   <addaction name="editMenu"/>
+   <addaction name="helpMenu"/>
+  </widget>
+  <action name="fileNewAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image0</normaloff>image0</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+   <property name="iconText">
+    <string>New</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileNewAction</cstring>
+   </property>
+  </action>
+  <action name="fileOpenAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image1</normaloff>image1</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+   <property name="iconText">
+    <string>Open</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileOpenAction</cstring>
+   </property>
+  </action>
+  <action name="fileSaveAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image2</normaloff>image2</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="iconText">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileSaveAction</cstring>
+   </property>
+  </action>
+  <action name="fileSaveAsAction">
+   <property name="text">
+    <string>Save &amp;As...</string>
+   </property>
+   <property name="iconText">
+    <string>Save As</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileSaveAsAction</cstring>
+   </property>
+  </action>
+  <action name="filePrintAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image3</normaloff>image3</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Print...</string>
+   </property>
+   <property name="iconText">
+    <string>Print</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>filePrintAction</cstring>
+   </property>
+  </action>
+  <action name="fileExitAction">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="iconText">
+    <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileExitAction</cstring>
+   </property>
+  </action>
+  <action name="editUndoAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image4</normaloff>image4</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Undo</string>
+   </property>
+   <property name="iconText">
+    <string>Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>editUndoAction</cstring>
+   </property>
+  </action>
+  <action name="editRedoAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image5</normaloff>image5</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Redo</string>
+   </property>
+   <property name="iconText">
+    <string>Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>editRedoAction</cstring>
+   </property>
+  </action>
+  <action name="editCutAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image6</normaloff>image6</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Cut</string>
+   </property>
+   <property name="iconText">
+    <string>Cut</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>editCutAction</cstring>
+   </property>
+  </action>
+  <action name="editCopyAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image7</normaloff>image7</iconset>
+   </property>
+   <property name="text">
+    <string>C&amp;opy</string>
+   </property>
+   <property name="iconText">
+    <string>Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>editCopyAction</cstring>
+   </property>
+  </action>
+  <action name="editPasteAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image8</normaloff>image8</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Paste</string>
+   </property>
+   <property name="iconText">
+    <string>Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>editPasteAction</cstring>
+   </property>
+  </action>
+  <action name="editFindAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>image9</normaloff>image9</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Find...</string>
+   </property>
+   <property name="iconText">
+    <string>Find</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>editFindAction</cstring>
+   </property>
+  </action>
+  <action name="helpContentsAction">
+   <property name="text">
+    <string>&amp;Contents...</string>
+   </property>
+   <property name="iconText">
+    <string>Contents</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>helpContentsAction</cstring>
+   </property>
+  </action>
+  <action name="helpIndexAction">
+   <property name="text">
+    <string>&amp;Index...</string>
+   </property>
+   <property name="iconText">
+    <string>Index</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>helpIndexAction</cstring>
+   </property>
+  </action>
+  <action name="helpAboutAction">
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+   <property name="iconText">
+    <string>About</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>helpAboutAction</cstring>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>fileNewAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>fileNew()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileOpenAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>fileOpen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileSaveAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>fileSave()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileSaveAsAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>fileSaveAs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>filePrintAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>filePrint()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileExitAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>fileExit()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>editUndoAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>editUndo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>editRedoAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>editRedo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>editCutAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>editCut()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>editCopyAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>editCopy()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>editPasteAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>editPaste()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>editFindAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>editFind()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>helpIndexAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>helpIndex()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>helpContentsAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>helpContents()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>helpAboutAction</sender>
+   <signal>activated()</signal>
+   <receiver>RhythmBase</receiver>
+   <slot>helpAbout()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

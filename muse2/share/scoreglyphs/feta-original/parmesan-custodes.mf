@@ -1,0 +1,500 @@
+% -%-Fundamental-%- -*-Metafont-*-
+% parmesan-custodes.mf -- implement ancient custodes
+% 
+% source file of LilyPond's pretty-but-neat music font
+% 
+% (c) 2000--2009 Juergen Reuter <reuter@ipd.uka.de>
+% 
+
+save black_notehead_width;
+numeric black_notehead_width;
+
+fet_begingroup ("custodes");
+
+%
+% character aligment:
+%
+%   The custos is assumed to be vertically centered around (0, 0).
+%   The left-most edge of the custos should touch the vertical line
+%   that goes though the point (0, 0).
+%
+% set_char_box() conventions:
+%
+% * breapth: Ignored (as far as I know).  Should be set to 0.
+%
+% * width: Should cover the horizontal range of the custos that is to
+%   be printed in the staff.  If the custos has an appendage that is
+%   supposed to reach beyond the right end of the staff, the width
+%   should be set such that the appendage is outside of the char box.
+%
+% * depth: Should match the bottom edge of the custos.  Affects
+%   vertical collision handling.
+%
+% * height: Should match the top edge of the custos.  Affects vertical
+%   collision handling.
+%
+
+save between_staff_lines, on_staff_line, anywhere;
+
+between_staff_lines := 0;
+on_staff_line := 1;
+anywhere := 2;
+
+save dir_up, dir_down;
+
+dir_up := 1;
+dir_down := -1;
+
+
+%%%%%%%%
+%
+%
+% Hufnagel style
+%
+%
+
+% parameterized hufnagel custos
+def custos_hufnagel (expr verbose_name, internal_name, 
+			  direction, staffline_adjustment) =
+
+	fet_beginchar (verbose_name, internal_name);
+		save alpha, dalpha, ht, wd, stem_ht, pen_size;
+
+		ht# = noteheight#;
+		wd# / ht# = 0.6;
+		alpha = 35;
+		dalpha = direction * alpha;
+
+		if staffline_adjustment = between_staff_lines:
+			stem_ht# = 1.00 staff_space#;
+		elseif staffline_adjustment = on_staff_line:
+			stem_ht# = 1.50 staff_space#;
+		else: % staffline_adjustment = anywhere
+			stem_ht# = 1.25 staff_space#;
+		fi;
+
+		pen_size# = 0.5 (wd# ++ ht#);
+
+		define_pixels (ht, wd, pen_size, stem_ht);
+
+		save ellipse, pat, T;
+		path ellipse, pat;
+		transform T;
+
+		T := identity xscaled linethickness
+			      yscaled pen_size
+			      rotated -dalpha;
+		pickup pencircle transformed T;
+		ellipse := fullcircle transformed T;
+
+		if direction = dir_up:
+			top y1 = ht / 2;
+			bot y2 = -ht / 2;
+		else:
+			bot y1 = -ht / 2;
+			top y2 = ht / 2;
+		fi;
+
+		lft x1 = 0;
+		rt  x2 = wd;
+		y3 - y2 = direction * stem_ht;
+		(y3 - y2) = (x3 - x2) * tand (90 - dalpha);
+
+		fill get_subpath (ellipse, z1 - z2, z2 - z1, z1)
+		     if direction > 0:
+			     -- get_subpath (ellipse, z2 - z1, z3 - z2, z2)
+		     else:
+			     -- get_subpoint (ellipse, z2 - z1, z2)
+			     -- get_subpoint (ellipse, z3 - z2, z2)
+		     fi
+		     -- get_subpath (ellipse, z3 - z2, z2 - z3, z3)
+		     if direction > 0:
+			     -- get_subpoint (ellipse, z2 - z3, z2)
+			     -- get_subpoint (ellipse, z1 - z2, z2)
+		     else:
+			     -- get_subpath (ellipse, z2 - z3, z1 - z2, z2)
+		     fi
+		     -- cycle;
+
+		% The stem is intentionally outside of the char box.
+		if direction > 0:
+			set_char_box (0, wd#, ht# / 2, stem_ht#);
+		else:
+			set_char_box (0, wd#, stem_ht#, ht# / 2);
+		fi;
+
+		labels (1, 2, 3);
+	fet_endchar;
+enddef;
+
+
+% custos hufnagel, stem up, between staff lines
+custos_hufnagel ("Custos Hufnagel", "hufnagel.u0", 
+		 dir_up, between_staff_lines);
+
+
+% custos hufnagel, stem up, on staff line
+custos_hufnagel ("Custos Hufnagel", "hufnagel.u1", 
+		 dir_up, on_staff_line);
+
+
+% custos hufnagel, stem up, anywhere
+custos_hufnagel ("Custos Hufnagel", "hufnagel.u2", 
+		 dir_up, anywhere);
+
+
+% custos hufnagel, stem down, between staff lines
+custos_hufnagel ("Reverse Custos Hufnagel", "hufnagel.d0",
+		 dir_down, between_staff_lines);
+
+
+% custos hufnagel, stem down, on staff line
+custos_hufnagel ("Reverse Custos Hufnagel", "hufnagel.d1",
+		 dir_down, on_staff_line);
+
+
+% custos hufnagel, stem down, anywhere
+custos_hufnagel ("Reverse Custos Hufnagel", "hufnagel.d2",
+		 dir_down, anywhere);
+
+
+%%%%%%%%
+%
+%
+% Medicaea style
+%
+%
+
+def custos_medicaea (expr verbose_name, internal_name, 
+			  direction, staffline_adjustment) =
+	fet_beginchar (verbose_name, internal_name);
+		save ht, wd, stem_ht;
+
+		ht# = noteheight#;
+		wd# / ht# = 0.25;
+
+		if staffline_adjustment = between_staff_lines:
+			stem_ht# = 1.00 staff_space#;
+		elseif staffline_adjustment = on_staff_line:
+			stem_ht# = 1.50 staff_space#;
+		else: % staffline_adjustment = anywhere
+			stem_ht# = 1.25 staff_space#;
+		fi;
+
+		define_pixels (ht, wd, stem_ht);
+
+		save ellipse, T;
+		path ellipse;
+		transform T;
+
+		T := identity xscaled 0.6 linethickness
+			      yscaled ht;
+		pickup pencircle transformed T;
+		ellipse := fullcircle transformed T;
+
+		lft x1 = 0;
+		y1 = 0;
+		rt x2 = wd;
+		y2 = y1;
+
+		fill get_subpath (ellipse, left, right, z1)
+		     -- get_subpath (ellipse, right, left, z2)
+		     -- cycle;
+
+		pickup pencircle scaled 0.6 linethickness;
+
+		rt x3 = wd;
+		y3 = 0;
+		x4 = x3;
+		if direction > 0:
+			top y4 = stem_ht;
+			draw_rounded_block (bot lft z3, top rt z4,
+					    0.6 linethickness);
+		else:
+			bot y4 = -stem_ht;
+			draw_rounded_block (bot lft z4, top rt z3,
+					    0.6 linethickness);
+		fi;
+
+
+		if direction > 0:
+			set_char_box (0, wd#, ht# / 2, stem_ht#);
+		else:
+			set_char_box (0, wd#, stem_ht#, ht# / 2);
+		fi;
+
+		labels (1, 2, 3, 4);
+	fet_endchar;
+enddef;
+
+
+% custos medicaea, stem up, between staff lines
+custos_medicaea ("Custos Med.", "medicaea.u0", 
+		 dir_up, between_staff_lines);
+
+
+% custos medicaea, stem up, on staff line
+custos_medicaea ("Custos Med.", "medicaea.u1", 
+		 dir_up, on_staff_line);
+
+
+% custos medicaea, stem up, anywhere
+custos_medicaea ("Custos Med.", "medicaea.u2", 
+		 dir_up, anywhere);
+
+
+% custos medicaea, stem down, between staff lines
+custos_medicaea ("Reverse Custos Med.", "medicaea.d0", 
+		dir_down, between_staff_lines);
+
+
+% custos medicaea, stem down, on staff line
+custos_medicaea ("Reverse Custos Med.", "medicaea.d1", 
+		 dir_down, on_staff_line);
+
+
+% custos medicaea, stem down, anywhere
+custos_medicaea ("Reverse Custos Med.", "medicaea.d2", 
+		 dir_down, anywhere);
+
+
+%%%%%%%%
+%
+%
+% Editio Vaticana style
+%
+%
+
+def custos_vaticana (expr verbose_name, internal_name, 
+			  direction, staffline_adjustment) =
+	fet_beginchar (verbose_name, internal_name);
+		save ht, wd, u_offs, l_offs, stem_size, stem_end;
+		save pen_ht, l_shift, curve_ht, bend_ht;
+
+		ht# = noteheight#;
+		wd# = 0.24 ht#;
+
+		if staffline_adjustment = between_staff_lines:
+			stem_size# = 1.00;
+		elseif staffline_adjustment = on_staff_line:
+			stem_size# = 1.50;
+		else: % staffline_adjustment = anywhere
+			stem_size# = 1.25;
+		fi;
+
+		curve_ht# = 0.6 ht#;
+		bend_ht# = 0.10 ht#;
+		l_shift# = 0.04 ht#;
+		u_offs# = +direction * 0.5 * (bend_ht# + l_shift#);
+		l_offs# = -direction * 0.5 * (bend_ht# - l_shift#);
+		stem_end# = direction * stem_size# * staff_space#;
+		pen_ht# = curve_ht# - l_shift#;
+
+		define_pixels (u_offs, l_offs, stem_end, ht, wd, pen_ht);
+
+		pickup pencircle scaled 0.6 linethickness;
+
+		z1 = (0, u_offs);
+		z2 = (0.7 wd, l_offs);
+		z3 = (wd, l_offs);
+
+		penpos1 (pen_ht, 90);
+		penpos2 (pen_ht, 90);
+		penpos3 (pen_ht, 90);
+
+		penstroke z1e{z2 - z1}
+			  .. {right}z2e
+			  .. z3e;
+
+		rt x4 = wd;
+		x5 = x4;
+
+		if direction > 0:
+			y4 = y3r;
+			top y5 = stem_end;
+			draw_rounded_block (bot lft z4, top rt z5,
+					    0.6 linethickness);
+		else:
+			y4 = y3l;
+			bot y5 = stem_end;
+			draw_rounded_block (bot lft z5, top rt z4,
+					    0.6 linethickness);
+		fi;
+
+		if direction > 0:
+			set_char_box (0, wd#,
+				      -l_offs# + 0.5 pen_ht#, stem_end#);
+		else:
+			set_char_box (0, wd#,
+				      -stem_end#, +l_offs# + 0.5 pen_ht#);
+		fi;
+
+		penlabels (1, 2, 3);
+		labels (4, 5);
+	fet_endchar;
+enddef;
+
+
+% custos vaticana, stem up, between staff lines
+custos_vaticana ("Custos Ed. Vat.", "vaticana.u0", 
+		 dir_up, between_staff_lines);
+
+
+% custos vaticana, stem up, on staff line
+custos_vaticana ("Custos Ed. Vat.", "vaticana.u1", 
+		 dir_up, on_staff_line);
+
+
+% custos vaticana, stem up, anywhere
+custos_vaticana ("Custos Ed. Vat.", "vaticana.u2", 
+		 dir_up, anywhere);
+
+
+% custos vaticana, stem down, between staff lines
+custos_vaticana ("Reverse Custos Ed. Vat.", "vaticana.d0", 
+		 dir_down, between_staff_lines);
+
+
+% custos vaticana, stem down, on_staff_line
+custos_vaticana ("Reverse Custos Ed. Vat.", "vaticana.d1", 
+		 dir_down, on_staff_line);
+
+
+% custos vaticana, stem down, anywhere
+custos_vaticana ("Reverse Custos Ed. Vat.", "vaticana.d2", 
+		 dir_down, anywhere);
+
+
+%%%%%%%%
+%
+%
+% Mensural style
+%
+%
+
+def custos_mensural (expr verbose_name, internal_name, 
+			  direction, staffline_adjustment) =
+	fet_beginchar (verbose_name, internal_name);
+		save alpha, dalpha, ht, wd, stem_ht;
+
+		ht# = noteheight#;
+		wd# / ht# = 1.2;
+		alpha = 35;
+		dalpha = direction * alpha;
+
+		if staffline_adjustment = between_staff_lines:
+			stem_ht# = 1.00 staff_space#;
+		elseif staffline_adjustment = on_staff_line:
+			stem_ht# = 1.50 staff_space#;
+		else: % staffline_adjustment = anywhere
+			stem_ht# = 1.25 staff_space#;
+		fi;
+
+		define_pixels (ht, wd, stem_ht);
+
+		save ellipse, T;
+		path ellipse;
+		transform T;
+
+		T := identity xscaled linethickness
+			      yscaled 0.4 ht
+			      rotated -dalpha;
+		pickup pencircle transformed T;
+		ellipse := fullcircle transformed T;
+
+		if direction > 0:
+			bot y1 = bot y3 = bot y5 = -direction * 0.33 ht;
+			top y2 = top y4 = +direction * 0.33 ht;
+		else:
+			top y1 = top y3 = top y5 = -direction * 0.33 ht;
+			bot y2 = bot y4 = +direction * 0.33 ht;
+		fi;
+
+		lft x1 = 0.0 wd;
+		lft x2 = 0.2 wd;
+		lft x3 = 0.4 wd;
+		lft x4 = 0.6 wd;
+		lft x5 = 0.8 wd;
+
+		y6 - y5 = direction * stem_ht;
+		y6 - y5 = (x6 - x5) * tand (90 - dalpha);
+
+		if direction > 0:
+			fill get_subpath (ellipse, z1 - z2, z2 - z1, z1)
+			     -- get_subpoint (ellipse, z2 - z1, z2)
+			     -- get_subpoint (ellipse, z3 - z2, z2)
+			     -- get_subpath (ellipse, z3 - z2, z4 - z3, z3)
+			     -- get_subpoint (ellipse, z4 - z3, z4)
+			     -- get_subpoint (ellipse, z5 - z4, z4)
+			     -- get_subpath (ellipse, z5 - z4, z6 - z5, z5)
+			     -- get_subpath (ellipse, z6 - z5, z5 - z6, z6)
+			     -- get_subpoint (ellipse, z5 - z6, z5)
+			     -- get_subpoint (ellipse, z4 - z5, z5)
+			     -- get_subpath (ellipse, z4 - z5, z3 - z4, z4)
+			     -- get_subpoint (ellipse, z3 - z4, z3)
+			     -- get_subpoint (ellipse, z2 - z3, z3)
+			     -- get_subpath (ellipse, z2 - z3, z1 - z2, z2)
+			     -- cycle;
+		else:
+			fill get_subpath (ellipse, z1 - z2, z2 - z1, z1)
+			     -- get_subpath (ellipse, z2 -z1, z3 - z2, z2)
+			     -- get_subpoint (ellipse, z3 - z2, z3)
+			     -- get_subpoint (ellipse, z4 - z3, z3)
+			     -- get_subpath (ellipse, z4 -z3, z5 - z4, z4)
+			     -- get_subpoint (ellipse, z5 - z4, z5)
+			     -- get_subpoint (ellipse, z6 - z5, z5)
+			     -- get_subpath (ellipse, z6 - z5, z5 - z6, z6)
+			     -- get_subpath (ellipse, z5 - z6, z4 - z5, z5)
+			     -- get_subpoint (ellipse, z4 - z5, z4)
+			     -- get_subpoint (ellipse, z3 - z4, z4)
+			     -- get_subpath (ellipse, z3 - z4, z2 - z3, z3)
+			     -- get_subpoint (ellipse, z2 - z3, z2)
+			     -- get_subpoint (ellipse, z1 - z2, z2)
+			     -- cycle;
+		fi;
+
+		% The stem is intentionally outside of the char box.
+		if direction > 0:
+			set_char_box (0, wd#,
+				      +direction * 0.33 ht#, stem_ht#);
+		else:
+			set_char_box (0, wd#,
+				      stem_ht#, -direction * 0.33 ht#);
+		fi;
+
+		labels (1, 2, 3, 4, 5, 6);
+	fet_endchar;
+enddef;
+
+
+% custos mensural, stem up, between staff lines
+custos_mensural ("Custos Mensural", "mensural.u0", 
+		 dir_up, between_staff_lines);
+
+
+% custos mensural, stem up, on staff line
+custos_mensural ("Custos Mensural", "mensural.u1", 
+		 dir_up, on_staff_line);
+
+
+% custos mensural, stem up, anywhere
+custos_mensural ("Custos Mensural", "mensural.u2", 
+		 dir_up, anywhere);
+
+
+% custos mensural, stem down, between staff lines
+custos_mensural ("Reverse Custos Mensural", "mensural.d0", 
+		 dir_down, between_staff_lines);
+
+
+% custos mensural, stem down, on staff line
+custos_mensural ("Reverse Custos Mensural", "mensural.d1", 
+		 dir_down, on_staff_line);
+
+
+% custos mensural, stem down, anywhere
+custos_mensural ("Reverse Custos Mensural", "mensural.d2", 
+		 dir_down, anywhere);
+
+
+fet_endgroup ("custodes");

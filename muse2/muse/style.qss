@@ -1,0 +1,73 @@
+/*
+ *    this is the MusE application style sheet
+ */
+
+
+/* TODO */
+
+/* DELETETHIS all?
+
+QLabel#midiChannelLabel { font-size: 6pt }
+MidiRack, EffectRack    { font-size: 8pt }
+QLabel#trackLabel       { font-size: 6pt }
+SimpleButton            { font-size: 8pt }
+QToolButton#routeButton { font-size: 8pt }
+QToolButton#preButton   { font-size: 8pt }
+
+TimeCanvas {
+      qproperty-fontSize1: 6;
+      qproperty-fontSize2: 8;
+      qproperty-fontSize3: 8
+      }
+
+QLabel#knobLabel        { font-size: 8pt }
+Awl--MidiVolEntry       { font-size: 5pt }
+Awl--MidiPanEntry       { font-size: 5pt }
+Awl--VolEntry           { font-size: 5pt }
+Awl--PanEntry           { font-size: 5pt }
+
+QLabel#AudioOut         {
+      font-size: 7pt;
+      background-color: white;
+      }
+
+QLabel#Group         {
+      font-size: 7pt;
+      background-color: yellow;
+      }
+
+QLabel#Wave         {
+      font-size: 7pt;
+      background-color: rgb(0,255,0);
+      }
+
+QLabel#AudioIn         {
+      font-size: 7pt;
+      background-color: red;
+      }
+
+QLabel#Synth         {
+      font-size: 7pt;
+      background-color: blue;
+      }
+
+QLabel#Midi         {
+      font-size: 7pt;
+      background-color: gray;
+      }
+
+QLabel#MidiOut         {
+      font-size: 7pt;
+      background-color: gray;
+      }
+
+QLabel#MidiIn         {
+      font-size: 7pt;
+      background-color: gray;
+      }
+QLabel#M-Synth         {
+      font-size: 7pt;
+      background-color: gray;
+      }
+
+*/

@@ -1,0 +1,84 @@
+#!@FONTFORGE@
+# all your brace are belong to us
+
+Open("feta-braces-b.pfb");
+SelectAll();
+Scale(200, 0, 0);
+Generate("feta-braces-b.scale.pfb");
+
+Open("feta-braces-c.pfb");
+SelectAll();
+Scale(300, 0, 0);
+Generate("feta-braces-c.scale.pfb");
+
+Open("feta-braces-d.pfb");
+SelectAll();
+Scale(400, 0, 0);
+Generate("feta-braces-d.scale.pfb");
+
+Open("feta-braces-e.pfb");
+SelectAll();
+Scale(500, 0, 0);
+Generate("feta-braces-e.scale.pfb");
+
+Open("feta-braces-f.pfb");
+SelectAll();
+Scale(600, 0, 0);
+Generate("feta-braces-f.scale.pfb");
+
+Open("feta-braces-g.pfb");
+SelectAll();
+Scale(700, 0, 0);
+Generate("feta-braces-g.scale.pfb");
+
+Open("feta-braces-h.pfb");
+SelectAll();
+Scale(800, 0, 0);
+Generate("feta-braces-h.scale.pfb");
+
+Open("feta-braces-i.pfb");
+SelectAll();
+Scale(900, 0, 0);
+Generate("feta-braces-i.scale.pfb");
+
+
+New()
+
+MergeFonts("feta-braces-a.pfb");
+MergeFonts("feta-braces-b.scale.pfb");
+MergeFonts("feta-braces-c.scale.pfb");
+MergeFonts("feta-braces-d.scale.pfb");
+MergeFonts("feta-braces-e.scale.pfb");
+MergeFonts("feta-braces-f.scale.pfb");
+MergeFonts("feta-braces-g.scale.pfb");
+MergeFonts("feta-braces-h.scale.pfb");
+MergeFonts("feta-braces-i.scale.pfb");
+
+SetFontNames("Aybabtu-Regular", "Aybabtu", "Aybabtu Regular", "Regular", "GNU GPL", "@TOPLEVEL_VERSION@");
+
+i = 0;
+while (i < CharCnt())
+  Select(i);
+# crashes fontforge, use PUA for now -- jcn
+# SetUnicodeValue(i + 0xF0000, 0);
+/*
+PRIVATE AREA
+       In the BMP, the range 0xe000 to 0xf8ff will never be  assigned  to  any
+       characters  by  the standard and is reserved for private usage. For the
+       Linux community, this private area has been subdivided further into the
+       range  0xe000  to 0xefff which can be used individually by any end-user
+       and the Linux zone in the range 0xf000 to 0xf8ff where  extensions  are
+       coordinated  among  all  Linux  users.  The  registry of the characters
+       assigned to the Linux zone is currently maintained by  H.  Peter  Anvin
+       <Peter.Anvin@linux.org>.
+*/
+  SetUnicodeValue(i + 0xE000, 0);
+  ++i;
+endloop
+
+LoadTableFromFile("LILF", "aybabtu.subfonts")
+LoadTableFromFile("LILC", "aybabtu.otf-table")
+LoadTableFromFile("LILY", "aybabtu.otf-gtable")
+
+Generate("aybabtu.otf");
+Generate("aybabtu.svg");
