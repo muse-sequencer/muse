@@ -36,7 +36,6 @@ extern int mtcType;
 
 namespace MusECore {
 
-
 //---------------------------------------------------------
 //   Pos
 //---------------------------------------------------------
@@ -47,6 +46,7 @@ Pos::Pos()
       _tick   = 0;
       _frame  = 0;
       sn      = -1;
+      _nullFlag = false;
       }
 
 Pos::Pos(const Pos& p)
@@ -55,8 +55,18 @@ Pos::Pos(const Pos& p)
       sn    = p.sn;
       _tick = p._tick;
       _frame = p._frame;
+      _nullFlag = p._nullFlag;
       }
 
+Pos::Pos(bool is_null)
+{
+      _type   = TICKS;
+      _tick   = 0;
+      _frame  = 0;
+      sn      = -1;
+      _nullFlag = is_null;
+}
+      
 Pos::Pos(unsigned t, bool ticks)
       {
       if (ticks) {
@@ -68,6 +78,15 @@ Pos::Pos(unsigned t, bool ticks)
             _frame = t;
             }
       sn = -1;
+      _nullFlag = false;
+      }
+
+Pos::Pos(unsigned t, TType tt)
+      {
+      _type = tt;  
+      _type == FRAMES ? _frame = t :_tick = t;
+      sn = -1;
+      _nullFlag = false;
       }
 
 Pos::Pos(const QString& s)
@@ -77,6 +96,7 @@ Pos::Pos(const QString& s)
       _tick = AL::sigmap.bar2tick(m, b, t);
       _type = TICKS;
       sn    = -1;
+      _nullFlag = false;
       }
 
 Pos::Pos(int measure, int beat, int tick)
@@ -84,6 +104,7 @@ Pos::Pos(int measure, int beat, int tick)
       _tick = AL::sigmap.bar2tick(measure, beat, tick);
       _type = TICKS;
       sn    = -1;
+      _nullFlag = false;
       }
 
 Pos::Pos(int min, int sec, int frame, int subframe)
@@ -108,6 +129,7 @@ Pos::Pos(int min, int sec, int frame, int subframe)
       _type  = FRAMES;
       _frame = lrint(time * MusEGlobal::sampleRate);
       sn     = -1;
+      _nullFlag = false;
       }
 
 //---------------------------------------------------------
@@ -242,6 +264,27 @@ unsigned Pos::frame() const
       }
 
 //---------------------------------------------------------
+//   value
+//---------------------------------------------------------
+
+unsigned Pos::posValue(TType t) const
+{
+  switch(t)
+  {
+    case FRAMES:
+      if (_type == TICKS)
+            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
+      return _frame;
+      break;
+    case TICKS:
+      if (_type == FRAMES)
+            _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
+      return _tick;
+      break;
+  }
+}
+      
+//---------------------------------------------------------
 //   setTick
 //---------------------------------------------------------
 
@@ -251,6 +294,7 @@ void Pos::setTick(unsigned pos)
       sn    = -1;
       if (_type == FRAMES)
             _frame = MusEGlobal::tempomap.tick2frame(pos, &sn);
+      _nullFlag = false;
       }
 
 //---------------------------------------------------------
@@ -263,7 +307,62 @@ void Pos::setFrame(unsigned pos)
       sn     = -1;
       if (_type == TICKS)
             _tick = MusEGlobal::tempomap.frame2tick(pos, &sn);
+      _nullFlag = false;
       }
+
+//---------------------------------------------------------
+//   setPosValue
+//---------------------------------------------------------
+
+void Pos::setPosValue(unsigned val, TType tt)
+{
+  sn = -1;
+  switch(tt) {
+    case FRAMES:
+          _frame = val;
+          if (_type == TICKS)
+                _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
+          break;
+    case TICKS:
+          _tick = val;
+          if (_type == FRAMES)
+                _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
+          break;
+  }
+  
+  // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   Why did I do it this way?
+  //_type = tt;  
+  //_type == FRAMES ? _frame = val :_tick = val;
+  
+  _nullFlag = false;
+}
+      
+//---------------------------------------------------------
+//   setPos
+//---------------------------------------------------------
+
+void Pos::setPos(const Pos& pos)
+{
+  sn = -1;
+  switch(pos._type) {
+    case FRAMES:
+          _frame = pos.frame();
+          if (_type == TICKS)
+                _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
+          break;
+    case TICKS:
+          _tick = pos.tick();
+          if (_type == FRAMES)
+                _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
+          break;
+  }
+
+  // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   Why did I do it this way?
+  //_type = tt;  
+  //_type == FRAMES ? _frame = val :_tick = val;
+  
+  _nullFlag = false;
+}
 
 //---------------------------------------------------------
 //   write
@@ -291,6 +390,7 @@ void Pos::write(int level, Xml& xml, const char* name) const
 void Pos::read(Xml& xml, const char* name)
       {
       sn = -1;
+      _nullFlag = false;
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -570,14 +670,15 @@ void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
 //   isValid
 //---------------------------------------------------------
 
+bool Pos::isValid() const
+{ 
+  return true;
+}
+
 bool Pos::isValid(int,int,int)
       {
       return true;
       }
-
-//---------------------------------------------------------
-//   isValid
-//---------------------------------------------------------
 
 bool Pos::isValid(int,int,int,int)
       {

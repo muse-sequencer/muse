@@ -119,7 +119,10 @@ class PianoCanvas : public EventCanvas {
          CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO
          };
 
-      PianoCanvas(MidiEditor*, QWidget*, int, int);
+      PianoCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0);
+      //PianoCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0,
+      //            MusECore::Pos::TType time_type = MusECore::Pos::TICKS,
+      //            bool formatted = true, int raster = 1);
       virtual ~PianoCanvas();
       void cmd(int cmd);
       void setColorMode(int mode) {

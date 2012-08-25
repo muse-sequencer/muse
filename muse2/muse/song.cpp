@@ -82,6 +82,12 @@ Song::Song(const char* name)
    :QObject(0)
       {
       setObjectName(name);
+      
+      // Experimental: REMOVE Tim. Or keep...
+      pos[0].setType(MusECore::Pos::FRAMES);
+      pos[1].setType(MusECore::Pos::FRAMES);
+      pos[2].setType(MusECore::Pos::FRAMES);
+      
       _arrangerRaster     = 0; // Set to measure, the same as Arranger intial value. Arranger snap combo will set this.
       noteFifoSize   = 0;
       noteFifoWindex = 0;
@@ -1290,13 +1296,19 @@ void Song::setPos(int idx, const Pos& val, bool sig,
             }
       if (sig) {
             if (swap) {
+                  // REMOVE Tim. Remove the four emit 'tick' versions when conversion to all Pos is complete...
+              
                   emit posChanged(LPOS, pos[LPOS].tick(), adjustScrollbar);
+                  emit posChanged(LPOS, pos[LPOS], adjustScrollbar);
                   emit posChanged(RPOS, pos[RPOS].tick(), adjustScrollbar);
+                  emit posChanged(RPOS, pos[RPOS], adjustScrollbar);
                   if (idx != LPOS && idx != RPOS)
                         emit posChanged(idx, pos[idx].tick(), adjustScrollbar);
+                        emit posChanged(idx, pos[idx], adjustScrollbar);
                   }
             else
                   emit posChanged(idx, pos[idx].tick(), adjustScrollbar);
+                  emit posChanged(idx, pos[idx], adjustScrollbar);
             }
 
       if (idx == CPOS) {
@@ -1390,9 +1402,14 @@ void Song::update(MusECore::SongChangedFlags_t flags, bool allowRecursion)
 
 void Song::updatePos()
       {
-      emit posChanged(0, pos[0].tick(), false);
+      // REMOVE Tim. Remove the three emit 'tick' versions when conversion to all Pos is complete...
+      emit posChanged(0, pos[0].tick(), false);  
+      emit posChanged(0, pos[0], false);
       emit posChanged(1, pos[1].tick(), false);
+      emit posChanged(1, pos[1], false);
       emit posChanged(2, pos[2].tick(), false);
+      emit posChanged(2, pos[2], false);
+      
       }
 
 //---------------------------------------------------------

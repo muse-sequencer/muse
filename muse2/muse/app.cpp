@@ -2108,6 +2108,8 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
 
 void MusE::kbAccel(int key)
       {
+      const MusECore::Rasterizer& rast = _arranger->rasterizer();  
+      
       if (key == MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_METRO].key) {
             MusEGlobal::song->setClick(!MusEGlobal::song->click());
             }
@@ -2139,35 +2141,40 @@ void MusE::kbAccel(int key)
       // Since no editor claimed the key event, we don't know a specific editor's snap setting,
       //  so adopt a policy where the arranger is the 'main' raster reference, I guess...
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_DEC].key) {
-            int spos = MusEGlobal::song->cpos();
-            if(spos > 0) 
-            {
-              spos -= 1;     // Nudge by -1, then snap down with raster1.
-              spos = AL::sigmap.raster1(spos, MusEGlobal::song->arrangerRaster());
-            }  
-            if(spos < 0)
-              spos = 0;
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+//             int spos = MusEGlobal::song->cpos();
+//             if(spos > 0) 
+//             {
+//               spos -= 1;     // Nudge by -1, then snap down with raster1.
+//               //spos = AL::sigmap.raster1(spos, MusEGlobal::song->arrangerRaster());   // REMOVE Tim.
+//               spos = _arranger->rasterizer();// AL::sigmap.raster1(spos, MusEGlobal::song->arrangerRaster());
+//             }  
+//             if(spos < 0)
+//               spos = 0;
+//             MusECore::Pos p(spos,true);
+//             MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, rast.rasterSnapDown(MusEGlobal::song->cPos()), true, true, true);
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC].key) {
-            int spos = AL::sigmap.raster2(MusEGlobal::song->cpos() + 1, MusEGlobal::song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+//             int spos = AL::sigmap.raster2(MusEGlobal::song->cpos() + 1, MusEGlobal::song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
+//             MusECore::Pos p(spos,true);
+//             MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+            MusEGlobal::song->setPos(0, rast.rasterSnapUp(MusEGlobal::song->cPos()), true, true, true); 
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_DEC_NOSNAP].key) {
-            int spos = MusEGlobal::song->cpos() - AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster());
-            if(spos < 0)
-              spos = 0;
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+//             int spos = MusEGlobal::song->cpos() - AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster());
+//             if(spos < 0)
+//               spos = 0;
+//             MusECore::Pos p(spos,true);
+//             MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, rast.rasterDownNoSnap(MusEGlobal::song->cPos()), true, true, true); 
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC_NOSNAP].key) {
-            MusECore::Pos p(MusEGlobal::song->cpos() + AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+//             MusECore::Pos p(MusEGlobal::song->cpos() + AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
+//             MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, rast.rasterUpNoSnap(MusEGlobal::song->cPos()), true, true, true); 
             return;
             }
             

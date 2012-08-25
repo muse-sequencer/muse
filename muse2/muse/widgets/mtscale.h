@@ -25,7 +25,8 @@
 
 #include "type_defs.h"
 #include "view.h"
-
+#include "pos.h"
+#include "rasterizer.h"
 
 namespace MusEGui {
 
@@ -36,11 +37,14 @@ namespace MusEGui {
 
 class MTScale : public View {
       Q_OBJECT
-      int* raster;
-      unsigned pos[4];
+      //int* raster;
+      MusECore::Rasterizer _rasterizer;
+      //unsigned pos[4];
+      MusECore::Pos pos[4];
       int button;
       bool barLocator;
-      bool waveMode;
+      //bool waveMode;
+      //MusECore::Pos::TType _timeType;
 
    private slots:
       void songChanged(MusECore::SongChangedFlags_t);
@@ -53,15 +57,25 @@ class MTScale : public View {
       virtual void leaveEvent(QEvent*e);
 
    signals:
-      void timeChanged(unsigned);
+      void timeChanged(unsigned tickPos);
+      void timeChanged(MusECore::Pos pos);
       //void addMarker(int);
 
    public slots:
-      void setPos(int, unsigned, bool);
+      //void setPos(int, unsigned, bool);
+      void setPos(int idx, const MusECore::Pos& pos, bool adjustScrollbar);
+      void setTimeType(MusECore::Pos::TType tt);
+      void setFormatted(bool f);
 
    public:
-      MTScale(int* raster, QWidget* parent, int xscale, bool f = false);
+      //MTScale(int* raster, QWidget* parent, int xscale, bool f = false);
+      //MTScale(int* raster, QWidget* parent, int xscale, MusECore::Pos::TType time_type = MusECore::Pos::TICKS);
+      MTScale(QWidget* parent, int xscale, const MusECore::Rasterizer& rasterizer);
       void setBarLocator(bool f) { barLocator = f; }
+      //MusECore::Pos::TType timeType() const { return _timeType; }
+      //MusECore::Pos::TType timeType() const { return _rasterizer.timeType(); }
+      //bool formatted() const { return _rasterizer.formatted(); }
+      const MusECore::Rasterizer& rasterizer() const { return _rasterizer; } 
       };
 
 } 

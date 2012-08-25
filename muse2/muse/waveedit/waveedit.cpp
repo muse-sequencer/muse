@@ -245,12 +245,12 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       tb1->addWidget(label);
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      pos1 = new PosLabel(0);
+      pos1 = new PosLabel(0, 0, MusECore::Pos::FRAMES);
       pos1->setFixedHeight(22);
       tb1->addWidget(pos1);
-      pos2 = new PosLabel(0);
+      pos2 = new PosLabel(0, 0, MusECore::Pos::TICKS);
       pos2->setFixedHeight(22);
-      pos2->setSmpte(true);
+      //pos2->setSmpte(true);  // REMOVE Tim.
       tb1->addWidget(pos2);
 
       //---------------------------------------------------
@@ -281,7 +281,8 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       ymag->setValue(yscale);
       ymag->setFocusPolicy(Qt::NoFocus);
 
-      time                 = new MTScale(&_raster, mainw, xscale, true);
+      //time                 = new MTScale(&_raster, mainw, xscale, true);  // REMOVE Tim.
+      time                 = new MTScale(&_raster, mainw, xscale, canvas->timeType());
       ymag->setFixedWidth(16);
       connect(canvas, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), canvas, SLOT(setYScale(int)));
@@ -404,19 +405,28 @@ void WaveEdit::updateHScrollRange()
 //   timeChanged
 //---------------------------------------------------------
 
-void WaveEdit::timeChanged(unsigned t)
+//void WaveEdit::timeChanged(unsigned t)   // REMOVE Tim.
+void WaveEdit::timeChanged(const MusECore::Pos& t)
 {
-      if(t == INT_MAX)
-      {
-        // Let the PosLabels disable themselves with INT_MAX.
-        pos1->setValue(t);
-        pos2->setValue(t);
-        return;
-      }
-     
-      unsigned frame = MusEGlobal::tempomap.tick2frame(t);
+      //if(t == INT_MAX)                  // REMOVE Tim.
+//       if(t.nullFlag())
+//       {
+//         // Let the PosLabels disable themselves with INT_MAX.  
+//         pos1->setValue(t);
+//         pos2->setValue(t);
+//         return;
+//       }
+//      
+//       unsigned frame = MusEGlobal::tempomap.tick2frame(t);
       pos1->setValue(t);
-      pos2->setValue(frame);
+      //pos2->setValue(frame);
+      pos2->setValue(t);
+      //time->setPos(3, t, false);
+      
+      
+      if(t.nullFlag())
+        return;
+      
       time->setPos(3, t, false);
 }
 
@@ -424,20 +434,28 @@ void WaveEdit::timeChanged(unsigned t)
 //   setTime
 //---------------------------------------------------------
 
-void WaveEdit::setTime(unsigned samplepos)
+//void WaveEdit::setTime(unsigned samplepos)  // REMOVE Tim.
+void WaveEdit::setTime(const MusECore::Pos& t)
       {
-      if(samplepos == INT_MAX)
-      {
-        // Let the PosLabels disable themselves with INT_MAX.
-        pos1->setValue(samplepos);
-        pos2->setValue(samplepos);
-        return;
-      }
-     
-      unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos);
-      pos1->setValue(tick);
-      pos2->setValue(samplepos);
-      time->setPos(3, tick, false);
+// REMOVE Tim.        
+//       if(samplepos == INT_MAX)
+//       {
+//         // Let the PosLabels disable themselves with INT_MAX.
+//         pos1->setValue(samplepos);
+//         pos2->setValue(samplepos);
+//         return;
+//       }
+/*     
+      unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos);*/
+      //pos1->setValue(tick);
+      pos1->setValue(t);
+      //pos2->setValue(samplepos);
+      pos2->setValue(t);
+      
+      if(t.nullFlag())
+        return; 
+      //time->setPos(3, tick, false);
+      time->setPos(3, t, false);
       }
 
 //---------------------------------------------------------

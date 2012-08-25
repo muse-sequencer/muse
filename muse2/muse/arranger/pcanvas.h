@@ -40,10 +40,13 @@ class QEvent;
 class QDragEnterEvent;
 class QLineEdit;
 class QMenu;
+class QPainter;
 
 namespace MusECore {
 class CtrlVal;
 class Xml;
+class Pos;
+class Rasterizer;
 }
 
 #define beats     4
@@ -51,6 +54,7 @@ class Xml;
 namespace MusEGui {
 
 class MidiEditor;
+class Arranger;
 
 //---------------------------------------------------------
 //   NPart
@@ -91,7 +95,7 @@ struct AutomationObject {
 
 class PartCanvas : public Canvas {
       Q_OBJECT
-      int* _raster;
+      //int* _raster;   // REMOVE Tim.
       MusECore::TrackList* tracks;
 
       MusECore::Part* resizePart;
@@ -113,7 +117,7 @@ class PartCanvas : public Canvas {
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual void updateSelection();
-      virtual QPoint raster(const QPoint&) const;
+      virtual QPoint rasterPoint(const QPoint&) const;
       virtual int y2pitch(int y) const;
       virtual int pitch2y(int p) const;
       
@@ -153,6 +157,9 @@ class PartCanvas : public Canvas {
       double valToLog(double inV, double min, double max);
 
    protected:
+      Arranger* _editor;
+      
+      virtual void draw(QPainter&, const QRect&);  
       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void endMoveItems(const QPoint&, DragType, int dir);
 
@@ -177,7 +184,11 @@ class PartCanvas : public Canvas {
       enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
              CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_INSERT_EMPTYMEAS };
 
-      PartCanvas(int* raster, QWidget* parent, int, int);
+      //PartCanvas(Arranger* editor, QWidget* parent, int* raster, int, int, const char* name = 0);   // REMOVE Tim.
+      //PartCanvas(int* raster, QWidget* parent, int, int, 
+      //            MusECore::Pos::TType time_type = MusECore::Pos::TICKS,
+      //            bool formatted = true, int raster = 1);
+      PartCanvas(Arranger* editor, QWidget* parent, int, int, const char* name = 0); 
       virtual ~PartCanvas();
       void partsChanged();
       void cmd(int);
@@ -186,6 +197,7 @@ class PartCanvas : public Canvas {
    public slots:
       void redirKeypress(QKeyEvent* e) { keyPress(e); }
       void controllerChanged(MusECore::Track *t, int CtrlId);
+      void setPos(int idx, const MusECore::Pos& pos, bool adjustScrollbar);
 };
 
 } // namespace MusEGui

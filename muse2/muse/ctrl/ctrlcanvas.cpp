@@ -335,7 +335,7 @@ void CtrlCanvas::leaveEvent(QEvent*)
 //   raster
 //---------------------------------------------------------
 
-QPoint CtrlCanvas::raster(const QPoint& p) const
+QPoint CtrlCanvas::rasterPoint(const QPoint& p) const
       {
       return p;
       }

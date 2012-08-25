@@ -49,16 +49,41 @@ static const char* rasterStrings[] = {
       QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "4pp", "7pp", "64.", "32.", "16.", "8.", "4.", "2.", "1."
       };
 
+static int frameRasterTable[] = {
+      1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 
+      };
+static const char* frameRasterStrings[] = {
+      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024", "2048", "4096"
+      };
+
+// // These need to also be adjustable as well as having preset numbers
+// // TODO Minutes, seconds, frames? SMPTE code? 
+// static int smpteRasterTable[] = {
+//       1, 2, 3, 4, 5, 6, 7, 8   // etc. Simple enumeration, code must determine actual frame
+//       };
+// static const char* smpteRasterStrings[] = {
+//       QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024", "2048", "4096"
+//       };
+// // TODO Ticks?
+// static int tickRasterTable[] = {
+//       1, 2, 3, 4, 5, 6, 7, 8   // etc. Simple enumeration, code must determine actual frame
+//       };
+// static const char* tickRasterStrings[] = {
+//       QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024", "2048", "4096"
+//       //QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "15", "24", "25", "29", "30", "50", "60", "90", "100"
+//       };
+// 
 
 //---------------------------------------------------------
 //   genToolbar
 //    solo time pitch raster
 //---------------------------------------------------------
 
-Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)    
+Toolbar1::Toolbar1(QWidget* parent, int r, bool sp, MusECore::Pos::TType time_type)    
    : QToolBar(QString("Pos/Snap/Solo-tools"), parent)
       {
       setObjectName("Pos/Snap/Solo-tools");
+      
       pitch = 0;
       showPitch = sp;
       // ORCAN - FIXME: Check this:
@@ -98,8 +123,8 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       raster->setFocusPolicy(Qt::TabFocus);
 
       rlist = new QTableWidget(10, 3);    
-      rlist->verticalHeader()->setDefaultSectionSize(22);                      
-      rlist->horizontalHeader()->setDefaultSectionSize(32);                      
+      ///rlist->verticalHeader()->setDefaultSectionSize(22);                      
+      ///rlist->horizontalHeader()->setDefaultSectionSize(32);                      
       rlist->setSelectionMode(QAbstractItemView::SingleSelection);                      
       rlist->verticalHeader()->hide();                        
       rlist->horizontalHeader()->hide();                      
@@ -108,10 +133,12 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       
       raster->setView(rlist);              
       
-      for (int j = 0; j < 3; j++)                                                 
-        for (int i = 0; i < 10; i++)
-          rlist->setItem(i, j, new QTableWidgetItem(tr(rasterStrings[i + j * 10])));
+      ///for (int j = 0; j < 3; j++)                                                 
+      ///  for (int i = 0; i < 10; i++)
+      ///    rlist->setItem(i, j, new QTableWidgetItem(tr(rasterStrings[i + j * 10])));
        
+      setTimeType(time_type);
+      
       setRaster(r);
 
       addWidget(raster);
@@ -124,6 +151,51 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       pos->setEnabled(false);
       }
 
+      
+//---------------------------------------------------------
+//   setRasterTimeType
+//---------------------------------------------------------
+
+void Toolbar1::setRasterTimeType()
+{
+  rlist->clear();
+  switch(_timeType) 
+  {
+    case MusECore::Pos::FRAMES:
+      rlist->setColumnCount(1);
+      rlist->setRowCount(13);
+      rlist->verticalHeader()->setDefaultSectionSize(22);
+      rlist->horizontalHeader()->setDefaultSectionSize(32);
+      
+      for (int j = 0; j < 1; j++)
+        for (int i = 0; i < 12; i++)
+          rlist->setItem(i, j, new QTableWidgetItem(tr(frameRasterStrings[i + j * 13])));
+      break;    
+    case MusECore::Pos::TICKS:
+      rlist->clear();
+      rlist->setColumnCount(3);
+      rlist->setRowCount(10);
+      rlist->verticalHeader()->setDefaultSectionSize(22);                      
+      rlist->horizontalHeader()->setDefaultSectionSize(32);                      
+      
+      for (int j = 0; j < 3; j++)                                                 
+        for (int i = 0; i < 10; i++)
+          rlist->setItem(i, j, new QTableWidgetItem(tr(rasterStrings[i + j * 10])));
+      break;    
+  }
+}
+
+//---------------------------------------------------------
+//   setTimeType
+//---------------------------------------------------------
+
+void Toolbar1::setTimeType(MusECore::Pos::TType tt)
+{
+  _timeType = tt;
+  pos->setTimeType(_timeType);
+  setRasterTimeType();
+}
+      
 //---------------------------------------------------------
 //   rasterChanged
 //---------------------------------------------------------
@@ -131,7 +203,19 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
 void Toolbar1::_rasterChanged(int /*i*/)
 //void Toolbar1::_rasterChanged(int r, int c)
       {
-      emit rasterChanged(rasterTable[rlist->currentRow() + rlist->currentColumn() * 10]);
+      // REMOVE Tim.  
+      ///emit rasterChanged(rasterTable[rlist->currentRow() + rlist->currentColumn() * 10]);
+      
+      switch(_timeType)
+      { 
+        case MusECore::Pos::FRAMES:
+          emit rasterChanged(frameRasterTable[rlist->currentRow() + rlist->currentColumn() * 13]);
+        break;  
+        case MusECore::Pos::TICKS:
+          emit rasterChanged(rasterTable[rlist->currentRow() + rlist->currentColumn() * 10]);
+        break;  
+      }
+      
       //parentWidget()->setFocus();
       //emit rasterChanged(rasterTable[r + c * 10]);
       }
@@ -161,17 +245,20 @@ void Toolbar1::setInt(int val)
 //   setTime
 //---------------------------------------------------------
 
-void Toolbar1::setTime(unsigned val)
+//void Toolbar1::setTime(unsigned val)   // REMOVE Tim.
+void Toolbar1::setTime(const MusECore::Pos& val)
       {
       if (!pos->isVisible()) {
             //printf("NOT visible\n");
             return;
             }
-      if (val == INT_MAX)
+      //if (val == INT_MAX)
+      if (val.nullFlag())
             pos->setEnabled(false);
       else {
             pos->setEnabled(true);
             pos->setValue(val);
+            //pos->setValue(val.pos(_timeType));
             }
       }
 
@@ -181,12 +268,25 @@ void Toolbar1::setTime(unsigned val)
 
 void Toolbar1::setRaster(int val)
       {
-      for (unsigned i = 0; i < sizeof(rasterTable)/sizeof(*rasterTable); i++) {
-            if (val == rasterTable[i]) {
-                  raster->setCurrentIndex(i);
-                  return;
-                  }
-            }
+      switch(_timeType)
+      {
+        case MusECore::Pos::FRAMES:
+          for (unsigned i = 0; i < sizeof(frameRasterTable)/sizeof(*frameRasterTable); i++) {
+                if (val == frameRasterTable[i]) {
+                      raster->setCurrentIndex(i);
+                      return;
+                      }
+                }
+          break;      
+        case MusECore::Pos::TICKS:
+          for (unsigned i = 0; i < sizeof(rasterTable)/sizeof(*rasterTable); i++) {
+                if (val == rasterTable[i]) {
+                      raster->setCurrentIndex(i);
+                      return;
+                      }
+                }
+          break;      
+      }        
       printf("setRaster(%d) not defined\n", val);
       raster->setCurrentIndex(0);
       }

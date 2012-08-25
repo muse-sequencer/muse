@@ -24,6 +24,7 @@
 #define __POSLABEL_H__
 
 #include <QLabel>
+#include "pos.h"
 
 namespace MusEGui {
 
@@ -34,9 +35,11 @@ namespace MusEGui {
 class PosLabel : public QLabel {
       Q_OBJECT
     
-      bool _smpte;
-      unsigned _tickValue;
-      unsigned _sampleValue;
+      MusECore::Pos _pos;
+      //bool _smpte;  // REMOVE Tim.
+      MusECore::Pos::TType _timeType;
+      //unsigned _tickValue;
+      //unsigned _sampleValue;
       
 
       void updateValue();
@@ -45,17 +48,21 @@ class PosLabel : public QLabel {
       QSize sizeHint() const;
 
    public slots:
-      void setTickValue(unsigned);
-      void setSampleValue(unsigned);
-      void setValue(unsigned);
+      //void setTickValue(unsigned);
+      //void setSampleValue(unsigned);
+      //void setValue(unsigned);   // REMOVE Tim.
+      void setValue(const MusECore::Pos&);     
+      void setTimeType(MusECore::Pos::TType tt);
 
    public:
-      PosLabel(QWidget* parent, const char* name = 0);
-      unsigned value()       const { return _smpte ? _sampleValue : _tickValue; }
-      unsigned tickValue()   const { return _tickValue; }
-      unsigned sampleValue() const { return _sampleValue; }
-      void setSmpte(bool);
-      bool smpte() const { return _smpte; }
+      PosLabel(QWidget* parent, const char* name = 0, MusECore::Pos::TType time_type = MusECore::Pos::TICKS);
+      //unsigned value()       const;   // REMOVE Tim.
+      MusECore::Pos value()  const; 
+      //unsigned tickValue()   const { return _tickValue; }
+      //unsigned sampleValue() const { return _sampleValue; }
+      //void setSmpte(bool);                  // REMOVE Tim.
+      //bool smpte() const { return _smpte; } // REMOVE Tim.
+      MusECore::Pos::TType timeType() const { return _timeType; }
       };
 
 } // namespace MusEGui

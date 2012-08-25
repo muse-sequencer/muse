@@ -154,8 +154,9 @@ class DrumCanvas : public EventCanvas {
          CMD_QUANTIZE, CMD_ERASE_EVENT, CMD_NOTE_SHIFT, CMD_DELETE_OVERLAPS, CMD_REORDER_LIST,
          CMD_GROUP_NONE, CMD_GROUP_CHAN, CMD_GROUP_MAX
          };
-      DrumCanvas(MidiEditor*, QWidget*, int, int,
-         const char* name = 0);
+      DrumCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0,
+                  MusECore::Pos::TType time_type = MusECore::Pos::TICKS,
+                  bool formatted = true, int raster = 1);
       virtual ~DrumCanvas();
       void cmd(int);
       virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);

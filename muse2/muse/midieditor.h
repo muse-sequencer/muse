@@ -26,6 +26,7 @@
 #include "type_defs.h"
 #include "al/sig.h"
 #include "cobject.h"
+#include "rasterizer.h"
 
 
 #include <set>
@@ -39,6 +40,8 @@ class Part;
 class PartList;
 class WavePart;
 class Xml;
+class Pos;
+class Rasterizer;
 }
 
 namespace MusEGui {
@@ -52,7 +55,7 @@ class ScrollScale;
 //   MidiEditor
 //---------------------------------------------------------
 
-class MidiEditor : public TopWin  {
+class MidiEditor : public TopWin  {   
       Q_OBJECT
 
       MusECore::PartList* _pl;
@@ -67,7 +70,8 @@ class MidiEditor : public TopWin  {
       //WaveView* wview;
 
       std::list<CtrlEdit*> ctrlEditList;
-      int _raster;
+      //int _raster;
+      MusECore::Rasterizer _rasterizer;
       QGridLayout* mainGrid;
       QWidget* mainw;
       virtual void readStatus(MusECore::Xml&);
@@ -93,12 +97,30 @@ class MidiEditor : public TopWin  {
          QWidget* parent = 0, const char* name = 0);
       ~MidiEditor();
 
-      int rasterStep(unsigned tick) const   { return AL::sigmap.rasterStep(tick, _raster); }
-      unsigned rasterVal(unsigned v)  const { return AL::sigmap.raster(v, _raster);  }
-      unsigned rasterVal1(unsigned v) const { return AL::sigmap.raster1(v, _raster); }
-      unsigned rasterVal2(unsigned v) const { return AL::sigmap.raster2(v, _raster); }
-      int raster() const           { return _raster; }
-      void setRaster(int val)      { _raster = val; }
+      // REMOVE Tim. When conversion to all Pos is done.
+//       int rasterStep(unsigned tick) const   { return AL::sigmap.rasterStep(tick, _raster); }  
+//       unsigned rasterVal(unsigned v)  const { return AL::sigmap.raster(v, _raster);  }
+//       unsigned rasterVal1(unsigned v) const { return AL::sigmap.raster1(v, _raster); }
+//       unsigned rasterVal2(unsigned v) const { return AL::sigmap.raster2(v, _raster); }
+//       
+//       // Newer versions:
+//       MusECore::Pos rasterStep(MusECore::Pos pos) const;  
+//       MusECore::Pos rasterVal(MusECore::Pos pos)  const; 
+//       MusECore::Pos rasterVal1(MusECore::Pos pos) const;
+//       MusECore::Pos rasterVal2(MusECore::Pos pos) const;
+//       MusECore::Pos rasterSnapUp(MusECore::Pos pos) const;
+//       MusECore::Pos rasterSnapDown(MusECore::Pos pos) const;
+//       MusECore::Pos rasterUpNoSnap(MusECore::Pos pos) const;
+//       MusECore::Pos rasterDownNoSnap(MusECore::Pos pos) const;
+//       
+//       // REMOVE Tim. When conversion to all Pos is done.
+//       int raster() const           { return _raster; }
+//       void setRaster(int val)      { _raster = val; }
+//       //MusECore::Pos raster() const;
+//       //void setRaster(int val)      { _raster = val; }
+      
+      const MusECore::Rasterizer& rasterizer() const { return _rasterizer; }
+      
       MusECore::PartList* parts()            { return _pl;  }
       int curDrumInstrument() const  { return _curDrumInstrument; }
       MusECore::Part* curCanvasPart();

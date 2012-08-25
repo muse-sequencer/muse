@@ -40,13 +40,14 @@ class Xml;
 
 class Pos {
    public:
-      enum TType { TICKS, FRAMES };
+      enum TType { FRAMES=0, TICKS=1 };
 
    private:
       TType _type;
       mutable int sn;
       mutable unsigned _tick;
       mutable unsigned _frame;
+      bool _nullFlag;
 
    public:
       Pos();
@@ -54,13 +55,17 @@ class Pos {
       Pos(int,int,int);
       Pos(int,int,int,int);
       Pos(unsigned, bool ticks=true);
+      Pos(unsigned, TType tt = TICKS);
       Pos(const QString&);
+      Pos(bool is_null);
       void dump(int n = 0) const;
       void mbt(int*, int*, int*) const;
       void msf(int*, int*, int*, int*) const;
 
       void invalidSn()  { sn = -1; }
-
+      bool nullFlag() const { return _nullFlag; }
+      void setNullFlag(bool f) { _nullFlag = f; }
+      
       TType  type() const     { return _type; }
       void   setType(TType t);
 
@@ -78,12 +83,15 @@ class Pos {
 
       unsigned tick() const;
       unsigned frame() const;
+      unsigned posValue(TType) const;
       void setTick(unsigned);
       void setFrame(unsigned);
+      void setPosValue(unsigned val, TType tt);     
+      void setPos(const Pos&);
 
       void write(int level, Xml&, const char*) const;
       void read(Xml& xml, const char*);
-      bool isValid() const { return true; }
+      bool isValid() const; 
       static bool isValid(int m, int b, int t);
       static bool isValid(int, int, int, int);
       };
@@ -111,7 +119,7 @@ class PosLen : public Pos {
       Pos end() const;
       unsigned endTick() const    { return end().tick(); }
       unsigned endFrame() const   { return end().frame(); }
-      void setPos(const Pos&);
+      void setPos(const Pos&);   // REMOVE Tim.
       };
 
 } // namespace MusECore

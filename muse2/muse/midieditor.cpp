@@ -20,6 +20,7 @@
 //
 //=========================================================
 
+#include "pos.h"
 #include "midieditor.h"
 #include "midiedit/ecanvas.h"
 #include "waveedit/waveview.h"
@@ -244,6 +245,201 @@ void MidiEditor::setCurCanvasPart(MusECore::Part* part)
   if(canvas) 
     canvas->setCurrentPart(part); 
 }
+
+// REMOVE Tim.
+// MusECore::Pos MidiEditor::rasterStep(MusECore::Pos pos) const 
+// { 
+//   MusECore::Pos::TType tt = canvas->timeType();
+//   pos.setType(tt);
+//   switch(tt)
+//   {
+//     case MusECore::Pos::FRAMES:
+// // REMOVE Tim.      
+// //       {
+// //         unsigned f = pos.frame();
+// //         if(_raster == 0)
+// //           return f;
+// //         unsigned r = f % _raster;
+// //         if(r >= _raster / 2)
+// //           return f - r + _raster;
+// //         else
+// //           return f - r;
+// //       }
+//       return MusECore::Pos(_raster, tt);
+//       break;
+//     case MusECore::Pos::TICKS:
+//       return MusECore::Pos(AL::sigmap.rasterStep(pos.tick(), _raster), tt); 
+//       break;
+//   }  
+//   
+//   return pos;
+// }
+// 
+// MusECore::Pos MidiEditor::rasterVal(MusECore::Pos pos) const 
+// { 
+//   MusECore::Pos::TType tt = canvas->timeType();
+//   pos.setType(tt);
+//   switch(tt)
+//   {
+//     case MusECore::Pos::FRAMES:
+//       {
+//         if(_raster == 0 || _raster == 1)
+//           return pos;
+//         // TODO: Probably incorrect. Fix proper snapping like sigmap.  // REMOVE Tim.
+//         unsigned f = pos.frame();
+//         unsigned r = f % _raster;
+//         if(r >= _raster / 2)
+//           return MusECore::Pos(f - r + _raster, tt);
+//         else
+//           return MusECore::Pos(f - r, tt);
+//       }
+//       break;
+//     case MusECore::Pos::TICKS:
+//       return MusECore::Pos(AL::sigmap.raster(pos.tick(), _raster), tt); 
+//       break;
+//   }  
+//   
+//   return pos;
+// }
+// 
+// MusECore::Pos MidiEditor::rasterVal1(MusECore::Pos pos) const
+// { 
+//   MusECore::Pos::TType tt = canvas->timeType();
+//   pos.setType(tt);
+//   switch(tt)
+//   {
+//     case MusECore::Pos::FRAMES:
+//       {
+//         if(_raster == 0 || _raster == 1)
+//           return pos;
+//         // TODO: Probably incorrect. Fix proper snapping like sigmap.  // REMOVE Tim.
+//         unsigned f = pos.frame();
+//         unsigned r = f % _raster;
+//         if(r >= _raster / 2)
+//           return MusECore::Pos(f - r + _raster, tt);
+//         else
+//           return MusECore::Pos(f - r, tt);
+//       }
+//       break;
+//     case MusECore::Pos::TICKS:
+//       return MusECore::Pos(AL::sigmap.raster1(pos.tick(), _raster), tt);
+//       break;
+//   }  
+//   
+//   return pos;
+// }
+// 
+// MusECore::Pos MidiEditor::rasterVal2(MusECore::Pos pos) const
+// { 
+//   MusECore::Pos::TType tt = canvas->timeType();
+//   pos.setType(tt);
+//   switch(tt)
+//   {
+//     case MusECore::Pos::FRAMES:
+//       {
+//         if(_raster == 0 || _raster == 1)
+//           return pos;
+//         // TODO: Probably incorrect. Fix proper snapping like sigmap.  // REMOVE Tim.
+//         unsigned f = pos.frame();
+//         unsigned r = f % _raster;
+//         if(r >= _raster / 2)
+//           return MusECore::Pos(f - r + _raster, tt);
+//         else
+//           return MusECore::Pos(f - r, tt);
+//       }
+//       break;
+//     case MusECore::Pos::TICKS:
+//       return MusECore::Pos(AL::sigmap.raster2(pos.tick(), _raster), tt); 
+//       break;
+//   }  
+//   
+//   return pos;
+// }
+// 
+// MusECore::Pos MidiEditor::rasterSnapDown(MusECore::Pos pos) const
+// {
+//   MusECore::Pos::TType tt = canvas->timeType();
+//   pos.setType(tt);
+//   switch(tt)
+//   {
+//     case MusECore::Pos::FRAMES:
+//       {
+//         if(_raster == 0 || _raster == 1)
+//           return pos;
+//         // TODO: Probably incorrect. Fix proper snapping like sigmap.  // REMOVE Tim.
+//         unsigned f = pos.frame();
+//         unsigned r = f % _raster;
+//         return MusECore::Pos(f - r, tt);
+//       }
+//       break;
+//     case MusECore::Pos::TICKS:
+//       {
+//         int spos = pos.tick();
+//         if(spos > 0) 
+//         {
+//           spos -= 1;     // Nudge by -1, then snap down with raster1.
+//           spos = AL::sigmap.raster1(spos, rasterStep(pos));
+//         }  
+//         if(spos < 0)
+//           spos = 0;
+//         return MusECore::Pos(spos, tt);
+//       }
+//       break;
+//   }  
+//   
+//   return pos;
+// }
+// 
+// MusECore::Pos MidiEditor::rasterSnapUp(MusECore::Pos pos) const
+// {
+//   MusECore::Pos::TType tt = canvas->timeType();
+//   pos.setType(tt);
+//   switch(tt)
+//   {
+//     case MusECore::Pos::FRAMES:
+//       {
+//         if(_raster == 0 || _raster == 1)
+//           return pos;
+//         // TODO: Probably incorrect. Fix proper snapping like sigmap.  // REMOVE Tim.
+//         unsigned f = pos.frame();
+//         unsigned r = f % _raster;
+//         if(r >= _raster / 2)
+//           return MusECore::Pos(f - r + _raster, tt);
+//         else
+//           return MusECore::Pos(f - r, tt);
+//       }
+//       break;
+//     case MusECore::Pos::TICKS:
+//       // Nudge by +1, then snap up with raster2.
+//       return MusECore::Pos(AL::sigmap.raster2(pos.tick() + 1, rasterStep(pos)), tt); 
+//       break;
+//   }  
+//   
+//   return pos;
+// }
+//  
+// MusECore::Pos MidiEditor::rasterDownNoSnap(MusECore::Pos pos) const
+// {
+//   MusECore::Pos::TType tt = canvas->timeType();
+//   pos.setType(tt);
+//   MusECore::Pos rstep = rasterStep(pos);
+//   if(pos <= rstep)
+//     return MusECore::Pos(0, tt);
+//   return pos - rstep;
+// }
+//  
+// MusECore::Pos MidiEditor::rasterUpNoSnap(MusECore::Pos pos) const
+// {
+//   MusECore::Pos::TType tt = canvas->timeType();
+//   pos.setType(tt);
+//   return pos + rasterStep(pos);
+// }
+
+// REMOVE Tim.
+// MusECore::Pos MidiEditor::raster() const
+// { 
+//   return MusECore::Pos(_raster, canvas->timeType()); 
+// }
 
 void MidiEditor::horizontalZoomIn()
 {

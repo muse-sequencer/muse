@@ -43,6 +43,7 @@ class QToolButton;
 
 namespace MusECore {
 class PartList;
+class Pos;
 }
 
 namespace MusEGui {
@@ -89,8 +90,10 @@ class WaveEdit : public MidiEditor {
 
    private slots:
       void cmd(int);
-      void timeChanged(unsigned t);
-      void setTime(unsigned t);
+      //void timeChanged(unsigned t);  // REMOVE Tim.
+      void timeChanged(const MusECore::Pos&);
+      //void setTime(unsigned t);      // REMOVE Tim.
+      void setTime(const MusECore::Pos&);
       void songChanged1(MusECore::SongChangedFlags_t);
       void soloChanged(bool flag);
       void moveVerticalSlider(int val);

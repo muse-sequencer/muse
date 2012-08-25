@@ -156,7 +156,7 @@ class CtrlCanvas : public MusEGui::View {
       int curDrumPitch;    //Used by the drum-editor to view velocity of only one key (one drum)
       
       void leaveEvent(QEvent*e);
-      QPoint raster(const QPoint&) const;
+      QPoint rasterPoint(const QPoint&) const;
 
       // selection
       bool isSingleSelection()  { return selection.size() == 1; }

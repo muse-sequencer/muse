@@ -33,11 +33,13 @@ class QMimeData;
 class QDrag;
 class QString;
 class QDropEvent;
+class QPainter;
 
 namespace MusECore {
 class MidiPart;
 class MidiTrack;
 class Part;
+class Pos;
 
 struct PartToChange
 {
@@ -65,8 +67,9 @@ class EventCanvas : public Canvas {
 
    protected:
       bool _playEvents;
-      MidiEditor* editor;
-      unsigned start_tick, end_tick;
+      MidiEditor* _editor;
+      //unsigned start_tick, end_tick;   // REMOVE Tim.
+      MusECore::Pos _startPos, _endPos;
       int curVelo;
       bool _steprec;
       bool _midiin;
@@ -74,7 +77,8 @@ class EventCanvas : public Canvas {
 
       void updateSelection();
       virtual CItem* addItem(MusECore::Part*, MusECore::Event&) = 0;
-      virtual QPoint raster(const QPoint&) const;
+      virtual void draw(QPainter&, const QRect&);  
+      virtual QPoint rasterPoint(const QPoint&) const;
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType) = 0;
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir);
@@ -83,23 +87,31 @@ class EventCanvas : public Canvas {
       void redrawGrid()       { redraw(); }
       void setSteprec(bool f) { _steprec = f; }
       void setMidiin(bool f)  { _midiin = f; }
+      void setPos(int idx, const MusECore::Pos& pos, bool adjustScrollbar);
 
    signals:
       void pitchChanged(int);       // current cursor position
       void timeChanged(unsigned);
+      void timeChanged(const MusECore::Pos&);
       void selectionChanged(int /*tick or frame*/ , MusECore::Event&, MusECore::Part*, bool /*update*/);
       void enterCanvas();
 
    public:
-      EventCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0);
+      EventCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0); 
+      //EventCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0, 
+      //            MusECore::Pos::TType time_type = MusECore::Pos::TICKS,
+      //            bool formatted = true, int raster = 1);
       MusECore::MidiTrack* track() const;
-      virtual unsigned start() const       { return start_tick; }
-      virtual unsigned end() const         { return end_tick; }
+      //virtual unsigned start() const       { return start_tick; }  // REMOVE Tim.
+      //virtual unsigned end() const         { return end_tick; }
+      virtual MusECore::Pos start() const       { return _startPos; }
+      virtual MusECore::Pos end() const         { return _endPos; }
       bool midiin() const     { return _midiin; }
       bool steprec() const    { return _steprec; }
       virtual QString getCaption() const;
       virtual void songChanged(MusECore::SongChangedFlags_t);
-      virtual void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
+      //virtual void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
+      virtual void range(MusECore::Pos* s, MusECore::Pos* e) const { *s = _startPos; *e = _endPos; }
       void playEvents(bool flag) { _playEvents = flag; }
       virtual void selectAtTick(unsigned int tick);
       virtual void viewDropEvent(QDropEvent* event);

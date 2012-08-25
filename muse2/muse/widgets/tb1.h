@@ -24,6 +24,7 @@
 #define __TB1_H__
 
 #include <QToolBar>     
+#include "pos.h"
 
 class QToolButton;
 class QTableWidget;
@@ -49,15 +50,20 @@ class Toolbar1 : public QToolBar {
       LabelCombo* raster;
       QTableWidget* rlist;
       bool showPitch;
+      MusECore::Pos::TType _timeType;
+
+      void setRasterTimeType();
       
    private slots:
       void _rasterChanged(int);
 
    public slots:
-      void setTime(unsigned);
+      //void setTime(unsigned);  // REMOVE Tim.
+      void setTime(const MusECore::Pos&);
       void setPitch(int);
       void setInt(int);
       void setRaster(int);
+      void setTimeType(MusECore::Pos::TType tt);
 
    signals:
       void rasterChanged(int);
@@ -66,9 +72,10 @@ class Toolbar1 : public QToolBar {
    public:
       //Toolbar1(QMainWindow* parent = 0, int r=96,
       Toolbar1(QWidget* parent, int r=96,     
-         bool showPitch=true);
+         bool showPitch=true, MusECore::Pos::TType time_type = MusECore::Pos::TICKS);
       void setSolo(bool val);
       void setPitchMode(bool flag);
+      MusECore::Pos::TType timeType() const { return _timeType; }
       };
 
 } // namespace MusEGui

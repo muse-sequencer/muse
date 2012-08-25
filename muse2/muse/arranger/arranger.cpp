@@ -207,7 +207,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
    : QWidget(parent)
       {
       setObjectName(name);
-      _raster  = 0;      // measure
+      //_raster  = 0;      // measure         // REMOVE Tim.
+      _rasterizer.setRaster(0);      // measure
+      _rasterizer.setTimeType(MusECore::Pos::TICKS);   
+      _rasterizer.setFormatted(true);
       selected = 0;
       showTrackinfoFlag = true;
       
@@ -247,7 +250,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
             raster->insertItem(i, tr(rastval[i]));
       raster->setCurrentIndex(1);
       // Set the audio record part snapping. Set to 0 (bar), the same as this combo box intial raster.
-      MusEGlobal::song->setArrangerRaster(0);
+      //MusEGlobal::song->setArrangerRaster(0);   // REMOVE Tim.
       toolbar->addWidget(raster);
       connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
       raster->setFocusPolicy(Qt::TabFocus);
@@ -471,7 +474,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       egrid->setContentsMargins(0, 0, 0, 0);  
       egrid->setSpacing(0);  
 
-      time = new MTScale(&_raster, editor, xscale);
+      //time = new MTScale(&_raster, editor, xscale);
+      time = new MTScale(editor, xscale, _rasterizer);
       time->setOrigin(-offset, 0);
       canvas = new PartCanvas(&_raster, editor, xscale, yscale);
       canvas->setBg(MusEGlobal::config.partCanvasBg);
@@ -866,7 +870,7 @@ void Arranger::_setRaster(int index)
             };
       _raster = rasterTable[index];
       // Set the audio record part snapping.
-      MusEGlobal::song->setArrangerRaster(_raster);
+      //MusEGlobal::song->setArrangerRaster(_raster);  // REMOVE Tim.
       canvas->redraw();
       focusCanvas();
       }

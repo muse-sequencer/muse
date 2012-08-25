@@ -91,11 +91,18 @@ NPart::NPart(MusECore::Part* e) : CItem(MusECore::Event(), e)
 //   PartCanvas
 //---------------------------------------------------------
 
-PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
-   : Canvas(parent, sx, sy)
+//PartCanvas::PartCanvas(Arranger* editor, QWidget* parent, int* r, int sx, int sy, const char* name)   // REMOVE Tim.
+//PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy, 
+//                       MusECore::Pos::TType time_type, bool formatted, int raster)
+//PartCanvas::PartCanvas(Arranger* editor, QWidget* parent, int sx, int sy, const MusECore::Rasterizer& rasterizer, const char* name) 
+PartCanvas::PartCanvas(Arranger* editor, QWidget* parent, int sx, int sy, const char* name) 
+   : Canvas(parent, sx, sy, name)
+//   : Canvas(parent, sx, sy, time_type, formatted, raster)
+   
       {
+      _editor = editor;  
       setAcceptDrops(true);
-      _raster = r;
+      //_raster = r;
 
       setFocusPolicy(Qt::StrongFocus);
       // Defaults:
@@ -110,10 +117,20 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       automation.controllerState = doNothing;
       automation.moveController = false;
       partsChanged();
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, const MusECore::Pos&, bool)), this, SLOT(setPos(int, const MusECore::Pos&, bool)));
       }
 
 PartCanvas::~PartCanvas()
 {
+}
+
+//---------------------------------------------------------
+//   setPos
+//---------------------------------------------------------
+
+void PartCanvas::setPos(int idx, const MusECore::Pos& val, bool adjustScrollbar)
+{
+  Canvas::setPos(idx, val, adjustScrollbar, _editor->rasterizer());  
 }
 
 //---------------------------------------------------------
@@ -295,7 +312,7 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     int y = ci->pos().y();
     int nx = x + dx;
     int ny = pitch2y(y2pitch(y) + dp);
-    QPoint newpos = raster(QPoint(nx, ny));
+    QPoint newpos = rasterPoint(QPoint(nx, ny));
     selectItem(ci, true);
     
     bool result=moveItem(operations, ci, newpos, dtype);
@@ -420,13 +437,15 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
 //   raster
 //---------------------------------------------------------
 
-QPoint PartCanvas::raster(const QPoint& p) const
+QPoint PartCanvas::rasterPoint(const QPoint& p) const
       {
       int y = pitch2y(y2pitch(p.y()));
       int x = p.x();
       if (x < 0)
             x = 0;
-      x = AL::sigmap.raster(x, *_raster);
+      //x = AL::sigmap.raster(x, *_raster);
+      const MusECore::Rasterizer& rast = _editor->rasterizer();      
+      x = rast.rasterVal(MusECore::Pos(x, rast.timeType())).posValue(rast.timeType());
       if (x < 0)
             x = 0;
       return QPoint(x, y);
@@ -1377,6 +1396,15 @@ void PartCanvas::keyPress(QKeyEvent* event)
             redraw();
             }
       }
+
+//---------------------------------------------------------
+//   draw
+//---------------------------------------------------------
+
+void PartCanvas::draw(QPainter& p, const QRect& rect)
+{
+  Canvas::draw(p, rect, _editor->rasterizer());  
+}
 
 //---------------------------------------------------------
 //   drawPart

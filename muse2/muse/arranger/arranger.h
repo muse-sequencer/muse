@@ -45,6 +45,7 @@ class QKeyEvent;
 namespace MusECore {
 class Track;
 class Xml;
+class Rasterizer;
 }
 
 namespace MusEGui {
@@ -115,7 +116,8 @@ class Arranger : public QWidget {
 
       static QByteArray header_state;
 
-      int _quant, _raster;
+      int _quant; //, _raster;  // REMOVE Tim.
+      MusECore::Rasterizer _rasterizer;
       PartCanvas* canvas;
       ScrollScale* hscroll;
       QScrollBar* vscroll;
@@ -215,6 +217,7 @@ class Arranger : public QWidget {
       Arranger(ArrangerView* parent, const char* name = 0);
 
       PartCanvas* getCanvas() { return canvas; }
+      const MusECore::Rasterizer& rasterizer() const { return _rasterizer; }
       void setMode(int);
       void reset();
       

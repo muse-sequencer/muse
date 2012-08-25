@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <limits.h>
+//#include <limits.h>
 
 #include <QMouseEvent>
 #include <QPainter>
@@ -37,27 +37,36 @@ namespace MusEGui {
 //    Midi Time Scale
 //---------------------------------------------------------
 
-MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
+//MTScale::MTScale(int* r, QWidget* parent, int xs, MusECore::Pos::TType time_type)
+MTScale::MTScale(QWidget* parent, int xs, const MusECore::Rasterizer& rasterizer)
    : View(parent, xs, 1)
       {
-      waveMode = _mode;
+      //_timeType = time_type;
       setToolTip(tr("bar scale"));
       barLocator = false;
-      raster = r;
-      if (waveMode) {
-            pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
-            pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
-            pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());
-            }
-      else {
-            pos[0] = MusEGlobal::song->cpos();
-            pos[1] = MusEGlobal::song->lpos();
-            pos[2] = MusEGlobal::song->rpos();
-            }
-      pos[3] = INT_MAX;            // do not show
+      //raster = r;
+      _rasterizer = rasterizer;
+      
+      // REMOVE Tim.
+//       if (waveMode) {
+//             pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
+//             pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
+//             pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());
+//             }
+//       else {
+//             pos[0] = MusEGlobal::song->cpos();
+//             pos[1] = MusEGlobal::song->lpos();
+//             pos[2] = MusEGlobal::song->rpos();
+//             }
+//       pos[3] = INT_MAX;            // do not show
+      pos[0] = MusEGlobal::song->cPos();
+      pos[1] = MusEGlobal::song->lPos();
+      pos[2] = MusEGlobal::song->rPos();
+      pos[3].setNullFlag(true);;            // do not show
       button = Qt::NoButton;
       setMouseTracking(true);
-      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
+      //connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, const MusECore::Pos&, bool)), SLOT(setPos(int, const MusECore::Pos&, bool)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
 	
@@ -72,39 +81,75 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
 void MTScale::songChanged(MusECore::SongChangedFlags_t type)
       {
       if (type & (SC_SIG|SC_TEMPO)) {
-           if ((type & SC_TEMPO) && waveMode) {
-                  pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
-                  pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
-                  pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());
-                  }
+           //if ((type & SC_TEMPO) && _timeType == MusECore::Pos::FRAMES) {
+// REMOVE Tim. Not required I believe, conversions would now be automatic when requested
+///           if ((type & SC_TEMPO) && _timeType == MusECore::Pos::FRAMES) {  
+//                   pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
+//                   pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
+//                   pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());
+///                  pos[0] = MusEGlobal::song->cPos();
+///                  pos[1] = MusEGlobal::song->lPos();
+///                  pos[2] = MusEGlobal::song->rPos();
+///                  }
             redraw();
             }
       }
 
 //---------------------------------------------------------
+//   setTimeType
+//---------------------------------------------------------
+
+void MTScale::setTimeType(MusECore::Pos::TType tt)
+{
+  //_timeType = tt;
+  _rasterizer.setTimeType(tt);
+  redraw();
+}
+
+//---------------------------------------------------------
+//   setFormatted
+//---------------------------------------------------------
+
+void MTScale::setFormatted(bool f)
+{
+  _rasterizer.setFormatted(f);
+  redraw();
+}
+
+//---------------------------------------------------------
 //   setPos
 //---------------------------------------------------------
 
-void MTScale::setPos(int idx, unsigned val, bool)
+//void MTScale::setPos(int idx, unsigned val, bool)
+void MTScale::setPos(int idx, const MusECore::Pos& val, bool)
       {
-      if (val == INT_MAX) {
+      //if (val == INT_MAX) {
+      if(val.nullFlag())  {
             if (idx == 3) {
-                  pos[3] = INT_MAX;
+                  //pos[3] = INT_MAX;
+                  pos[3].setNullFlag(true);
                   redraw(QRect(0, 0, width(), height()));
                   }
             return;
             }
-      if (waveMode)
-            val = MusEGlobal::tempomap.tick2frame(val);
+      //if (waveMode)
+      //      val = MusEGlobal::tempomap.tick2frame(val);
       if (val == pos[idx])
             return;
-      //unsigned opos = mapx(pos[idx] == INT_MAX ? val : pos[idx]);
-      int opos = mapx(pos[idx] == INT_MAX ? val : pos[idx]);
+      //int opos = mapx(pos[idx] == INT_MAX ? val : pos[idx]);
+      //int opos = mapx(pos[idx].nullFlag() ? (waveMode ? val.frame() : val.tick()) : (waveMode ? pos[idx].frame() : pos[idx].tick()));
+      //int opos = mapx(pos[idx].nullFlag() ? val.pos(waveMode) : pos[idx].pos(waveMode));   // TODO: Change wavemode to TType  REMOVE Tim.
+      //int opos = mapx(pos[idx].nullFlag() ? val.value(_timeType) : pos[idx].value(_timeType));   
+      int opos = mapx(pos[idx].nullFlag() ? val.posValue(_rasterizer.timeType()) : pos[idx].posValue(_rasterizer.timeType()));   
       pos[idx] = val;
       if (!isVisible())
             return;
 
-      int tval   = mapx(val);
+      //int tval   = mapx(val);
+      //int tval   = mapx((waveMode ? val.frame() : val.tick()));
+      //int tval   = mapx(val.pos(waveMode));
+      //int tval   = mapx(val.value(_timeType));
+      int tval   = mapx(val.posValue(_rasterizer.timeType()));
       int x = -9;
       int w = 18;
 
@@ -159,13 +204,28 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
             setCursor(QCursor(Qt::ArrowCursor));
       
       int x = event->x();
-      if (waveMode)
-            x = MusEGlobal::tempomap.frame2tick(x);
-      x = AL::sigmap.raster(x, *raster);
+      int tick_x = x;
+      //if (waveMode)
+      //if (_timeType == MusECore::Pos::FRAMES)
+      if (_rasterizer.timeType() == MusECore::Pos::FRAMES)
+            //x = MusEGlobal::tempomap.frame2tick(x);  // REMOVE Tim. etc...
+            tick_x = MusEGlobal::tempomap.frame2tick(x);
+      //x = AL::sigmap.raster(x, *raster);
+      //tick_x = AL::sigmap.raster(tick_x, *raster);
+      tick_x = AL::sigmap.raster(tick_x, _rasterizer.raster());
       if (x < 0)
             x = 0;
+      if (tick_x < 0)
+            tick_x = 0;
       //printf("MTScale::viewMouseMoveEvent\n");  
-      emit timeChanged(x);
+            
+      //emit timeChanged(x);
+      emit timeChanged(tick_x);            // REMOVE Tim. When conversion to all Pos is done.
+      //MusECore::Pos p(x, !waveMode);
+      //MusECore::Pos p(x, _timeType);
+      MusECore::Pos p(x, _rasterizer.timeType());
+      emit timeChanged(p);
+      
       int i;
       switch (button) {
             case Qt::LeftButton:
@@ -183,19 +243,22 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
             default:
                   return; // if no button is pressed the function returns here
             }
-      MusECore::Pos p(x, true);
+      ///MusECore::Pos p(x, true);
       
       if(i== 0 && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
-            MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(x);
+            //MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(x);   // REMOVE Tim.
+            MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(tick_x);  // TODO Change markers to Pos type
             if (!alreadyExists) {
-                  MusEGlobal::song->addMarker(QString(""), x, false);         
+                  //MusEGlobal::song->addMarker(QString(""), x, false);         
+                  MusEGlobal::song->addMarker(QString(""), tick_x, false);         
                   // Removed p3.3.43 
                   // Song::addMarker() already emits a 'markerChanged'.
                   //emit addMarker(x);
                   }
             }
       else if (i== 2 && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
-            MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(x);
+            //MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(x);        // REMOVE Tim. Change markers to Pos type
+            MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(tick_x); 
             if (toRemove)
               MusEGlobal::song->removeMarker(toRemove);
             else
@@ -211,7 +274,9 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
 
 void MTScale::leaveEvent(QEvent*)
       {
-      emit timeChanged(INT_MAX);
+      emit timeChanged(INT_MAX);             // REMOVE Tim. When conversion to all Pos is done.
+      MusECore::Pos p(true); // a null position
+      emit timeChanged(p);
       }
 
 //---------------------------------------------------------
@@ -223,12 +288,13 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
       int x = r.x();
       int w = r.width();
 
-      // Added by Tim. p3.3.6
       //printf("MTScale::pdraw x:%d w:%d\n", x, w);
       
       x -= 20;
       w += 40;    // wg. Text
 
+      MusECore::Pos::TType tt = _rasterizer.timeType();
+      
       //---------------------------------------------------
       //    draw Marker
       //---------------------------------------------------
@@ -243,7 +309,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             
             int xp;
-            if(waveMode) 
+            //if(waveMode) 
+            //if(_timeType == MusECore::Pos::FRAMES) 
+            if(tt == MusECore::Pos::FRAMES) 
               xp = mapx(m->second.frame());
             else  
               xp = mapx(m->second.tick());
@@ -254,7 +322,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
             ++mm;
             if (mm != marker->end()) {
                   
-                  if(waveMode) 
+                  //if(waveMode) 
+                  //if(_timeType == MusECore::Pos::FRAMES) 
+                  if(tt == MusECore::Pos::FRAMES) 
                     xe = mapx(MusEGlobal::tempomap.tick2frame(mm->first));
                   else
                     xe = mapx(mm->first);
@@ -279,7 +349,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
               //++mm;
               if (mm != marker->end())
               {
-                    if(waveMode) 
+                    //if(waveMode) 
+                    //if(_timeType == MusECore::Pos::FRAMES) 
+                    if(tt == MusECore::Pos::FRAMES) 
                       x2 = mapx(MusEGlobal::tempomap.tick2frame(mm->first));
                     else
                       x2 = mapx(mm->first);
@@ -344,7 +416,8 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                   }
             }
       p.setPen(Qt::black);
-      if (pos[3] != INT_MAX) {
+      //if (pos[3] != INT_MAX) {
+      if (!pos[3].nullFlag()) {
             int xp = mapx(pos[3]);
             if (xp >= x && xp < x+w)
                   p.drawLine(xp, 0, xp, height());
@@ -354,7 +427,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
       int bar1, bar2, beat;
       unsigned tick;
 
-      if (waveMode) {
+      //if (waveMode) {
+      //if (_timeType == MusECore::Pos::FRAMES) {
+      if (tt == MusECore::Pos::FRAMES) {
             ctick = MusEGlobal::tempomap.frame2tick(mapxDev(x));
             AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
             AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(x+w)),
@@ -373,7 +448,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
       for (int bar = bar1; bar <= bar2; bar++, stick = ntick) {
             ntick     = AL::sigmap.bar2tick(bar+1, 0, 0);
             int tpix, a, b=0;
-            if (waveMode) {
+            //if (waveMode) {
+            //if (_timeType == MusECore::Pos::FRAMES) {
+            if (tt == MusECore::Pos::FRAMES) {
                   a = MusEGlobal::tempomap.tick2frame(ntick);
                   b = MusEGlobal::tempomap.tick2frame(stick);
                   tpix  = rmapx(a - b);
@@ -397,7 +474,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                   if (bar % n)
                         continue;
                   p.setFont(MusEGlobal::config.fonts[3]);
-                  int x = mapx(waveMode ? b : stick);
+                  //int x = mapx(waveMode ? b : stick);
+                  //int x = mapx(_timeType == MusECore::Pos::FRAMES ? b : stick);
+                  int x = mapx(tt == MusECore::Pos::FRAMES ? b : stick);
                   QString s;
                   s.setNum(bar + 1);
                   p.drawLine(x, y+1, x, y+1+h);
@@ -410,7 +489,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                   AL::sigmap.timesig(stick, z, n);
                   for (int beat = 0; beat < z; beat++) {
                         int xx = AL::sigmap.bar2tick(bar, beat, 0);
-                        if (waveMode)
+                        //if (waveMode)
+                        //if (_timeType == MusECore::Pos::FRAMES)
+                        if (tt == MusECore::Pos::FRAMES)
                               xx = MusEGlobal::tempomap.tick2frame(xx);
                         int xp = mapx(xx);
                         QString s;

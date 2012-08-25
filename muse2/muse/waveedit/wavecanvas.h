@@ -29,6 +29,7 @@
 
 #include "type_defs.h"
 #include "ecanvas.h"
+#include "pos.h"
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QMouseEvent>
@@ -44,6 +45,7 @@ namespace MusECore {
 class SndFileR;
 class WavePart;
 class WaveTrack;
+class Rasterizer;
 
 struct WaveEventSelection {
       SndFileR file;
@@ -79,8 +81,8 @@ class WaveCanvas : public EventCanvas {
       
       int yScale;
       int button;
-      unsigned startSample;
-      unsigned endSample;
+      //unsigned startSample;
+      //unsigned endSample;
       int colorMode;
       int selectionStart, selectionStop, dragstartx;
       int lastGainvalue; //!< Stores the last used gainvalue when specifiying gain value in the editgain dialog
@@ -101,13 +103,14 @@ class WaveCanvas : public EventCanvas {
 
       
    protected:
-      virtual QPoint raster(const QPoint&) const;
-      void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
+      //virtual QPoint raster(const QPoint&) const;
+      //void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
+      void drawTickRaster(QPainter& p, int x, int y, int w, int h, const MusECore::Rasterizer& rasterizer);
       void drawParts(QPainter&, const QRect&, bool do_cur_part);
   
       // REMOVE Tim.
       //virtual void pdraw(QPainter&, const QRect&);
-      virtual void draw(QPainter&, const QRect&);
+      //virtual void draw(QPainter&, const QRect&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
       virtual bool mousePress(QMouseEvent*);
@@ -137,8 +140,9 @@ class WaveCanvas : public EventCanvas {
       virtual void curPartChanged();
       virtual void resizeEvent(QResizeEvent*);
 
-   private slots:
-      void setPos(int idx, unsigned val, bool adjustScrollbar);
+   //private slots:
+      //void setPos(int idx, unsigned tickPos, bool adjustScrollbar);
+      //void setPos(int idx, const MusECore::Pos& pos, bool adjustScrollbar);
 
    signals:
       void quantChanged(int);
@@ -162,7 +166,7 @@ class WaveCanvas : public EventCanvas {
              CMD_ERASE_MEASURE, CMD_DELETE_MEASURE, CMD_CREATE_MEASURE
            };
              
-      WaveCanvas(MidiEditor*, QWidget*, int, int);
+      WaveCanvas(MidiEditor*, QWidget*, int, int, MusECore::Pos::TType tt = MusECore::Pos::TICKS);
       virtual ~WaveCanvas();
       MusECore::WaveTrack* track() const;
       void cmd(int cmd);
@@ -172,7 +176,7 @@ class WaveCanvas : public EventCanvas {
             }
       QString getCaption() const;
       void songChanged(MusECore::SongChangedFlags_t);
-      void range(int* s, int* e) const { *s = startSample; *e = endSample; }
+      //void range(int* s, int* e) const { *s = startSample; *e = endSample; }
       void selectAtTick(unsigned int tick);
       void selectAtFrame(unsigned int frame);
       void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);

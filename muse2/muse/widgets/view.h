@@ -34,6 +34,10 @@ class QPainter;
 class QPixmap;
 class QResizeEvent;
 
+namespace MusECore {
+class Rasterizer;
+}
+
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -67,7 +71,9 @@ class View : public QWidget {
       virtual void draw(QPainter&, const QRect&) {}
       virtual void drawOverlay(QPainter&) {}
       virtual QRect overlayRect() const { return QRect(0, 0, 0, 0); }
-      virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
+      //virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);  // REMOVE Tim.
+      //virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster, MusECore::Pos::TType time_type = MusECore::Pos::TICKS, bool formatted = true);
+      virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, const MusECore::Rasterizer& rasterizer);
 
       virtual void pdraw(QPainter&, const QRect&);
 

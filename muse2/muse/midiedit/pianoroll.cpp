@@ -467,7 +467,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       initShortcuts(); // initialize shortcuts
 
       const MusECore::Pos cpos=MusEGlobal::song->cPos();
-      canvas->setPos(0, cpos.tick(), true);
+      //canvas->setPos(0, cpos.tick(), true);  // REMOVE Tim.
+      canvas->setPos(0, cpos, true);
       canvas->selectAtTick(cpos.tick());
         
       unsigned pos=0;

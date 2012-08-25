@@ -43,6 +43,7 @@
 #include "../marker/marker.h"
 #include "part.h"
 #include "fastlog.h"
+#include "rasterizer.h"
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 
@@ -52,9 +53,16 @@ namespace MusEGui {
 //   Canvas
 //---------------------------------------------------------
 
-Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
+Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name) 
+//Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name, 
+//               MusECore::Pos::TType time_type, bool formatted, int raster)
    : View(parent, sx, sy, name)
       {
+      //_timeType = time_type;  
+      //_raster.setTimeType(time_type);  
+      //_raster.setFormatted(formatted);
+      //_raster.setRaster(raster);
+      
       canvasTools = 0;
       itemPopupMenu = 0;
       
@@ -73,19 +81,72 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
 
       drag    = DRAG_OFF;
       _tool   = PointerTool;
-      pos[0]  = MusEGlobal::song->cpos();
-      pos[1]  = MusEGlobal::song->lpos();
-      pos[2]  = MusEGlobal::song->rpos();
+      //pos[0]  = MusEGlobal::song->cpos();   // REMOVE Tim.
+      //pos[1]  = MusEGlobal::song->lpos();
+      //pos[2]  = MusEGlobal::song->rpos();
+      pos[0]  = MusEGlobal::song->cPos();
+      pos[1]  = MusEGlobal::song->lPos();
+      pos[2]  = MusEGlobal::song->rPos();
       curPart = NULL;
       curPartId = -1;
       curItem = NULL;
-      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
+      //connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));   // REMOVE Tim.
+      //connect(MusEGlobal::song, SIGNAL(posChanged(int, const MusECore::Pos&, bool)), this, SLOT(setPos(int, const MusECore::Pos&, bool)));
       }
 
 Canvas::~Canvas()
 {
   items.clearDelete();
 }
+
+// REMOVE Tim.
+// //---------------------------------------------------------
+// //   setTimeType
+// //---------------------------------------------------------
+// 
+// void Canvas::setTimeType(MusECore::Pos::TType tt) 
+// { 
+//   //_timeType = tt;
+//   _raster.setTimeType(tt);
+// // REMOVE Tim.  
+// //   pos[0].setType(tt);
+// //   pos[1].setType(tt);
+// //   pos[2].setType(tt);
+//   
+//   redraw();
+// } 
+// 
+// //---------------------------------------------------------
+// //   setFormatted
+// //---------------------------------------------------------
+// 
+// void Canvas::setFormatted(bool f) 
+// { 
+//   //_timeType = tt;
+//   _raster.setFormatted(f);
+// // REMOVE Tim.  
+// //   pos[0].setType(tt);
+// //   pos[1].setType(tt);
+// //   pos[2].setType(tt);
+//   
+//   redraw();
+// } 
+// 
+// //---------------------------------------------------------
+// //   setRasterVal
+// //---------------------------------------------------------
+// 
+// void Canvas::setRasterVal(int val) 
+// { 
+//   //_timeType = tt;
+//   _raster.setFormatted(f);
+// // REMOVE Tim.  
+// //   pos[0].setType(tt);
+// //   pos[1].setType(tt);
+// //   pos[2].setType(tt);
+//   
+//   redraw();
+// } 
 
 //---------------------------------------------------------
 //   setPos
@@ -94,13 +155,20 @@ Canvas::~Canvas()
 //    flag  - emit followEvent()
 //---------------------------------------------------------
 
-void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
+//void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)  // Remove Tim.
+//void Canvas::setPos(int idx, const MusECore::Pos& val, bool adjustScrollbar)
+void Canvas::setPos(int idx, const MusECore::Pos& val, bool adjustScrollbar, const MusECore::Rasterizer& rasterizer)
       {
       //if (pos[idx] == val) // Seems to be some refresh problems here, pos[idx] might be val but the gui not updated.
       //    return;          // skipping this return forces update even if values match. Matching values only seem
                              // to occur when initializing
-      int opos = mapx(pos[idx]);
-      int npos = mapx(val);
+                             
+      //int opos = mapx(pos[idx]); // REMOVE Tim.
+      //int npos = mapx(val);
+      //MusECore::Pos::TType tt = _raster.timeType();
+      MusECore::Pos::TType tt = rasterizer.timeType();
+      int opos = mapx(tt == MusECore::Pos::FRAMES ? pos[idx].frame() : pos[idx].tick());
+      int npos = mapx(tt == MusECore::Pos::FRAMES ? val.frame() : val.tick());
 
       if (adjustScrollbar && idx == 0) {
             switch (MusEGlobal::song->follow()) {
@@ -108,38 +176,50 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
                         break;
                   case MusECore::Song::JUMP:
                         if (npos >= width()) {
-                              int ppos =  val - xorg - rmapxDev(width()/8);
+                              //int ppos =  val - xorg - rmapxDev(width()/8);
+                              int ppos = (tt == MusECore::Pos::FRAMES ? val.frame() : val.tick()) - xorg - rmapxDev(width()/8);
                               if (ppos < 0)
                                     ppos = 0;
                               emit followEvent(ppos);
-                              opos = mapx(pos[idx]);
-                              npos = mapx(val);
+                              //opos = mapx(pos[idx]);
+                              opos = mapx(tt == MusECore::Pos::FRAMES ? pos[idx].frame() : pos[idx].tick());
+                              //npos = mapx(val);
+                              npos = mapx(tt == MusECore::Pos::FRAMES ? val.frame() : val.tick());
                               }
                         else if (npos < 0) {
-                              int ppos =  val - xorg - rmapxDev(width()*3/4);
+                              //int ppos =  val - xorg - rmapxDev(width()*3/4);
+                              int ppos =  (tt == MusECore::Pos::FRAMES ? val.frame() : val.tick()) - xorg - rmapxDev(width()*3/4);
                               if (ppos < 0)
                                     ppos = 0;
                               emit followEvent(ppos);
-                              opos = mapx(pos[idx]);
-                              npos = mapx(val);
+                              //opos = mapx(pos[idx]);
+                              opos = mapx(tt == MusECore::Pos::FRAMES ? pos[idx].frame() : pos[idx].tick());
+                              //npos = mapx(val);
+                              npos = mapx(tt == MusECore::Pos::FRAMES ? val.frame() : val.tick());
                               }
                         break;
                   case MusECore::Song::CONTINUOUS:
                         if (npos > (width()/2)) {
-                              int ppos =  pos[idx] - xorg - rmapxDev(width()/2);
+                              //int ppos =  pos[idx] - xorg - rmapxDev(width()/2);
+                              int ppos =  (tt == MusECore::Pos::FRAMES ? pos[idx].frame() : pos[idx].tick()) - xorg - rmapxDev(width()/2);
                               if (ppos < 0)
                                     ppos = 0;
                               emit followEvent(ppos);
-                              opos = mapx(pos[idx]);
-                              npos = mapx(val);
+                              //opos = mapx(pos[idx]);
+                              opos = mapx(tt == MusECore::Pos::FRAMES ? pos[idx].frame() : pos[idx].tick());
+                              //npos = mapx(val);
+                              npos = mapx(tt == MusECore::Pos::FRAMES ? val.frame() : val.tick());
                               }
                         else if (npos < (width()/2)) {
-                              int ppos =  pos[idx] - xorg - rmapxDev(width()/2);
+                              //int ppos =  pos[idx] - xorg - rmapxDev(width()/2);
+                              int ppos =  (tt == MusECore::Pos::FRAMES ? pos[idx].frame() : pos[idx].tick()) - xorg - rmapxDev(width()/2);
                               if (ppos < 0)
                                     ppos = 0;
                               emit followEvent(ppos);
-                              opos = mapx(pos[idx]);
-                              npos = mapx(val);
+                              //opos = mapx(pos[idx]);
+                              opos = mapx(tt == MusECore::Pos::FRAMES ? pos[idx].frame() : pos[idx].tick());
+                              //npos = mapx(val);
+                              npos = mapx(tt == MusECore::Pos::FRAMES ? val.frame() : val.tick());
                               }
                         break;
                   }
@@ -163,7 +243,8 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
 //   draw
 //---------------------------------------------------------
 
-void Canvas::draw(QPainter& p, const QRect& rect)
+//void Canvas::draw(QPainter& p, const QRect& rect)   // REMOVE Tim.
+void Canvas::draw(QPainter& p, const QRect& rect, const MusECore::Rasterizer& rasterizer)
       {
 //      printf("draw canvas %x virt %d\n", this, virt());
 
@@ -250,16 +331,26 @@ void Canvas::draw(QPainter& p, const QRect& rect)
                   list2.push_back(ci);
               }  
             }
+            
+            // Draw non-current part backgrounds behind all others:
+            drawParts(p, r, false);
+            
             int i;
             int sz = list1.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list1[i], rect);
+            
+            // Draw current part background in front of all others:
+            drawParts(p, r, true);
+            
             sz = list2.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list2[i], rect);
+            
             //sz = list3.size();
             //for(i = 0; i != sz; ++i) 
             //  drawItem(p, list3[i], rect);
+              
             sz = list4.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list4[i], rect);
@@ -375,16 +466,26 @@ void Canvas::draw(QPainter& p, const QRect& rect)
                   list2.push_back(ci);
               }  
             }
+
+            // Draw non-current part backgrounds behind all others:
+            drawParts(p, r, false);
+            
             int i;
             int sz = list1.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list1[i], rect);
+            
+            // Draw current part background in front of all others:
+            drawParts(p, r, true);
+            
             sz = list2.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list2[i], rect);
+            
             //sz = list3.size();
             //for(i = 0; i != sz; ++i) 
             //  drawItem(p, list3[i], rect);
+              
             sz = list4.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list4[i], rect);
@@ -398,6 +499,9 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             setPainter(p);
       }
 
+      //MusECore::Pos::TType tt = _raster.timeType();   // REMOVE Tim.
+      MusECore::Pos::TType tt = rasterizer.timeType();
+      
       //---------------------------------------------------
       //    draw marker
       //---------------------------------------------------
@@ -412,6 +516,8 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             int xp = m->second.tick();
+            //int xp = MusEGlobal::tempomap.tick2frame(m->second.tick());
+            int xp = m->second.posValue(tt);
             if (xp >= x && xp < x+w) {
                   p.setPen(Qt::green);
                   //p.drawLine(xp, y, xp, y2);
@@ -425,20 +531,25 @@ void Canvas::draw(QPainter& p, const QRect& rect)
 
       p.setPen(Qt::blue);
       int mx;
-      if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
+      //if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
+      if (pos[1].posValue(tt) >= unsigned(x) && pos[1].posValue(tt) < unsigned(x2)) {
             //p.drawLine(pos[1], y, pos[1], y2);
-            mx = mapx(pos[1]);
+            //mx = mapx(pos[1]);
+            mx = mapx(pos[1].posValue(tt));
             p.drawLine(mx, my, mx, my2);
             }
-      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2)) {
+      //if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2)) {
+      if (pos[2].posValue(tt) >= unsigned(x) && pos[2].posValue(tt) < unsigned(x2)) {
             //p.drawLine(pos[2], y, pos[2], y2);
             mx = mapx(pos[2]);
             p.drawLine(mx, my, mx, my2);
             }
       p.setPen(Qt::red);
-      if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
+      //if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
+      if (pos[0].posValue(tt) >= unsigned(x) && pos[0].posValue(tt) < unsigned(x2)) {
             //p.drawLine(pos[0], y, pos[0], y2);
-            mx = mapx(pos[0]);
+            //mx = mapx(pos[0]);
+            mx = mapx(pos[0].posValue(tt));
             p.drawLine(mx, my, mx, my2);
             }
       
@@ -605,7 +716,7 @@ void Canvas::moveItems(const QPoint& pos, int dir = 0, bool rasterize)
             if(rasterize)
             {
               ny = pitch2y(y2pitch(y) + dp);
-              mp = raster(QPoint(nx, ny));
+              mp = rasterPoint(QPoint(nx, ny));
             }  
             else  
             {  

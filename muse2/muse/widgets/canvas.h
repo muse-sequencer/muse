@@ -35,6 +35,10 @@
 
 class QMenu;
 
+namespace MusECore {
+class Rasterizer;  
+}
+
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -64,7 +68,7 @@ class Canvas : public View {
             DRAGX_COPY, DRAGY_COPY,
             DRAGX_CLONE, DRAGY_CLONE,
             DRAG_DELETE,
-            DRAG_RESIZE, DRAG_LASSO_START, DRAG_LASSO,
+            DRAG_RESIZE, DRAG_LASSO_START, DRAG_LASSO
             };
 
       enum DragType {
@@ -78,6 +82,8 @@ class Canvas : public View {
             VSCROLL_NONE, VSCROLL_UP, VSCROLL_DOWN
             };
       
+      //MusECore::Pos::TType _timeType;  // REMOVE Tim
+      //MusECore::Rasterizer _raster;
       CItemList items;
       CItemList moving;
       CItem* curItem;
@@ -88,7 +94,8 @@ class Canvas : public View {
       QRect lasso;
       QPoint start;
       Tool _tool;
-      unsigned pos[3];
+      //unsigned pos[3];
+      MusECore::Pos pos[3];
       
       HScrollDir hscrollDir;
       VScrollDir vscrollDir;
@@ -102,7 +109,8 @@ class Canvas : public View {
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseMoveEvent(QMouseEvent*);
       virtual void viewMouseReleaseEvent(QMouseEvent*);
-      virtual void draw(QPainter&, const QRect&);
+      //virtual void draw(QPainter&, const QRect&);  // REMOVE Tim.
+      virtual void draw(QPainter&, const QRect&, const MusECore::Rasterizer& rasterizer);
       virtual void wheelEvent(QWheelEvent* e);
 
       virtual bool mousePress(QMouseEvent*) { return true; }
@@ -112,10 +120,11 @@ class Canvas : public View {
       virtual void drawCanvas(QPainter&, const QRect&) = 0;
       virtual void drawTopItem(QPainter& p, const QRect& rect) = 0;
 
+      virtual void drawParts(QPainter&, const QRect&, bool do_cur_part) { };
       virtual void drawItem(QPainter&, const CItem*, const QRect&) = 0;
       virtual void drawMoving(QPainter&, const CItem*, const QRect&) = 0;
       virtual void updateSelection() = 0;
-      virtual QPoint raster(const QPoint&) const = 0;
+      virtual QPoint rasterPoint(const QPoint&) const = 0;
       virtual int y2pitch(int) const = 0; //CDW
       virtual int pitch2y(int) const = 0; //CDW
 
@@ -173,13 +182,22 @@ class Canvas : public View {
       virtual void itemReleased(const CItem*, const QPoint&) {}
       virtual void itemMoved(const CItem*, const QPoint&) {}
       virtual void curPartChanged() { emit curPartHasChanged(curPart); }
+      // HACK: Needs rasterizer but Canvas does not carry the MidiEditor member. Transferring MidiEditor to class Canvas 
+      //        is undesirable. And adding a Rasterizer parameter to setPos signals/slots is undesirable. 
+      //       So this method is called by inheriters (like EventCanvas and PartCanvas), from normal sePos slot methods. 
+      virtual void setPos(int idx, const MusECore::Pos& pos, bool adjustScrollbar, const MusECore::Rasterizer& rasterizer);
 
    public slots:
       void setTool(int t);
-      virtual void setPos(int, unsigned, bool adjustScrollbar);
+      //virtual void setPos(int, unsigned, bool adjustScrollbar);  // REMOVE Tim.
+      //virtual void setPos(int idx, const MusECore::Pos& pos, bool adjustScrollbar);
+      //virtual void setPos(int idx, const MusECore::Pos& pos, bool adjustScrollbar, const MusECore::Rasterizer& rasterizer);
       void scrollTimerDone(void);
       void redirectedWheelEvent(QWheelEvent*);
-
+      //void setTimeType(MusECore::Pos::TType tt);  // REMOVE Tim.
+      //void setFormatted(bool f); 
+      //void setRasterVal(int val); 
+      
    signals:
       void followEvent(int);
       void toolChanged(int);
@@ -192,7 +210,14 @@ class Canvas : public View {
       
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
+      //Canvas(QWidget* parent, int sx, int sy, const char* name = 0, 
+      //       MusECore::Pos::TType time_type = MusECore::Pos::TICKS, 
+      //       bool formatted = true, int raster = 1);
       virtual ~Canvas();
+      //MusECore::Pos::TType timeType() const { return _raster.timeType(); }
+      //bool formatted() const { return _raster.formatted(); } 
+      //int rasterVal() const { return _raster.raster(); } 
+      //MusECore::Rasterizer& raster() { return _raster; }
       bool isSingleSelection();
       int selectionSize();
       Tool tool() const { return _tool; }

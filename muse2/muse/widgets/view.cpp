@@ -35,6 +35,7 @@
 #include "math.h"
 
 #include "al/sig.h"  
+#include "rasterizer.h"
 
 // Don't use this, it was just for debugging. 
 // It's much slower than muse-1 no matter how hard I tried.
@@ -578,9 +579,14 @@ void View::setPainter(QPainter& p)
 //   drawTickRaster
 //---------------------------------------------------------
 
-void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
+//void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)    // REMOVE Tim.
+//void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster, MusECore::Pos::TType time_type, bool formatted)
+void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, const MusECore::Rasterizer& rasterizer)
       {
       // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
+      
+      // TODO FIXME Respect full rasterizer options...
+      int raster = rasterizer.raster();
       
       //int mx = mapx(x);
       int my = mapy(y);
@@ -604,17 +610,12 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
       //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
       for (int bar = bar1; bar < bar2; ++bar) {
-            ///unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
             int xt = mapx(xb);
             p.setPen(Qt::black);
-            ///p.drawLine(x, y, x, y2);
             p.drawLine(xt, my, xt, y2);
             int z, n;
-            ///AL::sigmap.timesig(x, z, n);
             AL::sigmap.timesig(xb, z, n);
-            ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
-            ///int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
             //int q = rmapx(raster);
             int qq = raster;
             //if (q < 8)        // grid too dense

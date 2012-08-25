@@ -50,11 +50,13 @@ namespace MusEGui {
 //   EventCanvas
 //---------------------------------------------------------
 
-EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
-   int sy, const char* name)
+EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy, const char* name)
+//EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
+//   int sy, const char* name, MusECore::Pos::TType time_type, bool formatted, int raster)
    : Canvas(parent, sx, sy, name)
+//   : Canvas(parent, sx, sy, name, time_type, formatted, raster)
       {
-      editor      = pr;
+      _editor      = pr;
       _steprec    = false;
       _midiin     = false;
       _playEvents = false;
@@ -66,8 +68,9 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       setFocusPolicy(Qt::StrongFocus);
       setMouseTracking(true);
 
-      curPart   = (MusECore::MidiPart*)(editor->parts()->begin()->second);
+      curPart   = (MusECore::MidiPart*)(_editor->parts()->begin()->second);
       curPartId = curPart->sn();
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, const MusECore::Pos&, bool)), this, SLOT(setPos(int, const MusECore::Pos&, bool)));
       }
 
 //---------------------------------------------------------
@@ -92,7 +95,8 @@ QString EventCanvas::getCaption() const
 void EventCanvas::leaveEvent(QEvent*)
       {
       emit pitchChanged(-1);
-      emit timeChanged(INT_MAX);
+      emit timeChanged(INT_MAX);   // REMOVE Tim. When conversion to all Pos is done.
+      emit timeChanged(MusECore::Pos(true)); // a null position
       }
 
 //---------------------------------------------------------
@@ -105,15 +109,36 @@ void EventCanvas::enterEvent(QEvent*)
       }
 
 //---------------------------------------------------------
+//   setPos
+//---------------------------------------------------------
+
+void EventCanvas::setPos(int idx, const MusECore::Pos& val, bool adjustScrollbar)
+{
+  Canvas::setPos(idx, val, adjustScrollbar, _editor->rasterizer());  
+}
+
+//---------------------------------------------------------
+//   draw
+//---------------------------------------------------------
+
+void EventCanvas::draw(QPainter& p, const QRect& rect)
+{
+  Canvas::draw(p, rect, _editor->rasterizer());  
+}
+
+//---------------------------------------------------------
 //   raster
 //---------------------------------------------------------
 
-QPoint EventCanvas::raster(const QPoint& p) const
+QPoint EventCanvas::rasterPoint(const QPoint& p) const
       {
       int x = p.x();
       if (x < 0)
             x = 0;
-      x = editor->rasterVal(x);
+      //x = editor->rasterVal(x);
+      //x = editor->rasterVal(MusECore::Pos(x, _timeType)).value(_timeType);
+      const MusECore::Rasterizer& rast = _editor->rasterizer();      
+      x = rast.rasterVal(MusECore::Pos(x, rast.timeType())).posValue(rast.timeType());
       int pitch = y2pitch(p.y());
       int y = pitch2y(pitch);
       return QPoint(x, y);
@@ -127,7 +152,10 @@ void EventCanvas::mouseMove(QMouseEvent* event)
       {
       emit pitchChanged(y2pitch(event->pos().y()));
       int x = event->pos().x();
-      emit timeChanged(editor->rasterVal(x));
+      const MusECore::Rasterizer& rast = _editor->rasterizer();      
+      //emit timeChanged(editor->rasterVal(x));   // REMOVE Tim. When conversion to all Pos is done.
+      emit timeChanged(rast.rasterVal(x));   // REMOVE Tim. When conversion to all Pos is done.
+      emit timeChanged(MusECore::Pos(rast.rasterVal(x), rast.timeType()));
       }
 
 //---------------------------------------------------------
@@ -164,20 +192,28 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
             curItem=NULL;
             
             items.clearDelete();
-            start_tick  = INT_MAX;
-            end_tick    = 0;
+            //start_tick  = INT_MAX;
+            //end_tick    = 0;
+            _startPos.setType(MusECore::Pos::TICKS);
+            _endPos.setType(MusECore::Pos::TICKS);
+            _startPos.setNullFlag(true);
+            _endPos.setTick(0);
             curPart = 0;
-            for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
+            for (MusECore::iPart p = _editor->parts()->begin(); p != _editor->parts()->end(); ++p) {
                   MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
                   if (part->sn() == curPartId)
                         curPart = part;
                   unsigned stick = part->tick();
                   unsigned len = part->lenTick();
                   unsigned etick = stick + len;
-                  if (stick < start_tick)
-                        start_tick = stick;
-                  if (etick > end_tick)
-                        end_tick = etick;
+//                   if (stick < start_tick)
+//                         start_tick = stick;
+//                   if (etick > end_tick)
+//                         end_tick = etick;
+                  if (stick < _startPos.tick())
+                        _startPos.setTick(stick); 
+                  if (etick > _endPos.tick())
+                        _endPos.setTick(etick);
 
                   MusECore::EventList* el = part->events();
                   for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
@@ -220,8 +256,11 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
                         }
                   }
             }
-      start_tick = MusEGlobal::song->roundDownBar(start_tick);
-      end_tick   = MusEGlobal::song->roundUpBar(end_tick);
+            
+      //start_tick = MusEGlobal::song->roundDownBar(start_tick);
+      //end_tick   = MusEGlobal::song->roundUpBar(end_tick);
+      _startPos.setTick(MusEGlobal::song->roundDownBar(_startPos.tick()));
+      _endPos.setTick(MusEGlobal::song->roundUpBar(_endPos.tick()));
 
       if (n >= 1)    
       {
@@ -244,7 +283,7 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
         emit selectionChanged(x, event, part, !f1);
       
       if (curPart == 0)
-            curPart = (MusECore::MidiPart*)(editor->parts()->begin()->second);
+            curPart = (MusECore::MidiPart*)(_editor->parts()->begin()->second);
       redraw();
       }
 
@@ -393,20 +432,20 @@ void EventCanvas::keyPress(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_INC_POS].key) {
             // TODO: Check boundaries
-            modifySelected(NoteInfo::VAL_TIME, editor->raster());
+            modifySelected(NoteInfo::VAL_TIME, _editor->rasterizer().raster());
             }
       else if (key == shortcuts[SHRT_DEC_POS].key) {
             // TODO: Check boundaries
-            modifySelected(NoteInfo::VAL_TIME, 0 - editor->raster());
+            modifySelected(NoteInfo::VAL_TIME, 0 - _editor->rasterizer().raster());
             }
 
       else if (key == shortcuts[SHRT_INCREASE_LEN].key) {
             // TODO: Check boundaries
-            modifySelected(NoteInfo::VAL_LEN, editor->raster());
+            modifySelected(NoteInfo::VAL_LEN, _editor->rasterizer().raster());
             }
       else if (key == shortcuts[SHRT_DECREASE_LEN].key) {
             // TODO: Check boundaries
-            modifySelected(NoteInfo::VAL_LEN, 0 - editor->raster());
+            modifySelected(NoteInfo::VAL_LEN, 0 - _editor->rasterizer().raster());
             }
 
       else
@@ -430,7 +469,10 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
       if (event->mimeData()->hasFormat("text/x-muse-groupedeventlists")) {
             text = QString(event->mimeData()->data("text/x-muse-groupedeventlists"));
       
-            int x = editor->rasterVal(event->pos().x());
+            //int x = editor->rasterVal(event->pos().x());  // REMOVE Tim.
+            const MusECore::Rasterizer& rast = _editor->rasterizer();      
+            //int x = editor->rasterVal(MusECore::Pos(event->pos().x(), _timeType)).value(_timeType);
+            int x = rast.rasterVal(MusECore::Pos(event->pos().x(), rast.timeType())).posValue(rast.timeType());
             if (x < 0)
                   x = 0;
             paste_at(text,x,3072,false,false,curPart);
