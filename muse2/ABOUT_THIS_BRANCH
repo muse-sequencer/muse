@@ -1,0 +1,177 @@
+NOTE: Try to work this into the docs later, rather than merging 
+ this file with trunk. 
+
+By Tim. August 25 2012:
+-------------------------
+
+After I improved the Wave Editor, MusE needed a way to operate 
+ with frame, or Minute, Second, Frame (MSF) time scales. 
+
+What follows is the vast can of worms I am trying to contain.
+These changes are fundamentally sweeping and far-reaching. 
+It is currently very far from compile-able. 
+
+Pos class:
+------------
+'Pos' is the fundamental position class.
+Song position and song cursors are among its many uses.
+Part and Event base classes inherit Pos (via class PosLen).
+Pos is designed to have a dual frame/tick nature - its 'value' has
+ a type TType FRAMES or TICKS. The type can be changed.
+Pos can be asked for either a frame or tick representation of its
+ current value. When its type is FRAMES and it is asked for a tick,
+ or its type is TICKS and it is asked for a frame, it will convert 
+ its value to the desired type using the Tempo Map.
+A similar action occurs when setting its frame or tick value when
+ its type is the other type.
+In this way Pos was designed to be 'agnostic' and represent either
+ frames or ticks and convert automatically.
+No major new changes to class Pos, but a few new methods like 
+ PosValue, setPosValue, and setPos.
+
+New Rasterizer class:
+----------------------
+Until now, rasterization (basically 'snapping' functions) was done
+ inside the various editors and was done on a FRAME or TICK level 
+ depending on the type of editor (Arranger, Piano, Wave etc).
+This has been replaced and consolidated by a new class Rasterizer 
+ which works with Pos values instead of unsigned frame or tick values.
+
+Time scales:
+-------------
+Until now, the Arranger and Midi Editor Canvases operated in TICK 
+ mode and their Time Scales (at top) operated in Bar/Beat/Tick mode 
+ (BBT), while the Wave Editor Canvas operated in FRAME mode - but 
+ its Time Scale operated in BBT mode. So there was no way to move
+ a Wave Part or Wave Event to sample resolution or move to a 
+ Minute, Second, Frame scale (MSF). The Time Scale had a frame 
+ 'mode' but really it was displaying BBT values of the frames.  
+So the Time Scales have been augmented, now having FOUR modes:
+  FRAMES, TICKS, MSF, and BBT. 
+Actually, it was decided that the four modes consist of a FRAMES or 
+ TICKS mode, and a 'formatted' flag, because of the way Pos works
+ (Pos has time type but no 'formatted' flag, thus strictly TWO modes). 
+It was also decided that, for example Canvas in FRAME mode while 
+ Time Scale is in BBT or TICK mode, is not allowed due to complexity 
+ and user over-management: Canvas would need its own separate time mode 
+ setting. So instead the Time Scales solely determine the Canvas mode.
+As mentioned above, until now the Wave Editor actually did show Canvas
+ FRAMES with Time Scale BBTs. But it was reasoned that if one really 
+ wants to snap to BBTs while the Time Scale is in BBT mode, the 
+ Canvas should really be in TICKS mode. Conversely if one wants to 
+ snap to samples or MSF, then the Canvas will be in FRAMES mode.
+Still, the concept of separate Canvas and Time Scale time modes should 
+ be a goal to leave room for.
+
+Song position cursors:
+-----------------------
+There are three Song cursors, which are instances of type Pos: 
+ two blue left/right range cursors and one red Song position cursor. 
+Until now the cursors were fixed of type TICKS and nothing ever 
+ changed the type. But actually it is possible to set the song 
+ cursors to type FRAMES. This is done now, by the various editors
+ when their Time Scales are in FRAMES mode. In fact, each Time Scale 
+ has the ability to set the Song cursors to either mode. All other
+ Time Scales in other editors then display the correct cursor 
+ positions according to their own time modes because conversion is 
+ automatic thanks to class Pos.
+
+Editor Canvases and local copies of Song cursors:
+-------------------------------------------------
+Until now, class Canvas had three simple unsigned integers describing 
+ the Song cursors, which were local copies of either the cursor frame 
+ or tick values. Since each Canvas had either fixed frame or tick time 
+ scales, unsigned values were good enough.
+These have now been replaced by true instances of class Pos.
+
+Song posChanged signal, and timeChanged signals and setPos slots:
+-----------------------------------------------------------------
+When something changes a Song cursor position by calling Song::setPos, 
+ Song can emit a posChanged signal. Some objects connect the 
+ Song::posChanged signal to slots, such as MTScale::setPos.
+Similarly some objects can emit a timeChanged signal, such as 
+ MTScale::timeChanged when the user clicks or drags in a Time Scale. 
+These various signals and slots are connected to ensure things are 
+ updated, such as local copies of Song cursors, canvas redrawing,
+ Time Scale updating etc. 
+Until now, they used unsigned integers to convey the new position. 
+This has now been changed to true Pos class instances.
+
+Time readouts and entry boxes:
+------------------------------
+These have been / will also be changed to accept the four Time Scale modes.
+
+MTC time mode:
+------------------
+When Time Scales are in MSF mode, they shall obey the MTC type setting.
+The Rasterizer class also shall obey the setting when MSF mode operations
+ are done.
+Thus if the MTC mode is say 24fps, then in MSF Time Scale mode Muse shall 
+ snap to a minimum of 24 frames. Snap combo boxes will change to reflect 
+ the available settings.
+
+Snap combo boxes:
+-----------------
+Snap settings will change dynamically according to the FOUR Time Scale 
+ time mode settings. 
+For example in MSF mode the available Snaps would be something 
+ like "1/100, 1/24, 1" (for MTC mode = 24fps). 
+In Frames mode it would be say "1 2 4 8 16 32 64 128" etc.  
+In Ticks mode it would be say "1 16 32 64 384" etc.
+Finally in BBT mode it's the familiar 3-columns of note types.
+
+Time Locking, Wave Parts and Events, and Midi Parts and Events:
+---------------------------------------------------------------- 
+Here is perhaps the most radical idea so far: 
+MusE was designed with Midi Parts and Midi Events having fixed type TICKS. 
+Wave Parts and Wave Events have fixed type FRAMES. This makes sense 
+ because currently MusE has no audio time-shifting mechanism, thus no
+ way to stretch and fit the Wave Part should the tempo change.
+Unfortunately this means if tempo does change, the Wave Part plays at
+ the same (incorrect) speed as before and the incorrect starting time.
+One can see this in the Arranger when changing tempo - the Wave Parts
+ no longer align with with Midi Parts.
+Ideally, Wave Parts and Wave Events should be in TICKS by default so that 
+ MusE can stretch and reposition the Wave Part. Assume audio Time Stretching 
+ WILL be added at some point and you get the idea why this should be done 
+ in preparation. 
+However, there are two kinds of users: Those who would use MusE in a 
+ 'musical' time mode (ticks or BBTs, + tempo), and those who would use 
+ MusE in 'linear' time mode (samples or MSFs, no tempo) who don't care 
+ about BBTs or tempo and just want WYSIWYG time editing.
+So it is proposed to allow the time type of Wave parts, Wave Events,
+ Midi Parts, and Midi Events to be set to EITHER time type FRAMES or TICKS. 
+
+At this juncture, let us bring in the Time Locking concept.
+Until now there has been an unused Track List column called 'Time Lock',
+ for Midi Tracks only.
+Although it is not clear what the intention was, it is likely that 
+ 'Time Lock' means "lock Midi Parts in place so that tempo changes have 
+ no effect". Studying that sentence further reveals that it means
+ "pin the Midi Part to an exact specific time always and don't let it 
+ budge due to tempo changes". So there is a very simple way to do that: 
+ simply change the Part type to FRAMES. Et voila! The Midi Part is now
+ 'pinned' to the exact time.
+So 'Time Lock' is therefore synonymous with FRAMES/MSF mode!
+And 'No Time Lock' is synonymous with TICKS/BBT mode.
+So restating the proposal above, it is proposed that BOTH Wave Parts and 
+ Midi Parts have this 'Time Locking'.
+Yes in other words it is proposed that the user is allowed to change Part 
+ time type, except instead of being called "FRAMES/TICKS mode", it is 
+ done by setting a new Part "Time Lock" flag, in a popup menu, etc etc. 
+As for the existing Track 'Time Lock' setting, well, either get rid of 
+ it or leverage it as an override of the Parts' Time Lock settings. 
+
+Note that this means when a Part's time type is changed, ALL of its events 
+ must also be changed to that type. An undo operation will help there.
+
+Also, this means 'mixed' Part and Event time types in the PartList and 
+ EventList classes! 
+When sorting, the lists determine whether to use FRAMES or TICKS depending 
+ on the 'Time Lock' setting. 
+CLARIFY: Last sentence I'm not sure about - Events yes, but sort Parts how?
+
+In fact the whole thing is fraught with uncertainty and difficulty.
+Remains to be seen if it really correct and can really work...
+
+Tim.
