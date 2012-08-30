@@ -4698,6 +4698,9 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o velo-controller doesn't work in new-style drum tracks
  *
  * CURRENT TODO
+ *   o group plugins into user definable categories
+ *   o better and visual means for fading etc
+ *   o rename E- and A-note to I- and O-
  *   o storing <no_toplevels /> into a template file seems to ignore
  *     the arranger's "MDI-ness", sets is at subwin all the time!
  * 
