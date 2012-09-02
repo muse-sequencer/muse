@@ -287,7 +287,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       act->setData(MIDI_PORTS);  
       p->addSeparator();
       
-      p->addAction(new MusEGui::MenuTitleItem("Output port/device", p));
+      p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), p));
 
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
