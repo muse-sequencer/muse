@@ -64,6 +64,7 @@
 #include "midiseq.h"
 #include "amixer.h"
 #include "track.h"
+#include "plugin.h"
 
 namespace MusECore {
 
@@ -917,6 +918,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.unhideTracks = xml.parseInt();
                         else if (tag == "smartFocus")
                               MusEGlobal::config.smartFocus = xml.parseInt();
+                        else if (tag == "plugin_groups")
+                              MusEGlobal::readPluginGroupConfiguration(xml);
 
                         // ---- the following only skips obsolete entries ----
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
@@ -1320,6 +1323,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "bigtimeForegroundcolor", MusEGlobal::config.bigTimeForegroundColor);
       xml.colorTag(level, "bigtimeBackgroundcolor", MusEGlobal::config.bigTimeBackgroundColor);
       xml.colorTag(level, "waveEditBackgroundColor", MusEGlobal::config.waveEditBackgroundColor);
+
+      MusEGlobal::writePluginGroupConfiguration(level, xml);
 
       writeSeqConfiguration(level, xml, false);
 
