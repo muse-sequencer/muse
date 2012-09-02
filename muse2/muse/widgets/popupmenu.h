@@ -44,14 +44,14 @@ class QMouseEvent;
 class QVariant;
 class QAction;
 class QEvent;
-//class QTimer;
-//class QStandardItemModel;
 
 namespace MusEGui {
 
+/** offers a QMenu-like menu, which stays open once the user
+ *  clicked a checkable action. */
 class PopupMenu : public QMenu
 {
-  Q_OBJECT
+Q_OBJECT
   
     bool _stayOpen;
     #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
@@ -75,7 +75,7 @@ class PopupMenu : public QMenu
     PopupMenu(bool stayOpen);
     PopupMenu(QWidget* parent=0, bool stayOpen = false);
     PopupMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false);
-    ///void clear();
+    //void clear();
     QAction* findActionFromData(const QVariant&) const;
     bool stayOpen() const { return _stayOpen; }
     void clearAllChecks() const;

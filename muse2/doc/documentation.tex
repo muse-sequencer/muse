@@ -129,6 +129,7 @@
 \newcommand{\shell}[1]{\texttt{\textbf{#1}}}
 \newcommand{\menu}[1]{\textbf{#1}}
 \newcommand{\sym}[1]{\texttt{\camelhyph{#1}}}
+\newcommand{\listing}[1]{\texttt{\camelhyph{#1}}}
 \newcommand{\usym}[1]{\texttt{\underscorehyph{#1}}}
 \newcommand{\file}[1]{\texttt{\camelhyph{#1}}}
 \newcommand{\screenshotwidth}[0]{0.8\textwidth}
@@ -1025,6 +1026,105 @@ This chapter explains how MusE is built internally, and is meant
 to be an aid for developers wanting to quickly start up with MusE.
 For details on \emph{why} stuff is done please refer to the following
 chapter. 
+
+\section{User interface programming}
+We use the QT Toolkit for GUI- and other programming. The \emph{QT-Assistant}
+is an important tool for getting help. Almost everything can be looked
+up there.
+
+GUIs can be either be hardcoded (see \file{arranger.cpp} for an example)
+or can be created using \emph{QT-Designer} (see the dialogs under
+\file{widgets/function_dialogs/} for mostly cleanly-written examples).
+Don't forget to add your \file{cpp}, \file{h} and \file{ui} files to the
+corresponding sections in the \file{CMakeLists.txt}!
+
+Additionally, MusE offers some custom widgets, like menu title items etc.
+Following, there will be a small, unordered list about custom widgets:
+\begin{itemize}
+\item \sym{MusEGui::MenuTitleItem}: Provides a title-bar in a \sym{QMenu}. \\
+      Usage: \listing{someMenu->addAction(new MusEGui::MenuTitleItem(tr("fnord"), someMenu));} \\
+      Defined in \file{widgets/menutitleitem.h}.
+\item \sym{MusEGui::PopupMenu}: Provides a \sym{QMenu}-like menu which
+      can stay open after the user checks a checkable action.
+      Usage: just create a \listing{new PopupMenu( true|false )} instead of
+             a \listing{new QMenu()}. (\listing{true} means 'stay open')
+      Defined in \file{widgets/popupmenu.h}.
+\end{itemize}
+
+
+\section{Configuration} \label{portconfig_sucks}
+Configuration is a bit pesky in MusE in its current state. If you get
+confused by reading this chapter, that's a sign of a sane mind.
+
+There are three kinds of configuration items:
+\begin{itemize}
+\item (1) Global configuration, like coloring schemes, plugin categories, MDI-ness settings
+\item (2) Per-Song configuration, like whether to show or hide certain track types in the arranger
+\item (3) Something in between, like MIDI port settings etc. They obviously actually are
+      global configuration issues (or ought to be), but also obviously must be stored
+      in the song file for portability. (This problem could possibly be solved by
+      the feature proposal in \ref{symbolic_ports}.
+\end{itemize}
+
+\paragraph{Reading configuration}
+\sym{void MusECore::readConfiguration(Xml\&, bool, bool)} in
+\file{conf.cpp} is the central point
+of reading configuration. It is called when MusE is started first
+(by \sym{bool MusECore::readConfiguration()}), and also when a
+song is loaded. \\ %TODO: call paths!
+It can be instructed whether to read MIDI ports (3), global configuration
+and MIDI ports (1+3). Per-Song configuration is always read (2).
+
+When adding new configuration items and thus altering \sym{readConfiguration()},
+you must take care to place your item into the correct section. The code is
+divided into the following sections:
+\begin{itemize}
+\item Global and/or per-song configuration (3)
+\item Global configuration (1)
+\item Code for skipping obsolete entries
+\end{itemize}
+
+The sections are divided by comments (they contain \texttt{----}, so just
+search for them). Please do not just remove code for reading obsolete entries, 
+but always add an appropriate entry to the 'skipping' section in order to
+prevent error messages when reading old configs.
+
+\paragraph{Writing configuration}
+Global configuration is written using the
+\sym{MusEGui::MusE::writeGlobalConfiguration()} functions, while
+per-song-config is written by \sym{MusEGui::MusE::writeConfiguration()}
+(notice the missing \sym{Global}; both implemented in \file{conf.cpp}).
+
+\sym{writeConfiguration} is actually just a subset of the code in
+\sym{writeGlobalConfiguration}. \textbf{Duplicate code!}                  % TODO fix that in the sourcecode.
+
+\paragraph{Song state}
+Additionally to per-song configuration, there is the song's state.
+This contains "the song", that is all tracks, parts and note events,
+together with information about the currently opened windows, their
+position, size, settings and so on. Adding new items here is actually
+pretty painless: Configuration is read and written using
+\sym{MusECore::Song::read} and \sym{::write}, both implemented in
+\file{songfile.cpp}. There are no caveats.
+
+\paragraph{How to add new items}
+When adding global configuration items, then add them into the second
+block ("global configuration") in \sym{readConfiguration} and into
+\sym{writeGlobalConfiguration}.
+
+When adding just-per-song items, better don't bother to touch the
+"configuration" code and just add it to the song's state (there might
+be rare exceptions).
+
+When adding global configuration items, make sure you add them into the
+correct section of \sym{readConfiguration}, and into \sym{writeGlobalConfiguration}.
+
+
+%TODO: how to write config,
+%TODO: song/global stuff
+%TODO: config lesen und schreiben fuer plugingroups
+
+
 \section{User controls and automation}
 \subsection{Handling user input}
 \subsubsection{Plugins and synthesizers}
@@ -1418,7 +1518,21 @@ particular useful for stuff like "which low/high-pass filter type to use").
 
 Maybe make this behaviour default for discrete controllers?
 
+\section{Symbolic names for MIDI ports} \label{symbolic_ports}
+MIDI ports shall have a user-defined symbolic name (like "Korg" or "Yamaha DX 7").
+The mapping between these symbolic names and the hardware port (like
+"ALSA midi out port") is stored in the global configuration.
 
+Song files only specify the symbolic names as the ports associated with
+their tracks. No information about physical devices/port names, but only
+symbolic names are stored in the song file.
+
+This resolves the issues mentioned in \ref{portconfig_sucks}, and also
+allows the user to share his pieces with other people: They would only
+have to set up that symbolic-to-hardware mapping once (collisions are
+unlikely, because an equal symbolic name should usually mean the same
+device) and are happy, instead of having to re-map \emph{every} port
+for \emph{every} song.
 
 \end{document}
 
