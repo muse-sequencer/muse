@@ -527,15 +527,45 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
       MusECore::Track* t = ((NPart*)(i))->track();
       MusECore::Part*  p = ((NPart*)(i))->part();
 
-      int pos = p->tick() + i->width();
-      int snappedpos = p->tick();
-      if (!noSnap) {
-            snappedpos = AL::sigmap.raster(pos, *_raster);
-            }
-      unsigned int newwidth = snappedpos - p->tick();
-      if (newwidth == 0)
-            newwidth = AL::sigmap.rasterStep(p->tick(), *_raster);
+      const MusECore::Rasterizer& rast = _editor->rasterizer();
 
+      MusECore::Pos pos = p;
+      pos.setType(rast.timeType());
+      
+      //int pos = p->tick() + i->width();
+      //int pos = p->posValue(rast.timeType()) + i->width();
+      //MusECore::Pos pos = MusECore::Pos(i->width(), rast.timeType()) + p; // Operator+ First time type takes precedence.
+      //MusECore::PosLen pos(p, i->width()); 
+      //MusECore::PosLen pos(p->posValue(rast.timeType()), i->width(), rast.timeType()); 
+      MusECore::Pos end_pos = pos + i->width(); 
+      
+      //int snappedpos = p->tick();
+      //int snappedpos = p->posValue(rast.timeType());
+      //MusECore::Pos snappedpos = p;
+      //MusECore::PosLen snappedpos = p;
+      MusECore::Pos snapped_end_pos = pos;
+      
+      if (!noSnap) {
+            //snappedpos = AL::sigmap.raster(pos, *_raster);
+            //snappedpos = rast.rasterVal(pos); 
+            snapped_end_pos = rast.rasterVal(end_pos); 
+            }
+            
+      //unsigned int newwidth = snappedpos - p->tick();
+      //MusECore::Pos newwidth = snappedpos - p;
+      //MusECore::PosLen newwidth = snapped_end_pos - p;
+      //MusECore::Pos newwidth = snapped_end_pos - pos;
+      MusECore::PosLen newwidth(pos, snapped_end_pos);
+      
+      //if (newwidth == 0)
+      //if (newwidth.posValue(newwidth.type()) == 0)
+      if (newwidth.lenValue(newwidth.type()) == 0)
+            //newwidth = AL::sigmap.rasterStep(p->tick(), *_raster);
+            //newwidth = rast.rasterStep(p);
+            newwidth = MusECore::PosLen(pos, rast.rasterStep(pos));
+
+      //MusEGlobal::song->cmdResizePart(t, p, newwidth, !ctrl);
+      //MusEGlobal::song->cmdResizePart(t, p, newwidth.posValue(p->type()), !ctrl);
       MusEGlobal::song->cmdResizePart(t, p, newwidth, !ctrl);
       }
 
@@ -546,10 +576,14 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
 
 CItem* PartCanvas::newItem(const QPoint& pos, int)
       {
+      // TODO: Support Track Time Locking (parts+events can be either frames or ticks type).  
+
       int x = pos.x();
       if (x < 0)
             x = 0;
-      x = AL::sigmap.raster(x, *_raster);
+      //x = AL::sigmap.raster(x, *_raster);   // REMOVE Tim.
+      const MusECore::Rasterizer& rast = _editor->rasterizer();
+      MusECore::Pos pos_x = rast.rasterVal(MusECore::Pos(x, rast.timeType()));
       unsigned trackIndex = y2pitch(pos.y());
       if (trackIndex >= tracks->size())
             return 0;
@@ -564,13 +598,16 @@ CItem* PartCanvas::newItem(const QPoint& pos, int)
             case MusECore::Track::DRUM:
             case MusECore::Track::NEW_DRUM:
                   pa = new MusECore::MidiPart((MusECore::MidiTrack*)track);
-                  pa->setTick(x);
+                  //pa->setTick(x);        // REMOVE Tim.
+                  pa->setTick(pos_x.tick());
                   pa->setLenTick(0);
                   break;
             case MusECore::Track::WAVE:
                   pa = new MusECore::WavePart((MusECore::WaveTrack*)track);
-                  pa->setTick(x);
-                  pa->setLenTick(0);
+                  //pa->setTick(x);        // REMOVE Tim.
+                  pa->setFrame(pos_x.frame());
+                  //pa->setLenTick(0);     // REMOVE Tim.
+                  pa->setLenFrame(0);
                   break;
             case MusECore::Track::AUDIO_OUTPUT:
             case MusECore::Track::AUDIO_INPUT:
@@ -593,12 +630,26 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
       {
       MusECore::Part*  p = ((NPart*)(i))->part();
 
+      const MusECore::Rasterizer& rast = _editor->rasterizer();
+      MusECore::Pos pos = p;
+      pos.setType(rast.timeType());
+      MusECore::Pos end_pos = pos + i->width(); 
+      
       int len = i->width();
       if (!noSnap)
-            len = AL::sigmap.raster(len, *_raster);
-      if (len == 0)
-            len = AL::sigmap.rasterStep(p->tick(), *_raster);
-      p->setLenTick(len);
+            //len = AL::sigmap.raster(len, *_raster);
+            end_pos = rast.rasterVal(end_pos);
+      
+      MusECore::PosLen newwidth(pos, end_pos);
+      
+      //if (len == 0)
+            //len = AL::sigmap.rasterStep(p->tick(), *_raster);
+      if (newwidth.lenValue(newwidth.type()) == 0)
+            newwidth = MusECore::PosLen(pos, rast.rasterStep(pos));
+      
+      
+      //p->setLenTick(len);
+      p->setLen(newwidth);
       p->setSelected(true);
       MusEGlobal::audio->msgAddPart(p, true); //indicate undo
       }

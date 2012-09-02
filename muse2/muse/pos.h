@@ -55,7 +55,7 @@ class Pos {
       Pos(int,int,int);
       Pos(int,int,int,int);
       Pos(unsigned, bool ticks=true);
-      Pos(unsigned, TType tt = TICKS);
+      Pos(unsigned, TType time_type = TICKS);
       Pos(const QString&);
       Pos(bool is_null);
       void dump(int n = 0) const;
@@ -67,10 +67,12 @@ class Pos {
       void setNullFlag(bool f) { _nullFlag = f; }
       
       TType  type() const     { return _type; }
-      void   setType(TType t);
+      void   setType(TType time_type);
 
       Pos& operator+=(Pos a);
       Pos& operator+=(int a);
+      Pos& operator-=(Pos a);
+      Pos& operator-=(int a);
 
       bool operator>=(const Pos& s) const;
       bool operator>(const Pos& s) const;
@@ -80,13 +82,15 @@ class Pos {
 
       friend Pos operator+(Pos a, Pos b);
       friend Pos operator+(Pos a, int b);
+      friend Pos operator-(Pos a, Pos b);
+      friend Pos operator-(Pos a, int b);
 
       unsigned tick() const;
       unsigned frame() const;
-      unsigned posValue(TType) const;
+      unsigned posValue(TType time_type) const;
       void setTick(unsigned);
       void setFrame(unsigned);
-      void setPosValue(unsigned val, TType tt);     
+      void setPosValue(unsigned val, TType time_type);     
       void setPos(const Pos&);
 
       void write(int level, Xml&, const char*) const;
@@ -108,18 +112,24 @@ class PosLen : public Pos {
    public:
       PosLen();
       PosLen(const PosLen&);
+      PosLen(unsigned pos, unsigned len, TType time_type = TICKS);
+      PosLen(const Pos& pos, unsigned len);
+      PosLen(const Pos& start_pos, const Pos& end_pos);
       void dump(int n = 0) const;
 
       void write(int level, Xml&, const char*) const;
       void read(Xml& xml, const char*);
       void setLenTick(unsigned);
       void setLenFrame(unsigned);
+      void setLenValue(unsigned val, TType time_type);     
+      void setLen(const PosLen& len);     
       unsigned lenTick() const;
       unsigned lenFrame() const;
+      unsigned lenValue(TType time_type) const;
       Pos end() const;
       unsigned endTick() const    { return end().tick(); }
       unsigned endFrame() const   { return end().frame(); }
-      void setPos(const Pos&);   // REMOVE Tim.
+      //void setPos(const Pos&);   // REMOVE Tim.
       };
 
 } // namespace MusECore

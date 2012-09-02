@@ -843,14 +843,18 @@ void Song::removePart(Part* part)
 //   cmdResizePart
 //---------------------------------------------------------
 
-void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClones)
+//void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClones)   // REMOVE Tim.
+void Song::cmdResizePart(Track* track, Part* oPart, const MusECore::PosLen& len, bool doClones) 
       {
+      // TODO: Support Track Time Locking (parts+events can be either frames or ticks type).  
+        
       switch(track->type()) {
             case Track::WAVE:
                   {
                   MusECore::WavePart* nPart = new MusECore::WavePart(*(MusECore::WavePart*)oPart);
                   EventList* el = nPart->events();
-                  unsigned new_partlength = MusEGlobal::tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len);
+                  //unsigned new_partlength = MusEGlobal::tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len);  // REMOVE Tim.
+                  unsigned new_partlength = len.lenFrame();
 
                   // If new nr of frames is less than previous what can happen is:
                   // -   0 or more events are beginning after the new final position. Those are removed from the part
@@ -932,7 +936,8 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
 										if (part_it->lenTick()==orig_len)
 										{
 											MidiPart* newPart = new MidiPart(*part_it);
-											newPart->setLenTick(len);
+											//newPart->setLenTick(len);           // REMOVE Tim.
+											newPart->setLenTick(len.lenTick());
 											// Do port controller values but not clone parts. 
 											operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, newPart, true, false));
 										}

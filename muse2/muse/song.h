@@ -283,7 +283,8 @@ class Song : public QObject {
       //   part manipulations
       //-----------------------------------------
 
-      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doClones=false);
+      //void cmdResizePart(Track* t, Part* p, unsigned int size, bool doClones=false);   // REMOVE Tim.
+      void cmdResizePart(Track* t, Part* p, const MusECore::PosLen& size, bool doClones=false);
       void cmdSplitPart(Track* t, Part* p, int tick);
       void cmdGluePart(Track* t, Part* p);
 

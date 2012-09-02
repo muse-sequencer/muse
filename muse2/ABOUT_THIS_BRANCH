@@ -1,8 +1,8 @@
 NOTE: Try to work this into the docs later, rather than merging 
  this file with trunk. 
 
-By Tim. August 25 2012:
--------------------------
+By Tim. August 25 2012: Updated Sep 2.
+-------------------------------------
 
 After I improved the Wave Editor, MusE needed a way to operate 
  with frame, or Minute, Second, Frame (MSF) time scales. 
@@ -27,7 +27,23 @@ A similar action occurs when setting its frame or tick value when
 In this way Pos was designed to be 'agnostic' and represent either
  frames or ticks and convert automatically.
 No major new changes to class Pos, but a few new methods like 
- PosValue, setPosValue, and setPos.
+ PosValue, setPosValue, setPos, and operator- and -=.
+
+NULL positions:
+------------
+Until now, integers of value INT_MAX were passed among some of the 
+ routines to signify a non-valid value such as:
+      emit timeChanged(INT_MAX);
+Instead, a new private member _nullFlag and two new methods 
+ nullFlag() and setNullFlag(), as well as new contructors, have been 
+ added to class Pos.
+All uses of such INT_MAX values are to be eliminated.
+
+PosLen class:
+------------
+PosLen is a class which inherits Pos, and adds length members.
+New methods have been added to Poslen such as lenValue, setLenValue,
+ setLen, and some constructors as well.
 
 New Rasterizer class:
 ----------------------
@@ -170,6 +186,11 @@ Also, this means 'mixed' Part and Event time types in the PartList and
 When sorting, the lists determine whether to use FRAMES or TICKS depending 
  on the 'Time Lock' setting. 
 CLARIFY: Last sentence I'm not sure about - Events yes, but sort Parts how?
+
+UPDATE: After discussing, new proposal: Keep it simple, AND solve the problem:
+Drop Part Time Locking and just use Track Time Locking, thus Track Time Locking
+ governs all Parts and Events on a Track, and they ALL must be of the same type,
+ which solves the problem of sorting.
 
 In fact the whole thing is fraught with uncertainty and difficulty.
 Remains to be seen if it really correct and can really work...

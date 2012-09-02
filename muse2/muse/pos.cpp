@@ -81,10 +81,18 @@ Pos::Pos(unsigned t, bool ticks)
       _nullFlag = false;
       }
 
-Pos::Pos(unsigned t, TType tt)
+Pos::Pos(unsigned t, TType time_type)
       {
-      _type = tt;  
-      _type == FRAMES ? _frame = t :_tick = t;
+      _type = time_type;  
+      switch(_type)
+      {
+        case FRAMES:
+            _frame = t;
+          break;  
+        case TICKS:
+            _tick = t;
+          break;  
+      }
       sn = -1;
       _nullFlag = false;
       }
@@ -136,20 +144,24 @@ Pos::Pos(int min, int sec, int frame, int subframe)
 //   setType
 //---------------------------------------------------------
 
-void Pos::setType(TType t)
+void Pos::setType(TType time_type)
       {
-      if (t == _type)
+      if (time_type == _type)
             return;
 
-      if (_type == TICKS) {
-            // convert from ticks to frames
-            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
-            }
-      else {
+      switch(type)
+      {
+        case FRAMES:
             // convert from frames to ticks
             _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
-            }
-      _type = t;
+          break;
+        case TICKS:
+            // convert from ticks to frames
+            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
+          break;
+      }
+            
+      _type = time_type;
       }
 
 //---------------------------------------------------------
@@ -188,6 +200,42 @@ Pos& Pos::operator+=(int a)
       return *this;
       }
 
+//---------------------------------------------------------
+//   operator-=
+//---------------------------------------------------------
+
+Pos& Pos::operator-=(Pos a)
+      {
+      switch(_type) {
+            case FRAMES:
+                  _frame -= a.frame();
+                  break;
+            case TICKS:
+                  _tick -= a.tick();
+                  break;
+            }
+      sn = -1;          // invalidate cached values
+      return *this;
+      }
+
+//---------------------------------------------------------
+//   operator-=
+//---------------------------------------------------------
+
+Pos& Pos::operator-=(int a)
+      {
+      switch(_type) {
+            case FRAMES:
+                  _frame -= a;
+                  break;
+            case TICKS:
+                  _tick -= a;
+                  break;
+            }
+      sn = -1;          // invalidate cached values
+      return *this;
+      }
+
 Pos operator+(Pos a, int b)
       {
       Pos c;
@@ -201,44 +249,85 @@ Pos operator+(Pos a, Pos b)
       return c += b;
       }
 
+Pos operator-(Pos a, int b)
+      {
+      Pos c;
+      c.setType(a.type());
+      return c -= b;
+      }
+
+Pos operator-(Pos a, Pos b)
+      {
+      Pos c = a;
+      return c -= b;
+      }
+
 bool Pos::operator>=(const Pos& s) const
       {
-      if (_type == FRAMES)
-            return _frame >= s.frame();
-      else
-            return _tick >= s.tick();
+        switch(_type)
+        {
+          case FRAMES:
+              return _frame >= s.frame();
+            break;
+          case TICKS:
+              return _tick >= s.tick();
+            break;
+        }
       }
 
 bool Pos::operator>(const Pos& s) const
       {
-      if (_type == FRAMES)
-            return _frame > s.frame();
-      else
-            return _tick > s.tick();
+        switch(_type)
+        {
+          case FRAMES:
+              return _frame > s.frame();
+            break;
+          case TICKS:
+              return _tick > s.tick();
+            break;
+        }
+      
       }
 
 bool Pos::operator<(const Pos& s) const
       {
-      if (_type == FRAMES)
-            return _frame < s.frame();
-      else
-            return _tick < s.tick();
+        switch(_type)
+        {
+          case FRAMES:
+              return _frame < s.frame();
+            break;
+          case TICKS:
+              return _tick < s.tick();
+            break;
+        }
       }
 
 bool Pos::operator<=(const Pos& s) const
       {
-      if (_type == FRAMES)
-            return _frame <= s.frame();
-      else
-            return _tick <= s.tick();
+        switch(_type)
+        {
+          case FRAMES:
+              return _frame <= s.frame();
+            break;
+          case TICKS:
+              return _tick <= s.tick();
+            break;
+        }
+      
       }
 
 bool Pos::operator==(const Pos& s) const
       {
-      if (_type == FRAMES)
-            return _frame == s.frame();
-      else
-            return _tick == s.tick();
+        switch(_type)
+        {
+          case FRAMES:
+              return _frame == s.frame();
+            break;
+          case TICKS:
+              return _tick == s.tick();
+            break;
+        }
+      
       }
 
 //---------------------------------------------------------
@@ -267,9 +356,9 @@ unsigned Pos::frame() const
 //   value
 //---------------------------------------------------------
 
-unsigned Pos::posValue(TType t) const
+unsigned Pos::posValue(TType time_type) const
 {
-  switch(t)
+  switch(time_type)
   {
     case FRAMES:
       if (_type == TICKS)
@@ -314,10 +403,10 @@ void Pos::setFrame(unsigned pos)
 //   setPosValue
 //---------------------------------------------------------
 
-void Pos::setPosValue(unsigned val, TType tt)
+void Pos::setPosValue(unsigned val, TType time_type)
 {
   sn = -1;
-  switch(tt) {
+  switch(time_type) {
     case FRAMES:
           _frame = val;
           if (_type == TICKS)
@@ -330,10 +419,6 @@ void Pos::setPosValue(unsigned val, TType tt)
           break;
   }
   
-  // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   Why did I do it this way?
-  //_type = tt;  
-  //_type == FRAMES ? _frame = val :_tick = val;
-  
   _nullFlag = false;
 }
       
@@ -344,7 +429,7 @@ void Pos::setPosValue(unsigned val, TType tt)
 void Pos::setPos(const Pos& pos)
 {
   sn = -1;
-  switch(pos._type) {
+  switch(pos.type()) {
     case FRAMES:
           _frame = pos.frame();
           if (_type == TICKS)
@@ -356,10 +441,6 @@ void Pos::setPos(const Pos& pos)
                 _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
           break;
   }
-
-  // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   Why did I do it this way?
-  //_type = tt;  
-  //_type == FRAMES ? _frame = val :_tick = val;
   
   _nullFlag = false;
 }
@@ -447,6 +528,75 @@ PosLen::PosLen(const PosLen& p)
       _lenFrame = p._lenFrame;
       sn = -1;
       }
+
+PosLen::PosLen(unsigned pos, unsigned len, TType time_type)
+  : Pos(pos, time_type)
+{
+  sn      = -1;
+
+  switch(type())
+  {
+    case FRAMES:
+        _lenFrame = len;
+        // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
+        //_lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + len, &sn);
+      break;
+    case TICKS:
+        _lenTick = len;
+        // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
+        //_lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
+      break;
+  }
+  
+  //setLenValue(len, type());
+  
+  _nullFlag = false;
+}
+
+PosLen::PosLen(const Pos& pos, unsigned len)
+  : Pos(pos)
+{
+  sn      = -1;
+  switch(type())
+  {
+    case FRAMES:
+        _lenFrame = len;
+        // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
+        //_lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + len, &sn);
+      break;
+    case TICKS:
+        _lenTick = len;
+        // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
+        //_lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
+      break;
+  }
+  _nullFlag = false;
+}
+
+PosLen::PosLen(const Pos& start_pos, const Pos& end_pos)
+  : Pos(start_pos)
+{
+  sn      = -1;
+  
+  switch(type())   // start_pos governs the time type.
+  {
+    case FRAMES:
+        _lenFrame = end_pos.frame() - start_pos.frame();
+        // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
+        //_lenTick = MusEGlobal::tempomap.deltaFrame2tick(start_pos.frame(), end_pos.frame(), &sn);
+      break;
+    case TICKS:
+        _lenTick = end_pos.tick() - start_pos.tick();
+        // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
+        //_lenFrame = MusEGlobal::tempomap.deltaTick2frame(start_pos.tick(), end_pos.tick(), &sn);
+      break;
+  }
+
+  // start_pos governs the time type.  
+  //setLenValue(end_pos.posValue(type()) - start_pos.posValue(type()), type());
+  
+  _nullFlag = false;
+}
 
 //---------------------------------------------------------
 //   dump
@@ -558,7 +708,9 @@ void PosLen::setLenTick(unsigned len)
       {
       _lenTick = len;
       sn       = -1;
-      _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
+      if (_type == FRAMES)
+        _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn);
+      _nullFlag = false;
       }
 
 //---------------------------------------------------------
@@ -569,8 +721,56 @@ void PosLen::setLenFrame(unsigned len)
       {
       _lenFrame = len;
       sn      = -1;
-      _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + len, &sn);
+      if (_type == TICKS)
+        _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
+      _nullFlag = false;
       }
+
+//---------------------------------------------------------
+//   setLenValue
+//---------------------------------------------------------
+
+void PosLen::setLenValue(unsigned val, TType time_type)
+{
+  sn      = -1;
+  switch(time_type)
+  {
+    case FRAMES:
+        _lenFrame = val;
+        if (type() == TICKS)
+          _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
+      break;
+    case TICKS:
+        _lenTick = val;
+        if (type() == FRAMES)
+          _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn);
+      break;
+  }
+  _nullFlag = false;
+}
+
+//---------------------------------------------------------
+//   setLen
+//---------------------------------------------------------
+
+void PosLen::setLen(const PosLen& len)
+{
+  sn      = -1;
+  switch(len.type())
+  {
+    case FRAMES:
+        _lenFrame = len.lenFrame();
+        if (type() == TICKS)
+          _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
+      break;
+    case TICKS:
+        _lenTick = len.lenTick();
+        if (type() == FRAMES)
+          _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn);
+      break;
+  }
+  _nullFlag = false;
+}
 
 //---------------------------------------------------------
 //   lenTick
@@ -595,6 +795,27 @@ unsigned PosLen::lenFrame() const
       }
 
 //---------------------------------------------------------
+//   lenValue
+//---------------------------------------------------------
+
+unsigned PosLen::lenValue(TType time_type) const
+      {
+        switch(time_type)
+        {
+          case FRAMES:
+                if (type() == TICKS)
+                      _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn); 
+                return _lenFrame;
+            break;
+          case TICKS:
+                if (type() == FRAMES)
+                      _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
+                return _lenTick;
+            break;
+        }
+      }
+
+//---------------------------------------------------------
 //   end
 //---------------------------------------------------------
 
@@ -613,22 +834,23 @@ Pos PosLen::end() const
       return pos;
       }
 
-//---------------------------------------------------------
-//   setPos
-//---------------------------------------------------------
-
-void PosLen::setPos(const Pos& pos)
-      {
-      switch(pos.type()) {
-            case FRAMES:
-                  setFrame(pos.frame());
-                  break;
-            case TICKS:
-                  setTick(pos.tick());
-                  break;
-            }
-      }
-
+// REMOVE Tim.      
+// //---------------------------------------------------------
+// //   setPos
+// //---------------------------------------------------------
+// 
+// void PosLen::setPos(const Pos& pos)
+//       {
+//       switch(pos.type()) {
+//             case FRAMES:
+//                   setFrame(pos.frame());
+//                   break;
+//             case TICKS:
+//                   setTick(pos.tick());
+//                   break;
+//             }
+//       }
+// 
 //---------------------------------------------------------
 //   mbt
 //---------------------------------------------------------
