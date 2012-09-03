@@ -4698,7 +4698,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o velo-controller doesn't work in new-style drum tracks
  *
  * CURRENT TODO
- *   o group plugins into user definable categories
  *   o better and visual means for fading etc
  *   o rename E- and A-note to I- and O-
  *   o storing <no_toplevels /> into a template file seems to ignore
@@ -4721,6 +4720,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *       "'TR-808' is on 'jack-midi port foo, connected to bar'"
  *     if loading a song with unknown synth name, ask the user.
  *   o prerecord feature.
+ *   o part templates
  *
  *   o find and fix FINDMICHJETZT
  *   o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
