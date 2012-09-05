@@ -1,3 +1,6 @@
+04.09.2012: 
+         - Fix for forum topic "Ordering of simultaneous events". (Tim)
+           Methods EventList::add() and ::move() now sort all same-time notes AFTER controllers.
 03.09.2012: summer sleep is over! plugins can now be grouped (flo)
 14.08.2012:
          * Introducing: Improved Wave Editor. (Tim)
