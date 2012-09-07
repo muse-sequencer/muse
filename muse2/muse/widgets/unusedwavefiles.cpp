@@ -56,6 +56,7 @@ void UnusedWaveFiles::findWaveFiles()
     QStringList filter;
     filter.append("*.wav");
     filter.append("*.ogg");
+    filter.append("*.flac");
     allWaveFiles= dir.entryList(filter);
     if (!allWaveFiles.count())
         return;
@@ -75,7 +76,7 @@ void UnusedWaveFiles::findWaveFiles()
         QTextStream fileContent(fp);
         while (!fileContent.atEnd()) {
             QString line = fileContent.readLine();
-            if (line.contains(".wav") || line.contains(".ogg")) { // optimization
+            if (line.contains(".wav") || line.contains(".ogg") || line.contains(".flac")) { // optimization
                 foreach (QString wav, allWaveFiles) {
                     //printf("checking wav [%s]\n", wav.toLatin1().data() );
                     if (line.contains(wav)) {
