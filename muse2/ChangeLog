@@ -1,3 +1,6 @@
+06.09.2012:
+         - Bug 3555581: No synths listed in Edit menu: main.cpp: Move initMidiSynth() ahead of MusE. (Tim)
+         - Simple change: Privatize Arranger::parentWin. (Tim)
 04.09.2012: 
          - Fix for forum topic "Ordering of simultaneous events". (Tim)
            Methods EventList::add() and ::move() now sort all same-time notes AFTER controllers.

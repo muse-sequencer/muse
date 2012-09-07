@@ -115,6 +115,7 @@ class Arranger : public QWidget {
 
       static QByteArray header_state;
 
+      ArrangerView* _parentWin;
       int _quant, _raster;
       PartCanvas* canvas;
       ScrollScale* hscroll;
@@ -236,7 +237,7 @@ class Arranger : public QWidget {
       
       unsigned cursorValue() { return cursVal; }
       
-      ArrangerView* parentWin;
+      ArrangerView* parentWin() const { return _parentWin; }
       };
 
 } // namespace MusEGui

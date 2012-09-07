@@ -676,18 +676,18 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       partPopup->addSeparator();
       switch(trackType) {
             case MusECore::Track::MIDI: {
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startPianoEditAction);
-                  partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin->scoreSubmenu);
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startScoreEditAction);
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startPianoEditAction);
+                  partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);
                   }
                   break;
             case MusECore::Track::NEW_DRUM:
             case MusECore::Track::DRUM: {
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startDrumEditAction);
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
                   act_dexport->setData(16);
                   }
