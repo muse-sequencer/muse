@@ -71,6 +71,7 @@ class WaveEdit : public MidiEditor {
       QAction* pasteAction;
       QAction* selectPrevPartAction;
       QAction* selectNextPartAction;
+      QAction* adjustWaveOffsetAction;
 
       QAction* evColorNormalAction;
       QAction* evColorPartsAction;

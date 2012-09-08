@@ -33,6 +33,7 @@
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
+#include <QInputDialog>
 #include <QMouseEvent>
 #include <QList>
 #include <QPair>
@@ -1505,6 +1506,68 @@ bool WaveCanvas::deleteItem(MusEGui::CItem* item)
       }
 
 //---------------------------------------------------------
+//   adjustWaveOffset
+//---------------------------------------------------------
+
+void WaveCanvas::adjustWaveOffset()
+{
+  bool have_selected = false;
+  int init_offset = 0;
+  
+  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) 
+  {
+    if (k->second->isSelected())
+    {
+      have_selected = true;
+      init_offset = k->second->event().spos();
+      break;
+    }
+  }
+
+  if(!have_selected)
+  {
+    QMessageBox::information(this, 
+        QString("MusE"),
+        QWidget::tr("No wave events selected."));
+    return;
+  }
+
+  bool ok = false;
+  int offset = QInputDialog::getInt(this, 
+                                    tr("Adjust Wave Offset"), 
+                                    tr("Wave offset (frames)"), 
+                                    init_offset, 
+                                    0, 2147483647, 1, 
+                                    &ok);
+  if(!ok)
+    return;    
+  
+  MusECore::Undo operations;
+
+  // FIXME: Respect clones! If operating on two selected clones of the same part, an extra event is created!
+  //        Check - Is it really this code's problem? Seems so, other operations like moving an event seem OK.
+  for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+  {
+    if(ici->second->isSelected())
+    {
+      MusECore::Event oldEvent = ici->second->event();
+      if(oldEvent.spos() != offset)
+      {
+        MusECore::Part* part = ici->second->part();
+        MusECore::Event newEvent = oldEvent.clone();
+        newEvent.setSpos(offset);
+        // Do not do port controller values and clone parts. 
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, oldEvent, part, false, false));
+      }
+    }
+  }
+  
+  MusEGlobal::song->applyOperationGroup(operations);
+  
+  redraw();
+}
+      
+//---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
 
@@ -1722,7 +1785,10 @@ void WaveCanvas::cmd(int cmd)
                   }
                   break;
                  
-                  
+            case CMD_ADJUST_WAVE_OFFSET:
+                  adjustWaveOffset();
+                  break;
+
             case CMD_EDIT_EXTERNAL:
                   modifyoperation = EDIT_EXTERNAL;
                   break;

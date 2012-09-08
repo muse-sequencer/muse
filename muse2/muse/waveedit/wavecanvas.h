@@ -105,8 +105,6 @@ class WaveCanvas : public EventCanvas {
       void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
       void drawParts(QPainter&, const QRect&, bool do_cur_part);
   
-      // REMOVE Tim.
-      //virtual void pdraw(QPainter&, const QRect&);
       virtual void draw(QPainter&, const QRect&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
@@ -136,7 +134,8 @@ class WaveCanvas : public EventCanvas {
       virtual void itemMoved(const CItem*, const QPoint&);
       virtual void curPartChanged();
       virtual void resizeEvent(QResizeEvent*);
-
+      void adjustWaveOffset(); 
+      
    private slots:
       void setPos(int idx, unsigned val, bool adjustScrollbar);
 
@@ -159,7 +158,8 @@ class WaveCanvas : public EventCanvas {
              CMD_QUANTIZE,
              CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT, 
              CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART, 
-             CMD_ERASE_MEASURE, CMD_DELETE_MEASURE, CMD_CREATE_MEASURE
+             CMD_ERASE_MEASURE, CMD_DELETE_MEASURE, CMD_CREATE_MEASURE,
+             CMD_ADJUST_WAVE_OFFSET
            };
              
       WaveCanvas(MidiEditor*, QWidget*, int, int);
