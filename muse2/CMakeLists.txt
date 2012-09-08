@@ -180,10 +180,6 @@ include(${QT_USE_FILE})
 ##
 
 FIND_PROGRAM(DOXY doxygen)
-if (${DOXY} STREQUAL "DOXY-NOTFOUND")
-      message("\n\n** ERROR: The program 'doxygen' is required, but was not found.\n\n")
-endif (${DOXY} STREQUAL "DOXY-NOTFOUND")
-
 
 ##
 ## alsa >= 0.9.0
@@ -193,9 +189,6 @@ if (APPLE)
 	message("Disabling ALSA support due to OS X build.")
 else (APPLE)
 PKG_CHECK_MODULES(ALSA REQUIRED alsa>=0.9.0)
-if (NOT ALSA_FOUND)
-      message("\n** ERROR: alsa >= 0.9.0 is required, but development files were not found.\n\n")
-endif (NOT ALSA_FOUND)           
 include_directories(${ALSA_INCLUDE_DIRS})
 endif (APPLE)
 
@@ -204,9 +197,6 @@ endif (APPLE)
 ##
 
 PKG_CHECK_MODULES(SNDFILE REQUIRED sndfile>=1.0.0)
-if (NOT SNDFILE_FOUND)
-      message("\n** ERROR: sndfile >= 1.0.0 is required, but development files were not found.\n\n")
-endif (NOT SNDFILE_FOUND)           
 include_directories(${SNDFILE_INCLUDE_DIRS})
 
 ##
@@ -214,9 +204,6 @@ include_directories(${SNDFILE_INCLUDE_DIRS})
 ##
 
 PKG_CHECK_MODULES(SAMPLERATE REQUIRED samplerate>=0.1.0)
-if (NOT SAMPLERATE_FOUND)
-      message("\n** ERROR: samplerate >= 0.1.0 is required, but development files were not found.\n\n")
-endif (NOT SAMPLERATE_FOUND)           
 include_directories(${SAMPLERATE_INCLUDE_DIRS})
 
 ##
@@ -224,9 +211,6 @@ include_directories(${SAMPLERATE_INCLUDE_DIRS})
 ##
 
 PKG_CHECK_MODULES(UUID REQUIRED uuid>=0.0.1)
-if (NOT UUID_FOUND)
-      message("\n** ERROR: uuid >= 0.0.1 is required, but development files were not found.\n\n ")
-endif (NOT UUID_FOUND)           
 include_directories(${UUID_INCLUDE_DIRS})
 
 ##
@@ -234,9 +218,6 @@ include_directories(${UUID_INCLUDE_DIRS})
 ##
 
 PKG_CHECK_MODULES(JACK REQUIRED jack>=0.103)
-if (NOT JACK_FOUND)
-      message("\n** ERROR: jack >= 0.103 is required, but development files were not found.\n\n ")
-endif (NOT JACK_FOUND)           
 include_directories(${JACK_INCLUDE_DIRS})
 
 ##
@@ -256,9 +237,6 @@ if (ENABLE_LASH)
       if (LASH_FOUND)
             include_directories(${LASH_INCLUDE_DIRS})
             set(HAVE_LASH ON)
-      else (LASH_FOUND)
-        message("\n** WARNING: lash (>= 0.2) was enabled, but development files were not found. ")
-        message("** HINT: Don't have LASH? Try installing the LADISH LASH compatibility package instead.\n\n ")
       endif (LASH_FOUND)           
 else (ENABLE_LASH)
       message("LASH disabled")
@@ -273,8 +251,6 @@ if (ENABLE_OSC)
       if (LIBLO_FOUND)
             include_directories(${LIBLO_INCLUDE_DIRS})
             set(OSC_SUPPORT ON)
-      else (LIBLO_FOUND)
-        message("\n** WARNING: liblo (>= 0.23) (Lightweight Open Sound Control) was enabled, but development files were not found.\n\n ")
       endif (LIBLO_FOUND)
 else (ENABLE_OSC)
       message("OSC disabled")
@@ -299,8 +275,6 @@ if (ENABLE_PYTHON)
             if (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
                   set(PYTHON_SUPPORT ON)
             endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
-      else (PYTHONLIBS_FOUND)
-        message("\n** WARNING: python was enabled, but development files were not found.\n\n ")
       endif (PYTHONLIBS_FOUND)
 endif (ENABLE_PYTHON)
 
@@ -313,8 +287,6 @@ if (ENABLE_DSSI)
       if (DSSI_FOUND)
             include_directories(${DSSI_INCLUDE_DIRS})
             set(DSSI_SUPPORT ON)
-      else (DSSI_FOUND)
-        message("\n** WARNING: dssi (>= 0.9.0) was enabled, but development files were not found.\n\n ")
       endif (DSSI_FOUND)
 else (ENABLE_DSSI)
       message("DSSI disabled")
@@ -354,8 +326,6 @@ if ( ENABLE_FLUID )
             # message("FLUIDSYN_INCLUDE_DIRS " ${FLUIDSYN_INCLUDE_DIRS} )    # empty
             # message("FLUIDSYN_CFLAGS " ${FLUIDSYN_CFLAGS} )                # empty
             # message("FLUIDSYN_CFLAGS_OTHER " ${FLUIDSYN_CFLAGS_OTHER} )    # empty
-      else (FLUIDSYN_FOUND)
-        message("\n** WARNING: fluidsynth (>= 0.9.0) was enabled, but development files were not found.\n\n ")
       endif (FLUIDSYN_FOUND)
 else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
@@ -481,6 +451,59 @@ configure_file(
 
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
+
+##
+## Report errors and warnings and hints  
+##
+
+message("\n")
+
+if (${DOXY} STREQUAL "DOXY-NOTFOUND")
+      message("** ERROR: The program 'doxygen' is required, but was not found.")
+endif (${DOXY} STREQUAL "DOXY-NOTFOUND")
+  
+if (NOT ALSA_FOUND)
+      message("** ERROR: alsa >= 0.9.0 is required, but development files were not found.")
+endif (NOT ALSA_FOUND)           
+
+if (NOT SNDFILE_FOUND)
+      message("** ERROR: sndfile >= 1.0.0 is required, but development files were not found.")
+endif (NOT SNDFILE_FOUND)           
+
+if (NOT SAMPLERATE_FOUND)
+      message("** ERROR: samplerate >= 0.1.0 is required, but development files were not found.")
+endif (NOT SAMPLERATE_FOUND)           
+
+if (NOT UUID_FOUND)
+      message("** ERROR: uuid >= 0.0.1 is required, but development files were not found.")
+endif (NOT UUID_FOUND)           
+
+if (NOT JACK_FOUND)
+      message("** ERROR: jack >= 0.103 is required, but development files were not found.")
+endif (NOT JACK_FOUND)           
+
+if (ENABLE_LASH AND (NOT LASH_FOUND))
+        message("** WARNING: lash (>= 0.2) was enabled, but development files were not found. ")
+        message("** HINT: Don't have LASH? Try installing the LADISH LASH compatibility package instead.")
+endif (ENABLE_LASH AND (NOT LASH_FOUND))
+
+if (ENABLE_OSC AND (NOT LIBLO_FOUND))
+        message("** WARNING: liblo (>= 0.23) (Lightweight Open Sound Control) was enabled, but development files were not found.")
+endif (ENABLE_OSC AND (NOT LIBLO_FOUND))
+
+if (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
+        message("** WARNING: python was enabled, but development files were not found.")
+endif (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
+
+if (ENABLE_DSSI AND (NOT DSSI_FOUND))
+        message("** WARNING: dssi (>= 0.9.0) was enabled, but development files were not found.")
+endif (ENABLE_DSSI AND (NOT DSSI_FOUND))
+
+if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
+        message("** WARNING: fluidsynth (>= 0.9.0) was enabled, but development files were not found.")
+endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
+
+message("")
 
 ## Show a summary of what we got
 summary_add("Lash support" HAVE_LASH)
