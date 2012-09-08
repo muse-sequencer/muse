@@ -20,11 +20,13 @@ details.
       Requirements:
   =============================
       
-
+      - doxygen
+          www.doxygen.org
+          
       - CMake >= 2.4 
           http:/www.cmake.org/HTML/Download.html
 
-      - QT: Qt >= 4.2.0 
+      - QT: Qt >= 4.2.0 (development files)
           http://qt.nokia.com/products/
           MusE does _not_ compile with older versions
 
@@ -32,32 +34,37 @@ details.
           http://gcc.gnu.org/
           http://clang.llvm.org/
 
-      - libsndfile >= 1.0.1
+      - libsndfile >= 1.0.1 (development files)
           http://www.mega-nerd.com/libsndfile/
 
-      - libsamplerate
+      - libsamplerate >= 0.1.0 (development files)
           http://www.mega-nerd.com/SRC/
 
-      - JACK >= 0.103
+      - JACK >= 0.103 (development files)
           http://jackaudio.org/
 
-      - libuuid
+      - libuuid (development files)
          e2fsprogs package http://e2fsprogs.sourceforge.net/
-         Some distros may include it in another package, offering a choice.
+         Some distros may include it in another package such as 'libuuid', or offer a choice.
 
       Optional:
 
-      - fluidsynth >= 1.0.3 (formerly known as iiwusynth) from
-        http://sourceforge.net/apps/trac/fluidsynth/
+      - fluidsynth >= 1.0.3 (formerly known as iiwusynth) (development files) 
+          http://sourceforge.net/apps/trac/fluidsynth/
 
-      - liblo           Lightweight OSC (Open Sound Control)    http://liblo.sourceforge.net/
-      - DSSI            Disposable Soft Synth Interface.        http://dssi.sourceforge.net/
-          (Both recommended - DSSI alone will have no native GUIs, OSC alone does nothing, for now.)
+      - liblo    Lightweight OSC (Open Sound Control) (development files)   
+          http://liblo.sourceforge.net/
+      - DSSI     Disposable Soft Synth Interface (development files)   
+          http://dssi.sourceforge.net/
+        (Both recommended - DSSI alone will have no native GUIs, OSC alone does nothing, for now.)
 
-      - dssi-vst        Support for DSSI vst plugins            http://www.breakfastquay.com/dssi-vst/
+      - dssi-vst        Support for DSSI vst plugins            
+          http://www.breakfastquay.com/dssi-vst/
 
-      - LASH            Audio Session Handler                   http://lash.nongnu.org/
-         Recently LADISH has been emulating it instead.         http://ladish.org/
+      - LASH            Audio Session Handler                   
+          http://lash.nongnu.org/
+          Recently LADISH has been emulating it instead:         
+          http://ladish.org/
       
       - ConTeXt (for building documentation, by default the build
                script tries to build documentation, can be
