@@ -1,3 +1,5 @@
+09.09.2012:
+         - Added instructions on how to record audio with MusE to the new manual (rj)
 08.09.2012:
          - Follow up to Improved Wave Editor: Added Edit -> Adjust Wave Offset. Helps compensate for latency. (Tim) 
            FIXME: Respect clones! If operating on two selected clones of the same part, an extra event is created.
