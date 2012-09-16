@@ -601,7 +601,6 @@ void TList::returnPressed()
                                                           editTrack->name().toLatin1().constData(), 
                                                           editor->text().toLatin1().constData()));
                 editTrack->setName(editor->text());
-                //MusEGlobal::song->update(SC_TRACK_MODIFIED);   //DELETETHIS
                 MusEGlobal::song->endUndo(-1);                   //uagh, why "-1", why no proper flags?
                 }
         }    

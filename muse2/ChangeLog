@@ -1,3 +1,7 @@
+16.09.2012:
+	 - Fixed allocation error with drag&drop of plugins (rj)
+	 - Fixed close menu alternative in Instrument editor (rj)
+	 - Changed Aux name on strips to reflect the actual Aux strip name (rj)
 09.09.2012:
          - Added instructions on how to record audio with MusE to the new manual (rj)
 08.09.2012:

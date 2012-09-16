@@ -664,7 +664,7 @@ void AudioStrip::updateChannels()
 //           1 - aux send
 //---------------------------------------------------------
 
-MusEGui::Knob* AudioStrip::addKnob(int type, int id, MusEGui::DoubleLabel** dlabel)
+MusEGui::Knob* AudioStrip::addKnob(int type, int id, MusEGui::DoubleLabel** dlabel, QLabel *name)
       {
       MusEGui::Knob* knob = new MusEGui::Knob(this);
       knob->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -698,23 +698,20 @@ MusEGui::Knob* AudioStrip::addKnob(int type, int id, MusEGui::DoubleLabel** dlab
             }
       pl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       
-      QString label;
-      if (type == 0)
-            label = tr("Pan");
-      else
-            label.sprintf("Aux%d", id+1);
+      //      QString label;
+      //      if (type == 0)
+      //            label = tr("Pan");
+      //      else
+      //            label = name;
 
-      QLabel* plb = new QLabel(label, this);
-      ///plb->setFont(MusEGlobal::config.fonts[1]);
-      plb->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      plb->setAlignment(Qt::AlignCenter);
+      //QLabel* plb = new QLabel(label, this);
+      name->setParent(this);
+      name->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      name->setAlignment(Qt::AlignCenter);
 
-      grid->addWidget(plb, _curGridRow, 0);
+      grid->addWidget(name, _curGridRow, 0);
       grid->addWidget(pl, _curGridRow+1, 0);
       grid->addWidget(knob, _curGridRow, 1, 2, 1);
-      //grid->addWidget(plb, _curGridRow, 0, Qt::AlignCenter);
-      //grid->addWidget(pl, _curGridRow+1, 0, Qt::AlignCenter);
-      //grid->addWidget(knob, _curGridRow, 1, 2, 1, Qt::AlignCenter);
       _curGridRow += 2;
 
       connect(knob, SIGNAL(valueChanged(double,int)), pl, SLOT(setValue(double)));
@@ -822,8 +819,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       int auxsSize = MusEGlobal::song->auxs()->size();
       if (t->hasAuxSend()) {
             for (int idx = 0; idx < auxsSize; ++idx) {
-                  MusEGui::DoubleLabel* al;
-                  MusEGui::Knob* ak = addKnob(1, idx, &al);
+                  MusEGui::DoubleLabel* al; // the thought was to aquire the correct Aux name for each Aux
+                                            // now they are only called Aux1, Aux2, which isn't too usable.
+                  QLabel *name = new QLabel(((MusECore::Track*)(MusEGlobal::song->auxs()->at(idx)))->name(),this);
+                  MusEGui::Knob* ak = addKnob(1, idx, &al, name);
+
                   auxKnob.push_back(ak);
                   auxLabel.push_back(al);
                   double val = MusECore::fast_log10(t->auxSend(idx))*20.0;
@@ -895,7 +895,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       //    pan, balance
       //---------------------------------------------------
 
-      pan = addKnob(0, 0, &panl);
+      pan = addKnob(0, 0, &panl, new QLabel("Pan", this));
       pan->setValue(t->pan());
       
       //---------------------------------------------------

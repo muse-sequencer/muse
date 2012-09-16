@@ -58,8 +58,9 @@ void UnusedWaveFiles::findWaveFiles()
     filter.append("*.ogg");
     filter.append("*.flac");
     allWaveFiles= dir.entryList(filter);
-    if (!allWaveFiles.count())
+    if (allWaveFiles.count() == 0)
         return;
+
     // get med files
     QStringList medFiles;
     if (ui->currentProjRadioButton->isChecked()) {
@@ -69,6 +70,7 @@ void UnusedWaveFiles::findWaveFiles()
         QStringList medFilter("*.med");
         medFiles = dir.entryList(medFilter);
     }
+
     foreach (QString medFile, medFiles) {
         QString fname = MusEGlobal::museProject+"/"+ medFile;
         //printf("fopen %s\n", fname.toLatin1().data());
@@ -113,7 +115,8 @@ void UnusedWaveFiles::accept()
             // move the wca file if it exists
             QFileInfo wf(MusEGlobal::museProject + "/" + file);
             if (QFile::exists(MusEGlobal::museProject + "/" + wf.baseName()+".wca")) {
-                QFile::rename(MusEGlobal::museProject + "/" + wf.baseName()+".wca", MusEGlobal::museProject + "/unused/" +wf.baseName()+".wca");
+                QFile::rename(MusEGlobal::museProject + "/" + wf.baseName()+".wca",
+                              MusEGlobal::museProject + "/unused/" +wf.baseName()+".wca");
 
             }
         }
