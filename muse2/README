@@ -69,6 +69,11 @@ details.
       - ConTeXt (for building documentation, by default the build
                script tries to build documentation, can be
                disabled by setting ENABLE_DOCUMENTATION to OFF)
+      
+      - Python		The python scripting language
+          http://www.python.org
+          Python support is required for some experimental features.
+          Currently it's NOT recommended to build with python support.
 
   =============================
       Building MusE:
