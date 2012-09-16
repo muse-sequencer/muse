@@ -92,6 +92,8 @@ class PianoCanvas : public EventCanvas {
       virtual void itemMoved(const CItem*, const QPoint&);
       virtual void curPartChanged();
       virtual void resizeEvent(QResizeEvent*);
+      virtual void startPlayEvent(const CItem*);
+      virtual void stopPlayEvent();
 
    private slots:
       void midiNote(int pitch, int velo);

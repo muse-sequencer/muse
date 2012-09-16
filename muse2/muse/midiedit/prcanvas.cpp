@@ -499,11 +499,18 @@ MusEGui::CItem* PianoCanvas::newItem(const QPoint& p, int)
       e.setPitch(pitch);
       e.setVelo(curVelo);
       e.setLenTick(len);
-      return new NEvent(e, curPart, pitch2y(pitch));
+
+      NEvent *newEvent = new NEvent(e, curPart, pitch2y(pitch));
+      if(_playEvents)
+              startPlayEvent(newEvent);
+      return newEvent;
       }
 
 void PianoCanvas::newItem(MusEGui::CItem* item, bool noSnap)
       {
+      if(_playEvents)
+          stopPlayEvent();
+
       NEvent* nevent = (NEvent*) item;
       MusECore::Event event    = nevent->event();
       int x = item->x();
@@ -998,17 +1005,7 @@ void PianoCanvas::itemPressed(const MusEGui::CItem* item)
       {
       if (!_playEvents)
             return;
-
-      int port         = track()->outPort();
-      int channel      = track()->outChannel();
-      NEvent* nevent   = (NEvent*) item;
-      MusECore::Event event      = nevent->event();
-      playedPitch      = event.pitch() + track()->transposition;
-      int velo         = event.velo();
-
-      // play note:
-      MusECore::MidiPlayEvent e(0, port, channel, 0x90, playedPitch, velo);
-      MusEGlobal::audio->msgPlayMidiEvent(&e);
+      startPlayEvent(item);
       }
 
 //---------------------------------------------------------
@@ -1018,14 +1015,8 @@ void PianoCanvas::itemPressed(const MusEGui::CItem* item)
 void PianoCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
       {
       if (!_playEvents)
-            return;
-      int port    = track()->outPort();
-      int channel = track()->outChannel();
-
-      // release note:
-      MusECore::MidiPlayEvent ev(0, port, channel, 0x90, playedPitch, 0);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      playedPitch = -1;
+              return;
+      stopPlayEvent();
       }
 
 //---------------------------------------------------------
@@ -1165,6 +1156,39 @@ void PianoCanvas::resizeEvent(QResizeEvent* ev)
       if (ev->size().width() != ev->oldSize().width())
             emit newWidth(ev->size().width());
       EventCanvas::resizeEvent(ev);
+      }
+
+//---------------------------------------------------------
+//   startPlayEvent
+//---------------------------------------------------------
+
+void PianoCanvas::startPlayEvent(const MusEGui::CItem* item)
+      {
+      int port         = track()->outPort();
+      int channel      = track()->outChannel();
+      NEvent* nevent   = (NEvent*) item;
+      MusECore::Event event      = nevent->event();
+      playedPitch      = event.pitch() + track()->transposition;
+      int velo         = event.velo();
+
+      // play note:
+      MusECore::MidiPlayEvent e(0, port, channel, 0x90, playedPitch, velo);
+      MusEGlobal::audio->msgPlayMidiEvent(&e);
+      }
+
+//---------------------------------------------------------
+//   stopPlayEvent
+//---------------------------------------------------------
+
+void PianoCanvas::stopPlayEvent()
+      {
+      int port    = track()->outPort();
+      int channel = track()->outChannel();
+
+      // release note:
+      MusECore::MidiPlayEvent ev(0, port, channel, 0x90, playedPitch, 0);
+      MusEGlobal::audio->msgPlayMidiEvent(&ev);
+      playedPitch = -1;
       }
 
 } // namespace MusEGui
