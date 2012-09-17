@@ -1,3 +1,9 @@
+17.09.2012:
+         * Introducing: Copy On Write for waves. (Tim)
+           It asks to copy, to the Project Directory, any wave to be modified which is either 
+            not writable or is shared with another independent (non-clone) wave event.
+           TODO: Improve by asking even for writable waves outside the Project Directory 
+            (add a 'copy' checkbox column to the dialog, settable only under certain conditions). 
 16.09.2012:
 	 - Fixed allocation error with drag&drop of plugins (rj)
 	 - Fixed close menu alternative in Instrument editor (rj)

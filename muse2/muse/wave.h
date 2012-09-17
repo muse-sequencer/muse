@@ -64,7 +64,7 @@ class SndFile {
       bool openFlag;
       bool writeFlag;
       size_t readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer);
-
+      
    protected:
       int refCount;
 
@@ -86,10 +86,13 @@ class SndFile {
       bool isOpen() const     { return openFlag; }
       bool isWritable() const { return writeFlag; }
       void update();
+      bool checkCopyOnWrite();      //!< check if the file should be copied before writing to it
 
       QString basename() const;     //!< filename without extension
       QString dirPath() const;      //!< path
+      QString canonicalDirPath() const; //!< path, resolved (no symlinks or . .. etc)
       QString path() const;         //!< path with filename
+      QString canonicalPath() const; //!< path with filename, resolved (no symlinks or . .. etc)
       QString name() const;         //!< filename
 
       unsigned samples() const;
@@ -143,10 +146,13 @@ class SndFileR {
       bool isOpen() const     { return sf->isOpen(); }
       bool isWritable() const { return sf->isWritable(); }
       void update()           { sf->update(); }
+      bool checkCopyOnWrite() { return sf->checkCopyOnWrite(); };  
 
       QString basename() const { return sf->basename(); }
       QString dirPath() const  { return sf->dirPath(); }
+      QString canonicalDirPath() const  { return sf->canonicalDirPath(); }
       QString path() const     { return sf->path(); }
+      QString canonicalPath() const  { return sf->canonicalPath(); }
       QString name() const     { return sf->name(); }
 
       unsigned samples() const    { return sf->samples(); }

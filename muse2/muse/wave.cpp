@@ -42,6 +42,8 @@
 #include "audio.h"
 ///#include "sig.h"
 #include "al/sig.h"
+#include "part.h"
+#include "track.h"
 
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
@@ -393,9 +395,19 @@ QString SndFile::path() const
       return finfo->filePath();
       }
 
+QString SndFile::canonicalPath() const
+      {
+      return finfo->canonicalFilePath();
+      }
+
 QString SndFile::dirPath() const
       {
       return finfo->absolutePath();
+      }
+
+QString SndFile::canonicalDirPath() const
+      {
+      return finfo->canonicalPath();
       }
 
 QString SndFile::name() const
@@ -788,6 +800,58 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       orig->update();
       MusEGlobal::audio->msgIdle(false);
       }
+
+//---------------------------------------------------------
+//   checkCopyOnWrite
+//---------------------------------------------------------
+
+bool SndFile::checkCopyOnWrite()
+{
+  QString path_this = canonicalPath();
+  if(path_this.isEmpty())
+    return false;  
+
+  bool fwrite = finfo->isWritable();
+  
+  // No exceptions: Even if this wave event is a clone, if it ain't writeable we gotta copy the wave.
+  if(!fwrite)
+    return true;
+  
+  // Count the number of non-clone part wave events (including possibly this one) using this file.
+  // Not much choice but to search all active wave events - the sndfile ref count is not the solution for this...
+  int use_count = 0;
+  WaveTrackList* wtl = MusEGlobal::song->waves();
+  for(ciTrack it = wtl->begin(); it != wtl->end(); ++it)
+  {
+    PartList* pl = (*it)->parts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+    {
+      EventList* el = ip->second->events();
+      // We are looking for active independent non-clone parts
+      if(el->arefCount() > 1)
+        continue;
+      for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+      {
+        if(ie->second.type() != Wave)
+          continue;
+        const Event& ev = ie->second;
+        if(ev.empty())
+          continue;
+        const SndFileR sf = ev.sndFile();
+        QString path = sf.canonicalPath();
+        if(path.isEmpty())
+          continue;
+        if(path == path_this)
+          ++use_count;
+        // If more than one non-clone part wave event is using the file, signify that the caller should make a copy of it.
+        if(use_count > 1)
+          return true;
+      }
+    }
+  }
+
+  return false;
+}
 
 // DELETETHIS 170
 #if 0

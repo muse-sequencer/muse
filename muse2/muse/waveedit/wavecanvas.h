@@ -46,7 +46,7 @@ class WavePart;
 class WaveTrack;
 
 struct WaveEventSelection {
-      SndFileR file;
+      Event event;         
       unsigned startframe;
       unsigned endframe;
       };
