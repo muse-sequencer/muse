@@ -1778,6 +1778,7 @@ void Song::endMsgCmd()
             redoList->clearDelete();
             MusEGlobal::undoAction->setEnabled(true);
             MusEGlobal::redoAction->setEnabled(false);
+            setUndoRedoText();
             emit songChanged(updateFlags);
             }
       }
@@ -1795,6 +1796,7 @@ void Song::undo()
       doUndo3();
       MusEGlobal::redoAction->setEnabled(true);
       MusEGlobal::undoAction->setEnabled(!undoList->empty());
+      setUndoRedoText();
 
       if(updateFlags && (SC_TRACK_REMOVED | SC_TRACK_INSERTED))
         MusEGlobal::audio->msgUpdateSoloStates();
@@ -1815,6 +1817,7 @@ void Song::redo()
       doRedo3();
       MusEGlobal::undoAction->setEnabled(true);
       MusEGlobal::redoAction->setEnabled(!redoList->empty());
+      setUndoRedoText();
 
       if(updateFlags && (SC_TRACK_REMOVED | SC_TRACK_INSERTED))
         MusEGlobal::audio->msgUpdateSoloStates();
@@ -2102,6 +2105,7 @@ void Song::clear(bool signal, bool clear_all)
         MusEGlobal::undoAction->setEnabled(false);
       if(MusEGlobal::redoAction)
         MusEGlobal::redoAction->setEnabled(false);
+      setUndoRedoText();
       
       _markerList->clear();
       pos[0].setTick(0);

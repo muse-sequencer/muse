@@ -358,6 +358,7 @@ class Song : public QObject {
       void doRedo3();
 
       void addUndo(UndoOp i);
+      void setUndoRedoText();
 
       //-----------------------------------------
       //   Configuration

@@ -4,6 +4,8 @@
             not writable or is shared with another independent (non-clone) wave event.
            TODO: Improve by asking even for writable waves outside the Project Directory 
             (add a 'copy' checkbox column to the dialog, settable only under certain conditions). 
+         * Added: Informative text on Undo/Redo buttons/menu text/tooltips ("Undo AddTrack" etc). (Tim)
+           In cases of multiple items in one operation, the first is shown, with ", .." ("Undo AddTrack, ..").
 16.09.2012:
 	 - Fixed allocation error with drag&drop of plugins (rj)
 	 - Fixed close menu alternative in Instrument editor (rj)

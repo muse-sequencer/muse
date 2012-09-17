@@ -214,6 +214,7 @@ void Song::startUndo()
       {
       redoList->clearDelete(); // redo must be invalidated when a new undo is started
 			MusEGlobal::redoAction->setEnabled(false);
+      setUndoRedoText();
 			
       undoList->push_back(Undo());
       updateFlags = 0;
@@ -230,6 +231,49 @@ void Song::endUndo(SongChangedFlags_t flags)
       endMsgCmd();
       undoMode = false;
       }
+
+//---------------------------------------------------------
+//   setUndoRedoText
+//---------------------------------------------------------
+
+void Song::setUndoRedoText()
+{
+  if(MusEGlobal::undoAction)
+  {
+    QString s = tr("Und&o");
+    if(MusEGlobal::undoAction->isEnabled())
+    {
+      if(!undoList->empty() && !undoList->back().empty())
+      {
+        int sz = undoList->back().size();
+        //if(sz >= 2)
+        //  s += QString(" (%1)").arg(sz);
+        s += QString(" ") + undoList->back().front().typeName();
+        if(sz >= 2)
+          s += ", ..";  // Hm, the tooltip will not show three dots "..."
+      }
+    }
+    MusEGlobal::undoAction->setText(s);
+  }
+  
+  if(MusEGlobal::redoAction)
+  {
+    QString s = tr("Re&do");
+    if(MusEGlobal::redoAction->isEnabled())
+    {
+      if(!redoList->empty() && !redoList->back().empty())
+      {
+        int sz = redoList->back().size();
+        //if(sz >= 2)
+        //  s += QString(" (%1)").arg(sz);
+        s += QString(" ") + redoList->back().front().typeName();
+        if(sz >= 2)
+          s += ", ..";
+      }
+    }
+    MusEGlobal::redoAction->setText(s);
+  }
+}
 
 
 void cleanOperationGroup(Undo& group)
@@ -277,12 +321,14 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
             {
                   undoList->pop_back();
                   MusEGlobal::undoAction->setEnabled(!undoList->empty());
+                  setUndoRedoText();
             }
             else
             {
                   redoList->clearDelete(); // redo must be invalidated when a new undo is started
                   MusEGlobal::redoAction->setEnabled(false);
-						}
+                  setUndoRedoText();
+            }
             
             return doUndo;
       }
