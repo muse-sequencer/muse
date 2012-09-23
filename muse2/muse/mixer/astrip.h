@@ -73,6 +73,7 @@ class AudioStrip : public Strip {
       QToolButton* stereo;
       QToolButton* pre;
       MusEGui::TransparentToolButton* off;
+      MusEGui::TransparentToolButton* showArr;
 
       double volume;
       double panVal;
@@ -80,7 +81,7 @@ class AudioStrip : public Strip {
       //QToolButton* iR;
       //QToolButton* oR;
       
-      MusEGui::Knob* addKnob(int, int, MusEGui::DoubleLabel**);
+      MusEGui::Knob* addKnob(int, int, MusEGui::DoubleLabel**, QLabel *name);
       
       void updateOffState();
       void updateVolume();

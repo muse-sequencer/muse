@@ -116,6 +116,7 @@ class Arranger : public QWidget {
 
       static QByteArray header_state;
 
+      ArrangerView* _parentWin;
       int _quant; //, _raster;  // REMOVE Tim.
       MusECore::Rasterizer _rasterizer;
       PartCanvas* canvas;
@@ -239,7 +240,7 @@ class Arranger : public QWidget {
       
       unsigned cursorValue() { return cursVal; }
       
-      ArrangerView* parentWin;
+      ArrangerView* parentWin() const { return _parentWin; }
       };
 
 } // namespace MusEGui

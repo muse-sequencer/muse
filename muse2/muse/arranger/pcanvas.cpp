@@ -30,6 +30,7 @@
 #include <math.h>
 #include <map>
 
+#include <QApplication>
 #include <QClipboard>
 #include <QLineEdit>
 #include <QMenu>
@@ -210,6 +211,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
             viewMousePressEvent(event);
             return;
             }
+      MusECore::Pos::TType tt = _editor->rasterizer().timeType();      
       QPoint cpos = event->pos();
       curItem     = items.find(cpos);
       bool ctrl  = event->modifiers() & Qt::ControlModifier;
@@ -249,7 +251,12 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                         break;
                   yy += h;
                   }
-            if (pos[2] - pos[1] > 0 && it != tl->end()) {
+            //if (pos[2] - pos[1] > 0 && it != tl->end()) {  // REMOVE Tim.
+            //unsigned pos1 = pos[1].posValue(tt);
+            //unsigned pos2 = pos[2].posValue(tt);
+            //if (pos[2].posValue(tt) - pos[1].posValue(tt) > 0 && it != tl->end()) {  // REMOVE Tim.
+            //if (pos2 - pos1 > 0 && it != tl->end()) {
+            if (pos[2] > pos[1] && it != tl->end()) {   // agnostic compare
                   MusECore::Track* track = *it;
                   switch(track->type()) {
                         case MusECore::Track::MIDI:
@@ -257,8 +264,13 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                         case MusECore::Track::NEW_DRUM:
                               {
                               MusECore::MidiPart* part = new MusECore::MidiPart((MusECore::MidiTrack*)track);
-                              part->setTick(pos[1]);
-                              part->setLenTick(pos[2]-pos[1]);
+                              //part->setTick(pos[1]);       // REMOVE Tim.
+                              //part->setPosValue(pos1, tt);
+                              ///part->setPos(pos[1]);
+                              //part->setLenTick(pos[2]-pos[1]); // REMOVE Tim.
+                              //part->setLenValue(pos2-pos1, tt);
+                              //part->setLen(pos[1], pos[2]);
+                              part->setPosLen(pos[1], pos[2]);  // agnostic
                               part->setName(track->name());
                               NPart* np = new NPart(part);
                               items.add(np);
@@ -443,7 +455,7 @@ QPoint PartCanvas::rasterPoint(const QPoint& p) const
       int x = p.x();
       if (x < 0)
             x = 0;
-      //x = AL::sigmap.raster(x, *_raster);
+      //x = AL::sigmap.raster(x, *_raster);  // REMOVE Tim.
       const MusECore::Rasterizer& rast = _editor->rasterizer();      
       x = rast.rasterVal(MusECore::Pos(x, rast.timeType())).posValue(rast.timeType());
       if (x < 0)
@@ -532,6 +544,7 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
       MusECore::Pos pos = p;
       pos.setType(rast.timeType());
       
+      // REMOVE Tim.
       //int pos = p->tick() + i->width();
       //int pos = p->posValue(rast.timeType()) + i->width();
       //MusECore::Pos pos = MusECore::Pos(i->width(), rast.timeType()) + p; // Operator+ First time type takes precedence.
@@ -635,7 +648,7 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
       pos.setType(rast.timeType());
       MusECore::Pos end_pos = pos + i->width(); 
       
-      int len = i->width();
+      //int len = i->width();   // REMOVE Tim.
       if (!noSnap)
             //len = AL::sigmap.raster(len, *_raster);
             end_pos = rast.rasterVal(end_pos);
@@ -677,7 +690,10 @@ void PartCanvas::splitItem(CItem* item, const QPoint& pt)
       int x = pt.x();
       if (x < 0)
             x = 0;
-      MusEGlobal::song->cmdSplitPart(t, p, AL::sigmap.raster(x, *_raster));
+      //MusEGlobal::song->cmdSplitPart(t, p, AL::sigmap.raster(x, *_raster));
+      const MusECore::Rasterizer& rast = _editor->rasterizer();
+      MusECore::Pos pos(x, rast.timeType());
+      MusEGlobal::song->cmdSplitPart(t, p, rast.rasterVal(pos));
       }
 
 //---------------------------------------------------------
@@ -746,18 +762,18 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       partPopup->addSeparator();
       switch(trackType) {
             case MusECore::Track::MIDI: {
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startPianoEditAction);
-                  partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin->scoreSubmenu);
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startScoreEditAction);
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startPianoEditAction);
+                  partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);
                   }
                   break;
             case MusECore::Track::NEW_DRUM:
             case MusECore::Track::DRUM: {
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startDrumEditAction);
-                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
                   act_dexport->setData(16);
                   }
@@ -1037,7 +1053,9 @@ void PartCanvas::mouseMove(QMouseEvent* event)
       if (_tool == AutomationTool)
           processAutomationMovements(event->pos(), event->modifiers() & Qt::ShiftModifier);
 
-      emit timeChanged(AL::sigmap.raster(x, *_raster));
+      //emit timeChanged(AL::sigmap.raster(x, *_raster));  // REMOVE Tim.
+      const MusECore::Rasterizer& rast = _editor->rasterizer();      
+      emit timeChanged(MusECore::Pos(x, rast.timeType()));
       }
 
 //---------------------------------------------------------
@@ -1097,6 +1115,8 @@ void PartCanvas::keyPress(QKeyEvent* event)
           (key == Qt::Key_Return || key == Qt::Key_Enter) )
         return;
 
+      const MusECore::Rasterizer& rast = _editor->rasterizer();  
+      
       if (event->modifiers() &  Qt::ShiftModifier)
             key +=  Qt::SHIFT;
       if (event->modifiers() &  Qt::AltModifier)
@@ -1112,35 +1132,43 @@ void PartCanvas::keyPress(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC].key) {
-            int spos = pos[0];
-            if(spos > 0) 
-            {
-              spos -= 1;     // Nudge by -1, then snap down with raster1.
-              spos = AL::sigmap.raster1(spos, *_raster);
-            }  
-            if(spos < 0)
-              spos = 0;
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+// REMOVE Tim.        
+//             int spos = pos[0];
+//             if(spos > 0) 
+//             {
+//               spos -= 1;     // Nudge by -1, then snap down with raster1.
+//               spos = AL::sigmap.raster1(spos, *_raster);
+//             }  
+//             if(spos < 0)
+//               spos = 0;
+//             MusECore::Pos p(spos,true);
+//             MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, rast.rasterSnapDown(pos[0]), true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
-            int spos = AL::sigmap.raster2(pos[0] + 1, *_raster);    // Nudge by +1, then snap up with raster2.
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true); 
+// REMOVE Tim.         
+//             int spos = AL::sigmap.raster2(pos[0] + 1, *_raster);    // Nudge by +1, then snap up with raster2.
+//             MusECore::Pos p(spos,true);
+//             MusEGlobal::song->setPos(0, p, true, true, true); 
+            MusEGlobal::song->setPos(0, rast.rasterSnapUp(pos[0]), true, true, true); 
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
-            int spos = pos[0] - AL::sigmap.rasterStep(pos[0], *_raster);
-            if(spos < 0)
-              spos = 0;
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+// REMOVE Tim.        
+//             int spos = pos[0] - AL::sigmap.rasterStep(pos[0], *_raster);
+//             if(spos < 0)
+//               spos = 0;
+//             MusECore::Pos p(spos,true);
+//             MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, rast.rasterDownNoSnap(pos[0]), true, true, true); 
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
-            MusECore::Pos p(pos[0] + AL::sigmap.rasterStep(pos[0], *_raster), true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+// REMOVE Tim.        
+//             MusECore::Pos p(pos[0] + AL::sigmap.rasterStep(pos[0], *_raster), true);
+//             MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, rast.rasterUpNoSnap(pos[0]), true, true, true); 
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
@@ -1220,15 +1248,32 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   }
             }
 
-            int left_tick = leftmost->part()->tick();
-            int right_tick = rightmost->part()->tick() + rightmost->part()->lenTick();
-            MusECore::Pos p1(left_tick, true);
-            MusECore::Pos p2(right_tick, true);
+// REMOVE Tim. Original.            
+            //int left_tick = leftmost->part()->tick();
+            //int right_tick = rightmost->part()->tick() + rightmost->part()->lenTick();
+            //MusECore::Pos p1(left_tick, true);
+            //MusECore::Pos p2(right_tick, true);
+            
+// REMOVE Tim. Literal conversion.            
+//             int left_pos = leftmost->part()->posValue(leftmost->part()->type());
+//             int right_pos = rightmost->part()->posValue(rightmost->part()->type()) + rightmost->part()->lenValue(rightmost->part()->type());
+//             MusECore::Pos p1(left_pos, leftmost->part()->type());
+//             MusECore::Pos p2(right_pos, rightmost->part()->type());
+// Final code:
+            MusECore::Pos p1 = leftmost->part();
+            MusECore::Pos p2 = rightmost->part() + rightmost->part()->end();
+            // Hm, should we or not... Seems not. Try without for now  // REMOVE Tim. Or keep.
+            //p1.setType(rast.timeType());     
+            //p2.setType(rast.timeType());     
+            
             MusEGlobal::song->setPos(1, p1);
             MusEGlobal::song->setPos(2, p2);
             return;
             }
 
+      // TODO: Support Track Time Locking (parts+events can be either frames or ticks type).  
+      // Or else make these comparisons all in common units of frames.
+       
       // Select part to the right
       else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
             if (key == shortcuts[SHRT_SEL_RIGHT_ADD].key)
@@ -1886,6 +1931,10 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 
 void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       {
+      // TODO: Respect the rasterizer time type...  
+      //
+      // TODO: Support Track Time Locking (parts+events can be either frames or ticks type).  
+      
       int from   = rect.x();
       int to     = from + rect.width();
 
@@ -2384,6 +2433,10 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 
 void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* events, MusECore::MidiTrack *mt, MusECore::MidiPart *pt, const QRect& r, int pTick, int from, int to)
 {
+  // TODO: Respect the rasterizer time type...  
+  //
+  // TODO: Support Track Time Locking (parts+events can be either frames or ticks type).  
+  
   int color_brightness;
   
   if(pt) 
@@ -2612,6 +2665,10 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
 void PartCanvas::drawWavePart(QPainter& p,
    const QRect& bb, MusECore::WavePart* wp, const QRect& _pr)
       {
+      // TODO: Respect the rasterizer time type...  
+      //
+      // TODO: Support Track Time Locking (parts+events can be either frames or ticks type).  
+      
       QRect rr = map(bb);                          // Use our own map instead.
       QRect pr = map(_pr);
 
@@ -2762,6 +2819,10 @@ void PartCanvas::cmd(int cmd)
             case CMD_PASTE_DIALOG:
             case CMD_PASTE_CLONE_DIALOG:
             {
+                  // TODO: Respect the rasterizer time type...  
+                  //
+                  // TODO: Support Track Time Locking (parts+events can be either frames or ticks type).  
+                  
                   unsigned temp_begin = AL::sigmap.raster1(MusEGlobal::song->vcpos(),0);
                   unsigned temp_end = AL::sigmap.raster2(temp_begin + MusECore::get_paste_len(), 0);
                   paste_dialog->raster = temp_end - temp_begin;
@@ -2785,6 +2846,10 @@ void PartCanvas::cmd(int cmd)
                   break;
             }
             case CMD_INSERT_EMPTYMEAS:
+                  // TODO: Respect the rasterizer time type...  
+                  //
+                  // TODO: Support Track Time Locking (parts+events can be either frames or ticks type).  
+                  
                   int startPos=MusEGlobal::song->vcpos();
                   int oneMeas=AL::sigmap.ticksMeasure(startPos);
                   MusECore::Undo temp=MusECore::movePartsTotheRight(startPos,oneMeas);
@@ -2800,10 +2865,19 @@ void PartCanvas::cmd(int cmd)
 
 void PartCanvas::copy_in_range(MusECore::PartList* pl_)
 {
+  // Here, try a common units of frames for proper resolution. Tim.
+  // FIXME Tim. Decide what to do here: Which common units when comparing
+  //             cursors to each other? 
+  //            Who shall govern the time type in comparisons - the
+  //             cursors or the part?
+  
   MusECore::PartList pl;
   MusECore::PartList result_pl;
-  unsigned int lpos = MusEGlobal::song->lpos();
-  unsigned int rpos = MusEGlobal::song->rpos();
+  //unsigned int lpos = MusEGlobal::song->lpos();       // REMOVE Tim. etc.
+  //unsigned int rpos = MusEGlobal::song->rpos();
+  MusECore::Pos lpos = MusEGlobal::song->lPos();
+  MusECore::Pos rpos = MusEGlobal::song->rPos();
+  MusECore::Pos::TType tt = _editor->rasterizer().timeType();
   
   if (pl_->empty())
   {
@@ -2821,16 +2895,25 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
         pl.add(p->second);
   }
   
-  if (!pl.empty() && (rpos>lpos))
+  if (!pl.empty() && (rpos > lpos)) // agnostic compare
+  //if (!pl.empty() && (rpos.frame() > lpos.frame()))  // Just use common units of frames
+  //if (!pl.empty() && (rpos.posValue(tt) > lpos.posValue(tt)))  // FIXME Tim. Decide what to do here: Which common units?
   {
     for(MusECore::ciPart p = pl.begin(); p != pl.end(); ++p) 
     {
       MusECore::Part* part=p->second;
       MusECore::Track* track=part->track();
       
-      if ((part->tick() < rpos) && (part->endTick() > lpos)) //is the part in the range?
+      //if ((part->tick() < rpos) && (part->endTick() > lpos)) //is the part in the range?  // REMOVE Tim.
+      //if ((rpos > part) && (lpos < part->end())) //is the part in the range?  // Cursors shall govern time type.
+      //if ((rpos.posValue(tt) > part->posValue(tt)) && (lpos.posValue(tt) < part->end().posValue(tt))) //is the part in the range?
+      //if ((part->posValue(tt) < rpos.posValue(tt)) && (part->end().posValue(tt) > lpos.posValue(tt))) //is the part in the range?  
+      if ((part < rpos) && (part->end() > lpos)) //is the part in the range?  // agnostic compare
       {
-        if ((lpos > part->tick()) && (lpos < part->endTick()))
+        //if ((lpos > part->tick()) && (lpos < part->endTick())) // Second term unnecessary.
+        if(lpos > part)   // agnostic compare
+        //if (lpos.posValue(tt) > part->posValue(tt))  
+        //if (part->posValue(tt) < lpos.posValue(tt))  
         {
           MusECore::Part* p1;
           MusECore::Part* p2;
@@ -2842,7 +2925,11 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
           part=p2;
         }
         
-        if ((rpos > part->tick()) && (rpos < part->endTick()))
+        //if ((rpos > part->tick()) && (rpos < part->endTick())) // First term unnecessary.
+        //if (rpos < part->end())
+        //if (rpos.posValue(tt) < part->end().posValue(tt))
+        //if (part->end().posValue(tt) > rpos.posValue(tt))
+        if(rpos < part->end())  // agnostic compare
         {
           MusECore::Part* p1;
           MusECore::Part* p2;
@@ -2897,17 +2984,22 @@ void PartCanvas::copy(MusECore::PartList* pl)
       MusEGlobal::cloneList.clear();
       
       int level = 0;
-      int tick = 0;
+      //int tick = 0;
+      MusECore::Pos pos;
       for (MusECore::ciPart p = pl->begin(); p != pl->end(); ++p) {
             // Indicate this is a copy operation. Also force full wave paths.
             p->second->write(level, xml, true, true);
             
-            int endTick = p->second->endTick();
-            if (endTick > tick)
-                  tick = endTick;
+            //int endTick = p->second->endTick();  // REMOVE Tim.
+            //if (endTick > tick)
+            //      tick = endTick;
+            MusECore::Pos endPos = p->second->end();
+            if (endPos > pos)   // agnostic compare
+                  pos = endPos;
             }
-      MusECore::Pos p(tick, true);
-      MusEGlobal::song->setPos(0, p);
+      //MusECore::Pos p(tick, true);     // REMOVE Tim.
+      //MusEGlobal::song->setPos(0, p);
+      MusEGlobal::song->setPos(0, pos);
 
       //---------------------------------------------------
       //    read tmp file into QTextDrag Object
@@ -2954,8 +3046,10 @@ MusECore::Undo PartCanvas::pasteAt(const QString& pt, MusECore::Track* track, un
       const char* ptxt = ba.constData();
       MusECore::Xml xml(ptxt);
       bool firstPart=true;
-      int  posOffset=0;
-      unsigned int  finalPos = pos;
+      //int  posOffset=0;   // REMOVE Tim.
+      MusECore::Pos posOffset();
+      //unsigned int  finalPos = pos;  // REMOVE Tim.
+      MusECore::Pos finalPos();
       int  notDone = 0;
       int  done = 0;
       bool end = false;
@@ -2990,7 +3084,8 @@ MusECore::Undo PartCanvas::pasteAt(const QString& pt, MusECore::Track* track, un
                               
                               if (firstPart) {
                                     firstPart=false;
-                                    posOffset=pos-p->tick();
+                                    //posOffset=pos-p->tick();
+                                    posOffset = pos - p->tick();  // TODO: Left off here...
                                     }
                               p->setTick(p->tick()+posOffset);
                               if (p->tick()+p->lenTick()>finalPos) {
@@ -3287,6 +3382,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
             
             if (text.endsWith(".wav",Qt::CaseInsensitive) || 
                 text.endsWith(".ogg",Qt::CaseInsensitive) || 
+                text.endsWith(".flac",Qt::CaseInsensitive) || 
                 text.endsWith(".mpt", Qt::CaseInsensitive) )
             {
 
@@ -3303,7 +3399,8 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
                 }
                 if (track->type() == MusECore::Track::WAVE &&
                         (text.endsWith(".wav", Qt::CaseInsensitive) || 
-                          (text.endsWith(".ogg", Qt::CaseInsensitive))))
+                          text.endsWith(".ogg", Qt::CaseInsensitive) ||
+                          (text.endsWith(".flac", Qt::CaseInsensitive)) ))
                         {
                         unsigned tick = x;
                         MusEGlobal::muse->importWaveToTrack(text, tick, track);

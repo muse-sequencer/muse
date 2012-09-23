@@ -36,6 +36,7 @@
 #include <QMimeData>
 #include <QPainter>
 #include <QPointF>
+#include <QFileInfo>
 
 #include "audio.h"
 #include "audiodev.h"
@@ -565,5 +566,37 @@ int get_paste_len()
       else
             return end_tick - begin_tick;
 }
+
+//---------------------------------------------------------
+//   getUniqueFileName
+//   Sets newAbsFilePath to origFilepath or a new version if found
+//   Return true if success
+//---------------------------------------------------------
+
+bool getUniqueFileName(const QString& origFilepath, QString& newAbsFilePath)
+      {
+      QFileInfo fi(origFilepath);  
+      if(!fi.exists())
+      {
+        newAbsFilePath = fi.absoluteFilePath();
+        return true;
+      }
+      
+      QString pre = fi.absolutePath() + QString('/') + fi.baseName() + QString('_');
+      QString post = QString('.') + fi.completeSuffix();
+      for(int i = 1; i < 100000; ++i)
+      {
+        fi.setFile(pre + QString::number(i) + post);
+        if(!fi.exists())
+        {
+          newAbsFilePath = fi.absoluteFilePath();
+          return true;
+        }
+      }
+      
+      printf("Could not find a suitable filename (more than 100000 files based on %s - clean up!\n", origFilepath.toLatin1().constData());
+      return false;
+       }
+
 
 } // namespace MusECore

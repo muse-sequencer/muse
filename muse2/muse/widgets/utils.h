@@ -58,7 +58,9 @@ extern QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, 
 extern QIcon colorRect(const QColor& color, int width, int height);
 extern int get_paste_len();
 
-} // namespace MusECores
+extern bool getUniqueFileName(const QString& filename, QString& newAbsFilePath);
+
+} // namespace MusECore
 
 #endif
 

@@ -29,6 +29,34 @@ In this way Pos was designed to be 'agnostic' and represent either
 No major new changes to class Pos, but a few new methods like 
  PosValue, setPosValue, setPos, and operator- and -=.
 
+UPDATE: Several operators such as == < > <= >= + - += -= have now been
+ changed to be more agnostic and accurate. Previously the left term
+ goverened the Time Type domain of the comparison or operation,
+ converting the right term as necessary. Now, the rules are: 
+If EITHER of the terms is in units of FRAMES, the operation or comparison
+ shall be in FRAMES. Simple as that. In other words 
+
+Old way:
+ TICKS  > TICKS or FRAMES    compare in TICKS domain.
+ FRAMES > TICKS or FRAMES    compare in FRAMES domain.
+
+New way:
+ TICKS  > TICKS              compare in TICKS domain.
+ FRAMES > TICKS              compare in FRAMES domain.
+ TICKS  > FRAMES             compare in FRAMES domain.
+ FRAMES > FRAMES             compare in FRAMES domain.
+ 
+This way comparisons can be done without worrying about the order
+ of the terms. This is required because for example cursors and markers,
+ including the blue left and right range cursors for example, will be 
+ completely independent types - FRAMES or TICKS, and there are places 
+ which compare or subtract these cursor positions. So we'll have agnostic
+
+Accuracy will be improved because comparing 
+    [TICKS converted to FRAMES] to [FRAMES]
+ is more accurate than
+    [TICKS] to [FRAMES converted to TICKS]
+
 NULL positions:
 ------------
 Until now, integers of value INT_MAX were passed among some of the 
@@ -196,3 +224,10 @@ In fact the whole thing is fraught with uncertainty and difficulty.
 Remains to be seen if it really correct and can really work...
 
 Tim.
+
+====================================
+FIXMEs, TODOs, reminders etc.
+
+The methods in the Rasterizer class are not accurate and probably incorrect
+ for all the new FRAMES sections, but should be accurate for all old-code 
+ TICKS sections.

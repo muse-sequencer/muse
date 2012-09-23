@@ -216,7 +216,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       cursVal = INT_MAX;
       
-      parentWin=parent;
+      _parentWin=parent;
       
       setFocusPolicy(Qt::NoFocus);
       

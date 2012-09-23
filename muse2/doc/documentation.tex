@@ -1,4 +1,5 @@
 %% (c) 2012 florian jung
+%% (c) 2012 Robert Jonsson
 %% we should consider putting this under a proper license. GPL, or
 %% some GPL-like documentation license??
 
@@ -62,6 +63,20 @@
 %%   show up in the pdf. with \ref{someName}, you can reference to this
 %%   label. (LaTeX will insert the section number instead of \ref)
 %%   For this to work, you might need to recompile the .tex twice.
+%%
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% Dependencies:
+%% To produce pdf output from this document the following packages are
+%% needed (atleast under Ubuntu derivatives)
+%% latex???-base
+%% texlive-latex-recommended
+%% texlive-latex-extra
+%%
+%% To produce a pdf version of this manual type:
+%% pdflatex documentation.tex <enter>
+%% A file documentation.pdf should be generated.
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -129,6 +144,7 @@
 \newcommand{\shell}[1]{\texttt{\textbf{#1}}}
 \newcommand{\menu}[1]{\textbf{#1}}
 \newcommand{\sym}[1]{\texttt{\camelhyph{#1}}}
+\newcommand{\listing}[1]{\texttt{\camelhyph{#1}}}
 \newcommand{\usym}[1]{\texttt{\underscorehyph{#1}}}
 \newcommand{\file}[1]{\texttt{\camelhyph{#1}}}
 \newcommand{\screenshotwidth}[0]{0.8\textwidth}
@@ -268,7 +284,7 @@ midi, start MusE with the -A option: \shell{\$> muse2 -A}
 \subsection{Beginners tutorial}
 To get a quick grip of what MusE can achieve please follow this beginners
 tutorial.
-\subsubsection{Setup}
+\subsubsection{Midi Setup}
 First off, fire up MusE as was described in the previous chapter, making
 sure that the jack audio server is started with sufficient configuration
 to allow for audio output without breakup. Also make sure your system can
@@ -347,8 +363,85 @@ document is not enough, try googling your problem and/or get in touch with
 one of the online forums for MusE or Linux audio in general. See some pointers
 in the Support chapter.}
 
-\subsubsection{Recording}                                                %TODO: walkthrough of recording midi
+
+\subsubsection{Recording Midi}                                                %TODO: walkthrough of recording midi
 TBD
+\subsubsection{Recording Audio}
+At this point we'll make a a slight detour into full on audio recording. Getting
+audio out of MusE has already been covered in the previous chapters so we will
+concentrate on the additional steps needed to record onto an audio track.\\
+\\
+When MusE is first fired up, the
+output track has already been created (more about this in the chapter about 
+templates), to proceed with audio recording we need to add two additional tracks, a 
+wave track and an input track.\\
+When MusE is first started right click in an empty space on the track view
+\begin{figure}[htp]
+\centering \includegraphics[width=\screenshotwidth]
+{pics/main_window_add_track}
+\caption{Add track}
+\label{fig:Add track}
+\end{figure}
+and select \menu{Add Audio Input}. Right click again and also select 
+\menu{Add Wave Track}. Two additional tracks are now visible in the Arranger, 
+"Input 1" and "Track 1", bring up the mixer with \menu{F10} and you should see 
+the following configuration.
+\begin{figure}[htp]
+\centering \includegraphics[width=0.25\textwidth]{pics/mixer_with_one_input} 
+\caption{Mixer with one input}
+\label{fig:Mixer with one input}
+\end{figure}
+\\
+Note the buttons on each mixer strip. hover over them to see their 
+functionality. For more information on all the buttons see coming chapters 
+about the mixer. For now lets just do what we must.\\
+1. click on the stereo symbol over the slider to change the input to a mono track.\\
+2. do the same for the wave track (optional)\\
+3. click on the Mute (gray speaker) icon on the input track to unmute it.\\
+4. click on the input routing button (see the tooltip, it looks like a tele plug) 
+on the input track and select an appropriate connection from your system.\\
+5. click on the output routing button on the input track and select 
+\textbf{Track 1}\\
+\\
+Already after the meter on the input track should be able to display that there
+is incoming sound from your sound source. If there actually is sound coming 
+from your sound source, that is.\\
+We are now nearly ready to start recording. First we need to select a location
+to store the files. MusE does not use a centralized storage of soundfiles but
+uses the path of the song-file (extension .med) as guidance as to where the
+audio files should be placed. Now as it happens MusE will prohibit us from
+starting a recording until the songfile has been stored. So lets take advantage
+of this behaviour and just go ahead and try to record. Let's get started.\\
+In the mixer click on the red \textbf{record} dot on the Audio Track to arm it
+for recording (or enable if you will). Now when there is audio coming into the
+input it will also show up on the Audio Track. Also note that all the input and
+output routing buttons on the tracks now have the same gray color, this means
+that all of the tracks have a proper connection.
+\begin{figure}[htp]
+\centering \includegraphics[width=0.25\textwidth]{pics/mixer_with_one_input_buttons} 
+\caption{Mixer buttons}
+\label{fig:Mixer buttons}
+\end{figure}
+\\
+All fine and dandy. Now bring up the arranger window and find the round, red on
+white  \textbf{record} button and click on it. This is your queue to MusE to
+prepare for recording. However since we have not saved our song we are presented
+with a dialog to do just that.\\
+\begin{figure}[htp]
+\centering \includegraphics[width=0.6\textwidth]{pics/project_my_first_song} 
+\caption{Save song}
+\label{fig:Save song}
+\end{figure}
+Note the check box for creating a project folder, when working with audio this
+is very much recommended or you may soon loose track of what audio files belong
+to which song.\\
+Finally we are ready to start recording! The process is completed by clicking
+on the \textbf{Play} button in the Arranger. If all went well MusE then starts
+to record a wave file from the Input Track placed in your song directory.\\
+When you wish to stop recording press \textbf{Stop} in the Arranger, now the 
+resulting waveform should be visible in the Arranger. After rewinding the Play 
+position and pressing \textbf{Play} again the resulting sound should be audible
+through the connected output.
 
 
 \section{Basic overview}
@@ -1025,6 +1118,105 @@ This chapter explains how MusE is built internally, and is meant
 to be an aid for developers wanting to quickly start up with MusE.
 For details on \emph{why} stuff is done please refer to the following
 chapter. 
+
+\section{User interface programming}
+We use the QT Toolkit for GUI- and other programming. The \emph{QT-Assistant}
+is an important tool for getting help. Almost everything can be looked
+up there.
+
+GUIs can be either be hardcoded (see \file{arranger.cpp} for an example)
+or can be created using \emph{QT-Designer} (see the dialogs under
+\file{widgets/function_dialogs/} for mostly cleanly-written examples).
+Don't forget to add your \file{cpp}, \file{h} and \file{ui} files to the
+corresponding sections in the \file{CMakeLists.txt}!
+
+Additionally, MusE offers some custom widgets, like menu title items etc.
+Following, there will be a small, unordered list about custom widgets:
+\begin{itemize}
+\item \sym{MusEGui::MenuTitleItem}: Provides a title-bar in a \sym{QMenu}. \\
+      Usage: \listing{someMenu->addAction(new MusEGui::MenuTitleItem(tr("fnord"), someMenu));} \\
+      Defined in \file{widgets/menutitleitem.h}.
+\item \sym{MusEGui::PopupMenu}: Provides a \sym{QMenu}-like menu which
+      can stay open after the user checks a checkable action.\\
+      Usage: just create a \listing{new PopupMenu( true|false )} instead of
+             a \listing{new QMenu()}. (\listing{true} means 'stay open')\\
+      Defined in \file{widgets/popupmenu.h}.
+\end{itemize}
+
+
+\section{Configuration} \label{portconfig_sucks}
+Configuration is a bit pesky in MusE in its current state. If you get
+confused by reading this chapter, that's a sign of a sane mind.
+
+There are three kinds of configuration items:
+\begin{itemize}
+\item (1) Global configuration, like coloring schemes, plugin categories, MDI-ness settings
+\item (2) Per-Song configuration, like whether to show or hide certain track types in the arranger
+\item (3) Something in between, like MIDI port settings etc. They obviously actually are
+      global configuration issues (or ought to be), but also obviously must be stored
+      in the song file for portability. (This problem could possibly be solved by
+      the feature proposal in \ref{symbolic_ports}.
+\end{itemize}
+
+\paragraph{Reading configuration}
+\sym{void MusECore::readConfiguration(Xml\&, bool, bool)} in
+\file{conf.cpp} is the central point
+of reading configuration. It is called when MusE is started first
+(by \sym{bool MusECore::readConfiguration()}), and also when a
+song is loaded. \\ %TODO: call paths!
+It can be instructed whether to read MIDI ports (3), global configuration
+and MIDI ports (1+3). Per-Song configuration is always read (2).
+
+When adding new configuration items and thus altering \sym{readConfiguration()},
+you must take care to place your item into the correct section. The code is
+divided into the following sections:
+\begin{itemize}
+\item Global and/or per-song configuration (3)
+\item Global configuration (1)
+\item Code for skipping obsolete entries
+\end{itemize}
+
+The sections are divided by comments (they contain \texttt{----}, so just
+search for them). Please do not just remove code for reading obsolete entries, 
+but always add an appropriate entry to the 'skipping' section in order to
+prevent error messages when reading old configs.
+
+\paragraph{Writing configuration}
+Global configuration is written using the
+\sym{MusEGui::MusE::writeGlobalConfiguration()} functions, while
+per-song-config is written by \sym{MusEGui::MusE::writeConfiguration()}
+(notice the missing \sym{Global}; both implemented in \file{conf.cpp}).
+
+\sym{writeConfiguration} is actually just a subset of the code in
+\sym{writeGlobalConfiguration}. \textbf{Duplicate code!}                  % TODO fix that in the sourcecode.
+
+\paragraph{Song state}
+Additionally to per-song configuration, there is the song's state.
+This contains "the song", that is all tracks, parts and note events,
+together with information about the currently opened windows, their
+position, size, settings and so on. Adding new items here is actually
+pretty painless: Configuration is read and written using
+\sym{MusECore::Song::read} and \sym{::write}, both implemented in
+\file{songfile.cpp}. There are no caveats.
+
+\paragraph{How to add new items}
+When adding global configuration items, then add them into the second
+block ("global configuration") in \sym{readConfiguration} and into
+\sym{writeGlobalConfiguration}.
+
+When adding just-per-song items, better don't bother to touch the
+"configuration" code and just add it to the song's state (there might
+be rare exceptions).
+
+When adding global configuration items, make sure you add them into the
+correct section of \sym{readConfiguration}, and into \sym{writeGlobalConfiguration}.
+
+
+%TODO: how to write config,
+%TODO: song/global stuff
+%TODO: config lesen und schreiben fuer plugingroups
+
+
 \section{User controls and automation}
 \subsection{Handling user input}
 \subsubsection{Plugins and synthesizers}
@@ -1418,7 +1610,21 @@ particular useful for stuff like "which low/high-pass filter type to use").
 
 Maybe make this behaviour default for discrete controllers?
 
+\section{Symbolic names for MIDI ports} \label{symbolic_ports}
+MIDI ports shall have a user-defined symbolic name (like "Korg" or "Yamaha DX 7").
+The mapping between these symbolic names and the hardware port (like
+"ALSA midi out port") is stored in the global configuration.
 
+Song files only specify the symbolic names as the ports associated with
+their tracks. No information about physical devices/port names, but only
+symbolic names are stored in the song file.
+
+This resolves the issues mentioned in \ref{portconfig_sucks}, and also
+allows the user to share his pieces with other people: They would only
+have to set up that symbolic-to-hardware mapping once (collisions are
+unlikely, because an equal symbolic name should usually mean the same
+device) and are happy, instead of having to re-map \emph{every} port
+for \emph{every} song.
 
 \end{document}
 

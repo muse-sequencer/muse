@@ -1837,7 +1837,7 @@ Typically, set to 127/127, or an unused
     <addaction name="fileSaveAction"/>
     <addaction name="fileSaveAsAction"/>
     <addaction name="separator"/>
-    <addaction name="fileExitAction"/>
+    <addaction name="fileCloseAction"/>
    </widget>
    <widget class="QMenu" name="Help">
     <property name="title">
@@ -1909,18 +1909,18 @@ Typically, set to 127/127, or an unused
     <cstring>fileSaveAsAction</cstring>
    </property>
   </action>
-  <action name="fileExitAction">
+  <action name="fileCloseAction">
    <property name="text">
-    <string>E&amp;xit</string>
+    <string>&amp;Close</string>
    </property>
    <property name="iconText">
-    <string>Exit</string>
+    <string>Close</string>
    </property>
    <property name="shortcut">
     <string/>
    </property>
    <property name="name" stdset="0">
-    <cstring>fileExitAction</cstring>
+    <cstring>fileCloseAction</cstring>
    </property>
   </action>
   <action name="filenew_itemAction">
@@ -2040,10 +2040,10 @@ Typically, set to 127/127, or an unused
    </hints>
   </connection>
   <connection>
-   <sender>fileExitAction</sender>
+   <sender>fileCloseAction</sender>
    <signal>activated()</signal>
    <receiver>EditInstrumentBase</receiver>
-   <slot>fileExit()</slot>
+   <slot>fileClose()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

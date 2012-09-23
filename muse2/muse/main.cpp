@@ -530,6 +530,8 @@ int main(int argc, char* argv[])
       
       MusEGui::initIcons();
 
+      MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
+      
       MusEGlobal::muse = new MusEGui::MusE(); 
       app.setMuse(MusEGlobal::muse);
 
@@ -651,8 +653,6 @@ int main(int argc, char* argv[])
       
       MusECore::initMetronome();
       
-      MusECore::initMidiSynth();
-      
 #ifdef HAVE_LASH
       {
         MusEGui::lash_client = 0;
@@ -677,7 +677,7 @@ int main(int argc, char* argv[])
             if (mlockall(MCL_CURRENT | MCL_FUTURE))
                   perror("WARNING: Cannot lock memory:");
             }
-      
+
       MusEGlobal::muse->show();
       MusEGlobal::muse->seqStart();  
 

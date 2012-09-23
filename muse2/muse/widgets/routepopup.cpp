@@ -634,7 +634,7 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
         pup->addAction(wa_hdr);  
         ++id;
 #else   
-      pup->addAction(new MenuTitleItem("Output port/device", pup)); 
+      pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup)); 
 #endif
         
   for(int i = 0; i < MIDI_PORTS; ++i)

@@ -74,11 +74,29 @@ iEvent EventList::add(Event& event)
       // Note that in a med file, the tempo list is loaded AFTER all the tracks.
       // There was a bug that all the wave events' tick values were not correct,
       // since they were computed BEFORE the tempo map was loaded.
+// REMOVE Tim. Original
+//       if(event.type() == Wave)
+//         return std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (event.frame(), event));  
+//       else
+//         
+//         return std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (event.tick(), event));   
+      
       if(event.type() == Wave)
-        return std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (event.frame(), event));
+        return insert(std::pair<const unsigned, Event> (event.frame(), event));          
+
+      unsigned key = event.tick();
+      if(event.type() == Note)      // Place notes after controllers.
+      {
+        iEvent i = upper_bound(key);
+        return insert(i, std::pair<const unsigned, Event> (key, event));   
+      }
       else
-        
-        return std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (event.tick(), event));
+      {
+        iEvent i = lower_bound(key);
+        while(i != end() && i->first == key && i->second.type() != Note)
+          ++i;
+        return insert(i, std::pair<const unsigned, Event> (key, event));   
+      }
       }
 
 //---------------------------------------------------------
@@ -90,12 +108,33 @@ void EventList::move(Event& event, unsigned tick)
       iEvent i = find(event);
       erase(i);
       
-      // Added by T356.
-      if(event.type() == Wave)
-        std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (MusEGlobal::tempomap.tick2frame(tick), event));
-      else
+// REMOVE Tim. Original.
+//       if(event.type() == Wave)
+//         std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (MusEGlobal::tempomap.tick2frame(tick), event));  
+//       else
+//       
+//         std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (tick, event));  
       
-        std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (tick, event));
+      if(event.type() == Wave)
+      {
+        insert(std::pair<const unsigned, Event> (MusEGlobal::tempomap.tick2frame(tick), event));  
+        return;
+      }
+      
+      if(event.type() == Note)      // Place notes after controllers.
+      {
+        iEvent i = upper_bound(tick);
+        insert(i, std::pair<const unsigned, Event> (tick, event));   
+        return;
+      }
+      else
+      {
+        iEvent i = lower_bound(tick);
+        while(i != end() && i->first == tick && i->second.type() != Note)
+          ++i;
+        insert(i, std::pair<const unsigned, Event> (tick, event));   
+        return;
+      }
       }
 
 //---------------------------------------------------------

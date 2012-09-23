@@ -284,8 +284,9 @@ class Song : public QObject {
       //-----------------------------------------
 
       //void cmdResizePart(Track* t, Part* p, unsigned int size, bool doClones=false);   // REMOVE Tim.
-      void cmdResizePart(Track* t, Part* p, const MusECore::PosLen& size, bool doClones=false);
-      void cmdSplitPart(Track* t, Part* p, int tick);
+      void cmdResizePart(Track*, Part*, const MusECore::PosLen& size, bool doClones=false);
+      //void cmdSplitPart(Track* t, Part* p, int tick);
+      void cmdSplitPart(Track*, Part*, const MusECore::Pos& pos);
       void cmdGluePart(Track* t, Part* p);
 
       void addPart(Part* part);
@@ -360,6 +361,7 @@ class Song : public QObject {
       void doRedo3();
 
       void addUndo(UndoOp i);
+      void setUndoRedoText();
 
       //-----------------------------------------
       //   Configuration

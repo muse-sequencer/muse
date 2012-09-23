@@ -82,7 +82,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       virtual void fileOpen();
       virtual void fileSave();
       virtual void fileSaveAs();
-      virtual void fileExit();
+      virtual void fileClose();
       virtual void helpWhatsThis();
       void instrumentChanged();
       void tabChanged(QWidget*);

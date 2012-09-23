@@ -587,11 +587,8 @@ void EffectRack::dropEvent(QDropEvent *event)
             
             if(event->mimeData()->hasFormat("text/x-muse-plugin"))
             {
-              char *tmpStr = new char[event->mimeData()->data("text/x-muse-plugin").size()];
-              strcpy(tmpStr, event->mimeData()->data("text/x-muse-plugin").data());
-              MusECore::Xml xml(tmpStr);
+              MusECore::Xml xml(event->mimeData()->data("text/x-muse-plugin").data());
               initPlugin(xml, idx);
-              delete tmpStr;
             }
             else
             if (event->mimeData()->hasUrls()) 

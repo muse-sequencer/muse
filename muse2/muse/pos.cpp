@@ -170,14 +170,24 @@ void Pos::setType(TType time_type)
 
 Pos& Pos::operator+=(Pos a)
       {
-      switch(_type) {
-            case FRAMES:
-                  _frame += a.frame();
-                  break;
-            case TICKS:
-                  _tick += a.tick();
-                  break;
-            }
+// REMOVE Tim        
+//       switch(_type) {
+//             case FRAMES:
+//                   _frame += a.frame();
+//                   break;
+//             case TICKS:
+//                   _tick += a.tick();
+//                   break;
+//             }
+            
+        // Need to be agnostic and accurate. Instead of the left term governing the 
+        //  Time Type domain of the operation as before, if EITHER term is in frames 
+        //  then do it in frames. Ditto for the other operators...
+        if(_type == FRAMES || a.type() == FRAMES)
+          setFrame(frame() + a.frame());
+        else
+          setTick(tick() + a.tick());
+            
       sn = -1;          // invalidate cached values
       return *this;
       }
@@ -206,14 +216,21 @@ Pos& Pos::operator+=(int a)
 
 Pos& Pos::operator-=(Pos a)
       {
-      switch(_type) {
-            case FRAMES:
-                  _frame -= a.frame();
-                  break;
-            case TICKS:
-                  _tick -= a.tick();
-                  break;
-            }
+// REMOVE Tim        
+//       switch(_type) {
+//             case FRAMES:
+//                   _frame -= a.frame();
+//                   break;
+//             case TICKS:
+//                   _tick -= a.tick();
+//                   break;
+//             }
+            
+        if(_type == FRAMES || a.type() == FRAMES)
+          setFrame(frame() - a.frame());
+        else
+          setTick(tick() - a.tick());
+            
       sn = -1;          // invalidate cached values
       return *this;
       }
@@ -245,8 +262,14 @@ Pos operator+(Pos a, int b)
 
 Pos operator+(Pos a, Pos b)
       {
-      Pos c = a;
-      return c += b;
+// REMOVE Tim        
+//       Pos c = a;
+//       return c += b;
+      
+        if(a.type() == Pos::FRAMES || b.type() == Pos::FRAMES)
+          return Pos(a.frame() + b.frame(), Pos::FRAMES);
+        else
+          return Pos(a.tick() + b.tick(), Pos::TICKS);
       }
 
 Pos operator-(Pos a, int b)
@@ -258,76 +281,112 @@ Pos operator-(Pos a, int b)
 
 Pos operator-(Pos a, Pos b)
       {
-      Pos c = a;
-      return c -= b;
+// REMOVE Tim        
+//       Pos c = a;
+//       return c -= b;
+
+      if(a.type() == Pos::FRAMES || b.type() == Pos::FRAMES)
+        return Pos(a.frame() - b.frame(), Pos::FRAMES);
+      else
+        return Pos(a.tick() - b.tick(), Pos::TICKS);
       }
 
 bool Pos::operator>=(const Pos& s) const
       {
-        switch(_type)
-        {
-          case FRAMES:
-              return _frame >= s.frame();
-            break;
-          case TICKS:
-              return _tick >= s.tick();
-            break;
-        }
+// REMOVE Tim.        
+//         switch(_type)
+//         {
+//           case FRAMES:
+//               return _frame >= s.frame();
+//             break;
+//           case TICKS:
+//               return _tick >= s.tick();
+//             break;
+//         }
+
+        // Need to be agnostic and accurate. Instead of the left term governing the 
+        //  Time Type domain of the comparison as before, if EITHER term is in frames 
+        //  then do it in frames. Ditto for the other comparison operators...
+        if(_type == FRAMES || s.type() == FRAMES)
+          return frame() >= s.frame();
+        else
+          return tick() >= s.tick();
       }
 
 bool Pos::operator>(const Pos& s) const
       {
-        switch(_type)
-        {
-          case FRAMES:
-              return _frame > s.frame();
-            break;
-          case TICKS:
-              return _tick > s.tick();
-            break;
-        }
-      
+// REMOVE Tim.        
+//         switch(_type)
+//         {
+//           case FRAMES:
+//               return _frame > s.frame();
+//             break;
+//           case TICKS:
+//               return _tick > s.tick();
+//             break;
+//         }
+
+        if(_type == FRAMES || s.type() == FRAMES)
+          return frame() > s.frame();
+        else
+          return tick() > s.tick();
       }
 
 bool Pos::operator<(const Pos& s) const
       {
-        switch(_type)
-        {
-          case FRAMES:
-              return _frame < s.frame();
-            break;
-          case TICKS:
-              return _tick < s.tick();
-            break;
-        }
+// REMOVE Tim.        
+//         switch(_type)
+//         {
+//           case FRAMES:
+//               return _frame < s.frame();
+//             break;
+//           case TICKS:
+//               return _tick < s.tick();
+//             break;
+//         }
+
+        if(_type == FRAMES || s.type() == FRAMES)
+          return frame() < s.frame();
+        else
+          return tick() < s.tick();
       }
 
 bool Pos::operator<=(const Pos& s) const
       {
-        switch(_type)
-        {
-          case FRAMES:
-              return _frame <= s.frame();
-            break;
-          case TICKS:
-              return _tick <= s.tick();
-            break;
-        }
-      
+// REMOVE Tim.        
+//         switch(_type)
+//         {
+//           case FRAMES:
+//               return _frame <= s.frame();
+//             break;
+//           case TICKS:
+//               return _tick <= s.tick();
+//             break;
+//         }
+
+        if(_type == FRAMES || s.type() == FRAMES)
+          return frame() <= s.frame();
+        else
+          return tick() <= s.tick();
       }
 
 bool Pos::operator==(const Pos& s) const
       {
-        switch(_type)
-        {
-          case FRAMES:
-              return _frame == s.frame();
-            break;
-          case TICKS:
-              return _tick == s.tick();
-            break;
-        }
-      
+// REMOVE Tim.        
+//         switch(_type)
+//         {
+//           case FRAMES:
+//               return _frame == s.frame();
+//             break;
+//           case TICKS:
+//               return _tick == s.tick();
+//             break;
+//         }
+
+        if(_type == FRAMES || s.type() == FRAMES)
+          return frame() == s.frame();
+        else
+          return tick() == s.tick();
       }
 
 //---------------------------------------------------------
@@ -574,28 +633,46 @@ PosLen::PosLen(const Pos& pos, unsigned len)
 }
 
 PosLen::PosLen(const Pos& start_pos, const Pos& end_pos)
-  : Pos(start_pos)
+  //: Pos(start_pos)  // REMOVE Tim.
+  : Pos()
 {
-  sn      = -1;
-  
-  switch(type())   // start_pos governs the time type.
-  {
-    case FRAMES:
-        _lenFrame = end_pos.frame() - start_pos.frame();
-        // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
-        //_lenTick = MusEGlobal::tempomap.deltaFrame2tick(start_pos.frame(), end_pos.frame(), &sn);
-      break;
-    case TICKS:
-        _lenTick = end_pos.tick() - start_pos.tick();
-        // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
-        //_lenFrame = MusEGlobal::tempomap.deltaTick2frame(start_pos.tick(), end_pos.tick(), &sn);
-      break;
-  }
-
+// REMOVE Tim.
+//   sn      = -1;
+//   switch(type())   // start_pos governs the time type.
+//   {
+//     case FRAMES:
+//         _lenFrame = end_pos.frame() - start_pos.frame();
+//         // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
+//         //_lenTick = MusEGlobal::tempomap.deltaFrame2tick(start_pos.frame(), end_pos.frame(), &sn);
+//       break;
+//     case TICKS:
+//         _lenTick = end_pos.tick() - start_pos.tick();
+//         // OPTIMIZATION: Just flag it for conversion later:  // REMOVE Tim.   
+//         //_lenFrame = MusEGlobal::tempomap.deltaTick2frame(start_pos.tick(), end_pos.tick(), &sn);
+//       break;
+//   }
   // start_pos governs the time type.  
   //setLenValue(end_pos.posValue(type()) - start_pos.posValue(type()), type());
-  
-  _nullFlag = false;
+ 
+ 
+  // Need to be agnostic and accurate. Instead of the left term governing the 
+  //  Time Type domain, if EITHER term is in frames then do it in frames. 
+  if(start_pos.type() == FRAMES || end_pos.type() == FRAMES)
+  {
+    setType(FRAMES);
+    setFrame(start_pos.frame());
+    setLenFrame(end_pos.frame() - start_pos.frame());
+  }
+  else
+  {
+    //setType(TICKS);  // Already done in ctor
+    setTick(start_pos.tick());
+    setLenTick(end_pos.tick() - start_pos.tick());
+  }
+ 
+  // Already done:
+  //sn      = -1;  
+  //_nullFlag = false;
 }
 
 //---------------------------------------------------------
@@ -753,6 +830,18 @@ void PosLen::setLenValue(unsigned val, TType time_type)
 //   setLen
 //---------------------------------------------------------
 
+void PosLen::setLen(const Pos& start_pos, const Pos& end_pos)
+{
+  if(start_pos.type() == FRAMES || end_pos.type() == FRAMES)
+    setLenFrame(end_pos.frame() - start_pos.frame());
+  else
+    setLenTick(end_pos.tick() - start_pos.tick());
+}
+
+//---------------------------------------------------------
+//   setLen
+//---------------------------------------------------------
+
 void PosLen::setLen(const PosLen& len)
 {
   sn      = -1;
@@ -770,6 +859,24 @@ void PosLen::setLen(const PosLen& len)
       break;
   }
   _nullFlag = false;
+}
+
+//---------------------------------------------------------
+//   setPosLen
+//---------------------------------------------------------
+
+void PosLen::setPosLen(const Pos& pos, const Pos& end_pos)
+{
+  if(pos.type() == FRAMES || end_pos.type() == FRAMES)
+  {
+    setFrame(pos.frame());
+    setLenFrame(end_pos.frame() - pos.frame());
+  }
+  else
+  {
+    setTick(pos.tick());
+    setLenTick(end_pos.tick() - pos.tick());
+  }
 }
 
 //---------------------------------------------------------

@@ -26,7 +26,7 @@
 #include <QApplication>
 #include <QStyle>
 
-
+#include <limits.h>
 #include "poslabel.h"
 ///#include "sig.h"
 #include "al/sig.h"

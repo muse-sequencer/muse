@@ -33,6 +33,8 @@
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
+#include <QFile>
+#include <QInputDialog>
 #include <QMouseEvent>
 #include <QList>
 #include <QPair>
@@ -47,6 +49,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 
+#include "app.h"
 #include "xml.h"
 #include "wavecanvas.h"
 #include "event.h"
@@ -63,6 +66,7 @@
 #include "fastlog.h"
 #include "utils.h"
 #include "tools.h"
+#include "copy_on_write.h"
 
 namespace MusEGui {
 
@@ -1564,6 +1568,68 @@ bool WaveCanvas::deleteItem(MusEGui::CItem* item)
       }
 
 //---------------------------------------------------------
+//   adjustWaveOffset
+//---------------------------------------------------------
+
+void WaveCanvas::adjustWaveOffset()
+{
+  bool have_selected = false;
+  int init_offset = 0;
+  
+  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) 
+  {
+    if (k->second->isSelected())
+    {
+      have_selected = true;
+      init_offset = k->second->event().spos();
+      break;
+    }
+  }
+
+  if(!have_selected)
+  {
+    QMessageBox::information(this, 
+        QString("MusE"),
+        QWidget::tr("No wave events selected."));
+    return;
+  }
+
+  bool ok = false;
+  int offset = QInputDialog::getInt(this, 
+                                    tr("Adjust Wave Offset"), 
+                                    tr("Wave offset (frames)"), 
+                                    init_offset, 
+                                    0, 2147483647, 1, 
+                                    &ok);
+  if(!ok)
+    return;    
+  
+  MusECore::Undo operations;
+
+  // FIXME: Respect clones! If operating on two selected clones of the same part, an extra event is created!
+  //        Check - Is it really this code's problem? Seems so, other operations like moving an event seem OK.
+  for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+  {
+    if(ici->second->isSelected())
+    {
+      MusECore::Event oldEvent = ici->second->event();
+      if(oldEvent.spos() != offset)
+      {
+        MusECore::Part* part = ici->second->part();
+        MusECore::Event newEvent = oldEvent.clone();
+        newEvent.setSpos(offset);
+        // Do not do port controller values and clone parts. 
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, oldEvent, part, false, false));
+      }
+    }
+  }
+  
+  MusEGlobal::song->applyOperationGroup(operations);
+  
+  redraw();
+}
+      
+//---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
 
@@ -1624,7 +1690,6 @@ void WaveCanvas::waveCmd(int cmd)
                   break;
             case CMD_LEFT_NOSNAP:
                   {
-//                   //int spos = pos[0] - editor->rasterStep(pos[0]);
 //                   int spos = pos[0] - editor->rasterStep(pos[0]);
 //                   if (spos < 0)
 //                         spos = 0;
@@ -1807,7 +1872,10 @@ void WaveCanvas::cmd(int cmd)
                   }
                   break;
                  
-                  
+            case CMD_ADJUST_WAVE_OFFSET:
+                  adjustWaveOffset();
+                  break;
+
             case CMD_EDIT_EXTERNAL:
                   modifyoperation = EDIT_EXTERNAL;
                   break;
@@ -1904,8 +1972,7 @@ void WaveCanvas::cmd(int cmd)
             //  modifyWarnedYet = true;
             //  if(QMessageBox::warning(this, QString("Muse"),
             //     tr("Warning! Muse currently operates directly on the sound file.\n"
-            //        "Undo is supported, but NOT after exit, WITH OR WITHOUT A SAVE!\n"
-            //        "If you are stuck, try deleting the associated .wca file and reloading."), tr("&Ok"), tr("&Cancel"),
+            //        "Undo is supported, but NOT after exit, WITH OR WITHOUT A SAVE!"), tr("&Ok"), tr("&Cancel"),
             //     QString::null, 0, 1 ) != 0)
             //   return;
             //}
@@ -1966,7 +2033,7 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
 
                         //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLatin1().constData());
                         MusECore::WaveEventSelection s;
-                        s.file = file;
+                        s.event = event;  
                         s.startframe = sx;
                         s.endframe   = ex+1;
                         //printf("sx=%d ex=%d\n",sx,ex);
@@ -1983,8 +2050,6 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
 //---------------------------------------------------------
 void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stoppos, double paramA)
       {
-         MusEGlobal::song->startUndo();
-
          if (operation == PASTE) {
            // we need to redefine startpos and stoppos
            if (copiedPart =="")
@@ -1999,10 +2064,143 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
            pos[0].setFrame(stoppos);
          }
 
-         MusECore::WaveSelectionList selection = getSelection(startpos, stoppos);
+        //
+        // Copy on Write: Check if some files need to be copied, either because they are not 
+        //  writable, or more than one independent (non-clone) wave event shares a wave file.
+        //
+        
+        MusECore::WaveSelectionList selection = getSelection(startpos, stoppos);
+        std::vector<MusECore::SndFileR> copy_files_proj_dir;
+        for(MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++) 
+        {
+          MusECore::WaveEventSelection w = *i;
+          MusECore::SndFileR file = w.event.sndFile();
+          if(file.checkCopyOnWrite())
+          {
+            std::vector<MusECore::SndFileR>::iterator i = copy_files_proj_dir.begin();
+            for( ; i != copy_files_proj_dir.end(); ++i)
+            {
+              if(i->canonicalPath() == file.canonicalPath())
+                break; 
+            }  
+            if(i == copy_files_proj_dir.end())
+              copy_files_proj_dir.push_back(file);
+          }
+        }
+        if(!copy_files_proj_dir.empty())
+        {
+          CopyOnWriteDialog* dlg = new CopyOnWriteDialog();
+          for(std::vector<MusECore::SndFileR>::iterator i = copy_files_proj_dir.begin(); i != copy_files_proj_dir.end(); ++i)
+          {
+            qint64 sz = QFile(i->canonicalPath()).size();
+            QString s;
+            if(sz > 1048576)
+              s += QString::number(sz / 1048576) + "MB ";
+            else
+            if(sz > 1024)
+              s += QString::number(sz / 1024) + "KB ";
+            else
+              s += QString::number(sz) + "B ";
+            s += i->canonicalPath();
+            dlg->addProjDirFile(s);
+          }
+          int rv = dlg->exec();
+          delete dlg;
+          if(rv != QDialog::Accepted)
+            return;
+          // Has a project been created yet?
+          if(MusEGlobal::museProject == MusEGlobal::museProjectInitPath) // && MusEGlobal::config.useProjectSaveDialog
+          { 
+            // No project, we need to create one.
+            if(!MusEGlobal::muse->saveAs())
+              return; // No project, don't want to copy without one.
+            //setFocus(); // For some reason focus is given away to Arranger
+          }
+          for(MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++)
+          {
+            MusECore::WaveEventSelection w = *i;
+            MusECore::SndFileR file = w.event.sndFile();
+            if(!file.checkCopyOnWrite()) // Make sure to re-check
+              continue;
+            QString filePath = MusEGlobal::museProject + QString("/") + file.name();
+            QString newFilePath;
+            if(MusECore::getUniqueFileName(filePath, newFilePath))
+            {
+              {
+                QFile qf(file.canonicalPath());
+                if(!qf.copy(newFilePath)) // Copy the file
+                {
+                  printf("MusE Error: Could not copy to new sound file (file exists?): %s\n", newFilePath.toLatin1().constData());
+                  continue;  // Let's not overwrite an existing file
+                }
+              }  
+              QFile nqf(newFilePath);
+              // Need to make sure some permissions are set...
+              QFile::Permissions pm = nqf.permissions();
+              if(!(pm & QFile::ReadOwner))
+              {
+                pm |= QFile::ReadOwner;
+                if(!nqf.setPermissions(pm))
+                {
+                  printf("MusE Error: Could not set read owner permissions on new sound file: %s\n", newFilePath.toLatin1().constData());
+                  continue; 
+                }
+              }
+              if(!(pm & QFile::WriteOwner))
+              {
+                pm |= QFile::WriteOwner;
+                if(!nqf.setPermissions(pm))
+                {
+                  printf("MusE Error: Could not set write owner permissions on new sound file: %s\n", newFilePath.toLatin1().constData());
+                  continue; 
+                }
+              }
+              if(!(pm & QFile::ReadUser))
+              {
+                pm |= QFile::ReadUser;
+                if(!nqf.setPermissions(pm))
+                {
+                  printf("MusE Error: Could not set read user permissions on new sound file: %s\n", newFilePath.toLatin1().constData());
+                  continue; 
+                }
+              }
+              if(!(pm & QFile::WriteUser))
+              {
+                pm |= QFile::WriteUser;
+                if(!nqf.setPermissions(pm))
+                {
+                  printf("MusE Error: Could not set write user permissions on new sound file: %s\n", newFilePath.toLatin1().constData());
+                  continue; 
+                }
+              }
+              MusECore::SndFile* newSF = new MusECore::SndFile(newFilePath);
+              MusECore::SndFileR newSFR(newSF);  // Create a sndFileR for the new file
+              if(newSFR.openRead())  
+              {
+                printf("MusE Error: Could not open new sound file: %s\n", newSFR.canonicalPath().toLatin1().constData());
+                continue; // newSF will be deleted when newSFR goes out of scope and is deleted
+              }
+              MusEGlobal::audio->msgIdle(true); 
+              w.event.sndFile().close();             // Close the old file.
+              // NOTE: For now, don't bother providing undo for this. Reason: If the user undoes
+              //  and then modifies again, it will prompt to create new copies each time. There is
+              //  no mechanism ("touched"?) to tell if an existing copy would be suitable to just 'drop in'.
+              // It would help if we deleted the wave file copies upon undo, but not too crazy about that. 
+              // So since the copy has already been created and "there it is", we might as well use it.
+              // It means that events and even undo items BEFORE this operation will point to this 
+              //  NEW wave file (as if they always did). It also means the user CANNOT change back 
+              //  to the old file...    Oh well, this IS Copy On Write.
+              // FIXME: Find a conceptual way to make undo work with or without deleting the copies. 
+              w.event.setSndFile(newSFR);            // Set the new file.
+              MusEGlobal::audio->msgIdle(false); 
+            }
+          }
+        }
+         
+         MusEGlobal::song->startUndo();
          for (MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++) {
                MusECore::WaveEventSelection w = *i;
-               MusECore::SndFileR& file         = w.file;
+               MusECore::SndFileR file         = w.event.sndFile();
                unsigned sx            = w.startframe;
                unsigned ex            = w.endframe;
                unsigned file_channels = file.channels();

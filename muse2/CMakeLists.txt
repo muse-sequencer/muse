@@ -115,16 +115,16 @@ endif (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
 # Do we need this? - Orcan:
 # include ( ${PROJECT_SOURCE_DIR}/cmake/WrapMacros.cmake)
 
-option ( ENABLE_LASH        "enable LASH Audio Session Handler"                              ON)
-option ( ENABLE_OSC         "enable Open Sound Control (DSSI also recommended)"              ON)   
-option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface (OSC also recommended)"  ON)
-option ( ENABLE_VST         "enable VST/win support (deprecated)"                            OFF)
-option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"                            ON)
-option ( ENABLE_EXPERIMENTAL "enable building experimental features"                         OFF)
-option ( ENABLE_PYTHON      "enable Python control support"                                  OFF)
+option ( ENABLE_LASH        "enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
+option ( ENABLE_OSC         "enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)   
+option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface (dssi) (OSC also recommended)" ON)
+option ( ENABLE_VST         "enable VST/win support (deprecated)"                                OFF)
+option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"                                ON)
+option ( ENABLE_EXPERIMENTAL "enable building experimental features"                             OFF)
+option ( ENABLE_PYTHON      "enable Python control support"                                      OFF)
 option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files 
-         (WARNING: This will modify the .ts files in the source tree!!)"                     OFF)
-option ( MODULES_BUILD_STATIC "Build type of internal modules"                               OFF)
+         (WARNING: This will modify the .ts files in the source tree!!)"                         OFF)
+option ( MODULES_BUILD_STATIC "Build type of internal modules"                                   OFF)
 
 if ( MODULES_BUILD_STATIC )
       SET(MODULES_BUILD STATIC )
@@ -170,10 +170,16 @@ SET(QT_USE_QTUITOOLS TRUE)
 
 include(${QT_USE_FILE})
 
+##
+##   Begin MANDATORY packages...
+##
+
 
 ##
-## find doxygen
-##    TODO
+## find doxygen program
+##
+
+FIND_PROGRAM(DOXY doxygen)
 
 ##
 ## alsa >= 0.9.0
@@ -213,6 +219,14 @@ include_directories(${UUID_INCLUDE_DIRS})
 
 PKG_CHECK_MODULES(JACK REQUIRED jack>=0.103)
 include_directories(${JACK_INCLUDE_DIRS})
+
+##
+##   End MANDATORY packages.
+##
+
+##
+##   Begin OPTIONAL packages...
+##
 
 ##
 ## find LASH 
@@ -305,6 +319,7 @@ if ( ENABLE_FLUID )
       if (FLUIDSYN_FOUND)
             include_directories(${FLUIDSYN_INCLUDE_DIRS})
             set(HAVE_FLUIDSYNTH ON)
+            ## This stuff is just F.Y.I. Please keep...
             # message("FLUIDSYN_LIBRARIES " ${FLUIDSYN_LIBRARIES} )          # "fluidsynth"
             # message("FLUIDSYN_LDFLAGS " ${FLUIDSYN_LDFLAGS} )              # "-lfluidsynth"
             # message("FLUIDSYN_LDFLAGS_OTHER " ${FLUIDSYN_LDFLAGS_OTHER} )  # empty
@@ -315,6 +330,11 @@ if ( ENABLE_FLUID )
 else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
 endif ( ENABLE_FLUID )
+
+##
+##   End OPTIONAL packages.
+##
+
 
 if ( ENABLE_EXPERIMENTAL )
       set(CMAKE_CXX_FLAGS -DBUILD_EXPERIMENTAL ${CMAKE_CXX_FLAGS})
@@ -431,6 +451,59 @@ configure_file(
 
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
+
+##
+## Report errors and warnings and hints  
+##
+
+message("\n")
+
+if (${DOXY} STREQUAL "DOXY-NOTFOUND")
+      message("** ERROR: The program 'doxygen' is required, but was not found.")
+endif (${DOXY} STREQUAL "DOXY-NOTFOUND")
+  
+if (NOT ALSA_FOUND)
+      message("** ERROR: alsa >= 0.9.0 is required, but development files were not found.")
+endif (NOT ALSA_FOUND)           
+
+if (NOT SNDFILE_FOUND)
+      message("** ERROR: sndfile >= 1.0.0 is required, but development files were not found.")
+endif (NOT SNDFILE_FOUND)           
+
+if (NOT SAMPLERATE_FOUND)
+      message("** ERROR: samplerate >= 0.1.0 is required, but development files were not found.")
+endif (NOT SAMPLERATE_FOUND)           
+
+if (NOT UUID_FOUND)
+      message("** ERROR: uuid >= 0.0.1 is required, but development files were not found.")
+endif (NOT UUID_FOUND)           
+
+if (NOT JACK_FOUND)
+      message("** ERROR: jack >= 0.103 is required, but development files were not found.")
+endif (NOT JACK_FOUND)           
+
+if (ENABLE_LASH AND (NOT LASH_FOUND))
+        message("** WARNING: lash (>= 0.2) was enabled, but development files were not found. ")
+        message("** HINT: Don't have LASH? Try installing the LADISH LASH compatibility package instead.")
+endif (ENABLE_LASH AND (NOT LASH_FOUND))
+
+if (ENABLE_OSC AND (NOT LIBLO_FOUND))
+        message("** WARNING: liblo (>= 0.23) (Lightweight Open Sound Control) was enabled, but development files were not found.")
+endif (ENABLE_OSC AND (NOT LIBLO_FOUND))
+
+if (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
+        message("** WARNING: python was enabled, but development files were not found.")
+endif (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
+
+if (ENABLE_DSSI AND (NOT DSSI_FOUND))
+        message("** WARNING: dssi (>= 0.9.0) was enabled, but development files were not found.")
+endif (ENABLE_DSSI AND (NOT DSSI_FOUND))
+
+if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
+        message("** WARNING: fluidsynth (>= 0.9.0) was enabled, but development files were not found.")
+endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
+
+message("")
 
 ## Show a summary of what we got
 summary_add("Lash support" HAVE_LASH)

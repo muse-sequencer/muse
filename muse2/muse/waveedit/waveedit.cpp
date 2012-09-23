@@ -152,6 +152,12 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       mapper->setMapping(act, WaveCanvas::CMD_EDIT_EXTERNAL);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
+      menuEdit->addSeparator();
+
+      adjustWaveOffsetAction = menuEdit->addAction(tr("Adjust wave offset..."));
+      mapper->setMapping(adjustWaveOffsetAction, WaveCanvas::CMD_ADJUST_WAVE_OFFSET);
+      connect(adjustWaveOffsetAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      
       act = menuFunctions->addAction(tr("Mute Selection"));
       mapper->setMapping(act, WaveCanvas::CMD_MUTE);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));

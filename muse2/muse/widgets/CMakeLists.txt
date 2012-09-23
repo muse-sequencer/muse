@@ -40,6 +40,7 @@ QT4_WRAP_CPP (widget_mocs
       comboQuant.h  
       combobox.h  
       comment.h  
+      copy_on_write.h
       ctrlcombo.h  
       custom_widget_actions.h
       dentry.h  
@@ -114,6 +115,7 @@ file (GLOB widgets_ui_files
       cliplisteditorbase.ui  
       commentbase.ui  
       configmidifilebase.ui
+      copy_on_write_base.ui
       didyouknow.ui  
       editnotedialogbase.ui  
       editsysexdialogbase.ui  
@@ -153,6 +155,7 @@ file (GLOB widgets_source_files
       comboQuant.cpp 
       combobox.cpp  
       comment.cpp 
+      copy_on_write.cpp
       ctrlcombo.cpp 
       custom_widget_actions.cpp
       dentry.cpp 

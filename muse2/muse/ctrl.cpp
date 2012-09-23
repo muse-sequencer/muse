@@ -382,7 +382,7 @@ void CtrlList::assign(const CtrlList& l, int flags)
   
   if(flags & ASSIGN_VALUES)
   {
-    map::operator=(l); // Let map copy the items.
+    std::map<int, CtrlVal, std::less<int> >::operator=(l); // Let map copy the items.
     _guiUpdatePending = true;
   }
 }
@@ -523,7 +523,7 @@ CtrlList& CtrlList::operator=(const CtrlList& cl)
   _visible       = cl._visible;
   
   // Let map copy the items.
-  map::operator=(cl);
+  std::map<int, CtrlVal, std::less<int> >::operator=(cl);
   _guiUpdatePending = true;
   return *this;
 }
@@ -533,7 +533,7 @@ void CtrlList::swap(CtrlList& cl)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::swap id:%d\n", cl.id());  
 #endif
-  map::swap(cl);
+  std::map<int, CtrlVal, std::less<int> >::swap(cl);
   cl.setGuiUpdatePending(true);
   _guiUpdatePending = true;
 }
@@ -543,7 +543,7 @@ std::pair<iCtrl, bool> CtrlList::insert(const std::pair<int, CtrlVal>& p)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::insert frame:%d val:%f\n", p.first, p.second.val);  
 #endif
-  std::pair<iCtrl, bool> res = map::insert(p);
+  std::pair<iCtrl, bool> res = std::map<int, CtrlVal, std::less<int> >::insert(p);
   _guiUpdatePending = true;
   return res;
 }
@@ -553,7 +553,7 @@ iCtrl CtrlList::insert(iCtrl ic, const std::pair<int, CtrlVal>& p)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::insert2 frame:%d val:%f\n", p.first, p.second.val); 
 #endif
-  iCtrl res = map::insert(ic, p);
+  iCtrl res = std::map<int, CtrlVal, std::less<int> >::insert(ic, p);
   _guiUpdatePending = true;
   return res;
 }
@@ -563,7 +563,7 @@ void CtrlList::erase(iCtrl ictl)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::erase iCtrl frame:%d val:%f\n", ictl->second.frame, ictl->second.val);  
 #endif
-  map::erase(ictl);
+  std::map<int, CtrlVal, std::less<int> >::erase(ictl);
   _guiUpdatePending = true;
 }
 
@@ -572,7 +572,7 @@ std::map<int, CtrlVal, std::less<int> >::size_type CtrlList::erase(int frame)
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::erase frame:%d\n", frame);  
 #endif
-  size_type res = map::erase(frame);
+  size_type res = std::map<int, CtrlVal, std::less<int> >::erase(frame);
   _guiUpdatePending = true;
   return res;
 }
@@ -584,7 +584,7 @@ void CtrlList::erase(iCtrl first, iCtrl last)
          first->second.frame, first->second.val,
          last->second.frame, last->second.val);  
 #endif
-  map::erase(first, last);
+  std::map<int, CtrlVal, std::less<int> >::erase(first, last);
   _guiUpdatePending = true;
 }
 
@@ -593,7 +593,7 @@ void CtrlList::clear()
 #ifdef _CTRL_DEBUG_
   printf("CtrlList::clear\n");  
 #endif
-  map::clear();
+  std::map<int, CtrlVal, std::less<int> >::clear();
   _guiUpdatePending = true;
 }
 

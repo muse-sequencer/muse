@@ -169,7 +169,8 @@ class Track {
 
       virtual Part* newPart(Part*p=0, bool clone = false) = 0;
       void dump() const;
-      virtual void splitPart(Part*, int, Part*&, Part*&);
+      //virtual void splitPart(Part*, int, Part*&, Part*&);  // REMOVE Tim.
+      virtual void splitPart(Part*, const MusECore::Pos& pos, Part*&, Part*&);
 
       virtual void setMute(bool val);
       virtual void setOff(bool val);

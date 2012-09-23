@@ -742,13 +742,14 @@ Part::~Part()
       {
       if (_prevClone!=this || _nextClone!=this)
       {
-        printf("THIS MIGHT BE A HINT FOR BUGS: Part isn't unchained in ~Part()! i'll do that now. this is\n"
+        if (MusEGlobal::debugMsg) {
+            printf("THIS MIGHT BE A HINT FOR BUGS: Part isn't unchained in ~Part()! i'll do that now. this is\n"
                "not an actual bug, actually that manual unchain should be unneccessary if this was coded\n"
                "properly. but as it wasn't, and the unchain was always done manually, this might be an\n"
                "indicator that it have been forgotten. either your computer will explode in 3..2..1..now,\n"
                "or you can ignore this message.\n"
                "\n");
-        
+        }
         unchainClone(this);
       }
         
@@ -959,22 +960,27 @@ void Song::cmdResizePart(Track* track, Part* oPart, const MusECore::PosLen& len,
 //    create two new parts p1 and p2
 //---------------------------------------------------------
 
-void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
+//void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)  // REMOVE Tim.
+void Track::splitPart(Part* part, const MusECore::Pos& pos, Part*& p1, Part*& p2)
       {
+      // TODO: Support Track Time Locking (parts+events can be either frames or ticks type).  
+      
       int l1 = 0;       // len of first new part (ticks or samples)
       int l2 = 0;       // len of second new part
 
-      int samplepos = MusEGlobal::tempomap.tick2frame(tickpos);
+      //int samplepos = MusEGlobal::tempomap.tick2frame(tickpos);       // REMOVE Tim.
 
       switch (type()) {
             case WAVE:
-                  l1 = samplepos - part->frame();
+                  //l1 = samplepos - part->frame();                // REMOVE Tim.
+                  l1 = pos.frame() - part->frame();
                   l2 = part->lenFrame() - l1;
                   break;
             case MIDI:
             case DRUM:
             case NEW_DRUM:
-                  l1 = tickpos - part->tick();
+                  //l1 = tickpos - part->tick();                   // REMOVE Tim.
+                  l1 = pos.tick() - part->tick();
                   l2 = part->lenTick() - l1;
                   break;
             default:
@@ -987,19 +993,19 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
       p1 = newPart(part);     // new left part
       p2 = newPart(part);     // new right part
 
-      // Added by Tim. p3.3.6
-      
       switch (type()) {
             case WAVE:
                   p1->setLenFrame(l1);
-                  p2->setFrame(samplepos);
+                  //p2->setFrame(samplepos);  // REMOVE Tim.
+                  p2->setFrame(pos.frame());
                   p2->setLenFrame(l2);
                   break;
             case MIDI:
             case DRUM:
             case NEW_DRUM:
                   p1->setLenTick(l1);
-                  p2->setTick(tickpos);
+                  //p2->setTick(tickpos);     // REMOVE Tim.
+                  p2->setTick(pos.tick());
                   p2->setLenTick(l2);
                   break;
             default:
@@ -1051,15 +1057,19 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
 //   cmdSplitPart
 //---------------------------------------------------------
 
-void Song::cmdSplitPart(Track* track, Part* part, int tick)
+//void Song::cmdSplitPart(Track* track, Part* part, int tick)   // REMOVE Tim.
+void Song::cmdSplitPart(Track* track, Part* part, const MusECore::Pos& pos) 
       {
-      int l1 = tick - part->tick();
-      int l2 = part->lenTick() - l1;
+      //int l1 = tick - part->tick();            // REMOVE Tim.
+      //int l2 = part->lenTick() - l1;
+      int l1 = pos.posValue(pos.type()) - part->posValue(pos.type());
+      int l2 = part->lenValue(pos.type()) - l1;
       if (l1 <= 0 || l2 <= 0)
             return;
       Part* p1;
       Part* p2;
-      track->splitPart(part, tick, p1, p2);
+      //track->splitPart(part, tick, p1, p2);
+      track->splitPart(part, pos, p1, p2);  // REMOVE Tim.
       
       //MusEGlobal::song->informAboutNewParts(part, p1); // is unneccessary because of ChangePart below
       MusEGlobal::song->informAboutNewParts(part, p2);

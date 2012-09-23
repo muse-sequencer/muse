@@ -74,7 +74,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       fileOpenAction->setIcon(QIcon(*openIcon));
       fileSaveAction->setIcon(QIcon(*saveIcon));
       fileSaveAsAction->setIcon(QIcon(*saveasIcon));
-      fileExitAction->setIcon(QIcon(*exitIcon));
+      fileCloseAction->setIcon(QIcon(*exitIcon));
       viewController->setSelectionMode(QAbstractItemView::SingleSelection);
       toolBar->addAction(QWhatsThis::createAction(this));
       Help->addAction(QWhatsThis::createAction(this));
@@ -948,12 +948,12 @@ void EditInstrument::fileSaveAs()
     }
 
 //---------------------------------------------------------
-//   fileExit
+//   fileClose
 //---------------------------------------------------------
 
-void EditInstrument::fileExit()
+void EditInstrument::fileClose()
       {
-
+        close();
       }
 
 //---------------------------------------------------------

@@ -122,7 +122,9 @@ class PosLen : public Pos {
       void setLenTick(unsigned);
       void setLenFrame(unsigned);
       void setLenValue(unsigned val, TType time_type);     
+      void setLen(const Pos& start_pos, const Pos& end_pos);
       void setLen(const PosLen& len);     
+      void setPosLen(const Pos& pos, const Pos& end_pos);
       unsigned lenTick() const;
       unsigned lenFrame() const;
       unsigned lenValue(TType time_type) const;

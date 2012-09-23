@@ -31,6 +31,7 @@
 
 #include <QButtonGroup>
 #include <QCheckBox>
+#include <QInputDialog>
 #include <QComboBox>
 #include <QCursor>
 #include <QDir>
@@ -70,6 +71,9 @@
 #include "fastlog.h"
 #include "checkbox.h"
 #include "verticalmeter.h"
+#include "popupmenu.h"
+#include "menutitleitem.h"
+
 
 #include "audio.h"
 #include "al/dsp.h"
@@ -84,10 +88,14 @@
 
 namespace MusEGlobal {
 MusECore::PluginList plugins;
+MusECore::PluginGroups plugin_groups;
+QList<QString> plugin_group_names;
+
 }
 
 namespace MusEGui {
 int PluginDialog::selectedPlugType = 0;
+int PluginDialog::selectedGroup = 0;
 QStringList PluginDialog::sortItems = QStringList();
 QRect PluginDialog::geometrySave = QRect();
 QByteArray PluginDialog::listSave = QByteArray();
@@ -623,6 +631,9 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
             *max = 1.0;
       }
 
+
+
+
 //---------------------------------------------------------
 //   Plugin
 //---------------------------------------------------------
@@ -631,6 +642,7 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
 {
   _isDssi = isDssi;
   _isDssiSynth = isDssiSynth;
+  
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
   #endif
@@ -1020,6 +1032,40 @@ static void loadPluginDir(const QString& s)
                   }
             }
       }
+
+
+void PluginGroups::shift_left(int first, int last)
+{
+  for (int i=first; i<=last; i++)
+    replace_group(i, i-1);
+}
+
+void PluginGroups::shift_right(int first, int last)
+{
+  for (int i=last; i>=first; i--)
+    replace_group(i,i+1);
+}
+
+void PluginGroups::erase(int index)
+{
+  for (PluginGroups::iterator it=begin(); it!=end(); it++)
+  {
+    it->remove(index);
+  }
+}
+
+void PluginGroups::replace_group(int old, int now)
+{
+  for (PluginGroups::iterator it=begin(); it!=end(); it++)
+  {
+    if (it->contains(old))
+    {
+      it->remove(old);
+      it->insert(now);
+    }
+  }
+}
+
 
 //---------------------------------------------------------
 //   initPlugins
@@ -2822,14 +2868,23 @@ namespace MusEGui {
 PluginDialog::PluginDialog(QWidget* parent)
   : QDialog(parent)
       {
+      group_info=NULL;
       setWindowTitle(tr("MusE: select plugin"));
 
       if(!geometrySave.isNull())
         setGeometry(geometrySave);
       
       QVBoxLayout* layout = new QVBoxLayout(this);
-
+    
+      tabBar = new QTabBar(this);
+      tabBar->setToolTip(tr("Plugin categories.\nRight-click on tabs to manage.\nRight-click on plugins to add/remove from a category."));
+      tabBar->addTab("All");
+      for (QList<QString>::iterator it=MusEGlobal::plugin_group_names.begin(); it!=MusEGlobal::plugin_group_names.end(); it++)
+        tabBar->addTab(*it);
+      
+      
       pList  = new QTreeWidget(this);
+      
       pList->setColumnCount(12);
       // "Note: In order to avoid performance issues, it is recommended that sorting 
       //   is enabled after inserting the items into the tree. Alternatively, you could 
@@ -2862,7 +2917,9 @@ PluginDialog::PluginDialog(QWidget* parent)
       pList->setSelectionMode(QAbstractItemView::SingleSelection);
       pList->setAlternatingRowColors(true);
       pList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      pList->setContextMenuPolicy(Qt::CustomContextMenu);
       
+      layout->addWidget(tabBar);
       layout->addWidget(pList);
 
       //---------------------------------------------------
@@ -2920,6 +2977,23 @@ PluginDialog::PluginDialog(QWidget* parent)
             case SEL_M:   onlyM->setChecked(true);   break;
             case SEL_ALL: allPlug->setChecked(true); break;
             }
+      
+      tabBar->setCurrentIndex(selectedGroup);
+      tabBar->setContextMenuPolicy(Qt::ActionsContextMenu);
+      newGroupAction= new QAction(tr("&create new group"),tabBar);
+      delGroupAction= new QAction(tr("&delete currently selected group"),tabBar);
+      renGroupAction= new QAction(tr("re&name currently selected group"),tabBar);
+      tabBar->addAction(newGroupAction);
+      tabBar->addAction(delGroupAction);
+      tabBar->addAction(renGroupAction);
+      
+      if (selectedGroup==0)
+      {
+				delGroupAction->setEnabled(false);
+				renGroupAction->setEnabled(false);
+			}
+      //tabBar->setMovable(true); //not yet. need to find a way to forbid moving the zeroth tab
+      
 
       plugSelGroup->setToolTip(tr("Select which types of plugins should be visible in the list.<br>"
                              "Note that using mono plugins on stereo tracks is not a problem, two will be used in parallel.<br>"
@@ -2968,21 +3042,122 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       connect(pList,   SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(accept()));
       connect(pList,   SIGNAL(itemClicked(QTreeWidgetItem*,int)), SLOT(enableOkB()));
+      connect(pList,   SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(plistContextMenu(const QPoint&)));
       connect(cancelB, SIGNAL(clicked()), SLOT(reject()));
       connect(okB,     SIGNAL(clicked()), SLOT(accept()));
-      connect(plugSel, SIGNAL(buttonClicked(QAbstractButton*)), SLOT(fillPlugs(QAbstractButton*)));
+      connect(plugSel, SIGNAL(buttonClicked(QAbstractButton*)), SLOT(pluginTypeSelectionChanged(QAbstractButton*)));
+      connect(tabBar,  SIGNAL(currentChanged(int)), SLOT(tabChanged(int)));
+      //connect(tabBar,  SIGNAL(tabMoved(int,int)), SLOT(tabMoved(int,int))); //not yet. need to find a way to forbid moving the zeroth tab
       connect(sortBox, SIGNAL(editTextChanged(const QString&)),SLOT(fillPlugs()));
+      connect(newGroupAction, SIGNAL(activated()), SLOT(newGroup()));
+      connect(delGroupAction, SIGNAL(activated()), SLOT(delGroup()));
+      connect(renGroupAction, SIGNAL(activated()), SLOT(renameGroup()));
       sortBox->setFocus();
       }
+
+void PluginDialog::plistContextMenu(const QPoint& point)
+{
+  QTreeWidgetItem* item = pList->currentItem();
+  if (item)
+  {
+    group_info = &MusEGlobal::plugin_groups.get(item->text(1), item->text(2));
+    QMenu* menu = new MusEGui::PopupMenu(this, true);
+    QSignalMapper* mapper = new QSignalMapper(this);
+    menu->addAction(new MusEGui::MenuTitleItem(tr("Associated categories"), menu));
+    
+    if (tabBar->count()==1)
+    {
+      QAction* tmp=menu->addAction(tr("You need to define some categories first."));
+      tmp->setEnabled(false);
+    }
+    else
+    {
+      for (int i=1; i<tabBar->count(); i++) // ignore the first tab ("All")
+      {
+        QAction* act=menu->addAction(tabBar->tabText(i));
+        act->setCheckable(true);
+        act->setChecked(group_info->contains(i));
+        connect(act,SIGNAL(toggled(bool)), mapper, SLOT(map()));
+        mapper->setMapping(act, i);
+      }
+      connect(mapper, SIGNAL(mapped(int)), this, SLOT(groupMenuEntryToggled(int)));
+    }
+    
+    menu->exec(mapToGlobal(point));
+    
+    delete mapper;
+    delete menu;
+    
+    if (selectedGroup!=0 && !group_info->contains(selectedGroup)) // we removed the entry from the currently visible group
+      fillPlugs();
+    
+    group_info=NULL;
+  }
+}
+
+void PluginDialog::groupMenuEntryToggled(int index)
+{
+  if (group_info)
+  {
+    if (group_info->contains(index))
+      group_info->remove(index);
+    else
+      group_info->insert(index);
+  }
+  else
+  {
+    fprintf(stderr,"THIS SHOULD NEVER HAPPEN: groupMenuEntryToggled called but group_info is NULL!\n");
+  }
+}
+
+
 
 //---------------------------------------------------------
 //   enableOkB
 //---------------------------------------------------------
 
 void PluginDialog::enableOkB()
-      {
-	okB->setEnabled(true);
-      }
+{
+  okB->setEnabled(true);
+}
+
+
+void PluginDialog::newGroup()
+{
+  MusEGlobal::plugin_groups.shift_right(selectedGroup+1, tabBar->count());
+  tabBar->insertTab(selectedGroup+1, tr("new group"));
+  MusEGlobal::plugin_group_names.insert(selectedGroup, tr("new group"));
+}
+
+void PluginDialog::delGroup()
+{
+  if (selectedGroup!=0)
+  {
+    MusEGlobal::plugin_groups.erase(selectedGroup);
+    MusEGlobal::plugin_groups.shift_left(selectedGroup+1, tabBar->count());
+    tabBar->removeTab(selectedGroup);
+    MusEGlobal::plugin_group_names.removeAt(selectedGroup-1);
+  }
+}
+
+void PluginDialog::renameGroup()
+{
+  if (selectedGroup!=0)
+  {
+    bool ok;
+    QString newname = QInputDialog::getText(this, tr("Enter the new group name"),
+                                        tr("Enter the new group name"), QLineEdit::Normal,
+                                        tabBar->tabText(selectedGroup), &ok);
+    if (ok)
+    {
+      tabBar->setTabText(selectedGroup, newname);
+      MusEGlobal::plugin_group_names.replace(selectedGroup-1, newname);
+    }
+  }
+}
+
+
+
 
 //---------------------------------------------------------
 //   value
@@ -3042,10 +3217,10 @@ void PluginDialog::reject()
 }
 
 //---------------------------------------------------------
-//    fillPlugs
+//    pluginTypeSelectionChanged
 //---------------------------------------------------------
 
-void PluginDialog::fillPlugs(QAbstractButton* ab)
+void PluginDialog::pluginTypeSelectionChanged(QAbstractButton* ab)
       {
       if (ab == allPlug)
             selectedPlugType = SEL_ALL;
@@ -3058,11 +3233,42 @@ void PluginDialog::fillPlugs(QAbstractButton* ab)
       fillPlugs();
       }
 
+void PluginDialog::tabChanged(int index)
+{
+  renGroupAction->setEnabled(index!=0);
+  delGroupAction->setEnabled(index!=0);
+  
+  selectedGroup=index;
+  fillPlugs();
+}
+
+void PluginDialog::tabMoved(int from, int to)
+{
+//all the below doesn't work :/
+/*  static bool recurse=false;
+  
+  if (!recurse)
+  {
+    if (from==0 && to!=0) {recurse=true; tabBar->moveTab(to, from);}
+    if (from!=0 && to==0) {recurse=true; tabBar->moveTab(from, to);}
+  }
+  recurse=false;*/
+  
+  
+   //if ((from==0 && to!=0) || (from!=0 && to==0)) { tabBar->setMovable(false); tabBar->setMovable(true); }
+   printf("**** %i -> %i\n", from, to);
+  
+  //FINDMICH TODO
+}
+
 void PluginDialog::fillPlugs()
 {
     QString type_name;
     pList->clear();
-    for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i) {
+    okB->setEnabled(false);
+    for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
+       if (selectedGroup==0 || MusEGlobal::plugin_groups.get(*i).contains(selectedGroup))
+       {
           unsigned long ai = i->inports();       
           unsigned long ao = i->outports();
           unsigned long ci = i->controlInPorts();
@@ -4267,6 +4473,191 @@ QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent,
     return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal); 
 
   return QUiLoader::createWidget(className, parent, name);
-};
+}
 
 } // namespace MusEGui
+
+
+namespace MusEGlobal {
+
+static void writePluginGroupNames(int level, MusECore::Xml& xml)
+{
+  xml.tag(level++, "group_names");
+  
+  for (QList<QString>::iterator it=plugin_group_names.begin(); it!=plugin_group_names.end(); it++)
+    xml.strTag(level, "name", *it);
+  
+  xml.etag(--level, "group_names");
+}
+
+static void writePluginGroupMap(int level, MusECore::Xml& xml)
+{
+  using MusECore::PluginGroups;
+  
+  xml.tag(level++, "group_map");
+  
+  for (PluginGroups::iterator it=plugin_groups.begin(); it!=plugin_groups.end(); it++)
+		if (!it.value().empty())
+		{
+			xml.tag(level++, "entry");
+			
+			xml.strTag(level, "lib", it.key().first);
+			xml.strTag(level, "label", it.key().second);
+			
+			for (QSet<int>::iterator it2=it.value().begin(); it2!=it.value().end(); it2++)
+				xml.intTag(level, "group", *it2);
+
+			xml.etag(--level, "entry");
+		}
+  
+  xml.etag(--level, "group_map");
+}
+
+void writePluginGroupConfiguration(int level, MusECore::Xml& xml)
+{
+  xml.tag(level++, "plugin_groups");
+
+  writePluginGroupNames(level, xml);
+  writePluginGroupMap(level, xml);
+  
+  xml.etag(--level, "plugin_groups");
+}
+
+static void readPluginGroupNames(MusECore::Xml& xml)
+{
+	plugin_group_names.clear();
+	
+	for (;;)
+	{
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case MusECore::Xml::TagStart:
+				if (tag=="name")
+					plugin_group_names.append(xml.parse1());
+				else
+					xml.unknown("readPluginGroupNames");
+				break;
+				
+			case MusECore::Xml::TagEnd:
+				if (tag == "group_names")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+  
+static void readPluginGroupMap(MusECore::Xml& xml)
+{
+	plugin_groups.clear();
+	
+	for (;;)
+	{
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case MusECore::Xml::TagStart:
+				if (tag=="entry")
+				{
+					QString lib;
+					QString label;
+					QSet<int> groups;
+					bool read_lib=false, read_label=false;
+					
+					for (;;)
+					{
+						MusECore::Xml::Token token = xml.parse();
+						if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+							break;
+							
+						const QString& tag = xml.s1();
+						switch (token)
+						{
+							case MusECore::Xml::TagStart:
+								if (tag=="lib")
+								{
+									lib=xml.parse1();
+									read_lib=true;
+								}
+								else if (tag=="label")
+								{
+									label=xml.parse1();
+									read_label=true;
+								}
+								else if (tag=="group")
+									groups.insert(xml.parseInt());
+								else
+									xml.unknown("readPluginGroupMap");
+								break;
+								
+							case MusECore::Xml::TagEnd:
+								if (tag == "entry")
+									goto done_reading_entry;
+								
+							default:
+								break;
+						}
+					}
+
+done_reading_entry:
+
+					if (read_lib && read_label)
+						plugin_groups.get(lib,label)=groups;
+					else
+						fprintf(stderr,"ERROR: plugin group map entry without lib or label!\n");
+				}
+				else
+					xml.unknown("readPluginGroupMap");
+				break;
+				
+			case MusECore::Xml::TagEnd:
+				if (tag == "group_map")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void readPluginGroupConfiguration(MusECore::Xml& xml)
+{
+	for (;;)
+	{
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case MusECore::Xml::TagStart:
+				if (tag=="group_names")
+					readPluginGroupNames(xml);
+				else if (tag=="group_map")
+					readPluginGroupMap(xml);
+				else
+					xml.unknown("readPluginGroupConfiguration");
+				break;
+				
+			case MusECore::Xml::TagEnd:
+				if (tag == "plugin_groups")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+  
+} // namespace MusEGlobal

@@ -27,8 +27,13 @@
 
 #include <list>
 #include <vector>
+#include <QSet>
+#include <QMap>
+#include <QPair>
 
+#include <QMouseEvent>
 #include <QDialog>
+#include <QTabBar>
 #include <QFileInfo>
 #include <QMainWindow>
 #include <QUiLoader>
@@ -70,6 +75,7 @@ class AudioTrack;
 class Xml;
 
 class MidiController;
+
 
 //---------------------------------------------------------
 //   Plugin
@@ -119,7 +125,7 @@ class Plugin {
       unsigned long id() const                     { return _uniqueID; }
       QString maker() const                        { return _maker; }
       QString copyright() const                    { return _copyright; }
-      QString lib(bool complete = true)            { return complete ? fi.completeBaseName() : fi.baseName(); } // ddskrjo const
+      QString lib(bool complete = true) const      { return complete ? fi.completeBaseName() : fi.baseName(); } // ddskrjo const
       QString dirPath(bool complete = true) const  { return complete ? fi.absolutePath() : fi.path(); }
       QString filePath() const                     { return fi.filePath(); }
       QString fileName() const                     { return fi.fileName(); }
@@ -187,6 +193,22 @@ class Plugin {
       };
 
 typedef std::list<Plugin>::iterator iPlugin;
+
+
+class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
+{
+  public:
+    QSet<int>& get(QString a, QString b) { return (*this)[(QPair<QString,QString>(a,b))]; }
+    QSet<int>& get(const Plugin& p) { return (*this)[(QPair<QString,QString>(p.lib(),p.label()))]; }
+    
+    void shift_left(int first, int last);
+    void shift_right(int first, int last);
+    void erase(int index);
+  
+  private:
+    void replace_group(int old, int now);
+};
+
 
 //---------------------------------------------------------
 //   PluginList
@@ -529,6 +551,10 @@ class PluginGui : public QMainWindow {
       void updateValues();
       };
 
+
+
+
+
 //---------------------------------------------------------
 //   PluginDialog
 //---------------------------------------------------------
@@ -538,14 +564,6 @@ enum { SEL_SM, SEL_S, SEL_M, SEL_ALL };
 class PluginDialog : public QDialog {
       Q_OBJECT
 
-      QTreeWidget* pList;
-      QRadioButton* allPlug;
-      QRadioButton* onlyM;
-      QRadioButton* onlyS;
-      QRadioButton* onlySM;
-      QPushButton *okB;
-      void saveSettings();
-
    public:
       PluginDialog(QWidget* parent=0);
       static MusECore::Plugin* getPlugin(QWidget* parent);
@@ -554,25 +572,56 @@ class PluginDialog : public QDialog {
    public slots:
       void accept();
       void reject();
-      void fillPlugs(QAbstractButton*);
-      void fillPlugs();
 
    private slots:
       void enableOkB();
+      void pluginTypeSelectionChanged(QAbstractButton*);
+      void tabChanged(int);
+      void tabMoved(int,int);
+      void fillPlugs();
+      
+      void newGroup();
+      void delGroup();
+      void renameGroup();
+      void plistContextMenu(const QPoint&);
+      void groupMenuEntryToggled(int i);
 
    private:
-      QComboBox *sortBox;
+      QComboBox* sortBox;
+      QTabBar* tabBar;
+      QTreeWidget* pList;
+      QRadioButton* allPlug;
+      QRadioButton* onlyM;
+      QRadioButton* onlyS;
+      QRadioButton* onlySM;
+      QPushButton *okB;
+      
+      QAction* newGroupAction;
+      QAction* delGroupAction;
+      QAction* renGroupAction;
+      
+      
+      void saveSettings();
+
       static int selectedPlugType;
+      static int selectedGroup; // 0 means "show all"
       static QStringList sortItems;
       static QRect geometrySave;
       static QByteArray listSave;
-      };
+      
+      QSet<int>* group_info; //holds the group-set of the plugin which shall be affected by the plistContextMenu.
+};
 
 }
 
 
 namespace MusEGlobal {
 extern MusECore::PluginList plugins;
+extern MusECore::PluginGroups plugin_groups;
+extern QList<QString> plugin_group_names;
+
+void writePluginGroupConfiguration(int level, MusECore::Xml& xml);
+void readPluginGroupConfiguration(MusECore::Xml& xml);
 }
 #endif
 
