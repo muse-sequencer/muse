@@ -69,6 +69,7 @@
 #include "undo.h"
 #include "midi_audio_control.h"
 #include "ctrl.h"
+#include "plugin.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"

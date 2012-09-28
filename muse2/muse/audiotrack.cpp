@@ -832,6 +832,7 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
         {
           if(type() == AUDIO_SOFTSYNTH)
           {
+#ifdef DSSI_SUPPORT            
             const SynthI* synth = static_cast<const SynthI*>(this);
             if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
             {
@@ -844,6 +845,7 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
                 en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
               }
             }
+#endif
           }
         }
       }  
@@ -888,6 +890,7 @@ bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned
     {
       if(type() == AUDIO_SOFTSYNTH)
       {
+ #ifdef DSSI_SUPPORT
         const SynthI* synth = static_cast<const SynthI*>(this);
         if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
         {
@@ -899,6 +902,7 @@ bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned
             return dssi_sif->addScheduledControlEvent(in_ctrl_idx, val, frame);
           }
         }
+ #endif
       }
     }
   }  
@@ -930,6 +934,7 @@ void AudioTrack::enableController(int track_ctrl_id, bool en)
     {
       if(type() == AUDIO_SOFTSYNTH)
       {
+#ifdef DSSI_SUPPORT        
         SynthI* synth = static_cast<SynthI*>(this);
         if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
         {
@@ -941,6 +946,7 @@ void AudioTrack::enableController(int track_ctrl_id, bool en)
             dssi_sif->enableController(in_ctrl_idx, en);
           }
         }
+#endif
       }
     }
   }  
@@ -977,6 +983,7 @@ void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) con
         {
           if(type() == AUDIO_SOFTSYNTH)
           {
+#ifdef DSSI_SUPPORT
             const SynthI* synth = static_cast<const SynthI*>(this);
             if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
             {
@@ -989,6 +996,7 @@ void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) con
                 en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
               }
             }
+#endif
           }
         }
       }  

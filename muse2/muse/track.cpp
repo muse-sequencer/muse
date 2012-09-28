@@ -389,6 +389,7 @@ void Track::clearRecAutomation(bool clearList)
 
     if(type() == AUDIO_SOFTSYNTH)
     {
+#ifdef DSSI_SUPPORT
       SynthI* synth = static_cast<SynthI*>(this);
       if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
       {
@@ -399,6 +400,7 @@ void Track::clearRecAutomation(bool clearList)
           dssi_sif->enableAllControllers(true);
         }
       }
+#endif
     }
     
     if(clearList)
