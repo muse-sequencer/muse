@@ -1,3 +1,6 @@
+29.09.2012:
+         - Added handling of missing soundfonts in fluidsynth load so
+           a dialog asking for replacement soundfont pops up (rj)
 17.09.2012:
          * Introducing: Copy On Write for waves. (Tim)
            It asks to copy, to the Project Directory, any wave to be modified which is either 

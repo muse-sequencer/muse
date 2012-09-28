@@ -33,6 +33,7 @@
 #include <iostream>
 
 #include <QFileInfo>
+#include <QFileDialog>
 
 //#include "common_defs.h"
 #include "fluidsynti.h"
@@ -602,8 +603,25 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
 
       FS_Helper* helper = new FS_Helper;
       helper->fptr = this;
-      helper->filename = filename;
       helper->id = extid;
+
+      if (QFile::exists(filename))
+      {
+              helper->filename = filename;
+      }
+      else
+      {
+
+          // TODO: Strings should be translated, this does
+          //       however require the class to be derived from qobject
+          //       tried in vain to make the call in the gui object
+          //       could'nt get it to work due to symbol missing in .so ...
+          QString newName = QFileDialog::getOpenFileName(0,
+                                  QString("Can't find soundfont: %1 - Choose soundfont").arg(filename),
+                                  filename,
+                                  QString("Soundfonts (*.sf2);;All files (*)"));
+          helper->filename = newName.toStdString();
+      }
 
       if (pthread_create(&fontThread, attributes, ::fontLoadThread, (void*) helper))
             perror("creating thread failed:");
