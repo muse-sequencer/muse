@@ -48,6 +48,7 @@
 #include <math.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <set>
 
 #include "app.h"
 #include "xml.h"
@@ -1862,8 +1863,46 @@ void WaveCanvas::cmd(int cmd)
                   paramA = 0.25;
                   break;
 
-                  
+            case CMD_CREATE_PART_REGION:
+                  {
+                      // create a new part and put in the copy buffer
+                      MusECore::Part* pt = editor->curCanvasPart();
+                      if (pt == 0 || pt->track()->type() != MusECore::Track::WAVE)
+                          return;
+                      MusECore::WavePart *origPart = (MusECore::WavePart*)pt;
+                      if (MusEGlobal::song->lpos() < origPart->tick() || MusEGlobal::song->rpos() > origPart->endTick())
+                      {
+                          QMessageBox::warning(this, tr("Part creation failed"),
+                                       tr("Left and right position markers must be placed inside the current part."),
+                                       QMessageBox::Ok, QMessageBox::Ok);
+                          return;
+                      }
+                      MusECore::WavePart *tempPart = new MusECore::WavePart(origPart->track());
+                      unsigned origFrame = origPart->frame();
+                      unsigned frameDistance = MusEGlobal::song->lPos().frame() - origFrame;
+                      tempPart->setPos(MusEGlobal::song->lpos());
+                      tempPart->setLenTick(MusEGlobal::song->rpos() - MusEGlobal::song->lpos());
+                      // loop through the events and set them accordingly
+                      for (MusECore::iEvent iWaveEvent = origPart->events()->begin(); iWaveEvent != origPart->events()->end(); iWaveEvent++)
+                      {
+                          // TODO: handle multiple events correctly,
+                          // the math for subsequent events isn't correct
+                          MusECore::Event &ev = iWaveEvent->second;
+                          MusECore::Event *newEvent = new MusECore::Event(ev.clone());
+                          newEvent->setSpos(ev.spos() + frameDistance);
+                          newEvent->setLenTick(MusEGlobal::song->rpos() - MusEGlobal::song->lpos());
+                          tempPart->addEvent(*newEvent);
+                      }
+                      std::set<MusECore::Part*> partList;
+                      partList.insert(tempPart);
 
+                      QMimeData *mimeData =  MusECore::parts_to_mime(partList);
+                      QApplication::clipboard()->setMimeData(mimeData, QClipboard::Clipboard);
+                      QMessageBox::information(this, tr("Part created"),
+                                   tr("The selected region has been copied to the clipboard and can be pasted in the arranger."),
+                                   QMessageBox::Ok, QMessageBox::Ok);
+                  }
+                  break;
             case CMD_ERASE_MEASURE:
             case CMD_DELETE_MEASURE:
             case CMD_CREATE_MEASURE:

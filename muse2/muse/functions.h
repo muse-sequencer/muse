@@ -88,6 +88,9 @@ void copy_notes(const std::set<Part*>& parts, int range);
 bool paste_notes(Part* paste_into_part=NULL); // shows a dialog
 void paste_notes(int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL, int amount=1, int raster=3072);
 QMimeData* selected_events_to_mime(const std::set<Part*>& parts, int range);
+QMimeData* parts_to_mime(const std::set<Part*>& parts);
+
+
 void paste_at(const QString& pt, int pos, int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL, int amount=1, int raster=3072);
 
 //functions for selections
@@ -104,6 +107,9 @@ void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo
 void clean_parts();
 bool merge_selected_parts();
 bool merge_parts(const std::set<Part*>& parts);
+
+// internal
+QMimeData* file_to_mimedata(FILE *datafile, QString mimeType);
 
 } // namespace MusECore
 

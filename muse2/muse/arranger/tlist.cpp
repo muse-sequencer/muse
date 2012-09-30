@@ -378,7 +378,11 @@ void TList::paint(const QRect& r)
                                     }
                               break;
                         case COL_NAME:
-                              p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, track->name());
+                              if (track->type() == MusECore::Track::AUDIO_AUX) {
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, ((MusECore::AudioAux *)track)->auxName());
+                              } else {
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, track->name());
+                              }
                               break;
                         case COL_OCHANNEL:
                               {
@@ -2435,8 +2439,42 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
             if (t) {
                   int dTrack = MusEGlobal::song->tracks()->index(t);
                   MusEGlobal::audio->msgMoveTrack(sTrack, dTrack);
+                  MusECore::TrackList *tracks = MusEGlobal::song->tracks();
+                  if ( tracks->at(dTrack)->type() == MusECore::Track::AUDIO_AUX) {
+
+                      MusECore::AuxList auxCopy; // = *MusEGlobal::song->auxs();
+                      //MusEGlobal::song->auxs()->clear();
+                      std::vector<int> oldAuxIndex;
+
+                      for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+                          if ((*t)->type() == MusECore::Track::AUDIO_AUX) {
+                                  MusECore::AudioAux *ax = (MusECore::AudioAux*)*t;
+                                  auxCopy.push_back(ax);
+                                  oldAuxIndex.push_back(MusEGlobal::song->auxs()->index(ax)); // store old index
+                          }
+                      }
+                      // loop through all tracks and set the levels for all tracks
+                      for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+                          MusECore::AudioTrack *trk = (MusECore::AudioTrack*)*t;
+                          if (trk->hasAuxSend())
+                          {
+                              std::vector<double> oldAuxValue;
+                              for (unsigned i = 0 ; i < auxCopy.size(); i++)
+                                    oldAuxValue.push_back(trk->auxSend(i));
+                              for (unsigned i = 0 ; i < auxCopy.size(); i++)
+                                  trk->setAuxSend(i, oldAuxValue[oldAuxIndex[i]] );
+                          }
+                          MusEGlobal::song->auxs()->clear();
+                          for (MusECore::iAudioAux t = auxCopy.begin(); t != auxCopy.end(); ++t) {
+                                MusEGlobal::song->auxs()->push_back(*t);
+                          }
+                      }
+
+                      MusEGlobal::song->update(SC_EVERYTHING);
+
                   }
             }
+      }
       if (mode != NORMAL) {
             mode = NORMAL;
             setCursor(QCursor(Qt::ArrowCursor));

@@ -560,6 +560,7 @@ class AudioGroup : public AudioTrack {
 class AudioAux : public AudioTrack {
       float* buffer[MAX_CHANNELS];
       static bool _isVisible;
+      int _index;
    public:
       AudioAux();
       AudioAux(const AudioAux& t, int flags);
@@ -575,6 +576,8 @@ class AudioAux : public AudioTrack {
       static  void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
       static bool visible() { return _isVisible; }
+      virtual QString auxName();
+      virtual int index() { return _index; }
     };
 
 

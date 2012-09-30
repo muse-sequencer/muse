@@ -821,7 +821,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
             for (int idx = 0; idx < auxsSize; ++idx) {
                   MusEGui::DoubleLabel* al; // the thought was to aquire the correct Aux name for each Aux
                                             // now they are only called Aux1, Aux2, which isn't too usable.
-                  QLabel *name = new QLabel(((MusECore::Track*)(MusEGlobal::song->auxs()->at(idx)))->name(),this);
+                  QString title = ((MusECore::AudioAux*)(MusEGlobal::song->auxs()->at(idx)))->auxName();
+                  if (title.length() > 8) { // shorten name
+                      title = title.mid(0,8) + ".";
+                  }
+                  QLabel *name = new QLabel(title,this);
                   MusEGui::Knob* ak = addKnob(1, idx, &al, name);
 
                   auxKnob.push_back(ak);

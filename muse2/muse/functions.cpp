@@ -950,20 +950,51 @@ void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Pa
 	paste_at(s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
 }
 
-
 // if nothing is selected/relevant, this function returns NULL
 QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 {
-	unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
-	
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
-			if (is_relevant(ev->second, *part, range))
-				if (ev->second.tick() < start_tick)
-					start_tick=ev->second.tick();
-	
-	if (start_tick == INT_MAX)
-		return NULL;
+    unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
+
+    for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+        for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
+            if (is_relevant(ev->second, *part, range))
+                if (ev->second.tick() < start_tick)
+                    start_tick=ev->second.tick();
+
+    if (start_tick == INT_MAX)
+        return NULL;
+
+    //---------------------------------------------------
+    //    write events as XML into tmp file
+    //---------------------------------------------------
+
+    FILE* tmp = tmpfile();
+    if (tmp == 0)
+    {
+        fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+        return 0;
+    }
+
+    Xml xml(tmp);
+    int level = 0;
+
+    for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+    {
+        xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
+        for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
+            if (is_relevant(ev->second, *part, range))
+                ev->second.write(level, xml, -start_tick);
+        xml.etag(--level, "eventlist");
+    }
+
+    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
+    fclose(tmp);
+    return mimeData;
+}
+
+// if nothing is selected/relevant, this function returns NULL
+QMimeData* parts_to_mime(const set<Part*>& parts)
+{
 	
 	//---------------------------------------------------
 	//    write events as XML into tmp file
@@ -979,40 +1010,52 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 	Xml xml(tmp);
 	int level = 0;
 	
+    bool midi=false;
+    bool wave=false;
 	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 	{
-		xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
-		for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
-			if (is_relevant(ev->second, *part, range))
-				ev->second.write(level, xml, -start_tick);
-		xml.etag(--level, "eventlist");
-	}
+        if ((*part)->track()->type() == MusECore::Track::MIDI)
+            midi=true;
+        else
+            wave=true;
+        (*part)->write(level, xml, true, true);
+    }
+    QString mimeString = "text/x-muse-mixedpartlist";
+    if (!midi)
+        mimeString = "text/x-muse-wavepartlist";
+    else if (!wave)
+        mimeString = "text/x-muse-midipartlist";
+    QMimeData *mimeData =  file_to_mimedata(tmp, mimeString );
+    fclose(tmp);
+    return mimeData;
+}
 
-	//---------------------------------------------------
-	//    read tmp file into drag Object
-	//---------------------------------------------------
+//---------------------------------------------------
+//    read datafile into mime Object
+//---------------------------------------------------
+QMimeData* file_to_mimedata(FILE *datafile, QString mimeType)
+{
 
-	fflush(tmp);
+    fflush(datafile);
 	struct stat f_stat;
-	if (fstat(fileno(tmp), &f_stat) == -1)
+    if (fstat(fileno(datafile), &f_stat) == -1)
 	{
 		fprintf(stderr, "copy_notes() fstat failed:<%s>\n",
 		strerror(errno));
-		fclose(tmp);
+        fclose(datafile);
 		return 0;
 	}
 	int n = f_stat.st_size;
 	char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
-	MAP_PRIVATE, fileno(tmp), 0);
+    MAP_PRIVATE, fileno(datafile), 0);
 	fbuf[n] = 0;
 
 	QByteArray data(fbuf);
-	QMimeData* md = new QMimeData();
 
-	md->setData("text/x-muse-groupedeventlists", data);
+    QMimeData* md = new QMimeData();
+    md->setData(mimeType, data);
 
 	munmap(fbuf, n);
-	fclose(tmp);
 
 	return md;
 }

@@ -2829,40 +2829,13 @@ void PartCanvas::copy(MusECore::PartList* pl)
             }
       MusECore::Pos p(tick, true);
       MusEGlobal::song->setPos(0, p);
-
-      //---------------------------------------------------
-      //    read tmp file into QTextDrag Object
-      //---------------------------------------------------
-
-      fflush(tmp);
-      struct stat f_stat;
-      if (fstat(fileno(tmp), &f_stat) == -1) {
-            fprintf(stderr, "PartCanvas::copy() fstat failed:<%s>\n",
-               strerror(errno));
-            fclose(tmp);
-            return;
-            }
-      int n = f_stat.st_size;
-      char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
-         MAP_PRIVATE, fileno(tmp), 0);
-      fbuf[n] = 0;
-      
-      QByteArray data(fbuf);
-      QMimeData* md = new QMimeData();
-      
-      
-      if(midi && wave)
-        md->setData("text/x-muse-mixedpartlist", data);   // By T356. Support mixed .mpt files.
-      else
-      if(midi)
-        md->setData("text/x-muse-midipartlist", data);
-      else
-      if(wave)
-        md->setData("text/x-muse-wavepartlist", data);
-        
-      QApplication::clipboard()->setMimeData(md, QClipboard::Clipboard);
-      
-      munmap(fbuf, n);
+      QString mimeString = "text/x-muse-mixedpartlist";
+      if (!midi)
+          mimeString = "text/x-muse-wavepartlist";
+      else if (!wave)
+          mimeString = "text/x-muse-midipartlist";
+      QMimeData *mimeData =  MusECore::file_to_mimedata(tmp, mimeString );
+      QApplication::clipboard()->setMimeData(mimeData, QClipboard::Clipboard);
       fclose(tmp);
       }
 

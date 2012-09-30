@@ -99,6 +99,7 @@ class AudioDevice;
 #define SC_MIDI_TRACK_PROP     0x10000000   // a midi track's properties changed (channel, compression etc)
 #define SC_SONG_TYPE           0x20000000   // the midi song type (mtype) changed
 #define SC_KEY                 0x40000000   // key map changed
+#define SC_EVERYTHING          -1           // global update
 
 #define REC_NOTE_FIFO_SIZE    16
 

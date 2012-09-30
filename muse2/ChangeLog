@@ -1,3 +1,9 @@
+30.09.2012:
+         - Added part creation from wave editor - to make this really usable
+           more functions to set tempo etc, are needed (rj)
+         - Fixed name length of Aux ports and added index (rj)
+         - Fixed issue with moving aux:es in the track list causing the auxes
+           to be mixed up (rj)
 29.09.2012:
          - Added handling of missing soundfonts in fluidsynth load so
            a dialog asking for replacement soundfont pops up (rj)

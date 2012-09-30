@@ -159,7 +159,11 @@ void Strip::setLabelText()
                   return;      
             }
       
-      label->setText(track->name());
+      if (track->type() == MusECore::Track::AUDIO_AUX) {
+          label->setText(((MusECore::AudioAux*)track)->auxName());
+      } else {
+          label->setText(track->name());
+      }
       QPalette palette;
       //palette.setColor(label->backgroundRole(), c);
       QLinearGradient gradient(label->geometry().topLeft(), label->geometry().bottomLeft());

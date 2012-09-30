@@ -139,6 +139,10 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       mapper->setMapping(copyAction, WaveCanvas::CMD_EDIT_COPY);
       connect(copyAction, SIGNAL(triggered()), mapper, SLOT(map()));
 
+      copyPartRegionAction = menuEdit->addAction(tr("&Create Part from Region"));
+      mapper->setMapping(copyPartRegionAction, WaveCanvas::CMD_CREATE_PART_REGION);
+      connect(copyPartRegionAction, SIGNAL(triggered()), mapper, SLOT(map()));
+
       cutAction = menuEdit->addAction(tr("C&ut"));
       mapper->setMapping(cutAction, WaveCanvas::CMD_EDIT_CUT);
       connect(cutAction, SIGNAL(triggered()), mapper, SLOT(map()));

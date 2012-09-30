@@ -1710,8 +1710,31 @@ void AudioAux::write(int level, Xml& xml) const
       {
       xml.tag(level++, "AudioAux");
       AudioTrack::writeProperties(level, xml);
+      xml.intTag(level, "index", _index);
       xml.etag(level, "AudioAux");
       }
+
+
+//---------------------------------------------------------
+//   getNextAuxIndex
+//---------------------------------------------------------
+int getNextAuxIndex()
+{
+    printf("getNextAuxIndex!\n");
+    int curAux=0;
+    AuxList * al = MusEGlobal::song->auxs();
+    for (MusECore::iAudioAux i = al->begin(); i != al->end(); ++i)
+    {
+        MusECore::AudioAux* ax = *i;
+        printf("ax index %d\n", ax->index());
+        if (ax->index() > curAux)
+        {
+            printf("found new index! %d\n", ax->index());
+            curAux = ax->index();
+        }
+    }
+    return curAux+1;
+}
 
 //---------------------------------------------------------
 //   AudioAux
@@ -1720,25 +1743,27 @@ void AudioAux::write(int level, Xml& xml) const
 AudioAux::AudioAux()
    : AudioTrack(AUDIO_AUX)
 {
+      _index = getNextAuxIndex();
       for(int i = 0; i < MAX_CHANNELS; ++i)
       {
         if(i < channels())
           posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
         else
           buffer[i] = 0;
-      }  
+      }
 }
 
 AudioAux::AudioAux(const AudioAux& t, int flags)
    : AudioTrack(t, flags)
 {
+      _index = getNextAuxIndex();
       for(int i = 0; i < MAX_CHANNELS; ++i)
       {
         if(i < channels())
           posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
         else
           buffer[i] = 0;
-      }  
+      }
 }
 //---------------------------------------------------------
 //   AudioAux
@@ -1766,7 +1791,9 @@ void AudioAux::read(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (AudioTrack::readProperties(xml, tag))
+                      if (tag == "index")
+                        _index = xml.parseInt();
+                      else if (AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioAux");
                         break;
                   case Xml::Attribut:
@@ -1836,6 +1863,15 @@ void AudioAux::setChannels(int n)
     }
   }
   AudioTrack::setChannels(n);
+}
+
+//---------------------------------------------------------
+//   setName
+//---------------------------------------------------------
+
+QString AudioAux::auxName()
+{
+    return  QString("%1:").arg(index())+ name();
 }
 
 //---------------------------------------------------------
