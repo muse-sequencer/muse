@@ -438,7 +438,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       stepLenWidget->addItem("16");
       stepLenWidget->setCurrentIndex(0);
       stepLenWidget->setFocusPolicy(Qt::TabFocus);
-      connect(stepLenWidget, SIGNAL(activated(QString)), SLOT(setStep(QString)));
+      connect(stepLenWidget, SIGNAL(currentIndexChanged(QString)), SLOT(setStep(QString)));
       cursorToolbar->addWidget(stepLenWidget);
 
       addToolBarBreak();
@@ -1366,12 +1366,14 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             dlist->setCurDrumInstrument(dlist->getSelectedInstrument()-1);
             dlist->redraw();
             ((DrumCanvas*)canvas)->selectCursorEvent(((DrumCanvas*)canvas)->getEventAtCursorPos());
+            MusEGlobal::song->update(SC_DRUMMAP);
             return;
             }
       else if (key == shortcuts[SHRT_INSTRUMENT_STEP_DOWN].key) {
             dlist->setCurDrumInstrument(dlist->getSelectedInstrument()+1);
             dlist->redraw();
             ((DrumCanvas*)canvas)->selectCursorEvent(((DrumCanvas*)canvas)->getEventAtCursorPos());
+            MusEGlobal::song->update(SC_DRUMMAP);
             return;
             }
 
