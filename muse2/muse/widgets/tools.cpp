@@ -65,7 +65,7 @@ ToolB toolList[] = {
       {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "draw"),           infoDraw    },
       {&editmuteIcon, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "mute parts"),     infoMute    },
       {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "edit automation"),infoAutomation},
-      {&cursorIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor"),         infoCursor},
+    {&cursorIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor (tracker mode)\nNavigate with arrow keys\nUse VBNM to place notes\nChange step with 0 and 9"),         infoCursor},
       };
 
 //---------------------------------------------------------

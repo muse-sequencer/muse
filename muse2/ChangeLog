@@ -1,3 +1,5 @@
+02.10.2012:
+         - Added descriptive tooltip to cursor mode in drum editor (rj)
 01.10.2012:
          - Fixed Step shortcuts 0,9 in drum editor so they actually update 
            the step size and fixed update of controller view when stepping 
