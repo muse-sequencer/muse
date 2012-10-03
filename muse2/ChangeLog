@@ -1,3 +1,6 @@
+03.10.2012:
+         - Changed WaveTrack and AudioInput to create mono tracks, AudioInputs
+           are also no longer muted upon creation (rj)
 02.10.2012:
          - Added descriptive tooltip to cursor mode in drum editor (rj)
 01.10.2012:

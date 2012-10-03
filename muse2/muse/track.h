@@ -591,7 +591,7 @@ class WaveTrack : public AudioTrack {
 
    public:
 
-      WaveTrack() : AudioTrack(Track::WAVE) {  }
+      WaveTrack() : AudioTrack(Track::WAVE) { setChannels(1); }
       WaveTrack(const WaveTrack& wt, int flags) : AudioTrack(wt, flags) {}
 
       virtual WaveTrack* clone(int flags) const    { return new WaveTrack(*this, flags); }
