@@ -179,7 +179,8 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
       updateRouteButtons();
     
       MusECore::AudioTrack* src = (MusECore::AudioTrack*)track;
-      
+      gain->setValue(src->gain());
+
       // Do channels before MusEGlobal::config...
       if (val & SC_CHANNELS)
         updateChannels();
@@ -441,6 +442,15 @@ void AudioStrip::auxChanged(double val, int idx)
       }
 
 //---------------------------------------------------------
+//   gainChanged
+//---------------------------------------------------------
+
+void AudioStrip::gainChanged(double val)
+      {
+      ((MusECore::AudioTrack*)track)->setGain(val);
+      }
+
+//---------------------------------------------------------
 //   auxLabelChanged
 //---------------------------------------------------------
 
@@ -664,73 +674,78 @@ void AudioStrip::updateChannels()
 //           1 - aux send
 //---------------------------------------------------------
 
-MusEGui::Knob* AudioStrip::addKnob(int type, int id, MusEGui::DoubleLabel** dlabel, QLabel *name)
+MusEGui::Knob* AudioStrip::addKnob(Knob::KnobType type, int id, MusEGui::DoubleLabel** dlabel, QLabel *name)
       {
-      MusEGui::Knob* knob = new MusEGui::Knob(this);
+      MusEGui::Knob* knob = new Knob(this);
       knob->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      if (type == 0)
+      MusEGui::DoubleLabel* knobLabel;
+      if (type == Knob::panType)
+      {
             knob->setRange(-1.0, +1.0);
-      else
-            knob->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-      knob->setBackgroundRole(QPalette::Mid);
-
-      if (type == 0)
             knob->setToolTip(tr("panorama"));
-      else
-            knob->setToolTip(tr("aux send level"));
+            knobLabel = new MusEGui::DoubleLabel(0, -1.0, +1.0, this);
 
-      MusEGui::DoubleLabel* pl;
-      if (type == 0)
-            pl = new MusEGui::DoubleLabel(0, -1.0, +1.0, this);
-      else
-            pl = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.1, this);
+      } else if (type == Knob::auxType)
+      {
+            knob->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
+            knob->setToolTip(tr("aux send level"));
+            knob->setFaceColor(Qt::blue);
+            knobLabel = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.1, this);
+
+      } else if (type == Knob::gainType)
+      {
+            knob->setRange(1.0, 20.0);
+            knob->setFaceColor(Qt::yellow);
+            knob->setToolTip(tr("calibration gain"));
+            knobLabel = new MusEGui::DoubleLabel(1.0, 1.0, 30.0, this);
+      }
+      knob->setBackgroundRole(QPalette::Mid);
             
       if (dlabel)
-            *dlabel = pl;
-      pl->setSlider(knob);
+            *dlabel = knobLabel;
+      knobLabel->setSlider(knob);
       ///pl->setFont(MusEGlobal::config.fonts[1]);
-      pl->setBackgroundRole(QPalette::Mid);
-      pl->setFrame(true);
-      if (type == 0)
-            pl->setPrecision(2);
-      else {
-            pl->setPrecision(0);
+      knobLabel->setBackgroundRole(QPalette::Mid);
+      knobLabel->setFrame(true);
+      if (type == Knob::panType)
+            knobLabel->setPrecision(2);
+      else if (type == Knob::auxType){
+            knobLabel->setPrecision(0);
             }
-      pl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      else if (type == Knob::gainType){
+            knobLabel->setPrecision(1);
+            }
+      knobLabel->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       
-      //      QString label;
-      //      if (type == 0)
-      //            label = tr("Pan");
-      //      else
-      //            label = name;
-
-      //QLabel* plb = new QLabel(label, this);
       name->setParent(this);
       name->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       name->setAlignment(Qt::AlignCenter);
 
       grid->addWidget(name, _curGridRow, 0);
-      grid->addWidget(pl, _curGridRow+1, 0);
+      grid->addWidget(knobLabel, _curGridRow+1, 0);
       grid->addWidget(knob, _curGridRow, 1, 2, 1);
       _curGridRow += 2;
 
-      connect(knob, SIGNAL(valueChanged(double,int)), pl, SLOT(setValue(double)));
+      connect(knob, SIGNAL(valueChanged(double,int)), knobLabel, SLOT(setValue(double)));
 
-      if (type == 0) {
-            connect(pl, SIGNAL(valueChanged(double, int)), SLOT(panLabelChanged(double)));
+      if (type == Knob::panType) {
+            connect(knobLabel, SIGNAL(valueChanged(double, int)), SLOT(panLabelChanged(double)));
             connect(knob, SIGNAL(sliderMoved(double,int,bool)), SLOT(panChanged(double,int,bool)));
             connect(knob, SIGNAL(sliderPressed(int)), SLOT(panPressed()));
             connect(knob, SIGNAL(sliderReleased(int)), SLOT(panReleased()));
             connect(knob, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(panRightClicked(const QPoint &)));
             }
-      else {
+      else if (type == Knob::auxType){
+            knobLabel->setReadOnly(true);
             knob->setId(id);
-            
-            connect(pl, SIGNAL(valueChanged(double, int)), knob,  SLOT(setValue(double)));
-            // Not used yet. Switch if/when necessary.
-            //connect(pl, SIGNAL(valueChanged(double, int)), SLOT(auxLabelChanged(double, int)));
-            
+            connect(knobLabel, SIGNAL(valueChanged(double, int)), knob,  SLOT(setValue(double)));
             connect(knob, SIGNAL(sliderMoved(double, int)), SLOT(auxChanged(double, int)));
+            }
+      else if (type == Knob::gainType){
+            knobLabel->setReadOnly(true);
+            knob->setId(id);
+            connect(knobLabel, SIGNAL(valueChanged(double, int)), knob,  SLOT(setValue(double)));
+            connect(knob, SIGNAL(sliderMoved(double, int)), SLOT(gainChanged(double)));
             }
       return knob;
       }
@@ -813,6 +828,13 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       grid->addWidget(pre, _curGridRow++, 1);
 
       //---------------------------------------------------
+      //    Gain
+      //---------------------------------------------------
+
+      gain = addKnob(MusEGui::Knob::gainType, 0, &gainLabel, new QLabel("Gain", this));
+      gain->setValue(t->gain());
+
+      //---------------------------------------------------
       //    aux send
       //---------------------------------------------------
 
@@ -826,7 +848,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
                       title = title.mid(0,8) + ".";
                   }
                   QLabel *name = new QLabel(title,this);
-                  MusEGui::Knob* ak = addKnob(1, idx, &al, name);
+                  MusEGui::Knob* ak = addKnob(MusEGui::Knob::auxType, idx, &al, name);
 
                   auxKnob.push_back(ak);
                   auxLabel.push_back(al);
@@ -899,7 +921,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       //    pan, balance
       //---------------------------------------------------
 
-      pan = addKnob(0, 0, &panl, new QLabel("Pan", this));
+      pan = addKnob(MusEGui::Knob::panType, 0, &panl, new QLabel("Pan", this));
       pan->setValue(t->pan());
       
       //---------------------------------------------------

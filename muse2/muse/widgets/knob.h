@@ -43,6 +43,12 @@ class Knob : public SliderBase, public ScaleIf
    public:
       enum Symbol { Line, Dot };
 
+      enum KnobType {
+          panType,
+          auxType,
+          gainType,
+      };
+
    private:
       bool hasScale;
 

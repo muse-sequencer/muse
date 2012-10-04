@@ -406,8 +406,8 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   double _pan    = controller()->value(AC_PAN, pos,
                    !MusEGlobal::automation || automationType() == AUTO_OFF || !_panEnCtrl || !_panEn2Ctrl);
   
-  vol[0] = _volume * (1.0 - _pan);
-  vol[1] = _volume * (1.0 + _pan);
+  vol[0] = _volume * (1.0 - _pan) * _gain;
+  vol[1] = _volume * (1.0 + _pan) * _gain;
   float meter[trackChans];
 
   // Have we been here already during this process cycle?
@@ -744,8 +744,8 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   double _pan    = controller()->value(AC_PAN, pos,
                    !MusEGlobal::automation || automationType() == AUTO_OFF || !_panEnCtrl || !_panEn2Ctrl);
 
-  vol[0] = _volume * (1.0 - _pan);
-  vol[1] = _volume * (1.0 + _pan);
+  vol[0] = _volume * (1.0 - _pan) * _gain;
+  vol[1] = _volume * (1.0 + _pan) * _gain;
   float meter[trackChans];
 
   // Have we been here already during this process cycle?

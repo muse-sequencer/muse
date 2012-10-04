@@ -29,6 +29,7 @@
 
 #include "type_defs.h"
 #include "strip.h"
+#include "knob.h"
 //#include "route.h"
 
 //class QDialog;
@@ -67,6 +68,9 @@ class AudioStrip : public Strip {
       MusEGui::Knob* pan;
       MusEGui::DoubleLabel* panl;
 
+      MusEGui::Knob* gain;
+      MusEGui::DoubleLabel* gainLabel;
+
       std::vector<MusEGui::Knob*> auxKnob;
       std::vector<MusEGui::DoubleLabel*> auxLabel;
 
@@ -81,7 +85,7 @@ class AudioStrip : public Strip {
       //QToolButton* iR;
       //QToolButton* oR;
       
-      MusEGui::Knob* addKnob(int, int, MusEGui::DoubleLabel**, QLabel *name);
+      MusEGui::Knob* addKnob(Knob::KnobType, int, MusEGui::DoubleLabel**, QLabel *name);
       
       void updateOffState();
       void updateVolume();
@@ -96,6 +100,7 @@ class AudioStrip : public Strip {
       void iRoutePressed();
       void oRoutePressed();
       void auxChanged(double, int);
+      void gainChanged(double);
       void volumeChanged(double,int,bool);
       void volumePressed();
       void volumeReleased();

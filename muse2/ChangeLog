@@ -1,3 +1,6 @@
+04.10.2012:
+         - Added Gain knob on channel strip for audio tracks (rj)
+         - Added descriptive tooltips for midi parameters in midi track info (rj)
 03.10.2012:
          - Changed WaveTrack and AudioInput to create mono tracks, AudioInputs
            are also no longer muted upon creation (rj)

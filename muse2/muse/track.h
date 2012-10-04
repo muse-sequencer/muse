@@ -351,6 +351,7 @@ class AudioTrack : public Track {
       bool _sendMetronome;
       AutomationType _automationType;
       Pipeline* _efxPipe;
+      double _gain;
       void internal_assign(const Track&, int flags);
 
    protected:
@@ -421,6 +422,8 @@ class AudioTrack : public Track {
       void setVolume(double val);
       double pan() const;
       void setPan(double val);
+      double gain() const;
+      void setGain(double val);
 
       bool prefader() const              { return _prefader; }
       double auxSend(int idx) const;

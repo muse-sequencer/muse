@@ -40,6 +40,7 @@
 #include "dssihost.h"
 #include "app.h"
 #include "controlfifo.h"
+#include "fastlog.h"
 
 namespace MusECore {
 
@@ -123,6 +124,7 @@ AudioTrack::AudioTrack(TrackType t)
       bufferPos = INT_MAX;
       
       setVolume(1.0);
+      _gain = 1.0;
       }
 
 AudioTrack::AudioTrack(const AudioTrack& t, int flags)
@@ -802,6 +804,24 @@ void AudioTrack::setPan(double val)
       }
 
 //---------------------------------------------------------
+//   pan
+//---------------------------------------------------------
+
+double AudioTrack::gain() const
+      {
+        return _gain;
+      }
+
+//---------------------------------------------------------
+//   setPan
+//---------------------------------------------------------
+
+void AudioTrack::setGain(double val)
+      {
+        _gain = val;
+      }
+
+//---------------------------------------------------------
 //   pluginCtrlVal
 //---------------------------------------------------------
 
@@ -1084,6 +1104,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       xml.intTag(level, "prefader", prefader());
       xml.intTag(level, "sendMetronome", sendMetronome());
       xml.intTag(level, "automation", int(automationType()));
+      xml.floatTag(level, "gain", _gain);
       if (hasAuxSend()) {
             int naux = MusEGlobal::song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
@@ -1167,6 +1188,8 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             _prefader = xml.parseInt();
       else if (tag == "sendMetronome")
             _sendMetronome = xml.parseInt();
+      else if (tag == "gain")
+            _gain = xml.parseFloat();
       else if (tag == "automation")
             setAutomationType(AutomationType(xml.parseInt()));
       else if (tag == "controller") {

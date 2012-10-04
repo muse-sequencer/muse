@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>93</width>
+    <width>94</width>
     <height>417</height>
    </rect>
   </property>
@@ -284,6 +284,9 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="toolTip">
+      <string>Transpose notes up or down</string>
+     </property>
      <property name="text">
       <string>Transp.</string>
      </property>
@@ -324,6 +327,9 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Offset playback of notes before or after actual note</string>
      </property>
      <property name="text">
       <string>Delay</string>
@@ -368,6 +374,9 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Change note length in percent of actual length</string>
      </property>
      <property name="text">
       <string>Length</string>
@@ -416,6 +425,9 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add or substract velocity to notes on track.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Since the midi note range is 0-127 this &lt;br/&gt;might mean that the notes do not reach &lt;br/&gt;the combined velocity, note + Velocity.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Velocity</string>
      </property>
@@ -462,6 +474,9 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Compress the notes velocity range, in percent of actual velocity</string>
      </property>
      <property name="text">
       <string>Compr.</string>
