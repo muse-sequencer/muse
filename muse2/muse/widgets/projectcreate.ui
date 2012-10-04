@@ -151,7 +151,7 @@
      <item>
       <widget class="QCheckBox" name="createFolderCheckbox">
        <property name="text">
-        <string>Create project folder (recommended for audio projects)</string>
+        <string>&amp;Create project folder (recommended for audio projects)</string>
        </property>
       </widget>
      </item>
@@ -576,6 +576,9 @@
          </disabled>
         </palette>
        </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -624,15 +627,18 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>projectNameEdit</tabstop>
   <tabstop>templateCheckBox</tabstop>
+  <tabstop>winStateCheckbox</tabstop>
   <tabstop>projectFileTypeCB</tabstop>
   <tabstop>createFolderCheckbox</tabstop>
   <tabstop>storageDirEdit</tabstop>
   <tabstop>browseDirButton</tabstop>
+  <tabstop>restorePathButton</tabstop>
   <tabstop>commentEdit</tabstop>
   <tabstop>buttonBox</tabstop>
-  <tabstop>projDirLineEdit</tabstop>
   <tabstop>projDirToolButton</tabstop>
+  <tabstop>projDirLineEdit</tabstop>
  </tabstops>
  <resources/>
  <connections>
