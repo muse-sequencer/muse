@@ -4,7 +4,7 @@
 //  $Id: midi.h,v 1.4.2.2 2009/11/09 20:28:28 terminator356 Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011-2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -58,8 +58,37 @@ enum {
       ME_SENSE       = 0xfe
       };
 
-#define ME_TIMESIG      0x58
-
+//--------------------------------------      
+// Recognized / transmitted  meta events:
+//--------------------------------------      
+enum {
+      ME_META_TEXT_0_SEQUENCE_NUMBER = 0x00,
+      ME_META_TEXT_1_COMMENT = 0x01,
+      ME_META_TEXT_2_COPYRIGHT = 0x02,
+      ME_META_TEXT_3_TRACK_NAME = 0x03,
+      ME_META_TEXT_4_INSTRUMENT_NAME = 0x04,
+      ME_META_TEXT_5_LYRIC = 0x05,
+      ME_META_TEXT_6_MARKER = 0x06,
+      ME_META_TEXT_7_CUE_POINT = 0x07,
+      ME_META_TEXT_8 = 0x08,
+      ME_META_TEXT_9_DEVICE_NAME = 0x09,
+      ME_META_TEXT_A = 0x0a,
+      ME_META_TEXT_B = 0x0b,
+      ME_META_TEXT_C = 0x0c,
+      ME_META_TEXT_D = 0x0d,
+      ME_META_TEXT_E = 0x0e,
+      ME_META_TEXT_F_TRACK_COMMENT = 0x0f,
+      ME_META_CHANNEL_CHANGE = 0x20,
+      ME_META_PORT_CHANGE = 0x21,
+      ME_META_END_OF_TRACK = 0x2f,
+      ME_META_SET_TEMPO = 0x51,
+      ME_META_SMPTE_OFFSET = 0x54,
+      ME_META_TIME_SIGNATURE = 0x58,
+      ME_META_KEY_SIGNATURE = 0x59,
+      ME_META_SEQ_SPECIFIC_1 = 0x74,
+      ME_META_SEQ_SPECIFIC_2 = 0x7f
+};
+      
 extern const unsigned char gmOnMsg[];
 
 extern const unsigned char gsOnMsg[];

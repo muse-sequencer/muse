@@ -1,6 +1,32 @@
 <?xml version="1.0"?>
 <muse version="1.0">
   <MidiInstrument name="Yamaha-S90">
+    <SysEx name="Master 0">
+      <comment>Master number 0 select</comment>
+      <data>0x43 0x10 0x6b 0xa 0x0 0x0 0x0</data>
+      </SysEx>
+    <SysEx name="SeqPlay">
+      <comment>Switch to SeqPlay Mode</comment>
+      <data>0x43 0x10 0x6b 0xa 0x0 0x1 0x3</data>
+      </SysEx>
+    <SysEx name="Local off">
+      <comment>Local Off</comment>
+      <data>0x43 0x10 0x6b 0x0 0x0 0x9 0x0</data>
+      </SysEx>
+    <Init>
+      <!-- Master number 0 select -->
+      <event tick="0" type="2" datalen="7">
+          0x43 0x10 0x6b 0xa 0x0 0x0 0x0
+        </event>
+      <!-- Switch to SeqPlay Mode -->
+      <event tick="386" type="2" datalen="7">
+          0x43 0x10 0x6b 0xa 0x0 0x1 0x3
+        </event>
+      <!-- Local Off -->
+      <event tick="386" type="2" datalen="7">
+          0x43 0x10 0x6b 0x0 0x0 0x9 0x0
+        </event>
+      </Init>
     <PatchGroup name="PRE1">
       <Patch name="3LayerS700" hbank="63" lbank="0" prog="0" />
       <Patch name="Soft Touch" hbank="63" lbank="0" prog="1" />

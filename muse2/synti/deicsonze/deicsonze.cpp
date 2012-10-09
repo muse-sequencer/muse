@@ -3708,7 +3708,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
 //   getPatchName
 //---------------------------------------------------------
 
-const char* DeicsOnze::getPatchName(int ch, int val, int) const {
+const char* DeicsOnze::getPatchName(int ch, int val, bool) const {
   if(_global.channel[ch].isEnable) {
     Preset* p_preset;
     int hbank = (val & 0xff0000) >> 16;

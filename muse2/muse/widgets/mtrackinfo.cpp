@@ -407,7 +407,7 @@ void MidiTrackInfo::heartBeat()
         else
         {
           MusECore::MidiInstrument* instr = mp->instrument();
-          QString name = instr->getPatchName(outChannel, nprogram, MusEGlobal::song->mtype(), track->isDrumTrack());
+          QString name = instr->getPatchName(outChannel, nprogram, track->isDrumTrack());
           if(name.isEmpty())
           {
             const QString n("???");
@@ -448,7 +448,7 @@ void MidiTrackInfo::heartBeat()
               //else 
               //{
                     MusECore::MidiInstrument* instr = mp->instrument();
-                    QString name = instr->getPatchName(outChannel, program, MusEGlobal::song->mtype(), track->isDrumTrack());
+                    QString name = instr->getPatchName(outChannel, program, track->isDrumTrack());
                     if(iPatch->text() != name)
                       iPatch->setText(name);
   
@@ -827,7 +827,7 @@ void MidiTrackInfo::iProgHBankChanged()
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
       
       MusECore::MidiInstrument* instr = mp->instrument();
-      iPatch->setText(instr->getPatchName(channel, program, MusEGlobal::song->mtype(), track->isDrumTrack()));
+      iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
 //      updateTrackInfo();
       }
 
@@ -905,7 +905,7 @@ void MidiTrackInfo::iProgLBankChanged()
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
       
       MusECore::MidiInstrument* instr = mp->instrument();
-      iPatch->setText(instr->getPatchName(channel, program, MusEGlobal::song->mtype(), track->isDrumTrack()));
+      iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
 //      updateTrackInfo();
       }
 
@@ -983,7 +983,7 @@ void MidiTrackInfo::iProgramChanged()
         MusEGlobal::audio->msgPlayMidiEvent(&ev);
         
         MusECore::MidiInstrument* instr = mp->instrument();
-        iPatch->setText(instr->getPatchName(channel, program, MusEGlobal::song->mtype(), track->isDrumTrack()));
+        iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
       }
         
 //      updateTrackInfo();
@@ -1150,7 +1150,7 @@ void MidiTrackInfo::instrPopup()
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
       PopupMenu* pup = new PopupMenu(true);
       
-      instr->populatePatchPopup(pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
+      instr->populatePatchPopup(pup, channel, track->isDrumTrack());
 
       if(pup->actions().count() == 0)
       {
@@ -1479,7 +1479,7 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
           else
           {
             MusECore::MidiInstrument* instr = mp->instrument();
-            iPatch->setText(instr->getPatchName(outChannel, nprogram, MusEGlobal::song->mtype(), track->isDrumTrack()));
+            iPatch->setText(instr->getPatchName(outChannel, nprogram, track->isDrumTrack()));
           }         
         }
         else
@@ -1495,7 +1495,7 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
               //else 
               //{
                     MusECore::MidiInstrument* instr = mp->instrument();
-                    iPatch->setText(instr->getPatchName(outChannel, program, MusEGlobal::song->mtype(), track->isDrumTrack()));
+                    iPatch->setText(instr->getPatchName(outChannel, program, track->isDrumTrack()));
 
                     int hb = ((program >> 16) & 0xff) + 1;
                     if (hb == 0x100)

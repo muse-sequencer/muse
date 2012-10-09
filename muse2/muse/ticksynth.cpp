@@ -100,9 +100,8 @@ class MetronomeSynthIF : public SynthIF
       virtual int totalOutChannels() const { return 1; }
       virtual int totalInChannels() const { return 0; }
       virtual void deactivate3() {}
-      virtual const char* getPatchName(int, int, int, bool) const { return ""; }
-      virtual const char* getPatchName(int, int, MType, bool) { return ""; }
-      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool) {};
+      virtual const char* getPatchName(int, int, bool) { return ""; }
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) {};
       virtual void write(int, Xml&) const {}
       virtual float getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, float) {}

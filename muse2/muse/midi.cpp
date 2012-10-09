@@ -4,7 +4,7 @@
 //  $Id: midi.cpp,v 1.43.2.22 2009/11/09 20:28:28 terminator356 Exp $
 //
 //  (C) Copyright 1999/2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011-2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -71,6 +71,7 @@ const unsigned int  mmcStopMsgLen = sizeof(mmcStopMsg);
 const unsigned int  mmcLocateMsgLen = sizeof(mmcLocateMsg);
 
 #define CALC_TICK(the_tick) lrintf((float(the_tick) * float(MusEGlobal::config.division) + float(div/2)) / float(div));
+
 /*---------------------------------------------------------
  *    midi_meta_name
  *---------------------------------------------------------*/
@@ -79,22 +80,22 @@ QString midiMetaName(int meta)
       {
       const char* s = "";
       switch (meta) {
-            case 0:     s = "Sequence Number"; break;
-            case 1:     s = "Text Event"; break;
-            case 2:     s = "Copyright"; break;
-            case 3:     s = "Sequence/Track Name"; break;
-            case 4:     s = "Instrument Name"; break;
-            case 5:     s = "Lyric"; break;
-            case 6:     s = "Marker"; break;
-            case 7:     s = "Cue Point"; break;
-            case 8:
-            case 9:
-            case 0x0a:
-            case 0x0b:
-            case 0x0c:
-            case 0x0d:
-            case 0x0e:
-            case 0x0f:  s = "Text"; break;
+            case 0:     s = "Text 0: Sequence Number"; break;
+            case 1:     s = "Text 1: Track comment"; break;
+            case 2:     s = "Text 2: Copyright"; break;
+            case 3:     s = "Text 3: Sequence/Track Name"; break;
+            case 4:     s = "Text 4: Instrument Name"; break;
+            case 5:     s = "Text 5: Lyric"; break;
+            case 6:     s = "Text 6: Marker"; break;
+            case 7:     s = "Text 7: Cue Point"; break;
+            case 8:     s = "Text 8"; break; 
+            case 9:     s = "Text 9: Device Name"; break; 
+            case 0x0a:  s = "Text A"; break;
+            case 0x0b:  s = "Text B"; break;
+            case 0x0c:  s = "Text C"; break;
+            case 0x0d:  s = "Text D"; break;
+            case 0x0e:  s = "Text E"; break;
+            case 0x0f:  s = "Text F"; break;
             case 0x20:  s = "Channel Prefix"; break;
             case 0x21:  s = "Port Change"; break;
             case 0x2f:  s = "End of Track"; break;
@@ -411,31 +412,30 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                         {
                         const unsigned char* data = ev.data();
                         switch (ev.dataA()) {
-                              case 0x01: // Text
+                              case ME_META_TEXT_1_COMMENT: // Text
                                     if (track->comment().isEmpty())
                                           track->setComment(QString((const char*)data));
                                     else
                                           track->setComment(track->comment() + "\n" + QString((const char*)data));
                                     break;
-                              case 0x03: // Sequence-/TrackName
+                              case ME_META_TEXT_3_TRACK_NAME: // Sequence-/TrackName
                                     track->setName(QString((char*)data));
                                     break;
-                              case 0x6:   // Marker
+                              case ME_META_TEXT_6_MARKER:   // Marker
                                     {
                                     unsigned ltick  = CALC_TICK(tick);
                                     MusEGlobal::song->addMarker(QString((const char*)(data)), ltick, false);
                                     }
                                     break;
-                              case 0x5:   // Lyrics
-                              case 0x8:   // text
-                              case 0x9:
-                              case 0xa:
+                              case ME_META_TEXT_5_LYRIC:   // Lyrics
+                              case ME_META_TEXT_8:   // text
+                              case ME_META_TEXT_9_DEVICE_NAME:
+                              case ME_META_TEXT_A:
                                     break;
-
-                              case 0x0f:        // Track Comment
+                              case ME_META_TEXT_F_TRACK_COMMENT:        // Track Comment
                                     track->setComment(QString((char*)data));
                                     break;
-                              case 0x51:        // Tempo
+                              case ME_META_SET_TEMPO:        // Tempo
                                     {
                                     unsigned tempo = data[2] + (data[1] << 8) + (data[0] <<16);
                                     unsigned ltick  = CALC_TICK(tick);
@@ -443,7 +443,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     MusEGlobal::tempomap.addTempo(ltick, tempo);
                                     }
                                     break;
-                              case 0x58:        // Time Signature
+                              case ME_META_TIME_SIGNATURE:        // Time Signature
                                     {
                                     int timesig_z = data[0];
                                     int n = data[1];
@@ -454,10 +454,13 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     AL::sigmap.add(ltick, AL::TimeSignature(timesig_z, timesig_n));
                                     }
                                     break;
-                              case 0x59:  // Key Signature
+                              case ME_META_KEY_SIGNATURE:  // Key Signature
                                     break;
-                              default:
-                                    printf("unknown Meta 0x%x %d\n", ev.dataA(), ev.dataA());
+                              default: 
+                                    printf("buildMidiEventList: unknown Meta 0x%x %d unabsorbed, adding instead to track:%s\n", ev.dataA(), ev.dataA(), track->name().toLatin1().constData());
+                                    e.setType(Meta);
+                                    e.setA(ev.dataA());
+                                    e.setData(ev.data(), ev.len());
                               }
                         }
                         break;
@@ -631,46 +634,6 @@ void Audio::initDevices()
                         md->putEvent(ev);
                         }
                   activePorts[i] = false;  // no standard initialization
-                  }
-            }
-      //
-      // First all ports are initialized to GM and then are changed
-      // to XG/GS in order to prevent that devices with more than one
-      // port, e.g. Korg NS5R, toggle between GM and XG/GS several times.
-      //
-      // Standard initialization...
-      for (int i = 0; i < MIDI_PORTS; ++i) {
-            if (!activePorts[i])
-                  continue;
-            MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
-            switch(MusEGlobal::song->mtype()) {
-                  case MT_GS:
-                  case MT_UNKNOWN:
-                        break;
-                  case MT_GM:
-                  case MT_XG:
-                        port->sendGmOn();
-                        break;
-                  }
-            }
-      for (int i = 0; i < MIDI_PORTS; ++i) {
-            if (!activePorts[i])
-                  continue;
-            MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
-            switch(MusEGlobal::song->mtype()) {
-                  case MT_UNKNOWN:
-                        break;
-                  case MT_GM:
-                        port->sendGmInitValues();
-                        break;
-                  case MT_GS:
-                        port->sendGsOn();
-                        port->sendGsInitValues();
-                        break;
-                  case MT_XG:
-                        port->sendXgOn();
-                        port->sendXgInitValues();
-                        break;
                   }
             }
       }

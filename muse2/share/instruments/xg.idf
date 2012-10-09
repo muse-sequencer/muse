@@ -1,19 +1,21 @@
 <?xml version="1.0"?>
 <muse version="1.0">
   <MidiInstrument name="XG" nullparam="32639">
+    <SysEx name="GM on">
+      <comment>Switch General Midi mode on</comment>
+      <data>7e 7f 09 01</data>
+      </SysEx>
     <SysEx name="XG on">
       <comment>Switch XG mode on</comment>
       <data>0x43 0x10 0x4c 0x00 0x00 0x7e 0x00</data>
       </SysEx>
     <Init>
-      <!-- 
         <event tick="0" type="2" datalen="4"> 
             7e 7f 09 01           
             </event>
-        <event tick="0" type="2" datalen="7">
+        <event tick="250" type="2" datalen="7">
             43 10 4c 00 00 7e 00           
             </event>
-            -->      
       </Init>
     <PatchGroup name="Piano">
       <Patch name="Grand Piano" hbank="0" lbank="0" prog="0" />

@@ -426,8 +426,8 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                   event.type = SND_SEQ_EVENT_STOP;
                   break;
             default:
-                  printf("MidiAlsaDevice::putEvent(): event type %d not implemented\n",
-                     e.type());
+                  if(MusEGlobal::debugMsg)
+                    printf("MidiAlsaDevice::putEvent(): event type %d not implemented\n", e.type());
                   return true;
             }
       return putEvent(&event);

@@ -823,7 +823,7 @@ void EditCtrlDialog::updatePatch()
       int port              = track->outPort();
       int channel           = track->outChannel();
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
-      patchName->setText(instr->getPatchName(channel, val, MusEGlobal::song->mtype(), track->isDrumTrack()));
+      patchName->setText(instr->getPatchName(channel, val, track->isDrumTrack()));
 
       int hb = ((val >> 16) & 0xff) + 1;
       if (hb == 0x100)
@@ -860,7 +860,7 @@ void EditCtrlDialog::instrPopup()
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
       
       MusEGui::PopupMenu* pup = new MusEGui::PopupMenu(this);
-      instr->populatePatchPopup(pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
+      instr->populatePatchPopup(pup, channel, track->isDrumTrack());
 
       if(pup->actions().count() == 0)
       {

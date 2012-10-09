@@ -153,9 +153,8 @@ class SynthIF {
       virtual int totalOutChannels() const = 0;
       virtual int totalInChannels() const = 0;
       virtual void deactivate3() = 0;
-      virtual const char* getPatchName(int, int, int, bool) const = 0;
-      virtual const char* getPatchName(int, int, MType, bool) = 0;
-      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool) = 0;
+      virtual const char* getPatchName(int, int, bool) = 0;
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
       virtual float getParameter(unsigned long idx) const = 0;        
       virtual void setParameter(unsigned long idx, float value) = 0;  
@@ -228,12 +227,12 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synth() const          { return synthesizer; }
       virtual bool isSynti() const  { return true; }
 
-      virtual QString getPatchName(int ch, int prog, MType t, bool dr) {
-            return _sif->getPatchName(ch, prog, t, dr);
+      virtual QString getPatchName(int ch, int prog, bool dr) {
+            return _sif->getPatchName(ch, prog, dr);
             }
             
-      virtual void populatePatchPopup(MusEGui::PopupMenu* m, int i, MType t, bool d) {
-            _sif->populatePatchPopup(m, i, t, d);
+      virtual void populatePatchPopup(MusEGui::PopupMenu* m, int i, bool d) {
+            _sif->populatePatchPopup(m, i, d);
             }
       
       void currentProg(unsigned long *prog, unsigned long *bankL, unsigned long *bankH);
@@ -316,9 +315,8 @@ class MessSynthIF : public SynthIF {
       virtual int totalOutChannels() const;
       virtual int totalInChannels() const;
       virtual void deactivate3();
-      virtual const char* getPatchName(int, int, int, bool) const { return ""; }
-      virtual const char* getPatchName(int, int, MType, bool);
-      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);
+      virtual const char* getPatchName(int, int, bool);  
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       virtual void write(int level, Xml& xml) const;
       virtual float getParameter(unsigned long) const { return 0.0; }
       virtual void setParameter(unsigned long, float) {}

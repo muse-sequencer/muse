@@ -4,6 +4,7 @@
 //  $Id: midifile.cpp,v 1.17 2004/06/18 08:36:43 wschweer Exp $
 //
 //  (C) Copyright 1999-2003 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -75,14 +76,16 @@ MidiFile::MidiFile(FILE* f)
       {
       fp        = f;
       curPos    = 0;
-      _mtype    = MT_GM; // MT_UNKNOWN;
+      lastMtype = MT_UNKNOWN;
       _error    = MF_NO_ERROR;
       _tracks   = new MidiFileTrackList;
+      _usedPortMap = new MidiFilePortMap;
       }
 
 MidiFile::~MidiFile()
       {
       delete _tracks;
+      delete _usedPortMap;
       }
 
 //---------------------------------------------------------
@@ -243,11 +246,14 @@ bool MidiFile::readTrack(MidiFileTrack* t)
 
       int port    = 0;
       int channel = 0;
-
+      
       for (;;) {
             MidiPlayEvent event;
             lastport    = -1;
             lastchannel = -1;
+            lastMtype = MT_UNKNOWN;
+            lastInstrName.clear();
+            lastDeviceName.clear();
 
             int rv = readEvent(&event, t);
             if (lastport != -1) {
@@ -264,6 +270,67 @@ bool MidiFile::readTrack(MidiFileTrack* t)
                         channel = 0;
                         }
                   }
+                
+            if(!lastDeviceName.isEmpty())
+            {
+              iMidiFilePort iup = _usedPortMap->begin();
+              for( ; iup != _usedPortMap->end(); ++iup)
+              {
+                if(iup->second._subst4DevName == lastDeviceName)
+                {
+                  port = iup->first;
+                  break;
+                }
+              }
+              if(iup == _usedPortMap->end())
+              {
+                MidiDevice* md = MusEGlobal::midiDevices.find(lastDeviceName);
+                if(md)
+                {
+                  int pn = md->midiPort();
+                  if(pn != -1)
+                    port = pn;
+                  else
+                  {
+                    for(int i = 0; i < MIDI_PORTS; ++i)
+                    {
+                      iMidiFilePort ip = _usedPortMap->find(i);
+                      MidiPort* mp = &MusEGlobal::midiPorts[i];
+                      if(!mp->device() && (ip == _usedPortMap->end() || ip->second._subst4DevName.isEmpty()))
+                      {
+                        //mp->setMidiDevice(); // No, done in importMidi
+                        //msgSetMidiDevice(
+                        port = i;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            iMidiFilePort iup = _usedPortMap->find(port);
+            if(iup == _usedPortMap->end())
+            {
+              MidiFilePort up;
+              if(lastMtype != MT_UNKNOWN)
+                up._midiType = lastMtype;
+              if(!lastInstrName.isEmpty())
+                up._instrName = lastInstrName;
+              if(!lastDeviceName.isEmpty())
+                up._subst4DevName = lastDeviceName;
+              _usedPortMap->insert(std::pair<int, MidiFilePort>(port, up));
+            }
+            else
+            {
+              if(lastMtype != MT_UNKNOWN)
+                iup->second._midiType = lastMtype;
+              if(!lastInstrName.isEmpty())
+                iup->second._instrName = lastInstrName;
+              if(!lastDeviceName.isEmpty())
+                iup->second._subst4DevName = lastDeviceName;
+            }
+            
             if (rv == 0)
                   break;
             else if (rv == -1)
@@ -278,6 +345,7 @@ bool MidiFile::readTrack(MidiFileTrack* t)
                   channel = event.channel();
             el->add(event);
             }
+   
       int end = curPos;
       if (end != endPos) {
             printf("MidiFile::readTrack(): TRACKLEN does not fit %d+%d != %d, %d too much\n",
@@ -332,6 +400,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                         printf("readEvent: error 3\n");
                         return -2;
                         }
+                  // Buffer can be deleted by caller's event when it goes out of scope.
                   buffer = new unsigned char[len];
                   if (read(buffer, len)) {
                         printf("readEvent: error 4\n");
@@ -347,24 +416,22 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                   event->setType(ME_SYSEX);
                   event->setData(buffer, len);
                   if (((unsigned)len == gmOnMsgLen) && memcmp(buffer, gmOnMsg, gmOnMsgLen) == 0) {
-                        setMType(MT_GM);
+                        lastMtype = MT_GM;
                         return -1;
                         }
                   if (((unsigned)len == gsOnMsgLen) && memcmp(buffer, gsOnMsg, gsOnMsgLen) == 0) {
-                        setMType(MT_GS);
+                        lastMtype = MT_GS;
                         return -1;
                         }
                   if (((unsigned)len == xgOnMsgLen) && memcmp(buffer, xgOnMsg, xgOnMsgLen) == 0) {
-                        setMType(MT_XG);
+                        lastMtype = MT_XG;
                         return -1;
                         }
                   if (buffer[0] == 0x41) {   // Roland
-                        if (mtype() != MT_UNKNOWN)
-                              setMType(MT_GS);
+                              lastMtype = MT_GS;
                         }
                   else if (buffer[0] == 0x43) {    // Yamaha
-                        if (mtype() == MT_UNKNOWN || mtype() == MT_GM)
-                              setMType(MT_XG);
+                              lastMtype = MT_XG;
                         int type   = buffer[1] & 0xf0;
                         switch (type) {
                               case 0x00:  // bulk dump
@@ -384,7 +451,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                                           // 5 - DRUM 4
                                           printf("xg set part mode channel %d to %d\n", buffer[4]+1, buffer[6]);
                                           if (buffer[6] != 0)
-                                                t->isDrumTrack = true;
+                                                t->_isDrumTrack = true;
                                           }
                                     break;
                               case 0x20:
@@ -398,6 +465,8 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                                     return -1;
                               }
                         }
+                  if(MusEGlobal::debugMsg)
+                    printf("MidiFile::readEvent: unknown Sysex 0x%02x unabsorbed, passing thru intead\n", me & 0xff);
                   return 3;
                   }
             if (me == 0xff) {
@@ -424,18 +493,28 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                         }
                   buffer[len] = 0;
                   switch(type) {
-                        case 0x21:        // switch port
+                        case ME_META_TEXT_9_DEVICE_NAME:        // device name
+                                lastDeviceName = QString((const char*)buffer);
+                                delete[] buffer;
+                                return -1;
+                        case ME_META_TEXT_4_INSTRUMENT_NAME:        // instrument name
+                                lastInstrName = QString((const char*)buffer);
+                                delete[] buffer;
+                                return -1;
+                        case ME_META_PORT_CHANGE:        // switch port
                               lastport = buffer[0];
                               delete[] buffer;
                               return -1;
-                        case 0x20:        // switch channel
+                        case ME_META_CHANNEL_CHANGE:        // switch channel
                               lastchannel = buffer[0];
                               delete[] buffer;
                               return -1;
-                        case 0x2f:        // End of Track
+                        case ME_META_END_OF_TRACK:        // End of Track
                               delete[] buffer;
                               return 0;
                         default:
+                              if(MusEGlobal::debugMsg)
+                                printf("MidiFile::readEvent: unknown Meta 0x%x %d unabsorbed, passing thru instead\n", type, type);
                               event->setType(ME_META);
                               event->setData(buffer, len+1);
                               event->setA(type);

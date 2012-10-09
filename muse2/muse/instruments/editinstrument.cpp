@@ -79,6 +79,14 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       toolBar->addAction(QWhatsThis::createAction(this));
       Help->addAction(QWhatsThis::createAction(this));
 
+      // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
+      checkBoxGM->setEnabled(false);
+      checkBoxGS->setEnabled(false);
+      checkBoxXG->setEnabled(false);
+      checkBoxGM->setVisible(false);
+      checkBoxGS->setVisible(false);
+      checkBoxXG->setVisible(false);
+        
       // populate instrument list
       // Populate common controller list.
       for(int i = 0; i < 128; ++i)
@@ -1405,9 +1413,10 @@ void EditInstrument::patchChanged()
         spinBoxLBank->setEnabled(false);
         spinBoxProgram->setEnabled(false);
         checkBoxDrum->setEnabled(false);
-        checkBoxGM->setEnabled(false);
-        checkBoxGS->setEnabled(false);
-        checkBoxXG->setEnabled(false);
+        // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
+        //checkBoxGM->setEnabled(false);
+        //checkBoxGS->setEnabled(false);
+        //checkBoxXG->setEnabled(false);
         return;
       }
       
@@ -1420,9 +1429,10 @@ void EditInstrument::patchChanged()
         spinBoxLBank->setEnabled(true);
         spinBoxProgram->setEnabled(true);
         checkBoxDrum->setEnabled(true);
-        checkBoxGM->setEnabled(true);
-        checkBoxGS->setEnabled(true);
-        checkBoxXG->setEnabled(true);
+        // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
+        //checkBoxGM->setEnabled(true);
+        //checkBoxGS->setEnabled(true);
+        //checkBoxXG->setEnabled(true);
         
         int hb = ((p->hbank + 1) & 0xff);
         int lb = ((p->lbank + 1) & 0xff);
@@ -1431,9 +1441,10 @@ void EditInstrument::patchChanged()
         spinBoxLBank->setValue(lb);
         spinBoxProgram->setValue(pr);
         checkBoxDrum->setChecked(p->drum);
-        checkBoxGM->setChecked(p->typ & 1);
-        checkBoxGS->setChecked(p->typ & 2);
-        checkBoxXG->setChecked(p->typ & 4);
+        // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
+        //checkBoxGM->setChecked(p->typ & 1);
+        //checkBoxGS->setChecked(p->typ & 2);
+        //checkBoxXG->setChecked(p->typ & 4);
       }  
       else
       // The item is a patch group item.
@@ -1443,9 +1454,10 @@ void EditInstrument::patchChanged()
         spinBoxLBank->setEnabled(false);
         spinBoxProgram->setEnabled(false);
         checkBoxDrum->setEnabled(false);
-        checkBoxGM->setEnabled(false);
-        checkBoxGS->setEnabled(false);
-        checkBoxXG->setEnabled(false);
+        // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
+        //checkBoxGM->setEnabled(false);
+        //checkBoxGS->setEnabled(false);
+        //checkBoxXG->setEnabled(false);
       }  
     }
 
@@ -2550,7 +2562,7 @@ void EditInstrument::newPatchClicked()
       patch->hbank = hb;
       patch->lbank = lb;
       patch->prog = prg;
-      patch->typ = -1;                     
+      //patch->typ = -1;                     
       patch->drum = false;
       
       if(selpatch)
@@ -2558,7 +2570,7 @@ void EditInstrument::newPatchClicked()
         hb  = selpatch->hbank;
         lb  = selpatch->lbank;
         prg = selpatch->prog;
-        patch->typ = selpatch->typ;                     
+        //patch->typ = selpatch->typ;                     
         patch->drum = selpatch->drum;                     
       }
       
@@ -2638,9 +2650,10 @@ void EditInstrument::newPatchClicked()
       spinBoxLBank->setEnabled(true);
       spinBoxProgram->setEnabled(true);
       checkBoxDrum->setEnabled(true);
-      checkBoxGM->setEnabled(true);
-      checkBoxGS->setEnabled(true);
-      checkBoxXG->setEnabled(true);
+      // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
+      //checkBoxGM->setEnabled(true);
+      //checkBoxGS->setEnabled(true);
+      //checkBoxXG->setEnabled(true);
       
       oldPatchItem = 0;
       patchChanged();
@@ -2706,9 +2719,10 @@ void EditInstrument::newGroupClicked()
       spinBoxLBank->setEnabled(false);
       spinBoxProgram->setEnabled(false);
       checkBoxDrum->setEnabled(false);
-      checkBoxGM->setEnabled(false);
-      checkBoxGS->setEnabled(false);
-      checkBoxXG->setEnabled(false);
+      // REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
+      //checkBoxGM->setEnabled(false);
+      //checkBoxGS->setEnabled(false);
+      //checkBoxXG->setEnabled(false);
       
       workingInstrument.setDirty(true);
       }
@@ -2957,23 +2971,24 @@ void EditInstrument::updatePatch(MusECore::MidiInstrument* instrument, MusECore:
             }
       
       // there is no logical xor in c++
-      bool a = p->typ & 1;
-      bool b = p->typ & 2;
-      bool c = p->typ & 4;
-      bool aa = checkBoxGM->isChecked();
-      bool bb = checkBoxGS->isChecked();
-      bool cc = checkBoxXG->isChecked();
-      if ((a ^ aa) || (b ^ bb) || (c ^ cc)) {
-            int value = 0;
-            if (checkBoxGM->isChecked())
-                  value |= 1;
-            if (checkBoxGS->isChecked())
-                  value |= 2;
-            if (checkBoxXG->isChecked())
-                  value |= 4;
-            p->typ = value;
-            instrument->setDirty(true);
-            }
+// REMOVE Tim. OBSOLETE. When gui boxes are finally removed.
+//       bool a = p->typ & 1;
+//       bool b = p->typ & 2;
+//       bool c = p->typ & 4;
+//       bool aa = checkBoxGM->isChecked();
+//       bool bb = checkBoxGS->isChecked();
+//       bool cc = checkBoxXG->isChecked();
+//       if ((a ^ aa) || (b ^ bb) || (c ^ cc)) {
+//             int value = 0;
+//             if (checkBoxGM->isChecked())
+//                   value |= 1;
+//             if (checkBoxGS->isChecked())
+//                   value |= 2;
+//             if (checkBoxXG->isChecked())
+//                   value |= 4;
+//             p->typ = value;
+//             instrument->setDirty(true);
+//             }
       }
 
 //---------------------------------------------------------

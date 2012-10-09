@@ -943,12 +943,7 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             if (type == MusECore::CTRL_PROGRAM)
             {
               if (lastpv == MusECore::CTRL_VAL_UNKNOWN)
-              {
-                if (MusEGlobal::song->mtype() == MT_GM)
-                  event.setB(0xffff00 | (nval - 1));
-                else  
-                  event.setB(nval - 1);
-              }
+                event.setB(nval - 1);
               else  
                 event.setB((lastpv & 0xffff00) | (nval - 1));
             }
@@ -991,11 +986,7 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                   if (type == MusECore::CTRL_PROGRAM)
                   {
                     if (event.dataB() == MusECore::CTRL_VAL_UNKNOWN)
-                    {
                       --nval;
-                      if(MusEGlobal::song->mtype() == MT_GM)
-                        nval |= 0xffff00;
-                    }
                     else  
                       nval = (event.dataB() & 0xffff00) | (nval - 1);
                   }
@@ -1066,11 +1057,7 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
                         if(type == MusECore::CTRL_PROGRAM)
                         {
                           if(event.dataB() == MusECore::CTRL_VAL_UNKNOWN)
-                          {
                             --nval;
-                            if(MusEGlobal::song->mtype() == MT_GM)
-                              nval |= 0xffff00;
-                          }
                           else  
                             nval = (event.dataB() & 0xffff00) | (nval - 1);
                         }
@@ -1167,11 +1154,7 @@ void CtrlCanvas::newVal(int x1, int y)
               if(event.dataB() == MusECore::CTRL_VAL_UNKNOWN)
               {
                 if(lastpv == MusECore::CTRL_VAL_UNKNOWN)
-                {
                   --nval;
-                  if(MusEGlobal::song->mtype() == MT_GM)
-                    nval |= 0xffff00;
-                }
                 else  
                   nval = (lastpv & 0xffff00) | (nval - 1);
               }
@@ -1238,12 +1221,7 @@ void CtrlCanvas::newVal(int x1, int y)
               if(type == MusECore::CTRL_PROGRAM)
               {
                 if(lastpv == MusECore::CTRL_VAL_UNKNOWN)
-                {
-                  if(MusEGlobal::song->mtype() == MT_GM)
-                    event.setB(0xffff00 | (newval - 1));
-                  else  
-                    event.setB(newval - 1);
-                }
+                  event.setB(newval - 1);
                 else    
                   event.setB((lastpv & 0xffff00) | (newval - 1));
               }
@@ -1411,12 +1389,7 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             if(type == MusECore::CTRL_PROGRAM)
             {
               if(lastpv == MusECore::CTRL_VAL_UNKNOWN)
-              {
-                if(MusEGlobal::song->mtype() == MT_GM)
-                  event.setB(0xffff00 | (nval - 1));
-                else  
-                  event.setB(nval - 1);
-              }
+                event.setB(nval - 1);
               else  
                 event.setB((lastpv & 0xffff00) | (nval - 1));
             }
@@ -1900,7 +1873,12 @@ void CtrlCanvas::setCurDrumPitch(int instrument)
         curDrumPitch = instrument;
       else // new style drummap mode
       {
-        if (drumedit->get_instrument_map()[instrument].tracks.contains(curTrack))
+        // Crash protection by Tim. 
+        // FIXME: Still, drum list is blank, editor can't edit. Other values of instrument or curDrumPitch just crash too.
+        // Seems only with drum tracks that were created by importing a midi file (then changed to use fluidsynth device?).
+        if(instrument == -1)  curDrumPitch = -1;   
+        
+        else if (drumedit->get_instrument_map()[instrument].tracks.contains(curTrack))
           curDrumPitch = drumedit->get_instrument_map()[instrument].pitch;
         else
           curDrumPitch = -2; // this means "invalid", but not "unused"

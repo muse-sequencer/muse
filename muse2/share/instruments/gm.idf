@@ -6,6 +6,9 @@
       <data>7e 7f 09 01</data>
       </SysEx>
     <Init>
+        <event tick="0" type="2" datalen="4"> 
+            7e 7f 09 01           
+            </event>
       </Init>
     <PatchGroup name="Piano">
       <Patch name="Grand Piano" prog="0" />

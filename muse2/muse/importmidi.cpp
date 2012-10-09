@@ -4,6 +4,7 @@
 //  $Id: importmidi.cpp,v 1.26.2.10 2009/11/05 03:14:35 terminator356 Exp $
 //
 //  (C) Copyright 1999-2003 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -36,6 +37,7 @@
 #include "midi.h"
 #include "midifile.h"
 #include "midiport.h"
+#include "midiseq.h"
 #include "transport.h"
 #include "arranger.h"
 #include "mpevent.h"
@@ -117,33 +119,130 @@ bool MusE::importMidi(const QString name, bool merge)
             QMessageBox::critical(this, QString("MusE"), s);
             return rv;
             }
-      //
-      //  evaluate song Type (GM, XG, GS, unknown)
-      //
-      MType t = MusEGlobal::song->mtype();
-      if (!merge) {
-            t = mf.mtype();
-            MusEGlobal::song->setMType(t);
-            }
-      MusECore::MidiInstrument* instr = 0;
-      for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) {
-            MusECore::MidiInstrument* mi = *i;
-            if ((mi->iname() == "GM" && ((t == MT_UNKNOWN) || (t == MT_GM)))
-               || ((mi->iname() == "GS") && (t == MT_GS))
-               || ((mi->iname() == "XG") && (t == MT_XG))) {
-                  instr = mi;
-                  break;
-                  }
-            }
-      if (instr == 0) {
-            // the standard instrument files (GM, GS, XG) must be present
-            printf("no instrument, type %d\n", t);
-            abort();
-            }
-
+            
       MusECore::MidiFileTrackList* etl = mf.trackList();
       int division     = mf.division();
 
+      // Find the default instrument, we may need it later...
+      MusECore::MidiInstrument* def_instr = 0;
+      if(!MusEGlobal::config.importMidiDefaultInstr.isEmpty())
+      {
+        for(MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) 
+        {
+          if((*i)->iname() == MusEGlobal::config.importMidiDefaultInstr)   
+          {
+            def_instr = *i;
+            break;
+          }  
+        }
+      }
+          
+      //
+      // Need to set up ports and instruments first
+      //
+      
+      MusECore::MidiFilePortMap* usedPortMap = mf.usedPortMap();
+      bool dev_changed = false;
+      for(MusECore::iMidiFilePort imp = usedPortMap->begin(); imp != usedPortMap->end(); ++imp) 
+      {
+        MType midi_type = imp->second._midiType;
+        QString instr_name = MusEGlobal::config.importInstrNameMetas ? imp->second._instrName : QString();
+        MusECore::MidiInstrument* typed_instr = 0;
+        MusECore::MidiInstrument* named_instr = 0;
+        // Find a typed instrument and a named instrument, if requested
+        for(MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) 
+        {
+          MusECore::MidiInstrument* mi = *i;
+          if(midi_type != MT_UNKNOWN && midi_type == mi->midiType())
+            typed_instr = mi;
+          if(!instr_name.isEmpty() && instr_name == mi->iname())
+            named_instr = mi;
+          if((typed_instr && named_instr) || ((typed_instr && instr_name.isEmpty()) || (named_instr && midi_type == MT_UNKNOWN)))
+            break;  // Done searching
+        }
+
+        int port = imp->first;
+        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+        MusECore::MidiDevice* md = mp->device();
+        // Take care of assigning devices to empty ports here rather than in midifile.
+        //if(MusEGlobal::config.importDevNameMetas)  // TODO
+        {
+          if(!md)
+          {
+            QString dev_name = imp->second._subst4DevName;
+            md = MusEGlobal::midiDevices.find(dev_name); // Find any type of midi device - HW, synth etc.
+            if(md)
+            {
+              // TEST: Hopefully shouldn't require any routing saves/restorations as in midi port config set device name...
+              MusEGlobal::midiSeq->msgSetMidiDevice(mp, md);
+              // TEST: Hopefully can get away with this ouside the loop below...
+              //MusEGlobal::muse->changeConfig(true);     // save configuration file
+              //MusEGlobal::audio->msgUpdateSoloStates();
+              //MusEGlobal::song->update();
+              dev_changed = true;
+            }
+            else
+              printf("importMidi error: assign to empty port: device not found: %s\n", dev_name.toLatin1().constData());
+          }
+        }
+
+        MusECore::MidiInstrument* instr = 0;
+        // Priority is exact named instrument over a typed instrument.
+        // This allows a named instrument plus a typed sysex, and the name will take priority. 
+        // But it is possible that named mismatches may occur. So this named/typed order is user-selectable.
+        if(named_instr && (!typed_instr || MusEGlobal::config.importInstrNameMetas))
+        {
+          instr = named_instr;
+          if(MusEGlobal::debugMsg)
+            printf("port:%d named instrument found:%s\n",
+                    port, instr->iname().toLatin1().constData());
+        }
+        else if(typed_instr)
+        {
+        instr = typed_instr;
+        if(MusEGlobal::debugMsg)
+          printf("port:%d typed instrument found:%s\n",
+                  port, instr->iname().toLatin1().constData());
+        }
+        else if(def_instr)
+        {
+          instr = def_instr;
+          if(MusEGlobal::debugMsg)
+            printf("port:%d no named or typed instrument found. Using default:%s\n",
+                    port, instr->iname().toLatin1().constData());
+        }
+        else
+        {
+          instr = MusECore::genericMidiInstrument;
+          if(MusEGlobal::debugMsg)
+            printf("port:%d no named, typed, or default instrument found! Using:%s\n",
+                    port, instr->iname().toLatin1().constData());
+        }
+        
+        // If the instrument is one of the three standard GM, GS, or XG, mark the usedPort as "ch 10 is drums".
+        // Otherwise it's anybody's guess what channel(s) drums are on.
+        // Code is a bit HACKISH just to accomplish passing this bool value to the next stage, where tracks are created. 
+        if(instr->midiType() != MT_UNKNOWN)
+          imp->second._isStandardDrums = true;
+          
+        // Set the device's instrument - ONLY for non-synths because they provide their own. 
+        if(!md || (md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI))  
+        {
+          // this overwrites any instrument set for this port:
+          if(mp->instrument() != instr)
+            mp->setInstrument(instr);
+        }
+      }
+      
+      if(dev_changed)
+      {
+        // TEST: Hopefully can get away with this here instead of inside the loop above...
+        // TEST: Are these really necessary as in midi port config set device name?
+        MusEGlobal::muse->changeConfig(true);     // save configuration file 
+        MusEGlobal::audio->msgUpdateSoloStates(); // 
+        MusEGlobal::song->update();
+      }
+      
       //
       // create MidiTrack and copy events to ->events()
       //    - combine note on/off events
@@ -177,7 +276,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         already_processed.insert(pair<int,int>(channel, port));
                         
                         MusECore::MidiTrack* track = new MusECore::MidiTrack();
-                        if ((*t)->isDrumTrack)
+                        if ((*t)->_isDrumTrack)
                         {
                            if (MusEGlobal::config.importMidiNewStyleDrum)
                               track->setType(MusECore::Track::NEW_DRUM);
@@ -188,10 +287,8 @@ bool MusE::importMidi(const QString name, bool merge)
                         track->setOutChannel(channel);
                         track->setOutPort(port);
 
-                        MusECore::MidiPort* mport = &MusEGlobal::midiPorts[track->outPort()];
-                        // this overwrites any instrument set for this port:
-                        mport->setInstrument(instr);
-
+                        MusECore::MidiPort* mport = &MusEGlobal::midiPorts[port];
+                        //MusECore::MidiInstrument* instr = mport->instrument();
                         MusECore::EventList* mel = track->events();
                         buildMidiEventList(mel, el, track, division, first, false); // Don't do loops.
                         first = false;
@@ -199,7 +296,9 @@ bool MusE::importMidi(const QString name, bool merge)
                         // Comment Added by T356.
                         // Hmm. buildMidiEventList already takes care of this. 
                         // But it seems to work. How? Must test. 
-                        if (channel == 9 && MusEGlobal::song->mtype() != MT_UNKNOWN) {
+                        //if (channel == 9 && instr->midiType() != MT_UNKNOWN) {
+                        MusECore::ciMidiFilePort imp = usedPortMap->find(port);
+                        if(imp != usedPortMap->end() && imp->second._isStandardDrums && channel == 9) { // A bit HACKISH, see above
                            if (MusEGlobal::config.importMidiNewStyleDrum)
                               track->setType(MusECore::Track::NEW_DRUM);
                            else
@@ -246,7 +345,7 @@ bool MusE::importMidi(const QString name, bool merge)
                   MusEGlobal::song->insertTrack0(track, -1);
                   }
             }
-
+            
       if (!merge) {
             MusECore::TrackList* tl = MusEGlobal::song->tracks();
             if (!tl->empty()) {
@@ -324,8 +423,7 @@ void MusE::processTrack(MusECore::MidiTrack* track)
   
         for (int bar = 0; bar < bar2; ++bar, x1 = x2) {
               x2 = AL::sigmap.bar2tick(bar+1, 0, 0);
-              if (lastOff > x2) {
-                    // this measure is busy!
+              if (lastOff > x2) {        
                     continue;
                     }
               MusECore::iEvent i1 = tevents->lower_bound(x1);
@@ -335,7 +433,7 @@ void MusE::processTrack(MusECore::MidiTrack* track)
                     if (st != -1) {
                           MusECore::MidiPart* part = new MusECore::MidiPart(track);
                           part->setTick(st);
-                          part->setLenTick(x1-st);
+                          part->setLenTick((lastOff > x1 ? x2 : x1) - st);
                           part->setName(partname);
                           pl->add(part);
                           st = -1;
@@ -495,48 +593,6 @@ void MusE::importPart()
 //---------------------------------------------------------
 void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track)
 {
-      // DELETETHIS 41
-      // Changed by T356
-      /*
-      bool popenFlag = false;
-      FILE* fp = MusEGui::fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
-
-      if(fp) 
-      {
-        MusECore::MidiPart* importedPart = new MusECore::MidiPart((MusECore::MidiTrack*)track);
-        MusECore::Xml tmpXml = MusECore::Xml(fp);
-
-        MusECore::Xml::Token token = tmpXml.parse();
-        const QString& tag = tmpXml.s1();
-        if (token == MusECore::Xml::TagStart && tag == "part") 
-        {
-          // Make a backup of the current clone list, to retain any 'copy' items,
-          //  so that pasting works properly after.
-          MusECore::CloneList copyCloneList = MusEGlobal::cloneList;
-          // Clear the clone list to prevent any dangerous associations with
-          //  current non-original parts.
-          MusEGlobal::cloneList.clear();
-
-          importedPart->read(tmpXml);
-          importedPart->setTick(tick);
-          
-          // Restore backup of the clone list, to retain any 'copy' items,
-          //  so that pasting works properly after.
-          MusEGlobal::cloneList.clear();
-          MusEGlobal::cloneList = copyCloneList;
-          
-          MusEGlobal::audio->msgAddPart(importedPart);
-        }
-        else 
-        {
-          printf("Unknown tag: %s\n", tag.toLatin1().constData());
-        }
-        fclose(fp);
-      }      
-      return;
-      */            
-        
-      
       bool popenFlag = false;
       FILE* fp = MusEGui::fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
 

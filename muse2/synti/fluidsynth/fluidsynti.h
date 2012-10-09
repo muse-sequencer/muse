@@ -138,7 +138,7 @@ public:
       virtual bool setController(int, int, int);
       void setController(int, int , int, bool);
       virtual void getInitData(int*, const unsigned char**);
-      virtual const char* getPatchName(int, int, int, bool) const;
+      virtual const char* getPatchName(int, int, bool) const;
       virtual const MidiPatch* getPatchInfo(int i, const MidiPatch* patch) const;
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
       virtual bool processEvent(const MusECore::MidiPlayEvent&);

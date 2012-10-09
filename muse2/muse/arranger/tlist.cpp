@@ -492,7 +492,7 @@ void TList::paint(const QRect& r)
                                     MusECore::MidiInstrument* instr = mp->instrument();
                                     QString name;
                                     if (val!=MusECore::CTRL_VAL_UNKNOWN)
-                                      name = instr->getPatchName(mt->outChannel(), val, MusEGlobal::song->mtype(), mt->isDrumTrack());
+                                      name = instr->getPatchName(mt->outChannel(), val, mt->isDrumTrack());
                                     else
                                       name = tr("<unknown>");
                                       
@@ -2123,8 +2123,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       else
                       {
                         MusECore::MidiInstrument* instr = mp->instrument();
-                        if (delta>0) val=instr->getNextPatch(mt->outChannel(), val, MusEGlobal::song->mtype(), false);
-                        else if (delta<0) val=instr->getPrevPatch(mt->outChannel(), val, MusEGlobal::song->mtype(), false);
+                        if (delta>0) val=instr->getNextPatch(mt->outChannel(), val, false);
+                        else if (delta<0) val=instr->getPrevPatch(mt->outChannel(), val, false);   
                       }
 
                       if (val != oldval)
@@ -2169,7 +2169,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         MusECore::MidiInstrument* instr = mp->instrument();
                         
                         PopupMenu* pup = new PopupMenu(true);
-                        instr->populatePatchPopup(pup, mt->outChannel(), MusEGlobal::song->mtype(), mt->isDrumTrack());
+                        instr->populatePatchPopup(pup, mt->outChannel(), mt->isDrumTrack());
                         
                         if(pup->actions().count() == 0)
                         {
@@ -2623,8 +2623,8 @@ void TList::wheelEvent(QWheelEvent* ev)
                       else
                       {
                         MusECore::MidiInstrument* instr = mp->instrument();
-                        if (delta>0) val=instr->getNextPatch(mt->outChannel(), val, MusEGlobal::song->mtype(), false);
-                        else if (delta<0) val=instr->getPrevPatch(mt->outChannel(), val, MusEGlobal::song->mtype(), false);
+                        if (delta>0) val=instr->getNextPatch(mt->outChannel(), val, false); 
+                        else if (delta<0) val=instr->getPrevPatch(mt->outChannel(), val, false);
                       }
 
                       if (val != oldval)

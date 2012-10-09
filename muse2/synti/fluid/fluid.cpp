@@ -405,7 +405,7 @@ bool ISynth::processEvent(const MusECore::MidiPlayEvent& ev)
 //   getPatchName
 //---------------------------------------------------------
 
-const char* ISynth::getPatchName(int /*ch*/, int val, int, bool /*drum*/) const
+const char* ISynth::getPatchName(int /*ch*/, int val, bool /*drum*/) const
       {
       int prog =   val & 0xff;
       if(val == MusECore::CTRL_VAL_UNKNOWN || prog == 0xff)

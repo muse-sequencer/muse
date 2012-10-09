@@ -1,3 +1,23 @@
+09.10.2012:
+         - Fixed old fluidsynth bug: Drum patch numbers incorrect. (Tim)
+           Confusion due to special fluidsynth drum bank = 129. Changed FluidSynth::getFirstPatch, 
+            ::getNextPatch, and CTRL_PROGRAM section of ::setController. 
+         - Midi track info patches popup menu: Don't display category if empty. (Tim)
+08.10.2012:
+         * !!! Song type is now removed !!! : (Tim)
+           TODO: Instrument init sequences. Need some kind of editor. Need timing mechanism while in 'stop' mode. 
+                 Was thinking these events should be in FRAMES or real time - not affected by tempo. Jack slow sync 
+                  callback might help. (Also try to re-enable metronome precount - similar concept here!)
+         * Improved: Multi-port (aka multi-channel) midi import and export, via Device Name, Port, or Instrument metas. (Tim)
+           - MusE can now export a midi file and re-import exactly as it was, all ports + devices + instruments incl.
+           - Extra options for import/export added.
+           - Import midi now passes 'unabsorbed' meta events on to the track. They were discarded before - lost forever.
+           - Solved: Export midi now stores an instrument's Init sequence, instead of the old song type sysexes.
+           - MPEventList now has highly customized same-time sorting, helps 'cement' import/export events in place, such 
+              as controllers or program changes before notes, instrument metas before mode sysexes. (EventList NOT done.)
+         - Old bug: Fixed superfluous NULLS in meta texts in midi export.
+         - Old bug, annoying: Midi Import: parts are too short and 'events past end' indicator is on.
+         - TODO: Bug: Deicsonze: Midi track info patch popup: Screen all black until esc or click.
 04.10.2012:
          - Added Gain knob on channel strip for audio tracks (rj)
          - Added descriptive tooltips for midi parameters in midi track info (rj)

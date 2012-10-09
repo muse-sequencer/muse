@@ -1005,6 +1005,13 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   byte patch = (val & 0xff);
                   //printf("val: %d banknum: %x patch: %d\n", val, banknum, patch);
 
+                  if(val == MusECore::CTRL_VAL_UNKNOWN || patch == 0xff)
+                        return;
+                  if(channels[channel].drumchannel)
+                    banknum = 128;
+                  else if(banknum == 0xff)
+                    banknum = 0; // Is wise? Else try to keep a previous value when 'off' (0xff) like the HW values?
+                  
                   err = fluid_synth_program_select(fluidsynth, channel, font_intid , banknum, patch);
                   if (err)
                         printf("FluidSynth::setController() - Error changing program on soundfont %s, channel: %d\n", fluid_synth_error(fluidsynth), channel);
@@ -1205,18 +1212,15 @@ void FluidSynth::rewriteChannelSettings()
 //---------------------------------------------------------
 //   getPatchName
 //---------------------------------------------------------
-const char* FluidSynth::getPatchName(int i, int, int, bool /*drum*/) const
+const char* FluidSynth::getPatchName(int i, int, bool /*drum*/) const
       {
       if (channels[i].font_intid == FS_UNSPECIFIED_FONT ||
           channels[i].font_intid == FS_UNSPECIFIED_ID)
-            //return "no preset";
             return "<unknown>";
       else if (channels[i].preset == FS_UNSPECIFIED_PRESET)
-            //return "no preset";
             return "<unknown>";
       else {
             fluid_preset_t *preset = fluid_synth_get_channel_preset(fluidsynth, i);
-            //if (!preset) return "no preset";
             if (!preset) return "<unknown>";
             return preset->get_name(preset);
             }
@@ -1267,6 +1271,7 @@ const MidiPatch* FluidSynth::getFirstPatch (int channel) const
                         preset = sfont->get_preset (sfont, bank, patch);
                         if (preset) {
                               midiPatch.hbank = bank;
+                              midiPatch.lbank = 0xff;  // Off
                               midiPatch.prog = patch;
                               midiPatch.name = preset->get_name (preset);
                               return &midiPatch;
@@ -1280,7 +1285,8 @@ const MidiPatch* FluidSynth::getFirstPatch (int channel) const
             for (unsigned patch = 0; patch < 128; ++patch) {
                   preset = sfont->get_preset (sfont, bank, patch);
                   if (preset) {
-                        midiPatch.hbank = bank;
+                        midiPatch.hbank = 0xff;  // Off
+                        midiPatch.lbank = 0xff;  // Off
                         midiPatch.prog = patch;
                         midiPatch.name = preset->get_name(preset);
                         return &midiPatch;
@@ -1318,6 +1324,7 @@ const MidiPatch* FluidSynth::getNextPatch (int channel, const MidiPatch* patch) 
                         if (preset) {
                               //printf("Preset info: bank: %d prog: %d name: %s\n", bank, prog, preset->get_name(preset));
                               midiPatch.hbank = bank;
+                              midiPatch.lbank = 0xff;  // Off
                               midiPatch.prog = prog;
                               midiPatch.name = preset->get_name (preset);
                               return &midiPatch;
@@ -1333,7 +1340,8 @@ const MidiPatch* FluidSynth::getNextPatch (int channel, const MidiPatch* patch) 
                   preset = sfont->get_preset (sfont, bank, prog);
                   if (preset) {
                         //printf("Preset info: bank: %d prog: %d name: %s\n",bank, prog, preset->get_name(preset));
-                        midiPatch.hbank = bank;
+                        midiPatch.hbank = 0xff;  // Off
+                        midiPatch.lbank = 0xff;  // Off
                         midiPatch.prog = prog;
                         midiPatch.name = preset->get_name (preset);
                         return &midiPatch;

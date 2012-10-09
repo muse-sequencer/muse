@@ -97,7 +97,6 @@ class AudioDevice;
 #define SC_CLIP_MODIFIED       0x4000000
 #define SC_MIDI_CONTROLLER_ADD 0x8000000   // a hardware midi controller was added or deleted
 #define SC_MIDI_TRACK_PROP     0x10000000   // a midi track's properties changed (channel, compression etc)
-#define SC_SONG_TYPE           0x20000000   // the midi song type (mtype) changed
 #define SC_KEY                 0x40000000   // key map changed
 #define SC_EVERYTHING          -1           // global update
 
@@ -153,7 +152,6 @@ class Song : public QObject {
       bool punchoutFlag;
       bool recordFlag;
       bool soloFlag;
-      enum MType _mtype;
       int _recMode;
       int _cycleMode;
       bool _click;
@@ -180,9 +178,6 @@ class Song : public QObject {
       void putEvent(int pv);
       void endMsgCmd();
       void processMsg(AudioMsg* msg);
-
-      void setMType(MType t);
-      MType mtype() const              { return _mtype; }
 
       void setFollow(FollowMode m)     { _follow = m; }
       FollowMode follow() const        { return _follow; }

@@ -54,6 +54,23 @@ enum drumTrackPreference_t
   ONLY_OLD = 2,
   ONLY_NEW = 3
 };
+
+enum ExportPortsDevices_t
+{
+  EXPORT_PORTS_DEVICES_ALL = 0,
+  PORT_NUM_META = 1,
+  DEVICE_NAME_META = 2,
+  EXPORT_PORTS_DEVICES_END = 3
+};
+
+enum ExportModeInstr_t
+{
+  EXPORT_MODE_INSTR_ALL = 0,
+  MODE_SYSEX = 1,
+  INSTRUMENT_NAME_META = 2,
+  EXPORT_MODE_INSTR_END = 3
+};
+
 //---------------------------------------------------------
 //   MixerConfig
 //---------------------------------------------------------
@@ -133,6 +150,12 @@ struct GlobalConfigValues {
       bool expOptimNoteOffs;  // Save space by replacing note offs with note on velocity 0
       bool importMidiSplitParts; // Split imported tracks into multiple parts.
       bool importMidiNewStyleDrum; // Use new style drum tracks
+      bool importDevNameMetas;    // Import Prefer Device Name metas over port number metas if both exist.
+      bool importInstrNameMetas;  // Import Prefer Instrument Name metas over Mode sysexes if both exist.
+      ExportPortsDevices_t exportPortsDevices;  // Export port number metas and/or device name metas.
+      bool exportPortDeviceSMF0;  // Export a port and/or device meta even for SMF0.
+      ExportModeInstr_t exportModeInstr;   // Export mode sysexes and/or instrument name metas.
+      QString importMidiDefaultInstr;  // Default to this instrument not Generic, if no match found
       
       int startMode;          // 0 - start with last song
                               // 1 - start with default template

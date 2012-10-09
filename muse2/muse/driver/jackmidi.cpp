@@ -752,7 +752,6 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   if(MusEGlobal::debugMsg)
                     printf("MidiJackDevice::queueEvent: event type %x not supported\n", e.type());
                   return true;   // Absorb the event. Don't want it hanging around in the list. 
-                  break;
             }
             
             return true;

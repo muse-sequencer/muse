@@ -4,6 +4,7 @@
 //  $Id: mpevent.cpp,v 1.6.2.2 2009/11/25 09:09:43 terminator356 Exp $
 //
 //  (C) Copyright 2002-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -101,6 +102,101 @@ void MEvent::dump() const
       }
 
 //---------------------------------------------------------
+//   sortingWeight
+//---------------------------------------------------------
+
+int MEvent::sortingWeight() const
+{
+  // Sorting weight initially worked out by Tim E. Real
+  // Sorted here by most popular for quickest reponse.
+  
+  switch(_type)
+  {
+    case ME_NOTEON:
+      return 98;  
+    case ME_NOTEOFF:
+      return 7;
+      
+    case ME_PITCHBEND:
+      return 25;  
+    case ME_CONTROLLER:
+      switch(_a)
+      {
+        case CTRL_PROGRAM:
+          return 21;  
+        default:
+          return 24;
+      }
+    case ME_PROGRAM:
+      return 20;  
+      
+    case ME_CLOCK:
+      return 0;  
+    case ME_MTC_QUARTER:
+      return 1;  
+    case ME_TICK:
+      return 2;  
+    case ME_SENSE:
+      return 3;  
+
+    case ME_SYSEX_END:
+      return 4;  
+    case ME_AFTERTOUCH:
+      return 5;  
+    case ME_POLYAFTER:
+      return 6;  
+    case ME_STOP:
+      return 8;  
+
+    case ME_SONGSEL:
+      return 9;  
+    case ME_SYSEX:
+      return 18;  
+    case ME_META:
+      switch(_a)
+      {
+        case ME_META_TEXT_2_COPYRIGHT:
+          return 10;
+        case ME_META_TEXT_1_COMMENT:
+          return 11; 
+        case ME_META_PORT_CHANGE:
+          return 12; 
+        case ME_META_TEXT_9_DEVICE_NAME:
+          return 13; 
+        case ME_META_CHANNEL_CHANGE:
+          return 14;
+          
+        case ME_META_TEXT_3_TRACK_NAME:
+          return 15; 
+        case ME_META_TEXT_F_TRACK_COMMENT:  
+          return 16; 
+        case ME_META_TEXT_0_SEQUENCE_NUMBER:
+          return 17; 
+
+        case ME_META_TEXT_4_INSTRUMENT_NAME:
+          return 19; 
+        case ME_META_END_OF_TRACK:
+          return 99; 
+        default:  
+          return 97;
+      }
+
+    case ME_TUNE_REQ:
+      return 22;  
+    case ME_SONGPOS:
+      return 23;  
+
+    case ME_START:
+      return 26;  
+    case ME_CONTINUE:
+      return 27;  
+  }
+  
+  printf("FIXME: MEvent::sortingWeight: unknown event type:%d\n", _type);
+  return 100;
+}
+      
+//---------------------------------------------------------
 //   operator <
 //---------------------------------------------------------
 
@@ -115,9 +211,13 @@ bool MEvent::operator<(const MEvent& e) const
       // notes
 
       if (channel() == e.channel())
-            return type() == ME_NOTEOFF
-               || (type() == ME_NOTEON && dataB() == 0)
-               || type() != ME_NOTEON;  // Make note-ons last so that controllers such as program come before notes played. 1/31/2012 Tim.
+      {
+// REMOVE Tim.        
+//            return (type() == ME_NOTEOFF
+//                || (type() == ME_NOTEON && dataB() == 0)
+//                || type() != ME_NOTEON;  // Make note-ons last so that controllers such as program come before notes played. 1/31/2012 Tim.
+        return sortingWeight() < e.sortingWeight();
+      }         
 
       int map[16] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15 };
       return map[channel()] < map[e.channel()];

@@ -804,6 +804,28 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.expOptimNoteOffs = xml.parseInt();
                         else if (tag == "importMidiSplitParts")
                               MusEGlobal::config.importMidiSplitParts = xml.parseInt();
+                        else if (tag == "importDevNameMetas")
+                              MusEGlobal::config.importDevNameMetas = xml.parseInt();
+                        else if (tag == "importInstrNameMetas")
+                              MusEGlobal::config.importInstrNameMetas = xml.parseInt();
+                        else if (tag == "exportPortsDevices")
+                        {
+                          int i = xml.parseInt();
+                          if(i >= MusEGlobal::EXPORT_PORTS_DEVICES_END)
+                            i = MusEGlobal::EXPORT_PORTS_DEVICES_ALL;
+                          MusEGlobal::config.exportPortsDevices = MusEGlobal::ExportPortsDevices_t(i);
+                        }
+                        else if (tag == "exportPortDeviceSMF0")
+                              MusEGlobal::config.exportPortDeviceSMF0 = xml.parseInt();
+                        else if (tag == "exportModeInstr")
+                        {
+                          int i = xml.parseInt();
+                          if(i >= MusEGlobal::EXPORT_MODE_INSTR_END)
+                            i = MusEGlobal::EXPORT_MODE_INSTR_ALL;
+                          MusEGlobal::config.exportModeInstr = MusEGlobal::ExportModeInstr_t(i);
+                        }
+                        else if (tag == "importMidiDefaultInstr")
+                              MusEGlobal::config.importMidiDefaultInstr = xml.parse1();
                         
                         else if (tag == "showSplashScreen")
                               MusEGlobal::config.showSplashScreen = xml.parseInt();
@@ -1087,7 +1109,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   //  or ALSA reorders or renames devices etc etc, then we have at least kept the track <-> port routes.
                      mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1 ||   // p4.0.17 Default is now to connect to all channels.
                      mport->defaultOutChannels() ||
-                     (!mport->instrument()->iname().isEmpty() && mport->instrument()->iname() != "GM") ||
+                     (!mport->instrument()->iname().isEmpty() && mport->instrument()->midiType() != MT_GM) ||
                      !mport->syncInfo().isDefault()) 
                     used = true;  
                   else  
@@ -1114,7 +1136,8 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                     xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());
                   
                   if(!mport->instrument()->iname().isEmpty() &&                      // Tim.
-                     (mport->instrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable.
+                     (mport->instrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable. 
+                     //(mport->instrument()->midiType() != MT_GM))
                     xml.strTag(level, "instrument", mport->instrument()->iname());
                     
                   if (dev) {
@@ -1203,6 +1226,12 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "exp2ByteTimeSigs", MusEGlobal::config.exp2ByteTimeSigs);
       xml.intTag(level, "expOptimNoteOffs", MusEGlobal::config.expOptimNoteOffs);
       xml.intTag(level, "importMidiSplitParts", MusEGlobal::config.importMidiSplitParts);
+      xml.intTag(level, "importDevNameMetas", MusEGlobal::config.importDevNameMetas);
+      xml.intTag(level, "importInstrNameMetas", MusEGlobal::config.importInstrNameMetas);
+      xml.intTag(level, "exportPortsDevices", MusEGlobal::config.exportPortsDevices);
+      xml.intTag(level, "exportPortDeviceSMF0", MusEGlobal::config.exportPortDeviceSMF0);
+      xml.intTag(level, "exportModeInstr", MusEGlobal::config.exportModeInstr);
+      xml.strTag(level, "importMidiDefaultInstr", MusEGlobal::config.importMidiDefaultInstr);
       xml.intTag(level, "startMode", MusEGlobal::config.startMode);
       xml.strTag(level, "startSong", MusEGlobal::config.startSong);
       xml.intTag(level, "startSongLoadConfig", MusEGlobal::config.startSongLoadConfig);
@@ -1478,6 +1507,18 @@ MidiFileConfig::MidiFileConfig(QWidget* parent)
 
 void MidiFileConfig::updateValues()
       {
+      importDefaultInstr->clear();
+      for(MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) 
+        if(!dynamic_cast<MusECore::SynthI*>(*i))      // Sorry, no synths for now.
+          importDefaultInstr->addItem((*i)->iname());
+      int idx = importDefaultInstr->findText(MusEGlobal::config.importMidiDefaultInstr);
+      if(idx != -1)
+        importDefaultInstr->setCurrentIndex(idx);
+      
+      QString defInstr = importDefaultInstr->currentText();
+      if(!defInstr.isEmpty())
+        MusEGlobal::config.importMidiDefaultInstr = defInstr;
+      
       int divisionIdx = 2;
       switch(MusEGlobal::config.midiDivision) {
             case 96:  divisionIdx = 0; break;
@@ -1493,6 +1534,37 @@ void MidiFileConfig::updateValues()
       splitPartsCheckBox->setChecked(MusEGlobal::config.importMidiSplitParts);
       newDrumsCheckbox->setChecked(MusEGlobal::config.importMidiNewStyleDrum);
       oldDrumsCheckbox->setChecked(!MusEGlobal::config.importMidiNewStyleDrum);
+      importDevNameMetas->setChecked(MusEGlobal::config.importDevNameMetas);
+      importInstrNameMetas->setChecked(MusEGlobal::config.importInstrNameMetas);
+      exportPortDeviceSMF0->setChecked(MusEGlobal::config.exportPortDeviceSMF0);
+      switch(MusEGlobal::config.exportPortsDevices)
+      {
+        case MusEGlobal::PORT_NUM_META:
+          exportPortMetas->setChecked(true);
+          break;
+        case MusEGlobal::DEVICE_NAME_META:
+          exportDeviceNameMetas->setChecked(true);
+          break;
+        case MusEGlobal::EXPORT_PORTS_DEVICES_ALL:
+          exportPortAndDeviceNameMetas->setChecked(true);
+          break;
+        default:
+          printf("MidiFileConfig::updateValues FIXME: Unknown exportPortsDevices type\n");
+      }
+      switch(MusEGlobal::config.exportModeInstr)
+      {
+        case MusEGlobal::MODE_SYSEX:
+          exportModeSysexes->setChecked(true);
+          break;
+        case MusEGlobal::INSTRUMENT_NAME_META:
+          exportInstrumentNames->setChecked(true);
+          break;
+        case MusEGlobal::EXPORT_MODE_INSTR_ALL:
+          exportModeAndInstrName->setChecked(true);
+          break;
+        default:
+          printf("MidiFileConfig::updateValues FIXME: Unknown exportModeInstr type\n");
+      }
       }
 
 //---------------------------------------------------------
@@ -1501,6 +1573,10 @@ void MidiFileConfig::updateValues()
 
 void MidiFileConfig::okClicked()
       {
+      QString defInstr = importDefaultInstr->currentText();
+      if(!defInstr.isEmpty())
+        MusEGlobal::config.importMidiDefaultInstr = defInstr;
+      
       int divisionIdx = divisionCombo->currentIndex();
 
       int divisions[3] = { 96, 192, 384 };
@@ -1513,7 +1589,24 @@ void MidiFileConfig::okClicked()
       MusEGlobal::config.exp2ByteTimeSigs = twoByteTimeSigs->isChecked();
       MusEGlobal::config.importMidiSplitParts = splitPartsCheckBox->isChecked();
       MusEGlobal::config.importMidiNewStyleDrum = newDrumsCheckbox->isChecked();
+      
+      MusEGlobal::config.importDevNameMetas = importDevNameMetas->isChecked();
+      MusEGlobal::config.importInstrNameMetas = importInstrNameMetas->isChecked();
+      MusEGlobal::config.exportPortDeviceSMF0 = exportPortDeviceSMF0->isChecked();  
+      if(exportPortMetas->isChecked())
+        MusEGlobal::config.exportPortsDevices = MusEGlobal::PORT_NUM_META;
+      else if(exportDeviceNameMetas->isChecked())
+        MusEGlobal::config.exportPortsDevices = MusEGlobal::DEVICE_NAME_META;
+      else if(exportPortAndDeviceNameMetas->isChecked())
+        MusEGlobal::config.exportPortsDevices = MusEGlobal::EXPORT_PORTS_DEVICES_ALL;
 
+      if(exportModeSysexes->isChecked())
+        MusEGlobal::config.exportModeInstr = MusEGlobal::MODE_SYSEX;
+      else if(exportInstrumentNames->isChecked())
+        MusEGlobal::config.exportModeInstr = MusEGlobal::INSTRUMENT_NAME_META;
+      else if(exportModeAndInstrName->isChecked())
+        MusEGlobal::config.exportModeInstr = MusEGlobal::EXPORT_MODE_INSTR_ALL;
+      
       MusEGlobal::muse->changeConfig(true);  // write config file
       close();
       }

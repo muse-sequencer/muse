@@ -4,6 +4,7 @@
 //  $Id: midifile.h,v 1.3 2004/01/04 18:24:43 wschweer Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -24,6 +25,8 @@
 #ifndef __MIDIFILE_H__
 #define __MIDIFILE_H__
 
+#include <QString>
+
 #include <stdio.h>
 #include <list>
 
@@ -34,6 +37,27 @@ namespace MusECore {
 
 struct MPEventList;
 class MidiPlayEvent;
+class MidiInstrument;
+
+//---------------------------------------------------------
+//   MidiFileTrack
+//---------------------------------------------------------
+
+struct MidiFilePort {
+  bool _isStandardDrums; 
+  MType _midiType;
+  QString _instrName;
+  QString _subst4DevName;
+  MidiFilePort() {
+    _midiType = MT_UNKNOWN;
+    _isStandardDrums = false;
+  }
+};
+
+
+typedef std::map<int, MidiFilePort> MidiFilePortMap;
+typedef MidiFilePortMap::iterator iMidiFilePort;
+typedef MidiFilePortMap::const_iterator ciMidiFilePort;
 
 //---------------------------------------------------------
 //   MidiFileTrack
@@ -41,9 +65,9 @@ class MidiPlayEvent;
 
 struct MidiFileTrack {
       MPEventList events;
-      bool isDrumTrack;
+      bool _isDrumTrack;
       MidiFileTrack() {
-            isDrumTrack = false;
+            _isDrumTrack = false;
             }
       };
 
@@ -60,12 +84,18 @@ class MidiFile {
       int format;       // smf file format
       int ntracks;      // number of midi tracks
       int _division;
-      MType _mtype;
+      //MType _mtype;
       MidiFileTrackList* _tracks;
 
       int status, click;
       int sstatus;
       int lastport, lastchannel;
+      MType lastMtype;
+      //QString lastMtypeInstrument;
+      QString lastInstrName;
+      QString lastDeviceName;
+      //MidiInstrument* def_instr;
+      MidiFilePortMap* _usedPortMap;
       FILE* fp;
       int curPos;
 
@@ -92,6 +122,7 @@ class MidiFile {
       bool read();
       bool write();
       QString error();
+      MidiFilePortMap* usedPortMap() { return _usedPortMap; }
       MidiFileTrackList* trackList()  { return _tracks; }
       int tracks() const              { return ntracks; }
       void setTrackList(MidiFileTrackList* tr, int n) {
@@ -100,8 +131,6 @@ class MidiFile {
             }
       void setDivision(int d)         { _division = d; }
       int division() const            { return _division; }
-      void setMType(MType t)          { _mtype = t; }
-      MType mtype() const             { return _mtype; }
       };
 
 } // namespace MusECore

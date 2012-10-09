@@ -1526,7 +1526,7 @@ left button behave like the middle button in such areas.</string>
          <property name="title">
           <string>Drum tracks</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout">
+         <layout class="QGridLayout" name="gridLayout9">
           <item row="0" column="0">
            <widget class="QRadioButton" name="onlyOldDrumBtn">
             <property name="text">
@@ -1559,7 +1559,7 @@ left button behave like the middle button in such areas.</string>
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_2">
+        <spacer name="verticalSpacer_21">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>

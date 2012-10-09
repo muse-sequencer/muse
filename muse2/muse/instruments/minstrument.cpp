@@ -49,8 +49,6 @@ namespace MusECore {
 MidiInstrumentList midiInstruments;
 MidiInstrument* genericMidiInstrument;
 
-static const char* gmdrumname = "GM-drums";
-
 //---------------------------------------------------------
 //   string2sysex
 //   Return -1 if cannot be converted.
@@ -369,7 +367,7 @@ MidiInstrument::~MidiInstrument()
 MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
 {
   //---------------------------------------------------------
-  // TODO: Copy the _initScript, and _midiInit, _midiReset, and _midiState lists. 
+  // TODO: Copy the _initScript (if and when it is ever used)
   //---------------------------------------------------------
   
   for(iMidiController i = _controller->begin(); i != _controller->end(); ++i) 
@@ -399,6 +397,10 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
       _sysex.append(new MusECore::SysEx(*(ins.sysex().at(i))));
   }
   
+  *(_midiInit) = *(ins._midiInit);
+  *(_midiReset) = *(ins._midiReset);
+  *(_midiState) = *(ins._midiState);
+  
   for (ciPatchGroup g = pg.begin(); g != pg.end(); ++g) 
   {
     PatchGroup* pgp = *g;
@@ -424,7 +426,7 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
     {
       Patch* pp = *p;
       Patch* np = new Patch;
-      np->typ = pp->typ;  
+      //np->typ = pp->typ;  
       np->hbank = pp->hbank;
       np->lbank = pp->lbank;
       np->prog = pp->prog;
@@ -448,11 +450,26 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
 }
 
 //---------------------------------------------------------
+//   midiType
+//---------------------------------------------------------
+
+MType MidiInstrument::midiType() const
+{
+  if(_name == "GM")
+    return MT_GM;
+  if(_name == "GS")
+    return MT_GS;
+  if(_name == "XG")
+    return MT_XG;
+  return MT_UNKNOWN;
+}
+
+//---------------------------------------------------------
 //   reset
 //    send note off to all channels
 //---------------------------------------------------------
 
-void MidiInstrument::reset(int portNo, MType)
+void MidiInstrument::reset(int portNo)
 {
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[portNo];
       if(port->device() == 0)  // p4.0.15
@@ -517,7 +534,7 @@ void PatchGroup::read(Xml& xml)
 
 void Patch::read(Xml& xml)
       {
-      typ   = -1;
+      //typ   = -1;
       hbank = -1;
       lbank = -1;
       prog  = 0;
@@ -535,8 +552,11 @@ void Patch::read(Xml& xml)
                   case Xml::Attribut:
                         if (tag == "name")
                               name = xml.s2();
-                        else if (tag == "mode")
-                              typ = xml.s2().toInt();
+                        else if (tag == "mode")  // Obsolete
+                        {
+                              //typ = xml.s2().toInt();
+                              xml.s2().toInt();  
+                        }
                         else if (tag == "hbank")
                               hbank = xml.s2().toInt();
                         else if (tag == "lbank")
@@ -562,8 +582,8 @@ void Patch::read(Xml& xml)
 void Patch::write(int level, Xml& xml)
       {
             xml.nput(level, "<Patch name=\"%s\"", Xml::xmlString(name).toLatin1().constData());
-            if(typ != -1)
-              xml.nput(" mode=\"%d\"", typ);
+            //if(typ != -1)
+            //  xml.nput(" mode=\"%d\"", typ);  // Obsolete
             
             if(hbank != -1)
               xml.nput(" hbank=\"%d\"", hbank);
@@ -982,10 +1002,6 @@ void MidiInstrument::write(int level, Xml& xml)
       }  
       xml.put(">");
 
-      // -------------
-      // TODO: What about Init, Reset, State, and InitScript ?
-      // -------------
-      
       level++;
       for (ciPatchGroup g = pg.begin(); g != pg.end(); ++g) {
             PatchGroup* pgp = *g;
@@ -1006,6 +1022,15 @@ void MidiInstrument::write(int level, Xml& xml)
           _sysex.at(i)->write(level, xml);
       }
       
+      xml.tag(level++, "Init");
+      for(ciEvent ev=_midiInit->begin(); ev != _midiInit->end(); ++ev)
+        ev->second.write(level, xml, MusECore::Pos(0, true));
+      xml.etag(--level, "Init");
+      
+      // -------------
+      // TODO: What about _midiReset, _midiState, and _initScript ?
+      // -------------
+      
       writeDrummaps(level, xml);
       
       level--;
@@ -1019,45 +1044,30 @@ void MidiInstrument::write(int level, Xml& xml)
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MType songType, bool drum)
+void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, bool drum)
       {
       menu->clear();
-      int mask = 0;
-      bool drumchan = chan == 9;
-      switch (songType) {
-            case MT_XG: mask = 4; break;
-            case MT_GS: mask = 2; break;
-            case MT_GM: 
-              if(drumchan)
-              {
-                int id = (0xff << 16) + (0xff << 8) + 0x00;  // First patch
-                QAction* act = menu->addAction(gmdrumname);
-                act->setData(id);
-                return;
-              }  
-              mask = 1; 
-              break;
-            case MT_UNKNOWN:  mask = 7; break;
-            }
+      //int mask = 7; 
+      
       if (pg.size() > 1) {
             for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
                   PatchGroup* pgp = *i;
-                  MusEGui::PopupMenu* pm = new MusEGui::PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
-                  menu->addMenu(pm);
-                  pm->setFont(MusEGlobal::config.fonts[0]);
+                  MusEGui::PopupMenu* pm = 0;
                   const PatchList& pl = pgp->patches;
                   for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                         const Patch* mp = *ipl;
-                        if ((mp->typ & mask) && 
-                            ((drum && songType != MT_GM) || 
-                            (mp->drum == drumchan)) )  
-                            {
+                        if (//(mp->typ & mask) && 
+                            (mp->drum == drum)) {
+                              if(!pm) {
+                                pm = new MusEGui::PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.                                
+                                menu->addMenu(pm);
+                                pm->setFont(MusEGlobal::config.fonts[0]);
+                              }
                               int id = ((mp->hbank & 0xff) << 16)
                                          + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
                               QAction* act = pm->addAction(mp->name);
                               act->setData(id);
                             }
-                              
                         }
                   }
             }
@@ -1066,12 +1076,12 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MTyp
             const PatchList& pl = pg.front()->patches;
             for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                   const Patch* mp = *ipl;
-                  if (mp->typ & mask) {
+                  //if (mp->typ & mask) {
                         int id = ((mp->hbank & 0xff) << 16)
                                  + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
                         QAction* act = menu->addAction(mp->name);
                         act->setData(id);
-                        }
+                        //}
                   }
             }
 
@@ -1083,7 +1093,7 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MTyp
 //   getPatchName
 //---------------------------------------------------------
 
-QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool drum)
+QString MidiInstrument::getPatchName(int /*channel*/, int prog, bool drum)
       {
       int pr = prog & 0xff;
       if(prog == CTRL_VAL_UNKNOWN || pr == 0xff)
@@ -1091,38 +1101,17 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
 
       int hbank = (prog >> 16) & 0xff;
       int lbank = (prog >> 8) & 0xff;
-      int tmask = 1;
-      bool drumchan = channel == 9;
-      bool hb = false;
-      bool lb = false;
-      switch (mode) {
-            case MT_GS:
-                  tmask = 2;
-                  hb    = true;
-                  break;
-            case MT_XG:
-                  hb    = true;
-                  lb    = true;
-                  tmask = 4;
-                  break;
-            case MT_GM:
-                  if(drumchan)
-                        return gmdrumname;
-                  tmask = 1;
-                  break;
-            default:
-                  hb    = true;     // MSB bank matters
-                  lb    = true;     // LSB bank matters
-                  break;
-            }
+      //int tmask = 1;
+      
+      bool hb = hbank != 0xff;
+      bool lb = lbank != 0xff;
       for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
             const PatchList& pl = (*i)->patches;
             for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                   const Patch* mp = *ipl;
-                  if ((mp->typ & tmask)
-                    && (pr == mp->prog)
-                    && ((drum && mode != MT_GM) || 
-                       (mp->drum == drumchan))   
+                  if (//(mp->typ & tmask) &&
+                      (pr == mp->prog)
+                    && (mp->drum == drum) 
                     
                     && (hbank == mp->hbank || !hb || mp->hbank == -1)
                     && (lbank == mp->lbank || !lb || mp->lbank == -1))
@@ -1132,14 +1121,9 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
       return "<unknown>";
       }
 
-
-
-
-
-
-unsigned MidiInstrument::getNextPatch(int channel, unsigned patch, MType songType, bool drum)
+unsigned MidiInstrument::getNextPatch(int channel, unsigned patch, bool drum)
 {
-  QList<dumb_patchlist_entry_t> haystack=getPatches(channel,songType,drum);
+  QList<dumb_patchlist_entry_t> haystack=getPatches(channel,drum);
   if (haystack.empty()) return MusECore::CTRL_VAL_UNKNOWN;
   
   int prog=patch&0xFF;
@@ -1168,9 +1152,9 @@ unsigned MidiInstrument::getNextPatch(int channel, unsigned patch, MType songTyp
          ((((it->hbank==-1)?0xFF:it->hbank)<<16)&0xFF0000);
 }
 
-unsigned MidiInstrument::getPrevPatch(int channel, unsigned patch, MType songType, bool drum)
+unsigned MidiInstrument::getPrevPatch(int channel, unsigned patch, bool drum)
 {
-  QList<dumb_patchlist_entry_t> haystack=getPatches(channel,songType,drum);
+  QList<dumb_patchlist_entry_t> haystack=getPatches(channel,drum);
   if (haystack.empty()) return MusECore::CTRL_VAL_UNKNOWN;
   
   int prog=patch&0xFF;
@@ -1197,51 +1181,21 @@ unsigned MidiInstrument::getPrevPatch(int channel, unsigned patch, MType songTyp
          ((((it->hbank==-1)?0xFF:it->hbank)<<16)&0xFF0000);
 }
 
-QList<dumb_patchlist_entry_t> MidiInstrument::getPatches(int channel, MType mode, bool drum)
+QList<dumb_patchlist_entry_t> MidiInstrument::getPatches(int /*channel*/, bool drum)
       {
-      int tmask = 1;
-      bool drumchan = channel == 9;
-      bool hb = false;
-      bool lb = false;
-      switch (mode) {
-            case MT_GS:
-                  tmask = 2;
-                  hb    = true;
-                  break;
-            case MT_XG:
-                  hb    = true;
-                  lb    = true;
-                  tmask = 4;
-                  break;
-            case MT_GM:
-                  if(drumchan)
-                  {
-                    QList<dumb_patchlist_entry_t> tmp;
-                    tmp.push_back(dumb_patchlist_entry_t(0,-1,-1));
-                  }
-                  else
-                    tmask = 1;
-                  break;
-            default:
-                  hb    = true;     // MSB bank matters
-                  lb    = true;     // LSB bank matters
-                  break;
-            }
-      
-      
+      //int tmask = 1;
       QList<dumb_patchlist_entry_t> tmp;
       
       for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
             const PatchList& pl = (*i)->patches;
             for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                   const Patch* mp = *ipl;
-                  if ((mp->typ & tmask) && 
-                      ((drum && mode != MT_GM) || 
-                      (mp->drum == drumchan)) )  
+                  if (//(mp->typ & tmask) && 
+                      (mp->drum == drum))               
                   {
                     int prog = mp->prog;
-                    int lbank = (mp->lbank==-1 || !lb) ? -1 : mp->lbank;
-                    int hbank = (mp->hbank==-1 || !hb) ? -1 : mp->hbank;
+                    int lbank = mp->lbank;
+                    int hbank = mp->hbank;
                     tmp.push_back(dumb_patchlist_entry_t(prog,lbank,hbank));
                   }
             }

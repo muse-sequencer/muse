@@ -171,9 +171,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       
       virtual void deactivate3() {}
       
-      virtual const char* getPatchName(int, int, int, bool) const { return ""; }
-      virtual const char* getPatchName(int, int, MType, bool);
-      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);
+      virtual const char* getPatchName(int, int, bool);
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       
       virtual void write(int level, Xml& xml) const;
       

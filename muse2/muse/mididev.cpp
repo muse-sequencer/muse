@@ -445,8 +445,6 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                   return putMidiEvent(MidiPlayEvent(0, 0, chn, ME_PITCHBEND, b, 0));
                   }
             if (a == CTRL_PROGRAM) {
-                  // don't output program changes for GM drum channel
-                  if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
                         int hb = (b >> 16) & 0xff;
                         int lb = (b >> 8) & 0xff;
                         int pr = b & 0x7f;
@@ -455,8 +453,6 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                         if (lb != 0xff)
                               putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LBANK, lb));
                         return putMidiEvent(MidiPlayEvent(0, 0, chn, ME_PROGRAM, pr, 0));
-                        }
-                  return false;   // Should absorb anyway and return, right?    p4.0.48 Tim.  
                   }
 #if 1 // if ALSA cannot handle RPN NRPN etc. DELETETHIS? remove the wrapping #if #endif
             
