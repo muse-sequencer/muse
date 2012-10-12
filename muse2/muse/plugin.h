@@ -252,7 +252,7 @@ class PluginIBase
 
    public:
       PluginIBase(); 
-      ~PluginIBase(); 
+      virtual ~PluginIBase(); 
       virtual bool on() const = 0;       
       virtual void setOn(bool val) = 0;   
       virtual unsigned long pluginID() = 0;        
@@ -332,7 +332,7 @@ class PluginI : public PluginIBase {
       
    public:
       PluginI();
-      ~PluginI();
+      virtual ~PluginI();
 
       Plugin* plugin() const { return _plugin; }
       bool on() const        { return _on; }

@@ -3183,6 +3183,10 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 					case COLOR_MODE_VELO:
 						color_index=VELO_PIXMAP_BEGIN + it->source_event->velo();
 						break;
+					
+					default:
+						cerr << "ERROR: THIS CANNOT HAPPEN: coloring_mode (="<<coloring_mode<<") is invalid! defaulting to black." << endl;
+						color_index=BLACK_PIXMAP;
 				}
 				
 				if (it->source_event->selected())
@@ -3224,6 +3228,8 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 						case NONE: acc_pix=pix_noacc; break;
 						case SHARP: acc_pix=pix_sharp; break;
 						case B: acc_pix=pix_b; break;
+						default: cerr << "ERROR: THIS CANNOT HAPPEN: it->pos.vorzeichen (="<<it->pos.vorzeichen<<") is invalid! defaulting to NONE." << endl;
+						         acc_pix=pix_noacc; break;
 					}
 					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos+x_left,y_offset + it->y, acc_pix[color_index]);
 

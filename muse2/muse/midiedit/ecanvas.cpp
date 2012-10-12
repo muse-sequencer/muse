@@ -154,7 +154,7 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
             //             (same in waveview.cpp)
             bool curItemNeedsRestore=false;
             MusECore::Event storedEvent;
-            int partSn;
+            int partSn = 0xDEADBEEF; // to prevent compiler warning; partSn is unused anyway if curItemNeedsRestore==false.
             if (curItem)
             {
               curItemNeedsRestore=true;

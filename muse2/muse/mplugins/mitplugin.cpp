@@ -45,7 +45,7 @@ void MusE::startMidiInputPlugin(int id)
       {
       bool flag = false;
       QWidget* w = 0;
-      QAction* act;
+      QAction* act = 0;
       if (id == 0) {
             if (!MusEGlobal::mitPluginTranspose) {
                   MusEGlobal::mitPluginTranspose = new MITPluginTranspose();
@@ -101,7 +101,7 @@ void MusE::startMidiInputPlugin(int id)
             else
                   w->hide();
             }
-      act->setChecked(flag);
+      if (act) act->setChecked(flag);
       }
 
 void MusE::hideMitPluginTranspose()
