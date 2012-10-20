@@ -189,9 +189,11 @@
 //#include "xpm/darkgreendot.xpm"
 #include "xpm/bluedot.xpm"
 #include "xpm/graydot.xpm"
+#include "xpm/orangedot.xpm"
 #include "xpm/off.xpm"
 #include "xpm/blacksquare.xpm"
 #include "xpm/blacksqcheck.xpm"
+#include "xpm/checksquare.xpm"
 
 #include "xpm/mastertrackS.xpm"
 #include "xpm/localoffS.xpm"
@@ -425,9 +427,11 @@ QPixmap* greendotIcon;
 //QPixmap* darkgreendotIcon;
 QPixmap* graydotIcon;
 QPixmap* bluedotIcon;
+QPixmap* orangedotIcon;
 QPixmap* offIcon;
 QPixmap* blacksquareIcon;
 QPixmap* blacksqcheckIcon;
+QPixmap* checkSquareIcon;
 
 QPixmap* addtrack_addmiditrackIcon;
 QPixmap* addtrack_audiogroupIcon;
@@ -648,9 +652,11 @@ void initIcons()
       //darkgreendotIcon     = new MPIXMAP(darkgreendot_xpm, NULL);
       bluedotIcon          = new MPIXMAP(bluedot_xpm, NULL);
       graydotIcon          = new MPIXMAP(graydot_xpm, NULL);
+      orangedotIcon        = new MPIXMAP(orangedot_xpm, NULL);
       offIcon              = new MPIXMAP(off_xpm, NULL);
       blacksquareIcon      = new MPIXMAP(blacksquare_xpm, NULL);
       blacksqcheckIcon     = new MPIXMAP(blacksqcheck_xpm, NULL);
+      checkSquareIcon      = new MPIXMAP(checksquare_xpm, NULL);
 
       mastertrackSIcon     = new MPIXMAP(mastertrackS_xpm, NULL);
       localoffSIcon        = new MPIXMAP(localoffS_xpm, NULL);
@@ -885,10 +891,12 @@ void deleteIcons()
       //delete darkgreendotIcon;   
       delete bluedotIcon;          
       delete graydotIcon;          
+      delete orangedotIcon;          
       delete offIcon;              
       delete blacksquareIcon;      
       delete blacksqcheckIcon;     
-
+      delete checkSquareIcon;
+      
       delete mastertrackSIcon;     
       delete localoffSIcon;        
       delete miditransformSIcon;   

@@ -369,7 +369,7 @@ void TList::paint(const QRect& r)
                                     drawCenteredPixmap(p, blacksquareIcon, r);
                               else
                               if (track->solo())
-                                    drawCenteredPixmap(p, bluedotIcon, r);
+                                    drawCenteredPixmap(p, checkSquareIcon, r);
                               break;
                         case COL_TIMELOCK:
                               if (track->isMidiTrack()
@@ -1151,7 +1151,10 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                     MusEGlobal::audio->msgIdle(false);
                     MusEGlobal::audio->msgUpdateSoloStates();                   // (p4.0.14) p4.0.17
                     MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
-                }
+                  }
+                  
+                  // Prompt and send init sequences.
+                  MusEGlobal::audio->msgInitMidiDevices(false);
             }
             break;
                   

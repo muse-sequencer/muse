@@ -40,6 +40,8 @@
 #include "audiodev.h"
 #include "midi.h"
 #include "midiseq.h"
+#include "popupmenu.h"
+#include "menutitleitem.h"
 
 #include <QMenu>
 #include <QApplication>
@@ -733,12 +735,8 @@ void populateMidiPorts()
 }
 
 #else // this code is disabled
-// DELETETHIS uhm, yeah... do we need this?
-DISABLED AND MAYBE OUT-OF-DATE CODE!
-the code below is disabled for a longer period of time,
-there were certain changes and merges. dunno if that code
-works at all. before activating it again, intensively
-verify whether its still okay!
+
+// Please don't remove this section as it may be improved.
 
 // -------------------------------------------------------------------------------------------------------
 // populateMidiPorts()
@@ -863,6 +861,199 @@ void populateMidiPorts()
   }
 }
 #endif   // populateMidiPorts
+
+
+struct CI {
+            int num;
+            QString s;
+            bool used;
+            bool off;
+            bool instrument;
+            CI(int n, const QString& ss, bool u, bool o, bool i) : num(n), s(ss), used(u), off(o), instrument(i) {}
+            };
+
+//---------------------------------------------------
+//  populateMidiCtrlMenu
+//  Returns estimated width of the completed menu.            
+//---------------------------------------------------
+
+int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECore::Part* cur_part, int curDrumPitch)
+      {
+      //---------------------------------------------------
+      // build list of midi controllers for current
+      // MusECore::MidiPort/channel
+      //---------------------------------------------------
+
+      MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
+      int channel      = track->outChannel();
+      MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
+      bool isDrum      = track->type() == MusECore::Track::DRUM;
+      bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
+      MusECore::MidiInstrument* instr = port->instrument();
+      MusECore::MidiControllerList* mcl = instr->controller();
+
+      MusECore::MidiCtrlValListList* cll = port->controller();
+      int min = channel << 24;
+      int max = min + 0x1000000;
+
+      int est_width = 0;  
+      
+      std::list<CI> sList;
+      typedef std::list<CI>::iterator isList;
+
+      for (MusECore::iMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it) {
+            MusECore::MidiCtrlValList* cl = it->second;
+            MusECore::MidiController* c   = port->midiController(cl->num());
+            bool isDrumCtrl = ((c->num() & 0xff) == 0xff);
+            
+            // dont show drum specific controller if not a drum track
+            if (isDrumCtrl) {
+                  if (isDrum)
+                  {
+                    // only show controller for curDrumPitch:
+                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
+                          continue;
+                  }
+                  else if (isNewDrum)
+                  {
+                    // only show controller for curDrumPitch: FINDMICH does this work?
+                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != curDrumPitch))
+                          continue;
+                  }
+                  else
+                    continue;
+                  }
+            isList i = sList.begin();
+            for (; i != sList.end(); ++i) {
+                  //if (i->s == c->name())
+                  if (i->num == c->num())
+                        break;
+                  }
+                  
+            //printf("\n** c->num():%d cl->num:%d\n", c->num(), cl->num());      
+            if (i == sList.end()) {
+                  bool off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'
+                  bool used = false;
+                  for (MusECore::iPart ip = part_list->begin(); ip != part_list->end(); ++ip) {
+                        MusECore::EventList* el = ip->second->events();
+                        for (MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie) {
+                              MusECore::Event e = ie->second;
+                              if(e.type() != MusECore::Controller)
+                                continue;
+                              //e.dump();  
+                              int ctl_num = e.dataA();
+                              if(!isNewDrum)
+                              {
+                                // Is it a drum controller event, according to the track port's instrument?
+                                MusECore::MidiController *mc = port->drumController(ctl_num);
+                                if(mc)
+                                {
+                                  if((ctl_num & 0xff) != curDrumPitch)
+                                    continue;
+                                  // Change the controller event's index into the drum map to an instrument note.
+                                  ctl_num = (ctl_num & ~0xff) | MusEGlobal::drumMap[ctl_num & 0x7f].anote;
+                                }
+                              }
+                              if(ctl_num == cl->num()) 
+                              {
+                                    used = true;
+                                    break;
+                              }
+                                    
+                              }
+                        if (used)
+                              break;
+                        }
+                  bool isinstr = ( mcl->find(c->num()) != mcl->end() );
+                  int cnum = c->num();
+                  // Need to distinguish between global default controllers and 
+                  //  instrument defined controllers. Instrument takes priority over global
+                  //  ie they 'overtake' definition of a global controller such that the
+                  //  global def is no longer available.
+                  sList.push_back(CI(cnum, 
+                                  isinstr ? MusECore::midiCtrlNumString(cnum, true) + c->name() : MusECore::midiCtrlName(cnum, true), 
+                                  used, off, isinstr));
+                  }
+            }
+      
+      QString stext = QWidget::tr("Instrument-defined");
+      int fmw = menu->fontMetrics().width(stext);
+      if(fmw > est_width)
+        est_width = fmw;
+        
+      menu->addAction(new MenuTitleItem(stext, menu));
+      
+      // Add instrument-defined controllers.
+      for (isList i = sList.begin(); i != sList.end(); ++i) 
+      {
+        if(!i->instrument)
+          continue;
+        
+        fmw = menu->fontMetrics().width(i->s);
+        if(fmw > est_width)
+          est_width = fmw;
+        
+        if (i->used && !i->off)
+          menu->addAction(QIcon(*orangedotIcon), i->s)->setData(i->num);
+        else if (i->used)
+          menu->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
+        else if(!i->off)
+          menu->addAction(QIcon(*bluedotIcon), i->s)->setData(i->num);
+        else
+          menu->addAction(i->s)->setData(i->num);
+      }
+
+      stext = QWidget::tr("Add ...");
+      fmw = menu->fontMetrics().width(stext);
+      if(fmw > est_width)
+        est_width = fmw;
+      menu->addAction(QIcon(*configureIcon), stext)->setData(max + 1);
+
+      menu->addSeparator();
+      
+      stext = QWidget::tr("Others");
+      fmw = menu->fontMetrics().width(stext);
+      if(fmw > est_width)
+        est_width = fmw;
+      menu->addAction(new MenuTitleItem(stext, menu));
+      
+      stext = QWidget::tr("Velocity");
+      fmw = menu->fontMetrics().width(stext);
+      if(fmw > est_width)
+        est_width = fmw;
+      menu->addAction(stext)->setData(max);
+      
+      // Add global default controllers (all controllers not found in instrument).
+      for (isList i = sList.begin(); i != sList.end(); ++i) 
+      {
+        if(i->instrument)
+          continue;
+
+        fmw = menu->fontMetrics().width(i->s);
+        if(fmw > est_width)
+          est_width = fmw;
+        
+        if (i->used && !i->off)
+          menu->addAction(QIcon(*orangedotIcon), i->s)->setData(i->num);
+        else if (i->used)
+          menu->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
+        else if(!i->off)
+          menu->addAction(QIcon(*bluedotIcon), i->s)->setData(i->num);
+        else
+          menu->addAction(i->s)->setData(i->num);
+      }
+      
+      stext = QWidget::tr("Add ...");
+      fmw = menu->fontMetrics().width(stext);
+      if(fmw > est_width)
+        est_width = fmw;
+      menu->addAction(QIcon(*configureIcon), stext)->setData(max + 3);
+
+      est_width += 60; // Add about 60 for the coloured lights on the left.
+      
+      return est_width;
+      }
+
 
 
 } // namespace MusEGui

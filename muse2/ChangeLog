@@ -1,3 +1,18 @@
+19.10.2012:
+         * Improved: Midi initializations. New settings options, can be 'quiet'. Complete rewrite of initializations coding. (Tim) 
+         * Improved: Midi controller graphs: Control selector 'S' popup now stay-open, AND NOW with multi-coloured dots: 
+                      Blank: Controller has no current 'manual' value (it is 'Off'), and no stored automation values.
+                      Blue:  Controller has a current 'manual' value (it is not 'Off'), but no stored automation values.
+                      Green: Controller has no current 'manual' value, but does have stored automation values.
+                      Gold:  Controller has a current 'manual' value AND has stored automation values.
+                     Bonus! Pianoroll and drum edit 'Ctrl' buttons ALSO now popup this very same menu. No more clumsy
+                             adding of controllers - now just hold the ctrl key and select away and... "bing bing bing 1 2 3". (Tim)
+         * Improved: 'Old' drum track 'drum controllers' display and operation: Fixed several problems: Incorrect mapping to drum map etc. (Tim)
+                     Now if more than one drum is pointing to the same 'anote', the others are overlaid as grey slivers. (TODO Not quite done.)
+                     TODO: Although THESE "drum controllers" are improved, there are conceptual problems with NON-drum controllers old drum map:
+                           If a NON-drum controller such as pan is adjusted, what then? If the drum map contains more than one port/channel/anote 
+                            it should be sent to ALL of them BUT we would like a 'track override' which when turned off, 'pan' could be locally
+                            adjusted for EACH drum having different ports/channels/anotes. (So in theory drum track channel should be reinstated.) 
 09.10.2012:
          - Fixed old fluidsynth bug: Drum patch numbers incorrect. (Tim)
            Confusion due to special fluidsynth drum bank = 129. Changed FluidSynth::getFirstPatch, 

@@ -38,7 +38,7 @@ class QWidget;
 namespace MusECore {
 class Part;
 class Track;
-
+class PartList;
 
 QString pitch2string(int v);
 Part* partFromSerialNumber(int serial);
@@ -63,6 +63,8 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 }
 
 namespace MusEGui {
+class PopupMenu;
+  
 QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false, bool evenIgnoreDrumPreference=false);
 QStringList localizedStringListFromCharArray(const char** array, const char* context);
@@ -73,6 +75,7 @@ QString projectPathFromFilename(QString filename);
 QString projectExtensionFromFilename(QString filename);
 QString getUniqueUntitledName();
 void populateMidiPorts();
+int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECore::Part* cur_part, int curDrumPitch);
 } 
 
 #endif

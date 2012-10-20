@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <set>
+
 #include <QMenu>
 #include <QApplication>
 
@@ -30,13 +32,17 @@
 #include "midi.h"
 #include "minstrument.h"
 #include "xml.h"
+#include "gconfig.h"
 #include "globals.h"
+#include "globaldefs.h"
 #include "mpevent.h"
 #include "synth.h"
 #include "app.h"
 #include "song.h"
 #include "menutitleitem.h"
 #include "icons.h"
+#include "track.h"
+#include "drummap.h"
 
 namespace MusEGlobal {
 MusECore::MidiPort midiPorts[MIDI_PORTS];
@@ -68,6 +74,7 @@ void initMidiPorts()
 MidiPort::MidiPort()
    : _state("not configured")
       {
+      _initializationsSent = false;  
       _defaultInChannels  = (1 << MIDI_CHANNELS) -1;  // p4.0.17 Default is now to connect to all channels.
       _defaultOutChannels = 0;
       _device     = 0;
@@ -143,6 +150,7 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                   _instrument = genericMidiInstrument;
             _device->setPort(-1);
             _device->close();
+            _initializationsSent = false;
             }
       if (dev) {
             for (int i = 0; i < MIDI_PORTS; ++i) {
@@ -163,75 +171,181 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                   }
             _state = _device->open();
             _device->setPort(portno());
-
-            // By T356. Send all instrument controller initial (default) values to all midi channels now,
-            //  except where explicitly initialized in the song.
-            // By sending ALL instrument controller initial values, even if those controllers are NOT
-            //  in the song, we can ensure better consistency between songs. 
-            // For example: A song is loaded which has a 'reverb level' controller initial value of '100'.
-            // Then a song is loaded which has no such controller (hence no explicit initial value).
-            // The 'reverb level' controller would still be at '100', and could adversely affect the song,
-            //  but if the instrument has an available initial value of say '0', it will be used instead.
-            //
-
-            // NOT for syntis. Use midiState and/or initParams for that. 
-            if(_instrument && !_device->isSynti())
-            {
-              MidiControllerList* cl = _instrument->controller();
-              MidiController* mc;
-              for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc) 
-              {
-                mc = imc->second;
-                for(int chan = 0; chan < MIDI_CHANNELS; ++chan)
-                {
-                  ciMidiCtrlValList i;
-                  // Look for an initial value for this midi controller, on this midi channel, in the song...
-                  for(i = _controller->begin(); i != _controller->end(); ++i) 
-                  {
-                    int channel = i->first >> 24;
-                    int cntrl   = i->first & 0xffffff;
-                    int val     = i->second->hwVal();
-                    if(channel == chan && cntrl == mc->num() && val != CTRL_VAL_UNKNOWN)
-                      break;
-                  }  
-                  // If no initial value was found for this midi controller, on this midi channel, in the song...
-                  if(i == _controller->end())
-                  {
-                    // If the instrument's midi controller has an initial value, send it now.
-                    if(mc->initVal() != CTRL_VAL_UNKNOWN)
-                    {
-                      int ctl = mc->num();
-                      // Note the addition of bias!
-                      // Retry added. Use default attempts and delay. 
-                      _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,  
-                        ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
-                      // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
-                      // Set it again so that control labels show 'off'...
-                      setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, mc->initVal() + mc->bias());
-                    }    
-                  }    
-                }
-              }
-            }
-
-            // init HW controller state
-            for (iMidiCtrlValList i = _controller->begin(); i != _controller->end(); ++i) {
-                int channel = i->first >> 24;
-                int cntrl   = i->first & 0xffffff;
-                int val     = i->second->hwVal();
-                if (val != CTRL_VAL_UNKNOWN) {
-                  // Retry added. Use default attempts and delay. 
-                  _device->putEventWithRetry(MidiPlayEvent(0, portno(), channel,
-                    ME_CONTROLLER, cntrl, val));                          
-                  // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
-                  setHwCtrlState(channel, cntrl, val);
-                  }
-                }
+            _initializationsSent = false;
             }  
 
       else
             clearDevice();
       }
+
+//---------------------------------------------------------
+//   sendPendingInitializations
+//   Return true if success.
+//---------------------------------------------------------
+
+bool MidiPort::sendPendingInitializations(bool force)
+{
+  if(!_device || !(_device->openFlags() & 1))   // Not writable?
+    return false;
+  
+  bool rv = true;
+  int port = portno();
+  
+  //
+  // test for explicit instrument initialization
+  //
+
+  unsigned last_tick = 0;
+  MusECore::MidiInstrument* instr = instrument();
+  if(instr && MusEGlobal::config.midiSendInit && (force || !_initializationsSent))
+  {
+    // Send the Instrument Init sequences.
+    EventList* events = instr->midiInit();
+    if(!events->empty())
+    {
+      for(iEvent ie = events->begin(); ie != events->end(); ++ie) 
+      {
+        unsigned tick = ie->second.tick();
+        if(tick > last_tick)
+          last_tick = tick;
+        MusECore::MidiPlayEvent ev(tick, port, 0, ie->second);
+        _device->putEvent(ev);
+      }
+      // Give a bit of time for the last Init sysex to settle?
+      last_tick += 100;
+    }
+    _initializationsSent = true; // Mark as having been sent.
+  }
+    
+  // Send the Instrument controller default values.
+  sendInitialControllers(last_tick);
+
+  return rv;
+}
+      
+//---------------------------------------------------------
+//   sendInitialControllers
+//   Return true if success.
+//---------------------------------------------------------
+
+bool MidiPort::sendInitialControllers(unsigned start_time)
+{
+  bool rv = true;
+  int port = portno();
+  
+  // Find all channels of this port used in the song...
+  bool usedChans[MIDI_CHANNELS];
+  int usedChanCount = 0;
+  for(int i = 0; i < MIDI_CHANNELS; ++i)
+    usedChans[i] = false;
+  if(MusEGlobal::song->click() && MusEGlobal::clickPort == port)
+  {
+    usedChans[MusEGlobal::clickChan] = true;
+    ++usedChanCount;
+  }
+  bool drum_found = false;
+  for(ciMidiTrack imt = MusEGlobal::song->midis()->begin(); imt != MusEGlobal::song->midis()->end(); ++imt)
+  {
+    if((*imt)->type() == MusECore::Track::DRUM)
+    {
+      if(!drum_found)
+      {
+        drum_found = true; 
+        for(int i = 0; i < DRUM_MAPSIZE; ++i)
+        {
+          if(MusEGlobal::drumMap[i].port != port || usedChans[MusEGlobal::drumMap[i].channel])
+            continue;
+          usedChans[MusEGlobal::drumMap[i].channel] = true;
+          ++usedChanCount;
+          if(usedChanCount >= MIDI_CHANNELS)
+            break;  // All are used, done searching.
+        }
+      }
+    }
+    else
+    {
+      if((*imt)->outPort() != port || usedChans[(*imt)->outChannel()])
+        continue;
+      usedChans[(*imt)->outChannel()] = true;
+      ++usedChanCount;
+    }
+    
+    if(usedChanCount >= MIDI_CHANNELS)
+      break;  // All are used, done searching.
+  }
+
+  // NOT for syntis. Use midiState and/or initParams for that. 
+  if(MusEGlobal::config.midiSendInit && MusEGlobal::config.midiSendCtlDefaults && _instrument && !_device->isSynti())
+  {
+    MidiControllerList* cl = _instrument->controller();
+    MidiController* mc;
+    for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc) 
+    {
+      mc = imc->second;
+      for(int chan = 0; chan < MIDI_CHANNELS; ++chan)
+      {
+        if(!usedChans[chan])
+          continue;  // This channel on this port is not used in the song.
+        ciMidiCtrlValList i;
+        // Look for an initial value for this midi controller, on this midi channel, in the song...
+        for(i = _controller->begin(); i != _controller->end(); ++i) 
+        {
+          int channel = i->first >> 24;
+          int cntrl   = i->first & 0xffffff;
+          int val     = i->second->hwVal();
+          if(channel == chan && cntrl == mc->num() && val != CTRL_VAL_UNKNOWN)
+            break;
+        }  
+        // If no initial value was found for this midi controller, on this midi channel, in the song...
+        if(i == _controller->end())
+        {
+          // If the instrument's midi controller has an initial value, send it now.
+          if(mc->initVal() != CTRL_VAL_UNKNOWN)
+          {
+            int ctl = mc->num();
+            // Note the addition of bias!
+            // Retry added. Use default attempts and delay. 
+            _device->putEventWithRetry(MidiPlayEvent(start_time, port, chan,  
+              ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
+            // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
+            // Set it again so that control labels show 'off'...
+            setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, mc->initVal() + mc->bias());
+          }    
+        }    
+      }
+    }
+  }
+
+  // init HW controller state
+  for (iMidiCtrlValList i = _controller->begin(); i != _controller->end(); ++i) 
+  {
+      int channel = i->first >> 24;
+      if(!usedChans[channel])
+        continue;  // This channel on this port is not used in the song.
+      int cntrl   = i->first & 0xffffff;
+      int val     = i->second->hwVal();
+      if (val != CTRL_VAL_UNKNOWN) 
+      {
+        // Retry added. Use default attempts and delay. 
+        _device->putEventWithRetry(MidiPlayEvent(start_time, port, channel,
+          ME_CONTROLLER, cntrl, val));                          
+        // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
+        setHwCtrlState(channel, cntrl, val);
+      }
+  }
+              
+  return rv;
+}
+      
+//---------------------------------------------------------
+//   setInstrument
+//---------------------------------------------------------
+
+void MidiPort::setInstrument(MidiInstrument* i)
+{
+  _instrument = i;
+  _initializationsSent = false;
+}
 
 //---------------------------------------------------------
 //   clearDevice
@@ -240,6 +354,7 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
 void MidiPort::clearDevice()
       {
       _device = 0;
+      _initializationsSent = false;
       _state  = "not configured";
       }
 

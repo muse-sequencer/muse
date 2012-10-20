@@ -132,7 +132,8 @@ class CtrlCanvas : public MusEGui::View {
       void deleteVal(int x1, int x2, int y);
 
       bool setCurTrackAndPart();
-      void pdrawItems(QPainter&, const QRect&, const MusECore::MidiPart*, bool, bool);
+      void pdrawItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, bool velo, bool fg);
+      void pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const MusECore::MidiPart* part, int drum_ctl);
       void partControllers(const MusECore::MidiPart*, int, int*, int*, MusECore::MidiController**, MusECore::MidiCtrlValList**);
       
       

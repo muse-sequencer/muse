@@ -69,12 +69,33 @@ enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_
 //---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
+       
 void MPConfig::closeEvent(QCloseEvent *event)
 {
+    apply();
     QSettings settings("MusE", "MusE-qt");
     settings.setValue("MPConfig/geometry", saveGeometry());
     QWidget::closeEvent(event);
 }
+
+//---------------------------------------------------------
+//   apply
+//---------------------------------------------------------
+
+void MPConfig::apply()
+{
+  MusEGlobal::audio->msgInitMidiDevices(false);  // false = Don't force
+}
+
+//---------------------------------------------------------
+//   okClicked
+//---------------------------------------------------------
+
+void MPConfig::okClicked()
+{
+  close();  
+}
+
 //---------------------------------------------------------
 //   changeDefInputRoutes
 //---------------------------------------------------------
@@ -1116,6 +1137,10 @@ MPConfig::MPConfig(QWidget* parent)
       connect(synthList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(addInstanceClicked())); 
       connect(removeInstance, SIGNAL(clicked()), SLOT(removeInstanceClicked()));
       connect(instanceList,  SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(removeInstanceClicked()));
+      
+      connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
+      connect(okButton, SIGNAL(clicked()), SLOT(okClicked()));
+      
       songChanged(SC_CONFIG);  
       }
 

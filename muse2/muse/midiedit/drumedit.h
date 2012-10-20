@@ -35,7 +35,9 @@
 #include "shortcuts.h"
 #include "event.h"
 #include "dcanvas.h"
+#include "midictrl.h"
 
+class QAction;
 class QCloseEvent;
 class QLabel;
 class QMenu;
@@ -44,6 +46,7 @@ class QResizeEvent;
 class QToolButton;
 class QWidget;
 class QComboBox;
+class QPushButton;
 
 
 namespace MusECore {
@@ -110,6 +113,7 @@ class DrumEdit : public MidiEditor {
       MusEGui::Header* header;
       QToolBar* tools;
       QComboBox *stepLenWidget;
+      QPushButton* ctrl;
 
       static int _rasterInit;
       static int _dlistWidthInit, _dcanvasWidthInit;
@@ -123,6 +127,7 @@ class DrumEdit : public MidiEditor {
       QAction *groupNoneAction, *groupChanAction, *groupMaxAction;
       
       void initShortcuts();
+      void setupNewCtrl(CtrlEdit* ctrlEdit);
 
       virtual void closeEvent(QCloseEvent*);
       QWidget* genToolbar(QWidget* parent);
@@ -147,6 +152,8 @@ class DrumEdit : public MidiEditor {
       void configChanged();
       void songChanged1(MusECore::SongChangedFlags_t);
       void setStep(QString);
+      void addCtrlClicked();
+      void ctrlPopupTriggered(QAction* act);
 
       void updateGroupingActions();
       void set_ignore_hide(bool);
@@ -165,7 +172,6 @@ class DrumEdit : public MidiEditor {
       void execDeliveredScript(int);
       void execUserScript(int);
       void focusCanvas();
-      CtrlEdit* addCtrl();
       void ourDrumMapChanged(bool);
       virtual void updateHScrollRange();
 
@@ -179,6 +185,8 @@ class DrumEdit : public MidiEditor {
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml& xml);
       static void writeConfiguration(int, MusECore::Xml&);
+      
+      CtrlEdit* addCtrl(int ctl_num = MusECore::CTRL_VELOCITY);
       
       bool old_style_drummap_mode() { return _old_style_drummap_mode; }
       group_mode_t group_mode() { return _group_mode; }

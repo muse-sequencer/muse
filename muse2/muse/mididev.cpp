@@ -37,12 +37,14 @@
 #include "config.h"
 #include "gconfig.h"
 #include "globals.h"
+#include "globaldefs.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "midiseq.h"
 #include "sync.h"
 #include "midiitransform.h"
 #include "part.h"
+#include "drummap.h"
 
 namespace MusEGlobal {
 MusECore::MidiDeviceList midiDevices;
@@ -130,6 +132,13 @@ MidiDevice::MidiDevice(const QString& n)
       
       init();
       }
+
+void MidiDevice::setPort(int p)
+{
+  _port = p; 
+  if(_port != -1)
+    MusEGlobal::midiPorts[_port].clearInitSent();
+}
 
 //---------------------------------------------------------
 //   filterEvent
@@ -372,7 +381,7 @@ void MidiDeviceList::remove(MidiDevice* dev)
 //   sendNullRPNParams
 //---------------------------------------------------------
 
-bool MidiDevice::sendNullRPNParams(int chn, bool nrpn)
+bool MidiDevice::sendNullRPNParams(unsigned time, int port, int chn, bool nrpn)
 {
   if(_port == -1)
     return false;  
@@ -386,16 +395,16 @@ bool MidiDevice::sendNullRPNParams(int chn, bool nrpn)
   if(nvh != 0xff)
   {
     if(nrpn)
-      putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f));
+      putMidiEvent(MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f));
     else
-      putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f));
+      putMidiEvent(MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f));
   }
   if(nvl != 0xff)
   {
     if(nrpn)
-      putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LNRPN, nvl & 0x7f));
+      putMidiEvent(MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_LNRPN, nvl & 0x7f));
     else  
-      putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LRPN, nvl & 0x7f));
+      putMidiEvent(MidiPlayEvent(time, port, chn, ME_CONTROLLER, CTRL_LRPN, nvl & 0x7f));
   }
   return true;  
 }
@@ -437,22 +446,25 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
         //return true;
         return false;
         
+      unsigned t = ev.time();
+      int port = ev.port();
+      
       if (ev.type() == ME_CONTROLLER) {
             int a = ev.dataA();
             int b = ev.dataB();
             int chn = ev.channel();
             if (a == CTRL_PITCH) {
-                  return putMidiEvent(MidiPlayEvent(0, 0, chn, ME_PITCHBEND, b, 0));
+                  return putMidiEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, b, 0));
                   }
             if (a == CTRL_PROGRAM) {
                         int hb = (b >> 16) & 0xff;
                         int lb = (b >> 8) & 0xff;
                         int pr = b & 0x7f;
                         if (hb != 0xff)
-                              putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HBANK, hb));
+                              putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb));
                         if (lb != 0xff)
-                              putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LBANK, lb));
-                        return putMidiEvent(MidiPlayEvent(0, 0, chn, ME_PROGRAM, pr, 0));
+                              putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb));
+                        return putMidiEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0));
                   }
 #if 1 // if ALSA cannot handle RPN NRPN etc. DELETETHIS? remove the wrapping #if #endif
             
@@ -464,52 +476,52 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, ctrlH, dataH));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, ctrlL, dataL));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlH, dataH));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlL, dataL));
                   }
             else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HDATA, b));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
                   
                   // Select null parameters so that subsequent data controller
                   //  events do not upset the last *RPN controller.  Tim.
-                  sendNullRPNParams(chn, false);
+                  sendNullRPNParams(t, port, chn, false);
                 }
             else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HDATA, b));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b));
                   
-                  sendNullRPNParams(chn, true);
+                  sendNullRPNParams(t, port, chn, true);
                   }
             else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
                   
-                  sendNullRPNParams(chn, false);
+                  sendNullRPNParams(t, port, chn, false);
                   }
             else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
-                  putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH));
+                  putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL));
                   
-                  sendNullRPNParams(chn, true);
+                  sendNullRPNParams(t, port, chn, true);
                   }
             else {
                   printf("putEvent: unknown controller type 0x%x\n", a);
@@ -649,6 +661,7 @@ void MidiDevice::handleSeek()
     return;
   
   MidiPort* mp = &MusEGlobal::midiPorts[_port];
+  MidiInstrument* instr = mp->instrument();
   MidiCtrlValListList* cll = mp->controller();
   int pos = MusEGlobal::audio->tickPos();
   
@@ -691,10 +704,56 @@ void MidiDevice::handleSeek()
   //    Send new controller values
   //---------------------------------------------------
     
+  // Find channels on this port used in the song...
+  bool usedChans[MIDI_CHANNELS];
+  int usedChanCount = 0;
+  for(int i = 0; i < MIDI_CHANNELS; ++i)
+    usedChans[i] = false;
+  if(MusEGlobal::song->click() && MusEGlobal::clickPort == _port)
+  {
+    usedChans[MusEGlobal::clickChan] = true;
+    ++usedChanCount;
+  }
+  bool drum_found = false;
+  for(ciMidiTrack imt = MusEGlobal::song->midis()->begin(); imt != MusEGlobal::song->midis()->end(); ++imt)
+  {
+    if((*imt)->type() == MusECore::Track::DRUM)
+    {
+      if(!drum_found)
+      {
+        drum_found = true; 
+        for(int i = 0; i < DRUM_MAPSIZE; ++i)
+        {
+          if(MusEGlobal::drumMap[i].port != _port || usedChans[MusEGlobal::drumMap[i].channel])
+            continue;
+          usedChans[MusEGlobal::drumMap[i].channel] = true;
+          ++usedChanCount;
+          if(usedChanCount >= MIDI_CHANNELS)
+            break;  // All are used, done searching.
+        }
+      }
+    }
+    else
+    {
+      if((*imt)->outPort() != _port || usedChans[(*imt)->outChannel()])
+        continue;
+      usedChans[(*imt)->outChannel()] = true;
+      ++usedChanCount;
+    }
+
+    if(usedChanCount >= MIDI_CHANNELS)
+      break;    // All are used. Done searching.
+  }   
+  
   for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
   {
     MidiCtrlValList* vl = ivl->second;
+    int chan = ivl->first >> 24;
+    if(!usedChans[chan])  // Channel not used in song?
+      continue;
+    int ctlnum = vl->num();
     iMidiCtrlVal imcv = vl->iValue(pos);
+    //bool done = false;
     if(imcv != vl->end()) 
     {
       Part* p = imcv->second.part;
@@ -707,10 +766,30 @@ void MidiDevice::handleSeek()
       unsigned t = (unsigned)imcv->first;
       // Do not add values that are outside of the part.
       if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
-        //_playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+      {
+        //_playEvents.add(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val));
         // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
-        mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val), imcv->first == pos);
-        //mp->sendEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val), pos == 0 || imcv->first == pos);
+        mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), imcv->first == pos);
+        //mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), pos == 0 || imcv->first == pos);
+        //done = true;
+      }
+    }
+
+    // Either no value was found, or they were outside parts, or pos is in the unknown area before the first value.
+    // Send instrument default initial values.  NOT for syntis. Use midiState and/or initParams for that. 
+    //if((imcv == vl->end() || !done) && !MusEGlobal::song->record() && instr && !isSynti()) 
+    // Darn, without refinement we can only do this at position 0, due to possible 'skipped' values outside parts, above. 
+    if(imcv == vl->end() && MusEGlobal::config.midiSendCtlDefaults && !MusEGlobal::song->record() && pos == 0 && instr && !isSynti()) 
+    {
+      MidiControllerList* mcl = instr->controller();
+      ciMidiController imc = mcl->find(vl->num());
+      if(imc != mcl->end())
+      {
+        MidiController* mc = imc->second;
+        if(mc->initVal() != CTRL_VAL_UNKNOWN)
+          // Use sendEvent to get the optimizations and limiting. No force sending. Note the addition of bias.
+          mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, mc->initVal() + mc->bias()), false);
+      }
     }
   }
   

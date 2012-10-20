@@ -1107,6 +1107,9 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
 
       QApplication::restoreOverrideCursor();
 
+      // Prompt and send init sequences.
+      MusEGlobal::audio->msgInitMidiDevices(false);
+      
       if (MusEGlobal::song->getSongInfo().length()>0 && MusEGlobal::song->showSongInfoOnStartup()) {
           startSongInfo(false);
         }
@@ -1285,7 +1288,6 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
           }
         }
       }
-      
       }
 
 //---------------------------------------------------------

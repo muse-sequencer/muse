@@ -1,8 +1,8 @@
 /* XPM */
-static const char * bluedot_xpm[] = {
+static const char * orangedot_xpm[] = {
 "12 16 2 1",
 " 	c None",
-".	c #009AFF",
+".	c #FFBA00",
 "            ",
 "            ",
 "            ",

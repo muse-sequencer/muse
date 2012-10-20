@@ -35,6 +35,7 @@
 #include "midieditor.h"
 #include "tools.h"
 #include "event.h"
+#include "midictrl.h"
 
 class QAction;
 class QLabel;
@@ -129,7 +130,8 @@ class PianoRoll : public MidiEditor {
       MusEGui::Splitter* splitter;
       MusEGui::Splitter* hsplitter;
       MusEGui::Splitter* ctrlLane;
-
+      QPushButton* ctrl;
+      
       QToolButton* speaker;
       QToolBar* tools;
       MusEGui::EditToolBar* tools2;
@@ -146,6 +148,7 @@ class PianoRoll : public MidiEditor {
 
       
       void initShortcuts();
+      void setupNewCtrl(CtrlEdit* ctrlEdit);
       void setEventColorMode(int);
       QWidget* genToolbar(QWidget* parent);
       virtual void closeEvent(QCloseEvent*);
@@ -171,6 +174,8 @@ class PianoRoll : public MidiEditor {
       void toggleTrackInfo();
       void updateTrackInfo();
       void deltaModeChanged(bool);
+      void addCtrlClicked();
+      void ctrlPopupTriggered(QAction* act);
 
    signals:
       void isDeleting(MusEGui::TopWin*);
@@ -180,7 +185,6 @@ class PianoRoll : public MidiEditor {
       void execDeliveredScript(int id);
       void execUserScript(int id);
       void focusCanvas();
-      CtrlEdit* addCtrl();
       
    public:
       PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
@@ -189,6 +193,7 @@ class PianoRoll : public MidiEditor {
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml&);
       static void writeConfiguration(int, MusECore::Xml&);
+      CtrlEdit* addCtrl(int ctl_num = MusECore::CTRL_VELOCITY);
       };
 
 } // namespace MusEGui

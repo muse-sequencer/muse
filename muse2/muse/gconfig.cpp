@@ -127,6 +127,9 @@ GlobalConfigValues config = {
 
       384,                          // division;
       1024,                         // rtcTicks
+      true,                         // midiSendInit Send instrument initialization sequences
+      true,                         // warnInitPending Warn instrument initialization sequences pending
+      false,                        // midiSendCtlDefaults Send instrument controller defaults at position 0 if none in song
       -60,                          // int minMeter;
       -60.0,                        // double minSlider;
       false,                        // use Jack freewheel

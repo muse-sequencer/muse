@@ -278,7 +278,7 @@ class Audio {
       void msgUndo();
       void msgRedo();
       void msgLocalOff();
-      void msgInitMidiDevices();
+      void msgInitMidiDevices(bool force = true);
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgBounce();
@@ -330,7 +330,7 @@ class Audio {
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
       int getFrameOffset() const   { return frameOffset; }
-      void initDevices();
+      void initDevices(bool force = true);
 
       AudioOutput* audioMaster() const { return _audioMaster; }
       AudioOutput* audioMonitor() const { return _audioMonitor; }

@@ -26,6 +26,7 @@
 #include <QWidget>
 
 class QPushButton;
+class QAction;
 
 namespace MusECore {
 class MidiController;
@@ -68,6 +69,7 @@ class CtrlPanel: public QWidget {
       void ctrlChanged(double val);
       void labelDoubleClicked();
       void ctrlRightClicked(const QPoint& p, int id);
+      void ctrlPopupTriggered(QAction* act);
       
    protected slots:
       virtual void heartBeat();

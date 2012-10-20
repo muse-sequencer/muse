@@ -170,9 +170,11 @@ extern QPixmap* greendotIcon;
 //extern QPixmap* darkgreendotIcon;
 extern QPixmap* graydotIcon;
 extern QPixmap* bluedotIcon;
+extern QPixmap* orangedotIcon;
 extern QPixmap* offIcon;
 extern QPixmap* blacksquareIcon;
 extern QPixmap* blacksqcheckIcon;
+extern QPixmap* checkSquareIcon;
 
 extern QPixmap* mastertrackSIcon;
 extern QPixmap* localoffSIcon;

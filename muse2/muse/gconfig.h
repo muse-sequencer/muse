@@ -136,6 +136,9 @@ struct GlobalConfigValues {
 
       int division;
       int rtcTicks;
+      bool midiSendInit;         // Send instrument initialization sequences
+      bool warnInitPending;      // Warn instrument initialization sequences pending
+      bool midiSendCtlDefaults;  // Send instrument controller defaults at position 0 if none in song
       int minMeter;
       double minSlider;
       bool freewheelMode;

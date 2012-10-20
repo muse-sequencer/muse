@@ -888,6 +888,12 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.guiDivision = xml.parseInt();
                         else if (tag == "rtcTicks")
                               MusEGlobal::config.rtcTicks = xml.parseInt();
+                        else if (tag == "midiSendInit")
+                              MusEGlobal::config.midiSendInit = xml.parseInt();
+                        else if (tag == "warnInitPending")
+                              MusEGlobal::config.warnInitPending = xml.parseInt();
+                        else if (tag == "midiSendCtlDefaults")
+                              MusEGlobal::config.midiSendCtlDefaults = xml.parseInt();
                         else if (tag == "minMeter")
                               MusEGlobal::config.minMeter = xml.parseInt();
                         else if (tag == "minSlider")
@@ -1206,6 +1212,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
 
       xml.intTag(level, "division", MusEGlobal::config.division);
       xml.intTag(level, "rtcTicks", MusEGlobal::config.rtcTicks);
+      xml.intTag(level, "midiSendInit", MusEGlobal::config.midiSendInit);
+      xml.intTag(level, "warnInitPending", MusEGlobal::config.warnInitPending);
+      xml.intTag(level, "midiSendCtlDefaults", MusEGlobal::config.midiSendCtlDefaults);
       xml.intTag(level, "minMeter", MusEGlobal::config.minMeter);
       xml.doubleTag(level, "minSlider", MusEGlobal::config.minSlider);
       xml.intTag(level, "freewheelMode", MusEGlobal::config.freewheelMode);

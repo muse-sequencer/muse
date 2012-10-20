@@ -54,12 +54,14 @@ QT4_WRAP_CPP (widget_mocs
       hitscale.h  
       intlabel.h  
       knob.h  
+      knob_and_meter.h  
       lcombo.h  
       menutitleitem.h
       meter.h
       metronome.h  
       midi_audio_control.h  
       midisyncimpl.h  
+      midi_warn_init_pending_impl.h
       mixdowndialog.h  
       mlabel.h  
       mtscale.h  
@@ -125,6 +127,7 @@ file (GLOB widgets_ui_files
       itransformbase.ui  
       metronomebase.ui  
       midisync.ui  
+      midi_warn_init_pending.ui
       midi_audio_control_base.ui  
       mittransposebase.ui  
       mixdowndialogbase.ui  
@@ -170,12 +173,14 @@ file (GLOB widgets_source_files
       hitscale.cpp 
       intlabel.cpp 
       knob.cpp 
+      knob_and_meter.cpp
       lcombo.cpp 
       menutitleitem.cpp
       meter.cpp
       metronome.cpp 
       midi_audio_control.cpp 
       midisyncimpl.cpp 
+      midi_warn_init_pending_impl.cpp
       mixdowndialog.cpp 
       mlabel.cpp 
       mmath.cpp

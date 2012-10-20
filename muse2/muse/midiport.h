@@ -59,6 +59,9 @@ class MidiPort {
       // When creating a new midi track, add these global default channel routes to/from this port. Ignored if 0.
       int _defaultInChannels;    // These are bit-wise channel masks.
       int _defaultOutChannels;   //
+      // Whether Init sysexes and default controller values have been sent. To be reset whenever
+      //  something about the port changes like device, Jack routes, or instrument.
+      bool _initializationsSent; 
       
       RouteList _inRoutes, _outRoutes;
       
@@ -98,7 +101,7 @@ class MidiPort {
       void setMidiDevice(MidiDevice* dev);
       const QString& portname() const;
       MidiInstrument* instrument() const        { return _instrument; }
-      void setInstrument(MidiInstrument* i)     { _instrument = i; }
+      void setInstrument(MidiInstrument* i);
       MidiController* midiController(int num) const;
       MidiCtrlValList* addManagedController(int channel, int ctrl);
       void tryCtrlInitVal(int chan, int ctl, int val);
@@ -136,6 +139,13 @@ class MidiPort {
                          unsigned char s, unsigned char f, unsigned char sf, int devid = -1);
       void sendMMCStop(int devid = -1);
       void sendMMCDeferredPlay(int devid = -1);
+
+      // Send Instrument Init sequences and controller defaults etc.
+      bool sendPendingInitializations(bool force = true);  // Per port
+      // Send initial controller values. Called by above method, and elsewhere.
+      bool sendInitialControllers(unsigned start_time = 0);
+      bool initSent() const { return _initializationsSent; }  
+      void clearInitSent() { _initializationsSent = false; }  
       
       bool sendHwCtrlState(const MidiPlayEvent&, bool forceSend = false );
       bool sendEvent(const MidiPlayEvent&, bool forceSend = false );

@@ -203,11 +203,6 @@ void MidiSeq::processStop()
 
 void MidiSeq::processSeek()
 {
-  int pos = MusEGlobal::audio->tickPos();
-  // TODO Try to move this into MusEGlobal::audio::seek().   
-  if (pos == 0 && !MusEGlobal::song->record())
-        MusEGlobal::audio->initDevices();
-
   //---------------------------------------------------
   //    set all controller
   //---------------------------------------------------

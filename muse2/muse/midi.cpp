@@ -169,7 +169,7 @@ QString nameSysex(unsigned int len, const unsigned char* buf)
             case 0x43:  s = "Yamaha: "; break;
             case 0x44:  s = "Casio"; break;
             case 0x45:  s = "Akai"; break;
-            case MUSE_SYNTH_SYSEX_MFG_ID:  s = "MusE Soft Synth"; break;     // p4.0.27
+            case MUSE_SYNTH_SYSEX_MFG_ID:  s = "MusE Soft Synth"; break;     
             case 0x7d:  s = "Educational Use"; break;
             case 0x7e:  s = "Universal: Non Real Time"; break;
             case 0x7f:  s = "Universal: Real Time"; break;
@@ -521,7 +521,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                             printf("ERROR: THIS SHOULD NEVER HAPPEN: k==i in midi.cpp:buildMidiEventList()\n");
                           else
                             mel.erase(k);
-                            i = mel.begin();   // p4.0.34
+                            i = mel.begin();
                           continue;
                           }
                     }
@@ -592,49 +592,15 @@ void Audio::panic()
 
 //---------------------------------------------------------
 //   initDevices
-//    - called on seek to position 0
+//    - called when instrument init sequences plus controller 
+//       defaults should be checked and/or sent
 //    - called from arranger pulldown menu
 //---------------------------------------------------------
 
-void Audio::initDevices()
+void Audio::initDevices(bool force)
       {
-      //
-      // mark all used ports
-      //
-      bool activePorts[MIDI_PORTS];
-      for (int i = 0; i < MIDI_PORTS; ++i)
-            activePorts[i] = false;
-
-      MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
-      for (MusECore::iMidiTrack it = tracks->begin(); it != tracks->end(); ++it) {
-            MusECore::MidiTrack* track = *it;
-            activePorts[track->outPort()] = true;
-            }
-      if (MusEGlobal::song->click())
-            activePorts[MusEGlobal::clickPort] = true;
-
-      //
-      // test for explicit instrument initialization
-      //
-
       for (int i = 0; i < MIDI_PORTS; ++i) {
-            if (!activePorts[i])
-                  continue;
-
-            MusECore::MidiPort* port        = &MusEGlobal::midiPorts[i];
-            MusECore::MidiInstrument* instr = port->instrument();
-            MidiDevice* md        = port->device();
-
-            if (instr && md) {
-                  EventList* events = instr->midiInit();
-                  if (events->empty())
-                        continue;
-                  for (iEvent ie = events->begin(); ie != events->end(); ++ie) {
-                        MusECore::MidiPlayEvent ev(0, i, 0, ie->second);
-                        md->putEvent(ev);
-                        }
-                  activePorts[i] = false;  // no standard initialization
-                  }
+            MusEGlobal::midiPorts[i].sendPendingInitializations(force);
             }
       }
 
@@ -992,12 +958,12 @@ void Audio::processMidi()
                   RouteList* irl = track->inRoutes();
                   for(ciRoute r = irl->begin(); r != irl->end(); ++r)
                   {
-                        if(!r->isValid() || (r->type != Route::MIDI_PORT_ROUTE))   // p3.3.49
+                        if(!r->isValid() || (r->type != Route::MIDI_PORT_ROUTE))   
                           continue;
-                        int devport = r->midiPort;                                 // 
+                        int devport = r->midiPort;
                         if (devport == -1)
                           continue;
-                        MidiDevice* dev = MusEGlobal::midiPorts[devport].device();             // 
+                        MidiDevice* dev = MusEGlobal::midiPorts[devport].device();
                         if(!dev)
                           continue;
                         int channelMask = r->channel;   
@@ -1316,7 +1282,7 @@ void Audio::processMidi()
       for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
       {
         // We are done with the 'frozen' recording fifos, remove the events. 
-        (*id)->afterProcess();   // p4.0.34
+        (*id)->afterProcess();
         
         // ALSA devices handled by another thread.
         if((*id)->deviceType() != MidiDevice::ALSA_MIDI)

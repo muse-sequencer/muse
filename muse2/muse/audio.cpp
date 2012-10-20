@@ -706,7 +706,7 @@ void Audio::processMsg(AudioMsg* msg)
                   }      
                   break;
             case SEQM_INIT_DEVICES:
-                  initDevices();
+                  initDevices(msg->a);
                   break;
             case SEQM_MIDI_LOCAL_OFF:
                   sendLocalOff();

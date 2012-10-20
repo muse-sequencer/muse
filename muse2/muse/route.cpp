@@ -265,6 +265,9 @@ void addRoute(Route src, Route dst)
                 #ifdef ROUTE_DEBUG
                 fprintf(stderr, "addRoute: dst Jack src Jack midi name: %s pushing destination route\n", src.device->name().toLatin1().constData());
                 #endif
+                if(src.device->midiPort() != -1)
+                  // Initializations sysex etc. need to be sent to the new connection.
+                  MusEGlobal::midiPorts[src.device->midiPort()].clearInitSent();  
                 routes->push_back(dst);
               }
               else  

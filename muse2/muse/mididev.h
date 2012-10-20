@@ -99,7 +99,7 @@ class MidiDevice {
       virtual void setName(const QString& s)   { _name = s; }
       
       int midiPort() const             { return _port; }
-      void setPort(int p)              { _port = p; }
+      void setPort(int p);              
 
       int rwFlags() const              { return _rwFlags; }
       int openFlags() const            { return _openFlags; }
@@ -140,7 +140,7 @@ class MidiDevice {
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
       bool sysexReadingChunks() { return _sysexReadingChunks; }
       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
-      bool sendNullRPNParams(int, bool);
+      bool sendNullRPNParams(unsigned time, int port, int chan, bool);
       };
 
 //---------------------------------------------------------

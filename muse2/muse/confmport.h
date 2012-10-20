@@ -68,6 +68,9 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       void removeInstanceClicked();
       void changeDefInputRoutes(QAction* act);
       void changeDefOutputRoutes(QAction* act);
+      void apply();
+      void okClicked();
+      
    public slots:
       void closeEvent(QCloseEvent*e);
 

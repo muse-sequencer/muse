@@ -62,6 +62,8 @@
 #include "audio.h"
 #include "functions.h"
 #include "helper.h"
+#include "popupmenu.h"
+#include "menutitleitem.h"
 
 
 #include "cmd.h"
@@ -314,7 +316,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       hsplitter->setChildrenCollapsible(true);
       hsplitter->setHandleWidth(2);
       
-      QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
+      ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setToolTip(tr("Add Controller View"));
@@ -401,7 +403,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
-      connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
+      connect(ctrl, SIGNAL(clicked()), SLOT(addCtrlClicked()));
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
       connect(info, SIGNAL(deltaModeChanged(bool)), SLOT(deltaModeChanged(bool)));
 
@@ -793,27 +795,215 @@ void PianoRoll::noteinfoChanged(MusEGui::NoteInfo::ValType type, int val)
       }
 
 //---------------------------------------------------------
+//   ctrlPopupTriggered
+//---------------------------------------------------------
+
+void PianoRoll::ctrlPopupTriggered(QAction* act)
+{
+  // TODO Merge most of this with duplicate code in drum edit,
+  //       maybe by putting it in a new function near populateMidiCtrlMenu. 
+  
+  if(!act || (act->data().toInt() == -1))
+    return;
+  
+  int newCtlNum = -1;
+  MusECore::Part* part       = curCanvasPart();
+  MusECore::MidiTrack* track = (MusECore::MidiTrack*)(part->track());
+  int channel      = track->outChannel();
+  MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
+  int curDrumPitch = curDrumInstrument();
+  bool isDrum      = track->type() == MusECore::Track::DRUM;
+  bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
+  MusECore::MidiInstrument* instr = port->instrument();
+  MusECore::MidiControllerList* mcl = instr->controller();
+
+  MusECore::MidiCtrlValListList* cll = port->controller();
+  int min = channel << 24;
+  int max = min + 0x1000000;
+
+  int rv = act->data().toInt();
+  
+  if (rv == max) {    // special case velocity
+        newCtlNum = MusECore::CTRL_VELOCITY;
+        }
+  else if (rv == max + 1) {  // add new instrument controller
+        
+        PopupMenu * ctrlSubPop = new PopupMenu(this, true);  // true = enable stay open
+        ctrlSubPop->addAction(new MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
+        
+        //
+        // populate popup with all controllers available for
+        // current instrument
+        //
+        
+        for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+        {
+            int num = ci->second->num();
+            if((num & 0xff) == 0xff)
+            {
+              if (isDrum && curDrumPitch!=-1)
+                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+              else if (isNewDrum && curDrumPitch!=-1)
+                num = (num & ~0xff) + curDrumPitch; //FINDMICH does this work?
+              else // dont show drum specific controller if not a drum track
+                continue;
+            }    
+
+            if(cll->find(channel, num) == cll->end())
+              ctrlSubPop->addAction(MusECore::midiCtrlNumString(num, true) + ci->second->name())->setData(num);
+        }
+        
+        // Don't allow editing instrument if it's a synth
+        if(!port->device() || port->device()->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
+          ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instrument ..."))->setData(max + 2);
+        
+        QAction *act2 = ctrlSubPop->exec(ctrl->mapToGlobal(QPoint(0,0)));
+        if (act2) 
+        {
+          int rv2 = act2->data().toInt();
+          
+          if (rv2 == max + 2)            // edit instrument
+            MusEGlobal::muse->startEditInstrument();
+          else                           // select new instrument control
+          {
+            MusECore::MidiController* c;
+            for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
+            {
+                  c = ci->second;
+                  int num = c->num();
+                  if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                    num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+                  else if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                    num = (num & ~0xff) + curDrumPitch; //FINDMICHJETZT does this work?
+                  
+                  if(num != rv2)
+                    continue;
+                    
+                  if(cll->find(channel, num) == cll->end())
+                  {
+                    MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(num);
+                    
+                    cll->add(channel, vl);
+                    newCtlNum = c->num();
+                  }
+                  else 
+                    newCtlNum = c->num();
+                  break;
+            }
+          }  
+        }
+        delete ctrlSubPop;   
+        }
+  
+  //else if (rv == max + 2)             // edit instrument
+  //      MusEGlobal::muse->startEditInstrument();
+  
+  else if (rv == max + 3) {             // add new other controller
+        PopupMenu* ctrlSubPop = new PopupMenu(this, true);  // true = enable stay open
+        ctrlSubPop->addAction(new MenuTitleItem(tr("Common Controls"), ctrlSubPop));
+        
+        for(int num = 0; num < 127; ++num)
+          if(cll->find(channel, num) == cll->end())
+            ctrlSubPop->addAction(MusECore::midiCtrlName(num, true))->setData(num);
+        QAction *act2 = ctrlSubPop->exec(ctrl->mapToGlobal(QPoint(0,0)));
+        if (act2) {
+              int rv2 = act2->data().toInt();
+              int num = rv2;
+              if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+              if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                num = (num & ~0xff) + curDrumPitch; //FINDMICHJETZT does this work?
+
+              if(cll->find(channel, num) == cll->end())
+              {
+                MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(num);
+                
+                cll->add(channel, vl);
+                newCtlNum = rv2;
+              }
+              else 
+                newCtlNum = rv2;
+              }
+        delete ctrlSubPop;   
+        }
+  else {                           // Select a control
+        MusECore::iMidiCtrlValList i = cll->begin();
+        for (; i != cll->end(); ++i) {
+              MusECore::MidiCtrlValList* cl = i->second;
+              MusECore::MidiController* c   = port->midiController(cl->num());
+              if (c->num() == rv) {
+                    newCtlNum = c->num();
+                    break;
+                    }
+              }
+        if (i == cll->end()) {
+              printf("PianoRoll: controller number %d not found!", rv);
+              }
+        }
+
+  if(newCtlNum != -1)
+  {
+    CtrlEdit* ctrlEdit = new CtrlEdit(ctrlLane, this, xscale, false, "pianoCtrlEdit");  
+    ctrlEdit->setController(newCtlNum);
+    setupNewCtrl(ctrlEdit);
+  }
+}
+
+//---------------------------------------------------------
+//   addCtrlClicked
+//---------------------------------------------------------
+
+void PianoRoll::addCtrlClicked()
+{
+  PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent. 
+  connect(pup, SIGNAL(triggered(QAction*)), SLOT(ctrlPopupTriggered(QAction*)));
+  
+  int est_width = populateMidiCtrlMenu(pup, parts(), curCanvasPart(), -1); // _curDrumInstrument);
+  
+  QPoint ep = ctrl->mapToGlobal(QPoint(0,0));
+  //int newx = ep.x() - ctrlMainPop->width();  // Too much! Width says 640. Maybe because it hasn't been shown yet  .
+  int newx = ep.x() - est_width;  
+  if(newx < 0)
+    newx = 0;
+  ep.setX(newx);
+  pup->exec(ep);
+  delete pup;
+
+  ctrl->setDown(false);
+}
+
+//---------------------------------------------------------
 //   addCtrl
 //---------------------------------------------------------
 
-CtrlEdit* PianoRoll::addCtrl()
+CtrlEdit* PianoRoll::addCtrl(int ctl_num)
       {
       CtrlEdit* ctrlEdit = new CtrlEdit(ctrlLane/* formerly splitter*/, this, xscale, false, "pianoCtrlEdit");  // ccharrett
-      connect(tools2,   SIGNAL(toolChanged(int)),   ctrlEdit, SLOT(setTool(int)));
-      connect(hscroll,  SIGNAL(scrollChanged(int)), ctrlEdit, SLOT(setXPos(int)));
-      connect(hscroll,  SIGNAL(scaleChanged(int)),  ctrlEdit, SLOT(setXMag(int)));
-      connect(ctrlEdit, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
-      connect(ctrlEdit, SIGNAL(destroyedCtrl(CtrlEdit*)), SLOT(removeCtrl(CtrlEdit*)));
-      connect(ctrlEdit, SIGNAL(yposChanged(int)), toolbar, SLOT(setInt(int)));
-
-      ctrlEdit->setTool(tools2->curTool());
-      ctrlEdit->setXPos(hscroll->pos());
-      ctrlEdit->setXMag(hscroll->getScaleValue());
-
-      ctrlEdit->show();
-      ctrlEditList.push_back(ctrlEdit);
+      ctrlEdit->setController(ctl_num);
+      setupNewCtrl(ctrlEdit);
       return ctrlEdit;
       }
+
+//---------------------------------------------------------
+//   setupNewCtrl
+//---------------------------------------------------------
+
+void PianoRoll::setupNewCtrl(CtrlEdit* ctrlEdit)
+{      
+  connect(tools2,   SIGNAL(toolChanged(int)),   ctrlEdit, SLOT(setTool(int)));
+  connect(hscroll,  SIGNAL(scrollChanged(int)), ctrlEdit, SLOT(setXPos(int)));
+  connect(hscroll,  SIGNAL(scaleChanged(int)),  ctrlEdit, SLOT(setXMag(int)));
+  connect(ctrlEdit, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
+  connect(ctrlEdit, SIGNAL(destroyedCtrl(CtrlEdit*)), SLOT(removeCtrl(CtrlEdit*)));
+  connect(ctrlEdit, SIGNAL(yposChanged(int)), toolbar, SLOT(setInt(int)));
+
+  ctrlEdit->setTool(tools2->curTool());
+  ctrlEdit->setXPos(hscroll->pos());
+  ctrlEdit->setXMag(hscroll->getScaleValue());
+
+  ctrlEdit->show();
+  ctrlEditList.push_back(ctrlEdit);
+}
 
 //---------------------------------------------------------
 //   removeCtrl

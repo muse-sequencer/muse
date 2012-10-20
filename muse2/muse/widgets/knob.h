@@ -49,7 +49,7 @@ class Knob : public SliderBase, public ScaleIf
           gainType,
       };
 
-   private:
+   protected:
       bool hasScale;
 
       int d_borderWidth;
@@ -81,7 +81,7 @@ class Knob : public SliderBase, public ScaleIf
       void recalcAngle();
       void valueChange();
       void rangeChange();
-      void drawKnob(QPainter *p, const QRect &r);
+      virtual void drawKnob(QPainter *p, const QRect &r);
       void drawMarker(QPainter *p, double arc, const QColor &c);
 
       virtual void paintEvent(QPaintEvent *);

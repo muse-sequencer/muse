@@ -153,6 +153,9 @@ void GlobalSettingsConfig::updateSettings()
                   }
             }
 
+      midiSendInit->setChecked(MusEGlobal::config.midiSendInit);      
+      midiWarnInitPending->setChecked(MusEGlobal::config.warnInitPending);      
+      midiSendCtlDefaults->setChecked(MusEGlobal::config.midiSendCtlDefaults);      
       guiRefreshSelect->setValue(MusEGlobal::config.guiRefresh);
       minSliderSelect->setValue(int(MusEGlobal::config.minSlider));
       minMeterSelect->setValue(MusEGlobal::config.minMeter);
@@ -269,6 +272,9 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.useOutputLimiter = outputLimiterCheckBox->isChecked();
       MusEGlobal::config.vstInPlace  = vstInPlaceCheckBox->isChecked();
       MusEGlobal::config.rtcTicks    = rtcResolutions[rtcticks];
+      MusEGlobal::config.midiSendInit = midiSendInit->isChecked();
+      MusEGlobal::config.warnInitPending = midiWarnInitPending->isChecked();
+      MusEGlobal::config.midiSendCtlDefaults = midiSendCtlDefaults->isChecked();
       
       MusEGlobal::config.projectBaseFolder = projDirEntry->text();
       

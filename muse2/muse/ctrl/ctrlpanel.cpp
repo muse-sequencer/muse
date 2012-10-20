@@ -56,6 +56,7 @@
 #include "audio.h"
 #include "menutitleitem.h"
 #include "popupmenu.h"
+#include "helper.h"
 
 namespace MusEGui {
 
@@ -197,12 +198,7 @@ void CtrlPanel::heartBeat()
             // Auto bias...
             v -= _ctrl->bias();
           if (double(v) != _knob->value())
-          {
-            // Added by Tim. p3.3.6
-            //printf("CtrlPanel::heartBeat setting knob\n");
-            
             _knob->setValue(double(v));
-          }  
         }
       }
       else if(v != _val)
@@ -522,469 +518,174 @@ void CtrlPanel::setHeight(int h)
       setFixedHeight(h);
       }
 
-#if 0 // DELETETHIS. yeah, really!
-// when flo added the new style drumtracks in trunk, he changed a
-// lot of things. he didn't update that disabled area here, so
-// after releasing 2.0, when we continue developing on trunk,
-// then the below code is not only disabled but INVALID (as in WRONG)
-
-/* WARNING: INVALID CODE!                                           *\
- * the code which has been disabled by the above #if 0 is partly    *
- * OBSOLETE! it lacks support for new-style drum tracks, especially *
- * the drum-controller-handling for these!                          *
- *                                                                  *
- * when you ever enable that code again, first check the changes    *
- * flo93 did somewhere between revision 1188 and 1188+something     *
- * (let's say, 1195; it's NOT the revision in which this comment    *
- * has been introduced) in experimental to the currently enabled    *
- * code below. then apply similar changes to the currently disabled *
-\* code here!                                                       */
-#error "INVALID CODE. please check the comment in ctrlpanel.cpp which starts with 'WARNING: INVALID CODE'"
-just to be sure: dear compiler, please refuse to compile.
-dear user: read the comment above!
-
-struct CI {
-            QString s;
-            bool used;
-            CI(const QString& ss, bool u) : s(ss), used(u) {}
-            };
-
-//---------------------------------------------------------
-//   ctrlPopup
-//---------------------------------------------------------
-
+//---------------------------------------------------
+// ctrlPopup
+//---------------------------------------------------
+            
 void CtrlPanel::ctrlPopup()
       {
-      //---------------------------------------------------
-      // build list of midi controllers for current
-      // MusECore::MidiPort/channel
-      //---------------------------------------------------
-
       MusECore::PartList* parts  = editor->parts();
       MusECore::Part* part       = editor->curCanvasPart();
-      MusECore::MidiTrack* track = (MusECore::MidiTrack*)(part->track());
-      int channel      = track->outChannel();
-      MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      int curDrumPitch = ctrlcanvas->getCurDrumPitch();
-      bool isDrum      = track->type() == MusECore::Track::DRUM;
-      bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
-
-      QMenu* pop = new QMenu;
-      //pop->clear();
-      pop->addAction(tr("Velocity"))->setData(1);
+      int curDrumPitch           = ctrlcanvas->getCurDrumPitch();
       
-      MidiCtrlValListList* cll = port->controller();
-      int min = channel << 24;
-      int max = min + 0x1000000;
-
-      std::list<CI> sList;
-      typedef std::list<CI>::iterator isList;
-
-      for (MusECore::iMidiCtrlValList i = cll->lower_bound(min); i != cll->lower_bound(max); ++i) {
-            MidiCtrlValList* cl = i->second;
-            MusECore::MidiController* c   = port->midiController(cl->num());
-            // dont show drum specific controller if not a drum track
-            if ((c->num() & 0xff) == 0xff) {
-                  if (isDrum)
-                  {
-                    // only show controller for curDrumPitch:
-                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
-                          continue;
-                  }
-                  else if (isNewDrum)
-                  {
-                    // only show controller for curDrumPitch: FINDMICH does this work?
-                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != curDrumPitch))
-                          continue;
-                  }
-                  else
-                    continue;
-                  }
-            isList i = sList.begin();
-            for (; i != sList.end(); ++i) {
-                  if (i->s == c->name())
-                        break;
-                  }
-            if (i == sList.end()) {
-                  bool used = false;
-                  for (MusECore::iPart ip = parts->begin(); ip != parts->end(); ++ip) {
-                        MusECore::EventList* el = ip->second->events();
-                        for (MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie) {
-                              MusECore::Event e = ie->second;
-                              if ((e.type() == MusECore::Controller) && (e.dataA() == cl->num())) {
-                                    used = true;
-                                    break;
-                                    }
-                              }
-                        if (used)
-                              break;
-                        }
-                  sList.push_back(CI(c->name(), used));
-                  }
-            }
-      for (isList i = sList.begin(); i != sList.end(); ++i) {
-            if (i->used)
-                  pop->addAction(QIcon(*greendotIcon), i->s);
-            else
-                  pop->addAction(i->s);
-            }
-
-      pop->addAction(QIcon(*configureIcon), tr("add new ..."))->setData(2);
-      QAction *act = pop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
+      PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent. 
+      int est_width = populateMidiCtrlMenu(pup, parts, part, curDrumPitch);
+      QPoint ep = mapToGlobal(QPoint(0,0));
+      //int newx = ep.x() - ctrlMainPop->width();  // Too much! Width says 640. Maybe because it hasn't been shown yet  .
+      int newx = ep.x() - est_width;  
+      if(newx < 0)
+        newx = 0;
+      ep.setX(newx);
+      connect(pup, SIGNAL(triggered(QAction*)), SLOT(ctrlPopupTriggered(QAction*)));
+      pup->exec(ep);
+      delete pup;
       selCtrl->setDown(false);
-
-      if (!act)
-      {
-        delete pop;
-        return;
       }
-      
-      int rv = act->data().toInt();
-      QString s = act->text();
-      delete pop;
-      
-      if (rv == 1) {    // special case velocity
-            emit controllerChanged(MusECore::CTRL_VELOCITY);
-            }
-      else if (rv == 2) {
-            //
-            // add new controller
-            //
-            QMenu* pop1 = new QMenu(this);
-            //pop1->setCheckable(false); // Qt4 doc says not needed.
-            //
-            // populate popup with all controllers available for
-            // current instrument
-            //
-            MidiInstrument* instr   = port->instrument();
-            MusECore::MidiControllerList* mcl = instr->controller();
-            for (iMusECore::MidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+
+//---------------------------------------------------------
+//   ctrlPopupTriggered
+//---------------------------------------------------------
+
+void CtrlPanel::ctrlPopupTriggered(QAction* act)
+{
+  if(!act || (act->data().toInt() == -1))
+    return;
+  
+  MusECore::Part* part       = editor->curCanvasPart();
+  MusECore::MidiTrack* track = (MusECore::MidiTrack*)(part->track());
+  int channel      = track->outChannel();
+  MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
+  int curDrumPitch = ctrlcanvas->getCurDrumPitch();
+  bool isDrum      = track->type() == MusECore::Track::DRUM;
+  bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
+  MusECore::MidiInstrument* instr = port->instrument();
+  MusECore::MidiControllerList* mcl = instr->controller();
+
+  MusECore::MidiCtrlValListList* cll = port->controller();
+  int min = channel << 24;
+  int max = min + 0x1000000;
+
+  int rv = act->data().toInt();
+  
+  if (rv == max) {    // special case velocity
+        emit controllerChanged(MusECore::CTRL_VELOCITY);
+        }
+  else if (rv == max + 1) {  // add new instrument controller
+        
+        PopupMenu * ctrlSubPop = new PopupMenu(this, true);  // true = enable stay open
+        ctrlSubPop->addAction(new MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
+        
+        //
+        // populate popup with all controllers available for
+        // current instrument
+        //
+        
+        for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+        {
+            int num = ci->second->num();
+            if((num & 0xff) == 0xff)
             {
-                int num = ci->second->num();
-                if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
-                  num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
-                if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1) //FINDMICHJETZT does this work?
-                  num = (num & ~0xff) + curDrumPitch;
-                
-                if(cll->find(channel, num) == cll->end())
-                  pop1->addAction(ci->second->name());
-            }
-            QAction *act2 = pop1->exec(selCtrl->mapToGlobal(QPoint(0,0)));
-            if (act2) {
-                  QString s = act2->text();
-                  MusECore::MidiController* c;
-                  for (iMusECore::MidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
-                        c = ci->second;
-                        if (c->name() == s) {
-                              int num = c->num();
-                              if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
-                                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
-                              if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1) //FINDMICHJETZT does this work?
-                                num = (num & ~0xff) + curDrumPitch;
-                              
-                              if(cll->find(channel, num) == cll->end())
-                              {
-                                MidiCtrlValList* vl = new MidiCtrlValList(num);
-                                
-                                cll->add(channel, vl);
-                                emit controllerChanged(c->num());
-                                //MusEGlobal::song->update(SC_MIDI_CONTROLLER_ADD);
-                              }
-                              else 
-                                emit controllerChanged(c->num());
-                              break;
-                              }
-                        }
-                  }
-            delete pop1;   
-            }
-      else {
-            ///QString s = act->text();
-            MusECore::iMidiCtrlValList i = cll->begin();
-            for (; i != cll->end(); ++i) {
-                  MidiCtrlValList* cl = i->second;
-                  MusECore::MidiController* c   = port->midiController(cl->num());
-                  if (c->name() == s) {
-                        emit controllerChanged(c->num());
-                        break;
-                        }
-                  }
-            if (i == cll->end()) {
-                  printf("CtrlPanel: controller %s not found!", s.toLatin1().constData());
-                  }
-            }
-      }
+              if (isDrum && curDrumPitch!=-1)
+                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+              else if (isNewDrum && curDrumPitch!=-1)
+                num = (num & ~0xff) + curDrumPitch; //FINDMICH does this work?
+              else // dont show drum specific controller if not a drum track
+                continue;
+            }    
 
-#else               // p4.0.25 Tim
-struct CI {
-            int num;
-            QString s;
-            bool used;
-            bool instrument;
-            CI(int n, const QString& ss, bool u, bool i) : num(n), s(ss), used(u), instrument(i) {}
-            };
-
-void CtrlPanel::ctrlPopup()
-      {
-      //---------------------------------------------------
-      // build list of midi controllers for current
-      // MusECore::MidiPort/channel
-      //---------------------------------------------------
-
-      MusECore::PartList* parts  = editor->parts();
-      MusECore::Part* part       = editor->curCanvasPart();
-      MusECore::MidiTrack* track = (MusECore::MidiTrack*)(part->track());
-      int channel      = track->outChannel();
-      MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      int curDrumPitch = ctrlcanvas->getCurDrumPitch();
-      bool isDrum      = track->type() == MusECore::Track::DRUM;
-      bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
-      MusECore::MidiInstrument* instr = port->instrument();
-      MusECore::MidiControllerList* mcl = instr->controller();
-
-      MusECore::MidiCtrlValListList* cll = port->controller();
-      int min = channel << 24;
-      int max = min + 0x1000000;
-
-      std::list<CI> sList;
-      typedef std::list<CI>::iterator isList;
-
-      for (MusECore::iMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it) {
-            MusECore::MidiCtrlValList* cl = it->second;
-            MusECore::MidiController* c   = port->midiController(cl->num());
-            // dont show drum specific controller if not a drum track
-            if ((c->num() & 0xff) == 0xff) {
-                  if (isDrum)
-                  {
-                    // only show controller for curDrumPitch:
-                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
-                          continue;
-                  }
-                  else if (isNewDrum)
-                  {
-                    // only show controller for curDrumPitch: FINDMICH does this work?
-                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != curDrumPitch))
-                          continue;
-                  }
-                  else
-                    continue;
-                  }
-            isList i = sList.begin();
-            for (; i != sList.end(); ++i) {
-                  //if (i->s == c->name())
-                  if (i->num == c->num())
-                        break;
-                  }
-            if (i == sList.end()) {
-                  bool used = false;
-                  for (MusECore::iPart ip = parts->begin(); ip != parts->end(); ++ip) {
-                        MusECore::EventList* el = ip->second->events();
-                        for (MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie) {
-                              MusECore::Event e = ie->second;
-                              if ((e.type() == MusECore::Controller) && (e.dataA() == cl->num())) {
-                                    used = true;
-                                    break;
-                                    }
-                              }
-                        if (used)
-                              break;
-                        }
-                  //sList.push_back(CI(c->name(), used));
-                  bool isinstr = ( mcl->find(c->num()) != mcl->end() );
-                  int cnum = c->num();
-                  // Need to distinguish between global default controllers and 
-                  //  instrument defined controllers. Instrument takes priority over global
-                  //  ie they 'overtake' definition of a global controller such that the
-                  //  global def is no longer available.
-                  sList.push_back(CI(cnum, 
-                                  isinstr ? MusECore::midiCtrlNumString(cnum, true) + c->name() : MusECore::midiCtrlName(cnum, true), 
-                                  used, isinstr));
-                  }
-            }
-      
-      MusEGui::PopupMenu* ctrlMainPop = new MusEGui::PopupMenu;
-      
-      //ctrlMainPop->addSeparator();
-      ctrlMainPop->addAction(new MusEGui::MenuTitleItem(tr("Instrument-defined"), ctrlMainPop));
-      
-      //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 1);
-      
-      // Add instrument-defined controllers.
-      for (isList i = sList.begin(); i != sList.end(); ++i) 
-      {
-        if(!i->instrument)
-          continue;
-        if (i->used)
-          ctrlMainPop->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
-        else
-          ctrlMainPop->addAction(i->s)->setData(i->num);
-      }
-
-      ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 1);
-      //ctrlMainPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instruments"))->setData(max + 2);
-
-      ctrlMainPop->addSeparator();
-      ctrlMainPop->addAction(new MusEGui::MenuTitleItem(tr("Others"), ctrlMainPop));
-      
-      //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 3);
-      
-      ctrlMainPop->addAction(tr("Velocity"))->setData(max);
-      
-      // Add global default controllers (all controllers not found in instrument).
-      for (isList i = sList.begin(); i != sList.end(); ++i) 
-      {
-        if(i->instrument)
-          continue;
-        if (i->used)
-          ctrlMainPop->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
-        else
-          ctrlMainPop->addAction(i->s)->setData(i->num);
-      }
-      
-      ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 3);
-
-      //connect(ctrlMainPop, SIGNAL(hovered(QAction*)), SLOT(ctrlMainPopHovered(QAction*)));
-      
-      QAction *act = ctrlMainPop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
-      selCtrl->setDown(false);
-      
-      if (!act)
-      {
-        delete ctrlMainPop;
-        return;
-      }
-      
-      int rv = act->data().toInt();
-      delete ctrlMainPop;
-      
-      if (rv == max) {    // special case velocity
-            emit controllerChanged(MusECore::CTRL_VELOCITY);
-            }
-      else if (rv == max + 1) {  // add new instrument controller
-            
-            MusEGui::PopupMenu * ctrlSubPop = new MusEGui::PopupMenu(this);
-            ctrlSubPop->addAction(new MusEGui::MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
-            
-            //
-            // populate popup with all controllers available for
-            // current instrument
-            //
-            
-            //ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instruments"))->setData(max + 2);
-            
-            for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+            if(cll->find(channel, num) == cll->end())
+              ctrlSubPop->addAction(MusECore::midiCtrlNumString(num, true) + ci->second->name())->setData(num);
+        }
+        
+        // Don't allow editing instrument if it's a synth
+        if(!port->device() || port->device()->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
+          ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instrument ..."))->setData(max + 2);
+        
+        QAction *act2 = ctrlSubPop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
+        if (act2) 
+        {
+          int rv2 = act2->data().toInt();
+          
+          if (rv2 == max + 2)            // edit instrument
+            MusEGlobal::muse->startEditInstrument();
+          else                           // select new instrument control
+          {
+            MusECore::MidiController* c;
+            for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
             {
-                int num = ci->second->num();
-                if((num & 0xff) == 0xff)
-                {
-                  if (isDrum && curDrumPitch!=-1)
-                    num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
-                  else if (isNewDrum && curDrumPitch!=-1)
-                    num = (num & ~0xff) + curDrumPitch; //FINDMICH does this work?
-                  else // dont show drum specific controller if not a drum track
-                    continue;
-                }    
-
-                if(cll->find(channel, num) == cll->end())
-                  ctrlSubPop->addAction(MusECore::midiCtrlNumString(num, true) + ci->second->name())->setData(num);
-            }
-            
-            // Don't allow editing instrument if it's a synth
-            if(!port->device() || port->device()->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
-              ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instrument ..."))->setData(max + 2);
-            
-            //connect(ctrlSubPop, SIGNAL(hovered(QAction*)), SLOT(ctrlSubPopHovered(QAction*)));
-            
-            QAction *act2 = ctrlSubPop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
-            if (act2) 
-            {
-              int rv2 = act2->data().toInt();
-              
-              if (rv2 == max + 2)            // edit instrument
-                MusEGlobal::muse->startEditInstrument();
-              else                           // select new instrument control
-              {
-                MusECore::MidiController* c;
-                for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
-                {
-                      c = ci->second;
-                      int num = c->num();
-                      if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
-                        num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
-                      else if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
-                        num = (num & ~0xff) + curDrumPitch; //FINDMICHJETZT does this work?
-                      
-                      if(num != rv2)
-                        continue;
-                        
-                      if(cll->find(channel, num) == cll->end())
-                      {
-                        MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(num);
-                        
-                        cll->add(channel, vl);
-                        emit controllerChanged(c->num());
-                        //MusEGlobal::song->update(SC_MIDI_CONTROLLER_ADD);
-                      }
-                      else 
-                        emit controllerChanged(c->num());
-                      break;
-                }
-              }  
-            }
-            delete ctrlSubPop;   
-            }
-      
-      //else if (rv == max + 2)             // edit instrument
-      //      MusEGlobal::muse->startEditInstrument();
-      
-      else if (rv == max + 3) {             // add new other controller
-            MusEGui::PopupMenu* ctrlSubPop = new MusEGui::PopupMenu(this);
-            ctrlSubPop->addAction(new MusEGui::MenuTitleItem(tr("Common Controls"), ctrlSubPop));
-            
-            for(int num = 0; num < 127; ++num)
-              if(cll->find(channel, num) == cll->end())
-                ctrlSubPop->addAction(MusECore::midiCtrlName(num, true))->setData(num);
-            QAction *act2 = ctrlSubPop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
-            if (act2) {
-                  int rv2 = act2->data().toInt();
-                  int num = rv2;
+                  c = ci->second;
+                  int num = c->num();
                   if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
                     num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
-                  if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                  else if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
                     num = (num & ~0xff) + curDrumPitch; //FINDMICHJETZT does this work?
-
+                  
+                  if(num != rv2)
+                    continue;
+                    
                   if(cll->find(channel, num) == cll->end())
                   {
                     MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(num);
                     
                     cll->add(channel, vl);
-                    emit controllerChanged(rv2);
-                    //MusEGlobal::song->update(SC_MIDI_CONTROLLER_ADD);
+                    emit controllerChanged(c->num());
                   }
                   else 
-                    emit controllerChanged(rv2);
-                  }
-            delete ctrlSubPop;   
+                    emit controllerChanged(c->num());
+                  break;
             }
-      else {                           // Select a control
-            //QString s = act->text();
-            MusECore::iMidiCtrlValList i = cll->begin();
-            for (; i != cll->end(); ++i) {
-                  MusECore::MidiCtrlValList* cl = i->second;
-                  MusECore::MidiController* c   = port->midiController(cl->num());
-                  //if (c->name() == s) {
-                  if (c->num() == rv) {
-                        emit controllerChanged(c->num());
-                        break;
-                        }
-                  }
-            if (i == cll->end()) {
-                  //printf("CtrlPanel: controller %s not found!", s.toLatin1().constData());
-                  printf("CtrlPanel: controller number %d not found!", rv);
-                  }
-            }
-      }
-#endif
+          }  
+        }
+        delete ctrlSubPop;   
+        }
+  
+  //else if (rv == max + 2)             // edit instrument
+  //      MusEGlobal::muse->startEditInstrument();
+  
+  else if (rv == max + 3) {             // add new other controller
+        PopupMenu* ctrlSubPop = new PopupMenu(this, true);  // true = enable stay open
+        ctrlSubPop->addAction(new MenuTitleItem(tr("Common Controls"), ctrlSubPop));
+        
+        for(int num = 0; num < 127; ++num)
+          if(cll->find(channel, num) == cll->end())
+            ctrlSubPop->addAction(MusECore::midiCtrlName(num, true))->setData(num);
+        QAction *act2 = ctrlSubPop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
+        if (act2) {
+              int rv2 = act2->data().toInt();
+              int num = rv2;
+              if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
+              if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
+                num = (num & ~0xff) + curDrumPitch; //FINDMICHJETZT does this work?
+
+              if(cll->find(channel, num) == cll->end())
+              {
+                MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(num);
+                
+                cll->add(channel, vl);
+                emit controllerChanged(rv2);
+              }
+              else 
+                emit controllerChanged(rv2);
+              }
+        delete ctrlSubPop;   
+        }
+  else {                           // Select a control
+        MusECore::iMidiCtrlValList i = cll->begin();
+        for (; i != cll->end(); ++i) {
+              MusECore::MidiCtrlValList* cl = i->second;
+              MusECore::MidiController* c   = port->midiController(cl->num());
+              if (c->num() == rv) {
+                    emit controllerChanged(c->num());
+                    break;
+                    }
+              }
+        if (i == cll->end()) {
+              printf("CtrlPanel: controller number %d not found!", rv);
+              }
+        }
+
+}
 
 //---------------------------------------------------------
 //   ctrlRightClicked

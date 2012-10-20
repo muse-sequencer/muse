@@ -39,6 +39,8 @@
 #include "arranger.h"
 #include "plugin.h"
 #include "driver/jackmidi.h"
+#include "midi_warn_init_pending_impl.h"
+#include "gconfig.h"
 
 namespace MusECore {
 
@@ -1114,11 +1116,82 @@ void Audio::msgResetMidiDevices()
 //   msgInitMidiDevices
 //---------------------------------------------------------
 
-void Audio::msgInitMidiDevices()
+void Audio::msgInitMidiDevices(bool force)
       {
+      //
+      // test for explicit instrument initialization
+      //
+      
+      if(!force && MusEGlobal::config.warnInitPending)
+      {
+        bool found = false;
+        if(MusEGlobal::song->click())
+        {
+          MidiPort* mp = &MusEGlobal::midiPorts[MusEGlobal::clickPort];
+          if(mp->device() && 
+             (mp->device()->openFlags() & 1) && 
+             mp->instrument() && !mp->instrument()->midiInit()->empty() && 
+             !mp->initSent())
+            found = true;
+        }
+        
+        if(!found)
+        {
+          for(int i = 0; i < MIDI_PORTS; ++i)
+          {
+            MidiPort* mp = &MusEGlobal::midiPorts[i];
+            if(mp->device() && (mp->device()->openFlags() & 1) && 
+              mp->instrument() && !mp->instrument()->midiInit()->empty() && 
+              !mp->initSent())
+            {
+              found = true;
+              break;
+            }
+          }
+        }
+        
+        if(found)
+        {
+          MusEGui::MidiWarnInitPendingDialog dlg;
+          int rv = dlg.exec();
+          bool warn = !dlg.dontAsk();
+          if(warn != MusEGlobal::config.warnInitPending)  
+          {
+            MusEGlobal::config.warnInitPending = warn;
+            //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
+          }
+          if(rv != QDialog::Accepted)
+          {
+            if(MusEGlobal::config.midiSendInit)
+              MusEGlobal::config.midiSendInit = false;
+            //return;
+          }
+          else
+          {
+            if(!MusEGlobal::config.midiSendInit)
+              MusEGlobal::config.midiSendInit = true;
+          }
+        }
+      }
+      
+// We can either try to do it in one cycle with one message,
+//  or by idling the sequencer (gaining safe access to all structures)
+//  for as much time as we need.
+// Here we COULD get away with the audio 'hiccup' that idling causes,
+//  because it's unlikely someone would initialize during play...
+// But no midi is processed, so let's switch this only if requiring
+//  large numbers of init values causes a problem later...
+#if 1         
       AudioMsg msg;
       msg.id = SEQM_INIT_DEVICES;
+      msg.a = force;
       sendMessage(&msg, false);
+#else      
+      msgIdle(true); 
+      initDevices(force);
+      msgIdle(false); 
+#endif
+      
       }
 
 //---------------------------------------------------------
