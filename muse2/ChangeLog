@@ -1,3 +1,6 @@
+21.10.2012:
+         - Slight changes to midi track info hbank/lbank/program dblclick on/off behaviour. (Tim)
+           TODO Need to improve by having separate 'last valid hbank/lbank/program' instead of single 'last valid value'.
 20.10.2012:
          - In MidiEventBase::read() Repair controllers saved with lo byte 0xff. (Tim)
            No such control. It was supposed to be 0x00. It's an error caused by a previous bug, fixed now.

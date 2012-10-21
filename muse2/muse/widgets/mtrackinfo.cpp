@@ -206,8 +206,8 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   connect(iHBank, SIGNAL(valueChanged(int)), SLOT(iProgHBankChanged()));
   connect(iLBank, SIGNAL(valueChanged(int)), SLOT(iProgLBankChanged()));
   connect(iProgram, SIGNAL(valueChanged(int)), SLOT(iProgramChanged()));
-  connect(iHBank, SIGNAL(ctrlDoubleClicked()), SLOT(iProgramDoubleClicked()));
-  connect(iLBank, SIGNAL(ctrlDoubleClicked()), SLOT(iProgramDoubleClicked()));
+  connect(iHBank, SIGNAL(ctrlDoubleClicked()), SLOT(iProgHBankDoubleCLicked()));
+  connect(iLBank, SIGNAL(ctrlDoubleClicked()), SLOT(iProgLBankDoubleCLicked()));
   connect(iProgram, SIGNAL(ctrlDoubleClicked()), SLOT(iProgramDoubleClicked()));
   connect(iLautst, SIGNAL(valueChanged(int)), SLOT(iLautstChanged(int)));
   connect(iLautst, SIGNAL(ctrlDoubleClicked()), SLOT(iLautstDoubleClicked()));
@@ -1190,6 +1190,184 @@ void MidiTrackInfo::recEchoToggled(bool v)
 }
 
 //---------------------------------------------------------
+//   iProgHBankDoubleCLicked
+//---------------------------------------------------------
+
+void MidiTrackInfo::iProgHBankDoubleCLicked()
+{
+  if(!selected)
+    return;
+  MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
+  int port = track->outPort();
+  int chan = track->outChannel();
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];  
+  MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_PROGRAM);
+  
+  if(!track || !mctl)
+      return;
+  
+  int lastv = mp->lastValidHWCtrlState(chan, MusECore::CTRL_PROGRAM);
+  int curv = mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM);
+  
+  if(curv == MusECore::CTRL_VAL_UNKNOWN)
+  {
+    // If no value has ever been set yet, use the current knob value 
+    //  (or the controller's initial value?) to 'turn on' the controller.
+    if(lastv == MusECore::CTRL_VAL_UNKNOWN)
+    {
+      int kiv = mctl->initVal();
+      //int kiv = lrint(_knob->value());
+      if(kiv == MusECore::CTRL_VAL_UNKNOWN)
+        kiv = 0;
+      //else
+      //{  
+        //if(kiv < mctrl->minVal())
+        //  kiv = mctrl->minVal();
+        //if(kiv > mctrl->maxVal())
+        //  kiv = mctrl->maxVal();
+        //kiv += mctrl->bias();
+      //}    
+      
+      //MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, num, kiv);
+      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, kiv);
+      MusEGlobal::audio->msgPlayMidiEvent(&ev);
+    }
+    else
+    {
+      // TODO
+//       int hbank = (lastv >> 16) & 0xff;
+//       if(hbank == 0xff)
+//         lastv &= 0xffff;
+//       else
+//         lastv |= 0xff0000;
+      
+      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, lastv);
+      MusEGlobal::audio->msgPlayMidiEvent(&ev);
+    }
+  }  
+  else
+  {      
+    // TODO
+//     int lasthb = 0xff;
+//     if(lastv != MusECore::CTRL_VAL_UNKNOWN)
+//       lasthb = (lastv >> 16) & 0xff;
+//     
+//     int hbank = (curv >> 16) & 0xff;
+//     if(hbank == 0xff)
+//     {
+//       curv &= 0xffff;
+//       if(lasthb != 0xff)
+//         curv |= lasthb;
+//     }
+//     else
+//       curv |= 0xff0000;
+    
+    if(mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
+      MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
+//     MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, curv);
+//     MusEGlobal::audio->msgPlayMidiEvent(&ev);
+  }
+  
+  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
+}
+
+//---------------------------------------------------------
+//   iProgLBankDoubleCLicked
+//---------------------------------------------------------
+
+void MidiTrackInfo::iProgLBankDoubleCLicked()
+{
+  if(!selected)
+    return;
+  MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
+  int port = track->outPort();
+  int chan = track->outChannel();
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];  
+  MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_PROGRAM);
+  
+  if(!track || !mctl)
+      return;
+  
+  int lastv = mp->lastValidHWCtrlState(chan, MusECore::CTRL_PROGRAM);
+  int curv = mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM);
+  
+  if(curv == MusECore::CTRL_VAL_UNKNOWN)
+  {
+    // If no value has ever been set yet, use the current knob value 
+    //  (or the controller's initial value?) to 'turn on' the controller.
+    if(lastv == MusECore::CTRL_VAL_UNKNOWN)
+    {
+      int kiv = mctl->initVal();
+      //int kiv = lrint(_knob->value());
+      if(kiv == MusECore::CTRL_VAL_UNKNOWN)
+        kiv = 0xff0000;
+      //else
+      //{  
+        //if(kiv < mctrl->minVal())
+        //  kiv = mctrl->minVal();
+        //if(kiv > mctrl->maxVal())
+        //  kiv = mctrl->maxVal();
+        //kiv += mctrl->bias();
+      //}    
+      
+      //MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, num, kiv);
+      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, kiv);
+      MusEGlobal::audio->msgPlayMidiEvent(&ev);
+    }
+    else
+    {
+// TODO
+//       int lbank = (lastv >> 8) & 0xff;
+//       if(lbank == 0xff)
+//         lastv &= 0xff00ff;
+//       else
+//       {
+//         lastv |= 0xffff00;
+//         //int hbank = (lastv >> 16) & 0xff;
+//         //if(hbank != 0xff)
+//         //  lastv |= 0xff0000;
+//       }
+      
+      MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, lastv);
+      MusEGlobal::audio->msgPlayMidiEvent(&ev);
+    }
+  }  
+  else
+  {
+// TODO
+//     //int lasthb = 0xff;
+//     int lastlb = 0xff;
+//     if(lastv != MusECore::CTRL_VAL_UNKNOWN)
+//     {
+//       //lasthb = (lastv >> 16) & 0xff;
+//       lastlb = (lastv >> 8) & 0xff;
+//     }
+//     
+//     int lbank = (curv >> 8) & 0xff;
+//     if(lbank == 0xff)
+//     {
+//       curv &= 0xff00ff;
+//       if(lastlb != 0xff)
+//         curv |= lastlb;
+//     }
+//     else
+//     {
+//       curv |= 0xffff00;
+//       //int hbank = (curv >> 16) & 0xff;
+//       //if(hbank != 0xff)
+//       //  curv |= 0xff0000;
+//     }
+      
+    if(mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
+      MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
+//     MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, curv);
+//     MusEGlobal::audio->msgPlayMidiEvent(&ev);
+  }
+  
+  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
+}
+
+//---------------------------------------------------------
 //   iProgramDoubleClicked
 //---------------------------------------------------------
 
@@ -1218,7 +1396,7 @@ void MidiTrackInfo::iProgramDoubleClicked()
       int kiv = mctl->initVal();
       //int kiv = lrint(_knob->value());
       if(kiv == MusECore::CTRL_VAL_UNKNOWN)
-        kiv = 0;
+        kiv = 0xffff00;
       //else
       //{  
         //if(kiv < mctrl->minVal())

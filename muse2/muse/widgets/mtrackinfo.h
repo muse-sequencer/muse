@@ -51,7 +51,9 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       void iOutputChannelChanged(int);
       void iOutputPortChanged(int);
       void iProgHBankChanged();
+      void iProgHBankDoubleCLicked();
       void iProgLBankChanged();
+      void iProgLBankDoubleCLicked();
       void iProgramChanged();
       void iProgramDoubleClicked();
       void iLautstChanged(int);
