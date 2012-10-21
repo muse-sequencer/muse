@@ -177,7 +177,14 @@ void MidiEventBase::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "event")
+                        {  
+                              // HACK: Repair controllers saved with lo byte 0xff. 
+                              // No such control. It was supposed to be 0x00.
+                              // It's an error caused by a previous bug, fixed now.
+                              if((type() == Controller) && ((a & 0xff) == 0xff))
+                                a &= ~0xff;
                               return;
+                        }
                   default:
                         break;
                   }

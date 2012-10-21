@@ -1,3 +1,6 @@
+20.10.2012:
+         - In MidiEventBase::read() Repair controllers saved with lo byte 0xff. (Tim)
+           No such control. It was supposed to be 0x00. It's an error caused by a previous bug, fixed now.
 19.10.2012:
          * Improved: Midi initializations. New settings options, can be 'quiet'. Complete rewrite of initializations coding. (Tim) 
          * Improved: Midi controller graphs: Control selector 'S' popup now stay-open, AND NOW with multi-coloured dots: 
