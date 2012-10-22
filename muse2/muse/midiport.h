@@ -77,7 +77,6 @@ class MidiPort {
       MidiCtrlValListList* controller() { return _controller; }
       int getCtrl(int ch, int tick, int ctrl) const;
       int getCtrl(int ch, int tick, int ctrl, Part* part) const;
-      // Removed by T356.
       bool setControllerVal(int ch, int tick, int ctrl, int val, Part* part);
       // Can be CTRL_VAL_UNKNOWN until a valid state is set
       int lastValidHWCtrlState(int ch, int ctrl) const;
@@ -85,7 +84,8 @@ class MidiPort {
       bool setHwCtrlState(int ch, int ctrl, int val);
       bool setHwCtrlStates(int ch, int ctrl, int val, int lastval);
       void deleteController(int ch, int tick, int ctrl, Part* part);
-
+      void addDefaultControllers();
+      
       bool guiVisible() const;
       bool hasGui() const;
       bool nativeGuiVisible() const;

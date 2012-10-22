@@ -2113,8 +2113,12 @@ void Song::clear(bool signal, bool clear_all)
 
       // Clear all midi port controller values.
       for(int i = 0; i < MIDI_PORTS; ++i)
+      {
         // Remove the controllers AND the values so we start with a clean slate.
         MusEGlobal::midiPorts[i].controller()->clearDelete(true);
+        // Don't forget to re-add the default managed controllers.
+        MusEGlobal::midiPorts[i].addDefaultControllers();
+      }
 
       _masterFlag    = true;
       loopFlag       = false;

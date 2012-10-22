@@ -84,6 +84,8 @@ const int CTRL_PITCH    = CTRL_INTERNAL_OFFSET;
 const int CTRL_PROGRAM  = CTRL_INTERNAL_OFFSET      + 1;
 const int CTRL_VELOCITY = CTRL_INTERNAL_OFFSET      + 2;
 const int CTRL_MASTER_VOLUME = CTRL_INTERNAL_OFFSET + 3;
+const int CTRL_POLYAFTER = CTRL_INTERNAL_OFFSET     + 4;
+const int CTRL_AFTERTOUCH = CTRL_INTERNAL_OFFSET    + 5;
 
 const int CTRL_VAL_UNKNOWN   = 0x10000000; // used as unknown hwVal
 
@@ -113,7 +115,9 @@ class MidiController {
             NRPN14,           // non registered parameter 0x60000 -
             Pitch,            // num value = CTRL_PITCH
             Program,          // num value = CTRL_PROGRAM
-            Velo              // not assigned
+            Velo,             // not assigned
+            PolyAftertouch,   // num value = CTRL_POLYAFTER  
+            Aftertouch        // num value = CTRL_AFTERTOUCH
             };
    private:
       QString _name;

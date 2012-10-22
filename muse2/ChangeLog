@@ -1,3 +1,6 @@
+22.10.2012:
+         - Oops, fixed regression: Re-add default managed controllers to midi ports at Song::clear. (Tim)
+         - W.I.P. Preparations for Aftertouch and Poly Aftertouch (channel and key pressure) graph editing. (Tim)
 21.10.2012:
          - Slight changes to midi track info hbank/lbank/program dblclick on/off behaviour. (Tim)
            TODO Need to improve by having separate 'last valid hbank/lbank/program' instead of single 'last valid value'.

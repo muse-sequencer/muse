@@ -893,8 +893,15 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       MusECore::MidiControllerList* mcl = instr->controller();
 
       MusECore::MidiCtrlValListList* cll = port->controller();
-      int min = channel << 24;
-      int max = min + 0x1000000;
+      const int min = channel << 24;
+      const int max = min + 0x1000000;
+      
+      const int add_ins_def = max + 1;
+      const int add_other = max + 2;
+      
+      const int velo = max + 0x101;
+//       const int polyafter = max + 0x102;
+//       const int after = max + 0x103;
 
       int est_width = 0;  
       
@@ -1007,7 +1014,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       fmw = menu->fontMetrics().width(stext);
       if(fmw > est_width)
         est_width = fmw;
-      menu->addAction(QIcon(*configureIcon), stext)->setData(max + 1);
+      menu->addAction(QIcon(*configureIcon), stext)->setData(add_ins_def);
 
       menu->addSeparator();
       
@@ -1021,7 +1028,19 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       fmw = menu->fontMetrics().width(stext);
       if(fmw > est_width)
         est_width = fmw;
-      menu->addAction(stext)->setData(max);
+      menu->addAction(stext)->setData(velo);
+      
+//       stext = QWidget::tr("PolyAftertouch");
+//       fmw = menu->fontMetrics().width(stext);
+//       if(fmw > est_width)
+//         est_width = fmw;
+//       menu->addAction(stext)->setData(polyafter);
+//       
+//       stext = QWidget::tr("Aftertouch");
+//       fmw = menu->fontMetrics().width(stext);
+//       if(fmw > est_width)
+//         est_width = fmw;
+//       menu->addAction(stext)->setData(after);
       
       // Add global default controllers (all controllers not found in instrument).
       for (isList i = sList.begin(); i != sList.end(); ++i) 
@@ -1047,7 +1066,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       fmw = menu->fontMetrics().width(stext);
       if(fmw > est_width)
         est_width = fmw;
-      menu->addAction(QIcon(*configureIcon), stext)->setData(max + 3);
+      menu->addAction(QIcon(*configureIcon), stext)->setData(add_other);
 
       est_width += 60; // Add about 60 for the coloured lights on the left.
       

@@ -86,12 +86,7 @@ MidiPort::MidiPort()
       // create minimum set of managed controllers
       // to make midi mixer operational
       //
-      for (int i = 0; i < MIDI_CHANNELS; ++i) {
-            addManagedController(i, CTRL_PROGRAM);   
-            addManagedController(i, CTRL_VOLUME);
-            addManagedController(i, CTRL_PANPOT);
-            _automationType[i] = AUTO_READ;
-            }
+      addDefaultControllers();
       }
 
 //---------------------------------------------------------
@@ -738,6 +733,22 @@ MidiCtrlValList* MidiPort::addManagedController(int channel, int ctrl)
       }
 
 //---------------------------------------------------------
+//   addDefaultControllers
+//---------------------------------------------------------
+
+void MidiPort::addDefaultControllers()
+{
+  for (int i = 0; i < MIDI_CHANNELS; ++i) {
+        addManagedController(i, CTRL_PROGRAM);   
+        addManagedController(i, CTRL_VOLUME);
+        addManagedController(i, CTRL_PANPOT);
+        addManagedController(i, CTRL_POLYAFTER);
+        addManagedController(i, CTRL_AFTERTOUCH);
+        _automationType[i] = AUTO_READ;
+        }
+}
+      
+//---------------------------------------------------------
 //   limitValToInstrCtlRange
 //---------------------------------------------------------
 
@@ -811,6 +822,24 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
                   return false;
               }
             }
+//       else
+//       if (ev.type() == ME_POLYAFTER)    // REMOVE Tim. Or keep?
+//       {
+//             int db = limitValToInstrCtlRange(CTRL_POLYAFTER, ev.dataB());
+//             if(!setHwCtrlState(ev.channel(), CTRL_POLYAFTER, db)) {
+//               if (!forceSend)
+//                 return false;
+//             }
+//       }
+//       else
+//       if (ev.type() == ME_AFTERTOUCH) 
+//       {
+//             int da = limitValToInstrCtlRange(CTRL_AFTERTOUCH, ev.dataA());
+//             if(!setHwCtrlState(ev.channel(), CTRL_AFTERTOUCH, da)) {
+//               if (!forceSend)
+//                 return false;
+//             }
+//       }
       else
       if (ev.type() == ME_PITCHBEND) 
       {
@@ -1006,6 +1035,8 @@ MidiController* MidiPort::midiController(int num) const
             case MidiController::RPN:
             case MidiController::NRPN:
             case MidiController::Controller7:
+            case MidiController::PolyAftertouch:
+            case MidiController::Aftertouch:
                   max = 127;
                   break;
             case MidiController::Controller14:

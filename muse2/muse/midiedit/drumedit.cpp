@@ -1245,15 +1245,29 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
   MusECore::MidiControllerList* mcl = instr->controller();
 
   MusECore::MidiCtrlValListList* cll = port->controller();
-  int min = channel << 24;
-  int max = min + 0x1000000;
+  const int min = channel << 24;
+  const int max = min + 0x1000000;
+
+  const int add_ins_def = max + 1;
+  const int add_other = max + 2;
+  const int edit_ins = max + 3;
+  
+  const int velo = max + 0x101;
+  const int polyafter = max + 0x102;
+  const int after = max + 0x103;
 
   int rv = act->data().toInt();
   
-  if (rv == max) {    // special case velocity
+  if (rv == velo) {    // special case velocity
         newCtlNum = MusECore::CTRL_VELOCITY;
         }
-  else if (rv == max + 1) {  // add new instrument controller
+  else if (rv == polyafter) {    // special case 
+        newCtlNum = MusECore::CTRL_POLYAFTER;
+        }
+  else if (rv == after) {    // special case 
+        newCtlNum = MusECore::CTRL_AFTERTOUCH;
+        }
+  else if (rv == add_ins_def) {  // add new instrument controller
         
         PopupMenu * ctrlSubPop = new PopupMenu(this, true);  // true = enable stay open
         ctrlSubPop->addAction(new MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
@@ -1282,14 +1296,14 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
         
         // Don't allow editing instrument if it's a synth
         if(!port->device() || port->device()->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
-          ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instrument ..."))->setData(max + 2);
+          ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instrument ..."))->setData(edit_ins);
         
         QAction *act2 = ctrlSubPop->exec(ctrl->mapToGlobal(QPoint(0,0)));
         if (act2) 
         {
           int rv2 = act2->data().toInt();
           
-          if (rv2 == max + 2)            // edit instrument
+          if (rv2 == edit_ins)            // edit instrument
             MusEGlobal::muse->startEditInstrument();
           else                           // select new instrument control
           {
@@ -1322,10 +1336,10 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
         delete ctrlSubPop;   
         }
   
-  //else if (rv == max + 2)             // edit instrument
+  //else if (rv == edit_ins)             // edit instrument
   //      MusEGlobal::muse->startEditInstrument();
   
-  else if (rv == max + 3) {             // add new other controller
+  else if (rv == add_other) {             // add new other controller
         PopupMenu* ctrlSubPop = new PopupMenu(this, true);  // true = enable stay open
         ctrlSubPop->addAction(new MenuTitleItem(tr("Common Controls"), ctrlSubPop));
         

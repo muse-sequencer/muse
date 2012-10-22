@@ -466,6 +466,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
             case ME_NOTEON:
             case ME_NOTEOFF:
             case ME_CONTROLLER:
+            case ME_POLYAFTER:
                   event.setA(*(ev->buffer + 1));
                   event.setB(*(ev->buffer + 2));
                   break;
@@ -845,7 +846,13 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       }
     }
       
-    if(a == CTRL_PITCH) 
+    if(a == CTRL_AFTERTOUCH) 
+    {
+      //printf("MidiJackDevice::processEvent CTRL_AFTERTOUCH v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_AFTERTOUCH, b & 0x7f, 0)))
+        return false;
+    }
+    else if(a == CTRL_PITCH) 
     {
       int v = b + 8192;
       //printf("MidiJackDevice::processEvent CTRL_PITCH v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());

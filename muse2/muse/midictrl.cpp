@@ -81,13 +81,14 @@ MidiControllerList defaultMidiController;
 //
 // some global controller which are always available:
 //
-MidiController veloCtrl("Velocity",                 CTRL_VELOCITY,      0, 127,   0);
-static MidiController pitchCtrl("PitchBend",        CTRL_PITCH,     -8192, +8191, 0);
-static MidiController programCtrl("Program",        CTRL_PROGRAM,       0, 0xffffff, 0);
-// Removed p3.3.37 Re-added p4.0.15
-static MidiController mastervolCtrl("MasterVolume", CTRL_MASTER_VOLUME, 0, 0x3fff, 0x3000);
-static MidiController volumeCtrl("MainVolume",      CTRL_VOLUME,        0, 127, 100);
-static MidiController panCtrl("Pan",                CTRL_PANPOT,      -64, 63,    0);
+MidiController veloCtrl("Velocity",                   CTRL_VELOCITY,      0, 127,   0);
+static MidiController pitchCtrl("PitchBend",          CTRL_PITCH,     -8192, +8191, 0);
+static MidiController programCtrl("Program",          CTRL_PROGRAM,       0, 0xffffff, 0);
+static MidiController mastervolCtrl("MasterVolume",   CTRL_MASTER_VOLUME, 0, 0x3fff, 0x3000);
+static MidiController volumeCtrl("MainVolume",        CTRL_VOLUME,        0, 127, 100);
+static MidiController panCtrl("Pan",                  CTRL_PANPOT,      -64, 63,    0);
+static MidiController polyAfterCtrl("PolyAftertouch", CTRL_POLYAFTER,     0, 127,   0);
+static MidiController afterCtrl("Aftertouch",         CTRL_AFTERTOUCH,    0, 127,   0);
 
 
 //---------------------------------------------------------
@@ -107,6 +108,8 @@ static struct {
       { MidiController::NRPN14, QString("NRPN14") },
       { MidiController::Pitch, QString("Pitch") },
       { MidiController::Program, QString("Program") },
+      { MidiController::PolyAftertouch, QString("PolyAftertouch") },
+      { MidiController::Aftertouch, QString("Aftertouch") },
       { MidiController::Controller7, QString("Control") },    // alias
       };
 
@@ -146,6 +149,8 @@ const QString& int2ctrlType(int n)
 void initMidiController()
       {
       defaultMidiController.add(&veloCtrl);
+      defaultMidiController.add(&polyAfterCtrl);
+      defaultMidiController.add(&afterCtrl);
       defaultMidiController.add(&pitchCtrl);
       defaultMidiController.add(&programCtrl);
       defaultMidiController.add(&mastervolCtrl);
@@ -178,10 +183,10 @@ QString midiCtrlNumString(int ctrl, bool fullyQualified)
         case MidiController::NRPN:
           return s1 + QString("N") + s2;
         case MidiController::Pitch:    // Don't show internal controller numbers. 
-          return QString();
         case MidiController::Program:
-          return QString();
         case MidiController::Velo:
+        case MidiController::PolyAftertouch:
+        case MidiController::Aftertouch:
           return QString();
         case MidiController::RPN14:
           return s1 + QString("RF") + s2;
@@ -221,6 +226,10 @@ QString midiCtrlName(int ctrl, bool fullyQualified)
           return QString("Program");
         case MidiController::Velo:
           return QString("Velocity");
+        case MidiController::PolyAftertouch:
+          return QString("PolyAftertouch");
+        case MidiController::Aftertouch:
+          return QString("Aftertouch");
         case MidiController::RPN14:
           return s1 + QString("RF") + s2;
         case MidiController::NRPN14:
@@ -298,6 +307,10 @@ MidiController::ControllerType midiControllerType(int num)
             return MidiController::Program;
       if (num == CTRL_VELOCITY)
             return MidiController::Velo;
+      if (num == CTRL_POLYAFTER)
+            return MidiController::PolyAftertouch;
+      if (num == CTRL_AFTERTOUCH)
+            return MidiController::Aftertouch;
       if (num < CTRL_NRPN14_OFFSET)
             return MidiController::RPN14;
       if (num < CTRL_NONE_OFFSET)
@@ -328,6 +341,10 @@ int midiCtrlTerms2Number(int type_num, int ctrl)
       return CTRL_PROGRAM;
     case MidiController::Velo:
       return CTRL_VELOCITY;
+    case MidiController::PolyAftertouch:
+      return CTRL_POLYAFTER;
+    case MidiController::Aftertouch:
+      return CTRL_AFTERTOUCH;
     case MidiController::RPN14:
       return CTRL_RPN14_OFFSET + ctrl;
     case MidiController::NRPN14:
@@ -378,6 +395,8 @@ void MidiController::updateBias()
           mx = 8191;
           break;
     //case Velo:        // cannot happen
+    //case PolyAfter:
+    //case After:      
     default:
           b = 64;
           mn = 0;
@@ -413,7 +432,7 @@ void MidiController::updateBias()
 void MidiController::write(int level, Xml& xml) const
 {
       ControllerType t = midiControllerType(_num);
-      if(t == Velo)
+      if(t == Velo || t == PolyAftertouch || t == Aftertouch)
         return;
         
       QString type(int2ctrlType(t));
@@ -458,6 +477,8 @@ void MidiController::write(int level, Xml& xml) const
                   break;
             case Program:
             case Velo:        // Cannot happen
+            case PolyAftertouch:
+            case Aftertouch: 
                   break;
       }
       
@@ -579,6 +600,8 @@ void MidiController::read(Xml& xml)
                                           _num = CTRL_PROGRAM;
                                           break;
                                     case Velo:        // cannot happen
+                                    case PolyAftertouch:   
+                                    case Aftertouch:       
                                           break;
                                     }
                               if (_minVal == NOT_SET)
@@ -617,6 +640,10 @@ int MidiController::genNum(MidiController::ControllerType t, int h, int l)
                   return CTRL_PITCH;
             case Program:
                   return CTRL_PROGRAM;
+            case PolyAftertouch:
+                  return CTRL_POLYAFTER;
+            case Aftertouch:
+                  return CTRL_AFTERTOUCH;
             default:
                   return -1;
             }      

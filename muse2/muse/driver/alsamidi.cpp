@@ -386,7 +386,7 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                   snd_seq_ev_set_pitchbend(&event, chn, a);
                   break;
             case ME_POLYAFTER:
-                  // chnEvent2(chn, 0xa0, a, b);
+                  snd_seq_ev_set_keypress(&event, chn, a, b);
                   break;
             case ME_AFTERTOUCH:
                   snd_seq_ev_set_chanpress(&event, chn, a);
@@ -1278,7 +1278,6 @@ void alsaProcessMidiInput()
             switch(ev->type) 
             {
                   case SND_SEQ_EVENT_NOTEON:
-                  case SND_SEQ_EVENT_KEYPRESS:
                         event.setChannel(ev->data.note.channel);
                         event.setType(ME_NOTEON);
                         event.setA(ev->data.note.note);
@@ -1288,6 +1287,13 @@ void alsaProcessMidiInput()
                   case SND_SEQ_EVENT_NOTEOFF:
                         event.setChannel(ev->data.note.channel);
                         event.setType(ME_NOTEOFF);
+                        event.setA(ev->data.note.note);
+                        event.setB(ev->data.note.velocity);
+                        break;
+
+                  case SND_SEQ_EVENT_KEYPRESS:
+                        event.setChannel(ev->data.note.channel);
+                        event.setType(ME_POLYAFTER);
                         event.setA(ev->data.note.note);
                         event.setB(ev->data.note.velocity);
                         break;
