@@ -456,6 +456,9 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
             if (a == CTRL_PITCH) {
                   return putMidiEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, b, 0));
                   }
+            if (a == CTRL_AFTERTOUCH) {
+                  return putMidiEvent(MidiPlayEvent(t, port, chn, ME_AFTERTOUCH, b, 0));
+                  }
             if (a == CTRL_PROGRAM) {
                         int hb = (b >> 16) & 0xff;
                         int lb = (b >> 8) & 0xff;

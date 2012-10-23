@@ -327,6 +327,11 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                       snd_seq_ev_set_pitchbend(&event, chn, b);
                       break;
                     }
+                    else if(a == CTRL_AFTERTOUCH)
+                    {
+                      snd_seq_ev_set_chanpress(&event, chn, b);
+                      break;
+                    }
                   }
                   
 #if 1
