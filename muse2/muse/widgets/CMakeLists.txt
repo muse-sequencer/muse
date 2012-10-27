@@ -105,6 +105,7 @@ QT4_WRAP_CPP (widget_mocs
       view.h
       vscale.h
       visibletracks.h
+      warn_bad_timing.h
       )
 
 ##
@@ -142,6 +143,7 @@ file (GLOB widgets_ui_files
       tracks_duplicate_base.ui
       transformbase.ui  
       unusedwavefiles.ui
+      warn_bad_timing.ui
       )
 QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
@@ -229,6 +231,7 @@ file (GLOB widgets_source_files
       view.cpp
       vscale.cpp
       visibletracks.cpp
+      warn_bad_timing.cpp
       )
 
 ##

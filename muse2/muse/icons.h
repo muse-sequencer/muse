@@ -195,6 +195,8 @@ extern QPixmap* mixerAudioSIcon;
 extern QPixmap* initSIcon;
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;
+extern QPixmap* veloPerNote_OnIcon;
+extern QPixmap* veloPerNote_OffIcon;
 
 extern QPixmap* addtrack_addmiditrackIcon;
 extern QPixmap* addtrack_audiogroupIcon;

@@ -66,6 +66,7 @@ class ScrollScale;
 class Splitter;
 class TimeLabel;
 class Toolbar1;
+class Piano;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -126,6 +127,7 @@ class PianoRoll : public MidiEditor {
       QToolButton* srec;
       QToolButton* midiin;
 
+      Piano* piano;
       MusEGui::Toolbar1* toolbar;
       MusEGui::Splitter* splitter;
       MusEGui::Splitter* hsplitter;

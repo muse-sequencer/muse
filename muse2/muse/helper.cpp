@@ -888,7 +888,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
       bool isDrum      = track->type() == MusECore::Track::DRUM;
-      bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
+      bool isNewDrum      = (track->type() == MusECore::Track::NEW_DRUM) || (track->type() == MusECore::Track::MIDI);
       MusECore::MidiInstrument* instr = port->instrument();
       MusECore::MidiControllerList* mcl = instr->controller();
 
@@ -1029,18 +1029,6 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       if(fmw > est_width)
         est_width = fmw;
       menu->addAction(stext)->setData(velo);
-      
-//       stext = QWidget::tr("PolyAftertouch");
-//       fmw = menu->fontMetrics().width(stext);
-//       if(fmw > est_width)
-//         est_width = fmw;
-//       menu->addAction(stext)->setData(polyafter);
-//       
-//       stext = QWidget::tr("Aftertouch");
-//       fmw = menu->fontMetrics().width(stext);
-//       if(fmw > est_width)
-//         est_width = fmw;
-//       menu->addAction(stext)->setData(after);
       
       // Add global default controllers (all controllers not found in instrument).
       for (isList i = sList.begin(); i != sList.end(); ++i) 

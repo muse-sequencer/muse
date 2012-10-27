@@ -26,7 +26,7 @@
 namespace MusEGlobal {
 
 GlobalConfigValues config = {
-      190,                        // globalAlphaBlend    
+      170,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette
         QColor(0xff, 0xff, 0xff),
@@ -130,6 +130,8 @@ GlobalConfigValues config = {
       true,                         // midiSendInit Send instrument initialization sequences
       true,                         // warnInitPending Warn instrument initialization sequences pending
       false,                        // midiSendCtlDefaults Send instrument controller defaults at position 0 if none in song
+      true,                         // warnIfBadTiming Warn if timer res not good
+      false,                        // velocityPerNote Whether to show per-note or all velocities
       -60,                          // int minMeter;
       -60.0,                        // double minSlider;
       false,                        // use Jack freewheel

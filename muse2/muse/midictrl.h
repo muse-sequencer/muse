@@ -81,11 +81,13 @@ const int CTRL_LOCAL_OFF          = 0x7a; // 122
 const int CTRL_INTERNAL_OFFSET = 0x40000;
 
 const int CTRL_PITCH    = CTRL_INTERNAL_OFFSET;
-const int CTRL_PROGRAM  = CTRL_INTERNAL_OFFSET      + 1;
-const int CTRL_VELOCITY = CTRL_INTERNAL_OFFSET      + 2;
-const int CTRL_MASTER_VOLUME = CTRL_INTERNAL_OFFSET + 3;
-const int CTRL_POLYAFTER = CTRL_INTERNAL_OFFSET     + 4;
-const int CTRL_AFTERTOUCH = CTRL_INTERNAL_OFFSET    + 5;
+const int CTRL_PROGRAM  = CTRL_INTERNAL_OFFSET      + 0x01;
+const int CTRL_VELOCITY = CTRL_INTERNAL_OFFSET      + 0x02;
+const int CTRL_MASTER_VOLUME = CTRL_INTERNAL_OFFSET + 0x03;
+const int CTRL_AFTERTOUCH = CTRL_INTERNAL_OFFSET    + 0x04;
+// NOTE: The range from CTRL_INTERNAL_OFFSET + 0x100 to CTRL_INTERNAL_OFFSET + 0x1ff is reserved 
+//        for this control. (The low byte is reserved because this is a per-note control.) 
+const int CTRL_POLYAFTER = CTRL_INTERNAL_OFFSET     + 0x1FF;  // 100 to 1FF !
 
 const int CTRL_VAL_UNKNOWN   = 0x10000000; // used as unknown hwVal
 

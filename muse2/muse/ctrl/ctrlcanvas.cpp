@@ -511,16 +511,14 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
     int di;
     int n;
     
-    if(!mt->isDrumTrack() && curDrumPitch != -1)
-      printf("keyfilter != -1 in non drum track?\n");
-
     if((mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((num & 0xff) == 0xff))
     {
       di = (num & ~0xff) | curDrumPitch;
       n = (num & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;  // construct real controller number
       mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port];          
     }
-    else if ((mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch >= 0) && ((num & 0xff) == 0xff))  //FINDMICHJETZT does this work?
+    else if ((mt->type() == MusECore::Track::NEW_DRUM || mt->type() == MusECore::Track::MIDI) && 
+             (curDrumPitch >= 0) && ((num & 0xff) == 0xff))  //FINDMICHJETZT does this work?
     {
       di = (num & ~0xff) | curDrumPitch;
       n =  (num & ~0xff) | curDrumPitch;
@@ -599,12 +597,8 @@ void CtrlCanvas::updateItems()
                     if(_cnum == MusECore::CTRL_VELOCITY && e.type() == MusECore::Note) 
                     {
                           newev = 0;
-                          if (curDrumPitch == -1) // and NOT >=0
-                          {
-                                // This is interesting - it would allow ALL drum note velocities to be shown.
-                                // But currently the drum list ALWAYS has a selected item so this is not supposed to happen.
+                          if (curDrumPitch == -1 || !MusEGlobal::config.velocityPerNote) // and NOT >=0
                                 items.add(newev = new CEvent(e, part, e.velo()));
-                          }
                           else if (e.dataA() == curDrumPitch) //same note. if curDrumPitch==-2, this never is true
                                 items.add(newev = new CEvent(e, part, e.velo()));
                           if(newev && e.selected())
@@ -615,32 +609,16 @@ void CtrlCanvas::updateItems()
                       int ctl = e.dataA();
                       if(part->track() && part->track()->type() == MusECore::Track::DRUM && (_cnum & 0xff) == 0xff)
                       {
-                        //MusECore::MidiPort* port = &MusEGlobal::midiPorts[part->track()->outPort()];
                         if(curDrumPitch < 0)
-                        //if(curDrumPitch >= 0)
                           continue;
                           
-                        //{
-                          //MusECore::MidiPort* port = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port];
-                          //MusECore::MidiPort* port = &MusEGlobal::midiPorts[MusEGlobal::drumMap[ctl & 0x7f].port];
-                          int port = MusEGlobal::drumMap[ctl & 0x7f].port;
-                          int chan = MusEGlobal::drumMap[ctl & 0x7f].channel;
-                          //MusECore::MidiPort* cur_port = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port];
-                          int cur_port = MusEGlobal::drumMap[curDrumPitch].port;
-                          int cur_chan = MusEGlobal::drumMap[curDrumPitch].channel;
-                          if((port != cur_port) || (chan != cur_chan))
-                            continue;
-                          // Is it a drum controller event, according to the track port's instrument?
-                          //MusECore::MidiController *mc = port->drumController(ctl); 
-                          //if(!mc)
-                          //  continue;
-                          //if(mc)
-                          //{
-                            //if(MusEGlobal::drumMap[ctl & 0x7f].channel != e.
-                            // continue;  
-                            ctl = (ctl & ~0xff) | MusEGlobal::drumMap[ctl & 0x7f].anote;
-                          //}
-                        //}
+                        int port = MusEGlobal::drumMap[ctl & 0x7f].port;
+                        int chan = MusEGlobal::drumMap[ctl & 0x7f].channel;
+                        int cur_port = MusEGlobal::drumMap[curDrumPitch].port;
+                        int cur_chan = MusEGlobal::drumMap[curDrumPitch].channel;
+                        if((port != cur_port) || (chan != cur_chan))
+                          continue;
+                        ctl = (ctl & ~0xff) | MusEGlobal::drumMap[ctl & 0x7f].anote;
                       }
                       if(ctl == _dnum)
                       {

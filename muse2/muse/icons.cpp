@@ -212,6 +212,8 @@
 #include "xpm/initS.xpm"
 #include "xpm/delta_on.xpm"
 #include "xpm/delta_off.xpm"
+#include "xpm/velo_all.xpm"
+#include "xpm/velo_per_note.xpm"
 
 #include "xpm/addtrack_addmiditrack.xpm"
 #include "xpm/addtrack_audiogroup.xpm"
@@ -294,6 +296,8 @@ QPixmap* mixerAudioSIcon;
 QPixmap* initSIcon;
 QPixmap* deltaOnIcon;
 QPixmap* deltaOffIcon;
+QPixmap* veloPerNote_OnIcon;
+QPixmap* veloPerNote_OffIcon;
 
 QPixmap* exitIcon;
 QPixmap* exit1Icon;
@@ -678,6 +682,8 @@ void initIcons()
       initSIcon            = new MPIXMAP(initS_xpm, NULL);
       deltaOnIcon          = new MPIXMAP(delta_on_xpm, NULL);
       deltaOffIcon         = new MPIXMAP(delta_off_xpm, NULL);
+      veloPerNote_OnIcon   = new MPIXMAP(velo_per_note_xpm, NULL);
+      veloPerNote_OffIcon  = new MPIXMAP(velo_all_xpm, NULL);
 
       addtrack_addmiditrackIcon     = new MPIXMAP(addtrack_addmiditrack_xpm, NULL);
       addtrack_audiogroupIcon       = new MPIXMAP(addtrack_audiogroup_xpm, NULL);
@@ -917,6 +923,8 @@ void deleteIcons()
       delete initSIcon;            
       delete deltaOnIcon;          
       delete deltaOffIcon;         
+      delete veloPerNote_OnIcon;          
+      delete veloPerNote_OffIcon;         
 
       delete addtrack_addmiditrackIcon;     
       delete addtrack_audiogroupIcon;       

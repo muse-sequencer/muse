@@ -166,6 +166,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       lastSelections = 0;
       split1w1 = 0;
       //selPart  = 0;
+      _playEvents    = false;
       QSignalMapper *signalMapper = new QSignalMapper(this);
       
       _group_mode = GROUP_SAME_CHANNEL;
@@ -419,7 +420,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);
       
-      
+      speaker  = new QToolButton();
+      speaker->setToolTip(tr("Play Events"));
+      speaker->setIcon(*speakerIcon);
+      speaker->setCheckable(true);
+      speaker->setFocusPolicy(Qt::NoFocus);
+      tools->addWidget(speaker);
+
       tools2 = new MusEGui::EditToolBar(this, drumeditTools);
       addToolBar(tools2);
 
@@ -554,6 +561,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(dlist, SIGNAL(keyPressed(int, int)), canvas, SLOT(keyPressed(int, int)));
       connect(dlist, SIGNAL(keyReleased(int, bool)), canvas, SLOT(keyReleased(int, bool)));
       connect(dlist, SIGNAL(mapChanged(int, int)), canvas, SLOT(mapChanged(int, int)));
+      connect(dlist, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
 
       gridS1->setRowStretch(1, 100);
       gridS1->setColumnStretch(0, 100);
@@ -568,11 +576,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)),      dlist, SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
-      connect(vscroll, SIGNAL(scaleChanged(int)),  dlist, SLOT(setYMag(int)));
+      connect(vscroll, SIGNAL(scaleChanged(int)),   dlist, SLOT(setYMag(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setXMag(int)));
       connect(srec, SIGNAL(toggled(bool)),         canvas, SLOT(setSteprec(bool)));
       connect(midiin, SIGNAL(toggled(bool)),       canvas, SLOT(setMidiin(bool)));
+      connect(speaker, SIGNAL(toggled(bool)),              SLOT(setSpeaker(bool)));
 
       connect(vscroll, SIGNAL(scrollChanged(int)),   dlist,   SLOT(setYPos(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)),   time,   SLOT(setXPos(int)));
@@ -930,6 +939,7 @@ void DrumEdit::writeStatus(int level, MusECore::Xml& xml) const
       header->writeStatus(level, xml);
       xml.intTag(level, "steprec", canvas->steprec());
       xml.intTag(level, "midiin",  canvas->midiin());
+      xml.intTag(level, "playEvents", _playEvents);
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
       xml.intTag(level, "ypos", vscroll->pos());
@@ -974,6 +984,11 @@ void DrumEdit::readStatus(MusECore::Xml& xml)
                               MidiEditor::readStatus(xml);
                         else if (tag == header->objectName())
                               header->readStatus(xml);
+                        else if (tag == "playEvents") {
+                              _playEvents = xml.parseInt();
+                              canvas->playEvents(_playEvents);
+                              speaker->setChecked(_playEvents);
+                              }
                         else if (tag == "xmag")
                               hscroll->setMag(xml.parseInt());
                         else if (tag == "xpos")
@@ -1253,19 +1268,11 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
   const int edit_ins = max + 3;
   
   const int velo = max + 0x101;
-  const int polyafter = max + 0x102;
-  const int after = max + 0x103;
 
   int rv = act->data().toInt();
   
   if (rv == velo) {    // special case velocity
         newCtlNum = MusECore::CTRL_VELOCITY;
-        }
-  else if (rv == polyafter) {    // special case 
-        newCtlNum = MusECore::CTRL_POLYAFTER;
-        }
-  else if (rv == after) {    // special case 
-        newCtlNum = MusECore::CTRL_AFTERTOUCH;
         }
   else if (rv == add_ins_def) {  // add new instrument controller
         
@@ -1706,6 +1713,16 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
       }
 
 
+
+//---------------------------------------------------------
+//   setSpeaker
+//---------------------------------------------------------
+
+void DrumEdit::setSpeaker(bool val)
+      {
+      _playEvents = val;
+      canvas->playEvents(_playEvents);
+      }
 
 //---------------------------------------------------------
 //   initShortcuts

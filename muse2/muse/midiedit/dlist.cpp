@@ -1123,6 +1123,15 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
       }
 
 //---------------------------------------------------------
+//   wheelEvent
+//---------------------------------------------------------
+
+void DList::wheelEvent(QWheelEvent* ev)
+      {
+            emit redirectWheelEvent(ev);
+      }
+      
+//---------------------------------------------------------
 //   getSelectedInstrument
 //---------------------------------------------------------
 

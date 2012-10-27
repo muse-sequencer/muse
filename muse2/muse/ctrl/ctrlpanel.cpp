@@ -57,6 +57,7 @@
 #include "menutitleitem.h"
 #include "popupmenu.h"
 #include "helper.h"
+#include "pixmap_button.h"
 
 namespace MusEGui {
 
@@ -87,7 +88,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       kbox->setContentsMargins(0, 0, 0, 0);
       dbox->setContentsMargins(0, 0, 0, 0);
 
-      selCtrl = new QPushButton(tr("S"));
+      selCtrl = new QPushButton(tr("S"), this);
       selCtrl->setFocusPolicy(Qt::NoFocus);
       selCtrl->setFont(MusEGlobal::config.fonts[3]);
       selCtrl->setFixedHeight(20);
@@ -96,7 +97,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       selCtrl->setToolTip(tr("select controller"));
       
       // destroy button
-      QPushButton* destroy = new QPushButton(tr("X"));
+      QPushButton* destroy = new QPushButton(tr("X"), this);
       destroy->setFocusPolicy(Qt::NoFocus);
       destroy->setFont(MusEGlobal::config.fonts[3]);
       destroy->setFixedHeight(20);
@@ -112,7 +113,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       _val = MusECore::CTRL_VAL_UNKNOWN;
       _dnum = -1;
       
-      _knob = new MusEGui::Knob;
+      _knob = new Knob(this);
       _knob->setFixedWidth(25);
       _knob->setFixedHeight(25);
       _knob->setToolTip(tr("manual adjust"));
@@ -122,7 +123,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       _knob->hide();
       _knob->setAltFaceColor(Qt::red);
       
-      _dl = new MusEGui::DoubleLabel(-1.0, 0.0, +127.0);
+      _dl = new DoubleLabel(-1.0, 0.0, +127.0, this);
       _dl->setPrecision(0);
       _dl->setToolTip(tr("ctrl-double-click on/off"));
       _dl->setSpecialText(tr("off"));
@@ -139,16 +140,28 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       connect(_dl, SIGNAL(valueChanged(double,int)), SLOT(ctrlChanged(double)));
       connect(_dl, SIGNAL(ctrlDoubleClicked(int)), SLOT(labelDoubleClicked()));
       
+      _veloPerNoteButton = new PixmapButton(veloPerNote_OnIcon, veloPerNote_OffIcon, 2, this);  // Margin = 2
+      _veloPerNoteButton->setFocusPolicy(Qt::NoFocus);
+      _veloPerNoteButton->setCheckable(true);
+      _veloPerNoteButton->setToolTip(tr("all/per-note velocity mode"));
+      _veloPerNoteButton->setEnabled(false);
+      _veloPerNoteButton->hide();
+      connect(_veloPerNoteButton, SIGNAL(clicked()), SLOT(velPerNoteClicked()));
+      
       bbox->addStretch();
       bbox->addWidget(selCtrl);
       bbox->addWidget(destroy);
       bbox->addStretch();
       kbox->addStretch();
       kbox->addWidget(_knob);
+      kbox->addWidget(_veloPerNoteButton);
       kbox->addStretch();
       dbox->addStretch();
       dbox->addWidget(_dl);
       dbox->addStretch();
+      
+      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
       setLayout(vbox);
@@ -224,6 +237,35 @@ void CtrlPanel::heartBeat()
   }  
 
   inHeartBeat = false;
+}
+
+//---------------------------------------------------------
+//   configChanged
+//---------------------------------------------------------
+
+void CtrlPanel::configChanged()    
+{ 
+  songChanged(SC_CONFIG); 
+}
+
+//---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void CtrlPanel::songChanged(MusECore::SongChangedFlags_t type)
+{
+  if(editor->deleting())  // Ignore while while deleting to prevent crash.
+    return; 
+  
+  // Is it simply a midi controller value adjustment? Forget it.
+  if(type == SC_MIDI_CONTROLLER)
+    return;
+            
+  if(type & SC_CONFIG)
+  {
+    if(_veloPerNoteButton->isChecked() != MusEGlobal::config.velocityPerNote)
+      _veloPerNoteButton->setChecked(MusEGlobal::config.velocityPerNote);  
+  }
 }
 
 //---------------------------------------------------------
@@ -424,7 +466,7 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
     mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[cdp].port];          
     ch = MusEGlobal::drumMap[cdp].channel;
   }  
-  else if(_track->type() == MusECore::Track::NEW_DRUM && ((_dnum & 0xff) == 0xff) && cdp != -1)
+  else if((_track->type() == MusECore::Track::NEW_DRUM || _track->type() == MusECore::Track::MIDI) && ((_dnum & 0xff) == 0xff) && cdp != -1)
   {
     _dnum = (_dnum & ~0xff) | cdp; //FINDMICHJETZT does that work?
     mp = &MusEGlobal::midiPorts[_track->outPort()];
@@ -442,11 +484,15 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
     _dl->setEnabled(false);
     _knob->hide();
     _dl->hide();
+    _veloPerNoteButton->setEnabled(true);
+    _veloPerNoteButton->show();
   }
   else
   {
     _knob->setEnabled(true);
     _dl->setEnabled(true);
+    _veloPerNoteButton->setEnabled(false);
+    _veloPerNoteButton->hide();
     double dlv;
     int mn; int mx; int v;
     if(_dnum == MusECore::CTRL_PROGRAM)
@@ -573,7 +619,7 @@ void CtrlPanel::ctrlPopupTriggered(QAction* act)
   MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
   int curDrumPitch = ctrlcanvas->getCurDrumPitch();
   bool isDrum      = track->type() == MusECore::Track::DRUM;
-  bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
+  bool isNewDrum      = (track->type() == MusECore::Track::NEW_DRUM) || (track->type() == MusECore::Track::MIDI);
   MusECore::MidiInstrument* instr = port->instrument();
   MusECore::MidiControllerList* mcl = instr->controller();
 
@@ -586,19 +632,11 @@ void CtrlPanel::ctrlPopupTriggered(QAction* act)
   const int edit_ins = max + 3;
   
   const int velo = max + 0x101;
-  const int polyafter = max + 0x102;
-  const int after = max + 0x103;
 
   int rv = act->data().toInt();
   
   if (rv == velo) {    // special case velocity
         emit controllerChanged(MusECore::CTRL_VELOCITY);
-        }
-  else if (rv == polyafter) {    // special case 
-        emit controllerChanged(MusECore::CTRL_POLYAFTER);
-        }
-  else if (rv == after) {    // special case 
-        emit controllerChanged(MusECore::CTRL_AFTERTOUCH);
         }
   else if (rv == add_ins_def) {  // add new instrument controller
         
@@ -734,6 +772,19 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
   
   MusECore::MidiPart* part = dynamic_cast<MusECore::MidiPart*>(editor->curCanvasPart());
   MusEGlobal::song->execMidiAutomationCtlPopup(0, part, p, ctlnum);
+}
+
+//---------------------------------------------------------
+//   velPerNoteClicked
+//---------------------------------------------------------
+
+void CtrlPanel::velPerNoteClicked()
+{
+  if(MusEGlobal::config.velocityPerNote != _veloPerNoteButton->isChecked())
+  {
+    MusEGlobal::config.velocityPerNote = _veloPerNoteButton->isChecked();  
+    MusEGlobal::muse->changeConfig(false);  // Save settings? No, wait till close.
+  }
 }
 
 } // namespace MusEGui

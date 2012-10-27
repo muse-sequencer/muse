@@ -871,9 +871,11 @@ void DrumCanvas::keyPressed(int index, int velocity)
       int pitch = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
 
       // play note:
-      MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
-      MusEGlobal::audio->msgPlayMidiEvent(&e);
-      
+      if(_playEvents)
+      {
+        MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
+        MusEGlobal::audio->msgPlayMidiEvent(&e);
+      }
       
       if (_steprec) /* && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
       {
@@ -909,8 +911,11 @@ void DrumCanvas::keyReleased(int index, bool)
       int pitch = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
 
       // release note:
-      MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
-      MusEGlobal::audio->msgPlayMidiEvent(&e);
+      if(_playEvents)
+      {
+        MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
+        MusEGlobal::audio->msgPlayMidiEvent(&e);
+      }
       }
 
 //---------------------------------------------------------

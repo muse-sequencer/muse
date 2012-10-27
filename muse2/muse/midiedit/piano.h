@@ -27,26 +27,34 @@
 
 class QEvent;
 class QMouseEvent;
+class QWheelEvent;
 class QPainter;
 class QPixmap;
 
 #define KH  13
 
+namespace MusEGui {
+  
 //---------------------------------------------------------
 //   Piano
 //---------------------------------------------------------
 
-class Piano : public MusEGui::View
+class Piano : public View
       {
       Q_OBJECT
     
       int curPitch;
+      int _curSelectedPitch;
       QPixmap* octave;
       QPixmap* c_keys[10];
       QPixmap* mk1;
       QPixmap* mk2;
       QPixmap* mk3;
       QPixmap* mk4;
+      QPixmap* mk5;
+      QPixmap* mk6;
+      QPixmap* mk7;
+      QPixmap* mk8;
       int keyDown;
       bool shift;
       int button;
@@ -59,6 +67,7 @@ class Piano : public MusEGui::View
 
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseReleaseEvent(QMouseEvent*);
+      virtual void wheelEvent(QWheelEvent* e);
 
    protected:
       virtual void draw(QPainter&, const QRect&);
@@ -67,13 +76,19 @@ class Piano : public MusEGui::View
       void pitchChanged(int);
       void keyPressed(int, int, bool);
       void keyReleased(int, bool);
+      void curSelectedPitchChanged(int);
+      void redirectWheelEvent(QWheelEvent*);
 
    public slots:
       void setPitch(int);
 
    public:
       Piano(QWidget*, int);
+      int curSelectedPitch() const { return _curSelectedPitch; } 
+      void setCurSelectedPitch(int pitch);
       };
 
+} // namespace MusEGui
+      
 #endif
 

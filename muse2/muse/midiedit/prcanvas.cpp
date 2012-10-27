@@ -718,8 +718,11 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       pitch        += track()->transposition;
 
       // play note:
-      MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
-      MusEGlobal::audio->msgPlayMidiEvent(&e);
+      if(_playEvents)
+      {
+        MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
+        MusEGlobal::audio->msgPlayMidiEvent(&e);
+      }
       
       if (_steprec && curPart) // && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record]
 				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift, -1 /* anything which is != rcSteprecNote */);
@@ -736,8 +739,11 @@ void PianoCanvas::pianoReleased(int pitch, bool)
       pitch      += track()->transposition;
 
       // release key:
-      MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
-      MusEGlobal::audio->msgPlayMidiEvent(&e);
+      if(_playEvents)
+      {
+        MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
+        MusEGlobal::audio->msgPlayMidiEvent(&e);
+      }
       }
 
 //---------------------------------------------------------

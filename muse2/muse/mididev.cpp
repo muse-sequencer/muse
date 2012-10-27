@@ -456,6 +456,9 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
             if (a == CTRL_PITCH) {
                   return putMidiEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, b, 0));
                   }
+            if ((a | 0xff) == CTRL_POLYAFTER) {
+                  return putMidiEvent(MidiPlayEvent(t, port, chn, ME_POLYAFTER, a & 0x7f, b & 0x7f));
+                  }
             if (a == CTRL_AFTERTOUCH) {
                   return putMidiEvent(MidiPlayEvent(t, port, chn, ME_AFTERTOUCH, b, 0));
                   }

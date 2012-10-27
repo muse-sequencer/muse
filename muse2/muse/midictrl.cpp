@@ -87,9 +87,6 @@ static MidiController programCtrl("Program",          CTRL_PROGRAM,       0, 0xf
 static MidiController mastervolCtrl("MasterVolume",   CTRL_MASTER_VOLUME, 0, 0x3fff, 0x3000);
 static MidiController volumeCtrl("MainVolume",        CTRL_VOLUME,        0, 127, 100);
 static MidiController panCtrl("Pan",                  CTRL_PANPOT,      -64, 63,    0);
-static MidiController polyAfterCtrl("PolyAftertouch", CTRL_POLYAFTER,     0, 127,   0);
-static MidiController afterCtrl("Aftertouch",         CTRL_AFTERTOUCH,    0, 127,   0);
-
 
 //---------------------------------------------------------
 //   ctrlType2Int
@@ -149,8 +146,6 @@ const QString& int2ctrlType(int n)
 void initMidiController()
       {
       defaultMidiController.add(&veloCtrl);
-      defaultMidiController.add(&polyAfterCtrl);
-      defaultMidiController.add(&afterCtrl);
       defaultMidiController.add(&pitchCtrl);
       defaultMidiController.add(&programCtrl);
       defaultMidiController.add(&mastervolCtrl);
@@ -432,7 +427,7 @@ void MidiController::updateBias()
 void MidiController::write(int level, Xml& xml) const
 {
       ControllerType t = midiControllerType(_num);
-      if(t == Velo || t == PolyAftertouch || t == Aftertouch)
+      if(t == Velo)
         return;
         
       QString type(int2ctrlType(t));
@@ -475,10 +470,16 @@ void MidiController::write(int level, Xml& xml) const
                   mn = -8192;
                   mx = 8191;
                   break;
+            case PolyAftertouch:
+                  mn = 0;
+                  mx = 127;
+                  break;
+            case Aftertouch: 
+                  mn = 0;
+                  mx = 127;
+                  break;
             case Program:
             case Velo:        // Cannot happen
-            case PolyAftertouch:
-            case Aftertouch: 
                   break;
       }
       
@@ -599,9 +600,21 @@ void MidiController::read(Xml& xml)
                                                 _maxVal = 0xffffff;
                                           _num = CTRL_PROGRAM;
                                           break;
-                                    case Velo:        // cannot happen
                                     case PolyAftertouch:   
+                                          if (_maxVal == NOT_SET)
+                                                _maxVal = 127;
+                                          if (_minVal == NOT_SET)
+                                                _minVal = 0;
+                                          _num = CTRL_POLYAFTER;
+                                          break;
                                     case Aftertouch:       
+                                          if (_maxVal == NOT_SET)
+                                                _maxVal = 127;
+                                          if (_minVal == NOT_SET)
+                                                _minVal = 0;
+                                          _num = CTRL_AFTERTOUCH;
+                                          break;
+                                    case Velo:        // cannot happen
                                           break;
                                     }
                               if (_minVal == NOT_SET)

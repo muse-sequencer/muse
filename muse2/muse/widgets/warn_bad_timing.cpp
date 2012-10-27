@@ -1,7 +1,7 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  midi_warn_init_pending_impl.h
+//  warn_bad_timing.cpp
 //  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
@@ -19,22 +19,15 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 //=========================================================
-#ifndef __MIDI_WARN_INIT_PENDING_IMPL_H__
-#define __MIDI_WARN_INIT_PENDING_IMPL_H__
 
-#include "ui_midi_warn_init_pending.h"
+#include "warn_bad_timing.h"
 
 namespace MusEGui {
 
-class MidiWarnInitPendingDialog : public QDialog, public Ui::midiWarnInitPendingBase
+WarnBadTimingDialog::WarnBadTimingDialog()
 {
-    Q_OBJECT
-
-public:
-    MidiWarnInitPendingDialog();
-    bool dontAsk() const { return dontAskAgain->isChecked(); }
-};
+  setupUi(this);
+}
   
 } // namespace MusEGui
 
-#endif

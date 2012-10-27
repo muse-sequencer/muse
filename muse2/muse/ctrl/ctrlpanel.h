@@ -25,6 +25,8 @@
 
 #include <QWidget>
 
+#include "type_defs.h"
+
 class QPushButton;
 class QAction;
 
@@ -39,6 +41,7 @@ class DoubleLabel;
 class Knob;
 class MidiEditor;
 class CtrlCanvas;
+class PixmapButton;
 
 //---------------------------------------------------------
 //   CtrlPanel
@@ -58,8 +61,7 @@ class CtrlPanel: public QWidget {
       MusEGui::Knob* _knob;
       MusEGui::DoubleLabel* _dl;
       int _val;
-      
-      
+      PixmapButton* _veloPerNoteButton;
 
    signals:
       void destroyPanel();
@@ -70,6 +72,9 @@ class CtrlPanel: public QWidget {
       void labelDoubleClicked();
       void ctrlRightClicked(const QPoint& p, int id);
       void ctrlPopupTriggered(QAction* act);
+      void velPerNoteClicked();
+      void songChanged(MusECore::SongChangedFlags_t type);
+      void configChanged();    
       
    protected slots:
       virtual void heartBeat();

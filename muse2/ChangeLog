@@ -1,3 +1,9 @@
+27.10.2012:
+         * Improved: Velocity graphs. Icon for showing per-note or all velocities. Also found in Settings. (Tim)
+         * Improved: Piano KB has current selected note (yellow). For velocity/polyaftertouch/other per-note ctrls.  (Tim)
+         - Bad timing warning now has "don't show again". (Tim)
+         - Added 'speaker' icon to drum edit. And drum list and piano keyboard now obey the 'speaker' icon. (Tim)
+         - TODO: Still W.I.P on the aftertouch stuff...
 22.10.2012:
          - Oops, fixed regression: Re-add default managed controllers to midi ports at Song::clear. (Tim)
          - W.I.P. Preparations for Aftertouch and Poly Aftertouch (channel and key pressure) graph editing. (Tim)

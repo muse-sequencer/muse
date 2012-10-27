@@ -46,6 +46,7 @@
 #include "synth.h"
 #include "song.h"
 #include "gconfig.h"
+#include "warn_bad_timing.h"
 
 namespace MusEGlobal {
 MusECore::MidiSeq* midiSeq;
@@ -507,13 +508,23 @@ void MidiSeq::checkAndReportTimingResolution()
 {
     int freq = timer->getTimerFreq();
     if (freq < 500) {
-        QMessageBox::warning( MusEGlobal::muse, 
-        qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Bad timing")), 
-        qApp->translate("@default", QT_TRANSLATE_NOOP("@default", 
-                             "Timing source frequency is %1hz, which is below the recommended minimum: 500hz!\n" \
-                             "This could lead to audible timing problems for MIDI.\n" \
-                             "Please see the FAQ on http://muse-sequencer.org for remedies.\n" \
+        if(MusEGlobal::config.warnIfBadTiming)
+        {
+          MusEGui::WarnBadTimingDialog dlg;
+          dlg.setLabelText(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", 
+                             "Timing source frequency is %1hz, which is below the recommended minimum: 500hz!\n" 
+                             "This could lead to audible timing problems for MIDI.\n" 
+                             "Please see the FAQ on http://muse-sequencer.org for remedies.\n" 
                              "Also please check console output for any further error messages.\n ")).arg(freq) );
+          
+          dlg.exec();
+          bool warn = !dlg.dontAsk();
+          if(warn != MusEGlobal::config.warnIfBadTiming)  
+          {
+            MusEGlobal::config.warnIfBadTiming = warn;
+            //MusEGlobal::muse->changeConfig(true);  // Save settings? No, wait till close.
+          }
+        }
     }
 }
 

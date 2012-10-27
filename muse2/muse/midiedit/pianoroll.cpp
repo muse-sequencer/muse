@@ -359,9 +359,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS1->setSpacing(0);  
 
       time                = new MusEGui::MTScale(&_raster, split1, xscale);
-      Piano* piano        = new Piano(split1, yscale);
+      piano               = new Piano(split1, yscale);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
       vscroll             = new MusEGui::ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
+      setCurDrumInstrument(piano->curSelectedPitch());
       
       int offset = -(MusEGlobal::config.division/4);
       canvas->setOrigin(offset, 0);
@@ -428,6 +429,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       connect(piano, SIGNAL(keyPressed(int, int, bool)), canvas, SLOT(pianoPressed(int, int, bool)));
       connect(piano, SIGNAL(keyReleased(int, bool)), canvas, SLOT(pianoReleased(int, bool)));
+      connect(piano, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       connect(srec, SIGNAL(toggled(bool)), SLOT(setSteprec(bool)));
       connect(midiin, SIGNAL(toggled(bool)), canvas, SLOT(setMidiin(bool)));
       connect(speaker, SIGNAL(toggled(bool)), SLOT(setSpeaker(bool)));
@@ -811,9 +813,7 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
   MusECore::MidiTrack* track = (MusECore::MidiTrack*)(part->track());
   int channel      = track->outChannel();
   MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-  int curDrumPitch = curDrumInstrument();
-  bool isDrum      = track->type() == MusECore::Track::DRUM;
-  bool isNewDrum      = track->type() == MusECore::Track::NEW_DRUM;
+  int curPitch = curDrumInstrument();
   MusECore::MidiInstrument* instr = port->instrument();
   MusECore::MidiControllerList* mcl = instr->controller();
 
@@ -826,19 +826,11 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
   const int edit_ins = max + 3;
   
   const int velo = max + 0x101;
-  const int polyafter = max + 0x102;
-  const int after = max + 0x103;
 
   int rv = act->data().toInt();
   
   if (rv == velo) {    // special case velocity
         newCtlNum = MusECore::CTRL_VELOCITY;
-        }
-  else if (rv == polyafter) {    // special case 
-        newCtlNum = MusECore::CTRL_POLYAFTER;
-        }
-  else if (rv == after) {    // special case 
-        newCtlNum = MusECore::CTRL_AFTERTOUCH;
         }
   else if (rv == add_ins_def) {  // add new instrument controller
         
@@ -855,10 +847,11 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
             int num = ci->second->num();
             if((num & 0xff) == 0xff)
             {
-              if (isDrum && curDrumPitch!=-1)
-                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
-              else if (isNewDrum && curDrumPitch!=-1)
-                num = (num & ~0xff) + curDrumPitch; //FINDMICH does this work?
+              //if (curPitch!=-1)
+              //  num = (num & ~0xff) + MusEGlobal::drumMap[curPitch].anote;
+              //else 
+              if(curPitch!=-1)
+                num = (num & ~0xff) + curPitch; //FINDMICH does this work?
               else // dont show drum specific controller if not a drum track
                 continue;
             }    
@@ -885,10 +878,11 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
             {
                   c = ci->second;
                   int num = c->num();
-                  if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
-                    num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
-                  else if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
-                    num = (num & ~0xff) + curDrumPitch; //FINDMICHJETZT does this work?
+                  //if (((num & 0xff) == 0xff) && curPitch!=-1)
+                  //  num = (num & ~0xff) + MusEGlobal::drumMap[curPitch].anote;
+                  //else 
+                  if (((num & 0xff) == 0xff) && curPitch!=-1)
+                    num = (num & ~0xff) + curPitch; //FINDMICHJETZT does this work?
                   
                   if(num != rv2)
                     continue;
@@ -923,10 +917,10 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
         if (act2) {
               int rv2 = act2->data().toInt();
               int num = rv2;
-              if (isDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
-                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumPitch].anote;
-              if (isNewDrum && ((num & 0xff) == 0xff) && curDrumPitch!=-1)
-                num = (num & ~0xff) + curDrumPitch; //FINDMICHJETZT does this work?
+              //if (((num & 0xff) == 0xff) && curPitch!=-1)
+              //  num = (num & ~0xff) + MusEGlobal::drumMap[curPitch].anote;
+              if (((num & 0xff) == 0xff) && curPitch!=-1)
+                num = (num & ~0xff) + curPitch; //FINDMICHJETZT does this work?
 
               if(cll->find(channel, num) == cll->end())
               {
@@ -972,7 +966,7 @@ void PianoRoll::addCtrlClicked()
   PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent. 
   connect(pup, SIGNAL(triggered(QAction*)), SLOT(ctrlPopupTriggered(QAction*)));
   
-  int est_width = populateMidiCtrlMenu(pup, parts(), curCanvasPart(), -1); // _curDrumInstrument);
+  int est_width = populateMidiCtrlMenu(pup, parts(), curCanvasPart(), curDrumInstrument());
   
   QPoint ep = ctrl->mapToGlobal(QPoint(0,0));
   //int newx = ep.x() - ctrlMainPop->width();  // Too much! Width says 640. Maybe because it hasn't been shown yet  .
@@ -1010,7 +1004,11 @@ void PianoRoll::setupNewCtrl(CtrlEdit* ctrlEdit)
   connect(ctrlEdit, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
   connect(ctrlEdit, SIGNAL(destroyedCtrl(CtrlEdit*)), SLOT(removeCtrl(CtrlEdit*)));
   connect(ctrlEdit, SIGNAL(yposChanged(int)), toolbar, SLOT(setInt(int)));
+  connect(piano,    SIGNAL(curSelectedPitchChanged(int)), SLOT(setCurDrumInstrument(int)));
+  //connect(piano,    SIGNAL(curSelectedPitchChanged(int)), canvas, SLOT(setCurDrumInstrument(int)));
 
+  setCurDrumInstrument(piano->curSelectedPitch());
+      
   ctrlEdit->setTool(tools2->curTool());
   ctrlEdit->setXPos(hscroll->pos());
   ctrlEdit->setXMag(hscroll->getScaleValue());
@@ -1275,6 +1273,17 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             tools2->set(MusEGui::DrawTool);
             return;
             }
+      else if (key == shortcuts[SHRT_INSTRUMENT_STEP_UP].key) {
+            piano->setCurSelectedPitch(piano->curSelectedPitch()+1);
+            MusEGlobal::song->update(SC_DRUMMAP);
+            return;
+            }
+      else if (key == shortcuts[SHRT_INSTRUMENT_STEP_DOWN].key) {
+            piano->setCurSelectedPitch(piano->curSelectedPitch()-1);
+            MusEGlobal::song->update(SC_DRUMMAP);
+            return;
+            }
+
       else if (key == shortcuts[SHRT_POS_INC].key) {
             pc->pianoCmd(CMD_RIGHT);
             return;

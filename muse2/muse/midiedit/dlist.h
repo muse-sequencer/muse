@@ -137,6 +137,7 @@ class DList : public View {
       virtual void viewMouseReleaseEvent(QMouseEvent* event);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void viewMouseMoveEvent(QMouseEvent*);
+      virtual void wheelEvent(QWheelEvent* e);
 
       int x2col(int x) const;
       void devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll);
@@ -155,6 +156,7 @@ class DList : public View {
       void keyPressed(int, int);
       void keyReleased(int, bool);
       void curDrumInstrumentChanged(int);
+      void redirectWheelEvent(QWheelEvent*);
 
    public slots:
       void tracklistChanged();

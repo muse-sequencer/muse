@@ -1116,7 +1116,7 @@ Adjusts responsiveness of audio controls and
           <string>Ticks</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0" rowspan="2">
+          <item row="1" column="0" rowspan="2">
            <widget class="QLabel" name="TextLabel3">
             <property name="text">
              <string>RTC Resolution
@@ -1127,7 +1127,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <widget class="QComboBox" name="rtcResolutionSelect">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1167,7 +1167,7 @@ Adjusts responsiveness of audio controls and
             </item>
            </widget>
           </item>
-          <item row="1" column="1" rowspan="2">
+          <item row="2" column="1" rowspan="2">
            <widget class="QComboBox" name="midiDivisionSelect">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1225,7 +1225,7 @@ Adjusts responsiveness of audio controls and
             </item>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="midiResLabel">
             <property name="text">
              <string>Midi Resolution
@@ -1236,7 +1236,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="TextLabel4">
             <property name="text">
              <string>Displayed Resolution
@@ -1247,7 +1247,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QComboBox" name="guiDivisionSelect">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1305,6 +1305,13 @@ Adjusts responsiveness of audio controls and
             </item>
            </widget>
           </item>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="warnIfBadTimingCheckBox">
+            <property name="text">
+             <string>Warn if timer frequency is inadequate</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -1326,7 +1333,7 @@ Adjusts responsiveness of audio controls and
          <property name="title">
           <string>Behavior</string>
          </property>
-         <layout class="QGridLayout">
+         <layout class="QGridLayout" name="gridLayout7">
           <item row="0" column="0">
            <widget class="QLabel" name="TextLabel1">
             <property name="text">
@@ -1337,7 +1344,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="0" column="2">
            <widget class="QSpinBox" name="guiRefreshSelect">
             <property name="suffix">
              <string>/sec</string>
@@ -1363,7 +1370,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="1" column="2">
            <widget class="QCheckBox" name="oldStyleStopCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1376,7 +1383,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="2" column="0" colspan="2">
            <widget class="QLabel" name="textLabel1_4_2">
             <property name="text">
              <string>Move single armed track with selection</string>
@@ -1386,7 +1393,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="2" column="2">
            <widget class="QCheckBox" name="moveArmedCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1409,7 +1416,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="3" column="2">
            <widget class="QCheckBox" name="projectSaveCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1422,7 +1429,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="4" column="0" colspan="2">
            <widget class="QLabel" name="TextLabel1_3">
             <property name="toolTip">
              <string/>
@@ -1432,7 +1439,7 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="4" column="2">
            <widget class="QCheckBox" name="popsDefStayOpenCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1449,7 +1456,7 @@ Otherwise, hold Ctrl to keep them open.</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="5" column="0" colspan="2">
            <widget class="QLabel" name="label_2">
             <property name="toolTip">
              <string>In some areas, the middle mouse button decreases
@@ -1462,7 +1469,7 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="5" column="2">
            <widget class="QCheckBox" name="lmbDecreasesCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1475,7 +1482,14 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="6" column="0" colspan="2">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Shift + Right click sets left range marker</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
            <widget class="QCheckBox" name="rangeMarkerWithoutMMBCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1488,42 +1502,35 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Shift + Right click sets left range marker</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QCheckBox" name="addHiddenCheckBox">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0">
+          <item row="7" column="0" colspan="2">
            <widget class="QLabel" name="label_4">
             <property name="text">
              <string>Allow adding hidden tracks in track list menu</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
+          <item row="7" column="2">
+           <widget class="QCheckBox" name="addHiddenCheckBox">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0" colspan="2">
            <widget class="QLabel" name="label_5">
             <property name="text">
              <string>Unhide tracks when adding hidden tracks</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="1">
+          <item row="8" column="2">
            <widget class="QCheckBox" name="unhideTracksCheckBox">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
+          <item row="9" column="0" colspan="2">
            <widget class="QLabel" name="label5">
             <property name="text">
              <string>Smart focus</string>
@@ -1533,7 +1540,7 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="1">
+          <item row="9" column="2">
            <widget class="QCheckBox" name="smartFocusCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1553,7 +1560,21 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="10" column="0">
+          <item row="10" column="0" colspan="2">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Show midi velocity graphs per-note</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="2">
+           <widget class="QCheckBox" name="velocityPerNoteCheckBox">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1">
            <spacer name="verticalSpacer_2">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -1677,8 +1698,8 @@ left button behave like the middle button in such areas.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>474</width>
+               <height>410</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

@@ -153,6 +153,7 @@ void GlobalSettingsConfig::updateSettings()
                   }
             }
 
+      warnIfBadTimingCheckBox->setChecked(MusEGlobal::config.warnIfBadTiming);      
       midiSendInit->setChecked(MusEGlobal::config.midiSendInit);      
       midiWarnInitPending->setChecked(MusEGlobal::config.warnInitPending);      
       midiSendCtlDefaults->setChecked(MusEGlobal::config.midiSendCtlDefaults);      
@@ -220,6 +221,7 @@ void GlobalSettingsConfig::updateSettings()
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
       rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       smartFocusCheckBox->setChecked(MusEGlobal::config.smartFocus);
+      velocityPerNoteCheckBox->setChecked(MusEGlobal::config.velocityPerNote);
       
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
@@ -272,6 +274,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.useOutputLimiter = outputLimiterCheckBox->isChecked();
       MusEGlobal::config.vstInPlace  = vstInPlaceCheckBox->isChecked();
       MusEGlobal::config.rtcTicks    = rtcResolutions[rtcticks];
+      MusEGlobal::config.warnIfBadTiming = warnIfBadTimingCheckBox->isChecked();
       MusEGlobal::config.midiSendInit = midiSendInit->isChecked();
       MusEGlobal::config.warnInitPending = midiWarnInitPending->isChecked();
       MusEGlobal::config.midiSendCtlDefaults = midiSendCtlDefaults->isChecked();
@@ -335,6 +338,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
       MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
       MusEGlobal::config.smartFocus = smartFocusCheckBox->isChecked();
+      MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
 
       MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
       MusEGlobal::config.unhideTracks = unhideTracksCheckBox->isChecked();

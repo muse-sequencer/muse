@@ -103,7 +103,9 @@ class DrumEdit : public MidiEditor {
       MusEGui::NoteInfo* info;
       QToolButton* srec;
       QToolButton* midiin;
+      QToolButton* speaker;
       MusEGui::EditToolBar* tools2;
+      bool _playEvents;
 
       MusEGui::Toolbar1* toolbar;
       MusEGui::Splitter* split1;
@@ -152,6 +154,7 @@ class DrumEdit : public MidiEditor {
       void configChanged();
       void songChanged1(MusECore::SongChangedFlags_t);
       void setStep(QString);
+      void setSpeaker(bool);
       void addCtrlClicked();
       void ctrlPopupTriggered(QAction* act);
 

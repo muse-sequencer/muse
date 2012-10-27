@@ -846,7 +846,13 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       }
     }
       
-    if(a == CTRL_AFTERTOUCH) 
+    if((a | 0xff) == CTRL_POLYAFTER) 
+    {
+      //printf("MidiJackDevice::processEvent CTRL_AFTERTOUCH v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
+      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_POLYAFTER, a & 0x7f, b & 0x7f)))
+        return false;
+    }
+    else if(a == CTRL_AFTERTOUCH) 
     {
       //printf("MidiJackDevice::processEvent CTRL_AFTERTOUCH v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
       if(!queueEvent(MidiPlayEvent(t, port, chn, ME_AFTERTOUCH, b & 0x7f, 0)))

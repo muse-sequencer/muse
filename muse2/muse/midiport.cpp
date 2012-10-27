@@ -742,8 +742,6 @@ void MidiPort::addDefaultControllers()
         addManagedController(i, CTRL_PROGRAM);   
         addManagedController(i, CTRL_VOLUME);
         addManagedController(i, CTRL_PANPOT);
-        addManagedController(i, CTRL_POLYAFTER);
-        addManagedController(i, CTRL_AFTERTOUCH);
         _automationType[i] = AUTO_READ;
         }
 }
