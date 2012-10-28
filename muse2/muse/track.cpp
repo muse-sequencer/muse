@@ -1037,10 +1037,49 @@ void MidiTrack::read(Xml& xml)
                               if(p)
                                 parts()->add(p);
                               }
-                        else if (tag == "device")
-                              setOutPort(xml.parseInt());
-                        else if (tag == "channel")
-                              setOutChannel(xml.parseInt());
+                        // TODO: These two device and channel sections will need to change 
+                        //         if and when multiple output routes are supported. 
+                        //       For now just look for the first default (there's only one)...
+                        else if (tag == "device") {
+                                int port = xml.parseInt();
+                                if(port == -1)
+                                {
+                                  for(int i = 0; i < MIDI_PORTS; ++i)
+                                  {
+                                    if(MusEGlobal::midiPorts[i].defaultOutChannels())
+                                    {
+                                      port = i;
+                                      break;
+                                    }
+                                  }
+                                }
+                                if(port == -1)
+                                  port = 0;
+                                setOutPort(port);
+                              }
+                        else if (tag == "channel") {
+                                int chan = xml.parseInt();
+                                if(chan == -1)
+                                {
+                                  for(int i = 0; i < MIDI_PORTS; ++i)
+                                  {
+                                    int defchans = MusEGlobal::midiPorts[i].defaultOutChannels();
+                                    for(int c = 0; c < MIDI_CHANNELS; ++c)
+                                    {
+                                      if(defchans & (1 << c))
+                                      {
+                                        chan = c;
+                                        break;
+                                      }
+                                    }
+                                    if(chan != -1)
+                                      break;
+                                  }
+                                }
+                                if(chan == -1)
+                                  chan = 0;
+                                setOutChannel(chan);
+                              }
                         else if (tag == "inportMap")
                               portmask = xml.parseUInt();           // Obsolete but support old files.
                         else if (tag == "inchannelMap")

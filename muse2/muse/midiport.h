@@ -37,6 +37,7 @@ class MidiDevice;
 class Part;
 //class MidiSyncInfo;
 class MidiController;
+class MidiControllerList;
 class MidiCtrlValListList;
 class MidiCtrlValList;
 class MidiInstrument;
@@ -164,6 +165,7 @@ extern void setPortExclusiveDefOutChan(int /*port*/, int /*chan*/);
 #endif
 
 extern QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1);
+extern MidiControllerList defaultManagedMidiController;
 
 } // namespace MusECore
 

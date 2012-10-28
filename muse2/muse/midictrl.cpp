@@ -81,12 +81,15 @@ MidiControllerList defaultMidiController;
 //
 // some global controller which are always available:
 //
-MidiController veloCtrl("Velocity",                   CTRL_VELOCITY,      0, 127,   0);
-static MidiController pitchCtrl("PitchBend",          CTRL_PITCH,     -8192, +8191, 0);
-static MidiController programCtrl("Program",          CTRL_PROGRAM,       0, 0xffffff, 0);
-static MidiController mastervolCtrl("MasterVolume",   CTRL_MASTER_VOLUME, 0, 0x3fff, 0x3000);
-static MidiController volumeCtrl("MainVolume",        CTRL_VOLUME,        0, 127, 100);
-static MidiController panCtrl("Pan",                  CTRL_PANPOT,      -64, 63,    0);
+MidiController veloCtrl("Velocity",               CTRL_VELOCITY,       0,      127,      0);
+MidiController pitchCtrl("PitchBend",             CTRL_PITCH,      -8192,    +8191,      0);
+MidiController programCtrl("Program",             CTRL_PROGRAM,        0, 0xffffff,      0);
+MidiController mastervolCtrl("MasterVolume",      CTRL_MASTER_VOLUME,  0,   0x3fff, 0x3000);
+MidiController volumeCtrl("MainVolume",           CTRL_VOLUME,         0,      127,    100);
+MidiController panCtrl("Pan",                     CTRL_PANPOT,       -64,       63,      0);
+MidiController reverbSendCtrl("ReverbSend",       CTRL_REVERB_SEND,    0,      127,      0);
+MidiController chorusSendCtrl("ChorusSend",       CTRL_CHORUS_SEND,    0,      127,      0);
+MidiController variationSendCtrl("VariationSend", CTRL_VARIATION_SEND, 0,      127,      0);
 
 //---------------------------------------------------------
 //   ctrlType2Int
@@ -151,6 +154,9 @@ void initMidiController()
       defaultMidiController.add(&mastervolCtrl);
       defaultMidiController.add(&volumeCtrl);
       defaultMidiController.add(&panCtrl);
+      defaultMidiController.add(&reverbSendCtrl);
+      defaultMidiController.add(&chorusSendCtrl);
+      defaultMidiController.add(&variationSendCtrl);
       }
 
 //---------------------------------------------------------

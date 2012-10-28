@@ -1167,18 +1167,31 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   for (int k = 0; k < MIDI_CHANNELS; ++k) {
                         int min = k << 24;
                         int max = min + 0x100000;
-                        xml.tag(level++, "channel idx=\"%d\"", k);
+                        bool found = false;
                         iMidiCtrlValList s = vll->lower_bound(min);
                         iMidiCtrlValList e = vll->lower_bound(max);
                         if (s != e) {
                               for (iMidiCtrlValList i = s; i != e; ++i) {
+                                    int ctl = i->second->num();
+                                    if(mport->drumController(ctl))  // Including internals like polyaftertouch
+                                      ctl |= 0xff;
+                                    // Don't bother saving these empty controllers since they are already always added!
+                                    if(defaultManagedMidiController.find(ctl) != defaultManagedMidiController.end() 
+                                        && i->second->hwVal() == CTRL_VAL_UNKNOWN)
+                                      continue;
+                                    if(!found)
+                                    {
+                                      xml.tag(level++, "channel idx=\"%d\"", k);
+                                      found = true;
+                                    }
                                     xml.tag(level++, "controller id=\"%d\"", i->second->num());
                                     if (i->second->hwVal() != CTRL_VAL_UNKNOWN)
                                           xml.intTag(level, "val", i->second->hwVal());
                                     xml.etag(level--, "controller");
                                     }
                               }
-                        xml.etag(level--, "channel");
+                        if(found)      
+                          xml.etag(level--, "channel");
                         }
                   xml.etag(level--, "midiport");
                   }

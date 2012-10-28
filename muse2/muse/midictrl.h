@@ -256,7 +256,14 @@ extern MidiController::ControllerType ctrlType2Int(const QString& s);
 extern QString midiCtrlName(int ctrl, bool fullyQualified = false);
 extern QString midiCtrlNumString(int ctrl, bool fullyQualified = false);
 extern MidiController veloCtrl;
-
+extern MidiController pitchCtrl;
+extern MidiController programCtrl;
+extern MidiController mastervolCtrl;
+extern MidiController volumeCtrl;
+extern MidiController panCtrl;
+extern MidiController reverbSendCtrl;
+extern MidiController chorusSendCtrl;
+extern MidiController variationSendCtrl;
 
 typedef std::map<int, int, std::less<int> > MidiCtl2LadspaPortMap;
 typedef MidiCtl2LadspaPortMap::iterator iMidiCtl2LadspaPort;

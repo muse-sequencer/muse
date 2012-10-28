@@ -50,14 +50,32 @@ MusECore::MidiPort midiPorts[MIDI_PORTS];
 
 namespace MusECore {
 
+
+MidiControllerList defaultManagedMidiController;
+
 //---------------------------------------------------------
 //   initMidiPorts
 //---------------------------------------------------------
 
 void initMidiPorts()
       {
+      defaultManagedMidiController.add(&pitchCtrl);
+      defaultManagedMidiController.add(&programCtrl);
+      defaultManagedMidiController.add(&volumeCtrl);
+      defaultManagedMidiController.add(&panCtrl);
+      defaultManagedMidiController.add(&reverbSendCtrl);
+      defaultManagedMidiController.add(&chorusSendCtrl);
+      defaultManagedMidiController.add(&variationSendCtrl);
+        
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
+            
+            //
+            // create minimum set of managed controllers
+            // to make midi mixer operational
+            //
+            port->addDefaultControllers();
+            
             ///port->setInstrument(genericMidiInstrument);
             port->setInstrument(registerMidiInstrument("GM")); // Changed by Tim. 
             port->syncInfo().setPort(i);
@@ -81,12 +99,6 @@ MidiPort::MidiPort()
       _instrument = 0;
       _controller = new MidiCtrlValListList();
       _foundInSongFile = false;
-
-      //
-      // create minimum set of managed controllers
-      // to make midi mixer operational
-      //
-      addDefaultControllers();
       }
 
 //---------------------------------------------------------
@@ -739,9 +751,8 @@ MidiCtrlValList* MidiPort::addManagedController(int channel, int ctrl)
 void MidiPort::addDefaultControllers()
 {
   for (int i = 0; i < MIDI_CHANNELS; ++i) {
-        addManagedController(i, CTRL_PROGRAM);   
-        addManagedController(i, CTRL_VOLUME);
-        addManagedController(i, CTRL_PANPOT);
+        for(ciMidiController imc = defaultManagedMidiController.begin(); imc != defaultManagedMidiController.end(); ++imc)
+          addManagedController(i, imc->second->num());   
         _automationType[i] = AUTO_READ;
         }
 }
@@ -1074,7 +1085,8 @@ MidiController* MidiPort::drumController(int ctl)
   if(((ctl - CTRL_RPN_OFFSET >= 0) && (ctl - CTRL_RPN_OFFSET <= 0xffff)) ||
      ((ctl - CTRL_NRPN_OFFSET >= 0) && (ctl - CTRL_NRPN_OFFSET <= 0xffff)) ||
      ((ctl - CTRL_RPN14_OFFSET >= 0) && (ctl - CTRL_RPN14_OFFSET <= 0xffff)) ||
-     ((ctl - CTRL_NRPN14_OFFSET >= 0) && (ctl - CTRL_NRPN14_OFFSET <= 0xffff)))
+     ((ctl - CTRL_NRPN14_OFFSET >= 0) && (ctl - CTRL_NRPN14_OFFSET <= 0xffff)) ||
+     ((ctl - CTRL_INTERNAL_OFFSET >= 0) && (ctl - CTRL_INTERNAL_OFFSET <= 0xffff)))  // Include internals
   {
     // Does the instrument have a drum controller to match this controller's number?
     iMidiController imc = cl->find(ctl | 0xff);

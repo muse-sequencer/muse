@@ -1,3 +1,14 @@
+28.10.2012:
+         * Improved: Eliminated copious unrequired "controller" sections from songs and templates. (Tim)
+           These controllers such as volume, pan are already always added, so it's useless to store them when "Off".
+           Added midiport.cpp:defaultManagedMidiController, populated and used in init, also used when saving song
+            to look up these controllers and ignore them if "Off".
+         - Eliminated ALL "controller" sections from built-in templates, which were already over-populated. 
+         - Also eliminated ALL "midiport" sections from buit-in templates, so that they don't touch existing setups. 
+         - Also, specifically for the "synth.med", changed synth ports to 198 and 199 so that it is (almost) 
+            guaranteed not to touch existing used ports with the synths. 
+         * Improved: Also, wrote mechanism allowing track port/channel = -1 in templates, so that it uses your 
+            chosen default output port/channel from the midi ports setup dialog. Try midiGM.med template for example.
 27.10.2012:
          * Improved: Velocity graphs. Icon for showing per-note or all velocities. Also found in Settings. (Tim)
          * Improved: Piano KB has current selected note (yellow). For velocity/polyaftertouch/other per-note ctrls.  (Tim)
