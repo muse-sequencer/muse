@@ -2725,21 +2725,26 @@ again:
 //   startEditInstrument
 //---------------------------------------------------------
 
-void MusE::startEditInstrument()
+void MusE::startEditInstrument(const QString& find_instrument, EditInstrument::TabType show_tab)
     {
       if(editInstrument == 0)
       {
             editInstrument = new MusEGui::EditInstrument(this);
             editInstrument->show();
+            editInstrument->findInstrument(find_instrument);
+            editInstrument->showTab(show_tab);
       }
       else
       {
         if(! editInstrument->isHidden())
           editInstrument->hide();
-        else      
+        else
+        {
           editInstrument->show();
+          editInstrument->findInstrument(find_instrument);
+          editInstrument->showTab(show_tab);
+        }
       }
-      
     }
 
 //---------------------------------------------------------

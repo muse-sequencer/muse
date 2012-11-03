@@ -27,6 +27,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QListWidget>
+#include <QListWidgetItem>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
@@ -602,21 +603,31 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
       {
       setupUi(this);
       widgetStack->setAutoFillBackground(true);
-      val = 0;
-      num = 0;
-      if (!event.empty()) {
-            num = event.dataA();
-            val = event.dataB();
-            }
-
-      ///pop = new QMenu(this);
-      //pop->setCheckable(false); //not necessary in Qt4
 
       MusECore::MidiTrack* track   = part->track();
       int portn          = track->outPort();
       MusECore::MidiPort* port     = &MusEGlobal::midiPorts[portn];
-      bool isDrum        = track->isDrumTrack();
+      bool isDrum        = track->type() == MusECore::Track::DRUM;
+      bool isNewDrum     = track->type() == MusECore::Track::NEW_DRUM;
+      bool isMidi        = track->type() == MusECore::Track::MIDI;
       MusECore::MidiCtrlValListList* cll = port->controller();
+
+      val = 0;
+      num = 0;
+      int note = -1;
+      if (!event.empty()) {
+            num = event.dataA();
+            val = event.dataB();
+            if(port->drumController(num))
+            {
+              if(isDrum)
+                num = (num & ~0xff) | MusEGlobal::drumMap[num & 0xff].anote;
+              note = num & 0xff;
+            }
+          }
+
+      ///pop = new QMenu(this);
+      //pop->setCheckable(false); //not necessary in Qt4
 
       ctrlList->clear();
       ctrlList->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -630,14 +641,34 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
 
       for (MusECore::iMidiCtrlValList it = cll->begin(); it != cll->end(); ++it) {
             MusECore::MidiCtrlValList* cl = it->second;
-            int num             = cl->num();
+            int clnum             = cl->num();
 
             // dont show drum specific controller if not a drum track
-            if ((num & 0xff) == 0xff) {
-                  if (!isDrum)
-                        continue;
-                  }
-            MusECore::MidiController* c = port->midiController(num);
+            //if ((num & 0xff) == 0xff) {     // REMOVE Tim. Or keep.
+            //      if (!isDrum)
+            //            continue;
+            //      }
+//             int rnum = num;
+//             if(port->drumController(num))
+//             {
+//               rnum |= 0xff;
+//               if()
+//               continue;
+//             }
+
+
+// FIXME: TODO: Finish this stuff off. Use items' data member for control number.
+            
+            MusECore::MidiController* c = port->midiController(clnum);
+            //int cnum = c->num();
+            //if(c->isPerNoteController())
+            //{
+              if(((isDrum || isNewDrum) && !(c->showInTracks() & MusECore::MidiController::ShowInDrum)) ||
+                 (isMidi && !(c->showInTracks() & MusECore::MidiController::ShowInMidi)))
+                continue;
+            //}
+
+            
 	    {
             isList i = sList.begin();
             for (; i != sList.end(); ++i) {
@@ -674,10 +705,27 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
         {
           widgetStack->setCurrentIndex(0);
           valSlider->setValue(val - mc->bias());
+          
+          if(mc->isPerNoteController())
+          {
+            noteSpinBox->setVisible(true);
+            noteSpinBox->setEnabled(true);
+            if(note != -1)
+              noteSpinBox->setValue(note);
+          }
+          else
+          {
+            noteSpinBox->setEnabled(false);
+            noteSpinBox->setVisible(false);
+          }
         }  
       }
       else
+      {
+        noteSpinBox->setEnabled(false);
+        noteSpinBox->setVisible(false);
         ctrlListClicked(ctrlList->selectedItems()[0]);
+      }
       connect(ctrlList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(ctrlListClicked(QListWidgetItem*)));
       connect(buttonNewController, SIGNAL(clicked()), SLOT(newController()));
       connect(hbank,   SIGNAL(valueChanged(int)), SLOT(programChanged()));
@@ -703,36 +751,77 @@ void EditCtrlDialog::newController()
       MusECore::MidiTrack* track        = part->track();
       int portn               = track->outPort();
       MusECore::MidiPort* port          = &MusEGlobal::midiPorts[portn];
+      bool isDrum      = track->type() == MusECore::Track::DRUM;
+      bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
+      bool isMidi      = track->type() == MusECore::Track::MIDI;
       MusECore::MidiInstrument* instr   = port->instrument();
       MusECore::MidiControllerList* mcl = instr->controller();
       
       MusECore::MidiCtrlValListList* cll = port->controller();
       int channel              = track->outChannel();
-      int nn = 0;
+      //int nn = 0;
       for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
       {
-            if(cll->find(channel, ci->second->num()) == cll->end())
-            {
-                    QAction* act = pup->addAction(ci->second->name());
-		    act->setData(nn);
-		    ++nn;
-	    }
+
+          MusECore::MidiController* c = ci->second;
+          int num = c->num();
+          int show = c->showInTracks();
+
+          if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
+             (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
+            continue;
+          if(c->isPerNoteController())
+          {
+            if (isDrum)
+              num = (num & ~0xff) | MusEGlobal::drumMap[noteSpinBox->value()].anote;
+            else if ((isNewDrum || isMidi))
+              num = (num & ~0xff) | noteSpinBox->value(); 
+            else // dont show drum specific controller if not a drum track
+              continue;
+          }
+
+          // If it's not already in the parent menu...
+          if(cll->find(channel, num) == cll->end())
+          {
+            //ctrlSubPop->addAction(MusECore::midiCtrlNumString(num, true) + ci->second->name())->setData(num);
+            QAction* act = pup->addAction(MusECore::midiCtrlNumString(num, true) + c->name());
+            act->setData(num);
+          }
+
+// REMOVE Tim.          
+//             if(cll->find(channel, ci->second->num()) == cll->end())
+//             {
+//                     QAction* act = pup->addAction(ci->second->name());
+// 		    act->setData(nn);
+// 		    ++nn;
+// 	    }
       }
-      QAction* rv = pup->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
-      if (rv) {
-            QString s = rv->text();
+      
+//       QAction* rv = pup->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
+      QAction* act = pup->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
+      if (act && act->data().toInt() != -1) {
+            //QString s = rv->text();   // REMOVE Tim.
+            int rv = act->data().toInt();
+            int num = rv;
+            if(port->drumController(rv))
+              num |= 0xff;
             for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
                   MusECore::MidiController* mc = ci->second;
-                  if (mc->name() == s) {
-                        if(cll->find(channel, mc->num()) == cll->end())
+                  //if (mc->name() == s) {          // REMOVE Tim.
+                  if (mc->num() == num) {
+                        //if(cll->find(channel, mc->num()) == cll->end())   // REMOVE Tim.
+                        if(cll->find(channel, rv) == cll->end())
                         {
-                          MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(mc->num());
+                          //MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(mc->num());   // REMOVE Tim.
+                          MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(rv);
                           cll->add(channel, vl);
                         }
                         int idx = 0;
                         for (; idx < ctrlList->count() ;++idx) {   // p4.0.25 Fix segfault 
-                              QString str = ctrlList->item(idx)->text();
-                              if (s == str)
+                              //QString str = ctrlList->item(idx)->text();               // REMOVE Tim.
+                              int item_data = ctrlList->item(idx)->data(Qt::UserRole).toInt();
+                              //if (s == str)
+                              if (item_data == num)
                               {
                                     ctrlList->item(idx)->setSelected(true);
                                     ctrlListClicked(ctrlList->item(idx));
@@ -740,7 +829,10 @@ void EditCtrlDialog::newController()
                               }      
                               }
                         if (idx >= ctrlList->count()) {                       // p4.0.25 Fix segfault 
-                              ctrlList->addItem(s);
+                              //ctrlList->addItem(s);                          // REMOVE Tim.
+                              QListWidgetItem* new_item = new QListWidgetItem(act->text(), ctrlList);
+                              new_item->setData(Qt::UserRole, num);
+                              //ctrlList->addItem(new_item);
                               ctrlList->item(idx)->setSelected(true);
                               ctrlListClicked(ctrlList->item(idx));
                               break;

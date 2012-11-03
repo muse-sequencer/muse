@@ -88,7 +88,7 @@ void MidiAudioControl::heartbeat()
 
     if(MusEGlobal::midiLearnCtrl != -1)
     {
-      int type = MusECore::midiControllerType(MusEGlobal::midiLearnCtrl);
+      MusECore::MidiController::ControllerType type = MusECore::midiControllerType(MusEGlobal::midiLearnCtrl);
       if(type < controlTypeComboBox->count() && type != controlTypeComboBox->currentIndex())
       {
         controlTypeComboBox->blockSignals(true);
@@ -223,7 +223,7 @@ void MidiAudioControl::ctrlTypeChanged(int idx)
   updateCtrlBoxes();
   
   _ctrl = (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value();
-  _ctrl = MusECore::midiCtrlTerms2Number(idx, _ctrl);
+  _ctrl = MusECore::midiCtrlTerms2Number(MusECore::MidiController::ControllerType(idx), _ctrl);
 
   resetLearn();
 }
@@ -233,7 +233,7 @@ void MidiAudioControl::ctrlHChanged()
   if(controlTypeComboBox->currentIndex() == -1)
     return;
   _ctrl = (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value();
-  _ctrl = MusECore::midiCtrlTerms2Number(controlTypeComboBox->currentIndex(), _ctrl);
+  _ctrl = MusECore::midiCtrlTerms2Number(MusECore::MidiController::ControllerType(controlTypeComboBox->currentIndex()), _ctrl);
 
   resetLearn();
 }
@@ -243,7 +243,7 @@ void MidiAudioControl::ctrlLChanged()
   if(controlTypeComboBox->currentIndex() == -1)
     return;
   _ctrl = (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value();
-  _ctrl = MusECore::midiCtrlTerms2Number(controlTypeComboBox->currentIndex(), _ctrl);
+  _ctrl = MusECore::midiCtrlTerms2Number(MusECore::MidiController::ControllerType(controlTypeComboBox->currentIndex()), _ctrl);
 
   resetLearn();
 }

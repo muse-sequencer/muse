@@ -605,19 +605,21 @@
     <Controller name="EG AttackTime" type="NRPN" h="1" l="99" />
     <Controller name="EG DecayTime" type="NRPN" h="1" l="100" />
     <Controller name="EG Release" type="NRPN" h="1" l="102" />
-    <Controller name="Drum FilterCutoffFreq" type="NRPN" h="20" l="pitch" />
-    <Controller name="Drum FilterResonance" type="NRPN" h="21" l="pitch" />
-    <Controller name="Drum EG AttackRate" type="NRPN" h="22" l="pitch" />
-    <Controller name="Drum EG DecayRage" type="NRPN" h="23" l="pitch" />
-    <Controller name="Drum Pitch Coarse" type="NRPN" h="24" l="pitch" min="-64" max="63" />
-    <Controller name="Drum Pitch Fine" type="NRPN" h="25" l="pitch" min="-64" max="63" />
-    <Controller name="Drum Level" type="NRPN" h="26" l="pitch" />
-    <Controller name="Drum Pan" type="NRPN" h="28" l="pitch" min="-64" max="63" />
-    <Controller name="Drum ReverbSendLevel" type="NRPN" h="29" l="pitch" />
-    <Controller name="Drum ChorusSendLevel" type="NRPN" h="30" l="pitch" />
-    <Controller name="Drum VariationSendLev" type="NRPN" h="31" l="pitch" />
+    <Controller name="Drum FilterCutoffFreq" type="NRPN" h="20" l="pitch" showType="1" />
+    <Controller name="Drum FilterResonance" type="NRPN" h="21" l="pitch" showType="1" />
+    <Controller name="Drum EG AttackRate" type="NRPN" h="22" l="pitch" showType="1" />
+    <Controller name="Drum EG DecayRage" type="NRPN" h="23" l="pitch" showType="1" />
+    <Controller name="Drum Pitch Coarse" type="NRPN" h="24" l="pitch" min="-64" max="63" showType="1" />
+    <Controller name="Drum Pitch Fine" type="NRPN" h="25" l="pitch" min="-64" max="63" showType="1" />
+    <Controller name="Drum Level" type="NRPN" h="26" l="pitch" showType="1" />
+    <Controller name="Drum Pan" type="NRPN" h="28" l="pitch" min="-64" max="63" showType="1" />
+    <Controller name="Drum ReverbSendLevel" type="NRPN" h="29" l="pitch" showType="1" />
+    <Controller name="Drum ChorusSendLevel" type="NRPN" h="30" l="pitch" showType="1" />
+    <Controller name="Drum VariationSendLev" type="NRPN" h="31" l="pitch" showType="1" />
     <Controller name="Pitch" type="Pitch" />
     <Controller name="Program" type="Program" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
 
     <Drummaps>
       <entry>

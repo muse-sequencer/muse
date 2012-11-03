@@ -48,7 +48,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Don't ask me again</string>
+      <string>Don't warn me again</string>
      </property>
     </widget>
    </item>

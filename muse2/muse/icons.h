@@ -167,6 +167,7 @@ extern QPixmap* toggle_small_Icon;
 extern QPixmap* redLedIcon;
 extern QPixmap* darkRedLedIcon;
 extern QPixmap* greendotIcon;
+extern QPixmap* reddotIcon;
 //extern QPixmap* darkgreendotIcon;
 extern QPixmap* graydotIcon;
 extern QPixmap* bluedotIcon;

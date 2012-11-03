@@ -186,6 +186,7 @@
 #include "xpm/redled.xpm"
 #include "xpm/darkredled.xpm"
 #include "xpm/greendot.xpm"
+#include "xpm/reddot.xpm"
 //#include "xpm/darkgreendot.xpm"
 #include "xpm/bluedot.xpm"
 #include "xpm/graydot.xpm"
@@ -428,6 +429,7 @@ QPixmap* toggle_small_Icon;
 QPixmap* redLedIcon;
 QPixmap* darkRedLedIcon;
 QPixmap* greendotIcon;
+QPixmap* reddotIcon;
 //QPixmap* darkgreendotIcon;
 QPixmap* graydotIcon;
 QPixmap* bluedotIcon;
@@ -653,6 +655,7 @@ void initIcons()
       redLedIcon           = new MPIXMAP(redled_xpm, NULL);
       darkRedLedIcon       = new MPIXMAP(darkredled_xpm, NULL);
       greendotIcon         = new MPIXMAP(greendot_xpm, NULL);
+      reddotIcon           = new MPIXMAP(reddot_xpm, NULL);
       //darkgreendotIcon     = new MPIXMAP(darkgreendot_xpm, NULL);
       bluedotIcon          = new MPIXMAP(bluedot_xpm, NULL);
       graydotIcon          = new MPIXMAP(graydot_xpm, NULL);
@@ -894,6 +897,7 @@ void deleteIcons()
       delete redLedIcon;           
       delete darkRedLedIcon;       
       delete greendotIcon;         
+      delete reddotIcon;
       //delete darkgreendotIcon;   
       delete bluedotIcon;          
       delete graydotIcon;          

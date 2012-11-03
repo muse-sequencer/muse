@@ -1565,17 +1565,17 @@
     <Controller name="NRPN EG Attack Time"   type="NRPN" h="0x01" l="0x63" min="-0x40" max="0x3f" init="0x00" />
     <Controller name="NRPN EG Decay Time"    type="NRPN" h="0x01" l="0x64" min="-0x40" max="0x3f" init="0x00" />
     <Controller name="NRPN EG Release Time"  type="NRPN" h="0x01" l="0x66" min="-0x40" max="0x3f" init="0x00" />
-    <Controller name="NRPN Drum Cutoff Freq." type="NRPN" h="0x14" l="pitch" min="-0x40" max="0x3f" init="0x00" />
-    <Controller name="NRPN Drum Filter Res."  type="NRPN" h="0x15" l="pitch" min="-0x40" max="0x3f" init="0x00" />
-    <Controller name="NRPN Drum AEG Atk Time" type="NRPN" h="0x16" l="pitch" min="-0x40" max="0x3f" init="0x00" />
-    <Controller name="NRPN Drum AEG Dcy Time" type="NRPN" h="0x17" l="pitch" min="-0x40" max="0x3f" init="0x00" />
-    <Controller name="NRPN Drum Pitch Coarse" type="NRPN" h="0x18" l="pitch" min="-0x40" max="0x3f" init="0x00" />
-    <Controller name="NRPN Drum Pitch Fine"   type="NRPN" h="0x19" l="pitch" min="-0x40" max="0x3f" init="0x00" />
-    <Controller name="NRPN Drum Level"        type="NRPN" h="0x1a" l="pitch" min="0x00"  max="0x7f" init="0x64" />
-    <Controller name="NRPN Drum Panpot"       type="NRPN" h="0x1c" l="pitch" min="-0x40" max="0x3f" init="0x00" />
-    <Controller name="NRPN Drum Reverb Send"  type="NRPN" h="0x1d" l="pitch" min="0x00"  max="0x7f" init="0x28" />
-    <Controller name="NRPN Drum Chorus Send"  type="NRPN" h="0x1e" l="pitch" min="0x00"  max="0x7f" init="0x00" />
-    <Controller name="NRPN Drum Var Send"     type="NRPN" h="0x1f" l="pitch" min="0x00"  max="0x7f" init="0x00" />
+    <Controller name="NRPN Drum Cutoff Freq." type="NRPN" h="0x14" l="pitch" min="-0x40" max="0x3f" init="0x00" showType="1" />
+    <Controller name="NRPN Drum Filter Res."  type="NRPN" h="0x15" l="pitch" min="-0x40" max="0x3f" init="0x00" showType="1" />
+    <Controller name="NRPN Drum AEG Atk Time" type="NRPN" h="0x16" l="pitch" min="-0x40" max="0x3f" init="0x00" showType="1" />
+    <Controller name="NRPN Drum AEG Dcy Time" type="NRPN" h="0x17" l="pitch" min="-0x40" max="0x3f" init="0x00" showType="1" />
+    <Controller name="NRPN Drum Pitch Coarse" type="NRPN" h="0x18" l="pitch" min="-0x40" max="0x3f" init="0x00" showType="1" />
+    <Controller name="NRPN Drum Pitch Fine"   type="NRPN" h="0x19" l="pitch" min="-0x40" max="0x3f" init="0x00" showType="1" />
+    <Controller name="NRPN Drum Level"        type="NRPN" h="0x1a" l="pitch" min="0x00"  max="0x7f" init="0x64" showType="1" />
+    <Controller name="NRPN Drum Panpot"       type="NRPN" h="0x1c" l="pitch" min="-0x40" max="0x3f" init="0x00" showType="1" />
+    <Controller name="NRPN Drum Reverb Send"  type="NRPN" h="0x1d" l="pitch" min="0x00"  max="0x7f" init="0x28" showType="1" />
+    <Controller name="NRPN Drum Chorus Send"  type="NRPN" h="0x1e" l="pitch" min="0x00"  max="0x7f" init="0x00" showType="1" />
+    <Controller name="NRPN Drum Var Send"     type="NRPN" h="0x1f" l="pitch" min="0x00"  max="0x7f" init="0x00" showType="1" />
     <Controller name="RPN Pitch Bend Sens."   type="RPN"   h="0x00" l="0x00" min="0x00" max="0x18" init="0x02" />
     <Controller name="RPN Master Coarse Tune" type="RPN"   h="0x00" l="0x02" min="0x28" max="0x58" init="0x40" />
     <Controller name="RPN Master Fine Tune"   type="RPN14" h="0x00" l="0x01" min="0x0000" max="0x7f7f" init="0x4000" />

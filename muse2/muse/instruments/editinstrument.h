@@ -33,6 +33,8 @@ class QMenu;
 class QCloseEvent;
 class QGridLayout;
 class QStringListModel;
+class QString;
+class QAction;
 
 namespace MusEGui {
 
@@ -70,6 +72,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       QTreeWidgetItem* addControllerToView(MusECore::MidiController* mctrl);
       QString getPatchItemText(int);
       void enableDefaultControls(bool, bool);
+      void enableNonCtrlControls(bool);
       void setDefaultPatchName(int);
       int getDefaultPatchNumber();
       void setDefaultPatchNumbers(int);
@@ -98,13 +101,15 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void deleteControllerClicked();
       void newControllerClicked();
       void addControllerClicked();
-      void ctrlTypeChanged(int);
+      void ctrlPopupTriggered(QAction*);
+      void ctrlTypeChanged();
       void ctrlNameReturn();
-      void ctrlHNumChanged(int);
-      void ctrlLNumChanged(int);
+      void ctrlNumChanged();
       void ctrlMinChanged(int);
       void ctrlMaxChanged(int);
       void ctrlDefaultChanged(int);
+      void ctrlShowInMidiChanged(int);
+      void ctrlShowInDrumChanged(int);
       void sysexChanged(QListWidgetItem*, QListWidgetItem*);
       void deleteSysexClicked();
       void newSysexClicked();
@@ -124,7 +129,11 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void fetchPatchCollection();
 
    public:
+      enum TabType { Patches=0, DrumMaps=1, Controllers=2, Sysex=3 };
+      
       EditInstrument(QWidget* parent = 0, Qt::WFlags fl = Qt::Window);
+      void findInstrument(const QString& find_instrument);
+      void showTab(TabType);
       };
 
 } // namespace MusEGui

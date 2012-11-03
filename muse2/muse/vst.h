@@ -47,7 +47,7 @@ class VstSynth : public Synth {
       VstSynth(const QFileInfo& fi) : Synth(fi, fi->baseName()) {
             fstHandle = 0;
             }
-      
+
       virtual ~VstSynth() {}
       virtual Type synthType() const { return VST_SYNTH; }
       virtual void incInstances(int val);
@@ -70,7 +70,7 @@ class VstSynthIF : public SynthIF
             _fst = 0;
             _guiVisible = false;
             }
-            
+
       virtual bool initGui()       { return true; };
       virtual void guiHeartBeat()  {  }
       virtual bool guiVisible() const { return false; }

@@ -775,7 +775,10 @@ void MidiDevice::handleSeek()
       {
         //_playEvents.add(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val));
         // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
-        mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), imcv->first == pos);
+        // NOTE: Why again was this forced? There was a reason. Think it was RJ in response to bug rep, then I modded.
+        // A reason not to force: If a straight line is drawn on graph, multiple identical events are stored
+        //  (which must be allowed). So seeking through them here sends them all redundantly, not good. // REMOVE Tim.
+        mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), false); //, imcv->first == pos);
         //mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), pos == 0 || imcv->first == pos);
         //done = true;
       }

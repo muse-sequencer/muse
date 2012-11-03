@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "cobject.h"
+#include <editinstrument.h>
 
 #include <QFileInfo>
 #include <list>
@@ -336,7 +337,7 @@ class MusE : public QMainWindow
       void showArranger(bool);
       void importMidi(const QString &file);
       void showDidYouKnowDialog();
-      void startEditInstrument();
+      void startEditInstrument(const QString& find_instrument = QString(), EditInstrument::TabType show_tab = EditInstrument::Patches);
       void configMidiPorts();
 
       void startEditor(MusECore::PartList*, int);

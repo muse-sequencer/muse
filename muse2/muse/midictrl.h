@@ -117,10 +117,13 @@ class MidiController {
             NRPN14,           // non registered parameter 0x60000 -
             Pitch,            // num value = CTRL_PITCH
             Program,          // num value = CTRL_PROGRAM
-            Velo,             // not assigned
-            PolyAftertouch,   // num value = CTRL_POLYAFTER  
-            Aftertouch        // num value = CTRL_AFTERTOUCH
+            PolyAftertouch,   // num value = CTRL_POLYAFTER
+            Aftertouch,       // num value = CTRL_AFTERTOUCH
+            Velo              // not assigned
             };
+            
+      enum ShowInTrackType { ShowInDrum=1, ShowInMidi=2 };
+      
    private:
       QString _name;
       int _num;               // Controller Number
@@ -128,11 +131,12 @@ class MidiController {
       int _maxVal;
       int _initVal;
       int _bias;
+      int _showInTracks;
       void updateBias();
 
    public:
       MidiController();
-      MidiController(const QString& n, int num, int min, int max, int init);
+      MidiController(const QString& n, int num, int min, int max, int init, int show_in_track = (ShowInDrum | ShowInMidi));
       MidiController(const MidiController& mc);
       void copy(const MidiController &mc);
       MidiController& operator= (const MidiController &mc);
@@ -150,6 +154,9 @@ class MidiController {
       void setMinVal(int val)             { _minVal = val; updateBias(); }
       void setMaxVal(int val)             { _maxVal = val; updateBias(); }
       int bias() const                    { return _bias; }
+      int showInTracks() const            { return _showInTracks; }
+      void setShowInTracks(int i)         { _showInTracks = i; }
+      bool isPerNoteController() const    { return (_num & 0xff) == 0xff; }
       static int genNum(ControllerType, int, int);
       };
 
@@ -239,6 +246,7 @@ class MidiControllerList : public std::map<int, MidiController*, std::less<int> 
       MidiControllerList(const MidiControllerList& mcl);
       
       void add(MidiController* mc) { insert(std::pair<int, MidiController*>(mc->num(), mc)); }
+      bool ctrlAvailable(int find_num, MidiController* ignore_this = 0);
 };
 
 typedef MidiControllerList::iterator iMidiController;
@@ -248,7 +256,7 @@ typedef MidiControllerList MidiControllerList;
 extern MidiControllerList defaultMidiController;
 extern void initMidiController();
 extern MidiController::ControllerType midiControllerType(int num);
-extern int midiCtrlTerms2Number(int type_num, int ctrl);
+extern int midiCtrlTerms2Number(MidiController::ControllerType type, int ctrl = 0);
 
 
 extern const QString& int2ctrlType(int n);

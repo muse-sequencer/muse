@@ -250,11 +250,12 @@ MidiController::MidiController()
       _minVal  = 0;
       _maxVal  = 127;
       _initVal = 0;
+      _showInTracks = ShowInDrum | ShowInMidi;
       updateBias();
       }
 
-MidiController::MidiController(const QString& s, int n, int min, int max, int init)
-   : _name(s), _num(n), _minVal(min), _maxVal(max), _initVal(init)
+MidiController::MidiController(const QString& s, int n, int min, int max, int init, int show_in_track)
+   : _name(s), _num(n), _minVal(min), _maxVal(max), _initVal(init), _showInTracks(show_in_track)
       {
       updateBias();
       }
@@ -276,6 +277,7 @@ void MidiController::copy(const MidiController &mc)
       _maxVal  = mc._maxVal;
       _initVal = mc._initVal;
       _bias    = mc._bias;
+      _showInTracks = mc._showInTracks;
 }
 
 //---------------------------------------------------------
@@ -308,7 +310,7 @@ MidiController::ControllerType midiControllerType(int num)
             return MidiController::Program;
       if (num == CTRL_VELOCITY)
             return MidiController::Velo;
-      if (num == CTRL_POLYAFTER)
+      if ((num | 0xff) == CTRL_POLYAFTER)
             return MidiController::PolyAftertouch;
       if (num == CTRL_AFTERTOUCH)
             return MidiController::Aftertouch;
@@ -323,10 +325,10 @@ MidiController::ControllerType midiControllerType(int num)
 //   midiCtrlTerms2Number
 //---------------------------------------------------------
 
-int midiCtrlTerms2Number(int type_num, int ctrl)
+int midiCtrlTerms2Number(MidiController::ControllerType type, int ctrl)
 {
   ctrl &= 0xffff;
-  switch(type_num)
+  switch(type)
   {
     case MidiController::Controller7:
       return ctrl & 0xff;
@@ -442,7 +444,7 @@ void MidiController::write(int level, Xml& xml) const
       int l = _num & 0x7f;
 
       QString sl;
-      if ((_num & 0xff) == 0xff)
+      if (isPerNoteController())
             sl = "pitch";
       else
             sl.setNum(l);
@@ -504,6 +506,10 @@ void MidiController::write(int level, Xml& xml) const
         if(_initVal != CTRL_VAL_UNKNOWN)     
           xml.nput(" init=\"%d\"", _initVal);
       }
+
+      if(_showInTracks != (ShowInDrum | ShowInMidi))
+          xml.nput(" showType=\"%d\"", _showInTracks);
+        
       xml.put(" />");
 }
 
@@ -542,9 +548,7 @@ void MidiController::read(Xml& xml)
                         else if (tag == "h")
                               h = xml.s2().toInt(&ok, base);
                         else if (tag == "l") {
-                              // By T356 08/16/08. Changed wildcard to '*'. 
-                              // Changed back to 'pitch' again.
-                              // Support instrument files with '*' as wildcard.
+                              // Support instrument files with '*' or 'pitch' as wildcard.
                               if ((xml.s2() == "*") || (xml.s2() == "pitch"))
                                     l = 0xff;
                               else
@@ -556,6 +560,8 @@ void MidiController::read(Xml& xml)
                               _maxVal = xml.s2().toInt(&ok, base);
                         else if (tag == "init")
                               _initVal = xml.s2().toInt(&ok, base);
+                        else if (tag == "showType")
+                              _showInTracks = xml.s2().toInt(&ok, base);
                         }
                         break;
                   case Xml::TagStart:
@@ -625,7 +631,6 @@ void MidiController::read(Xml& xml)
                                     }
                               if (_minVal == NOT_SET)
                                     _minVal = 0;
-                                    
                               updateBias();
                               return;
                               }
@@ -641,10 +646,10 @@ void MidiController::read(Xml& xml)
 
 int MidiController::genNum(MidiController::ControllerType t, int h, int l)
       {
-      int val = (h << 8) + l;
+      int val = (h << 8) | (l & 0xff);
       switch(t) {
             case Controller7:
-                  return l;
+                  return l & 0xff;
             case Controller14:
                   return val + CTRL_14_OFFSET;
             case RPN:
@@ -880,5 +885,31 @@ MidiControllerList::MidiControllerList(const MidiControllerList& mcl) : std::map
     add(new MidiController(*mc));
   }  
 }
+
+//---------------------------------------------------------
+//   ctrlAvailable (static)
+//   Check if either a per-note controller, or else a regular controller already exists.
+//---------------------------------------------------------
+
+bool MidiControllerList::ctrlAvailable(int find_num, MidiController* ignore_this)
+{
+  MusECore::ciMidiController imc;
+  for(imc = begin(); imc != end(); ++ imc)
+  {
+    // Ignore this controller.
+    if(ignore_this && imc->second == ignore_this)
+      continue;
+    int n = imc->second->num();
+    if(((find_num & 0xff) == 0xff) && ((n | 0xff) == find_num))
+      break;
+    if(imc->second->isPerNoteController() && ((find_num | 0xff) == n))
+      break;
+    if(find_num == n)
+      break;
+  }
+  return imc == end();
+}
+
+
 
 } // namespace MusECore

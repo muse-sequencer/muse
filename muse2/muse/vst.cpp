@@ -342,12 +342,12 @@ void jfst_reserve_mem (int bufsize)
 void initVST()
       {
       jfst_reserve_mem(1000000);
-      
+
       if (fst_init(fstSignalHandler)) {
             printf("initVST failed\n");
             return;
             }
-      
+
       char* vstPath = getenv("VST_PATH");
       if (vstPath == 0)
             vstPath = "/usr/lib/vst:/usr/local/lib/vst";

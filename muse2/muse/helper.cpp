@@ -888,43 +888,38 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
       bool isDrum      = track->type() == MusECore::Track::DRUM;
-      bool isNewDrum      = (track->type() == MusECore::Track::NEW_DRUM) || (track->type() == MusECore::Track::MIDI);
+      bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
+      bool isMidi      = track->type() == MusECore::Track::MIDI;
       MusECore::MidiInstrument* instr = port->instrument();
       MusECore::MidiControllerList* mcl = instr->controller();
-
       MusECore::MidiCtrlValListList* cll = port->controller();
       const int min = channel << 24;
       const int max = min + 0x1000000;
-      
-      const int add_ins_def = max + 1;
-      const int add_other = max + 2;
-      
+      const int edit_ins = max + 3;
       const int velo = max + 0x101;
-//       const int polyafter = max + 0x102;
-//       const int after = max + 0x103;
-
       int est_width = 0;  
       
       std::list<CI> sList;
       typedef std::list<CI>::iterator isList;
+      std::set<int> already_added_nums;
 
       for (MusECore::iMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it) {
             MusECore::MidiCtrlValList* cl = it->second;
             MusECore::MidiController* c   = port->midiController(cl->num());
-            bool isDrumCtrl = ((c->num() & 0xff) == 0xff);
-            
-            // dont show drum specific controller if not a drum track
+            bool isDrumCtrl = (c->isPerNoteController());
+            int show = c->showInTracks();
+            int cnum = c->num();
+            int num = cl->num();
             if (isDrumCtrl) {
+                  // Only show controller for current pitch:
                   if (isDrum)
                   {
-                    // only show controller for curDrumPitch:
-                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
+                    if ((curDrumPitch == -1) || ((num & 0xff) != MusEGlobal::drumMap[curDrumPitch].anote))
                           continue;
                   }
-                  else if (isNewDrum)
+                  else if (isNewDrum || isMidi)
                   {
-                    // only show controller for curDrumPitch: FINDMICH does this work?
-                    if ((curDrumPitch == -1) || ((cl->num() & 0xff) != curDrumPitch))
+                    if ((curDrumPitch == -1) || ((num & 0xff) != curDrumPitch)) // FINDMICH does this work?
                           continue;
                   }
                   else
@@ -932,14 +927,11 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                   }
             isList i = sList.begin();
             for (; i != sList.end(); ++i) {
-                  //if (i->s == c->name())
-                  if (i->num == c->num())
+                  if (i->num == num)
                         break;
                   }
                   
-            //printf("\n** c->num():%d cl->num:%d\n", c->num(), cl->num());      
             if (i == sList.end()) {
-                  bool off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'
                   bool used = false;
                   for (MusECore::iPart ip = part_list->begin(); ip != part_list->end(); ++ip) {
                         MusECore::EventList* el = ip->second->events();
@@ -947,21 +939,17 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                               MusECore::Event e = ie->second;
                               if(e.type() != MusECore::Controller)
                                 continue;
-                              //e.dump();  
                               int ctl_num = e.dataA();
-                              if(!isNewDrum)
+                              // Is it a drum controller event, according to the track port's instrument?
+                              MusECore::MidiController *mc = port->drumController(ctl_num);
+                              if(mc)
                               {
-                                // Is it a drum controller event, according to the track port's instrument?
-                                MusECore::MidiController *mc = port->drumController(ctl_num);
-                                if(mc)
-                                {
-                                  if((ctl_num & 0xff) != curDrumPitch)
-                                    continue;
-                                  // Change the controller event's index into the drum map to an instrument note.
+                                if((ctl_num & 0xff) != curDrumPitch)
+                                  continue;
+                                if(isDrum)
                                   ctl_num = (ctl_num & ~0xff) | MusEGlobal::drumMap[ctl_num & 0x7f].anote;
-                                }
                               }
-                              if(ctl_num == cl->num()) 
+                              if(ctl_num == num)
                               {
                                     used = true;
                                     break;
@@ -971,15 +959,21 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                         if (used)
                               break;
                         }
-                  bool isinstr = ( mcl->find(c->num()) != mcl->end() );
-                  int cnum = c->num();
+                  bool off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
+                  // Filter if not used and off. But if there's something there, we must show it.
+                  if(!used && off &&
+                     (((isDrumCtrl || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
+                     (isMidi && !(show & MusECore::MidiController::ShowInMidi))))
+                    continue;
+                  bool isinstr = mcl->find(cnum) != mcl->end();
                   // Need to distinguish between global default controllers and 
                   //  instrument defined controllers. Instrument takes priority over global
                   //  ie they 'overtake' definition of a global controller such that the
                   //  global def is no longer available.
-                  sList.push_back(CI(cnum, 
+                  sList.push_back(CI(num, 
                                   isinstr ? MusECore::midiCtrlNumString(cnum, true) + c->name() : MusECore::midiCtrlName(cnum, true), 
                                   used, off, isinstr));
+                  already_added_nums.insert(num); 
                   }
             }
       
@@ -987,19 +981,69 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       int fmw = menu->fontMetrics().width(stext);
       if(fmw > est_width)
         est_width = fmw;
-        
       menu->addAction(new MenuTitleItem(stext, menu));
       
-      // Add instrument-defined controllers.
-      for (isList i = sList.begin(); i != sList.end(); ++i) 
+      // Don't allow editing instrument if it's a synth
+      if(!port->device() || port->device()->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
+      {
+        stext = QWidget::tr("Edit instrument ...");
+        fmw = menu->fontMetrics().width(stext);
+        if(fmw > est_width)
+          est_width = fmw;
+        menu->addAction(QIcon(*midi_edit_instrumentIcon), QWidget::tr("Edit instrument ..."))->setData(edit_ins);
+        menu->addSeparator();
+      }
+      
+      //
+      // populate popup with all controllers available for
+      // current instrument
+      //
+
+      stext = QWidget::tr("Add");
+      fmw = menu->fontMetrics().width(stext);
+      if(fmw > est_width)
+        est_width = fmw;
+      PopupMenu * ctrlSubPop = new PopupMenu(stext, menu, true);  // true = enable stay open
+      for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+      {
+          int show = ci->second->showInTracks();
+          if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
+             (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
+            continue;
+          int cnum = ci->second->num();
+          int num = cnum;
+          if(ci->second->isPerNoteController())
+          {
+            if (isDrum && curDrumPitch!=-1)
+              num = (cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
+            else if ((isNewDrum || isMidi) && curDrumPitch!=-1)
+              num = (cnum & ~0xff) | curDrumPitch; //FINDMICH does this work? 
+            else 
+              continue;
+          }
+
+          // If it's not already in the parent menu...
+          if(cll->find(channel, num) == cll->end())
+          {
+            ctrlSubPop->addAction(MusECore::midiCtrlNumString(cnum, true) + ci->second->name())->setData(num); 
+            already_added_nums.insert(num); //cnum);
+          }
+      }
+      
+      menu->addMenu(ctrlSubPop);
+
+      menu->addSeparator();
+      
+      // Add instrument-defined controllers:
+      for (isList i = sList.begin(); i != sList.end(); ++i)
       {
         if(!i->instrument)
           continue;
-        
+
         fmw = menu->fontMetrics().width(i->s);
         if(fmw > est_width)
           est_width = fmw;
-        
+
         if (i->used && !i->off)
           menu->addAction(QIcon(*orangedotIcon), i->s)->setData(i->num);
         else if (i->used)
@@ -1010,20 +1054,28 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
           menu->addAction(i->s)->setData(i->num);
       }
 
-      stext = QWidget::tr("Add ...");
-      fmw = menu->fontMetrics().width(stext);
-      if(fmw > est_width)
-        est_width = fmw;
-      menu->addAction(QIcon(*configureIcon), stext)->setData(add_ins_def);
-
-      menu->addSeparator();
-      
       stext = QWidget::tr("Others");
       fmw = menu->fontMetrics().width(stext);
       if(fmw > est_width)
         est_width = fmw;
       menu->addAction(new MenuTitleItem(stext, menu));
+
+      // Add a.k.a. Common Controls not found in instrument:
+      stext = QWidget::tr("Common Controls");
+      fmw = menu->fontMetrics().width(stext);
+      if(fmw > est_width)
+        est_width = fmw;
+      PopupMenu* ccSubPop = new PopupMenu(stext, menu, true);  // true = enable stay open
+      for(int num = 0; num < 127; ++num)
+        // If it's not already in the parent menu...
+        if(already_added_nums.find(num) == already_added_nums.end())
+          ccSubPop->addAction(MusECore::midiCtrlName(num, true))->setData(num);
+
+      menu->addMenu(ccSubPop);
+
+      menu->addSeparator();
       
+      // Add the special case velocity:
       stext = QWidget::tr("Velocity");
       fmw = menu->fontMetrics().width(stext);
       if(fmw > est_width)
@@ -1050,12 +1102,6 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
           menu->addAction(i->s)->setData(i->num);
       }
       
-      stext = QWidget::tr("Add ...");
-      fmw = menu->fontMetrics().width(stext);
-      if(fmw > est_width)
-        est_width = fmw;
-      menu->addAction(QIcon(*configureIcon), stext)->setData(add_other);
-
       est_width += 60; // Add about 60 for the coloured lights on the left.
       
       return est_width;

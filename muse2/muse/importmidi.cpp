@@ -526,7 +526,7 @@ void MusE::importController(int channel, MusECore::MidiPort* mport, int n)
                   break;
                   }
             // wildcard?
-            if (((cn & 0xff) == 0xff) && ((cn & ~0xff) == (n & ~0xff))) {
+            if (mc->isPerNoteController() && ((cn & ~0xff) == (n & ~0xff))) {
                   ctrl = i->second;
                   break;
                   }

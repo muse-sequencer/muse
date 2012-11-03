@@ -429,11 +429,11 @@
     <Controller name="AttackRate" type="NRPN" h="1" l="99" />
     <Controller name="DecayRate" type="NRPN" h="1" l="100" />
     <Controller name="ReleaseRate" type="NRPN" h="1" l="102" />
-    <Controller name="DrumPitchCoarseTune" type="NRPN" h="24" l="pitch" min="-64" max="63" />
-    <Controller name="DrumLevel" type="NRPN" h="26" l="pitch" />
-    <Controller name="DrumPanpot" type="NRPN" h="28" l="pitch" min="-64" max="63" init="0" />
-    <Controller name="DrumReverbSend" type="NRPN" h="29" l="pitch" />
-    <Controller name="DrumChorusSend" type="NRPN" h="30" l="pitch" />
+    <Controller name="DrumPitchCoarseTune" type="NRPN" h="24" l="pitch" min="-64" max="63" showType="1" />
+    <Controller name="DrumLevel" type="NRPN" h="26" l="pitch" showType="1" />
+    <Controller name="DrumPanpot" type="NRPN" h="28" l="pitch" min="-64" max="63" init="0" showType="1" />
+    <Controller name="DrumReverbSend" type="NRPN" h="29" l="pitch" showType="1" />
+    <Controller name="DrumChorusSend" type="NRPN" h="30" l="pitch" showType="1" />
     <Controller name="Pitch" type="Pitch" />
     <Controller name="Program" type="Program" />
   </MidiInstrument>

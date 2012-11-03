@@ -1020,7 +1020,7 @@ MidiController* MidiPort::midiController(int num) const
                   if (cn == num)
                         return i->second;
                   // wildcard?
-                  if (((cn & 0xff) == 0xff) && ((cn & ~0xff) == (num & ~0xff)))
+                  if (i->second->isPerNoteController() && ((cn & ~0xff) == (num & ~0xff)))
                         return i->second;
                   }
             }
@@ -1030,7 +1030,7 @@ MidiController* MidiPort::midiController(int num) const
             if (cn == num)
                   return i->second;
             // wildcard?
-            if (((cn & 0xff) == 0xff) && ((cn & ~0xff) == (num & ~0xff)))
+            if (i->second->isPerNoteController() && ((cn & ~0xff) == (num & ~0xff)))
                   return i->second;
             }
       
