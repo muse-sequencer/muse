@@ -865,18 +865,6 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                               unsigned event_endframe = event_startframe + e.lenFrame();
                               if (event_endframe < new_partlength)
                                     continue;
-// REMOVE Tim. 
-//                               if (event_startframe > new_partlength) { // If event start was after the new length, remove it from part
-//                                     // Do not do port controller values and clone parts. 
-//                                     operations.push_back(UndoOp(UndoOp::DeleteEvent, e, nPart, false, false));
-//                                     continue;
-//                                     }
-//                               if (event_endframe > new_partlength) { // If this event starts before new length and ends after, shrink it
-//                                     Event newEvent = e.clone();
-//                                     newEvent.setLenFrame(new_partlength - event_startframe);
-//                                     // Do not do port controller values and clone parts. 
-//                                     operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, nPart, false,false));
-//                                     }
                               }
                         nPart->setLenFrame(new_partlength);
                         // Do not do port controller values and clone parts. 
@@ -895,20 +883,10 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                           iEvent i = el->end();
                           i--;
                           Event last = i->second;
-// REMOVE Tim.              unsigned last_start = last.frame();
                           MusECore::SndFileR file = last.sndFile();
                           if (file.isNull())
                                 return;
-  
-//                          unsigned clipframes = (file.samples() - last.spos());// / file.channels();
                           Event newEvent = last.clone();
-  
-// REMOVE Tim. 
-//                          unsigned new_eventlength = new_partlength - last_start;
-//                           if (new_eventlength > clipframes) // Shrink event length if new partlength exceeds last clip
-//                                 new_eventlength = clipframes;
-//  
-//                          newEvent.setLenFrame(new_eventlength);
                           // Do not do port controller values and clone parts. 
                           operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, last, nPart, false, false));
                         }  

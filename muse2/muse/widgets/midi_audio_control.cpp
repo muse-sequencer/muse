@@ -45,6 +45,18 @@ MidiAudioControl::MidiAudioControl(int port, int chan, int ctrl, QWidget* parent
 {
   setupUi(this);
 
+  controlTypeComboBox->addItem(tr("Control7"), MusECore::MidiController::Controller7);
+  controlTypeComboBox->addItem(tr("Control14"), MusECore::MidiController::Controller14);
+  controlTypeComboBox->addItem(tr("RPN"), MusECore::MidiController::RPN);
+  controlTypeComboBox->addItem(tr("NPRN"), MusECore::MidiController::NRPN);
+  controlTypeComboBox->addItem(tr("RPN14"), MusECore::MidiController::RPN14);
+  controlTypeComboBox->addItem(tr("NRPN14"), MusECore::MidiController::NRPN14);
+  controlTypeComboBox->addItem(tr("Pitch"), MusECore::MidiController::Pitch);
+  controlTypeComboBox->addItem(tr("Program"), MusECore::MidiController::Program);
+  //controlTypeComboBox->addItem(tr("PolyAftertouch"), MusECore::MidiController::PolyAftertouch); // Not supported yet. Need a way to select pitch.
+  controlTypeComboBox->addItem(tr("Aftertouch"), MusECore::MidiController::Aftertouch);
+  controlTypeComboBox->setCurrentIndex(0);
+  
   _port = port;
   _chan = chan;
   _ctrl = ctrl;
@@ -89,59 +101,71 @@ void MidiAudioControl::heartbeat()
     if(MusEGlobal::midiLearnCtrl != -1)
     {
       MusECore::MidiController::ControllerType type = MusECore::midiControllerType(MusEGlobal::midiLearnCtrl);
-      if(type < controlTypeComboBox->count() && type != controlTypeComboBox->currentIndex())
+      int idx = controlTypeComboBox->findData(type);
+      if(idx != -1 && idx != controlTypeComboBox->currentIndex())
       {
         controlTypeComboBox->blockSignals(true);
-        controlTypeComboBox->setCurrentIndex(type);
+        controlTypeComboBox->setCurrentIndex(idx);
         controlTypeComboBox->blockSignals(false);
       }
 
       int hv = (MusEGlobal::midiLearnCtrl >> 8) & 0xff;
       int lv = MusEGlobal::midiLearnCtrl & 0xff;
-      if(type == MusECore::MidiController::Program || type == MusECore::MidiController::Pitch)
-      {
-        ctrlHiSpinBox->setEnabled(false);
-        ctrlLoSpinBox->setEnabled(false);
-        ctrlHiSpinBox->blockSignals(true);
-        ctrlLoSpinBox->blockSignals(true);
-        ctrlHiSpinBox->setValue(0);
-        ctrlLoSpinBox->setValue(0);
-        ctrlHiSpinBox->blockSignals(false);
-        ctrlLoSpinBox->blockSignals(false);
-      }
-      else if(type == MusECore::MidiController::Controller7)
-      {
-        ctrlHiSpinBox->setEnabled(false);
-        ctrlLoSpinBox->setEnabled(true);
 
-        ctrlHiSpinBox->blockSignals(true);
-        ctrlHiSpinBox->setValue(0);
-        ctrlHiSpinBox->blockSignals(false);
-        
-        if(lv != ctrlLoSpinBox->value())
-        {
-          ctrlLoSpinBox->blockSignals(true);
-          ctrlLoSpinBox->setValue(lv);
-          ctrlLoSpinBox->blockSignals(false);
-        }
-      }
-      else
+      switch(type)
       {
-        ctrlHiSpinBox->setEnabled(true);
-        ctrlLoSpinBox->setEnabled(true);
-        if(hv != ctrlHiSpinBox->value())
-        {
+        case MusECore::MidiController::Program:
+        case MusECore::MidiController::Pitch:
+        case MusECore::MidiController::PolyAftertouch: // Unsupported yet. Need a way to select pitch.
+        case MusECore::MidiController::Aftertouch:
+          ctrlHiSpinBox->setEnabled(false);
+          ctrlLoSpinBox->setEnabled(false);
           ctrlHiSpinBox->blockSignals(true);
-          ctrlHiSpinBox->setValue(hv);
-          ctrlHiSpinBox->blockSignals(false);
-        }
-        if(lv != ctrlLoSpinBox->value())
-        {
           ctrlLoSpinBox->blockSignals(true);
-          ctrlLoSpinBox->setValue(lv);
+          ctrlHiSpinBox->setValue(0);
+          ctrlLoSpinBox->setValue(0);
+          ctrlHiSpinBox->blockSignals(false);
           ctrlLoSpinBox->blockSignals(false);
-        }
-      }  
+          break;
+        case MusECore::MidiController::Controller7:
+          ctrlHiSpinBox->setEnabled(false);
+          ctrlLoSpinBox->setEnabled(true);
+
+          ctrlHiSpinBox->blockSignals(true);
+          ctrlHiSpinBox->setValue(0);
+          ctrlHiSpinBox->blockSignals(false);
+
+          if(lv != ctrlLoSpinBox->value())
+          {
+            ctrlLoSpinBox->blockSignals(true);
+            ctrlLoSpinBox->setValue(lv);
+            ctrlLoSpinBox->blockSignals(false);
+          }
+          break;
+        case MusECore::MidiController::Controller14:  
+        case MusECore::MidiController::RPN:
+        case MusECore::MidiController::RPN14:
+        case MusECore::MidiController::NRPN:
+        case MusECore::MidiController::NRPN14:
+          ctrlHiSpinBox->setEnabled(true);
+          ctrlLoSpinBox->setEnabled(true);
+          if(hv != ctrlHiSpinBox->value())
+          {
+            ctrlHiSpinBox->blockSignals(true);
+            ctrlHiSpinBox->setValue(hv);
+            ctrlHiSpinBox->blockSignals(false);
+          }
+          if(lv != ctrlLoSpinBox->value())
+          {
+            ctrlLoSpinBox->blockSignals(true);
+            ctrlLoSpinBox->setValue(lv);
+            ctrlLoSpinBox->blockSignals(false);
+          }
+          break;
+        default:
+          printf("FIXME: MidiAudioControl::heartbeat: Unknown control type: %d\n", type);
+          break;
+      }
       
       _ctrl = MusECore::midiCtrlTerms2Number(type, (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value());
     }
@@ -184,46 +208,55 @@ void MidiAudioControl::chanChanged()
 
 void MidiAudioControl::updateCtrlBoxes()
 {
-  int idx = controlTypeComboBox->currentIndex();
-  if(idx == -1)
+  if(controlTypeComboBox->currentIndex() == -1)
     return;
-  
-  if(idx == MusECore::MidiController::Program || idx == MusECore::MidiController::Pitch)
-  {
-    ctrlHiSpinBox->setEnabled(false);
-    ctrlLoSpinBox->setEnabled(false);
-    ctrlHiSpinBox->blockSignals(true);
-    ctrlLoSpinBox->blockSignals(true);
-    ctrlHiSpinBox->setValue(0);
-    ctrlLoSpinBox->setValue(0);
-    ctrlHiSpinBox->blockSignals(false);
-    ctrlLoSpinBox->blockSignals(false);
-  }
-  else if(idx == MusECore::MidiController::Controller7)
-  {
-    ctrlHiSpinBox->setEnabled(false);
-    ctrlLoSpinBox->setEnabled(true);
+  MusECore::MidiController::ControllerType t = (MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(controlTypeComboBox->currentIndex()).toInt();
 
-    ctrlHiSpinBox->blockSignals(true);
-    ctrlHiSpinBox->setValue(0);
-    ctrlHiSpinBox->blockSignals(false);
-  }
-  else
+  switch(t)
   {
-    ctrlHiSpinBox->setEnabled(true);
-    ctrlLoSpinBox->setEnabled(true);
-  }  
+    case MusECore::MidiController::Program:
+    case MusECore::MidiController::Pitch:
+    case MusECore::MidiController::PolyAftertouch: // Unsupported yet. Need a way to select pitch.
+    case MusECore::MidiController::Aftertouch:
+      ctrlHiSpinBox->setEnabled(false);
+      ctrlLoSpinBox->setEnabled(false);
+      ctrlHiSpinBox->blockSignals(true);
+      ctrlLoSpinBox->blockSignals(true);
+      ctrlHiSpinBox->setValue(0);
+      ctrlLoSpinBox->setValue(0);
+      ctrlHiSpinBox->blockSignals(false);
+      ctrlLoSpinBox->blockSignals(false);
+      break;
+    case MusECore::MidiController::Controller7:
+      ctrlHiSpinBox->setEnabled(false);
+      ctrlLoSpinBox->setEnabled(true);
+      ctrlHiSpinBox->blockSignals(true);
+      ctrlHiSpinBox->setValue(0);
+      ctrlHiSpinBox->blockSignals(false);
+      break;
+    case MusECore::MidiController::Controller14:
+    case MusECore::MidiController::RPN:
+    case MusECore::MidiController::RPN14:
+    case MusECore::MidiController::NRPN:
+    case MusECore::MidiController::NRPN14:
+      ctrlHiSpinBox->setEnabled(true);
+      ctrlLoSpinBox->setEnabled(true);
+      break;
+    default:
+      printf("FIXME: MidiAudioControl::updateCtrlBoxes: Unknown control type: %d\n", t);
+      break;
+  }
 }
 
 void MidiAudioControl::ctrlTypeChanged(int idx)
 {
   if(idx == -1)
     return;
-  
+
   updateCtrlBoxes();
   
   _ctrl = (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value();
-  _ctrl = MusECore::midiCtrlTerms2Number(MusECore::MidiController::ControllerType(idx), _ctrl);
+  _ctrl = MusECore::midiCtrlTerms2Number((MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(idx).toInt(), _ctrl);
 
   resetLearn();
 }
@@ -233,7 +266,7 @@ void MidiAudioControl::ctrlHChanged()
   if(controlTypeComboBox->currentIndex() == -1)
     return;
   _ctrl = (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value();
-  _ctrl = MusECore::midiCtrlTerms2Number(MusECore::MidiController::ControllerType(controlTypeComboBox->currentIndex()), _ctrl);
+  _ctrl = MusECore::midiCtrlTerms2Number((MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(controlTypeComboBox->currentIndex()).toInt(), _ctrl);
 
   resetLearn();
 }
@@ -243,7 +276,7 @@ void MidiAudioControl::ctrlLChanged()
   if(controlTypeComboBox->currentIndex() == -1)
     return;
   _ctrl = (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value();
-  _ctrl = MusECore::midiCtrlTerms2Number(MusECore::MidiController::ControllerType(controlTypeComboBox->currentIndex()), _ctrl);
+  _ctrl = MusECore::midiCtrlTerms2Number((MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(controlTypeComboBox->currentIndex()).toInt(), _ctrl);
 
   resetLearn();
 }
@@ -282,59 +315,71 @@ void MidiAudioControl::update()
   channelSpinBox->blockSignals(false);
 
   int type = MusECore::midiControllerType(_ctrl);
-  if(type < controlTypeComboBox->count())
+  int idx = controlTypeComboBox->findData(type);
+  if(idx != -1 && idx != controlTypeComboBox->currentIndex())
   {
     controlTypeComboBox->blockSignals(true);
-    controlTypeComboBox->setCurrentIndex(type);
+    controlTypeComboBox->setCurrentIndex(idx);
     controlTypeComboBox->blockSignals(false);
   }
 
   int hv = (_ctrl >> 8) & 0xff;
   int lv = _ctrl & 0xff;
-  if(type == MusECore::MidiController::Program || type == MusECore::MidiController::Pitch)
-  {
-    ctrlHiSpinBox->setEnabled(false);
-    ctrlLoSpinBox->setEnabled(false);
-    ctrlHiSpinBox->blockSignals(true);
-    ctrlLoSpinBox->blockSignals(true);
-    ctrlHiSpinBox->setValue(0);
-    ctrlLoSpinBox->setValue(0);
-    ctrlHiSpinBox->blockSignals(false);
-    ctrlLoSpinBox->blockSignals(false);
-  }
-  else if(type == MusECore::MidiController::Controller7)
-  {
-    ctrlHiSpinBox->setEnabled(false);
-    ctrlLoSpinBox->setEnabled(true);
 
-    ctrlHiSpinBox->blockSignals(true);
-    ctrlHiSpinBox->setValue(0);
-    ctrlHiSpinBox->blockSignals(false);
-    
-    if(lv != ctrlLoSpinBox->value())
-    {
-      ctrlLoSpinBox->blockSignals(true);
-      ctrlLoSpinBox->setValue(lv);
-      ctrlLoSpinBox->blockSignals(false);
-    }
-  }
-  else
+  switch(type)
   {
-    ctrlHiSpinBox->setEnabled(true);
-    ctrlLoSpinBox->setEnabled(true);
-    if(hv != ctrlHiSpinBox->value())
-    {
+    case MusECore::MidiController::Program:
+    case MusECore::MidiController::Pitch:
+    case MusECore::MidiController::PolyAftertouch:  // Unsupported yet. Need a way to select pitch.
+    case MusECore::MidiController::Aftertouch:
+      ctrlHiSpinBox->setEnabled(false);
+      ctrlLoSpinBox->setEnabled(false);
       ctrlHiSpinBox->blockSignals(true);
-      ctrlHiSpinBox->setValue(hv);
-      ctrlHiSpinBox->blockSignals(false);
-    }
-    if(lv != ctrlLoSpinBox->value())
-    {
       ctrlLoSpinBox->blockSignals(true);
-      ctrlLoSpinBox->setValue(lv);
+      ctrlHiSpinBox->setValue(0);
+      ctrlLoSpinBox->setValue(0);
+      ctrlHiSpinBox->blockSignals(false);
       ctrlLoSpinBox->blockSignals(false);
-    }
+      break;
+    case MusECore::MidiController::Controller7:  
+      ctrlHiSpinBox->setEnabled(false);
+      ctrlLoSpinBox->setEnabled(true);
+
+      ctrlHiSpinBox->blockSignals(true);
+      ctrlHiSpinBox->setValue(0);
+      ctrlHiSpinBox->blockSignals(false);
+
+      if(lv != ctrlLoSpinBox->value())
+      {
+        ctrlLoSpinBox->blockSignals(true);
+        ctrlLoSpinBox->setValue(lv);
+        ctrlLoSpinBox->blockSignals(false);
+      }
+      break;
+    case MusECore::MidiController::Controller14:
+    case MusECore::MidiController::RPN:
+    case MusECore::MidiController::RPN14:
+    case MusECore::MidiController::NRPN:
+    case MusECore::MidiController::NRPN14:
+      ctrlHiSpinBox->setEnabled(true);
+      ctrlLoSpinBox->setEnabled(true);
+      if(hv != ctrlHiSpinBox->value())
+      {
+        ctrlHiSpinBox->blockSignals(true);
+        ctrlHiSpinBox->setValue(hv);
+        ctrlHiSpinBox->blockSignals(false);
+      }
+      if(lv != ctrlLoSpinBox->value())
+      {
+        ctrlLoSpinBox->blockSignals(true);
+        ctrlLoSpinBox->setValue(lv);
+        ctrlLoSpinBox->blockSignals(false);
+      }
+      break;
+    default:
+      printf("FIXME: MidiAudioControl::updateCtrlBoxes: Unknown control type: %d\n", type);
+      break;
   }
 }
 
-}
+}  // namespace MusEGui

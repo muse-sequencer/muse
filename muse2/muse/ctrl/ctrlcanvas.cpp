@@ -476,6 +476,7 @@ void CtrlCanvas::songChanged(MusECore::SongChangedFlags_t type)
 
 //---------------------------------------------------------
 //   partControllers
+//   num is the controller number, in 'MidiController terms' (lo-byte = 0xff for per-note controllers).
 //---------------------------------------------------------
 
 void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* dnum, int* didx, MusECore::MidiController** mc, MusECore::MidiCtrlValList** mcvl)
@@ -510,20 +511,27 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
     MusECore::MidiPort* mp;
     int di;
     int n;
+
+    if((curDrumPitch >= 0) && ((num & 0xff) == 0xff))
+    {
+      di = (num & ~0xff) | curDrumPitch;
+      if((mt->type() == MusECore::Track::DRUM))
+      {
+        n = (num & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;  
+        mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port];
+      }
+      if(mt->type() == MusECore::Track::NEW_DRUM)
+      {
+        n = di; // Simple one-to-one correspondence. 
+        mp = &MusEGlobal::midiPorts[mt->outPort()];
+      }
+      else if(mt->type() == MusECore::Track::MIDI) 
+      {
+        n = di; // Simple one-to-one correspondence. There is no 'mapping' for piano roll midi - yet.
+        mp = &MusEGlobal::midiPorts[mt->outPort()];
+      }
+    }
     
-    if((mt->type() == MusECore::Track::DRUM) && (curDrumPitch >= 0) && ((num & 0xff) == 0xff))
-    {
-      di = (num & ~0xff) | curDrumPitch;
-      n = (num & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;  // construct real controller number
-      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port];          
-    }
-    else if ((mt->type() == MusECore::Track::NEW_DRUM || mt->type() == MusECore::Track::MIDI) && 
-             (curDrumPitch >= 0) && ((num & 0xff) == 0xff))  //FINDMICHJETZT does this work?
-    {
-      di = (num & ~0xff) | curDrumPitch;
-      n =  (num & ~0xff) | curDrumPitch;
-      mp = &MusEGlobal::midiPorts[mt->outPort()];          
-    }
     else
     {
        di = num;
@@ -611,7 +619,6 @@ void CtrlCanvas::updateItems()
                       {
                         if(curDrumPitch < 0)
                           continue;
-                          
                         int port = MusEGlobal::drumMap[ctl & 0x7f].port;
                         int chan = MusEGlobal::drumMap[ctl & 0x7f].channel;
                         int cur_port = MusEGlobal::drumMap[curDrumPitch].port;
@@ -2026,7 +2033,7 @@ void CtrlCanvas::setCurDrumPitch(int instrument)
         // Crash protection by Tim. 
         // FIXME: Still, drum list is blank, editor can't edit. Other values of instrument or curDrumPitch just crash too.
         // Seems only with drum tracks that were created by importing a midi file (then changed to use fluidsynth device?).
-        if(instrument == -1)  curDrumPitch = -1;   
+        if(instrument == -1)  curDrumPitch = -1;
         
         else if (drumedit->get_instrument_map()[instrument].tracks.contains(curTrack))
           curDrumPitch = drumedit->get_instrument_map()[instrument].pitch;

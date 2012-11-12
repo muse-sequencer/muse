@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: drumedit.cpp,v 1.22.2.21 2009/11/16 11:29:33 lunar_shuttle Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -1292,8 +1293,14 @@ void DrumEdit::addCtrlClicked()
 {
   PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent. 
   connect(pup, SIGNAL(triggered(QAction*)), SLOT(ctrlPopupTriggered(QAction*)));
+
+  int cur_instr = curDrumInstrument();
+  // HACK! New drum ctrl canvas current drum index is not the same as the editor current drum index.
+  //       Should try to fix this situation - two different values exist. Tim.
+  if(!old_style_drummap_mode())
+    cur_instr = (cur_instr & ~0xff) | get_instrument_map()[cur_instr].pitch;
   
-  int est_width = populateMidiCtrlMenu(pup, parts(), curCanvasPart(), curDrumInstrument());
+  int est_width = populateMidiCtrlMenu(pup, parts(), curCanvasPart(), cur_instr);
   
   QPoint ep = ctrl->mapToGlobal(QPoint(0,0));
   //int newx = ep.x() - pup->width();  // Too much! Width says 640. Maybe because it hasn't been shown yet  .

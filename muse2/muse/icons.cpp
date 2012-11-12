@@ -186,11 +186,15 @@
 #include "xpm/redled.xpm"
 #include "xpm/darkredled.xpm"
 #include "xpm/greendot.xpm"
+#include "xpm/greendot12x12.xpm"
 #include "xpm/reddot.xpm"
 //#include "xpm/darkgreendot.xpm"
 #include "xpm/bluedot.xpm"
+#include "xpm/bluedot12x12.xpm"
 #include "xpm/graydot.xpm"
+#include "xpm/graydot12x12.xpm"
 #include "xpm/orangedot.xpm"
+#include "xpm/orangedot12x12.xpm"
 #include "xpm/off.xpm"
 #include "xpm/blacksquare.xpm"
 #include "xpm/blacksqcheck.xpm"
@@ -429,11 +433,15 @@ QPixmap* toggle_small_Icon;
 QPixmap* redLedIcon;
 QPixmap* darkRedLedIcon;
 QPixmap* greendotIcon;
+QPixmap* greendot12x12Icon;
 QPixmap* reddotIcon;
 //QPixmap* darkgreendotIcon;
 QPixmap* graydotIcon;
+QPixmap* graydot12x12Icon;
 QPixmap* bluedotIcon;
+QPixmap* bluedot12x12Icon;
 QPixmap* orangedotIcon;
+QPixmap* orangedot12x12Icon;
 QPixmap* offIcon;
 QPixmap* blacksquareIcon;
 QPixmap* blacksqcheckIcon;
@@ -655,11 +663,15 @@ void initIcons()
       redLedIcon           = new MPIXMAP(redled_xpm, NULL);
       darkRedLedIcon       = new MPIXMAP(darkredled_xpm, NULL);
       greendotIcon         = new MPIXMAP(greendot_xpm, NULL);
+      greendot12x12Icon    = new MPIXMAP(greendot12x12_xpm, NULL);
       reddotIcon           = new MPIXMAP(reddot_xpm, NULL);
       //darkgreendotIcon     = new MPIXMAP(darkgreendot_xpm, NULL);
       bluedotIcon          = new MPIXMAP(bluedot_xpm, NULL);
+      bluedot12x12Icon     = new MPIXMAP(bluedot12x12_xpm, NULL);
       graydotIcon          = new MPIXMAP(graydot_xpm, NULL);
+      graydot12x12Icon     = new MPIXMAP(graydot12x12_xpm, NULL);
       orangedotIcon        = new MPIXMAP(orangedot_xpm, NULL);
+      orangedot12x12Icon   = new MPIXMAP(orangedot12x12_xpm, NULL);
       offIcon              = new MPIXMAP(off_xpm, NULL);
       blacksquareIcon      = new MPIXMAP(blacksquare_xpm, NULL);
       blacksqcheckIcon     = new MPIXMAP(blacksqcheck_xpm, NULL);

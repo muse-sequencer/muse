@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: ctrlpanel.cpp,v 1.10.2.9 2009/06/14 05:24:45 terminator356 Exp $
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License

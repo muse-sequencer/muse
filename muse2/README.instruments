@@ -1,6 +1,6 @@
 ================================================
     MusE loadable Midi Instrument Definitions
-    (valid from around MusE 0.8.1, Edited by Tim APR.25.2010, at MusE 2.0alpha)
+    (valid from around MusE 0.8.1, Edited by Tim NOV.11.2012, at MusE 2.1rc1)
 ================================================
 
   - File Extension  ".idf"
@@ -33,6 +33,7 @@
     ...
     <Controller name="Pan" l="10" min="-64" max="63" init="0" />
     <Controller name="PitchBendSensitivity" type="RPN" h="0" l="0" max="24" init="2" />
+    
     ...
     </MidiInstrument>
   </muse>
@@ -62,7 +63,9 @@
       A XG-Patch looks like:
       <Patch name="Electro" drum="1" hbank="127" lbank="0" prog="24"/>
 
- (5)  A patch can be associated with a "mode" with one of
+ (5)  Prior to version 2.1:
+      ---------------------
+      A patch can be associated with a "mode" with one of
 
             1  - GM
             2  - GS
@@ -76,6 +79,12 @@
 
       <Patch name="Grand Piano" mode=7" hbank="0" lbank="0" prog="0"/>
 
+      From version 2.1:
+      -----------------
+      There is no 'mode' parameter. The selection of GM, GS, or XG instruments
+       or other instruments with an sysex 'Init' section, determines what 'mode'
+       the device is in.
+
  (4)  example for MusE event (Sysex "XG-On"):
 
       <event tick="0" type="5" datalen="7">
@@ -84,8 +93,14 @@
 
  (5)  <Init> ... </Init> part can be omitted
 
+      From version 2.1:
+      -----------------
+      This section contains initialization events to be sent to the devices
+       upon certain changes such as device selection, change of instrument etc.
+      Usually it contains a brief series of sysex commands such as (4) to set the
+       device to a 'mode'.
 
- (6)  Controller have the following porperties:
+ (6)  Controllers have the following properties:
 
       name: arbitrary unique (short) string describing the controller
       
@@ -97,15 +112,20 @@
                 NRPN14            non registered parameter 14-bit
                 Pitch             pitch mod wheel
                 Program           program 
+              From version 2.1:
+                PolyAftertouch    key pressure controller
+                Aftertouch        channel pressure controller
 
             Default Controller7 if omitted.
-            Pitch and Program are convenience controllers which
-             wrap pitch or program functionality in one controller.
+            Pitch Program PolyAftertouch and Aftertouch are convenience controllers which
+             wrap functionality in one controller. They translate to and from the real midi messages
+             which are behind the scenes such as Pitch -> midi 0xE0. Their controller numbers are
+             internal and cannot be changed. PolyAftertouch is really an internal per-pitch controller.
 
       h:  controller number MSB. Default 0 if omitted.
       l:  controller number LSB. Default 0 if omitted.
-            For drum controllers, this can also be "pitch" indicating
-             each drum 'note' has its own controller.
+            For per-pitch controllers, 'l' can also be "pitch" indicating each 'note' or
+             'drum sound' has its own controller. Some devices such as XG support this.
 
       min:  minimum value for controller
       max:  maximum value for controller
@@ -118,3 +138,12 @@
             pan = -64 -> 63, MusE automatically displays this range, 
             yet uses the true range of 0-127 'behind the scenes'.
 
+    From version 2.1:
+    ----------------
+      showType: Combination of 1: Show controller in drum tracks.
+                           and 2: Show controller in midi tracks.
+                Default is to show in both drum and midi tracks if omitted (same as "3").
+
+    Here is a per-pitch drum controller example from the XG instrument definition file:
+    <Controller name="Drum Pan" type="NRPN" h="28" l="pitch" min="-64" max="63" showType="1" />
+                

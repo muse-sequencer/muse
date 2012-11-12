@@ -113,7 +113,7 @@ class DPitchEdit: public Awl::PitchEdit
 
 class DList : public View {
       Q_OBJECT
-      
+
       MusEGui::DrumCanvas* dcanvas;
       MusECore::DrumMap* ourDrumMap;
       int ourDrumMapSize;

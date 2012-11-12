@@ -39,8 +39,9 @@ class Xml;
 class EventBase;
 class WavePart;
 
-enum EventType { Note, Controller, Sysex, PAfter, CAfter, Meta, Wave };
-
+// NOTICE: The values 3 and 4 (PAfter and CAfter) are reserved for the support of those two obsolete
+//          channel and key pressure events in old files. They are converted to controllers upon load.
+enum EventType { Note=0, Controller=1, Sysex=2, /*PAfter=3,*/ /*CAfter=4,*/ Meta=5, Wave=6 };
 
 //---------------------------------------------------------
 //   Event

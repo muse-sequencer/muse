@@ -2333,12 +2333,17 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
 
               for (MusECore::iEvent i = events->lower_bound(from); i != ito; ++i) {
                     MusECore::EventType type = i->second.type();
+                    int a = i->second.dataA() | 0xff;
                     if (
                       ((MusEGlobal::config.canvasShowPartEvent & 1) && (type == MusECore::Note))
-                      || ((MusEGlobal::config.canvasShowPartEvent & 2) && (type == MusECore::PAfter))
-                      || ((MusEGlobal::config.canvasShowPartEvent & 4) && (type == MusECore::Controller))
-                      || ((MusEGlobal::config.canvasShowPartEvent &16) && (type == MusECore::CAfter))
-                      || ((MusEGlobal::config.canvasShowPartEvent &64) && (type == MusECore::Sysex || type == MusECore::Meta))
+                      || ((MusEGlobal::config.canvasShowPartEvent & (2 | 4)) == (2 | 4) &&
+                           type == MusECore::Controller && a == MusECore::CTRL_POLYAFTER)
+                      || ((MusEGlobal::config.canvasShowPartEvent & 4) && (type == MusECore::Controller) &&
+                          (a != MusECore::CTRL_POLYAFTER  || (MusEGlobal::config.canvasShowPartEvent & 2)) &&
+                          (a != MusECore::CTRL_AFTERTOUCH || (MusEGlobal::config.canvasShowPartEvent & 16)))
+                      || ((MusEGlobal::config.canvasShowPartEvent & (16 | 4)) == (16 | 4) &&
+                          type == MusECore::Controller && a == MusECore::CTRL_AFTERTOUCH)
+                      || ((MusEGlobal::config.canvasShowPartEvent & 64) && (type == MusECore::Sysex || type == MusECore::Meta))
                       ) {
                           int t = i->first + pTick;
                           int th = mt->height();

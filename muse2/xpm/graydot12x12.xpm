@@ -1,11 +1,9 @@
 /* XPM */
-static const char * graydot_xpm[] = {
-"12 16 2 1",
+static const char * graydot12x12_xpm[] = {
+"12 12 2 1",
 " 	c None",
 ".	c #AAAAAA",
 "            ",
-"            ",
-"            ",
 "     ..     ",
 "    ....    ",
 "   ......   ",
@@ -15,7 +13,5 @@ static const char * graydot_xpm[] = {
 "   ......   ",
 "    ....    ",
 "     ..     ",
-"            ",
-"            ",
 "            ",
 "            "};

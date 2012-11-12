@@ -112,12 +112,8 @@ class EditSysexDialog : public QDialog, public Ui::EditSysexDialogBase {
 class EditCtrlDialog : public QDialog, public Ui::EditCtrlBase  {
       Q_OBJECT
 
-      int num;          // controller number
-      int val;          // controller value (for prog. changes)
-
       const MusECore::MidiPart* part;
-
-      void updatePatch();
+      void updatePatch(int val);
 
    private slots:
       void ctrlListClicked(QListWidgetItem*);
@@ -127,7 +123,6 @@ class EditCtrlDialog : public QDialog, public Ui::EditCtrlBase  {
 
    protected:
       QGridLayout* layout;
-
 
    public:
       EditCtrlDialog(int tick, const MusECore::Event&,
@@ -164,49 +159,6 @@ class EditMetaDialog : public EditEventDialog {
       EditMetaDialog(int tick, const MusECore::Event&,
          QWidget* parent=0);
       ~EditMetaDialog();
-      static MusECore::Event getEvent(int tick, const MusECore::Event&,
-         QWidget* parent = 0);
-      virtual MusECore::Event event();
-      };
-
-//---------------------------------------------------------
-//   EditCAfterDialog
-//---------------------------------------------------------
-
-class EditCAfterDialog : public EditEventDialog {
-      Q_OBJECT
-
-      Awl::PosEdit* epos;
-      MusEGui::IntLabel* il2;
-
-   protected:
-      QGridLayout* layout;
-
-   public:
-      EditCAfterDialog(int tick, const MusECore::Event&,
-         QWidget* parent=0);
-      static MusECore::Event getEvent(int tick, const MusECore::Event&,
-         QWidget* parent = 0);
-      virtual MusECore::Event event();
-      };
-
-//---------------------------------------------------------
-//   EditPAfterDialog
-//---------------------------------------------------------
-
-class EditPAfterDialog : public EditEventDialog {
-      Q_OBJECT
-
-      Awl::PosEdit* epos;
-      MusEGui::PitchEdit* pl;
-      MusEGui::IntLabel* il2;
-
-   protected:
-      QGridLayout* layout;
-
-   public:
-      EditPAfterDialog(int tick, const MusECore::Event&,
-         QWidget* parent=0);
       static MusECore::Event getEvent(int tick, const MusECore::Event&,
          QWidget* parent = 0);
       virtual MusECore::Event event();

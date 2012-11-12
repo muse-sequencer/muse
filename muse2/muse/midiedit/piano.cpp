@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: piano.cpp,v 1.3 2004/05/31 11:48:55 lunar_shuttle Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -25,9 +26,15 @@
 
 #include <stdio.h>
 
+#include <map>
+
 #include "piano.h"
 #include "globals.h"
 #include "song.h"
+#include "track.h"
+#include "midieditor.h"
+#include "midictrl.h"
+#include "icons.h"
 
 namespace MusEGui {
   
@@ -438,10 +445,11 @@ static const char *mk8_xpm[] = {
 //   Piano
 //---------------------------------------------------------
 
-Piano::Piano(QWidget* parent, int ymag)
+Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
    : View(parent, 1, ymag)
       {
       setMouseTracking(true);
+      _midiEditor = editor;
       curPitch = -1;
       _curSelectedPitch = 60;  // Start with 'C3"
       octave = new QPixmap(oct_xpm);
@@ -537,6 +545,63 @@ void Piano::draw(QPainter& p, const QRect& r)
         }
       }
       
+
+      if(!_midiEditor)
+        return;
+      MusECore::PartList* part_list = _midiEditor->parts();
+      MusECore::Part* cur_part = _midiEditor->curCanvasPart();
+      if(!part_list || !cur_part)
+        return;
+      
+      MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
+      int channel      = track->outChannel();
+      MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
+      MusECore::MidiCtrlValListList* cll = port->controller();
+      const int min = channel << 24;
+      const int max = min + 0x1000000;
+
+      for(MusECore::ciMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it)
+      {
+        MusECore::MidiCtrlValList* cl = it->second;
+        MusECore::MidiController* c   = port->midiController(cl->num());
+        if(!c->isPerNoteController())
+          continue;
+        int cnum = c->num();
+        int num = cl->num();
+        int pitch = num & 0x7f;
+        bool used = false;
+        MusECore::EventList* el = cur_part->events();
+        for (MusECore::ciEvent ie = el->begin(); ie != el->end(); ++ie)
+        {
+          MusECore::Event e = ie->second;
+          if(e.type() != MusECore::Controller)
+            continue;
+          int ctl_num = e.dataA();
+          if((ctl_num | 0xff) == cnum && (ctl_num & 0x7f) == pitch)
+          {
+            used = true;
+            break;
+          }
+        }
+
+        bool off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
+
+        int y = pitch2y(pitch) + 3;
+        if(used)
+        {
+          if(off)
+            p.drawPixmap(0, y, 6, 6, *greendot12x12Icon);
+          else
+            p.drawPixmap(0, y, 6, 6, *orangedot12x12Icon);
+        }
+        else
+        {
+          if(off)
+            p.drawPixmap(0, y, 6, 6, *graydot12x12Icon);
+          else
+            p.drawPixmap(0, y, 6, 6, *bluedot12x12Icon);
+        }
+      }
       
       }
 

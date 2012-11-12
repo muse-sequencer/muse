@@ -64,7 +64,7 @@ void EventList::read(Xml& xml, const char* name, bool midi)
 
 iEvent EventList::add(Event& event)
       {
-      // Added by T356. An event list containing wave events should be sorted by
+      // Changed by Tim. An event list containing wave events should be sorted by
       //  frames. WaveTrack::fetchData() relies on the sorting order, and
       //  there was a bug that waveparts were sometimes muted because of
       //  incorrect sorting order (by ticks).
@@ -74,12 +74,6 @@ iEvent EventList::add(Event& event)
       // Note that in a med file, the tempo list is loaded AFTER all the tracks.
       // There was a bug that all the wave events' tick values were not correct,
       // since they were computed BEFORE the tempo map was loaded.
-// REMOVE Tim. Original
-//       if(event.type() == Wave)
-//         return std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (event.frame(), event));  
-//       else
-//         
-//         return std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (event.tick(), event));   
       
       if(event.type() == Wave)
         return insert(std::pair<const unsigned, Event> (event.frame(), event));          
@@ -107,13 +101,6 @@ void EventList::move(Event& event, unsigned tick)
       {
       iEvent i = find(event);
       erase(i);
-      
-// REMOVE Tim. Original.
-//       if(event.type() == Wave)
-//         std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (MusEGlobal::tempomap.tick2frame(tick), event));  
-//       else
-//       
-//         std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (tick, event));  
       
       if(event.type() == Wave)
       {

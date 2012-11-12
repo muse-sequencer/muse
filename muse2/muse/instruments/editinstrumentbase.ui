@@ -1206,56 +1206,6 @@ Typically, set to 127/127, or an unused
                 <property name="whatsThis">
                  <string>Midi controller type</string>
                 </property>
-                <item>
-                 <property name="text">
-                  <string>Control7</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Control14</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>RPN</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>NRPN</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>RPN14</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>NRPN14</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Pitch</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Program</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>PolyAftertouch</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Aftertouch</string>
-                 </property>
-                </item>
                </widget>
               </item>
               <item>

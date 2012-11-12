@@ -75,8 +75,6 @@ void MidiEventBase::dump(int n) const
             case Note:      p = "Note    "; break;
             case Controller: p = "Ctrl    "; break;
             case Sysex:     p = "Sysex   "; break;
-            case PAfter:    p = "PAfter  "; break;
-            case CAfter:    p = "CAfter  "; break;
             case Meta:      p = "Meta    "; break;
             default:        p = "??      "; break;
             }
@@ -129,7 +127,7 @@ void MidiEventBase::write(int level, Xml& xml, const Pos& offset, bool /*forcePa
 
 void MidiEventBase::read(Xml& xml)
       {
-      setType(Note);
+      int ev_type = Note;
       a      = 0;
       b      = 0;
       c      = 0;
@@ -163,7 +161,8 @@ void MidiEventBase::read(Xml& xml)
                         if (tag == "tick")
                               setTick(xml.s2().toInt());
                         else if (tag == "type")
-                              setType(EventType(xml.s2().toInt()));
+                              //setType(EventType(xml.s2().toInt()));
+                              ev_type = xml.s2().toInt();
                         else if (tag == "len")
                               setLenTick(xml.s2().toInt());
                         else if (tag == "a")
@@ -176,12 +175,27 @@ void MidiEventBase::read(Xml& xml)
                               dataLen = xml.s2().toInt();
                         break;
                   case Xml::TagEnd:
-                        if (tag == "event")
-                        {  
+                        if (tag == "event") {
+                              // Convert obsolete PAfter and CAfter events to newer controllers
+                              if(ev_type == 3) // PAfter
+                              {
+                                ev_type = Controller;
+                                a = (a & 0x7f) | (CTRL_POLYAFTER & ~0xff); // Controller number + pitch. B is the value.
+                              }
+                              else
+                              if(ev_type == 4) // CAfter
+                              {
+                                ev_type = Controller;
+                                b = a;               // Value
+                                a = CTRL_AFTERTOUCH; // Controller number
+                              }
+
+                              setType(EventType(ev_type));
+                              
                               // HACK: Repair controllers saved with lo byte 0xff. 
                               // No such control. It was supposed to be 0x00.
                               // It's an error caused by a previous bug, fixed now.
-                              if((type() == Controller) && ((a & 0xff) == 0xff))
+                              if((ev_type == Controller) && ((a & 0xff) == 0xff))
                                 a &= ~0xff;
                               return;
                         }

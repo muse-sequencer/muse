@@ -166,8 +166,190 @@ void DList::draw(QPainter& p, const QRect& rect)
                                     }
                               break;
                         case COL_NAME:
-                              s = dm->name;
-                              align = Qt::AlignVCenter | Qt::AlignLeft;
+                              {
+                                if(dcanvas && dcanvas->part())
+                                {
+                                  MusECore::Part* cur_part = dcanvas->part();
+                                  if(cur_part->track() && cur_part->track()->isMidiTrack())
+                                  {
+                                    MusECore::MidiTrack* cur_track = static_cast<MusECore::MidiTrack*>(cur_part->track());
+                                    int cur_channel      = cur_track->outChannel();
+                                    MusECore::MidiPort* cur_port   = &MusEGlobal::midiPorts[cur_track->outPort()];
+
+                                    if(old_style_drummap_mode)
+                                    {
+                                      int channel              = dm->channel;
+                                      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[dm->port];
+                                      int instr_pitch = dm->anote;
+                                      MusECore::MidiCtrlValListList* cll = mp->controller();
+                                      const int min = channel << 24;
+                                      const int max = min + 0x1000000;
+                                      bool found = false;
+                                      bool used = false;
+                                      bool off = true;
+                                      for(MusECore::iMidiCtrlValList imcvl = cll->lower_bound(min); imcvl != cll->lower_bound(max); ++imcvl)
+                                      {
+                                        MusECore::MidiCtrlValList* cl = imcvl->second;
+                                        MusECore::MidiController* c   = mp->midiController(cl->num());
+                                        if(!c->isPerNoteController())
+                                          continue;
+                                        int cnum = c->num();
+                                        int num = cl->num();
+                                        int pitch = num & 0x7f;
+                                        if(pitch != instr_pitch)
+                                          continue;
+
+                                        found = true;
+                                        MusECore::EventList* el = cur_part->events();
+                                        for(MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie)
+                                        {
+                                          MusECore::Event e = ie->second;
+                                          if(e.type() != MusECore::Controller)
+                                            continue;
+                                          int ctl_num = e.dataA();
+                                          if((ctl_num | 0xff) == cnum && (ctl_num & 0x7f) == instrument)
+                                          {
+                                            used = true;
+                                            break;
+                                          }
+                                        }
+                                        off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
+                                        if(used && !off)
+                                          break;  // We have all the info we need, done.
+                                      }
+
+                                      if(found)
+                                      {
+                                        int rx = r.x() + 1;
+                                        int ry = r.y() + r.height()/2 - 3;
+                                        int rw = 6;
+                                        int rh = 6;
+                                        if(used)
+                                        {
+                                          if(off)
+                                            p.drawPixmap(rx, ry, rw, rh, *greendot12x12Icon);
+                                          else
+                                            p.drawPixmap(rx, ry, rw, rh, *orangedot12x12Icon);
+                                        }
+                                        else
+                                        {
+                                          if(off)
+                                            p.drawPixmap(rx, ry, rw, rh, *graydot12x12Icon);
+                                          else
+                                            p.drawPixmap(rx, ry, rw, rh, *bluedot12x12Icon);
+                                        }
+                                      }
+                                    }
+                                    else
+                                    {
+
+                                      QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
+                                      bool found = false;
+                                      bool used = false;
+                                      bool off = true;
+
+                                      // REMOVE Tim. Or FIXME. An attempt to light the dots while respecting grouping.
+                                      //if(!group->empty())
+                                      {
+//                                         int group_size = group->size();
+//                                         if(group_size == 1)
+//                                         {
+//                                           MusECore::Track* t = *group->begin();
+//                                           MusECore::PartList* part_list = dcanvas->drumEdit()->parts();
+//                                           for(MusECore::ciPart ip = part_list->cbegin(); ip != part_list->cend(); ++ip) {
+//                                             if(ip->second->track() == t) {
+//                                                }
+//                                           }
+//                                         }
+
+                                        int instr_pitch = dcanvas->get_instrument_map()[instrument].pitch;
+
+                                        //if(//dcanvas->drumEdit()->group_mode() == DrumEdit::DONT_GROUP ||
+                                          //dcanvas->drumEdit()->group_mode() == DrumEdit::GROUP_MAX ||
+                                          //dcanvas->drumEdit()->group_mode() == DrumEdit::GROUP_SAME_CHANNEL ||
+                                          //group_size >= 2 && group->find(cur_track) != group->end())
+                                        //for(QSet<MusECore::Track*>::iterator it = group->begin(); it != group->end(); ++it)
+                                        if(group->find(cur_track) != group->end())
+                                        {
+                                          //if(!(*it)->isMidiTrack())
+                                          //  continue;
+                                          //MusECore::MidiTrack* track = static_cast<MusECore::MidiTrack*>(*it);
+                                          //MusECore::MidiPort* mp = &MusEGlobal::midiPorts[track->outPort()];
+                                          //MusECore::MidiCtrlValListList* cll = mp->controller();
+                                          MusECore::MidiCtrlValListList* cll = cur_port->controller();
+                                          //int channel = track->outChannel();
+                                          //const int min = channel << 24;
+                                          const int min = cur_channel << 24;
+                                          const int max = min + 0x1000000;
+
+                                          for(MusECore::iMidiCtrlValList imcvl = cll->lower_bound(min); imcvl != cll->lower_bound(max); ++imcvl)
+                                          {
+                                            MusECore::MidiCtrlValList* cl = imcvl->second;
+                                            MusECore::MidiController* c   = cur_port->midiController(cl->num());
+                                            if(!c->isPerNoteController())
+                                              continue;
+                                            int cnum = c->num();
+                                            int num = cl->num();
+                                            int pitch = num & 0x7f;
+                                            if(pitch != instr_pitch)
+                                              continue;
+
+                                            found = true;
+                                            MusECore::EventList* el = cur_part->events();
+                                            //MusECore::PartList* part_list = dcanvas->drumEdit()->parts();
+                                            //for(MusECore::ciPart ip = part_list->cbegin(); ip != part_list->cend(); ++ip)
+                                            {
+                                              //MusECore::Part* part = ip->second;
+                                              ///if(part->track() != 
+                                              //MusECore::EventList* el = part->events();
+                                              for(MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie)
+                                              {
+                                                MusECore::Event e = ie->second;
+                                                if(e.type() != MusECore::Controller)
+                                                  continue;
+                                                int ctl_num = e.dataA();
+                                                if((ctl_num | 0xff) == cnum && (ctl_num & 0x7f) == pitch)
+                                                {
+                                                  used = true;
+                                                  break;
+                                                }
+                                              }
+                                            }
+                                            off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
+                                            if(used && !off)
+                                              break;  // We have all the info we need, done.
+                                          }
+                                        }
+
+                                        if(found)
+                                        {
+                                          int rx = r.x() + 1;
+                                          int ry = r.y() + r.height()/2 - 3;
+                                          int rw = 6;
+                                          int rh = 6;
+                                          if(used)
+                                          {
+                                            if(off)
+                                              p.drawPixmap(rx, ry, rw, rh, *greendot12x12Icon);
+                                            else
+                                              p.drawPixmap(rx, ry, rw, rh, *orangedot12x12Icon);
+                                          }
+                                          else
+                                          {
+                                            if(off)
+                                              p.drawPixmap(rx, ry, rw, rh, *graydot12x12Icon);
+                                            else
+                                              p.drawPixmap(rx, ry, rw, rh, *bluedot12x12Icon);
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                                QString str = dm->name;
+                                align = Qt::AlignVCenter | Qt::AlignLeft;
+                                p.drawText(r.x() + 8, r.y(), r.width() - 8, r.height(), align, str);
+                              }
                               break;
                         case COL_OUTCHANNEL:
                               s.setNum(dm->channel+1);

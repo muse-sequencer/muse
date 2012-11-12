@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: pianoroll.cpp,v 1.25.2.15 2009/11/16 11:29:33 lunar_shuttle Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -360,7 +361,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS1->setSpacing(0);  
 
       time                = new MusEGui::MTScale(&_raster, split1, xscale);
-      piano               = new Piano(split1, yscale);
+      piano               = new Piano(split1, yscale, this);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
       vscroll             = new MusEGui::ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
       setCurDrumInstrument(piano->curSelectedPitch());

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>341</width>
-    <height>148</height>
+    <width>367</width>
+    <height>156</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -80,46 +80,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <item>
-        <property name="text">
-         <string>Control7</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Control14</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>RPN</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>NRPN</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>RPN14</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>NRPN14</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Pitch</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Program</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item>
@@ -225,7 +185,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Learn</string>
+        <string>&amp;Learn</string>
        </property>
        <property name="checkable">
         <bool>true</bool>

@@ -4,6 +4,7 @@
 //  $Id: editinstrument.cpp,v 1.2.2.6 2009/05/31 05:12:12 terminator356 Exp $
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -71,6 +72,19 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
    : QMainWindow(parent, fl)
       {
       setupUi(this);
+
+      ctrlType->addItem(tr("Control7"), MusECore::MidiController::Controller7);
+      ctrlType->addItem(tr("Control14"), MusECore::MidiController::Controller14);
+      ctrlType->addItem(tr("RPN"), MusECore::MidiController::RPN);
+      ctrlType->addItem(tr("NPRN"), MusECore::MidiController::NRPN);
+      ctrlType->addItem(tr("RPN14"), MusECore::MidiController::RPN14);
+      ctrlType->addItem(tr("NRPN14"), MusECore::MidiController::NRPN14);
+      ctrlType->addItem(tr("Pitch"), MusECore::MidiController::Pitch);
+      ctrlType->addItem(tr("Program"), MusECore::MidiController::Program);
+      ctrlType->addItem(tr("PolyAftertouch"), MusECore::MidiController::PolyAftertouch);  
+      ctrlType->addItem(tr("Aftertouch"), MusECore::MidiController::Aftertouch);
+      ctrlType->setCurrentIndex(0);
+
       fileNewAction->setIcon(QIcon(*filenewIcon));
       fileOpenAction->setIcon(QIcon(*openIcon));
       fileSaveAction->setIcon(QIcon(*saveIcon));
@@ -189,7 +203,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WFlags fl)
       connect(deleteController, SIGNAL(clicked()), SLOT(deleteControllerClicked()));
       connect(newController, SIGNAL(clicked()), SLOT(newControllerClicked()));
       connect(addController, SIGNAL(clicked()), SLOT(addControllerClicked()));
-      connect(ctrlType,SIGNAL(activated(int)), SLOT(ctrlTypeChanged()));
+      connect(ctrlType,SIGNAL(activated(int)), SLOT(ctrlTypeChanged(int)));
       connect(ctrlName, SIGNAL(returnPressed()), SLOT(ctrlNameReturn()));
       connect(ctrlName, SIGNAL(lostFocus()), SLOT(ctrlNameReturn()));
       connect(spinBoxHCtrlNo, SIGNAL(valueChanged(int)), SLOT(ctrlNumChanged()));
@@ -1694,10 +1708,13 @@ void EditInstrument::controllerChanged()
         ctrlL = -1;
         
       MusECore::MidiController::ControllerType type = MusECore::midiControllerType(c->num());
-      
-      ctrlType->blockSignals(true);
-      ctrlType->setCurrentIndex(type);
-      ctrlType->blockSignals(false);
+      int idx = ctrlType->findData(type);
+      if(idx != -1)
+      {
+        ctrlType->blockSignals(true);
+        ctrlType->setCurrentIndex(idx);
+        ctrlType->blockSignals(false);
+      }
 
       ctrlShowInMidi->setChecked(c->showInTracks() & MusECore::MidiController::ShowInMidi);
       ctrlShowInDrum->setChecked(c->showInTracks() & MusECore::MidiController::ShowInDrum);
@@ -1872,58 +1889,27 @@ void EditInstrument::ctrlNameReturn()
 //   ctrlTypeChanged
 //---------------------------------------------------------
 
-void EditInstrument::ctrlTypeChanged()
+void EditInstrument::ctrlTypeChanged(int idx)
       {
       QTreeWidgetItem* item = viewController->currentItem();
       
       if (item == 0)
             return;
       
-      MusECore::MidiController::ControllerType t = MusECore::ctrlType2Int(ctrlType->currentText());
+      MusECore::MidiController::ControllerType t = (MusECore::MidiController::ControllerType)ctrlType->itemData(idx).toInt();
       MusECore::MidiController* c = (MusECore::MidiController*)item->data(0, Qt::UserRole).value<void*>();
-      //if(t == MusECore::midiControllerType(c->num()))
-      //   return;
-      
-      // REMOVE Tim.
-      //if(c->showInTracks() & MusECore::MidiController::ShowInMidi)
-      //  item->setText(COL_SHOW_MIDI, "Y");
-      //if(c->showInTracks() & MusECore::MidiController::ShowInDrum)
-      //  item->setText(COL_SHOW_DRUM, "Y");
-      
       int hnum = 0, lnum = 0;
       
-//       spinBoxMin->blockSignals(true);
-//       spinBoxMax->blockSignals(true);
-//       spinBoxDefault->blockSignals(true);
-//       
       switch (t) {
             case MusECore::MidiController::Controller7:
                   spinBoxHCtrlNo->setEnabled(false);
                   spinBoxLCtrlNo->setEnabled(true);
-//                   spinBoxMin->setEnabled(true);
-//                   spinBoxMax->setEnabled(true);
-//                   enableDefaultControls(true, false);
-//                   spinBoxMin->setRange(-128, 127);
-//                   spinBoxMax->setRange(-128, 127);
-//                   spinBoxMin->setValue(0);
-//                   spinBoxMax->setValue(127);
-//                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
-//                   spinBoxDefault->setValue(spinBoxDefault->minimum());
                   lnum = spinBoxLCtrlNo->value();
                   break;
             case MusECore::MidiController::RPN:
             case MusECore::MidiController::NRPN:
                   spinBoxHCtrlNo->setEnabled(true);
                   spinBoxLCtrlNo->setEnabled(true);
-//                   spinBoxMin->setEnabled(true);
-//                   spinBoxMax->setEnabled(true);
-//                   enableDefaultControls(true, false);
-//                   spinBoxMin->setRange(-128, 127);
-//                   spinBoxMax->setRange(-128, 127);
-//                   spinBoxMin->setValue(0);
-//                   spinBoxMax->setValue(127);
-//                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
-//                   spinBoxDefault->setValue(spinBoxDefault->minimum());
                   hnum = spinBoxHCtrlNo->value();
                   lnum = spinBoxLCtrlNo->value();
                   break;
@@ -1932,57 +1918,21 @@ void EditInstrument::ctrlTypeChanged()
             case MusECore::MidiController::NRPN14:
                   spinBoxHCtrlNo->setEnabled(true);
                   spinBoxLCtrlNo->setEnabled(true);
-//                   spinBoxMin->setEnabled(true);
-//                   spinBoxMax->setEnabled(true);
-//                   enableDefaultControls(true, false);
-//                   spinBoxMin->setRange(-16384, 16383);
-//                   spinBoxMax->setRange(-16384, 16383);
-//                   spinBoxMin->setValue(0);
-//                   spinBoxMax->setValue(16383);
-//                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
-//                   spinBoxDefault->setValue(spinBoxDefault->minimum());
                   hnum = spinBoxHCtrlNo->value();
                   lnum = spinBoxLCtrlNo->value();
                   break;
             case MusECore::MidiController::Pitch:
                   spinBoxHCtrlNo->setEnabled(false);
                   spinBoxLCtrlNo->setEnabled(false);
-//                   spinBoxMin->setEnabled(true);
-//                   spinBoxMax->setEnabled(true);
-//                   enableDefaultControls(true, false);
-//                   spinBoxMin->setRange(-8192, 8191);
-//                   spinBoxMax->setRange(-8192, 8191);
-//                   spinBoxMin->setValue(-8192);
-//                   spinBoxMax->setValue(8191);
-//                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
-//                   spinBoxDefault->setValue(spinBoxDefault->minimum());
                   break;
             case MusECore::MidiController::PolyAftertouch:
             case MusECore::MidiController::Aftertouch:
                   spinBoxHCtrlNo->setEnabled(false);
                   spinBoxLCtrlNo->setEnabled(false);
-//                   spinBoxMin->setEnabled(true);
-//                   spinBoxMax->setEnabled(true);
-//                   enableDefaultControls(true, false);
-//                   spinBoxMin->setRange(0, 127);
-//                   spinBoxMax->setRange(0, 127);
-//                   spinBoxMin->setValue(0);
-//                   spinBoxMax->setValue(127);
-//                   spinBoxDefault->setRange(spinBoxMin->value() - 1, spinBoxMax->value());
-//                   spinBoxDefault->setValue(spinBoxDefault->minimum());
                   break;
             case MusECore::MidiController::Program:
                   spinBoxHCtrlNo->setEnabled(false);
                   spinBoxLCtrlNo->setEnabled(false);
-//                   spinBoxMin->setEnabled(false);
-//                   spinBoxMax->setEnabled(false);
-//                   enableDefaultControls(false, true);
-//                   spinBoxMin->setRange(0, 0);
-//                   spinBoxMax->setRange(0, 0);
-//                   spinBoxMin->setValue(0);
-//                   spinBoxMax->setValue(0);
-//                   spinBoxDefault->setRange(0, 0);
-//                   spinBoxDefault->setValue(0);
                   break;
             // Shouldn't happen...
             default:
@@ -1997,10 +1947,6 @@ void EditInstrument::ctrlTypeChanged()
                   break;
             }      
             
-//       spinBoxMin->blockSignals(false);
-//       spinBoxMax->blockSignals(false);
-//       spinBoxDefault->blockSignals(false);
-// 
       int new_num = MusECore::MidiController::genNum(t, hnum, lnum);
       MusECore::MidiControllerList* cl = workingInstrument.controller();
       // Check if either a per-note controller, or else a regular controller already exists.
@@ -2033,9 +1979,6 @@ void EditInstrument::ctrlTypeChanged()
 
       switch (t) {
             case MusECore::MidiController::Controller7:
-                  //spinBoxMin->setEnabled(true);
-                  //spinBoxMax->setEnabled(true);
-                  //enableDefaultControls(true, false);
                   spinBoxMin->setRange(-128, 127);
                   spinBoxMax->setRange(-128, 127);
                   spinBoxMin->setValue(0);
@@ -2053,9 +1996,6 @@ void EditInstrument::ctrlTypeChanged()
                   break;
             case MusECore::MidiController::RPN:
             case MusECore::MidiController::NRPN:
-                  //spinBoxMin->setEnabled(true);
-                  //spinBoxMax->setEnabled(true);
-                  //enableDefaultControls(true, false);
                   spinBoxMin->setRange(-128, 127);
                   spinBoxMax->setRange(-128, 127);
                   spinBoxMin->setValue(0);
@@ -2074,9 +2014,6 @@ void EditInstrument::ctrlTypeChanged()
             case MusECore::MidiController::Controller14:
             case MusECore::MidiController::RPN14:
             case MusECore::MidiController::NRPN14:
-                  //spinBoxMin->setEnabled(true);
-                  //spinBoxMax->setEnabled(true);
-                  //enableDefaultControls(true, false);
                   spinBoxMin->setRange(-16384, 16383);
                   spinBoxMax->setRange(-16384, 16383);
                   spinBoxMin->setValue(0);
@@ -2093,9 +2030,6 @@ void EditInstrument::ctrlTypeChanged()
                   item->setText(COL_DEF, QString("---"));
                   break;
             case MusECore::MidiController::Pitch:
-                  //spinBoxMin->setEnabled(true);
-                  //spinBoxMax->setEnabled(true);
-                  //enableDefaultControls(true, false);
                   spinBoxMin->setRange(-8192, 8191);
                   spinBoxMax->setRange(-8192, 8191);
                   spinBoxMin->setValue(-8192);
@@ -2110,9 +2044,6 @@ void EditInstrument::ctrlTypeChanged()
                   break;
             case MusECore::MidiController::PolyAftertouch:
             case MusECore::MidiController::Aftertouch:
-                  //spinBoxMin->setEnabled(true);
-                  //spinBoxMax->setEnabled(true);
-                  //enableDefaultControls(true, false);
                   spinBoxMin->setRange(0, 127);
                   spinBoxMax->setRange(0, 127);
                   spinBoxMin->setValue(0);
@@ -2126,9 +2057,6 @@ void EditInstrument::ctrlTypeChanged()
                   item->setText(COL_DEF, QString("---"));
                   break;
             case MusECore::MidiController::Program:
-                  //spinBoxMin->setEnabled(false);
-                  //spinBoxMax->setEnabled(false);
-                  //enableDefaultControls(false, true);
                   spinBoxMin->setRange(0, 0);
                   spinBoxMax->setRange(0, 0);
                   spinBoxMin->setValue(0);
@@ -2224,100 +2152,6 @@ void EditInstrument::ctrlShowInDrumChanged(int state)
       workingInstrument.setDirty(true);
       }
 
-// REMOVE Tim.      
-/*      
-//---------------------------------------------------------
-//   ctrlHNumChanged
-//---------------------------------------------------------
-
-void EditInstrument::ctrlHNumChanged(int val)
-      {
-      QTreeWidgetItem* item = viewController->currentItem();
-      if (item == 0)
-            return;
-      MusECore::MidiController* c = (MusECore::MidiController*)item->data(0, Qt::UserRole).value<void*>();
-      int n = spinBoxLCtrlNo->isEnabled() ? spinBoxLCtrlNo->value() & 0xff : c->num() & 0xff;
-      MusECore::MidiControllerList* cl = workingInstrument.controller();
-      MusECore::MidiController::ControllerType t = MusECore::ctrlType2Int(ctrlType->currentText());
-      int tn = MusECore::midiCtrlTerms2Number(t);
-      if((tn & 0xffff0000) == MusECore::CTRL_INTERNAL_OFFSET)  // Error, should not happen.
-        return;
-      int new_num = tn | ((val & 0xff) << 8) | n;
-      // Check if either a per-note controller, or else a regular controller already exists.
-      if(!cl->ctrlAvailable(new_num, c))
-      {
-        ctrlValidLabel->setPixmap(*reddotIcon);
-        enableNonCtrlControls(false);
-        return;
-      }
-      ctrlValidLabel->setPixmap(*greendotIcon);
-      enableNonCtrlControls(true);
-      cl->erase(c->num());
-      c->setNum(new_num);
-      cl->add(c);
-      QString s;
-      if(c->isPerNoteController())
-        item->setText(COL_LNUM, QString("*"));
-      else
-      {
-        s.setNum(n);
-        item->setText(COL_LNUM, s);
-      }
-      s.setNum(val);
-      item->setText(COL_HNUM, s);
-      item->setText(COL_TYPE, ctrlType->currentText());
-      workingInstrument.setDirty(true);
-      }
-
-//---------------------------------------------------------
-//   ctrlLNumChanged
-//---------------------------------------------------------
-
-void EditInstrument::ctrlLNumChanged(int val)
-      {
-      QTreeWidgetItem* item = viewController->currentItem();
-      if (item == 0)
-            return;
-      MusECore::MidiController* c = (MusECore::MidiController*)item->data(0, Qt::UserRole).value<void*>();
-      int n = spinBoxHCtrlNo->isEnabled() ? (spinBoxHCtrlNo->value() & 0x7f) << 8 : c->num() & 0x7f00;
-      MusECore::MidiControllerList* cl = workingInstrument.controller();
-      MusECore::MidiController::ControllerType t = MusECore::ctrlType2Int(ctrlType->currentText());
-      int tn = MusECore::midiCtrlTerms2Number(t);
-      if((tn & 0xffff0000) == MusECore::CTRL_INTERNAL_OFFSET)  // Error, should not happen.
-        return;
-      int new_num = tn | n | (val & 0xff);
-      // Check if either a per-note controller, or else a regular controller already exists.
-      if(!cl->ctrlAvailable(new_num, c))
-      {
-        ctrlValidLabel->setPixmap(*reddotIcon);
-        enableNonCtrlControls(false);
-        return;
-      }
-      ctrlValidLabel->setPixmap(*greendotIcon);
-      enableNonCtrlControls(true);
-      cl->erase(c->num());
-      c->setNum(new_num);
-      cl->add(c);
-      QString s;
-      if(c->isPerNoteController())
-        item->setText(COL_LNUM, QString("*"));
-      else  
-      {
-        s.setNum(val);
-        item->setText(COL_LNUM, s);
-      }
-      if(t == MusECore::MidiController::Controller7)
-        item->setText(COL_HNUM, "---");
-      else
-      {
-        s.setNum(n >> 8);
-        item->setText(COL_HNUM, s);
-      }
-      item->setText(COL_TYPE, ctrlType->currentText());
-      workingInstrument.setDirty(true);
-      }
-*/
-      
 //---------------------------------------------------------
 //   ctrlNumChanged
 //---------------------------------------------------------
@@ -2325,9 +2159,9 @@ void EditInstrument::ctrlLNumChanged(int val)
 void EditInstrument::ctrlNumChanged()
       {
       QTreeWidgetItem* item = viewController->currentItem();
-      if (item == 0)
+      if (item == 0 || ctrlType->currentIndex() == -1)
             return;
-      MusECore::MidiController::ControllerType t = MusECore::ctrlType2Int(ctrlType->currentText());
+      MusECore::MidiController::ControllerType t = (MusECore::MidiController::ControllerType)ctrlType->itemData(ctrlType->currentIndex()).toInt(); 
       int hnum = 0, lnum = 0;
       switch (t) {
             case MusECore::MidiController::Controller7:
@@ -2361,15 +2195,9 @@ void EditInstrument::ctrlNumChanged()
         return;
       }
       
-
-      //int n = spinBoxLCtrlNo->isEnabled() ? spinBoxLCtrlNo->value() & 0xff : c->num() & 0xff;
       MusECore::MidiControllerList* cl = workingInstrument.controller();
       MusECore::MidiController* c = (MusECore::MidiController*)item->data(0, Qt::UserRole).value<void*>();
 
-      //int tn = MusECore::midiCtrlTerms2Number(t);
-      //if((tn & 0xffff0000) == MusECore::CTRL_INTERNAL_OFFSET)  // Error, should not happen.
-      //  return;
-      //int new_num = tn | ((val & 0xff) << 8) | n;
       // Check if either a per-note controller, or else a regular controller already exists.
       if(!cl->ctrlAvailable(new_num, c))
       {
@@ -3270,87 +3098,9 @@ void EditInstrument::addControllerClicked()
     if(cl->find(num) == cl->end())
       pup->addAction(MusECore::midiCtrlName(num, true))->setData(num);
   }
-  
   connect(pup, SIGNAL(triggered(QAction*)), SLOT(ctrlPopupTriggered(QAction*)));
   pup->exec(mapToGlobal(QPoint(0,0)));
   delete pup;
-
-
-
-
-
-  
-// REMOVE Tim.  
-//   QListWidgetItem* idx = listController->currentItem();
-//   if(idx == 0)
-//     return;
-  
-//  int lnum = -1;
-//   QString name = listController->currentItem()->text();
-//   for(int i = 0; i < 128; i++)
-//   {
-//     if(MusECore::midiCtrlName(i) == name)
-//     {
-//       lnum = i;
-//       break;
-//     }  
-//   }
-  
-//   if(lnum == -1)
-//   {
-//     printf("Add controller: Controller not found: %s\n", name.toLatin1().constData());
-//     return;
-//   }
-//   
-//   int num = MusECore::MidiController::genNum(MusECore::MidiController::Controller7, 0, lnum);
-//     
-//   MusECore::MidiControllerList* cl = workingInstrument.controller();
-//   for(MusECore::iMidiController ic = cl->begin(); ic != cl->end(); ++ic) 
-//   {
-//     MusECore::MidiController* c = ic->second;
-//     if(c->name() == name)
-//     {
-//       QMessageBox::critical(this,
-//           tr("MusE: Cannot add common controller"),
-//           tr("A controller named '%1' already exists.").arg(name),
-//           QMessageBox::Ok,
-//           Qt::NoButton,
-//           Qt::NoButton);
-//           
-//       return;      
-//     }
-//     
-//     if(c->num() == num)
-//     {
-//       QMessageBox::critical(this,
-//           tr("MusE: Cannot add common controller"),
-//           tr("A controller number %1 already exists.").arg(num),
-//           QMessageBox::Ok,
-//           Qt::NoButton,
-//           Qt::NoButton);
-//           
-//       return;      
-//     }
-//   }
-//   
-//   MusECore::MidiController* ctrl = new MusECore::MidiController();
-//   ctrl->setNum(num);
-//   ctrl->setMinVal(0);
-//   ctrl->setMaxVal(127);
-//   ctrl->setInitVal(MusECore::CTRL_VAL_UNKNOWN);
-//   ctrl->setName(name);
-//   
-//   workingInstrument.controller()->add(ctrl);   
-//   
-//   QTreeWidgetItem* item = addControllerToView(ctrl);
-//   
-//   viewController->blockSignals(true);
-//   item->setSelected(true);
-//   viewController->blockSignals(false);
-//   
-//   controllerChanged();
-//   
-//   workingInstrument.setDirty(true);
 }
 
 //---------------------------------------------------------

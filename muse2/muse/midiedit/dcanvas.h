@@ -170,6 +170,7 @@ class DrumCanvas : public EventCanvas {
       QVector<instrument_number_mapping_t>& get_instrument_map() { return instrument_map; }
       void propagate_drummap_change(int instrument, bool update_druminmap);
       void rebuildOurDrumMap();
+      DrumEdit* drumEdit() { return drumEditor; }
       };
 
 } // namespace MusEGui

@@ -280,10 +280,11 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                         e.setLenTick(0);
                         break;
                   case ME_POLYAFTER:
-                        e.setType(PAfter);
-                        e.setA(ev.dataA());
+                        e.setType(Controller);
+                        e.setA((CTRL_POLYAFTER & ~0xff) | (ev.dataA() & 0x7f));
                         e.setB(ev.dataB());
                         break;
+                        
                   case ME_CONTROLLER:
                         {
                         int val = ev.dataB();
@@ -393,8 +394,9 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                         break;
 
                   case ME_AFTERTOUCH:
-                        e.setType(CAfter);
-                        e.setA(ev.dataA());
+                        e.setType(Controller);
+                        e.setA(CTRL_AFTERTOUCH);
+                        e.setB(ev.dataA());
                         break;
 
                   case ME_PITCHBEND:

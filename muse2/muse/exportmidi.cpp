@@ -84,7 +84,7 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             int lb = (b >> 8) & 0xff;
             int pr = b & 0x7f;
             int tickoffset = 0;
-            // REMOVE Tim. Song type removal.
+            // REMOVE Tim. Song type removal. Hm, TEST is this OK here?
             //switch(MusEGlobal::song->mtype()) {
             //      case MT_GM:       // no HBANK/LBANK
             //            break;
@@ -204,15 +204,6 @@ static void addEventList(MusECore::EventList* evlist, MusECore::MPEventList* mpe
                   //mpevlist->add(ev);
                 }
                 break;
-
-          case MusECore::PAfter:
-                mpevlist->add(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_AFTERTOUCH, ev.dataA(), ev.dataB()));
-                break;
-
-          case MusECore::CAfter:
-                mpevlist->add(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_POLYAFTER, ev.dataA(), ev.dataB()));
-                break;
-
           case MusECore::Meta:
                 {
                 MusECore::MidiPlayEvent mpev(tick, port, MusECore::ME_META, ev.eventData());

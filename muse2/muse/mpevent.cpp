@@ -62,16 +62,6 @@ MEvent::MEvent(unsigned tick, int port, int channel, const Event& e)
                   setA(e.dataA());  // controller number
                   setB(e.dataB());  // controller value
                   break;
-            case PAfter:
-                  setType(ME_POLYAFTER);
-                  setA(e.dataA());
-                  setB(e.dataB());
-                  break;
-            case CAfter:
-                  setType(ME_AFTERTOUCH);
-                  setA(e.dataA());
-                  setB(0);
-                  break;
             case Sysex:
                   setType(ME_SYSEX);
                   setData(e.eventData());

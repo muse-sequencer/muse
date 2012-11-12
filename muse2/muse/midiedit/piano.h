@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: piano.h,v 1.2 2004/05/31 11:48:55 lunar_shuttle Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -34,7 +35,9 @@ class QPixmap;
 #define KH  13
 
 namespace MusEGui {
-  
+
+class MidiEditor;
+
 //---------------------------------------------------------
 //   Piano
 //---------------------------------------------------------
@@ -42,7 +45,8 @@ namespace MusEGui {
 class Piano : public View
       {
       Q_OBJECT
-    
+
+      MidiEditor* _midiEditor;
       int curPitch;
       int _curSelectedPitch;
       QPixmap* octave;
@@ -83,7 +87,7 @@ class Piano : public View
       void setPitch(int);
 
    public:
-      Piano(QWidget*, int);
+      Piano(QWidget* parent, int ymag, MidiEditor* editor = 0);
       int curSelectedPitch() const { return _curSelectedPitch; } 
       void setCurSelectedPitch(int pitch);
       };

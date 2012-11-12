@@ -213,35 +213,10 @@ void ListEdit::songChanged(MusECore::SongChangedFlags_t type)
                   }
             liste->setSortingEnabled(false);
             if (type == SC_SELECTION) {
-                  
-                  
-                  // DELETETHIS or clean up or whatever?
                   // BUGFIX: I found the keyboard modifier states affect how QTreeWidget::setCurrentItem() operates.
                   //         So for example (not) holding shift while lassoo-ing notes in piano roll affected 
                   //          whether multiple items were selected in this event list editor! 
                   //         Also blockSignals() definitely required - was messing up selections. p4.0.18 Tim.
-                  /*
-                  bool update = false;
-                  QTreeWidgetItem* ci = 0;
-                  for (int row = 0; row < liste->topLevelItemCount(); ++row) {
-                        QTreeWidgetItem* i = liste->topLevelItem(row);
-                        if (i->isSelected() ^ ((EventListItem*)i)->event.selected()) 
-                        {
-                                    i->setSelected(((EventListItem*)i)->event.selected());
-                                    if (i->isSelected())
-                                          ci = i;
-                              update = true;
-                              }
-                        }
-                  if (update) 
-                  {
-                        if (ci)
-                        {
-                              liste->setCurrentItem(ci);
-                        }      
-                        //liste->update();
-                  }
-                  */
                   bool ci_done = false;
                   liste->blockSignals(true);  
                   // Go backwards to avoid QTreeWidget::setCurrentItem() dependency on KB modifiers!
@@ -339,6 +314,8 @@ QString EventListItem::text(int col) const
                                     case MusECore::MidiController::NRPN:         cs = "NRPN"; break;
                                     case MusECore::MidiController::Pitch:        cs = "Pitch"; break;
                                     case MusECore::MidiController::Program:      cs = "Program"; break;
+                                    case MusECore::MidiController::PolyAftertouch: cs = "PolyAftertouch"; break;
+                                    case MusECore::MidiController::Aftertouch:   cs = "Aftertouch"; break;
                                     case MusECore::MidiController::RPN14:        cs = "RPN14"; break;
                                     case MusECore::MidiController::NRPN14:       cs = "NRPN14"; break;
                                     default:           cs = "Ctrl?"; break;
@@ -369,12 +346,6 @@ QString EventListItem::text(int col) const
                               }
                               s = QString("SysEx");
                               break;
-                        case MusECore::PAfter:
-                              s = QString("PoAT");
-                              break;
-                        case MusECore::CAfter:
-                              s = QString("ChAT");
-                              break;
                         case MusECore::Meta:
                               commentLabel = midiMetaComment(event);
                               s = QString("Meta");
@@ -389,7 +360,7 @@ QString EventListItem::text(int col) const
                   s.setNum(part->track()->outChannel() + 1);
                   break;
             case 4:
-                  if (event.isNote() || event.type() == MusECore::PAfter)
+                  if (event.isNote())
                         s =  MusECore::pitch2string(event.dataA());
                   else if (event.type() == MusECore::Controller)
                         s.setNum(event.dataA() & 0xffff);  // mask off type bits
@@ -479,15 +450,11 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       insertSysEx = new QAction(QIcon(*sysexIcon), tr("insert SysEx"), insertItems);
       insertCtrl = new QAction(QIcon(*ctrlIcon), tr("insert Ctrl"), insertItems);
       insertMeta = new QAction(QIcon(*metaIcon), tr("insert Meta"), insertItems);
-      insertCAfter = new QAction(QIcon(*cafterIcon), tr("insert Channel Aftertouch"), insertItems);
-      insertPAfter = new QAction(QIcon(*pafterIcon), tr("insert Poly Aftertouch"), insertItems);
 
       connect(insertNote,    SIGNAL(activated()), SLOT(editInsertNote()));
       connect(insertSysEx,   SIGNAL(activated()), SLOT(editInsertSysEx()));
       connect(insertCtrl,    SIGNAL(activated()), SLOT(editInsertCtrl()));
       connect(insertMeta,    SIGNAL(activated()), SLOT(editInsertMeta()));
-      connect(insertCAfter,  SIGNAL(activated()), SLOT(editInsertCAfter()));
-      connect(insertPAfter,  SIGNAL(activated()), SLOT(editInsertPAfter()));
 
       //---------Pulldown Menu----------------------------
       
@@ -717,53 +684,6 @@ void ListEdit::editInsertMeta()
       }
 
 //---------------------------------------------------------
-//   editInsertCAfter
-//---------------------------------------------------------
-
-void ListEdit::editInsertCAfter()
-      {
-      if(!curPart)
-        return;
-      
-      MusECore::Event event = EditCAfterDialog::getEvent(curPart->tick(), MusECore::Event(), this);
-      if (!event.empty()) {
-            //No events before beginning of part + take Part offset into consideration
-            unsigned tick = event.tick();
-            if (tick < curPart->tick())
-                  tick = 0;
-            else
-                  tick-= curPart->tick();
-            event.setTick(tick);
-            // Indicate do undo, and do not handle port controller values. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
-            }
-      }
-
-//---------------------------------------------------------
-//   editInsertPAfter
-//---------------------------------------------------------
-
-void ListEdit::editInsertPAfter()
-      {
-      if(!curPart)
-        return;
-      
-      MusECore::Event ev;
-      MusECore::Event event = EditPAfterDialog::getEvent(curPart->tick(), ev, this);
-      if (!event.empty()) {
-            //No events before beginning of part + take Part offset into consideration
-            unsigned tick = event.tick();
-            if (tick < curPart->tick())
-                  tick = 0;
-            else
-                  tick-= curPart->tick();
-            event.setTick(tick);
-            // Indicate do undo, and do not handle port controller values. 
-            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
-            }
-      }
-
-//---------------------------------------------------------
 //   editEvent
 //---------------------------------------------------------
 
@@ -780,12 +700,6 @@ void ListEdit::editEvent(MusECore::Event& event, MusECore::MidiPart* part)
                   break;
             case MusECore::Sysex:
                   nevent = EditSysexDialog::getEvent(tick, event, this);
-                  break;
-            case MusECore::PAfter:
-                  nevent = EditPAfterDialog::getEvent(tick, event, this);
-                  break;
-            case MusECore::CAfter:
-                  nevent = EditCAfterDialog::getEvent(tick, event, this);
                   break;
             case MusECore::Meta:
                   nevent = EditMetaDialog::getEvent(tick, event, this);
@@ -1025,8 +939,6 @@ void ListEdit::initShortcuts()
       insertSysEx->setShortcut(shortcuts[SHRT_LE_INS_SYSEX].key);
       insertCtrl->setShortcut(shortcuts[SHRT_LE_INS_CTRL].key);
       insertMeta->setShortcut(shortcuts[SHRT_LE_INS_META].key);
-      insertCAfter->setShortcut(shortcuts[SHRT_LE_INS_CHAN_AFTERTOUCH].key);
-      insertPAfter->setShortcut(shortcuts[SHRT_LE_INS_POLY_AFTERTOUCH].key);
       }
 
 //---------------------------------------------------------

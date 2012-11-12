@@ -32,6 +32,18 @@ ArrangerColumns::ArrangerColumns(QWidget* parent) : QDialog(parent)
 	ignoreSomethingChanged=true;
 	
 	setupUi(this);
+
+	ctrlType->addItem(tr("Control7"), MusECore::MidiController::Controller7);
+	ctrlType->addItem(tr("Control14"), MusECore::MidiController::Controller14);
+	ctrlType->addItem(tr("RPN"), MusECore::MidiController::RPN);
+	ctrlType->addItem(tr("NPRN"), MusECore::MidiController::NRPN);
+	ctrlType->addItem(tr("RPN14"), MusECore::MidiController::RPN14);
+	ctrlType->addItem(tr("NRPN14"), MusECore::MidiController::NRPN14);
+	ctrlType->addItem(tr("Pitch"), MusECore::MidiController::Pitch);
+	ctrlType->addItem(tr("Program"), MusECore::MidiController::Program);
+	//ctrlType->addItem(tr("PolyAftertouch"), MusECore::MidiController::PolyAftertouch);  // Not supported yet. Need a way to select pitch.
+	ctrlType->addItem(tr("Aftertouch"), MusECore::MidiController::Aftertouch);
+	ctrlType->setCurrentIndex(0);
 	
 	initList();
 	
@@ -58,7 +70,9 @@ ArrangerColumns::ArrangerColumns(QWidget* parent) : QDialog(parent)
 
 void ArrangerColumns::ctrlTypeChanged(int idx)
 {
-	MusECore::MidiController::ControllerType t = (MusECore::MidiController::ControllerType)idx;
+	if(idx == -1)
+	  return;
+	MusECore::MidiController::ControllerType t = (MusECore::MidiController::ControllerType)ctrlType->itemData(idx).toInt();
 
 	switch (t)
 	{
@@ -90,17 +104,17 @@ void ArrangerColumns::somethingChanged()
 	if (ignoreSomethingChanged) return;
 	
 	int row=listWidget->currentRow();
-	if (row!=-1)
+	if (row!=-1 && ctrlType->currentIndex() != -1)
 	{
+		MusECore::MidiController::ControllerType t = (MusECore::MidiController::ControllerType)ctrlType->itemData(ctrlType->currentIndex()).toInt();
 		int hnum = spinBoxHCtrlNo->value();
 		int lnum = spinBoxLCtrlNo->value();
-		MusECore::MidiController::ControllerType t = (MusECore::MidiController::ControllerType)ctrlType->currentIndex();
 		int ctrl_number = MusECore::MidiController::genNum(t, hnum, lnum);
 
 		Arranger::new_custom_columns[row].name=nameEdit->text();
 		Arranger::new_custom_columns[row].ctrl=ctrl_number;
 		Arranger::new_custom_columns[row].affected_pos=(affectBeginButton->isChecked() ? Arranger::custom_col_t::AFFECT_BEGIN : Arranger::custom_col_t::AFFECT_CPOS);
-		
+
 		listWidget->currentItem()->setText(getListEntryString(row));
 	}
 }
@@ -134,7 +148,9 @@ void ArrangerColumns::itemSelected(int i)
 		
 		nameEdit->setText(Arranger::new_custom_columns[i].name);
 		int num=Arranger::new_custom_columns[i].ctrl;
-		ctrlType->setCurrentIndex(MusECore::midiControllerType(num));
+		int idx = ctrlType->findData(MusECore::midiControllerType(num));
+		if(idx != -1)
+		  ctrlType->setCurrentIndex(idx);
 		if (spinBoxHCtrlNo->isEnabled())
 			spinBoxHCtrlNo->setValue((num & 0xFF00)>>8);
 		else

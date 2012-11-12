@@ -116,7 +116,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
    int sy, const char* name)
    : EventCanvas(pr, parent, sx, sy, name)
       {
-      drumEditor=dynamic_cast<DrumEdit*>(pr);
+      drumEditor=static_cast<DrumEdit*>(pr);
       
       _setCurPartIfOnlyOneEventIsSelected=false;
       

@@ -4,6 +4,7 @@
 //  $Id: editinstrument.h,v 1.1.1.1.2.4 2009/05/31 05:12:12 terminator356 Exp $
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -102,7 +103,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void newControllerClicked();
       void addControllerClicked();
       void ctrlPopupTriggered(QAction*);
-      void ctrlTypeChanged();
+      void ctrlTypeChanged(int);
       void ctrlNameReturn();
       void ctrlNumChanged();
       void ctrlMinChanged(int);

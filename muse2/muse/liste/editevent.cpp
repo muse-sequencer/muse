@@ -148,28 +148,6 @@ MusECore::Event EditMetaDialog::getEvent(int tick, const MusECore::Event& event,
       return nevent;
       }
 
-MusECore::Event EditCAfterDialog::getEvent(int tick, const MusECore::Event& event, QWidget* parent)
-      {
-      EditEventDialog* dlg = new EditCAfterDialog(tick, event, parent);
-      MusECore::Event nevent;
-      if (dlg->exec() == QDialog::Accepted) {
-            nevent = dlg->event();
-            }
-      delete dlg;
-      return nevent;
-      }
-
-MusECore::Event EditPAfterDialog::getEvent(int tick, const MusECore::Event& event, QWidget* parent)
-      {
-      EditEventDialog* dlg = new EditPAfterDialog(tick, event, parent);
-      MusECore::Event nevent;
-      if (dlg->exec() == QDialog::Accepted) {
-            nevent = dlg->event();
-            }
-      delete dlg;
-      return nevent;
-      }
-
 //---------------------------------------------------------
 //   EditEventDialog
 //---------------------------------------------------------
@@ -434,128 +412,6 @@ void EditMetaDialog::accept()
       }
 
 //---------------------------------------------------------
-//   EditCAfterDialog
-//---------------------------------------------------------
-
-EditCAfterDialog::EditCAfterDialog(int tick, const MusECore::Event& event,
-   QWidget* parent)
-   : EditEventDialog(parent)
-      {
-      setWindowTitle(tr("MusE: Enter Channel Aftertouch"));
-
-      QLabel* l1 = new QLabel(tr("Time Position"));
-      epos = new Awl::PosEdit;
-
-      QLabel* l2 = new QLabel(tr("Pressure"));
-      il2  = new MusEGui::IntLabel(-1, 0, 127, this, -1);
-      il2->setFrame(true);
-      il2->setDark();
-
-      QSlider* slider = new QSlider(Qt::Horizontal);
-      slider->setMinimum(0);
-      slider->setMaximum(127);
-      slider->setPageStep(1);
-      slider->setValue(0);
-
-      connect(slider, SIGNAL(valueChanged(int)), il2, SLOT(setValue(int)));
-      connect(il2, SIGNAL(valueChanged(int)), slider, SLOT(setValue(int)));
-
-      if (!event.empty()) {
-            epos->setValue(tick);
-            il2->setValue(event.dataA());
-            slider->setValue(event.dataA());
-            }
-      else {
-            epos->setValue(tick);
-            il2->setValue(64);
-            slider->setValue(64);
-            }
-
-      layout1->addWidget(l1,   0, 0);
-      layout1->addWidget(epos,  0, 1, Qt::AlignLeft);
-      layout1->addWidget(l2,   1, 0);
-      layout1->addWidget(il2,  1, 1, Qt::AlignLeft);
-      //layout1->addMultiCellWidget(slider, 2, 2, 0, 1);
-      layout1->addWidget(slider, 2, 0, 1, 2);
-      }
-
-//---------------------------------------------------------
-//   EditCAfterDialog::event
-//---------------------------------------------------------
-
-MusECore::Event EditCAfterDialog::event()
-      {
-      MusECore::Event event(MusECore::CAfter);
-      event.setTick(epos->pos().tick());
-      event.setA(il2->value());
-      return event;
-      }
-
-//---------------------------------------------------------
-//   EditPAfterDialog
-//---------------------------------------------------------
-
-EditPAfterDialog::EditPAfterDialog(int tick, const MusECore::Event& event,
-   QWidget* parent)
-   : EditEventDialog(parent)
-      {
-      setWindowTitle(tr("MusE: Enter Poly Aftertouch"));
-
-      QLabel* l1 = new QLabel(tr("Time Position"));
-      epos = new Awl::PosEdit;
-
-      QLabel* l2 = new QLabel(tr("Pitch"));
-      pl = new MusEGui::PitchEdit;
-      QLabel* l3 = new QLabel(tr("Pressure"));
-      il2  = new MusEGui::IntLabel(-1, 0, 127, this, -1);
-      il2->setFrame(true);
-      il2->setDark();
-
-      QSlider* slider = new QSlider(Qt::Horizontal);
-      slider->setMinimum(0);
-      slider->setMaximum(127);
-      slider->setPageStep(1);
-      slider->setValue(0);
-
-      connect(slider, SIGNAL(valueChanged(int)), il2, SLOT(setValue(int)));
-      connect(il2, SIGNAL(valueChanged(int)), slider, SLOT(setValue(int)));
-
-      if (!event.empty()) {
-            epos->setValue(tick);
-            pl->setValue(event.pitch());
-            il2->setValue(event.dataB());
-            slider->setValue(event.dataB());
-            }
-      else {
-            epos->setValue(tick);
-            pl->setValue(64);
-            il2->setValue(64);
-            slider->setValue(64);
-            }
-
-      layout1->addWidget(l1,  0, 0);
-      layout1->addWidget(epos, 0, 1, Qt::AlignLeft);
-      layout1->addWidget(l2,  1, 0);
-      layout1->addWidget(pl,  1, 1, Qt::AlignLeft);
-      layout1->addWidget(l3,  2, 0);
-      layout1->addWidget(il2, 2, 1, Qt::AlignLeft);
-      //layout1->addMultiCellWidget(slider, 3, 3, 0, 1);
-      layout1->addWidget(slider, 3, 0, 1, 2);
-      }
-
-//---------------------------------------------------------
-//   EditPAfterDialog::event
-//---------------------------------------------------------
-
-MusECore::Event EditPAfterDialog::event()
-      {
-      MusECore::Event event(MusECore::PAfter);
-      event.setTick(epos->pos().tick());
-      event.setA(pl->value());
-      event.setB(il2->value());
-      return event;
-      }
-//---------------------------------------------------------
 //   getEvent
 //---------------------------------------------------------
 
@@ -579,11 +435,64 @@ MusECore::Event EditCtrlDialog::event()
       {
       MusECore::Event event(MusECore::Controller);
       event.setTick(timePos->pos().tick());
-      event.setA(num);
-      if (num == MusECore::CTRL_PROGRAM)
-            event.setB(val);
+
+      int cnum = 0;
+      QListWidgetItem* item = ctrlList->currentItem();
+      if(item != 0)
+        cnum = item->data(Qt::UserRole).toInt();
+
+      MusECore::MidiTrack* track  = part->track();
+      bool isDrum                 = track->type() == MusECore::Track::DRUM;
+      MusECore::MidiPort* port    = &MusEGlobal::midiPorts[track->outPort()];
+      int channel                 = track->outChannel();
+
+      int evnum = cnum;
+      int num = cnum;
+      if((cnum & 0xff) == 0xff)
+      {
+        evnum = (cnum & ~0xff) | (noteSpinBox->value() & 0x7f);
+        num = evnum;
+        if(isDrum)
+        {
+          MusECore::DrumMap* dm = &MusEGlobal::drumMap[noteSpinBox->value() & 0x7f];
+          num     = (cnum & ~0xff) | dm->anote;
+          port    = &MusEGlobal::midiPorts[dm->port];
+          channel = dm->channel;
+        }
+      }
+
+      MusECore::MidiController* c = port->midiController(cnum);
+      MusECore::MidiCtrlValListList* cll = port->controller();
+
+      if(cll->find(channel, num) == cll->end())
+      {
+        MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(num);
+        cll->add(channel, vl);
+      }
+                        
+      event.setA(evnum);
+      if(cnum == MusECore::CTRL_PROGRAM)
+      {
+        int hb   = hbank->value();
+        int lb   = lbank->value();
+        int prog = program->value();
+        if (hb > 0 && hb < 129)
+              hb -= 1;
+        else
+              hb = 0xff;
+        if (lb > 0 && lb < 129)
+              lb -= 1;
+        else
+              lb = 0xff;
+        if (prog > 0 && prog < 129)
+              prog -= 1;
+        else
+              prog = 0xff;
+        int val = (hb << 16) + (lb << 8) + prog;
+        event.setB(val);
+      }
       else
-            event.setB(valSlider->value() + MusEGlobal::midiPorts[part->track()->outPort()].midiController(num)->bias());
+        event.setB(valSlider->value() + c->bias());
       return event;
       }
 
@@ -597,6 +506,15 @@ MusECore::Event EditCtrlDialog::event()
 //    QPushButton* buttonNewController;
 //---------------------------------------------------------
 
+struct CI {
+            int num;
+            QString s;
+            bool used;
+            bool off;
+            bool instrument;
+            CI(int n, const QString& ss, bool u, bool o, bool i) : num(n), s(ss), used(u), off(o), instrument(i) {}
+            };
+
 EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
    const MusECore::MidiPart* p, QWidget* parent)
    : QDialog(parent), part(p)
@@ -605,90 +523,100 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
       widgetStack->setAutoFillBackground(true);
 
       MusECore::MidiTrack* track   = part->track();
-      int portn          = track->outPort();
-      MusECore::MidiPort* port     = &MusEGlobal::midiPorts[portn];
+      MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
       bool isDrum        = track->type() == MusECore::Track::DRUM;
       bool isNewDrum     = track->type() == MusECore::Track::NEW_DRUM;
       bool isMidi        = track->type() == MusECore::Track::MIDI;
       MusECore::MidiCtrlValListList* cll = port->controller();
-
-      val = 0;
-      num = 0;
-      int note = -1;
+      int channel        = track->outChannel();
+      MusECore::MidiInstrument* instr = port->instrument();
+      MusECore::MidiControllerList* mcl = instr->controller();
+      int val = 0;
+      int ev_num = 0;
+      int num = 0;
+      int ev_cnum = 0;
+      int ev_note = -1;
       if (!event.empty()) {
-            num = event.dataA();
+            ev_num = event.dataA();
+            num = ev_num;
+            ev_cnum = ev_num;
             val = event.dataB();
-            if(port->drumController(num))
+            if(port->drumController(ev_num))
             {
+              ev_cnum |= 0xff;
               if(isDrum)
-                num = (num & ~0xff) | MusEGlobal::drumMap[num & 0xff].anote;
-              note = num & 0xff;
+                num = (ev_num & ~0xff) | MusEGlobal::drumMap[ev_num & 0xff].anote;
+              ev_note = ev_num & 0xff;
             }
           }
 
-      ///pop = new QMenu(this);
-      //pop->setCheckable(false); //not necessary in Qt4
-
+      MusECore::MidiController* mc = port->midiController(ev_num);
+      
       ctrlList->clear();
       ctrlList->setSelectionMode(QAbstractItemView::SingleSelection);
 
-      //
-      // populate list of available controller
-      //
+      //---------------------------------------------------
+      // build list of midi controllers for current
+      // MusECore::MidiPort/channel
+      //---------------------------------------------------
 
-      std::list<QString> sList;
-      typedef std::list<QString>::iterator isList;
+      std::list<CI> sList;
+      typedef std::list<CI>::iterator isList;
+      std::set<int> already_added_nums;
 
       for (MusECore::iMidiCtrlValList it = cll->begin(); it != cll->end(); ++it) {
             MusECore::MidiCtrlValList* cl = it->second;
-            int clnum             = cl->num();
-
-            // dont show drum specific controller if not a drum track
-            //if ((num & 0xff) == 0xff) {     // REMOVE Tim. Or keep.
-            //      if (!isDrum)
-            //            continue;
-            //      }
-//             int rnum = num;
-//             if(port->drumController(num))
-//             {
-//               rnum |= 0xff;
-//               if()
-//               continue;
-//             }
-
-
-// FIXME: TODO: Finish this stuff off. Use items' data member for control number.
-            
-            MusECore::MidiController* c = port->midiController(clnum);
-            //int cnum = c->num();
-            //if(c->isPerNoteController())
-            //{
-              if(((isDrum || isNewDrum) && !(c->showInTracks() & MusECore::MidiController::ShowInDrum)) ||
-                 (isMidi && !(c->showInTracks() & MusECore::MidiController::ShowInMidi)))
-                continue;
-            //}
-
-            
-	    {
+            int ch = it->first >> 24;
+            if(ch != channel)
+              continue;
+            MusECore::MidiController* c   = port->midiController(cl->num());
+            bool isDrumCtrl = (c->isPerNoteController());
+            int show = c->showInTracks();
+            int cnum = c->num();
+            int clnum = cl->num();
             isList i = sList.begin();
             for (; i != sList.end(); ++i) {
-                  if (*i == c->name())
+                  if (i->num == cnum)
                         break;
                   }
-            if (i == sList.end())
-                  sList.push_back(c->name());
-	    }
-            }
-      MusECore::MidiController* mc = port->midiController(num);
-      int idx = 0;
-      int selectionIndex = 0;
-      for (isList i = sList.begin(); i != sList.end(); ++i, ++idx) {
-            ctrlList->addItem(*i);
-            if (mc->name() == *i)
-                  selectionIndex = idx;
-            }
-      ctrlList->item(selectionIndex)->setSelected(true);
 
+            if (i == sList.end()) {
+                  bool used = (clnum == num);
+                  bool off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
+                  // Filter if not used and off. But if there's something there, we must show it.
+                  //if(!used && off &&
+                  if(!used && //off &&
+                     (((isDrumCtrl || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
+                     (isMidi && !(show & MusECore::MidiController::ShowInMidi))))
+                    continue;
+                  bool isinstr = mcl->find(cnum) != mcl->end();
+                  // Need to distinguish between global default controllers and
+                  //  instrument defined controllers. Instrument takes priority over global
+                  //  ie they 'overtake' definition of a global controller such that the
+                  //  global def is no longer available.
+                  //sList.push_back(CI(num,
+                  sList.push_back(CI(cnum,
+                                  isinstr ? MusECore::midiCtrlNumString(cnum, true) + c->name() : MusECore::midiCtrlName(cnum, true),
+                                  used, off, isinstr));
+                  already_added_nums.insert(num);
+                  }
+            }
+
+      // Add instrument-defined controllers:
+      QListWidgetItem* sel_item = 0; 
+      for (isList i = sList.begin(); i != sList.end(); ++i)
+      {
+        // Filter if not used and off. But if there's something there, we must show it.
+        if(!i->instrument && !i->used && i->off)
+          continue;
+        QListWidgetItem* item = new QListWidgetItem(i->s, ctrlList);
+        item->setData(Qt::UserRole, i->num);
+        if(i->num == ev_cnum)
+          sel_item = item;
+      }
+      if(sel_item)
+        ctrlList->setCurrentItem(sel_item);  
+      
       valSlider->setRange(mc->minVal(), mc->maxVal());
       valSpinBox->setRange(mc->minVal(), mc->maxVal());
       
@@ -696,10 +624,10 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
 
       if(!event.empty())
       {
-        if(num == MusECore::CTRL_PROGRAM)
+        if(ev_num == MusECore::CTRL_PROGRAM)
         {
           widgetStack->setCurrentIndex(1);
-          updatePatch();
+          updatePatch(val);
         }  
         else  
         {
@@ -710,13 +638,17 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
           {
             noteSpinBox->setVisible(true);
             noteSpinBox->setEnabled(true);
-            if(note != -1)
-              noteSpinBox->setValue(note);
+            noteLabel->setVisible(true);
+            noteLabel->setEnabled(true);
+            if(ev_note != -1)
+              noteSpinBox->setValue(ev_note);
           }
           else
           {
             noteSpinBox->setEnabled(false);
             noteSpinBox->setVisible(false);
+            noteLabel->setEnabled(false);
+            noteLabel->setVisible(false);
           }
         }  
       }
@@ -724,7 +656,10 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
       {
         noteSpinBox->setEnabled(false);
         noteSpinBox->setVisible(false);
-        ctrlListClicked(ctrlList->selectedItems()[0]);
+        noteLabel->setEnabled(false);
+        noteLabel->setVisible(false);
+        if(sel_item)
+          ctrlListClicked(sel_item);
       }
       connect(ctrlList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(ctrlListClicked(QListWidgetItem*)));
       connect(buttonNewController, SIGNAL(clicked()), SLOT(newController()));
@@ -759,86 +694,61 @@ void EditCtrlDialog::newController()
       
       MusECore::MidiCtrlValListList* cll = port->controller();
       int channel              = track->outChannel();
-      //int nn = 0;
       for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
       {
-
           MusECore::MidiController* c = ci->second;
-          int num = c->num();
+          int cnum = c->num();
           int show = c->showInTracks();
-
           if(((isDrum || isNewDrum) && !(show & MusECore::MidiController::ShowInDrum)) ||
              (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
             continue;
-          if(c->isPerNoteController())
-          {
-            if (isDrum)
-              num = (num & ~0xff) | MusEGlobal::drumMap[noteSpinBox->value()].anote;
-            else if ((isNewDrum || isMidi))
-              num = (num & ~0xff) | noteSpinBox->value(); 
-            else // dont show drum specific controller if not a drum track
-              continue;
-          }
-
           // If it's not already in the parent menu...
-          if(cll->find(channel, num) == cll->end())
-          {
-            //ctrlSubPop->addAction(MusECore::midiCtrlNumString(num, true) + ci->second->name())->setData(num);
-            QAction* act = pup->addAction(MusECore::midiCtrlNumString(num, true) + c->name());
-            act->setData(num);
+          int idx = 0;
+          for(; idx < ctrlList->count(); ++idx) {
+            if(ctrlList->item(idx)->data(Qt::UserRole).toInt() == cnum)
+              break;
           }
-
-// REMOVE Tim.          
-//             if(cll->find(channel, ci->second->num()) == cll->end())
-//             {
-//                     QAction* act = pup->addAction(ci->second->name());
-// 		    act->setData(nn);
-// 		    ++nn;
-// 	    }
+          if(idx >= ctrlList->count()) {
+            QAction* act = pup->addAction(MusECore::midiCtrlNumString(cnum, true) + c->name());
+            act->setData(cnum);
+          }
       }
       
-//       QAction* rv = pup->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
       QAction* act = pup->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
       if (act && act->data().toInt() != -1) {
-            //QString s = rv->text();   // REMOVE Tim.
             int rv = act->data().toInt();
-            int num = rv;
-            if(port->drumController(rv))
-              num |= 0xff;
+            int cnum = rv;
             for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
                   MusECore::MidiController* mc = ci->second;
-                  //if (mc->name() == s) {          // REMOVE Tim.
-                  if (mc->num() == num) {
-                        //if(cll->find(channel, mc->num()) == cll->end())   // REMOVE Tim.
-                        if(cll->find(channel, rv) == cll->end())
+                  if (mc->num() == cnum) {
+                        // Create a new controller list if it does not exist.
+                        // FIXME: Sorry no per-pitch controller lists created here
+                        //         (meaning you should only create one 'new' one at a time)
+                        //         because the user has not had a chance to choose a pitch yet.
+                        //        They are handled in accept(), where there are more checks and creations.
+                        if(!mc->isPerNoteController() && cll->find(channel, rv) == cll->end())
                         {
-                          //MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(mc->num());   // REMOVE Tim.
                           MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(rv);
                           cll->add(channel, vl);
                         }
                         int idx = 0;
-                        for (; idx < ctrlList->count() ;++idx) {   // p4.0.25 Fix segfault 
-                              //QString str = ctrlList->item(idx)->text();               // REMOVE Tim.
-                              int item_data = ctrlList->item(idx)->data(Qt::UserRole).toInt();
-                              //if (s == str)
-                              if (item_data == num)
+                        for (; idx < ctrlList->count() ;++idx) {  
+                              QListWidgetItem* item = ctrlList->item(idx);
+                              int item_data = item->data(Qt::UserRole).toInt();
+                              if(item_data == cnum)
                               {
-                                    ctrlList->item(idx)->setSelected(true);
-                                    ctrlListClicked(ctrlList->item(idx));
+                                    ctrlList->setCurrentItem(item);
+                                    ctrlListClicked(item);
                                     break;
                               }      
                               }
-                        if (idx >= ctrlList->count()) {                       // p4.0.25 Fix segfault 
-                              //ctrlList->addItem(s);                          // REMOVE Tim.
+                        if (idx >= ctrlList->count()) {                       
                               QListWidgetItem* new_item = new QListWidgetItem(act->text(), ctrlList);
-                              new_item->setData(Qt::UserRole, num);
-                              //ctrlList->addItem(new_item);
-                              ctrlList->item(idx)->setSelected(true);
-                              ctrlListClicked(ctrlList->item(idx));
+                              new_item->setData(Qt::UserRole, cnum);
+                              ctrlList->setCurrentItem(new_item);
+                              ctrlListClicked(new_item);
                               break;
                               }
-                              
-                              
                         break;
                         }
                   }
@@ -851,65 +761,67 @@ void EditCtrlDialog::newController()
 
 void EditCtrlDialog::ctrlListClicked(QListWidgetItem* item)
       {
-      if (item == 0)
-            return;
-      QString s(item->text());
+      if(item == 0)
+        return;
+      int cnum = item->data(Qt::UserRole).toInt();
+      MusECore::MidiTrack* track  = part->track();
+      int portn                   = track->outPort();
+      MusECore::MidiPort* port    = &MusEGlobal::midiPorts[portn];
+      MusECore::MidiController* c = port->midiController(cnum);
+      int val;
+      if (cnum == MusECore::CTRL_PROGRAM) {
+            widgetStack->setCurrentIndex(1);
 
-      MusECore::MidiTrack* track         = part->track();
-      int portn                = track->outPort();
-      MusECore::MidiPort* port           = &MusEGlobal::midiPorts[portn];
-      MusECore::MidiCtrlValListList* cll = port->controller();
-      
-      MusECore::iMidiCtrlValList i;
-      for (i = cll->begin(); i != cll->end(); ++i) {
-            MusECore::MidiCtrlValList* cl = i->second;
-            num                 = cl->num();
-            MusECore::MidiController* c   = port->midiController(num);
-            if (s == c->name()) {
-                  if (num == MusECore::CTRL_PROGRAM) {
-                        widgetStack->setCurrentIndex(1);
-                        
-                        val = c->initVal();
-                        if(val == MusECore::CTRL_VAL_UNKNOWN)
-                          val = 0;
-                        updatePatch();
-                        }
-                  else {
-                        widgetStack->setCurrentIndex(0);
-                        valSlider->setRange(c->minVal(), c->maxVal());
-                        valSpinBox->setRange(c->minVal(), c->maxVal());
-                        controllerName->setText(s);
-                        val = c->initVal();
-                        
-                        if(val == MusECore::CTRL_VAL_UNKNOWN || val == 0)
-                        {
-                          switch(num)
-                          {
-                            case MusECore::CTRL_PANPOT:
-                              val = 64 - c->bias();
-                            break;
-                            case MusECore::CTRL_VOLUME:
-                              val = 100;
-                            break;
-                            default:  
-                              val = 0;
-                            break;  
-                          } 
-                        }
-                        valSlider->setValue(val);
-                        }
-                  break;
-                  }
+            val = c->initVal();
+            if(val == MusECore::CTRL_VAL_UNKNOWN)
+              val = 0;
+            updatePatch(val);
             }
-      if (i == cll->end())
-            printf("controller %s not found!\n", s.toLatin1().constData());
+      else {
+            widgetStack->setCurrentIndex(0);
+            if(c->isPerNoteController())
+            {
+              noteSpinBox->setEnabled(true);
+              noteSpinBox->setVisible(true);
+              noteLabel->setEnabled(true);
+              noteLabel->setVisible(true);
+            }
+            else
+            {
+              noteSpinBox->setEnabled(false);
+              noteSpinBox->setVisible(false);
+              noteLabel->setEnabled(false);
+              noteLabel->setVisible(false);
+            }
+            valSlider->setRange(c->minVal(), c->maxVal());
+            valSpinBox->setRange(c->minVal(), c->maxVal());
+            controllerName->setText(c->name());
+            val = c->initVal();
+
+            if(val == MusECore::CTRL_VAL_UNKNOWN || val == 0)
+            {
+              switch(cnum)
+              {
+                case MusECore::CTRL_PANPOT:
+                  val = 64 - c->bias();
+                break;
+                case MusECore::CTRL_VOLUME:
+                  val = 100;
+                break;
+                default:
+                  val = 0;
+                break;
+              }
+            }
+            valSlider->setValue(val);
+            }
       }
 
 //---------------------------------------------------------
 //   updatePatch
 //---------------------------------------------------------
 
-void EditCtrlDialog::updatePatch()
+void EditCtrlDialog::updatePatch(int val)
       {
       MusECore::MidiTrack* track      = part->track();
       int port              = track->outPort();
@@ -962,8 +874,7 @@ void EditCtrlDialog::instrPopup()
       
       QAction* rv = pup->exec(patchName->mapToGlobal(QPoint(10,5)));
       if (rv) {
-            val = rv->data().toInt();
-            updatePatch();
+            updatePatch(rv->data().toInt());
             }
             
       delete pup;      
@@ -992,8 +903,8 @@ void EditCtrlDialog::programChanged()
       else
             prog = 0xff;
 
-      val = (hb << 16) + (lb << 8) + prog;
-      updatePatch();
+      int val = (hb << 16) + (lb << 8) + prog;
+      updatePatch(val);
       }
 
 } // namespace MusEGui

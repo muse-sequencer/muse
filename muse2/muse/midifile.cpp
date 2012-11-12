@@ -699,8 +699,7 @@ bool MidiFile::write()
       writeShort(MusEGlobal::config.smfFormat);
       if (MusEGlobal::config.smfFormat == 0) {
             // DELETETHIS 30
-            /*
-            //writeShort(1);    // Removed. Bug tracker 3293339
+            /*                       // REMOVE Tim.
             MidiFileTrack dst;
             for (iMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i) {
                   MPEventList* sl = &((*i)->events);
@@ -713,8 +712,8 @@ bool MidiFile::write()
                         //        Nope. Didn't help. Now that it's a single MidiFileTrack, try skipping this section altogether...
                         //        Yes that appears to have fixed it. Weird. What's the difference - the local 'dst' variable ?
                         //        Or are there still lurking problems, or something more fundamentally wrong with Event or MPEvent?
-                        printf("MidiFile::write adding event to dst:\n"); // REMOVE Tim.
-                        ie->dump();  // REMOVE Tim.
+                        printf("MidiFile::write adding event to dst:\n"); 
+                        ie->dump();  
                         dst.events.add(*ie);
                   }      
                   }

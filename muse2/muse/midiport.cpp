@@ -4,6 +4,7 @@
 //  $Id: midiport.cpp,v 1.21.2.15 2009/12/07 20:11:51 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -831,24 +832,26 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
                   return false;
               }
             }
-//       else
-//       if (ev.type() == ME_POLYAFTER)    // REMOVE Tim. Or keep?
-//       {
-//             int db = limitValToInstrCtlRange(CTRL_POLYAFTER, ev.dataB());
-//             if(!setHwCtrlState(ev.channel(), CTRL_POLYAFTER, db)) {
-//               if (!forceSend)
-//                 return false;
-//             }
-//       }
-//       else
-//       if (ev.type() == ME_AFTERTOUCH) 
-//       {
-//             int da = limitValToInstrCtlRange(CTRL_AFTERTOUCH, ev.dataA());
-//             if(!setHwCtrlState(ev.channel(), CTRL_AFTERTOUCH, da)) {
-//               if (!forceSend)
-//                 return false;
-//             }
-//       }
+      else
+      if (ev.type() == ME_POLYAFTER)    // REMOVE Tim. Or keep? ...
+      {
+            int pitch = ev.dataA() & 0x7f;
+            int ctl = (CTRL_POLYAFTER & ~0xff) | pitch;
+            int db = limitValToInstrCtlRange(ctl, ev.dataB());
+            if(!setHwCtrlState(ev.channel(), ctl, db)) {
+              if (!forceSend)
+                return false;
+            }
+      }
+      else
+      if (ev.type() == ME_AFTERTOUCH)  // ... Same
+      {
+            int da = limitValToInstrCtlRange(CTRL_AFTERTOUCH, ev.dataA());
+            if(!setHwCtrlState(ev.channel(), CTRL_AFTERTOUCH, da)) {
+              if (!forceSend)
+                return false;
+            }
+      }
       else
       if (ev.type() == ME_PITCHBEND) 
       {

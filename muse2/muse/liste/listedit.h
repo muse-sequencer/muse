@@ -68,15 +68,13 @@ class ListEdit : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       void initShortcuts();
-      QAction *insertNote, *insertSysEx, *insertCtrl, *insertMeta, *insertCAfter, *insertPAfter;
+      QAction *insertNote, *insertSysEx, *insertCtrl, *insertMeta; 
 
    private slots:
       void editInsertNote();
       void editInsertSysEx();
       void editInsertCtrl();
       void editInsertMeta();
-      void editInsertCAfter();
-      void editInsertPAfter();
       void editEvent(MusECore::Event&, MusECore::MidiPart*);
       void selectionChanged();
       void doubleClicked(QTreeWidgetItem*);

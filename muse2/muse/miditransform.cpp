@@ -1716,14 +1716,24 @@ bool MidiTransformerDialog::typesMatch(MusECore::Event& e, unsigned selType)
             matched = (e.type() == MusECore::Note);
             break;
          case MIDITRANSFORM_POLY:
-            matched = (e.type() == MusECore::PAfter);
+            {
+            if (e.type() == MusECore::Controller) {
+                  MusECore::MidiController::ControllerType c = MusECore::midiControllerType(e.dataA());
+                  matched = (c == MusECore::MidiController::PolyAftertouch);
+                  }
             break;
+            }
          case MIDITRANSFORM_CTRL:
             matched = (e.type() == MusECore::Controller);
             break;
          case MIDITRANSFORM_ATOUCH:
-            matched = (e.type() == MusECore::CAfter);
+            {
+            if (e.type() == MusECore::Controller) {
+                  MusECore::MidiController::ControllerType c = MusECore::midiControllerType(e.dataA());
+                  matched = (c == MusECore::MidiController::Aftertouch);
+                  }
             break;
+            }
          case MIDITRANSFORM_PITCHBEND:
             {
             if (e.type() == MusECore::Controller) {
