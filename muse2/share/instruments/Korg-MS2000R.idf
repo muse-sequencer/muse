@@ -542,5 +542,6 @@
     <Controller name="AllSoundsOff" l="120" />
     <Controller name="ResetAllController" l="121" />
     <Controller name="Program" type="Program" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

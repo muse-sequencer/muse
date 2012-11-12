@@ -85,5 +85,6 @@
       <Patch name="H-8" hbank="0" lbank="0" prog="64" />
     </PatchGroup>
     <Controller name="Program" type="Program" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

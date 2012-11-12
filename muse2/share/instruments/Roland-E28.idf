@@ -305,5 +305,7 @@
     <Controller name="DrumChorusSend" type="NRPN" h="30" l="pitch" showType="1" />
     <Controller name="Pitch" type="Pitch" />
     <Controller name="Program" type="Program" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

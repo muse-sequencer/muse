@@ -54,6 +54,8 @@
       <Patch name="Eastern 5th" hbank="93" lbank="1" prog="49" />
     </PatchGroup>
     <Controller name="Program" type="Program" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>
 

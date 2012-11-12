@@ -1,8 +1,10 @@
+12.11.2012:
+         - Added aftertouch controllers to all relevant remaining instrument files. (Tim)
 11.11.2012:
          - Finished Aftertouch controllers: Removed PAfter and CAfter Event types. Quietly convert such
-            events in old songs into the new controllers. Converted midi input (hopefully).
-           Updated README.instruments. TODO: Add afterouch controllers to all relevant remaining instrument files.
-         * Feature: Piano KB and drum list show coloured dots when per-pitch controllers exist or have data.
+            events in old songs into the new controllers. Converted midi input (hopefully). (Tim)
+           Updated README.instruments. 
+         * Feature: Piano KB and drum list show coloured dots when per-pitch controllers exist or have data. (Tim)
 03.11.2012:
          * Improved: Instrument Editor (controller tab): Redesigned. Fixed MANY bugs. Should be SOLID now. (Tim)
            Two new columns: "Show in midi tracks" and "Show in drum tracks".

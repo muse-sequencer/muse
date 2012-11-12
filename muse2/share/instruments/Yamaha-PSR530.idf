@@ -753,5 +753,6 @@
       <Patch name="692: FireWork" hbank="64" lbank="0" prog="115" />
     </PatchGroup>
     <Controller name="Program" type="Program" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

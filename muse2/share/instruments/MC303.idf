@@ -522,5 +522,7 @@
       <Patch name="HIP HOP" hbank="64" lbank="0" prog="80" drum="1" />
     </PatchGroup>
     <Controller name="Program" type="Program" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

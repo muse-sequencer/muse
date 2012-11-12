@@ -1367,5 +1367,7 @@
     <Controller name="FineTuning" type="RPN" h="0" l="1" min="-64" max="63" init="0" />
     <Controller name="Pitch" type="Pitch" />
     <Controller name="Program" type="Program" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

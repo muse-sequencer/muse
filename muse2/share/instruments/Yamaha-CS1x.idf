@@ -1654,5 +1654,7 @@
     <Controller name="Controller 90" l="0x5a" min="0x00"  max="0x7f" />
     <Controller name="Controller 92" l="0x5c" min="0x00"  max="0x7f" />
     <Controller name="Controller 95" l="0x5f" min="0x00"  max="0x7f" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

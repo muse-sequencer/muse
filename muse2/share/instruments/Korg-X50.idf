@@ -1087,5 +1087,8 @@
     <Controller name="MFX2_On_Off" l="95" />
     <Controller name="All_Sound_Off" l="120" />
     <Controller name="Reset_All_Controllers" l="121" />
+    <Controller name="Program" type="Program" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

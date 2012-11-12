@@ -688,5 +688,7 @@
       <Patch name="HipHop5" hbank="63" lbank="40" prog="2" drum="1" />
     </PatchGroup>
     <Controller name="Program" type="Program" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

@@ -570,5 +570,7 @@
     <Controller name="All Notes Off" l="123" />
     <Controller name="Pitch" type="Pitch" />
     <Controller name="Program" type="Program" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

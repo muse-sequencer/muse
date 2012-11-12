@@ -925,5 +925,8 @@
       <Patch name="254"		 hbank="84" lbank="1" prog="126"/>
       <Patch name="255"		 hbank="84" lbank="1" prog="127"/>
     </PatchGroup>
+    <Controller name="Program" type="Program" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

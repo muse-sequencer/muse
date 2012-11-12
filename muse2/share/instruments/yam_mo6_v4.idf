@@ -1433,6 +1433,8 @@
     <Controller name="Pan" l="10" min="-64" max="63" init="0" />
     <Controller name="Expression" l="11" init="0" />
     <Controller name="Brightness" l="74" min="-64" max="63" init="0" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
 
   </MidiInstrument>
 </muse>

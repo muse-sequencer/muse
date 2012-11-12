@@ -117,5 +117,7 @@
     <Controller name="OmniOn" l="125" />
     <Controller name="MonoOn" l="126" />
     <Controller name="PolyOn" l="127" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>

@@ -274,5 +274,7 @@
     <Controller name="BankSelMSB" l="0" />
     <Controller name="BankSelLSB" l="32" />
     <Controller name="Program" type="Program" init="0x0" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <Controller name="Aftertouch" type="Aftertouch" />
   </MidiInstrument>
 </muse>
