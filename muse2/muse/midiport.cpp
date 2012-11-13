@@ -794,7 +794,9 @@ int MidiPort::limitValToInstrCtlRange(int ctl, int val)
     return val;
     
   MidiControllerList* cl = _instrument->controller();
-  
+
+  // FIXME: This might be optimized by calling midiController instead,
+  //         and simply asking if it's a drum controller. Saves one list iteration.
   // Is it a drum controller?
   MidiController *mc = drumController(ctl);
   if(!mc)

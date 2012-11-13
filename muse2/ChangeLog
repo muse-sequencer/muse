@@ -1,5 +1,6 @@
 12.11.2012:
          - Added aftertouch controllers to all relevant remaining instrument files. (Tim)
+         - Synths: Added aftertouch controller to fluidsynth, and aftertouch/poly-aftertouch to DSSI. (Tim)
 11.11.2012:
          - Finished Aftertouch controllers: Removed PAfter and CAfter Event types. Quietly convert such
             events in old songs into the new controllers. Converted midi input (hopefully). (Tim)

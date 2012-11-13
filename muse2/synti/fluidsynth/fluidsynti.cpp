@@ -76,6 +76,7 @@ FluidCtrl FluidSynth::fluidCtrl[] = {
       { "Channel reverb send", MusECore::CTRL_REVERB_SEND, 0, 127, 40},
       { "Channel chorus send", MusECore::CTRL_CHORUS_SEND, 0, 127, 0},
       { "Pitch", MusECore::CTRL_PITCH, -8192, 8191, 0},
+      { "Channel pressure", MusECore::CTRL_AFTERTOUCH, 0, 127, 0},
       // Added by T356
       { "Pitch bend sensitivity", FS_PITCHWHEELSENS, 0, 24, 2}
     };
@@ -508,7 +509,9 @@ bool FluidSynth::processEvent(const MusECore::MidiPlayEvent& ev)
             case MusECore::ME_PITCHBEND:
                 setController(ev.channel(), MusECore::CTRL_PITCH, ev.dataA(), false);
                 break;            
-            
+            case MusECore::ME_AFTERTOUCH:
+                setController(ev.channel(), MusECore::CTRL_AFTERTOUCH, ev.dataA(), false);
+                break;
             case MusECore::ME_PROGRAM:
                 setController(ev.channel(), MusECore::CTRL_PROGRAM, ev.dataA(), false);
             break;   
@@ -983,15 +986,20 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
             //
             case MusECore::CTRL_PITCH:
                   // MusE's range is from -8192 to +8191, fluidsynth seems to be [0, 16384]
-                  val +=8192;
-                  err = fluid_synth_pitch_bend (fluidsynth, channel, val);
+                  if(val != MusECore::CTRL_VAL_UNKNOWN)
+                  {
+                    val +=8192;
+                    err = fluid_synth_pitch_bend (fluidsynth, channel, val);
+                  }
                   break;
-                  
-            // Added by T356
+            case MusECore::CTRL_AFTERTOUCH:
+                  if(val != MusECore::CTRL_VAL_UNKNOWN)
+                    err = fluid_synth_channel_pressure (fluidsynth, channel, val);
+                  break;
             case FS_PITCHWHEELSENS:
-                  err = fluid_synth_pitch_wheel_sens(fluidsynth, channel, val);
+                  if(val != MusECore::CTRL_VAL_UNKNOWN)
+                    err = fluid_synth_pitch_wheel_sens(fluidsynth, channel, val);
                   break;
-                  
             case MusECore::CTRL_PROGRAM: {
                   //Check if MusE is trying to set a preset on an unspecified font. If so, ignore.
                   if (FS_DEBUG)

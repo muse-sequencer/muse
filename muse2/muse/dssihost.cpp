@@ -1112,6 +1112,32 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
         return true;
       }
           
+      if(a == MusECore::CTRL_AFTERTOUCH)
+      {
+        #ifdef DSSI_DEBUG
+        fprintf(stderr, "DssiSynthIF::processEvent midi event is MusECore::ME_CONTROLLER, dataA is MusECore::CTRL_AFTERTOUCH\n");
+        #endif
+
+        snd_seq_ev_clear(event);
+        event->queue = SND_SEQ_QUEUE_DIRECT;
+        snd_seq_ev_set_chanpress(event, chn, b);
+        // Event pointer filled. Return true.
+        return true;
+      }
+
+      if((a | 0xff)  == MusECore::CTRL_POLYAFTER)
+      {
+        #ifdef DSSI_DEBUG
+        fprintf(stderr, "DssiSynthIF::processEvent midi event is MusECore::ME_CONTROLLER, dataA is MusECore::CTRL_POLYAFTER\n");
+        #endif
+
+        snd_seq_ev_clear(event);
+        event->queue = SND_SEQ_QUEUE_DIRECT;
+        snd_seq_ev_set_keypress(event, chn, a & 0x7f, b & 0x7f);
+        // Event pointer filled. Return true.
+        return true;
+      }
+
       const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
       
       MusECore::ciMidiCtl2LadspaPort ip = synth->midiCtl2PortMap.find(a);
@@ -1218,6 +1244,11 @@ bool DssiSynthIF::processEvent(const MusECore::MidiPlayEvent& e, snd_seq_event_t
       snd_seq_ev_clear(event); 
       event->queue = SND_SEQ_QUEUE_DIRECT;
       snd_seq_ev_set_chanpress(event, chn, a);
+    break;
+    case MusECore::ME_POLYAFTER:
+      snd_seq_ev_clear(event);
+      event->queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_set_keypress(event, chn, a & 0x7f, b & 0x7f);
     break;
     case MusECore::ME_SYSEX: 
       {
@@ -1613,6 +1644,19 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
         {
           int da = mp->limitValToInstrCtlRange(MusECore::CTRL_PITCH, start_event->dataA());
           if(!mp->setHwCtrlState(start_event->channel(), MusECore::CTRL_PITCH, da))
+            continue;
+        }
+        else if(start_event->type() == MusECore::ME_AFTERTOUCH)
+        {
+          int da = mp->limitValToInstrCtlRange(MusECore::CTRL_AFTERTOUCH, start_event->dataA());
+          if(!mp->setHwCtrlState(start_event->channel(), MusECore::CTRL_AFTERTOUCH, da))
+            continue;
+        }
+        else if(start_event->type() == MusECore::ME_POLYAFTER)
+        {
+          int ctl = (MusECore::CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
+          int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
+          if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
             continue;
         }
         else if(start_event->type() == MusECore::ME_PROGRAM) 
@@ -2160,7 +2204,23 @@ void DssiSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*ch*/, bool 
 int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval)
 {
   int controlPorts = synth->_controlInPorts;
-  if(id >= controlPorts)
+  if(id == controlPorts || id == controlPorts + 1)
+  {
+    //
+    // It is unknown at this point whether or not a synth recognizes aftertouch and poly aftertouch
+    //  (channel and key pressure) midi messages, so add support for them now (as controllers).
+    //
+    if(id == controlPorts)
+      *ctrl = MusECore::CTRL_POLYAFTER;
+    else if(id == controlPorts + 1)
+      *ctrl = MusECore::CTRL_AFTERTOUCH;
+    *min  = 0;
+    *max  = 127;
+    *initval = MusECore::CTRL_VAL_UNKNOWN;
+    *name = midiCtrlName(*ctrl).toLatin1().constData();
+    return ++id;
+  }
+  else if(id >= controlPorts + 2)
     return 0;
 
   const DSSI_Descriptor* dssi = synth->dssi;

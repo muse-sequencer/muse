@@ -145,8 +145,10 @@ bool Mess::processEvent(const MusECore::MidiPlayEvent& ev)
 	            return sysex(ev.len(), ev.data());
             case MusECore::ME_CONTROLLER:
                   return setController(ev.channel(), ev.dataA(), ev.dataB());
-            case MusECore::ME_PITCHBEND:       // Tim.
+            case MusECore::ME_PITCHBEND:       
                   return setController(ev.channel(), MusECore::CTRL_PITCH, ev.dataA());
+            case MusECore::ME_AFTERTOUCH:       
+                  return setController(ev.channel(), MusECore::CTRL_AFTERTOUCH, ev.dataA());
             }
       return false;
       }
