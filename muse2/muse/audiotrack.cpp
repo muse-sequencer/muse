@@ -145,7 +145,8 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       
       _recFile = NULL;
       
-      internal_assign(t, flags | ASSIGN_PROPERTIES);  
+      _gain = t._gain;
+      internal_assign(t, flags | ASSIGN_PROPERTIES);
       }
 
 void AudioTrack::internal_assign(const Track& t, int flags)
