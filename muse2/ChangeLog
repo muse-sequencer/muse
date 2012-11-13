@@ -11,9 +11,8 @@
            Two new columns: "Show in midi tracks" and "Show in drum tracks".
          * Improved: Midi controller graph 'Ctrl' popup menus now unified (cascading). (Tim)
            'Edit Instrument' menu item now takes you right to the instrument and controllers tab.
-         * Improved: Aftertouch and PolyAftertouch (channel/key pressure) are true MusE controllers now.
+         * Feature request: Aftertouch and PolyAftertouch (channel/key pressure) are true MusE controllers now. (Tim)
            Now FULLY supported in controller graphs AND in the improved Instrument Editor / Definition Files.
-           TODO: Still W.I.P. on Event List Editor, and recording these controllers, and other aftertouch places.
          - Midi controller stuff: Fixed some bugs, added some methods and improvements.
 28.10.2012:
          * Improved: Eliminated copious unrequired "controller" sections from songs and templates. (Tim)
@@ -31,7 +30,6 @@
          * Improved: Piano KB has current selected note (yellow). For velocity/polyaftertouch/other per-note ctrls.  (Tim)
          - Bad timing warning now has "don't show again". (Tim)
          - Added 'speaker' icon to drum edit. And drum list and piano keyboard now obey the 'speaker' icon. (Tim)
-         - TODO: Still W.I.P on the aftertouch stuff...
 22.10.2012:
          - Oops, fixed regression: Re-add default managed controllers to midi ports at Song::clear. (Tim)
          - W.I.P. Preparations for Aftertouch and Poly Aftertouch (channel and key pressure) graph editing. (Tim)
