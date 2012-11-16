@@ -24,17 +24,12 @@
 //
 //=========================================================
 
-//#include <stdio.h>
 #include <QMouseEvent>
 #include <QHoverEvent>
 #include <QAction>
 #include <QPoint>
 #include <QDesktopWidget>
 #include <QApplication>
-//#include <QTimer>
-
-//#include <stdio.h>
-//#include <QStandardItemModel>
 
 #include "popupmenu.h"
 #include "gconfig.h"
@@ -46,11 +41,6 @@ namespace MusEGui {
 //======================
 // PopupMenu
 //======================
-
-//PopupMenu::PopupMenu() 
-//{
-//  init();
-//}
 
 PopupMenu::PopupMenu(bool stayOpen) 
           : _stayOpen(stayOpen)
@@ -72,10 +62,13 @@ PopupMenu::PopupMenu(const QString& title, QWidget* parent, bool stayOpen)
 
 void PopupMenu::init()
 {
-  //printf("PopupMenu::init this:%p\n", this);   
-
   // Menus will trigger! Set to make sure our trigger handlers ignore menus.
   menuAction()->setData(-1);
+  
+  _cur_menu = this;
+  _cur_menu_count = 1;
+  _cur_item_width = 0;
+  _cur_col_count = 0;
   
   //_stayOpen = false;
   moveDelta = 0;
@@ -91,7 +84,7 @@ void PopupMenu::init()
 
 // NOTE: Tested all RoutePopupMenu and PopupMenu dtors and a couple of action dtors from our 
 //  PixmapButtonsHeaderWidgetAction and PixmapButtonsWidgetAction: 
-// This does not appear to be required any more. All submenus and actions are being deleted now.  p4.0.43 
+// This does not appear to be required any more. All submenus and actions are being deleted now.  
 /*
 void PopupMenu::clear()
 {
@@ -171,8 +164,6 @@ QAction* PopupMenu::findActionFromData(const QVariant& v) const
     
 bool PopupMenu::event(QEvent* event)
 {
-  //printf("PopupMenu::event type:%d\n", event->type());   
-  
   switch(event->type())
   {
     #ifndef POPUP_MENU_DISABLE_STAY_OPEN  
@@ -221,25 +212,7 @@ bool PopupMenu::event(QEvent* event)
     {
       QMouseEvent* e = static_cast<QMouseEvent*>(event);
       QPoint globPos = e->globalPos();
-      //QPoint pos = e->pos();
       int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
-      
-      //printf("PopupMenu::event MouseMove: pos x:%d y:%d  globPos x:%d y:%d\n", 
-      //      pos.x(), pos.y(), globPos.x(), globPos.y());  
-      
-      /*
-      //QAction* action = actionAt(globPos);
-      QAction* action = actionAt(pos);
-      if(action)
-      { 
-        QRect r = actionGeometry(action);
-        //printf(" act x:%d y:%d w:%d h:%d  popup px:%d py:%d pw:%d ph:%d\n", 
-        //      r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height());  
-              
-        //action->hover();      
-      }
-      */
-      
       if(x() < 0 && globPos.x() <= 0)   // If on the very first pixel (or beyond)
       {
         moveDelta = 32;
@@ -280,8 +253,6 @@ bool PopupMenu::event(QEvent* event)
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
 void PopupMenu::timerHandler()
 {
-  // printf("PopupMenu::timerHandler\n");   
-  
   //if(!isVisible() || !hasFocus())
   if(!isVisible())
   {
@@ -308,39 +279,16 @@ void PopupMenu::timerHandler()
 
 void PopupMenu::popHovered(QAction* action)
 {
-  //timer->stop();
-  
-  //moveDelta = 0;
   if(action)
   {  
     int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
-    
     QRect r = actionGeometry(action);
-    //printf("PopupMenu::popHovered x:%d y:%d w:%d h:%d px:%d py:%d pw:%d ph:%d\n", 
-    //       r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height());  
-    //printf("PopupMenu::popHovered x:%d y:%d w:%d h:%d px:%d py:%d pw:%d ph:%d dtw:%d\n", 
-    //      r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height(), dw);  
-    //int x = r.x() + ctrlSubPop->x();
     if(x() + r.x() < 0)
-      //setGeometry(0, y(), width(), height());      
-      //scroll(-x, 0);      
-      //move(-r.x() + 32, y());   // Allow some of left column to show so that mouse can move over it.  
-      //move(-r.x() + r.width(), y());   // Allow some of left column to show so that mouse can move over it.  
-      //moveDelta = x() - r.x() + 32;
       move(-r.x(), y());   
     else
     if(r.x() + r.width() + x() > dw)
-      //setGeometry(1200 - r.x() - r.width(), y(), width(), height());      
-      //scroll(-x + 1200, 0);      
-      //move(dw - r.x() - r.width() - 32, y());  // Allow some of right column to show so that mouse can move over it.       
-      //move(dw - r.x(), y());  // Allow some of right column to show so that mouse can move over it.       
-      //moveDelta = x() + dw - r.x() - r.width() - 32;
       move(dw - r.x() - r.width(), y());  
   }
-      
-  //if(moveDelta == 0)
-  //  timer->stop();
-    
 }
 #endif    // POPUP_MENU_DISABLE_AUTO_SCROLL
 
@@ -376,13 +324,107 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
       return;
     }  
     
-    //printf("PopupMenu::mouseReleaseEvent\n");  
     if (action) 
       action->activate(QAction::Trigger);
     else 
       QMenu::mouseReleaseEvent(e);
       
     #endif   // POPUP_MENU_DISABLE_STAY_OPEN 
+}
+
+//-----------------------------------------
+// getMenu
+// Auto-breakup a too-wide menu.
+// NOTE This is a necessary catch-all because X doesn't like too-wide menus, but risky because
+//       some callers might depend on all the items being in one menu (using ::actions or ::addActions).
+//      So try to avoid that. The overwhelming rule of thumb is that too-wide menus are bad design anyway.
+//------------------------------------------
+PopupMenu* PopupMenu::getMenu()
+{
+  // We want the whole thing if multiple monitors.
+  // Resonable to assume if X can show this desktop, it can show a menu with the same width?
+  int dw = QApplication::desktop()->width();
+  // If we're still only at one column, not much we can do - some item(s) must have had reeeeally long text.
+  // Not to worry. Hopefully the auto-scroll will handle it!
+  // Use columnCount() + 2 to catch well BEFORE it widens beyond the edge, and leave room for many <More...>
+  // TESTED: Not only does the system not appear to like too-wide menus, but also the column count was observed
+  //          rolling over to zero repeatedly after it reached 15, simply when adding actions! The action width was 52
+  //          the number of items when it first rolled over was around 480 = 884, well below my desktop width of 1366.
+  //         Apparently there is a limit on the number of columns - whatever, it made the col count limit necessary:
+  if((_cur_col_count > 1 && ((_cur_col_count + 2) * _cur_item_width) >= dw) || _cur_col_count >= 8)
+  {
+    // This menu is too wide. So make a new one...
+    _cur_item_width = 0;
+    _cur_col_count = 1;
+    QString s(tr("<More...> %1").arg(_cur_menu_count));
+    _cur_menu = new PopupMenu(s, this, _stayOpen);
+    ++_cur_menu_count;
+    addMenu(_cur_menu);
+  }
+  return _cur_menu;
+}
+
+//----------------------------------------------------
+// Need to catch these to auto-breakup a too-big menu...
+//----------------------------------------------------
+
+QAction* PopupMenu::addAction(const QString& text)
+{
+  QAction* act = static_cast<QMenu*>(getMenu())->addAction(text);
+  int w = _cur_menu->actionGeometry(act).width();
+  if(w > _cur_item_width)
+    _cur_item_width = w;
+  int c = _cur_menu->columnCount();
+  if(c > _cur_col_count)
+    _cur_col_count = c;
+  return act;
+}
+
+QAction* PopupMenu::addAction(const QIcon& icon, const QString& text)
+{
+  QAction* act = static_cast<QMenu*>(getMenu())->addAction(icon, text);
+  int w = _cur_menu->actionGeometry(act).width();
+  if(w > _cur_item_width)
+    _cur_item_width = w;
+  int c = _cur_menu->columnCount();
+  if(c > _cur_col_count)
+    _cur_col_count = c;
+  return act;
+}
+
+QAction* PopupMenu::addAction(const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut)
+{
+  QAction* act = static_cast<QMenu*>(getMenu())->addAction(text, receiver, member, shortcut);
+  int w = _cur_menu->actionGeometry(act).width();
+  if(w > _cur_item_width)
+    _cur_item_width = w;
+  int c = _cur_menu->columnCount();
+  if(c > _cur_col_count)
+    _cur_col_count = c;
+  return act;
+}
+
+QAction* PopupMenu::addAction(const QIcon& icon, const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut)
+{
+  QAction* act = static_cast<QMenu*>(getMenu())->addAction(icon, text, receiver, member, shortcut);
+  int w = _cur_menu->actionGeometry(act).width();
+  if(w > _cur_item_width)
+    _cur_item_width = w;
+  int c = _cur_menu->columnCount();
+  if(c > _cur_col_count)
+    _cur_col_count = c;
+  return act;
+}
+
+void PopupMenu::addAction(QAction* action)
+{
+  static_cast<QMenu*>(getMenu())->addAction(action);
+  int w = _cur_menu->actionGeometry(action).width();
+  if(w > _cur_item_width)
+    _cur_item_width = w;
+  int c = _cur_menu->columnCount();
+  if(c > _cur_col_count)
+    _cur_col_count = c;
 }
 
 /*

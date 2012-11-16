@@ -1,3 +1,7 @@
+15.11.2012:
+         * Improved: Popup menus: Auto-breakup too-wide menus in class PopupMenu. (Tim)
+           In some cases X/Qt was giving up if too wide AND/OR too many columns, menu would not appear.
+           Tested OK with Deicsonze track info patch popup, and a synth plugin with > 2000 automation controls.
 13.11.2012:
          - Fix init of gain for duplicated audiotracks (rj)
 12.11.2012:

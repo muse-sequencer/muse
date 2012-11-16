@@ -58,7 +58,14 @@ Q_OBJECT
     QTimer* timer;
     #endif
     int moveDelta;
+    PopupMenu* _cur_menu; // For auto-breakup.
+    int _cur_menu_count;
+    int _cur_item_width;
+    int _cur_col_count;
+
     void init();
+    // Auto-breakup a too-wide menu.
+    PopupMenu* getMenu();
     
   private slots:
     #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
@@ -71,7 +78,6 @@ Q_OBJECT
     bool event(QEvent*);   
   
   public:
-    //PopupMenu();
     PopupMenu(bool stayOpen);
     PopupMenu(QWidget* parent=0, bool stayOpen = false);
     PopupMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false);
@@ -79,6 +85,13 @@ Q_OBJECT
     QAction* findActionFromData(const QVariant&) const;
     bool stayOpen() const { return _stayOpen; }
     void clearAllChecks() const;
+
+    // Need to catch these to auto-breakup a too-big menu.
+    QAction* addAction(const QString& text);
+    QAction* addAction(const QIcon& icon, const QString& text);
+    QAction* addAction(const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
+    QAction* addAction(const QIcon& icon, const QString& text, const QObject* receiver, const char* member, const QKeySequence& shortcut = 0);
+    void     addAction(QAction* action);
 };
 
 
