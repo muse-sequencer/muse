@@ -48,7 +48,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>9</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="PresetsTab">
       <attribute name="title">

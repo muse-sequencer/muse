@@ -391,6 +391,7 @@ class PluginI : public PluginIBase {
       unsigned long parameters() const           { return controlPorts; }    
       unsigned long parametersOut() const           { return controlOutPorts; }
       void setParam(unsigned long i, float val);  
+      void putParam(unsigned long i, float val) { controls[i].val = controls[i].tmpVal = val; }
       float param(unsigned long i) const        { return controls[i].val; }       
       float paramOut(unsigned long i) const        { return controlsOut[i].val; }
       float defaultValue(unsigned long param) const;

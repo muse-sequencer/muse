@@ -1603,6 +1603,10 @@ void DeicsOnzeGui::processEvent(const MusECore::MidiPlayEvent& ev) {
       memcpy(&f, &data[1], sizeof(float));
       updateDelayPanLFODepth(f);
       break;
+    case SYSEX_DELAYWETDRYMIX :
+      memcpy(&f, &data[1], sizeof(float));
+      //updateDelayPanDryWet(f);
+      break;
     case SYSEX_QUALITY :
       updateQuality((int)data[1]);
       break;
@@ -3139,9 +3143,7 @@ void DeicsOnzeGui::setDelayBPM(double t) {
   message[1]=DEICSONZE_UNIQUE_ID;
   message[2]=SYSEX_DELAYBPM;
   float f = (float)t;
-  ///memcpy(&message[1], &f, sizeof(float));
   memcpy(&message[3], &f, sizeof(float));
-  ///message[1]=(unsigned char)f;
   message[3]=(unsigned char)f;
   sendSysex(message, sizeof(float)+3);
   //updateDelayTime(it);
@@ -3152,9 +3154,7 @@ void DeicsOnzeGui::setDelayBeatRatio(double t) {
   message[1]=DEICSONZE_UNIQUE_ID;
   message[2]=SYSEX_DELAYBEATRATIO;
   float f = (float)t;
-  ///memcpy(&message[1], &f, sizeof(float));
   memcpy(&message[3], &f, sizeof(float));
-  ///message[1]=(unsigned char)f;
   message[3]=(unsigned char)f;
   sendSysex(message, sizeof(float)+3);
 } 

@@ -26,6 +26,7 @@
 
 #include <QLineEdit>
 #include <QMouseEvent>
+#include <QContextMenuEvent>
 #include <QTimer>
 
 #define TIMER1    400
@@ -53,10 +54,41 @@ FloatEntry::FloatEntry(QWidget* parent)
       timer      = new QTimer(this);
       connect(timer, SIGNAL(timeout()), SLOT(repeat()));
       _value = 0.0f;
-      connect(this, SIGNAL(returnPressed()), SLOT(endEdit()));
+      //connect(this, SIGNAL(returnPressed()), SLOT(endEdit()));
+      connect(this, SIGNAL(editingFinished()), SLOT(endEdit()));
       setCursor(QCursor(Qt::ArrowCursor));
       updateValue();
       }
+
+//---------------------------------------------------------
+//   calcIncrement()
+//---------------------------------------------------------
+
+double FloatEntry::calcIncrement() const
+{
+  double dif;
+  if(_maxValue - _minValue > 0)
+    dif = _maxValue - _minValue;
+  else
+    dif = _minValue - _maxValue;
+
+  if(dif <= 10.0)
+    return 0.1;
+  else
+  if(dif <= 100.0)
+    return 1.0;
+  else
+    return 10.0;
+}
+
+//---------------------------------------------------------
+//   contextMenuEvent
+//---------------------------------------------------------
+
+void FloatEntry::contextMenuEvent(QContextMenuEvent * e)
+{
+  e->accept();
+}
 
 //---------------------------------------------------------
 //   setString
@@ -114,11 +146,16 @@ void FloatEntry::valueChange()
 
 void FloatEntry::incValue(double)
       {
-      if (_value + 1.0 < _maxValue) {
-            _value = _value + 1.0;
-            updateValue();
-            valueChange();
-            }
+      if(_value >= _maxValue)
+        return;
+      double inc = calcIncrement();
+      if(_value + inc >= _maxValue)
+        //setValue(_maxValue);
+        _value = _maxValue;
+      else
+        //setValue(_value + inc);
+        _value += inc;
+      valueChange();
       }
 
 //---------------------------------------------------------
@@ -127,11 +164,16 @@ void FloatEntry::incValue(double)
 
 void FloatEntry::decValue(double)
       {
-      if (_value - 1.0 > _minValue) {
-            _value = _value - 1.0;
-            updateValue();
-            valueChange();
-            }
+      if(_value <= _minValue)
+        return;
+      double inc = calcIncrement();
+      if(_value - inc <= _minValue)
+        //setValue(_minValue);
+        _value = _minValue;
+      else
+        //setValue(_value - inc);
+        _value -= inc;
+      valueChange();
       }
 
 //---------------------------------------------------------
@@ -188,8 +230,8 @@ void FloatEntry::mousePressEvent(QMouseEvent* event)
 
 void FloatEntry::wheelEvent(QWheelEvent* event)
       {
+      event->accept();
       int delta = event->delta();
-
       if (delta < 0)
             decValue(-1.0);
       else if (delta > 0)
@@ -322,5 +364,45 @@ double FloatEntry::value() const
             rv = _value;
       return rv;
       }
+
+//---------------------------------------------------------
+//   minLogValue
+//---------------------------------------------------------
+
+//double FloatEntry::minValue() const {
+//  return _log ? pow(10.0, _minValue*0.05f) : _minValue;
+//}
+
+//---------------------------------------------------------
+//   setMinLogValue
+//---------------------------------------------------------
+
+void FloatEntry::setMinLogValue(double val) {
+  if (_log) {
+    if (val == 0.0f) _minValue = -100;
+    else _minValue = fast_log10(val) * 20.0f;
+  }
+  else _minValue = val;
+}
+
+//---------------------------------------------------------
+//   maxLogValue
+//---------------------------------------------------------
+
+//double FloatEntry::maxValue() const {
+//  return _log ? pow(10.0, _maxValue*0.05f) : _maxValue;
+//}
+
+//---------------------------------------------------------
+//   setMaxLogValue
+//---------------------------------------------------------
+
+void FloatEntry::setMaxLogValue(double val) {
+  if (_log) {
+    _maxValue = fast_log10(val) * 20.0f;
+  }
+  else _maxValue = val;
+}
+      
 }
 

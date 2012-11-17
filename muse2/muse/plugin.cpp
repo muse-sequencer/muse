@@ -719,7 +719,8 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
 Plugin::~Plugin()
 {
   if(plugin)
-    delete plugin;
+  //  delete plugin;
+    printf("Plugin::~Plugin Error: plugin is not NULL\n");
 }
   
 //---------------------------------------------------------

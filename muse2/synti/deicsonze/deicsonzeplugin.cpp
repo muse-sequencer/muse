@@ -27,6 +27,7 @@
 // 02111-1301, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
+#include "deicsonze.h"
 #include "deicsonzeplugin.h"
 #include "plugin.h"
 ///#include "plugingui.h"
@@ -46,14 +47,21 @@ class PluginDialog;
 void DeicsOnze::initPluginReverb(MusECore::Plugin* pluginReverb) {
   //init plugin
   if(_pluginIReverb) delete(_pluginIReverb);
-  ///_pluginIReverb = new MusECore::PluginI(NULL);
   _pluginIReverb = new MusECore::PluginI();
 
   _pluginIReverb->initPluginInstance(pluginReverb, 2);
 
   //for(int i = 0; i < pluginReverb->parameter(); i++) {
-  for(int i = 0; i < (int)pluginReverb->controlInPorts(); i++) {
-    
+  //for(int i = 0; i < (int)pluginReverb->controlInPorts(); i++) {
+  for(int i = 0; i < (int)_pluginIReverb->parameters(); i++) {
+
+
+// From DSSI host. Maybe use this to add automation controllers. Problems with this method.
+//     // Support a special block for dssi synth ladspa controllers.
+//     // Put the ID at a special block after plugins (far after).
+//     //int id = MusECore::genACnum(MAX_PLUGINS, cip);
+//     int id = MusECore::genACnum(MAX_PLUGINS, i);
+
 // FIXME FIXME Tim
 /*    Ctrl* c = new Ctrl();
     c->setCurVal((float)pluginReverb->defaultValue(i));
@@ -61,6 +69,8 @@ void DeicsOnze::initPluginReverb(MusECore::Plugin* pluginReverb) {
 */
     
     //setReverbParam(i, pluginReverb->defaultValue(i));
+    //setReverbParam(i, _pluginIReverb->defaultValue(i));
+    _pluginIReverb->putParam(i, _pluginIReverb->defaultValue(i));
   }
 
   //send build gui to the gui
@@ -72,14 +82,13 @@ void DeicsOnze::initPluginReverb(MusECore::Plugin* pluginReverb) {
 
 void DeicsOnze::initPluginChorus(MusECore::Plugin* pluginChorus) {
   if(_pluginIChorus) delete(_pluginIChorus);
-  ///_pluginIChorus = new MusECore::PluginI(NULL);
   _pluginIChorus = new MusECore::PluginI();
 
   _pluginIChorus->initPluginInstance(pluginChorus, 2);
 
   //for(int i = 0; i < pluginChorus->parameter(); i++) {
-  for(int i = 0; i < (int)pluginChorus->controlInPorts(); i++) {
-
+  for(int i = 0; i < (int)_pluginIChorus->parameters(); i++) {
+  
 // FIXME FIXME Tim
 /*    
     Ctrl* c = new Ctrl();
@@ -88,7 +97,9 @@ void DeicsOnze::initPluginChorus(MusECore::Plugin* pluginChorus) {
 */    
     
     //setChorusParam(i, pluginChorus->defaultValue(i));
-}
+    //setChorusParam(i, _pluginIChorus->defaultValue(i));
+    _pluginIChorus->putParam(i, _pluginIChorus->defaultValue(i));
+  }
 
   //send build gui to the gui
   char data;
@@ -99,14 +110,13 @@ void DeicsOnze::initPluginChorus(MusECore::Plugin* pluginChorus) {
 
 void DeicsOnze::initPluginDelay(MusECore::Plugin* pluginDelay) {
   if(_pluginIDelay) delete(_pluginIDelay);
-  ///_pluginIDelay = new MusECore::PluginI(NULL);
   _pluginIDelay = new MusECore::PluginI();
 
   _pluginIDelay->initPluginInstance(pluginDelay, 2);
 
   //for(int i = 0; i < pluginDelay->parameter(); i++) { 
-  for(int i = 0; i < (int)pluginDelay->controlInPorts(); i++) { 
-
+  for(int i = 0; i < (int)_pluginIDelay->parameters(); i++) {
+   
 // FIXME FIXME Tim
 /*    
     Ctrl* c = new Ctrl();
@@ -115,8 +125,11 @@ void DeicsOnze::initPluginDelay(MusECore::Plugin* pluginDelay) {
 */    
 
     //setChorusParam(i, pluginDelay->defaultValue(i));
+    setDelayParam(i, _pluginIDelay->defaultValue(i));
   }
-  setDelayDryWet(1);
+
+  //setDelayDryWet(1);
+  _pluginIDelay->putParam(5, 1.0);
   
   float f;
   char dataDelayBPM[sizeof(float)+1];
@@ -159,20 +172,33 @@ void DeicsOnze::initPluginDelay(MusECore::Plugin* pluginDelay) {
 				 (const unsigned char*)dataDelayLFODepth,
 				 sizeof(float)+1);
   _gui->writeEvent(evSysexDelayLFODepth); 
+  char dataDelayWetDryMix[sizeof(float)+1];
+  dataDelayWetDryMix[0] = SYSEX_DELAYWETDRYMIX;
+  f = getDelayDryWet();
+  memcpy(&dataDelayWetDryMix, &f, sizeof(float)+1);
+  MusECore::MidiPlayEvent evSysexDelayWetDryMix(0, 0,MusECore::ME_SYSEX,
+                                 (const unsigned char*)dataDelayWetDryMix,
+                                 sizeof(float)+1);
+  _gui->writeEvent(evSysexDelayWetDryMix);
 }
 
-void DeicsOnze::setReverbParam(int index, double val) {
+void DeicsOnze::setReverbParam(int index, float val) {
   ///if(_pluginIReverb) _pluginIReverb->controller(index)->setCurVal((float)val);
   if(_pluginIReverb) _pluginIReverb->setParam(index, val);
   else printf("Warning : no DeicsOnze reverb loaded\n");
 }
-void DeicsOnze::setChorusParam(int index, double val) {
+void DeicsOnze::setChorusParam(int index, float val) {
   ///if(_pluginIChorus) _pluginIChorus->controller(index)->setCurVal((float)val);
   if(_pluginIChorus) _pluginIChorus->setParam(index, val);
   else printf("Warning : no DeicsOnze chorus loaded\n");
 }
+void DeicsOnze::setDelayParam(int index, float val) {
+  ///if(_pluginIDelay) _pluginIDelay->controller(index)->setCurVal((float)val);
+  if(_pluginIDelay) _pluginIDelay->setParam(index, val);
+  else printf("Warning : no DeicsOnze delay loaded\n");
+}
 
-double DeicsOnze::getReverbParam(int index) const {
+float DeicsOnze::getReverbParam(int index) const {
   ///if(_pluginIReverb) return _pluginIReverb->controller(index)->curVal().f; 
   if(_pluginIReverb) return _pluginIReverb->param(index); 
   else {
@@ -181,13 +207,22 @@ double DeicsOnze::getReverbParam(int index) const {
   }
 }
 
-double DeicsOnze::getChorusParam(int index) const {
+float DeicsOnze::getChorusParam(int index) const {
   ///if(_pluginIChorus) return _pluginIChorus->controller(index)->curVal().f;
   if(_pluginIChorus) return _pluginIChorus->param(index);
   else {
     return 0.0;
     printf("Warning : no DeicsOnze chorus loaded\n");  
   }    
+}
+
+float DeicsOnze::getDelayParam(int index) const {
+  ///if(_pluginIDelay) return _pluginIDelay->controller(index)->curVal().f;
+  if(_pluginIDelay) return _pluginIDelay->param(index);
+  else {
+    return 0.0;
+    printf("Warning : no DeicsOnze delay loaded\n");
+  }
 }
 
 void DeicsOnzeGui::addPluginCheckBox(int index, QString text, bool toggled,
@@ -233,9 +268,10 @@ void DeicsOnzeGui::addPluginSlider(int index, QString text, bool isLog,
   QLabel* l = new QLabel(text, parent);
   grid->addWidget(l, index, 0);
   FloatEntry* f = new FloatEntry(parent);
+  f->setId(index);
+  f->setLog(isLog);
+  f->setLogRange(min, max);
   f->setValue(val);
-  f->setMinValue(min);
-  f->setMaxValue(max);
   f->setMaximumWidth(72);
   grid->addWidget(f, index, 1);
   Slider* s = new Slider(parent);
@@ -299,26 +335,19 @@ void DeicsOnzeGui::buildGuiReverb() {
   //build sliders                                         
   //for(int i = 0; i < plugI->plugin()->parameter(); i++) { 
   for(int i = 0; i < (int)plugI->plugin()->controlInPorts(); i++) { 
-    ///double min, max, val;
-    float min, max; //, val;
+    float min, max, val;
     plugI->range(i, &min, &max);
 
-// FIXME FIXME Tim
-/*     
     val = _deicsOnze->getReverbParam(i);
-     if(plugI->isBool(i))
-      addPluginCheckBox(i, plugI->getParameterName(i), val > 0.0,
-			_reverbSuperWidget, grid, true);
-    else if(plugI->isInt(i)) {
-      addPluginIntSlider(i, plugI->getParameterName(i), rint(min), rint(max),
-			 rint(val), _reverbSuperWidget, grid, true);
-    }
-    else {
-      addPluginSlider(i, plugI->getParameterName(i), plugI->isLog(i),
-		      min, max, val, _reverbSuperWidget, grid, true);
-    }
-*/    
-    
+     if(plugI->ctrlValueType(i) == MusECore::VAL_BOOL)
+      addPluginCheckBox(i, plugI->paramName(i), val > 0.0,
+                        _reverbSuperWidget, grid, true);
+    else if(plugI->ctrlValueType(i) == MusECore::VAL_INT) 
+      addPluginIntSlider(i, plugI->paramName(i), rint(min), rint(max),
+                         rint(val), _reverbSuperWidget, grid, true);
+    else 
+      addPluginSlider(i, plugI->paramName(i), plugI->ctrlValueType(i) == MusECore::VAL_LOG,
+                      min, max, val, _reverbSuperWidget, grid, true);
   }
   //update colors of the new sliders (and the whole gui actually)
   setEditTextColor(reinterpret_cast<const QColor &>(*etColor));
@@ -350,26 +379,19 @@ void DeicsOnzeGui::buildGuiChorus() {
   //build sliders                              
   //for(int i = 0; i < plugI->plugin()->parameter(); i++) {
   for(int i = 0; i < (int)plugI->plugin()->controlInPorts(); i++) {
-    ///double min, max, val;
-    float min, max; //, val;
+    float min, max, val;
     plugI->range(i, &min, &max);
     
-// FIXME FIXME Tim
-/*    
     val = _deicsOnze->getChorusParam(i);
-    if(plugI->isBool(i))
-      addPluginCheckBox(i, plugI->getParameterName(i), val > 0.0,
-			_chorusSuperWidget, grid, false);
-    else if(plugI->isInt(i)) {
-      addPluginIntSlider(i, plugI->getParameterName(i), rint(min), rint(max),
-			 rint(val), _chorusSuperWidget, grid, false);
-    }
-    else {
-      addPluginSlider(i, plugI->getParameterName(i), plugI->isLog(i),
-		      min, max, val, _chorusSuperWidget, grid, false);
-    }
-*/    
-    
+    if(plugI->ctrlValueType(i) == MusECore::VAL_BOOL)
+      addPluginCheckBox(i, plugI->paramName(i), val > 0.0,
+                        _chorusSuperWidget, grid, false);
+    else if(plugI->ctrlValueType(i) == MusECore::VAL_INT) 
+      addPluginIntSlider(i, plugI->paramName(i), rint(min), rint(max),
+                         rint(val), _chorusSuperWidget, grid, false);
+    else 
+      addPluginSlider(i, plugI->paramName(i), plugI->ctrlValueType(i) == MusECore::VAL_LOG,
+                      min, max, val, _chorusSuperWidget, grid, false);
   }
   //update colors of the new sliders (and the whole gui actually)
   setEditTextColor(reinterpret_cast<const QColor &>(*etColor));
@@ -380,85 +402,75 @@ void DeicsOnzeGui::buildGuiChorus() {
 //of the parameter because it sends a double and does not
 //change any thing
 void DeicsOnzeGui::setReverbCheckBox(double v, int i) {
-  float f = (float)v;
-  unsigned char* message = new unsigned char[2+sizeof(float)];
-  message[0]=SYSEX_REVERBPARAM;
-  if(i<256) {
-    message[1]=(unsigned char)i;
-    memcpy(&message[2], &f, sizeof(float));
-    sendSysex(message, 2+sizeof(float));
+  if(i>=256) {
+    printf("setReverbCheckBox Error : controller index >= 256\n");
+    return;    
   }
-  else printf("setReverbCheckBox Error : cannot send controller upper than 225\n");
+  float f = (float)v;
+  unsigned char message[sizeof(float)+4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_REVERBPARAM;
+  message[3]=(unsigned char)i;
+  memcpy(&message[4], &f, sizeof(float));
+  sendSysex(message, sizeof(float)+4);
 }
 
 //setChorusCheckBox is used, by the way, to send the value
 //of the parameter because it sends a double and does not
 //change any thing
 void DeicsOnzeGui::setChorusCheckBox(double v, int i) {
-  float f = (float)v;
-  unsigned char* message = new unsigned char[2+sizeof(float)];
-  message[0]=SYSEX_CHORUSPARAM;
-  if(i<256) {
-    message[1]=(unsigned char)i;
-    memcpy(&message[2], &f, sizeof(float));
-    sendSysex(message, 2+sizeof(float));
+  if(i>=256) {
+    printf("setChorusCheckBox Error : controller index >= 256\n");
+    return;
   }
-  else printf("setChorusCheckBox Error : cannot send controller upper than 225\n");
+  float f = (float)v;
+  unsigned char message[sizeof(float)+4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_CHORUSPARAM;
+  message[3]=(unsigned char)i;
+  memcpy(&message[4], &f, sizeof(float));
+  sendSysex(message, sizeof(float)+4);
 }
 
-void DeicsOnzeGui::setReverbFloatEntry(double /*v*/, int /*i*/) {
+void DeicsOnzeGui::setReverbFloatEntry(double v, int i) {
   if(_deicsOnze->_pluginIReverb) {
     
-// FIXME FIXME Tim
-/*    
-    if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
-    updateReverbFloatEntry(v, i);  
-    updateReverbSlider(v, i);
-    setReverbCheckBox(v, i); //because this send the SYSEX
-*/    
-    
-  }
-  else printf("Warning : no DeicsOnze reverb loaded\n");
-}
-void DeicsOnzeGui::setReverbSlider(double /*v*/, int /*i*/) {
-  if(_deicsOnze->_pluginIReverb) {
-    
-// FIXME FIXME Tim
-/*
-    if(_deicsOnze->_pluginIReverb->isInt(i)) v = rint(v);
+    if(_deicsOnze->_pluginIReverb->ctrlValueType(i) == MusECore::VAL_INT) v = rint(v);
     updateReverbFloatEntry(v, i);
     updateReverbSlider(v, i);
     setReverbCheckBox(v, i); //because this send the SYSEX
-*/
-    
   }
   else printf("Warning : no DeicsOnze reverb loaded\n");
 }
-void DeicsOnzeGui::setChorusFloatEntry(double /*v*/, int /*i*/) {
+void DeicsOnzeGui::setReverbSlider(double v, int i) {
   if(_deicsOnze->_pluginIReverb) {
     
-// FIXME FIXME Tim
-/*
-    if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
+    if(_deicsOnze->_pluginIReverb->ctrlValueType(i) == MusECore::VAL_INT) v = rint(v);
+    updateReverbFloatEntry(v, i);
+    updateReverbSlider(v, i);
+    setReverbCheckBox(v, i); //because this send the SYSEX
+  }
+  else printf("Warning : no DeicsOnze reverb loaded\n");
+}
+void DeicsOnzeGui::setChorusFloatEntry(double v, int i) {
+  if(_deicsOnze->_pluginIReverb) {
+
+    if(_deicsOnze->_pluginIChorus->ctrlValueType(i) == MusECore::VAL_INT) v = rint(v);
     updateChorusFloatEntry(v, i);
     updateChorusSlider(v, i);
     setChorusCheckBox(v, i); //because this send the SYSEX
-*/
-    
   }
   else printf("Warning : no DeicsOnze chorus loaded\n");
 }
-void DeicsOnzeGui::setChorusSlider(double /*v*/, int /*i*/) {
+void DeicsOnzeGui::setChorusSlider(double v, int i) {
   if(_deicsOnze->_pluginIReverb) {  
-    
-// FIXME FIXME Tim
-/*
-    if(_deicsOnze->_pluginIChorus->isInt(i)) v = rint(v);
+
+    if(_deicsOnze->_pluginIChorus->ctrlValueType(i) == MusECore::VAL_INT) v = rint(v);
     updateChorusSlider(v, i);
     updateChorusFloatEntry(v, i);
     setChorusCheckBox(v, i); //because this send the SYSEX
-*/    
-    
   }
   else printf("Warning : no DeicsOnze chorus loaded\n");
 }
@@ -566,3 +578,12 @@ void DeicsOnze::setDelayDryWet(float val) {
   if(_pluginIDelay) _pluginIDelay->setParam(5, val);
   else printf("Warning : no DeicsOnze delay loaded\n");
 }
+float DeicsOnze::getDelayDryWet() const {
+  ///if(_pluginIDelay) return _pluginIDelay->controller(5)->curVal().f;
+  if(_pluginIDelay) return _pluginIDelay->param(5);
+  else {
+    printf("Warning : no DeicsOnze delay loaded\n");
+    return 0.0;
+  }
+}
+

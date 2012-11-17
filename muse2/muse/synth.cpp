@@ -880,22 +880,37 @@ const char* MessSynthIF::getPatchName(int channel, int prog, bool drum)
 
 void MessSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int ch, bool)
       {
+      MusEGui::PopupMenu* hbank_menu = 0;
+      MusEGui::PopupMenu* lbank_menu = 0;
       menu->clear();
       const MidiPatch* mp = _mess->getPatchInfo(ch, 0);
       while (mp) {
-            int id = ((mp->hbank & 0xff) << 16)
-                      + ((mp->lbank & 0xff) << 8) + mp->prog;
-            /* DELETETHIS 9
-            int pgid = ((mp->hbank & 0xff) << 8) | (mp->lbank & 0xff) | 0x40000000;          
-            int itemnum = menu->indexOf(pgid);
-            if(itemnum == -1)
+            if(mp->typ == MP_TYPE_HBANK)
             {
-              QPopupMenu* submenu = new QPopupMenu(menu);
-              itemnum = 
+              lbank_menu = 0;
+              hbank_menu = new MusEGui::PopupMenu(QString(mp->name),  menu, true);
+              menu->addMenu(hbank_menu);
             }
-            */  
-            QAction *act = menu->addAction(QString(mp->name));
-            act->setData(id);
+            else
+            if(mp->typ == MP_TYPE_LBANK)
+            {
+              lbank_menu = new MusEGui::PopupMenu(QString(mp->name),  menu, true);
+              hbank_menu->addMenu(lbank_menu);
+            }
+            else
+            {
+              int id = ((mp->hbank & 0xff) << 16)
+                        + ((mp->lbank & 0xff) << 8) + mp->prog;
+              MusEGui::PopupMenu* m;
+              if(lbank_menu)
+                m = lbank_menu;
+              else if(hbank_menu)
+                m = hbank_menu;
+              else
+                m = menu;
+              QAction *act = m->addAction(QString(mp->name));
+              act->setData(id);
+            }
             mp = _mess->getPatchInfo(ch, mp);
             }
       }

@@ -100,6 +100,7 @@
 
 #define SYSEX_INIT_DATA 1
 #define SYSEX_INIT_DATA_VERSION 1
+//#define SYSEX_INIT_DATA_VERSION_2 2
 ///#define SAVEINITLENGTH 2
 #define SAVEINITLENGTH 4    // MFG ID, synth ID, init data command, init data version
 
@@ -160,6 +161,7 @@
 #define SYSEX_DELAYFEEDBACK 95
 #define SYSEX_DELAYLFOFREQ 96
 #define SYSEX_DELAYLFODEPTH 97
+#define SYSEX_DELAYWETDRYMIX 98
 
 //REVERB PARAMETERS
 
@@ -221,6 +223,8 @@ enum {
   NUM_DELAY_LFO_FREQ = NUM_DELAY_FEEDBACK + sizeof(float),
   NUM_DELAY_LFO_DEPTH = NUM_DELAY_LFO_FREQ + sizeof(float),
   NUM_CONFIGLENGTH = NUM_DELAY_LFO_DEPTH + sizeof(float)
+  //NUM_DELAY_WET_DRY_MIX = NUM_DELAY_LFO_DEPTH + sizeof(float),
+  //NUM_CONFIGLENGTH = NUM_DELAY_WET_DRY_MIX + sizeof(float)
 };
 
 class DeicsOnzeGui;
@@ -478,16 +482,19 @@ class DeicsOnze : public Mess {
   void initPluginChorus(MusECore::Plugin*);
   void initPluginDelay(MusECore::Plugin*);
   
-  void setReverbParam(int i, double val);
-  double getReverbParam(int i) const;
-  void setChorusParam(int i, double val);
-  double getChorusParam(int i) const;
+  void setReverbParam(int i, float val);
+  float getReverbParam(int i) const;
+  void setChorusParam(int i, float val);
+  float getChorusParam(int i) const;
+  void setDelayParam(int i, float val);
+  float getDelayParam(int i) const;
   void setDelayBPM(float val);
   void setDelayBeatRatio(float val);
   void setDelayFeedback(float val);
   void setDelayLFOFreq(float val);
   void setDelayLFODepth(float val);
   void setDelayDryWet(float val);
+  float getDelayDryWet() const; 
   float getDelayBPM() const;
   float getDelayBeatRatio() const;
   float getDelayFeedback() const;

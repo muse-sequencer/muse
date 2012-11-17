@@ -58,6 +58,8 @@ class FloatEntry : public QLineEdit {
       int _precision;
       bool _log;
 
+      double calcIncrement() const;
+      
       virtual void wheelEvent(QWheelEvent*);
       virtual void mousePressEvent(QMouseEvent*);
       virtual void mouseMoveEvent(QMouseEvent*);
@@ -67,6 +69,7 @@ class FloatEntry : public QLineEdit {
       virtual bool setString(double);
       virtual void incValue(double);
       virtual void decValue(double);
+      void contextMenuEvent(QContextMenuEvent*);
 
       void updateValue();
 
@@ -96,10 +99,16 @@ class FloatEntry : public QLineEdit {
       double minValue() const               { return _minValue; }
       double maxValue() const               { return _maxValue; }
       void setMinValue(double v)            { _minValue = v; }
+      void setMinLogValue(double v);
       void setMaxValue(double v)            { _maxValue = v; }
+      void setMaxLogValue(double v);
       void setRange(double a, double b) {
             _minValue = a;
             _maxValue = b;
+            }
+      void setLogRange(double a, double b) {
+            setMinLogValue(a);
+            setMaxLogValue(b);
             }
       int precision() const                 { return _precision; }
       void setPrecision(int val);
