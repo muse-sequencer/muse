@@ -431,8 +431,12 @@ bool initJackAudio()
       //      }
       //if (i == 5)
       //      return true;
+
+      int opts = JackNullOption;
+      if(MusEGlobal::noAutoStartJack)
+        opts |= JackNoStartServer;
       jack_status_t status;
-      jack_client_t* client = jack_client_open("MusE", JackNoStartServer, &status);
+      jack_client_t* client = jack_client_open("MusE", (jack_options_t)opts, &status);
       if (!client) {
             if (status & JackServerStarted)
                   printf("jack server started...\n");

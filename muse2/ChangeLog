@@ -1,6 +1,7 @@
 17.11.2012:
          * Improved: Deicsonze soft synthesizer: Fixed crash, bugs, added ladspa plugins. (Tim)
            TODO: No plugin control automation. Some oddities with log slider/entry ranges. Maybe add delay wet/dry.
+         * Added: Request from forums: Auto-start Jack upon MusE startup. Command-line disable switch -J added. (Tim)
 15.11.2012:
          * Improved: Popup menus: Auto-breakup too-wide menus in class PopupMenu. (Tim)
            In some cases X/Qt was giving up if too wide AND/OR too many columns, menu would not appear.

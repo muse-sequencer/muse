@@ -228,6 +228,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -h       This help\n");
       fprintf(stderr, "   -v       Print version\n");
       fprintf(stderr, "   -a       No audio, use dummy audio driver, plus ALSA midi\n");
+      fprintf(stderr, "   -J       Do not try to auto-start the Jack audio server\n");
       fprintf(stderr, "   -A       Force inclusion of ALSA midi even if using Jack\n");
       fprintf(stderr, "   -P  n    Set audio driver real time priority to n\n");
       fprintf(stderr, "                        (Dummy only, default 40. Else fixed by Jack.)\n");
@@ -347,7 +348,7 @@ int main(int argc, char* argv[])
       MuseApplication app(argc, argv);
       MusEGui::Appearance::defaultStyle = app.style()->objectName();   // NOTE: May need alternate method, above.
       
-      QString optstr("aAhvdDumMsP:Y:l:py");
+      QString optstr("aJAhvdDumMsP:Y:l:py");
 #ifdef VST_SUPPORT
       optstr += QString("V");
 #endif
@@ -372,6 +373,9 @@ int main(int argc, char* argv[])
                         return 0;
                   case 'a':
                         noAudio = true;
+                        break;
+                  case 'J':
+                        MusEGlobal::noAutoStartJack = true;
                         break;
                   case 'A':
                         MusEGlobal::useAlsaWithJack = true;
