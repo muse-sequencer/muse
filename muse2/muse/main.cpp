@@ -232,7 +232,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -A       Force inclusion of ALSA midi even if using Jack\n");
       fprintf(stderr, "   -P  n    Set audio driver real time priority to n\n");
       fprintf(stderr, "                        (Dummy only, default 40. Else fixed by Jack.)\n");
-      fprintf(stderr, "   -Y  n    Force midi real time priority to n (default: audio driver prio +2)\n");
+      fprintf(stderr, "   -Y  n    Force midi real time priority to n (default: audio driver prio -1)\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "   -p       Don't load LADSPA plugins\n");
 #ifdef VST_SUPPORT

@@ -177,10 +177,10 @@ bool MusE::seqStart()
       //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
       if(MusEGlobal::realTimeScheduling) 
       {
-        {
-          pfprio = MusEGlobal::realTimePriority + 1;
-          midiprio = MusEGlobal::realTimePriority + 2;
-        }  
+        if(MusEGlobal::realTimePriority - 5 >= 0)
+          pfprio = MusEGlobal::realTimePriority - 5;
+        if(MusEGlobal::realTimePriority - 1 >= 0)
+          midiprio = MusEGlobal::realTimePriority - 1;
       }
       
       if(MusEGlobal::midiRTPrioOverride > 0)
