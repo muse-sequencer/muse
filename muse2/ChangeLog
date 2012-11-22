@@ -1,3 +1,9 @@
+21.11.2012:
+         * Fixed: Markers and synth windows don't open at all on some desktops like Lubuntu. (Tim)
+           Solution was combination of REMOVAL of fix for "bug: 2811156 Softsynth GUI unclosable..."
+            (of which said removal BY ITSELF DID NOT FIX this problem) AND removal of some superfluous show()s.
+           Tested OK with Lubuntu and XFCE (which the original fix was for). 
+           Thanx to knowledgable tester who told us to remove that bugfix.
 20.11.2012:
          - Fixed audio stuttering loud annoying repeated segments upon seek. (Tim)
            Slight readjustment of audio prefetch and midi thread priority (-5 and -1 instead of +1 and +2).

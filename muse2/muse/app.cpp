@@ -1555,11 +1555,14 @@ void MusE::showMarker(bool flag)
             markerView = new MusEGui::MarkerView(this);
 
             connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-            markerView->show();
+            // Nov 21, 2012 Hey this causes the thing not to open at all, EVER, on Lubuntu and some others!  
+            //markerView->show();  // ??? REMOVE Tim. Superfluous?
             toplevels.push_back(markerView);
             }
-      markerView->setVisible(flag);
-      viewMarkerAction->setChecked(flag);
+      if(markerView->isVisible() != flag)      
+        markerView->setVisible(flag);
+      if(viewMarkerAction->isChecked() != flag)
+        viewMarkerAction->setChecked(flag);   // ??? TEST: Recursion? Does this call toggleMarker if called from menu?  No. Why? It should. REMOVE Tim. Or keep.
       if (!flag)
         if (currentMenuSharingTopwin == markerView)
           setCurrentMenuSharingTopwin(NULL);
@@ -1573,7 +1576,8 @@ void MusE::showMarker(bool flag)
 
 void MusE::markerClosed()
       {
-      viewMarkerAction->setChecked(false);
+      if(viewMarkerAction->isChecked())
+        viewMarkerAction->setChecked(false); // ??? TEST: Recursion? Does this call toggleMarker? Yes. REMOVE Tim. Or keep.
       if (currentMenuSharingTopwin == markerView)
         setCurrentMenuSharingTopwin(NULL);
 
@@ -1609,8 +1613,10 @@ void MusE::toggleArranger(bool checked)
 
 void MusE::showArranger(bool flag)
       {
-      arrangerView->setVisible(flag);
-      viewArrangerAction->setChecked(flag);
+      if(arrangerView->isVisible() != flag)  
+        arrangerView->setVisible(flag);
+      if(viewArrangerAction->isChecked() != flag)
+        viewArrangerAction->setChecked(flag);
       if (!flag)
         if (currentMenuSharingTopwin == arrangerView)
           setCurrentMenuSharingTopwin(NULL);
@@ -1623,7 +1629,8 @@ void MusE::showArranger(bool flag)
 
 void MusE::arrangerClosed()
       {
-      viewArrangerAction->setChecked(false);
+      if(viewArrangerAction->isChecked())  
+        viewArrangerAction->setChecked(false);
       updateWindowMenu();
 
       // focus the last activated topwin which is not the arranger view
@@ -1656,8 +1663,10 @@ void MusE::toggleTransport(bool checked)
 
 void MusE::showTransport(bool flag)
       {
-      transport->setVisible(flag);
-      viewTransportAction->setChecked(flag);
+      if(transport->isVisible() != flag)
+        transport->setVisible(flag);
+      if(viewTransportAction->isChecked() != flag)
+        viewTransportAction->setChecked(flag);
       }
 
 //---------------------------------------------------------
