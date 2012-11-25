@@ -104,7 +104,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       veloOnOffset  = 0;
       veloOffOffset = 0;
       lastSelections = 0;
-      _playEvents    = false;
+      _playEvents    = true;
       colorMode      = colorModeInit;
       
       QSignalMapper* mapper = new QSignalMapper(this);
@@ -293,6 +293,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       speaker->setToolTip(tr("Play Events"));
       speaker->setIcon(*speakerIcon);
       speaker->setCheckable(true);
+      speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 

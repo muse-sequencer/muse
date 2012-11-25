@@ -168,7 +168,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       lastSelections = 0;
       split1w1 = 0;
       //selPart  = 0;
-      _playEvents    = false;
+      _playEvents    = true;
       QSignalMapper *signalMapper = new QSignalMapper(this);
       
       _group_mode = GROUP_SAME_CHANNEL;
@@ -426,6 +426,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       speaker->setToolTip(tr("Play Events"));
       speaker->setIcon(*speakerIcon);
       speaker->setCheckable(true);
+      speaker->setChecked(true);
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 

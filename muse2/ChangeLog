@@ -1,3 +1,5 @@
+25.11.2012:
+         - Changed playback of midi in editors to default to on (rj)
 21.11.2012:
          * Fixed: Markers and synth windows don't open at all on some desktops like Lubuntu. (Tim)
            Solution was combination of REMOVAL of fix for "bug: 2811156 Softsynth GUI unclosable..."

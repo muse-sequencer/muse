@@ -57,7 +57,7 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       editor      = pr;
       _steprec    = false;
       _midiin     = false;
-      _playEvents = false;
+      _playEvents = true;
       _setCurPartIfOnlyOneEventIsSelected = true;
       curVelo     = 70;
 
