@@ -111,6 +111,7 @@ int realTimePriority = 40;  // 80
 int midiRTPrioOverride = -1;
 bool loadPlugins = true;
 bool loadVST = true;
+bool loadNativeVST = true;
 bool loadDSSI = true;
 bool usePythonBridge = false;
 bool useLASH = true;

@@ -22,6 +22,7 @@
 #=============================================================================
 
 include(FindPkgConfig)
+include(CheckIncludeFile)
 include(cmake/Summary.cmake)
 include(cmake/TargetDoc.cmake)
 
@@ -34,6 +35,12 @@ endif(COMMAND cmake_policy)
 if (NOT DEFINED LIB_SUFFIX)
         SET(LIB_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
 endif (NOT DEFINED LIB_SUFFIX)
+
+if (NOT DEFINED VST_HEADER_PATH)
+        SET(VST_HEADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vestige" CACHE PATH "Path to vst header files (aeffectx.h). Default is ./vestige. See ENABLE_VST_SDK.")
+endif (NOT DEFINED VST_HEADER_PATH)
+message(" vst header path: " ${VST_HEADER_PATH} )
+include_directories(${VST_HEADER_PATH})
 
 # set libdir if not use -DLIB_INSTALL_DIR
 if (NOT LIB_INSTALL_DIR)
@@ -112,18 +119,16 @@ else (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
             OUTPUT_VARIABLE MusE_SVNVER )
 endif (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
 
-# Do we need this? - Orcan:
-# include ( ${PROJECT_SOURCE_DIR}/cmake/WrapMacros.cmake)
-
-option ( ENABLE_LASH        "enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
-option ( ENABLE_OSC         "enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)   
-option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface (dssi) (OSC also recommended)" ON)
-option ( ENABLE_VST         "enable VST/win support (deprecated)"                                OFF)
-option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"                                ON)
-option ( ENABLE_EXPERIMENTAL "enable building experimental features"                             OFF)
-option ( ENABLE_PYTHON      "enable Python control support"                                      OFF)
-option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files 
-         (WARNING: This will modify the .ts files in the source tree!!)"                         OFF)
+option ( ENABLE_LASH        "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
+option ( ENABLE_OSC         "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)
+option ( ENABLE_DSSI        "Enable Disposable Soft Synth Interface (dssi) (OSC also recommended)" ON)
+option ( ENABLE_VST         "Enable VST/win support (deprecated)"                                OFF)
+option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_SDK and VST_HEADER_PATH)" ON)
+option ( ENABLE_VST_SDK     "Enable VST SDK support (requires SDK, recommended for best results!)" OFF)
+option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
+option ( ENABLE_EXPERIMENTAL "Enable building experimental features."                             OFF)
+option ( ENABLE_PYTHON      "Enable Python control support."                                      OFF)
+option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files (WARNING: This will modify the .ts files in the source tree!!)" OFF)
 option ( MODULES_BUILD_STATIC "Build type of internal modules"                                   OFF)
 
 if ( MODULES_BUILD_STATIC )
@@ -153,7 +158,6 @@ endif (APPLE)
 set(QT_MIN_VERSION "4.3.0")
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
-#set(QT_USE_QTNSPLUGIN TRUE)
 set(QT_USE_QTSVG TRUE)
 
 find_package(Qt4)
@@ -174,12 +178,20 @@ include(${QT_USE_FILE})
 ##   Begin MANDATORY packages...
 ##
 
-
 ##
 ## find doxygen program
 ##
 
 FIND_PROGRAM(DOXY doxygen)
+
+##
+## find ladspa.h
+##
+
+CHECK_INCLUDE_FILE(ladspa.h HAVE_LADSPA_H)
+if(NOT HAVE_LADSPA_H)
+      message(FATAL_ERROR "** ERROR: header file ladspa.h is required, but was not found.")
+endif(NOT HAVE_LADSPA_H)
 
 ##
 ## alsa >= 0.9.0
@@ -292,6 +304,10 @@ else (ENABLE_DSSI)
       message("DSSI disabled")
 endif (ENABLE_DSSI)
 
+##
+## Depricated FST-based VST support
+##
+
 if (ENABLE_VST)
       message("deprecated VST support enabled")
       set (VST_SUPPORT TRUE)
@@ -299,6 +315,36 @@ else (ENABLE_VST)
       #message("VST support disabled")
       set (VST_SUPPORT FALSE)
 endif (ENABLE_VST)
+
+##
+## Native VST support
+##
+
+SET (AEFFECT_H_FOUND FALSE)
+SET (VST_NATIVE_SUPPORT FALSE)
+
+if (ENABLE_VST_NATIVE)
+      find_file(VST_HEADER_CHECK aeffectx.h PATHS ${VST_HEADER_PATH} NO_DEFAULT_PATH)
+      if (VST_HEADER_CHECK STREQUAL "VST_HEADER_CHECK-NOTFOUND")
+        message("Native VST support disabled")
+      else (VST_HEADER_CHECK STREQUAL "VST_HEADER_CHECK-NOTFOUND")
+        SET (AEFFECT_H_FOUND TRUE)
+        message("Native VST support enabled")
+        set (VST_NATIVE_SUPPORT TRUE)
+      endif (VST_HEADER_CHECK STREQUAL "VST_HEADER_CHECK-NOTFOUND")
+    
+else (ENABLE_VST_NATIVE)
+      message("Native VST support disabled")
+endif (ENABLE_VST_NATIVE)
+
+# find_file creates a cached variable. We don't want VST_HEADER_CHECK cached.
+UNSET (VST_HEADER_CHECK CACHE)
+
+if (ENABLE_VST_SDK)
+  SET (VST_SDK_SUPPORT TRUE)
+else (ENABLE_VST_SDK) 
+  SET (VST_SDK_SUPPORT FALSE)
+endif (ENABLE_VST_SDK)
 
 ##
 ## TODO
@@ -313,19 +359,12 @@ SET (USE_SSE false)
 ##
 
 if ( ENABLE_FLUID )
-      # Be careful with naming here since we have two shared synth libraries
-      #  to be built later, named 'fluidsynth' and 'fluid' !
+      # Be careful with variable name here since we have a shared
+      #  synth library named 'fluid_synth' to be built later.
       PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=0.9.0)
       if (FLUIDSYN_FOUND)
             include_directories(${FLUIDSYN_INCLUDE_DIRS})
             set(HAVE_FLUIDSYNTH ON)
-            ## This stuff is just F.Y.I. Please keep...
-            # message("FLUIDSYN_LIBRARIES " ${FLUIDSYN_LIBRARIES} )          # "fluidsynth"
-            # message("FLUIDSYN_LDFLAGS " ${FLUIDSYN_LDFLAGS} )              # "-lfluidsynth"
-            # message("FLUIDSYN_LDFLAGS_OTHER " ${FLUIDSYN_LDFLAGS_OTHER} )  # empty
-            # message("FLUIDSYN_INCLUDE_DIRS " ${FLUIDSYN_INCLUDE_DIRS} )    # empty
-            # message("FLUIDSYN_CFLAGS " ${FLUIDSYN_CFLAGS} )                # empty
-            # message("FLUIDSYN_CFLAGS_OTHER " ${FLUIDSYN_CFLAGS_OTHER} )    # empty
       endif (FLUIDSYN_FOUND)
 else ( ENABLE_FLUID )
       message("Fluidsynth disabled")
@@ -418,9 +457,6 @@ set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions -fPIC $
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce -fPIC ${CMAKE_CXX_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG -fPIC ${CMAKE_CXX_FLAGS_DEBUG}")
 
-# subdirs(al awl grepmidi plugins midiplugins muse share synti)
-# subdirs(al lib grepmidi plugins xpm muse share demos doc synti utils)
-#subdirs(al lib grepmidi plugins muse share demos synti )
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
 subdirs(al awl grepmidi man plugins muse synti packaging utils demos share)
@@ -480,7 +516,7 @@ endif (NOT UUID_FOUND)
 
 if (NOT JACK_FOUND)
       message("** ERROR: jack >= 0.103 is required, but development files were not found.")
-endif (NOT JACK_FOUND)           
+endif (NOT JACK_FOUND)
 
 if (ENABLE_LASH AND (NOT LASH_FOUND))
         message("** WARNING: lash (>= 0.2) was enabled, but development files were not found. ")
@@ -499,6 +535,11 @@ if (ENABLE_DSSI AND (NOT DSSI_FOUND))
         message("** WARNING: dssi (>= 0.9.0) was enabled, but development files were not found.")
 endif (ENABLE_DSSI AND (NOT DSSI_FOUND))
 
+if (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
+        message("** WARNING: Native VST was enabled, but development files were not found.")
+        message("** HINT: Check the VST_HEADER_PATH variable. Points to ./vestige by default.")
+endif (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
+
 if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
         message("** WARNING: fluidsynth (>= 0.9.0) was enabled, but development files were not found.")
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
@@ -511,6 +552,7 @@ summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
+summary_add("Native VST support" VST_NATIVE_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()

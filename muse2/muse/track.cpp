@@ -291,7 +291,7 @@ void Track::internal_assign(const Track& t, int flags)
           {
             // Do not call setName here. Audio Input and Output override it and try to set 
             //  Jack ports, which have not been initialized yet here. Must wait until 
-            // .Audio Input and Output copy constructors or assign are called.
+            //  Audio Input and Output copy constructors or assign are called.
             _name = s;
             break;
           }
@@ -389,18 +389,10 @@ void Track::clearRecAutomation(bool clearList)
 
     if(type() == AUDIO_SOFTSYNTH)
     {
-#ifdef DSSI_SUPPORT
-      SynthI* synth = static_cast<SynthI*>(this);
-      if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
-      {
-        SynthIF* sif = synth->sif();
-        if(sif)
-        {
-          DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
-          dssi_sif->enableAllControllers(true);
-        }
-      }
-#endif
+      const SynthI* synth = static_cast<const SynthI*>(this);
+      SynthIF* sif = synth->sif();
+      if(sif)
+        sif->enableAllControllers(true);
     }
     
     if(clearList)

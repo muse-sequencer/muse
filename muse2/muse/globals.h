@@ -81,6 +81,7 @@ extern bool heavyDebugMsg;
 extern bool debugSync;
 extern bool loadPlugins;
 extern bool loadVST;
+extern bool loadNativeVST;
 extern bool loadDSSI;
 extern bool usePythonBridge;
 extern bool useLASH;

@@ -38,6 +38,7 @@
 #include "audiodev.h"
 #include "synth.h"
 #include "dssihost.h"
+#include "vst_native.h"
 #include "app.h"
 #include "controlfifo.h"
 #include "fastlog.h"
@@ -845,7 +846,7 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
       }
       else
       {
-        if(ctlID < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+        if(ctlID < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
         {
           _efxPipe->controllersEnabled(ctlID, &en_1, &en_2); 
         }
@@ -853,20 +854,14 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
         {
           if(type() == AUDIO_SOFTSYNTH)
           {
-#ifdef DSSI_SUPPORT            
             const SynthI* synth = static_cast<const SynthI*>(this);
-            if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+            const SynthIF* sif = synth->sif();
+            if(sif)
             {
-              SynthIF* sif = synth->sif();
-              if(sif)
-              {
-                const DssiSynthIF* dssi_sif = static_cast<const DssiSynthIF*>(sif);
-                int in_ctrl_idx = ctlID & AC_PLUGIN_CTL_ID_MASK;
-                en_1 = dssi_sif->controllerEnabled(in_ctrl_idx);
-                en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
-              }
+              int in_ctrl_idx = ctlID & AC_PLUGIN_CTL_ID_MASK;
+              en_1 = sif->controllerEnabled(in_ctrl_idx);
+              en_2 = sif->controllerEnabled2(in_ctrl_idx);
             }
-#endif
           }
         }
       }  
@@ -905,25 +900,19 @@ bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned
   }
   else
   {
-    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
       return _efxPipe->addScheduledControlEvent(track_ctrl_id, val, frame);
     else
     {
       if(type() == AUDIO_SOFTSYNTH)
       {
- #ifdef DSSI_SUPPORT
         const SynthI* synth = static_cast<const SynthI*>(this);
-        if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+        SynthIF* sif = synth->sif();
+        if(sif)
         {
-          SynthIF* sif = synth->sif();
-          if(sif)
-          {
-            DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
-            int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
-            return dssi_sif->addScheduledControlEvent(in_ctrl_idx, val, frame);
-          }
+          int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+          return sif->addScheduledControlEvent(in_ctrl_idx, val, frame);
         }
- #endif
       }
     }
   }  
@@ -949,25 +938,19 @@ void AudioTrack::enableController(int track_ctrl_id, bool en)
   }
   else
   {
-    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+    if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
       _efxPipe->enableController(track_ctrl_id, en);
     else
     {
       if(type() == AUDIO_SOFTSYNTH)
       {
-#ifdef DSSI_SUPPORT        
-        SynthI* synth = static_cast<SynthI*>(this);
-        if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+        const SynthI* synth = static_cast<const SynthI*>(this);
+        SynthIF* sif = synth->sif();
+        if(sif)
         {
-          SynthIF* sif = synth->sif();
-          if(sif)
-          {
-            DssiSynthIF* dssi_sif = static_cast<DssiSynthIF*>(sif);
-            int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
-            dssi_sif->enableController(in_ctrl_idx, en);
-          }
+          int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+          sif->enableController(in_ctrl_idx, en);
         }
-#endif
       }
     }
   }  
@@ -996,7 +979,7 @@ void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) con
       }
       else
       {
-        if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.             
+        if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
         {
           _efxPipe->controllersEnabled(track_ctrl_id, &en_1, &en_2); 
         }
@@ -1004,20 +987,14 @@ void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) con
         {
           if(type() == AUDIO_SOFTSYNTH)
           {
-#ifdef DSSI_SUPPORT
             const SynthI* synth = static_cast<const SynthI*>(this);
-            if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
+            const SynthIF* sif = synth->sif();
+            if(sif)
             {
-              SynthIF* sif = synth->sif();
-              if(sif)
-              {
-                const DssiSynthIF* dssi_sif = static_cast<const DssiSynthIF*>(sif);
-                int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
-                en_1 = dssi_sif->controllerEnabled(in_ctrl_idx);
-                en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
-              }
+              int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
+              en_1 = sif->controllerEnabled(in_ctrl_idx);
+              en_2 = sif->controllerEnabled2(in_ctrl_idx);
             }
-#endif
           }
         }
       }  
@@ -1204,37 +1181,23 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             //  controls would all be set to zero.
             // But we will allow for the (unintended, useless) possibility of a controller 
             //  with no matching plugin control.
-            PluginIBase* p = 0;     
+            const PluginIBase* p = 0;     
             bool ctlfound = false;
             unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;       
             int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
             if(n >= 0 && n < PipelineDepth)
-            {
               p = (*_efxPipe)[n];
-              if(p && m < p->parameters())
-                  ctlfound = true;
-            }
-            // Support a special block for dssi synth ladspa controllers. 
+            // Support a special block for synth controllers.
             else if(n == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)    
             {
-              SynthI* synti = dynamic_cast < SynthI* > (this);
-              if(synti)
-              {
-                SynthIF* sif = synti->sif();
-                if(sif)
-                {
-#ifdef DSSI_SUPPORT
-                  DssiSynthIF* dsif = dynamic_cast < DssiSynthIF* > (sif);
-                  if(dsif)
-                  {
-                    p = dsif;
-                    if(p && m < p->parameters())
-                        ctlfound = true;
-                  }
-#endif
-                }
-              }
+              const SynthI* synti = static_cast < SynthI* > (this);
+              const SynthIF* sif = synti->sif();
+              if(sif)
+                p = static_cast < const PluginIBase* > (sif);
             }
+            
+            if(p && m < p->parameters())
+              ctlfound = true;
             
             iCtrlList icl = _controller.find(l->id());
             if (icl == _controller.end())
@@ -1382,22 +1345,13 @@ void AudioTrack::mapRackPluginsToControllers()
       const PluginIBase* p = 0;
       if(idx >= 0 && idx < PipelineDepth)
         p = (*_efxPipe)[idx];
-      // Support a special block for dssi synth ladspa controllers. 
+      // Support a special block for synth controllers.
       else if(idx == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)    
       {
-        const SynthI* synti = dynamic_cast < const SynthI* > (this);
-        if(synti)
-        {
-          SynthIF* sif = synti->sif();
-          if(sif)
-          {
-#ifdef DSSI_SUPPORT
-            const DssiSynthIF* dsif = dynamic_cast < const DssiSynthIF* > (sif);
-            if(dsif)
-              p = dsif;
-#endif
-          }
-        }
+        const SynthI* synti = static_cast < const SynthI* > (this);
+        SynthIF* sif = synti->sif();
+        if(sif)
+          p = static_cast < const PluginIBase* > (sif);
       }
       
       // If there's no plugin at that rack position, or the param is out of range of

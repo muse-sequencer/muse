@@ -61,7 +61,7 @@ namespace MusECore {
 extern void connectNodes(AudioTrack*, AudioTrack*);
 bool SynthI::_isVisible=false;
 
-const char* synthTypes[] = { "METRONOME", "MESS", "DSSI", "VST", "UNKNOWN" };
+const char* synthTypes[] = { "METRONOME", "MESS", "DSSI", "VST", "VST_NATIVE", "UNKNOWN" };
 QString synthType2String(Synth::Type type) { return QString(synthTypes[type]); } 
 
 Synth::Type string2SynthType(const QString& type) 
@@ -73,6 +73,62 @@ Synth::Type string2SynthType(const QString& type)
   }  
   return Synth::SYNTH_TYPE_END;
 } 
+
+//--------------------------------
+// Methods for PluginIBase:
+//--------------------------------
+
+bool SynthIF::on() const                                 { return true; }  // Synth is not part of a rack plugin chain. Always on.
+void SynthIF::setOn(bool /*val*/)                        { }
+unsigned long SynthIF::pluginID()                        { return 0; }
+int SynthIF::id()                                        { return MAX_PLUGINS; } // Set for special block reserved for synth. 
+QString SynthIF::pluginLabel() const                     { return QString(); } 
+QString SynthIF::name() const                            { return synti->name(); }
+QString SynthIF::lib() const                             { return QString(); }
+QString SynthIF::dirPath() const                         { return QString(); }
+QString SynthIF::fileName() const                        { return QString(); }
+QString SynthIF::titlePrefix() const                     { return QString(); }
+MusECore::AudioTrack* SynthIF::track()                   { return static_cast < MusECore::AudioTrack* > (synti); }
+void SynthIF::enableController(unsigned long, bool)  { }
+bool SynthIF::controllerEnabled(unsigned long) const   { return true;}
+void SynthIF::enable2Controller(unsigned long, bool) { }
+bool SynthIF::controllerEnabled2(unsigned long) const  { return true; }
+void SynthIF::enableAllControllers(bool)               { }
+void SynthIF::enable2AllControllers(bool)              { }
+void SynthIF::updateControllers()                        { }
+void SynthIF::activate()                                 { }
+void SynthIF::deactivate()                               { }
+void SynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
+bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
+unsigned long SynthIF::parameters() const                { return 0; }
+unsigned long SynthIF::parametersOut() const             { return 0; }
+void SynthIF::setParam(unsigned long, float)       { }
+float SynthIF::param(unsigned long) const              { return 0.0; }
+float SynthIF::paramOut(unsigned long) const           { return 0.0; }
+const char* SynthIF::paramName(unsigned long)          { return NULL; }
+const char* SynthIF::paramOutName(unsigned long)       { return NULL; }
+LADSPA_PortRangeHint SynthIF::range(unsigned long)
+{
+  LADSPA_PortRangeHint h;
+  h.HintDescriptor = 0;
+  h.LowerBound = 0.0;
+  h.UpperBound = 1.0;
+  return h;
+}
+LADSPA_PortRangeHint SynthIF::rangeOut(unsigned long)
+{
+  LADSPA_PortRangeHint h;
+  h.HintDescriptor = 0;
+  h.LowerBound = 0.0;
+  h.UpperBound = 1.0;
+  return h;
+}
+CtrlValueType SynthIF::ctrlValueType(unsigned long) const { return VAL_LINEAR; }
+CtrlList::Mode SynthIF::ctrlMode(unsigned long) const     { return CtrlList::INTERPOLATE; };
+
+//-------------------------------------------------------------------------
+
+
 
 bool MessSynthIF::nativeGuiVisible() const
       {

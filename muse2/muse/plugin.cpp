@@ -1575,6 +1575,7 @@ bool PluginIBase::addScheduledControlEvent(unsigned long i, float val, unsigned 
   }
   ControlEvent ce;
   ce.unique = false;
+  ce.fromGui = false;                 
   ce.idx = i;
   ce.value = val;
   // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
@@ -2800,6 +2801,7 @@ int PluginI::oscControl(unsigned long port, float value)
   */
   ControlEvent ce;
   ce.unique = _plugin->_isDssiVst;   // Special for messages from vst gui to host - requires processing every message.
+  ce.fromGui = true;                 // It came form the plugin's own GUI.
   ce.idx = cport;
   ce.value = value;
   // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().

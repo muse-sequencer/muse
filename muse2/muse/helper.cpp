@@ -50,14 +50,6 @@
 #include <QFileDialog>
 #include <QString>
 
-#ifdef DSSI_SUPPORT
-#include "dssihost.h"
-#endif
-
-#ifdef VST_SUPPORT
-#include "vst.h"
-#endif
-
 using std::set;
 
 namespace MusEGlobal {

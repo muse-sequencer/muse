@@ -157,7 +157,7 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
 //   scanVstDir
 //---------------------------------------------------------
 
-static void scanDSSIDir(QString& s) // ddskrjo removed const for argument
+static void scanDSSIDir(const QString& s)
 {
       if(MusEGlobal::debugMsg)
         printf("scanDSSIDir: scan DSSI plugin dir <%s>\n", s.toLatin1().constData());
@@ -202,8 +202,7 @@ void initDSSI()
                   char* buffer = new char[n + 1];
                   strncpy(buffer, p, n);
                   buffer[n] = '\0';
-                  QString tmpStr(buffer);
-                  scanDSSIDir(tmpStr);
+                  scanDSSIDir(QString(buffer));
                   delete[] buffer;
                   }
             p = pe;
@@ -270,7 +269,8 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d) : // ddskrjo remov
 DssiSynth::~DssiSynth() 
 { 
   if(dssi)
-    delete dssi;
+  //  delete dssi;
+    printf("DssiSynth::~DssiSynth Error: dssi descriptor is not NULL\n");
 }
 
 //---------------------------------------------------------
@@ -650,9 +650,8 @@ bool DssiSynthIF::init(DssiSynth* s)
           }
         }
       }
-          
-      if (ld->activate)
-            ld->activate(handle);
+
+      activate();
 
       // Set current configuration values.
       if(dssi->configure) 
@@ -1988,6 +1987,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   // p4.0.21
   ControlEvent ce;
   ce.unique = synth->_isDssiVst;    // Special for messages from vst gui to host - requires processing every message.
+  ce.fromGui = true;                // It came form the plugin's own GUI.
   ce.idx = cport;
   ce.value = value;
 
@@ -2305,21 +2305,27 @@ int DssiSynthIF::totalInChannels() const
   return synth->_inports; 
 }
 
+void DssiSynthIF::deactivate3()
+{
+  deactivate();
+}
+
+
 //--------------------------------
 // Methods for PluginIBase:
 //--------------------------------
 
-bool DssiSynthIF::on() const                                 { return true; }  // Synth is not part of a rack plugin chain. Always on.
-void DssiSynthIF::setOn(bool /*val*/)                        { }   
+//bool DssiSynthIF::on() const                                 { return true; }  // Synth is not part of a rack plugin chain. Always on.
+//void DssiSynthIF::setOn(bool /*val*/)                        { }   
 unsigned long DssiSynthIF::pluginID()                        { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->UniqueID : 0; }   
 int DssiSynthIF::id()                                        { return MAX_PLUGINS; } // Set for special block reserved for dssi synth. p4.0.20
 QString DssiSynthIF::pluginLabel() const                     { return (synth && synth->dssi) ? QString(synth->dssi->LADSPA_Plugin->Label) : QString(); } 
-QString DssiSynthIF::name() const                            { return synti->name(); }
+//QString DssiSynthIF::name() const                            { return synti->name(); }
 QString DssiSynthIF::lib() const                             { return synth ? synth->completeBaseName() : QString(); }
 QString DssiSynthIF::dirPath() const                         { return synth ? synth->absolutePath() : QString(); }
 QString DssiSynthIF::fileName() const                        { return synth ? synth->fileName() : QString(); }
-QString DssiSynthIF::titlePrefix() const                     { return QString(); }
-MusECore::AudioTrack* DssiSynthIF::track()                   { return (MusECore::AudioTrack*)synti; }
+//QString DssiSynthIF::titlePrefix() const                     { return QString(); }
+//MusECore::AudioTrack* DssiSynthIF::track()                   { return (MusECore::AudioTrack*)synti; }
 void DssiSynthIF::enableController(unsigned long i, bool v)  { controls[i].enCtrl = v; } 
 bool DssiSynthIF::controllerEnabled(unsigned long i) const   { return controls[i].enCtrl; }  
 void DssiSynthIF::enable2Controller(unsigned long i, bool v) { controls[i].en2Ctrl = v; }     
@@ -2338,10 +2344,38 @@ void DssiSynthIF::enable2AllControllers(bool v)
   for(unsigned long i = 0; i < synth->_controlInPorts; ++i)
     controls[i].en2Ctrl = v; 
 }
+void DssiSynthIF::updateControllers() { }
+void DssiSynthIF::activate()
+{
+  if(synth && synth->dssi && synth->dssi->LADSPA_Plugin && synth->dssi->LADSPA_Plugin->activate)
+    //for (int i = 0; i < instances; ++i)
+    //  _plugin->activate(handle[i]);
+    synth->dssi->LADSPA_Plugin->activate(handle);
 
-void DssiSynthIF::updateControllers()                        { }
-void DssiSynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
-bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
+// REMOVE Tim. Or keep? From PluginI::activate().
+//   if (initControlValues) {
+//         for (unsigned long i = 0; i < controlPorts; ++i) {
+//               controls[i].val = controls[i].tmpVal;
+//               }
+//         }
+//   else {
+//         // get initial control values from plugin
+//         for (unsigned long i = 0; i < controlPorts; ++i) {
+//               controls[i].tmpVal = controls[i].val;
+//               }
+//         }
+}
+void DssiSynthIF::deactivate()
+{
+  if(!synth || !synth->dssi || !synth->dssi->LADSPA_Plugin ||!synth->dssi->LADSPA_Plugin->deactivate)
+    return;
+  //for (int i = 0; i < instances; ++i)
+  //  synth->dssi->LADSPA_Plugin->deactivate(handle[i]);
+  synth->dssi->LADSPA_Plugin->deactivate(handle);
+}
+
+//void DssiSynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
+//bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
 
 unsigned long DssiSynthIF::parameters() const                { return synth ? synth->_controlInPorts : 0; }
 unsigned long DssiSynthIF::parametersOut() const             { return synth ? synth->_controlOutPorts : 0; }

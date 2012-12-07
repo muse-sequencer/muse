@@ -114,7 +114,7 @@ class DssiSynth : public Synth {
 //    VSTi synthesizer instance
 //---------------------------------------------------------
 
-class DssiSynthIF : public SynthIF, public PluginIBase
+class DssiSynthIF : public SynthIF
       {
       DssiSynth* synth;
       LADSPA_Handle handle;
@@ -143,6 +143,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       
       virtual ~DssiSynthIF();
 
+      bool init(DssiSynth* s);
+
       virtual DssiSynth* dssiSynth() { return synth; }
       virtual SynthI* dssiSynthI()   { return synti; }
       
@@ -169,7 +171,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       virtual int totalOutChannels() const;
       virtual int totalInChannels() const;
       
-      virtual void deactivate3() {}
+      virtual void deactivate3();
       
       virtual const char* getPatchName(int, int, bool);
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
@@ -179,11 +181,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       virtual float getParameter(unsigned long /*idx*/) const;
       virtual float getParameterOut(unsigned long n) const;
       virtual void setParameter(unsigned long /*idx*/, float /*value*/);
-      
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*);
       
-      bool init(DssiSynth* s);
-
       #ifdef OSC_SUPPORT
       OscDssiIF& oscIF() { return _oscif; }
       int oscProgram(unsigned long prog, unsigned long bank);
@@ -196,17 +195,13 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       //-------------------------
       // Methods for PluginIBase:
       //-------------------------
-      bool on() const;       
-      void setOn(bool val);   
+      
       unsigned long pluginID();        
       int id();
       QString pluginLabel() const;  
-      QString name() const;
       QString lib() const;            
       QString dirPath() const;
       QString fileName() const;
-      QString titlePrefix() const;
-      MusECore::AudioTrack* track();          
       void enableController(unsigned long i, bool v = true);      
       bool controllerEnabled(unsigned long i) const;          
       void enable2Controller(unsigned long i, bool v = true);      
@@ -214,8 +209,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       void enableAllControllers(bool v = true);
       void enable2AllControllers(bool v = true);
       void updateControllers();
-      void writeConfiguration(int level, Xml& xml);
-      bool readConfiguration(Xml& xml, bool readPreset=false);
+      void activate();
+      void deactivate();
 
       unsigned long parameters() const;                            
       unsigned long parametersOut() const;

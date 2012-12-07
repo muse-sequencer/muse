@@ -71,6 +71,7 @@ extern void initMidiController();
 extern void initMetronome();
 extern void initOSC();
 extern void initVST();
+extern void initVST_Native();
 extern void initPlugins();
 extern void initDSSI();
 extern void readConfiguration();
@@ -238,6 +239,9 @@ static void usage(const char* prog, const char* txt)
 #ifdef VST_SUPPORT
       fprintf(stderr, "   -V       Don't load VST plugins\n");
 #endif
+#ifdef VST_NATIVE_SUPPORT
+      fprintf(stderr, "   -N       Don't load Native VST plugins\n");
+#endif
 #ifdef DSSI_SUPPORT
       fprintf(stderr, "   -I       Don't load DSSI plugins\n");
 #endif
@@ -352,6 +356,9 @@ int main(int argc, char* argv[])
 #ifdef VST_SUPPORT
       optstr += QString("V");
 #endif
+#ifdef VST_NATIVE_SUPPORT
+      optstr += QString("N");
+#endif
 #ifdef DSSI_SUPPORT
       optstr += QString("I");
 #endif
@@ -398,6 +405,7 @@ int main(int argc, char* argv[])
                   case 'Y': MusEGlobal::midiRTPrioOverride = atoi(optarg); break;
                   case 'p': MusEGlobal::loadPlugins = false; break;
                   case 'V': MusEGlobal::loadVST = false; break;
+                  case 'N': MusEGlobal::loadNativeVST = false; break;
                   case 'I': MusEGlobal::loadDSSI = false; break;
                   case 'L': MusEGlobal::useLASH = false; break;  
                   case 'y': MusEGlobal::usePythonBridge = true; break;
@@ -649,6 +657,9 @@ int main(int argc, char* argv[])
 
       if (MusEGlobal::loadVST)
             MusECore::initVST();
+
+      if (MusEGlobal::loadNativeVST)
+            MusECore::initVST_Native();
 
       if(MusEGlobal::loadDSSI)
             MusECore::initDSSI();

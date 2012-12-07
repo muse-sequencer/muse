@@ -34,6 +34,7 @@
 #include "midiport.h"
 #include "track.h"
 #include "stringparam.h"
+#include "plugin.h"
 
 #include <QFileInfo>
 
@@ -67,7 +68,7 @@ class Synth {
       QString _version;
 
    public:
-      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, SYNTH_TYPE_END };
+      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, SYNTH_TYPE_END };
 
       Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver);
       
@@ -119,7 +120,7 @@ class MessSynth : public Synth {
 //      0xNN                           The synth's unique ID byte
 //---------------------------------------------------------
 
-class SynthIF {
+class SynthIF : public PluginIBase {
       
    protected:
       SynthI* synti;
@@ -159,6 +160,47 @@ class SynthIF {
       virtual float getParameter(unsigned long idx) const = 0;        
       virtual void setParameter(unsigned long idx, float value) = 0;  
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) = 0;
+
+      //-------------------------
+      // Methods for PluginIBase:
+      //-------------------------
+      
+      virtual bool on() const;
+      virtual void setOn(bool val);
+      virtual unsigned long pluginID();
+      virtual int id();
+      virtual QString pluginLabel() const;
+      virtual QString name() const;
+      virtual QString lib() const;
+      virtual QString dirPath() const;
+      virtual QString fileName() const;
+      virtual QString titlePrefix() const;
+      virtual MusECore::AudioTrack* track();
+      virtual void enableController(unsigned long i, bool v = true);
+      virtual bool controllerEnabled(unsigned long i) const;
+      virtual void enable2Controller(unsigned long i, bool v = true);
+      virtual bool controllerEnabled2(unsigned long i) const;
+      virtual void enableAllControllers(bool v = true);
+      virtual void enable2AllControllers(bool v = true);
+      virtual void updateControllers();
+      virtual void activate();
+      virtual void deactivate();
+
+      virtual void writeConfiguration(int level, Xml& xml);
+      virtual bool readConfiguration(Xml& xml, bool readPreset=false);
+
+      virtual unsigned long parameters() const;
+      virtual unsigned long parametersOut() const;
+      virtual void setParam(unsigned long i, float val);
+      virtual float param(unsigned long i) const;
+      virtual float paramOut(unsigned long i) const;
+      virtual const char* paramName(unsigned long i);
+      virtual const char* paramOutName(unsigned long i);
+      // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
+      virtual LADSPA_PortRangeHint range(unsigned long i);
+      virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
+      virtual CtrlValueType ctrlValueType(unsigned long i) const;
+      virtual CtrlList::Mode ctrlMode(unsigned long i) const;
       };
 
 //---------------------------------------------------------
@@ -207,6 +249,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       friend class MessSynthIF;
       friend class DssiSynthIF;
       friend class VstSynthIF;
+      friend class VstNativeSynthIF;
       
       SynthI();
       virtual ~SynthI();

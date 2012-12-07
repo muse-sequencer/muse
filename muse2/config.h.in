@@ -24,6 +24,8 @@
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
 #cmakedefine VST_SUPPORT
+#cmakedefine VST_NATIVE_SUPPORT
+#cmakedefine VST_SDK_SUPPORT
 #cmakedefine USE_SSE
 
 #define VERSION          "${MusE_VERSION_FULL}"

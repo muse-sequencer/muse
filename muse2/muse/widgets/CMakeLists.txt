@@ -105,6 +105,7 @@ QT4_WRAP_CPP (widget_mocs
       view.h
       vscale.h
       visibletracks.h
+      vst_native_editor.h
       warn_bad_timing.h
       )
 
@@ -231,6 +232,7 @@ file (GLOB widgets_source_files
       view.cpp
       vscale.cpp
       visibletracks.cpp
+      vst_native_editor.cpp
       warn_bad_timing.cpp
       )
 

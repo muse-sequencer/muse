@@ -138,6 +138,7 @@ file (GLOB core_source_files
       undo.cpp
       value.cpp
       vst.cpp
+      vst_native.cpp
       wave.cpp
       waveevent.cpp 
       wavetrack.cpp 

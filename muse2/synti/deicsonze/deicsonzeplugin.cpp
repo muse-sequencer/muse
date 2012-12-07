@@ -311,6 +311,8 @@ void DeicsOnzeGui::addPluginSlider(int index, QString text, bool isLog,
 }
 
 void DeicsOnzeGui::buildGuiReverb() {
+  if(!_deicsOnze->_pluginIReverb)
+    return;
   MusECore::PluginI* plugI = _deicsOnze->_pluginIReverb;
   QString name = plugI->name();
   name.resize(name.size()-2);
@@ -355,6 +357,8 @@ void DeicsOnzeGui::buildGuiReverb() {
 }
 
 void DeicsOnzeGui::buildGuiChorus() {
+  if(!_deicsOnze->_pluginIChorus)
+    return;
   MusECore::PluginI* plugI = _deicsOnze->_pluginIChorus;
   QString name = plugI->name();
   name.resize(name.size()-2);

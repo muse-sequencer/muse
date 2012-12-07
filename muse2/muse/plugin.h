@@ -274,6 +274,9 @@ class PluginIBase
       virtual void enable2AllControllers(bool v = true) = 0;
       virtual void updateControllers() = 0;
       
+      virtual void activate() = 0;
+      virtual void deactivate() = 0;
+      
       virtual void writeConfiguration(int level, Xml& xml) = 0;
       virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
       
@@ -285,6 +288,7 @@ class PluginIBase
       virtual float paramOut(unsigned long i) const = 0;
       virtual const char* paramName(unsigned long i) = 0;
       virtual const char* paramOutName(unsigned long i) = 0;
+      // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
       virtual LADSPA_PortRangeHint range(unsigned long i) = 0;
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i) = 0;
       

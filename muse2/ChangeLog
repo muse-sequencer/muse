@@ -1,3 +1,10 @@
+07.12.2012:
+         * Feature: Native VST instruments support. Best results are from compiling with the vst sdk. (Tim)
+           Featuring: True sample-accurate parameter automation, full native GUI support for TOUCH, WRITE modes.
+           New cmake options for enabling native vst, enabling true sdk support, and the vst header path.
+           Plugins environment variable is currently VST_NATIVE_PATH else "/usr/lib/vst:/usr/local/lib/vst".
+           TODOs: Parameter ranges: fixed at linear 0.0 - 1.0 for now. Program categories.
+                  Dynamic port changes. Plugins correct path and env var? No rack effect plugins yet. 
 25.11.2012:
          - Changed playback of midi in editors to default to on (rj)
 21.11.2012:

@@ -36,7 +36,9 @@ struct ControlEvent
   // Unique: Whether the item must not be skipped, even if it has the same 
   //  (possibly rounded) frame and index as the previous item. This is mainly for 
   //  dssi-vst guis, they require acknowledgment of every message.
-  bool unique; 
+  bool unique;
+  // Whether or not the event is from a synth or effect's own GUI.
+  bool fromGui;
   unsigned long idx;
   float value;
   unsigned long frame;    

@@ -1175,7 +1175,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       {
       if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
       {
-        MusECore::SynthI* synth = (MusECore::SynthI*)t;
+        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
   
         QMenu* p = new QMenu;
         QAction* gact = p->addAction(tr("show gui"));
@@ -1191,7 +1191,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         // If it has a gui but we don't have OSC, disable the action.
         #ifndef OSC_SUPPORT
         #ifdef DSSI_SUPPORT
-        if(dynamic_cast<MusECore::DssiSynthIF*>(synth->sif()))
+        if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::DSSI_SYNTH)
         {
           nact->setChecked(false);
           nact->setEnabled(false);
@@ -1233,10 +1233,14 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       #ifndef OSC_SUPPORT
       #ifdef DSSI_SUPPORT
       MusECore::MidiDevice* dev = port->device();
-      if(dev && dev->isSynti() && (dynamic_cast<MusECore::DssiSynthIF*>(((MusECore::SynthI*)dev)->sif())))
+      if(dev && dev->isSynti()) 
       {
-        nact->setChecked(false);
-        nact->setEnabled(false);
+        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(dev);
+        if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::DSSI_SYNTH)
+        {
+          nact->setChecked(false);
+          nact->setEnabled(false);
+        }
       }  
       #endif
       #endif

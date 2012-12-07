@@ -173,12 +173,11 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
       const char* sub = strstr(p, ba.constData());
       if(sub == NULL) 
         continue;
-      
-      // TODO: Fix this dynamic cast - it may be a slowdown.
-      DssiSynthIF* instance = dynamic_cast<DssiSynthIF*>(synti->sif());
-      if(!instance)
-        break;
-        
+
+      if(!synti->sif() || !synti->synth() || synti->synth()->synthType() != MusECore::Synth::DSSI_SYNTH)
+        continue;
+      DssiSynthIF* instance = static_cast<DssiSynthIF*>(synti->sif());
+
       p = sub + ba.length();
       if (*p != '/' || *(p + 1) == 0)
       {
