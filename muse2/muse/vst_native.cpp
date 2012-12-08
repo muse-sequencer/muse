@@ -390,7 +390,7 @@ static void scanVstNativeLib(QFileInfo& fi)
   
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
-  if(vst_version < 2 || !((plugin->flags & effFlagsIsSynth) || (plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
+  if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
   {
     if(MusEGlobal::debugMsg)
       fprintf(stderr, "Plugin is not a synth\n");
@@ -637,7 +637,7 @@ AEffect* VstNativeSynth::instantiate()
 
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
-  if(vst_version < 2 || !((plugin->flags & effFlagsIsSynth) || (plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
+  if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
   {
     if(MusEGlobal::debugMsg)
       fprintf(stderr, "Plugin is not a synth\n");
