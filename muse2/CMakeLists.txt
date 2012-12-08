@@ -37,7 +37,7 @@ if (NOT DEFINED LIB_SUFFIX)
 endif (NOT DEFINED LIB_SUFFIX)
 
 if (NOT DEFINED VST_HEADER_PATH)
-        SET(VST_HEADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vestige" CACHE PATH "Path to vst header files (aeffectx.h). Default is ./vestige. See ENABLE_VST_SDK.")
+        SET(VST_HEADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vestige" CACHE PATH "Path to vst header files (aeffectx.h). Default is ./vestige. See ENABLE_VST_VESTIGE.")
 endif (NOT DEFINED VST_HEADER_PATH)
 message(" vst header path: " ${VST_HEADER_PATH} )
 include_directories(${VST_HEADER_PATH})
@@ -123,8 +123,8 @@ option ( ENABLE_LASH        "Enable LASH Audio Session Handler (or LADISH compat
 option ( ENABLE_OSC         "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)
 option ( ENABLE_DSSI        "Enable Disposable Soft Synth Interface (dssi) (OSC also recommended)" ON)
 option ( ENABLE_VST         "Enable VST/win support (deprecated)"                                OFF)
-option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_SDK and VST_HEADER_PATH)" ON)
-option ( ENABLE_VST_SDK     "Enable VST SDK support (requires SDK, recommended for best results!)" OFF)
+option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
+option ( ENABLE_VST_VESTIGE "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_EXPERIMENTAL "Enable building experimental features."                             OFF)
 option ( ENABLE_PYTHON      "Enable Python control support."                                      OFF)
@@ -340,11 +340,11 @@ endif (ENABLE_VST_NATIVE)
 # find_file creates a cached variable. We don't want VST_HEADER_CHECK cached.
 UNSET (VST_HEADER_CHECK CACHE)
 
-if (ENABLE_VST_SDK)
-  SET (VST_SDK_SUPPORT TRUE)
-else (ENABLE_VST_SDK) 
-  SET (VST_SDK_SUPPORT FALSE)
-endif (ENABLE_VST_SDK)
+if (ENABLE_VST_VESTIGE)
+  SET (VST_VESTIGE_SUPPORT TRUE)
+else (ENABLE_VST_VESTIGE) 
+  SET (VST_VESTIGE_SUPPORT FALSE)
+endif (ENABLE_VST_VESTIGE)
 
 ##
 ## TODO

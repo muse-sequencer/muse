@@ -51,7 +51,7 @@
 #define NEW_PLUGIN_ENTRY_POINT "VSTPluginMain"
 
 // Enable debugging messages
-//#define VST_NATIVE_DEBUG 
+//#define VST_NATIVE_DEBUG
 //#define VST_NATIVE_DEBUG_PROCESS
 
 namespace MusECore {
@@ -95,18 +95,6 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   // call effEditIdle for all open editors too)
                   return 0;
 
-            case audioMasterPinConnected:
-                  // inquire if an input or output is beeing connected;
-                  // index enumerates input or output counting from zero:
-                  // value is 0 for input and != 0 otherwise. note: the
-                  // return value is 0 for <true> such that older versions
-                  // will always return true.
-                  return 1;
-
-            case audioMasterWantMidi:
-                  // <value> is a filter which is currently ignored
-                  return 0;
-
             case audioMasterGetTime:
                   // returns const VstTimeInfo* (or 0 if not supported)
                   // <value> should contain a mask indicating which fields are required
@@ -118,29 +106,8 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   // VstEvents* in <ptr>
                   return 0;
 
-            case audioMasterSetTime:
-                  // VstTimenfo* in <ptr>, filter in <value>, not supported
-                  return 0;
-
-            case audioMasterTempoAt:
-                  // returns tempo (in bpm * 10000) at sample frame location passed in <value>
-                  return 0;
-
-            case audioMasterGetNumAutomatableParameters:
-                  return 0;
-
-            case audioMasterGetParameterQuantization:
-                     // returns the integer value for +1.0 representation,
-                   // or 1 if full single float precision is maintained
-                     // in automation. parameter index in <value> (-1: all, any)
-                  return 0;
-
             case audioMasterIOChanged:
                    // numInputs and/or numOutputs has changed
-                  return 0;
-
-            case audioMasterNeedIdle:
-                   // plug needs idle calls (outside its editor window)
                   return 0;
 
             case audioMasterSizeWindow:
@@ -157,17 +124,6 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   return 0;
 
             case audioMasterGetOutputLatency:
-                  return 0;
-
-            case audioMasterGetPreviousPlug:
-                   // input pin in <value> (-1: first to come), returns cEffect*
-                  return 0;
-
-            case audioMasterGetNextPlug:
-                   // output pin in <value> (-1: first to come), returns cEffect*
-
-            case audioMasterWillReplaceOrAccumulate:
-                   // returns: 0: not supported, 1: replace, 2: accumulate
                   return 0;
 
             case audioMasterGetCurrentProcessLevel:
@@ -197,14 +153,6 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
             case audioMasterOfflineGetCurrentMetaPass:
                   return 0;
 
-            case audioMasterSetOutputSampleRate:
-                  // for variable i/o, sample rate in <opt>
-                  return 0;
-
-            case audioMasterGetSpeakerArrangement:
-                  // (long)input in <value>, output in <ptr>
-                  return 0;
-
             case audioMasterGetVendorString:
                   // fills <ptr> with a string identifying the vendor (max 64 char)
                   strcpy ((char*) ptr, "MusE");
@@ -223,10 +171,6 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   // no definition, vendor specific handling
                   return 0;
 
-            case audioMasterSetIcon:
-                  // void* in <ptr>, format not defined yet
-                  return 0;
-
             case audioMasterCanDo:
                   // string in ptr, see below
                   return 0;
@@ -234,14 +178,6 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
             case audioMasterGetLanguage:
                   // see enum
                   return kVstLangEnglish;
-
-            case audioMasterOpenWindow:
-                  // returns platform specific ptr
-                  return 0;
-
-            case audioMasterCloseWindow:
-                  // close window, platform specific handle in <ptr>
-                  return 0;
 
             case audioMasterGetDirectory:
                   // get plug directory, FSSpec on MAC, else char*
@@ -265,6 +201,79 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
 
             case audioMasterCloseFileSelector:
                   return 0;
+                  
+#ifdef VST_FORCE_DEPRECATED
+
+            case audioMasterGetSpeakerArrangement:
+                  // (long)input in <value>, output in <ptr>
+                  return 0;
+
+            case audioMasterPinConnected:
+                  // inquire if an input or output is beeing connected;
+                  // index enumerates input or output counting from zero:
+                  // value is 0 for input and != 0 otherwise. note: the
+                  // return value is 0 for <true> such that older versions
+                  // will always return true.
+                  //return 1;
+                  return 0;
+
+            // VST 2.0 opcodes...
+            case audioMasterWantMidi:
+                  // <value> is a filter which is currently ignored
+                  return 0;
+
+            case audioMasterSetTime:
+                  // VstTimenfo* in <ptr>, filter in <value>, not supported
+                  return 0;
+
+            case audioMasterTempoAt:
+                  // returns tempo (in bpm * 10000) at sample frame location passed in <value>
+                  return 0;  // TODO:
+
+            case audioMasterGetNumAutomatableParameters:
+                  return 0;
+
+            case audioMasterGetParameterQuantization:
+                     // returns the integer value for +1.0 representation,
+                   // or 1 if full single float precision is maintained
+                     // in automation. parameter index in <value> (-1: all, any)
+                  //return 0;
+                  return 1;
+
+            case audioMasterNeedIdle:
+                   // plug needs idle calls (outside its editor window)
+                  return 0;
+
+            case audioMasterGetPreviousPlug:
+                   // input pin in <value> (-1: first to come), returns cEffect*
+                  return 0;
+
+            case audioMasterGetNextPlug:
+                   // output pin in <value> (-1: first to come), returns cEffect*
+                  return 0;
+
+            case audioMasterWillReplaceOrAccumulate:
+                   // returns: 0: not supported, 1: replace, 2: accumulate
+                  //return 0;
+                  return 1;
+
+            case audioMasterSetOutputSampleRate:
+                  // for variable i/o, sample rate in <opt>
+                  return 0;
+
+            case audioMasterSetIcon:
+                  // void* in <ptr>, format not defined yet
+                  return 0;
+
+            case audioMasterOpenWindow:
+                  // returns platform specific ptr
+                  return 0;
+
+            case audioMasterCloseWindow:
+                  // close window, platform specific handle in <ptr>
+                  return 0;
+                  
+#endif
                   
             default:
                   break;
@@ -475,7 +484,7 @@ VstNativeSynth::VstNativeSynth(const QFileInfo& fi, AEffect* plugin, const QStri
   _outports = plugin->numOutputs;
   _controlInPorts = plugin->numParams;
   _inPlaceCapable = false; //(plugin->flags & effFlagsCanReplacing) && (_inports == _outports) && MusEGlobal::config.vstInPlace;
-#ifdef VST_SDK_SUPPORT
+#ifndef VST_VESTIGE_SUPPORT
   _hasChunks = plugin->flags & effFlagsProgramChunks;
 #else
   _hasChunks = false;
@@ -812,8 +821,17 @@ bool VstNativeSynthIF::init(Synth* s)
           cl = icl->second;
           ///controls[cip].val = cl->curVal();
           //setParam(i, cl->curVal());
+#ifndef VST_VESTIGE_SUPPORT
           if(dispatch(effCanBeAutomated, i, 0, NULL, 0.0f) == 1)
-            _plugin->setParameter(_plugin, i, cl->curVal());
+          {
+#endif            
+            double v = cl->curVal();
+            if(v != _plugin->getParameter(_plugin, i))
+              _plugin->setParameter(_plugin, i, v);
+#ifndef VST_VESTIGE_SUPPORT
+          }
+#endif
+
 #ifdef VST_NATIVE_DEBUG
           else  
             fprintf(stderr, "VstNativeSynthIF::init %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), i);
@@ -1008,7 +1026,7 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                      !strcmp((char*)ptr, "supplyIdle"))               
                     return 1;
 
-#if 0 //ifdef VST_SDK_SUPPORT
+#if 0 //ifndef VST_VESTIGE_SUPPORT
                   else
                   if(!strcmp((char*)ptr, "openFileSelector") ||       
                      !strcmp((char*)ptr, "closeFileSelector"))        
@@ -1045,7 +1063,7 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                   guiAutomationEnd(index);
                   return 1;  
 
-#if 0 //ifdef VST_SDK_SUPPORT
+#if 0 //ifndef VST_VESTIGE_SUPPORT
             case audioMasterOpenFileSelector:
                   // open a fileselector window with VstFileSelect* in <ptr>
                   return 0;
@@ -1054,7 +1072,7 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                   return 0;
 #endif
 
-#ifdef VST_NATIVE_FORCE_DEPRECATED
+#ifdef VST_FORCE_DEPRECATED
                   
             case audioMasterGetSpeakerArrangement:
                   // (long)input in <value>, output in <ptr>
@@ -1332,7 +1350,7 @@ void VstNativeSynthIF::queryPrograms()
       {
         buf[0] = 0;
 
-//#ifdef VST_SDK_SUPPORT
+//#ifndef VST_VESTIGE_SUPPORT
         // value = category. -1 = regular linear.
         if(dispatch(effGetProgramNameIndexed, prog, -1, buf, 0.0f) == 0)  
         {
@@ -1340,15 +1358,18 @@ void VstNativeSynthIF::queryPrograms()
           dispatch(effSetProgram, 0, prog, NULL, 0.0f);
           dispatch(effGetProgramName, 0, 0, buf, 0.0f);
           need_restore = true;
-//#ifdef VST_SDK_SUPPORT
+//#ifndef VST_VESTIGE_SUPPORT
         }
 //#endif
 
+        int bankH = (prog >> 14) & 0x7f;
+        int bankL = (prog >> 7) & 0x7f;
+        int patch = prog & 0x7f;
         VST_Program p;
         p.name    = QString(buf);
         //p.program = prog & 0x7f;
         //p.bank    = prog << 7;
-        p.program = prog;
+        p.program = (bankH << 16) | (bankL << 8) | patch;
         programs.push_back(p);
       }
 
@@ -1380,7 +1401,7 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
   if(prog == 0xff)
     prog = 0;
   
-  int p = (bankH << 14) + (bankL << 7) + prog;
+  int p = (bankH << 14) | (bankL << 7) | prog;
 
   if(p >= _plugin->numPrograms)
   {
@@ -1391,16 +1412,20 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
   //for (unsigned short i = 0; i < instances(); ++i)
   //{
     // "host calls this before a new program (effSetProgram) is loaded"
+#ifndef VST_VESTIGE_SUPPORT
     //if(dispatch(effBeginSetProgram, 0, 0, NULL, 0.0f) == 1)  // TESTED: Usually it did not acknowledge. So IGNORE it.
     dispatch(effBeginSetProgram, 0, 0, NULL, 0.0f);
     //{
+#endif      
       dispatch(effSetProgram, 0, p, NULL, 0.0f);
       //dispatch(effSetProgram, 0, prog, NULL, 0.0f);
       // "host calls this after the new program (effSetProgram) has been loaded"
+#ifndef VST_VESTIGE_SUPPORT
       dispatch(effEndSetProgram, 0, 0, NULL, 0.0f);
     //}
     //else
     //  fprintf(stderr, "VstNativeSynthIF::doSelectProgram bankH:%d bankL:%d prog:%d Effect did not acknowledge effBeginSetProgram\n", bankH, bankL, prog);
+#endif
   //}
     
   // TODO: Is this true of VSTs? See the similar section in dssihost.cpp  // REMOVE Tim.
@@ -1441,18 +1466,17 @@ const char* VstNativeSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/
   unsigned long  program = prog & 0x7f;
   unsigned long  lbank   = (prog >> 8) & 0xff;
   unsigned long  hbank   = (prog >> 16) & 0xff;
-
   if (lbank == 0xff)
         lbank = 0;
   if (hbank == 0xff)
         hbank = 0;
-  prog = (hbank << 14) + (lbank << 7) + program;
-
-  if(prog < _plugin->numPrograms)
+  unsigned long p = (hbank << 16) | (lbank << 8) | program;
+  int vp          = (hbank << 14) | (lbank << 7) | program;
+  if((int)vp < _plugin->numPrograms)
   {
     for(std::vector<VST_Program>::const_iterator i = programs.begin(); i != programs.end(); ++i)
     {
-      if(i->program == program)
+      if(i->program == p)
         return i->name.toLatin1().constData();
     }
   }
@@ -1610,7 +1634,7 @@ void VstNativeSynthIF::guiAutomationEnd(unsigned long param_idx)
 int VstNativeSynthIF::guiControlChanged(unsigned long param_idx, float value)
 {
   #ifdef VST_NATIVE_DEBUG
-  fprintf(stderr, "VstNativeSynthIF::guiControlChanged received oscControl port:%lu val:%f\n", port, value);
+  fprintf(stderr, "VstNativeSynthIF::guiControlChanged received oscControl port:%lu val:%f\n", param_idx, value);
   #endif
 
   if(param_idx >= _synth->inControls())
@@ -1659,7 +1683,7 @@ int VstNativeSynthIF::guiControlChanged(unsigned long param_idx, float value)
 
 void VstNativeSynthIF::write(int level, Xml& xml) const
 {
-#ifdef VST_SDK_SUPPORT
+#ifndef VST_VESTIGE_SUPPORT
   if(_synth->hasChunks())
   {
     //---------------------------------------------
@@ -1741,15 +1765,6 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
   int chn = e.channel();
   int a   = e.dataA();
   int b   = e.dataB();
-
-  int len = e.len();
-  char ca[len + 2];
-
-  ca[0] = 0xF0;
-  memcpy(ca + 1, (const char*)e.data(), len);
-  ca[len + 1] = 0xF7;
-
-  len += 2;
 
   #ifdef VST_NATIVE_DEBUG
   fprintf(stderr, "VstNativeSynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", type, chn, a, b);
@@ -1979,7 +1994,7 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
                 {
                   if(_synth->hasChunks())
                   {
-#ifdef VST_SDK_SUPPORT
+#ifndef VST_VESTIGE_SUPPORT
                     int chunk_flags = data[9];
                     if(chunk_flags & VST_NATIVE_CHUNK_FLAG_COMPRESSED)
                       fprintf(stderr, "chunk flags:%x compressed chunks not supported yet.\n", chunk_flags);
@@ -1987,7 +2002,7 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
                     {
                       fprintf(stderr, "%s: loading chunk from sysex!\n", name().toLatin1().constData());
                       // 10 = 2 bytes header + "VSTSAVE" + 1 byte flags (compression etc)
-                      len = dispatch(effSetChunk, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
+                      dispatch(effSetChunk, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
                     }
 #else
                     fprintf(stderr, "support for vst chunks not compiled in!\n");
@@ -2061,6 +2076,13 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
         {
           // FIXME TODO: Sysex support.
           return false;
+
+          //int len = e.len();
+          //char ca[len + 2];
+          //ca[0] = 0xF0;      // FIXME Stack overflow with big dumps. Use std::vector<char> or something else.
+          //memcpy(ca + 1, (const char*)e.data(), len);
+          //ca[len + 1] = 0xF7;
+          //len += 2;
 
           // NOTE: There is a limit on the size of a sysex. Got this:
           // "VstNativeSynthIF::processEvent midi event is MusECore::ME_SYSEX"
@@ -2229,10 +2251,19 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
         //_controls[k].val = track->controller()->value(genACnum(id(), k), frame,
         //                        no_auto || !_controls[k].enCtrl || !_controls[k].en2Ctrl,
         //                        &nextFrame);
+#ifndef VST_VESTIGE_SUPPORT
         if(dispatch(effCanBeAutomated, k, 0, NULL, 0.0f) == 1)
-          _plugin->setParameter(_plugin, k, track->controller()->value(genACnum(id(), k), frame,
-                                 no_auto || !_controls[k].enCtrl || !_controls[k].en2Ctrl,
-                                 &nextFrame));
+        {
+#endif          
+          double v = track->controller()->value(genACnum(id(), k), frame,
+                                   no_auto || !_controls[k].enCtrl || !_controls[k].en2Ctrl,
+                                   &nextFrame);
+          if(v != _plugin->getParameter(_plugin, k))
+            _plugin->setParameter(_plugin, k, v);
+#ifndef VST_VESTIGE_SUPPORT
+        }
+#endif
+
 #ifdef VST_NATIVE_DEBUG
         else
           fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), k);
@@ -2307,8 +2338,16 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
       index = v.idx;
       // Set the ladspa control port value.
       //controls[v.idx].val = v.value;
+#ifndef VST_VESTIGE_SUPPORT
       if(dispatch(effCanBeAutomated, v.idx, 0, NULL, 0.0f) == 1)
-        _plugin->setParameter(_plugin, v.idx, v.value);
+      {
+#endif        
+        if(v.value != _plugin->getParameter(_plugin, v.idx))
+          _plugin->setParameter(_plugin, v.idx, v.value);
+#ifndef VST_VESTIGE_SUPPORT
+      }
+#endif
+
 #ifdef VST_NATIVE_DEBUG
       else
         fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), v.idx);
@@ -2481,7 +2520,7 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
     {
       _plugin->processReplacing(_plugin, in_bufs, out_bufs, nsamp);
     }
-#if 0 //ifdef VST_NATIVE_FORCE_DEPRECATED
+#if 0 //ifdef VST_FORCE_DEPRECATED
     else
     {
       // TODO: This is not right, we don't accumulate data here. Depricated now, and frowned upon anyway...
@@ -2549,10 +2588,10 @@ void VstNativeSynthIF::activate()
   //for (unsigned short i = 0; i < instances(); ++i) {
   //        dispatch(i, effMainsChanged, 0, 1, NULL, 0.0f);
   dispatch(effMainsChanged, 0, 1, NULL, 0.0f);
-//#ifdef VST_SDK_SUPPORT
+#ifndef VST_VESTIGE_SUPPORT
   //dispatch(i, effStartProcess, 0, 0, NULL, 0.0f);
   dispatch(effStartProcess, 0, 0, NULL, 0.0f);
-//#endif
+#endif
   //}
 
 // REMOVE Tim. Or keep? From PluginI::activate().
@@ -2571,10 +2610,10 @@ void VstNativeSynthIF::activate()
 void VstNativeSynthIF::deactivate()
 {
   //for (unsigned short i = 0; i < instances(); ++i) {
-//#ifdef VST_SDK_SUPPORT
+#ifndef VST_VESTIGE_SUPPORT
   //dispatch(i, effStopProcess, 0, 0, NULL, 0.0f);
   dispatch(effStopProcess, 0, 0, NULL, 0.0f);
-//#endif
+#endif
   //dispatch(i, effMainsChanged, 0, 0, NULL, 0.0f);
   dispatch(effMainsChanged, 0, 0, NULL, 0.0f);
   //}

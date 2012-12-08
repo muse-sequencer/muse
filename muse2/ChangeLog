@@ -1,3 +1,10 @@
+08.12.2012:
+         - Native VST fixes and changes. (Tim)
+           Redid cmake options. Please do 'prune' and carefully reconfigure.
+           Fixed track info banks and patch popup list bank issues.
+           Fixed plugins such as NoizeMaker: Kill harmful redundancies - call getParameter before setParameter.
+           Fixed crash reloading song with huge-chunk plugin like NoizeMaker: Stack overflow in processEvent().
+              TODO: Fix all other such sysex stack buffer usages like possibly in DSSI.
 07.12.2012:
          * Feature: Native VST instruments support. Best results are from compiling with the vst sdk. (Tim)
            Featuring: True sample-accurate parameter automation, full native GUI support for TOUCH, WRITE modes.

@@ -44,40 +44,21 @@ typedef class VstNativeSynthIF VSTPlugin;
 
 #include "aeffectx.h"
 
-//#define VST_2_3_EXTENSIONS          // TODO Detect this  ?
-#define VST_2_4_EXTENSIONS          // TODO Detect this  ?
-#define VST_NATIVE_FORCE_DEPRECATED   // TODO On or off?
-
-#ifndef VST_SDK_SUPPORT
-#ifndef effCanBeAutomated
-#define effCanBeAutomated 26
-#endif
+#ifdef VST_VESTIGE_SUPPORT
 #ifndef effGetProgramNameIndexed
 #define effGetProgramNameIndexed 29
 #endif
-#ifndef effBeginSetProgram
-#define effBeginSetProgram 67  
-#endif
-#ifndef effEndSetProgram
-#define effEndSetProgram 68
-#endif
-#ifndef effStartProcess
-#define effStartProcess 71
-#endif
-#ifndef effStopProcess
-#define effStopProcess 72
-#endif
 #endif
 
-#if defined(VST_2_4_EXTENSIONS)
-#ifdef VST_SDK_SUPPORT
+#ifndef VST_2_4_EXTENSIONS
+#ifndef VST_VESTIGE_SUPPORT
 typedef long     VstInt32;
 typedef long     VstIntPtr;
 #else
 typedef int32_t  VstInt32;
 typedef intptr_t VstIntPtr;
-#endif
 #define VSTCALLBACK
+#endif
 #endif
 
 #include "vst_native_editor.h"
