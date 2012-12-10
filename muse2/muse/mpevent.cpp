@@ -103,6 +103,8 @@ int MEvent::sortingWeight() const
   switch(_type)
   {
     case ME_NOTEON:
+      if(_b == 0)  // Is it really a note off?
+        return 7;  
       return 98;  
     case ME_NOTEOFF:
       return 7;

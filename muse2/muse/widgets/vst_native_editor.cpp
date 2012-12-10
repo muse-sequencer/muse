@@ -87,6 +87,15 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
           _sif(0)
 {
   setAttribute(Qt::WA_DeleteOnClose);
+  
+  // TODO TEST Test if these might be helpful, especially opaque event.
+            //setBackgroundRole(QPalette::NoRole);
+            //setAttribute(Qt::WA_NoSystemBackground);
+  //         setAttribute(Qt::WA_StaticContents);
+  //         // This is absolutely required for speed! Otherwise painfully slow because of full background
+  //         //  filling, even when requesting small udpdates! Background is drawn by us.
+            //setAttribute(Qt::WA_OpaquePaintEvent);
+  //         //setFrameStyle(QFrame::Raised | QFrame::StyledPanel);
 }
 
 VstNativeEditor::~VstNativeEditor()
@@ -123,8 +132,9 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif)
                   QWidget::setFixedSize(w, h);
   }
 
-  _sif->dispatch(effEditOpen, 0, value, ptr, 0.0f);  
-
+  int rv = _sif->dispatch(effEditOpen, 0, value, ptr, 0.0f);
+  //fprintf(stderr, "VstNativeEditor::open effEditOpen returned:%d effEditGetRect rect l:%d r:%d t:%d b:%d\n", rv, pRect->left, pRect->right, pRect->top, pRect->bottom); // REMOVE Tim.
+  
 #if defined(Q_WS_X11)
   _vstEditor = getXChildWindow(_display, (Window) winId());
   if(_vstEditor)

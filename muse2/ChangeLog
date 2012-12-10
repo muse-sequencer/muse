@@ -1,3 +1,7 @@
+09.12.2012:
+         - Fix VST names: Use filename if effect name or product name blank. (Tim)
+         - Fix bug 3594221: End-to-end midi notes don't retrigger. My bad. (Tim)
+           In MEvent::sortingWeight(): Note-ons with zero velocity are really note-offs.
 08.12.2012:
          - Native VST fixes and changes. (Tim)
            Redid cmake options. Please do 'prune' and carefully reconfigure.

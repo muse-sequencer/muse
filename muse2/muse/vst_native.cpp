@@ -302,6 +302,7 @@ static void scanVstNativeLib(QFileInfo& fi)
   QString effectName;
   QString vendorString;
   QString productString;
+  int vendorVersion;
   std::vector<Synth*>::iterator is;
   int vst_version = 0;
   VstNativeSynth* new_synth = NULL;
@@ -382,6 +383,14 @@ static void scanVstNativeLib(QFileInfo& fi)
   plugin->dispatcher(plugin, effGetProductString, 0, 0, buffer, 0);
   if (buffer[0])
     productString = QString(buffer);
+
+  vendorVersion = plugin->dispatcher(plugin, effGetVendorVersion, 0, 0, NULL, 0);
+
+  if(effectName.isEmpty())
+    effectName = fi.completeBaseName();
+  if(productString.isEmpty())
+    //productString = fi.completeBaseName();
+    productString = effectName;
   
   // Make sure it doesn't already exist.
   for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
@@ -397,7 +406,7 @@ static void scanVstNativeLib(QFileInfo& fi)
     goto _ending;  
   }
 
-  new_synth = new VstNativeSynth(fi, plugin, effectName, productString, vendorString, QString()); // TODO Version string?
+  new_synth = new VstNativeSynth(fi, plugin, effectName, productString, vendorString, QString::number(vendorVersion)); 
   
   if(MusEGlobal::debugMsg)
     fprintf(stderr, "scanVstNativeLib: adding vst synth plugin:%s name:%s effectName:%s vendorString:%s productString:%s vstver:%d\n",
@@ -1019,9 +1028,9 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
             case audioMasterCanDo:
                   // string in ptr, see below
                   if(!strcmp((char*)ptr, "sendVstEvents") ||          
-                     !strcmp((char*)ptr, "receiveVstMidiEvent") ||    
+                     // !strcmp((char*)ptr, "receiveVstMidiEvent") ||    // TODO
                      !strcmp((char*)ptr, "sendVstMidiEvent") ||
-                     !strcmp((char*)ptr, "sendVstTimeInfo") ||
+                     // !strcmp((char*)ptr, "sendVstTimeInfo") ||        // TODO 
                      !strcmp((char*)ptr, "sizeWindow") ||
                      !strcmp((char*)ptr, "supplyIdle"))               
                     return 1;
@@ -1228,15 +1237,6 @@ void VstNativeSynthIF::showNativeGui(bool v)
                   | Qt::WindowCloseButtonHint;
           _editor = new MusEGui::VstNativeEditor(NULL, wflags);
           _editor->open(this);
-
-          // TODO TEST Test if these might be helpful, especially opaque event.
-          //         _editor->setBackgroundRole(QPalette::NoRole);
-          //         _editor->setAttribute(Qt::WA_NoSystemBackground);
-          //         _editor->setAttribute(Qt::WA_StaticContents);
-          //         // This is absolutely required for speed! Otherwise painfully slow because of full background
-          //         //  filling, even when requesting small udpdates! Background is drawn by us.
-          //         _editor->setAttribute(Qt::WA_OpaquePaintEvent);
-          //         //_editor->setFrameStyle(QFrame::Raised | QFrame::StyledPanel);
         }
       }
       else
