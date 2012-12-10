@@ -1,3 +1,9 @@
+10.12.2012:
+         - Changed versions to rc2
+         - Changed name of SimpleSynth to original name SimpleDrums, this
+           does affect loading of songs using SimpleSynth. Open the song file
+           in a text editor and change the name of all SimpleSynth to SimpleDrums
+           and all should be ok. (rj)
 09.12.2012:
          - Fix VST names: Use filename if effect name or product name blank. (Tim)
          - Fix bug 3594221: End-to-end midi notes don't retrigger. My bad. (Tim)

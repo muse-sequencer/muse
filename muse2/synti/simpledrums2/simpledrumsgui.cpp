@@ -94,6 +94,26 @@
 
 SimpleSynthGui* simplesynthgui_ptr;
 
+QString labelStrings[] = {
+  "C 1",
+  "C#1",
+  "D 1",
+  "D#1",
+  "E 1",
+  "F 1",
+  "F#1",
+  "G 1",
+
+  "G#1",
+  "A 1",
+  "A#1",
+  "B 1",
+  "C 2",
+  "C#2",
+  "D 2",
+  "D#2",
+};
+
 
 /*!
     \fn QChannelSlider::QChannelSlider(Qt::Orientation orientation, int ch, QWidget* parent, const char* name)
@@ -401,7 +421,8 @@ SimpleSynthGui::SimpleSynthGui()
                   QHBoxLayout* strip = new QHBoxLayout;//(mgbLayout, 5);
                   mgbLayout->addLayout(strip, r, c);
 
-                  QLabel* channelLabel = new QLabel(QString("Ch ") + QString::number(i + 1), mainGroupBox);
+                  //QLabel* channelLabel = new QLabel(QString("Ch ") + QString::number(i + 1), mainGroupBox);
+                  QLabel* channelLabel = new QLabel(QString::number(i + 1) + ": (" +labelStrings[i] + ")", mainGroupBox);
                   strip->addWidget(channelLabel);
 
                   sampleNameLineEdit[i] = new QLineEdit(mainGroupBox);

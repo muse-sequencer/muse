@@ -1,5 +1,5 @@
 //
-// C++ Implementation: simplesynth
+// C++ Implementation: simpledrums
 //
 // Description:
 //
@@ -1665,9 +1665,9 @@ void SimpleSynth::guiSendError(const char* errorstring)
 extern "C"
       {
       static MESS descriptor = {
-            "SimpleSynth",
-            "SimpleSynth by Mathias Lundgren",   // (lunar_shuttle@users.sf.net)",
-            "0.1",      //Version string
+            "SimpleDrums",
+            "SimpleDrums by Mathias Lundgren",   // (lunar_shuttle@users.sf.net)",
+            "0.1.1",      //Version string
             MESS_MAJOR_VERSION, MESS_MINOR_VERSION,
             instantiate,
             };
