@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <cmath>
+#include <string>
 #include <math.h>
 #include <sys/stat.h>
 
@@ -1076,13 +1077,18 @@ void initPlugins()
       {
       loadPluginDir(MusEGlobal::museGlobalLib + QString("/plugins"));
 
+      std::string s;
       const char* p = 0;
       
       // Take care of DSSI plugins first...
       #ifdef DSSI_SUPPORT
       const char* dssiPath = getenv("DSSI_PATH");
       if (dssiPath == 0)
-            dssiPath = "/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi";
+      {
+          const char* home = getenv("HOME");
+          s = std::string(home) + std::string("/dssi:/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi");
+          dssiPath = s.c_str();
+      }
       p = dssiPath;
       while (*p != '\0') {
             const char* pe = p;
@@ -1106,7 +1112,11 @@ void initPlugins()
       // Now do LADSPA plugins...
       const char* ladspaPath = getenv("LADSPA_PATH");
       if (ladspaPath == 0)
-            ladspaPath = "/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa";
+      {
+          const char* home = getenv("HOME");
+          s = std::string(home) + std::string("/ladspa:/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa");
+          ladspaPath = s.c_str();
+      }
       p = ladspaPath;
       
       if(MusEGlobal::debugMsg)

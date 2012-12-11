@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#include <string>
 #include "ssplugin.h"
 #include "common.h"
 
@@ -110,10 +111,14 @@ void SS_initPlugins()
       SS_TRACE_IN
       //loadPluginDir(museGlobalLib + QString("/plugins"));
 
+      std::string s;
       const char* ladspaPath = getenv("LADSPA_PATH");
       if (ladspaPath == 0)
-            ladspaPath = "/usr/lib/ladspa:/usr/local/lib/ladspa:/usr/lib64/ladspa:/usr/local/lib64/ladspa";
-
+      {
+          const char* home = getenv("HOME");
+          s = std::string(home) + std::string("/ladspa:/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa");
+          ladspaPath = s.c_str();
+      }
       const char* p = ladspaPath;
       while (*p != '\0') {
             const char* pe = p;

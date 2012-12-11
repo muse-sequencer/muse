@@ -1,3 +1,5 @@
+11.12.2012:
+         - Fix native vst path (VST_NATIVE_PATH, VST_PATH, then preset). Also ladspa, dssi paths. Added -help text. (Tim)
 10.12.2012:
          - Changed versions to rc2
          - Changed name of SimpleSynth to original name SimpleDrums, this

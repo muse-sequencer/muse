@@ -277,6 +277,22 @@ static void usage(const char* prog, const char* txt)
                       "   -graphicssystem            Set backend used for on-screen widgets/QPixmaps: raster or opengl\n"
                       "   -qmljsdebugger = port      Activate QML/JS debugger with port, formatted port:1234[,block]\n" 
       );
+
+      fprintf(stderr, "\n");
+
+      fprintf(stderr, "Some useful environment variables:\n");
+      fprintf(stderr, "   LADSPA_PATH: Override where to look for ladspa plugins, or else\n"
+                      "     ~/ladspa:/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa\n\n");
+#ifdef DSSI_SUPPORT
+      fprintf(stderr, "   DSSI_PATH: Override where to look for dssi plugins (dssi-vst plugins: VST_PATH), or else\n"
+                      "     ~/dssi:/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi\n\n" );
+#endif
+#ifdef VST_NATIVE_SUPPORT
+      fprintf(stderr, "   VST_NATIVE_PATH: Override where to look for native vst plugins, or else VST_PATH, or else\n"
+                      "     ~/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst\n\n");
+#endif
+
+      fprintf(stderr, "   LANG: Help browser language suffix (en etc.)\n");
       
       fprintf(stderr, "\n");
       }

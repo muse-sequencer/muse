@@ -33,6 +33,7 @@
 #include <dlfcn.h>
 #include <cmath>
 #include <set>
+#include <string>
 #include <jack/jack.h>
 
 #include "globals.h"
@@ -456,10 +457,39 @@ static void scanVstNativeDir(const QString& s)
 
 void initVST_Native()
       {
-      const char* vstPath = getenv("VST_NATIVE_PATH");  // FIXME TODO: What's the right path and env var?
-      if (vstPath == 0)
-            vstPath = "/usr/lib/vst:/usr/local/lib/vst";
-
+      std::string s;
+      const char* vstPath = getenv("VST_NATIVE_PATH");
+      if (vstPath)
+      {
+        if (MusEGlobal::debugMsg)
+            fprintf(stderr, "scan native vst: VST_NATIVE_PATH is: %s\n", vstPath);
+      }
+      else
+      {
+        if (MusEGlobal::debugMsg)
+            fprintf(stderr, "scan native vst: VST_NATIVE_PATH not set\n");
+      }
+      
+      if(!vstPath)
+      {
+        vstPath = getenv("VST_PATH");
+        if (vstPath)
+        {
+          if (MusEGlobal::debugMsg)
+              fprintf(stderr, "scan native vst: VST_PATH is: %s\n", vstPath);
+        }
+        else
+        {
+          if (MusEGlobal::debugMsg)
+              fprintf(stderr, "scan native vst: VST_PATH not set\n");
+          const char* home = getenv("HOME");
+          s = std::string(home) + std::string("/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst");
+          vstPath = s.c_str();
+          if (MusEGlobal::debugMsg)
+              fprintf(stderr, "scan native vst: defaulting to path: %s\n", vstPath);
+        }
+      }
+      
       const char* p = vstPath;
       while (*p != '\0') {
             const char* pe = p;

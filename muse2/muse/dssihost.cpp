@@ -32,6 +32,7 @@
 // Support vst state saving/loading with vst chunks. 
 //#define DSSI_VST_CHUNK_SUPPORT    
 
+#include <string>
 #include <string.h>
 #include <signal.h>
 #include <dlfcn.h>
@@ -187,10 +188,14 @@ static void scanDSSIDir(const QString& s)
 
 void initDSSI()
       {
+      std::string s;
       const char* dssiPath = getenv("DSSI_PATH");
       if (dssiPath == 0)
-            dssiPath = "/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi";
-
+      {
+          const char* home = getenv("HOME");
+          s = std::string(home) + std::string("/dssi:/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi");
+          dssiPath = s.c_str();
+      }
       const char* p = dssiPath;
       while (*p != '\0') {
             const char* pe = p;
