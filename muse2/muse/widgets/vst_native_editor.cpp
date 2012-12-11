@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include "config.h"
+
 #ifdef VST_NATIVE_SUPPORT
 
 #include "vst_native_editor.h"

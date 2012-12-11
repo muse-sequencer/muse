@@ -26,6 +26,8 @@
 
 #include <QWidget>
 
+#include "config.h"
+
 #ifdef VST_NATIVE_SUPPORT
 
 #if defined(Q_WS_X11)
