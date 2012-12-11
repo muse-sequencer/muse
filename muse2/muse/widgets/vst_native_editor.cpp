@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#ifdef VST_NATIVE_SUPPORT
+
 #include "vst_native_editor.h"
 #include "vst_native.h"
 
@@ -231,3 +233,6 @@ void VstNativeEditor::moveEvent(QMoveEvent *pMoveEvent)
 }
 
 } // namespace MusEGui
+
+#endif // VST_NATIVE_SUPPORT
+

@@ -24,9 +24,9 @@
 #ifndef __VST_NATIVE_EDITOR_H__
 #define __VST_NATIVE_EDITOR_H__
 
-//#include "vst_native.h"
-//#include <QtGlobal>
 #include <QWidget>
+
+#ifdef VST_NATIVE_SUPPORT
 
 #if defined(Q_WS_X11)
 #include <QX11Info>
@@ -50,11 +50,15 @@ namespace MusECore {
 class VstNativeSynthIF;
 }
 
+#endif  // VST_NATIVE_SUPPORT
+
 namespace MusEGui {
 
 class VstNativeEditor : public QWidget
 {
     Q_OBJECT
+
+#ifdef VST_NATIVE_SUPPORT
 
 #if defined(Q_WS_X11)
     Display*   _display;
@@ -84,6 +88,8 @@ public:
 #endif
 
     //MusECore::VstNativeSynthIF* sif() const { return _sif; }
+    
+#endif  // VST_NATIVE_SUPPORT
 };
 
 } // namespace MusEGui
