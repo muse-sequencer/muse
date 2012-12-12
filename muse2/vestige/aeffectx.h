@@ -26,6 +26,8 @@
 #ifndef _AEFFECTX_H
 #define _AEFFECTX_H
 
+#include <stdint.h>
+
 #define CCONST(a, b, c, d)( ( ( (int) a ) << 24 ) |		\
 				( ( (int) b ) << 16 ) |		\
 				( ( (int) c ) << 8 ) |		\

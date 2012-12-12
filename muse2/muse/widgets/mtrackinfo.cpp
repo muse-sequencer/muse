@@ -90,6 +90,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   setupUi(this); 
   _midiDetect = false; 
   heartBeatCounter = 0;
+  _blockHeartbeatCount = 0;
   
   selected = sel_track;
   
@@ -278,7 +279,13 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
 void MidiTrackInfo::heartBeat()
 {
   ///if(!showTrackinfoFlag || !selected)
-  if(!isVisible() || !isEnabled() || !selected)
+  if(_blockHeartbeatCount < 0)  // error
+  {
+    fprintf(stderr, "ERROR: MidiTrackInfo::heartBeat: _blockHeartbeatCount is < 0, resetting to 0\n");
+    _blockHeartbeatCount = 0;
+  }
+  
+  if(_blockHeartbeatCount > 0 || !isVisible() || !isEnabled() || !selected)
     return;
   switch(selected->type()) 
   {
@@ -407,14 +414,17 @@ void MidiTrackInfo::heartBeat()
         else
         {
           MusECore::MidiInstrument* instr = mp->instrument();
-          QString name = instr->getPatchName(outChannel, nprogram, track->isDrumTrack());
+          const QString name = instr->getPatchName(outChannel, nprogram, track->isDrumTrack());
+          //const char* name = instr->getPatchName(outChannel, nprogram, track->isDrumTrack());
           if(name.isEmpty())
+          //if(name == NULL)
           {
             const QString n("???");
             if(iPatch->text() != n)
               iPatch->setText(n);
           }
           else if(iPatch->text() != name)
+          //else if(strcmp(iPatch->text().constData(), QChar name))
             iPatch->setText(name);
         }         
       }
@@ -448,8 +458,12 @@ void MidiTrackInfo::heartBeat()
               //else 
               //{
                     MusECore::MidiInstrument* instr = mp->instrument();
-                    QString name = instr->getPatchName(outChannel, program, track->isDrumTrack());
+                    //const QString name = instr->getPatchName(outChannel, program, track->isDrumTrack());
+                    const char* chr_name = instr->getPatchName(outChannel, program, track->isDrumTrack());
+                    const QString name(chr_name);
+                    //fprintf(stderr, "patch name qstring:%s charstr:%s\n", name.toLatin1().constData(), chr_name);  // REMOVE Tim.
                     if(iPatch->text() != name)
+                    //if(!strcmp(iPatch->text().toLatin1().constData(), name))
                       iPatch->setText(name);
   
                     int hb = ((program >> 16) & 0xff) + 1;
@@ -674,6 +688,7 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
         return;
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       if (channel != track->outChannel()) {
+            ++_blockHeartbeatCount;
             // Changed by T356.
             //track->setOutChannel(channel);
             MusEGlobal::audio->msgIdle(true);
@@ -687,6 +702,7 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
             MusEGlobal::audio->msgUpdateSoloStates();                   // p4.0.14
             //MusEGlobal::song->update(SC_MIDI_TRACK_PROP | SC_ROUTE);  //
             MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
+            --_blockHeartbeatCount;
             }
       }
 
@@ -704,6 +720,7 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       if (port_num == track->outPort())
             return;
+      ++_blockHeartbeatCount;
       // Changed by T356.
       //track->setOutPort(port_num);
       MusEGlobal::audio->msgIdle(true);
@@ -715,6 +732,7 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       MusEGlobal::audio->msgUpdateSoloStates();                   // p4.0.14
       //MusEGlobal::song->update(SC_MIDI_TRACK_PROP | SC_ROUTE);  //
       MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
+      --_blockHeartbeatCount;
       }
 
 //---------------------------------------------------------
@@ -785,11 +803,14 @@ void MidiTrackInfo::iProgHBankChanged()
       if(prog == 0xff && hbank == 0xff && lbank == 0xff)
       {
         program = MusECore::CTRL_VAL_UNKNOWN;
+        ++_blockHeartbeatCount;
         if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
           MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
+        --_blockHeartbeatCount;
         return;  
       }
       
+      ++_blockHeartbeatCount;
       int np = mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
       if(np == MusECore::CTRL_VAL_UNKNOWN)
       {
@@ -829,6 +850,8 @@ void MidiTrackInfo::iProgHBankChanged()
       MusECore::MidiInstrument* instr = mp->instrument();
       iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
 //      updateTrackInfo();
+      
+      --_blockHeartbeatCount;
       }
 
 //---------------------------------------------------------
@@ -863,11 +886,14 @@ void MidiTrackInfo::iProgLBankChanged()
       if(prog == 0xff && hbank == 0xff && lbank == 0xff)
       {
         program = MusECore::CTRL_VAL_UNKNOWN;
+        ++_blockHeartbeatCount;
         if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
           MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
+        --_blockHeartbeatCount;
         return;  
       }
       
+      ++_blockHeartbeatCount;
       int np = mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
       if(np == MusECore::CTRL_VAL_UNKNOWN)
       {
@@ -907,6 +933,8 @@ void MidiTrackInfo::iProgLBankChanged()
       MusECore::MidiInstrument* instr = mp->instrument();
       iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
 //      updateTrackInfo();
+      
+      --_blockHeartbeatCount;
       }
 
 //---------------------------------------------------------
@@ -940,6 +968,7 @@ void MidiTrackInfo::iProgramChanged()
       MusECore::MidiPort *mp = &MusEGlobal::midiPorts[port];
       if(prog == 0xff)
       {
+        ++_blockHeartbeatCount;
         program = MusECore::CTRL_VAL_UNKNOWN;
         iHBank->blockSignals(true);
         iLBank->blockSignals(true);
@@ -950,10 +979,12 @@ void MidiTrackInfo::iProgramChanged()
         
         if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
           MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
-        return;  
+        --_blockHeartbeatCount;
+        return;
       }
       else
       {
+        ++_blockHeartbeatCount;
         int np = mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
         if(np == MusECore::CTRL_VAL_UNKNOWN)
         {
@@ -984,6 +1015,8 @@ void MidiTrackInfo::iProgramChanged()
         
         MusECore::MidiInstrument* instr = mp->instrument();
         iPatch->setText(instr->getPatchName(channel, program, track->isDrumTrack()));
+        
+        --_blockHeartbeatCount;
       }
         
 //      updateTrackInfo();
@@ -1129,9 +1162,11 @@ void MidiTrackInfo::instrPopupActivated(QAction* act)
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
+      ++_blockHeartbeatCount;
       MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
       updateTrackInfo(-1);
+      --_blockHeartbeatCount;
     }  
   }
 }
@@ -1167,9 +1202,11 @@ void MidiTrackInfo::instrPopup()
         int rv = act->data().toInt();
         if(rv != -1)
         {
+          ++_blockHeartbeatCount;
           MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
           MusEGlobal::audio->msgPlayMidiEvent(&ev);
           updateTrackInfo(-1);
+          --_blockHeartbeatCount;
         }  
       }
             
@@ -1227,10 +1264,12 @@ void MidiTrackInfo::iProgHBankDoubleCLicked()
         //  kiv = mctrl->maxVal();
         //kiv += mctrl->bias();
       //}    
-      
+
+      ++_blockHeartbeatCount;
       //MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, num, kiv);
       MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, kiv);
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
+      --_blockHeartbeatCount;
     }
     else
     {
@@ -1241,8 +1280,10 @@ void MidiTrackInfo::iProgHBankDoubleCLicked()
 //       else
 //         lastv |= 0xff0000;
       
+      ++_blockHeartbeatCount;
       MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, lastv);
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
+      --_blockHeartbeatCount;
     }
   }  
   else
@@ -1263,7 +1304,11 @@ void MidiTrackInfo::iProgHBankDoubleCLicked()
 //       curv |= 0xff0000;
     
     if(mp->hwCtrlState(chan, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
+    {
+      ++_blockHeartbeatCount;
       MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
+      --_blockHeartbeatCount;
+    }
 //     MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, curv);
 //     MusEGlobal::audio->msgPlayMidiEvent(&ev);
   }
@@ -1557,6 +1602,8 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
       if(!selected)
         return;
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
+
+      ++_blockHeartbeatCount;
       
       setLabelText();
       setLabelFont();
@@ -1651,7 +1698,7 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
           
           program = MusECore::CTRL_VAL_UNKNOWN;
           nprogram = mp->lastValidHWCtrlState(outChannel, MusECore::CTRL_PROGRAM);
-          if(nprogram == MusECore::CTRL_VAL_UNKNOWN) 
+          if(nprogram == MusECore::CTRL_VAL_UNKNOWN)
             //iPatch->setText(QString("<unknown>"));
             iPatch->setText(tr("<unknown>"));
           else
@@ -1737,6 +1784,7 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
         iPan->blockSignals(false);
       //}
       
+      --_blockHeartbeatCount;
 }
 
 //---------------------------------------------------------

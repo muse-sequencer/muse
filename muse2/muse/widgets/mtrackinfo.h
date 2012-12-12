@@ -43,6 +43,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       bool _midiDetect;
       int program, pan, volume;
       int heartBeatCounter;
+      int _blockHeartbeatCount;
       
     protected:
       virtual void resizeEvent(QResizeEvent*);

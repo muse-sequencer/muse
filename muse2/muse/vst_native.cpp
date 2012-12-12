@@ -956,7 +956,9 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                     // Can't use song pos - it is only updated every (slow) GUI heartbeat !
                     //Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
 
-                    // TODO
+
+                    //unsigned int tick_pos = MusEGlobal::audio->tickPos();
+                    
                     int p_bar, p_beat, p_tick;
                     p.mbt(&p_bar, &p_beat, &p_tick);
                     
@@ -981,7 +983,6 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                     _timeInfo.timeSigDenominator = n;
 #endif
 
-                    // TODO
                     ////pos->ticks_per_beat = 24;
                     //pos->ticks_per_beat = MusEGlobal::config.division;
 
@@ -1413,6 +1414,8 @@ void VstNativeSynthIF::queryPrograms()
         }
 //#endif
 
+        //fprintf(stderr, " VstNativeSynthIF::queryPrograms():  patch name:%s\n", buf);  // REMOVE Tim.
+        
         int bankH = (prog >> 14) & 0x7f;
         int bankL = (prog >> 7) & 0x7f;
         int patch = prog & 0x7f;
@@ -1527,13 +1530,18 @@ const char* VstNativeSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/
   if (hbank == 0xff)
         hbank = 0;
   unsigned long p = (hbank << 16) | (lbank << 8) | program;
-  int vp          = (hbank << 14) | (lbank << 7) | program;
-  if((int)vp < _plugin->numPrograms)
+  unsigned long vp          = (hbank << 14) | (lbank << 7) | program;
+  //if((int)vp < _plugin->numPrograms)
+  if(vp < programs.size())
   {
     for(std::vector<VST_Program>::const_iterator i = programs.begin(); i != programs.end(); ++i)
     {
+      //fprintf(stderr, "    VstNativeSynthIF::patch name:%s\n", i->name.toLatin1().constData());  // REMOVE Tim.
       if(i->program == p)
+      {
+        //fprintf(stderr, "    found patch name:%s\n", i->name.toLatin1().constData());  // REMOVE Tim.
         return i->name.toLatin1().constData();
+      }
     }
   }
   return "?";

@@ -270,8 +270,13 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synth() const          { return synthesizer; }
       virtual bool isSynti() const  { return true; }
 
-      virtual QString getPatchName(int ch, int prog, bool dr) {
-            return _sif->getPatchName(ch, prog, dr);
+      virtual const char* getPatchName(int ch, int prog, bool dr) const {
+            // REMOVE Tim.
+            const char* s = _sif->getPatchName(ch, prog, dr);
+            //fprintf(stderr, "SynthI::getPatchName patch name:%s\n", s);  // REMOVE Tim.
+            return s;
+            
+            ///return _sif->getPatchName(ch, prog, dr);
             }
             
       virtual void populatePatchPopup(MusEGui::PopupMenu* m, int i, bool d) {
