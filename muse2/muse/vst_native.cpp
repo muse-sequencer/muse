@@ -960,13 +960,13 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                     int p_bar, p_beat, p_tick;
                     p.mbt(&p_bar, &p_beat, &p_tick);
                     
-#ifndef VST_VESTIGE_SUPPORT
+//#ifndef VST_VESTIGE_SUPPORT
                     _timeInfo.barStartPos = Pos(p_bar, 0, 0).tick();
-                    _timeInfo.ppqPos = MusEGlobal::audio->tickPos();
-#else
-                    *((double*)&_timeInfo.empty2[0]) = (double)Pos(p_bar, 0, 0).tick() / 120.0;
-                    *((double*)&_timeInfo.empty1[8]) = (double)MusEGlobal::audio->tickPos() / 120.0;  
-#endif
+                    _timeInfo.ppqPos = MusEGlobal::audio->tickPos() / 240.0;
+// #else
+//                     *((double*)&_timeInfo.empty2[0]) = (double)Pos(p_bar, 0, 0).tick() / 120.0;
+//                     *((double*)&_timeInfo.empty1[8]) = (double)MusEGlobal::audio->tickPos() / 120.0;  
+// #endif
                     //pos->bar++;
                     //pos->beat++;
 
