@@ -136,7 +136,8 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif)
                   QWidget::setFixedSize(w, h);
   }
 
-  int rv = _sif->dispatch(effEditOpen, 0, value, ptr, 0.0f);
+  _sif->dispatch(effEditOpen, 0, value, ptr, 0.0f);
+  //int rv = _sif->dispatch(effEditOpen, 0, value, ptr, 0.0f);
   //fprintf(stderr, "VstNativeEditor::open effEditOpen returned:%d effEditGetRect rect l:%d r:%d t:%d b:%d\n", rv, pRect->left, pRect->right, pRect->top, pRect->bottom); // REMOVE Tim.
   
 #if defined(Q_WS_X11)

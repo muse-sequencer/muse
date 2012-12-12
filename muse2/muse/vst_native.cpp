@@ -45,6 +45,10 @@
 #include "xml.h"
 #include "plugin.h"
 #include "popupmenu.h"
+#include "pos.h"
+#include "tempo.h"
+#include "sync.h"
+#include "al/sig.h"
 
 #include "vst_native.h"
 
@@ -66,13 +70,16 @@ extern JackAudioDevice* jackAudio;
 
 VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt)
 {
+      // Is this callback for an actual instance? Hand-off to the instance if so.
       VSTPlugin* plugin;
       if(effect && effect->user)
       {
         plugin = (VSTPlugin*)(effect->user);
         return ((VstNativeSynthIF*)plugin)->hostCallback(opcode, index, value, ptr, opt);
       }
-      
+
+      // No instance found. So we are just scanning for plugins...
+    
 #ifdef VST_NATIVE_DEBUG      
       fprintf(stderr, "vstNativeHostCallback eff:%p opcode:%ld\n", effect, opcode);
 #endif      
@@ -387,6 +394,7 @@ static void scanVstNativeLib(QFileInfo& fi)
 
   vendorVersion = plugin->dispatcher(plugin, effGetVendorVersion, 0, 0, NULL, 0);
 
+  // Some (older) plugins don't have any of these strings. We only have the filename to use.
   if(effectName.isEmpty())
     effectName = fi.completeBaseName();
   if(productString.isEmpty())
@@ -723,7 +731,6 @@ VstNativeSynthIF::VstNativeSynthIF(SynthI* s) : SynthIF(s)
 //       controlsOut = 0;
       _audioInBuffers = NULL;
       _audioInSilenceBuf = NULL;
-      //_audioInSilenceBufs = NULL;
       _audioOutBuffers = NULL;
 }
 
@@ -758,16 +765,6 @@ VstNativeSynthIF::~VstNativeSynthIF()
   if(_audioInSilenceBuf)
     free(_audioInSilenceBuf);
     
-//   if(_audioInSilenceBufs)
-//   {
-//     for(unsigned long i = 0; i < _synth->inPorts(); ++i)
-//     {
-//       if(_audioInSilenceBufs[i])
-//         free(_audioInSilenceBufs[i]);
-//     }
-//     delete[] _audioInSilenceBufs;
-//   }
-  
   if(_controls)
     delete[] _controls;
 }
@@ -801,13 +798,10 @@ bool VstNativeSynthIF::init(Synth* s)
       if(inports != 0)
       {
         _audioInBuffers = new float*[inports];
-        //_audioInSilenceBufs = new float*[inports];
         for(unsigned long k = 0; k < inports; ++k)
         {
           posix_memalign((void**)&_audioInBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
           memset(_audioInBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
-          //posix_memalign((void**)&_audioInSilenceBufs[k], 16, sizeof(float) * MusEGlobal::segmentSize);
-          //memset(_audioInSilenceBufs[k], 0, sizeof(float) * MusEGlobal::segmentSize);
           _iUsedIdx.push_back(false); // Start out with all false.
         }
         
@@ -815,7 +809,7 @@ bool VstNativeSynthIF::init(Synth* s)
         memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
       }
 
-      int controlPorts = _synth->inControls();
+      unsigned long controlPorts = _synth->inControls();
       if(controlPorts != 0)
         _controls = new Port[controlPorts];
       else
@@ -824,7 +818,7 @@ bool VstNativeSynthIF::init(Synth* s)
       //_synth->midiCtl2PortMap.clear();
       //_synth->port2MidiCtlMap.clear();
 
-      for(unsigned long i = 0; i < _synth->inControls(); ++i)
+      for(unsigned long i = 0; i < controlPorts; ++i)
       {
         _controls[i].idx = i;
         //float val;  // TODO
@@ -852,14 +846,14 @@ bool VstNativeSynthIF::init(Synth* s)
         {
           cl = new CtrlList(id);
           cll->add(cl);
-          //cl->setCurVal(controls[cip].val);
-          cl->setCurVal(_plugin->getParameter(_plugin, i));
+          cl->setCurVal(_controls[i].val);
+          //cl->setCurVal(_plugin->getParameter(_plugin, i));
         }
         else
         {
           cl = icl->second;
-          ///controls[cip].val = cl->curVal();
-          //setParam(i, cl->curVal());
+          _controls[i].val = cl->curVal();
+          
 #ifndef VST_VESTIGE_SUPPORT
           if(dispatch(effCanBeAutomated, i, 0, NULL, 0.0f) == 1)
           {
@@ -869,14 +863,15 @@ bool VstNativeSynthIF::init(Synth* s)
               _plugin->setParameter(_plugin, i, v);
 #ifndef VST_VESTIGE_SUPPORT
           }
-#endif
 
-#ifdef VST_NATIVE_DEBUG
+  #ifdef VST_NATIVE_DEBUG
           else  
             fprintf(stderr, "VstNativeSynthIF::init %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), i);
-#endif
+  #endif
 
+#endif
         }
+        
         cl->setRange(min, max);
         cl->setName(QString(param_name));
         //cl->setValueType(ladspaCtrlValueType(ld, k));
@@ -910,12 +905,11 @@ bool VstNativeSynthIF::resizeEditor(int w, int h)
 
 VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt)
       {
-      //static VstTimeInfo _timeInfo;
-      //jack_position_t jack_pos;
-      //jack_transport_state_t tstate;
+      static VstTimeInfo _timeInfo;
 
 #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::hostCallback %s opcode:%ld\n", name().toLatin1().constData(), opcode);
+      if(opcode != audioMasterGetTime)
+        fprintf(stderr, "VstNativeSynthIF::hostCallback %s opcode:%ld\n", name().toLatin1().constData(), opcode);
 #endif
 
       switch (opcode) {
@@ -943,42 +937,69 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                   return 0;
 
             case audioMasterGetTime:
+            {
                   // returns const VstTimeInfo* (or 0 if not supported)
                   // <value> should contain a mask indicating which fields are required
                   // (see valid masks above), as some items may require extensive
                   // conversions
 
-// FIXME: TODO: Change this to MusE tempo and sig, and even if Jack is used,
-//               the jackAudio pointer may be 0. Jack may not be running and dummy used instead.
-#if 1
-                  return 0;
-#else
                   memset(&_timeInfo, 0, sizeof(_timeInfo));
 
-                  if (_plugin) {
-                        tstate = jackAudio->transportQuery(&jack_pos);
+                  unsigned int curr_frame = MusEGlobal::audio->pos().frame();
+                  _timeInfo.samplePos = (double)curr_frame;
+                  _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
+                  _timeInfo.flags = 0;
 
-                        _timeInfo.samplePos  = jack_pos.frame;
-                        _timeInfo.sampleRate = jack_pos.frame_rate;
-                        _timeInfo.flags = 0;
+                  if(value & (kVstBarsValid | kVstTimeSigValid | kVstTempoValid | kVstPpqPosValid))
+                  {
+                    Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+                    // Can't use song pos - it is only updated every (slow) GUI heartbeat !
+                    //Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
 
-                        if ((value & (kVstBarsValid|kVstTempoValid)) && (jack_pos.valid & JackPositionBBT)) {
-                              _timeInfo.tempo = jack_pos.beats_per_minute;
-                              _timeInfo.timeSigNumerator = (long) floor (jack_pos.beats_per_bar);
-                              _timeInfo.timeSigDenominator = (long) floor (jack_pos.beat_type);
-                              _timeInfo.flags |= (kVstBarsValid|kVstTempoValid);
-                              }
-                        if (tstate == JackTransportRolling) {
-                              _timeInfo.flags |= kVstTransportPlaying;
-                              }
-                        }
-                  else {
-                        _timeInfo.samplePos  = 0;
-                        _timeInfo.sampleRate = MusEGlobal::sampleRate;
-                        }
-                  return (long)&_timeInfo;
+                    // TODO
+                    int p_bar, p_beat, p_tick;
+                    p.mbt(&p_bar, &p_beat, &p_tick);
+                    
+#ifndef VST_VESTIGE_SUPPORT
+                    _timeInfo.barStartPos = Pos(p_bar, 0, 0).tick();
+                    _timeInfo.ppqPos = MusEGlobal::audio->tickPos();
+#else
+                    *((double*)&_timeInfo.empty2[0]) = (double)Pos(p_bar, 0, 0).tick() / 120.0;
+                    *((double*)&_timeInfo.empty1[8]) = (double)MusEGlobal::audio->tickPos() / 120.0;  
+#endif
+                    //pos->bar++;
+                    //pos->beat++;
+
+                    int z, n;
+                    AL::sigmap.timesig(p.tick(), z, n);
+
+#ifndef VST_VESTIGE_SUPPORT
+                    _timeInfo.timeSigNumerator = (long)z;
+                    _timeInfo.timeSigDenominator = (long)n;
+#else
+                    _timeInfo.timeSigNumerator = z;
+                    _timeInfo.timeSigDenominator = n;
 #endif
 
+                    // TODO
+                    ////pos->ticks_per_beat = 24;
+                    //pos->ticks_per_beat = MusEGlobal::config.division;
+
+                    double tempo = MusEGlobal::tempomap.tempo(p.tick());
+                    _timeInfo.tempo = (60000000.0 / tempo) * double(MusEGlobal::tempomap.globalTempo())/100.0;
+                    _timeInfo.flags |= (kVstBarsValid | kVstTimeSigValid | kVstTempoValid | kVstPpqPosValid);
+
+#ifdef VST_NATIVE_DEBUG
+                    fprintf(stderr, "VstNativeSynthIF::hostCallback master time: sample pos:%f samplerate:%f sig num:%ld den:%ld tempo:%f\n",
+                      _timeInfo.samplePos, _timeInfo.sampleRate, _timeInfo.timeSigNumerator, _timeInfo.timeSigDenominator, _timeInfo.tempo);
+#endif
+                  }
+
+                  if(MusEGlobal::audio->isPlaying())
+                    _timeInfo.flags |= (kVstTransportPlaying | kVstTransportChanged);
+                  return (long)&_timeInfo;
+            }
+            
             case audioMasterProcessEvents:
                   // VstEvents* in <ptr>
                   return 0;  // TODO:
@@ -1058,9 +1079,9 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
             case audioMasterCanDo:
                   // string in ptr, see below
                   if(!strcmp((char*)ptr, "sendVstEvents") ||          
-                     // !strcmp((char*)ptr, "receiveVstMidiEvent") ||    // TODO
+                     !strcmp((char*)ptr, "receiveVstMidiEvent") ||   
                      !strcmp((char*)ptr, "sendVstMidiEvent") ||
-                     // !strcmp((char*)ptr, "sendVstTimeInfo") ||        // TODO 
+                     !strcmp((char*)ptr, "sendVstTimeInfo") ||        
                      !strcmp((char*)ptr, "sizeWindow") ||
                      !strcmp((char*)ptr, "supplyIdle"))               
                     return 1;
@@ -1465,10 +1486,15 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
   // Need to update the automation value, otherwise it overwrites later with the last automation value.
   if(id() != -1)
   {
-    for(unsigned long k = 0; k < _synth->inControls(); ++k)
+    const unsigned long sic = _synth->inControls();
+    for(unsigned long k = 0; k < sic; ++k)
     {
       // We're in the audio thread context: no need to send a message, just modify directly.
-      synti->setPluginCtrlVal(genACnum(id(), k), _plugin->getParameter(_plugin, k));
+      //synti->setPluginCtrlVal(genACnum(id(), k), _controls[k].val);
+      //synti->setPluginCtrlVal(genACnum(id(), k), _plugin->getParameter(_plugin, k));
+      const float v = _plugin->getParameter(_plugin, k);
+      _controls[k].val = v;
+      synti->setPluginCtrlVal(genACnum(id(), k), v);
     }
   }
 
@@ -2166,9 +2192,9 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
   const bool usefixedrate = false;  
   unsigned long fixedsize = nframes; 
 
-  // For now, the fixed size is clamped to the MusEGlobal::audio buffer size.
+  // For now, the fixed size is clamped to the audio buffer size.
   // TODO: We could later add slower processing over several cycles -
-  //  so that users can select a small MusEGlobal::audio period but a larger control period.
+  //  so that users can select a small audio period but a larger control period.
   if(fixedsize > nframes)
     fixedsize = nframes;
 
@@ -2278,26 +2304,26 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
       const unsigned long in_ctrls = _synth->inControls();
       for(unsigned long k = 0; k < in_ctrls; ++k)
       {
-        //_controls[k].val = track->controller()->value(genACnum(id(), k), frame,
-        //                        no_auto || !_controls[k].enCtrl || !_controls[k].en2Ctrl,
-        //                        &nextFrame);
-#ifndef VST_VESTIGE_SUPPORT
-        if(dispatch(effCanBeAutomated, k, 0, NULL, 0.0f) == 1)
-        {
-#endif          
-          double v = track->controller()->value(genACnum(id(), k), frame,
+        const float v = track->controller()->value(genACnum(id(), k), frame,
                                    no_auto || !_controls[k].enCtrl || !_controls[k].en2Ctrl,
                                    &nextFrame);
-          if(v != _plugin->getParameter(_plugin, k))
-            _plugin->setParameter(_plugin, k, v);
+        if(_controls[k].val != v)
+        {
+          _controls[k].val = v;
 #ifndef VST_VESTIGE_SUPPORT
+          if(dispatch(effCanBeAutomated, k, 0, NULL, 0.0f) == 1)
+          {
+#endif
+            if(_plugin->getParameter(_plugin, k) != v)
+              _plugin->setParameter(_plugin, k, v);
+#ifndef VST_VESTIGE_SUPPORT
+          }
+  #ifdef VST_NATIVE_DEBUG
+          else
+            fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), k);
+  #endif
+#endif
         }
-#endif
-
-#ifdef VST_NATIVE_DEBUG
-        else
-          fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), k);
-#endif
             
 #ifdef VST_NATIVE_DEBUG_PROCESS
         fprintf(stderr, "VstNativeSynthIF::getData k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, nextFrame, nsamp);
@@ -2366,26 +2392,27 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
       found = true;
       frame = evframe;
       index = v.idx;
-      // Set the ladspa control port value.
-      //controls[v.idx].val = v.value;
+
+      //if(_controls[v.idx].val != v.value)  // Mm nah, force it always. REMOVE Tim.
+      //{
+        _controls[v.idx].val = v.value;
 #ifndef VST_VESTIGE_SUPPORT
-      if(dispatch(effCanBeAutomated, v.idx, 0, NULL, 0.0f) == 1)
-      {
+        if(dispatch(effCanBeAutomated, v.idx, 0, NULL, 0.0f) == 1)
+        {
 #endif        
-        if(v.value != _plugin->getParameter(_plugin, v.idx))
-          _plugin->setParameter(_plugin, v.idx, v.value);
+          if(v.value != _plugin->getParameter(_plugin, v.idx))
+            _plugin->setParameter(_plugin, v.idx, v.value);
 #ifndef VST_VESTIGE_SUPPORT
-      }
+        }
+  #ifdef VST_NATIVE_DEBUG
+        else
+          fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), v.idx);
+  #endif
 #endif
-
-#ifdef VST_NATIVE_DEBUG
-      else
-        fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), v.idx);
-#endif
-
-      // Need to update the automation value, otherwise it overwrites later with the last automation value.
-      if(id() != -1)
-        synti->setPluginCtrlVal(genACnum(id(), v.idx), v.value);
+        // Need to update the automation value, otherwise it overwrites later with the last automation value.
+        if(id() != -1)
+          synti->setPluginCtrlVal(genACnum(id(), v.idx), v.value);
+      //}
     }
 
     if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
@@ -2602,14 +2629,16 @@ void VstNativeSynthIF::enableAllControllers(bool v)
 {
   if(!_synth)
     return;
-  for(unsigned long i = 0; i < _synth->inControls(); ++i)
+  const unsigned long sic = _synth->inControls();
+  for(unsigned long i = 0; i < sic; ++i)
     _controls[i].enCtrl = v;
 }
 void VstNativeSynthIF::enable2AllControllers(bool v)
 {
   if(!_synth)
     return;
-  for(unsigned long i = 0; i < _synth->inControls(); ++i)
+  const unsigned long sic = _synth->inControls();
+  for(unsigned long i = 0; i < sic; ++i)
     _controls[i].en2Ctrl = v;
 }
 void VstNativeSynthIF::updateControllers() { }
