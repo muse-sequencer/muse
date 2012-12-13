@@ -415,16 +415,13 @@ void MidiTrackInfo::heartBeat()
         {
           MusECore::MidiInstrument* instr = mp->instrument();
           const QString name = instr->getPatchName(outChannel, nprogram, track->isDrumTrack());
-          //const char* name = instr->getPatchName(outChannel, nprogram, track->isDrumTrack());
           if(name.isEmpty())
-          //if(name == NULL)
           {
             const QString n("???");
             if(iPatch->text() != n)
               iPatch->setText(n);
           }
           else if(iPatch->text() != name)
-          //else if(strcmp(iPatch->text().constData(), QChar name))
             iPatch->setText(name);
         }         
       }
@@ -458,12 +455,8 @@ void MidiTrackInfo::heartBeat()
               //else 
               //{
                     MusECore::MidiInstrument* instr = mp->instrument();
-                    //const QString name = instr->getPatchName(outChannel, program, track->isDrumTrack());
-                    const char* chr_name = instr->getPatchName(outChannel, program, track->isDrumTrack());
-                    const QString name(chr_name);
-                    //fprintf(stderr, "patch name qstring:%s charstr:%s\n", name.toLatin1().constData(), chr_name);  // REMOVE Tim.
+                    const QString name = instr->getPatchName(outChannel, program, track->isDrumTrack());
                     if(iPatch->text() != name)
-                    //if(!strcmp(iPatch->text().toLatin1().constData(), name))
                       iPatch->setText(name);
   
                     int hb = ((program >> 16) & 0xff) + 1;

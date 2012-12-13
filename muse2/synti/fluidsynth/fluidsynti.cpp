@@ -34,6 +34,7 @@
 
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QString>
 
 //#include "common_defs.h"
 #include "fluidsynti.h"
@@ -1220,7 +1221,7 @@ void FluidSynth::rewriteChannelSettings()
 //---------------------------------------------------------
 //   getPatchName
 //---------------------------------------------------------
-const char* FluidSynth::getPatchName(int i, int, bool /*drum*/) const
+QString FluidSynth::getPatchName(int i, int, bool /*drum*/) const
       {
       if (channels[i].font_intid == FS_UNSPECIFIED_FONT ||
           channels[i].font_intid == FS_UNSPECIFIED_ID)

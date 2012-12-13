@@ -154,7 +154,7 @@ class SynthIF : public PluginIBase {
       virtual int totalOutChannels() const = 0;
       virtual int totalInChannels() const = 0;
       virtual void deactivate3() = 0;
-      virtual const char* getPatchName(int, int, bool) = 0;
+      virtual QString getPatchName(int, int, bool) const = 0;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
       virtual float getParameter(unsigned long idx) const = 0;        
@@ -270,13 +270,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       Synth* synth() const          { return synthesizer; }
       virtual bool isSynti() const  { return true; }
 
-      virtual const char* getPatchName(int ch, int prog, bool dr) const {
-            // REMOVE Tim.
-            const char* s = _sif->getPatchName(ch, prog, dr);
-            //fprintf(stderr, "SynthI::getPatchName patch name:%s\n", s);  // REMOVE Tim.
-            return s;
-            
-            ///return _sif->getPatchName(ch, prog, dr);
+      virtual QString getPatchName(int ch, int prog, bool dr) const {
+            return _sif->getPatchName(ch, prog, dr);
             }
             
       virtual void populatePatchPopup(MusEGui::PopupMenu* m, int i, bool d) {
@@ -363,7 +358,7 @@ class MessSynthIF : public SynthIF {
       virtual int totalOutChannels() const;
       virtual int totalInChannels() const;
       virtual void deactivate3();
-      virtual const char* getPatchName(int, int, bool);  
+      virtual QString getPatchName(int, int, bool) const;  
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       virtual void write(int level, Xml& xml) const;
       virtual float getParameter(unsigned long) const { return 0.0; }

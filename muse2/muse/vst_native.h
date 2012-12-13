@@ -208,7 +208,7 @@ class VstNativeSynthIF : public SynthIF
       virtual int totalOutChannels() const;
       virtual int totalInChannels() const;
       virtual void deactivate3();
-      virtual const char* getPatchName(int chan, int prog, bool drum);
+      virtual QString getPatchName(int chan, int prog, bool drum) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu* menu, int chan, bool drum);
       virtual void write(int level, Xml& xml) const;
       virtual float getParameter(unsigned long idx) const;

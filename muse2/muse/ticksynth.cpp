@@ -100,7 +100,7 @@ class MetronomeSynthIF : public SynthIF
       virtual int totalOutChannels() const { return 1; }
       virtual int totalInChannels() const { return 0; }
       virtual void deactivate3() {}
-      virtual const char* getPatchName(int, int, bool) { return ""; }
+      virtual QString getPatchName(int, int, bool) const { return ""; }
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) {};
       virtual void write(int, Xml&) const {}
       virtual float getParameter(unsigned long) const  { return 0.0; }

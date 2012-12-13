@@ -173,7 +173,7 @@ class DssiSynthIF : public SynthIF
       
       virtual void deactivate3();
       
-      virtual const char* getPatchName(int, int, bool);
+      virtual QString getPatchName(int, int, bool) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       
       virtual void write(int level, Xml& xml) const;

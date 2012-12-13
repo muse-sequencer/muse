@@ -1414,8 +1414,6 @@ void VstNativeSynthIF::queryPrograms()
         }
 //#endif
 
-        //fprintf(stderr, " VstNativeSynthIF::queryPrograms():  patch name:%s\n", buf);  // REMOVE Tim.
-        
         int bankH = (prog >> 14) & 0x7f;
         int bankL = (prog >> 7) & 0x7f;
         int patch = prog & 0x7f;
@@ -1520,7 +1518,7 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
 //   getPatchName
 //---------------------------------------------------------
 
-const char* VstNativeSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/)
+QString VstNativeSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/) const
 {
   unsigned long  program = prog & 0x7f;
   unsigned long  lbank   = (prog >> 8) & 0xff;
@@ -1536,12 +1534,8 @@ const char* VstNativeSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/
   {
     for(std::vector<VST_Program>::const_iterator i = programs.begin(); i != programs.end(); ++i)
     {
-      //fprintf(stderr, "    VstNativeSynthIF::patch name:%s\n", i->name.toLatin1().constData());  // REMOVE Tim.
       if(i->program == p)
-      {
-        //fprintf(stderr, "    found patch name:%s\n", i->name.toLatin1().constData());  // REMOVE Tim.
-        return i->name.toLatin1().constData();
-      }
+        return i->name;
     }
   }
   return "?";

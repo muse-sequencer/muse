@@ -919,14 +919,10 @@ void SynthI::read(Xml& xml)
 //   getPatchName
 //---------------------------------------------------------
 
-const char* MessSynthIF::getPatchName(int channel, int prog, bool drum)
+QString MessSynthIF::getPatchName(int channel, int prog, bool drum) const
       {
         if (_mess)
-        {
-              const char* s = _mess->getPatchName(channel, prog, drum); 
-              if(s)
-                return s;
-        }      
+          return _mess->getPatchName(channel, prog, drum);
         return "";
       }
 

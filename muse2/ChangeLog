@@ -1,3 +1,7 @@
+12.12.2012:
+         - Fixed some vst controls stuck. (Tim)
+         - Added vst master timebase (sequencers should work now). WIP Not quite finished. (Tim)
+         - Fixed weird QString bug causing some patch names to appear with garbage characters. (Tim)
 11.12.2012:
          - Fix native vst path (VST_NATIVE_PATH, VST_PATH, then preset). Also ladspa, dssi paths. Added -help text. (Tim)
 10.12.2012:

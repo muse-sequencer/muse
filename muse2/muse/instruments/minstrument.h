@@ -238,7 +238,7 @@ class MidiInstrument {
       virtual void writeToGui(const MidiPlayEvent&) {}
 
       virtual void reset(int); 
-      virtual const char* getPatchName(int,int,bool) const;
+      virtual QString getPatchName(int,int,bool) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       void read(Xml&);
       void write(int level, Xml&);

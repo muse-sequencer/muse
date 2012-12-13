@@ -26,10 +26,10 @@
 #define MESS_MAJOR_VERSION 1
 #define MESS_MINOR_VERSION 1
 
+#include <QString>
 #include "mpevent.h"
 
 class QWidget;
-class QString;
 class MessP;
 
 //---------------------------------------------------------
@@ -88,7 +88,7 @@ class Mess {
 
       virtual void getInitData(int* n, const unsigned char**) /*const*/ { *n = 0; } // No const: Synths may need to allocate member pointers. p4.0.27 Tim
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const {return 0;}
-      virtual const char* getPatchName(int, int, bool) const { return "?"; }
+      virtual QString getPatchName(int, int, bool) const { return "?"; }
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }
 
       // synthesizer -> host communication

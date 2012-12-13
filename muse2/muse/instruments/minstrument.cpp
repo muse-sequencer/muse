@@ -1093,7 +1093,7 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, 
 //   getPatchName
 //---------------------------------------------------------
 
-const char* MidiInstrument::getPatchName(int /*channel*/, int prog, bool drum) const
+QString MidiInstrument::getPatchName(int /*channel*/, int prog, bool drum) const
       {
       int pr = prog & 0xff;
       if(prog == CTRL_VAL_UNKNOWN || pr == 0xff)
@@ -1115,7 +1115,7 @@ const char* MidiInstrument::getPatchName(int /*channel*/, int prog, bool drum) c
                     
                     && (hbank == mp->hbank || !hb || mp->hbank == -1)
                     && (lbank == mp->lbank || !lb || mp->lbank == -1))
-                        return mp->name.toLatin1().constData();
+                        return mp->name;
                   }
             }
       return "<unknown>";

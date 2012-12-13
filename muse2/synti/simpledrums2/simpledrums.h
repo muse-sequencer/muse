@@ -137,7 +137,7 @@ class SimpleSynth : public Mess
       virtual bool processEvent(const MusECore::MidiPlayEvent& arg1);
       virtual bool setController(int arg1, int arg2, int arg3);
       virtual bool sysex(int arg1, const unsigned char* arg2);
-      virtual const char* getPatchName(int arg1, int arg2, bool arg3) const; 
+      virtual QString getPatchName(int arg1, int arg2, bool arg3) const; 
       virtual const MidiPatch* getPatchInfo(int arg1, const MidiPatch* arg2) const;
       virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
       virtual void processMessages();

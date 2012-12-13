@@ -2163,7 +2163,7 @@ void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bank, int prog)
 //   getPatchName
 //---------------------------------------------------------
 
-const char* DssiSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/)
+QString DssiSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/) const
       {
       unsigned program = prog & 0x7f;
       int lbank   = (prog >> 8) & 0xff;

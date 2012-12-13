@@ -644,10 +644,10 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
     \fn SimpleSynth::getPatchName
     \brief Called from host to get names of patches
     \param index - which patchnr we're about to deliver
-    \return const char* with patchname
+    \return QString with patchname
  */
 //---------------------------------------------------------
-const char* SimpleSynth::getPatchName(int /*index*/, int, bool) const
+QString SimpleSynth::getPatchName(int /*index*/, int, bool) const
       {
       SS_TRACE_IN
       SS_TRACE_OUT
