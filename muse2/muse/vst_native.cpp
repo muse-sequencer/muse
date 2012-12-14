@@ -943,6 +943,17 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                   // (see valid masks above), as some items may require extensive
                   // conversions
 
+#ifdef VST_NATIVE_DEBUG
+                  fprintf(stderr, "VstNativeSynthIF::hostCallback master time: valid: nanos:%d ppqpos:%d tempo:%d bars:%d cyclepos:%d sig:%d smpte:%d clock:%d\n",  // REMOVE Tim.
+                    (bool)(value & kVstNanosValid),
+                    (bool)(value & kVstPpqPosValid),
+                    (bool)(value & kVstTempoValid),
+                    (bool)(value & kVstBarsValid),
+                    (bool)(value & kVstCyclePosValid),
+                    (bool)(value & kVstTimeSigValid),
+                    (bool)(value & kVstSmpteValid),
+                    (bool)(value & kVstClockValid));
+#endif
                   memset(&_timeInfo, 0, sizeof(_timeInfo));
 
                   unsigned int curr_frame = MusEGlobal::audio->pos().frame();
@@ -950,28 +961,18 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                   _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
                   _timeInfo.flags = 0;
 
-                  if(value & (kVstBarsValid | kVstTimeSigValid | kVstTempoValid | kVstPpqPosValid))
+                  Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+
+                  if(value & kVstBarsValid)
                   {
-                    Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false);
-                    // Can't use song pos - it is only updated every (slow) GUI heartbeat !
-                    //Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
-
-
-                    //unsigned int tick_pos = MusEGlobal::audio->tickPos();
-                    
                     int p_bar, p_beat, p_tick;
                     p.mbt(&p_bar, &p_beat, &p_tick);
-                    
-//#ifndef VST_VESTIGE_SUPPORT
                     _timeInfo.barStartPos = (double)Pos(p_bar, 0, 0).tick() / (double)MusEGlobal::config.division;
-                    _timeInfo.ppqPos = (double)MusEGlobal::audio->tickPos() / (double)MusEGlobal::config.division;
-// #else
-//                     *((double*)&_timeInfo.empty2[0]) = (double)Pos(p_bar, 0, 0).tick() / (double)MusEGlobal::config.division;
-//                     *((double*)&_timeInfo.empty1[8]) = (double)MusEGlobal::audio->tickPos() / (double)MusEGlobal::config.division;
-// #endif
-                    //pos->bar++;
-                    //pos->beat++;
+                    _timeInfo.flags |= kVstBarsValid;
+                  }
 
+                  if(value & kVstTimeSigValid)
+                  {
                     int z, n;
                     AL::sigmap.timesig(p.tick(), z, n);
 
@@ -982,22 +983,33 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                     _timeInfo.timeSigNumerator = z;
                     _timeInfo.timeSigDenominator = n;
 #endif
-
-                    ////pos->ticks_per_beat = 24;
-                    //pos->ticks_per_beat = MusEGlobal::config.division;
-
-                    double tempo = MusEGlobal::tempomap.tempo(p.tick());
-                    _timeInfo.tempo = (60000000.0 / tempo) * double(MusEGlobal::tempomap.globalTempo())/100.0;
-                    _timeInfo.flags |= (kVstBarsValid | kVstTimeSigValid | kVstTempoValid | kVstPpqPosValid);
-
-#ifdef VST_NATIVE_DEBUG
-                    fprintf(stderr, "VstNativeSynthIF::hostCallback master time: sample pos:%f samplerate:%f sig num:%ld den:%ld tempo:%f\n",
-                      _timeInfo.samplePos, _timeInfo.sampleRate, _timeInfo.timeSigNumerator, _timeInfo.timeSigDenominator, _timeInfo.tempo);
-#endif
+                    _timeInfo.flags |= kVstTimeSigValid;
+                  }
+                  
+                  if(value & kVstPpqPosValid)
+                  {
+                    _timeInfo.ppqPos = (double)MusEGlobal::audio->tickPos() / (double)MusEGlobal::config.division;
+                    _timeInfo.flags |= kVstPpqPosValid;
                   }
 
+                  if(value & kVstTempoValid)
+                  {
+                    double tempo = MusEGlobal::tempomap.tempo(p.tick());
+                    _timeInfo.tempo = (60000000.0 / tempo) * double(MusEGlobal::tempomap.globalTempo())/100.0;
+                    _timeInfo.flags |= kVstTempoValid;
+                  }
+                  
+#ifdef VST_NATIVE_DEBUG
+                  fprintf(stderr, "VstNativeSynthIF::hostCallback master time: sample pos:%f samplerate:%f sig num:%ld den:%ld tempo:%f\n",
+                    _timeInfo.samplePos, _timeInfo.sampleRate, _timeInfo.timeSigNumerator, _timeInfo.timeSigDenominator, _timeInfo.tempo);
+#endif
+                 
                   if(MusEGlobal::audio->isPlaying())
                     _timeInfo.flags |= (kVstTransportPlaying | kVstTransportChanged);
+                  // TODO
+                  //if(MusEGlobal::audio->isRecording())
+                  //  _timeInfo.flags |= (kVstTransportRecording | kVstTransportChanged);
+                  
                   return (long)&_timeInfo;
             }
             
