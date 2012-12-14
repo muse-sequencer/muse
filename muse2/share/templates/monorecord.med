@@ -136,7 +136,7 @@
     <cycle>0</cycle>
     <click>0</click>
     <quantize>0</quantize>
-    <len>0</len>
+    <len>230400</len>
     <follow>1</follow>
     <sampleRate>44100</sampleRate>
     <AudioOutput>

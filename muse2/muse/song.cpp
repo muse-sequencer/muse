@@ -2131,7 +2131,7 @@ void Song::clear(bool signal, bool clear_all)
       _cycleMode     = CYCLE_NORMAL;
       _click         = false;
       _quantize      = false;
-      _len           = 0;           // song len in ticks
+      _len           = AL::sigmap.bar2tick(150, 0, 0);  // default song len in ticks set for 150 bars
       _follow        = JUMP;
       dirty          = false;
       initDrumMap();
