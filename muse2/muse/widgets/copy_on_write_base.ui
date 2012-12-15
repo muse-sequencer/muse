@@ -26,9 +26,12 @@
       <item>
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Some wave files will be copied to the Project Directory, 
+         <string>Some sound files will be copied to the Project Directory, 
 either because they are not writable or because more 
 than one independent Wave Event shares them.
+(If you prefer instead that the Wave Events are
+ inter-dependent, try using Clone Parts.)
+
 Multiple copies will be made in some cases. 
 
 If no Project has been created yet, you will be asked to,
