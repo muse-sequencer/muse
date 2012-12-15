@@ -808,7 +808,7 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
       					   this,
                                        tr("Load sample dialog"),
       					   lastDir,
-                                       QString("*.wav *.WAV"));
+                                       QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
 
       if (filename != QString::null) {
             QFileInfo fi(filename);

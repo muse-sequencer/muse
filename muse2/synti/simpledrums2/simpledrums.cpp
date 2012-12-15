@@ -31,6 +31,7 @@
 #include "simpledrums.h"
 
 #include <samplerate.h>
+#include <QFileDialog>
 
 const char* SimpleSynth::synth_state_descr[] =
       {
@@ -1333,11 +1334,30 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
       // Thread stuff:
       SS_SampleLoader* loader = new SS_SampleLoader;
       loader->channel = ch;
-      loader->filename = std::string(filename);
       loader->ch_no   = chno;
       if (SS_DEBUG) {
             printf("Loader filename is: %s\n", filename);
             }
+
+      if (QFile::exists(filename))
+      {
+          loader->filename = std::string(filename);
+      }
+      else
+      {
+
+          // TODO: Strings should be translated, this does
+          //       however require the class to be derived from qobject
+          //       tried in vain to make the call in the gui object
+          //       could'nt get it to work due to symbol missing in .so ...
+          QString newName = QFileDialog::getOpenFileName(0,
+                                  QString("Can't find sample: %1 - Choose sample").arg(filename),
+                                  filename,
+                                  QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
+          loader->filename = newName.toStdString();
+      }
+
+
       pthread_t sampleThread;
       pthread_attr_t* attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
       pthread_attr_init(attributes);
