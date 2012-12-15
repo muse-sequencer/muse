@@ -456,8 +456,12 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, con
             // release note:
             MusECore::MidiPlayEvent ev1(0, port, channel, 0x90, event.pitch() + track()->transposition, 0);
             MusEGlobal::audio->msgPlayMidiEvent(&ev1);
-            MusECore::MidiPlayEvent ev2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
-            MusEGlobal::audio->msgPlayMidiEvent(&ev2);
+            if (moving.size() == 1) {
+                MusECore::MidiPlayEvent ev2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
+                MusEGlobal::audio->msgPlayMidiEvent(&ev2);
+                }
+            else
+                playedPitch=-1;
             }
       
       MusECore::Part* part = nevent->part();
@@ -1041,10 +1045,15 @@ void PianoCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
             // release note:
             MusECore::MidiPlayEvent ev1(0, port, channel, 0x90, playedPitch, 0);
             MusEGlobal::audio->msgPlayMidiEvent(&ev1);
-            // play note:
-            MusECore::MidiPlayEvent e2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
-            MusEGlobal::audio->msgPlayMidiEvent(&e2);
-            playedPitch = npitch + track()->transposition;
+
+            if (moving.size() == 1) { // items moving
+                // play note:
+                MusECore::MidiPlayEvent e2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
+                MusEGlobal::audio->msgPlayMidiEvent(&e2);
+                playedPitch = npitch + track()->transposition;
+                }
+            else
+                playedPitch = -1;
             }
       }
 

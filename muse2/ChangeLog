@@ -1,5 +1,6 @@
 14.12.2012:
          - Made simpledrums ask to load another sample if a sample wasn't found during loading (rj)
+         - when dragging multiple notes in editors they are not played, to avoid hanging notes (rj)
 12.12.2012:
          - Fixed some vst controls stuck. (Tim)
          - Added vst master timebase (sequencers should work now). WIP Not quite finished. (Tim)
