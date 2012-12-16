@@ -1166,7 +1166,14 @@ Pipeline::Pipeline()
    : std::vector<PluginI*>()
       {
       for (int i = 0; i < MAX_CHANNELS; ++i)
-            posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+      {
+        int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+        if(rv != 0)
+        {
+          fprintf(stderr, "ERROR: Pipeline ctor: posix_memalign returned error:%d. Aborting!\n", rv);
+          abort();
+        }
+      }
       
       for (int i = 0; i < PipelineDepth; ++i)
             push_back(0);
@@ -1180,7 +1187,14 @@ Pipeline::Pipeline(const Pipeline& /*p*/)
    : std::vector<PluginI*>()
       {
       for (int i = 0; i < MAX_CHANNELS; ++i)
-            posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+      {
+        int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+        if(rv != 0)
+        {
+          fprintf(stderr, "ERROR: Pipeline copy ctor: posix_memalign returned error:%d. Aborting!\n", rv);
+          abort();
+        }
+      }
       
       // TODO: Copy plug-ins !
       for (int i = 0; i < PipelineDepth; ++i)

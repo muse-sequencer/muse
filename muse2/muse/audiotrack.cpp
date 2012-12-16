@@ -23,6 +23,7 @@
 
 #include <limits.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <map>
 
 #include <QMessageBox>
@@ -117,7 +118,14 @@ AudioTrack::AudioTrack(TrackType t)
       _totalOutChannels = MAX_CHANNELS;
       outBuffers = new float*[_totalOutChannels];
       for (int i = 0; i < _totalOutChannels; ++i)
-            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
+      {
+        int rv = posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
+        if(rv != 0)
+        {
+          fprintf(stderr, "ERROR: AudioTrack ctor: posix_memalign returned error:%d. Aborting!\n", rv);
+          abort();
+        }
+      }
       
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
@@ -1725,7 +1733,14 @@ AudioAux::AudioAux()
       for(int i = 0; i < MAX_CHANNELS; ++i)
       {
         if(i < channels())
-          posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+        {
+          int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+          if(rv != 0)
+          {
+            fprintf(stderr, "ERROR: AudioAux ctor: posix_memalign returned error:%d. Aborting!\n", rv);
+            abort();
+          }
+        }
         else
           buffer[i] = 0;
       }
@@ -1738,7 +1753,14 @@ AudioAux::AudioAux(const AudioAux& t, int flags)
       for(int i = 0; i < MAX_CHANNELS; ++i)
       {
         if(i < channels())
-          posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+        {
+          int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+          if(rv != 0)
+          {
+            fprintf(stderr, "ERROR: AudioAux ctor: posix_memalign returned error:%d. Aborting!\n", rv);
+            abort();
+          }
+        }
         else
           buffer[i] = 0;
       }
@@ -1830,7 +1852,14 @@ void AudioAux::setChannels(int n)
   if(n > channels()) 
   {
     for(int i = channels(); i < n; ++i)
-      posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+    {
+      int rv = posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
+      if(rv != 0)
+      {
+        fprintf(stderr, "ERROR: AudioAux::setChannels: posix_memalign returned error:%d. Aborting!\n", rv);
+        abort();
+      }
+    }
   }
   else if(n < channels()) 
   {

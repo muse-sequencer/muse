@@ -227,7 +227,13 @@ DummyAudioDevice::DummyAudioDevice()
       // Added by Tim. p3.3.15
       // p3.3.30
       //posix_memalign((void**)&buffer, 16, sizeof(float) * dummyFrames);
-      posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::config.dummyAudioBufSize);
+
+      int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::config.dummyAudioBufSize);
+      if(rv != 0)
+      {
+        fprintf(stderr, "ERROR: DummyAudioDevice ctor: posix_memalign returned error:%d. Aborting!\n", rv);
+        abort();
+      }
       
       dummyThread = 0;
       realtimeFlag = false;

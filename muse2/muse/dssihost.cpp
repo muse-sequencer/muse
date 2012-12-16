@@ -37,6 +37,7 @@
 #include <signal.h>
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/stat.h>
 
 #include <QDir>
@@ -486,13 +487,23 @@ bool DssiSynthIF::init(DssiSynth* s)
       int inports = synth->_inports;
       if(inports != 0)
       {
-        posix_memalign((void**)&audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+        int rv = posix_memalign((void**)&audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+        if(rv != 0)
+        {
+          fprintf(stderr, "ERROR: DssiSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+          abort();
+        }
         memset(audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
         
         audioInBuffers = new float*[inports];
         for(int k = 0; k < inports; ++k)
         {
-          posix_memalign((void**)&audioInBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          int rv = posix_memalign((void**)&audioInBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          if(rv != 0)
+          {
+            fprintf(stderr, "ERROR: DssiSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+            abort();
+          }
           memset(audioInBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
           ld->connect_port(handle, synth->iIdx[k], audioInBuffers[k]);
         }  
@@ -504,7 +515,12 @@ bool DssiSynthIF::init(DssiSynth* s)
         audioOutBuffers = new float*[outports];
         for(int k = 0; k < outports; ++k)
         {
-          posix_memalign((void**)&audioOutBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          int rv = posix_memalign((void**)&audioOutBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          if(rv != 0)
+          {
+            fprintf(stderr, "ERROR: DssiSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+            abort();
+          }
           memset(audioOutBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
           ld->connect_port(handle, synth->oIdx[k], audioOutBuffers[k]);
         }  

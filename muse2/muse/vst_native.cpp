@@ -789,7 +789,12 @@ bool VstNativeSynthIF::init(Synth* s)
         _audioOutBuffers = new float*[outports];
         for(unsigned long k = 0; k < outports; ++k)
         {
-          posix_memalign((void**)&_audioOutBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          int rv = posix_memalign((void**)&_audioOutBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          if(rv != 0)
+          {
+            fprintf(stderr, "ERROR: VstNativeSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+            abort();
+          }
           memset(_audioOutBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
         }
       }
@@ -800,12 +805,22 @@ bool VstNativeSynthIF::init(Synth* s)
         _audioInBuffers = new float*[inports];
         for(unsigned long k = 0; k < inports; ++k)
         {
-          posix_memalign((void**)&_audioInBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          int rv = posix_memalign((void**)&_audioInBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          if(rv != 0)
+          {
+            fprintf(stderr, "ERROR: VstNativeSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+            abort();
+          }
           memset(_audioInBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
           _iUsedIdx.push_back(false); // Start out with all false.
         }
         
-        posix_memalign((void**)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+        int rv = posix_memalign((void**)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+        if(rv != 0)
+        {
+          fprintf(stderr, "ERROR: VstNativeSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+          abort();
+        }
         memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
       }
 

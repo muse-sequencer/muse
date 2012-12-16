@@ -25,6 +25,7 @@
 #include <cmath>
 #include <sndfile.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <QString>
 
@@ -1576,8 +1577,8 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
               free(b->buffer);
               b->buffer = 0;
             }     
-            posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
-            if(!b->buffer)
+            int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
+            if(rv != 0 || !b->buffer)
             {
               printf("Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
               return true;
@@ -1666,8 +1667,8 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
               b->buffer = 0;
             }
             
-            posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
-            if(!b->buffer)
+            int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
+            if(rv != 0 || !b->buffer)
             {
               printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
               return true;
@@ -1742,7 +1743,14 @@ void AudioTrack::setTotalOutChannels(int num)
           
         outBuffers = new float*[chans];
         for (int i = 0; i < chans; ++i)
-              posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
+        {
+          int rv = posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
+          if(rv != 0)
+          {
+            fprintf(stderr, "ERROR: AudioTrack::setTotalOutChannels: posix_memalign returned error:%d. Aborting!\n", rv);
+            abort();
+          }
+        }
       }  
       chans = num;
       // Limit the actual track (meters, copying etc, all 'normal' operation) to two-channel stereo.

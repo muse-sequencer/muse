@@ -23,6 +23,8 @@
 //=========================================================
 
 #include <fastlog.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <QLayout>
 #include <QApplication>
@@ -676,45 +678,46 @@ void AudioStrip::updateChannels()
 
 MusEGui::Knob* AudioStrip::addKnob(Knob::KnobType type, int id, MusEGui::DoubleLabel** dlabel, QLabel *name)
       {
-      MusEGui::Knob* knob = new Knob(this);
-      knob->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      MusEGui::DoubleLabel* knobLabel;
-      if (type == Knob::panType)
+      MusEGui::Knob* knob = NULL;
+      MusEGui::DoubleLabel* knobLabel = NULL;
+      switch(type)
       {
-            knob->setRange(-1.0, +1.0);
-            knob->setToolTip(tr("panorama"));
-            knobLabel = new MusEGui::DoubleLabel(0, -1.0, +1.0, this);
-
-      } else if (type == Knob::auxType)
-      {
-            knob->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-            knob->setToolTip(tr("aux send level"));
-            knob->setFaceColor(Qt::blue);
-            knobLabel = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.1, this);
-
-      } else if (type == Knob::gainType)
-      {
-            knob->setRange(1.0, 20.0);
-            knob->setFaceColor(Qt::yellow);
-            knob->setToolTip(tr("calibration gain"));
-            knobLabel = new MusEGui::DoubleLabel(1.0, 1.0, 30.0, this);
+        case Knob::panType:
+          knob = new Knob(this);
+          knob->setRange(-1.0, +1.0);
+          knob->setToolTip(tr("panorama"));
+          knobLabel = new MusEGui::DoubleLabel(0, -1.0, +1.0, this);
+          knobLabel->setPrecision(2);
+        break;
+        case Knob::auxType:
+          knob = new Knob(this);
+          knob->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
+          knob->setToolTip(tr("aux send level"));
+          knob->setFaceColor(Qt::blue);
+          knobLabel = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.1, this);
+          knobLabel->setPrecision(0);
+        break;
+        case Knob::gainType:
+          knob = new Knob(this);
+          knob->setRange(1.0, 20.0);
+          knob->setFaceColor(Qt::yellow);
+          knob->setToolTip(tr("calibration gain"));
+          knobLabel = new MusEGui::DoubleLabel(1.0, 1.0, 30.0, this);
+          knobLabel->setPrecision(1);
+        break;
+        default:
+          fprintf(stderr, "FIXME: AudioStrip::addKnob(): Unknown type. Aborting!\n");
+          abort();
       }
+        
+      knob->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       knob->setBackgroundRole(QPalette::Mid);
             
       if (dlabel)
             *dlabel = knobLabel;
       knobLabel->setSlider(knob);
-      ///pl->setFont(MusEGlobal::config.fonts[1]);
       knobLabel->setBackgroundRole(QPalette::Mid);
       knobLabel->setFrame(true);
-      if (type == Knob::panType)
-            knobLabel->setPrecision(2);
-      else if (type == Knob::auxType){
-            knobLabel->setPrecision(0);
-            }
-      else if (type == Knob::gainType){
-            knobLabel->setPrecision(1);
-            }
       knobLabel->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       
       name->setParent(this);
