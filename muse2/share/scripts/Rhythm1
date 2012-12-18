@@ -1,0 +1,86 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# MusE external midi processing script
+# By: Robert Jonsson 2012
+# Rhythm1
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2002-2011 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+import sys,time
+testFile = file(sys.argv[1],"r")
+inputEvents = testFile.readlines()
+testFile.close()
+
+outputEvents=[]
+BAR=0
+BEAT=0
+BEATLEN=0
+QUANTLEN=0
+PARTLEN=0
+
+hihatNote="42"
+kickNote="35"
+snareNote="38"
+length="1"
+velocity="100"
+
+#loop through events reading configuration
+for line in inputEvents:
+  outputEvents.append(line)
+  if line.startswith('TIMESIG'):
+    tag,bar,beat = line.split(' ')
+    BAR = int(bar)
+    BEAT = int(beat)
+  if line.startswith('BEATLEN'):
+    tag,beatLen = line.split(' ')
+    BEATLEN=int(beatLen)
+  if line.startswith('QUANTLEN'):
+    tag,quantLen = line.split(' ')
+    QUANTLEN = int(quantLen)
+  if line.startswith('PART'):
+    tag,start,end = line.split(' ')
+    PARTLEN = int(end) - int(start)
+    
+######################################
+######################################
+
+for ticking in range(0,PARTLEN):
+  if ticking % (BEATLEN * 4) == 0:
+    newline = "NOTE " + str(ticking) + " " + kickNote + " " + length + " " + velocity + "\n"
+    outputEvents.append(newline)
+  
+  if ticking % (BEATLEN * 4) - (BEATLEN * 2) == 0:
+    newline = "NOTE " + str(ticking) + " " + snareNote + " " + length + " " + velocity + "\n"
+    outputEvents.append(newline)
+
+  if ticking % (BEATLEN) == 0:
+    newline = "NOTE " + str(ticking) + " " + hihatNote + " " + length + " " + velocity + "\n"
+    outputEvents.append(newline)
+
+testFile = file(sys.argv[1],"w")
+testFile.writelines(outputEvents)
+testFile.close()
+
+#testFile2 = file("/home/ddskrjo/o2.txt","w")
+#testFile2.writelines(outputEvents)
+#testFile2.close()
