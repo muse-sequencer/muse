@@ -616,15 +616,21 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
       else
       {
 
-          // TODO: Strings should be translated, this does
-          //       however require the class to be derived from qobject
-          //       tried in vain to make the call in the gui object
-          //       could'nt get it to work due to symbol missing in .so ...
-          QString newName = QFileDialog::getOpenFileName(0,
-                                  QString("Can't find soundfont: %1 - Choose soundfont").arg(filename),
-                                  filename,
-                                  QString("Soundfonts (*.sf2);;All files (*)"));
-          helper->filename = newName.toStdString();
+          //printf("current path: %s \nmuseProject %s\nfilename %s\n",QDir::currentPath().toLatin1().data(), MusEGlobal::museProject.toLatin1().data(), filename);
+          QFileInfo fi(filename);
+          if (QFile::exists(fi.fileName()))
+              helper->filename = QDir::currentPath().toStdString() + "/" + fi.fileName().toStdString();
+          else {
+              // TODO: Strings should be translated, this does
+              //       however require the class to be derived from qobject
+              //       tried in vain to make the call in the gui object
+              //       could'nt get it to work due to symbol missing in .so ...
+              QString newName = QFileDialog::getOpenFileName(0,
+                                      QString("Can't find soundfont: %1 - Choose soundfont").arg(filename),
+                                      filename,
+                                      QString("Soundfonts (*.sf2);;All files (*)"));
+              helper->filename = newName.toStdString();
+          }
       }
 
       if (pthread_create(&fontThread, attributes, ::fontLoadThread, (void*) helper))

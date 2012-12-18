@@ -1,3 +1,9 @@
+18.12.2012
+         - Enable fluidsynth and simpledrums to search for missing sounds in project dir if
+           the path was missing. (rj)
+         - Added change-dir to project dir when saving or loading songs, it needs to be
+           researched a bit if this has any drawbacks. The idea is that if plugins or
+           whatever wants to write to disk it should happen in the project dir. (rj)
 14.12.2012:
          - Made simpledrums ask to load another sample if a sample wasn't found during loading (rj)
          - when dragging multiple notes in editors they are not played, to avoid hanging notes (rj)

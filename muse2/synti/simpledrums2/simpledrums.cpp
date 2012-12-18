@@ -29,6 +29,7 @@
 #include "muse/mpevent.h"   
 //#include "common_defs.h"
 #include "simpledrums.h"
+#include "globals.h"
 
 #include <samplerate.h>
 #include <QFileDialog>
@@ -1345,16 +1346,23 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
       }
       else
       {
+          //printf("current path: %s \nmuseProject %s\nfilename %s\n",QDir::currentPath().toLatin1().data(), MusEGlobal::museProject.toLatin1().data(), filename);
+          //MusEGlobal::museProject
+          QFileInfo fi(filename);
+          if (QFile::exists(fi.fileName()))
+              loader->filename = QDir::currentPath().toStdString() + "/" + fi.fileName().toStdString();
+          else {
 
-          // TODO: Strings should be translated, this does
-          //       however require the class to be derived from qobject
-          //       tried in vain to make the call in the gui object
-          //       could'nt get it to work due to symbol missing in .so ...
-          QString newName = QFileDialog::getOpenFileName(0,
-                                  QString("Can't find sample: %1 - Choose sample").arg(filename),
-                                  filename,
-                                  QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
-          loader->filename = newName.toStdString();
+              // TODO: Strings should be translated, this does
+              //       however require the class to be derived from qobject
+              //       tried in vain to make the call in the gui object
+              //       could'nt get it to work due to symbol missing in .so ...
+              QString newName = QFileDialog::getOpenFileName(0,
+                                      QString("Can't find sample: %1 - Choose sample").arg(filename),
+                                      filename,
+                                      QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
+              loader->filename = newName.toStdString();
+          }
       }
 
 

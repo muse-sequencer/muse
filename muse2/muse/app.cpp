@@ -1145,11 +1145,13 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                   }
             project.setFile(MusEGui::getUniqueUntitledName());  
             MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+            QDir::setCurrent(QDir::homePath());
             }
       else {
             printf("Setting project path to %s\n", fi.absolutePath().toLatin1().constData());
             MusEGlobal::museProject = fi.absolutePath();
             project.setFile(name);
+            QDir::setCurrent(MusEGlobal::museProject);
             }
       QString ex = fi.completeSuffix().toLower();
       QString mex = ex.section('.', -1, -1);  
@@ -1298,7 +1300,8 @@ void MusE::setUntitledProject()
       {
       setConfigDefaults();
       QString name(MusEGui::getUniqueUntitledName());  
-      MusEGlobal::museProject = "./"; 
+      MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+      QDir::setCurrent(QDir::homePath());
       project.setFile(name);
       setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
       writeTopwinState=true;
@@ -1338,6 +1341,7 @@ void MusE::loadProject()
          tr("MusE: load project"), &doReadMidiPorts);
       if (!fn.isEmpty()) {
             MusEGlobal::museProject = QFileInfo(fn).absolutePath();
+            QDir::setCurrent(QFileInfo(fn).absolutePath());
             loadProjectFile(fn, false, doReadMidiPorts);
             }
       }
@@ -1711,6 +1715,8 @@ bool MusE::saveAs()
                   }
             else
                   MusEGlobal::museProject = tempOldProj;
+
+            QDir::setCurrent(MusEGlobal::museProject);
             }
 
       return ok;
@@ -2624,6 +2630,7 @@ MusE::lash_idle_cb ()
             setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(project.absoluteFilePath())));
             addProject(ss.toAscii());
             MusEGlobal::museProject = QFileInfo(ss.toAscii()).absolutePath();
+            QDir::setCurrent(MusEGlobal::museProject);
           }
           lash_send_event (lash_client, event);
         }
