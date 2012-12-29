@@ -481,7 +481,9 @@ void MidiSeq::threadStop()
 int MidiSeq::setRtcTicks()
       {
       int gotTicks = timer->setTimerFreq(MusEGlobal::config.rtcTicks);
-
+      if (MusEGlobal::config.rtcTicks-24 > gotTicks) {
+          printf("INFO: Could not get the wanted frequency %d, got %d, still it should suffice.\n", MusEGlobal::config.rtcTicks, gotTicks);
+      }
       timer->startTimer();
       return gotTicks;
       }
@@ -507,6 +509,7 @@ void MidiSeq::start(int priority)
 void MidiSeq::checkAndReportTimingResolution()
 {
     int freq = timer->getTimerFreq();
+    printf("Aquired timer frequency: %d\n", freq);
     if (freq < 500) {
         if(MusEGlobal::config.warnIfBadTiming)
         {

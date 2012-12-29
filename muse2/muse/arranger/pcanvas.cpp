@@ -3564,7 +3564,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       {
         //p.restore();
         return;
-      }  
+      }
+
       int xpixel = oldX;
       int oldY = -1;
       int ypixel = oldY;
@@ -3575,24 +3576,30 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       QPen pen2(cl->color(), 2);  
       pen2.setCosmetic(true);
 
-      // First check that there ARE automation, ic == cl->end means no automation
-      if (ic == cl->end()) 
+      // Store first value for later
+      double yfirst;
       {
-        double y;   
-        if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-          y = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
-          if (y < 0) y = 0.0;
-        }
-        else 
-          y = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
-        ypixel = oldY = bottom - rmapy_f(y) * height;
+          if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
+            yfirst = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
+            if (yfirst < 0) yfirst = 0.0;
+          }
+          else {
+            yfirst = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
+          }
+          yfirst = oldY = bottom - rmapy_f(yfirst) * height;
+      }
+
+      // Check that there IS automation, ic == cl->end means no automation
+      if (ic == cl->end())
+      {
+          ypixel = yfirst;
       }
       else
       {
         for (; ic !=cl->end(); ++ic)
         {
             double y = ic->second.val; 
-            if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
+            if (cl->valueType() == MusECore::VAL_LOG ) {
               y = logToVal(y, min, max); // represent volume between 0 and 1
               if (y < 0) y = 0.0;
             }
@@ -3617,8 +3624,6 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
               break;
 
             // draw a square around the point
-            //p.drawRect(mapx(MusEGlobal::tempomap.frame2tick(prevPosFrame))-2, (rr.bottom()-2)-prevVal*height-2, 5, 5);
-            //p.drawRect(mapx(MusEGlobal::tempomap.frame2tick(prevPosFrame))-1, (rr.bottom()-1)-prevVal*height-2, 3, 3);
             pen2.setColor((automation.currentCtrlValid && automation.currentCtrlList == cl && 
                            automation.currentCtrlFrameList.contains(ic->second.frame)) ?
                           Qt::white : cl->color());  
@@ -3637,10 +3642,16 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
                     if (cl->valueType() == MusECore::VAL_LOG) {
                         val = MusECore::fast_log10(ic->second.val) * 20.0;
                     }
-                    p.drawText(textRect, QString("Value: %1").arg(val));
+                    p.drawText(textRect, QString("Param: %1, Value: %2").arg(cl->name()).arg(val));
             }
         }
       }
+
+      p.setPen(pen1);
+      //int xTextPos = mapx(0) > rmapx(0) ? mapx(0) + 5 : rmapx(0) + 5; // follow window..(doesn't work very well)
+      int xTextPos = mapx(0) + 5;
+      p.drawText(xTextPos,yfirst,100,height-2,0,cl->name());
+
       if (xpixel <= rr.right())
       {
         p.setPen(pen1);

@@ -1446,7 +1446,18 @@ void TList::changeAutomation(QAction* act)
     if (id == cl->id())  // got it, change state
         cl->setVisible(act->isChecked());
   }
-  MusEGlobal::song->update(SC_TRACK_MODIFIED);
+
+  // if automation is OFF for the track we change it to READ as a convenience
+  // hopefully this confuses users far less than not understanding why the
+  // automation does not do anything.
+  if (((MusECore::AudioTrack*)editAutomation)->automationType() == AUTO_OFF)
+  {
+      MusEGlobal::audio->msgSetTrackAutomationType((MusECore::AudioTrack*)editAutomation, AUTO_READ);
+      if (MusEGlobal::debugMsg)
+          printf("Changing automation from OFF to READ\n");
+  }
+
+  MusEGlobal::song->update(SC_TRACK_MODIFIED|SC_AUTOMATION);
 }
 
 //---------------------------------------------------------
