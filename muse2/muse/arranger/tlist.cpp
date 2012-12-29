@@ -80,7 +80,7 @@ namespace MusEGui {
 static const int MIN_TRACKHEIGHT = 20;
 static const int WHEEL_DELTA = 120;
 QColor collist[] = { Qt::red, Qt::yellow, Qt::blue , Qt::black, Qt::white, Qt::green };
-
+QString colnames[] = { "Red", "Yellow", "Blue", "Black", "White", "Green"};
 //---------------------------------------------------------
 //   TList
 //---------------------------------------------------------
@@ -1461,6 +1461,21 @@ void TList::changeAutomationColor(QAction* act)
   int colindex = act->data().toInt() & 0xff;
   int id = (act->data().toInt() & 0x00ffffff) >> 8;
 
+  // Is it the clear automation action item?
+  // (As commented below, we should rewrite this to make it easier to understand..)
+  if (colindex == 253)
+  {
+      if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
+          tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
+          QString::null, 0, 1 ) == 0)
+      {
+        MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
+        MusEGlobal::audio->msgClearControllerEvents(track, id);
+
+      }
+  }
+
+
   // Is it the clear midi control action item?
   if(colindex == 254)  
   {
@@ -1537,8 +1552,10 @@ void TList::changeAutomationColor(QAction* act)
   MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
   for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
     MusECore::CtrlList *cl = icll->second;
-    if (cl->id() == id) // got it, change color
+    if (cl->id() == id) { // got it, change color and enable
         cl->setColor(collist[colindex]);
+        cl->setVisible(true);
+    }
   }
   MusEGlobal::song->update(SC_TRACK_MODIFIED);
 }
@@ -1551,6 +1568,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
   PopupMenu * m = new PopupMenu(parent, true);  
 
   QActionGroup* col_actgrp = new QActionGroup(m);
+  m->addAction(new MusEGui::MenuTitleItem(tr("Change color"), m));
   col_actgrp->setExclusive(true);
   for (int i = 0; i< 6; i++) {
     QPixmap pix(10,10);
@@ -1559,7 +1577,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     p.setPen(Qt::black);
     p.drawRect(0,0,10,10);
     QIcon icon(pix);
-    QAction *act = col_actgrp->addAction(icon,"");
+    QAction *act = col_actgrp->addAction(icon,colnames[i]);
     act->setCheckable(true);
     if (c == collist[i])
         act->setChecked(true);
@@ -1604,6 +1622,10 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
       m->addActions(midi_actgrp->actions());
     }
   }
+  m->addAction(new MenuTitleItem(tr("Other"), m));
+  QAction *act = m->addAction(tr("clear automation"));
+  act->setCheckable(false);
+  act->setData((id<<8) + 253); // Shift 8 bits. Make clear menu item 253 (should enum this)
   
   connect(m, SIGNAL(triggered(QAction*)), SLOT(changeAutomationColor(QAction*)));
   return m;
@@ -1784,6 +1806,15 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       act = p->addAction(cl->name());
                       act->setCheckable(true);
                       act->setChecked(cl->isVisible());
+
+                      QPixmap pix(8,8);
+                      QPainter qp(&pix);
+                      qp.fillRect(0,0,8,8,cl->color());
+                      qp.setPen(Qt::black);
+                      qp.drawRect(0,0,8,8);
+                      QIcon icon(pix);
+                      act->setIcon(icon);
+                      //act->setIconVisibleInMenu(true); //setToolTip(tr("click to show/unshow, submenu to select color"));
                       
                       int data = ctrl<<8; // shift 8 bits
                       data += 150; // illegal color > 100

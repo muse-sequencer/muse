@@ -1,3 +1,8 @@
+29.12.2012:
+         - Added clear automation to automation menu
+         - Changed automation color selection to hopefully make more sense with styles that
+           don't explicitly show an unchecked visual, color is shown in first menu also and
+           automation is enabled when color is selected in the color menu (rj)
 18.12.2012
          - Enable fluidsynth and simpledrums to search for missing sounds in project dir if
            the path was missing. (rj)
