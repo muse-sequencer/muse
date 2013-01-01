@@ -46,6 +46,7 @@
 
 namespace MusEGui {
 
+
 //---------------------------------------------------------
 //   EventCanvas
 //---------------------------------------------------------
@@ -474,6 +475,43 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
       moving.clear();
       updateSelection();
       redraw();
+      }
+
+//---------------------------------------------------------
+//   startPlayEvent
+//---------------------------------------------------------
+
+void EventCanvas::startPlayEvent(int note, int velocity, int port, int channel)
+      {
+      if (MusEGlobal::debugMsg)
+        printf("EventCanvas::startPlayEvent %d %d %d %d\n", note, velocity, port, channel);
+      playedPitch      = note + track()->transposition;
+
+      // play note:
+      MusECore::MidiPlayEvent e(0, port, channel, 0x90, playedPitch, velocity);
+      MusEGlobal::audio->msgPlayMidiEvent(&e);
+      }
+
+void EventCanvas::startPlayEvent(int note, int velocity)
+      {
+      int port         = track()->outPort();
+      int channel      = track()->outChannel();
+      startPlayEvent(note, velocity, port, channel);
+}
+
+//---------------------------------------------------------
+//   stopPlayEvent
+//---------------------------------------------------------
+
+void EventCanvas::stopPlayEvent()
+      {
+      int port    = track()->outPort();
+      int channel = track()->outChannel();
+
+      // release note:
+      MusECore::MidiPlayEvent ev(0, port, channel, 0x90, playedPitch, 0);
+      MusEGlobal::audio->msgPlayMidiEvent(&ev);
+      playedPitch = -1;
       }
 
 } // namespace MusEGui

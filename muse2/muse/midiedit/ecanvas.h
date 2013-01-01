@@ -29,6 +29,8 @@
 #include <QEvent>
 #include <QKeyEvent>
 
+#define KH        13
+
 class QMimeData;
 class QDrag;
 class QString;
@@ -51,6 +53,7 @@ typedef std::map<Part*, PartToChange>::iterator iPartToChange;
 
 namespace MusEGui {
 
+
 class MidiEditor;
 //---------------------------------------------------------
 //   EventCanvas
@@ -64,6 +67,7 @@ class EventCanvas : public Canvas {
       virtual void mouseMove(QMouseEvent* event);
 
    protected:
+      int playedPitch;
       bool _playEvents;
       MidiEditor* editor;
       unsigned start_tick, end_tick;
@@ -78,6 +82,11 @@ class EventCanvas : public Canvas {
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType) = 0;
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir);
+      virtual void startPlayEvent(int note, int velocity);
+      virtual void startPlayEvent(int note, int velocity, int port, int channel);
+      virtual void stopPlayEvent();
+
+
 
    public slots:
       void redrawGrid()       { redraw(); }
@@ -104,7 +113,7 @@ class EventCanvas : public Canvas {
       virtual void selectAtTick(unsigned int tick);
       virtual void viewDropEvent(QDropEvent* event);
       virtual void modifySelected(NoteInfo::ValType, int /*val*/, bool /*delta_mode*/ = true) {}
-      virtual void keyPress(QKeyEvent*);
+      virtual void keyPress(QKeyEvent*);      
       };
 
 } // namespace MusEGui

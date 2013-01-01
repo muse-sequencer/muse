@@ -34,7 +34,6 @@
 
 #include "steprec.h"
 
-#define KH        13
 
 class QRect;
 
@@ -61,7 +60,6 @@ class PianoCanvas : public EventCanvas {
       Q_OBJECT
     
       int colorMode;
-      int playedPitch;
       
       bool noteHeldDown[128];
       
@@ -92,8 +90,6 @@ class PianoCanvas : public EventCanvas {
       virtual void itemMoved(const CItem*, const QPoint&);
       virtual void curPartChanged();
       virtual void resizeEvent(QResizeEvent*);
-      virtual void startPlayEvent(const CItem*);
-      virtual void stopPlayEvent();
 
    private slots:
       void midiNote(int pitch, int velo);

@@ -67,6 +67,7 @@ NEvent::NEvent(MusECore::Event& e, MusECore::Part* p, int y) : MusEGui::CItem(e,
       setBBox(QRect(tick, y, e.lenTick(), KH/2));
       }
 
+
 //---------------------------------------------------------
 //   addItem
 //---------------------------------------------------------
@@ -83,11 +84,6 @@ CItem* PianoCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
 
       int diff = event.tick()-part->lenTick();
       if (diff > 0)  {// too short part? extend it
-            //printf("addItem - this code should not be run!\n"); DELETETHIS
-            //MusECore::Part* newPart = part->clone();
-            //newPart->setLenTick(newPart->lenTick()+diff);
-            //MusEGlobal::audio->msgChangePart(part, newPart,false);
-            //part = newPart;
             part->setLenTick(part->lenTick()+diff);
             }
       
@@ -248,24 +244,9 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
       int mey = mer.y();
       int mew = mer.width();
       int meh = mer.height();
-      //int mfx = mx; DELETETHIS 
-      //if(mfx == mex) mfx += 1;
-      //int mfy = my;
-      //if(mfy == mey) mfy += 1;
-      //int mfw = mw;
-      //if(mfw == mew) mfw -= 1;
-      //if(mfx == mex) mfw -= 1;
-      //int mfh = mh;
-      //if(mfh == meh) mfh -= 1;
-      //if(mfy == mey) mfh -= 1;
       color.setAlpha(MusEGlobal::config.globalAlphaBlend);
-      //QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 2);    // Inside the border DELETETHIS
-      //gradient.setColorAt(0, color);
-      //gradient.setColorAt(1, color.darker());
-      //QBrush brush(gradient);
       QBrush brush(color);
       p.fillRect(mr, brush);       
-      //p.fillRect(mfx, mfy, mfw, mfh, brush);     DELETETHIS   
       
       if(mex >= mx && mex <= mx + mw)
         p.drawLine(mex, my, mex, my + mh - 1);                       // The left edge
@@ -451,17 +432,10 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, con
       if (x < 0)
             x = 0;
       if (event.pitch() != npitch && _playEvents) {
-            int port    = track()->outPort();
-            int channel = track()->outChannel();
-            // release note:
-            MusECore::MidiPlayEvent ev1(0, port, channel, 0x90, event.pitch() + track()->transposition, 0);
-            MusEGlobal::audio->msgPlayMidiEvent(&ev1);
+            stopPlayEvent();
             if (moving.size() == 1) {
-                MusECore::MidiPlayEvent ev2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
-                MusEGlobal::audio->msgPlayMidiEvent(&ev2);
+                startPlayEvent(npitch, event.velo());
                 }
-            else
-                playedPitch=-1;
             }
       
       MusECore::Part* part = nevent->part();
@@ -506,7 +480,7 @@ MusEGui::CItem* PianoCanvas::newItem(const QPoint& p, int)
 
       NEvent *newEvent = new NEvent(e, curPart, pitch2y(pitch));
       if(_playEvents)
-              startPlayEvent(newEvent);
+              startPlayEvent(e.pitch(), e.velo());
       return newEvent;
       }
 
@@ -717,15 +691,10 @@ void PianoCanvas::pianoCmd(int cmd)
 
 void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       {
-      int port      = track()->outPort();
-      int channel   = track()->outChannel();
-      pitch        += track()->transposition;
-
       // play note:
       if(_playEvents)
       {
-        MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
-        MusEGlobal::audio->msgPlayMidiEvent(&e);
+        startPlayEvent(pitch, velocity);
       }
       
       if (_steprec && curPart) // && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record]
@@ -736,18 +705,11 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
 //   pianoReleased
 //---------------------------------------------------------
 
-void PianoCanvas::pianoReleased(int pitch, bool)
+void PianoCanvas::pianoReleased(int /*pitch*/, bool)
       {
-      int port    = track()->outPort();
-      int channel = track()->outChannel();
-      pitch      += track()->transposition;
-
       // release key:
       if(_playEvents)
-      {
-        MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
-        MusEGlobal::audio->msgPlayMidiEvent(&e);
-      }
+        stopPlayEvent();
       }
 
 //---------------------------------------------------------
@@ -761,56 +723,28 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
       int w = rect.width();
       int h = rect.height();
 
-      //DELETETHIS whoa, clean up the whole function. remove every commented out code line
-
-      // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
-      
-      //int mx = mapx(x);
-      //int my = mapy(y);
-      //int mw = mapx(x + w) - mx;
-      //int mw = mapx(x + w) - mx - 1;
-      //int mh = mapy(y + h) - my;
-      //int mh = mapy(y + h) - my - 1;
-      
-      // p.save();
-      // FIXME Can't get horizontal lines quite right yet. Draw in virtual space for now...
-      ///p.setWorldMatrixEnabled(false);
       
       //---------------------------------------------------
       //  horizontal lines
       //---------------------------------------------------
 
       int yy  = ((y-1) / KH) * KH + KH;
-      //int yy  = my + KH;
-      //int yy  = ((my-1) / KH) * KH + KH;
-      //int yoff = -rmapy(yorg) - ypos;
       int key = 75 - (yy / KH);
       
-      //printf("PianoCanvas::drawCanvas x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d yy:%d key:%d\n", x, y, w, h, mx, my, mw, mh, yy, key);  
       
       for (; yy < y + h; yy += KH) {
-      //for (; yy + yoff < my + mh; yy += KH) {
-      //for (; yy < my + mh; yy += KH) {
             switch (key % 7) {
                   case 0:
                   case 3:
                         p.setPen(Qt::black);
                         p.drawLine(x, yy, x + w, yy);
-                        //p.drawLine(mx, yy + yoff, mx + mw, yy + yoff);
-                        //p.drawLine(mx, yy, mx + mw, yy);
                         break;
                   default:
                         p.fillRect(x, yy-3, w, 6, QBrush(QColor(230,230,230)));
-                        //p.fillRect(mx, yy-3 + yoff, mw, 6, QBrush(QColor(230,230,230)));
-                        //p.fillRect(mx, yy-3, mw, 6, QBrush(QColor(230,230,230)));
                         break;
                   }
             --key;
             }
-      //p.restore();
-      ///p.setWorldMatrixEnabled(true);
-      
-      //p.setWorldMatrixEnabled(false);
       
       //---------------------------------------------------
       // vertical lines
@@ -818,8 +752,6 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
 
       drawTickRaster(p, x, y, w, h, editor->raster());
       
-      //p.restore();
-      //p.setWorldMatrixEnabled(true);
       }
 
 //---------------------------------------------------------
@@ -993,8 +925,6 @@ void PianoCanvas::dragEnterEvent(QDragEnterEvent* event)
 
 void PianoCanvas::dragMoveEvent(QDragMoveEvent*)
       {
-      //printf("drag move %x\n", this); DELETETHIS (whole function?)
-      //event->acceptProposedAction();  
       }
 
 //---------------------------------------------------------
@@ -1003,8 +933,6 @@ void PianoCanvas::dragMoveEvent(QDragMoveEvent*)
 
 void PianoCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
-      //printf("drag leave\n");         DELETETHIS (whole function?)
-      //event->acceptProposedAction();  
       }
 
 //---------------------------------------------------------
@@ -1015,7 +943,8 @@ void PianoCanvas::itemPressed(const MusEGui::CItem* item)
       {
       if (!_playEvents)
             return;
-      startPlayEvent(item);
+      MusECore::Event e = ((NEvent*)item)->event();
+      startPlayEvent(e.pitch(), e.velo());
       }
 
 //---------------------------------------------------------
@@ -1037,23 +966,16 @@ void PianoCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
       {
       int npitch = y2pitch(pos.y());
       if ((playedPitch != -1) && (playedPitch != npitch)) {
-            int port         = track()->outPort();
-            int channel      = track()->outChannel();
             NEvent* nevent   = (NEvent*) item;
             MusECore::Event event      = nevent->event();
 
             // release note:
-            MusECore::MidiPlayEvent ev1(0, port, channel, 0x90, playedPitch, 0);
-            MusEGlobal::audio->msgPlayMidiEvent(&ev1);
+            stopPlayEvent();
 
             if (moving.size() == 1) { // items moving
                 // play note:
-                MusECore::MidiPlayEvent e2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
-                MusEGlobal::audio->msgPlayMidiEvent(&e2);
-                playedPitch = npitch + track()->transposition;
+                startPlayEvent(npitch, event.velo());
                 }
-            else
-                playedPitch = -1;
             }
       }
 
@@ -1173,37 +1095,6 @@ void PianoCanvas::resizeEvent(QResizeEvent* ev)
       EventCanvas::resizeEvent(ev);
       }
 
-//---------------------------------------------------------
-//   startPlayEvent
-//---------------------------------------------------------
 
-void PianoCanvas::startPlayEvent(const MusEGui::CItem* item)
-      {
-      int port         = track()->outPort();
-      int channel      = track()->outChannel();
-      NEvent* nevent   = (NEvent*) item;
-      MusECore::Event event      = nevent->event();
-      playedPitch      = event.pitch() + track()->transposition;
-      int velo         = event.velo();
-
-      // play note:
-      MusECore::MidiPlayEvent e(0, port, channel, 0x90, playedPitch, velo);
-      MusEGlobal::audio->msgPlayMidiEvent(&e);
-      }
-
-//---------------------------------------------------------
-//   stopPlayEvent
-//---------------------------------------------------------
-
-void PianoCanvas::stopPlayEvent()
-      {
-      int port    = track()->outPort();
-      int channel = track()->outChannel();
-
-      // release note:
-      MusECore::MidiPlayEvent ev(0, port, channel, 0x90, playedPitch, 0);
-      MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      playedPitch = -1;
-      }
 
 } // namespace MusEGui
