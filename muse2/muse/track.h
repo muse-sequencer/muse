@@ -443,7 +443,7 @@ class AudioTrack : public Track {
 
       virtual void preProcessAlways() { _processed = false; }
       virtual void  addData(unsigned samplePos, int channels, int srcStartChan, int srcChannels, unsigned frames, float** buffer);
-      virtual void copyData(unsigned samplePos, int channels, int srcStartChan, int srcChannels, unsigned frames, float** buffer);
+      virtual void copyData(unsigned samplePos, int channels, int srcStartChan, int srcChannels, unsigned frames, float** buffer, bool add=false);
       virtual bool hasAuxSend() const { return false; }
       
       // automation
