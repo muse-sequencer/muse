@@ -1,3 +1,5 @@
+03.01.2013:
+         - Fixed SimpleDrums GUI issues on AVLinux (and supposedly other debian based distros) (rj)
 01.01.2013: Happy new year!
          - Fixed playback of drumsounds during editing for new type drum editor (rj)
 29.12.2012:

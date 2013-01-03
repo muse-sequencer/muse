@@ -163,10 +163,14 @@ SS_PluginFront::SS_PluginFront(QWidget* parent, int in_fxid)
       setFocusPolicy(Qt::NoFocus);
       setMinimumSize(SS_PLUGINFRONT_MINWIDTH, SS_PLUGINFRONT_MINHEIGHT);
       setMaximumSize(SS_PLUGINGUI_MAX_WIDTH, SS_PLUGINFRONT_MINHEIGHT);
+      //layout->setSpacing(1);
+      //layout->setMargin(1);
 
       QVBoxLayout* bigLayout = new QVBoxLayout(this);
       bigLayout->setContentsMargins(SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN, SS_PLUGINFRONT_MARGIN);
       bigLayout->setAlignment(Qt::AlignTop);
+      bigLayout->setSpacing(1);
+      bigLayout->setMargin(1);
 //TODO      bigLayout->setResizeMode(QLayout::SetNoConstraint);
 
       layout = new QHBoxLayout;

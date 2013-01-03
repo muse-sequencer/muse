@@ -122,6 +122,7 @@ QChannelSlider::QChannelSlider(Qt::Orientation orientation, int ch, QWidget* par
       : QSlider(orientation, parent)
 {
     channel = ch;
+    setMinimumHeight(50);
 }
 
 void QChannelSlider::sliderChange(SliderChange change)
@@ -287,8 +288,15 @@ SimpleSynthGui::SimpleSynthGui()
       pluginGui->hide();
 
       QVBoxLayout* mainLayout = new QVBoxLayout(this); //, 3);
+
+//      mainLayout->setSpacing(0);
+//      mainLayout->setMargin(0);
       QHBoxLayout* channelLayout = new QHBoxLayout;
+      channelLayout->setSpacing(1);
+      channelLayout->setMargin(0);
       mainLayout->addLayout(channelLayout);
+
+
 
       //this->setFixedWidth(SS_GUI_WINDOW_WIDTH);
       //this->setFixedHeight(SS_GUI_WINDOW_HEIGHT);
@@ -304,6 +312,9 @@ SimpleSynthGui::SimpleSynthGui()
 
             QVBoxLayout* inchnlLayout = new QVBoxLayout(channelButtonGroups[i]); //, 2, 0, "channelinternallayout");
             inchnlLayout->setAlignment(Qt::AlignHCenter);
+            inchnlLayout->setSpacing(1);
+            inchnlLayout->setMargin(0);
+
 
             onOff[i] = new QChannelCheckbox(channelButtonGroups[i], i);
 //            onOff[i]->setMinimumSize(SS_ONOFF_WIDTH, SS_ONOFF_HEIGHT);
@@ -390,6 +401,9 @@ SimpleSynthGui::SimpleSynthGui()
       channelLayout->addWidget(masterButtonGroup);
       QVBoxLayout* mbgLayout = new QVBoxLayout(masterButtonGroup);
       mbgLayout->setAlignment(Qt::AlignCenter);
+      mbgLayout->setSpacing(1);
+      mbgLayout->setMargin(0);
+
 //      masterButtonGroup->setMinimumSize(SS_BTNGRP_WIDTH, SS_BTNGRP_HEIGHT);
       
       ///masterSlider = new QInvertedSlider(Qt::Vertical, masterButtonGroup);
@@ -413,6 +427,8 @@ SimpleSynthGui::SimpleSynthGui()
       mainLayout->addWidget(mainGroupBox);
 
       QGridLayout* mgbLayout = new QGridLayout(mainGroupBox); // , 8, 3, 1);
+      mgbLayout->setSpacing(1);
+      mgbLayout->setMargin(0);
 
       int i=0;
 
@@ -454,6 +470,8 @@ SimpleSynthGui::SimpleSynthGui()
       openPluginsButton->setToolTip("Configure LADSPA send effects");
       connect(openPluginsButton, SIGNAL(clicked()), SLOT(openPluginButtonClicked()));
       rbLayout->addWidget(openPluginsButton, 2, 1, Qt::AlignCenter | Qt::AlignVCenter);
+      rbLayout->setSpacing(0);
+      rbLayout->setMargin(0);
       aboutButton = new QPushButton("About SimpleDrums");
       connect(aboutButton, SIGNAL(clicked()), SLOT(aboutButtonClicked()));
 //TD      rbLayout->addRowSpacing(3, 20);
