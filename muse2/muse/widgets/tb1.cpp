@@ -97,18 +97,18 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       raster = new LabelCombo(tr("Snap"), 0);
       raster->setFocusPolicy(Qt::TabFocus);
 
-      rlist = new QTableWidget(10, 3);    
-      rlist->verticalHeader()->setDefaultSectionSize(22);                      
-      rlist->horizontalHeader()->setDefaultSectionSize(32);                      
-      rlist->setSelectionMode(QAbstractItemView::SingleSelection);                      
-      rlist->verticalHeader()->hide();                        
-      rlist->horizontalHeader()->hide();                      
-      
+      rlist = new QTableWidget(10, 3);
+      rlist->verticalHeader()->setDefaultSectionSize(22);
+      rlist->horizontalHeader()->setDefaultSectionSize(32);
+      rlist->setSelectionMode(QAbstractItemView::SingleSelection);
+      rlist->verticalHeader()->hide();
+      rlist->horizontalHeader()->hide();
+
       rlist->setMinimumWidth(96);
-      
-      raster->setView(rlist);              
-      
-      for (int j = 0; j < 3; j++)                                                 
+
+      raster->setView(rlist);
+
+      for (int j = 0; j < 3; j++)
         for (int i = 0; i < 10; i++)
           rlist->setItem(i, j, new QTableWidgetItem(tr(rasterStrings[i + j * 10])));
        

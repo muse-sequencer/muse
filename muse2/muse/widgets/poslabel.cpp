@@ -53,9 +53,12 @@ PosLabel::PosLabel(QWidget* parent, const char* name)
       setFrameStyle(WinPanel | Sunken);
       setLineWidth(2);
       setMidLineWidth(3);
+
       //int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this); // ddskrjo 0
-      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth); 
+      int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
       setIndent(fw);
+      //setContentsMargins(0,0,0,0);  // REMOVE Tim. Or keep and remove above three lines.
+      
       updateValue();
       }
 

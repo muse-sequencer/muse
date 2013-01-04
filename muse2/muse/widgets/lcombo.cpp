@@ -35,19 +35,19 @@ LabelCombo::LabelCombo(const QString& txt, QWidget* parent,
    const char* name) : QWidget(parent)
       {
       setObjectName(name);
-//      setFixedHeight(20);
       QHBoxLayout* layout = new QHBoxLayout(this);
       QLabel* label = new QLabel(txt, this);
-      //box = new QComboBox(false, this);
+      //label->setContentsMargins(0,0,0,0);                                               // REMOVE Tim. Or keep.
       box = new QComboBox(this);
+      //box->setContentsMargins(0,0,0,0);                                                 //
+      // Ignored was only solution, others were too tall. The label takes priority then.  //
+      //box->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);                 //
       box->setEditable(false);
-      ///layout->addStretch();
       layout->addSpacing(5);
       layout->addWidget(label);
       layout->addSpacing(5);
       layout->addWidget(box);
       layout->addSpacing(5);
-      ///layout->addStretch();
       connect(box, SIGNAL(activated(int)), SIGNAL(activated(int)));
       }
 
