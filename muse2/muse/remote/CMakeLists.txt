@@ -53,6 +53,7 @@ set_target_properties( remote
       )
 
 target_link_libraries(remote
+      widgets # through app.h
       ${PYTHON_LIBRARIES}
       )
 

@@ -1,3 +1,5 @@
+13.01.2013:
+         - remote should depend on widgets through #including app.h otherwise Python bindings don't compile (Orcan)
 03.01.2013:
          - Fixed SimpleDrums GUI issues on AVLinux (and supposedly other debian based distros) (rj)
 01.01.2013: Happy new year!
