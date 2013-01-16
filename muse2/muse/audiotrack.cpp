@@ -266,7 +266,6 @@ void AudioTrack::internal_assign(const Track& t, int flags)
                     }
               }
       }  
-      
 }  
 
 void AudioTrack::assign(const Track& t, int flags)

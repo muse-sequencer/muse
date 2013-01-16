@@ -69,7 +69,10 @@ void initShortCuts()
       defShrt(SHRT_REDO,          Qt::CTRL + Qt::SHIFT + Qt::Key_Z, QT_TRANSLATE_NOOP("shortcuts", "Edit: Redo"), INVIS_SHRT, "redo");
       defShrt(SHRT_CUT,           Qt::CTRL + Qt::Key_X, QT_TRANSLATE_NOOP("shortcuts", "Edit: Cut"), INVIS_SHRT, "cut");
       defShrt(SHRT_PASTE,         Qt::CTRL + Qt::Key_V, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste"), INVIS_SHRT, "paste");
-      defShrt(SHRT_PASTE_DIALOG,  Qt::CTRL + Qt::SHIFT + Qt::Key_V, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste (with dialog)"), GLOBAL_SHRT, "paste_dialog");
+      defShrt(SHRT_PASTE_TO_TRACK, Qt::CTRL + Qt::SHIFT + Qt::Key_V, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste to selected track"), ARRANG_SHRT, "paste_to_track");
+      defShrt(SHRT_PASTE_CLONE,   Qt::CTRL + Qt::Key_B, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste clone"), ARRANG_SHRT, "paste_clones");
+      defShrt(SHRT_PASTE_CLONE_TO_TRACK,  Qt::CTRL + Qt::SHIFT + Qt::Key_B, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste clone to selected track"), ARRANG_SHRT, "paste_clones_to_track");
+      defShrt(SHRT_PASTE_DIALOG,  Qt::CTRL + Qt::Key_G, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste (with dialog)"), GLOBAL_SHRT, "paste_with_dialog");
       defShrt(SHRT_DELETE,        Qt::Key_Delete, QT_TRANSLATE_NOOP("shortcuts", "Edit: Delete"), INVIS_SHRT, "delete");
 
       //-----------------------------------------------------------
@@ -162,9 +165,6 @@ void initShortCuts()
 
       defShrt(SHRT_INSERTMEAS,            Qt::CTRL+Qt::SHIFT+ Qt::Key_O, QT_TRANSLATE_NOOP("shortcuts", "Edit: Insert empty measure"), ARRANG_SHRT, "insert_measure");
 
-      defShrt(SHRT_PASTE_CLONE,        Qt::CTRL+Qt::Key_B, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste as clones"), ARRANG_SHRT, "paste_as_clone"); // i changed "paste_clone" to "paste_as_clone" intendedly. otherwise muse would keep its old, conflicting definition (ctrl+shift+v instead of ctrl+b) (flo)
-      defShrt(SHRT_PASTE_CLONE_DIALOG,  Qt::CTRL+Qt::SHIFT+Qt::Key_B, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste as clones (with dialog)"), ARRANG_SHRT, "paste_as_clone_dialog");
-      
       defShrt(SHRT_SEL_TRACK_ABOVE,       Qt::CTRL + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Select track above"), ARRANG_SHRT, "sel_track_above");
       defShrt(SHRT_SEL_TRACK_BELOW,       Qt::CTRL + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Select track below"), ARRANG_SHRT, "sel_track_below");
 

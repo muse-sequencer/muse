@@ -68,7 +68,7 @@ class ArrangerView : public TopWin
 
 		enum cmd_enum
 			{CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_INSERTMEAS, CMD_PASTE_CLONE,
-			CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_DELETE,
+			CMD_PASTE_TO_TRACK, CMD_PASTE_CLONE_TO_TRACK, CMD_PASTE_DIALOG, CMD_DELETE,
 			CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
 			CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
 			CMD_DELETE_TRACK, CMD_DUPLICATE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
@@ -95,7 +95,7 @@ class ArrangerView : public TopWin
     QAction *trackMidiAction, *trackDrumAction, *trackNewStyleDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
 		QAction *trackAInputAction, *trackAAuxAction;
 		QAction *editCutAction, *editCopyAction, *editCopyRangeAction;
-		QAction *editPasteAction, *editPasteCloneAction, *editPasteDialogAction, *editPasteCloneDialogAction;
+		QAction *editPasteAction, *editPasteCloneAction, *editPasteToTrackAction, *editPasteCloneToTrackAction, *editPasteDialogAction;
 		QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
     QAction *editDuplicateSelTrackAction;
 		QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;

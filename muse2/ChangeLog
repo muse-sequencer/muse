@@ -1,3 +1,16 @@
+15.01.2013:
+         - Reinstate old Arranger "Paste to track" (Ctl+Shift+V) and "Paste clone to track" (Ctl+Shift+B). (Tim...)
+         - Changed default shortcut of Arranger "Paste clone" to Ctl+B.
+         - Changed default shortcut of Arranger "Paste (show dialog)" to Ctl+G.
+         - Removed Arranger "Paste clone with dialog". Instead, paste dialog now remembers 'clone' checkbox setting.
+         - Fixed Pianoroll/Drum Ctl+V paste bug was pasting into other parts: Always paste into current part.
+           TODO: Score Editor still not working because there never seems to be a current part! Must ask Florian...
+         - Fixed Pr/Dr Function dialogs bring main window to front: Don't give them a parent, add destroy_function_dialogs().
+         - Fixed "Duplicate Track" feature: If selected 'copy parts', it was quietly cloning. Re-wrote ASSIGN_PARTS sections.
+           Now it copies both clone and non-clone parts. Tests OK but needs a good workout. (Maybe push Parts to Undo list?)
+           TODO: Found C.O.W. bug when de-cloning a part on a duplicated Wave Track - it's still a clone. Investigating...
+         - Fixed Old-style Drum Editor: Was not playing new notes as they were drawn. Re-wrote a DrumCanvas::newItem(),
+            and eliminated dynamic_casts.
 13.01.2013:
          - remote should depend on widgets through #including app.h otherwise Python bindings don't compile (Orcan)
 03.01.2013:

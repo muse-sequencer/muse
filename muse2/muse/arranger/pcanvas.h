@@ -175,7 +175,7 @@ class PartCanvas : public Canvas {
 
    public:
       enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
-             CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_INSERT_EMPTYMEAS };
+             CMD_PASTE_PART_TO_TRACK, CMD_PASTE_CLONE_PART_TO_TRACK, CMD_PASTE_DIALOG, CMD_INSERT_EMPTYMEAS };
 
       PartCanvas(int* raster, QWidget* parent, int, int);
       virtual ~PartCanvas();

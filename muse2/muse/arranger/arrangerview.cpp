@@ -125,9 +125,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
   editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("Copy in range"), this);
   editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
-  editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (show dialog)"), this);
   editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
-  editPasteCloneDialogAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste clone (show dialog)"), this);
+  editPasteToTrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to selected &track"), this);
+  editPasteCloneToTrackAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste clone to selected trac&k"), this);
+  editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (show dialo&g)"), this);
   editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
   editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
   editDuplicateSelTrackAction = new QAction(QIcon(*edit_track_addIcon), tr("Duplicate Selected Tracks"), this);
@@ -197,9 +198,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addAction(editCopyAction);
   menuEdit->addAction(editCopyRangeAction);
   menuEdit->addAction(editPasteAction);
-  menuEdit->addAction(editPasteDialogAction);
+  menuEdit->addAction(editPasteToTrackAction);
   menuEdit->addAction(editPasteCloneAction);
-  menuEdit->addAction(editPasteCloneDialogAction);
+  menuEdit->addAction(editPasteCloneToTrackAction);
+  menuEdit->addAction(editPasteDialogAction);
   menuEdit->addAction(editInsertEMAction);
   menuEdit->addSeparator();
   menuEdit->addAction(editShrinkPartsAction);
@@ -282,8 +284,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(editCopyRangeAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editPasteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editPasteCloneAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editPasteToTrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editPasteCloneToTrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editPasteDialogAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-  connect(editPasteCloneDialogAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editDuplicateSelTrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -304,8 +307,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   editSignalMapper->setMapping(editCopyRangeAction, CMD_COPY_RANGE);
   editSignalMapper->setMapping(editPasteAction, CMD_PASTE);
   editSignalMapper->setMapping(editPasteCloneAction, CMD_PASTE_CLONE);
+  editSignalMapper->setMapping(editPasteToTrackAction, CMD_PASTE_TO_TRACK);
+  editSignalMapper->setMapping(editPasteCloneToTrackAction, CMD_PASTE_CLONE_TO_TRACK);
   editSignalMapper->setMapping(editPasteDialogAction, CMD_PASTE_DIALOG);
-  editSignalMapper->setMapping(editPasteCloneDialogAction, CMD_PASTE_CLONE_DIALOG);
   editSignalMapper->setMapping(editInsertEMAction, CMD_INSERTMEAS);
   editSignalMapper->setMapping(editDeleteSelectedAction, CMD_DELETE_TRACK);
   editSignalMapper->setMapping(editDuplicateSelTrackAction, CMD_DUPLICATE_TRACK);
@@ -502,11 +506,14 @@ void ArrangerView::cmd(int cmd)
             case CMD_PASTE_CLONE:
                   arranger->cmd(Arranger::CMD_PASTE_CLONE_PART);
                   break;
+            case CMD_PASTE_TO_TRACK:
+                  arranger->cmd(Arranger::CMD_PASTE_PART_TO_TRACK);
+                  break;
+            case CMD_PASTE_CLONE_TO_TRACK:
+                  arranger->cmd(Arranger::CMD_PASTE_CLONE_PART_TO_TRACK);
+                  break;
             case CMD_PASTE_DIALOG:
                   arranger->cmd(Arranger::CMD_PASTE_DIALOG);
-                  break;
-            case CMD_PASTE_CLONE_DIALOG:
-                  arranger->cmd(Arranger::CMD_PASTE_CLONE_DIALOG);
                   break;
             case CMD_INSERTMEAS:
                   arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
@@ -690,8 +697,9 @@ void ArrangerView::updateShortcuts()
       editCopyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
       editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
       editPasteCloneAction->setShortcut(shortcuts[SHRT_PASTE_CLONE].key);
+      editPasteToTrackAction->setShortcut(shortcuts[SHRT_PASTE_TO_TRACK].key);
+      editPasteCloneToTrackAction->setShortcut(shortcuts[SHRT_PASTE_CLONE_TO_TRACK].key);
       editPasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
-      editPasteCloneDialogAction->setShortcut(shortcuts[SHRT_PASTE_CLONE_DIALOG].key);
       editInsertEMAction->setShortcut(shortcuts[SHRT_INSERTMEAS].key);
 
       //editDeleteSelectedAction has no acceleration
@@ -740,8 +748,9 @@ void ArrangerView::clipboardChanged()
       
       editPasteAction->setEnabled(flag);
       editPasteCloneAction->setEnabled(flag);
+      editPasteToTrackAction->setEnabled(flag);
+      editPasteCloneToTrackAction->setEnabled(flag);
       editPasteDialogAction->setEnabled(flag);
-      editPasteCloneDialogAction->setEnabled(flag);
       }
 
 //---------------------------------------------------------

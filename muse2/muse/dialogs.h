@@ -58,7 +58,8 @@ extern Legato* legato_dialog;
 extern PasteDialog* paste_dialog;
 extern PasteEventsDialog* paste_events_dialog;
 
-void init_function_dialogs(QWidget* parent);
+void init_function_dialogs();
+void destroy_function_dialogs();
 void retranslate_function_dialogs();
 void read_function_dialog_config(MusECore::Xml& xml);
 void write_function_dialog_config(int level, MusECore::Xml& xml);

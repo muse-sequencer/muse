@@ -297,16 +297,6 @@ void Track::internal_assign(const Track& t, int flags)
           }
         }
       }
-
-      if(flags & ASSIGN_PARTS)
-      {
-        const PartList* pl = t.cparts();
-        for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
-              Part* newPart = ip->second->clone();
-              newPart->setTrack(this);
-              _parts.add(newPart);
-              }
-      }
 }
 
 //---------------------------------------------------------
@@ -623,6 +613,38 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         _drummap_ordering_tied_to_patch=mt._drummap_ordering_tied_to_patch;
         // TODO FINDMICH "assign" ordering as well
       }
+
+      if(flags & ASSIGN_PARTS)
+      {
+        const PartList* pl = t.cparts();
+        for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
+              Part* spart = ip->second;
+              bool clone = spart->events()->arefCount() > 1;
+              // This increments aref count if cloned, and chains clones.
+              // It also gives the new part a new serial number.
+              Part* dpart = newPart(spart, clone);
+              if(!clone) {
+                    // Copy Events
+                    MusECore::EventList* se = spart->events();
+                    MusECore::EventList* de = dpart->events();
+                    for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
+                          MusECore::Event oldEvent = i->second;
+                          MusECore::Event ev = oldEvent.clone();
+                          de->add(ev);
+                          }
+                    }
+
+              // TODO: Should we include the parts in the undo?      
+              //      dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
+              //                                    // so we must decrement it first :/
+              //      // These will not increment ref count, and will not chain clones...
+              //      // DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
+              //      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
+
+              parts()->add(dpart);
+              }
+      }
+      
 }
 
 void MidiTrack::assign(const Track& t, int flags)

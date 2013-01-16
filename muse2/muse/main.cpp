@@ -563,7 +563,7 @@ int main(int argc, char* argv[])
       MusEGlobal::muse = new MusEGui::MusE(); 
       app.setMuse(MusEGlobal::muse);
 
-      MusEGui::init_function_dialogs(MusEGlobal::muse);
+      MusEGui::init_function_dialogs();
       MusEGui::retranslate_function_dialogs();
       
       // SHOW MUSE SPLASH SCREEN
@@ -733,6 +733,7 @@ int main(int argc, char* argv[])
       if(MusEGlobal::debugMsg) 
         printf("app.exec() returned:%d\nDeleting main MusE object\n", rv);
       delete MusEGlobal::muse; 
+      MusEGui::destroy_function_dialogs();
       if(MusEGlobal::debugMsg) 
         printf("Finished! Exiting main, return value:%d\n", rv);
       return rv;

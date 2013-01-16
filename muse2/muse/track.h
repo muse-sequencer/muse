@@ -592,11 +592,15 @@ class WaveTrack : public AudioTrack {
       Fifo _prefetchFifo;  // prefetch Fifo
       static bool _isVisible;
 
+      void internal_assign(const Track&, int flags);
+      
    public:
 
-      WaveTrack() : AudioTrack(Track::WAVE) { setChannels(1); }
-      WaveTrack(const WaveTrack& wt, int flags) : AudioTrack(wt, flags) {}
+      WaveTrack();
+      WaveTrack(const WaveTrack& wt, int flags);
 
+      virtual void assign(const Track&, int flags);
+      
       virtual WaveTrack* clone(int flags) const    { return new WaveTrack(*this, flags); }
       virtual WaveTrack* newTrack() const { return new WaveTrack(); }
       virtual Part* newPart(Part*p=0, bool clone=false);

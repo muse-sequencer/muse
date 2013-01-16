@@ -763,7 +763,7 @@ void ScoreEdit::menu_command(int cmd)
 		case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(), MusECore::any_event_selected(score_canvas->get_all_parts()) ? 3 : 2); break;
 		case CMD_PASTE: 
 			menu_command(CMD_SELECT_NONE); 
-			MusECore::paste_notes(3072);
+			MusECore::paste_notes(3072, false, true, score_canvas->get_selected_part());
 			break;
 		case CMD_PASTE_DIALOG: 
 			menu_command(CMD_SELECT_NONE); 

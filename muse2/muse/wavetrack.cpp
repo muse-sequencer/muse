@@ -31,10 +31,68 @@
 #include "gconfig.h"
 #include "al/dsp.h"
 
-// Added by Tim. p3.3.18
 //#define WAVETRACK_DEBUG
 
 namespace MusECore {
+
+//---------------------------------------------------------
+//   WaveTrack
+//---------------------------------------------------------
+
+WaveTrack::WaveTrack() : AudioTrack(Track::WAVE)
+{
+  setChannels(1);
+}
+
+WaveTrack::WaveTrack(const WaveTrack& wt, int flags) : AudioTrack(wt, flags)
+{
+  internal_assign(wt, flags | Track::ASSIGN_PROPERTIES);
+}
+
+void WaveTrack::internal_assign(const Track& t, int flags)
+{
+      if(t.type() != WAVE)
+        return;
+      //const WaveTrack& wt = (const WaveTrack&)t;
+
+      if(flags & ASSIGN_PARTS)
+      {
+        const PartList* pl = t.cparts();
+        for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
+              Part* spart = ip->second;
+              bool clone = spart->events()->arefCount() > 1;
+              // This increments aref count if cloned, and chains clones.
+              // It also gives the new part a new serial number.
+              Part* dpart = newPart(spart, clone);
+              if(!clone) {
+                    // Copy Events
+                    MusECore::EventList* se = spart->events();
+                    MusECore::EventList* de = dpart->events();
+                    for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
+                          MusECore::Event oldEvent = i->second;
+                          MusECore::Event ev = oldEvent.clone();
+                          de->add(ev);
+                          }
+                    }
+
+              // TODO: Should we include the parts in the undo?
+              //      dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
+              //                                    // so we must decrement it first :/
+              //      // These will not increment ref count, and will not chain clones...
+              //      // DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
+              //      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
+              
+              parts()->add(dpart);
+              }
+      }
+
+}
+
+void WaveTrack::assign(const Track& t, int flags)
+{
+      AudioTrack::assign(t, flags);
+      internal_assign(t, flags);
+}
 
 //---------------------------------------------------------
 //   fetchData
@@ -43,7 +101,6 @@ namespace MusECore {
 
 void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek)
       {
-      // Added by Tim. p3.3.17
       #ifdef WAVETRACK_DEBUG
       printf("WaveTrack::fetchData %s samples:%lu pos:%u\n", name().toLatin1().constData(), samples, pos);
       #endif
@@ -245,7 +302,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
             return false;
       
       // DELETETHIS 43
-      // Removed by T356. Multiple out route cacheing now handled by AudioTrack::copyData and ::addData.
+      // Removed by T356. Multiple out route cacheing now handled by AudioTrack::copyData and ::addData.   // REMOVE Tim.
       /*
       if (outRoutes()->size() > 1) {
             if (bufferPos != framePos) {

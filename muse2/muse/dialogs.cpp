@@ -55,20 +55,36 @@ Legato* legato_dialog=NULL;
 PasteDialog* paste_dialog=NULL;
 PasteEventsDialog* paste_events_dialog=NULL;
 
-void init_function_dialogs(QWidget* parent)
+void init_function_dialogs()
 {
-	gatetime_dialog = new GateTime(parent);
-	velocity_dialog = new Velocity(parent);
-	quantize_dialog = new Quantize(parent);
-	erase_dialog = new Remove(parent);
-	del_overlaps_dialog = new DelOverlaps(parent);
-	set_notelen_dialog = new Setlen(parent);
-	move_notes_dialog = new Move(parent);
-	transpose_dialog = new Transpose(parent);
-	crescendo_dialog = new Crescendo(parent);
-	legato_dialog = new Legato(parent);
-	paste_dialog = new PasteDialog(parent);
-	paste_events_dialog = new PasteEventsDialog(parent);
+        gatetime_dialog = new GateTime();
+        velocity_dialog = new Velocity();
+        quantize_dialog = new Quantize();
+        erase_dialog = new Remove();
+        del_overlaps_dialog = new DelOverlaps();
+        set_notelen_dialog = new Setlen();
+        move_notes_dialog = new Move();
+        transpose_dialog = new Transpose();
+        crescendo_dialog = new Crescendo();
+        legato_dialog = new Legato();
+        paste_dialog = new PasteDialog();
+        paste_events_dialog = new PasteEventsDialog();
+}
+
+void destroy_function_dialogs()
+{
+        delete gatetime_dialog;
+        delete velocity_dialog;
+        delete quantize_dialog;
+        delete erase_dialog;
+        delete del_overlaps_dialog;
+        delete set_notelen_dialog;
+        delete move_notes_dialog;
+        delete transpose_dialog;
+        delete crescendo_dialog;
+        delete legato_dialog;
+        delete paste_dialog;
+        delete paste_events_dialog;
 }
 
 void retranslate_function_dialogs()

@@ -58,6 +58,7 @@
 
 using MusEGlobal::debugMsg;
 using MusEGlobal::heavyDebugMsg;
+using MusECore::Track;
 using MusECore::MidiTrack;
 
 namespace MusEGui {
@@ -415,11 +416,24 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
   e.setLenTick(ourDrumMap[instrument].len);
   if(_playEvents)
   {
-    int port = old_style_drummap_mode ? ourDrumMap[instrument].port : dynamic_cast<MidiTrack*>(*instrument_map[instrument].tracks.begin())->outPort();
-    int channel = old_style_drummap_mode ? ourDrumMap[instrument].channel : dynamic_cast<MidiTrack*>(*instrument_map[instrument].tracks.begin())->outChannel();
-    startPlayEvent(e.pitch(),e.velo(), port, channel);
+    int pitch = old_style_drummap_mode ? ourDrumMap[instrument].anote : instrument_map[instrument].pitch;
+    int port, channel;
+    if(old_style_drummap_mode)
+    {
+      port = ourDrumMap[instrument].port;
+      channel = ourDrumMap[instrument].channel;
+    }
+    else
+    {
+      Track* t = *instrument_map[instrument].tracks.begin();
+      if(!t->isMidiTrack())
+        return NULL;
+      MidiTrack* mt = static_cast<MidiTrack*>(t);
+      port = mt->outPort();
+      channel = mt->outChannel();
+    }
+    startPlayEvent(pitch, e.velo(), port, channel);
   }
-
   return new DEvent(e, curPart, instrument);
 }
 

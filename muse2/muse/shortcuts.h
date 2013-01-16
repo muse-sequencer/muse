@@ -102,7 +102,10 @@ enum {
       SHRT_COPY_RANGE, //Ctrl+Shift+C
       SHRT_CUT,   //Ctrl+X
       SHRT_PASTE, //Ctrl+V
-      SHRT_PASTE_DIALOG, //Ctrl+Shift+V
+      SHRT_PASTE_CLONE, //CTRL+Shift+V
+      SHRT_PASTE_TO_TRACK, //CTRL+Key_B
+      SHRT_PASTE_CLONE_TO_TRACK, //CTRL+SHIFT+Key_B
+      SHRT_PASTE_DIALOG, //Ctrl+G
       SHRT_DELETE,//Delete
 
 
@@ -193,9 +196,6 @@ enum {
       SHRT_SEL_BELOW_ADD, //move down and add to selection
 
       SHRT_INSERTMEAS, //Ctrl+Shift+M - insert measures
-      
-      SHRT_PASTE_CLONE, //CTRL+B
-      SHRT_PASTE_CLONE_DIALOG, //CTRL+SHIFT+B
       
       //Arranger tracks
       SHRT_SEL_TRACK_BELOW,

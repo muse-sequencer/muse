@@ -2685,13 +2685,17 @@ void PartCanvas::cmd(int cmd)
             case CMD_PASTE_CLONE_PART:
                   paste(true);
                   break;
+            case CMD_PASTE_PART_TO_TRACK:
+                  paste(false, PASTEMODE_MIX, true);
+                  break;
+            case CMD_PASTE_CLONE_PART_TO_TRACK:
+                  paste(true, PASTEMODE_MIX, true);
+                  break;
             case CMD_PASTE_DIALOG:
-            case CMD_PASTE_CLONE_DIALOG:
             {
                   unsigned temp_begin = AL::sigmap.raster1(MusEGlobal::song->vcpos(),0);
                   unsigned temp_end = AL::sigmap.raster2(temp_begin + MusECore::get_paste_len(), 0);
                   paste_dialog->raster = temp_end - temp_begin;
-                  paste_dialog->clone = (cmd == CMD_PASTE_CLONE_DIALOG);
                   
                   if (paste_dialog->exec())
                   {
