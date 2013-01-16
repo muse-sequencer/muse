@@ -942,8 +942,8 @@ void Audio::processMidi()
             MidiDevice* md = MusEGlobal::midiPorts[port].device();
             if(md)
             {
-              // only add track events if the track is unmuted
-              if(!track->isMute()) 
+              // only add track events if the track is unmuted and turned on
+              if(!track->isMute() && !track->off()) 
               {
                 if(isPlaying() && (curTickPos < nextTickPos))
                   collectEvents(track, curTickPos, nextTickPos);

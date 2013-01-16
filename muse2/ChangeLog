@@ -11,6 +11,7 @@
            TODO: Found C.O.W. bug when de-cloning a part on a duplicated Wave Track - it's still a clone. Investigating...
          - Fixed Old-style Drum Editor: Was not playing new notes as they were drawn. Re-wrote a DrumCanvas::newItem(),
             and eliminated dynamic_casts.
+         - Don't play midi parts if track is off.   
 13.01.2013:
          - remote should depend on widgets through #including app.h otherwise Python bindings don't compile (Orcan)
 03.01.2013:
