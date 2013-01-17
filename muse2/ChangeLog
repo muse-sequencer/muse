@@ -1,3 +1,6 @@
+17.01.2013:
+         - Fixed song length way too big after recorded wave is added. (Tim)
+           Was a simple regression in Song::cmdAddRecordedWave back when tempo recording was added.
 15.01.2013:
          - Reinstate old Arranger "Paste to track" (Ctl+Shift+V) and "Paste clone to track" (Ctl+Shift+B). (Tim...)
          - Changed default shortcut of Arranger "Paste clone" to Ctl+B.

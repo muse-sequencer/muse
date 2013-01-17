@@ -1085,7 +1085,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       unsigned sframe = (a_rast == 1) ? s.frame() : Pos(AL::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster())).frame();   
       // Round the end up using the Arranger part snap raster value. 
       unsigned eframe = (a_rast == 1) ? e.frame() : Pos(AL::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster())).frame();
-      unsigned etick = Pos(eframe).tick();
+      unsigned etick = Pos(eframe, false).tick();
 
       // Done using master tempo map. Restore master flag. 
       if(MusEGlobal::extSyncFlag.value() && !master_was_on)
