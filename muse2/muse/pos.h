@@ -28,6 +28,21 @@ class QString;
 
 namespace MusECore {
 
+
+struct XTick // eXtended tick with subticks.
+{
+	unsigned tick; // do NOT just grab this and ignore subtick if you're doing integer calculations!
+	               // use to_uint() instead, which takes care of proper rounding.
+	double subtick;
+	
+	XTick(unsigned t=0, double s=0.0) { tick=t; subtick=s; }
+	static XTick from_double(double d);
+	double to_double() const;
+	unsigned to_uint() const;
+	
+	XTick operator-(const XTick& t2);
+};
+
 class Xml;
 
 //---------------------------------------------------------
@@ -46,15 +61,19 @@ class Pos {
       TType _type;
       mutable int sn;
       mutable unsigned _tick;
+      mutable float _subtick;
+      
       mutable unsigned _frame;
+      
+      void recalc_frames();
 
    public:
       Pos();
       Pos(const Pos&);
-      Pos(int,int,int);
-      Pos(int,int,int,int);
-      Pos(unsigned, bool ticks=true);
-      Pos(const QString&);
+      Pos(int measure,int beat,int tick, float subtick=0.0);
+      Pos(int min, int sec, int frame, int subframe);
+      Pos(unsigned, bool ticks=true); //considered evil
+      Pos(const QString&); //considered evil
       void dump(int n = 0) const;
       void mbt(int*, int*, int*) const;
       void msf(int*, int*, int*, int*) const;

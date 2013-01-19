@@ -37,6 +37,31 @@ extern int mtcType;
 namespace MusECore {
 
 
+XTick XTick::from_double(double d)
+{
+    XTick tmp;
+    tmp.tick=floor(d);
+    tmp.subtick=d-tmp.tick;
+    return tmp;
+
+}
+double XTick::to_double() const { return tick+subtick; }
+unsigned XTick::to_uint() const { return tick + (subtick>=0.5 ? 1 : 0); }
+
+XTick XTick::operator-(const XTick& t2)
+{
+    XTick tmp(this->tick-t2.tick, this->subtick-t2.subtick);
+    if (tmp.subtick<0)
+    {
+        tmp.subtick+=1.0;
+        tmp.tick-=1;
+    }
+    return tmp;
+}
+
+
+
+
 //---------------------------------------------------------
 //   Pos
 //---------------------------------------------------------
@@ -45,7 +70,8 @@ Pos::Pos()
       {
       _type   = TICKS;
       _tick   = 0;
-      _frame  = 0;
+      _subtick = 0;
+      recalc_frames();
       sn      = -1;
       }
 
@@ -54,11 +80,14 @@ Pos::Pos(const Pos& p)
       _type = p._type;
       sn    = p.sn;
       _tick = p._tick;
+      _subtick = p._subtick;
       _frame = p._frame;
       }
 
-Pos::Pos(unsigned t, bool ticks)
+Pos::Pos(unsigned t, bool ticks) // TODO: considered evil.
       {
+      _subtick=0.0;
+      
       if (ticks) {
             _type   = TICKS;
             _tick   = t;
@@ -70,8 +99,10 @@ Pos::Pos(unsigned t, bool ticks)
       sn = -1;
       }
 
-Pos::Pos(const QString& s)
+Pos::Pos(const QString& s) // TODO: considered evil.
       {
+      _subtick=0.0;
+      
       int m, b, t;
       sscanf(s.toLatin1(), "%04d.%02d.%03d", &m, &b, &t);
       _tick = AL::sigmap.bar2tick(m, b, t);
@@ -79,10 +110,12 @@ Pos::Pos(const QString& s)
       sn    = -1;
       }
 
-Pos::Pos(int measure, int beat, int tick)
+Pos::Pos(int measure, int beat, int tick, float subtick)
       {
       _tick = AL::sigmap.bar2tick(measure, beat, tick);
+      _subtick=subtick;
       _type = TICKS;
+      recalc_frames();
       sn    = -1;
       }
 
@@ -109,6 +142,12 @@ Pos::Pos(int min, int sec, int frame, int subframe)
       _frame = lrint(time * MusEGlobal::sampleRate);
       sn     = -1;
       }
+
+
+void Pos::recalc_frames()
+{
+    _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
+}
 
 //---------------------------------------------------------
 //   setType

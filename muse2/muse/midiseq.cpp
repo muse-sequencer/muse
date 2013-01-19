@@ -689,7 +689,7 @@ void MidiSeq::processTimerTick()
                     {
                       MidiPort* mp = &MusEGlobal::midiPorts[port];
                       
-                      // No device? Clock out not turned on? DELETETHIS 3
+                      // No device? Clock out not turned on?
                       if(!mp->device() || !mp->syncInfo().MCOut())
                         continue;
                         
@@ -733,9 +733,8 @@ void MidiSeq::processTimerTick()
                     
                     if(MusEGlobal::debugMsg && used && perr > 1)
                       printf("Dropped %d midi out clock(s). curTick:%d midiClock:%d div:%d\n", perr, curTick, midiClock, div);
-                  //} DELETETHIS and maybe the below ???
                     
-                  // Increment as if we had caught the timer exactly on the mark, even if the timer
+                  /* Increment as if we had caught the timer exactly on the mark, even if the timer
                   //  has passed beyond the mark, or even beyond 2 * div.
                   // If we missed some chances to send clock, resume the count where it would have been, 
                   //  had we not missed chances.
@@ -759,64 +758,16 @@ void MidiSeq::processTimerTick()
                   //
                   // No equalization periods... TODO: or DELETETHIS?
                   //midiClock += (perr * div);
+                  */
                }
             }
 
       // play all events upto curFrame
       for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) {
-            //MidiDevice* md = *id; DELETETHIS 10
-            // Is it a Jack midi device? They are iterated in Audio::processMidi. p3.3.36 
-            //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
-            //if(mjd)
-            //if(md->deviceType() == MidiDevice::JACK_MIDI)
-            //  continue;
-            //if(md->isSynti())      // syntis are handled by audio thread
-            //      continue;
-            // Only ALSA midi devices are handled by this thread.
+            // Jack midi devices are iterated in Audio::processMidi.
+            // syntis are handled by audio thread
             if((*id)->deviceType() == MidiDevice::ALSA_MIDI)
               (*id)->processMidi();
-            
-            // Moved into MidiAlsaDevice.      p4.0.34 DELETETHIS 40
-            /*
-            int port = md->midiPort();
-            MidiPort* mp = port != -1 ? &MusEGlobal::midiPorts[port] : 0;
-            MPEventList* el = md->playEvents();
-            if (el->empty())
-                  continue;
-            
-            ///iMPEvent i = md->nextPlayEvent();
-            iMPEvent i = el->begin();            // p4.0.15 Tim.
-            
-            for (; i != el->end(); ++i) {
-                  // p3.3.25
-                  // If syncing to external midi sync, we cannot use the tempo map.
-                  // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
-                  //if (i->time() > curFrame) {
-                  if (i->time() > (extsync ? tickpos : curFrame)) {
-                        //printf("  curT %d  frame %d\n", i->time(), curFrame);
-                        break; // skip this event
-                        }
-
-                  if (mp) {
-                        if (mp->sendEvent(*i))
-                              break;
-                        }
-                  else {
-                        if (md->putEvent(*i))
-                              break;
-                        }
-                  }
-            ///md->setNextPlayEvent(i);
-            // p4.0.15 We are done with these events. Let us erase them here instead of Audio::processMidi.
-            // That way we can simply set the next play event to the beginning.
-            // This also allows other events to be inserted without the problems caused by the next play event 
-            //  being at the 'end' iterator and not being *easily* set to some new place beginning of the newer insertions. 
-            // The way that MPEventList sorts made it difficult to predict where the iterator of the first newly inserted items was.
-            // The erasure in Audio::processMidi was missing some events because of that.
-            el->erase(el->begin(), i);
-            //md->setNextPlayEvent(el->begin());  // Removed p4.0.15
-            */
-            
             }
       }
 

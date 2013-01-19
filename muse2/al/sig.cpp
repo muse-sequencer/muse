@@ -21,10 +21,8 @@
 //=============================================================================
 
 
-///#include "al.h"
 #include "gconfig.h"  // Tim
 #include "sig.h"
-///#include "xml.h"
 
 
 namespace AL {

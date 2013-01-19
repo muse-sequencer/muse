@@ -26,6 +26,7 @@
 
 #include <map>
 #include <vector>
+#include "pos.h"
 
 #ifndef MAX_TICK
 #define MAX_TICK (0x7fffffff/100)
@@ -93,12 +94,20 @@ class TempoList : public TEMPOLIST {
 
       int tempo(unsigned tick) const;
       int tempoAt(unsigned tick) const;
-      unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const;
-      unsigned tick2frame(unsigned tick, int* sn = 0) const;
-      unsigned frame2tick(unsigned frame, int* sn = 0) const;
-      unsigned frame2tick(unsigned frame, unsigned tick, int* sn) const;
-      unsigned deltaTick2frame(unsigned tick1, unsigned tick2, int* sn = 0) const;
-      unsigned deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn = 0) const;
+      
+      unsigned tick2frame(unsigned tick, unsigned frame, int* sn) const { return tick2frame(XTick(tick,0.0), frame, sn); }
+      unsigned tick2frame(unsigned tick, int* sn = 0) const { return tick2frame(XTick(tick,0.0), sn); }
+      unsigned deltaTick2frame(unsigned tick1, unsigned tick2, int* sn = 0) const { return deltaTick2frame(XTick(tick1,0.0),XTick(tick2,0.0),sn); }
+      unsigned tick2frame(XTick tick, unsigned frame, int* sn) const;
+      unsigned tick2frame(XTick tick, int* sn = 0) const;
+      unsigned deltaTick2frame(XTick tick1, XTick tick2, int* sn = 0) const;
+
+      unsigned frame2tick(unsigned frame, int* sn = 0) const { XTick tmp = frame2xtick(frame,sn); return tmp.to_uint(); }
+      unsigned frame2tick(unsigned frame, unsigned tick, int* sn) const { XTick tmp = frame2xtick(frame, XTick(tick,0.0), sn); return tmp.to_uint(); }
+      unsigned deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn = 0) const {XTick tmp = deltaFrame2xtick(frame1,frame2,sn); return tmp.to_uint(); }
+      XTick frame2xtick(unsigned frame, int* sn = 0) const;
+      XTick frame2xtick(unsigned frame, XTick tick, int* sn) const;
+      XTick deltaFrame2xtick(unsigned frame1, unsigned frame2, int* sn = 0) const;
       
       int tempoSN() const { return _tempoSN; }
       void setTempo(unsigned tick, int newTempo);

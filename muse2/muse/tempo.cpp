@@ -297,7 +297,7 @@ bool TempoList::setMasterFlag(unsigned /*tick*/, bool val)
 //   tick2frame
 //---------------------------------------------------------
 
-unsigned TempoList::tick2frame(unsigned tick, unsigned frame, int* sn) const
+unsigned TempoList::tick2frame(XTick tick, unsigned frame, int* sn) const
       {
       return (*sn == _tempoSN) ? frame : tick2frame(tick, sn);
       }
@@ -306,22 +306,22 @@ unsigned TempoList::tick2frame(unsigned tick, unsigned frame, int* sn) const
 //   tick2frame
 //---------------------------------------------------------
 
-unsigned TempoList::tick2frame(unsigned tick, int* sn) const
+unsigned TempoList::tick2frame(XTick tick, int* sn) const
       {
       int f;
       if (useList) {
-            ciTEvent i = upper_bound(tick);
+            ciTEvent i = upper_bound(tick.tick);
             if (i == end()) {
-                  printf("tick2frame(%d,0x%x): not found\n", tick, tick);
+                  printf("tick2frame(%d,0x%x): not found\n", tick.tick, tick.tick);
                   return 0;
                   }
-            unsigned dtick = tick - i->second->tick;
-            double dtime   = double(dtick) / (MusEGlobal::config.division * _globalTempo * 10000.0/ i->second->tempo);
+            double dtick = tick.tick + tick.subtick - i->second->tick; 
+            double dtime   = dtick / (MusEGlobal::config.division * _globalTempo * 10000.0/ i->second->tempo);
             unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
             f = i->second->frame + dframe;
             }
       else {
-            double t = (double(tick) * double(_tempo)) / (double(MusEGlobal::config.division) * _globalTempo * 10000.0);
+            double t = (double(tick.tick+tick.subtick) * double(_tempo)) / (double(MusEGlobal::config.division) * _globalTempo * 10000.0);
             f = lrint(t * MusEGlobal::sampleRate);
             }
       if (sn)
@@ -334,7 +334,7 @@ unsigned TempoList::tick2frame(unsigned tick, int* sn) const
 //    return cached value t if list did not change
 //---------------------------------------------------------
 
-unsigned TempoList::frame2tick(unsigned frame, unsigned t, int* sn) const
+XTick TempoList::frame2xtick(unsigned frame, XTick t, int* sn) const
       {
       return (*sn == _tempoSN) ? t : frame2tick(frame, sn);
       }
@@ -343,9 +343,9 @@ unsigned TempoList::frame2tick(unsigned frame, unsigned t, int* sn) const
 //   frame2tick
 //---------------------------------------------------------
 
-unsigned TempoList::frame2tick(unsigned frame, int* sn) const
+XTick TempoList::frame2xtick(unsigned frame, int* sn) const
       {
-      unsigned tick;
+      XTick tick;
       if (useList) {
             ciTEvent e;
             for (e = begin(); e != end();) {
@@ -360,12 +360,21 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn) const
             unsigned te  = e->second->tempo;
             int dframe   = frame - e->second->frame;
             double dtime = double(dframe) / double(MusEGlobal::sampleRate);
-            tick         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
+            
+            double dticks = dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te;
+            tick.tick = e->second->tick + floor(dticks);
+            tick.subtick = dticks-floor(dticks);
             }
       else
-            tick = lrint((double(frame)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEGlobal::config.division * 10000.0 / double(_tempo));
+      {
+            double dticks = (double(frame)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEGlobal::config.division * 10000.0 / double(_tempo);
+            tick.tick = floor(dticks);
+            tick.subtick = dticks-floor(dticks);
+      }
+            
       if (sn)
             *sn = _tempoSN;
+            
       return tick;
       }
 
@@ -373,42 +382,11 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn) const
 //   deltaTick2frame
 //---------------------------------------------------------
 
-unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) const
+unsigned TempoList::deltaTick2frame(XTick tick1, XTick tick2, int* sn) const
       {
-      int f1, f2;
-      if (useList) {
-            ciTEvent i = upper_bound(tick1);
-            if (i == end()) {
-                  printf("TempoList::deltaTick2frame: tick1:%d not found\n", tick1);
-                  // abort();
-                  return 0;
-                  }
-            unsigned dtick = tick1 - i->second->tick;
-            double dtime   = double(dtick) / (MusEGlobal::config.division * _globalTempo * 10000.0/ i->second->tempo);
-            unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
-            f1 = i->second->frame + dframe;
-            
-            i = upper_bound(tick2);
-            if (i == end()) {
-                  return 0;
-                  }
-            dtick = tick2 - i->second->tick;
-            dtime   = double(dtick) / (MusEGlobal::config.division * _globalTempo * 10000.0/ i->second->tempo);
-            dframe   = lrint(dtime * MusEGlobal::sampleRate);
-            f2 = i->second->frame + dframe;
-            }
-      else {
-            double t = (double(tick1) * double(_tempo)) / (double(MusEGlobal::config.division) * _globalTempo * 10000.0);
-            f1 = lrint(t * MusEGlobal::sampleRate);
-            
-            t = (double(tick2) * double(_tempo)) / (double(MusEGlobal::config.division) * _globalTempo * 10000.0);
-            f2 = lrint(t * MusEGlobal::sampleRate);
-            }
-      if (sn)
-            *sn = _tempoSN;
       // FIXME: Caution: This should be rounded off properly somehow, but how to do that? 
       //                 But it seems to work so far.
-      return f2 - f1;
+      return tick2frame(tick2,sn) - tick2frame(tick1,sn);
       }
 
 
@@ -416,48 +394,10 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
 //   deltaFrame2tick
 //---------------------------------------------------------
 
-unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn) const
+XTick TempoList::deltaFrame2xtick(unsigned frame1, unsigned frame2, int* sn) const
       {
-      unsigned tick1, tick2;
-      if (useList) {
-            ciTEvent e;
-            for (e = begin(); e != end();) {
-                  ciTEvent ee = e;
-                  ++ee;
-                  if (ee == end())
-                        break;
-                  if (frame1 < ee->second->frame)
-                        break;
-                  e = ee;
-                  }
-            unsigned te  = e->second->tempo;
-            int dframe   = frame1 - e->second->frame;
-            double dtime = double(dframe) / double(MusEGlobal::sampleRate);
-            tick1         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
-            
-            for (e = begin(); e != end();) {
-                  ciTEvent ee = e;
-                  ++ee;
-                  if (ee == end())
-                        break;
-                  if (frame2 < ee->second->frame)
-                        break;
-                  e = ee;
-                  }
-            te  = e->second->tempo;
-            dframe   = frame2 - e->second->frame;
-            dtime = double(dframe) / double(MusEGlobal::sampleRate);
-            tick2         = e->second->tick + lrint(dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te);
-            }
-      else
-      {
-            tick1 = lrint((double(frame1)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEGlobal::config.division * 10000.0 / double(_tempo));
-            tick2 = lrint((double(frame2)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEGlobal::config.division * 10000.0 / double(_tempo));
-      }
-      if (sn)
-            *sn = _tempoSN;
-      // FIXME: Caution: This should be rounded off properly somehow, but how to do that? 
-      //                 But it seems to work so far.
+	  XTick tick1=frame2tick(frame1,sn);
+	  XTick tick2=frame2tick(frame2,sn);
       return tick2 - tick1;
       }
     

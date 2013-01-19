@@ -122,7 +122,6 @@ file (GLOB core_source_files
       route.cpp
       seqmsg.cpp 
       shortcuts.cpp 
-      sig.cpp
       song.cpp
       songfile.cpp 
       stringparam.cpp
