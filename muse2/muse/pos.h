@@ -1,138 +1,163 @@
-//=========================================================
-//  MusE
-//  Linux Music Editor
-//  $Id: pos.h,v 1.8 2004/07/14 15:27:26 wschweer Exp $
-//
-//  (C) Copyright 2000 Werner Schweer (ws@seh.de)
-//
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; version 2 of
-//  the License, or (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-//
-//=========================================================
+// =========================================================
+// MusE
+// Linux Music Editor
+// $Id: pos.h,v 1.8 2004/07/14 15:27:26 wschweer Exp $
+// 
+// (C) Copyright 2000 Werner Schweer (ws@seh.de)
+// 
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; version 2 of
+// the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+// USA.
+// 
+// =========================================================
 
 #ifndef __POS_H__
 #define __POS_H__
 
 class QString;
 
-namespace MusECore {
-
-
-struct XTick // eXtended tick with subticks.
+namespace MusECore
 {
-	unsigned tick; // do NOT just grab this and ignore subtick if you're doing integer calculations!
-	               // use to_uint() instead, which takes care of proper rounding.
-	double subtick;
-	
-	XTick(unsigned t=0, double s=0.0) { tick=t; subtick=s; }
-	static XTick from_double(double d);
-	double to_double() const;
-	unsigned to_uint() const;
-	
-	XTick operator-(const XTick& t2);
-};
 
-class Xml;
 
-//---------------------------------------------------------
-//   Pos
-//    depending on type _tick or _frame is a cached
-//    value. When the tempomap changes, all cached values
-//    are invalid. Sn is used to check for tempomap
-//    changes.
-//---------------------------------------------------------
+	struct XTick				// eXtended tick with subticks.
+	{
+		unsigned tick;			// do NOT just grab this and ignore subtick if
+		// you're doing integer calculations!
+		// use to_uint() instead, which takes care of proper rounding.
+		double subtick;
 
-class Pos {
-   public:
-      enum TType { TICKS, FRAMES };
+		  XTick(unsigned t = 0, double s = 0.0)
+		{
+			tick = t;
+			subtick = s;
+		}
+		static XTick from_double(double d);
+		double to_double() const;
+		unsigned to_uint() const;
 
-   private:
-      TType _type;
-      mutable int sn;
-      mutable unsigned _tick;
-      mutable float _subtick;
-      
-      mutable unsigned _frame;
-      
-      void recalc_frames();
+		XTick operator-(const XTick& t2);
+	};
 
-   public:
-      Pos();
-      Pos(const Pos&);
-      Pos(int measure,int beat,int tick, float subtick=0.0);
-      Pos(int min, int sec, int frame, int subframe);
-      Pos(unsigned, bool ticks=true); //considered evil
-      Pos(const QString&); //considered evil
-      void dump(int n = 0) const;
-      void mbt(int*, int*, int*) const;
-      void msf(int*, int*, int*, int*) const;
+	class Xml;
 
-      void invalidSn()  { sn = -1; }
+	// ---------------------------------------------------------
+	// Pos
+	// depending on type _tick or _frame is a cached
+	// value. When the tempomap changes, all cached values
+	// are invalid. Sn is used to check for tempomap
+	// changes.
+	// ---------------------------------------------------------
 
-      TType  type() const     { return _type; }
-      void   setType(TType t);
+	class Pos
+	{
+	  public:
+		enum TType
+		{ TICKS, FRAMES };
 
-      Pos& operator+=(Pos a);
-      Pos& operator+=(int a);
+	  private:
+		TType _type;
+		mutable int sn;
+		mutable unsigned _tick;
+		mutable float _subtick;
 
-      bool operator>=(const Pos& s) const;
-      bool operator>(const Pos& s) const;
-      bool operator<(const Pos& s) const;
-      bool operator<=(const Pos& s) const;
-      bool operator==(const Pos& s) const;
+		mutable unsigned _frame;
 
-      friend Pos operator+(Pos a, Pos b);
-      friend Pos operator+(Pos a, int b);
+		void recalc_frames();
 
-      unsigned tick() const;
-      unsigned frame() const;
-      void setTick(unsigned);
-      void setFrame(unsigned);
+	  public:
+		Pos();
+		Pos(const Pos&);
+		Pos(int measure, int beat, int tick, float subtick = 0.0);
+		Pos(int min, int sec, int frame, int subframe);
+		Pos(unsigned, bool ticks = true);	// considered evil
+		Pos(const QString&);	// considered evil
+		void dump(int n = 0) const;
+		void mbt(int*, int*, int*) const;
+		void msf(int*, int*, int*, int*) const;
 
-      void write(int level, Xml&, const char*) const;
-      void read(Xml& xml, const char*);
-      bool isValid() const { return true; }
-      static bool isValid(int m, int b, int t);
-      static bool isValid(int, int, int, int);
-      };
+		void invalidSn()
+		{
+			sn = -1;
+		}
 
-//---------------------------------------------------------
-//   PosLen
-//---------------------------------------------------------
+		TType type() const
+		{
+			return _type;
+		}
+		void setType(TType t);
 
-class PosLen : public Pos {
-      mutable unsigned _lenTick;
-      mutable unsigned _lenFrame;
-      mutable int sn;
+		Pos& operator+=(Pos a);
+		Pos& operator+=(int a);
 
-   public:
-      PosLen();
-      PosLen(const PosLen&);
-      void dump(int n = 0) const;
+		bool operator>=(const Pos& s) const;
+		bool operator>(const Pos& s) const;
+		bool operator<(const Pos& s) const;
+		bool operator<=(const Pos& s) const;
+		bool operator==(const Pos& s) const;
 
-      void write(int level, Xml&, const char*) const;
-      void read(Xml& xml, const char*);
-      void setLenTick(unsigned);
-      void setLenFrame(unsigned);
-      unsigned lenTick() const;
-      unsigned lenFrame() const;
-      Pos end() const;
-      unsigned endTick() const    { return end().tick(); }
-      unsigned endFrame() const   { return end().frame(); }
-      void setPos(const Pos&);
-      };
+		friend Pos operator+(Pos a, Pos b);
+		friend Pos operator+(Pos a, int b);
 
-} // namespace MusECore
+		unsigned tick() const;
+		unsigned frame() const;
+		void setTick(unsigned);
+		void setFrame(unsigned);
+
+		void write(int level, Xml&, const char*) const;
+		void read(Xml& xml, const char*);
+		bool isValid() const
+		{
+			return true;
+		}
+		static bool isValid(int m, int b, int t);
+		static bool isValid(int, int, int, int);
+	};
+
+	// ---------------------------------------------------------
+	// PosLen
+	// ---------------------------------------------------------
+
+	class PosLen:public Pos
+	{
+		mutable unsigned _lenTick;
+		mutable unsigned _lenFrame;
+		mutable int sn;
+
+	  public:
+		  PosLen();
+		  PosLen(const PosLen&);
+		void dump(int n = 0) const;
+
+		void write(int level, Xml&, const char*) const;
+		void read(Xml& xml, const char*);
+		void setLenTick(unsigned);
+		void setLenFrame(unsigned);
+		unsigned lenTick() const;
+		unsigned lenFrame() const;
+		Pos end() const;
+		unsigned endTick() const
+		{
+			return end().tick();
+		}
+		unsigned endFrame() const
+		{
+			return end().frame();
+		}
+		void setPos(const Pos&);
+	};
+
+}								// namespace MusECore
 
 #endif
