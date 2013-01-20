@@ -669,7 +669,7 @@ void MidiDevice::handleSeek()
   MidiPort* mp = &MusEGlobal::midiPorts[_port];
   MidiInstrument* instr = mp->instrument();
   MidiCtrlValListList* cll = mp->controller();
-  int pos = MusEGlobal::audio->tickPos();
+  unsigned pos = MusEGlobal::audio->tickPos();
   
   //---------------------------------------------------
   //    Send STOP 
@@ -758,37 +758,76 @@ void MidiDevice::handleSeek()
     if(!usedChans[chan])  // Channel not used in song?
       continue;
     int ctlnum = vl->num();
-    iMidiCtrlVal imcv = vl->iValue(pos);
-    //bool done = false;
-    if(imcv != vl->end()) 
+
+    // Find the first non-muted value at the given tick...
+    bool values_found = false;
+    bool found_value = false;
+    
+    iMidiCtrlVal imcv = vl->lower_bound(pos);
+    if(imcv != vl->end() && imcv->first == (int)pos)
     {
-      Part* p = imcv->second.part;
-      // Don't send if part or track is muted or off.
-      if(!p || p->mute())
-        continue;
-      Track* track = p->track();
-      if(track && (track->isMute() || track->off()))   
-        continue;
-      unsigned t = (unsigned)imcv->first;
-      // Do not add values that are outside of the part.
-      if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
+      for( ; imcv != vl->end() && imcv->first == (int)pos; ++imcv)
       {
-        //_playEvents.add(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val));
+        const Part* p = imcv->second.part;
+        if(!p)
+          continue;
+        // Ignore values that are outside of the part.
+        if(pos < p->tick() || pos >= (p->tick() + p->lenTick()))
+          continue;
+        values_found = true;
+        // Ignore if part or track is muted or off.
+        if(p->mute())
+          continue;
+        const Track* track = p->track();
+        if(track && (track->isMute() || track->off()))
+          continue;
+        found_value = true;
+        break;
+      }
+    }
+    else
+    {
+      while(imcv != vl->begin())
+      {
+        --imcv;
+        const Part* p = imcv->second.part;
+        if(!p)
+          continue;
+        // Ignore values that are outside of the part.
+        unsigned t = imcv->first;
+        if(t < p->tick() || t >= (p->tick() + p->lenTick()))
+          continue;
+        values_found = true;
+        // Ignore if part or track is muted or off.
+        if(p->mute())
+          continue;
+        const Track* track = p->track();
+        if(track && (track->isMute() || track->off()))
+          continue;
+        found_value = true;
+        break;
+      }
+    }
+
+    if(found_value)
+    {
+      // Don't bother sending any sustain values if not playing. Just set the hw state.
+      if(ctlnum == CTRL_SUSTAIN && !MusEGlobal::audio->isPlaying())
+        mp->setHwCtrlState(chan, CTRL_SUSTAIN, imcv->second.val);
+      else
         // Use sendEvent to get the optimizations and limiting. But force if there's a value at this exact position.
         // NOTE: Why again was this forced? There was a reason. Think it was RJ in response to bug rep, then I modded.
         // A reason not to force: If a straight line is drawn on graph, multiple identical events are stored
         //  (which must be allowed). So seeking through them here sends them all redundantly, not good. // REMOVE Tim.
         mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), false); //, imcv->first == pos);
         //mp->sendEvent(MidiPlayEvent(0, _port, chan, ME_CONTROLLER, ctlnum, imcv->second.val), pos == 0 || imcv->first == pos);
-        //done = true;
-      }
     }
 
     // Either no value was found, or they were outside parts, or pos is in the unknown area before the first value.
     // Send instrument default initial values.  NOT for syntis. Use midiState and/or initParams for that. 
     //if((imcv == vl->end() || !done) && !MusEGlobal::song->record() && instr && !isSynti()) 
-    // Darn, without refinement we can only do this at position 0, due to possible 'skipped' values outside parts, above. 
-    if(imcv == vl->end() && MusEGlobal::config.midiSendCtlDefaults && !MusEGlobal::song->record() && pos == 0 && instr && !isSynti()) 
+    // Hmm, without refinement we can only do this at position 0, due to possible 'skipped' values outside parts, above.
+    if(!values_found && MusEGlobal::config.midiSendCtlDefaults && !MusEGlobal::song->record() && pos == 0 && instr && !isSynti())
     {
       MidiControllerList* mcl = instr->controller();
       ciMidiController imc = mcl->find(vl->num());

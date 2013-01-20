@@ -1,3 +1,6 @@
+19.01.2013:
+         - Fixed confused controllers on seek with multiple muted/off midi tracks/parts on same port/channel. (Tim)
+           In MidiDevice::handleSeek(): Re-wrote controller value sending section - fixed obeying mute/off section.
 17.01.2013:
          - Fixed song length way too big after recorded wave is added. (Tim)
            Was a simple regression in Song::cmdAddRecordedWave back when tempo recording was added.
