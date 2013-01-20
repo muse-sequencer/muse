@@ -36,7 +36,7 @@ namespace MusECore {
 EventBase::EventBase(EventType t)
       {
       _type     = t;
-      Pos::setType(_type == Wave ? FRAMES : TICKS);
+      Pos::setType(TICKS); // wave parts are also in TICKS now.
       refCount  = 0;
       _selected = false;
       }

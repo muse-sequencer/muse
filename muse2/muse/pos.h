@@ -38,7 +38,7 @@ namespace MusECore
 		// use to_uint() instead, which takes care of proper rounding.
 		double subtick;
 
-		  XTick(unsigned t = 0, double s = 0.0)
+		XTick(unsigned t = 0, double s = 0.0)
 		{
 			tick = t;
 			subtick = s;
@@ -47,7 +47,13 @@ namespace MusECore
 		double to_double() const;
 		unsigned to_uint() const;
 
-		XTick operator-(const XTick& t2);
+		XTick operator+(const XTick& t2) const;
+		XTick operator-(const XTick& t2) const;
+		bool operator>=(const XTick& t2) const;
+		bool operator>(const XTick& t2) const;
+		bool operator<=(const XTick& t2) const;
+		bool operator<(const XTick& t2) const;
+		bool operator==(const XTick& t2) const;
 	};
 
 	class Xml;
@@ -63,17 +69,15 @@ namespace MusECore
 	class Pos
 	{
 	  public:
-		enum TType
-		{ TICKS, FRAMES };
+		enum TType { TICKS, FRAMES };
 
 	  private:
 		TType _type;
 		mutable int sn;
-		mutable unsigned _tick;
-		mutable float _subtick;
+		
+		mutable XTick _tick;
 
 		mutable unsigned _frame;
-
 		void recalc_frames();
 
 	  public:
@@ -110,9 +114,11 @@ namespace MusECore
 		friend Pos operator+(Pos a, Pos b);
 		friend Pos operator+(Pos a, int b);
 
+		XTick xtick() const;
 		unsigned tick() const;
 		unsigned frame() const;
 		void setTick(unsigned);
+		void setTick(XTick);
 		void setFrame(unsigned);
 
 		void write(int level, Xml&, const char*) const;
@@ -129,15 +135,15 @@ namespace MusECore
 	// PosLen
 	// ---------------------------------------------------------
 
-	class PosLen:public Pos
+	class PosLen : public Pos
 	{
-		mutable unsigned _lenTick;
+		mutable XTick _lenTick;
 		mutable unsigned _lenFrame;
 		mutable int sn;
 
 	  public:
-		  PosLen();
-		  PosLen(const PosLen&);
+		PosLen();
+		PosLen(const PosLen&);
 		void dump(int n = 0) const;
 
 		void write(int level, Xml&, const char*) const;
@@ -147,14 +153,8 @@ namespace MusECore
 		unsigned lenTick() const;
 		unsigned lenFrame() const;
 		Pos end() const;
-		unsigned endTick() const
-		{
-			return end().tick();
-		}
-		unsigned endFrame() const
-		{
-			return end().frame();
-		}
+		unsigned endTick() const  { return end().tick();  }
+		unsigned endFrame() const { return end().frame(); }
 		void setPos(const Pos&);
 	};
 

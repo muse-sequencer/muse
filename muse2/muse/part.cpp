@@ -713,13 +713,13 @@ MidiPart::MidiPart(const MidiPart& p) : Part(p)
 WavePart::WavePart(WaveTrack* t)
    : Part(t)
       {
-      setType(FRAMES);
+      setType(TICKS);
       }
 
 WavePart::WavePart(WaveTrack* t, EventList* ev)
    : Part(t, ev)
       {
-      setType(FRAMES);
+      setType(TICKS);
       }
 
 //---------------------------------------------------------

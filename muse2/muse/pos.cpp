@@ -28,7 +28,6 @@
 #include "xml.h"
 #include "tempo.h"
 #include "globals.h"
-// /#include "sig.h"
 #include "al/sig.h"
 
 namespace MusEGlobal
@@ -43,9 +42,9 @@ namespace MusECore
 	XTick XTick::from_double(double d)
 	{
 		XTick tmp;
-		  tmp.tick = floor(d);
-		  tmp.subtick = d - tmp.tick;
-		  return tmp;
+		tmp.tick = floor(d);
+		tmp.subtick = d - tmp.tick;
+		return tmp;
 
 	}
 	double XTick::to_double() const
@@ -57,7 +56,18 @@ namespace MusECore
 		return tick + (subtick >= 0.5 ? 1 : 0);
 	}
 
-	XTick XTick::operator-(const XTick& t2)
+	XTick XTick::operator+(const XTick& t2) const
+	{
+		XTick tmp(this->tick + t2.tick, this->subtick + t2.subtick);
+		if (tmp.subtick >= 1.0)
+		{
+			tmp.subtick -= 1.0;
+			tmp.tick += 1;
+		}
+		return tmp;
+	}
+
+	XTick XTick::operator-(const XTick& t2) const
 	{
 		XTick tmp(this->tick - t2.tick, this->subtick - t2.subtick);
 		if (tmp.subtick < 0)
@@ -68,6 +78,37 @@ namespace MusECore
 		return tmp;
 	}
 
+	bool XTick::operator>(const XTick& t2) const
+	{
+		if (this->tick > t2.tick)
+			return true;
+		else if (this->tick == t2.tick)
+			return (this->subtick > t2.subtick);
+		else
+			return false;
+	}
+
+	bool XTick::operator<(const XTick& t2) const
+	{
+		return t2 > (*this);
+	}
+	
+	bool XTick::operator>=(const XTick& t2) const
+	{
+		return !((*this) < t2);
+	}
+	
+	bool XTick::operator<=(const XTick& t2) const
+	{
+		return !((*this) > t2);
+	}
+	
+	bool XTick::operator==(const XTick& t2) const
+	{
+		return (this->tick == t2.tick) && (this->subtick == t2.subtick); // TODO floating point == is evil :(
+	}
+	
+	
 
 
 
@@ -78,8 +119,7 @@ namespace MusECore
 	Pos::Pos()
 	{
 		_type = TICKS;
-		_tick = 0;
-		_subtick = 0;
+		_tick = XTick(0,0);
 		recalc_frames();
 		sn = -1;
 	}
@@ -89,42 +129,39 @@ namespace MusECore
 		_type = p._type;
 		sn = p.sn;
 		_tick = p._tick;
-		_subtick = p._subtick;
 		_frame = p._frame;
 	}
 
 	Pos::Pos(unsigned t, bool ticks)	// TODO: considered evil.
 	{
-		_subtick = 0.0;
-
 		if (ticks)
 		{
 			_type = TICKS;
-			_tick = t;
+			_tick = XTick(t);
 		}
 		else
 		{
 			_type = FRAMES;
-			_frame = t;
+			printf("DEBUG: warning: Pos::Pos(t, use_frames=true) called\n");
+			setFrame(t);
 		}
+		recalc_frames();
 		sn = -1;
 	}
 
 	Pos::Pos(const QString& s)	// TODO: considered evil.
 	{
-		_subtick = 0.0;
-
 		int m, b, t;
 		sscanf(s.toLatin1(), "%04d.%02d.%03d", &m, &b, &t);
-		_tick = AL::sigmap.bar2tick(m, b, t);
+		_tick = XTick(AL::sigmap.bar2tick(m, b, t));
 		_type = TICKS;
+		recalc_frames();
 		sn = -1;
 	}
 
 	Pos::Pos(int measure, int beat, int tick, float subtick)
 	{
-		_tick = AL::sigmap.bar2tick(measure, beat, tick);
-		_subtick = subtick;
+		_tick = XTick(AL::sigmap.bar2tick(measure, beat, tick), subtick);
 		_type = TICKS;
 		recalc_frames();
 		sn = -1;
@@ -150,8 +187,9 @@ namespace MusECore
 				time += f * 1.0 / 30.0;
 				break;
 		}
-		_type = FRAMES;
-		_frame = lrint(time * MusEGlobal::sampleRate);
+		_type = TICKS;
+		setFrame(lrint(time * MusEGlobal::sampleRate));
+		recalc_frames();
 		sn = -1;
 	}
 
@@ -169,7 +207,10 @@ namespace MusECore
 	{
 		if (t == _type)
 			return;
-
+		
+		if (t == FRAMES)
+			printf("DEBUG: warning: Pos::setType(FRAMES) called\n");
+		
 		if (_type == TICKS)
 		{
 			// convert from ticks to frames
@@ -178,7 +219,7 @@ namespace MusECore
 		else
 		{
 			// convert from frames to ticks
-			_tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
+			_tick = MusEGlobal::tempomap.frame2xtick(_frame, _tick, &sn);
 		}
 		_type = t;
 	}
@@ -194,8 +235,10 @@ namespace MusECore
 			case FRAMES:
 				_frame += a.frame();
 				break;
+			
 			case TICKS:
-				_tick += a.tick();
+				//_tick += a.xtick(); // TODO implement operator+= and replace!
+				_tick = _tick + a.xtick();
 				break;
 		}
 		sn = -1;				// invalidate cached values
@@ -213,8 +256,10 @@ namespace MusECore
 			case FRAMES:
 				_frame += a;
 				break;
+			
 			case TICKS:
-				_tick += a;
+				//_tick += a; // TODO implement operator+= and replace!
+				_tick = _tick + XTick(a);
 				break;
 		}
 		sn = -1;				// invalidate cached values
@@ -271,7 +316,7 @@ namespace MusECore
 		if (_type == FRAMES)
 			return _frame == s.frame();
 		else
-			return _tick == s.tick();
+			return _tick == s.xtick();
 	}
 
 	// ---------------------------------------------------------
@@ -280,8 +325,13 @@ namespace MusECore
 
 	unsigned Pos::tick() const
 	{
-		if (_type == FRAMES)
-			_tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
+		if (_type == FRAMES) // TODO should never happen
+			_tick = MusEGlobal::tempomap.frame2xtick(_frame, _tick, &sn);
+		return _tick.tick;
+	}
+
+	XTick Pos::xtick() const
+	{
 		return _tick;
 	}
 
@@ -291,7 +341,7 @@ namespace MusECore
 
 	unsigned Pos::frame() const
 	{
-		if (_type == TICKS)
+		if (_type == TICKS) // TODO should always happen
 			_frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
 		return _frame;
 	}
@@ -302,10 +352,17 @@ namespace MusECore
 
 	void Pos::setTick(unsigned pos)
 	{
+		setTick(XTick(pos));
+	}
+
+	void Pos::setTick(XTick pos)
+	{
 		_tick = pos;
 		sn = -1;
 		if (_type == FRAMES)
 			_frame = MusEGlobal::tempomap.tick2frame(pos, &sn);
+		
+		recalc_frames();
 	}
 
 	// ---------------------------------------------------------
@@ -317,7 +374,7 @@ namespace MusECore
 		_frame = pos;
 		sn = -1;
 		if (_type == TICKS)
-			_tick = MusEGlobal::tempomap.frame2tick(pos, &sn);
+			_tick = MusEGlobal::tempomap.frame2xtick(pos, &sn);
 	}
 
 	// ---------------------------------------------------------
@@ -331,7 +388,7 @@ namespace MusECore
 		switch (_type)
 		{
 			case TICKS:
-				xml.nput("tick=\"%d\"", _tick);
+				xml.nput("tick=\"%d\"", _tick.tick); // TODO FINDMICH also save subtick!
 				break;
 				case FRAMES:xml.nput("frame=\"%d\"", _frame);
 				break;
@@ -363,18 +420,21 @@ namespace MusECore
 				case Xml::Attribut:
 					if (tag == "tick")
 					{
-						_tick = xml.s2().toInt();
+						_tick = XTick(xml.s2().toInt()); // TODO FINDMICH also read subtick!
 						_type = TICKS;
 					}
 					else if (tag == "frame")
 					{
-						_frame = xml.s2().toInt();
-						_type = FRAMES;
+						// TODO flo
+						printf("DEBUG: Pos::read wants type=FRAMES, but this is denied.\n");
+						_type = TICKS;
+						setFrame(xml.s2().toInt());
 					}
 					else if (tag == "sample")
 					{			// obsolete
-						_frame = xml.s2().toInt();
-						_type = FRAMES;
+						printf("DEBUG: Pos::read wants type=FRAMES, but this is denied.\n");
+						_type = TICKS;
+						setFrame(xml.s2().toInt());
 					}
 					else
 						xml.unknown(name);
@@ -395,12 +455,12 @@ namespace MusECore
 
 	PosLen::PosLen()
 	{
-		_lenTick = 0;
+		_lenTick = XTick(0);
 		_lenFrame = 0;
 		sn = -1;
 	}
 
-	PosLen::PosLen(const PosLen& p):Pos(p)
+	PosLen::PosLen(const PosLen& p) : Pos(p)
 	{
 		_lenTick = p._lenTick;
 		_lenFrame = p._lenFrame;
@@ -420,7 +480,9 @@ namespace MusECore
 			case FRAMES:
 				printf("samples=%d)\n", _lenFrame);
 				break;
-				case TICKS:printf("ticks=%d)\n", _lenTick);
+			
+			case TICKS:
+				printf("ticks=%d + %f)\n", _lenTick.tick, _lenTick.subtick);
 				break;
 		}
 	}
@@ -433,7 +495,9 @@ namespace MusECore
 			case FRAMES:
 				printf("samples=%d)", _frame);
 				break;
-				case TICKS:printf("ticks=%d)", _tick);
+			
+			case TICKS:
+				printf("ticks=%d + %f)", _tick.tick, _tick.subtick);
 				break;
 		}
 	}
@@ -449,10 +513,11 @@ namespace MusECore
 		switch (type())
 		{
 			case TICKS:
-				xml.nput("tick=\"%d\" len=\"%d\"", tick(), _lenTick);
+				xml.nput("tick=\"%d\" len=\"%d\"", tick(), _lenTick.tick); // TODO FINDMICH write subtick
 				break;
-				case FRAMES:xml.nput("sample=\"%d\" len=\"%d\"", frame(),
-									 _lenFrame);
+			
+			case FRAMES:
+				xml.nput("sample=\"%d\" len=\"%d\"", frame(), _lenFrame);
 				break;
 		}
 		xml.put(" />", name);
@@ -485,9 +550,10 @@ namespace MusECore
 						setType(TICKS);
 						setTick(xml.s2().toInt());
 					}
-					else if (tag == "sample")
+					else if (tag == "sample") // FINDMICH
 					{
-						setType(FRAMES);
+						printf("PosLen::read wants FRAMES but this is denied.\n");
+						setType(TICKS);
 						setFrame(xml.s2().toInt());
 					}
 					else if (tag == "len")
@@ -522,10 +588,9 @@ namespace MusECore
 
 	void PosLen::setLenTick(unsigned len)
 	{
-		_lenTick = len;
+		_lenTick = XTick(len);
 		sn = -1;
-		_lenFrame =
-			MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
+		_lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
 	}
 
 	// ---------------------------------------------------------
@@ -536,8 +601,7 @@ namespace MusECore
 	{
 		_lenFrame = len;
 		sn = -1;
-		_lenTick =
-			MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + len, &sn);
+		_lenTick = MusEGlobal::tempomap.deltaFrame2xtick(frame(), frame() + len, &sn);
 	}
 
 	// ---------------------------------------------------------
@@ -547,10 +611,8 @@ namespace MusECore
 	unsigned PosLen::lenTick() const
 	{
 		if (type() == FRAMES)
-			_lenTick =
-				MusEGlobal::tempomap.deltaFrame2tick(frame(),
-													 frame() + _lenFrame, &sn);
-		return _lenTick;
+			_lenTick = MusEGlobal::tempomap.deltaFrame2xtick(frame(), frame() + _lenFrame, &sn);
+		return _lenTick.tick;
 	}
 
 	// ---------------------------------------------------------
@@ -560,9 +622,7 @@ namespace MusECore
 	unsigned PosLen::lenFrame() const
 	{
 		if (type() == TICKS)
-			_lenFrame =
-				MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick,
-													 &sn);
+			_lenFrame = MusEGlobal::tempomap.deltaTick2frame(xtick(), xtick() + _lenTick, &sn);
 		return _lenFrame;
 	}
 
@@ -573,13 +633,16 @@ namespace MusECore
 	Pos PosLen::end() const
 	{
 		Pos pos(*this);
-		  pos.invalidSn();
+		pos.invalidSn();
+		
 		switch (type())
 		{
 			case FRAMES:
 				pos.setFrame(pos.frame() + _lenFrame);
 				break;
-				case TICKS:pos.setTick(pos.tick() + _lenTick);
+			
+			case TICKS:
+				pos.setTick(pos.xtick() + _lenTick);
 				break;
 		}
 		return pos;
@@ -597,7 +660,7 @@ namespace MusECore
 				setFrame(pos.frame());
 				break;
 			case TICKS:
-				setTick(pos.tick());
+				setTick(pos.xtick());
 				break;
 		}
 	}
@@ -617,27 +680,27 @@ namespace MusECore
 
 	void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
 	{
-		double time = double (frame()) / double (MusEGlobal::sampleRate);
-		*min = int (time) / 60;
-		*sec = int (time) % 60;
+		double time = double(frame()) / double(MusEGlobal::sampleRate);
+		*min = int(time) / 60;
+		*sec = int(time) % 60;
 		double rest = time - (*min * 60 + *sec);
 		switch (MusEGlobal::mtcType)
 		{
 			case 0:			// 24 frames sec
 				rest *= 24;
 				break;
-				case 1:			// 25
+			case 1:			// 25
 				rest *= 25;
 				break;
-				case 2:			// 30 drop frame
+			case 2:			// 30 drop frame
 				rest *= 30;
 				break;
-				case 3:			// 30 non drop frame
+			case 3:			// 30 non drop frame
 				rest *= 30;
 				break;
 		}
-		*fr = int (rest);
-		*subFrame = int ((rest - *fr) * 100);
+		*fr = int(rest);
+		*subFrame = int((rest - *fr) * 100);
 	}
 
 	// ---------------------------------------------------------
@@ -658,4 +721,4 @@ namespace MusECore
 		return true;
 	}
 
-}								// namespace MusECore
+} // namespace MusECore
