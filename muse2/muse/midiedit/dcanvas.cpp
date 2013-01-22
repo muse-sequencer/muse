@@ -199,7 +199,7 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
       x              = newpos.x();
       if(x < 0)
         x = 0;
-      int ntick = editor->rasterVal(x) - part->tick();
+      int ntick = editor->rasterVal(x).to_uint() - part->tick();
       if(ntick < 0)
         ntick = 0;
       int diff = ntick + event.lenTick() - part->lenTick();
@@ -326,7 +326,7 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       int x            = pos.x();
       if (x < 0)
             x = 0;
-      int ntick        = editor->rasterVal(x) - dest_part->tick();
+      int ntick        = editor->rasterVal(x).to_uint() - dest_part->tick();
       if (ntick < 0)
             ntick = 0;
       MusECore::Event newEvent   = event.clone();
@@ -373,7 +373,7 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
             velo = ourDrumMap[instr].lv2;
       else if (state == (Qt::ControlModifier | Qt::ShiftModifier))
             velo = ourDrumMap[instr].lv1;
-      int tick = editor->rasterVal(p.x());
+      int tick = editor->rasterVal(p.x()).to_uint();
       return newItem(tick, instr, velo);
       }
 
@@ -466,7 +466,7 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       if (x<0)
             x=0;
       if (!noSnap)
-            x = editor->rasterVal(x);
+            x = editor->rasterVal(x).to_uint();
       event.setTick(x - nevent->part()->tick());
       int npitch = event.pitch();
 
@@ -833,7 +833,7 @@ void DrumCanvas::cmd(int cmd)
                       if(spos > 0)
                       {
                         spos -= 1;     // Nudge by -1, then snap down with raster1.
-                        spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                        spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]).to_uint());
                       }
                       if(spos < 0)
                         spos = 0;
@@ -843,7 +843,7 @@ void DrumCanvas::cmd(int cmd)
                   break;
             case CMD_RIGHT:
                   {
-                      int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                      int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]).to_uint());    // Nudge by +1, then snap up with raster2.
                       MusECore::Pos p(spos,true);
                       MusEGlobal::song->setPos(0, p, true, true, true);
                   }
@@ -851,7 +851,7 @@ void DrumCanvas::cmd(int cmd)
             case CMD_LEFT_NOSNAP:
                   {
                     printf("left no snap\n");
-                  int spos = pos[0] - editor->rasterStep(pos[0]);
+                  int spos = pos[0] - editor->rasterStep(pos[0]).to_uint();
                   if (spos < 0)
                         spos = 0;
                   MusECore::Pos p(spos,true);
@@ -860,7 +860,7 @@ void DrumCanvas::cmd(int cmd)
                   break;
             case CMD_RIGHT_NOSNAP:
                   {
-                  MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]), true);
+                  MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]).to_uint(), true);
                   MusEGlobal::song->setPos(0, p, true, true, true); //CDW
                   }
                   break;
@@ -1286,14 +1286,14 @@ int DrumCanvas::getNextStep(unsigned int pos, int basicStep, int stepSize)
   int newPos = pos;
   for (int i =0; i<stepSize;i++) {
     if (basicStep > 0) { // moving right
-      newPos = AL::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by +1, then snap up with raster2.
-      if (unsigned(newPos) > curPart->endTick()- editor->rasterStep(curPart->endTick()))
+      newPos = AL::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos).to_uint());    // Nudge by +1, then snap up with raster2.
+      if (unsigned(newPos) > curPart->endTick()- editor->rasterStep(curPart->endTick()).to_uint())
         newPos = curPart->tick();
     }
     else { // moving left
-      newPos = AL::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by -1, then snap up with raster1.
+      newPos = AL::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos).to_uint());    // Nudge by -1, then snap up with raster1.
       if (unsigned(newPos) < curPart->tick() ) {
-        newPos = AL::sigmap.raster1(curPart->endTick()-1, editor->rasterStep(curPart->endTick()));
+        newPos = AL::sigmap.raster1(curPart->endTick()-1, editor->rasterStep(curPart->endTick()).to_uint());
       }
     }
   }

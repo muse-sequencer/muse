@@ -164,7 +164,7 @@ class Canvas : public View {
       // moving
       void startMoving(const QPoint&, DragType);
       
-      void moveItems(const QPoint&, int dir, bool rasterize = true);
+      void moveItems(const QPoint&, int dir=0, bool rasterize = true);
       virtual void endMoveItems(const QPoint&, DragType, int dir) = 0;
 
       virtual void selectLasso(bool toggle);

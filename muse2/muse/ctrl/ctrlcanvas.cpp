@@ -897,12 +897,12 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
         y2 = a;
       }
       
-      int xx1 = editor->rasterVal1(x1);
-      int xx2 = editor->rasterVal2(x2);
+      int xx1 = editor->rasterVal1(x1).to_uint();
+      int xx2 = editor->rasterVal2(x2).to_uint();
       // If x1 and x2 happen to lie directly on the same raster, xx1 will equal xx2, 
       //  which is not good - there should always be a spread. Nudge by +1 and recompute.
       if(xx1 == xx2)
-        xx2  = editor->rasterVal2(x2 + 1);
+        xx2  = editor->rasterVal2(x2 + 1).to_uint();
       
       int type = _controller->num();
 
@@ -947,7 +947,7 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
       // insert new events
       for (int x = xx1, step; x < xx2 ; x += step )    
       {
-            step = useRaster ? raster : editor->rasterVal2(x + 1) - x;
+            step = useRaster ? raster : editor->rasterVal2(x + 1).to_uint() - x;
             
             int y    = x + step >= xx2 || x2 == x1 ? y2 : (x == xx1 ? y1 : (((y2 - y1) * (x + step/2 - x1)) / (x2 - x1)) + y1);
             int nval = computeVal(_controller, y, height());
@@ -1106,12 +1106,12 @@ void CtrlCanvas::newVal(int x1, int y)
       if(!curPart || !_controller)         
         return;
       
-      int xx1  = editor->rasterVal1(x1);
-      int xx2  = editor->rasterVal2(x1);
+      int xx1  = editor->rasterVal1(x1).to_uint();
+      int xx2  = editor->rasterVal2(x1).to_uint();
       // If x1 happens to lie directly on a raster, xx1 will equal xx2, 
       //  which is not good - there should always be a spread. Nudge by +1 and recompute.
       if(xx1 == xx2)
-        xx2  = editor->rasterVal2(x1 + 1);
+        xx2  = editor->rasterVal2(x1 + 1).to_uint();
         
       int newval = computeVal(_controller, y, height());
       int type = _controller->num();
@@ -1298,14 +1298,14 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       // Also the loops below were getting complicated to ignore that first position.
       // So I draw from the first x. (TODO The idea may work now since I wrote this - more work was done.) p4.0.18 Tim.
       
-      int xx1 = editor->rasterVal1(x1);
+      int xx1 = editor->rasterVal1(x1).to_uint();
       
-      int xx2 = editor->rasterVal2(x2);
+      int xx2 = editor->rasterVal2(x2).to_uint();
       
       // If x1 and x2 happen to lie directly on the same raster, xx1 will equal xx2, 
       //  which is not good - there should always be a spread. Nudge by +1 and recompute.
       if(xx1 == xx2)
-        xx2  = editor->rasterVal2(x2 + 1);
+        xx2  = editor->rasterVal2(x2 + 1).to_uint();
       
       int type = _controller->num();
 
@@ -1393,7 +1393,7 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       // insert new events
       for (int x = xx1, step; x < xx2 ; x += step )    
       {
-            step = useRaster ? raster : editor->rasterVal2(x + 1) - x;
+            step = useRaster ? raster : editor->rasterVal2(x + 1).to_uint() - x;
             
             int y    = x + step >= xx2 || x2 == x1 ? y2 : (x == xx1 ? y1 : (((y2 - y1) * (x + step/2 - x1)) / (x2 - x1)) + y1);
             int nval = computeVal(_controller, y, height());
@@ -1457,12 +1457,12 @@ void CtrlCanvas::deleteVal(int x1, int x2, int)
         x2 = a;
       }
       
-      int xx1 = editor->rasterVal1(x1);
-      int xx2 = editor->rasterVal2(x2);
+      int xx1 = editor->rasterVal1(x1).to_uint();
+      int xx2 = editor->rasterVal2(x2).to_uint();
       // If x1 and x2 happen to lie directly on the same raster, xx1 will equal xx2, 
       //  which is not good - there should always be a spread. Nudge by +1 and recompute.
       if(xx1 == xx2)
-        xx2  = editor->rasterVal2(x2 + 1);
+        xx2  = editor->rasterVal2(x2 + 1).to_uint();
 
       int partTick = curPart->tick();
       xx1 -= partTick;

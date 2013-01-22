@@ -329,7 +329,7 @@ MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, i
       x              = newpos.x();
       if(x < 0)
         x = 0;
-      int ntick = editor->rasterVal(x) - part->tick();
+      int ntick = editor->rasterVal(x).to_uint() - part->tick();
       if(ntick < 0)
         ntick = 0;
       int diff = ntick + event.lenTick() - part->lenTick();
@@ -441,7 +441,7 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, con
       MusECore::Part* part = nevent->part();
       
       newEvent.setPitch(npitch);
-      int ntick = editor->rasterVal(x) - part->tick();
+      int ntick = editor->rasterVal(x).to_uint() - part->tick();
       if (ntick < 0)
             ntick = 0;
       newEvent.setTick(ntick);
@@ -466,7 +466,7 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, con
 MusEGui::CItem* PianoCanvas::newItem(const QPoint& p, int)
       {
       int pitch = y2pitch(p.y());
-      int tick  = editor->rasterVal1(p.x());
+      int tick  = editor->rasterVal1(p.x()).to_uint();
       int len   = p.x() - tick;
       tick     -= curPart->tick();
       if (tick < 0)
@@ -497,8 +497,8 @@ void PianoCanvas::newItem(MusEGui::CItem* item, bool noSnap)
       int w = item->width();
 
       if (!noSnap) {
-            x = editor->rasterVal1(x); //round down
-            w = editor->rasterVal(x + w) - x;
+            x = editor->rasterVal1(x).to_uint(); //round down
+            w = editor->rasterVal(x + w).to_uint() - x;
             if (w == 0)
                   w = editor->raster();
             }
@@ -544,7 +544,7 @@ void PianoCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         //
             len = nevent->width();
       else {
             unsigned tick = event.tick() + part->tick();
-            len = editor->rasterVal(tick + nevent->width()) - tick;
+            len = editor->rasterVal(tick + nevent->width()).to_uint() - tick;
             if (len <= 0)
                   len = editor->raster();
       }
@@ -598,7 +598,7 @@ void PianoCanvas::pianoCmd(int cmd)
                   if(spos > 0) 
                   {
                     spos -= 1;     // Nudge by -1, then snap down with raster1.
-                    spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                    spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]).to_uint());
                   }  
                   if(spos < 0)
                     spos = 0;
@@ -608,14 +608,14 @@ void PianoCanvas::pianoCmd(int cmd)
                   break;
             case CMD_RIGHT:
                   {
-                  int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                  int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]).to_uint());    // Nudge by +1, then snap up with raster2.
                   MusECore::Pos p(spos,true);
                   MusEGlobal::song->setPos(0, p, true, true, true); 
                   }
                   break;
             case CMD_LEFT_NOSNAP:
                   {
-                  int spos = pos[0] - editor->rasterStep(pos[0]);
+                  int spos = pos[0] - editor->rasterStep(pos[0]).to_uint();
                   if (spos < 0)
                         spos = 0;
                   MusECore::Pos p(spos,true);
@@ -624,7 +624,7 @@ void PianoCanvas::pianoCmd(int cmd)
                   break;
             case CMD_RIGHT_NOSNAP:
                   {
-                  MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]), true);
+                  MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]).to_uint(), true);
                   MusEGlobal::song->setPos(0, p, true, true, true); //CDW
                   }
                   break;
@@ -652,7 +652,7 @@ void PianoCanvas::pianoCmd(int cmd)
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
                   
-                  MusECore::Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0])), true);
+                  MusECore::Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0]).to_uint()).to_uint(), true);
                   MusEGlobal::song->setPos(0, p, true, false, true);
                   }
                   return;
@@ -678,7 +678,7 @@ void PianoCanvas::pianoCmd(int cmd)
                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
-                  MusECore::Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0])), true);
+                  MusECore::Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0]).to_uint()).to_uint(), true);
                   MusEGlobal::song->setPos(0, p, true, false, true);
                   }
                   break;

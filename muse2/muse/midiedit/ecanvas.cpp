@@ -114,7 +114,7 @@ QPoint EventCanvas::raster(const QPoint& p) const
       int x = p.x();
       if (x < 0)
             x = 0;
-      x = editor->rasterVal(x);
+      x = editor->rasterVal(x).to_uint();
       int pitch = y2pitch(p.y());
       int y = pitch2y(pitch);
       return QPoint(x, y);
@@ -128,7 +128,7 @@ void EventCanvas::mouseMove(QMouseEvent* event)
       {
       emit pitchChanged(y2pitch(event->pos().y()));
       int x = event->pos().x();
-      emit timeChanged(editor->rasterVal(x));
+      emit timeChanged(editor->rasterVal(x).to_uint());
       }
 
 //---------------------------------------------------------
@@ -431,7 +431,7 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
       if (event->mimeData()->hasFormat("text/x-muse-groupedeventlists")) {
             text = QString(event->mimeData()->data("text/x-muse-groupedeventlists"));
       
-            int x = editor->rasterVal(event->pos().x());
+            int x = editor->rasterVal(event->pos().x()).to_uint();
             if (x < 0)
                   x = 0;
             paste_at(text,x,3072,false,false,curPart);

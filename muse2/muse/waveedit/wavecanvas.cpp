@@ -827,7 +827,7 @@ QPoint WaveCanvas::raster(const QPoint& p) const
       if (x < 0)
             x = 0;
       //x = editor->rasterVal(x);
-      x = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x)));
+      x = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2xtick(x)));
       int pitch = y2pitch(p.y());
       int y = pitch2y(pitch);
       return QPoint(x, y);
@@ -1261,7 +1261,7 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
       x              = newpos.x();
       if(x < 0)
         x = 0;
-      int nframe = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) - part->frame();
+      int nframe = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2xtick(x))) - part->frame();
       if(nframe < 0)
         nframe = 0;
       int diff = nframe + event.lenFrame() - part->lenFrame();
@@ -1367,7 +1367,7 @@ bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, cons
             x = 0;
       
       MusECore::Part* part = wevent->part();
-      int nframe = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) - part->frame();
+      int nframe = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2xtick(x))) - part->frame();
       if (nframe < 0)
             nframe = 0;
       newEvent.setFrame(nframe);
@@ -1391,7 +1391,7 @@ bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, cons
 
 MusEGui::CItem* WaveCanvas::newItem(const QPoint& p, int)
       {
-      int frame  = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2tick(p.x())));
+      int frame  = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2xtick(p.x())));
       int len   = p.x() - frame;
       frame     -= curPart->frame();
       if (frame < 0)
@@ -1414,9 +1414,9 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
 
       if (!noSnap) {
             //x = editor->rasterVal1(x); //round down
-            x = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2tick(x))); //round down
+            x = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2xtick(x))); //round down
             //w = editor->rasterVal(x + w) - x;
-            w = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x + w))) - x;
+            w = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2xtick(x + w))) - x;
             if (w == 0)
                   //w = editor->raster();
                   w = MusEGlobal::tempomap.tick2frame(editor->raster());
@@ -1464,7 +1464,7 @@ void WaveCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // 
       else {
             unsigned frame = event.frame() + part->frame();
             //len = editor->rasterVal(tick + wevent->width()) - tick;
-            len = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(frame + wevent->width()))) - frame;
+            len = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2xtick(frame + wevent->width()))) - frame;
             if (len <= 0)
                   //len = editor->raster();
                   len = MusEGlobal::tempomap.tick2frame(editor->raster());
@@ -1595,7 +1595,7 @@ void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect)
 
 void WaveCanvas::waveCmd(int cmd)
       {
-      // TODO: New WaveCanvas: Convert this routine to frames.  
+      // TODO FINDMICH: New WaveCanvas: Convert this routine to frames.  
       switch(cmd) {
             case CMD_LEFT:
                   {
@@ -1603,7 +1603,7 @@ void WaveCanvas::waveCmd(int cmd)
                   if(spos > 0) 
                   {
                     spos -= 1;     // Nudge by -1, then snap down with raster1.
-                    spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                    spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]).to_uint());
                   }  
                   if(spos < 0)
                     spos = 0;
@@ -1613,14 +1613,14 @@ void WaveCanvas::waveCmd(int cmd)
                   break;
             case CMD_RIGHT:
                   {
-                  int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                  int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]).to_uint());    // Nudge by +1, then snap up with raster2.
                   MusECore::Pos p(spos,true);
                   MusEGlobal::song->setPos(0, p, true, true, true); 
                   }
                   break;
             case CMD_LEFT_NOSNAP:
                   {
-                  int spos = pos[0] - editor->rasterStep(pos[0]);
+                  int spos = pos[0] - editor->rasterStep(pos[0]).to_uint();
                   if (spos < 0)
                         spos = 0;
                   MusECore::Pos p(spos,true);
@@ -1629,7 +1629,7 @@ void WaveCanvas::waveCmd(int cmd)
                   break;
             case CMD_RIGHT_NOSNAP:
                   {
-                  MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]), true);
+                  MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]).to_uint(), true);
                   MusEGlobal::song->setPos(0, p, true, true, true); //CDW
                   }
                   break;
@@ -1657,7 +1657,7 @@ void WaveCanvas::waveCmd(int cmd)
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
                   
-                  MusECore::Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0])), true);
+                  MusECore::Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0]).to_uint()).to_uint(), true);
                   MusEGlobal::song->setPos(0, p, true, false, true);
                   }
                   return;
@@ -1683,7 +1683,7 @@ void WaveCanvas::waveCmd(int cmd)
                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
-                  MusECore::Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0])), true);
+                  MusECore::Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0]).to_uint()).to_uint(), true);
                   MusEGlobal::song->setPos(0, p, true, false, true);
                   }
                   break;

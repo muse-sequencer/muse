@@ -110,6 +110,11 @@ class SigList : public SIGLIST {
 
       int ticksMeasure(unsigned tick) const;
       int ticksBeat(unsigned tick) const;
+      
+      //raster=n raster on n ticks
+      //raster=1 means raster on full ticks (for int-ticks, this does nothing)
+      //raster=0 means raster on measure
+      //raster<0 would mean "don't even touch the subtick" (for XTicks and int-ticks, this does nothing)
       unsigned raster(unsigned tick, int raster) const;
       unsigned raster1(unsigned tick, int raster) const;    // round down
       unsigned raster2(unsigned tick, int raster) const;    // round up

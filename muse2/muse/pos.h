@@ -45,7 +45,7 @@ namespace MusECore
 		}
 		static XTick from_double(double d);
 		double to_double() const;
-		unsigned to_uint() const;
+		unsigned to_uint() const; // TODO: possibly add a cast to unsigned later, and find and remove all .to_uint()
 
 		XTick operator+(const XTick& t2) const;
 		XTick operator-(const XTick& t2) const;
