@@ -186,8 +186,7 @@ class Canvas : public View {
       void verticalScroll(unsigned);
       void horizontalScroll(unsigned);
       void horizontalScrollNoLimit(unsigned);
-      void horizontalZoomIn();
-      void horizontalZoomOut();
+      void horizontalZoom(bool zoom_in, int pos_offset);
       void curPartHasChanged(MusECore::Part*);
       
    public:

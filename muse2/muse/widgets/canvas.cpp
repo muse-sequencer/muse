@@ -508,11 +508,7 @@ void Canvas::wheelEvent(QWheelEvent* ev)
         emit horizontalScroll((unsigned)newXpos);
 
     } else if (ctrl) {  // zoom horizontally
-      if (ev->delta()>0)
-        emit horizontalZoomIn();
-      else
-        emit horizontalZoomOut();
-
+      emit horizontalZoom(ev->delta()>0, ev->x());
     } else { // scroll vertically
         int delta       = ev->delta() / WHEEL_DELTA;
         int ypixelscale = rmapyDev(1);

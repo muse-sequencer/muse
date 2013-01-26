@@ -845,7 +845,7 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
   bool shift      = keyState & Qt::ShiftModifier;
   bool ctrl       = keyState & Qt::ControlModifier;
 
-  if (shift) { // scroll vertically
+  if (shift) { // scroll horizontally
       int delta       = -ev->delta() / WHEEL_DELTA;
       int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
 
@@ -866,13 +866,8 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
       //setYPos(newYpos);
       emit horizontalScroll((unsigned)newXpos);
 
-
   } else if (ctrl) {  // zoom horizontally
-    if (ev->delta()>0)
-      emit horizontalZoomIn();
-    else
-      emit horizontalZoomOut();
-
+      emit horizontalZoom(ev->delta()>0, ev->x());
   } else { // scroll horizontally
       emit mouseWheelMoved(ev->delta() / 10);
   }

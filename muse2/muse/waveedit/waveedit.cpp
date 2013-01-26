@@ -38,6 +38,9 @@
 #include <QResizeEvent>
 #include <QKeyEvent>
 #include <QSettings>
+#include <QCursor>
+#include <QPoint>
+#include <QRect>
 
 #include "app.h"
 #include "xml.h"
@@ -295,8 +298,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       ymag->setFixedWidth(16);
       connect(canvas, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), canvas, SLOT(setYScale(int)));
-      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
-      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+      connect(canvas, SIGNAL(horizontalZoom(bool,int)), SLOT(horizontalZoom(bool,int)));
 
       time->setOrigin(0, 0);
 
@@ -696,25 +698,21 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             
       // TODO: New WaveCanvas: Convert some of these to use frames.
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
-                  zoomlvl++;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            int offset = 0;
+            QPoint cp = canvas->mapFromGlobal(QCursor::pos());
+            QPoint sp = mainw->mapFromGlobal(QCursor::pos());
+            if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < mainw->height())
+              offset = cp.x();
+            horizontalZoom(true, offset);
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl > 1)
-                  zoomlvl--;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            int offset = 0;
+            QPoint cp = canvas->mapFromGlobal(QCursor::pos());
+            QPoint sp = mainw->mapFromGlobal(QCursor::pos());
+            if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < mainw->height())
+              offset = cp.x();
+            horizontalZoom(false, offset);
             return;
             }
       else if (key == shortcuts[SHRT_GOTO_CPOS].key) {
@@ -785,31 +783,22 @@ void WaveEdit::moveVerticalSlider(int val)
       ymag->setValue(ymag->value() + val);
       }
 
-
-void WaveEdit::horizontalZoomIn()
+void WaveEdit::horizontalZoom(bool zoom_in, int pos_offset)
 {
   int mag = hscroll->mag();
   int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
+  if(zoom_in)
+  {
+    if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
         zoomlvl++;
-
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-
-  hscroll->setMag(newmag);
-
-}
-
-void WaveEdit::horizontalZoomOut()
-{
-  int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl > 1)
+  }
+  else
+  {
+    if (zoomlvl > 1)
         zoomlvl--;
-
+  }
   int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-
-  hscroll->setMag(newmag);
-
+  hscroll->setMag(newmag, pos_offset);
 }
 
 //---------------------------------------------------------

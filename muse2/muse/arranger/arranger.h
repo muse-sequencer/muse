@@ -116,6 +116,7 @@ class Arranger : public QWidget {
       static QByteArray header_state;
 
       ArrangerView* _parentWin;
+      QWidget* editor;
       int _quant, _raster;
       PartCanvas* canvas;
       ScrollScale* hscroll;
@@ -165,8 +166,7 @@ class Arranger : public QWidget {
       void setTempo100();
       void setTempo200();
       void verticalScrollSetYpos(unsigned);
-      void horizontalZoomIn();
-      void horizontalZoomOut();
+      void horizontalZoom(bool zoom_in, int pos_offset);
       
    signals:
       void editPart(MusECore::Track*);

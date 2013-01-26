@@ -1,3 +1,9 @@
+25.01.2013:
+         * Feature/fix: Zoom at cursor! Zoom Ctl+PgUp/PgDown (defaults) and Ctl+MouseWheel now zoom about cursor. (Tim)
+           Eliminated redundant call in ScrollScale::setMag(), by blocking signals.
+           Consolidated all HorizontalZoomIn and HorizontalZoomOut functions into a single HorizontalZoom.
+           Added eight more 'quick zoom' levels to class ScrollScale.
+           Modified all HorizontalZoom functions to pass cursor offset, and use it in ScrollScale::setScale().
 19.01.2013:
          - Fixed confused controllers on seek with multiple muted/off midi tracks/parts on same port/channel. (Tim)
            In MidiDevice::handleSeek(): Re-wrote controller value sending section - fixed obeying mute/off section.

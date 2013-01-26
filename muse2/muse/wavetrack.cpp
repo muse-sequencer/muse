@@ -301,50 +301,6 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       if (!MusEGlobal::audio->isPlaying())
             return false;
       
-      // DELETETHIS 43
-      // Removed by T356. Multiple out route cacheing now handled by AudioTrack::copyData and ::addData.   // REMOVE Tim.
-      /*
-      if (outRoutes()->size() > 1) {
-            if (bufferPos != framePos) {
-                  // Added by Tim. p3.3.16
-                  printf("WaveTrack::getData bufferPos:%d != framePos\n", bufferPos);
-                  
-                  bufferPos = framePos;
-                  if (MusEGlobal::audio->freewheel()) {
-                        // when freewheeling, read data direct from file:
-                        fetchData(bufferPos, nframe, outBuffers);
-                        }
-                  else {
-                        unsigned pos;
-                        if (_prefetchFifo.get(channels, nframe, outBuffers, &pos)) {
-                              printf("WaveTrack::getData(%s) fifo underrun\n",
-                                 name().toLatin1().constData());
-                              return false;
-                              }
-                        if (pos != framePos) {
-                              printf("fifo get error expected %d, got %d\n",
-                                 framePos, pos);
-                              if (MusEGlobal::debugMsg)
-                                    printf("fifo get error expected %d, got %d\n",
-                                       framePos, pos);
-                              while (pos < framePos) {
-                                    if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
-                                          printf("WaveTrack::getData(%s) fifo underrun\n",
-                                             name().toLatin1().constData());
-                                          return false;
-                                          }
-                                    }
-                              }
-                        }
-                  }
-            for (int i = 0; i < channels; ++i)
-                  //memcpy(bp[i], outBuffers[i], nframe * sizeof(float));
-                  AL::dsp->cpy(bp[i], outBuffers[i], nframe);
-            }
-      else {
-      */
-      
-            
             if (MusEGlobal::audio->freewheel()) {
                   
                   // when freewheeling, read data direct from file:

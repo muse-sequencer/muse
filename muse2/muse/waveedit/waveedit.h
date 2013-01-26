@@ -101,8 +101,7 @@ class WaveEdit : public MidiEditor {
    public slots:
       void configChanged();
       virtual void updateHScrollRange();
-      void horizontalZoomIn();
-      void horizontalZoomOut();
+      void horizontalZoom(bool zoom_in, int pos_offset);
       void focusCanvas();
 
    signals:

@@ -37,6 +37,9 @@
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QPainter>
+#include <QCursor>
+#include <QPoint>
+#include <QRect>
 
 #include "arrangerview.h"
 #include "arranger.h"
@@ -337,7 +340,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       tpolicy.setVerticalStretch(100);
       tracklist->setSizePolicy(tpolicy);
 
-      QWidget* editor = new QWidget(split);
+      editor = new QWidget(split);
       split->setStretchFactor(split->indexOf(editor), 1);
       QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
       epolicy.setHorizontalStretch(255);
@@ -474,8 +477,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
       connect(canvas, SIGNAL(selectTrackAbove()), list, SLOT(selectTrackAbove()));
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
-      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
-      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+      connect(canvas, SIGNAL(horizontalZoom(bool,int)), SLOT(horizontalZoom(bool,int)));
       connect(lenEntry,           SIGNAL(returnPressed()), SLOT(focusCanvas()));
       connect(lenEntry,           SIGNAL(escapePressed()), SLOT(focusCanvas()));
       connect(globalPitchSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
@@ -1205,41 +1207,43 @@ void Arranger::keyPressEvent(QKeyEvent* event)
         key+= Qt::CTRL;
 
   if (key == shortcuts[SHRT_ZOOM_IN].key) {
-        horizontalZoomIn();
+        int offset = 0;
+        QPoint cp = canvas->mapFromGlobal(QCursor::pos());
+        QPoint sp = editor->mapFromGlobal(QCursor::pos());
+        if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < editor->height())
+          offset = cp.x();
+        horizontalZoom(true, offset);  
         return;
         }
   else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
-        horizontalZoomOut();
+        int offset = 0;
+        QPoint cp = canvas->mapFromGlobal(QCursor::pos());
+        QPoint sp = editor->mapFromGlobal(QCursor::pos());
+        if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < editor->height())
+          offset = cp.x();
+        horizontalZoom(false, offset);  
         return;
         }
 
   QWidget::keyPressEvent(event);
 }
 
-void Arranger::horizontalZoomIn()
+void Arranger::horizontalZoom(bool zoom_in, int pos_offset)
 {
   int mag = hscroll->mag();
   int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
+  if(zoom_in)
+  {
+    if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
         zoomlvl++;
-
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-
-  hscroll->setMag(newmag);
-
-}
-
-void Arranger::horizontalZoomOut()
-{
-  int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl > 1)
+  }
+  else
+  {
+    if (zoomlvl > 1)
         zoomlvl--;
-
+  }
   int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-
-  hscroll->setMag(newmag);
-
+  hscroll->setMag(newmag, pos_offset);
 }
 
 } // namespace MusEGui

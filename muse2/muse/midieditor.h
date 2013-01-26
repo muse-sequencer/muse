@@ -81,8 +81,7 @@ class MidiEditor : public TopWin  {
    public slots:
       void songChanged(MusECore::SongChangedFlags_t type);
       void setCurDrumInstrument(int instr);
-      void horizontalZoomIn();
-      void horizontalZoomOut();
+      void horizontalZoom(bool zoom_in, int pos_offset);
 
       virtual void updateHScrollRange() { };
    signals:

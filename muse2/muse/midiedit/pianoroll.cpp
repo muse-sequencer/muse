@@ -42,6 +42,9 @@
 #include <QMimeData>
 #include <QScrollArea>
 #include <QSettings>
+#include <QCursor>
+#include <QPoint>
+#include <QRect>
 
 #include <stdio.h>
 
@@ -372,8 +375,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       canvas->setCanvasTools(pianorollTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
-      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
-      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+      connect(canvas, SIGNAL(horizontalZoom(bool,int)), SLOT(horizontalZoom(bool,int)));
       time->setOrigin(offset, 0);
 
       gridS1->setRowStretch(2, 100);
@@ -1198,25 +1200,21 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
-                  zoomlvl++;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            int offset = 0;
+            QPoint cp = canvas->mapFromGlobal(QCursor::pos());
+            QPoint sp = splitter->mapFromGlobal(QCursor::pos());
+            if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < splitter->height())
+              offset = cp.x(); 
+            horizontalZoom(true, offset);
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl > 1)
-                  zoomlvl--;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            int offset = 0;
+            QPoint cp = canvas->mapFromGlobal(QCursor::pos());
+            QPoint sp = splitter->mapFromGlobal(QCursor::pos());
+            if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < splitter->height())
+              offset = cp.x();
+            horizontalZoom(false, offset);
             return;
             }
       else if (key == shortcuts[SHRT_GOTO_CPOS].key) {

@@ -42,9 +42,10 @@ namespace MusEGui {
 //    "val" - slider value in range 0-convertQuickZoomLevelToMag(zoomLevels-1)
 //---------------------------------------------------------
 
-void ScrollScale::setScale ( int val )
+void ScrollScale::setScale ( int val, int pos_offset )
 {
 	int off = offset();
+	int old_scale_val = scaleVal;
 	if ( invers )
         val = convertQuickZoomLevelToMag(zoomLevels-1) - val;
 	double min, max;
@@ -107,6 +108,21 @@ void ScrollScale::setScale ( int val )
     pos = off * scaleVal;
     pmax = maxVal * scaleVal - i;
   }
+
+  // Zoom at cursor support...
+  if(pos_offset != 0)
+  {
+    double oscale = old_scale_val;
+    double nscale = scaleVal;
+    if(old_scale_val < 1)
+      oscale = 1.0 / -old_scale_val;
+    if(scaleVal < 1)
+      nscale = 1.0 / -scaleVal;
+    double scale_fact = nscale / oscale;
+    int pos_diff = (int)((double)pos_offset * scale_fact - (double)pos_offset + 0.5);  // 0.5 for round-off
+    pos += pos_diff;
+  }
+  
   if(pos > pmax)
     pos = pmax;
   setPos(pos);
@@ -116,10 +132,12 @@ void ScrollScale::setScale ( int val )
 //   setMag
 //---------------------------------------------------------
 
-void ScrollScale::setMag ( int cs )
+void ScrollScale::setMag ( int cs, int pos_offset )
 {
+	scale->blockSignals(true);
 	scale->setValue ( cs );
-	setScale ( cs );
+	scale->blockSignals(false);
+	setScale ( cs, pos_offset );
 }
 
 //---------------------------------------------------------
@@ -290,7 +308,6 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	box->addWidget ( scale, 5 );
 	setLayout(box);
 	connect ( scale, SIGNAL ( valueChanged ( int ) ), SLOT ( setScale ( int ) ) );
-	///connect ( scale, SIGNAL ( valueChanged ( int ) ), SIGNAL ( lscaleChanged ( int ) ) );  // ??
 	connect ( scroll, SIGNAL ( valueChanged ( int ) ), SIGNAL ( scrollChanged ( int ) ) );
 }
 
@@ -524,8 +541,8 @@ int ScrollScale::convertQuickZoomLevelToMag(int zoomlevel)
       int vals[] = {
             0,   1,   15,  30,  46,  62,  80,  99,  119, 140,
             163, 187, 214, 242, 274, 308, 346, 388, 436, 491,
-            555, 631, 726, 849, 1024, 1200, 1400, 1500, 1800,
-            2100, 2500 };
+            555, 631, 726, 849, 1024, 1200, 1300, 1400, 1500, 1600, 1700, 1800,    
+            1900, 2100, 2200, 2300, 2400, 2500 };  
 
       return vals[zoomlevel];
 }
