@@ -1,3 +1,12 @@
+27.01.2013:
+         * Feature: Shortcuts dialog modeless + has default global shortcut Ctl+Shift+F1 + "Printable file" button. (Tim)
+         - Memory leaks! Many widgets and dialogs had no parent and were not deleted!  (Tim)
+           Including several top-level editors such as LMaster, MasterEdit, ListEdit, and WaveEditor!
+           Created MusE::deleteParentlessDialogs(), call it from MusE::closeEvent() to delete all parentless dialogs:
+            appearance, metronomeConfig, shortcutConfig, midiSyncConfig, midiFileConfig, globalSettingsConfig,
+            mitPluginTranspose, midiInputTransform, midiFilterConfig, midiRemoteConfig, midiRhythmGenerator, midiTransformerDialog.
+           Also moved call of destroy_function_dialogs() into it instead of at end of main. (Consolidation.)
+           Verified that all destructors were being called.
 25.01.2013:
          * Feature/fix: Zoom at cursor! Zoom Ctl+PgUp/PgDown (defaults) and Ctl+MouseWheel now zoom about cursor. (Tim)
            Eliminated redundant call in ScrollScale::setMag(), by blocking signals.

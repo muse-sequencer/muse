@@ -89,7 +89,7 @@ class ListEdit : public MidiEditor {
       void isDeleting(MusEGui::TopWin*);
 
    public:
-      ListEdit(MusECore::PartList*);
+      ListEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0);
       ~ListEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

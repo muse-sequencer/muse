@@ -91,8 +91,8 @@ void WaveEdit::closeEvent(QCloseEvent* e)
 //   WaveEdit
 //---------------------------------------------------------
 
-WaveEdit::WaveEdit(MusECore::PartList* pl)
-   : MidiEditor(TopWin::WAVE, 1, pl)
+WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
+   : MidiEditor(TopWin::WAVE, 1, pl, parent, name)
       {
       setFocusPolicy(Qt::NoFocus);
       colorMode      = colorModeInit;

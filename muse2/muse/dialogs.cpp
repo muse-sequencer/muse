@@ -57,6 +57,7 @@ PasteEventsDialog* paste_events_dialog=NULL;
 
 void init_function_dialogs()
 {
+        // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
         gatetime_dialog = new GateTime();
         velocity_dialog = new Velocity();
         quantize_dialog = new Quantize();
@@ -71,20 +72,23 @@ void init_function_dialogs()
         paste_events_dialog = new PasteEventsDialog();
 }
 
+//
+// NOTE: This is called by MusE::deleteParentlessDialogs()
+//
 void destroy_function_dialogs()
 {
-        delete gatetime_dialog;
-        delete velocity_dialog;
-        delete quantize_dialog;
-        delete erase_dialog;
-        delete del_overlaps_dialog;
-        delete set_notelen_dialog;
-        delete move_notes_dialog;
-        delete transpose_dialog;
-        delete crescendo_dialog;
-        delete legato_dialog;
-        delete paste_dialog;
-        delete paste_events_dialog;
+        if(gatetime_dialog) delete gatetime_dialog;
+        if(velocity_dialog) delete velocity_dialog;
+        if(quantize_dialog) delete quantize_dialog;
+        if(erase_dialog) delete erase_dialog;
+        if(del_overlaps_dialog) delete del_overlaps_dialog;
+        if(set_notelen_dialog) delete set_notelen_dialog;
+        if(move_notes_dialog) delete move_notes_dialog;
+        if(transpose_dialog) delete transpose_dialog;
+        if(crescendo_dialog) delete crescendo_dialog;
+        if(legato_dialog) delete legato_dialog;
+        if(paste_dialog) delete paste_dialog;
+        if(paste_events_dialog) delete paste_events_dialog;
 }
 
 void retranslate_function_dialogs()

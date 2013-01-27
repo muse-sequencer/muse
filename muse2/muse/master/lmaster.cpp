@@ -145,8 +145,8 @@ void LMaster::songChanged(MusECore::SongChangedFlags_t type)
 //   LMaster
 //---------------------------------------------------------
 
-LMaster::LMaster()
-   : MidiEditor(TopWin::LMASTER, 0, 0, 0)
+LMaster::LMaster(QWidget* parent, const char* name)
+   : MidiEditor(TopWin::LMASTER, 0, 0, parent, name)
       {
       pos_editor = 0;
       tempo_editor = 0;

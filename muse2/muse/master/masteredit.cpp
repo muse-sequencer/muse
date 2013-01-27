@@ -102,8 +102,8 @@ void MasterEdit::songChanged(MusECore::SongChangedFlags_t type)
 //   MasterEdit
 //---------------------------------------------------------
 
-MasterEdit::MasterEdit()
-   : MidiEditor(TopWin::MASTER, _rasterInit, 0)
+MasterEdit::MasterEdit(QWidget* parent, const char* name)
+   : MidiEditor(TopWin::MASTER, _rasterInit, 0, parent, name)
       {
       setWindowTitle(tr("MusE: Mastertrack"));
       setFocusPolicy(Qt::NoFocus);

@@ -47,7 +47,6 @@ void defShrt(int shrt, int key, const char* descr, int type, const char* xml)
       shortcuts[shrt].xml   = xml;
 }
 
-
 void initShortCuts()
       {
       //Global:
@@ -62,6 +61,7 @@ void initShortCuts()
       defShrt(SHRT_START_REC,     Qt::Key_Asterisk, QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle Record"),    GLOBAL_SHRT, "toggle_rec");
       defShrt(SHRT_REC_CLEAR,     Qt::Key_Backspace, QT_TRANSLATE_NOOP("shortcuts", "Transport: Clear all rec enabled tracks"),    GLOBAL_SHRT, "rec_clear");
       defShrt(SHRT_FULLSCREEN,       Qt::CTRL + Qt::Key_F, QT_TRANSLATE_NOOP("shortcuts", "Toggle fullscreen"), GLOBAL_SHRT, "fullscreen");
+      defShrt(SHRT_CONFIG_SHORTCUTS, Qt::CTRL + Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure shortcuts"), GLOBAL_SHRT, "configure_key_shortcuts");
 
       defShrt(SHRT_COPY,          Qt::CTRL + Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy"), INVIS_SHRT, "copy");
       defShrt(SHRT_COPY_RANGE,    Qt::CTRL + Qt::SHIFT + Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy in range"), GLOBAL_SHRT,    "copy_range");
@@ -103,7 +103,7 @@ void initShortCuts()
       defShrt(SHRT_ADD_MIDI_TRACK,        Qt::CTRL + Qt::Key_J, QT_TRANSLATE_NOOP("shortcuts", "Add midi track"), ARRANG_SHRT, "add_midi_track");
       defShrt(SHRT_ADD_DRUM_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Add drum track"), ARRANG_SHRT, "add_drum_track");
       defShrt(SHRT_ADD_NEW_STYLE_DRUM_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Add new style drum track"), ARRANG_SHRT, "add_new_style_drum_track");
-      defShrt(SHRT_ADD_WAVE_TRACK,        Qt::CTRL + Qt::Key_K, QT_TRANSLATE_NOOP("shortcuts", "Add wave track"), ARRANG_SHRT, "add_wave_track");
+      defShrt(SHRT_ADD_WAVE_TRACK,        0, QT_TRANSLATE_NOOP("shortcuts", "Add wave track"), ARRANG_SHRT, "add_wave_track");
       defShrt(SHRT_ADD_AUDIO_OUTPUT,      0, QT_TRANSLATE_NOOP("shortcuts", "Add audio output"), ARRANG_SHRT, "add_audio_output");
       defShrt(SHRT_ADD_AUDIO_GROUP,       0, QT_TRANSLATE_NOOP("shortcuts", "Add audio group"), ARRANG_SHRT, "add_audio_group");
       defShrt(SHRT_ADD_AUDIO_INPUT,       0, QT_TRANSLATE_NOOP("shortcuts", "Add audio input"), ARRANG_SHRT, "add_audio_input");
@@ -124,7 +124,7 @@ void initShortCuts()
       defShrt(SHRT_FOLLOW_CONTINUOUS,     0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Follow song continuous"), ARRANG_SHRT, "follow_continuous");
 
       defShrt(SHRT_GLOBAL_CONFIG,         0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Global configuration"), ARRANG_SHRT, "configure_global");
-      defShrt(SHRT_CONFIG_SHORTCUTS,      0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure shortcuts"), ARRANG_SHRT, "configure_shortcuts");
+      //defShrt(SHRT_CONFIG_SHORTCUTS,      Qt::CTRL + Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure shortcuts"), ARRANG_SHRT, "configure_key_shortcuts");
       defShrt(SHRT_CONFIG_METRONOME,      0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure metronome"), ARRANG_SHRT, "configure_metronome");
       defShrt(SHRT_CONFIG_MIDISYNC,       0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Midi sync configuration"), ARRANG_SHRT, "configure_midi_sync");
       defShrt(SHRT_MIDI_FILE_CONFIG,      0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Midi file import/export configuration"), ARRANG_SHRT, "configure_midi_file");

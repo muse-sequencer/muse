@@ -29,7 +29,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="childrenCollapsible">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <widget class="QTreeWidget" name="cgListView">
       <property name="sizePolicy">
@@ -143,6 +143,42 @@
        </property>
        <property name="shortcut">
         <string>Alt+A</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="textFileButton">
+       <property name="text">
+        <string>&amp;Printable file...</string>
+       </property>
+       <property name="shortcut">
+        <string>Alt+P</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>30</width>
+         <height>21</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="okButton">
+       <property name="text">
+        <string>&amp;Ok</string>
+       </property>
+       <property name="shortcut">
+        <string>Alt+O</string>
        </property>
       </widget>
      </item>

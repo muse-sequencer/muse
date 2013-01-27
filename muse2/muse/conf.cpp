@@ -1470,6 +1470,7 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
 void MusE::configMidiSync()
       {
       if (!midiSyncConfig)
+        // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
         midiSyncConfig = new MusEGui::MidiSyncConfig;
         
       if (midiSyncConfig->isVisible()) {
@@ -1487,6 +1488,7 @@ void MusE::configMidiSync()
 void MusE::configMidiFile()
       {
       if (!midiFileConfig)
+            // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
             midiFileConfig = new MusEGui::MidiFileConfig();
       midiFileConfig->updateValues();
 
@@ -1505,6 +1507,7 @@ void MusE::configMidiFile()
 void MusE::configGlobalSettings()
       {
       if (!globalSettingsConfig)
+          // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
           globalSettingsConfig = new MusEGui::GlobalSettingsConfig();
 
       if (globalSettingsConfig->isVisible()) {

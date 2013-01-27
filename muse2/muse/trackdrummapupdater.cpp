@@ -29,7 +29,7 @@ namespace MusECore {
 
 using MusEGlobal::song;
 
-TrackDrummapUpdater::TrackDrummapUpdater()
+TrackDrummapUpdater::TrackDrummapUpdater(QObject* parent) : QObject(parent)
 {
   connect(song,SIGNAL(songChanged(MusECore::SongChangedFlags_t)), this, SLOT(songChanged(MusECore::SongChangedFlags_t)));
 }

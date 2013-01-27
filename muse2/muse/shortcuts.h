@@ -64,6 +64,7 @@ struct shortcut
       const char* descr;
       const char* xml; //xml-tag for config-file
       int type;
+      shortcut() : key(0),  descr(NULL), xml(NULL), type(0) { }
       };
 
 struct shortcut_cg
@@ -148,7 +149,7 @@ enum {
       SHRT_FOLLOW_CONTINUOUS, //Default: undefined
 
       SHRT_GLOBAL_CONFIG, //Default: undefined
-      SHRT_CONFIG_SHORTCUTS, //Default: undefined
+      SHRT_CONFIG_SHORTCUTS, //Default: Ctrl+K
       SHRT_CONFIG_METRONOME, //Default: undefined
       SHRT_CONFIG_MIDISYNC, //Default: undefined
       SHRT_MIDI_FILE_CONFIG, //Default: undefined

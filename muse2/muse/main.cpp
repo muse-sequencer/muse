@@ -732,8 +732,8 @@ int main(int argc, char* argv[])
       int rv = app.exec();
       if(MusEGlobal::debugMsg) 
         printf("app.exec() returned:%d\nDeleting main MusE object\n", rv);
-      delete MusEGlobal::muse; 
-      MusEGui::destroy_function_dialogs();
+      delete MusEGlobal::muse;
+      
       if(MusEGlobal::debugMsg) 
         printf("Finished! Exiting main, return value:%d\n", rv);
       return rv;

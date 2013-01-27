@@ -175,7 +175,7 @@ class LMaster : public MidiEditor {
       void seekTo(int tick);
 
    public:
-      LMaster();
+      LMaster(QWidget* parent = 0, const char* name = 0);
       ~LMaster();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

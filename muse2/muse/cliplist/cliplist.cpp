@@ -156,7 +156,6 @@ ClipListEdit::ClipListEdit(QWidget* parent)
 
 ClipListEdit::~ClipListEdit()
 {
-
 }
 
 //---------------------------------------------------------

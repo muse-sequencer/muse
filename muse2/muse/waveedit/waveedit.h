@@ -108,7 +108,7 @@ class WaveEdit : public MidiEditor {
       void isDeleting(MusEGui::TopWin*);
 
    public:
-      WaveEdit(MusECore::PartList*);
+      WaveEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0);
       ~WaveEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

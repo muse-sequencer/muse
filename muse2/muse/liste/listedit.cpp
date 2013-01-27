@@ -439,8 +439,8 @@ QString EventListItem::text(int col) const
 //   ListEdit
 //---------------------------------------------------------
 
-ListEdit::ListEdit(MusECore::PartList* pl)
-   : MidiEditor(TopWin::LISTE, 0, pl)
+ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
+   : MidiEditor(TopWin::LISTE, 0, pl, parent, name)
       {
       selectedTick=0;
       
