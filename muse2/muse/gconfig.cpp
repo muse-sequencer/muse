@@ -205,7 +205,8 @@ GlobalConfigValues config = {
       true,                         // addHiddenTracks
       true,                         // unhideTracks
       MusEGlobal::PREFER_NEW,       // drumTrackPreference
-      true                          // smartFocus
+      true,                         // smartFocus
+      20,                           // trackHeight
     };
 
 } // namespace MusEGlobal

@@ -211,6 +211,8 @@ struct GlobalConfigValues {
       bool unhideTracks;
       drumTrackPreference_t drumTrackPreference;
       bool smartFocus;
+      int trackHeight;
+
       };
 
 

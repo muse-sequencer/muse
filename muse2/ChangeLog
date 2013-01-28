@@ -1,3 +1,5 @@
+28.01.2013:
+         - Added setting for default track height (rj)
 27.01.2013:
          * Feature: Shortcuts dialog modeless + has default global shortcut Ctl+Shift+F1 + "Printable file" button. (Tim)
          - Memory leaks! Many widgets and dialogs had no parent and were not deleted!  (Tim)
@@ -35,6 +37,8 @@
          - Don't play midi parts if track is off.   
 13.01.2013:
          - remote should depend on widgets through #including app.h otherwise Python bindings don't compile (Orcan)
+06.01.2013:
+         - MusE 2.1 released!
 03.01.2013:
          - Fixed SimpleDrums GUI issues on AVLinux (and supposedly other debian based distros) (rj)
 01.01.2013: Happy new year!

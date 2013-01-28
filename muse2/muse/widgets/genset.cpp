@@ -234,6 +234,8 @@ void GlobalSettingsConfig::updateSettings()
         case MusEGlobal::PREFER_OLD: preferOldDrumBtn->setChecked(true); break;
       }
 
+      trackHeight->setValue(MusEGlobal::config.trackHeight);
+
       updateMdiSettings();
 }
 
@@ -383,7 +385,8 @@ void GlobalSettingsConfig::apply()
       else if (preferNewDrumBtn->isChecked())
         MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_NEW;
 
-      
+      MusEGlobal::config.trackHeight = trackHeight->value();
+
       applyMdiSettings();
       
       MusEGlobal::muse->changeConfig(true);    // save settings

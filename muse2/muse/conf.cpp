@@ -519,6 +519,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               }
                         else if (tag == "geometryMain")
                               MusEGlobal::config.geometryMain = readGeometry(xml, tag);
+                        else if (tag == "trackHeight")
+                                 MusEGlobal::config.trackHeight = xml.parseInt();
 
 
                         else if (doReadMidiPortConfig==false) {
@@ -1297,6 +1299,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "inputTracksVisible",  MusECore::AudioInput::visible());
       xml.intTag(level, "outputTracksVisible",  MusECore::AudioOutput::visible());
       xml.intTag(level, "synthTracksVisible",  MusECore::SynthI::visible());
+      xml.intTag(level, "trackHeight",  MusEGlobal::config.trackHeight);
 
       for (int i = 0; i < NUM_FONTS; ++i) {
             char buffer[32];
