@@ -38,6 +38,7 @@
 #include "helper.h"
 #include "limits.h"
 #include "dssihost.h"
+#include "gconfig.h"
 
 namespace MusECore {
 
@@ -216,7 +217,7 @@ void Track::init()
       _panEn2Ctrl    = true;
       
       _selected      = false;
-      _height        = 20;
+      _height        = MusEGlobal::config.trackHeight;
       _locked        = false;
       for (int i = 0; i < MAX_CHANNELS; ++i) {
             _meter[i] = 0.0;
