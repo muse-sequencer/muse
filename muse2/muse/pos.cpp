@@ -564,18 +564,20 @@ namespace MusECore
 					if (tag == "tick")
 					{
 						setType(TICKS);
+						setLenType(TICKS);
 						setTick(xml.s2().toInt());
 					}
 					else if (tag == "sample") // FINDMICH
 					{
 						printf("PosLen::read wants FRAMES but this is denied.\n");
 						setType(TICKS);
+						setLenType(TICKS);
 						setFrame(xml.s2().toInt());
 					}
 					else if (tag == "len")
 					{
 						int n = xml.s2().toInt();
-						switch (type())
+						switch (lenType())
 						{
 							case TICKS:
 								setLenTick(n);
@@ -636,7 +638,7 @@ namespace MusECore
 
 	XTick PosLen::lenXTick() const
 	{
-		if (type() == FRAMES)
+		if (lenType() == FRAMES)
 			_lenTick = MusEGlobal::tempomap.deltaFrame2xtick(frame(), frame() + _lenFrame, &sn);
 		return _lenTick;
 	}
@@ -647,7 +649,7 @@ namespace MusECore
 
 	unsigned PosLen::lenFrame() const
 	{
-		if (type() == TICKS)
+		if (lenType() == TICKS)
 			_lenFrame = MusEGlobal::tempomap.deltaTick2frame(xtick(), xtick() + _lenTick, &sn);
 		return _lenFrame;
 	}
@@ -661,7 +663,7 @@ namespace MusECore
 		Pos pos(*this);
 		pos.invalidSn();
 		
-		switch (type())
+		switch (lenType())
 		{
 			case FRAMES:
 				pos.setFrame(pos.frame() + _lenFrame);
@@ -672,6 +674,18 @@ namespace MusECore
 				break;
 		}
 		return pos;
+	}
+	
+	void PosLen::setLenType(TType t)
+	{
+		if (_lenType==t) return;
+		
+		if (_lenType==FRAMES)
+			_lenTick = MusEGlobal::tempomap.deltaFrame2xtick(frame(), frame() + _lenFrame, &sn);
+		else
+			_lenFrame = MusEGlobal::tempomap.deltaTick2frame(xtick(), xtick() + _lenTick, &sn);
+		
+		_lenType=t;
 	}
 
 	// ---------------------------------------------------------

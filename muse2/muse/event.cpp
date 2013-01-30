@@ -37,6 +37,7 @@ EventBase::EventBase(EventType t)
       {
       _type     = t;
       Pos::setType(TICKS); // wave parts are also in TICKS now.
+      PosLen::setLenType( t==Wave ? FRAMES : TICKS );
       refCount  = 0;
       _selected = false;
       }
