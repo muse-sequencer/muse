@@ -1242,7 +1242,7 @@ void Song::swapTracks(int i1, int i2)
 void Song::seekTo(int tick)
 {
   if (!MusEGlobal::audio->isPlaying()) {
-    Pos p(tick, true);
+    Pos p(tick);
     setPos(0, p);
   }
 }
@@ -1340,7 +1340,7 @@ void Song::setPos(int idx, const Pos& val, bool sig,
 void Song::forward()
       {
       unsigned newPos = pos[0].tick() + MusEGlobal::config.division;
-      MusEGlobal::audio->msgSeek(Pos(newPos, true));
+      MusEGlobal::audio->msgSeek(Pos(newPos));
       }
 
 //---------------------------------------------------------
@@ -1354,7 +1354,7 @@ void Song::rewind()
             newPos = 0;
       else
             newPos = pos[0].tick() - MusEGlobal::config.division;
-      MusEGlobal::audio->msgSeek(Pos(newPos, true));
+      MusEGlobal::audio->msgSeek(Pos(newPos));
       }
 
 //---------------------------------------------------------
@@ -1363,7 +1363,7 @@ void Song::rewind()
 
 void Song::rewindStart()
       {
-      MusEGlobal::audio->msgSeek(Pos(0, true));
+      MusEGlobal::audio->msgSeek(Pos(0));
       }
 
 //---------------------------------------------------------
@@ -1612,7 +1612,7 @@ void Song::beat()
       
       
       if (MusEGlobal::audio->isPlaying())
-        setPos(0, MusEGlobal::audio->tickPos(), true, false, true);
+        setPos(0, Pos(MusEGlobal::audio->tickPos()), true, false, true);
 
       // Process external tempo changes:
       while(!_tempoFifo.isEmpty())
@@ -1654,7 +1654,7 @@ void Song::beat()
                   else if (pitch == MusEGlobal::rcRecordNote)
                         setRecord(true);
                   else if (pitch == MusEGlobal::rcGotoLeftMarkNote)
-                        setPos(0, pos[LPOS].tick(), true, true, true);
+                        setPos(0, MusECore::Pos(pos[LPOS].tick()), true, true, true);
                   else if (pitch == MusEGlobal::rcPlayNote)
                         setPlay(true);
                   }

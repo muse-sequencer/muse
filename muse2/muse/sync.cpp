@@ -773,7 +773,7 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
       MusEGlobal::curExtMidiSyncTick = (MusEGlobal::config.division * midiBeat) / 4;
       MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
       
-      Pos pos(MusEGlobal::curExtMidiSyncTick, true);
+      Pos pos(MusEGlobal::curExtMidiSyncTick);
       
       if (!MusEGlobal::checkAudioDevice()) return;
 

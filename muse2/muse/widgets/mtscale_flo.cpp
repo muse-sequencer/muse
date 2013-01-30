@@ -156,7 +156,6 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
             default:
                   return; // if no button is pressed the function returns here
             }
-      MusECore::Pos p(tick, true);
       
       if(i== 0 && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
             MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(tick);
@@ -171,7 +170,7 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
               printf("No marker to remove\n");
             }
       else
-            MusEGlobal::song->setPos(i, p);                             // all other cases: relocating one of the locators
+            MusEGlobal::song->setPos(i, MusECore::XTick(tick)); // all other cases: relocating one of the locators
       }
 
 

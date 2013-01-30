@@ -1050,27 +1050,24 @@ void PartCanvas::keyPress(QKeyEvent* event)
             }  
             if(spos < 0)
               spos = 0;
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
             int spos = AL::sigmap.raster2(pos[0] + 1, *_raster);    // Nudge by +1, then snap up with raster2.
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true); 
+            MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true); 
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
             int spos = pos[0] - AL::sigmap.rasterStep(pos[0], *_raster);
             if(spos < 0)
               spos = 0;
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
-            MusECore::Pos p(pos[0] + AL::sigmap.rasterStep(pos[0], *_raster), true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            int spos = pos[0] + AL::sigmap.rasterStep(pos[0], *_raster);
+            MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
@@ -1150,10 +1147,8 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   }
             }
 
-            int left_tick = leftmost->part()->tick();
-            int right_tick = rightmost->part()->tick() + rightmost->part()->lenTick();
-            MusECore::Pos p1(left_tick, true);
-            MusECore::Pos p2(right_tick, true);
+            MusECore::Pos p1(leftmost->part()->xtick());
+            MusECore::Pos p2(rightmost->part()->xtick() + rightmost->part()->lenXTick());
             MusEGlobal::song->setPos(1, p1);
             MusEGlobal::song->setPos(2, p2);
             return;
@@ -2836,8 +2831,7 @@ void PartCanvas::copy(MusECore::PartList* pl)
             if (endTick > tick)
                   tick = endTick;
             }
-      MusECore::Pos p(tick, true);
-      MusEGlobal::song->setPos(0, p);
+      MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(tick)));
       QString mimeString = "text/x-muse-mixedpartlist";
       if (!midi)
           mimeString = "text/x-muse-wavepartlist";
@@ -3026,8 +3020,7 @@ void PartCanvas::paste(bool clone, paste_mode_t paste_mode, bool to_single_track
           operations.insert(operations.end(), temp.begin(), temp.end());
         }
         
-        MusECore::Pos p(endPos, true);
-        MusEGlobal::song->setPos(0, p);
+        MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(endPos)));
         
         if (paste_mode != PASTEMODE_MIX)
         {

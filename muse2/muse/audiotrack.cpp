@@ -661,7 +661,7 @@ void AudioTrack::seekPrevACEvent(int id)
     if(s != cl->begin())
       --s;
     
-    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  
+    MusEGlobal::song->setPos(Song::CPOS, Pos(MusEGlobal::tempomap.frame2xtick(s->second.frame)), false, true, false);  //TODO FINDMICH
     return;
 }
 
@@ -686,7 +686,7 @@ void AudioTrack::seekNextACEvent(int id)
       --s;
     }
     
-    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  
+    MusEGlobal::song->setPos(Song::CPOS, Pos(MusEGlobal::tempomap.frame2xtick(s->second.frame)), false, true, false);    //TODO FINDMICH
     return;  
 }
 

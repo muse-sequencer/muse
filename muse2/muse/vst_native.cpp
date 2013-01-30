@@ -976,7 +976,12 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                   _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
                   _timeInfo.flags = 0;
 
-                  Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+                  Pos p;
+                  if (MusEGlobal::extSyncFlag.value())
+                    p = Pos(XTick(MusEGlobal::audio->tickPos()));
+                  else
+                    p = Pos(XTick(MusEGlobal::tempomap.frame2xtick(curr_frame)));
+//                  Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag.value() ? true : false); FINDMICH
 
                   if(value & kVstBarsValid)
                   {

@@ -249,7 +249,7 @@ void PosEdit::setValue(const QString& s)
 
 void PosEdit::setValue(int t)
       {
-      MusECore::Pos time(t);
+      MusECore::Pos time( MusECore::XTick((unsigned)t)  );
       setValue(time);
       }
 

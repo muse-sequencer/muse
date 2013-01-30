@@ -1024,7 +1024,7 @@ void MidiInstrument::write(int level, Xml& xml)
       
       xml.tag(level++, "Init");
       for(ciEvent ev=_midiInit->begin(); ev != _midiInit->end(); ++ev)
-        ev->second.write(level, xml, MusECore::Pos(0, true));
+        ev->second.write(level, xml, MusECore::Pos(MusECore::XTick(0)));
       xml.etag(--level, "Init");
       
       // -------------

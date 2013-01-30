@@ -85,8 +85,10 @@ namespace MusECore
 		Pos(const Pos&);
 		Pos(int measure, int beat, int tick, float subtick = 0.0);
 		Pos(int min, int sec, int frame, int subframe);
-		Pos(unsigned, bool ticks = true);	// considered evil
-		Pos(const QString&);	// considered evil
+		Pos(unsigned, bool ticks = true);	// never use frames, except for internal audio timing stuff.
+		Pos(XTick t);
+		Pos(const QString&); // expects a string like "mmmm.bb.ttt", where m,b,t means measure(range 1..inf), beat(range usually 1..4), tick(range 0..config.division)
+		                     // only use for PosEdits! This ctor cannot handle subticks!
 		void dump(int n = 0) const;
 		void mbt(int*, int*, int*) const;
 		void msf(int*, int*, int*, int*) const;
@@ -140,20 +142,26 @@ namespace MusECore
 		mutable XTick _lenTick;
 		mutable unsigned _lenFrame;
 		mutable int sn;
+		TType _lenType;
 
 	  public:
 		PosLen();
 		PosLen(const PosLen&);
 		void dump(int n = 0) const;
-
+		TType lenType() const { return _lenType; }
+		void setLenType(TType t);
+		
 		void write(int level, Xml&, const char*) const;
 		void read(Xml& xml, const char*);
 		void setLenTick(unsigned);
+		void setLenTick(XTick);
 		void setLenFrame(unsigned);
 		unsigned lenTick() const;
+		XTick lenXTick() const;
 		unsigned lenFrame() const;
 		Pos end() const;
 		unsigned endTick() const  { return end().tick();  }
+		XTick endXTick() const  { return end().xtick();  }
 		unsigned endFrame() const { return end().frame(); }
 		void setPos(const Pos&);
 	};

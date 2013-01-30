@@ -106,8 +106,7 @@ void HitScale::viewMouseMoveEvent(QMouseEvent* event)
             default:
                   return;
             }
-      MusECore::Pos p(x, true);
-      MusEGlobal::song->setPos(i, p);
+      MusEGlobal::song->setPos(i, MusECore::Pos(MusECore::XTick(x)));
       }
 
 //---------------------------------------------------------

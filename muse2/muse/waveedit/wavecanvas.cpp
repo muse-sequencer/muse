@@ -356,10 +356,8 @@ void WaveCanvas::keyPress(QKeyEvent* event)
                         tick_min = tick;
                   }
             if (found) {
-                  MusECore::Pos p1(tick_min, true);
-                  MusECore::Pos p2(tick_max, true);
-                  MusEGlobal::song->setPos(1, p1);
-                  MusEGlobal::song->setPos(2, p2);
+                  MusEGlobal::song->setPos(1, MusECore::Pos(MusECore::XTick(tick_min)));
+                  MusEGlobal::song->setPos(2, MusECore::Pos(MusECore::XTick(tick_max)));
                   }
             }
       // Select items by key (PianoRoll & DrumEditor)
@@ -1607,15 +1605,13 @@ void WaveCanvas::waveCmd(int cmd)
                   }  
                   if(spos < 0)
                     spos = 0;
-                  MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true);
+                  MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true);
                   }
                   break;
             case CMD_RIGHT:
                   {
                   int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]).to_uint());    // Nudge by +1, then snap up with raster2.
-                  MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); 
+                  MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true); 
                   }
                   break;
             case CMD_LEFT_NOSNAP:
@@ -1623,14 +1619,13 @@ void WaveCanvas::waveCmd(int cmd)
                   int spos = pos[0] - editor->rasterStep(pos[0]).to_uint();
                   if (spos < 0)
                         spos = 0;
-                  MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true); //CDW
                   }
                   break;
             case CMD_RIGHT_NOSNAP:
                   {
-                  MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]).to_uint(), true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  int spos = pos[0] + editor->rasterStep(pos[0]).to_uint();
+                  MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true); //CDW
                   }
                   break;
             case CMD_INSERT:
@@ -1657,8 +1652,8 @@ void WaveCanvas::waveCmd(int cmd)
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
                   
-                  MusECore::Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0]).to_uint()).to_uint(), true);
-                  MusEGlobal::song->setPos(0, p, true, false, true);
+                  int spos = editor->rasterVal(pos[0] + editor->rasterStep(pos[0]).to_uint()).to_uint();
+                  MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, false, true);
                   }
                   return;
             case CMD_BACKSPACE:
@@ -1683,8 +1678,8 @@ void WaveCanvas::waveCmd(int cmd)
                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
                         }
                   MusEGlobal::song->applyOperationGroup(operations);
-                  MusECore::Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0]).to_uint()).to_uint(), true);
-                  MusEGlobal::song->setPos(0, p, true, false, true);
+                  int spos=editor->rasterVal(pos[0] - editor->rasterStep(pos[0]).to_uint()).to_uint();
+                  MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, false, true);
                   }
                   break;
             }
@@ -1880,7 +1875,7 @@ void WaveCanvas::cmd(int cmd)
                       MusECore::WavePart *tempPart = new MusECore::WavePart(origPart->track());
                       unsigned origFrame = origPart->frame();
                       unsigned frameDistance = MusEGlobal::song->lPos().frame() - origFrame;
-                      tempPart->setPos(MusEGlobal::song->lpos());
+                      tempPart->setPos(XTick(MusEGlobal::song->lpos()));
                       tempPart->setLenTick(MusEGlobal::song->rpos() - MusEGlobal::song->lpos());
                       // loop through the events and set them accordingly
                       for (MusECore::iEvent iWaveEvent = origPart->events()->begin(); iWaveEvent != origPart->events()->end(); iWaveEvent++)

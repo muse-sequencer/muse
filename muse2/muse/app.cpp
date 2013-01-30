@@ -2136,7 +2136,7 @@ void MusE::kbAccel(int key)
             else if (MusEGlobal::song->cpos() != MusEGlobal::song->lpos())
                   MusEGlobal::song->setPos(0, MusEGlobal::song->lPos());
             else {
-                  MusECore::Pos p(0, true);
+                  MusECore::Pos p(XTick(0));
                   MusEGlobal::song->setPos(0, p);
                   }
             }
@@ -2144,8 +2144,7 @@ void MusE::kbAccel(int key)
             MusEGlobal::song->setStop(true);
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_GOTO_START].key) {
-            MusECore::Pos p(0, true);
-            MusEGlobal::song->setPos(0, p);
+            MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(0)));
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_PLAY_SONG].key ) {
             MusEGlobal::song->setPlay(true);
@@ -2164,27 +2163,24 @@ void MusE::kbAccel(int key)
             }  
             if(spos < 0)
               spos = 0;
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true);
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC].key) {
             int spos = AL::sigmap.raster2(MusEGlobal::song->cpos() + 1, MusEGlobal::song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+            MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true); //CDW
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_DEC_NOSNAP].key) {
             int spos = MusEGlobal::song->cpos() - AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster());
             if(spos < 0)
               spos = 0;
-            MusECore::Pos p(spos,true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true);
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC_NOSNAP].key) {
-            MusECore::Pos p(MusEGlobal::song->cpos() + AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
-            MusEGlobal::song->setPos(0, p, true, true, true);
+            int spos = MusEGlobal::song->cpos() + AL::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster());
+            MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true);
             return;
             }
             

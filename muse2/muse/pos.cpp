@@ -132,12 +132,27 @@ namespace MusECore
 		_frame = p._frame;
 	}
 
+	Pos::Pos(XTick t)
+	{
+		_type = TICKS;
+		_tick = t;
+		recalc_frames();
+	}
+
+	/*Pos::Pos(unsigned t)
+	{
+		_type = TICKS;
+		_tick = XTick(t);
+		recalc_frames();
+	}*/
+
 	Pos::Pos(unsigned t, bool ticks)	// TODO: considered evil.
 	{
 		if (ticks)
 		{
 			_type = TICKS;
 			_tick = XTick(t);
+			recalc_frames();
 		}
 		else
 		{
@@ -145,11 +160,10 @@ namespace MusECore
 			printf("DEBUG: warning: Pos::Pos(t, use_frames=true) called\n");
 			setFrame(t);
 		}
-		recalc_frames();
 		sn = -1;
 	}
 
-	Pos::Pos(const QString& s)	// TODO: considered evil.
+	Pos::Pos(const QString& s)
 	{
 		int m, b, t;
 		sscanf(s.toLatin1(), "%04d.%02d.%03d", &m, &b, &t);
@@ -458,12 +472,14 @@ namespace MusECore
 		_lenTick = XTick(0);
 		_lenFrame = 0;
 		sn = -1;
+		_lenType = type();
 	}
 
 	PosLen::PosLen(const PosLen& p) : Pos(p)
 	{
 		_lenTick = p._lenTick;
 		_lenFrame = p._lenFrame;
+		_lenType = p._lenType;
 		sn = -1;
 	}
 
@@ -475,7 +491,7 @@ namespace MusECore
 	{
 		Pos::dump(n);
 		printf("  Len(");
-		switch (type())
+		switch (lenType())
 		{
 			case FRAMES:
 				printf("samples=%d)\n", _lenFrame);
@@ -513,7 +529,7 @@ namespace MusECore
 		switch (type())
 		{
 			case TICKS:
-				xml.nput("tick=\"%d\" len=\"%d\"", tick(), _lenTick.tick); // TODO FINDMICH write subtick
+				xml.nput("tick=\"%d\" len=\"%d\"", tick(), _lenTick.tick); // TODO FINDMICH write subtick and type
 				break;
 			
 			case FRAMES:
@@ -588,9 +604,14 @@ namespace MusECore
 
 	void PosLen::setLenTick(unsigned len)
 	{
-		_lenTick = XTick(len);
+		setLenTick(XTick(len));
+	}
+
+	void PosLen::setLenTick(XTick len)
+	{
+		_lenTick = len;
 		sn = -1;
-		_lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
+		_lenFrame = MusEGlobal::tempomap.deltaTick2frame(xtick(), xtick() + len, &sn);
 	}
 
 	// ---------------------------------------------------------
@@ -610,9 +631,14 @@ namespace MusECore
 
 	unsigned PosLen::lenTick() const
 	{
+		return lenXTick().tick;
+	}
+
+	XTick PosLen::lenXTick() const
+	{
 		if (type() == FRAMES)
 			_lenTick = MusEGlobal::tempomap.deltaFrame2xtick(frame(), frame() + _lenFrame, &sn);
-		return _lenTick.tick;
+		return _lenTick;
 	}
 
 	// ---------------------------------------------------------

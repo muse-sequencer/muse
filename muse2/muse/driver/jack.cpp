@@ -272,10 +272,14 @@ static void timebase_callback(jack_transport_state_t /* state */,
         printf("timebase_callback JackVideoFrameOffset: %u\n", pos->video_offset);
     }
     
-    //Pos p(pos->frame, false);
-      Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
       // Can't use song pos - it is only updated every (slow) GUI heartbeat !
-      //Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
+      //Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false);
+      Pos p;
+      if (MusEGlobal::extSyncFlag.value())
+        p = Pos(XTick(MusEGlobal::audio->tickPos()));
+      else
+        p = Pos(XTick(MusEGlobal::tempomap.frame2xtick(pos->frame)));
+//                  Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag.value() ? true : false); FINDMICH
       
       pos->valid = JackPositionBBT;
       p.mbt(&pos->bar, &pos->beat, &pos->tick);

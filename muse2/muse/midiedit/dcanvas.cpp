@@ -837,15 +837,13 @@ void DrumCanvas::cmd(int cmd)
                       }
                       if(spos < 0)
                         spos = 0;
-                      MusECore::Pos p(spos,true);
-                      MusEGlobal::song->setPos(0, p, true, true, true);
+                      MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true);
                   }
                   break;
             case CMD_RIGHT:
                   {
                       int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]).to_uint());    // Nudge by +1, then snap up with raster2.
-                      MusECore::Pos p(spos,true);
-                      MusEGlobal::song->setPos(0, p, true, true, true);
+                      MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true);
                   }
                   break;
             case CMD_LEFT_NOSNAP:
@@ -854,14 +852,13 @@ void DrumCanvas::cmd(int cmd)
                   int spos = pos[0] - editor->rasterStep(pos[0]).to_uint();
                   if (spos < 0)
                         spos = 0;
-                  MusECore::Pos p(spos,true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true); //CDW
                   }
                   break;
             case CMD_RIGHT_NOSNAP:
                   {
-                  MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]).to_uint(), true);
-                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
+                  int spos = pos[0] + editor->rasterStep(pos[0]).to_uint();
+                  MusEGlobal::song->setPos(0, MusECore::Pos(MusECore::XTick(spos)), true, true, true); //CDW
                   }
                   break;
             }
