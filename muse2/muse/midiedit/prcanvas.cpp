@@ -406,7 +406,7 @@ MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, i
       MusECore::Part* opart = ip2c->first;
       int diff = ip2c->second.xdiff;
       
-      schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations);
+      schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, MusECore::Pos::TICKS, operations);
     }    
 					
   	return operations;
@@ -516,7 +516,7 @@ void PianoCanvas::newItem(MusEGui::CItem* item, bool noSnap)
         
         if (diff > 0)// part must be extended?
         {
-              schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
+              schedule_resize_all_same_len_clone_parts(part, event.endTick(), MusECore::Pos::TICKS, operations);
               printf("newItem: extending\n");
         }
         
@@ -559,7 +559,7 @@ void PianoCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         //
         
         if (diff > 0)// part must be extended?
         {
-              schedule_resize_all_same_len_clone_parts(part, event.tick()+len, operations);
+              schedule_resize_all_same_len_clone_parts(part, event.tick()+len, MusECore::Pos::TICKS, operations);
               printf("resizeItem: extending\n");
         }
       }

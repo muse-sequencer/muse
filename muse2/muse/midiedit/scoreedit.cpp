@@ -4122,7 +4122,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					MusECore::Undo operations;
 					operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, tmp, dragged_event, dragged_event_part, false, false));
 					if (newpartlen != dragged_event_part->lenTick())
-						schedule_resize_all_same_len_clone_parts(dragged_event_part, newpartlen, operations);
+						schedule_resize_all_same_len_clone_parts(dragged_event_part, newpartlen, MusECore::Pos::TICKS, operations);
 					undo_started=MusEGlobal::song->applyOperationGroup(operations);
 					
 					old_len=new_len;

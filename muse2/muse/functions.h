@@ -26,6 +26,7 @@
 #include <set>
 #include "part.h"
 #include "dialogs.h"
+#include "pos.h"
 #include <QWidget>
 
 class QString;
@@ -103,7 +104,7 @@ void select_not_in_loop(const std::set<Part*>& parts);
 //functions for parts
 void shrink_parts(int raster=-1); //negative values mean "config.division"
 void expand_parts(int raster=-1);
-void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations);
+void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Pos::TType lentype, Undo& operations);
 void clean_parts();
 bool merge_selected_parts();
 bool merge_parts(const std::set<Part*>& parts);

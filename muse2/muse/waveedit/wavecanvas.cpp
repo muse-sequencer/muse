@@ -1338,7 +1338,7 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
       int diff = ip2c->second.xdiff;
       
       //schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations);
-      schedule_resize_all_same_len_clone_parts(opart, opart->lenFrame() + diff, operations);
+      schedule_resize_all_same_len_clone_parts(opart, opart->lenFrame() + diff, MusECore::Pos::FRAMES, operations);
     }    
                                         
         return operations;
@@ -1433,7 +1433,7 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
         if (diff > 0)// part must be extended?
         {
               //schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
-              schedule_resize_all_same_len_clone_parts(part, event.endFrame(), operations);
+              schedule_resize_all_same_len_clone_parts(part, event.endFrame(), MusECore::Pos::FRAMES, operations);
               printf("newItem: extending\n");
         }
         
@@ -1481,7 +1481,7 @@ void WaveCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // 
         if (diff > 0)// part must be extended?
         {
               //schedule_resize_all_same_len_clone_parts(part, event.tick()+len, operations);
-              schedule_resize_all_same_len_clone_parts(part, event.frame() + len, operations);
+              schedule_resize_all_same_len_clone_parts(part, event.frame() + len, MusECore::Pos::FRAMES, operations);
               printf("resizeItem: extending\n");
         }
       }

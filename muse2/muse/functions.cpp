@@ -544,7 +544,7 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 		}
 		
 		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
-			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+			schedule_resize_all_same_len_clone_parts(it->first, it->second, MusECore::Pos::TICKS, operations);
 
 		return MusEGlobal::song->applyOperationGroup(operations);
 	}
@@ -753,7 +753,7 @@ bool move_notes(const set<Part*>& parts, int range, signed int ticks)
 		}
 		
 		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
-			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+			schedule_resize_all_same_len_clone_parts(it->first, it->second, MusECore::Pos::TICKS, operations);
 		
 		return MusEGlobal::song->applyOperationGroup(operations);
 	}
@@ -1220,7 +1220,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 	
 	for (map<Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
 		if (it->second != it->first->lenTick())
-			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+			schedule_resize_all_same_len_clone_parts(it->first, it->second, MusECore::Pos::TICKS, operations);
 
 	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
 	                                                     // pointer changes (by resize) screw it up
@@ -1321,37 +1321,48 @@ void shrink_parts(int raster)
 }
 
 
-void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations)
+void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Pos::TType lentype, Undo& operations)
 {
 	QSet<const Part*> already_done;
+	
+	if (part->lenType() != lentype)
+		printf("warning: part length type mismatch in schedule_resize_all_same_len_clone_parts. it should work, though.\n");
 	
 	for (Undo::iterator op_it=operations.begin(); op_it!=operations.end();op_it++)
 		if (op_it->type==UndoOp::ModifyPart || op_it->type==UndoOp::DeletePart)
 			already_done.insert(op_it->nPart);
 			
-	unsigned old_len= part->type() == Pos::FRAMES ? part->lenFrame() : part->lenTick();
+	unsigned old_len_orig = (part->lenType() == Pos::FRAMES) ? part->lenFrame() : part->lenTick();
+	unsigned old_len = (lentype == Pos::FRAMES) ? part->lenFrame() : part->lenTick();
+	
 	if (old_len!=new_len)
 	{
 		Part* part_it=part;
 		do
 		{
-			if (part->type() == Pos::FRAMES)
-			{
-			  if (part_it->lenFrame()==old_len && !already_done.contains(part_it))
-			  {
-				  WavePart* new_part = new WavePart(*(WavePart*)part_it);
-				  new_part->setLenFrame(new_len);
-				  operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
-			  }
-			}
-			else
-			if (part_it->lenTick()==old_len && !already_done.contains(part_it))
-			{
-				MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);
-				new_part->setLenTick(new_len);
-				operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
-			}
+			unsigned this_len = (part_it->lenType() == Pos::FRAMES) ? part_it->lenFrame() : part_it->lenTick();
 			
+			if (this_len==old_len_orig && !already_done.contains(part_it))
+			{
+				if (part->type() == Pos::FRAMES)
+				{
+					WavePart* new_part = new WavePart(*(WavePart*)part_it);
+					if (lentype==Pos::FRAMES)
+						new_part->setLenFrame(new_len);
+					else
+						new_part->setLenTick(new_len);
+					operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
+				}
+				else
+				{
+					MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);
+					if (lentype==Pos::FRAMES)
+						new_part->setLenFrame(new_len);
+					else
+						new_part->setLenTick(new_len);
+					operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
+				}
+			}
 			part_it=part_it->nextClone();
 		} while (part_it!=part);
 	}

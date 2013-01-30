@@ -280,7 +280,7 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
 			MusECore::Part* opart = ip2c->first;
 			int diff = ip2c->second.xdiff;
 			
-			schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations); 
+			schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, MusECore::Pos::TICKS, operations); 
 		}    
 					
   	return operations;
@@ -509,7 +509,7 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
         
         if (diff > 0) // part must be extended?
         {
-              schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
+              schedule_resize_all_same_len_clone_parts(part, event.endTick(), MusECore::Pos::TICKS, operations);
               printf("newItem: extending\n");
         }
       }

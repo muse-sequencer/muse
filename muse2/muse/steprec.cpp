@@ -203,7 +203,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 	if (!((lasttick > part->lenTick()) && part->hasHiddenEvents())) // allowed?
 	{
 		if (lasttick > part->lenTick()) // we have to expand the part?
-			schedule_resize_all_same_len_clone_parts(part, lasttick, operations);
+			schedule_resize_all_same_len_clone_parts(part, lasttick, MusECore::Pos::TICKS, operations);
 		
 		MusEGlobal::song->applyOperationGroup(operations);
 	}
