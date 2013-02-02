@@ -518,7 +518,11 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
       if((mt->type() == MusECore::Track::DRUM))
       {
         n = (num & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;  
-        mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port];
+        // Default to track port if -1 and track channel if -1.
+        int mport = MusEGlobal::drumMap[curDrumPitch].port;
+        if(mport == -1)
+          mport = mt->outPort();
+        mp = &MusEGlobal::midiPorts[mport];
       }
       if(mt->type() == MusECore::Track::NEW_DRUM)
       {
@@ -619,10 +623,19 @@ void CtrlCanvas::updateItems()
                       {
                         if(curDrumPitch < 0)
                           continue;
+                        // Default to track port if -1 and track channel if -1.
                         int port = MusEGlobal::drumMap[ctl & 0x7f].port;
+                        if(port == -1)
+                          port = part->track()->outPort();
                         int chan = MusEGlobal::drumMap[ctl & 0x7f].channel;
+                        if(chan == -1)
+                          chan = part->track()->outChannel();
                         int cur_port = MusEGlobal::drumMap[curDrumPitch].port;
+                        if(cur_port == -1)
+                          cur_port = part->track()->outPort();
                         int cur_chan = MusEGlobal::drumMap[curDrumPitch].channel;
+                        if(cur_chan == -1)
+                          cur_chan = part->track()->outChannel();
                         if((port != cur_port) || (chan != cur_chan))
                           continue;
                         ctl = (ctl & ~0xff) | MusEGlobal::drumMap[ctl & 0x7f].anote;
@@ -1601,7 +1614,11 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
     
     if(is_drum_ctl)
     {
-      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port]; 
+      // Default to track port if -1 and track channel if -1.
+      int mport = MusEGlobal::drumMap[curDrumPitch].port;
+      if(mport == -1)
+        mport = mt->outPort();
+      mp = &MusEGlobal::midiPorts[mport];
       cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
     }
     else
@@ -1736,7 +1753,11 @@ void CtrlCanvas::pdrawExtraDrumCtrlItems(QPainter& p, const QRect& rect, const M
     
     if(is_drum_ctl)
     {
-      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port]; 
+      // Default to track port if -1 and track channel if -1.
+      int mport = MusEGlobal::drumMap[curDrumPitch].port;
+      if(mport == -1)
+        mport = mt->outPort();
+      mp = &MusEGlobal::midiPorts[mport];
       cnum = (_cnum & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;
     }
     else
@@ -1892,11 +1913,17 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
       if(curPart && curPart->track() && curPart->track()->type() == MusECore::Track::DRUM && 
          curDrumPitch >= 0 && ((_cnum & 0xff) == 0xff))
       {
-        int port = MusEGlobal::drumMap[curDrumPitch].port; 
+        // Default to track port if -1 and track channel if -1.
+        int port = MusEGlobal::drumMap[curDrumPitch].port;
+        if(port == -1)
+          port = curPart->track()->outPort();
         int anote = MusEGlobal::drumMap[curDrumPitch].anote;
         for(int i = 0; i < DRUM_MAPSIZE; ++i)
         {
-          if(i != curDrumPitch && MusEGlobal::drumMap[i].port == port && MusEGlobal::drumMap[i].anote == anote)
+          int iport = MusEGlobal::drumMap[i].port;
+          if(iport == -1)
+            iport = curPart->track()->outPort();
+          if(i != curDrumPitch && iport == port && MusEGlobal::drumMap[i].anote == anote)
             pdrawExtraDrumCtrlItems(p, rect, curPart, anote);
         }
       }

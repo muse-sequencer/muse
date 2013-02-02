@@ -754,9 +754,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.mixerBg = readColor(xml);
                         else if (tag == "midiTrackLabelBg")
                               MusEGlobal::config.midiTrackLabelBg = readColor(xml);
-                        else if (tag == "drumTrackLabelBg")
+                        else if (tag == "drumTrackLabelBg2")
                               MusEGlobal::config.drumTrackLabelBg = readColor(xml);
-                        else if (tag == "newDrumTrackLabelBg")
+                        else if (tag == "newDrumTrackLabelBg2")
                               MusEGlobal::config.newDrumTrackLabelBg = readColor(xml);
                         else if (tag == "waveTrackLabelBg")
                               MusEGlobal::config.waveTrackLabelBg = readColor(xml);
@@ -766,7 +766,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.inputTrackLabelBg = readColor(xml);
                         else if (tag == "groupTrackLabelBg")
                               MusEGlobal::config.groupTrackLabelBg = readColor(xml);
-                        else if (tag == "auxTrackLabelBg")
+                        else if (tag == "auxTrackLabelBg2")
                               MusEGlobal::config.auxTrackLabelBg = readColor(xml);
                         else if (tag == "synthTrackLabelBg")
                               MusEGlobal::config.synthTrackLabelBg = readColor(xml);
@@ -1334,13 +1334,13 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
       xml.colorTag(level, "midiTrackLabelBg",   MusEGlobal::config.midiTrackLabelBg);
-      xml.colorTag(level, "drumTrackLabelBg",   MusEGlobal::config.drumTrackLabelBg);
-      xml.colorTag(level, "newDrumTrackLabelBg",MusEGlobal::config.newDrumTrackLabelBg);
+      xml.colorTag(level, "drumTrackLabelBg2",  MusEGlobal::config.drumTrackLabelBg);
+      xml.colorTag(level, "newDrumTrackLabelBg2",MusEGlobal::config.newDrumTrackLabelBg);
       xml.colorTag(level, "waveTrackLabelBg",   MusEGlobal::config.waveTrackLabelBg);
       xml.colorTag(level, "outputTrackLabelBg", MusEGlobal::config.outputTrackLabelBg);
       xml.colorTag(level, "inputTrackLabelBg",  MusEGlobal::config.inputTrackLabelBg);
       xml.colorTag(level, "groupTrackLabelBg",  MusEGlobal::config.groupTrackLabelBg);
-      xml.colorTag(level, "auxTrackLabelBg",    MusEGlobal::config.auxTrackLabelBg);
+      xml.colorTag(level, "auxTrackLabelBg2",   MusEGlobal::config.auxTrackLabelBg);
       xml.colorTag(level, "synthTrackLabelBg",  MusEGlobal::config.synthTrackLabelBg);
       
       xml.colorTag(level, "midiTrackBg",   MusEGlobal::config.midiTrackBg);

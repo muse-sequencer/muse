@@ -30,6 +30,7 @@
 #include <stdio.h>
 
 #include "globals.h"
+#include "globaldefs.h"
 #include "app.h"
 #include "audio.h"
 #include "pitchedit.h"
@@ -178,8 +179,14 @@ void DList::draw(QPainter& p, const QRect& rect)
 
                                     if(old_style_drummap_mode)
                                     {
-                                      int channel              = dm->channel;
-                                      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[dm->port];
+                                      // Default to track port if -1 and track channel if -1.
+                                      int channel = dm->channel;
+                                      if(channel == -1)
+                                        channel = cur_channel;
+                                      int mport = dm->port;
+                                      if(mport == -1)
+                                        mport = cur_track->outPort();
+                                      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mport];
                                       int instr_pitch = dm->anote;
                                       MusECore::MidiCtrlValListList* cll = mp->controller();
                                       const int min = channel << 24;
@@ -351,11 +358,15 @@ void DList::draw(QPainter& p, const QRect& rect)
                                 p.drawText(r.x() + 8, r.y(), r.width() - 8, r.height(), align, str);
                               }
                               break;
+                              
+                        // Default to track port if -1 and track channel if -1.
                         case COL_OUTCHANNEL:
-                              s.setNum(dm->channel+1);
+                              if(dm->channel != -1)
+                                s.setNum(dm->channel+1);
                               break;
                         case COL_OUTPORT:
-                              s.sprintf("%d:%s", dm->port+1, MusEGlobal::midiPorts[dm->port].portname().toLatin1().constData());
+                              if(dm->port != -1)
+                                s.sprintf("%d:%s", dm->port+1, MusEGlobal::midiPorts[dm->port].portname().toLatin1().constData());
                               align = Qt::AlignVCenter | Qt::AlignLeft;
                               break;
                         }
@@ -411,7 +422,7 @@ void DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll)
         return;
       }
       
-      QMenu* p = MusECore::midiPortsPopup(this, t->port);
+      QMenu* p = MusECore::midiPortsPopup(this, t->port, true);  // Include a "<Default>" entry.
       QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
       bool doemit = false;
       if(!act)
@@ -423,23 +434,41 @@ void DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll)
       int n = act->data().toInt();
       delete p;
 
-      if(n < 0)              // Invalid item.
+      const int openConfigId = MIDI_PORTS;
+      const int defaultId    = MIDI_PORTS + 1;
+
+      if(n < 0 || n > defaultId)     // Invalid item.
         return;
-      
-      if(n >= MIDI_PORTS)    // Show port config dialog.
+
+      if(n == openConfigId)    // Show port config dialog.
       {
         MusEGlobal::muse->configMidiPorts();
         return;
       }
-                  
+
+      if(n == defaultId)   // Means the <default> -1
+        n = -1;
+      
       if (!changeAll)
       {
           if(n != t->port)
           {
+            int mport = n;
+            // Default to track port if -1 and track channel if -1.
+            if(mport == -1)
+            {
+              if(!dcanvas || !dcanvas->part())
+                return;
+              MusECore::Part* cur_part = dcanvas->part();
+              if(!cur_part->track() || !cur_part->track()->isMidiTrack())
+                return;
+              MusECore::MidiTrack* cur_track = static_cast<MusECore::MidiTrack*>(cur_part->track());
+              mport = cur_track->outPort();
+            }
             MusEGlobal::audio->msgIdle(true);
-            MusEGlobal::song->remapPortDrumCtrlEvents(getSelectedInstrument(), -1, -1, n);
+            MusEGlobal::song->remapPortDrumCtrlEvents(getSelectedInstrument(), -1, -1, mport);
             MusEGlobal::audio->msgIdle(false);
-            t->port = n;
+            t->port = n;      // -1 is allowed
             doemit = true;
           }  
       }      
@@ -631,8 +660,9 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   break;
             case COL_OUTCHANNEL: // this column isn't visible in new style drum mode
                   val = dm->channel + incVal;
-                  if (val < 0)
-                        val = 0;
+                  // Default to track port if -1 and track channel if -1.
+                  if (val < -1)
+                        val = -1;
                   else if (val > 127)
                         val = 127;
                   
@@ -653,7 +683,11 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       if(val != dm->channel)
                       {
                         MusEGlobal::audio->msgIdle(true);
-                        MusEGlobal::song->remapPortDrumCtrlEvents(instrument, -1, val, -1);
+                        int mchan = val;
+                        if(mchan == -1 && dcanvas && dcanvas->part() && dcanvas->part()->track() && dcanvas->part()->track()->isMidiTrack())
+                          mchan = static_cast<MusECore::MidiTrack*>(dcanvas->part()->track())->outChannel();
+                        if(val != -1)
+                          MusEGlobal::song->remapPortDrumCtrlEvents(instrument, -1, val, -1);
                         MusEGlobal::audio->msgIdle(false);
                         dm->channel = val;
                         MusEGlobal::song->update(SC_DRUMMAP);
@@ -836,7 +870,9 @@ void DList::lineEdit(int line, int section)
                   break;
 
                   case COL_OUTCHANNEL:
-                  editor->setText(QString::number(dm->channel+1));
+                  // Default to track port if -1 and track channel if -1.
+                  if(dm->channel != -1)  
+                    editor->setText(QString::number(dm->channel+1));
                   break;
             }
 
@@ -970,11 +1006,13 @@ void DList::returnPressed()
                   break;
                   
               case COL_OUTCHANNEL:
-                  val--;
-                  if (val >= 16)
-                  val = 15;
-                  if (val < 0)
-                  val = 0;
+                  // Default to track port if -1 and track channel if -1.
+                  if(val <= 0)
+                    val = -1;
+                  else
+                    val--;
+                  if (val >= MIDI_CHANNELS)
+                    val = MIDI_CHANNELS - 1;
                   break;
                   
               default: break;
@@ -1016,7 +1054,7 @@ void DList::returnPressed()
                   break;
 
             case COL_OUTCHANNEL:
-                  editEntry->channel = val;
+                    editEntry->channel = val;
                   break;
 
             default:

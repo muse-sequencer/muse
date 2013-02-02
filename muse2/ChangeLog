@@ -1,3 +1,12 @@
+02.02.2013:
+         * Solved: "Old style" Drums: Track channel/port re-enabled, drum list columns default to them. (Tim...)
+           The drum list port and channel columns are now blank by default until overriden by user.
+           When blank they default to the track port and channel.
+           Internally, -1 is now an acceptable value for members DrumMap::port and ::channel, meaning default to track.
+           All built-in drum maps have been changed, as well as the initial and blank DrumMap structures.
+         - Since Old Style Drum and New Style Drum had the same icon, and the only way to tell the difference between them
+            was the port and channel columns, and that difference is now gone, this required some icon and colour changes.
+         - Fixed Old Style Drum lockup: Certain item channel overrides caused infinite loop in Audio::processMidi().
 28.01.2013:
          - MusE 2.1.1 released!
          - Added setting for default track height (rj)

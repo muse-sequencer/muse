@@ -93,6 +93,7 @@ Song::Song(const char* name)
       bounceTrack = NULL;
       bounceOutput = NULL;
       showSongInfo=true;
+      clearDrumMap(); // One-time only early init
       clear(false);
       }
 
@@ -669,8 +670,13 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
         if(note == mapidx)
         {
           int tick = ev.tick() + part->tick();
+          // Default to track port if -1 and track channel if -1.
           int ch = MusEGlobal::drumMap[note].channel;
+          if(ch == -1)
+            ch = mt->outChannel();
           int port = MusEGlobal::drumMap[note].port;
+          if(port == -1)
+            port = mt->outPort();
           MidiPort* mp = &MusEGlobal::midiPorts[port];
           cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
           
@@ -738,8 +744,11 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
         if(trackmp->drumController(cntrl))
         {
           int note = cntrl & 0x7f;
-          ch = MusEGlobal::drumMap[note].channel;
-          mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+          // Default to track port if -1 and track channel if -1.
+          if(MusEGlobal::drumMap[note].channel != -1)
+            ch = MusEGlobal::drumMap[note].channel;
+          if(MusEGlobal::drumMap[note].port != -1)
+            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
           cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
         }
         else
@@ -2663,8 +2672,11 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     // Change the controller event's index into the drum map to an instrument note.
     int note = ctlnum & 0x7f;
     dctl &= ~0xff;
-    channel = MusEGlobal::drumMap[note].channel;
-    mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+    // Default to track port if -1 and track channel if -1.
+    if(MusEGlobal::drumMap[note].channel != -1)
+      channel = MusEGlobal::drumMap[note].channel;
+    if(MusEGlobal::drumMap[note].port != -1)
+      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
     dctl |= MusEGlobal::drumMap[note].anote;
   }
     

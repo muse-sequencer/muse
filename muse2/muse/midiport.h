@@ -165,7 +165,7 @@ extern void initMidiPorts();
 extern void setPortExclusiveDefOutChan(int /*port*/, int /*chan*/);
 #endif
 
-extern QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1);
+extern QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1, bool includeDefaultEntry = false);
 extern MidiControllerList defaultManagedMidiController;
 
 } // namespace MusECore

@@ -330,6 +330,8 @@ void TList::paint(const QRect& r)
                                           pm = addtrack_addmiditrackIcon;
                                           break;
                                     case MusECore::Track::NEW_DRUM:
+                                          pm = addtrack_newDrumtrackIcon;
+                                          break;
                                     case MusECore::Track::DRUM:
                                           pm = addtrack_drumtrackIcon;
                                           break;
@@ -388,11 +390,8 @@ void TList::paint(const QRect& r)
                               {
                               QString s;
                               int n;
-                              if (track->isMidiTrack() && track->type() == MusECore::Track::DRUM) {
-                                    p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, "-");
-                                    break;
-                              }
-                              else if (track->isMidiTrack()) {
+                              // Default to track port if -1 and track channel if -1.
+                              if (track->isMidiTrack()) {
                                     n = ((MusECore::MidiTrack*)track)->outChannel() + 1;
                                     }
                               else {
@@ -631,7 +630,8 @@ void TList::chanValueFinished()
     if(editTrack->isMidiTrack()) 
     {
       MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editTrack);
-      if (mt && mt->type() != MusECore::Track::DRUM)
+      // Default to track port if -1 and track channel if -1.
+      if (mt)
       {
         int channel = chan_edit->value() - 1;
         if(channel >= MIDI_CHANNELS)
@@ -645,18 +645,10 @@ void TList::chanValueFinished()
                                                           editTrack, 
                                                           mt->outChannel(), 
                                                           channel));
-              //mt->setOutChannel(channel); DELETETHIS 10 (only the comments of course)
               MusEGlobal::audio->msgIdle(true);
-              //MusEGlobal::audio->msgSetTrackOutChannel(mt, channel);
               mt->setOutChanAndUpdate(channel);
               MusEGlobal::audio->msgIdle(false);
-              //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
-              //      for (int i=0; i<DRUM_MAPSIZE; i++)
-              //            MusEGlobal::drumMap[i].channel = channel;
-              //      }
               MusEGlobal::audio->msgUpdateSoloStates();                   
-              //MusEGlobal::song->endUndo(SC_CHANNELS);
-              //MusEGlobal::song->endUndo(SC_MIDI_TRACK_PROP | SC_ROUTE);  
               MusEGlobal::song->endUndo(SC_MIDI_TRACK_PROP);
         }      
       }
@@ -706,7 +698,10 @@ void TList::ctrlValueFinished()
   if(editTrack && editTrack->isMidiTrack())
   { 
     MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editTrack);
-    if (mt && mt->type() != MusECore::Track::DRUM)
+    //if (mt && mt->type() != MusECore::Track::DRUM)
+    // Default to track port if -1 and track channel if -1.
+    // TODO TEST: Why was DRUM excluded? I want to say just "if(mt)", but will it break something with dynamic columns?  // REMOVE Tim.
+    if (mt)
     {
       int val = ctrl_edit->value();
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
@@ -832,9 +827,9 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   editor->show();
                   }
             else if (section == COL_OCHANNEL) {
-                  //if (t->isMidiTrack() && t->type() != MusECore::Track::DRUM)
                   // Enabled for audio tracks. And synth channels cannot be changed ATM.   
-                  if(t->type() == MusECore::Track::DRUM || t->type() == MusECore::Track::AUDIO_SOFTSYNTH)   
+                  // Default to track port if -1 and track channel if -1.
+                  if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                   {
                     mousePressEvent(ev);
                     return;
@@ -1101,36 +1096,9 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                     
                     MusEGlobal::song->update();
                   }
-                  // Changed by T356. DELETETHIS 5
-                  //track->setOutPort(n);
-                  //MusEGlobal::audio->msgSetTrackOutPort(track, n);
-                  
-                  //MusEGlobal::song->update();
-                  if (t->type() == MusECore::Track::DRUM) {
-                        bool change = QMessageBox::question(this, tr("Update drummap?"),
-                                      tr("Do you want to use same port for all instruments in the drummap?"),
-                                      tr("&Yes"), tr("&No"), QString::null, 0, 1);
-                        MusEGlobal::audio->msgIdle(true);
-                        if (!change) 
-                        {
-                              // Delete all port controller events.
-                              MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
-                              track->setOutPort(n);
-                  
-                              for (int i=0; i<DRUM_MAPSIZE; i++) //Remap all drum instruments to this port
-                                    MusEGlobal::drumMap[i].port = track->outPort();
-                              // Add all port controller events.
-                              MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
-                        }
-                        else
-                        {
-                          track->setOutPortAndUpdate(n);
-                        }
-                        MusEGlobal::audio->msgIdle(false);
-                        MusEGlobal::audio->msgUpdateSoloStates();                   // (p4.0.14)  p4.0.17
-                        MusEGlobal::song->update();
-                  }
-                  else if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH) 
+
+                  // Default to track port if -1 and track channel if -1. No need anymore to ask to change all items
+                  if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                   {
                     if(md != 0)
                     {
@@ -1149,8 +1117,8 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                     MusEGlobal::audio->msgIdle(true);
                     track->setOutPortAndUpdate(n);
                     MusEGlobal::audio->msgIdle(false);
-                    MusEGlobal::audio->msgUpdateSoloStates();                   // (p4.0.14) p4.0.17
-                    MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
+                    MusEGlobal::audio->msgUpdateSoloStates();
+                    MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
                   }
                   
                   // Prompt and send init sequences.
@@ -2074,9 +2042,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(t);
                       if (mt == 0)
                         break;
-                      if (mt->type() == MusECore::Track::DRUM)
-                        break;
-
                       int channel = mt->outChannel();
                       channel += delta;
                       if(channel >= MIDI_CHANNELS)
@@ -2085,25 +2050,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         channel = 0;
                       if (channel != mt->outChannel()) 
                       {
-                            // Changed by T356.
                             MusEGlobal::audio->msgIdle(true);
                             mt->setOutChanAndUpdate(channel);
                             MusEGlobal::audio->msgIdle(false);
-                            
-                            // DELETETHIS 15?
-                            /* --- I really don't like this, you can mess up the whole map "as easy as dell"
-                            if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
-                                  for (int i=0; i<DRUM_MAPSIZE; i++)
-                                        MusEGlobal::drumMap[i].channel = channel;
-                                  }*/
-                            
-                            // may result in adding/removing mixer strip:
-                            //MusEGlobal::song->update(-1);
-                            //MusEGlobal::song->update(SC_CHANNELS);
-                            //MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
-                            MusEGlobal::audio->msgUpdateSoloStates();                   // p4.0.14
-                            //MusEGlobal::song->update(SC_MIDI_TRACK_PROP | SC_ROUTE);  //
-                            MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
+                            MusEGlobal::audio->msgUpdateSoloStates();
+                            MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
                       }
                     }
                     else
@@ -2748,7 +2699,7 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
       p.clear();
       p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
       p.addAction(QIcon(*addtrack_drumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
-      p.addAction(QIcon(*addtrack_drumtrackIcon), tr("New style drum"))->setData(MusECore::Track::NEW_DRUM);
+      p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("New style drum"))->setData(MusECore::Track::NEW_DRUM);
       QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
 
       if (!act)
@@ -2769,11 +2720,7 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
                         if(ev.type() == MusECore::Note)
                         {
                           int pitch = ev.pitch();
-                          // Changed by T356.
-                          // Tested: Notes were being mixed up switching back and forth between midi and drum.
-                          //pitch = MusEGlobal::drumMap[pitch].anote; DELETETHIS
                           pitch = MusEGlobal::drumMap[pitch].enote;
-                          
                           ev.setPitch(pitch);
                         }
                         else
@@ -2786,7 +2733,6 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
                             // Change the controller event's index into the drum map to an instrument note.
                             ev.setA((ctl & ~0xff) | MusEGlobal::drumMap[ctl & 0x7f].enote);
                         }
-                          
                       }
                   }
             t->setType(MusECore::Track::TrackType(n));
@@ -2797,22 +2743,14 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
             //
             //    Midi -> Drum
             //
-            bool change = QMessageBox::question(this, tr("Update drummap?"),
-                           tr("Do you want to use same port and channel for all instruments in the drummap?"),
-                           tr("&Yes"), tr("&No"), QString::null, 0, 1);
-            
+
+            // Default to track port if -1 and track channel if -1. No need anymore to ask to change all items.
+
             MusEGlobal::audio->msgIdle(true);
+
             // Delete all port controller events.
             MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
             
-            if (!change) {
-                  MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
-                  for (int i=0; i<DRUM_MAPSIZE; i++) {
-                        MusEGlobal::drumMap[i].channel = m->outChannel();
-                        MusEGlobal::drumMap[i].port    = m->outPort();
-                        }
-                  }
-
             MusECore::PartList* pl = t->parts();
             MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
             for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
@@ -2824,7 +2762,7 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
                           int pitch = ev.pitch();
                           pitch = MusEGlobal::drumInmap[pitch];
                           ev.setPitch(pitch);
-                        }  
+                        }
                         else
                         {
                           if(ev.type() == MusECore::Controller)
@@ -2836,17 +2774,17 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
                               // Change the controller event's instrument note to an index into the drum map.
                               ev.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
                           }
-                          
                         }
-                        
                       }
                   }
+
             t->setType(MusECore::Track::DRUM);
             
-            // Add all port controller events.
-            MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
+             // Add all port controller events.
+             MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
+            
             MusEGlobal::audio->msgIdle(false);
-            MusEGlobal::song->update(SC_EVENT_MODIFIED);
+            MusEGlobal::song->update(SC_EVENT_MODIFIED);   
             }
       else // MIDI -> NEW_DRUM or vice versa. added by flo.
       {

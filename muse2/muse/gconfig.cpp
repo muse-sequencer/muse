@@ -102,13 +102,13 @@ GlobalConfigValues config = {
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
       
       QColor(74, 150, 194),         // midiTrackLabelBg;   // Med blue
-      QColor(74, 150, 194),         // drumTrackLabelBg;   // Med blue
-      QColor(74, 150, 194),         // newDrumTrackLabelBg;   // Med blue
+      QColor(150, 177, 189),        // drumTrackLabelBg;   // Pale pastel blue
+      QColor(116, 232, 242),        // newDrumTrackLabelBg; // Light blue
       QColor(213, 128, 202),        // waveTrackLabelBg;   // magenta
       QColor(84, 185, 58),          // outputTrackLabelBg; // green
       QColor(199, 75, 64),          // inputTrackLabelBg;  // red
       QColor(236, 214, 90),         // groupTrackLabelBg;  // yellow
-      QColor(161, 234, 242),        // auxTrackLabelBg;    // Light blue
+      QColor(142, 157, 6),          // auxTrackLabelBg;    // Med olive
       QColor(229, 157, 101),        // synthTrackLabelBg;  // Med orange
       
       QColor(215, 220, 230),     // midiTrackBg;

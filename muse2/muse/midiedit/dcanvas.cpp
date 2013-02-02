@@ -420,8 +420,23 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
     int port, channel;
     if(old_style_drummap_mode)
     {
+      // Default to track port if -1 and track channel if -1.
       port = ourDrumMap[instrument].port;
+      if(port == -1)
+      {
+        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+          return 0;
+        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
+        port = mt->outPort();
+      }
       channel = ourDrumMap[instrument].channel;
+      if(channel == -1)
+      {
+        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+          return 0;
+        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
+        channel = mt->outChannel();
+      }
     }
     else
     {
@@ -649,8 +664,23 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
       if (pitch != playedPitch && _playEvents) {
             keyReleased(playedPitch, true); // kinda backwards but this should pick the right port, stopPlayEvent does not know.
             if (moving.size() == 1) {
+                // Default to track port if -1 and track channel if -1.
                 int port = old_style_drummap_mode ? ourDrumMap[instrument].port : dynamic_cast<MidiTrack*>(*instrument_map[instrument].tracks.begin())->outPort();
+                if(port == -1)
+                {
+                  if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+                    return;
+                  MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
+                  port = mt->outPort();
+                }
                 int channel = old_style_drummap_mode ? ourDrumMap[instrument].channel : dynamic_cast<MidiTrack*>(*instrument_map[instrument].tracks.begin())->outChannel();
+                if(channel == -1)
+                {
+                  if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+                    return;
+                  MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
+                  channel = mt->outChannel();
+                }
                 startPlayEvent(pitch, e.velo(), port, channel);
                 }
             }
@@ -930,8 +960,23 @@ void DrumCanvas::keyPressed(int index, int velocity)
         return;
       
       // called from DList - play event
+      // Default to track port if -1 and track channel if -1.
       int port = old_style_drummap_mode ? ourDrumMap[index].port : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outPort();
+      if(port == -1)
+      {
+        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+          return;
+        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
+        port = mt->outPort();
+      }
       int channel = old_style_drummap_mode ? ourDrumMap[index].channel : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outChannel();
+      if(channel == -1)
+      {
+        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+          return;
+        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
+        channel = mt->outChannel();
+      }
       int pitch = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
       // play note:
       if(_playEvents)
@@ -966,8 +1011,23 @@ void DrumCanvas::keyReleased(int index, bool)
         return;
       
       // called from DList - silence playing event
+      // Default to track port if -1 and track channel if -1.
       int port = old_style_drummap_mode ? ourDrumMap[index].port : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outPort();
+      if(port == -1)
+      {
+        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+          return;
+        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
+        port = mt->outPort();
+      }
       int channel = old_style_drummap_mode ? ourDrumMap[index].channel : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outChannel();
+      if(channel == -1)
+      {
+        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+          return;
+        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
+        channel = mt->outChannel();
+      }
       int pitch = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
 
       // release note:

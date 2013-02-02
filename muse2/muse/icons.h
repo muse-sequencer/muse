@@ -209,6 +209,7 @@ extern QPixmap* addtrack_audioinputIcon;
 extern QPixmap* addtrack_audiooutputIcon;
 extern QPixmap* addtrack_auxsendIcon;
 extern QPixmap* addtrack_drumtrackIcon;
+extern QPixmap* addtrack_newDrumtrackIcon;
 extern QPixmap* addtrack_wavetrackIcon;
 extern QPixmap* edit_drummsIcon;
 extern QPixmap* edit_listIcon;

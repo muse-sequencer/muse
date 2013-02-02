@@ -220,12 +220,13 @@
 #include "xpm/velo_all.xpm"
 #include "xpm/velo_per_note.xpm"
 
-#include "xpm/addtrack_addmiditrack.xpm"
+#include "xpm/addtrack_addmiditrack_2.xpm"
 #include "xpm/addtrack_audiogroup.xpm"
 #include "xpm/addtrack_audioinput.xpm"
 #include "xpm/addtrack_audiooutput.xpm"
-#include "xpm/addtrack_auxsend.xpm"
-#include "xpm/addtrack_drumtrack.xpm"
+#include "xpm/addtrack_auxsend_2.xpm"
+#include "xpm/addtrack_old_drumtrack.xpm"
+#include "xpm/addtrack_drumtrack_2.xpm"
 #include "xpm/addtrack_wavetrack.xpm"
 #include "xpm/edit_drumms.xpm"
 #include "xpm/edit_list.xpm"
@@ -453,6 +454,7 @@ QPixmap* addtrack_audioinputIcon;
 QPixmap* addtrack_audiooutputIcon;
 QPixmap* addtrack_auxsendIcon;
 QPixmap* addtrack_drumtrackIcon;
+QPixmap* addtrack_newDrumtrackIcon;
 QPixmap* addtrack_wavetrackIcon;
 QPixmap* edit_drummsIcon;
 QPixmap* edit_listIcon;
@@ -700,12 +702,13 @@ void initIcons()
       veloPerNote_OnIcon   = new MPIXMAP(velo_per_note_xpm, NULL);
       veloPerNote_OffIcon  = new MPIXMAP(velo_all_xpm, NULL);
 
-      addtrack_addmiditrackIcon     = new MPIXMAP(addtrack_addmiditrack_xpm, NULL);
+      addtrack_addmiditrackIcon     = new MPIXMAP(addtrack_addmiditrack_2_xpm, NULL);
       addtrack_audiogroupIcon       = new MPIXMAP(addtrack_audiogroup_xpm, NULL);
       addtrack_audioinputIcon       = new MPIXMAP(addtrack_audioinput_xpm, NULL);
       addtrack_audiooutputIcon      = new MPIXMAP(addtrack_audiooutput_xpm, NULL);
-      addtrack_auxsendIcon          = new MPIXMAP(addtrack_auxsend_xpm, NULL);
-      addtrack_drumtrackIcon        = new MPIXMAP(addtrack_drumtrack_xpm, NULL);
+      addtrack_auxsendIcon          = new MPIXMAP(addtrack_auxsend_2_xpm, NULL);
+      addtrack_drumtrackIcon        = new MPIXMAP(addtrack_old_drumtrack_xpm, NULL);
+      addtrack_newDrumtrackIcon     = new MPIXMAP(addtrack_drumtrack_2_xpm, NULL);
       addtrack_wavetrackIcon        = new MPIXMAP(addtrack_wavetrack_xpm, NULL);
       edit_drummsIcon               = new MPIXMAP(edit_drumms_xpm, NULL);
       edit_listIcon                 = new MPIXMAP(edit_list_xpm, NULL);
@@ -948,6 +951,7 @@ void deleteIcons()
       delete addtrack_audiooutputIcon;      
       delete addtrack_auxsendIcon;          
       delete addtrack_drumtrackIcon;        
+      delete addtrack_newDrumtrackIcon;
       delete addtrack_wavetrackIcon;        
       delete edit_drummsIcon;               
       delete edit_listIcon;                 

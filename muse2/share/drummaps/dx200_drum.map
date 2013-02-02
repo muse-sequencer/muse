@@ -38,8 +38,8 @@
 <entry><name>PickBass A#</name><channel>1</channel><enote>34</enote><anote>34</anote></entry>
 <entry><name>PickBass B</name><channel>1</channel><enote>35</enote><anote>35</anote></entry>
 <entry><name>BD Analog 808</name><channel>1</channel><enote>36</enote><anote>36</anote></entry>
-<entry><name>BD R&B 1</name><channel>1</channel><enote>37</enote><anote>37</anote></entry>
-<entry><name>BD R&B 2</name><channel>1</channel><enote>38</enote><anote>38</anote></entry>
+<entry><name>BD R&amp;B 1</name><channel>1</channel><enote>37</enote><anote>37</anote></entry>
+<entry><name>BD R&amp;B 2</name><channel>1</channel><enote>38</enote><anote>38</anote></entry>
 <entry><name>BD Lo-Fi</name><channel>1</channel><enote>39</enote><anote>39</anote></entry>
 <entry><name>BD Jungle</name><channel>1</channel><enote>40</enote><anote>40</anote></entry>
 <entry><name>BD Hip 1</name><channel>1</channel><enote>41</enote><anote>41</anote></entry>
@@ -53,8 +53,8 @@
 <entry><name>BD Elec 2 909</name><channel>1</channel><enote>49</enote><anote>49</anote></entry>
 <entry><name>BD Elec 3 909</name><channel>1</channel><enote>50</enote><anote>50</anote></entry>
 <entry><name>SD Live</name><channel>1</channel><enote>51</enote><anote>51</anote></entry>
-<entry><name>SD R&B 1</name><channel>1</channel><enote>52</enote><anote>52</anote></entry>
-<entry><name>SD R&B 2</name><channel>1</channel><enote>53</enote><anote>53</anote></entry>
+<entry><name>SD R&amp;B 1</name><channel>1</channel><enote>52</enote><anote>52</anote></entry>
+<entry><name>SD R&amp;B 2</name><channel>1</channel><enote>53</enote><anote>53</anote></entry>
 <entry><name>SD Analog 808</name><channel>1</channel><enote>54</enote><anote>54</anote></entry>
 <entry><name>SD Hip 1</name><channel>1</channel><enote>55</enote><anote>55</anote></entry>
 <entry><name>SD Hip 2 Lo-Fi</name><channel>1</channel><enote>56</enote><anote>56</anote></entry>
@@ -62,14 +62,14 @@
 <entry><name>SD Cut Jungle</name><channel>1</channel><enote>58</enote><anote>58</anote></entry>
 <entry><name>SD Dodge</name><channel>1</channel><enote>59</enote><anote>59</anote></entry>
 <entry><name>SD Timbra</name><channel>1</channel><enote>60</enote><anote>60</anote></entry>
-<entry><name>SD D&B</name><channel>1</channel><enote>61</enote><anote>61</anote></entry>
+<entry><name>SD D&amp;B</name><channel>1</channel><enote>61</enote><anote>61</anote></entry>
 <entry><name>SD Dist 909</name><channel>1</channel><enote>62</enote><anote>62</anote></entry>
 <entry><name>SD Elec 1 909</name><channel>1</channel><enote>63</enote><anote>63</anote></entry>
 <entry><name>SD Elec 2 909</name><channel>1</channel><enote>64</enote><anote>64</anote></entry>
 <entry><name>SD Rim 1</name><channel>1</channel><enote>65</enote><anote>65</anote></entry>
 <entry><name>SD Rim 2</name><channel>1</channel><enote>66</enote><anote>66</anote></entry>
-<entry><name>HH D&B Cls</name><channel>1</channel><enote>67</enote><anote>67</anote></entry>
-<entry><name>HH D&B Opn</name><channel>1</channel><enote>68</enote><anote>68</anote></entry>
+<entry><name>HH D&amp;B Cls</name><channel>1</channel><enote>67</enote><anote>67</anote></entry>
+<entry><name>HH D&amp;B Opn</name><channel>1</channel><enote>68</enote><anote>68</anote></entry>
 <entry><name>HH Ana Cls 1 909</name><channel>1</channel><enote>69</enote><anote>69</anote></entry>
 <entry><name>HH Ana Opn 1 808</name><channel>1</channel><enote>70</enote><anote>70</anote></entry>
 <entry><name>HH Syn Cls</name><channel>1</channel><enote>71</enote><anote>71</anote></entry>

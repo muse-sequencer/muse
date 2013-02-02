@@ -730,9 +730,16 @@ void MidiDevice::handleSeek()
         drum_found = true; 
         for(int i = 0; i < DRUM_MAPSIZE; ++i)
         {
-          if(MusEGlobal::drumMap[i].port != _port || usedChans[MusEGlobal::drumMap[i].channel])
+          // Default to track port if -1 and track channel if -1.
+          int mport = MusEGlobal::drumMap[i].port;
+          if(mport == -1)
+            mport = (*imt)->outPort();
+          int mchan = MusEGlobal::drumMap[i].channel;
+          if(mchan == -1)
+            mchan = (*imt)->outChannel();
+          if(mport != _port || usedChans[mchan])
             continue;
-          usedChans[MusEGlobal::drumMap[i].channel] = true;
+          usedChans[mchan] = true;
           ++usedChanCount;
           if(usedChanCount >= MIDI_CHANNELS)
             break;  // All are used, done searching.

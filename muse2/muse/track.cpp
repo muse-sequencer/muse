@@ -90,8 +90,11 @@ void addPortCtrlEvents(MidiTrack* t)
           {
             int note = cntrl & 0x7f;
             cntrl &= ~0xff;
-            ch = MusEGlobal::drumMap[note].channel;
-            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+            // Default to track port if -1 and track channel if -1.
+            if(MusEGlobal::drumMap[note].channel != -1)
+              ch = MusEGlobal::drumMap[note].channel;
+            if(MusEGlobal::drumMap[note].port != -1)
+              mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
             cntrl |= MusEGlobal::drumMap[note].anote;
           }
         }
@@ -132,8 +135,11 @@ void removePortCtrlEvents(MidiTrack* t)
           {
             int note = cntrl & 0x7f;
             cntrl &= ~0xff;
-            ch = MusEGlobal::drumMap[note].channel;
-            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+            // Default to track port if -1 and track channel if -1.
+            if(MusEGlobal::drumMap[note].channel != -1)
+              ch = MusEGlobal::drumMap[note].channel;
+            if(MusEGlobal::drumMap[note].port != -1)
+              mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
             cntrl |= MusEGlobal::drumMap[note].anote;
           }
         }

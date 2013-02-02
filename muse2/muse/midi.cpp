@@ -679,8 +679,13 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     // Map drum-notes to the drum-map values
                                    int instr = ev.pitch();
                                    pitch     = MusEGlobal::drumMap[instr].anote;
+                                   // Default to track port if -1 and track channel if -1.
                                    port      = MusEGlobal::drumMap[instr].port; //This changes to non-default port
+                                   if(port == -1)
+                                     port = track->outPort();
                                    channel   = MusEGlobal::drumMap[instr].channel;
+                                   if(channel == -1)
+                                     channel = track->outChannel();
                                    velo      = int(double(velo) * (double(MusEGlobal::drumMap[instr].vol) / 100.0)) ;
                                    }
                               else if (track->type() != Track::NEW_DRUM) {
@@ -744,8 +749,13 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     int instr = ctl & 0x7f;
                                     ctl &=  ~0xff;
                                     int pitch = MusEGlobal::drumMap[instr].anote & 0x7f;
+                                    // Default to track port if -1 and track channel if -1.
                                     port      = MusEGlobal::drumMap[instr].port; //This changes to non-default port
+                                    if(port == -1)
+                                      port = track->outPort();
                                     channel   = MusEGlobal::drumMap[instr].channel;
+                                    if(channel == -1)
+                                      channel = track->outChannel();
                                     MidiDevice* mdAlt = MusEGlobal::midiPorts[port].device();
                                     if(mdAlt) 
                                     {
@@ -1044,11 +1054,15 @@ void Audio::processMidi()
                                             int pitch = event.dataA();
                                             //Map note that is played according to MusEGlobal::drumInmap
                                             drumRecPitch = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].enote;
+                                            // Default to track port if -1 and track channel if -1.
                                             devport = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].port;
+                                            if(devport == -1)
+                                              devport = track->outPort();
                                             event.setPort(devport);
-                                            channel = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].channel;
+                                            int mapchan = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].channel;
+                                            if(mapchan != -1)
+                                              event.setChannel(mapchan);
                                             event.setA(MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].anote);
-                                            event.setChannel(channel);
                                       }
                                       else if (track->type() == Track::NEW_DRUM)
                                       {
@@ -1100,11 +1114,15 @@ void Audio::processMidi()
                                       int dmindex = MusEGlobal::drumInmap[pitch] & 0x7f;
                                       //Map note that is played according to MusEGlobal::drumInmap
                                       drumRecPitch = MusEGlobal::drumMap[dmindex].enote;
+                                      // Default to track port if -1 and track channel if -1.
                                       devport = MusEGlobal::drumMap[dmindex].port;
+                                      if(devport == -1)
+                                        devport = track->outPort();
                                       event.setPort(devport);
-                                      channel = MusEGlobal::drumMap[dmindex].channel;
+                                      int mapchan = MusEGlobal::drumMap[dmindex].channel;
+                                      if(mapchan != -1)
+                                        event.setChannel(mapchan);
                                       event.setA(ctl | MusEGlobal::drumMap[dmindex].anote);
-                                      event.setChannel(channel);
                                     }  
                                   }
                                   else if (track->type() == Track::NEW_DRUM) //FINDMICHJETZT TEST
@@ -1197,10 +1215,9 @@ void Audio::processMidi()
                                             MusECore::MidiPlayEvent drumRecEvent = event;
                                             drumRecEvent.setA(drumRecPitch);
                                             drumRecEvent.setB(preVelo);
-                                            // Tested: Events were not being recorded for a drum map entry pointing to a 
-                                            //  different port. This must have been wrong - buildMidiEventList would ignore this. Tim.
+                                            // Changed to 'port'. Events were not being recorded for a drum map entry pointing to a
+                                            //  different port. That must have been wrong - buildMidiEventList would ignore that. Tim.
                                             drumRecEvent.setPort(port);  //rec-event to current port
-                                            
                                             drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
                                             rl->add(drumRecEvent);
                                         }    

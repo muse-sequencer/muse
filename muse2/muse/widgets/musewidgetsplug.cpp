@@ -130,13 +130,13 @@ MusEGlobal::GlobalConfigValues config = {
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
       
       QColor(0, 160, 255),          // midiTrackLabelBg;   // Med blue
-      QColor(0, 160, 255),          // drumTrackLabelBg;   // Med blue
-      QColor(0, 160, 255),          // newDrumTrackLabelBg;   // Med blue
+      QColor(150, 177, 189),        // drumTrackLabelBg;   // Pale pastel blue
+      QColor(116, 232, 242),        // newDrumTrackLabelBg; // Light blue
       Qt::magenta,                  // waveTrackLabelBg;
       Qt::green,                    // outputTrackLabelBg;
       Qt::red,                      // inputTrackLabelBg;
       Qt::yellow,                   // groupTrackLabelBg;
-      QColor(120, 255, 255),        // auxTrackLabelBg;    // Light blue
+      QColor(142, 157, 6),          // auxTrackLabelBg;    // Med olive
       QColor(255, 130, 0),          // synthTrackLabelBg;  // Med orange
       
       QColor(220, 220, 220),     // midiTrackBg;

@@ -457,7 +457,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool evenIgnor
 
         if (!evenIgnoreDrumPreference && (MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_NEW || MusEGlobal::config.drumTrackPreference==MusEGlobal::ONLY_NEW))
         {
-          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
                                             qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
           newdrum->setData(MusECore::Track::NEW_DRUM);
           grp->addAction(newdrum);
@@ -472,7 +472,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool evenIgnor
         }
         if (evenIgnoreDrumPreference || MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_OLD)
         {
-          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
                                             qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add New Style Drum Track")));
           newdrum->setData(MusECore::Track::NEW_DRUM);
           grp->addAction(newdrum);
