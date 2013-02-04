@@ -1,3 +1,5 @@
+04.02.2013:
+         - Fixed gain adjustment with 'Other' choice in wave editor, it was reversed (rj)
 02.02.2013:
          * Solved: "Old style" Drums: Track channel/port re-enabled, drum list columns default to them. (Tim...)
            The drum list port and channel columns are now blank by default until overriden by user.
