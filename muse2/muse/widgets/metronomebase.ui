@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>557</width>
-    <height>363</height>
+    <width>647</width>
+    <height>522</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,100 +16,48 @@
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
-  <layout class="QGridLayout">
-   <property name="margin">
-    <number>11</number>
-   </property>
-   <property name="spacing">
-    <number>6</number>
-   </property>
+  <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
-    <layout class="QGridLayout">
-     <item row="0" column="0">
-      <widget class="QGroupBox" name="GroupBox1">
-       <property name="title">
-        <string>Metronome</string>
-       </property>
-       <layout class="QGridLayout">
-        <property name="margin">
-         <number>11</number>
-        </property>
-        <property name="spacing">
-         <number>6</number>
-        </property>
-        <item row="0" column="0">
-         <layout class="QVBoxLayout">
+    <widget class="QGroupBox" name="GroupBox1">
+     <property name="title">
+      <string>Metronome</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <property name="margin">
+       <number>11</number>
+      </property>
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item row="0" column="0">
+       <layout class="QVBoxLayout" name="qvbl_2">
+        <item>
+         <layout class="QHBoxLayout" name="qhbl_4">
           <item>
-           <layout class="QHBoxLayout">
-            <item>
-             <widget class="QCheckBox" name="audioBeep">
-              <property name="text">
-               <string>Audio Beep</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="audioBeepRoutesButton">
-              <property name="text">
-               <string>Choose outputs...</string>
-              </property>
-              <property name="autoDefault">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout">
-            <item>
-             <widget class="QSlider" name="volumeSlider">
-              <property name="minimum">
-               <number>0</number>
-              </property>
-              <property name="maximum">
-               <number>100</number>
-              </property>
-              <property name="singleStep">
-               <number>1</number>
-              </property>
-              <property name="pageStep">
-               <number>10</number>
-              </property>
-              <property name="value">
-               <number>50</number>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="volumeLabel">
-              <property name="text">
-               <string>50</string>
-              </property>
-              <property name="wordWrap">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="textLabel1">
-              <property name="text">
-               <string>% Audio volume</string>
-              </property>
-              <property name="wordWrap">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="midiClick">
+           <widget class="QCheckBox" name="audioBeep">
             <property name="text">
-             <string>MIDI Click</string>
+             <string>Audio Beep</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="audioBeepRoutesButton">
+            <property name="text">
+             <string>Choose outputs...</string>
+            </property>
+            <property name="autoDefault">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QRadioButton" name="radioSamples2">
+            <property name="text">
+             <string>Two samples (old samples)</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -117,199 +65,236 @@
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout">
-            <property name="spacing">
-             <number>6</number>
-            </property>
-            <property name="margin">
-             <number>0</number>
-            </property>
-            <item>
-             <layout class="QGridLayout">
-              <property name="margin">
-               <number>0</number>
-              </property>
-              <property name="spacing">
-               <number>6</number>
-              </property>
-              <item row="4" column="1">
-               <widget class="QLabel" name="TextLabel5">
-                <property name="text">
-                 <string>Midi Channel</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLabel" name="TextLabel1">
-                <property name="text">
-                 <string>Measure Note</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QSpinBox" name="midiChannel">
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>16</number>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLabel" name="TextLabel2">
-                <property name="text">
-                 <string>Measure Velocity</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLabel" name="TextLabel4">
-                <property name="text">
-                 <string>Beat Velocity</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QSpinBox" name="midiPort">
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>16</number>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QLabel" name="TextLabel3">
-                <property name="text">
-                 <string>Beat Note</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QSpinBox" name="beatNote"/>
-              </item>
-              <item row="1" column="0">
-               <widget class="QSpinBox" name="measureVelocity">
-                <property name="maximum">
-                 <number>127</number>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QSpinBox" name="measureNote"/>
-              </item>
-              <item row="5" column="1">
-               <widget class="QLabel" name="TextLabel6">
-                <property name="text">
-                 <string>Midi Port</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QSpinBox" name="beatVelocity">
-                <property name="maximum">
-                 <number>127</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <spacer name="Spacer10">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Expanding</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QGroupBox" name="GroupBox2">
-       <property name="title">
-        <string>Precount</string>
-       </property>
-       <layout class="QVBoxLayout">
-        <property name="spacing">
-         <number>6</number>
-        </property>
-        <property name="margin">
-         <number>11</number>
-        </property>
-        <item>
-         <widget class="QCheckBox" name="precountEnable">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>enable</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout">
-          <property name="spacing">
-           <number>6</number>
-          </property>
-          <property name="margin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QSpinBox" name="precountBars">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>10</number>
-            </property>
-            <property name="value">
-             <number>2</number>
+           <widget class="QRadioButton" name="radioSamples4">
+            <property name="text">
+             <string>Four samples (new samples, with accents)</string>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QLabel" name="TextLabel7">
+         </layout>
+        </item>
+        <item>
+         <layout class="QGridLayout" name="gridLayout_x">
+          <item row="0" column="0">
+           <widget class="QLabel" name="textLabel1_6">
             <property name="text">
-             <string>Bars</string>
+             <string>Audio volume</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSlider" name="volumeSlider">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="pageStep">
+             <number>10</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="volumeLabel">
+            <property name="text">
+             <string>50</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="3">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>5</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="textLabel1_2">
+            <property name="text">
+             <string>Meas volume</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSlider" name="measVolumeSlider">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="pageStep">
+             <number>10</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="measVolumeLabel">
+            <property name="text">
+             <string>50</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="textLabel1_3">
+            <property name="text">
+             <string>Beat volume</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSlider" name="beatVolumeSlider">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="pageStep">
+             <number>10</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLabel" name="beatVolumeLabel">
+            <property name="text">
+             <string>50</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="textLabel1_4">
+            <property name="text">
+             <string>Accent1 volume</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSlider" name="accent1VolumeSlider">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="pageStep">
+             <number>10</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLabel" name="accent1VolumeLabel">
+            <property name="text">
+             <string>50</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="textLabel1_5">
+            <property name="text">
+             <string>Accent2 volume</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QSlider" name="accent2VolumeSlider">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="pageStep">
+             <number>10</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLabel" name="accent2VolumeLabel">
+            <property name="text">
+             <string>50</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -319,12 +304,22 @@
          </layout>
         </item>
         <item>
-         <widget class="QCheckBox" name="precountFromMastertrack">
-          <property name="enabled">
-           <bool>false</bool>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="midiClick">
           <property name="text">
-           <string>From Mastertrack</string>
+           <string>MIDI Click</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -332,7 +327,7 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout">
+         <layout class="QHBoxLayout" name="qhbl_1">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -340,157 +335,372 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QSpinBox" name="precountSigZ">
-            <property name="enabled">
-             <bool>false</bool>
+           <layout class="QGridLayout" name="qgr_1">
+            <property name="margin">
+             <number>0</number>
             </property>
-            <property name="minimum">
-             <number>1</number>
+            <property name="spacing">
+             <number>6</number>
             </property>
-            <property name="maximum">
-             <number>32</number>
-            </property>
-            <property name="value">
-             <number>4</number>
-            </property>
-           </widget>
+            <item row="4" column="1">
+             <widget class="QLabel" name="TextLabel5">
+              <property name="text">
+               <string>Midi Channel</string>
+              </property>
+              <property name="wordWrap">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="TextLabel1">
+              <property name="text">
+               <string>Measure Note</string>
+              </property>
+              <property name="wordWrap">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QSpinBox" name="midiChannel">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>16</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="TextLabel2">
+              <property name="text">
+               <string>Measure Velocity</string>
+              </property>
+              <property name="wordWrap">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="TextLabel4">
+              <property name="text">
+               <string>Beat Velocity</string>
+              </property>
+              <property name="wordWrap">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QSpinBox" name="midiPort">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>16</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="TextLabel3">
+              <property name="text">
+               <string>Beat Note</string>
+              </property>
+              <property name="wordWrap">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QSpinBox" name="beatNote"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QSpinBox" name="measureVelocity">
+              <property name="maximum">
+               <number>127</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QSpinBox" name="measureNote"/>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLabel" name="TextLabel6">
+              <property name="text">
+               <string>Midi Port</string>
+              </property>
+              <property name="wordWrap">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QSpinBox" name="beatVelocity">
+              <property name="maximum">
+               <number>127</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QLabel" name="TextLabel8">
-            <property name="text">
-             <string>/</string>
+           <spacer name="Spacer10">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-            <property name="wordWrap">
-             <bool>false</bool>
+            <property name="sizeType">
+             <enum>QSizePolicy::Expanding</enum>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="precountSigN">
-            <property name="enabled">
-             <bool>false</bool>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
             </property>
-            <property name="minimum">
-             <number>2</number>
-            </property>
-            <property name="maximum">
-             <number>64</number>
-            </property>
-            <property name="value">
-             <number>4</number>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="TextLabel9">
-            <property name="text">
-             <string>Signature</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
+           </spacer>
           </item>
          </layout>
         </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="GroupBox2">
+     <property name="title">
+      <string>Precount</string>
+     </property>
+     <layout class="QVBoxLayout" name="qvbl_1">
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <property name="margin">
+       <number>11</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="precountEnable">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>enable</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="qhbl_2">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QCheckBox" name="precountPrerecord">
+         <widget class="QSpinBox" name="precountBars">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
-          <property name="text">
-           <string>Prerecord</string>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>10</number>
+          </property>
+          <property name="value">
+           <number>2</number>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="precountPreroll">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
+         <widget class="QLabel" name="TextLabel7">
           <property name="text">
-           <string>Preroll</string>
+           <string>Bars</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="precountFromMastertrack">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>From Mastertrack</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="qhbl_3">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QSpinBox" name="precountSigZ">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>32</number>
+          </property>
+          <property name="value">
+           <number>4</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="TextLabel8">
+          <property name="text">
+           <string>/</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="precountSigN">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="minimum">
+           <number>2</number>
+          </property>
+          <property name="maximum">
+           <number>64</number>
+          </property>
+          <property name="value">
+           <number>4</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="TextLabel9">
+          <property name="text">
+           <string>Signature</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="precountPrerecord">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Prerecord</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="precountPreroll">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Preroll</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="textLabel3">
+       <property name="text">
+        <string>Hint: Enable metronome in Transportpanel</string>
+       </property>
+       <property name="wordWrap">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
-     <item row="1" column="0" colspan="2">
-      <layout class="QHBoxLayout">
-       <item>
-        <widget class="QLabel" name="textLabel3">
-         <property name="text">
-          <string>Hint: Enable metronome in Transportpanel</string>
-         </property>
-         <property name="wordWrap">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="Horizontal Spacing2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Expanding</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>8</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="buttonApply">
-         <property name="text">
-          <string>&amp;Apply</string>
-         </property>
-         <property name="shortcut">
-          <string>Alt+A</string>
-         </property>
-         <property name="autoDefault">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="buttonOk">
-         <property name="text">
-          <string>&amp;OK</string>
-         </property>
-         <property name="shortcut">
-          <string>Alt+O</string>
-         </property>
-         <property name="autoDefault">
-          <bool>true</bool>
-         </property>
-         <property name="default">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="buttonCancel">
-         <property name="text">
-          <string>&amp;Cancel</string>
-         </property>
-         <property name="shortcut">
-          <string>Alt+C</string>
-         </property>
-         <property name="autoDefault">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
+     <item>
+      <spacer name="Horizontal Spacing2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>13</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonApply">
+       <property name="text">
+        <string>&amp;Apply</string>
+       </property>
+       <property name="shortcut">
+        <string>Alt+A</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonOk">
+       <property name="text">
+        <string>&amp;OK</string>
+       </property>
+       <property name="shortcut">
+        <string>Alt+O</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonCancel">
+       <property name="text">
+        <string>&amp;Cancel</string>
+       </property>
+       <property name="shortcut">
+        <string>Alt+C</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
   </layout>
+  <zorder>GroupBox1</zorder>
+  <zorder>GroupBox2</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
@@ -537,22 +747,6 @@
    <signal>clicked()</signal>
    <receiver>MetronomeConfigBase</receiver>
    <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>20</x>
-     <y>20</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>volumeSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>volumeLabel</receiver>
-   <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>20</x>

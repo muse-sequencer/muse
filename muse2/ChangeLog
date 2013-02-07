@@ -1,3 +1,7 @@
+07.02.2013:
+         * Feature: choice of new metronome with different sounds and adjustable volume.
+           Also has additional ticks before each standard tick. The idea is to improve timing.
+           Still needs some work, especially buggy for large time signatures, e.g. 3/16 (rj)
 04.02.2013:
          - Fixed gain adjustment with 'Other' choice in wave editor, it was reversed (rj)
 02.02.2013:

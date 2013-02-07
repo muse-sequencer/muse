@@ -42,6 +42,11 @@ class MusE;
 
 namespace MusEGlobal {
 
+enum ClickSamples {
+    origSamples,
+    newSamples
+};
+
 extern const float denormalBias;
 
 extern int sampleRate;
@@ -153,6 +158,11 @@ extern unsigned char measureClickNote;
 extern unsigned char measureClickVelo;
 extern unsigned char beatClickNote;
 extern unsigned char beatClickVelo;
+extern unsigned char accentClick1;
+extern unsigned char accentClick1Velo;
+extern unsigned char accentClick2;
+extern unsigned char accentClick2Velo;
+
 extern unsigned char clickChan;
 extern unsigned char clickPort;
 extern bool precountEnableFlag;
@@ -164,6 +174,11 @@ extern bool precountPreroll;
 extern bool midiClickFlag;
 extern bool audioClickFlag;
 extern float audioClickVolume;
+extern float measClickVolume;
+extern float beatClickVolume;
+extern float accent1ClickVolume;
+extern float accent2ClickVolume;
+extern ClickSamples clickSamples;
 
 extern bool rcEnable;
 extern unsigned char rcStopNote;
@@ -178,7 +193,7 @@ extern int midiLearnCtrl;
 
 extern bool midiSeqRunning;
 extern bool automation;
-
+extern int trackHeight;
 // p3.3.55
 #define JACK_MIDI_OUT_PORT_SUFFIX "_out"
 #define JACK_MIDI_IN_PORT_SUFFIX  "_in"

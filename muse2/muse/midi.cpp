@@ -1250,49 +1250,90 @@ void Audio::processMidi()
       if (MusEGlobal::midiClickFlag)
             md = MusEGlobal::midiPorts[MusEGlobal::clickPort].device();
       if (MusEGlobal::song->click() && (isPlaying() || state == PRECOUNT)) {
-            int bar, beat;
+            int bar, beat, z, n;
             unsigned tick;
-            bool isMeasure = false;
+            AudioTickSound audioTickSound = MusECore::beatSound;
             while (midiClick < nextTickPos) {
                   if (isPlaying()) {
-                        AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
-                        isMeasure = beat == 0;
-                        }
+                    AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
+                    AL::sigmap.timesig(midiClick, z, n);
+
+                    //n = 2;
+                    if (tick == 0 && beat == 0) {
+                        audioTickSound = MusECore::measureSound;
+                        if (MusEGlobal::debugMsg)
+                            printf("meas: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                    }
+                    else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) {
+                        audioTickSound = MusECore::accent2Sound;
+                        if (MusEGlobal::debugMsg)
+                            printf("acc2: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                    }
+                    else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/n))) {
+                        audioTickSound = MusECore::accent1Sound;
+                        if (MusEGlobal::debugMsg)
+                            printf("acc1: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                    } else {
+                        if (MusEGlobal::debugMsg)
+                            printf("beat: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                    }
+                  }
                   else if (state == PRECOUNT) {
-                        isMeasure = (clickno % clicksMeasure) == 0;
-                        }
+                    if ((clickno % clicksMeasure) == 0) {
+                        audioTickSound = MusECore::measureSound;
+                    }
+                  }
                   int evtime = extsync ? midiClick : MusEGlobal::tempomap.tick2frame(midiClick) + frameOffset;  // p3.3.25
-                  
+
+                  MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
+                  if (audioTickSound == MusECore::measureSound) {
+                    ev.setA(MusEGlobal::measureClickNote);
+                    ev.setB(MusEGlobal::measureClickVelo);
+                  }
+                  if (audioTickSound == MusECore::accent1Sound) {
+                    ev.setA(MusEGlobal::accentClick1);
+                    ev.setB(MusEGlobal::accentClick1Velo);
+                  }
+                  if (audioTickSound == MusECore::accent2Sound) {
+                    ev.setA(MusEGlobal::accentClick2);
+                    ev.setB(MusEGlobal::accentClick2Velo);
+                  }
                   if (md) {
-                        MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON,
-                           MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
-                        
-                        if (isMeasure) {
-                              ev.setA(MusEGlobal::measureClickNote);
-                              ev.setB(MusEGlobal::measureClickVelo);
-                              }
-                        md->addScheduledEvent(ev);
-                        
-                        ev.setB(0);
-                        ev.setTime(midiClick+10);
-                        md->addStuckNote(ev);
-                        }
+                    md->addScheduledEvent(ev);
+                    ev.setB(0);
+                    ev.setTime(midiClick+10);
+                    md->addStuckNote(ev);
+                  }
                   if (MusEGlobal::audioClickFlag) {
-                        MusECore::MidiPlayEvent ev(evtime, 0, 0, MusECore::ME_NOTEON, 0, 0);
-                        ev.setA(isMeasure ? 0 : 1);
-                        metronome->addScheduledEvent(ev);
-                        // Built-in metronome synth does not use stuck notes...
-                        }
-                  if (isPlaying())
+                    ev.setA(audioTickSound);
+                    metronome->addScheduledEvent(ev);
+                    // Built-in metronome synth does not use stuck notes...
+                  }
+                  if (isPlaying()) {
+                      // State machine to select next midiClick position.
+                      if (MusEGlobal::clickSamples == MusEGlobal::newSamples) {
+                          if (tick == 0) {//  ON key
+                              midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - ((MusEGlobal::config.division/n)));
+                          }
+                          else if (tick >= unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) { // second accent tick
+                              midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                          }
+                          else if (tick < unsigned(MusEGlobal::config.division - ((MusEGlobal::config.division/(n*2))))) { // first accent tick
+                              midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)));
+                          }
+                      }
+                      else {
                         midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                      }
+                  }
                   else if (state == PRECOUNT) {
                         midiClick += ticksBeat;
                         if (clickno)
                               --clickno;
                         else
                               state = START_PLAY;
-                        }
                   }
+               }
             }
       
       //

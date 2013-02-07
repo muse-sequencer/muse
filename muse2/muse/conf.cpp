@@ -394,6 +394,16 @@ static void loadConfigMetronom(Xml& xml)
                               MusEGlobal::audioClickFlag = xml.parseInt();
                         else if (tag == "audioClickVolume")
                               MusEGlobal::audioClickVolume = xml.parseFloat();
+                        else if (tag == "measClickVolume")
+                              MusEGlobal::measClickVolume = xml.parseFloat();
+                        else if (tag == "beatClickVolume")
+                              MusEGlobal::beatClickVolume = xml.parseFloat();
+                        else if (tag == "accent1ClickVolume")
+                              MusEGlobal::accent1ClickVolume = xml.parseFloat();
+                        else if (tag == "accent2ClickVolume")
+                              MusEGlobal::accent2ClickVolume = xml.parseFloat();
+                        else if (tag == "clickSamples")
+                              MusEGlobal::clickSamples = (MusEGlobal::ClickSamples)xml.parseInt();
                         else
                               xml.unknown("Metronome");
                         break;
@@ -1094,6 +1104,11 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "midiClickEnable", MusEGlobal::midiClickFlag);
       xml.intTag(level, "audioClickEnable", MusEGlobal::audioClickFlag);
       xml.floatTag(level, "audioClickVolume", MusEGlobal::audioClickVolume);
+      xml.floatTag(level, "measClickVolume", MusEGlobal::measClickVolume);
+      xml.floatTag(level, "beatClickVolume", MusEGlobal::beatClickVolume);
+      xml.floatTag(level, "accent1ClickVolume", MusEGlobal::accent1ClickVolume);
+      xml.floatTag(level, "accent2ClickVolume", MusEGlobal::accent2ClickVolume);
+      xml.intTag(level, "clickSamples", MusEGlobal::clickSamples);
       xml.tag(level--, "/metronom");
 
       xml.intTag(level, "rcEnable",   MusEGlobal::rcEnable);

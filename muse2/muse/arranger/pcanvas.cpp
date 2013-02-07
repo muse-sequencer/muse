@@ -1951,18 +1951,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         
         pts = 0;
         if(het == (MusECore::Part::LeftEventsHidden | MusECore::Part::RightEventsHidden))
-        {
-          //points[pts++] = QPoint(xs_0, y0); DELETETHIS 11
-          //points[pts++] = QPoint(xe_0, y0);
-          //points[pts++] = QPoint(xe_j, y1);
-          //points[pts++] = QPoint(xe_0, y2);
-          //points[pts++] = QPoint(xe_j, y3);
-          //points[pts++] = QPoint(xe_0, y4);
-          //points[pts++] = QPoint(xs_0, y4);
-          //points[pts++] = QPoint(xs_j, y3);
-          //points[pts++] = QPoint(xs_0, y2);
-          //points[pts++] = QPoint(xs_j, y1);
-          
+        {          
           points[pts++] = QPoint(xs_0, y0);
           points[pts++] = QPoint(xe_0, y0);
           points[pts++] = QPoint(xe_j, y2);
@@ -1975,14 +1964,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         else
         if(het == MusECore::Part::LeftEventsHidden)
         {
-          //points[pts++] = QPoint(xs_0, y0); DELETETHIS 7
-          //points[pts++] = QPoint(xe_0, y0);
-          //points[pts++] = QPoint(xe_0, y4);
-          //points[pts++] = QPoint(xs_0, y4);
-          //points[pts++] = QPoint(xs_j, y3);
-          //points[pts++] = QPoint(xs_0, y2);
-          //points[pts++] = QPoint(xs_j, y1);
-          
           points[pts++] = QPoint(xs_0, y0);
           points[pts++] = QPoint(xe_0, y0);
           points[pts++] = QPoint(xe_0, y4);
@@ -1994,14 +1975,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         else
         if(het == MusECore::Part::RightEventsHidden)
         {
-          //points[pts++] = QPoint(xs_0, y0); DELETETHIS 7
-          //points[pts++] = QPoint(xe_0, y0);
-          //points[pts++] = QPoint(xe_j, y1);
-          //points[pts++] = QPoint(xe_0, y2);
-          //points[pts++] = QPoint(xe_j, y3);
-          //points[pts++] = QPoint(xe_0, y4);
-          //points[pts++] = QPoint(xs_0, y4);
-          
           points[pts++] = QPoint(xs_0, y0);
           points[pts++] = QPoint(xe_0, y0);
           points[pts++] = QPoint(xe_j, y2);
@@ -2016,11 +1989,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         int part_r, part_g, part_b, brightness, color_brightness;
         MusEGlobal::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
         brightness =  part_r*29 + part_g*59 + part_b*12;
-        // DELETETHIS 4 ??
-        //if ((brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving())
-        //  color_brightness=223;   // too dark: use lighter color 
-        //else
-        //  color_brightness=32;  // otherwise use dark color 
         if ((brightness >= 12000 && !part->selected()))
           color_brightness=96; //0;    // too light: use dark color 
         else
@@ -2030,12 +1998,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         if(het & MusECore::Part::RightEventsHidden)
         {
           pts = 0;
-          //points[pts++] = QPoint(xe_0, y0); DELETETHIS 5
-          //points[pts++] = QPoint(xe_0, y4);
-          //points[pts++] = QPoint(xe_j, y3);
-          //points[pts++] = QPoint(xe_0, y2);
-          //points[pts++] = QPoint(xe_j, y1);
-          
           points[pts++] = QPoint(xe_0, y0);
           points[pts++] = QPoint(xe_0, y4);
           points[pts++] = QPoint(xe_j, y2);
@@ -2045,12 +2007,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         if(het & MusECore::Part::LeftEventsHidden)
         {
           pts = 0;
-          //points[pts++] = QPoint(xs_0, y0); DELETETHIS 5
-          //points[pts++] = QPoint(xs_j, y1);
-          //points[pts++] = QPoint(xs_0, y2);
-          //points[pts++] = QPoint(xs_j, y3);
-          //points[pts++] = QPoint(xs_0, y4);
-          
           points[pts++] = QPoint(xs_0, y0);
           points[pts++] = QPoint(xs_j, y2);
           points[pts++] = QPoint(xs_0, y4);
@@ -2092,22 +2048,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       }
 
       p.setWorldMatrixEnabled(false);
-      
-  #if 0 // DELETETHIS 13
-        //
-        // Now draw the borders...
-        // Works great but requires clones be drawn with the highest priority on top of all other parts, in Canvas::draw.
-        //
         
-        QPen pen(part->selected() ? MusEGlobal::config.partColors[i] : Qt::black, 2.0, clone ? Qt::DotLine : Qt::SolidLine);
-        pen.setCosmetic(true);
-        p.setPen(pen); 
-        p.setBrush(Qt::NoBrush);
-        p.drawRect(r);
-        
-  //#else 
-  #endif
-  
   #if 1 // DELETETHIS remove wrapping #if
         //
         // Now draw the borders, using custom segments...
@@ -2134,15 +2075,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         penNormal2H.setCosmetic(true);
         penNormal1V.setCosmetic(true);
         penNormal2V.setCosmetic(true);
-        
-        //pc = Qt::white;
-        //pc = Qt::darkGray;
-        //QPen penHidden1(pc);
-        //QPen penHidden2(pc, 2.0);
-        //penHidden2.setCosmetic(true);
-        
+                
         QVector<qreal> customDashPattern;
-        
         if(clone)
         {
           customDashPattern << 4.0 << 6.0;
@@ -2176,79 +2110,37 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           }
         }  
         
-        //if(het & MusECore::Part::RightEventsHidden)
-        //  p.setPen(((NPart*)item)->rightBorderTouches ? penHidden1 : penHidden2); 
-        //else  
-        {
-          if(((NPart*)item)->rightBorderTouches)              
-            p.setPen(part->selected() ? penSelect1V : penNormal1V); 
-          else  
-            p.setPen(part->selected() ? penSelect2V : penNormal2V); 
-        }  
+        if(((NPart*)item)->rightBorderTouches)
+          p.setPen(part->selected() ? penSelect1V : penNormal1V);
+        else
+          p.setPen(part->selected() ? penSelect2V : penNormal2V);
         
-        if(rbx >= mrxs_0 && rbx <= mrxe_0)  // Respect the requested drawing rectangle. Gives speed boost!
-        {
-          QLine l2(rbx, ys_0, rbx, ye_0);            // Right 
-          p.drawLine(l2);        // Right line
-        }
+//        if(rbx >= mrxs_0 && rbx <= mrxe_0)  // Respect the requested drawing rectangle. Gives speed boost!
+//        {
+//          QLine l2(rbx, ys_0, rbx, ye_0);            // Right
+//          p.drawLine(l2);        // Right line
+//        }
+
+//        if(((NPart*)item)->leftBorderTouches)
+//          p.setPen(part->selected() ? penSelect1V : penNormal1V);
+//        else
+//          p.setPen(part->selected() ? penSelect2V : penNormal2V);
         
-        /*
-        int xx = rbt?xe_1:xe_0; 
-        if(clone)
-        {
-          int yinc = 7;
-          for(int yy = (rbt?ys_1:ys_2); yy < ye_2; yy += yinc)
-          {
-            int yi = rbt?3:2;
-            if(yy + yi > ye_2)
-              yi = ye_2 - yy;
-            p.drawLine(QPoint(xx, yy), QPoint(xx, yy + yi));      // Right dashed line
-          }   
-        }
-        else  
-          p.drawLine(QPoint(xx, rbt?ys_1:ys_2), QPoint(xx, rbt?ye_1:ye_2));      // Right line
-        */
+//        if(xs_0 >= mrxs_0 && xs_0 <= mrxe_0)
+//        {
+//          QLine l4(xs_0, ys_0, xs_0, ye_0);            // Left
+//          p.drawLine(l4);        //  Left line
+//        }
+                
+//        p.setPen(part->selected() ? penSelect2H : penNormal2H);
         
-        //if(het & MusECore::Part::LeftEventsHidden)
-        //  p.setPen(((NPart*)item)->leftBorderTouches ? penHidden1 : penHidden2); 
-        //else  
-        {
-          if(((NPart*)item)->leftBorderTouches)              
-            p.setPen(part->selected() ? penSelect1V : penNormal1V); 
-          else  
-            p.setPen(part->selected() ? penSelect2V : penNormal2V); 
-        }  
-        
-        if(xs_0 >= mrxs_0 && xs_0 <= mrxe_0)
-        {
-          QLine l4(xs_0, ys_0, xs_0, ye_0);            // Left
-          p.drawLine(l4);        //  Left line
-        }
-        
-        /*
-        xx = xs_0;
-        if(clone)
-        {
-          int yinc = 7;
-          for(int yy = (lbt?ys_1:ys_2); yy < ye_2; yy += yinc)
-          {
-            int yi = lbt?3:2;
-            if(yy + yi > ye_2)
-              yi = ye_2 - yy;
-            p.drawLine(QPoint(xx, yy), QPoint(xx, yy + yi));      // Left dashed line
-          }   
-        }
-        else  
-          p.drawLine(QPoint(xx, lbt?ys_1:ys_2), QPoint(xx, lbt?ye_1:ye_2));      // Left line
-        */
-        
-        p.setPen(part->selected() ? penSelect2H : penNormal2H); 
-        
-        // Respect the requested drawing rectangle. Gives speed boost!
-        QLine l1(lbx_c, ys_0, rbx_c, ys_0);  
-        p.drawLine(l1);  // Top line
-        QLine l3(lbx_c, ye_0, rbx_c, ye_0);  
-        p.drawLine(l3);  // Bottom line
+//        // Respect the requested drawing rectangle. Gives speed boost!
+//        QLine l1(lbx_c, ys_0, rbx_c, ys_0);
+//        p.drawLine(l1);  // Top line
+//        QLine l3(lbx_c, ye_0, rbx_c, ye_0);
+//        p.drawLine(l3);  // Bottom line
+
+        p.drawRoundedRect(lbx_c, ys_0, rbx_c-lbx_c, ye_0-ys_0, 5.0, 5.0);
         
   #endif
       

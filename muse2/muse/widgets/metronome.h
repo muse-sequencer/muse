@@ -45,7 +45,12 @@ class MetronomeConfig : public QDialog, public Ui::MetronomeConfigBase {
       void midiClickChanged(bool);
       void precountEnableChanged(bool);
       void precountFromMastertrackChanged(bool);
-      void beepVolumeChanged(int);
+      void volumeChanged(int);
+      void measVolumeChanged(int);
+      void beatVolumeChanged(int);
+      void accent1VolumeChanged(int);
+      void accent2VolumeChanged(int);
+      void switchSamples();
 
    public:
       MetronomeConfig(QDialog* parent=0);

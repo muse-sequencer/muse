@@ -88,7 +88,14 @@ enum {
       ME_META_SEQ_SPECIFIC_1 = 0x74,
       ME_META_SEQ_SPECIFIC_2 = 0x7f
 };
-      
+
+enum AudioTickSound {
+    beatSound,
+    measureSound,
+    accent1Sound,
+    accent2Sound
+};
+
 extern const unsigned char gmOnMsg[];
 
 extern const unsigned char gsOnMsg[];
