@@ -2115,32 +2115,30 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         else
           p.setPen(part->selected() ? penSelect2V : penNormal2V);
         
-//        if(rbx >= mrxs_0 && rbx <= mrxe_0)  // Respect the requested drawing rectangle. Gives speed boost!
-//        {
-//          QLine l2(rbx, ys_0, rbx, ye_0);            // Right
-//          p.drawLine(l2);        // Right line
-//        }
+        if(rbx >= mrxs_0 && rbx <= mrxe_0)  // Respect the requested drawing rectangle. Gives speed boost!
+        {
+          QLine l2(rbx, ys_0, rbx, ye_0);            // Right
+          p.drawLine(l2);        // Right line
+        }
 
-//        if(((NPart*)item)->leftBorderTouches)
-//          p.setPen(part->selected() ? penSelect1V : penNormal1V);
-//        else
-//          p.setPen(part->selected() ? penSelect2V : penNormal2V);
+        if(((NPart*)item)->leftBorderTouches)
+          p.setPen(part->selected() ? penSelect1V : penNormal1V);
+        else
+          p.setPen(part->selected() ? penSelect2V : penNormal2V);
         
-//        if(xs_0 >= mrxs_0 && xs_0 <= mrxe_0)
-//        {
-//          QLine l4(xs_0, ys_0, xs_0, ye_0);            // Left
-//          p.drawLine(l4);        //  Left line
-//        }
+        if(xs_0 >= mrxs_0 && xs_0 <= mrxe_0)
+        {
+          QLine l4(xs_0, ys_0, xs_0, ye_0);            // Left
+          p.drawLine(l4);        //  Left line
+        }
                 
-//        p.setPen(part->selected() ? penSelect2H : penNormal2H);
+        p.setPen(part->selected() ? penSelect2H : penNormal2H);
         
-//        // Respect the requested drawing rectangle. Gives speed boost!
-//        QLine l1(lbx_c, ys_0, rbx_c, ys_0);
-//        p.drawLine(l1);  // Top line
-//        QLine l3(lbx_c, ye_0, rbx_c, ye_0);
-//        p.drawLine(l3);  // Bottom line
-
-        p.drawRoundedRect(lbx_c, ys_0, rbx_c-lbx_c, ye_0-ys_0, 5.0, 5.0);
+        // Respect the requested drawing rectangle. Gives speed boost!
+        QLine l1(lbx_c, ys_0, rbx_c, ys_0);
+        p.drawLine(l1);  // Top line
+        QLine l3(lbx_c, ye_0, rbx_c, ye_0);
+        p.drawLine(l3);  // Bottom line
         
   #endif
       
