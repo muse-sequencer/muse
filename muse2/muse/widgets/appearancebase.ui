@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab1">
       <attribute name="title">
@@ -186,9 +186,6 @@
             <property name="allColumnsShowFocus">
              <bool>true</bool>
             </property>
-            <attribute name="headerVisible">
-             <bool>false</bool>
-            </attribute>
             <attribute name="headerVisible">
              <bool>false</bool>
             </attribute>
@@ -1200,6 +1197,35 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>MusE color scheme</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="colorSchemeComboBox">
+            <item>
+             <property name="text">
+              <string>current settings</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>light theme (changing overrides all other settings)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dark theme (changing overrides all other settings)</string>
+             </property>
+            </item>
+           </widget>
           </item>
           <item>
            <spacer name="spacer3">

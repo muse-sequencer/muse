@@ -24,7 +24,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define NUM_PARTCOLORS 17
+#define NUM_PARTCOLORS 19
 #define NUM_FONTS 7
 
 #include <QColor>
@@ -133,6 +133,9 @@ struct GlobalConfigValues {
       QColor partCanvasBg;
       QColor ctrlGraphFg;
       QColor mixerBg;
+
+      QColor rulerBg;
+      QColor rulerFg;
 
       int division;
       int rtcTicks;

@@ -125,6 +125,9 @@ GlobalConfigValues config = {
       QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
       QColor(0, 0, 0),           // mixerBg;
 
+      QColor(0xe0, 0xe0, 0xe0),           // Ruler background
+      QColor(0, 0, 0),              // Ruler text
+
       384,                          // division;
       1024,                         // rtcTicks
       true,                         // midiSendInit Send instrument initialization sequences
@@ -207,6 +210,7 @@ GlobalConfigValues config = {
       MusEGlobal::PREFER_NEW,       // drumTrackPreference
       true,                         // smartFocus
       20,                           // trackHeight
+
     };
 
 } // namespace MusEGlobal

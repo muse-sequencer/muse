@@ -177,6 +177,8 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
              new IdListViewItem(0x400 + i, id, MusEGlobal::config.partColorNames[i]);
            
            new IdListViewItem(0x41c, aid, "part canvas background");
+           new IdListViewItem(0x41f, aid, "Ruler background");
+           new IdListViewItem(0x420, aid, "Ruler text");
       id = new IdListViewItem(0, aid, "Track List");
            new IdListViewItem(0x411, id, "background");
            new IdListViewItem(0x412, id, "midi background");
@@ -190,7 +192,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x419, id, "synth background");
            new IdListViewItem(0x41a, id, "selected track background");
            new IdListViewItem(0x41b, id, "selected track foreground");
-           //   0x41e is already used (between 413 and 414)
+           //   0x41c - 0x420 is already used (see above)
       id = new IdListViewItem(0, itemList, "BigTime");
            new IdListViewItem(0x100, id, "background");
            new IdListViewItem(0x101, id, "foreground");
@@ -463,31 +465,63 @@ void Appearance::updateFonts()
 
 void Appearance::apply()
       {
+
+      // Changing color themes overrides all other configurations
+
+      if (colorSchemeComboBox->currentIndex()==1) // light theme
+      {
+        // load standard light theme
+        backgroundTree->reset();
+        styleSheetPath->setText("");
+        MusEGlobal::muse->loadStyleSheetFile("");
+        MusEGlobal::config.styleSheetFile = "";
+        QString configPath = MusEGlobal::museGlobalShare +"/lightbase.cfg";
+        MusECore::readConfiguration(configPath.toLatin1().constData());
+        colorSchemeComboBox->setCurrentIndex(0);
+        MusEGlobal::muse->changeConfig(true);
+        return;
+
+      }
+      else if (colorSchemeComboBox->currentIndex()==2) // dark theme
+      {
+        // load standard dark theme
+        backgroundTree->reset();
+        styleSheetPath->setText(MusEGlobal::museGlobalShare +"/darkbase.qss");
+        MusEGlobal::config.styleSheetFile = styleSheetPath->text();
+        QString configPath = MusEGlobal::museGlobalShare +"/darkbase.cfg";
+        MusECore::readConfiguration(configPath.toLatin1().constData());
+        colorSchemeComboBox->setCurrentIndex(0);
+        MusEGlobal::muse->changeConfig(true);
+        return;
+      }
+
+//
+//
       int showPartEvent = 0;
       int showPartType = 0;
 
-      if (partShownames->isChecked())		
+      if (partShownames->isChecked())
                 showPartType  |= 1;
-      if (partShowevents->isChecked())		
+      if (partShowevents->isChecked())
                 showPartType  |= 2;
-      if (partCakeStretch->isChecked())		
+      if (partCakeStretch->isChecked())
                 showPartType  |= 4;
 
       config->canvasShowPartType = showPartType;
 
-      if (eventNoteon->isChecked())		
+      if (eventNoteon->isChecked())
                 showPartEvent |= (1 << 0);
-      if (eventPolypressure->isChecked())	
+      if (eventPolypressure->isChecked())
                 showPartEvent |= (1 << 1);
-      if (eventController->isChecked())	
+      if (eventController->isChecked())
                 showPartEvent |= (1 << 2);
-      if (eventProgramchange->isChecked())	
+      if (eventProgramchange->isChecked())
                 showPartEvent |= (1 << 3);
-      if (eventAftertouch->isChecked())	
+      if (eventAftertouch->isChecked())
                 showPartEvent |= (1 << 4);
-      if (eventPitchbend->isChecked())		
+      if (eventPitchbend->isChecked())
                 showPartEvent |= (1 << 5);
-      if (eventSpecial->isChecked())		
+      if (eventSpecial->isChecked())
                 showPartEvent |= (1 << 6);
 
       config->canvasShowPartEvent = showPartEvent;
@@ -502,11 +536,11 @@ void Appearance::apply()
       config->canvasCustomBgList = QStringList();
       for (int i = 0; i < user_bg->childCount(); ++i)
             config->canvasCustomBgList << user_bg->child(i)->data(0, Qt::UserRole).toString();
-      
+
       config->styleSheetFile = styleSheetPath->text();
-      
+
       config->fonts[0].setFamily(fontName0->text());
-      
+
       config->fonts[0].setPointSize(fontSize0->value());
       config->fonts[0].setItalic(italic0->isChecked());
       config->fonts[0].setBold(bold0->isChecked());
@@ -543,15 +577,15 @@ void Appearance::apply()
       config->fonts[6].setBold(bold6->isChecked());
 
       config->style = themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText();
-    	// setting up a new theme might change the fontsize, so re-read
+      // setting up a new theme might change the fontsize, so re-read
       fontSize0->setValue(QApplication::font().pointSize());
 
       config->canvasShowGrid = arrGrid->isChecked();
-      
+
       config->globalAlphaBlend = globalAlphaVal->value();
-      
       // set colors...
       MusEGlobal::config = *config;
+
       MusEGlobal::muse->changeConfig(true);
       }
 
@@ -706,7 +740,11 @@ void Appearance::colorItemSelectionChanged()
             case 0x41b: color = &config->selectTrackFg;  break;
             case 0x41c: color = &config->partCanvasBg; break;
             case 0x41d: color = &config->ctrlGraphFg; break;
+
             //   0x41e is already used (between 413 and 414)
+
+            case 0x41f: color = &config->rulerBg; break;
+            case 0x420: color = &config->rulerFg; break;
 
             case 0x500: color = &config->mixerBg;   break;
             case 0x501: color = &config->midiTrackLabelBg;   break;

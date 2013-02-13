@@ -1,3 +1,5 @@
+13.02.2013:
+         * Added basic theme support selection, currently two themes selectable, light and dark (rj)
 07.02.2013:
          * Feature: choice of new metronome with different sounds and adjustable volume.
            Also has additional ticks before each standard tick. The idea is to improve timing.

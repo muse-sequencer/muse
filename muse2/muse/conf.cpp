@@ -859,6 +859,11 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.transportHandleColor = readColor(xml);
                         else if (tag == "waveEditBackgroundColor")
                               MusEGlobal::config.waveEditBackgroundColor = readColor(xml);
+                        else if (tag == "rulerBackgroundColor")
+                              MusEGlobal::config.rulerBg = readColor(xml);
+                        else if (tag == "rulerForegroundColor")
+                              MusEGlobal::config.rulerFg = readColor(xml);
+
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
                         /* Obsolete. done by song's toplevel list. arrangerview also handles arranger.
@@ -1026,13 +1031,21 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 //---------------------------------------------------------
 //   readConfiguration
 //---------------------------------------------------------
-
 bool readConfiguration()
+{
+    return readConfiguration(NULL);
+}
+
+bool readConfiguration(const char *configFile)
       {
-      FILE* f = fopen(MusEGlobal::configName.toLatin1().constData(), "r");
+      if (configFile == NULL)
+        configFile = MusEGlobal::configName.toLatin1().constData();
+
+      printf("Config File <%s>\n", configFile);
+      FILE* f = fopen(configFile, "r");
       if (f == 0) {
             if (MusEGlobal::debugMsg || MusEGlobal::debugMode)
-                  fprintf(stderr, "NO Config File <%s> found\n", MusEGlobal::configName.toLatin1().constData());
+                  fprintf(stderr, "NO Config File <%s> found\n", configFile);
 
             if (MusEGlobal::config.userInstrumentsDir.isEmpty()) 
                   MusEGlobal::config.userInstrumentsDir = MusEGlobal::configPath + "/instruments";
@@ -1398,6 +1411,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "bigtimeForegroundcolor", MusEGlobal::config.bigTimeForegroundColor);
       xml.colorTag(level, "bigtimeBackgroundcolor", MusEGlobal::config.bigTimeBackgroundColor);
       xml.colorTag(level, "waveEditBackgroundColor", MusEGlobal::config.waveEditBackgroundColor);
+      xml.colorTag(level, "rulerBackgroundColor", MusEGlobal::config.rulerBg);
+      xml.colorTag(level, "rulerForegroundColor", MusEGlobal::config.rulerFg);
 
       MusEGlobal::writePluginGroupConfiguration(level, xml);
 

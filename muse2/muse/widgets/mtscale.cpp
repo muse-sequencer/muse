@@ -27,6 +27,7 @@
 
 #include "mtscale.h"
 #include "song.h"
+#include "app.h"
 #include "icons.h"
 #include "gconfig.h"
 
@@ -60,9 +61,19 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
-	
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
+
       setFixedHeight(28);
-      setBg(QColor(0xe0, 0xe0, 0xe0));
+
+      setBg(MusEGlobal::config.rulerBg);
+      //setBg(QColor(0xe0, 0xe0, 0xe0));
+      }
+
+void MTScale::configChanged()
+      {
+      setBg(MusEGlobal::config.rulerBg);
+
+
       }
 
 //---------------------------------------------------------
@@ -234,7 +245,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
       //---------------------------------------------------
 
       int y = 12;
-      p.setPen(Qt::black);
+      p.setPen(MusEGlobal::config.rulerFg);
       p.setFont(MusEGlobal::config.fonts[5]);
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
@@ -270,8 +281,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
             {        
               if (m->second.current()) 
               {
-                    //p.fillRect(tr, white);
-                    p.fillRect(wr, Qt::white);
+                    p.fillRect(tr, Qt::white);
               }
               
               int x2;
@@ -303,7 +313,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
               if(xp >= -1023)
               {
                 QRect r = QRect(xp+10, 0, x2-xp, 12);
-                p.setPen(Qt::black);
+                p.setPen(MusEGlobal::config.rulerFg);
                 p.drawText(r, Qt::AlignLeft|Qt::AlignVCenter, m->second.name());
               }  
               
@@ -343,7 +353,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                         }
                   }
             }
-      p.setPen(Qt::black);
+      p.setPen(MusEGlobal::config.rulerFg);
       if (pos[3] != INT_MAX) {
             int xp = mapx(pos[3]);
             if (xp >= x && xp < x+w)
