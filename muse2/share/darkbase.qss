@@ -2,3 +2,42 @@ QWidget {
       background-color: rgb(30,30,30);
       color: rgb(120,120,120);
 }
+
+QToolBar QToolButton {
+      background-color: rgb(50,50,50);
+      border-color: rgb(70,70,70);
+     border-style: outset;
+     border-width: 1px;
+     border-radius: 3px;
+      padding: 1px;
+
+}
+
+QToolBar QToolButton:hover {
+      background-color: rgb(50,50,50);
+      border-color: rgb(58,167,221);
+     border-style: outset;
+     border-width: 1px;
+     border-radius: 3px;
+      padding: 2px;
+
+}
+
+QToolBar QToolButton:pressed {
+      background-color: rgb(30,30,30);
+     border-style: inset;
+     border-width: 1px;
+     border-radius: 2px;
+      padding: 2px;
+
+}
+QToolBar QToolButton:checked {
+      background-color: rgb(30,30,30);
+     border-style: inset;
+     border-width: 1px;
+     border-radius: 2px;
+      padding: 2px;
+
+}
+/*
+*/
