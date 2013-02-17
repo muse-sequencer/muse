@@ -980,7 +980,7 @@ PyMethodDef g_methodDefinitions[] =
 
       { "getDivision", getDivision, METH_VARARGS, "Number of ticks per 1/4 (?)" },
 
-      {NULL, NULL, NULL, NULL}
+      {NULL, NULL, 0, NULL}
 };
 
 /**

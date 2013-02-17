@@ -227,7 +227,7 @@ int S1::getControllerInfo(int id, const char** name, int* ctrl, int* min, int* m
 class QWidget;
 
 
-static Mess* instantiate(int sr, QWidget*, QString* projectPathPtr, const char*)
+static Mess* instantiate(int sr, QWidget*, QString* /* projectPathPtr */, const char*)
       {
       S1* s1 = new S1();
       s1->setSampleRate(sr);

@@ -229,7 +229,7 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
               
               audioState = Audio::START_PLAY;
             break;  
-            //case JackTransportNetStarting:  
+            //case JackTransportNetStarting: -- only available in Jack-2!
             // FIXME: Quick and dirty hack to support both Jack-1 and Jack-2
             // Really need a config check of version...
             case 4:  
@@ -1603,7 +1603,7 @@ int JackAudioDevice::getState()
               //printf("JackAudioDevice::getState JackTransportStarting\n");
               
               return Audio::START_PLAY;
-            //case JackTransportNetStarting:  
+            //case JackTransportNetStarting: -- only available in Jack-2!
             // FIXME: Quick and dirty hack to support both Jack-1 and Jack-2
             // Really need a config check of version...
             case 4:  

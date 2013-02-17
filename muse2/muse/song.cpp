@@ -1385,7 +1385,7 @@ void Song::update(MusECore::SongChangedFlags_t flags, bool allowRecursion)
       if (level && !allowRecursion) {
             printf("THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
-                   "                          probably cause windows being not up-to-date.\n", flags, level);
+                   "                          probably cause windows being not up-to-date.\n", (unsigned long)flags, level);
             return;
             }
       ++level;
