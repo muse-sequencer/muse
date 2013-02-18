@@ -27,6 +27,8 @@ file(GLOB script_files
       DoubleSpeed 
       ConstantLength 
       SwingQuantize1
+      RandomQuantize1
+      Rhythm1
       )
 
 install (PROGRAMS ${script_files}
