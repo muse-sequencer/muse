@@ -67,6 +67,7 @@ class CtrlEdit : public QWidget {
       void destroyedCtrl(CtrlEdit*);
       void enterCanvas();
       void yposChanged(int);
+      void redirectWheelEvent(QWheelEvent*);
 
    public:
       CtrlEdit(QWidget*, MidiEditor* e, int xmag,

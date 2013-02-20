@@ -98,7 +98,6 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
    : EventCanvas(pr, parent, sx, sy)
       {
       colorMode = 0;
-      playedPitch = -1;
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       
       steprec=new MusECore::StepRec(noteHeldDown);
@@ -298,7 +297,7 @@ void PianoCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, int dx, DragType dtype)
+MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, int dx, DragType dtype, bool rasterize)
 {      
   if(editor->parts()->empty())
     return MusECore::Undo(); //return empty list
@@ -321,7 +320,9 @@ MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, i
       
       int x = ci->pos().x() + dx;
       int y = pitch2y(y2pitch(ci->pos().y()) + dp);
-      QPoint newpos = raster(QPoint(x, y));
+      QPoint newpos = QPoint(x, y);
+      if(rasterize)
+        newpos = raster(newpos);
       
       // Test moving the item...
       NEvent* nevent = (NEvent*) ci;
@@ -329,7 +330,7 @@ MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, i
       x              = newpos.x();
       if(x < 0)
         x = 0;
-      int ntick = editor->rasterVal(x) - part->tick();
+      int ntick = (rasterize ? editor->rasterVal(x) : x) - part->tick();
       if(ntick < 0)
         ntick = 0;
       int diff = ntick + event.lenTick() - part->lenTick();
@@ -377,7 +378,9 @@ MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, i
 			int y = ci->pos().y();
 			int nx = x + dx;
 			int ny = pitch2y(y2pitch(y) + dp);
-			QPoint newpos = raster(QPoint(nx, ny));
+			QPoint newpos = QPoint(nx, ny);
+			if(rasterize)
+			  newpos = raster(newpos);
 			selectItem(ci, true);
 			
 			iDoneList idl;
@@ -389,7 +392,7 @@ MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, i
 			// Do not process if the event has already been processed (meaning it's an event in a clone part)...
 			if (idl == doneList.end())
 			{
-				moveItem(operations, ci, newpos, dtype); // always returns true. if not, change is necessary here!
+				moveItem(operations, ci, newpos, dtype, rasterize); // always returns true. if not, change is necessary here!
 				doneList.push_back(ci);
 			}
 			ci->move(newpos);
@@ -422,7 +425,7 @@ MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, i
 //    called after moving an object
 //---------------------------------------------------------
 
-bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, const QPoint& pos, DragType dtype)
+bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
       {
       NEvent* nevent = (NEvent*) item;
       MusECore::Event event    = nevent->event();
@@ -431,17 +434,10 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, con
       int x          = pos.x();
       if (x < 0)
             x = 0;
-      if (event.pitch() != npitch && _playEvents) {
-            stopPlayEvent();
-            if (moving.size() == 1) {
-                startPlayEvent(npitch, event.velo());
-                }
-            }
-      
       MusECore::Part* part = nevent->part();
       
       newEvent.setPitch(npitch);
-      int ntick = editor->rasterVal(x) - part->tick();
+      int ntick = (rasterize ? editor->rasterVal(x) : x) - part->tick();
       if (ntick < 0)
             ntick = 0;
       newEvent.setTick(ntick);
@@ -463,10 +459,12 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, con
 //   newItem(p, state)
 //---------------------------------------------------------
 
-MusEGui::CItem* PianoCanvas::newItem(const QPoint& p, int)
+MusEGui::CItem* PianoCanvas::newItem(const QPoint& p, int state)
       {
       int pitch = y2pitch(p.y());
-      int tick  = editor->rasterVal1(p.x());
+      int tick = p.x();
+      if(!(state & Qt::ShiftModifier))
+        tick  = editor->rasterVal1(tick);
       int len   = p.x() - tick;
       tick     -= curPart->tick();
       if (tick < 0)
@@ -486,25 +484,25 @@ MusEGui::CItem* PianoCanvas::newItem(const QPoint& p, int)
 
 void PianoCanvas::newItem(MusEGui::CItem* item, bool noSnap)
       {
-      if(_playEvents)
-          stopPlayEvent();
-
       NEvent* nevent = (NEvent*) item;
       MusECore::Event event    = nevent->event();
-      int x = item->x();
-      if (x<0)
-            x=0;
-      int w = item->width();
-
-      if (!noSnap) {
-            x = editor->rasterVal1(x); //round down
-            w = editor->rasterVal(x + w) - x;
-            if (w == 0)
-                  w = editor->raster();
-            }
       MusECore::Part* part = nevent->part();
-      event.setTick(x - part->tick());
+      int ptick = part->tick();
+      int x = item->x();
+      if (x<ptick)
+            x=ptick;
+      if(!noSnap)
+        x = editor->rasterVal1(x); //round down
+      if (x<ptick)
+            x=ptick;
+      int w = item->width();
+      event.setTick(x - ptick);
+      if (!noSnap)
+            w = editor->rasterVal(w);
+      if (w == 0)
+            w = editor->rasterStep(ptick);
       event.setLenTick(w);
+            
       event.setPitch(y2pitch(item->y()));
 
       MusECore::Undo operations;
@@ -693,9 +691,7 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       {
       // play note:
       if(_playEvents)
-      {
         startPlayEvent(pitch, velocity);
-      }
       
       if (_steprec && curPart) // && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record]
 				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift, -1 /* anything which is != rcSteprecNote */);
@@ -968,11 +964,9 @@ void PianoCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
       if ((playedPitch != -1) && (playedPitch != npitch)) {
             NEvent* nevent   = (NEvent*) item;
             MusECore::Event event      = nevent->event();
-
             // release note:
             stopPlayEvent();
-
-            if (moving.size() == 1) { // items moving
+            if (moving.size() <= 1) { // items moving or curItem
                 // play note:
                 startPlayEvent(npitch, event.velo());
                 }

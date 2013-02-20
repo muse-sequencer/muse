@@ -70,8 +70,8 @@ class PianoCanvas : public EventCanvas {
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       void drawTopItem(QPainter &p, const QRect &rect);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
-      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType);
-      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType);
+      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
+      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool noSnap, bool);
       virtual void newItem(CItem*, bool noSnap);
@@ -84,6 +84,8 @@ class PianoCanvas : public EventCanvas {
 
       int y2pitch(int) const;
       int pitch2y(int) const;
+      inline int y2height(int) const { return KH/2; }
+      inline int yItemOffset() const { return KH/4; }
       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);

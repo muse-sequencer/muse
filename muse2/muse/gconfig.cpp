@@ -210,7 +210,7 @@ GlobalConfigValues config = {
       MusEGlobal::PREFER_NEW,       // drumTrackPreference
       true,                         // smartFocus
       20,                           // trackHeight
-
+      true                          // borderlessMouse
     };
 
 } // namespace MusEGlobal

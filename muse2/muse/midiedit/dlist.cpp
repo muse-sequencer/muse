@@ -1359,7 +1359,7 @@ int DList::getSelectedInstrument()
       {
       if (currentlySelected == NULL)
             return -1;
-      return MusEGlobal::drumInmap[int(currentlySelected->enote)];
+      return currentlySelected - ourDrumMap;
       }
 
 

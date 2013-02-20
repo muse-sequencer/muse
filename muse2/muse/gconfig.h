@@ -215,7 +215,7 @@ struct GlobalConfigValues {
       drumTrackPreference_t drumTrackPreference;
       bool smartFocus;
       int trackHeight;
-
+      bool borderlessMouse;
       };
 
 

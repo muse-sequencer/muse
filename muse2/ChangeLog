@@ -1,3 +1,29 @@
+19.02.2013
+         * MASSIVE FIXES: MANY editor, usability, operation fixes and changes. (Tim...)
+         - Please see the files README.usage and README.shortcuts for general changes.
+         - Added: Pan and Zoom tools to editors. P + Z shortcuts. Added a Settings item for alternate behaviour.
+         - Fixed: MAJOR Canvas class re-writes/simplifications!
+         - Fixed: ALL auto-scrolling. Was 'drifting' while scrolling. Accuracy is solid now.
+         - Fixed: Moving/new parts now fit into the tracks they are hovering over.
+         - Improved: "Velocity per-note" is now per-graph. Also does not cause main window to activate (w/ Robert's new styles).
+         - Fixed: Pianoroll and Drum Editor 'Snap' boxes not remembering 1st or 3rd columns.
+         - Fixed: Arranger 'Snap' was not stored or remembered.
+         - Fixed: Accelerator buttons shift/ctrl/alt for moving/copying/cloning / restricting movement.
+         - Fixed: Shift key restricting movement: Ignore snap setting now.
+         - Fixed: Resize shift key ignore snap setting now.
+         - Fixed: Draw new item shift key ignore snap setting now.
+         - Fixed: Shift key was not snapping to vertical.
+         - Fixed/changed: Drum velocity level hot-keys/order. LV3 is default now. Re-ordered all MusE drum maps' LV3/LV4.
+         - Fixed: Open Wave Editor shortcut changed from Ctrl-W to Ctrl-Y due to ambiguity with MDI 'Close Window'.
+         - Fixed: ALL 'Speaker' related playing of notes. Works with new notes, moving notes, piano press etc.
+         - Fixed: ALL 'Speaker' related notes now send true note-offs instead of zero-velocity note-ons.
+         - Fixed: Drum 'Cursor' mode was playing double notes.
+         - Fixed: New Drums 'Cursor' mode and instrument up/down movement was broken, jumping all over the place.
+         - Fixed: Drum 'Cursor' mode was not working if no controller graphs were shown. (Silly error.)
+         - Improved: Shortcut listings: Added Wave/Score categories. Re-categorized several keys. Updated README.shortcuts
+         - Fixed: Memory leaks in CtrlEdit class (ownerships).
+         - Fixed: Drum Editor not saving tool state.
+         - Improved: Right-click menus expanded. Now also shows 'Tools' menu when clicked on parts.
 17.02.2013
          - Added patch from Willy Foobar to remove warnings from compilation (rj)
 13.02.2013:

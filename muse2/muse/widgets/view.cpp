@@ -420,10 +420,28 @@ void View::keyPressEvent(QKeyEvent* event)
       }
 
 //---------------------------------------------------------
+//   keyReleaseEvent
+//---------------------------------------------------------
+
+void View::keyReleaseEvent(QKeyEvent* event)
+      {
+      viewKeyReleaseEvent(event);
+      }
+
+//---------------------------------------------------------
 //   viewKeyPressEvent
 //---------------------------------------------------------
 
 void View::viewKeyPressEvent(QKeyEvent* event)
+      {
+      event->ignore();
+      }
+
+//---------------------------------------------------------
+//   viewKeyReleaseEvent
+//---------------------------------------------------------
+
+void View::viewKeyReleaseEvent(QKeyEvent* event)
       {
       event->ignore();
       }

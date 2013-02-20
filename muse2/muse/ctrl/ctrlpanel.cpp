@@ -267,12 +267,6 @@ void CtrlPanel::songChanged(MusECore::SongChangedFlags_t type)
   // Is it simply a midi controller value adjustment? Forget it.
   if(type == SC_MIDI_CONTROLLER)
     return;
-            
-  if(type & SC_CONFIG)
-  {
-    if(_veloPerNoteButton->isChecked() != MusEGlobal::config.velocityPerNote)
-      _veloPerNoteButton->setChecked(MusEGlobal::config.velocityPerNote);  
-  }
 }
 
 //---------------------------------------------------------
@@ -693,11 +687,18 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
 
 void CtrlPanel::velPerNoteClicked()
 {
-  if(MusEGlobal::config.velocityPerNote != _veloPerNoteButton->isChecked())
-  {
-    MusEGlobal::config.velocityPerNote = _veloPerNoteButton->isChecked();  
-    MusEGlobal::muse->changeConfig(false);  // Save settings? No, wait till close.
-  }
+  if(ctrlcanvas && _veloPerNoteButton->isChecked() != ctrlcanvas->perNoteVeloMode())
+    ctrlcanvas->setPerNoteVeloMode(_veloPerNoteButton->isChecked());
+}
+
+//---------------------------------------------------------
+//   setVeloPerNoteMode
+//---------------------------------------------------------
+
+void CtrlPanel::setVeloPerNoteMode(bool v)
+{
+  if(v != _veloPerNoteButton->isChecked())
+    _veloPerNoteButton->setDown(v);
 }
 
 } // namespace MusEGui

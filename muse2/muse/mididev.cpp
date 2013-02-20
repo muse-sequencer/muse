@@ -236,7 +236,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
         event.setLoopNum(MusEGlobal::audio->loopCount());
       
       if (MusEGlobal::midiInputTrace) {
-            printf("MidiInput: ");
+            fprintf(stderr, "MidiInput: ");
             event.dump();
             }
 
@@ -288,7 +288,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
 
       if (!applyMidiInputTransformation(event)) {
             if (MusEGlobal::midiInputTrace)
-                  printf("   midi input transformation: event filtered\n");
+                  fprintf(stderr, "   midi input transformation: event filtered\n");
             return;
             }
 
@@ -313,7 +313,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
       unsigned int ch = (typ == ME_SYSEX)? MIDI_CHANNELS : event.channel();
       if(_recordFifo[ch].put(event))
-        printf("MidiDevice::recordEvent: fifo channel %d overflow\n", ch);
+        fprintf(stderr, "MidiDevice::recordEvent: fifo channel %d overflow\n", ch);
       }
 
 //---------------------------------------------------------
@@ -530,7 +530,7 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                   sendNullRPNParams(t, port, chn, true);
                   }
             else {
-                  printf("putEvent: unknown controller type 0x%x\n", a);
+                  fprintf(stderr, "putEvent: unknown controller type 0x%x\n", a);
                   }
             return false;
 #endif

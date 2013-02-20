@@ -40,6 +40,7 @@ class QAction;
 class QResizeEvent;
 class QSlider;
 class QToolButton;
+class QPoint;
 
 namespace MusECore {
 class PartList;
@@ -101,7 +102,8 @@ class WaveEdit : public MidiEditor {
    public slots:
       void configChanged();
       virtual void updateHScrollRange();
-      void horizontalZoom(bool zoom_in, int pos_offset);
+      void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
+      void horizontalZoom(int mag, const QPoint& glob_pos);
       void focusCanvas();
 
    signals:

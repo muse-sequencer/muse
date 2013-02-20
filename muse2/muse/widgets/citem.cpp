@@ -37,13 +37,12 @@ CItem::CItem()
 
 CItem::CItem(const QPoint&p, const QRect& r)
       {
+      _part = NULL;  
       _pos   = p;
       _bbox  = r;
       _isMoving = false;
       }
 
-// Changed by Tim. p3.3.20
-//CItem::CItem(MusECore::Event e, Part* p)
 CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
       {
       _event = e;

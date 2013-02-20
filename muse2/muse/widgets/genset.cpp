@@ -221,6 +221,7 @@ void GlobalSettingsConfig::updateSettings()
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
       rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       smartFocusCheckBox->setChecked(MusEGlobal::config.smartFocus);
+      borderlessMouseCheckBox->setChecked(MusEGlobal::config.borderlessMouse);
       velocityPerNoteCheckBox->setChecked(MusEGlobal::config.velocityPerNote);
       
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
@@ -340,6 +341,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
       MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
       MusEGlobal::config.smartFocus = smartFocusCheckBox->isChecked();
+      MusEGlobal::config.borderlessMouse = borderlessMouseCheckBox->isChecked();
       MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
 
       MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();

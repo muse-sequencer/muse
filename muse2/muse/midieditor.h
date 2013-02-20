@@ -32,7 +32,7 @@
 
 class QGridLayout;
 class QWidget;
-
+class QPoint;
 
 namespace MusECore {
 class Part;
@@ -81,7 +81,6 @@ class MidiEditor : public TopWin  {
    public slots:
       void songChanged(MusECore::SongChangedFlags_t type);
       void setCurDrumInstrument(int instr);
-      void horizontalZoom(bool zoom_in, int pos_offset);
 
       virtual void updateHScrollRange() { };
    signals:

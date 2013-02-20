@@ -156,7 +156,6 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
 
 DrumCanvas::~DrumCanvas()
 {
-  
   if (must_delete_our_drum_map && ourDrumMap!=NULL)
     delete [] ourDrumMap;
   
@@ -165,9 +164,60 @@ DrumCanvas::~DrumCanvas()
 
 //---------------------------------------------------------
 //   moveCanvasItems
+//   Return false if invalid index
 //---------------------------------------------------------
 
-MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype)
+bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
+{
+      if ((index<0) || (index>=getOurDrumMapSize()))
+        return false;
+
+      int mport, ch;
+      if(old_style_drummap_mode)
+      {
+        // Default to track port if -1 and track channel if -1.
+        mport = ourDrumMap[index].port;
+        if(mport == -1)
+        {
+          if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+            return false;
+          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
+          mport = mt->outPort();
+        }
+        ch = ourDrumMap[index].channel;
+        if(ch == -1)
+        {
+          if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
+            return false;
+          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(curPart->track());
+          ch = mt->outChannel();
+        }
+      }
+      else
+      {
+        MusECore::Track* track = *instrument_map[index].tracks.begin();
+        if(!track->isMidiTrack())
+          return false;
+        MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
+        mport = mt->outPort();
+        ch = mt->outChannel();
+      }
+      
+      if(port)
+        *port = mport;
+      if(channel)
+        *channel = ch;
+      if(note)
+        *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
+      
+      return true;
+}
+      
+//---------------------------------------------------------
+//   moveCanvasItems
+//---------------------------------------------------------
+
+MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, bool rasterize)
 {      
 
   if(editor->parts()->empty())
@@ -191,7 +241,9 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
       
       int x = ci->pos().x() + dx;
       int y = pitch2y(y2pitch(ci->pos().y()) + dp);
-      QPoint newpos = raster(QPoint(x, y));
+      QPoint newpos = QPoint(x, y);
+      if(rasterize)
+        newpos = raster(newpos);
       
       // Test moving the item...
       DEvent* nevent = (DEvent*) ci;
@@ -199,7 +251,7 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
       x              = newpos.x();
       if(x < 0)
         x = 0;
-      int ntick = editor->rasterVal(x) - part->tick();
+      int ntick = (rasterize ? editor->rasterVal(x) : x) - part->tick();
       if(ntick < 0)
         ntick = 0;
       int diff = ntick + event.lenTick() - part->lenTick();
@@ -247,7 +299,9 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
 			int y = ci->pos().y();
 			int nx = x + dx;
 			int ny = pitch2y(y2pitch(y) + dp);
-			QPoint newpos = raster(QPoint(nx, ny));
+			QPoint newpos = QPoint(nx, ny);
+			if(rasterize)
+			  newpos = raster(newpos);
 			selectItem(ci, true);
 			
 			iDoneList idl;
@@ -259,7 +313,7 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
 			// Do not process if the event has already been processed (meaning it's an event in a clone part)...
 			if (idl == doneList.end())
 			{
-				if (moveItem(operations, ci, newpos, dtype) == false) //error?
+				if (moveItem(operations, ci, newpos, dtype, rasterize) == false) //error?
         {
           QMessageBox::warning(this, tr("Moving items failed"), tr("The selection couldn't be moved, because at least one note would be moved into a track which is different from both the original track and the current part's track.\nChanging the current part with ALT+LEFT/RIGHT may help."));
           return MusECore::Undo(); //return empty list
@@ -295,17 +349,17 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
 //   moveItem
 //---------------------------------------------------------
 
-bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& pos, DragType dtype)
+bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
       {
       DEvent* nevent   = (DEvent*) item;
       
       MusECore::MidiPart* part   = (MusECore::MidiPart*)nevent->part();
       MusECore::MidiPart* dest_part   = part;
       
-      int instrument       = y2pitch(pos.y());
+      int instrument        = y2pitch(pos.y());
       if (instrument<0) instrument=0;
       if (instrument>=getOurDrumMapSize()) instrument=getOurDrumMapSize()-1;
-            
+      MusECore::Event event = nevent->event();
       if (!instrument_map[instrument].tracks.contains(dest_part->track()))
       {
         if (debugMsg)
@@ -320,20 +374,15 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
           dest_part=(MusECore::MidiPart*)curPart;
       }
 
-
-      MusECore::Event event      = nevent->event();
-
       int x            = pos.x();
       if (x < 0)
             x = 0;
-      int ntick        = editor->rasterVal(x) - dest_part->tick();
+      int ntick        = (rasterize ? editor->rasterVal(x) : x) - dest_part->tick();
       if (ntick < 0)
             ntick = 0;
       MusECore::Event newEvent   = event.clone();
-
       
       int ev_pitch = instrument_map[instrument].pitch;
-      
       newEvent.setPitch(ev_pitch);
       newEvent.setTick(ntick);
 
@@ -365,15 +414,26 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
       int instr = y2pitch(p.y());
       if ((instr<0) || (instr>=getOurDrumMapSize()))
         return NULL;
+
+      int k4  = (Qt::MetaModifier | Qt::AltModifier);
+      //int nk4 = Qt::ControlModifier;
       
-      int velo  = ourDrumMap[instr].lv4;
-      if (state == Qt::ShiftModifier)
-            velo = ourDrumMap[instr].lv3;
-      else if (state == Qt::ControlModifier)
+      int k2  = Qt::MetaModifier;
+      int nk2 = (Qt::ControlModifier | Qt::AltModifier);
+      
+      int k1  = (Qt::ControlModifier | Qt::MetaModifier);
+      int nk1 = Qt::AltModifier;
+      
+      int velo  = ourDrumMap[instr].lv3;
+      if      ((state & k4) == k4) // && !(state & nk4))
+            velo = ourDrumMap[instr].lv4;
+      else if ((state & k2) == k2 && !(state & nk2))
             velo = ourDrumMap[instr].lv2;
-      else if (state == (Qt::ControlModifier | Qt::ShiftModifier))
+      else if ((state & k1) == k1 && !(state & nk1))
             velo = ourDrumMap[instr].lv1;
-      int tick = editor->rasterVal(p.x());
+      int tick = p.x();
+      if(!(state & Qt::ShiftModifier))
+        tick = editor->rasterVal(tick);
       return newItem(tick, instr, velo);
       }
 
@@ -407,7 +467,6 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 
   tick    -= curPart->tick();
   if (tick < 0)
-        //tick=0;
         return 0;
   MusECore::Event e(MusECore::Note);
   e.setTick(tick);
@@ -416,53 +475,12 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
   e.setLenTick(ourDrumMap[instrument].len);
   if(_playEvents)
   {
-    int pitch = old_style_drummap_mode ? ourDrumMap[instrument].anote : instrument_map[instrument].pitch;
-    int port, channel;
-    if(old_style_drummap_mode)
-    {
-      // Default to track port if -1 and track channel if -1.
-      port = ourDrumMap[instrument].port;
-      if(port == -1)
-      {
-        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-          return 0;
-        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
-        port = mt->outPort();
-      }
-      channel = ourDrumMap[instrument].channel;
-      if(channel == -1)
-      {
-        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-          return 0;
-        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
-        channel = mt->outChannel();
-      }
-    }
-    else
-    {
-      Track* t = *instrument_map[instrument].tracks.begin();
-      if(!t->isMidiTrack())
-        return NULL;
-      MidiTrack* mt = static_cast<MidiTrack*>(t);
-      port = mt->outPort();
-      channel = mt->outChannel();
-    }
-    startPlayEvent(pitch, e.velo(), port, channel);
+    int pitch, port, channel;
+    if(index2Note(instrument, &port, &channel, &pitch))
+      startPlayEvent(pitch, e.velo(), port, channel);
   }
   return new DEvent(e, curPart, instrument);
 }
-
-//---------------------------------------------------------
-//   resizeItem
-//---------------------------------------------------------
-
-void DrumCanvas::resizeItem(CItem* item, bool, bool)
-      {
-      DEvent* nevent = (DEvent*) item;
-      MusECore::Event ev = nevent->event();
-      // Indicate do undo, and do not do port controller values and clone parts. 
-      MusEGlobal::audio->msgDeleteEvent(ev, nevent->part(), true, false, false);
-      }
 
 //---------------------------------------------------------
 //   newItem
@@ -473,68 +491,66 @@ void DrumCanvas::newItem(CItem* item, bool noSnap) {
 
 void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
 {
-   if (item)
+   if(!item)
    {
-      DEvent* nevent = (DEvent*) item;
-      MusECore::Event event    = nevent->event();
-      int x = item->x();
-      if (x<0)
-            x=0;
-      if (!noSnap)
-            x = editor->rasterVal(x);
-      event.setTick(x - nevent->part()->tick());
-      int npitch = event.pitch();
-
-      if(_playEvents) {
-         //stopPlayEvent();
-         keyReleased(pitch2y(event.pitch()), true); // kinda backwards but this should pick the right port, stopPlayEvent does not know.
-      }
-
-      // check for existing event
-      //    if found change command semantic from insert to delete
-      MusECore::EventList* el = nevent->part()->events();
-      MusECore::iEvent lower  = el->lower_bound(event.tick());
-      MusECore::iEvent upper  = el->upper_bound(event.tick());
-
-      for (MusECore::iEvent i = lower; i != upper; ++i) {
-            MusECore::Event ev = i->second;
-            // Added by T356. Only do notes.
-            if(!ev.isNote())
-              continue;
-              
-            if (ev.pitch() == npitch) {
-                  // Indicate do undo, and do not do port controller values and clone parts. 
-                  MusEGlobal::audio->msgDeleteEvent(ev, nevent->part(), true, false, false);
-                  if (replace)
-                    break;
-                  else
-                    return;
-
-              }
-            }
-
-      // Added by T356.
-      MusECore::Part* part = nevent->part();
-      MusECore::Undo operations;
-      int diff = event.endTick()-part->lenTick();
-      
-      if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
-      {
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent,event, part, false, false));
-        
-        if (diff > 0) // part must be extended?
-        {
-              schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
-              printf("newItem: extending\n");
-        }
-      }
-      //else forbid action by not applying it
-      MusEGlobal::song->applyOperationGroup(operations);
-      songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is neccessary
-                                      //to remove "forbidden" events from the list again
+     printf("THIS SHOULD NEVER HAPPEN: DrumCanvas::newItem called with NULL item!\n");
+     return;
    }
-   else
-    printf("THIS SHOULD NEVER HAPPEN: DrumCanvas::newItem called with NULL item!\n");
+     
+    DEvent* nevent = (DEvent*) item;
+    MusECore::Event event    = nevent->event();
+    MusECore::Part* part = nevent->part();
+    int ptick = part->tick();
+    int x = item->x();
+    if (x<ptick)
+          x=ptick;
+    if (!noSnap)
+          x = editor->rasterVal(x);
+    if (x<ptick)
+          x=ptick;
+    event.setTick(x - ptick);
+    int npitch = y2pitch(item->y());
+    if ((npitch<0) || (npitch>=getOurDrumMapSize()))
+      return;
+    npitch = instrument_map[npitch].pitch;
+    event.setPitch(npitch);
+    // check for existing event
+    //    if found change command semantic from insert to delete
+    MusECore::EventList* el = part->events();
+    MusECore::iEvent lower  = el->lower_bound(event.tick());
+    MusECore::iEvent upper  = el->upper_bound(event.tick());
+
+    for (MusECore::iEvent i = lower; i != upper; ++i) {
+          MusECore::Event ev = i->second;
+          if(!ev.isNote())
+            continue;
+          if (ev.pitch() == npitch) {
+                // Indicate do undo, and do not do port controller values and clone parts.
+                MusEGlobal::audio->msgDeleteEvent(ev, nevent->part(), true, false, false);
+                if (replace)
+                  break;
+                else
+                  return;
+            }
+          }
+
+    MusECore::Undo operations;
+    int diff = event.endTick()-part->lenTick();
+
+    if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
+    {
+      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent,event, part, false, false));
+
+      if (diff > 0) // part must be extended?
+      {
+            schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
+            printf("newItem: extending\n");
+      }
+    }
+    //else forbid action by not applying it
+    MusEGlobal::song->applyOperationGroup(operations);
+    songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is neccessary
+                                    //to remove "forbidden" events from the list again
 }
 
 //---------------------------------------------------------
@@ -557,26 +573,50 @@ void DrumCanvas::itemPressed(const MusEGui::CItem* item)
       {
       if (!_playEvents)
             return;
-
       MusECore::Event e = ((DEvent*)item)->event();
-      int pitch = e.pitch();
-
-      startPlayEvent(pitch, e.velo()); //, port, channel);
+      int index = e.pitch();
+      // play note:
+      int pitch, port, channel;
+      if(index2Note(index, &port, &channel, &pitch))
+        startPlayEvent(pitch, e.velo(), port, channel);
       }
 
 //---------------------------------------------------------
 //   itemReleased
 //---------------------------------------------------------
 
-void DrumCanvas::itemReleased(const MusEGui::CItem* item, const QPoint&)
+void DrumCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
       {
       if (!_playEvents)
               return;
-      MusECore::Event e = ((DEvent*)item)->event();
-      keyReleased(pitch2y(e.pitch()), true); // kinda backwards but this should pick the right port, stopPlayEvent does not know.
-      //stopPlayEvent();
+      stopPlayEvent();
       }
 
+
+//---------------------------------------------------------
+//   itemMoved
+//---------------------------------------------------------
+
+void DrumCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
+      {
+      if(!_playEvents)
+        return;
+      int index = y2pitch(pos.y());
+      int pitch, port, channel;
+      if(index2Note(index, &port, &channel, &pitch))
+      {
+        if(_playEvents && (port != playedPitchPort || channel != playedPitchChannel || pitch != playedPitch))
+        {
+          MusECore::Event e = ((DEvent*)item)->event();
+          // release note:
+          stopPlayEvent();  
+          if (moving.size() <= 1) { // items moving or curItem
+              // play note:
+              startPlayEvent(pitch, e.velo(), port, channel);
+              }
+        }
+      }
+      }
 
 //---------------------------------------------------------
 //   drawItem
@@ -657,33 +697,6 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
       p.setPen(Qt::black);
       p.setBrush(Qt::black);
       p.drawPolygon(pa);
-
-      int instrument = y2pitch(y);
-      int pitch = instrument_map[instrument].pitch;
-      MusECore::Event e = ((DEvent*)item)->event();
-      if (pitch != playedPitch && _playEvents) {
-            keyReleased(playedPitch, true); // kinda backwards but this should pick the right port, stopPlayEvent does not know.
-            if (moving.size() == 1) {
-                // Default to track port if -1 and track channel if -1.
-                int port = old_style_drummap_mode ? ourDrumMap[instrument].port : dynamic_cast<MidiTrack*>(*instrument_map[instrument].tracks.begin())->outPort();
-                if(port == -1)
-                {
-                  if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-                    return;
-                  MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
-                  port = mt->outPort();
-                }
-                int channel = old_style_drummap_mode ? ourDrumMap[instrument].channel : dynamic_cast<MidiTrack*>(*instrument_map[instrument].tracks.begin())->outChannel();
-                if(channel == -1)
-                {
-                  if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-                    return;
-                  MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
-                  channel = mt->outChannel();
-                }
-                startPlayEvent(pitch, e.velo(), port, channel);
-                }
-            }
     }
 
 //---------------------------------------------------------
@@ -954,34 +967,15 @@ void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
 
 void DrumCanvas::keyPressed(int index, int velocity)
 {
-      using MusECore::MidiTrack;
-      
       if ((index<0) || (index>=getOurDrumMapSize()))
         return;
-      
       // called from DList - play event
-      // Default to track port if -1 and track channel if -1.
-      int port = old_style_drummap_mode ? ourDrumMap[index].port : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outPort();
-      if(port == -1)
-      {
-        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-          return;
-        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
-        port = mt->outPort();
-      }
-      int channel = old_style_drummap_mode ? ourDrumMap[index].channel : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outChannel();
-      if(channel == -1)
-      {
-        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-          return;
-        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
-        channel = mt->outChannel();
-      }
-      int pitch = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
       // play note:
       if(_playEvents)
       {
-        startPlayEvent(pitch,velocity, port, channel);
+        int pitch, port, channel;
+        if(index2Note(index, &port, &channel, &pitch))
+          startPlayEvent(pitch, velocity, port, channel);
       }
       
       if (_steprec) /* && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
@@ -1005,38 +999,21 @@ void DrumCanvas::keyPressed(int index, int velocity)
 //   keyReleased
 //---------------------------------------------------------
 
-void DrumCanvas::keyReleased(int index, bool)
-      {    
-      if ((index<0) || (index>=getOurDrumMapSize()))
-        return;
-      
-      // called from DList - silence playing event
-      // Default to track port if -1 and track channel if -1.
-      int port = old_style_drummap_mode ? ourDrumMap[index].port : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outPort();
-      if(port == -1)
+void DrumCanvas::keyReleased(int, bool)
       {
-        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-          return;
-        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
-        port = mt->outPort();
-      }
-      int channel = old_style_drummap_mode ? ourDrumMap[index].channel : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outChannel();
-      if(channel == -1)
-      {
-        if(!curPart || !curPart->track() || !curPart->track()->isMidiTrack())
-          return;
-        MidiTrack* mt = static_cast<MidiTrack*>(curPart->track());
-        channel = mt->outChannel();
-      }
-      int pitch = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
-
       // release note:
       if(_playEvents)
       {
-        MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
-        MusEGlobal::audio->msgPlayMidiEvent(&e);
-        playedPitch=-1;
+        // REMOVE Tim.
+        //int pitch, port, channel;
+        //if(index2Note(index, &port, &channel, &pitch))
+        //{
+        //  MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
+        //  MusEGlobal::audio->msgPlayMidiEvent(&e);
+        //}
+        stopPlayEvent();
       }
+      //playedPitch=-1;
       }
 
 //---------------------------------------------------------
@@ -1363,6 +1340,7 @@ int DrumCanvas::getNextStep(unsigned int pos, int basicStep, int stepSize)
 //---------------------------------------------------------
 //   keyPress
 //---------------------------------------------------------
+
 void DrumCanvas::keyPress(QKeyEvent* event)
 {
   if (_tool == CursorTool) {
@@ -1394,10 +1372,10 @@ void DrumCanvas::keyPress(QKeyEvent* event)
       update();
       return;
     }
+    // NOTE: The inner NewItem may play the note. But let us not stop the note so shortly after playing it.
+    //       So it is up to the corresponding keyRelease() to stop the note.
     else if (key == shortcuts[SHRT_ADDNOTE_1].key) {
           newItem(newItem(cursorPos.x(), cursorPos.y(), ourDrumMap[cursorPos.y()].lv1),false,true);
-          keyPressed(cursorPos.y(), ourDrumMap[cursorPos.y()].lv1);
-          keyReleased(cursorPos.y(), false);
           cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
           selectCursorEvent(getEventAtCursorPos());
           if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
@@ -1406,8 +1384,6 @@ void DrumCanvas::keyPress(QKeyEvent* event)
     }
     else if (key == shortcuts[SHRT_ADDNOTE_2].key) {
           newItem(newItem(cursorPos.x(), cursorPos.y(), ourDrumMap[cursorPos.y()].lv2),false,true);
-          keyPressed(cursorPos.y(), ourDrumMap[cursorPos.y()].lv2);
-          keyReleased(cursorPos.y(), false);
           cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
           selectCursorEvent(getEventAtCursorPos());
           if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
@@ -1416,8 +1392,6 @@ void DrumCanvas::keyPress(QKeyEvent* event)
     }
     else if (key == shortcuts[SHRT_ADDNOTE_3].key) {
           newItem(newItem(cursorPos.x(), cursorPos.y(), ourDrumMap[cursorPos.y()].lv3),false,true);
-          keyPressed(cursorPos.y(), ourDrumMap[cursorPos.y()].lv3);
-          keyReleased(cursorPos.y(), false);
           cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
           selectCursorEvent(getEventAtCursorPos());
           if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
@@ -1426,8 +1400,6 @@ void DrumCanvas::keyPress(QKeyEvent* event)
     }
     else if (key == shortcuts[SHRT_ADDNOTE_4].key) {
           newItem(newItem(cursorPos.x(), cursorPos.y(), ourDrumMap[cursorPos.y()].lv4),false,true);
-          keyPressed(cursorPos.y(), ourDrumMap[cursorPos.y()].lv4);
-          keyReleased(cursorPos.y(), false);
           cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
           selectCursorEvent(getEventAtCursorPos());
           if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
@@ -1438,6 +1410,36 @@ void DrumCanvas::keyPress(QKeyEvent* event)
   EventCanvas::keyPress(event);
 }
 
+//---------------------------------------------------------
+//   keyRelease
+//---------------------------------------------------------
+
+void DrumCanvas::keyRelease(QKeyEvent* event)
+{
+  if (_tool == CursorTool)
+  {
+    if (_playEvents)
+    {
+      int key = event->key();
+      if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
+            key += Qt::SHIFT;
+      if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
+            key += Qt::ALT;
+      if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
+            key+= Qt::CTRL;
+      if (key == shortcuts[SHRT_ADDNOTE_1].key ||
+          key == shortcuts[SHRT_ADDNOTE_2].key ||
+          key == shortcuts[SHRT_ADDNOTE_3].key ||
+          key == shortcuts[SHRT_ADDNOTE_4].key)
+      {
+        // Must stop note that was played.
+        stopPlayEvent();
+        return;
+      }
+    }
+  }
+  EventCanvas::keyRelease(event);
+}
 
 //---------------------------------------------------------
 //   setTool2

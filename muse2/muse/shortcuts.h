@@ -54,7 +54,7 @@
 #define ALL_SHRT      1023  // All shortcuts
 #define INVIS_SHRT    1024  // Shortcuts not shown in the config-dialog. Hard-coded. To avoid conflicts
 
-#define SHRT_NUM_OF_CATEGORIES   7 //Number of shortcut categories
+#define SHRT_NUM_OF_CATEGORIES   9 //Number of shortcut categories
 
 namespace MusEGui {
 
@@ -304,7 +304,9 @@ enum {
       SHRT_TOOL_POINTER,  //
       SHRT_TOOL_PENCIL,
       SHRT_TOOL_RUBBER,
-
+      SHRT_TOOL_PAN,
+      SHRT_TOOL_ZOOM,
+      
       // pianoroll and drum editor
       SHRT_TOOL_LINEDRAW,
 
@@ -319,6 +321,9 @@ enum {
       SHRT_INSTRUMENT_STEP_DOWN,
       SHRT_INSTRUMENT_STEP_UP,
 
+      // wave editor
+      SHRT_TOOL_RANGE,
+      
       // arranger
       SHRT_TOOL_SCISSORS,
       SHRT_TOOL_GLUE,

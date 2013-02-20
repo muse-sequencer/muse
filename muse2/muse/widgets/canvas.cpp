@@ -22,10 +22,12 @@
 //=========================================================
 
 #include <stdio.h>
+#include <math.h>
 
 #include "canvas.h"
 
 #include <QApplication>
+#include <QDesktopWidget>
 #include <QMenu>
 #include <QPainter>
 #include <QCursor>
@@ -33,9 +35,11 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QRect>
 
 #include <vector>
 
+#include "gconfig.h"
 #include "song.h"
 #include "event.h"
 #include "citem.h"
@@ -43,6 +47,7 @@
 #include "../marker/marker.h"
 #include "part.h"
 #include "fastlog.h"
+#include "menutitleitem.h"
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 
@@ -68,8 +73,9 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       hscrollDir = HSCROLL_NONE;
       vscrollDir = VSCROLL_NONE;
       scrollTimer=NULL;
+      ignore_mouse_move = false;
       
-      scrollSpeed=10;    // hardcoded scroll jump
+      scrollSpeed=30;    // hardcoded scroll jump
 
       drag    = DRAG_OFF;
       _tool   = PointerTool;
@@ -79,12 +85,20 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       curPart = NULL;
       curPartId = -1;
       curItem = NULL;
+      newCItem = NULL;
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
       }
 
 Canvas::~Canvas()
 {
   items.clearDelete();
+
+  if(newCItem)
+  {
+    if(newCItem->event().empty() && newCItem->part()) // Was it a new part, with no event?
+      delete newCItem->part();
+    delete newCItem;
+  }
 }
 
 //---------------------------------------------------------
@@ -164,7 +178,7 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
 //---------------------------------------------------------
 
 void Canvas::draw(QPainter& p, const QRect& rect)
-      {
+{
 //      printf("draw canvas %x virt %d\n", this, virt());
 
       int x = rect.x();
@@ -175,7 +189,6 @@ void Canvas::draw(QPainter& p, const QRect& rect)
 
       std::vector<CItem*> list1;
       std::vector<CItem*> list2;
-      //std::vector<CItem*> list3;
       std::vector<CItem*> list4;
 
       if (virt()) {
@@ -186,44 +199,6 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             //---------------------------------------------------
 
             iCItem to(items.lower_bound(x2));
-            
-            /*
-            // Draw items from other parts behind all others.
-            // Only for items with events (not arranger parts).
-            for(iCItem i = items.begin(); i != to; ++i)
-            { 
-              CItem* ci = i->second;
-              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
-              ci->part()->hasHiddenEvents();
-              if(!ci->event().empty() && ci->part() != curPart)
-                drawItem(p, ci, rect);
-            }
-                
-            // Draw unselected parts behind selected.
-            for (iCItem i = items.begin(); i != to; ++i) 
-            {
-                  CItem* ci = i->second;
-                  if((!ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                     && !(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents())))  // p4.0.29 
-                  {
-                        drawItem(p, ci, rect);
-                  }      
-            }
-            
-            // Draw selected parts in front of unselected.
-            for (iCItem i = items.begin(); i != to; ++i) 
-            {
-                CItem* ci = i->second;
-                if(ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                //if((ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart)) 
-                //   || (ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents())))
-                {
-                      drawItem(p, ci, rect);
-                }      
-            }  
-            */
-            
-            // p4.0.29
             for(iCItem i = items.begin(); i != to; ++i)
             { 
               CItem* ci = i->second;
@@ -240,11 +215,6 @@ void Canvas::draw(QPainter& p, const QRect& rect)
                 // Draw selected parts in front of all others.
                 if(ci->isSelected()) 
                   list4.push_back(ci);
-                // Draw clone parts, and parts with hidden events, in front of others all except selected.
-                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents()))
-                // Draw clone parts in front of others all except selected.
-                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1))
-                //  list3.push_back(ci);
                 else  
                   // Draw unselected parts.
                   list2.push_back(ci);
@@ -257,21 +227,22 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             sz = list2.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list2[i], rect);
-            //sz = list3.size();
-            //for(i = 0; i != sz; ++i) 
-            //  drawItem(p, list3[i], rect);
             sz = list4.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list4[i], rect);
             
+            // Draw items being moved, a special way in their original location.
             to = moving.lower_bound(x2);
             for (iCItem i = moving.begin(); i != to; ++i) 
-            {
                   drawItem(p, i->second, rect);
-            }
 
+            // Draw special top item for new recordings etc.
             drawTopItem(p,rect);
 
+            // Draw special new item for first-time placement.
+            // It is not in the item list yet. It will be added when mouse released.
+            if(newCItem)
+              drawItem(p, newCItem, rect);
       }
       else {  
             p.save();
@@ -308,47 +279,14 @@ void Canvas::draw(QPainter& p, const QRect& rect)
                   y = 0;
             x2 = x + w;
 
-            drawCanvas(p, QRect(x, y, w, h));
+            QRect new_rect(x, y, w, h);
+            drawCanvas(p, new_rect);
             p.restore();
 
             //---------------------------------------------------
             // draw Canvas Items
             //---------------------------------------------------
             
-            /*
-            // Draw items from other parts behind all others.
-            // Only for items with events (not arranger parts).
-            for(iCItem i = items.begin(); i != items.end(); ++i)
-            { 
-              CItem* ci = i->second;
-              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
-              ci->part()->hasHiddenEvents();
-              if(!ci->event().empty() && ci->part() != curPart)
-                drawItem(p, ci, rect);
-            }
-                
-            // Draw unselected parts behind selected.
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
-                  CItem* ci = i->second;
-                  if(!ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                    {
-                        drawItem(p, ci, rect);
-                    }      
-                  }
-            
-            // Draw selected parts in front of unselected.
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
-                  CItem* ci = i->second;
-                  if(ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                  //if((ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart)) 
-                  //   || (ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents())))
-                  {    
-                      drawItem(p, ci, rect);
-                  }    
-                } 
-            */
-            
-            // p4.0.29
             for(iCItem i = items.begin(); i != items.end(); ++i)
             { 
               CItem* ci = i->second;
@@ -365,11 +303,6 @@ void Canvas::draw(QPainter& p, const QRect& rect)
                 // Draw selected parts in front of all others.
                 if(ci->isSelected()) 
                   list4.push_back(ci);
-                // Draw clone parts, and parts with hidden events, in front of others all except selected.
-                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents()))
-                // Draw clone parts in front of others all except selected.
-                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1))
-                //  list3.push_back(ci);
                 else  
                   // Draw unselected parts.
                   list2.push_back(ci);
@@ -382,18 +315,22 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             sz = list2.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list2[i], rect);
-            //sz = list3.size();
-            //for(i = 0; i != sz; ++i) 
-            //  drawItem(p, list3[i], rect);
             sz = list4.size();
             for(i = 0; i != sz; ++i) 
               drawItem(p, list4[i], rect);
-            
+
+            // Draw items being moved, a special way in their original location.
             for (iCItem i = moving.begin(); i != moving.end(); ++i) 
-                  {
                         drawItem(p, i->second, rect);
-                  }
-            drawTopItem(p, QRect(x,y,w,h));
+            
+            // Draw special top item for new recordings etc.
+            drawTopItem(p, new_rect);
+
+            // Draw special new item for first-time placement.
+            // It is not in the item list yet. It will be added when mouse released.
+            if(newCItem)
+              drawItem(p, newCItem, rect);
+            
             p.save();
             setPainter(p);
       }
@@ -407,14 +344,12 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       p.setWorldMatrixEnabled(false);
       
       int my = mapy(y);
-      //int y2 = y + h;
       int my2 = mapy(y + h);
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             int xp = m->second.tick();
             if (xp >= x && xp < x+w) {
                   p.setPen(Qt::green);
-                  //p.drawLine(xp, y, xp, y2);
                   p.drawLine(mapx(xp), my, mapx(xp), my2);
                   }
             }
@@ -426,21 +361,21 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       p.setPen(Qt::blue);
       int mx;
       if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
-            //p.drawLine(pos[1], y, pos[1], y2);
             mx = mapx(pos[1]);
             p.drawLine(mx, my, mx, my2);
             }
       if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2)) {
-            //p.drawLine(pos[2], y, pos[2], y2);
             mx = mapx(pos[2]);
             p.drawLine(mx, my, mx, my2);
             }
       p.setPen(Qt::red);
       if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
-            //p.drawLine(pos[0], y, pos[0], y2);
             mx = mapx(pos[0]);
             p.drawLine(mx, my, mx, my2);
             }
+      
+      if(drag == DRAG_ZOOM)
+        p.drawPixmap(mapFromGlobal(global_start), *zoomAtIcon);
       
       //p.restore();
       //p.setWorldMatrixEnabled(true);
@@ -457,7 +392,7 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             }
       
       //---------------------------------------------------
-      //    draw moving items
+      //    draw outlines of potential drop places of moving items
       //---------------------------------------------------
       
       if(virt()) 
@@ -472,7 +407,7 @@ void Canvas::draw(QPainter& p, const QRect& rect)
           drawMoving(p, i->second, rect);
         setPainter(p);
       }
-      }
+}
 
 #define WHEEL_STEPSIZE 40
 #define WHEEL_DELTA   120
@@ -490,47 +425,29 @@ void Canvas::wheelEvent(QWheelEvent* ev)
     if (shift) { // scroll horizontally
         int delta       = -ev->delta() / WHEEL_DELTA;
         int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
-
         if (xpixelscale <= 0)
               xpixelscale = 1;
-
         int scrollstep = WHEEL_STEPSIZE * (delta);
-        ///if (ev->state() == Qt::ShiftModifier)
-  //      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
         scrollstep = scrollstep / 10;
-
         int newXpos = xpos + xpixelscale * scrollstep;
-
         if (newXpos < 0)
               newXpos = 0;
-
-        //setYPos(newYpos);
         emit horizontalScroll((unsigned)newXpos);
 
     } else if (ctrl) {  // zoom horizontally
-      emit horizontalZoom(ev->delta()>0, ev->x());
+      emit horizontalZoom(ev->delta()>0, ev->globalPos());
     } else { // scroll vertically
         int delta       = ev->delta() / WHEEL_DELTA;
         int ypixelscale = rmapyDev(1);
-
         if (ypixelscale <= 0)
               ypixelscale = 1;
-
         int scrollstep = WHEEL_STEPSIZE * (-delta);
-        ///if (ev->state() == Qt::ShiftModifier)
-  //      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
         scrollstep = scrollstep / 2;
-
         int newYpos = ypos + ypixelscale * scrollstep;
-
         if (newYpos < 0)
               newYpos = 0;
-
-        //setYPos(newYpos);
         emit verticalScroll((unsigned)newYpos);
-
     }
-
 }
 
 void Canvas::redirectedWheelEvent(QWheelEvent* ev)
@@ -562,7 +479,7 @@ void Canvas::selectItem(CItem* e, bool flag)
 //    copy selection-List to moving-List
 //---------------------------------------------------------
 
-void Canvas::startMoving(const QPoint& pos, DragType)
+void Canvas::startMoving(const QPoint& pos, DragType, bool rasterize)
       {
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (i->second->isSelected()) {
@@ -570,7 +487,7 @@ void Canvas::startMoving(const QPoint& pos, DragType)
                   moving.add(i->second);
                   }
             }
-      moveItems(pos, 0);
+      moveItems(pos, 0, rasterize);
       }
 
 //---------------------------------------------------------
@@ -580,13 +497,9 @@ void Canvas::startMoving(const QPoint& pos, DragType)
 //          2     move only vertical
 //---------------------------------------------------------
 
-void Canvas::moveItems(const QPoint& pos, int dir = 0, bool rasterize)
+void Canvas::moveItems(const QPoint& pos, int dir, bool rasterize)
       {
-      int dp;
-      if(rasterize)
-        dp = y2pitch(pos.y()) - y2pitch(start.y());
-      else  
-        dp = pos.y() - start.y();
+      int dp = y2pitch(pos.y()) - y2pitch(start.y());
       int dx = pos.x() - start.x();
       if (dir == 1)
             dp = 0;
@@ -598,16 +511,12 @@ void Canvas::moveItems(const QPoint& pos, int dir = 0, bool rasterize)
             int nx = x + dx;
             int ny;
             QPoint mp;
+            ny = pitch2y(y2pitch(y) + dp);
             if(rasterize)
-            {
-              ny = pitch2y(y2pitch(y) + dp);
               mp = raster(QPoint(nx, ny));
-            }  
-            else  
-            {  
-              ny = y + dp;
+            else
               mp = QPoint(nx, ny);
-            }  
+            
             if (i->second->mp() != mp) {
                   i->second->setMp(mp);
                   itemMoved(i->second, mp);
@@ -626,6 +535,15 @@ void Canvas::viewKeyPressEvent(QKeyEvent* event)
       }
 
 //---------------------------------------------------------
+//   viewKeyReleaseEvent
+//---------------------------------------------------------
+
+void Canvas::viewKeyReleaseEvent(QKeyEvent* event)
+      {
+      keyRelease(event);
+      }
+
+//---------------------------------------------------------
 //   viewMousePressEvent
 //---------------------------------------------------------
 
@@ -634,16 +552,13 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       if (!mousePress(event))
           return;
 
-      ///keyState = event->state();
-      keyState = ((QInputEvent*)event)->modifiers();
+      keyState = event->modifiers();
       button = event->button();
-
       //printf("viewMousePressEvent buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
       
       // special events if right button is clicked while operations
       // like moving or drawing lasso is performed.
-      ///if (event->stateAfter() & Qt::RightButton) {
-      if (event->buttons() & Qt::RightButton & ~(event->button())) {
+      if (event->buttons() & Qt::RightButton & ~(button)) {
           //printf("viewMousePressEvent special buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
           switch (drag) {
               case DRAG_LASSO:
@@ -660,15 +575,19 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       }
 
       // ignore event if (another) button is already active:
-      ///if (keyState & (Qt::LeftButton|Qt::RightButton|Qt::MidButton)) {
-      if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) {
+      if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(button)) {
             //printf("viewMousePressEvent ignoring buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
             return;
             }
+            
       bool alt        = keyState & Qt::AltModifier;
       bool ctrl       = keyState & Qt::ControlModifier;
+      
       start           = event->pos();
-
+      ev_pos          = start;
+      global_start    = event->globalPos();
+      ev_global_pos   = global_start;
+      
       //---------------------------------------------------
       //    set curItem to item mouse is pointing
       //    (if any)
@@ -687,7 +606,6 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                   int w = rmapxDev(box.width());
                   int h = rmapyDev(box.height());
                   QRect r(x, y, w, h);
-                  ///r.moveBy(i->second->pos().x(), i->second->pos().y());
                   r.translate(i->second->pos().x(), i->second->pos().y());
                   if (r.contains(start)) {
                         if(i->second->isSelected())
@@ -707,14 +625,14 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                     curItem = ius->second;
             }
 
-      if (curItem && (event->button() == Qt::MidButton)) {
+      if (curItem && (button == Qt::MidButton)) {
             deleteItem(start); // changed from "start drag" to "delete" by flo93
             drag = DRAG_DELETE;
             setCursor();
             }
-      else if (event->button() == Qt::RightButton) {
+      else if (button == Qt::RightButton) {
             if (curItem) {
-                  if (ctrl) {
+                  if (ctrl && virt()) {       // Non-virt width is meaningless, such as drums.
                         drag = DRAG_RESIZE;
                         setCursor();
                         int dx = start.x() - curItem->x();
@@ -745,20 +663,17 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         }
                   }
             }
-      else if (event->button() == Qt::LeftButton) {
+      else if (button == Qt::LeftButton) {
             switch (_tool) {
                   case PointerTool:
                         if (curItem) {
                               itemPressed(curItem);
-                              // Changed by T356. Alt is default reserved for moving the whole window in KDE. Changed to Shift-Alt.
-                              // Hmm, nope, shift-alt is also reserved sometimes. Must find a way to bypass, 
-                              //  why make user turn off setting? Left alone for now...
-                              if (ctrl)
+                              // Alt alone is usually reserved for moving a window in X11. Ignore shift + alt.
+                              if (ctrl && !alt)
                                     drag = DRAG_COPY_START;
-                              else if (alt) {
+                              else if (ctrl && alt) 
                                     drag = DRAG_CLONE_START;
-                                    }
-                              else
+                              else if (!ctrl && !alt)
                                     drag = DRAG_MOVE_START;
                               }
                         else
@@ -774,18 +689,32 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
 
                   case PencilTool:
                         if (curItem) {
-                              drag = DRAG_RESIZE;
-                              setCursor();
-                              int dx = start.x() - curItem->x();
-                              curItem->setWidth(dx);
-                              start.setX(curItem->x());
+                                if(!virt()) { // Non-virt width is meaningless, such as drums.
+                                  itemPressed(curItem);
+                                  // Alt alone is usually reserved for moving a window in X11. Ignore shift + alt.
+                                  if (ctrl && !alt)
+                                        drag = DRAG_COPY_START;
+                                  else if (ctrl && alt)
+                                        drag = DRAG_CLONE_START;
+                                  else if (!ctrl && !alt)
+                                        drag = DRAG_MOVE_START;
+                                  setCursor();
+                                  break;
+                                }
+                                else {
+                                  drag = DRAG_RESIZE;
+                                  setCursor();
+                                  int dx = start.x() - curItem->x();
+                                  curItem->setWidth(dx);
+                                  start.setX(curItem->x());
+                                }
                               }
                         else {
                               drag = DRAG_NEW;
                               setCursor();
-                              curItem = newItem(start, event->modifiers());
+                              curItem = newItem(start, keyState);
                               if (curItem)
-                                    items.add(curItem);
+                                    newCItem = curItem;
                               else {
                                     drag = DRAG_OFF;
                                     setCursor();
@@ -798,6 +727,35 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         redraw();
                         break;
 
+                  case PanTool:
+                        {
+                          drag = DRAG_PAN;
+                          if(MusEGlobal::config.borderlessMouse)
+                          {
+                            QRect r = QApplication::desktop()->screenGeometry();
+                            ignore_mouse_move = true;      // Avoid recursion.
+                            QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
+                          }
+                          setCursor();
+                        }
+                        break;
+                        
+                  case ZoomTool:
+                        {
+                          drag = DRAG_ZOOM;
+                          if(MusEGlobal::config.borderlessMouse)
+                          {
+                            QRect r = QApplication::desktop()->screenGeometry();
+                            ignore_mouse_move = true;      // Avoid recursion.
+                            QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
+                          }
+                          setCursor();
+                          // Update the small zoom drawing area
+                          QPoint pt = mapFromGlobal(global_start);
+                          update(pt.x(), pt.y(), zoomIcon->width(), zoomIcon->height());
+                        }
+                        break;
+
                   default:
                         break;
                   }
@@ -807,19 +765,22 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
 void Canvas::scrollTimerDone()
 {
       //printf("Canvas::scrollTimerDone drag:%d doScroll:%d\n", drag, doScroll);
-      
-      if (drag != DRAG_OFF && doScroll)
+      if (doScroll && drag != DRAG_OFF && drag != DRAG_ZOOM)
       {
         //printf("Canvas::scrollTimerDone drag != DRAG_OFF && doScroll\n");
-        
+        int modifiers = QApplication::keyboardModifiers();
+        bool ctrl  = modifiers & Qt::ControlModifier;
+        bool meta  = modifiers & Qt::MetaModifier;
+        bool alt   = modifiers & Qt::AltModifier;
+        bool right_button = QApplication::mouseButtons() & Qt::RightButton;
+        bool scrollDoResize = ((!ctrl && !right_button) || meta || alt) && virt();  // Non-virt width is meaningless, such as drums.
+        int dx = 0;
+        int dy = 0;
         bool doHMove = false;
         bool doVMove = false;
-        int hoff = rmapx(xOffset())+mapx(xorg)-1;
-        int curxpos;
         switch(hscrollDir)
         {  
           case HSCROLL_RIGHT:
-            hoff += scrollSpeed;
             switch(drag) 
             {
               case DRAG_NEW:
@@ -833,102 +794,83 @@ void Canvas::scrollTimerDone()
               case DRAG_MOVE:
               case DRAG_COPY:
               case DRAG_CLONE:
-                emit horizontalScrollNoLimit(hoff);
+              case DRAG_PAN:
+                emit horizontalScrollNoLimit(xpos + scrollSpeed);
                 canScrollLeft = true;
-                ev_pos.setX(rmapxDev(rmapx(ev_pos.x()) + scrollSpeed));
+                dx = rmapxDev(scrollSpeed);
+                ev_pos.setX(ev_pos.x() + dx);
                 doHMove = true;
               break;
               default:  
                 if(canScrollRight)
                 {
-                  curxpos = xpos;
-                  emit horizontalScroll(hoff);
+                  int curxpos = xpos;
+                  emit horizontalScroll(xpos + scrollSpeed);
                   if(xpos <= curxpos)
-                  {  
                     canScrollRight = false;
-                  }
                   else
                   {
                     canScrollLeft = true;
-                    ev_pos.setX(rmapxDev(rmapx(ev_pos.x()) + scrollSpeed));
+                    dx = rmapxDev(scrollSpeed);
+                    ev_pos.setX(ev_pos.x() + dx);
                     doHMove = true;
                   }  
                 }  
-                else
-                {  
-                }
               break;
             }
           break;  
           case HSCROLL_LEFT:
             if(canScrollLeft)
             {
-              curxpos = xpos;
-              hoff -= scrollSpeed;
-              emit horizontalScroll(hoff);
+              int curxpos = xpos;
+              emit horizontalScroll(xpos - scrollSpeed);
               if(xpos >= curxpos)
-              {  
                 canScrollLeft = false;
-              }
               else
               {
                 canScrollRight = true;
-                ev_pos.setX(rmapxDev(rmapx(ev_pos.x()) - scrollSpeed));
+                dx = -rmapxDev(scrollSpeed);
+                ev_pos.setX(ev_pos.x() + dx);
                 doHMove = true;
               }
             }    
-            else
-            {  
-            }
           break; 
           default:
           break;   
         }
-        int voff = rmapy(yOffset())+mapy(yorg);
-        int curypos;
         switch(vscrollDir)
         {
           case VSCROLL_DOWN:
             if(canScrollDown)
             {
-              curypos = ypos;
-              voff += scrollSpeed;
-              emit verticalScroll(voff);
+              int curypos = ypos;
+              emit verticalScroll(ypos + scrollSpeed);
               if(ypos <= curypos)
-              {  
                 canScrollDown = false;
-              }
               else
               {
                 canScrollUp = true;
-                ev_pos.setY(rmapyDev(rmapy(ev_pos.y()) + scrollSpeed));
+                dy = rmapyDev(scrollSpeed);
+                ev_pos.setY(ev_pos.y() + dy);
                 doVMove = true;
               }
             }    
-            else
-            {  
-            }
           break;  
           case VSCROLL_UP:
             if(canScrollUp)
             {
-              curypos = ypos;
-              voff -= scrollSpeed;
-              emit verticalScroll(voff);
+              int curypos = ypos;
+              emit verticalScroll(ypos - scrollSpeed);
               if(ypos >= curypos)
-              {  
                 canScrollUp = false;
-              }
               else
               {
                 canScrollDown = true;
-                ev_pos.setY(rmapyDev(rmapy(ev_pos.y()) - scrollSpeed));
+                dy = -rmapyDev(scrollSpeed);
+                ev_pos.setY(ev_pos.y() + dy);
                 doVMove = true;
               } 
             }   
-            else
-            {  
-            }
           break;
           default:
           break;
@@ -965,13 +907,41 @@ void Canvas::scrollTimerDone()
                 lasso = QRect(start.x(), start.y(), dist.x(), dist.y());
                 redraw();
                 break;
+
           case DRAG_NEW:
+                if(newCItem)
+                {
+                  if((doHMove && !scrollDoResize) || doVMove)
+                  {
+                    int nx = newCItem->x();
+                    int ny = newCItem->y();
+                    if(doHMove && !scrollDoResize)
+                      nx += dx;
+                    if(nx < 0)
+                      nx = 0;
+                    if(doVMove)
+                      ny += dy;
+                    if(ny < 0)
+                      ny = 0;
+                    newCItem->move(QPoint(nx, ny));
+                  }
+                  if(scrollDoResize && doHMove)
+                  {
+                    int w = ev_pos.x() - newCItem->x();
+                    if(w < 1)
+                      w = 1;
+                    newCItem->setWidth(w);
+                  }
+                  redraw();
+                }
+                break;
+                
           case DRAG_RESIZE:
-                if (dist.x()) {
-                      if (dist.x() < 1)
-                            curItem->setWidth(1);
-                      else
-                            curItem->setWidth(dist.x());
+                if (doHMove) {
+                      int w = ev_pos.x() - curItem->x();
+                      if(w < 1)
+                        w = 1;
+                      curItem->setWidth(w);
                       redraw();
                       }
                 break;
@@ -980,28 +950,19 @@ void Canvas::scrollTimerDone()
         }
         //printf("Canvas::scrollTimerDone starting scrollTimer: Currently active?%d\n", scrollTimer->isActive());
         
-        // p3.3.43 Make sure to yield to other events (for up to 3 seconds), otherwise other events 
-        //  take a long time to reach us, causing scrolling to take a painfully long time to stop.
-        // FIXME: Didn't help at all.
-        //qApp->processEvents();
-        // No, try up to 100 ms for each yield.
-        //qApp->processEvents(100);
-        //
-        //scrollTimer->start( 40, TRUE ); // X ms single-shot timer
-        // OK, changing the timeout from 40 to 80 helped.
-        //scrollTimer->start( 80, TRUE ); // X ms single-shot timer
+        // Make sure to yield to other events, otherwise other events take a long time to reach us,
+        //  causing scrolling to take a painfully long time to stop. Try up to 100 ms for each yield: 
+        //qApp->processEvents(100);       // FIXME: Didn't help at all.
         scrollTimer->setSingleShot(true);
-        scrollTimer->start(80);
+        scrollTimer->start(80);           // OK, setting a timeout 80 helped.
       }
       else 
       {
           //printf("Canvas::scrollTimerDone !(drag != DRAG_OFF && doScroll) deleting scrollTimer\n");
-          
           delete scrollTimer;
           scrollTimer=NULL;
       }
 }
-
 
 //---------------------------------------------------------
 //   viewMouseMoveEvent
@@ -1009,22 +970,43 @@ void Canvas::scrollTimerDone()
 
 void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       {
+      if(ignore_mouse_move)
+      {
+        ignore_mouse_move = false;
+        event->accept();
+        return;
+      }
+      //fprintf(stderr, "xpos=%d xorg=%d xmag=%d event->x=%d ->gx:%d mapx(xorg)=%d rmapx0=%d xOffset=%d rmapx(xOffset()=%d\n",
+      //                 xpos,   xorg,   xmag,   event->x(), event->globalX(), mapx(xorg), rmapx(0), xOffset(), rmapx(xOffset()));
+      //fprintf(stderr, "ypos=%d yorg=%d ymag=%d event->y=%d ->gy:%d mapy(yorg)=%d rmapy0=%d yOffset=%d rmapy(yOffset()=%d\n",
+      //                 ypos,   yorg,   ymag,   event->y(), event->globalY(), mapy(yorg), rmapy(0), yOffset(), rmapy(yOffset()));
+
+      QRect  screen_rect    = QApplication::desktop()->screenGeometry();
+      QPoint screen_center  = QPoint(screen_rect.width()/2, screen_rect.height()/2);
+      QPoint glob_dist      = event->globalPos() - ev_global_pos;
+      QPoint glob_zoom_dist = MusEGlobal::config.borderlessMouse ? (event->globalPos() - screen_center) : glob_dist;
+      QPoint last_dist      = event->pos() - ev_pos;
       
-      ev_pos  = event->pos();
-      QPoint dist = ev_pos - start;
-      int ax      = ABS(rmapx(dist.x()));
-      int ay      = ABS(rmapy(dist.y()));
-      bool moving = (ax >= 2) || (ay > 2);
+      ev_pos     = event->pos();
+      QPoint dist  = ev_pos - start;
+      int ax       = ABS(rmapx(dist.x()));
+      int ay       = ABS(rmapy(dist.y()));
+      bool moving  = (ax >= 2) || (ay > 2);
+      int modifiers = event->modifiers();
+      bool ctrl  = modifiers & Qt::ControlModifier;
+      bool shift = modifiers & Qt::ShiftModifier;
+      bool meta  = modifiers & Qt::MetaModifier;
+      bool alt   = modifiers & Qt::AltModifier;
+      bool right_button = event->buttons() & Qt::RightButton;
 
       // set scrolling variables: doScroll, scrollRight
-      if (drag != DRAG_OFF) {
-            
-                
+      // No auto scroll in zoom mode or normal pan mode.
+      if (drag != DRAG_OFF && drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse)) {  
             int ex = rmapx(event->x())+mapx(0);
-            if(ex < 40 && canScrollLeft)
-              hscrollDir = HSCROLL_LEFT;
+            if(ex < 15 && (canScrollLeft || drag == DRAG_PAN))
+              hscrollDir = (drag == DRAG_PAN ? HSCROLL_RIGHT : HSCROLL_LEFT);
             else  
-            if(ex > (width() - 40))
+            if(ex > (width() - 15))
               switch(drag) 
               {
                 case DRAG_NEW:
@@ -1038,25 +1020,28 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                 case DRAG_MOVE:
                 case DRAG_COPY:
                 case DRAG_CLONE:
-                    hscrollDir = HSCROLL_RIGHT;
+                case DRAG_PAN:
+                    hscrollDir = (drag == DRAG_PAN ? HSCROLL_LEFT : HSCROLL_RIGHT);
                 break;
                 default:
                   if(canScrollRight)
-                    hscrollDir = HSCROLL_RIGHT;
+                    hscrollDir = (drag == DRAG_PAN ? HSCROLL_LEFT : HSCROLL_RIGHT);
                   else  
                     hscrollDir = HSCROLL_NONE;
                 break;
               }
             else  
               hscrollDir = HSCROLL_NONE;
+            
             int ey = rmapy(event->y())+mapy(0);
-            if(ey < 15 && canScrollUp)
-              vscrollDir = VSCROLL_UP;
+            if(ey < 15 && (canScrollUp || drag == DRAG_PAN))
+              vscrollDir = (drag == DRAG_PAN ? VSCROLL_DOWN : VSCROLL_UP);
             else  
-            if(ey > (height() - 15) && canScrollDown)
-              vscrollDir = VSCROLL_DOWN;
+            if(ey > (height() - 15) && (canScrollDown || drag == DRAG_PAN))
+              vscrollDir = (drag == DRAG_PAN ? VSCROLL_UP : VSCROLL_DOWN);
             else  
               vscrollDir = VSCROLL_NONE;
+
             if(hscrollDir != HSCROLL_NONE || vscrollDir != VSCROLL_NONE)
             {
               doScroll=true;
@@ -1064,7 +1049,6 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
               {
                   scrollTimer= new QTimer(this);
                   connect( scrollTimer, SIGNAL(timeout()), SLOT(scrollTimerDone()) );
-                  //scrollTimer->start( 0, TRUE ); // single-shot timer
                   scrollTimer->setSingleShot(true); // single-shot timer
                   scrollTimer->start(0); 
               }
@@ -1090,14 +1074,11 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   drag = DRAG_LASSO;
                   setCursor();
                   // proceed with DRAG_LASSO:
-
             case DRAG_LASSO:
                   {
                   lasso = QRect(start.x(), start.y(), dist.x(), dist.y());
-
                   // printf("xorg=%d xmag=%d event->x=%d, mapx(xorg)=%d rmapx0=%d xOffset=%d rmapx(xOffset()=%d\n",
                   //         xorg, xmag, event->x(),mapx(xorg), rmapx(0), xOffset(),rmapx(xOffset()));
-
                   }
                   redraw();
                   break;
@@ -1149,50 +1130,123 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   else
                         dt = MOVE_CLONE;
                   
-                  startMoving(ev_pos, dt);
+                  startMoving(ev_pos, dt, !(keyState & Qt::ShiftModifier));
                   break;
 
             case DRAG_MOVE:
             case DRAG_COPY:
             case DRAG_CLONE:
-      
                   if(!scrollTimer)
-                    moveItems(ev_pos, 0);
+                    moveItems(ev_pos, 0, !shift);
                   break;
 
             case DRAGX_MOVE:
             case DRAGX_COPY:
             case DRAGX_CLONE:
                   if(!scrollTimer)
-                    moveItems(ev_pos, 1);
+                    moveItems(ev_pos, 1, false);
                   break;
 
             case DRAGY_MOVE:
             case DRAGY_COPY:
             case DRAGY_CLONE:
                   if(!scrollTimer)
-                    moveItems(ev_pos, 2);
+                    moveItems(ev_pos, 2, false);
                   break;
 
             case DRAG_NEW:
+                  if(newCItem) {
+                    if (last_dist.x()) {
+                          if(((ctrl || right_button) && !meta && !alt) || !virt())  // Non-virt width is meaningless, such as drums.
+                          {
+                            int nx = ev_pos.x() - newCItem->width();  // Keep the cursor at the right edge.
+                            if(nx < 0)
+                              nx = 0;
+                            if(!shift)
+                            {
+                              nx = raster(QPoint(nx, 0)).x();  // 0 is dummy, we want only x
+                              if(nx < 0)
+                                nx = 0;
+                            }
+                            newCItem->move(QPoint(nx, newCItem->y()));
+                          }
+                          else
+                          {
+                            int w = ev_pos.x() - newCItem->x();
+                            if(w < 1)
+                              w = 1;
+                            newCItem->setWidth(w);
+                          }
+                          }
+                    if (last_dist.y()) {
+                          int x = newCItem->x();
+                          int y = ev_pos.y();
+                          int ny = pitch2y(y2pitch(y)) - yItemOffset();
+                          QPoint pt = QPoint(x, ny);
+                          newCItem->move(pt);
+                          newCItem->setHeight(y2height(y));
+                          itemMoved(newCItem, pt);
+                          }
+                    if (last_dist.x() || last_dist.y())
+                      redraw();
+                  }
+                  break;
+
             case DRAG_RESIZE:
-                  if (dist.x()) {
-                        if (dist.x() < 1)
-                              curItem->setWidth(1);
-                        else
-                              curItem->setWidth(dist.x());
+                  if (last_dist.x()) {
+                        int w = ev_pos.x() - curItem->x();
+                        if(w < 1)
+                          w = 1;
+                        curItem->setWidth(w);
                         redraw();
                         }
                   break;
+                  
             case DRAG_DELETE:
                   deleteItem(ev_pos);
                   break;
 
+            case DRAG_PAN:
+                  {
+                    bool changed = false;
+                    if((!shift || (shift && ctrl)) && glob_zoom_dist.x() != 0 && (!doScroll || hscrollDir == HSCROLL_NONE))  // Don't interfere if auto-scrolling
+                    {
+                      emit horizontalScroll(xpos - glob_zoom_dist.x());
+                      changed = true;
+                    }
+                    if((!ctrl || (shift && ctrl)) && glob_zoom_dist.y() != 0 && (!doScroll || vscrollDir == VSCROLL_NONE))   // Don't interfere if auto-scrolling
+                    {
+                      emit verticalScroll(ypos - glob_zoom_dist.y());
+                      changed = true;
+                    }
+                    if(MusEGlobal::config.borderlessMouse && changed)
+                    {
+                      ignore_mouse_move = true;      // Avoid recursion.
+                      QCursor::setPos(screen_center);
+                    }
+                  }
+                  break;
+                  
+            case DRAG_ZOOM:
+                  if(glob_zoom_dist.x() != 0)   
+                      emit horizontalZoom(glob_zoom_dist.x(), global_start);
+                  //if(glob_zoom_dist.y() != 0)
+                  //    emit verticalZoom(glob_zoom_dist.y(), global_start);  // TODO
+                  if(MusEGlobal::config.borderlessMouse && (glob_zoom_dist.x() != 0 || glob_zoom_dist.y() != 0))
+                  {
+                    ignore_mouse_move = true;      // Avoid recursion.
+                    QCursor::setPos(screen_center);
+                  }
+                  break;
+                  
             case DRAG_OFF:
                   break;
             }
-                  
-      mouseMove(event);
+
+      ev_global_pos = event->globalPos();
+
+      if(drag != DRAG_ZOOM && (drag != DRAG_PAN || !MusEGlobal::config.borderlessMouse))
+        mouseMove(event);
       }
 
 //---------------------------------------------------------
@@ -1200,19 +1254,18 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 //---------------------------------------------------------
 
 void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
-      {
+{
       doScroll = false;
       canScrollLeft = true;
       canScrollRight = true;
       canScrollUp = true;
       canScrollDown = true;
-      if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) {
+      if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) 
             return;
-            }
 
       QPoint pos = event->pos();
-      bool ctrl = ((QInputEvent*)event)->modifiers() & Qt::ControlModifier;
-      bool shift = ((QInputEvent*)event)->modifiers() & Qt::ShiftModifier;
+      bool ctrl = event->modifiers() & Qt::ControlModifier;
+      bool shift = event->modifiers() & Qt::ShiftModifier;
       bool redrawFlag = false;
 
       switch (drag) {
@@ -1224,10 +1277,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                         curPartId = curPart->sn();
                         curPartChanged();
                         }
-
                   if (!ctrl)
                         deselectAll();
-                        
                   if (!shift) { //Select or deselect only the clicked item
                       selectItem(curItem, !(ctrl && curItem->isSelected()));
                       }
@@ -1243,40 +1294,47 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                   itemReleased(curItem, curItem->pos());
                   break;
             case DRAG_COPY:
-                  endMoveItems(pos, MOVE_COPY, 0);
+                  endMoveItems(pos, MOVE_COPY, 0, !shift);
                   break;
             case DRAGX_COPY:
-                  endMoveItems(pos, MOVE_COPY, 1);
+                  endMoveItems(pos, MOVE_COPY, 1, false);
                   break;
             case DRAGY_COPY:
-                  endMoveItems(pos, MOVE_COPY, 2);
+                  endMoveItems(pos, MOVE_COPY, 2, false);
                   break;
             case DRAG_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 0);
+                  endMoveItems(pos, MOVE_MOVE, 0, !shift);
                   break;
             case DRAGX_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 1);
+                  endMoveItems(pos, MOVE_MOVE, 1, false);
                   break;
             case DRAGY_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 2);
+                  endMoveItems(pos, MOVE_MOVE, 2, false);
                   break;
             case DRAG_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 0);
+                  endMoveItems(pos, MOVE_CLONE, 0, !shift);
                   break;
             case DRAGX_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 1);
+                  endMoveItems(pos, MOVE_CLONE, 1, false);
                   break;
             case DRAGY_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 2);
+                  endMoveItems(pos, MOVE_CLONE, 2, false);
                   break;
             case DRAG_OFF:
                   break;
             case DRAG_RESIZE:
-                  resizeItem(curItem, false, ctrl);
+                  resizeItem(curItem, shift, ctrl);
                   break;
             case DRAG_NEW:
-                  newItem(curItem, false);
-                  redrawFlag = true;
+                  if(newCItem)
+                  {
+                    items.add(newCItem);
+                    curItem = newCItem;
+                    newCItem = NULL;
+                    itemReleased(curItem, curItem->pos());
+                    newItem(curItem, shift);
+                    redrawFlag = true;
+                  }
                   break;
             case DRAG_LASSO_START:
                   lasso.setRect(-1, -1, -1, -1);
@@ -1297,15 +1355,49 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
 
             case DRAG_DELETE:
                   break;
+                  
+            case DRAG_PAN:
+                  if(MusEGlobal::config.borderlessMouse)
+                  {
+                    pos = global_start;
+                    ignore_mouse_move = true;      // Avoid recursion.
+                    QCursor::setPos(global_start);
+                  }
+                  break;
+                  
+            case DRAG_ZOOM:
+                  if(MusEGlobal::config.borderlessMouse)
+                  {
+                    pos = global_start;
+                    ignore_mouse_move = true;      // Avoid recursion.
+                    QCursor::setPos(global_start);
+                  }
+                  break;
             }
       //printf("Canvas::viewMouseReleaseEvent setting drag to DRAG_OFF\n");
+
+      // Just in case it was somehow forgotten:
+      if(newCItem)
+      {
+        if(newCItem->event().empty() && newCItem->part()) // Was it a new part, with no event?
+          delete newCItem->part();
+        delete newCItem;
+        newCItem = NULL;
+      }
+      
+      if(drag == DRAG_ZOOM) // Update the small zoom drawing area
+      {
+        drag = DRAG_OFF;
+        QPoint pt = mapFromGlobal(global_start);
+        update(pt.x(), pt.y(), zoomIcon->width(), zoomIcon->height());
+      }
       
       drag = DRAG_OFF;
       if (redrawFlag)
             redraw();
       setCursor();
       mouseRelease(pos);
-      }
+}
 
 //---------------------------------------------------------
 //   selectLasso
@@ -1330,7 +1422,6 @@ void Canvas::selectLasso(bool toggle)
                   int w = rmapxDev(box.width());
                   int h = rmapyDev(box.height());
                   QRect r(x, y, w, h);
-                  ///r.moveBy(i->second->pos().x(), i->second->pos().y());
                   r.translate(i->second->pos().x(), i->second->pos().y());
                   if (r.intersects(lasso)) {
                         selectItem(i->second, !(toggle && i->second->isSelected()));
@@ -1338,8 +1429,6 @@ void Canvas::selectLasso(bool toggle)
                         }
                   }
             }
-
-
 
       if (n) {
             updateSelection();
@@ -1385,7 +1474,6 @@ void Canvas::deleteItem(const QPoint& p)
                   int w = rmapxDev(box.width());
                   int h = rmapyDev(box.height());
                   QRect r(x, y, w, h);
-                  ///r.moveBy(i->second->pos().x(), i->second->pos().y());
                   r.translate(i->second->pos().x(), i->second->pos().y());
                   if (r.contains(p)) {
                         if (deleteItem(i->second)) {
@@ -1431,13 +1519,28 @@ void Canvas::setCursor()
             case DRAG_MOVE:
             case DRAG_COPY:
             case DRAG_CLONE:
-                  QWidget::setCursor(QCursor(Qt::SizeAllCursor));
+	          // Bug in KDE cursor theme? On some distros this cursor is actually another version of a closed hand! From 'net:
+                  // "It might be a problem in the distribution as Qt uses the cursor that is provided by X.org/xcursor extension with name "size_all".
+	          //  We fixed this issue by setting the KDE cursor theme to "System theme" "
+                  QWidget::setCursor(QCursor(Qt::SizeAllCursor));  
                   break;
 
             case DRAG_RESIZE:
                   QWidget::setCursor(QCursor(Qt::SizeHorCursor));
                   break;
 
+            case DRAG_PAN:
+                  if(MusEGlobal::config.borderlessMouse)
+                    QWidget::setCursor(QCursor(Qt::BlankCursor));  // Hide it.
+                  else
+                    QWidget::setCursor(QCursor(Qt::ClosedHandCursor));
+                  break;
+                  
+            case DRAG_ZOOM:
+                  if(MusEGlobal::config.borderlessMouse)
+                    QWidget::setCursor(QCursor(Qt::BlankCursor));  // Hide it.
+                  break;
+                  
             case DRAG_DELETE:
             case DRAG_COPY_START:
             case DRAG_CLONE_START:
@@ -1465,6 +1568,12 @@ void Canvas::setCursor()
                         case AutomationTool:
                               QWidget::setCursor(QCursor(Qt::PointingHandCursor));
                               break;
+                        case PanTool:
+                              QWidget::setCursor(QCursor(Qt::OpenHandCursor));
+                              break;
+                        case ZoomTool:
+                              QWidget::setCursor(QCursor(*zoomAtIcon, 0, 0));
+                              break;
                         default:
                               QWidget::setCursor(QCursor(Qt::ArrowCursor));
                               break;
@@ -1478,6 +1587,15 @@ void Canvas::setCursor()
 //---------------------------------------------------------
 
 void Canvas::keyPress(QKeyEvent* event)
+      {
+      event->ignore();
+      }
+
+//---------------------------------------------------------
+//   keyRelease
+//---------------------------------------------------------
+
+void Canvas::keyRelease(QKeyEvent* event)
       {
       event->ignore();
       }
@@ -1507,25 +1625,34 @@ int Canvas::selectionSize()
 
 //---------------------------------------------------------
 //   genCanvasPopup
+//   Add the list of available tools to a popup menu
+//   menu parameter can be NULL meaning create a menu here
 //---------------------------------------------------------
 
-QMenu* Canvas::genCanvasPopup()
+QMenu* Canvas::genCanvasPopup(QMenu* menu)
       {
       if (canvasTools == 0)
             return 0;
-      QMenu* canvasPopup = new QMenu(this);
+      QMenu* r_menu = menu;
+      if(!r_menu)
+        r_menu = new QMenu(this);
       QAction* act0 = 0;
 
-      for (unsigned i = 0; i < 9; ++i) {
+      r_menu->addAction(new MenuTitleItem(tr("Tools:"), r_menu));
+      
+      for (unsigned i = 0; i < gNumberOfTools; ++i) {
             if ((canvasTools & (1 << i))==0)
                   continue;
-            QAction* act = canvasPopup->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
-	    act->setData(1<<i); // ddskrjo
+            QAction* act = r_menu->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
+	    act->setData(TOOLS_ID_BASE + i);
+            act->setCheckable(true);
+            act->setChecked((1 << i) == _tool);
             if (!act0)
                   act0 = act;
             }
-      canvasPopup->setActiveAction(act0);
-      return canvasPopup;
+      if(!menu)  // Don't interefere with supplied menu's current item
+        r_menu->setActiveAction(act0);
+      return r_menu;
       }
 
 //---------------------------------------------------------
@@ -1534,8 +1661,13 @@ QMenu* Canvas::genCanvasPopup()
 
 void Canvas::canvasPopup(int n)
       {
-      setTool(n);
-      emit toolChanged(n);
+        if(n >= TOOLS_ID_BASE)
+        {
+          n -= TOOLS_ID_BASE;
+          int t = 1 << n;
+          setTool(t);
+          emit toolChanged(t);
+        }
       }
 
 void Canvas::setCurrentPart(MusECore::Part* part)

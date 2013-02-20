@@ -32,6 +32,7 @@
 #include "midictrl.h"
 #include "event.h"
 
+class QWheelEvent;
 class QMouseEvent;
 class QEvent;
 class QWidget;
@@ -118,6 +119,7 @@ class CtrlCanvas : public MusEGui::View {
       void viewMousePressEvent(QMouseEvent* event);
       void viewMouseMoveEvent(QMouseEvent*);
       void viewMouseReleaseEvent(QMouseEvent*);
+      virtual void wheelEvent(QWheelEvent*);
 
       virtual void draw(QPainter&, const QRect&);
       virtual void pdraw(QPainter&, const QRect&);
@@ -155,6 +157,7 @@ class CtrlCanvas : public MusEGui::View {
       MusEGui::Tool tool;
       unsigned pos[3];
       int curDrumPitch;    //Used by the drum-editor to view velocity of only one key (one drum)
+      bool _perNoteVeloMode;
       
       void leaveEvent(QEvent*e);
       QPoint raster(const QPoint&) const;
@@ -184,16 +187,19 @@ class CtrlCanvas : public MusEGui::View {
       void followEvent(int);
       void xposChanged(unsigned);
       void yposChanged(int);
+      void redirectWheelEvent(QWheelEvent*);
 
    public:
       CtrlCanvas(MidiEditor*, QWidget* parent, int,
          const char* name = 0, CtrlPanel* pnl = 0);
       ~CtrlCanvas();   
-      void setPanel(CtrlPanel* pnl) { _panel = pnl; }
+      void setPanel(CtrlPanel* pnl);
       MusECore::MidiCtrlValList* ctrlValList() { return ctrl; }
       MusECore::MidiController* controller() { return _controller; }
       MusECore::MidiTrack* track() const { return curTrack; }
       int getCurDrumPitch() const { return curDrumPitch; }
+      bool perNoteVeloMode() const { return _perNoteVeloMode; }
+      void setPerNoteVeloMode(bool);
       };
 
 } // namespace MusEGui

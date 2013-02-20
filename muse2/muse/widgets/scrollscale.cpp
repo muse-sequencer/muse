@@ -44,10 +44,15 @@ namespace MusEGui {
 
 void ScrollScale::setScale ( int val, int pos_offset )
 {
+        int mag_max = convertQuickZoomLevelToMag(zoomLevels-1);
+	if(val < 0)
+	  val = 0;
+	else if(val > mag_max)
+	  val = mag_max;
 	int off = offset();
 	int old_scale_val = scaleVal;
 	if ( invers )
-        val = convertQuickZoomLevelToMag(zoomLevels-1) - val;
+        val = mag_max - val;
 	double min, max;
 	if ( scaleMin < 0 )
 		min = 1.0/ ( -scaleMin );
@@ -60,7 +65,7 @@ void ScrollScale::setScale ( int val, int pos_offset )
 		max = double ( scaleMax );
 
 	double diff = max-min;
-    double fkt  = double ( val ) /double(convertQuickZoomLevelToMag(zoomLevels-1));
+    double fkt  = double ( val ) /double(mag_max);
 	double v = ( pow ( logbase, fkt )-1 ) / ( logbase-1 );
 	double scale;
 	if ( invers )
@@ -91,7 +96,7 @@ void ScrollScale::setScale ( int val, int pos_offset )
 			scale = scaleMin;
 	}
 #endif
-//    printf("scaleMin %d scaleMax %d val=%d emit scaleVal=%d\n", scaleMin, scaleMax, val, scaleVal);
+    //fprintf(stderr, "scaleMin %d scaleMax %d val=%d emit scaleVal=%d\n", scaleMin, scaleMax, val, scaleVal);
 	emit scaleChanged ( scaleVal );
 	if ( !noScale )
 		setRange ( minVal, maxVal );

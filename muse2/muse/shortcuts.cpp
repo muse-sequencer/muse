@@ -64,7 +64,7 @@ void initShortCuts()
       defShrt(SHRT_CONFIG_SHORTCUTS, Qt::CTRL + Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure shortcuts"), GLOBAL_SHRT, "configure_key_shortcuts");
 
       defShrt(SHRT_COPY,          Qt::CTRL + Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy"), INVIS_SHRT, "copy");
-      defShrt(SHRT_COPY_RANGE,    Qt::CTRL + Qt::SHIFT + Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy in range"), GLOBAL_SHRT,    "copy_range");
+      defShrt(SHRT_COPY_RANGE,    Qt::CTRL + Qt::SHIFT + Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy in range"), SCORE_SHRT + PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT, "copy_range");
       defShrt(SHRT_UNDO,          Qt::CTRL + Qt::Key_Z, QT_TRANSLATE_NOOP("shortcuts", "Edit: Undo"), INVIS_SHRT, "undo");
       defShrt(SHRT_REDO,          Qt::CTRL + Qt::SHIFT + Qt::Key_Z, QT_TRANSLATE_NOOP("shortcuts", "Edit: Redo"), INVIS_SHRT, "redo");
       defShrt(SHRT_CUT,           Qt::CTRL + Qt::Key_X, QT_TRANSLATE_NOOP("shortcuts", "Edit: Cut"), INVIS_SHRT, "cut");
@@ -72,7 +72,7 @@ void initShortCuts()
       defShrt(SHRT_PASTE_TO_TRACK, Qt::CTRL + Qt::SHIFT + Qt::Key_V, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste to selected track"), ARRANG_SHRT, "paste_to_track");
       defShrt(SHRT_PASTE_CLONE,   Qt::CTRL + Qt::Key_B, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste clone"), ARRANG_SHRT, "paste_clones");
       defShrt(SHRT_PASTE_CLONE_TO_TRACK,  Qt::CTRL + Qt::SHIFT + Qt::Key_B, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste clone to selected track"), ARRANG_SHRT, "paste_clones_to_track");
-      defShrt(SHRT_PASTE_DIALOG,  Qt::CTRL + Qt::Key_G, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste (with dialog)"), GLOBAL_SHRT, "paste_with_dialog");
+      defShrt(SHRT_PASTE_DIALOG,  Qt::CTRL + Qt::Key_G, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste (with dialog)"), SCORE_SHRT + PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT, "paste_with_dialog");
       defShrt(SHRT_DELETE,        Qt::Key_Delete, QT_TRANSLATE_NOOP("shortcuts", "Edit: Delete"), INVIS_SHRT, "delete");
 
       //-----------------------------------------------------------
@@ -96,7 +96,7 @@ void initShortCuts()
       defShrt(SHRT_OPEN_PIANO,            Qt::CTRL + Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Open pianoroll"), ARRANG_SHRT, "open_pianoroll");
       defShrt(SHRT_OPEN_DRUMS,            Qt::CTRL + Qt::Key_D, QT_TRANSLATE_NOOP("shortcuts", "Open drumeditor"), ARRANG_SHRT, "open_drumedit");
       defShrt(SHRT_OPEN_LIST,             Qt::CTRL + Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "Open listeditor"), ARRANG_SHRT, "open_listedit");
-      defShrt(SHRT_OPEN_WAVE,             Qt::CTRL + Qt::Key_W, QT_TRANSLATE_NOOP("shortcuts", "Open waveeditor"), ARRANG_SHRT, "open_waveedit");
+      defShrt(SHRT_OPEN_WAVE,             Qt::CTRL + Qt::Key_Y, QT_TRANSLATE_NOOP("shortcuts", "Open waveeditor"), ARRANG_SHRT, "open_waveeditor");
       defShrt(SHRT_OPEN_GRAPHIC_MASTER,   Qt::CTRL + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Open graphical mastertrack editor"), ARRANG_SHRT, "open_graph_master");
       defShrt(SHRT_OPEN_LIST_MASTER,      Qt::CTRL + Qt::SHIFT + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Open list mastertrack editor"), ARRANG_SHRT, "open_list_master");
       defShrt(SHRT_OPEN_MIDI_TRANSFORM,   Qt::CTRL + Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Open midi transformer"), ARRANG_SHRT, "open_midi_transform");
@@ -155,7 +155,7 @@ void initShortCuts()
 
 //      defShrt(SHRT_OPEN_CLIPS,            0, QT_TRANSLATE_NOOP("shortcuts", "View audio clips"), ARRANG_SHRT,                  "view_audio_clips");
       defShrt(SHRT_OPEN_HELP,             Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Help: Open Manual"), ARRANG_SHRT,        "open_help");
-      defShrt(SHRT_START_WHATSTHIS,       Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Help: Toggle whatsthis mode"), ARRANG_SHRT, "toggle_whatsthis");
+      defShrt(SHRT_START_WHATSTHIS,       Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Help: Toggle whatsthis mode"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "toggle_whatsthis");
 
       defShrt(SHRT_EDIT_PART,             Qt::Key_Return, QT_TRANSLATE_NOOP("shortcuts", "Edit: Edit selected part"), ARRANG_SHRT, "edit_selected_part");
       defShrt(SHRT_SEL_ABOVE,             Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part on track above"), ARRANG_SHRT, "sel_part_above");
@@ -170,63 +170,65 @@ void initShortCuts()
 
       //-----------------------------------------------------------
 
-      defShrt(SHRT_TRANSPOSE,       0, QT_TRANSLATE_NOOP("shortcuts", "Midi: Transpose"), ARRANG_SHRT + PROLL_SHRT, "midi_transpose");
+      defShrt(SHRT_TRANSPOSE,       0, QT_TRANSLATE_NOOP("shortcuts", "Midi: Transpose"), ARRANG_SHRT + PROLL_SHRT + SCORE_SHRT, "midi_transpose");
 
       //-----------------------------------------------------------
 
-      defShrt(SHRT_SELECT_ALL,       Qt::CTRL + Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select all"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_all");
-      defShrt(SHRT_SELECT_NONE,      Qt::CTRL + Qt::SHIFT + Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select none"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_none");
-      defShrt(SHRT_SELECT_INVERT,    Qt::CTRL + Qt::Key_I, QT_TRANSLATE_NOOP("shortcuts", "Edit: Invert Selection"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,  "sel_inv");
-      defShrt(SHRT_SELECT_ILOOP,     0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select events/parts inside locators"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,  "sel_ins_loc");
-      defShrt(SHRT_SELECT_OLOOP,     0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select events/parts outside locators"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_out_loc");
-      defShrt(SHRT_SELECT_PREV_PART, Qt::ALT + Qt::Key_Left, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select previous part"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_prv_prt");
-      defShrt(SHRT_SELECT_NEXT_PART, Qt::ALT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select next part"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_nxt_prt");
-      defShrt(SHRT_SEL_LEFT,         Qt::Key_Left,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part/event to the left or move cursor"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_left");
-      defShrt(SHRT_SEL_LEFT_ADD,     Qt::Key_Left + Qt::SHIFT,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part/event to the left to selection"), PROLL_SHRT + DEDIT_SHRT, "sel_left_add");
-      defShrt(SHRT_SEL_RIGHT,        Qt::Key_Right,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part/event to the right or move cursor"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,"sel_right");
-      defShrt(SHRT_SEL_RIGHT_ADD,    Qt::Key_Right + Qt::SHIFT, QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part/event to the right to selection"), PROLL_SHRT + DEDIT_SHRT,"sel_right_add");
-      defShrt(SHRT_LOCATORS_TO_SELECTION, Qt::ALT + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Edit: Set locators to selection"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "loc_to_sel");
+      defShrt(SHRT_SELECT_ALL,       Qt::CTRL + Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select all"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT + SCORE_SHRT, "sel_all");
+      defShrt(SHRT_SELECT_NONE,      Qt::CTRL + Qt::SHIFT + Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select none"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT + SCORE_SHRT, "sel_none");
+      defShrt(SHRT_SELECT_INVERT,    Qt::CTRL + Qt::Key_I, QT_TRANSLATE_NOOP("shortcuts", "Edit: Invert Selection"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT,  "sel_inv");
+      defShrt(SHRT_SELECT_ILOOP,     0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select events/parts inside locators"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT,  "sel_ins_loc");
+      defShrt(SHRT_SELECT_OLOOP,     0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select events/parts outside locators"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT, "sel_out_loc");
+      defShrt(SHRT_SELECT_PREV_PART, Qt::ALT + Qt::Key_Left, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select previous part"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_prv_prt");
+      defShrt(SHRT_SELECT_NEXT_PART, Qt::ALT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select next part"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_nxt_prt");
+      defShrt(SHRT_SEL_LEFT,         Qt::Key_Left,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part/event to the left or move cursor"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_left");
+      defShrt(SHRT_SEL_LEFT_ADD,     Qt::Key_Left + Qt::SHIFT,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part/event to the left to selection"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_left_add");
+      defShrt(SHRT_SEL_RIGHT,        Qt::Key_Right,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part/event to the right or move cursor"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT,"sel_right");
+      defShrt(SHRT_SEL_RIGHT_ADD,    Qt::Key_Right + Qt::SHIFT, QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part/event to the right to selection"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT,"sel_right_add");
+      defShrt(SHRT_LOCATORS_TO_SELECTION, Qt::ALT + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Edit: Set locators to selection"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "loc_to_sel");
       defShrt(SHRT_INC_PITCH,        Qt::CTRL + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Edit: Increase pitch"), PROLL_SHRT + DEDIT_SHRT, "sel_inc_pitch");
       defShrt(SHRT_DEC_PITCH,        Qt::CTRL + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Edit: Decrease pitch"), PROLL_SHRT + DEDIT_SHRT, "sel_dec_pitch");
-      defShrt(SHRT_INC_POS,          Qt::CTRL + Qt::Key_Right,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Increase event position"), PROLL_SHRT + DEDIT_SHRT, "sel_inc_pos");
-      defShrt(SHRT_DEC_POS,          Qt::CTRL + Qt::Key_Left,   QT_TRANSLATE_NOOP("shortcuts", "Edit: Decrease event position"), PROLL_SHRT + DEDIT_SHRT, "sel_dec_pos");
-      defShrt(SHRT_ZOOM_IN,          Qt::CTRL + Qt::Key_PageUp,   QT_TRANSLATE_NOOP("shortcuts", "View: Zoom in"),  PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT, "zoom_in");
-      defShrt(SHRT_ZOOM_OUT,         Qt::CTRL + Qt::Key_PageDown, QT_TRANSLATE_NOOP("shortcuts", "View: Zoom out"), PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT, "zoom_out");
-      defShrt(SHRT_GOTO_CPOS,        Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "View: Goto Current Position"), PROLL_SHRT + DEDIT_SHRT, "goto_cpos");
-      defShrt(SHRT_SCROLL_LEFT,      Qt::Key_H, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT, "scroll_left");
-      defShrt(SHRT_SCROLL_RIGHT,     Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT, "scroll_right");
+      defShrt(SHRT_INC_POS,          Qt::CTRL + Qt::Key_Right,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Increase event position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_inc_pos");
+      defShrt(SHRT_DEC_POS,          Qt::CTRL + Qt::Key_Left,   QT_TRANSLATE_NOOP("shortcuts", "Edit: Decrease event position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_dec_pos");
+      defShrt(SHRT_ZOOM_IN,          Qt::CTRL + Qt::Key_PageUp,   QT_TRANSLATE_NOOP("shortcuts", "View: Zoom in"),  PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT + WAVE_SHRT, "zoom_in");
+      defShrt(SHRT_ZOOM_OUT,         Qt::CTRL + Qt::Key_PageDown, QT_TRANSLATE_NOOP("shortcuts", "View: Zoom out"), PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT + WAVE_SHRT, "zoom_out");
+      defShrt(SHRT_GOTO_CPOS,        Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "View: Goto Current Position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "goto_cpos");
+      defShrt(SHRT_SCROLL_LEFT,      Qt::Key_H, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_left");
+      defShrt(SHRT_SCROLL_RIGHT,     Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_right");
 
       //-----------------------------------------------------------
       //Drum:
       //-----------------------------------------------------------
 
-      defShrt(SHRT_FIXED_LEN,   Qt::ALT + Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "Edit: Set Fixed Length on Midi Events"), PROLL_SHRT + DEDIT_SHRT, "midi_fixed_len");
+      defShrt(SHRT_FIXED_LEN,   Qt::ALT + Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "Edit: Set Fixed Length on Midi Events"), PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT, "midi_fixed_len");
 
       //-----------------------------------------------------------
       //Pianoroll:
       //-----------------------------------------------------------
 
-      defShrt(SHRT_QUANTIZE,    0, QT_TRANSLATE_NOOP("shortcuts", "Quantize"), PROLL_SHRT, "midi_quant");
-      defShrt(SHRT_MODIFY_GATE_TIME, 0, QT_TRANSLATE_NOOP("shortcuts", "Modify Note Length"), PROLL_SHRT, "midi_mod_gate_time");
-      defShrt(SHRT_MODIFY_VELOCITY,  0, QT_TRANSLATE_NOOP("shortcuts", "Modify Velocity"), PROLL_SHRT,  "midi_mod_velo");
-      defShrt(SHRT_CRESCENDO,        0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Crescendo"), PROLL_SHRT, "midi_crescendo");
-      defShrt(SHRT_THIN_OUT,         0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Thin Out"), PROLL_SHRT, "midi_thin_out");
-      defShrt(SHRT_ERASE_EVENT,      0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Erase Event"), PROLL_SHRT, "midi_erase_event");
-      defShrt(SHRT_DELETE_OVERLAPS,  0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Delete Overlaps"), PROLL_SHRT, "midi_delete_overlaps");
-      defShrt(SHRT_NOTE_SHIFT,       0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Note Shift"), PROLL_SHRT, "midi_note_shift");
-      defShrt(SHRT_MOVE_CLOCK,       0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Move Clock"), PROLL_SHRT, "midi_move_clock");
-      defShrt(SHRT_COPY_MEASURE,     0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy Measure"), PROLL_SHRT, "midi_copy_measure");
-      defShrt(SHRT_ERASE_MEASURE,    0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Erase Measure"), PROLL_SHRT,"midi_erase_measure");
-      defShrt(SHRT_DELETE_MEASURE,   0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Delete Measure"), PROLL_SHRT, "midi_delete_measure");
-      defShrt(SHRT_CREATE_MEASURE,   0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Create Measure"), PROLL_SHRT, "midi_create_measure");
-      defShrt(SHRT_EVENT_COLOR,      Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Edit: Change Event Color"), PROLL_SHRT, "change_event_color");
+      defShrt(SHRT_QUANTIZE,    0, QT_TRANSLATE_NOOP("shortcuts", "Quantize"), PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT, "midi_quant");
+      defShrt(SHRT_MODIFY_GATE_TIME, 0, QT_TRANSLATE_NOOP("shortcuts", "Modify Note Length"), PROLL_SHRT + SCORE_SHRT, "midi_mod_gate_time");
+      defShrt(SHRT_MODIFY_VELOCITY,  0, QT_TRANSLATE_NOOP("shortcuts", "Modify Velocity"), PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT,  "midi_mod_velo");
+      defShrt(SHRT_CRESCENDO,        0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Crescendo"), PROLL_SHRT + DEDIT_SHRT, "midi_crescendo");
+      defShrt(SHRT_THIN_OUT,         0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Thin Out"), PROLL_SHRT + DEDIT_SHRT, "midi_thin_out");
+      defShrt(SHRT_ERASE_EVENT,      0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Erase Event"), PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT, "midi_erase_event");
+      defShrt(SHRT_DELETE_OVERLAPS,  0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Delete Overlaps"), PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT, "midi_delete_overlaps");
+      defShrt(SHRT_NOTE_SHIFT,       0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Note Shift"), PROLL_SHRT + DEDIT_SHRT + SCORE_SHRT, "midi_note_shift");
+      defShrt(SHRT_MOVE_CLOCK,       0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Move Clock"), PROLL_SHRT + DEDIT_SHRT, "midi_move_clock");
+      defShrt(SHRT_COPY_MEASURE,     0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy Measure"), PROLL_SHRT + DEDIT_SHRT, "midi_copy_measure");
+      defShrt(SHRT_ERASE_MEASURE,    0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Erase Measure"), PROLL_SHRT + DEDIT_SHRT,"midi_erase_measure");
+      defShrt(SHRT_DELETE_MEASURE,   0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Delete Measure"), PROLL_SHRT + DEDIT_SHRT, "midi_delete_measure");
+      defShrt(SHRT_CREATE_MEASURE,   0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Create Measure"), PROLL_SHRT + DEDIT_SHRT, "midi_create_measure");
+      defShrt(SHRT_EVENT_COLOR,      Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Edit: Change Event Color"), PROLL_SHRT + SCORE_SHRT, "change_event_color");
 
 
       // Shortcuts for tools
       // global
-      defShrt(SHRT_TOOL_POINTER,     Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Tool: Pointer"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "pointer_tool");
-      defShrt(SHRT_TOOL_PENCIL,      Qt::Key_D, QT_TRANSLATE_NOOP("shortcuts", "Tool: Pencil"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "pencil_tool");
-      defShrt(SHRT_TOOL_RUBBER,      Qt::Key_R, QT_TRANSLATE_NOOP("shortcuts", "Tool: Eraser"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "eraser_tool");
+      defShrt(SHRT_TOOL_POINTER,     Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Tool: Pointer"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT + SCORE_SHRT, "pointer_tool");
+      defShrt(SHRT_TOOL_PENCIL,      Qt::Key_D, QT_TRANSLATE_NOOP("shortcuts", "Tool: Pencil"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT + SCORE_SHRT, "pencil_tool");
+      defShrt(SHRT_TOOL_RUBBER,      Qt::Key_R, QT_TRANSLATE_NOOP("shortcuts", "Tool: Eraser"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT + SCORE_SHRT, "eraser_tool");
+      defShrt(SHRT_TOOL_PAN,         Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Tool: Pan"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "pan_tool");
+      defShrt(SHRT_TOOL_ZOOM,        Qt::Key_Z, QT_TRANSLATE_NOOP("shortcuts", "Tool: Zoom"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "zoom_tool");
       // piano roll & drum editor
       defShrt(SHRT_TOOL_LINEDRAW,    Qt::Key_F, QT_TRANSLATE_NOOP("shortcuts", "Tool: Line Draw"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "line_draw_tool");
 
@@ -242,6 +244,9 @@ void initShortCuts()
       defShrt(SHRT_INSTRUMENT_STEP_UP,    Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Instrument/Cursor up"), DEDIT_SHRT, "instrument_up");
       defShrt(SHRT_INSTRUMENT_STEP_DOWN,    Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Instrument/Cursor down"), DEDIT_SHRT, "instrument_down");
 
+      // wave editor
+      defShrt(SHRT_TOOL_RANGE,      Qt::Key_Y, QT_TRANSLATE_NOOP("shortcuts", "Tool: Range"), WAVE_SHRT, "range_tool");
+      
       // arranger
       defShrt(SHRT_TOOL_SCISSORS,    Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Tool: Scissor"), ARRANG_SHRT, "scissor_tool");
       defShrt(SHRT_TOOL_GLUE,        Qt::Key_G, QT_TRANSLATE_NOOP("shortcuts", "Tool: Glue"), ARRANG_SHRT, "glue_tool");
@@ -286,17 +291,17 @@ void initShortCuts()
       */
       
       
-      defShrt(SHRT_SET_QUANT_1,      Qt::Key_1, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/1 note"),  PROLL_SHRT, "midi_quant_1");
-      defShrt(SHRT_SET_QUANT_2,      Qt::Key_2, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/2 note"),  PROLL_SHRT, "midi_quant_2");
-      defShrt(SHRT_SET_QUANT_3,      Qt::Key_3, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/4 note"),  PROLL_SHRT, "midi_quant_3");
-      defShrt(SHRT_SET_QUANT_4,      Qt::Key_4, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/8 note"),  PROLL_SHRT, "midi_quant_4");
-      defShrt(SHRT_SET_QUANT_5,      Qt::Key_5, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/16 note"), PROLL_SHRT, "midi_quant_5");
-      defShrt(SHRT_SET_QUANT_6,      Qt::Key_6, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/32 note"), PROLL_SHRT, "midi_quant_6");
-      defShrt(SHRT_SET_QUANT_7,      Qt::Key_7, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/64 note"), PROLL_SHRT, "midi_quant_7");
+      defShrt(SHRT_SET_QUANT_1,      Qt::Key_1, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/1 note"),  PROLL_SHRT + DEDIT_SHRT, "midi_quant_1");
+      defShrt(SHRT_SET_QUANT_2,      Qt::Key_2, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/2 note"),  PROLL_SHRT + DEDIT_SHRT, "midi_quant_2");
+      defShrt(SHRT_SET_QUANT_3,      Qt::Key_3, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/4 note"),  PROLL_SHRT + DEDIT_SHRT, "midi_quant_3");
+      defShrt(SHRT_SET_QUANT_4,      Qt::Key_4, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/8 note"),  PROLL_SHRT + DEDIT_SHRT, "midi_quant_4");
+      defShrt(SHRT_SET_QUANT_5,      Qt::Key_5, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/16 note"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_5");
+      defShrt(SHRT_SET_QUANT_6,      Qt::Key_6, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/32 note"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_6");
+      defShrt(SHRT_SET_QUANT_7,      Qt::Key_7, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/64 note"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_7");
 
-      defShrt(SHRT_TOGGLE_TRIOL,       Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Toggle triol quantization"), PROLL_SHRT, "midi_quant_triol");
-      defShrt(SHRT_TOGGLE_PUNCT,       Qt::Key_Period, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Toggle punctuation quantization"), PROLL_SHRT, "midi_quant_punct");
-      defShrt(SHRT_TOGGLE_PUNCT2,      Qt::Key_Comma, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Toggle punctuation quantization (2)"), PROLL_SHRT, "midi_quant_punct2");
+      defShrt(SHRT_TOGGLE_TRIOL,       Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Toggle triol quantization"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_triol");
+      defShrt(SHRT_TOGGLE_PUNCT,       Qt::Key_Period, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Toggle punctuation quantization"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_punct");
+      defShrt(SHRT_TOGGLE_PUNCT2,      Qt::Key_Comma, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Toggle punctuation quantization (2)"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_punct2");
       defShrt(SHRT_INSERT_AT_LOCATION, Qt::SHIFT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Edit: Insert at location"), PROLL_SHRT, "midi_insert_at_loc");
 
       defShrt(SHRT_INCREASE_LEN, Qt::CTRL + Qt::SHIFT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Edit: Increase length"), PROLL_SHRT, "increase_len");
@@ -322,8 +327,10 @@ void initShortCuts()
       defShrt(SHRT_LM_EDIT_VALUE, Qt::CTRL + Qt::Key_E,            QT_TRANSLATE_NOOP("shortcuts", "Edit Event Value"),       LMEDIT_SHRT,  "lm_edit_val");
       defShrt(SHRT_LM_INS_KEY, Qt::CTRL + Qt::Key_K,            QT_TRANSLATE_NOOP("shortcuts", "Insert Key"),       LMEDIT_SHRT,  "lm_ins_key");
 
-      defShrt(SHRT_NEXT_MARKER, Qt::Key_F6,            QT_TRANSLATE_NOOP("shortcuts", "Goto Next Marker"),       ARRANG_SHRT,  "me_sel_next");
-      defShrt(SHRT_PREV_MARKER, Qt::Key_F5,            QT_TRANSLATE_NOOP("shortcuts", "Goto Prev Marker"),       ARRANG_SHRT,  "me_sel_prev");
+      // Since the marker window is always created at start, these are actually global
+      //  because they are handled there, and affect the whole app.
+      defShrt(SHRT_NEXT_MARKER, Qt::Key_F6, QT_TRANSLATE_NOOP("shortcuts", "Goto Next Marker"), GLOBAL_SHRT,  "me_sel_next");
+      defShrt(SHRT_PREV_MARKER, Qt::Key_F5, QT_TRANSLATE_NOOP("shortcuts", "Goto Prev Marker"), GLOBAL_SHRT,  "me_sel_prev");
       
       }
 
@@ -334,8 +341,8 @@ void initShortCuts()
       { DEDIT_SHRT,  "Drumeditor" },
       { LEDIT_SHRT,  "List editor" },
       { LMEDIT_SHRT, "List Mastertrack" },
-//      { SCORE_SHRT,  "Score editor" },
-//      { WAVE_SHRT,   "Wave editor" },
+      { SCORE_SHRT,  "Score editor" },
+      { WAVE_SHRT,   "Wave editor" },
       { ALL_SHRT  ,  "All categories" }
  };
 

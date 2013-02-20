@@ -52,27 +52,38 @@ const char* infoDraw = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Drawing
 const char* infoMute = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Muting Tool:\n"
       "click on part to mute/unmute");
 const char* infoAutomation = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Manipulate automation");
-const char* infoCursor = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cursor tool");
+const char* infoCursor = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Cursor (tracker mode) tool:\n"
+      "with the cursor tool you can:\n"
+      "  navigate with arrow keys\n"
+      "  use VBNM to place notes\n"
+      "  change step with 0 and 9");
+const char* infoRange = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Range Tool");
+const char* infoPan = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Panning Tool");
+const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Zoom Tool");
 
 ToolB toolList[] = {
       {&pointerIcon,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pointer"),        infoPointer },
       {&pencilIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pencil"),         infoPencil  },
       {&deleteIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "eraser"),         infoDel     },
       {&cutIcon,      QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cutter"),         infoCut     },
-      {&note1Icon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "score"),          infoScore   },
       {&glueIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "glue"),           infoGlue    },
+      {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "range"),          infoRange   },
+      {&openHandIcon, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pan"),            infoPan     },
+      {&zoomIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "zoom"),           infoZoom    },
+      {&note1Icon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "score"),          infoScore   },
       {&quantIcon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "quantize"),       infoQuant   },
       {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "draw"),           infoDraw    },
       {&editmuteIcon, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "mute parts"),     infoMute    },
       {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "edit automation"),infoAutomation},
-    {&cursorIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor (tracker mode)\nNavigate with arrow keys\nUse VBNM to place notes\nChange step with 0 and 9"),         infoCursor},
+      {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor"),         infoCursor}
       };
+
+const unsigned gNumberOfTools = sizeof(toolList) / sizeof(ToolB);
 
 //---------------------------------------------------------
 //   EditToolBar
 //---------------------------------------------------------
 
-//EditToolBar::EditToolBar(QMainWindow* parent, int tools, const char*)
 EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
    : QToolBar(tr("Edit Tools"), parent)
       {

@@ -191,12 +191,16 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       setBg(Qt::white);
       setFont(MusEGlobal::config.fonts[3]);  
       editor = e;
+      _panel = pnl;
       drag   = DRAG_OFF;
       tool   = MusEGui::PointerTool;
       pos[0] = 0;
       pos[1] = 0;
       pos[2] = 0;
       noEvents=false;
+      _perNoteVeloMode = MusEGlobal::config.velocityPerNote;
+      if(_panel)
+        _panel->setVeloPerNoteMode(_perNoteVeloMode);
       
       if (dynamic_cast<DrumEdit*>(editor) && dynamic_cast<DrumEdit*>(editor)->old_style_drummap_mode()==false)
         filterTrack=true;
@@ -205,7 +209,6 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
 
       ctrl   = &veloList;
       _controller = &MusECore::veloCtrl;
-      _panel = pnl;
       _cnum  = MusECore::CTRL_VELOCITY;    
       _dnum  = MusECore::CTRL_VELOCITY;    
       _didx  = MusECore::CTRL_VELOCITY;      
@@ -232,6 +235,17 @@ CtrlCanvas::~CtrlCanvas()
   items.clearDelete();
 }
    
+//---------------------------------------------------------
+//   setPanel
+//---------------------------------------------------------
+
+void CtrlCanvas::setPanel(CtrlPanel* pnl)
+{
+  _panel = pnl;
+  if(_panel)
+    _panel->setVeloPerNoteMode(_perNoteVeloMode);
+}
+
 //---------------------------------------------------------
 //   setPos
 //    set one of three markers
@@ -602,14 +616,14 @@ void CtrlCanvas::updateItems()
               for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) 
               {
                     MusECore::Event e = i->second;
-                    // Added by T356. Do not add events which are past the end of the part.
+                    // Do not add events which are past the end of the part.
                     if(e.tick() >= len)
                       break;
                     
                     if(_cnum == MusECore::CTRL_VELOCITY && e.type() == MusECore::Note) 
                     {
                           newev = 0;
-                          if (curDrumPitch == -1 || !MusEGlobal::config.velocityPerNote) // and NOT >=0
+                          if (curDrumPitch == -1 || !_perNoteVeloMode) // and NOT >=0
                                 items.add(newev = new CEvent(e, part, e.velo()));
                           else if (e.dataA() == curDrumPitch) //same note. if curDrumPitch==-2, this never is true
                                 items.add(newev = new CEvent(e, part, e.velo()));
@@ -890,6 +904,15 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
             }
       drag = DRAG_OFF;
       }
+
+//---------------------------------------------------------
+//   wheelEvent
+//---------------------------------------------------------
+
+void CtrlCanvas::wheelEvent(QWheelEvent* ev)
+{
+  emit redirectWheelEvent(ev);
+}
 
 //---------------------------------------------------------
 //   newValRamp
@@ -2074,6 +2097,15 @@ void CtrlCanvas::curPartHasChanged(MusECore::Part*)
   setCurTrackAndPart();
   setCurDrumPitch(editor->curDrumInstrument());
   songChanged(SC_EVENT_MODIFIED);
+}
+
+void CtrlCanvas::setPerNoteVeloMode(bool v)
+{
+  if(v == _perNoteVeloMode)
+    return;
+  _perNoteVeloMode = v;
+  if(_cnum == MusECore::CTRL_VELOCITY)
+    updateItems();
 }
 
 } // namespace MusEGui

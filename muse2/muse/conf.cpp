@@ -965,6 +965,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.unhideTracks = xml.parseInt();
                         else if (tag == "smartFocus")
                               MusEGlobal::config.smartFocus = xml.parseInt();
+                        else if (tag == "borderlessMouse")
+                              MusEGlobal::config.borderlessMouse = xml.parseInt();
                         else if (tag == "velocityPerNote")
                               MusEGlobal::config.velocityPerNote = xml.parseInt();
                         else if (tag == "plugin_groups")
@@ -1314,6 +1316,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "leftMouseButtonCanDecrease", MusEGlobal::config.leftMouseButtonCanDecrease);
       xml.intTag(level, "rangeMarkerWithoutMMB", MusEGlobal::config.rangeMarkerWithoutMMB);
       xml.intTag(level, "smartFocus", MusEGlobal::config.smartFocus);
+      xml.intTag(level, "borderlessMouse", MusEGlobal::config.borderlessMouse);
       xml.intTag(level, "velocityPerNote", MusEGlobal::config.velocityPerNote);
       
       xml.intTag(level, "unhideTracks", MusEGlobal::config.unhideTracks);

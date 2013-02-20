@@ -67,7 +67,11 @@ extern QPixmap* steprecIcon;
 extern QPixmap* glueIcon;
 extern QPixmap* drawIcon;
 extern QPixmap* cursorIcon;
-
+extern QPixmap* closedHandIcon;
+extern QPixmap* openHandIcon;
+extern QPixmap* zoomIcon;
+extern QPixmap* zoomAtIcon;
+extern QPixmap* sizeAllIcon;
 
 extern QPixmap* quantIcon;
 extern QPixmap* printIcon;

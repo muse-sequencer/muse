@@ -47,6 +47,7 @@ class QScrollBar;
 class QToolBar;
 class QToolButton;
 class QWidget;
+class QPoint;
 
 namespace MusECore {
 class MidiPart;
@@ -184,6 +185,8 @@ class PianoRoll : public MidiEditor {
       void isDeleting(MusEGui::TopWin*);
    
    public slots:
+      void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
+      void horizontalZoom(int mag, const QPoint& glob_pos);
       virtual void updateHScrollRange();
       void execDeliveredScript(int id);
       void execUserScript(int id);

@@ -63,6 +63,11 @@
 #include "xpm/pencil.xpm"
 #include "xpm/delete.xpm"
 #include "xpm/play.xpm"
+#include "xpm/closed_hand.xpm"
+#include "xpm/open_hand.xpm"
+#include "xpm/zoom.xpm"
+#include "xpm/zoom_at.xpm"
+#include "xpm/size_all.xpm"
 
 #include "xpm/record1.xpm"
 #include "xpm/record.xpm"
@@ -325,6 +330,11 @@ QPixmap* punchout1Icon;
 QPixmap* loopIcon;
 QPixmap* loop1Icon;
 QPixmap* playIcon;
+QPixmap* closedHandIcon;
+QPixmap* openHandIcon;
+QPixmap* zoomIcon;
+QPixmap* zoomAtIcon;
+QPixmap* sizeAllIcon;
 
 QPixmap* record1_Icon;
 QPixmap* record_on_Icon;
@@ -538,6 +548,11 @@ void initIcons()
       loopIcon     = new MPIXMAP(loop_xpm, NULL);
       loop1Icon    = new MPIXMAP(loop1_xpm, NULL);
       playIcon     = new MPIXMAP(play_xpm, "media-playback-start");
+      closedHandIcon = new MPIXMAP(closed_hand_xpm, NULL);
+      openHandIcon = new MPIXMAP(open_hand_xpm, NULL);
+      zoomIcon     = new MPIXMAP(zoom_xpm, NULL);
+      zoomAtIcon   = new MPIXMAP(zoom_at_xpm, NULL);
+      sizeAllIcon  = new MPIXMAP(size_all_xpm, NULL);
 
       record1_Icon  = new MPIXMAP(record1_xpm, NULL);
       record_on_Icon = new MPIXMAP(record_on_xpm, NULL);
@@ -794,6 +809,11 @@ void deleteIcons()
       delete loopIcon;
       delete loop1Icon;
       delete playIcon;
+      delete closedHandIcon;
+      delete openHandIcon;
+      delete zoomIcon;
+      delete zoomAtIcon;
+      delete sizeAllIcon;
 
       delete record1_Icon;
       delete record_on_Icon;

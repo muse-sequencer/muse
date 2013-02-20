@@ -245,24 +245,6 @@ void MidiEditor::setCurCanvasPart(MusECore::Part* part)
     canvas->setCurrentPart(part); 
 }
 
-void MidiEditor::horizontalZoom(bool zoom_in, int pos_offset)
-{
-  int mag = hscroll->mag();
-  int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-  if(zoom_in)
-  {
-    if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
-        zoomlvl++;
-  }
-  else
-  {
-    if (zoomlvl > 1)
-        zoomlvl--;
-  }
-  int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-  hscroll->setMag(newmag, pos_offset);
-}
-
 void MidiEditor::addNewParts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >& param)
 {
   using std::map;

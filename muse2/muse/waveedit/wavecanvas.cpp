@@ -51,6 +51,7 @@
 #include <set>
 
 #include "app.h"
+#include "icons.h"
 #include "xml.h"
 #include "wavecanvas.h"
 #include "event.h"
@@ -656,6 +657,9 @@ void WaveCanvas::draw(QPainter& p, const QRect& r)
             p.drawLine(mx, my, mx, my2);
             }
             
+      if(drag == DRAG_ZOOM)
+        p.drawPixmap(mapFromGlobal(global_start), *zoomAtIcon);
+        
       //p.restore();
       //p.setWorldMatrixEnabled(true);
       p.setWorldMatrixEnabled(wmtxen);
@@ -848,30 +852,19 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
   if (shift) { // scroll horizontally
       int delta       = -ev->delta() / WHEEL_DELTA;
       int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
-
-
       if (xpixelscale <= 0)
             xpixelscale = 1;
-
       int scrollstep = WHEEL_STEPSIZE * (delta);
-      ///if (ev->state() == Qt::ShiftModifier)
-  //      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
       scrollstep = scrollstep / 10;
-
       int newXpos = xpos + xpixelscale * scrollstep;
-
       if (newXpos < 0)
             newXpos = 0;
-
-      //setYPos(newYpos);
       emit horizontalScroll((unsigned)newXpos);
-
   } else if (ctrl) {  // zoom horizontally
-      emit horizontalZoom(ev->delta()>0, ev->x());
+      emit horizontalZoom(ev->delta()>0, ev->globalPos());
   } else { // scroll horizontally
       emit mouseWheelMoved(ev->delta() / 10);
   }
-
 }
 
 //---------------------------------------------------------
@@ -891,7 +884,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
       switch (_tool) {
             default:
                   break;
-             case CursorTool:
+             case RangeTool:
                   switch (button) {
                         case Qt::LeftButton:
                               if (mode == NORMAL) {
@@ -1224,7 +1217,7 @@ void WaveCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/, int dx, DragType dtype)
+MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/, int dx, DragType dtype, bool rasterize)
 {      
   if(editor->parts()->empty())
     return MusECore::Undo(); //return empty list
@@ -1248,7 +1241,9 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
       int x = ci->pos().x() + dx;
       //int y = pitch2y(y2pitch(ci->pos().y()) + dp);
       int y = 0;
-      QPoint newpos = raster(QPoint(x, y));
+      QPoint newpos = QPoint(x, y);
+      if(rasterize)
+        newpos = raster(newpos);
       
       // Test moving the item...
       WEvent* wevent = (WEvent*) ci;
@@ -1256,7 +1251,7 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
       x              = newpos.x();
       if(x < 0)
         x = 0;
-      int nframe = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) - part->frame();
+      int nframe = (rasterize ? MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) : x) - part->frame();
       if(nframe < 0)
         nframe = 0;
       int diff = nframe + event.lenFrame() - part->lenFrame();
@@ -1305,7 +1300,9 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
                         int nx = x + dx;
                         //int ny = pitch2y(y2pitch(y) + dp);
                         int ny = 0;
-                        QPoint newpos = raster(QPoint(nx, ny));
+                        QPoint newpos = QPoint(nx, ny);
+                        if(rasterize)
+                          newpos = raster(newpos);
                         selectItem(ci, true);
                         
                         iDoneList idl;
@@ -1317,7 +1314,7 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
                         // Do not process if the event has already been processed (meaning it's an event in a clone part)...
                         if (idl == doneList.end())
                         {
-                                moveItem(operations, ci, newpos, dtype); // always returns true. if not, change is necessary here!
+                                moveItem(operations, ci, newpos, dtype, rasterize); // always returns true. if not, change is necessary here!
                                 doneList.push_back(ci);
                         }
                         ci->move(newpos);
@@ -1351,7 +1348,7 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
 //    called after moving an object
 //---------------------------------------------------------
 
-bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, const QPoint& pos, DragType dtype)
+bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
       {
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
@@ -1362,7 +1359,7 @@ bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, cons
             x = 0;
       
       MusECore::Part* part = wevent->part();
-      int nframe = MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) - part->frame();
+      int nframe = (rasterize ? MusEGlobal::tempomap.tick2frame(editor->rasterVal(MusEGlobal::tempomap.frame2tick(x))) : x) - part->frame();
       if (nframe < 0)
             nframe = 0;
       newEvent.setFrame(nframe);
@@ -1384,9 +1381,11 @@ bool WaveCanvas::moveItem(MusECore::Undo& operations, MusEGui::CItem* item, cons
 //   newItem(p, state)
 //---------------------------------------------------------
 
-MusEGui::CItem* WaveCanvas::newItem(const QPoint& p, int)
+MusEGui::CItem* WaveCanvas::newItem(const QPoint& p, int key_modifiers)
       {
-      int frame  = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2tick(p.x())));
+      int frame  = p.x();
+      if(!(key_modifiers & Qt::ShiftModifier))
+        frame = MusEGlobal::tempomap.tick2frame(editor->rasterVal1(MusEGlobal::tempomap.frame2tick(frame)));
       int len   = p.x() - frame;
       frame     -= curPart->frame();
       if (frame < 0)
@@ -1402,9 +1401,11 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
       {
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
+      MusECore::Part* part = wevent->part();
+      int pframe = part->frame();
       int x = item->x();
-      if (x<0)
-            x=0;
+      if (x<pframe)
+            x=pframe;
       int w = item->width();
 
       if (!noSnap) {
@@ -1416,8 +1417,9 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
                   //w = editor->raster();
                   w = MusEGlobal::tempomap.tick2frame(editor->raster());
             }
-      MusECore::Part* part = wevent->part();
-      event.setFrame(x - part->frame());
+      if (x<pframe)
+            x=pframe;
+      event.setFrame(x - pframe);
       event.setLenFrame(w);
 
       MusECore::Undo operations;
@@ -1696,7 +1698,7 @@ void WaveCanvas::cmd(int cmd)
       double paramA = 0.0;
       switch (cmd) {
             case CMD_SELECT_ALL:     // select all
-                  if (tool() == MusEGui::CursorTool) 
+                  if (tool() == MusEGui::RangeTool) 
                   {
                     if (!editor->parts()->empty()) {
                           MusECore::iPart iBeg = editor->parts()->begin();
