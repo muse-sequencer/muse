@@ -103,4 +103,27 @@ To resize a wave event with the pointer tool, press:
 To delete a wave event, press:
          Middle-click/Delete: Delete event.
 
-          
+Panning and Zooming the editors:
+================================
+There are different ways to pan and zoom:
+The default shortcut keys H and L pan the Pianoroll, Drum Editor, and Wave Editor
+ right and left.
+Shift + Mouse Wheel pans the Arranger, Pianoroll, Drum Editor, and Wave Editor.
+The Pan tool (hand) lets you pan just by dragging the canvases.
+And the horizontal scroll bars obviously pan all windows as well.
+
+The default shortcut keys Ctrl + PageUp and Ctrl + PageDown zoom the Arranger,
+ Pianoroll, Drum Editor, and Wave Editor about the mouse cursor position.
+Ctrl + Mouse Wheel also zooms these editors, about the mouse cursor position.
+The Zoom tool (magnifier) lets you zoom just by dragging the canvases.
+And the horizontal magnification scroll bars obviously zoom as well, but they
+ do not zoom about any cursor, they zoom from the left edge.
+
+By default, the Pan and Zoom tools have continuous, borderless motion, using a
+ special coding technique. This is great for track-ball mice for example, because
+ it lets you keep rolling and rolling without border limits!
+An alternate, more standard method is available by un-checking "Borderless zoom/pan"
+ in Global Settings -> GUI Behaviour. This method does present border limitations
+ on how far you can move before you must reposition the mouse. 
+
+ 

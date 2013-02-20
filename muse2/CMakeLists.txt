@@ -475,6 +475,7 @@ file (GLOB doc_files
       README.shortcuts
       README.softsynth
       README.translate
+      README.usage
       SECURITY
       )
 INSTALL( FILES ${doc_files} DESTINATION ${MusE_DOC_DIR})
