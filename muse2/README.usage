@@ -109,7 +109,8 @@ There are different ways to pan and zoom:
 The default shortcut keys H and L pan the Pianoroll, Drum Editor, and Wave Editor
  right and left.
 Shift + Mouse Wheel pans the Arranger, Pianoroll, Drum Editor, and Wave Editor.
-The Pan tool (hand) lets you pan just by dragging the canvases.
+The Pan tool (hand) lets you pan just by dragging the canvases. Hold Shift to
+ constrict movement vertically. Hold Ctrl to constrict movement horizontally.
 And the horizontal scroll bars obviously pan all windows as well.
 
 The default shortcut keys Ctrl + PageUp and Ctrl + PageDown zoom the Arranger,
