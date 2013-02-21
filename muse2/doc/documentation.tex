@@ -92,6 +92,7 @@
 \usepackage{hyphenat}
 \usepackage{wrapfig}
 \usepackage{fancyhdr}
+\usepackage{hyperref}
 \pagestyle{fancy}
         \lhead{\scriptsize{\slshape\leftmark}}
         \chead{}
@@ -139,7 +140,8 @@
 \author{Florian Jung, Robert Jonsson, Tim Donnelly}
 \title{MusE Documentation}
 
-\newcommand{\url}[1]{\texttt{#1}}
+% Orcan: not needed since the hyperref package takes care of all
+%\newcommand{\url}[1]{\texttt{#1}}
 \newcommand{\key}[1]{\textbf{#1}}
 \newcommand{\shell}[1]{\texttt{\textbf{#1}}}
 \newcommand{\menu}[1]{\textbf{#1}}
@@ -151,11 +153,11 @@
 
 
 \begin{document}
-\label{Main/Arranger}
 \begin{figure}[htp]
 \centering \includegraphics[width=1.0\textwidth]{pics/muse2}
 \label{fig:MusE}
 \end{figure}
+\tableofcontents
 \chapter{What is this?}
 You are, if you have printed this document, holding in your hand the
 written documentation for the audio and midi sequencer MusE version 2.\\ 
@@ -197,10 +199,11 @@ E.g.\\
 
 \subsection{Getting up and running for impatient people}
 Install MusE from the repository of your chosen distribution.
-To get decent performance start Jack with the following command in a
-terminal:\\
+To get decent performance start \href{http://jackaudio.org/}{Jack} with
+the following command in a terminal:\\
 \hspace*{1cm}\shell{\$> jackd -d alsa -d hw:0 -p 256}\\
-Or, if you prefer, use the launcher utility \textbf{QJackCtl} to get some
+Or, if you prefer, use the launcher utility 
+\href{http://qjackctl.sourceforge.net/}{QJackCtl} to get some
 help starting Jack.
 After this, start MusE from the menu or fire up another terminal and
 type
@@ -290,8 +293,9 @@ sure that the jack audio server is started with sufficient configuration
 to allow for audio output without breakup. Also make sure your system can
 make sound. 
 \subsubsection{Soft synth test}
-With MusE up and running right click in the Track-pane (see screenshot in
-~\ref{Main/Arranger}) and select \menu{Add Synth > MESS > vam soft synth}.
+With MusE up and running right click in the Track-pane (see
+Fig. \ref{fig:Main Window}) and select 
+\menu{Add Synth > MESS > vam soft synth}.
 A Soft Synth track called vam-0 should appear as well as a separate GUI
 for the synthesizer.
 
@@ -300,13 +304,15 @@ Track}. Another track appears called Track 1, and its track list Port
 column should show it is bound to the synth that was just created vam-0.
 If it is not, click on the Track 1 Port column to open a drop-down list
 of available devices and choose vam-0.
+
 \begin{wrapfigure}{r}{0.05\textwidth}
 \includegraphics[width=0.05\textwidth]{pics/arrow_tool}
 %\hrulefill
 \end{wrapfigure}
 Now select the drawing tool icon
 from the toolbar, alternatively press the shortcut key \key{D}.
-Move the mouse over to the arranger canvas as referenced in ~\ref{Main/Arranger}
+Move the mouse over to the arranger canvas as referenced in 
+Fig. \ref{fig:Main Window}
 and point at the midi track, the mouse should have changed to a small pencil.
 Draw a Part along the midi track using the mouse. For this exercise it is
 not important where or how large the drawn Part is. When you are done double
@@ -468,7 +474,7 @@ Track-pane, each have an icon which indicate it's type, wave-track, input,
 output etcetera, more about that later. In the Arranger canvas a number of
 parts are visible, the ones in yellow are in this composition wave files,
 the multicolored line are different Parts of a drum track.
-\label{Main/Arranger} 
+
 \begin{figure}[htp]
 \centering \includegraphics[width=\screenshotwidth]
 {pics/main_window_with_arrangement} 
@@ -1134,12 +1140,12 @@ Additionally, MusE offers some custom widgets, like menu title items etc.
 Following, there will be a small, unordered list about custom widgets:
 \begin{itemize}
 \item \sym{MusEGui::MenuTitleItem}: Provides a title-bar in a \sym{QMenu}. \\
-      Usage: \listing{someMenu->addAction(new MusEGui::MenuTitleItem(tr("fnord"), someMenu));} \\
+      Usage: \listing{someMenu->addAction(new\ MusEGui::MenuTitleItem(tr("fnord"),\ someMenu));} \\
       Defined in \file{widgets/menutitleitem.h}.
 \item \sym{MusEGui::PopupMenu}: Provides a \sym{QMenu}-like menu which
       can stay open after the user checks a checkable action.\\
-      Usage: just create a \listing{new PopupMenu( true|false )} instead of
-             a \listing{new QMenu()}. (\listing{true} means 'stay open')\\
+      Usage: just create a \listing{new\ PopupMenu(\ true|false\ )} instead of
+             a \listing{new\ QMenu()}. (\listing{true} means 'stay open')\\
       Defined in \file{widgets/popupmenu.h}.
 \end{itemize}
 
@@ -1159,10 +1165,10 @@ There are three kinds of configuration items:
 \end{itemize}
 
 \paragraph{Reading configuration}
-\sym{void MusECore::readConfiguration(Xml\&, bool, bool)} in
+\sym{void\ MusECore::readConfiguration(Xml\&,\ bool,\ bool)} in
 \file{conf.cpp} is the central point
 of reading configuration. It is called when MusE is started first
-(by \sym{bool MusECore::readConfiguration()}), and also when a
+(by \sym{bool\ MusECore::readConfiguration()}), and also when a
 song is loaded. \\ %TODO: call paths!
 It can be instructed whether to read MIDI ports (3), global configuration
 and MIDI ports (1+3). Per-Song configuration is always read (2).

@@ -1,3 +1,6 @@
+21.02.2013:
+         - Fixed: Multiple label warnings in the LaTeX doc. Reference and formatting fixes. (Orcan)
+         - Improved: Table of contents and hyperrefs in te LaTeX doc. (Orcan)
 19.02.2013
          * MASSIVE FIXES: MANY editor, usability, operation fixes and changes. (Tim...)
          - Please see the files README.usage and README.shortcuts for general changes.
