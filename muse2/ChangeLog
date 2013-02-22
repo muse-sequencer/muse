@@ -1,3 +1,12 @@
+22.02.2013:
+         * New: Install pre-built PDF + single/split HMTL docs. Separate devel docs. Added build script. (Tim)
+           Build script is /doc/build_docs.sh You'll want to use it or a variant to get the HTML .aux files.
+           Fixed table in my Appendix in tex file so it works with HTML.
+         - For now, I've changed F1 help to open PDF, if not found fallback to HTML.
+           I've #define MUSE_USE_PDF_HELP_FILE in help.cpp. Undefine for HTML only.
+           May at least need to keep track of viewer process (don't open copies), also try context-sensitive help.
+           Help opener always been LANG ready (looks for _xx) but this new build script is not 'automatic'.
+         - TODO: For some reason the generated HTML developer docs contain nonsense. (Unknown formatters?)
 21.02.2013:
          - Fixed: Multiple label warnings in the LaTeX doc. Reference and formatting fixes. (Orcan)
          - Improved: Table of contents and hyperrefs in te LaTeX doc. (Orcan)

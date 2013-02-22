@@ -20,9 +20,6 @@ details.
       Requirements:
   =============================
       
-      - doxygen
-          www.doxygen.org
-          
       - CMake >= 2.4 
           http:/www.cmake.org/HTML/Download.html
 
@@ -47,7 +44,12 @@ details.
          e2fsprogs package http://e2fsprogs.sourceforge.net/
          Some distros may include it in another package such as 'libuuid', or offer a choice.
 
+      - LADSPA (development file ladspa.h)
+         www.ladspa.org
+         
+  =============================
       Optional:
+  =============================
 
       - fluidsynth >= 1.0.3 (formerly known as iiwusynth) (development files) 
           http://sourceforge.net/apps/trac/fluidsynth/
@@ -65,10 +67,6 @@ details.
           http://lash.nongnu.org/
           Recently LADISH has been emulating it instead:         
           http://ladish.org/
-      
-      - ConTeXt (for building documentation, by default the build
-               script tries to build documentation, can be
-               disabled by setting ENABLE_DOCUMENTATION to OFF)
       
       - Python		The python scripting language
           http://www.python.org

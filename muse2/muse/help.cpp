@@ -23,6 +23,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <QDesktopServices>
 #include <QMessageBox>
@@ -34,6 +35,9 @@
 #include "icons.h"
 #include "aboutbox_impl.h"
 
+// Whether to open the pdf or the html
+#define MUSE_USE_PDF_HELP_FILE
+
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -43,16 +47,44 @@ namespace MusEGui {
 void MusE::startHelpBrowser()
       {
       QString lang(getenv("LANG"));
-      QString museHelp = DOCDIR + QString("/html/index_") + lang + QString(".html");
-      if (access(museHelp.toLatin1(), R_OK) != 0) {
-            museHelp = DOCDIR + QString("/html/index.html");
-            if (access(museHelp.toLatin1(), R_OK) != 0) {
-                  QString info(tr("no help found at: "));
-                  info += museHelp;
-                  QMessageBox::critical(this, tr("MusE: Open Help"), info);
-                  return;
-                  }
+      QString museHelp;
+      bool pdffound = false;
+      
+#ifdef MUSE_USE_PDF_HELP_FILE
+      museHelp = DOCDIR + QString("/muse_pdf/documentation_") + lang + QString(".pdf");
+      if (access(museHelp.toLatin1(), R_OK) != 0)
+      {
+            museHelp = DOCDIR + QString("/muse_pdf/documentation.pdf");
+            if (access(museHelp.toLatin1(), R_OK) != 0)
+            {
+                  //QString info(tr("no help found at: "));
+                  //info += museHelp;
+                  //info += tr("\nTrying HTML file instead...\n");
+                  //QMessageBox::critical(this, tr("MusE: Open Help"), info);
+                  fprintf(stderr, "MusE::startHelpBrowser() no help found at:%s\nTrying HTML file instead...",
+                          museHelp.toLatin1().constData());
             }
+            else
+              pdffound = true;
+      }
+      else
+        pdffound = true;
+#endif            
+
+      if(!pdffound)
+      {
+        museHelp = DOCDIR + QString("/muse_html/single/documentation/index_") + lang + QString(".html");
+        if (access(museHelp.toLatin1(), R_OK) != 0) {
+              museHelp = DOCDIR + QString("/muse_html/single/documentation/index.html");
+              if (access(museHelp.toLatin1(), R_OK) != 0) {
+                    QString info(tr("no help found at: "));
+                    info += museHelp;
+                    QMessageBox::critical(this, tr("MusE: Open Help"), info);
+                    return;
+                    }
+              }
+      }
+      
       launchBrowser(museHelp);
       }
 

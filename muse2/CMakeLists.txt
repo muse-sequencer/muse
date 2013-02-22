@@ -24,7 +24,6 @@
 include(FindPkgConfig)
 include(CheckIncludeFile)
 include(cmake/Summary.cmake)
-include(cmake/TargetDoc.cmake)
 
 project(muse)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
@@ -177,12 +176,6 @@ include(${QT_USE_FILE})
 ##
 ##   Begin MANDATORY packages...
 ##
-
-##
-## find doxygen program
-##
-
-FIND_PROGRAM(DOXY doxygen)
 
 ##
 ## find ladspa.h
@@ -459,7 +452,7 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG -fPIC ${CMAKE_CXX_FLAGS_DEBUG}")
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(al awl grepmidi man plugins muse synti packaging utils demos share)
+subdirs(doc al awl grepmidi man plugins muse synti packaging utils demos share)
 
 ## Install doc files
 file (GLOB doc_files
@@ -495,10 +488,6 @@ add_custom_target(uninstall
 
 message("\n")
 
-if (${DOXY} STREQUAL "DOXY-NOTFOUND")
-      message("** ERROR: The program 'doxygen' is required, but was not found.")
-endif (${DOXY} STREQUAL "DOXY-NOTFOUND")
-  
 if (NOT ALSA_FOUND)
       message("** ERROR: alsa >= 0.9.0 is required, but development files were not found.")
 endif (NOT ALSA_FOUND)           

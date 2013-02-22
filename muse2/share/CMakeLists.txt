@@ -25,7 +25,6 @@
 #       are scanned before coming to share/locale
 subdirs(
       drummaps
-      html
       instruments
       plugins
       pybridge
