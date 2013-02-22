@@ -7,6 +7,7 @@
            May at least need to keep track of viewer process (don't open copies), also try context-sensitive help.
            Help opener always been LANG ready (looks for _xx) but this new build script is not 'automatic'.
          - TODO: For some reason the generated HTML developer docs contain nonsense. (Unknown formatters?)
+         - Added new french translation from Yann Collette (rj)
 21.02.2013:
          - Fixed: Multiple label warnings in the LaTeX doc. Reference and formatting fixes. (Orcan)
          - Improved: Table of contents and hyperrefs in te LaTeX doc. (Orcan)
