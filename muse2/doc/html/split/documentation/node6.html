@@ -1,0 +1,489 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Tracks and parts</TITLE>
+<META NAME="description" CONTENT="Tracks and parts">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node7.html">
+<LINK REL="previous" HREF="node5.html">
+<LINK REL="up" HREF="node3.html">
+<LINK REL="next" HREF="node7.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html247"
+  HREF="node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html243"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html237"
+  HREF="node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html245"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html248"
+  HREF="node7.html">Routes</A>
+<B> Up:</B> <A NAME="tex2html244"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html238"
+  HREF="node5.html">Basic overview</A>
+ &nbsp; <B>  <A NAME="tex2html246"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html249"
+  HREF="node6.html#SECTION00331000000000000000">Tracks</A>
+<UL>
+<LI><A NAME="tex2html250"
+  HREF="node6.html#SECTION00331010000000000000">MIDI tracks</A>
+<LI><A NAME="tex2html251"
+  HREF="node6.html#SECTION00331020000000000000">Wave tracks</A>
+<LI><A NAME="tex2html252"
+  HREF="node6.html#SECTION00331030000000000000">Audio input tracks</A>
+<LI><A NAME="tex2html253"
+  HREF="node6.html#SECTION00331040000000000000">Audio output tracks</A>
+<LI><A NAME="tex2html254"
+  HREF="node6.html#SECTION00331050000000000000">Audio group tracks</A>
+<LI><A NAME="tex2html255"
+  HREF="node6.html#SECTION00331060000000000000">Audio aux tracks</A>
+<LI><A NAME="tex2html256"
+  HREF="node6.html#SECTION00331070000000000000">Synthesizer tracks</A>
+<LI><A NAME="tex2html257"
+  HREF="node6.html#SECTION00331080000000000000">Creation</A>
+<LI><A NAME="tex2html258"
+  HREF="node6.html#SECTION00331090000000000000">Attributes</A>
+<LI><A NAME="tex2html259"
+  HREF="node6.html#SECTION00331100000000000000">The trackinfo side bar</A>
+<UL>
+<LI><A NAME="tex2html260"
+  HREF="node6.html#SECTION00331110000000000000">MIDI trackinfo sidebar</A>
+<UL>
+<LI><A NAME="tex2html261"
+  HREF="node6.html#SECTION00331111000000000000">Old style drum tracks:</A>
+</UL>
+</UL>
+<LI><A NAME="tex2html262"
+  HREF="node6.html#SECTION00331200000000000000">New style drum tracks</A>
+<UL>
+<LI><A NAME="tex2html263"
+  HREF="node6.html#SECTION00331201000000000000">MIDI trackinfo controls:</A>
+<LI><A NAME="tex2html264"
+  HREF="node6.html#SECTION00331210000000000000">Audio trackinfo sidebar</A>
+<UL>
+<LI><A NAME="tex2html265"
+  HREF="node6.html#SECTION00331211000000000000">Effects rack:</A>
+</UL>
+</UL>
+</UL>
+<BR>
+<LI><A NAME="tex2html266"
+  HREF="node6.html#SECTION00332000000000000000">Parts</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00330000000000000000">
+Tracks and parts</A>
+</H1>
+MusE arranges your music in <SPAN  CLASS="textit">tracks</SPAN> and <SPAN  CLASS="textit">parts</SPAN>. The following
+section shall provide you an overview of how things are done with MusE.
+If you are or were a Cubase or Cakewalk user, you will feel familiar with
+this. 
+
+<P>
+
+<H2><A NAME="SECTION00331000000000000000">
+Tracks</A>
+</H2>
+There are two general classes of tracks: MIDI tracks and audio
+tracks. MIDI tracks (and drum tracks which are internally MIDI tracks)
+can hold note data. The Wave track is a type of audio track which holds
+wave data. There are also several other kinds of audio tracks.
+
+<P>
+
+<H4><A NAME="SECTION00331010000000000000">
+MIDI tracks</A>
+</H4>
+MIDI and drum tracks hold MIDI event data. They don't differ much,
+except that drum tracks offer a special editor which is more suitable
+for drum editing.
+
+<P>
+
+<H4><A NAME="SECTION00331020000000000000">
+Wave tracks</A>
+</H4>
+They hold audio data which can be just played back or be piped through
+effect plugin chains. They offer automation for these plugins.
+
+<P>
+
+<H4><A NAME="SECTION00331030000000000000">
+Audio input tracks</A>
+</H4>
+These provide the path for your audio data from outside into your
+project. Set up the physical audio inputs you want to connect your
+audio input track with, and then route the input tracks to various
+other tracks such as wave tracks.
+
+<P>
+
+<H4><A NAME="SECTION00331040000000000000">
+Audio output tracks</A>
+</H4>
+These provide the path for your project's audio data to outside. Set
+up the physical audio outputs you want to connect your audio out track
+with, and then route various other tracks, such as wave tracks, to
+the output tracks.
+
+<P>
+
+<H4><A NAME="SECTION00331050000000000000">
+Audio group tracks</A>
+</H4>
+Group tracks are like busses, where you can route other tracks to
+them, then route the groups to other tracks. Since group tracks have
+all the features of other audio tracks, like volume and pan, they
+provide a convenient common routing point where you have control of
+the sound before it is passed to other tracks.
+
+<P>
+
+<H4><A NAME="SECTION00331060000000000000"></A> <A NAME="aux_tracks"></A>
+<BR>
+Audio aux tracks
+</H4> 
+These provide a more convenient way to mix several audio tracks
+together. With each audio aux track added, other audio tracks will
+gain a common send knob for adjusting the level sent to the aux
+track. This can be more convenient than using several group tracks.
+
+<P>
+
+<H4><A NAME="SECTION00331070000000000000">
+Synthesizer tracks</A>
+</H4>
+This type of track is a software synthesizer which MIDI and drum tracks
+can be assigned to.
+
+<P>
+
+<H4><A NAME="SECTION00331080000000000000">
+Creation</A>
+</H4>
+You can create a track by either right-clicking in the arranger's track   list and then adding the desired track, or via the edit menu.
+
+<P>
+
+<H4><A NAME="SECTION00331090000000000000">
+Attributes</A>
+</H4>                                                    
+Tracks have several attributes:
+<DL>
+<DT><STRONG>Mute:</STRONG></DT>
+<DD>If you click on the <SPAN  CLASS="textit">Mute</SPAN> field (denoted with
+a "M" column header), the track gets muted and stops producing sound.
+</DD>
+<DT><STRONG>Solo:</STRONG></DT>
+<DD><A NAME="track_attr_solo"></A> The solo button ("S" column
+header) singles out a track for listening. It mutes
+some other tracks but may phantom solo others. 
+For more info see the section on soloing: <A HREF="node8.html#track_soloing">2.5</A> and
+phantom soloing: <A HREF="node8.html#phantom_soloing">2.5.1</A>
+</DD>
+<DT><STRONG>Record:</STRONG></DT>
+<DD>The R column "arms" your track for recording.
+When you rec-arm your song and have no tracks rec-armed, you won't be
+able to record anything. See also the config option "move rec-arm with    selection". 
+</DD>
+<DT><STRONG>Track name:</STRONG></DT>
+<DD>Double-click to edit the track name.
+</DD>
+<DT><STRONG>Port:</STRONG></DT>
+<DD>For MIDI tracks, this lets you select the MIDI
+port to which the events should be routed. This can be your physical
+synthesizer or a software synthesizer. For soft synths, this is the
+port the synth is associated to. For other track types, this is disabled.
+</DD>
+<DT><STRONG>Channel:</STRONG></DT>
+<DD>For MIDI tracks, this is the MIDI channel the
+output is sent to. For any kind of audio tracks, this is the number of
+channels (mono, stereo).
+                                                                          </DD>
+<DT><STRONG>Automation:</STRONG></DT>
+<DD><A NAME="track_attr_automation"></A> For audio tracks,
+this lets you set up the automation display in the arranger. 
+(See automation <A HREF="node10.html#audio_automation">2.7.1</A>). Clicking this will provide you
+with a popup menu with lots of submenus. Clicking on a submenu will
+select or unselect it showing or hiding the automation parameter as a 
+graph overlaid on top of the track.
+<BR>
+The submenus let you select the color you want to associate with the
+automation parameter. There you can also assign midi controllers to
+the parameters, a dialog is shown where you can manually choose the
+midi controller, with a <SPAN  CLASS="textit">learn</SPAN> button to 'listen for' and
+automatically recognize any midi controller operated by you.
+
+<P>
+</DD>
+<DT><STRONG>Clef:</STRONG></DT>
+<DD>For MIDI tracks, you can specify a clef here. This
+only affects the score editor.
+
+<P>
+</DD>
+</DL>
+
+<P>
+
+<H3><A NAME="SECTION00331100000000000000">
+The trackinfo side bar</A>
+</H3>
+In the arranger and the part editors, you'll have a trackinfo sidebar
+on the left side. You can set up track-type specific things there.
+
+<P>
+
+<H4><A NAME="SECTION00331110000000000000"></A> <A NAME="midi_trackinfo_sidebar"></A>
+<BR>
+MIDI trackinfo sidebar
+</H4>
+The MIDI trackinfo sidebar lets you change program, volume, pan and
+more. This sidebar can also be viewed at the left of the pianoroll
+editor.                                                                        
+
+<H5><A NAME="SECTION00331111000000000000">
+Old style drum tracks:</A>
+</H5>
+These are MIDI tracks as well, but with a few differences. They allow
+you to map certain drum sounds with different input notes, and you
+can change the output settings of a certain "drum instrument" without
+having to alter each single event.
+
+<P>
+However, they have certain limitations: They only can handle 128 sounds
+(even if you have more synthes), they aren't really compatible with
+MIDI tracks (you can interchange parts between them, but if you touched
+the drum list, you'll get unexpected results), you can't set a program
+for the used channel and more.
+
+<P>
+
+<H3><A NAME="SECTION00331200000000000000">
+New style drum tracks</A>
+</H3>
+Because of these limitations, we introduced the new-style drum tracks.
+They're not fully compatible with the old drum tracks, so the old are
+still retained. Under "Global Settings", "GUI settings", you can set
+up whether you prefer the old or new.
+
+<P>
+They are handled exactly like plain MIDI tracks (staying compatible with
+them), and offer all of the functionality, though in a different way.
+They allow you to re-order the drum map efficiently, you can open parts
+from multiple drum tracks in <SPAN  CLASS="textit">one</SPAN> drum editor (MusE will separate
+the sounds from different tracks according to your settings, see the
+"Window Config" menu), and you can set programs as with normal MIDI tracks.
+
+<P>
+
+<H5><A NAME="SECTION00331201000000000000">
+MIDI trackinfo controls:</A>
+</H5>
+<DL>
+<DT><STRONG>Output port:</STRONG></DT>
+<DD>This drop-down list selects the midi port
+to send midi output from this track. 
+</DD>
+<DT><STRONG>Output channel:</STRONG></DT>
+<DD>This box selects the midi channel to be
+used on the output port.
+</DD>
+<DT><STRONG>Input and output routing:</STRONG></DT>
+<DD>Selects midi ports and
+channels to receive midi from, and soloing paths. (See Routes
+<A HREF="node7.html#routes">2.4</A>).
+</DD>
+<DT><STRONG>Midi through:</STRONG></DT>
+<DD>This button selects whether midi input is
+passed through to the selected output port.
+<BR>
+Depending on your midi devices and settings, there are cases when
+this should be off such as using the same port and channel for
+input and output (otherwise a double-note <SPAN  CLASS="textit">echo</SPAN> will be heard),
+and cases when it must be on such as when using a synthesizer track
+as output device. 
+</DD>
+<DT><STRONG>Input detect indicator:</STRONG></DT>
+<DD>Blinks when midi activity is
+detected on the selected midi channels on the selected midi input
+ports.
+</DD>
+<DT><STRONG>Transpose:</STRONG></DT>
+<DD>This transposes midi input notes up or down
+in pitch. This is very useful if your midi keyboard hasn't enough
+keys or the selected output device plays an octave too low or high,
+and you would like to shift the octave of the incoming notes to
+compensate.
+</DD>
+<DT><STRONG>Delay:</STRONG></DT>
+<DD>Adjusts the delay of the notes.                               
+</DD>
+<DT><STRONG>Length:</STRONG></DT>
+<DD>Adjusts the length of the notes.                             
+</DD>
+<DT><STRONG>Velocity:</STRONG></DT>
+<DD>Adjusts the velocity of incoming notes.
+Use it to compensate for a too-loud or too-soft keyboard.
+</DD>
+<DT><STRONG>Compression:</STRONG></DT>
+<DD>Adjusts the compression of incoming note
+velocities. Use it to make soft incoming notes louder, and loud
+notes not so loud. 
+</DD>
+<DT><STRONG>Instrument:</STRONG></DT>
+<DD>Selects the midi instrument patch to be used
+by the selected output port. This is equivalent of dialing the patch
+in the bank and program boxes, except it displays a more friendly
+patch <SPAN  CLASS="textit">name</SPAN> as defined by the selected output port's midi
+instrument. See instruments, or port configuration                             
+<A HREF="node11.html#midi_port_config">2.8.1</A>
+</DD>
+<DT><STRONG>H-Bank:</STRONG></DT>
+<DD>Selects the high bank number of the current patch.
+</DD>
+<DT><STRONG>L-Bank:</STRONG></DT>
+<DD>Selects the low bank number of the current patch.
+</DD>
+<DT><STRONG>Prog:</STRONG></DT>
+<DD>Selects the program number of the current patch.
+</DD>
+<DT><STRONG>Volume:</STRONG></DT>
+<DD>Adjusts the midi volume controller.
+</DD>
+<DT><STRONG>Pan:</STRONG></DT>
+<DD>Adjusts the midi pan controller.
+</DD>
+</DL>
+The buttons beside the Prog, Volume, and Pan boxes store the value,
+at the current transport position, for midi automation. (See
+automation <A HREF="node10.html#midi_automation">2.7.1</A>).
+
+<P>
+Note that the 'Prog' button stores H-Bank and L-Bank along with
+'Prog' value, so there are no H-Bank and L-Bank buttons.
+
+<P>
+The 'All' button simply stores all three Program (and banks), Volume,
+and Pan values at once.
+
+<P>
+<SPAN  CLASS="textit">Tip:</SPAN> If the Song Type is GM, GS, or XG, you may need to store           
+desired values at transport position zero, otherwise your adjustments
+may be overriden by the instrument when the transport is moved back
+to position zero. If this behaviour is undesired, you can set the 
+Song Type to 'NO' meaning no song type.                                        
+
+<P>
+
+<H4><A NAME="SECTION00331210000000000000">
+Audio trackinfo sidebar</A>
+</H4>
+Unlike the midi trackinfo sidebar, the audio trackinfo side bar
+is nothing more than an embedded audio mixer strip, the exact same 
+strip as found in the mixers. (See mixer <A HREF="node5.html#mixer">2.2.2</A>).
+
+<H5><A NAME="SECTION00331211000000000000">
+Effects rack:</A>
+</H5>
+On the top of the audio trackinfo sidebar, there is an effects rack
+which allows you to apply various plugins on the audio. For more
+information on this, refer to <A HREF="node9.html#effects_rack">2.6.1</A>.
+
+<P>
+
+<H2><A NAME="SECTION00332000000000000000">
+Parts</A>
+</H2>
+Within MIDI, drum and wave tracks, you can create <SPAN  CLASS="textit">parts</SPAN>. Parts
+are chunks of coherent notes or wave data which can be moved around,
+copied, cloned and deleted independent from other parts.
+
+<P>
+Parts are created by selecting the pencil tool and then drawing onto
+the right part area in the arranger. You can move them with the arrow
+tool, delete them using the <SPAN  CLASS="textbf">DEL</SPAN> key, and a right-click opens
+a popup menu. This menu allows you even more stuff, such as setting
+the part's color, saving the part to disk etc.. You can use
+<SPAN  CLASS="textbf">CTRL+C</SPAN> and <SPAN  CLASS="textbf">CTRL+V</SPAN> for copying and pasting parts.
+<SPAN  CLASS="textbf">CTRL+B</SPAN> pastes the part as a clone. Pressing <SPAN  CLASS="textbf">SHIFT</SPAN>
+additionally provides you a dialog which allows you to paste the part
+multiple times and set more stuff.
+
+<P>
+You can also copy parts with the mouse by moving the part with the mouse
+while holding down the <SPAN  CLASS="textbf">CTRL</SPAN> key.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html247"
+  HREF="node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html243"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html237"
+  HREF="node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html245"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html248"
+  HREF="node7.html">Routes</A>
+<B> Up:</B> <A NAME="tex2html244"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html238"
+  HREF="node5.html">Basic overview</A>
+ &nbsp; <B>  <A NAME="tex2html246"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>
