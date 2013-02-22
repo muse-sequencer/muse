@@ -56,14 +56,6 @@ mkdir -p tmp/html/split/developer_docs
 # Run the PDF conversions first to get the *.aux files required for proper HTML links displaying
 # Run each conversion at least three times to resolve all references
 #
-# pdflatex -output-directory=pdf documentation.tex
-# pdflatex -output-directory=pdf documentation.tex
-# pdflatex -output-directory=pdf documentation.tex
-# 
-# pdflatex -output-directory=pdf developer_docs.tex
-# pdflatex -output-directory=pdf developer_docs.tex
-# pdflatex -output-directory=pdf developer_docs.tex
-
 pdflatex -interaction=batchmode -halt-on-error -file-line-error -output-directory=tmp/pdf/documentation documentation.tex
 pdflatex -interaction=batchmode -halt-on-error -file-line-error -output-directory=tmp/pdf/documentation documentation.tex
 pdflatex -interaction=batchmode -halt-on-error -file-line-error -output-directory=tmp/pdf/documentation documentation.tex
@@ -75,14 +67,8 @@ pdflatex -interaction=batchmode -halt-on-error -file-line-error -output-director
 #
 # Now run the HTML conversions
 #
-# latex2html -nonavigation -noaddress -noinfo -split 0 -external_file pdf/documentation -dir html/single/documentation documentation.tex
-# latex2html -nonavigation -noaddress -noinfo -split 0 -external_file pdf/developer_docs -dir html/single/developer_docs developer_docs.tex
-# latex2html -noaddress -noinfo -split 4 -external_file pdf/documentation -dir html/split/documentation documentation.tex
-# latex2html -noaddress -noinfo -split 4 -external_file pdf/developer_docs -dir html/split/developer_docs developer_docs.tex
-
 latex2html -nonavigation -noaddress -noinfo -split 0 -external_file tmp/pdf/documentation/documentation -mkdir -dir tmp/html/single/documentation documentation.tex
 latex2html -nonavigation -noaddress -noinfo -split 0 -external_file tmp/pdf/developer_docs/developer_docs -mkdir -dir tmp/html/single/developer_docs developer_docs.tex
-
 latex2html -noaddress -noinfo -split 4 -external_file tmp/pdf/documentation/documentation -mkdir -dir tmp/html/split/documentation documentation.tex
 latex2html -noaddress -noinfo -split 4 -external_file tmp/pdf/developer_docs/developer_docs -mkdir -dir tmp/html/split/developer_docs developer_docs.tex
 
@@ -120,10 +106,5 @@ mv -f tmp/html/split/developer_docs/*.png    html/split/developer_docs
 # Post clean
 #
 if [ "$1" != "--no_post_clean" ]; then
-# rm -f pdf/*.aux pdf/*.log pdf/*.out pdf/*.toc
-# rm -f html/single/documentation/*.aux html/single/documentation/*.log html/single/documentation/*.out html/single/documentation/*.pl html/single/documentation/*.tex html/single/documentation/WARNINGS
-# rm -f html/single/developer_docs/*.aux html/single/developer_docs/*.log html/single/developer_docs/*.out html/single/developer_docs/*.pl html/single/developer_docs/*.tex html/single/developer_docs/WARNINGS
-# rm -f html/split/documentation/*.aux html/split/documentation/*.log html/split/documentation/*.out html/split/documentation/*.pl html/split/documentation/*.tex html/split/documentation/WARNINGS
-# rm -f html/split/developer_docs/*.aux html/split/developer_docs/*.log html/split/developer_docs/*.out html/split/developer_docs/*.pl html/split/developer_docs/*.tex html/split/developer_docs/WARNINGS
 rm -rf tmp
 fi
