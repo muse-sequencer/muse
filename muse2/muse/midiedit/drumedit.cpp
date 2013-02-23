@@ -1560,6 +1560,10 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             tools2->set(MusEGui::RubberTool);
             return;
             }
+      else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
+            tools2->set(MusEGui::DrawTool);
+            return;
+            }
       else if (key == shortcuts[SHRT_TOOL_CURSOR].key) {
             tools2->set(MusEGui::CursorTool);
             return;

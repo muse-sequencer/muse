@@ -1,3 +1,5 @@
+23.02.2013:
+         - Added missing line draw shortcut (F) to drum editor. (Tim)
 22.02.2013:
          * New: Install pre-built PDF + single/split HMTL docs. Separate devel docs. Added build script. (Tim)
            Build script is /doc/build_docs.sh You'll want to use it or a variant to get the HTML .aux files.
