@@ -31,6 +31,7 @@
 
 #include "globals.h"
 #include "globaldefs.h"
+#include "gconfig.h"
 #include "app.h"
 #include "audio.h"
 #include "pitchedit.h"
@@ -1202,7 +1203,7 @@ void DList::songChanged(MusECore::SongChangedFlags_t flags)
 
 void DList::init(QHeaderView* h, QWidget* parent)
 {
-      setBg(Qt::white);
+      setBg(MusEGlobal::config.drumListBg);
       if (!h)
         h = new QHeaderView(Qt::Horizontal, parent);
 

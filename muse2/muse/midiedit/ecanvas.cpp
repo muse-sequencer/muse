@@ -44,6 +44,7 @@
 #include "audio.h"
 #include "functions.h"
 #include "midi.h"
+#include "gconfig.h"
 
 namespace MusEGui {
 
@@ -67,7 +68,7 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       playedPitchPort = -1;
       playedVelocity = 0;
 
-      setBg(Qt::white);
+      setBg(MusEGlobal::config.midiCanvasBg);
       setAcceptDrops(true);
       setFocusPolicy(Qt::StrongFocus);
       setMouseTracking(true);

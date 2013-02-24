@@ -736,7 +736,7 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
                         p.drawLine(x, yy, x + w, yy);
                         break;
                   default:
-                        p.fillRect(x, yy-3, w, 6, QBrush(QColor(230,230,230)));
+                        p.fillRect(x, yy-3, w, 6, MusEGlobal::config.midiCanvasBg.darker(110));
                         break;
                   }
             --key;

@@ -863,6 +863,16 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.rulerBg = readColor(xml);
                         else if (tag == "rulerForegroundColor")
                               MusEGlobal::config.rulerFg = readColor(xml);
+                        else if (tag == "rulerCurrentColor") {
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                              printf ("Read ruler current color!!!!!\n");
+                        }
+                        else if (tag == "midiCanvasBackgroundColor")
+                              MusEGlobal::config.midiCanvasBg = readColor(xml);
+                        else if (tag == "midiControllerViewBackgroundColor")
+                              MusEGlobal::config.midiControllerViewBg = readColor(xml);
+                        else if (tag == "drumListBackgroundColor")
+                              MusEGlobal::config.drumListBg = readColor(xml);
 
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
@@ -1416,6 +1426,10 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "waveEditBackgroundColor", MusEGlobal::config.waveEditBackgroundColor);
       xml.colorTag(level, "rulerBackgroundColor", MusEGlobal::config.rulerBg);
       xml.colorTag(level, "rulerForegroundColor", MusEGlobal::config.rulerFg);
+      xml.colorTag(level, "rulerCurrentColor", MusEGlobal::config.rulerCurrent);
+      xml.colorTag(level, "midiCanvasBackgroundColor", MusEGlobal::config.midiCanvasBg);
+      xml.colorTag(level, "midiControllerViewBackgroundColor", MusEGlobal::config.midiControllerViewBg);
+      xml.colorTag(level, "drumListBackgroundColor", MusEGlobal::config.drumListBg);
 
       MusEGlobal::writePluginGroupConfiguration(level, xml);
 

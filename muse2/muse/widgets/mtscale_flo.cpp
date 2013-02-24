@@ -224,7 +224,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
             if(!wr.isEmpty()) 
             {        
               if (m->second.current()) 
-                    p.fillRect(wr, Qt::white);
+                    p.fillRect(wr, MusEGlobal::config.rulerCurrent);
               
               int x2;
               if (mm != marker->end())

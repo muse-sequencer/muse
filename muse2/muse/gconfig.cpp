@@ -125,8 +125,12 @@ GlobalConfigValues config = {
       QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
       QColor(0, 0, 0),           // mixerBg;
 
-      QColor(0xe0, 0xe0, 0xe0),           // Ruler background
+      QColor(0xe0, 0xe0, 0xe0),     // Ruler background
       QColor(0, 0, 0),              // Ruler text
+      QColor(255, 255, 255),        // Midi editor canvas
+      QColor(255, 255, 255),        // midiControllerViewBg
+      QColor(255, 255, 255),        // drumListBg
+      QColor(255, 255, 255),        // rulerCurrent
 
       384,                          // division;
       1024,                         // rtcTicks

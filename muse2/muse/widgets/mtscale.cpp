@@ -281,7 +281,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
             {        
               if (m->second.current()) 
               {
-                    p.fillRect(tr, Qt::white);
+                    p.fillRect(tr, MusEGlobal::config.rulerCurrent);
               }
               
               int x2;

@@ -32,6 +32,7 @@
 #include <QFileInfo>
 #include <QPainter>
 #include <QtGlobal>
+#include <QMessageBox>
 
 #include "icons.h"
 #include "appearance.h"
@@ -145,7 +146,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       global_bg->setFlags(Qt::ItemIsEnabled);
       user_bg = new QTreeWidgetItem(backgroundTree, QStringList(tr("Custom")), 0);
       user_bg->setFlags(Qt::ItemIsEnabled);
-      colorframe->setAutoFillBackground(true);
+      colorwidget->setAutoFillBackground(true);
       aPalette = new QButtonGroup(aPaletteBox);
 
       aPalette->addButton(palette0, 0);
@@ -179,6 +180,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x41c, aid, "part canvas background");
            new IdListViewItem(0x41f, aid, "Ruler background");
            new IdListViewItem(0x420, aid, "Ruler text");
+           new IdListViewItem(0x424, aid, "Ruler current marker space");
       id = new IdListViewItem(0, aid, "Track List");
            new IdListViewItem(0x411, id, "background");
            new IdListViewItem(0x412, id, "midi background");
@@ -199,7 +201,11 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       id = new IdListViewItem(0, itemList, "Transport");
            new IdListViewItem(0x200, id, "handle");
       id = new IdListViewItem(0, itemList, "Midi Editor");
-           new IdListViewItem(0x41d, id, "controller graph");
+           new IdListViewItem(0x41d, id, "controller graph color");
+           new IdListViewItem(0x423, id, "controller graph background");
+           new IdListViewItem(0x421, id, "background");
+           new IdListViewItem(0x422, id, "drum list");
+
       id = new IdListViewItem(0, itemList, "Wave Editor");
            new IdListViewItem(0x300, id, "background");
       id = new IdListViewItem(0, itemList, "Mixer");
@@ -235,6 +241,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(hval, SIGNAL(valueChanged(int)), SLOT(hsliderChanged(int)));
       connect(sval, SIGNAL(valueChanged(int)), SLOT(ssliderChanged(int)));
       connect(vval, SIGNAL(valueChanged(int)), SLOT(vsliderChanged(int)));
+      connect(changeThemeButton, SIGNAL(clicked()), SLOT(changeTheme()));
 
       connect(addToPalette, SIGNAL(clicked()), SLOT(addToPaletteClicked()));
 
@@ -460,41 +467,52 @@ void Appearance::updateFonts()
       }
 
 //---------------------------------------------------------
+//   changeTheme
+//
+//  Simple theme selector that over time should
+//  be exchanged for a more dynamic solution
+//---------------------------------------------------------
+
+void Appearance::changeTheme()
+{
+    if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
+        tr("Do you really want to reset colors to theme default?"), tr("&Ok"), tr("&Cancel"),
+        QString::null, 0, 1 ) == 1)
+    {
+        return;
+    }
+
+    if (colorSchemeComboBox->currentIndex()==1) // light theme
+    {
+      // load standard light theme
+      backgroundTree->reset();
+      styleSheetPath->setText("");
+      MusEGlobal::muse->loadStyleSheetFile("");
+      MusEGlobal::config.styleSheetFile = "";
+      QString configPath = MusEGlobal::museGlobalShare +"/lightbase.cfg";
+      MusECore::readConfiguration(configPath.toLatin1().constData());
+      colorSchemeComboBox->setCurrentIndex(0);
+      MusEGlobal::muse->changeConfig(true);
+    }
+    else if (colorSchemeComboBox->currentIndex()==2) // dark theme
+    {
+      // load standard dark theme
+      backgroundTree->reset();
+      styleSheetPath->setText(MusEGlobal::museGlobalShare +"/darkbase.qss");
+      MusEGlobal::config.styleSheetFile = styleSheetPath->text();
+      QString configPath = MusEGlobal::museGlobalShare +"/darkbase.cfg";
+      MusECore::readConfiguration(configPath.toLatin1().constData());
+      colorSchemeComboBox->setCurrentIndex(0);
+      MusEGlobal::muse->changeConfig(true);
+    }
+    close();
+}
+//---------------------------------------------------------
 //   apply
 //---------------------------------------------------------
 
 void Appearance::apply()
       {
-
-      // Changing color themes overrides all other configurations
-
-      if (colorSchemeComboBox->currentIndex()==1) // light theme
-      {
-        // load standard light theme
-        backgroundTree->reset();
-        styleSheetPath->setText("");
-        MusEGlobal::muse->loadStyleSheetFile("");
-        MusEGlobal::config.styleSheetFile = "";
-        QString configPath = MusEGlobal::museGlobalShare +"/lightbase.cfg";
-        MusECore::readConfiguration(configPath.toLatin1().constData());
-        colorSchemeComboBox->setCurrentIndex(0);
-        MusEGlobal::muse->changeConfig(true);
-        return;
-
-      }
-      else if (colorSchemeComboBox->currentIndex()==2) // dark theme
-      {
-        // load standard dark theme
-        backgroundTree->reset();
-        styleSheetPath->setText(MusEGlobal::museGlobalShare +"/darkbase.qss");
-        MusEGlobal::config.styleSheetFile = styleSheetPath->text();
-        QString configPath = MusEGlobal::museGlobalShare +"/darkbase.cfg";
-        MusECore::readConfiguration(configPath.toLatin1().constData());
-        colorSchemeComboBox->setCurrentIndex(0);
-        MusEGlobal::muse->changeConfig(true);
-        return;
-      }
-
 //
 //
       int showPartEvent = 0;
@@ -745,6 +763,10 @@ void Appearance::colorItemSelectionChanged()
 
             case 0x41f: color = &config->rulerBg; break;
             case 0x420: color = &config->rulerFg; break;
+            case 0x421: color = &config->midiCanvasBg; break;
+            case 0x422: color = &config->drumListBg; break;
+            case 0x423: color = &config->midiControllerViewBg; break;
+            case 0x424: color = &config->rulerCurrent; break;
 
             case 0x500: color = &config->mixerBg;   break;
             case 0x501: color = &config->midiTrackLabelBg;   break;
@@ -790,8 +812,8 @@ void Appearance::updateColor()
       QPalette pal;
       QColor cfc(*color);
       
-      pal.setColor(colorframe->backgroundRole(), cfc);
-      colorframe->setPalette(pal);
+      colorwidget->setColor(cfc);
+
       color->getRgb(&r, &g, &b);
       color->getHsv(&h, &s, &v);
 

@@ -136,6 +136,10 @@ struct GlobalConfigValues {
 
       QColor rulerBg;
       QColor rulerFg;
+      QColor midiCanvasBg;
+      QColor midiControllerViewBg;
+      QColor drumListBg;
+      QColor rulerCurrent;
 
       int division;
       int rtcTicks;

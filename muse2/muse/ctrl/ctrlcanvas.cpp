@@ -188,7 +188,7 @@ void CEventList::clearDelete()
 CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
    const char* name, CtrlPanel* pnl) : View(parent, xmag, 1, name)
       {
-      setBg(Qt::white);
+      setBg(MusEGlobal::config.midiControllerViewBg);
       setFont(MusEGlobal::config.fonts[3]);  
       editor = e;
       _panel = pnl;
