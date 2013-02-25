@@ -46,6 +46,7 @@ WaveEventBase::WaveEventBase(EventType t)
    : EventBase(t)
       {
       deleted = false;
+      _spos = 0;
       }
 
 //---------------------------------------------------------
@@ -448,7 +449,10 @@ void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffe
   
   //sfCurFrame = f.seek(offset + _spos, 0); DELETETHIS 2
   //sfCurFrame += f.read(channel, buffer, n, overwrite);
-  f.seek(offset + _spos, 0);
+  off_t e_off = offset + _spos;
+  if(e_off < 0)
+    e_off = 0;
+  f.seek(e_off, 0);
   f.read(channel, buffer, n, overwrite);
       
   return;

@@ -161,9 +161,10 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       menuEdit->addSeparator();
 
-      adjustWaveOffsetAction = menuEdit->addAction(tr("Adjust wave offset..."));
-      mapper->setMapping(adjustWaveOffsetAction, WaveCanvas::CMD_ADJUST_WAVE_OFFSET);
-      connect(adjustWaveOffsetAction, SIGNAL(triggered()), mapper, SLOT(map()));
+// REMOVE Tim. Also remove CMD_ADJUST_WAVE_OFFSET and so on...      
+//       adjustWaveOffsetAction = menuEdit->addAction(tr("Adjust wave offset..."));
+//       mapper->setMapping(adjustWaveOffsetAction, WaveCanvas::CMD_ADJUST_WAVE_OFFSET);
+//       connect(adjustWaveOffsetAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Mute Selection"));
       mapper->setMapping(act, WaveCanvas::CMD_MUTE);
