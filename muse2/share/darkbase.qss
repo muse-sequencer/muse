@@ -13,6 +13,18 @@ QToolBar QToolButton {
 
 }
 
+QAction {
+      background-color: rgb(150,150,150);
+     spacing: 3px;
+     padding: 1px 4px;
+     background: transparent;
+     border-radius: 4px;
+ }
+
+QMenu::item:selected {
+     background-color: rgb(40,90,40);
+}
+
 QToolBar QToolButton:hover {
       background-color: rgb(50,50,50);
       border-color: rgb(58,167,221);
@@ -39,5 +51,3 @@ QToolBar QToolButton:checked {
       padding: 2px;
 
 }
-/*
-*/

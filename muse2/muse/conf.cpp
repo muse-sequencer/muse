@@ -863,10 +863,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.rulerBg = readColor(xml);
                         else if (tag == "rulerForegroundColor")
                               MusEGlobal::config.rulerFg = readColor(xml);
-                        else if (tag == "rulerCurrentColor") {
+                        else if (tag == "rulerCurrentColor")
                               MusEGlobal::config.rulerCurrent = readColor(xml);
-                              printf ("Read ruler current color!!!!!\n");
-                        }
                         else if (tag == "midiCanvasBackgroundColor")
                               MusEGlobal::config.midiCanvasBg = readColor(xml);
                         else if (tag == "midiControllerViewBackgroundColor")
