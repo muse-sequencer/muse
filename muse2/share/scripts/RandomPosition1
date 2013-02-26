@@ -51,7 +51,7 @@ class Quantize(QtGui.QWidget):
         grid.addWidget(button, 3, 1)
 
         self.setLayout(grid)
-        self.resize(200, 100)
+        self.resize(300, 150)
         button.setFocus()
 
     def execute(self):
