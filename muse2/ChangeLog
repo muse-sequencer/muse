@@ -1,3 +1,5 @@
+28.02.2013:
+         - Wave Editor: Fixed some painting problems. Optimizations, speed boosts. (Tim)
 24.02.2013:
          - Improved dark theme, midi editors now set background color, the current part of the ruler is darker.
            Theme setting separated from the regular Ok button in the Appearance settings. Also fixed the color 

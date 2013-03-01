@@ -49,6 +49,8 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QString>
+#include <QLine>
+#include <QRect>
 
 using std::set;
 
@@ -1099,6 +1101,58 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       return est_width;
       }
 
+//---------------------------------------------------
+//  clipQLine
+//---------------------------------------------------
+
+QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect)
+{
+  const int rect_x     = rect.x();
+  const int rect_y     = rect.y();
+  const int rect_right = rect_x + rect.width();
+  const int rect_bot   = rect_y + rect.height();
+  
+  if(x1 < rect_x)
+  {
+    if(x2 < rect_x)
+      return QLine();
+    x1 = rect_x;
+  }
+  else
+  if(x1 > rect_right)
+  {
+    if(x2 > rect_right)
+      return QLine();
+    x1 = rect_right;
+  }
+  
+  if(x2 < rect_x)
+    x2 = rect_x;
+  else
+  if(x2 > rect_right)
+    x2 = rect_right;
+  
+  if(y1 < rect_y)
+  {
+    if(y2 < rect_y)
+      return QLine();
+    y1 = rect_y;
+  }
+  else
+  if(y1 > rect_bot)
+  {
+    if(y2 > rect_bot)
+      return QLine();
+    y1 = rect_bot;
+  }
+  
+  if(y2 < rect_y)
+    y2 = rect_y;
+  if(y2 > rect_bot)
+    y2 = rect_bot;
+
+  return QLine(x1, y1, x2, y2);
+}
 
 
 } // namespace MusEGui

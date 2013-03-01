@@ -40,6 +40,8 @@
 #include <QPair>
 #include <QMessageBox>
 #include <QDir>
+#include <QLine>
+#include <QVector>
 
 #include <set>
 
@@ -69,6 +71,7 @@
 #include "utils.h"
 #include "tools.h"
 #include "copy_on_write.h"
+#include "helper.h"
 
 namespace MusEGui {
 
@@ -1032,14 +1035,14 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
         return;
       
       int x1 = mr.x();
-      int x2 = mr.right() + 1;
+      int x2 = x1 + mr.width();
       if (x1 < 0)
             x1 = 0;
       if (x2 > width())
             x2 = width();
       int hh = height();
-      int h  = hh/2;
-      int y  = mr.y() + h;
+      int y1 = mr.y();
+      int y2 = y1 + mr.height();
 
       int xScale = xmag;
       if (xScale < 0)
@@ -1065,10 +1068,6 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
 
       int pos = (xpos + sx) * xScale + event.spos() - event.frame() - px;
       
-      //printf("pos=%d xpos=%d sx=%d ex=%d xScale=%d event.spos=%d event.frame=%d px=%d\n",   
-      //      pos, xpos, sx, ex, xScale, event.spos(), event.frame(), px);
-
-      
       QBrush brush;
       if (item->isMoving()) 
       {
@@ -1078,7 +1077,7 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
             brush = QBrush(gradient);
-            p.fillRect(sx, 0, ex - sx, hh, brush);
+            p.fillRect(sx, y1, ex - sx + 1, y2, brush);
       }
       else 
       if (item->isSelected()) 
@@ -1088,94 +1087,142 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
           QLinearGradient gradient(r.topLeft(), r.bottomLeft());
           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
-          //c.setRgba(64, 64, 64, c.alpha());        
           gradient.setColorAt(0, QColor(51, 51, 51, MusEGlobal::config.globalAlphaBlend));
           gradient.setColorAt(1, c);
           brush = QBrush(gradient);
-          p.fillRect(sx, 0, ex - sx, hh, brush);
+          p.fillRect(sx, y1, ex - sx + 1, y2, brush);
       }
-      //else
-      {
-            QPen pen(Qt::DashLine);
-            pen.setColor(Qt::black);
-            pen.setCosmetic(true);
-            p.setPen(pen);
-            p.drawRect(sx, 0, ex - sx, hh);
-      }  
-      //p.fillRect(sx, 0, ex - sx, hh, brush);
-      //p.drawRect(sx, 0, ex - sx, hh, brush);
-      
+
       MusECore::SndFileR f = event.sndFile();
-      if(f.isNull())
+      if(!f.isNull())
       {
-        p.setWorldMatrixEnabled(wmtxen);
-        return;
-      }
-      
-      int ev_channels = f.channels();
-      if (ev_channels == 0) {
-            p.setWorldMatrixEnabled(wmtxen);
-            printf("WaveCnvas::drawItem: ev_channels==0! %s\n", f.name().toLatin1().constData());
-            return;
-            }
-                  
-      h       = hh / (ev_channels * 2);
-      int cc  = hh % (ev_channels * 2) ? 0 : 1;
+        int ev_channels = f.channels();
+        if (ev_channels == 0) {
+              p.setWorldMatrixEnabled(wmtxen);
+              printf("WaveCnvas::drawItem: ev_channels==0! %s\n", f.name().toLatin1().constData());
+              return;
+              }
 
-      unsigned peoffset = px + event.frame() - event.spos();
-      
-      for (int i = sx; i < ex; i++) {
-            y  = mr.y() + h;
-            MusECore::SampleV sa[f.channels()];
-            f.read(sa, xScale, pos);
-            pos += xScale;
-            if (pos < event.spos())
-                  continue;
+        int h   = hh / (ev_channels * 2);
+        int cc  = hh % (ev_channels * 2) ? 0 : 1;
 
-            int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
-            int selectionStopPos  = selectionStop  - peoffset;
+        unsigned peoffset = px + event.frame() - event.spos();
 
-            for (int k = 0; k < ev_channels; ++k) {
-                  int kk = k % f.channels();
-                  int peak = (sa[kk].peak * (h - 1)) / yScale;
-                  int rms  = (sa[kk].rms  * (h - 1)) / yScale;
-                  if (peak > h)
-                        peak = h;
-                  if (rms > h)
-                        rms = h;
-                  QColor peak_color = QColor(Qt::darkGray);
-                  QColor rms_color  = QColor(Qt::black);
-                  
-                  // Changed by T356. Reduces (but not eliminates) drawing artifacts. (TODO Cause of artifacts gone, correct this now.)
-                  //if (pos > selectionStartPos && pos < selectionStopPos) {
-                  if (pos > selectionStartPos && pos <= selectionStopPos) {
-                        
-                        peak_color = QColor(Qt::lightGray);
-                        rms_color  = QColor(Qt::white);
-                        // Draw inverted
-                        p.setPen(QColor(Qt::black));
-                        p.drawLine(i, y - h + cc, i, y + h - cc );
+        for (int i = sx; i < ex; i++) {
+              int y = h;
+              MusECore::SampleV sa[f.channels()];
+              f.read(sa, xScale, pos);
+              pos += xScale;
+              if (pos < event.spos())
+                    continue;
+
+              int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
+              int selectionStopPos  = selectionStop  - peoffset;
+
+              for (int k = 0; k < ev_channels; ++k) {
+                    int kk = k % f.channels();
+                    int peak = (sa[kk].peak * (h - 1)) / yScale;
+                    int rms  = (sa[kk].rms  * (h - 1)) / yScale;
+                    if (peak > h)
+                          peak = h;
+                    if (rms > h)
+                          rms = h;
+                    QColor peak_color = QColor(Qt::darkGray);
+                    QColor rms_color  = QColor(Qt::black);
+
+                    if (pos > selectionStartPos && pos < selectionStopPos) {
+                          peak_color = QColor(Qt::lightGray);
+                          rms_color  = QColor(Qt::white);
+                          QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mr);
+                          if(!l_inv.isNull())
+                          {
+                            // Draw inverted
+                            p.setPen(QColor(Qt::black));
+                            p.drawLine(l_inv);
+                          }
                         }
-                  p.setPen(peak_color);
-                  p.drawLine(i, y - peak - cc, i, y + peak);
-                  p.setPen(rms_color);
-                  p.drawLine(i, y - rms - cc, i, y + rms);
-                  y  += 2 * h;
-                  }
-            }
-            
 
-      int hn = hh / ev_channels;
-      int hhn = hn / 2;
-      for (int i = 0; i < ev_channels; ++i) {
-            int h2     = hn * i;
-            int center = hhn + h2;
-            p.setPen(QColor(i & i ? Qt::red : Qt::blue));
-            p.drawLine(sx, center, ex, center);
-            p.setPen(QColor(Qt::black));
-            p.drawLine(sx, h2, ex, h2);
-            }
+                    QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mr);
+                    if(!l_peak.isNull())
+                    {
+                      p.setPen(peak_color);
+                      p.drawLine(l_peak);
+                    }
+
+                    QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mr);
+                    if(!l_rms.isNull())
+                    {
+                      p.setPen(rms_color);
+                      p.drawLine(l_rms);
+                    }
+
+                    y += 2 * h;
+                  }
+              }
             
+        int hn = hh / ev_channels;
+        int hhn = hn / 2;
+        for (int i = 0; i < ev_channels; ++i) {
+              int h2     = hn * i;
+              int center = hhn + h2;
+              if(center >= y1 && center < y2)
+              {
+                p.setPen(QColor(i & 1 ? Qt::red : Qt::blue));
+                p.drawLine(sx, center, ex, center);
+              }
+              if(i != 0 && h2 >= y1 && h2 < y2)
+              {
+                p.setPen(QColor(Qt::black));
+                p.drawLine(sx, h2, ex, h2);
+              }
+            }
+      }
+
+      //      
+      // Draw custom dashed borders around the wave event
+      //
+
+      QColor color(item->isSelected() ? Qt::white : Qt::black);
+      QPen penH(color);
+      QPen penV(color);
+      penH.setCosmetic(true);
+      penV.setCosmetic(true);
+      QVector<qreal> customDashPattern;
+      customDashPattern << 4.0 << 6.0;
+      penH.setDashPattern(customDashPattern);
+      penV.setDashPattern(customDashPattern);
+      penV.setDashOffset(2.0);
+      // FIXME: Some shifting still going on. Values likely not quite right here.
+      //int xdiff = sx - r.x();
+      int xdiff = sx - mer.x();
+      if(xdiff > 0)
+      {
+        int doff = xdiff % 10;
+        penH.setDashOffset(doff);
+      }
+      // Tested OK. Each segment drawn only when necessary.
+      if(y1 <= 0)
+      {
+        p.setPen(penH);
+        p.drawLine(sx, 0, ex, 0);
+      }
+      if(y2 >= hh - 1)
+      {
+        p.setPen(penH);
+        p.drawLine(sx, hh - 1, ex, hh - 1);
+      }
+      if(x1 <= mer.x())
+      {
+        p.setPen(penV);
+        p.drawLine(mer.x(), y1, mer.x(), y2);
+      }
+      if(x2 >= mer.x() + mer.width())
+      {
+        p.setPen(penV);
+        p.drawLine(mer.x() + mer.width(), y1, mer.x() + mer.width(), y2);
+      }
+
+      // Done. Restore and return.
       p.setWorldMatrixEnabled(wmtxen);
 }
 

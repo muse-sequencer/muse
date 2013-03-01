@@ -730,26 +730,26 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                   case PanTool:
                         {
                           drag = DRAG_PAN;
+                          setCursor();
                           if(MusEGlobal::config.borderlessMouse)
                           {
                             QRect r = QApplication::desktop()->screenGeometry();
                             ignore_mouse_move = true;      // Avoid recursion.
                             QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
                           }
-                          setCursor();
                         }
                         break;
                         
                   case ZoomTool:
                         {
                           drag = DRAG_ZOOM;
+                          setCursor();
                           if(MusEGlobal::config.borderlessMouse)
                           {
                             QRect r = QApplication::desktop()->screenGeometry();
                             ignore_mouse_move = true;      // Avoid recursion.
                             QCursor::setPos( QPoint(r.width()/2, r.height()/2) );
                           }
-                          setCursor();
                           // Update the small zoom drawing area
                           QPoint pt = mapFromGlobal(global_start);
                           update(pt.x(), pt.y(), zoomIcon->width(), zoomIcon->height());

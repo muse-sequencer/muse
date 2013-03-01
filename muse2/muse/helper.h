@@ -33,7 +33,8 @@ class QActionGroup;
 class QString;
 class QMenu;
 class QWidget;
-
+class QLine;
+class QRect;
 
 namespace MusECore {
 class Part;
@@ -76,6 +77,7 @@ QString projectExtensionFromFilename(QString filename);
 QString getUniqueUntitledName();
 void populateMidiPorts();
 int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECore::Part* cur_part, int curDrumPitch);
+QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect);
 } 
 
 #endif
