@@ -241,12 +241,11 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(hval, SIGNAL(valueChanged(int)), SLOT(hsliderChanged(int)));
       connect(sval, SIGNAL(valueChanged(int)), SLOT(ssliderChanged(int)));
       connect(vval, SIGNAL(valueChanged(int)), SLOT(vsliderChanged(int)));
-      connect(changeThemeButton, SIGNAL(clicked()), SLOT(changeTheme()));
 
       connect(addToPalette, SIGNAL(clicked()), SLOT(addToPaletteClicked()));
 
       //---------------------------------------------------
-	//    STYLE
+      //    STYLE
       //---------------------------------------------------
       openStyleSheet->setIcon(*openIcon);
       connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
@@ -254,7 +253,21 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(defaultStyleSheet, SIGNAL(clicked()), SLOT(setDefaultStyleSheet()));
       
       //---------------------------------------------------
-	//    Fonts
+      //    THEMES
+      //---------------------------------------------------
+      connect(changeThemeButton, SIGNAL(clicked()), SLOT(changeTheme()));
+
+      QDir themeDir(MusEGlobal::museGlobalShare + QString("/themes"));
+      QStringList list;
+
+      QStringList fileTypes;
+      fileTypes.append("*.cfg");
+      list = themeDir.entryList(fileTypes);
+
+      colorSchemeComboBox->addItems(list);
+
+      //---------------------------------------------------
+      //    Fonts
       //---------------------------------------------------
 
       fontBrowse0->setIcon(QIcon(*openIcon));
@@ -279,6 +292,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(removeBgButton, SIGNAL(clicked()), SLOT(removeBackground()));
       connect(clearBgButton, SIGNAL(clicked()), SLOT(clearBackground()));
       connect(partShowevents, SIGNAL(toggled(bool)), eventButtonGroup, SLOT(setEnabled(bool)));
+
       //updateColor();
       }
 
@@ -469,12 +483,13 @@ void Appearance::updateFonts()
 //---------------------------------------------------------
 //   changeTheme
 //
-//  Simple theme selector that over time should
-//  be exchanged for a more dynamic solution
 //---------------------------------------------------------
 
 void Appearance::changeTheme()
 {
+    if (colorSchemeComboBox->currentIndex() == 0) {
+      return;
+    }
     if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
         tr("Do you really want to reset colors to theme default?"), tr("&Ok"), tr("&Cancel"),
         QString::null, 0, 1 ) == 1)
@@ -482,29 +497,29 @@ void Appearance::changeTheme()
         return;
     }
 
-    if (colorSchemeComboBox->currentIndex()==1) // light theme
+
+    QString currentTheme = colorSchemeComboBox->currentText();
+    printf("Changing to theme %s\n", currentTheme.toLatin1().constData() );
+
+    QString themeDir = MusEGlobal::museGlobalShare + "/themes/";
+    backgroundTree->reset();
+    if (QFile::exists(themeDir + QFileInfo(currentTheme).baseName()+ ".qss"))
     {
-      // load standard light theme
-      backgroundTree->reset();
-      styleSheetPath->setText("");
+      styleSheetPath->setText(themeDir + QFileInfo(currentTheme).baseName()+ ".qss");
+      MusEGlobal::config.styleSheetFile = styleSheetPath->text();
+    }
+    else
+    {
+      styleSheetPath->setText("arg");
       MusEGlobal::muse->loadStyleSheetFile("");
       MusEGlobal::config.styleSheetFile = "";
-      QString configPath = MusEGlobal::museGlobalShare +"/lightbase.cfg";
-      MusECore::readConfiguration(configPath.toLatin1().constData());
-      colorSchemeComboBox->setCurrentIndex(0);
-      MusEGlobal::muse->changeConfig(true);
     }
-    else if (colorSchemeComboBox->currentIndex()==2) // dark theme
-    {
-      // load standard dark theme
-      backgroundTree->reset();
-      styleSheetPath->setText(MusEGlobal::museGlobalShare +"/darkbase.qss");
-      MusEGlobal::config.styleSheetFile = styleSheetPath->text();
-      QString configPath = MusEGlobal::museGlobalShare +"/darkbase.cfg";
-      MusECore::readConfiguration(configPath.toLatin1().constData());
-      colorSchemeComboBox->setCurrentIndex(0);
-      MusEGlobal::muse->changeConfig(true);
-    }
+
+    QString configPath = themeDir + currentTheme;
+    MusECore::readConfiguration(configPath.toLatin1().constData());
+    colorSchemeComboBox->setCurrentIndex(0);
+    MusEGlobal::muse->changeConfig(true);
+
     close();
 }
 //---------------------------------------------------------

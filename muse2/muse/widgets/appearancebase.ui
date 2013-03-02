@@ -1205,16 +1205,6 @@
                 <string>current settings</string>
                </property>
               </item>
-              <item>
-               <property name="text">
-                <string>light theme (changing overrides all other settings)</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>dark theme (changing overrides all other settings)</string>
-               </property>
-              </item>
              </widget>
             </item>
             <item>

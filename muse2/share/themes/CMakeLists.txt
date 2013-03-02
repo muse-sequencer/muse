@@ -3,7 +3,7 @@
 #  Linux Music Editor
 #  $Id:$
 #
-#  Copyright (C) 1999-2011 by Werner Schweer and others
+#  Copyright (C) 1999-2013 by Werner Schweer and others
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License
@@ -21,19 +21,10 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-# NOTE: locale/ directory needs to be at the end so that the translations
-#       are scanned before coming to share/locale
-subdirs(
-      drummaps
-      instruments
-      plugins
-      pybridge
-      scripts
-      templates
-      wallpapers
-      scoreglyphs
-      locale
-      themes
+file (GLOB theme_files *.cfg *.qss
       )
 
-install (FILES didyouknow.txt splash.png DESTINATION ${MusE_SHARE_DIR} )
+install( FILES ${theme_files}
+      DESTINATION ${MusE_SHARE_DIR}/themes
+      )
+

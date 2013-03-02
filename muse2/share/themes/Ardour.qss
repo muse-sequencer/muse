@@ -1,0 +1,53 @@
+QWidget {
+      background-color: rgb(108,109,121);
+      color: rgb(193,193,197);
+}
+
+QToolBar QToolButton {
+      background-color: rgb(93,94,106);
+      border-color: rgb(70,70,70);
+     border-style: outset;
+     border-width: 1px;
+     border-radius: 5px;
+      padding: 1px;
+
+}
+
+QAction {
+      background-color: rgb(150,150,150);
+     spacing: 3px;
+     padding: 1px 4px;
+     background: transparent;
+     border-radius: 4px;
+ }
+
+QMenu::item:selected {
+     background-color: rgb(40,90,40);
+}
+
+QToolBar QToolButton:hover {
+      background-color: rgb(50,50,50);
+      border-color: rgb(58,167,221);
+     border-style: outset;
+     border-width: 1px;
+     border-radius: 3px;
+      padding: 2px;
+
+}
+
+QToolBar QToolButton:pressed {
+      background-color: rgb(125,247,131);
+     border-style: inset;
+     border-width: 1px;
+     border-radius: 2px;
+      padding: 2px;
+
+}
+QToolBar QToolButton:checked {
+      background-color: rgb(125,247,131);
+     border-style: inset;
+     border-width: 1px;
+     border-radius: 2px;
+      padding: 2px;
+
+}
