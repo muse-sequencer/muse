@@ -51,6 +51,8 @@ enum Tool {
    CursorTool=8192
 };
 
+extern QMap<int,int> toolShortcuts;
+
 const int arrangerTools = PointerTool | PencilTool | RubberTool | CutTool | GlueTool | MuteTool |
                           AutomationTool | PanTool | ZoomTool;
 

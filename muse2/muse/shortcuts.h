@@ -257,12 +257,12 @@ enum {
       SHRT_INCREASE_LEN,
       SHRT_DECREASE_LEN,
 
-      SHRT_TOOL_1,//Shift+1 Pointer
-      SHRT_TOOL_2,//Shift+2 Pen
-      SHRT_TOOL_3,//Shift+3 Rubber
-      SHRT_TOOL_4,//Shift+4
-      SHRT_TOOL_5,//Shift+5
-      SHRT_TOOL_6,//Shift+6
+      //SHRT_TOOL_1,//Shift+1 Pointer
+      //SHRT_TOOL_2,//Shift+2 Pen
+      //SHRT_TOOL_3,//Shift+3 Rubber
+      //SHRT_TOOL_4,//Shift+4
+      //SHRT_TOOL_5,//Shift+5
+      //SHRT_TOOL_6,//Shift+6
       SHRT_TRANSPOSE, //Default: undefined
 
       //Shortcuts to be in pianoroll & drumeditor

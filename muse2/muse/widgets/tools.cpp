@@ -27,6 +27,7 @@
 
 #include "icons.h"
 #include "action.h"
+#include "shortcuts.h"
 
 namespace MusEGui {
 
@@ -78,6 +79,9 @@ ToolB toolList[] = {
       {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor"),         infoCursor}
       };
 
+QMap<int,int> toolShortcuts;
+
+
 const unsigned gNumberOfTools = sizeof(toolList) / sizeof(ToolB);
 
 //---------------------------------------------------------
@@ -122,7 +126,22 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
       // Note: Does not take ownership.
       addActions(action->actions());
       
-      connect(action, SIGNAL(selected(QAction*)), SLOT(toolChanged(QAction*)));   
+      connect(action, SIGNAL(selected(QAction*)), SLOT(toolChanged(QAction*)));
+
+      toolShortcuts[PointerTool] = SHRT_TOOL_CURSOR;
+      toolShortcuts[PencilTool]  = SHRT_TOOL_PENCIL;
+      toolShortcuts[RubberTool]  = SHRT_TOOL_RUBBER;
+      toolShortcuts[CutTool]     = SHRT_TOOL_SCISSORS;
+      toolShortcuts[GlueTool]    = SHRT_TOOL_GLUE;
+      toolShortcuts[RangeTool]   = SHRT_TOOL_RANGE;
+      toolShortcuts[PanTool]     = SHRT_TOOL_PAN;
+      toolShortcuts[ZoomTool]    = SHRT_TOOL_ZOOM;
+      //toolShortcuts[ScoreTool]   = SHRT_TOOL_
+      //toolShortcuts[QuantTool]    = SHRT_TOOL_
+      toolShortcuts[DrawTool]    = SHRT_TOOL_LINEDRAW;
+      toolShortcuts[MuteTool]    = SHRT_TOOL_MUTE;
+      toolShortcuts[AutomationTool] = SHRT_TOOL_LINEDRAW;
+      toolShortcuts[CursorTool]  = SHRT_TOOL_CURSOR;
       }
 
 //---------------------------------------------------------

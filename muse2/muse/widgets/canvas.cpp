@@ -48,6 +48,7 @@
 #include "part.h"
 #include "fastlog.h"
 #include "menutitleitem.h"
+#include "shortcuts.h"
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 
@@ -1644,7 +1645,12 @@ QMenu* Canvas::genCanvasPopup(QMenu* menu)
             if ((canvasTools & (1 << i))==0)
                   continue;
             QAction* act = r_menu->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
-	    act->setData(TOOLS_ID_BASE + i);
+
+            if (MusEGui::toolShortcuts.contains(1 << i)) {
+                act->setShortcut(MusEGui::shortcuts[MusEGui::toolShortcuts[1 << i]].key);
+            }
+            //
+            act->setData(TOOLS_ID_BASE + i);
             act->setCheckable(true);
             act->setChecked((1 << i) == _tool);
             if (!act0)
