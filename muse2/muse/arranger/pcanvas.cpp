@@ -2315,26 +2315,29 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* events, MusECore::MidiTrack *mt, MusECore::MidiPart *pt, const QRect& r, int pTick, int from, int to)
 {
   int color_brightness;
+  QColor eventColor;
   
   if(pt) 
   {
     int part_r, part_g, part_b, brightness;
     MusEGlobal::config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
     brightness =  part_r*29 + part_g*59 + part_b*12;
-    //if ((brightness < 12000 || pt->selected()) && !pt->mute()) DELETETHIS 4
-    //  color_brightness=192;   // too dark: use lighter color 
-    //else
-    //  color_brightness=64;  // otherwise use dark color 
-    if (brightness >= 12000 && !pt->selected())
+    if (brightness >= 12000 && !pt->selected()) {
+      eventColor=MusEGlobal::config.partMidiDarkEventColor;
       color_brightness=54; // 96;    // too bright: use dark color
-    else
+    }
+    else {
+      eventColor=MusEGlobal::config.partMidiLightEventColor;
       color_brightness=200; //160;   // too dark: use lighter color
+    }
   }
-  else
+  else {
+    eventColor=QColor(80,80,80);
     color_brightness=80;
+  }
     
   if (MusEGlobal::config.canvasShowPartType & 2) {      // show events
-            p.setPen(QColor(color_brightness,color_brightness,color_brightness));
+            p.setPen(eventColor);
             // Do not allow this, causes segfault.
             if(from <= to)
             {
@@ -2510,7 +2513,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
         if (MusEGlobal::heavyDebugMsg) printf("DEBUG: arranger: cakewalk enabled, y-stretch disabled\n");
       }
 
-      p.setPen(QColor(color_brightness,color_brightness,color_brightness));      
+      p.setPen(eventColor);
       for (MusECore::iEvent i = events->begin(); i != ito; ++i) {
             int t  = i->first + pTick;
             int te = t + i->second.lenTick();
@@ -2618,9 +2621,9 @@ void PartCanvas::drawWavePart(QPainter& p,
                         rms /= channels;
                         peak = (peak * (hh-2)) >> 9;
                         rms  = (rms  * (hh-2)) >> 9;
-                        p.setPen(QColor(Qt::darkGray));
+                        p.setPen(MusEGlobal::config.partWaveColorPeak);
                         p.drawLine(i, y - peak - cc, i, y + peak);
-                        p.setPen(QColor(Qt::darkGray).darker());
+                        p.setPen(MusEGlobal::config.partWaveColorRms);
                         p.drawLine(i, y - rms - cc, i, y + rms);
                         }
                   }
@@ -2638,9 +2641,9 @@ void PartCanvas::drawWavePart(QPainter& p,
                         for (unsigned k = 0; k < channels; ++k) {
                               int peak = (sa[k].peak * (hm - 1)) >> 8;
                               int rms  = (sa[k].rms  * (hm - 1)) >> 8;
-                              p.setPen(QColor(Qt::darkGray));
+                              p.setPen(MusEGlobal::config.partWaveColorPeak);
                               p.drawLine(i, y - peak - cc, i, y + peak);
-                              p.setPen(QColor(Qt::darkGray).darker());
+                              p.setPen(MusEGlobal::config.partWaveColorRms);
                               p.drawLine(i, y - rms - cc, i, y + rms);
                               
                               y  += 2 * hm;

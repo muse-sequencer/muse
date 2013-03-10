@@ -181,6 +181,11 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x41f, aid, "Ruler background");
            new IdListViewItem(0x420, aid, "Ruler text");
            new IdListViewItem(0x424, aid, "Ruler current marker space");
+           new IdListViewItem(0x425, aid, "part wave peak");
+           new IdListViewItem(0x426, aid, "part wave rms");
+           new IdListViewItem(0x427, aid, "part midi event for light part color");
+           new IdListViewItem(0x428, aid, "part midi event for dark part color");
+
       id = new IdListViewItem(0, aid, "Track List");
            new IdListViewItem(0x411, id, "background");
            new IdListViewItem(0x412, id, "midi background");
@@ -207,7 +212,13 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x422, id, "drum list");
 
       id = new IdListViewItem(0, itemList, "Wave Editor");
-           new IdListViewItem(0x300, id, "background");
+           new IdListViewItem(0x300, id, "Background");
+           new IdListViewItem(0x301, id, "Wave peak color");
+           new IdListViewItem(0x302, id, "Wave rms color");
+           new IdListViewItem(0x303, id, "Wave peak color selected");
+           new IdListViewItem(0x304, id, "Wave rms color selected");
+           new IdListViewItem(0x305, id, "Wave nonselected part");
+
       id = new IdListViewItem(0, itemList, "Mixer");
            new IdListViewItem(0x500, id, "background");
            new IdListViewItem(0x501, id, "midi label");
@@ -759,6 +770,12 @@ void Appearance::colorItemSelectionChanged()
             case 0x101: color = &config->bigTimeForegroundColor; break;
             case 0x200: color = &config->transportHandleColor; break;
             case 0x300: color = &config->waveEditBackgroundColor; break;
+            case 0x301: color = &config->wavePeakColor; break;
+            case 0x302: color = &config->waveRmsColor; break;
+            case 0x303: color = &config->wavePeakColorSelected; break;
+            case 0x304: color = &config->waveRmsColorSelected; break;
+            case 0x305: color = &config->waveNonselectedPart; break;
+
             case 0x411: color = &config->trackBg;       break;
             case 0x412: color = &config->midiTrackBg;   break;
             case 0x413: color = &config->drumTrackBg;   break;
@@ -782,6 +799,10 @@ void Appearance::colorItemSelectionChanged()
             case 0x422: color = &config->drumListBg; break;
             case 0x423: color = &config->midiControllerViewBg; break;
             case 0x424: color = &config->rulerCurrent; break;
+            case 0x425: color = &config->partWaveColorPeak; break;
+            case 0x426: color = &config->partWaveColorRms; break;
+            case 0x427: color = &config->partMidiDarkEventColor; break;
+            case 0x428: color = &config->partMidiLightEventColor; break;
 
             case 0x500: color = &config->mixerBg;   break;
             case 0x501: color = &config->midiTrackLabelBg;   break;

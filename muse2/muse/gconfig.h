@@ -24,7 +24,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define NUM_PARTCOLORS 19
+#define NUM_PARTCOLORS 18
 #define NUM_FONTS 7
 
 #include <QColor>
@@ -140,6 +140,17 @@ struct GlobalConfigValues {
       QColor midiControllerViewBg;
       QColor drumListBg;
       QColor rulerCurrent;
+
+      QColor waveNonselectedPart;
+      QColor wavePeakColor;
+      QColor waveRmsColor;
+      QColor wavePeakColorSelected;
+      QColor waveRmsColorSelected;
+
+      QColor partWaveColorPeak;
+      QColor partWaveColorRms;
+      QColor partMidiDarkEventColor;
+      QColor partMidiLightEventColor;
 
       int division;
       int rtcTicks;

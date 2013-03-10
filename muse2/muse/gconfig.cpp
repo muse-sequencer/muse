@@ -132,6 +132,17 @@ GlobalConfigValues config = {
       QColor(255, 255, 255),        // drumListBg
       QColor(255, 255, 255),        // rulerCurrent
 
+      Qt::lightGray,                // waveNonselectedPart
+      Qt::darkGray,                 // wavePeakColor
+      Qt::black,                    // waveRmsColor
+      Qt::lightGray,                // wavePeakColorSelected
+      Qt::white,                    // waveRmsColorSelected
+
+      Qt::darkGray,                 // partWaveColorPeak
+      QColor(20,20,20),             // partWaveColorRms
+      QColor(54,54,54),             // partMidiDarkEventColor
+      QColor(200,200,200),          // partMidiLightEventColor
+
       384,                          // division;
       1024,                         // rtcTicks
       true,                         // midiSendInit Send instrument initialization sequences

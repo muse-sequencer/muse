@@ -739,7 +739,7 @@ void WaveCanvas::drawParts(QPainter& p, const QRect& r, bool do_cur_part)
               {
                 //int cidx = wp->colorIndex();
                 //QColor c(MusEGlobal::config.partColors[cidx]);
-                QColor c(Qt::darkGray);
+                QColor c(MusEGlobal::config.waveNonselectedPart);
                 c.setAlpha(MusEGlobal::config.globalAlphaBlend);
                 QBrush part_bg_brush(MusECore::gGradientFromQColor(c, mwpr.topLeft(), mwpr.bottomLeft()));
                 p.fillRect(mpbgr, part_bg_brush);
@@ -1127,12 +1127,12 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
                           peak = h;
                     if (rms > h)
                           rms = h;
-                    QColor peak_color = QColor(Qt::darkGray);
-                    QColor rms_color  = QColor(Qt::black);
+                    QColor peak_color = MusEGlobal::config.wavePeakColor;
+                    QColor rms_color  = MusEGlobal::config.waveRmsColor;
 
                     if (pos > selectionStartPos && pos < selectionStopPos) {
-                          peak_color = QColor(Qt::lightGray);
-                          rms_color  = QColor(Qt::white);
+                          peak_color = MusEGlobal::config.wavePeakColorSelected;
+                          rms_color  = MusEGlobal::config.waveRmsColorSelected;
                           QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mr);
                           if(!l_inv.isNull())
                           {

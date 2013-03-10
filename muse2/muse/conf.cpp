@@ -677,6 +677,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.palette[15] = readColor(xml);
                         else if (tag == "palette16")
                               MusEGlobal::config.palette[16] = readColor(xml);
+
                         else if (tag == "partColor0")
                               MusEGlobal::config.partColors[0] = readColor(xml);
                         else if (tag == "partColor1")
@@ -865,6 +866,27 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.rulerFg = readColor(xml);
                         else if (tag == "rulerCurrentColor")
                               MusEGlobal::config.rulerCurrent = readColor(xml);
+
+                        else if (tag == "waveNonselectedPart")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "wavePeakColor")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "waveRmsColor")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "wavePeakColorSelected")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "waveRmsColorSelected")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+
+                        else if (tag == "partWaveColorPeak")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "partWaveColorRms")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "partMidiDarkEventColor")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "partMidiLightEventColor")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+
                         else if (tag == "midiCanvasBackgroundColor")
                               MusEGlobal::config.midiCanvasBg = readColor(xml);
                         else if (tag == "midiControllerViewBackgroundColor")
@@ -1425,6 +1447,18 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "rulerBackgroundColor", MusEGlobal::config.rulerBg);
       xml.colorTag(level, "rulerForegroundColor", MusEGlobal::config.rulerFg);
       xml.colorTag(level, "rulerCurrentColor", MusEGlobal::config.rulerCurrent);
+
+      xml.colorTag(level, "waveNonselectedPart", MusEGlobal::config.waveNonselectedPart);
+      xml.colorTag(level, "wavePeakColor", MusEGlobal::config.wavePeakColor);
+      xml.colorTag(level, "waveRmsColor", MusEGlobal::config.waveRmsColor);
+      xml.colorTag(level, "wavePeakColorSelected", MusEGlobal::config.wavePeakColorSelected);
+      xml.colorTag(level, "waveRmsColorSelected", MusEGlobal::config.waveRmsColorSelected);
+
+      xml.colorTag(level, "partWaveColorPeak", MusEGlobal::config.partWaveColorPeak);
+      xml.colorTag(level, "partWaveColorRms", MusEGlobal::config.partWaveColorRms);
+      xml.colorTag(level, "partMidiDarkEventColor", MusEGlobal::config.partMidiDarkEventColor);
+      xml.colorTag(level, "partMidiLightEventColor", MusEGlobal::config.partMidiLightEventColor);
+
       xml.colorTag(level, "midiCanvasBackgroundColor", MusEGlobal::config.midiCanvasBg);
       xml.colorTag(level, "midiControllerViewBackgroundColor", MusEGlobal::config.midiControllerViewBg);
       xml.colorTag(level, "drumListBackgroundColor", MusEGlobal::config.drumListBg);
