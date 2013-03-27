@@ -1281,7 +1281,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                   case NoteInfo::VAL_PITCH:
                         if (old_style_drummap_mode)
                         {
-                        int pitch = val; 
+                        int pitch = -val;
                         if(delta_mode)
                           pitch += event.pitch();  
                         if (pitch > 127)
@@ -1291,7 +1291,17 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         newEvent.setPitch(pitch);
                         }
                         else
-                          printf("DrumCanvas::modifySelected - MusEWidget::NoteInfo::VAL_PITCH not implemented for new style drum editors\n");
+                        {
+                          int direction = -val;
+                          for (int i = 0; i < instrument_map.size(); ++i) {
+                              if (instrument_map.at(i).pitch == event.pitch()) {
+                                  int nextPos = i + direction;
+                                  if (nextPos> -1 && nextPos < instrument_map.size())
+                                    newEvent.setPitch(instrument_map.at(nextPos).pitch);
+                                  break;
+                              }
+                          }
+                        }
                         break;
                   }
             MusEGlobal::song->changeEvent(event, newEvent, part);
