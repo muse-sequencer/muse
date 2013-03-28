@@ -125,6 +125,7 @@ extern QPixmap* configureIcon;
 extern QPixmap* editmuteIcon;
 extern QPixmap* editmuteSIcon;
 extern QPixmap* panicIcon;
+extern QPixmap* metronomeIcon;
 
 extern QIcon* pianoIconSet;
 extern QIcon* scoreIconSet;

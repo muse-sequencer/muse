@@ -247,6 +247,7 @@ QAction* punchinAction;
 QAction* punchoutAction;
 QAction* recordAction;
 QAction* panicAction;
+QAction* metronomeAction;
 
 MusEGui::MusE* muse = 0;
 

@@ -437,25 +437,29 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::stopAction->setChecked(true);
       connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setStop(bool)));
 
-      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon),
-         tr("Play"), MusEGlobal::transportAction);
+      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon), tr("Play"), MusEGlobal::transportAction);
       MusEGlobal::playAction->setCheckable(true);
 
       MusEGlobal::playAction->setWhatsThis(tr("start sequencer play"));
       MusEGlobal::playAction->setChecked(false);
       connect(MusEGlobal::playAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPlay(bool)));
 
-      MusEGlobal::recordAction = new QAction(QIcon(*MusEGui::recordIcon),
-         tr("Record"), MusEGlobal::transportAction);
+      MusEGlobal::recordAction = new QAction(QIcon(*MusEGui::recordIcon), tr("Record"), MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
       MusEGlobal::recordAction->setWhatsThis(tr("to record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
 
-      MusEGlobal::panicAction = new QAction(QIcon(*MusEGui::panicIcon),
-         tr("Panic"), this);
+      MusEGlobal::panicAction = new QAction(QIcon(*MusEGui::panicIcon), tr("Panic"), this);
 
       MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(activated()), MusEGlobal::song, SLOT(panic()));
+
+      MusEGlobal::metronomeAction = new QAction(QIcon(*MusEGui::metronomeIcon), tr("Metronome"), this);
+      MusEGlobal::metronomeAction->setCheckable(true);
+      MusEGlobal::metronomeAction->setWhatsThis(tr("turn on/off metronome"));
+      MusEGlobal::metronomeAction->setChecked(MusEGlobal::song->click());
+      connect(MusEGlobal::metronomeAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
+      connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), MusEGlobal::metronomeAction, SLOT(setChecked(bool)));
 
       //----Actions
       //-------- File Actions
@@ -707,6 +711,10 @@ MusE::MusE() : QMainWindow()
       panicToolbar->setObjectName("Panic (global)");
       panicToolbar->addAction(MusEGlobal::panicAction);
 
+      QToolBar* metronomeToolbar = addToolBar(tr("Metronome"));
+      metronomeToolbar->setObjectName("Metronome");
+      metronomeToolbar->addAction(MusEGlobal::metronomeAction);
+
       requiredToolbars.push_back(tools);
       optionalToolbars.push_back(songpos_tb);
       optionalToolbars.push_back(sig_tb);
@@ -714,6 +722,7 @@ MusE::MusE() : QMainWindow()
       optionalToolbars.push_back(undoToolbar);
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);
+      optionalToolbars.push_back(metronomeToolbar);
 
        QSocketNotifier* ss = new QSocketNotifier(MusEGlobal::audio->getFromThreadFdr(), QSocketNotifier::Read, this); 
        connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));  

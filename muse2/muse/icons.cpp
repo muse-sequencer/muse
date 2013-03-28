@@ -179,6 +179,7 @@
 #include "xpm/buttondown.xpm"
 #include "xpm/configure.xpm"
 #include "xpm/panic.xpm"
+#include "xpm/metronome.xpm"
 
 
 // next two lines will vanish soon
@@ -419,6 +420,7 @@ QPixmap* soloblksqIconOff;
 QPixmap* editmuteIcon;
 QPixmap* editmuteSIcon;
 QPixmap* panicIcon;
+QPixmap* metronomeIcon;
 
 QIcon* pianoIconSet;
 QIcon* scoreIconSet;
@@ -628,6 +630,7 @@ void initIcons()
       editmuteIcon  = new MPIXMAP(editmute_xpm, NULL);
       editmuteSIcon = new MPIXMAP(editmuteS_xpm, NULL);
       panicIcon  = new MPIXMAP(panic_xpm, NULL);
+      metronomeIcon  = new MPIXMAP(metronome_xpm, NULL);
 
       editcutIconSet       = new MICON(editcutS_xpm, "edit-cut"); // ddskrjo
       editcopyIconSet      = new MICON(editcopyS_xpm, "edit-copy");
