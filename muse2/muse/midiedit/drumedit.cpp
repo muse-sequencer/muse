@@ -1519,6 +1519,8 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             dlist->setCurDrumInstrument(dlist->getSelectedInstrument()-1);
             dlist->redraw();
             ((DrumCanvas*)canvas)->selectCursorEvent(((DrumCanvas*)canvas)->getEventAtCursorPos());
+            ((DrumCanvas*)canvas)->keyPressed(dlist->getSelectedInstrument(),100);
+
             MusEGlobal::song->update(SC_DRUMMAP);
             return;
             }
@@ -1526,6 +1528,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             dlist->setCurDrumInstrument(dlist->getSelectedInstrument()+1);
             dlist->redraw();
             ((DrumCanvas*)canvas)->selectCursorEvent(((DrumCanvas*)canvas)->getEventAtCursorPos());
+            ((DrumCanvas*)canvas)->keyPressed(dlist->getSelectedInstrument(),100);
             MusEGlobal::song->update(SC_DRUMMAP);
             return;
             }

@@ -255,7 +255,7 @@ void write_new_style_drummap(int level, Xml& xml, const char* tagname,
 }
 
 void read_new_style_drummap(Xml& xml, const char* tagname,
-                            DrumMap* drummap, bool* drummap_hidden)
+                            DrumMap* drummap, bool* drummap_hidden, bool compatibility)
 {
 	for (;;)
 	{
@@ -268,7 +268,8 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
 			case Xml::TagStart:
 				if (tag == "entry")  // then read that entry with a nested loop
         {
-					DrumMap* dm=NULL;
+          DrumMap* dm=NULL;
+          DrumMap temporaryMap;
           bool* hidden=NULL;
           for (;;) // nested loop
           {
@@ -295,9 +296,13 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                 break;
               
               case Xml::TagStart:
-                if (dm==NULL)
+                if (dm==NULL && compatibility == false)
                   printf("ERROR: THIS SHOULD NEVER HAPPEN: no valid 'pitch' attribute in <entry> tag, but sub-tags follow in read_new_style_drummap()!\n");
-                else if (tag == "name")
+                else if (dm ==NULL && compatibility == true)
+                {
+                   dm = &temporaryMap;
+                }
+                if (tag == "name")
                   dm->name = xml.parse(QString("name"));
                 else if (tag == "vol")
                   dm->vol = (unsigned char)xml.parseInt();
@@ -313,8 +318,16 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                   dm->lv3 = xml.parseInt();
                 else if (tag == "lv4")
                   dm->lv4 = xml.parseInt();
-                else if (tag == "enote")
+                else if (tag == "enote") {
                   dm->enote = xml.parseInt();
+                  if (compatibility) {
+                      int pitch = temporaryMap.enote;
+                      drummap[pitch] = temporaryMap;
+                      dm = &drummap[pitch];
+                      hidden = drummap_hidden ? &drummap_hidden[pitch] : NULL;
+                      dm->anote = pitch;
+                  }
+                }
                 else if (tag == "mute")
                   dm->mute = xml.parseInt();
                 else if (tag == "hide")

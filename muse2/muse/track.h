@@ -327,7 +327,7 @@ class MidiTrack : public Track {
       //void writeOurDrumSettings(int level, Xml& xml) const; // above in private:
       //void readOurDrumSettings(Xml& xml); // above in private:
       void writeOurDrumMap(int level, Xml& xml, bool full) const;
-      void readOurDrumMap(Xml& xml, bool dont_init=false);
+      void readOurDrumMap(Xml& xml, QString tag, bool dont_init=false, bool compatibility=false);
       };
 
 //---------------------------------------------------------

@@ -2232,10 +2232,15 @@ void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
                     if (mode == 0 && tag == "muse")
                           mode = 1;
                     else if (mode == 1 && tag == "our_drummap") {
-                          t->readOurDrumMap(xml, true);
+                          t->readOurDrumMap(xml, tag, true);
                           mode = 0;
                           }
-                    else
+                    else if (mode == 1 && tag == "drummap") { // compatibility mode, read old drummaps
+                          QMessageBox::information(this, tr("Drummap"), tr("This drummap was created with a previous version of MusE,\nit is being read but the format has changed slightly so some\nadjustments may be necessary."));
+                          t->readOurDrumMap(xml, tag, true, true);
+                          mode = 0;
+                          }
+                        else
                           xml.unknown("TList::loadTrackDrummap");
                     break;
               case MusECore::Xml::Attribut:

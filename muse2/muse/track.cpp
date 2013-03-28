@@ -39,6 +39,7 @@
 #include "limits.h"
 #include "dssihost.h"
 #include "gconfig.h"
+#include <QMessageBox>
 
 namespace MusECore {
 
@@ -1152,8 +1153,10 @@ void MidiTrack::readOurDrumSettings(Xml& xml)
 				else if (tag == "ordering_tied") 
 					_drummap_ordering_tied_to_patch = xml.parseInt();
 				else if (tag == "our_drummap")
-					readOurDrumMap(xml);
-				else
+                    readOurDrumMap(xml, tag);
+                else if (tag == "drummap")
+                    readOurDrumMap(xml, tag, false);
+                else
 					xml.unknown("MidiTrack::readOurDrumSettings");
 				break;
 
@@ -1167,12 +1170,12 @@ void MidiTrack::readOurDrumSettings(Xml& xml)
 	}
 }
 
-void MidiTrack::readOurDrumMap(Xml& xml, bool dont_init)
+void MidiTrack::readOurDrumMap(Xml& xml, QString tag, bool dont_init, bool compatibility)
 {
   if (!dont_init) init_drummap(false);
   _drummap_tied_to_patch=false;
   _drummap_ordering_tied_to_patch=false;
-  read_new_style_drummap(xml, "our_drummap", _drummap, _drummap_hidden);
+  read_new_style_drummap(xml, tag.toLatin1().data(), _drummap, _drummap_hidden, compatibility);
   update_drum_in_map();
 }
 
