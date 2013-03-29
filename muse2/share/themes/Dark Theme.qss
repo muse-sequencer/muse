@@ -51,3 +51,8 @@ QToolBar QToolButton:checked {
       padding: 2px;
 
 }
+
+QTreeView {
+     alternate-background-color: rgb(60,60,60);
+     background: rgb(30,30,30);
+ }
