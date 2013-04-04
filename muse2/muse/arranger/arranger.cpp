@@ -513,6 +513,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
       connect(time,    SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
+      connect(list, SIGNAL(verticalScrollSetYpos(int)), vscroll, SLOT(setValue(int)));
+
       connect(canvas, SIGNAL(tracklistChanged()), list, SLOT(tracklistChanged()));
       connect(canvas, SIGNAL(dclickPart(MusECore::Track*)), SIGNAL(editPart(MusECore::Track*)));
       connect(canvas, SIGNAL(startEditor(MusECore::PartList*,int)),   SIGNAL(startEditor(MusECore::PartList*, int)));

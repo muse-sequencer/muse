@@ -88,6 +88,46 @@ int SS_map_logdomain2pluginparam(float pluginparam_log)
       return scaled;
       }
 
+double rangeToPitch(int value)
+{
+    // inrange 0 .. 127
+    // outrange 0.5 .. 2
+    double outValue;
+    if (value == 64)
+        outValue = 1.0;
+    else if (value > 64) {
+        outValue = double(value) / 64.0;
+    }
+    else { // value < 63
+        outValue = double(value) / 127.0 + 0.5;
+    }
+
+    //printf("rangeToPitch(%d) %f\n", value, outValue);
+    return outValue;
+}
+
+/*int pitchToRange(double pitch)
+{
+    // inrange 0.5 .. 2
+    // outrange 0 .. 127
+    int outValue;
+    if (fabs(pitch -1.0) < 0.0001)
+        outValue =  64;
+    else if ( pitch < 1.0){
+        outValue = (pitch -0.5) * 127;
+    }
+    else if ( pitch > 1.0) {
+        outValue = (pitch -1.0) * 127 + 32;
+    }
+    if (outValue < 0)
+        outValue = 0;
+    if (outValue > 127)
+        outValue = 127;
+    printf("pitchToRange(%f) %d\n", pitch, outValue);
+    return outValue;
+}*/
+
+
 //---------------------------------------------------------
 //   SimpleSynth
 //---------------------------------------------------------
@@ -108,6 +148,7 @@ SimpleSynth::SimpleSynth(int sr)
       //initialize
       for (int i=0; i<SS_NR_OF_CHANNELS; i++) {
             channels[i].sample = 0;
+            channels[i].originalSample = 0;
             channels[i].playoffset = 0;
             channels[i].noteoff_ignore = false;
             channels[i].volume = (double) (100.0/SS_CHANNEL_VOLUME_QUOT );
@@ -115,6 +156,7 @@ SimpleSynth::SimpleSynth(int sr)
             channels[i].pan = 64;
             channels[i].balanceFactorL = 1.0;
             channels[i].balanceFactorR = 1.0;
+            channels[i].pitchInt = 64;
             SWITCH_CHAN_STATE(i, SS_CHANNEL_INACTIVE);
             channels[i].channel_on = false;
             for (int j=0; j<SS_NR_OF_SENDEFFECTS; j++) {
@@ -421,6 +463,19 @@ bool SimpleSynth::setController(int channel, int id, int val)
                         channels[ch].volume_ctrlval = val;
                         updateVolume(ch, val);
                         break;
+                  case SS_CHANNEL_CTRL_PITCH:
+                        if (SS_DEBUG_MIDI)
+                              printf("Received channel ctrl pitch %d for channel %d\n", val, ch);
+                        channels[ch].pitchInt = val;
+                        printf("SS_CHANNEL_CTRL_PITCH %d\n", channels[channel].pitchInt);
+
+                        if (channels[ch].sample != 0)
+                        {
+                            std::string bkStr = channels[ch].sample->filename;
+                            resample(channels[ch].originalSample,channels[ch].sample,rangeToPitch(channels[ch].pitchInt));
+                        }
+                        break;
+
                   case SS_CHANNEL_CTRL_NOFF:
                         if (SS_DEBUG_MIDI)
                               printf("Received ctrl noff %d for channel %d\n", val, ch);
@@ -538,7 +593,7 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
       if(len < 3 || d[0] != MUSE_SYNTH_SYSEX_MFG_ID 
           || d[1] != SIMPLEDRUMS_UNIQUE_ID) 
       {
-        if (SS_DEBUG_MIDI)
+        //if (SS_DEBUG_MIDI)
           printf("MusE SimpleDrums: Unknown sysex header\n");
         return false;
       }
@@ -546,7 +601,9 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
       const unsigned char* data = d + 2;
       SS_TRACE_IN
       int cmd = data[0];
+      printf("Got sysex %d %d\n", len, cmd );
       switch (cmd) {
+
             case SS_SYSEX_LOAD_SAMPLE:
                   {
                   int channel = data[1];
@@ -556,6 +613,17 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
                         printf("Sysex cmd: load sample, filename %s, on channel: %d\n", filename, channel);
                         }
                   loadSample(channel, filename);
+                  break;
+                  }
+            case SS_SYSEX_PITCH_SAMPLE:
+                  {
+                  int channel = data[1];
+                  channels[channel].pitchInt = data[2];
+
+                  printf("SS_SYSEX_PITCH_SAMPLE %d\n", channels[channel].pitchInt);
+
+                  //if (strlen(channels[channel].name) > 0)
+                  //    loadSample(channel, channels[channel].name);
                   break;
                   }
             case SS_SYSEX_CLEAR_SAMPLE:
@@ -1008,8 +1076,9 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
       // 2       - noff ignore (0-1)
       // 3       - channel on/off (0-1)
       // 4 - 7   - sendfx 1-4 (0-127)
-      // 8       - len of filename, n
-      // 9 - 9+n - filename
+      // 8       - pitch
+      // 9       - len of filename, n
+      // 10 - 10+n - filename
       for (int ch=0; ch<SS_NR_OF_CHANNELS; ch++) {
             initBuffer[i]   = (byte) channels[ch].volume_ctrlval;
             initBuffer[i+1] = (byte) channels[ch].pan;
@@ -1019,6 +1088,7 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
             initBuffer[i+5] = (byte) round(channels[ch].sendfxlevel[1] * 127.0);
             initBuffer[i+6] = (byte) round(channels[ch].sendfxlevel[2] * 127.0);
             initBuffer[i+7] = (byte) round(channels[ch].sendfxlevel[3] * 127.0);
+            initBuffer[i+8] = channels[ch].pitchInt;
 
             if (SS_DEBUG_INIT) {
                   printf("Channel %d:\n", ch);
@@ -1032,12 +1102,12 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
                   }
             if (channels[ch].sample) {
                   int filenamelen = strlen(channels[ch].sample->filename.c_str()) + 1;
-                  initBuffer[i+8] = (byte) filenamelen;
-                  memcpy((initBuffer+(i+9)), channels[ch].sample->filename.c_str(), filenamelen);
+                  initBuffer[i+9] = (byte) filenamelen;
+                  memcpy((initBuffer+(i+10)), channels[ch].sample->filename.c_str(), filenamelen);
                   if (SS_DEBUG_INIT) {
-                        printf("initBuffer[%d] - filenamelen: %d\n", i+8, filenamelen);
-                        printf("initBuffer[%d] - initBuffer[%d] - filename: ", (i+9), (i+9) + filenamelen - 1);
-                        for (int j = i+9; j< i+9+filenamelen; j++) {
+                        printf("initBuffer[%d] - filenamelen: %d\n", i+9, filenamelen);
+                        printf("initBuffer[%d] - initBuffer[%d] - filename: ", (i+10), (i+10) + filenamelen - 1);
+                        for (int j = i+10; j< i+10+filenamelen; j++) {
                               printf("%c",initBuffer[j]);
                               }
                         printf("\n");
@@ -1045,9 +1115,9 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
                   i+= (SS_NR_OF_CHANNEL_CONTROLLERS + 1 + filenamelen);
                   }
             else {
-                  initBuffer[i+8] = SS_NO_SAMPLE;
+                  initBuffer[i+9] = SS_NO_SAMPLE;
                   if (SS_DEBUG_INIT) {
-                        printf("initBuffer[%d]: SS_NO_SAMPLE: - %d\n", i+8, SS_NO_SAMPLE);
+                        printf("initBuffer[%d]: SS_NO_SAMPLE: - %d\n", i+9, SS_NO_SAMPLE);
                         }
                   i+= (SS_NR_OF_CHANNEL_CONTROLLERS + 1);
                   }
@@ -1152,9 +1222,11 @@ void SimpleSynth::parseInitData(const unsigned char* data)
       {
       SS_TRACE_IN
       //int len = strlen((const char*)data);
-      if (SS_DEBUG_INIT) {
+      //if (SS_DEBUG_INIT)
+      {
             printf("buffer[1], SS_SYSEX_INIT_DATA_VERSION=%d\n", *(data+1));
             }
+      int dataVersion = *(data+1);
       const byte* ptr = data+2;
       for (int ch=0; ch<SS_NR_OF_CHANNELS; ch++) {
                channels[ch].volume_ctrlval = (byte) *(ptr);
@@ -1195,6 +1267,15 @@ void SimpleSynth::parseInitData(const unsigned char* data)
                      guiUpdateSendFxLevel(ch, i, *(ptr));
                      ptr++;
                      }
+
+//
+//
+//
+               if (dataVersion > 1) {
+                   updatePitch(ch, *(ptr));
+                   guiUpdatePitch(ch, *(ptr));
+                   ptr++;
+               }
 
                bool hasSample = *(ptr);
                ptr++;
@@ -1346,7 +1427,7 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
       }
       else
       {
-          //printf("current path: %s \nmuseProject %s\nfilename %s\n",QDir::currentPath().toLatin1().data(), MusEGlobal::museProject.toLatin1().data(), filename);
+          printf("current path: %s \nmuseProject %s\nfilename %s\n",QDir::currentPath().toLatin1().data(), MusEGlobal::museProject.toLatin1().data(), filename);
           //MusEGlobal::museProject
           QFileInfo fi(filename);
           if (QFile::exists(fi.fileName()))
@@ -1382,6 +1463,48 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
       return true;
       }
 
+
+void resample(SS_Sample *origSample, SS_Sample* newSample, double pitch)
+{
+    // Get new nr of frames:
+    double srcratio = (double) SS_samplerate/ (double) origSample->samplerate * pitch;
+    newSample->frames = (long) floor(((double) origSample->frames * srcratio));
+    //smp->frames = (sfi.channels == 1 ? smp->frames * 2 : smp->frames ); // Double nr of new frames if mono->stereo
+    newSample->samples = newSample->frames * newSample->channels;
+    newSample->samplerate = SS_samplerate;
+
+    // Allocate mem for the new one
+    float* newData = new float[newSample->frames * newSample->channels];
+    memset(newData, 0, sizeof(float)* newSample->frames * newSample->channels);
+
+    // libsamplerate & co (secret rabbits in the code!)
+    SRC_DATA srcdata;
+    srcdata.data_in  = origSample->data;
+    srcdata.data_out = newData;
+    srcdata.input_frames  = origSample->frames;
+    srcdata.output_frames = newSample->frames;
+    srcdata.src_ratio = (double) newSample->samplerate / (double) origSample->samplerate  * pitch;
+
+    if (SS_DEBUG) {
+          printf("Converting sample....\n");
+          }
+
+    if (src_simple(&srcdata, SRC_SINC_BEST_QUALITY, origSample->channels)) {
+          SS_ERROR("Error when resampling, ignoring current sample");
+          //TODO: deallocate and stuff
+          }
+    else if (SS_DEBUG) {
+          printf("Sample converted. %ld input frames used, %ld output frames generated\n",
+                   srcdata.input_frames_used,
+                   srcdata.output_frames_gen);
+          }
+    float *oldData = newSample->data;
+    newSample->data = newData;
+    if (oldData) {
+        delete oldData;
+    }
+}
+
 /*!
     \fn loadSampleThread(void* p)
     \brief Since process needs to respond withing a certain time, loading of samples need to be done in a separate thread
@@ -1402,8 +1525,6 @@ static void* loadSampleThread(void* p)
             delete[] ch->sample->data;
             delete ch->sample;
             }
-      ch->sample = new SS_Sample;
-      SS_Sample* smp = ch->sample;
 
       SNDFILE* sf;
       const char* filename = loader->filename.c_str();
@@ -1436,40 +1557,31 @@ static void* loadSampleThread(void* p)
       // Allocate and read the thingie
       //
 
-      // If current samplerate is the same as MusE's:
-      if (SS_samplerate == sfi.samplerate) {
-            smp->data = new float[sfi.channels * sfi.frames];
-            sf_count_t n = sf_readf_float(sf, smp->data, sfi.frames);
-            smp->frames = sfi.frames;
-            smp->samples = (n * sfi.channels);
-            smp->channels = sfi.channels;
-            if (SS_DEBUG) {
-                  printf("%ld frames read\n", (long) n);
-                  }
-            }
-      else  // otherwise, resample:
+//      // If current samplerate is the same as MusE's and no pitching is needed:
+//      if (SS_samplerate == sfi.samplerate && (ch->pitch -1.0) < 0.001) {
+//            smp->data = new float[sfi.channels * sfi.frames];
+//            sf_count_t n = sf_readf_float(sf, smp->data, sfi.frames);
+//            smp->frames = sfi.frames;
+//            smp->samples = (n * sfi.channels);
+//            smp->channels = sfi.channels;
+//            if (SS_DEBUG) {
+//                  printf("%ld frames read\n", (long) n);
+//                  }
+//            }
+//      else  // otherwise, resample:
       {
+            ch->sample = new SS_Sample;
+            SS_Sample* smp = ch->sample;
+            //smp->data = 0; // reset the data so we won't accidentally delete unallocated data
+            ch->originalSample = new SS_Sample;
+            SS_Sample* origSmp = ch->originalSample;
+
             smp->channels = sfi.channels;
-            // Get new nr of frames:
-            double srcratio = (double) SS_samplerate/ (double) sfi.samplerate;
-            smp->frames = (long) floor(((double) sfi.frames * srcratio));
-            smp->frames = (sfi.channels == 1 ? smp->frames * 2 : smp->frames ); // Double nr of new frames if mono->stereo
-            smp->samples = smp->frames * smp->channels;
+            origSmp->channels = sfi.channels;
 
-            if (SS_DEBUG) {
-                  //wilyfoobar-2011-02-13
-                  // arg2 :sfi.frames is of type sf_count_t (== 64 bit)  (long long)  
-                  // this requires format %lld (twice 'l' in format string (arg1)
-                  // old code//printf("Resampling from %ld frames to %ld frames - srcration: %lf\n", sfi.frames, smp->frames, srcratio);
-                  //printf("Resampling from %lld frames to %ld frames - srcration: %lf\n", sfi.frames, smp->frames, srcratio);
-                  // Changed by Tim. Just avoid the hassle for now. Need to determine 32/64 bit and provide two different printf lines.
-                  printf("Resampling to %ld frames - srcration: %lf\n", smp->frames, srcratio);
-                  printf("Nr of new samples: %ld\n", smp->samples);
-                  }
-
-            // Read to temporary:
-            float temp[sfi.frames * sfi.channels];
-            int frames_read = sf_readf_float(sf, temp, sfi.frames);
+            // Read to original sample storage:
+            float *origSample = new float[sfi.frames * sfi.channels];
+            int frames_read = sf_readf_float(sf, origSample, sfi.frames);
             if (frames_read != sfi.frames) {
                   fprintf(stderr,"Error reading sample %s\n", filename);
                   simplesynth_ptr->guiSendSampleLoaded(false, loader->ch_no, filename);
@@ -1482,31 +1594,12 @@ static void* loadSampleThread(void* p)
                   SS_TRACE_OUT
                   }
 
-            // Allocate mem for the new one
-            smp->data = new float[smp->frames * smp->channels];
-            memset(smp->data, 0, sizeof(float)* smp->frames * smp->channels);
+            origSmp->channels = sfi.channels;
+            origSmp->frames = sfi.frames;
+            origSmp->samplerate = sfi.samplerate;
+            origSmp->data = origSample;
 
-            // libsamplerate & co (secret rabbits in the code!)
-            SRC_DATA srcdata;
-            srcdata.data_in  = temp;
-            srcdata.data_out = smp->data;
-            srcdata.input_frames  = sfi.frames;
-            srcdata.output_frames = smp->frames;
-            srcdata.src_ratio = (double) SS_samplerate / (double) sfi.samplerate;
-
-            if (SS_DEBUG) {
-                  printf("Converting sample....\n");
-                  }
-
-            if (src_simple(&srcdata, SRC_SINC_BEST_QUALITY, sfi.channels)) {
-                  SS_ERROR("Error when resampling, ignoring current sample");
-                  //TODO: deallocate and stuff
-                  }
-            else if (SS_DEBUG) {
-                  printf("Sample converted. %ld input frames used, %ld output frames generated\n",
-                           srcdata.input_frames_used,
-                           srcdata.output_frames_gen);
-                  }
+            resample(origSmp, smp, rangeToPitch(ch->pitchInt));
          }
       //Just close the dam thing
       sf_close(sf);
@@ -1571,6 +1664,27 @@ void SimpleSynth::updateVolume(int ch, int invol_ctrlval)
       SS_TRACE_OUT
       }
 
+
+/*!
+    \fn SimpleSynth::updatePitch(int inpitch_ctrlval)
+ */
+void SimpleSynth::updatePitch(int ch, int inpitch_ctrlval)
+      {
+      SS_TRACE_IN
+      channels[ch].pitchInt = inpitch_ctrlval;
+      SS_TRACE_OUT
+      }
+
+/*!
+    \fn SimpleSynth::guiUpdatePitch(int ch, int bal)
+ */
+void SimpleSynth::guiUpdatePitch(int ch, int bal)
+      {
+      SS_TRACE_IN
+      MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, SS_CHANNEL_PITCH_CONTROLLER(ch), bal);
+      gui->writeEvent(ev);
+      SS_TRACE_OUT
+      }
 
 /*!
     \fn SimpleSynth::guiUpdateBalance(int ch, int bal)

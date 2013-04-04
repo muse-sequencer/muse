@@ -154,6 +154,7 @@ class QChannelDial : public QDial
 
    signals:
       void valueChanged(int channel, int fxid, int val);
+      void sliderMoved(int channel, int val);
 
    ///public slots:
    ///   virtual void setValue(int val);
@@ -161,7 +162,9 @@ class QChannelDial : public QDial
    protected:
       int channel;
       int sendfxid;
-      virtual void sliderChange(SliderChange change);    
+      virtual void sliderChange(SliderChange change);
+   private slots:
+      void forwardSliderMoved();
    };
 
 //--------------------------------------
@@ -174,6 +177,7 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       // MESS interface:
       virtual void processEvent(const MusECore::MidiPlayEvent& ev);
       void setChannelVolume(int channel, int volume);
+      void setChannelPitch(int channel, int volume);
       void displayPluginGui();
       QGroupBox* channelButtonGroups[SS_NR_OF_CHANNELS];
       QGroupBox*           masterButtonGroup;
@@ -181,6 +185,7 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       
       ///QInvertedChannelSlider* volumeSliders[SS_NR_OF_CHANNELS];
       QChannelSlider*         volumeSliders[SS_NR_OF_CHANNELS];       // p4.0.27 Tim. Inverted not correct. Was WIP? 
+      QChannelDial*           pitchKnobs[SS_NR_OF_CHANNELS];
       
       QChannelSlider*         panSliders[SS_NR_OF_CHANNELS];
       QChannelCheckbox*       onOff[SS_NR_OF_CHANNELS];
@@ -219,6 +224,7 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
 
    private slots:
       void volumeChanged(int channel, int val);
+      void pitchChanged(int channel, int val);
       void panChanged(int channel, int value);
       void channelOnOff(int channel, bool state);
       void channelNoteOffIgnore(int channel, bool state);

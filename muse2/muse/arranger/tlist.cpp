@@ -1358,6 +1358,16 @@ void TList::moveSelection(int n)
                     (*s)->setSelected(false);
                     selTrack->setSelected(true);
 
+                    // if selected track is outside of view, enforce scrolling
+                    if (selTrack->y() > this->height()+ypos-20)
+                    {
+                        emit verticalScrollSetYpos(ypos+selTrack->height());
+                    }
+                    else if (selTrack->y() < ypos)
+                    {
+                        emit verticalScrollSetYpos(selTrack->y());
+                    }
+
                     // rec enable track if expected
                     MusECore::TrackList recd = getRecEnabledTracks();
                     if (recd.size() == 1 && MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
@@ -2819,3 +2829,4 @@ void TList::setHeader(Header* h)
 }
 
 } // namespace MusEGui
+
