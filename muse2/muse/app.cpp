@@ -351,7 +351,7 @@ MusE::MusE() : QMainWindow()
 
       saveTimer = new QTimer(this);
       connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));
-      saveTimer->start( 10 * 1000 ); // every minute
+      saveTimer->start( 60 * 1000 ); // every minute
       
 #ifdef ENABLE_PYTHON
       //---------------------------------------------------
