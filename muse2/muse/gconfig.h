@@ -231,6 +231,7 @@ struct GlobalConfigValues {
       bool smartFocus;
       int trackHeight;
       bool borderlessMouse;
+      bool autoSave;
       };
 
 

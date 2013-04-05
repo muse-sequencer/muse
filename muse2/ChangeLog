@@ -1,3 +1,10 @@
+05.04.2013:
+         - Change window title when there are unsaved changes (rj)
+         - Add auto-save feature, when enabled tries to save after 5 minutes
+           when there has been changes, unless transport is running (rj)
+04.04.2013:
+         - Added pitch control to SimpleDrums, first version (rj)
+         - Fixed Ctrl+arrows in the arranger so the track list is scrolled (rj)
 29.03.2013:
          - MusE 2.1.2 released! (rj)
 28.03.2013:

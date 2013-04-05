@@ -327,6 +327,7 @@ MusE::MusE() : QMainWindow()
       editInstrument        = 0;
       //routingPopupMenu      = 0;
       progress              = 0;
+      saveIncrement         = 0;
       activeTopWin          = NULL;
       currentMenuSharingTopwin = NULL;
       waitingForTopwin      = NULL;
@@ -345,7 +346,12 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::heartBeatTimer->setObjectName("timer");
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), MusEGlobal::song, SLOT(beat()));
       connect(this, SIGNAL(activeTopWinChanged(MusEGui::TopWin*)), SLOT(activeTopWinChangedSlot(MusEGui::TopWin*)));
+      connect(MusEGlobal::song, SIGNAL(sigDirty()), this, SLOT(setDirty()));
       new MusECore::TrackDrummapUpdater(this); // no need for keeping the reference, the thing autoconnects on its own.
+
+      saveTimer = new QTimer(this);
+      connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));
+      saveTimer->start( 10 * 1000 ); // every minute
       
 #ifdef ENABLE_PYTHON
       //---------------------------------------------------
@@ -970,6 +976,16 @@ void MusE::setHeartBeat()
       MusEGlobal::heartBeatTimer->start(1000/MusEGlobal::config.guiRefresh);
       }
 
+//---------------------------------------------------------
+//   setDirty
+//---------------------------------------------------------
+
+void MusE::setDirty()
+      {
+      MusEGlobal::song->dirty = true;
+      setWindowTitle(projectTitle(project.absoluteFilePath()) + " <unsaved changes>");
+      }
+
 //---------------------------------------------------
 //  loadDefaultSong
 //    if no songname entered on command line:
@@ -1215,7 +1231,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             }
       if (!songTemplate) {
             addProject(project.absoluteFilePath());
-            setWindowTitle(QString("MusE: Song: ") + MusEGui::projectTitleFromFilename(project.absoluteFilePath()));
+            setWindowTitle(projectTitle(project.absoluteFilePath()));
             }
       MusEGlobal::song->dirty = false;
       progress->setValue(30);
@@ -1321,7 +1337,7 @@ void MusE::setUntitledProject()
       MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
       QDir::setCurrent(QDir::homePath());
       project.setFile(name);
-      setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
+      setWindowTitle(projectTitle(name));
       writeTopwinState=true;
       }
 
@@ -1426,6 +1442,8 @@ bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
       else {
             popenFlag? pclose(f) : fclose(f);
             MusEGlobal::song->dirty = false;
+            setWindowTitle(projectTitle(project.absoluteFilePath()));
+            saveIncrement = 0;
             return true;
             }
       }
@@ -1732,7 +1750,7 @@ bool MusE::saveAs()
             ok = save(name, true, writeTopwinState);
             if (ok) {
                   project.setFile(name);
-                  setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
+                  setWindowTitle(projectTitle(project.absoluteFilePath()));
                   addProject(name);
                   }
             else
@@ -3694,6 +3712,11 @@ void MusE::tileSubWindows()
   }
 }
 
+QString MusE::projectTitle(QString name)
+{
+  return tr("MusE: Song: ") + MusEGui::projectTitleFromFilename(name);
+}
+
 QString MusE::projectTitle() const
 { 
   return MusEGui::projectTitleFromFilename(project.fileName());
@@ -3707,6 +3730,29 @@ QString MusE::projectPath() const
 QString MusE::projectExtension() const
 {
   return MusEGui::projectExtensionFromFilename(project.fileName()); 
+}
+
+void MusE::saveTimerSlot()
+{
+    if (MusEGlobal::config.autoSave == false ||
+        MusEGlobal::museProject == MusEGlobal::museProjectInitPath ||
+        MusEGlobal::song->dirty == false)
+    {
+        //printf("conditions not met, ignore %d %d\n", MusEGlobal::config.autoSave, MusEGlobal::song->dirty);
+        return;
+    }
+    saveIncrement++;
+    if (saveIncrement > 4) {
+        // printf("five minutes passed %d %d\n", MusEGlobal::config.autoSave, MusEGlobal::song->dirty);
+        // time to see if we are allowed to save, if so. Do
+        if (MusEGlobal::audio->isPlaying() == false) {
+            printf("Performing autosave\n");
+            save(project.filePath(), false, writeTopwinState);
+        } else
+        {
+            //printf("isPlaying, can't save\n");
+        }
+    }
 }
 
 } //namespace MusEGui

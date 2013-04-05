@@ -431,6 +431,7 @@ class Song : public QObject {
       void midiNote(int pitch, int velo);  
       void controllerChanged(MusECore::Track*, int); 
       void newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
+      void sigDirty();
       };
 
 } // namespace MusECore
