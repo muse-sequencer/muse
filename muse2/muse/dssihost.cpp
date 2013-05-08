@@ -914,22 +914,22 @@ void DssiSynthIF::setParameter(unsigned long n, float v)
 void DssiSynthIF::write(int level, Xml& xml) const
 {
 #ifdef DSSI_VST_CHUNK_SUPPORT
-      if(synth->dssi->getCustomData)
+      if(_synth->dssi->getCustomData)
       {
         //---------------------------------------------
         // dump current state of synth
         //---------------------------------------------
-        printf("dumping DSSI custom data! %p\n", synth->dssi->getCustomData);
+        printf("dumping DSSI custom data! %p\n", _synth->dssi->getCustomData);
   
         // this is only needed and supported if
         // we are talking to a VST plugin at the other end.
-        std::string name = synth->dssi->LADSPA_Plugin->Name;
+        std::string name = _synth->dssi->LADSPA_Plugin->Name;
         if ((name.length()> 4) && name.substr(name.length() - 4) == " VST")
         {
-          printf("is vst plugin, commencing data dump, apiversion=%d!\n", synth->dssi->DSSI_API_Version);
+          printf("is vst plugin, commencing data dump, apiversion=%d!\n", _synth->dssi->DSSI_API_Version);
           unsigned long len = 0;
           void* p = 0;
-          synth->dssi->getCustomData(handle,&p, &len);
+          _synth->dssi->getCustomData(_handle,&p, &len);
           if (len) {
                 xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);         
                 xml.nput(level++, "<event type=\"%d\"", Sysex);
@@ -1335,7 +1335,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
                   if(dssi->setCustomData)
                   {
                     printf("loading chunk from sysex %s!\n", data+9);
-                    dssi->setCustomData(handle, (unsigned char*)(data+9) /* len of str*/,e.len()-9);
+                    dssi->setCustomData(_handle, (unsigned char*)(data+9) /* len of str*/,e.len()-9);
                   } 
 #else
                   printf("support for vst chunks not compiled in!\n");
