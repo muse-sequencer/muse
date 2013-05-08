@@ -1025,6 +1025,8 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                           foreach(int frame, automation.currentCtrlFrameList)
                               MusEGlobal::audio->msgEraseACEvent((MusECore::AudioTrack*)automation.currentTrack,
                                        automation.currentCtrlList->id(), frame);
+                          // User probably would like to hear results so make sure controller is enabled.
+                          ((MusECore::AudioTrack*)automation.currentTrack)->enableController(automation.currentCtrlList->id(), true); 
                       }
                   }
                   else {
@@ -3877,7 +3879,7 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
        int frame = MusEGlobal::tempomap.tick2frame(pos.x());
        // FIXME Inefficient to add with wait here, then remove and add with wait again below. Tim.
        MusEGlobal::audio->msgAddACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), frame, 1.0 /*dummy value */);
-
+       
        MusECore::iCtrl ic=automation.currentCtrlList->begin();
        for (; ic !=automation.currentCtrlList->end(); ++ic) {
          MusECore::CtrlVal &cv = ic->second;
@@ -3956,6 +3958,9 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
       MusEGlobal::audio->msgChangeACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), icc->second.frame, newFrame, cvval);
     else
       MusEGlobal::audio->msgAddACEvent((MusECore::AudioTrack*)automation.currentTrack, automation.currentCtrlList->id(), newFrame, cvval);
+
+    // User probably would like to hear results so make sure controller is enabled.
+    ((MusECore::AudioTrack*)automation.currentTrack)->enableController(automation.currentCtrlList->id(), true); 
   }
 
 }

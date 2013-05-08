@@ -4,6 +4,7 @@
 //  $Id: audiotrack.cpp,v 1.14.2.21 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2013 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -43,6 +44,7 @@
 #include "app.h"
 #include "controlfifo.h"
 #include "fastlog.h"
+#include "gconfig.h"
 
 namespace MusECore {
 
@@ -94,6 +96,122 @@ void cacheJackRouteNames()
 */
 
 //---------------------------------------------------------
+//   init_buffers
+//---------------------------------------------------------
+
+void AudioTrack::initBuffers()
+{
+  int chans = _totalOutChannels;
+  // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less.
+  if(chans < MAX_CHANNELS)
+    chans = MAX_CHANNELS;
+  if(!outBuffers)
+  {
+    outBuffers = new float*[chans];
+    for(int i = 0; i < chans; ++i)
+    {
+      int rv = posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
+      if(rv != 0)
+      {
+        fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign returned error:%d. Aborting!\n", rv);
+        abort();
+      }
+    }
+  }
+  for(int i = 0; i < chans; ++i)
+  {
+    if(MusEGlobal::config.useDenormalBias)
+    {
+      for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+        outBuffers[i][q] = MusEGlobal::denormalBias;
+    }
+    else
+      memset(outBuffers[i], 0, sizeof(float) * MusEGlobal::segmentSize);
+  }
+  
+  if(!outBuffersExtraMix)
+  {
+    outBuffersExtraMix = new float*[MAX_CHANNELS];
+    for(int i = 0; i < MAX_CHANNELS; ++i)
+    {
+      int rv = posix_memalign((void**)&outBuffersExtraMix[i], 16, sizeof(float) * MusEGlobal::segmentSize);
+      if(rv != 0)
+      {
+        fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign outBuffersMonoMix returned error:%d. Aborting!\n", rv);
+        abort();
+      }
+    }
+  }
+  for(int i = 0; i < MAX_CHANNELS; ++i)
+  {
+    if(MusEGlobal::config.useDenormalBias)
+    {
+      for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+        outBuffersExtraMix[i][q] = MusEGlobal::denormalBias;
+    }
+    else
+      memset(outBuffersExtraMix[i], 0, sizeof(float) * MusEGlobal::segmentSize);
+  }
+
+  if(!audioInSilenceBuf)
+  {
+    int rv = posix_memalign((void**)&audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+    if(rv != 0)
+    {
+      fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign returned error:%d. Aborting!\n", rv);
+      abort();
+    }
+    if(MusEGlobal::config.useDenormalBias)
+    {
+      for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+        audioInSilenceBuf[q] = MusEGlobal::denormalBias;
+    }
+    else
+      memset(audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
+  }
+
+  if(!audioOutDummyBuf)
+  {
+    int rv = posix_memalign((void**)&audioOutDummyBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+    if(rv != 0)
+    {
+      fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign returned error:%d. Aborting!\n", rv);
+      abort();
+    }
+    if(MusEGlobal::config.useDenormalBias)
+    {
+      for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+        audioOutDummyBuf[q] = MusEGlobal::denormalBias;
+    }
+    else
+      memset(audioOutDummyBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
+  }
+
+  if(!_controls && _controlPorts != 0)
+  {
+    _controls = new Port[_controlPorts];
+    ciCtrlList icl = _controller.begin();
+    for(unsigned long k = 0; k < _controlPorts; ++k)
+    {
+      float val = 0.0;
+      if(icl != _controller.end())
+      {
+        // Since the list is sorted by id, if no match is found just let k catch up to the id.
+        if((unsigned long)icl->second->id() == k)
+        {
+          val = icl->second->getDefault();
+          ++icl;
+        }
+      }
+      _controls[k].idx    = k;
+      _controls[k].val    = val;
+      _controls[k].tmpVal = val;
+      _controls[k].enCtrl = true;
+    }
+  }
+}
+
+//---------------------------------------------------------
 //   AudioTrack
 //---------------------------------------------------------
 
@@ -106,32 +224,32 @@ AudioTrack::AudioTrack(TrackType t)
       _prefader = false;
       _efxPipe  = new Pipeline();
       recFileNumber = 1;
-      //_recFile  = 0; //unneeded, _recFile's ctor does this
       _channels = 0;
       _automationType = AUTO_OFF;
       setChannels(2);
+
       addController(new CtrlList(AC_VOLUME,"Volume",0.001,3.163 /* roughly 10 db */, VAL_LOG));
       addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
       addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*dont show in arranger */));
+      _controlPorts = 3;
+
+      _curVolume = 0.0;
+      _curVol1 = 0.0;
+      _curVol2 = 0.0;
       
-      // for a lot of considerations and failures, see revision 1402 or earlier (flo)
+      _controls = 0;
+      outBuffers = 0;
+      outBuffersExtraMix = 0;
+      audioInSilenceBuf = 0;
+      audioOutDummyBuf = 0;
+      
       _totalOutChannels = MAX_CHANNELS;
-      outBuffers = new float*[_totalOutChannels];
-      for (int i = 0; i < _totalOutChannels; ++i)
-      {
-        int rv = posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
-        if(rv != 0)
-        {
-          fprintf(stderr, "ERROR: AudioTrack ctor: posix_memalign returned error:%d. Aborting!\n", rv);
-          abort();
-        }
-      }
-      
+
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
       
-      bufferPos = INT_MAX;
-      
+      initBuffers();
+
       setVolume(1.0);
       _gain = 1.0;
       }
@@ -144,17 +262,27 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       _efxPipe        = new Pipeline();                 // Start off with a new pipeline.
       recFileNumber = 1;
 
+      addController(new CtrlList(AC_VOLUME,"Volume",0.001,3.163 /* roughly 10 db */, VAL_LOG));
+      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
+      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*dont show in arranger */));
+      _controlPorts = 3;
+
+      _curVolume = 0.0;
+      _curVol1 = 0.0;
+      _curVol2 = 0.0;
+
       // Don't allocate outBuffers here. Let internal_assign() call setTotalOutChannels to set them up.
+      _controls = 0;
       outBuffers = 0;
+      outBuffersExtraMix = 0;
+      audioInSilenceBuf = 0;
+      audioOutDummyBuf = 0;
       _totalOutChannels = 0;
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
       
-      bufferPos = INT_MAX;
-      
       _recFile = NULL;
       
-      _gain = t._gain;
       internal_assign(t, flags | ASSIGN_PROPERTIES);
       }
 
@@ -171,54 +299,169 @@ void AudioTrack::internal_assign(const Track& t, int flags)
         _prefader       = at._prefader;
         _auxSend        = at._auxSend;
         _automationType = at._automationType;
-        
+        _gain           = at._gain;
+
         if(!(flags & ASSIGN_STD_CTRLS))
         {
-          _controller.clearDelete();
-          for(ciCtrlList icl = at._controller.begin(); icl != at._controller.end(); ++icl)
+          // Copy the standard controller block...
+          ciCtrlList icl          = at._controller.begin();
+          ciCtrlList icl_this     = _controller.begin();
+          ciCtrlList icl_end      = at._controller.lower_bound(AC_PLUGIN_CTL_BASE);
+          ciCtrlList icl_this_end = _controller.lower_bound(AC_PLUGIN_CTL_BASE);
+          int id, id_this;
+          CtrlList* cl, *cl_this;
+          while(icl != icl_end && icl_this != icl_this_end)
           {
-            CtrlList* cl = icl->second;
-            // Copy all built-in controllers (id below AC_PLUGIN_CTL_BASE), but not plugin controllers.
-            if(cl->id() >= AC_PLUGIN_CTL_BASE)
-              continue;
-            CtrlList* new_cl = new CtrlList();
-            new_cl->assign(*cl, CtrlList::ASSIGN_PROPERTIES);  // Don't copy values.
-            addController(new_cl);
+            cl      = icl->second;
+            cl_this = icl_this->second;
+            id      = cl->id();
+            id_this = cl_this->id();
+            if(id < id_this)
+              ++icl;      // Let id catch up to this id.
+            else if(id > id_this)
+              ++icl_this; // Let this id catch up to id.
+            else
+            {
+              // Match found. Copy properties but not values.
+              cl_this->assign(*cl, CtrlList::ASSIGN_PROPERTIES);  
+              ++icl;
+              ++icl_this;
+            }
+          }
+
+          // Copy the special synth controller block...
+          const int synth_id = (int)genACnum(MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
+          const int synth_id_end = synth_id + AC_PLUGIN_CTL_BASE; // The end of the special block.
+          icl           = at._controller.lower_bound(synth_id);
+          icl_this      = _controller.lower_bound(synth_id);
+          icl_end       = at._controller.lower_bound(synth_id_end);
+          icl_this_end  = _controller.lower_bound(synth_id_end);
+          while(icl != icl_end && icl_this != icl_this_end)
+          {
+            cl      = icl->second;
+            cl_this = icl_this->second;
+            id      = cl->id();
+            id_this = cl_this->id();
+            if(id < id_this)
+              ++icl;      // Let id catch up to this id.
+            else if(id > id_this)
+              ++icl_this; // Let this id catch up to id.
+            else
+            {
+              // Match found. Copy properties but not values.
+              cl_this->assign(*cl, CtrlList::ASSIGN_PROPERTIES);  
+              ++icl;
+              ++icl_this;
+            }
           }
         }
         
-        // This will set up or reallocate the outBuffers.
+        // This will set up or reallocate the outBuffers. _controlPorts must be valid by now.
         setTotalOutChannels(at._totalOutChannels);
         
         // This is only set by multi-channel syntis...
         setTotalInChannels(at._totalInChannels);
-       
+
+        // FIXME: setChannels also called in setTotalOutChannels above, causing redundant efxpipe setChannels.
         setChannels(at.channels()); // Set track channels (max 2).
+
+        unsigned long cp = _controlPorts;
+        if(at._controlPorts < cp)
+          cp = at._controlPorts;
+        for(unsigned long k = 0; k < cp; ++k)
+          _controls[k] = at._controls[k];  // Assign the structures.
       }    
       
       if(flags & ASSIGN_PLUGINS)
       {
         delete _efxPipe;
-        _efxPipe = new Pipeline(*(at._efxPipe));  // Make copies of the plugins. 
+        _efxPipe = new Pipeline(*(at._efxPipe), this);  // Make copies of the plugins. 
       }  
       
       if(flags & (ASSIGN_STD_CTRLS | ASSIGN_PLUGIN_CTRLS))
       {
-        _controller.clearDelete();
-        for(ciCtrlList icl = at._controller.begin(); icl != at._controller.end(); ++icl)
+        const int synth_id = (int)genACnum(MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
+        const int synth_id_end = synth_id + AC_PLUGIN_CTL_BASE; // The end of the special block.
+        ciCtrlList icl, icl_end, icl_this, icl_this_end;
+        int id, id_this;
+        CtrlList* cl, *cl_this;
+
+        if(flags & ASSIGN_STD_CTRLS)
         {
-          CtrlList* cl = icl->second;
-          // Discern between built-in controllers (id below AC_PLUGIN_CTL_BASE), and plugin controllers.
-          if(cl->id() >= AC_PLUGIN_CTL_BASE)
+          // Copy the standard controller block...
+          icl          = at._controller.begin();
+          icl_this     = _controller.begin();
+          icl_end      = at._controller.lower_bound(AC_PLUGIN_CTL_BASE);
+          icl_this_end = _controller.lower_bound(AC_PLUGIN_CTL_BASE);
+          while(icl != icl_end && icl_this != icl_this_end)
           {
-            if(!(flags & ASSIGN_PLUGIN_CTRLS))
-              continue;
+            cl      = icl->second;
+            cl_this = icl_this->second;
+            id      = cl->id();
+            id_this = cl_this->id();
+            if(id < id_this)
+              ++icl;      // Let id catch up to this id.
+            else if(id > id_this)
+              ++icl_this; // Let this id catch up to id.
+            else
+            {
+              // Match found. Copy properties and values.
+              cl_this->assign(*cl, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);  
+              ++icl;
+              ++icl_this;
+            }
           }
-          else if(!(flags & ASSIGN_STD_CTRLS))
-              continue;
           
-          CtrlList* new_cl = new CtrlList(*cl);  // Let copy constructor handle the rest. Copy values.
-          addController(new_cl);
+          // Copy the special synth controller block...
+          icl           = at._controller.lower_bound(synth_id);
+          icl_this      = _controller.lower_bound(synth_id);
+          icl_end       = at._controller.lower_bound(synth_id_end);
+          icl_this_end  = _controller.lower_bound(synth_id_end);
+          while(icl != icl_end && icl_this != icl_this_end)
+          {
+            cl      = icl->second;
+            cl_this = icl_this->second;
+            id      = cl->id();
+            id_this = cl_this->id();
+            if(id < id_this)
+              ++icl;      // Let id catch up to this id.
+            else if(id > id_this)
+              ++icl_this; // Let this id catch up to id.
+            else
+            {
+              // Match found. Copy properties and values.
+              cl_this->assign(*cl, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+              ++icl;
+              ++icl_this;
+            }
+          }
+        }
+
+        if(flags & ASSIGN_PLUGIN_CTRLS)
+        {
+          // Copy all plugin controller blocks...
+          icl           = at._controller.lower_bound(AC_PLUGIN_CTL_BASE);
+          icl_this      = _controller.lower_bound(AC_PLUGIN_CTL_BASE);
+          icl_end       = at._controller.lower_bound(synth_id);
+          icl_this_end  = _controller.lower_bound(synth_id);
+          while(icl != icl_end && icl_this != icl_this_end)
+          {
+            cl      = icl->second;
+            cl_this = icl_this->second;
+            id      = cl->id();
+            id_this = cl_this->id();
+            if(id < id_this)
+              ++icl;      // Let id catch up to this id.
+            else if(id > id_this)
+              ++icl_this; // Let this id catch up to id.
+            else
+            {
+              // Match found. Copy properties and values.
+              cl_this->assign(*cl, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+              ++icl;
+              ++icl_this;
+            }
+          }
         }
       }
       
@@ -277,6 +520,22 @@ void AudioTrack::assign(const Track& t, int flags)
 AudioTrack::~AudioTrack()
 {
       delete _efxPipe;
+
+      if(audioInSilenceBuf)
+        free(audioInSilenceBuf);
+
+      if(audioOutDummyBuf)
+        free(audioOutDummyBuf);
+
+      if(outBuffersExtraMix)
+      {
+        for(int i = 0; i < MAX_CHANNELS; ++i)
+        {
+          if(outBuffersExtraMix[i])
+            free(outBuffersExtraMix[i]);
+        }
+        delete[] outBuffersExtraMix;
+      }
       
       int chans = _totalOutChannels;
       // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
@@ -291,7 +550,10 @@ AudioTrack::~AudioTrack()
         }
         delete[] outBuffers;
       }
-      
+
+      if(_controls)
+        delete[] _controls;
+
       _controller.clearDelete();
 }
 
@@ -348,13 +610,22 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
     }
   }
   efxPipe()->insert(plugin, idx);
-  if (plugin) 
+  setupPlugin(plugin, idx);
+}
+
+//---------------------------------------------------------
+//   setupPlugin
+//---------------------------------------------------------
+
+void AudioTrack::setupPlugin(PluginI* plugin, int idx)
+{
+  if (plugin)
   {
     plugin->setID(idx);
     plugin->setTrack(this);
-          
+
     int controller = plugin->parameters();
-    for (int i = 0; i < controller; ++i) 
+    for (int i = 0; i < controller; ++i)
     {
       int id = genACnum(idx, i);
       const char* name = plugin->paramName(i);
@@ -770,7 +1041,7 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
 double AudioTrack::volume() const
       {
       return _controller.value(AC_VOLUME, MusEGlobal::audio->curFramePos(), 
-                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_volumeEnCtrl || !_volumeEn2Ctrl);
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_controls[AC_VOLUME].enCtrl);
       }
 
 //---------------------------------------------------------
@@ -795,7 +1066,7 @@ void AudioTrack::setVolume(double val)
 double AudioTrack::pan() const
       {
       return _controller.value(AC_PAN, MusEGlobal::audio->curFramePos(), 
-                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_panEnCtrl || !_panEn2Ctrl);
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !_controls[AC_PAN].enCtrl);
       }
 
 //---------------------------------------------------------
@@ -836,26 +1107,17 @@ void AudioTrack::setGain(double val)
 
 double AudioTrack::pluginCtrlVal(int ctlID) const
       {
-      bool en_1 = true, en_2 = true;
+      bool en = true;
       if(ctlID < AC_PLUGIN_CTL_BASE)  
       {
-        if(ctlID == AC_VOLUME)
-        {
-          en_1 = _volumeEnCtrl; 
-          en_2 = _volumeEn2Ctrl;
-        }
-        else
-        if(ctlID == AC_PAN)
-        {
-          en_1 = _panEnCtrl; 
-          en_2 = _panEn2Ctrl;
-        }
+        if((unsigned long)ctlID < _controlPorts)
+          en = _controls[ctlID].enCtrl;
       }
       else
       {
         if(ctlID < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
         {
-          _efxPipe->controllersEnabled(ctlID, &en_1, &en_2); 
+          en = _efxPipe->controllerEnabled(ctlID);
         }
         else
         {
@@ -866,15 +1128,14 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
             if(sif)
             {
               int in_ctrl_idx = ctlID & AC_PLUGIN_CTL_ID_MASK;
-              en_1 = sif->controllerEnabled(in_ctrl_idx);
-              en_2 = sif->controllerEnabled2(in_ctrl_idx);
+              en = sif->controllerEnabled(in_ctrl_idx);
             }
           }
         }
       }  
             
       return _controller.value(ctlID, MusEGlobal::audio->curFramePos(), 
-                               !MusEGlobal::automation || automationType() == AUTO_OFF || !en_1 || !en_2);
+                               !MusEGlobal::automation || automationType() == AUTO_OFF || !en);
       }
 
 //---------------------------------------------------------
@@ -897,12 +1158,22 @@ void AudioTrack::setPluginCtrlVal(int param, double val)
 
 bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
 {
-  if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  // FIXME: These controllers (three so far - vol, pan, mute) have no vari-run-length support.
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
   {
-    iCtrlList icl = _controller.find(track_ctrl_id);
-    if(icl == _controller.end())
+    // Send these controllers directly to the track's own FIFO.
+    ControlEvent ce;
+    ce.unique = false;
+    ce.fromGui = false;
+    ce.idx = track_ctrl_id;
+    ce.value = val;
+    // Time-stamp the event. timestamp() is circular, which is making it impossible to deal with 'modulo' events which
+    //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
+    ce.frame = frame;
+    if(_controlFifo.put(ce))
+    {
+      fprintf(stderr, "AudioTrack::addScheduledControlEvent: fifo overflow: in control number:%d\n", track_ctrl_id);
       return true;
-    icl->second->setCurVal(val);
+    }
     return false;
   }
   else
@@ -937,11 +1208,8 @@ void AudioTrack::enableController(int track_ctrl_id, bool en)
 {
   if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
   {
-    if(track_ctrl_id == AC_VOLUME)
-      enableVolumeController(en);
-    else
-    if(track_ctrl_id == AC_PAN)
-      enablePanController(en);
+    if((unsigned long)track_ctrl_id < _controlPorts)
+      _controls[track_ctrl_id].enCtrl = en;
   }
   else
   {
@@ -964,31 +1232,22 @@ void AudioTrack::enableController(int track_ctrl_id, bool en)
 }
 
 //---------------------------------------------------------
-//   controllersEnabled
+//   controllerEnabled
 //---------------------------------------------------------
 
-void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) const
+bool AudioTrack::controllerEnabled(int track_ctrl_id) const
       {
-      bool en_1 = true, en_2 = true;
       if(track_ctrl_id < AC_PLUGIN_CTL_BASE)  
       {
-        if(track_ctrl_id == AC_VOLUME)
-        {
-          en_1 = _volumeEnCtrl; 
-          en_2 = _volumeEn2Ctrl;
-        }
-        else
-        if(track_ctrl_id == AC_PAN)
-        {
-          en_1 = _panEnCtrl; 
-          en_2 = _panEn2Ctrl;
-        }
+        if((unsigned long)track_ctrl_id < _controlPorts)
+          return _controls[track_ctrl_id].enCtrl;
+        return false;
       }
       else
       {
         if(track_ctrl_id < (int)genACnum(MAX_PLUGINS, 0))  // The beginning of the special synth controller block.
         {
-          _efxPipe->controllersEnabled(track_ctrl_id, &en_1, &en_2); 
+          return _efxPipe->controllerEnabled(track_ctrl_id);
         }
         else
         {
@@ -999,18 +1258,45 @@ void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) con
             if(sif)
             {
               int in_ctrl_idx = track_ctrl_id & AC_PLUGIN_CTL_ID_MASK;
-              en_1 = sif->controllerEnabled(in_ctrl_idx);
-              en_2 = sif->controllerEnabled2(in_ctrl_idx);
+              return sif->controllerEnabled(in_ctrl_idx);
             }
           }
         }
       }  
-        
-      if(en1)
-        *en1 = en_1;
-      if(en2)
-        *en2 = en_2;
+      return false;
       }
+
+//---------------------------------------------------------
+//   enableAllControllers
+//   Enable all track and plugin controllers, and synth controllers if applicable.
+//---------------------------------------------------------
+
+void AudioTrack::enableAllControllers()
+{
+    // Enable track controllers:
+    for(unsigned long i = 0; i < _controlPorts; ++i)
+      _controls[i].enCtrl = true;
+
+    // Enable plugin controllers:
+    Pipeline *pl = efxPipe();
+    PluginI *p;
+    for(iPluginI i = pl->begin(); i != pl->end(); ++i)
+    {
+      p = *i;
+      if(!p)
+        continue;
+      p->enableAllControllers(true);
+    }
+
+    // Enable synth controllers:
+    if(type() == AUDIO_SOFTSYNTH)
+    {
+      const SynthI* synth = static_cast<const SynthI*>(this);
+      SynthIF* sif = synth->sif();
+      if(sif)
+        sif->enableAllControllers(true);
+    }
+}
 
 void AudioTrack::recordAutomation(int n, double v)
       {
@@ -1739,6 +2025,13 @@ AudioAux::AudioAux()
             fprintf(stderr, "ERROR: AudioAux ctor: posix_memalign returned error:%d. Aborting!\n", rv);
             abort();
           }
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+              buffer[i][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(buffer[i], 0, sizeof(float) * MusEGlobal::segmentSize);
         }
         else
           buffer[i] = 0;
@@ -1759,6 +2052,13 @@ AudioAux::AudioAux(const AudioAux& t, int flags)
             fprintf(stderr, "ERROR: AudioAux ctor: posix_memalign returned error:%d. Aborting!\n", rv);
             abort();
           }
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+              buffer[i][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(buffer[i], 0, sizeof(float) * MusEGlobal::segmentSize);
         }
         else
           buffer[i] = 0;
@@ -1858,6 +2158,13 @@ void AudioAux::setChannels(int n)
         fprintf(stderr, "ERROR: AudioAux::setChannels: posix_memalign returned error:%d. Aborting!\n", rv);
         abort();
       }
+      if(MusEGlobal::config.useDenormalBias)
+      {
+        for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+          buffer[i][q] = MusEGlobal::denormalBias;
+      }
+      else
+        memset(buffer[i], 0, sizeof(float) * MusEGlobal::segmentSize);
     }
   }
   else if(n < channels()) 

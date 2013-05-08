@@ -4,7 +4,7 @@
 //  $Id: astrip.h,v 1.8.2.6 2009/11/14 03:37:48 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -81,6 +81,9 @@ class AudioStrip : public Strip {
 
       double volume;
       double panVal;
+
+      bool _volPressed;
+      bool _panPressed;
 
       //QToolButton* iR;
       //QToolButton* oR;

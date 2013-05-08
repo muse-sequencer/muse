@@ -812,7 +812,7 @@ void SimpleSynth::processMessages()
     \param len - nr of samples to process
  */
 //---------------------------------------------------------
-void SimpleSynth::process(float** out, int offset, int len)
+void SimpleSynth::process(unsigned /*pos*/, float** out, int offset, int len)
       {
       /*
       //Process messages from the gui

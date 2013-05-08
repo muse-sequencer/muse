@@ -6,7 +6,7 @@
 //    controller for mixer automation
 //
 //  (C) Copyright 2003-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011-2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -49,6 +49,32 @@ inline unsigned long genACnum(unsigned long plugin, unsigned long ctrl) { return
 
 enum CtrlValueType { VAL_LOG, VAL_LINEAR, VAL_INT, VAL_BOOL };
 enum CtrlRecValueType { ARVT_VAL, ARVT_START, ARVT_STOP };
+
+//---------------------------------------------------------
+//   CtrlInterpolate
+//    Controller interpolation values.
+//    For speed: Can be filled once by CtrlList::getInterpolation(),
+//     then passed repeatedly to CtrlList::interpolate().
+//---------------------------------------------------------
+
+struct CtrlInterpolate {
+      int    sFrame;     // Starting frame. Always valid. Can be less than any first CtrlList item's frame, or zero !
+      double sVal;       // Value at starting frame.
+      int    eFrame;     // Ending frame. Can be -1 meaning endless.
+      double eVal;       // Value at ending frame, or sVal if eFrame is -1.
+      bool   eStop;      // Whether to stop refreshing this struct from CtrlList upon eFrame. Control FIFO ring buffers
+                         //  set this true and replace eFrame and eVal. Upon the next run slice, if eStop is set, eval
+                         //  should be copied to sVal, eFrame to sFrame, doInterp cleared, and eFrame set to some frame or -1.
+      bool   doInterp;   // Whether to actually interpolate whenever this struct is passed to CtrlList::interpolate().
+      CtrlInterpolate(int sframe = 0, int eframe = -1, double sval = 0.0, double eval = 0.0, bool end_stop = false, bool do_interpolate = false) {
+            sFrame = sframe;
+            sVal   = sval;
+            eFrame = eframe;
+            eVal   = eval;
+            eStop = end_stop;
+            doInterp = do_interpolate;
+            }
+      };
 
 //---------------------------------------------------------
 //   CtrlVal
@@ -159,6 +185,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       CtrlList(bool dontShow=false);
       CtrlList(int id, bool dontShow=false);
       CtrlList(int id, QString name, double min, double max, CtrlValueType v, bool dontShow=false);
+      CtrlList(const CtrlList& l, int flags);
       void assign(const CtrlList& l, int flags); 
 
       void swap(CtrlList&);
@@ -190,7 +217,9 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
             }
       CtrlValueType valueType() const { return _valueType; }
       void setValueType(CtrlValueType t) { _valueType = t; }
-
+      void getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* interp);
+      double interpolate(int frame, const CtrlInterpolate& interp);
+      
       double value(int frame, bool cur_val_only = false, int* nextFrame = NULL) const;  
       void add(int frame, double value);
       void del(int frame);

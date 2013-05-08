@@ -819,7 +819,51 @@ void Audio::processMidi()
           while (s->eventsPending()) 
           {
             MusECore::MidiRecordEvent ev = s->receiveEvent();
-            md->recordEvent(ev);
+            // FIXME: This is for recording the events sent by GUI.
+            //        It never gets a chance to be processed since reading of
+            //         record FIFOs is done only by connected input ROUTES, below.
+            //        To be useful, the synth itself must be allowed to be chosen
+            //         as an input route, which is simple enough, but we currently don't
+            //         list synths as inputs for fear of too many INCOMPATIBLE messages
+            //         from DIFFERING synths. However, we could allow ONLY THIS synth
+            //         to be listed and therefore be automatically connected too, if desired.
+            //md->recordEvent(ev);
+            //
+            // For now, instead of recording, here is the minimum that we must do:
+            //
+            // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+            // Same code as in MidiPort::sendEvent()
+            if(md->midiPort() != -1)
+            {
+              MidiPort* mp = &MusEGlobal::midiPorts[md->midiPort()];
+              if(ev.type() == ME_CONTROLLER)
+              {
+                int da = ev.dataA();
+                int db = ev.dataB();
+                db = mp->limitValToInstrCtlRange(da, db);
+                mp->setHwCtrlState(ev.channel(), da, db);
+              }
+              else if(ev.type() == ME_PITCHBEND)
+              {
+                int da = mp->limitValToInstrCtlRange(CTRL_PITCH, ev.dataA());
+                mp->setHwCtrlState(ev.channel(), CTRL_PITCH, da);
+              }
+              else if(ev.type() == ME_AFTERTOUCH)
+              {
+                int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, ev.dataA());
+                mp->setHwCtrlState(ev.channel(), CTRL_AFTERTOUCH, da);
+              }
+              else if(ev.type() == ME_POLYAFTER)
+              {
+                int ctl = (CTRL_POLYAFTER & ~0xff) | (ev.dataA() & 0x7f);
+                int db = mp->limitValToInstrCtlRange(ctl, ev.dataB());
+                mp->setHwCtrlState(ev.channel(), ctl , db);
+              }
+              else if(ev.type() == ME_PROGRAM)
+              {
+                mp->setHwCtrlState(ev.channel(), CTRL_PROGRAM, ev.dataA());
+              }
+            }
           }
         }
         
@@ -921,8 +965,8 @@ void Audio::processMidi()
                   // Unlike our built-in gui controls, there is not much choice here but to 
                   //  just do this:
                   if ( (at == AUTO_WRITE) ||
-                       (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
-                  //if(isPlaying() && (at == AUTO_WRITE || at == AUTO_TOUCH)) DELETETHIS
+                       (at == AUTO_READ && !MusEGlobal::audio->isPlaying()) ||
+                       (at == AUTO_TOUCH) )                                       
                     track->enableController(actrl, false);
                   if(isPlaying())
                   {

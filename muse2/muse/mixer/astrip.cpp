@@ -4,7 +4,7 @@
 //  $Id: astrip.cpp,v 1.23.2.17 2009/11/16 01:55:55 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -69,6 +69,7 @@
 #include "menutitleitem.h"
 //#include "popupmenu.h"
 #include "routepopup.h"
+#include "ctrl.h"
 
 namespace MusEGui {
 
@@ -305,20 +306,21 @@ void AudioStrip::songChanged(MusECore::SongChangedFlags_t val)
 
 void AudioStrip::updateVolume()
 {
+      if(_volPressed) // Inhibit the controller stream if control is currently pressed.
+        return;
       double vol = ((MusECore::AudioTrack*)track)->volume();
-        if (vol != volume) 
-        {
-            //printf("AudioStrip::updateVolume setting slider and label\n");
-          
-            slider->blockSignals(true);
-            sl->blockSignals(true);
-            double val = MusECore::fast_log10(vol) * 20.0;
-            slider->setValue(val);
-            sl->setValue(val);
-            sl->blockSignals(false);
-            slider->blockSignals(false);
-            volume = vol;
-            }
+      if (vol != volume)
+      {
+          //printf("AudioStrip::updateVolume setting slider and label\n");
+          slider->blockSignals(true);
+          sl->blockSignals(true);
+          double val = MusECore::fast_log10(vol) * 20.0;
+          slider->setValue(val);
+          sl->setValue(val);
+          sl->blockSignals(false);
+          slider->blockSignals(false);
+          volume = vol;
+          }
 }
 
 //---------------------------------------------------------
@@ -327,20 +329,21 @@ void AudioStrip::updateVolume()
 
 void AudioStrip::updatePan()
 {
+      if(_panPressed) // Inhibit the controller stream if control is currently pressed.
+        return;
       double v = ((MusECore::AudioTrack*)track)->pan();
-        if (v != panVal) 
-        {
-            //printf("AudioStrip::updatePan setting slider and label\n");
-            
-            pan->blockSignals(true);
-            panl->blockSignals(true);
-            pan->setValue(v);
-            panl->setValue(v);
-            panl->blockSignals(false);
-            pan->blockSignals(false);
-            panVal = v;
-            }
-}       
+      if (v != panVal)
+      {
+          //printf("AudioStrip::updatePan setting slider and label\n");
+          pan->blockSignals(true);
+          panl->blockSignals(true);
+          pan->setValue(v);
+          panl->setValue(v);
+          panl->blockSignals(false);
+          pan->blockSignals(false);
+          panVal = v;
+          }
+}
 
 //---------------------------------------------------------
 //   offToggled
@@ -469,11 +472,9 @@ void AudioStrip::auxLabelChanged(double val, unsigned int idx)
 
 void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if ( (at == AUTO_WRITE) ||
-           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
-        track->enableVolumeController(false);
-      
+      if(track->isMidiTrack())
+        return;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       double vol;
       if (val <= MusEGlobal::config.minSlider) {
             vol = 0.0;
@@ -482,10 +483,9 @@ void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
       else
             vol = pow(10.0, val/20.0);
       volume = vol;
-      //MusEGlobal::audio->msgSetVolume((MusECore::AudioTrack*)track, vol);
-      // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
-      ((MusECore::AudioTrack*)track)->setVolume(vol);
-      if (!shift_pressed) ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_VOLUME, vol);
+      if (!shift_pressed) t->recordAutomation(MusECore::AC_VOLUME, vol);  // with shift, we get straight lines :)
+      t->setParam(MusECore::AC_VOLUME, vol);                              // Schedules a timed control change.
+      t->enableController(MusECore::AC_VOLUME, false);
       }
 
 //---------------------------------------------------------
@@ -494,10 +494,10 @@ void AudioStrip::volumeChanged(double val, int, bool shift_pressed)
 
 void AudioStrip::volumePressed()
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
-        track->enableVolumeController(false);
-      
+      if(track->isMidiTrack())
+        return;
+      _volPressed = true;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       double val = slider->value();
       double vol;
       if (val <= MusEGlobal::config.minSlider) {
@@ -507,10 +507,9 @@ void AudioStrip::volumePressed()
       else
             vol = pow(10.0, val/20.0);
       volume = vol;
-      //MusEGlobal::audio->msgSetVolume((MusECore::AudioTrack*)track, volume);
-      // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
-      ((MusECore::AudioTrack*)track)->setVolume(volume);
-      ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_VOLUME, volume);
+      t->startAutoRecord(MusECore::AC_VOLUME, vol);
+      t->setVolume(vol);
+      t->enableController(MusECore::AC_VOLUME, false);
       }
 
 //---------------------------------------------------------
@@ -519,11 +518,15 @@ void AudioStrip::volumePressed()
 
 void AudioStrip::volumeReleased()
       {
-      AutomationType at = track->automationType();
-      if (at == AUTO_OFF || at == AUTO_READ || at == AUTO_TOUCH)
-        track->enableVolumeController(true);
-      
-      ((MusECore::AudioTrack*)track)->stopAutoRecord(MusECore::AC_VOLUME, volume);
+      if(track->isMidiTrack())
+        return;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
+      AutomationType at = t->automationType();
+      t->stopAutoRecord(MusECore::AC_VOLUME, volume);
+      if(at == AUTO_OFF ||
+        at == AUTO_TOUCH)
+        t->enableController(MusECore::AC_VOLUME, true);
+      _volPressed = false;
       }
 
 //---------------------------------------------------------
@@ -540,11 +543,9 @@ void AudioStrip::volumeRightClicked(const QPoint &p)
 
 void AudioStrip::volLabelChanged(double val)
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if ( (at == AUTO_WRITE) ||
-           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
-        track->enableVolumeController(false);
-      
+      if(track->isMidiTrack())
+        return;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       double vol;
       if (val <= MusEGlobal::config.minSlider) {
             vol = 0.0;
@@ -553,11 +554,12 @@ void AudioStrip::volLabelChanged(double val)
       else
             vol = pow(10.0, val/20.0);
       volume = vol;
-      slider->setValue(val);
-      //audio->msgSetVolume((MusECore::AudioTrack*)track, vol);
-      // p4.0.21 audio->msgXXX waits. Do we really need to?
-      ((MusECore::AudioTrack*)track)->setVolume(vol);
-      ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_VOLUME, vol);
+      slider->blockSignals(true);
+      slider->setValue(val);                   
+      slider->blockSignals(false);
+      t->startAutoRecord(MusECore::AC_VOLUME, vol);
+      t->setParam(MusECore::AC_VOLUME, vol);  // Schedules a timed control change.
+      t->enableController(MusECore::AC_VOLUME, false);
       }
 
 //---------------------------------------------------------
@@ -566,16 +568,13 @@ void AudioStrip::volLabelChanged(double val)
 
 void AudioStrip::panChanged(double val, int, bool shift_pressed)
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if ( (at == AUTO_WRITE) ||
-           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
-        track->enablePanController(false);
-      
-      panVal = val;  
-      //MusEGlobal::audio->msgSetPan(((MusECore::AudioTrack*)track), val);
-      // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
-      ((MusECore::AudioTrack*)track)->setPan(val);
-      if (!shift_pressed) ((MusECore::AudioTrack*)track)->recordAutomation(MusECore::AC_PAN, val);
+      if(track->isMidiTrack())
+        return;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
+      panVal = val;
+      if (!shift_pressed) t->recordAutomation(MusECore::AC_PAN, val);  // with shift, we get straight lines :)
+      t->setParam(MusECore::AC_PAN, val);                              // Schedules a timed control change.
+      t->enableController(MusECore::AC_PAN, false);
       }
 
 //---------------------------------------------------------
@@ -584,15 +583,14 @@ void AudioStrip::panChanged(double val, int, bool shift_pressed)
 
 void AudioStrip::panPressed()
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType();
-      if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
-        track->enablePanController(false);
-      
-      panVal = pan->value();  
-      //MusEGlobal::audio->msgSetPan(((MusECore::AudioTrack*)track), panVal);
-      // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
-      ((MusECore::AudioTrack*)track)->setPan(panVal);
-      ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_PAN, panVal);
+      if(track->isMidiTrack())
+        return;
+      _panPressed = true;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
+      panVal = pan->value();
+      t->startAutoRecord(MusECore::AC_PAN, panVal);
+      t->setPan(panVal);
+      t->enableController(MusECore::AC_PAN, false);
       }
 
 //---------------------------------------------------------
@@ -601,10 +599,15 @@ void AudioStrip::panPressed()
 
 void AudioStrip::panReleased()
       {
-      AutomationType at = track->automationType();
-      if (at == AUTO_OFF || at == AUTO_READ || at == AUTO_TOUCH)
-        track->enablePanController(true);
-      ((MusECore::AudioTrack*)track)->stopAutoRecord(MusECore::AC_PAN, panVal);
+      if(track->isMidiTrack())
+        return;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
+      AutomationType at = t->automationType();
+      t->stopAutoRecord(MusECore::AC_PAN, panVal);
+      if(at == AUTO_OFF ||
+         at == AUTO_TOUCH)
+        t->enableController(MusECore::AC_PAN, true);
+      _panPressed = false;
       }
 
 //---------------------------------------------------------
@@ -621,17 +624,16 @@ void AudioStrip::panRightClicked(const QPoint &p)
 
 void AudioStrip::panLabelChanged(double val)
       {
-      AutomationType at = ((MusECore::AudioTrack*)track)->automationType(); 
-      if ( (at == AUTO_WRITE) ||
-           (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
-        track->enablePanController(false);
-      
+      if(track->isMidiTrack())
+        return;
+      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
       panVal = val;
+      pan->blockSignals(true);
       pan->setValue(val);
-      //MusEGlobal::audio->msgSetPan((MusECore::AudioTrack*)track, val);
-      // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
-      ((MusECore::AudioTrack*)track)->setPan(val);
-      ((MusECore::AudioTrack*)track)->startAutoRecord(MusECore::AC_PAN, val);
+      pan->blockSignals(false);
+      t->startAutoRecord(MusECore::AC_PAN, val);
+      t->setParam(MusECore::AC_PAN, val);     // Schedules a timed control change.
+      t->enableController(MusECore::AC_PAN, false);
       }
 
 //---------------------------------------------------------
@@ -772,6 +774,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       {
       volume        = -1.0;
       panVal        = 0;
+      _volPressed   = false;
+      _panPressed   = false;
       
       record        = 0;
       off           = 0;

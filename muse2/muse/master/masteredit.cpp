@@ -285,13 +285,14 @@ void MasterEdit::readStatus(MusECore::Xml& xml)
                   case MusECore::Xml::TagStart:
                         if (tag == "midieditor")
                               MidiEditor::readStatus(xml);
+                        else if (tag == "xpos")
+                              hscroll->setPos(xml.parseInt());
+                        else if (tag == "xmag") 
+                              hscroll->setMag(xml.parseInt());
                         else if (tag == "ypos")
                               vscroll->setPos(xml.parseInt());
-                        else if (tag == "ymag") {
-                              // vscroll->setMag(xml.parseInt());
-                              int mag = xml.parseInt();
-                              vscroll->setMag(mag);
-                              }
+                        else if (tag == "ymag") 
+                              vscroll->setMag(xml.parseInt());
                         else
                               xml.unknown("MasterEdit");
                         break;
@@ -324,8 +325,10 @@ void MasterEdit::readStatus(MusECore::Xml& xml)
 void MasterEdit::writeStatus(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "master");
-      xml.intTag(level, "ypos", vscroll->pos());
+      xml.intTag(level, "xmag", hscroll->mag());
+      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ymag", vscroll->mag());
+      xml.intTag(level, "ypos", vscroll->pos());
       MidiEditor::writeStatus(level, xml);
       xml.tag(level, "/master");
       }

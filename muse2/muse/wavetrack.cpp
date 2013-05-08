@@ -252,31 +252,25 @@ Part* WaveTrack::newPart(Part*p, bool clone)
 
 bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float** bp)
       {
+      bool have_data = false;
       if ((MusEGlobal::song->bounceTrack != this) && !noInRoute()) {
             RouteList* irl = inRoutes();
-            ciRoute i = irl->begin();
-            if(i->track->isMidiTrack())
-              return false;
-
-            ((AudioTrack*)i->track)->copyData(framePos, channels, 
-                                              i->channel, 
-                                              i->channels,
-                                              nframe, bp);
-            
-            ++i;
-            for (; i != irl->end(); ++i)
+            for(ciRoute i = irl->begin(); i != irl->end(); ++i)
             {
               if(i->track->isMidiTrack())
                 continue;
 
-              ((AudioTrack*)i->track)->addData(framePos, channels, 
-                                               i->channel, 
+              ((AudioTrack*)i->track)->copyData(framePos, channels,
+                                               i->channel,
                                                i->channels,
-                                               nframe, bp);
-              
+                                               nframe, bp, have_data);
+              have_data = true;
             }
+            
             if (recordFlag()) {
-                  if (MusEGlobal::audio->isRecording() && recFile()) {
+            //if (have_data && recordFlag()) {
+                  //if (MusEGlobal::audio->isRecording() && recFile()) {
+                  if (have_data && MusEGlobal::audio->isRecording() && recFile()) {
                         if (MusEGlobal::audio->freewheel()) {
                               }
                         else {
@@ -295,39 +289,42 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                                        framePos, channels, nframe);
                               }
                         }
-                  return true;
+                  //return true;  // REMOVE Tim. Can't hear existing parts while recording, even while simply armed.
+                  // FIXME TODO Remove this. But first code below needs to become ADDITIVE/REPLACING (don't just take over buffers).
+                  return have_data;  
                   }
             }
       if (!MusEGlobal::audio->isPlaying())
             return false;
+            //return have_data;
       
-            if (MusEGlobal::audio->freewheel()) {
-                  
-                  // when freewheeling, read data direct from file:
-                  // Indicate do not seek file before each read.
-                  fetchData(framePos, nframe, bp, false);
-                  
+      if (MusEGlobal::audio->freewheel()) {
+
+            // when freewheeling, read data direct from file:
+            // Indicate do not seek file before each read.
+            fetchData(framePos, nframe, bp, false);
+
+            }
+      else {
+            unsigned pos;
+            if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
+                  printf("WaveTrack::getData(%s) fifo underrun\n",
+                      name().toLatin1().constData());
+                  return false;
                   }
-            else {
-                  unsigned pos;
-                  if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
-                        printf("WaveTrack::getData(%s) fifo underrun\n",
-                           name().toLatin1().constData());
-                        return false;
-                        }
-                  if (pos != framePos) {
-                        if (MusEGlobal::debugMsg)
-                              printf("fifo get error expected %d, got %d\n",
-                                 framePos, pos);
-                        while (pos < framePos) {
-                              if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
-                                    printf("WaveTrack::getData(%s) fifo underrun\n",
-                                       name().toLatin1().constData());
-                                    return false;
-                                    }
+            if (pos != framePos) {
+                  if (MusEGlobal::debugMsg)
+                        printf("fifo get error expected %d, got %d\n",
+                            framePos, pos);
+                  while (pos < framePos) {
+                        if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
+                              printf("WaveTrack::getData(%s) fifo underrun\n",
+                                  name().toLatin1().constData());
+                              return false;
                               }
                         }
                   }
+            }
       return true;
       }
 

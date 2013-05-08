@@ -527,7 +527,6 @@ void EventCanvas::stopPlayEvent()
       if(playedPitch == -1 || playedPitchPort == -1 || playedPitchChannel == -1)
         return;
       // release note:
-      //MusECore::MidiPlayEvent ev(0, playedPitchPort, playedPitchChannel, 0x90, playedPitch, 0);  // REMOVE Tim.
       MusECore::MidiPlayEvent ev(0, playedPitchPort, playedPitchChannel, MusECore::ME_NOTEOFF, playedPitch, playedVelocity);
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
       playedPitch = playedPitchPort = playedPitchChannel = -1;

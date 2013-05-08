@@ -175,13 +175,10 @@ class SynthIF : public PluginIBase {
       virtual QString dirPath() const;
       virtual QString fileName() const;
       virtual QString titlePrefix() const;
-      virtual MusECore::AudioTrack* track();
+      virtual AudioTrack* track();
       virtual void enableController(unsigned long i, bool v = true);
       virtual bool controllerEnabled(unsigned long i) const;
-      virtual void enable2Controller(unsigned long i, bool v = true);
-      virtual bool controllerEnabled2(unsigned long i) const;
       virtual void enableAllControllers(bool v = true);
-      virtual void enable2AllControllers(bool v = true);
       virtual void updateControllers();
       virtual void activate();
       virtual void deactivate();
@@ -252,8 +249,9 @@ class SynthI : public AudioTrack, public MidiDevice,
       friend class VstNativeSynthIF;
       
       SynthI();
+      SynthI(const SynthI& si, int flags);
       virtual ~SynthI();
-      SynthI* clone(int /*flags*/) const { return new SynthI(*this); }
+      SynthI* clone(int flags) const { return new SynthI(*this, flags); }
 
       virtual inline int deviceType() const { return SYNTH_MIDI; } 
       

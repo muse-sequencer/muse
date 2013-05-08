@@ -4,7 +4,7 @@
 //  $Id: dssihost.h,v 1.10.2.7 2009/12/06 10:05:00 terminator356 Exp $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License
@@ -83,10 +83,9 @@ class DssiSynth : public Synth {
       unsigned long _portCount, _inports, _outports, _controlInPorts, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
-      std::vector<int> iUsedIdx;       // During process, tells whether an audio input port was used by any input routes.
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
-      MusECore::MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to DSSI port numbers.
-      MusECore::MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps DSSI port numbers to midi controller numbers.
+      MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to DSSI port numbers.
+      MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps DSSI port numbers to midi controller numbers.
       bool _hasGui;
       bool _inPlaceCapable;
       // Hack: Special flag required.
@@ -116,11 +115,11 @@ class DssiSynth : public Synth {
 
 class DssiSynthIF : public SynthIF
       {
-      DssiSynth* synth;
-      LADSPA_Handle handle;
+      DssiSynth* _synth;
+      LADSPA_Handle _handle;
       
-      Port* controls;
-      Port* controlsOut;
+      Port* _controls;
+      Port* _controlsOut;
       
       #ifdef OSC_SUPPORT
       OscDssiIF _oscif;
@@ -129,11 +128,12 @@ class DssiSynthIF : public SynthIF
       std::vector<DSSI_Program_Descriptor> programs;
       void queryPrograms();
       void doSelectProgram(LADSPA_Handle handle, int bank, int prog); 
-      bool processEvent(const MusECore::MidiPlayEvent&, snd_seq_event_t*);
+      bool processEvent(const MidiPlayEvent&, snd_seq_event_t*);
       
-      float** audioInBuffers;
-      float** audioOutBuffers;
-      float*  audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
+      float** _audioInBuffers;
+      float** _audioOutBuffers;
+      float*  _audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
+      std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.
       
    public:
       DssiSynthIF(SynthI* s);
@@ -145,7 +145,7 @@ class DssiSynthIF : public SynthIF
 
       bool init(DssiSynth* s);
 
-      virtual DssiSynth* dssiSynth() { return synth; }
+      virtual DssiSynth* dssiSynth() { return _synth; }
       virtual SynthI* dssiSynthI()   { return synti; }
       
       virtual bool initGui();
@@ -156,15 +156,15 @@ class DssiSynthIF : public SynthIF
       virtual bool nativeGuiVisible() const;                                        
       virtual void showNativeGui(bool);                                              
       virtual bool hasNativeGui() const { return !dssi_ui_filename().isEmpty(); }    
-      virtual void getGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
-      virtual void setGeometry(int, int, int, int) {}
+      virtual void getGeometry(int*x, int*y, int*w, int*h) const;
+      virtual void setGeometry(int, int, int, int);
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
       
       virtual void preProcessAlways();
-      virtual MusECore::iMPEvent getData(MusECore::MidiPort*, MusECore::MPEventList*, MusECore::iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
-      virtual bool putEvent(const MusECore::MidiPlayEvent& ev);
-      virtual MusECore::MidiPlayEvent receiveEvent();
+      virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
+      virtual bool putEvent(const MidiPlayEvent& ev);
+      virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const { return 0; }
       
       virtual int channels() const;
@@ -204,10 +204,7 @@ class DssiSynthIF : public SynthIF
       QString fileName() const;
       void enableController(unsigned long i, bool v = true);      
       bool controllerEnabled(unsigned long i) const;          
-      void enable2Controller(unsigned long i, bool v = true);      
-      bool controllerEnabled2(unsigned long i) const;          
       void enableAllControllers(bool v = true);
-      void enable2AllControllers(bool v = true);
       void updateControllers();
       void activate();
       void deactivate();

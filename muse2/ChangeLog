@@ -1,3 +1,20 @@
+08.05.2013:
+         - Yet another MAJOR audio engine and plugin/synth process chain re-write. (Tim...)
+         - Track controllers (vol, pan) now sample-accurate.
+         - Track controllers (vol, pan) slope limited for near-noiseless operation. TODO: User settings.
+         - Fixed: "Duplicate Selected Tracks" crashes. Also now copies plugins and synths too.
+         - DSSI + Native VST: Fixed not remembering generic/native GUI pos/size. TODO: DSSI native GUI.
+         - Fixed regression by flo: Sliders were recording multiple automation points at same value.
+         - Fixed canvases not remembering position/zoom - everything reopens at exact same pos/zoom now.
+         - Fixed automatable audio GUI controls 'jumpy' in TOUCH mode if heavy graphics causing slowdowns.
+           When pressed, any control now truly 'disengages' from competing/intefering controller stream.
+         - Improved audio automation modes, + READ mode can now be interrupted by GUI or ext control.
+         - MESS synths (esp Deicsonze): Controls (like Track Info program) and synth controls now mirror
+            each other, both ways.
+         - Deicsonze softsynth: Fixed several problems: Not remembering settings + ladspa plugin settings,
+            midi controllers were in wrong domain - moved to NRPN14 type. TODO: Fix 'biased' midi controllers
+            like pan and detune etc.
+         - Native VST: Call idle periodically. Makes some plugins like Glitch work, as per LAD mail.
 05.04.2013:
          - Change window title when there are unsaved changes (rj)
          - Add auto-save feature, when enabled tries to save after 5 minutes

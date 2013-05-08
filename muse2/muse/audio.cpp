@@ -353,6 +353,7 @@ void Audio::process(unsigned frames)
       
       if (state == START_PLAY && jackState == PLAY) {
             _loopCount = 0;
+            MusEGlobal::song->reenableTouchedControllers();
             startRolling();
             if (_bounce)
                   write(sigFd, "f", 1);
@@ -376,6 +377,7 @@ void Audio::process(unsigned frames)
             }
       else if (state == STOP && jackState == PLAY) {
             _loopCount = 0;
+            MusEGlobal::song->reenableTouchedControllers();
             startRolling();
             }
       else if (state == LOOP1 && jackState == PLAY)

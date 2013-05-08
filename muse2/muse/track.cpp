@@ -217,12 +217,6 @@ void Track::init()
       _internalSolo  = 0;
       _off           = false;
       _channels      = 0;           // 1 - mono, 2 - stereo
-      
-      _volumeEnCtrl  = true;
-      _volumeEn2Ctrl = true;
-      _panEnCtrl     = true;
-      _panEn2Ctrl    = true;
-      
       _selected      = false;
       _height        = MusEGlobal::config.trackHeight;
       _locked        = false;
@@ -240,11 +234,28 @@ Track::Track(Track::TrackType t)
 
 Track::Track(const Track& t, int flags)
 {
-      internal_assign(t, flags | ASSIGN_PROPERTIES);  
-      for (int i = 0; i < MAX_CHANNELS; ++i) {
-            _meter[i] = 0.0;
-            _peak[i]  = 0.0;
-            }
+  _type         = t.type();
+  _name =  t.name() + " #";
+  for(int i = 2; true; ++i)
+  {
+    QString n;
+    n.setNum(i);
+    QString s = _name + n;
+    Track* track = MusEGlobal::song->findTrack(s);
+    if(track == 0)
+    {
+      // Do not call setName here. Audio Input and Output override it and try to set
+      //  Jack ports, which have not been initialized yet here. Must wait until
+      //  Audio Input and Output copy constructors or assign are called.
+      _name = s;
+      break;
+    }
+  }
+  internal_assign(t, flags | ASSIGN_PROPERTIES);
+  for (int i = 0; i < MAX_CHANNELS; ++i) {
+        _meter[i] = 0.0;
+        _peak[i]  = 0.0;
+        }
 }
 
 Track::~Track()
@@ -275,35 +286,11 @@ void Track::internal_assign(const Track& t, int flags)
         _internalSolo = t._internalSolo;
         _off          = t._off;
         _channels     = t._channels;
-        
-        _volumeEnCtrl  = t._volumeEnCtrl;
-        _volumeEn2Ctrl = t._volumeEn2Ctrl;
-        _panEnCtrl     = t._panEnCtrl;
-        _panEn2Ctrl    = t._panEn2Ctrl;
-        
         _selected     = t.selected();
         _y            = t._y;
         _height       = t._height;
         _comment      = t.comment();
-        _type         = t.type();
         _locked       = t.locked();
-
-        _name =  t.name() + " #";
-        for(int i = 2; true; ++i) 
-        {
-          QString n;
-          n.setNum(i);
-          QString s = _name + n;
-          Track* track = MusEGlobal::song->findTrack(s);
-          if(track == 0) 
-          {
-            // Do not call setName here. Audio Input and Output override it and try to set 
-            //  Jack ports, which have not been initialized yet here. Must wait until 
-            //  Audio Input and Output copy constructors or assign are called.
-            _name = s;
-            break;
-          }
-        }
       }
 }
 
@@ -366,33 +353,11 @@ void Track::setDefaultName(QString base)
 
 void Track::clearRecAutomation(bool clearList)
 {
-    _volumeEnCtrl  = true;
-    _volumeEn2Ctrl = true;
-    _panEnCtrl     = true;
-    _panEn2Ctrl    = true;
-    
     if(isMidiTrack())
       return;
-          
-    AudioTrack *t = (AudioTrack*)this;
-    Pipeline *pl = t->efxPipe();
-    PluginI *p; 
-    for(iPluginI i = pl->begin(); i != pl->end(); ++i) 
-    {
-      p = *i;
-      if(!p)
-        continue;
-      p->enableAllControllers(true);
-    }
-
-    if(type() == AUDIO_SOFTSYNTH)
-    {
-      const SynthI* synth = static_cast<const SynthI*>(this);
-      SynthIF* sif = synth->sif();
-      if(sif)
-        sif->enableAllControllers(true);
-    }
-    
+    AudioTrack *t = static_cast<AudioTrack*>(this);
+    // Re-enable all track and plugin controllers, and synth controllers if applicable.
+    t->enableAllControllers();
     if(clearList)
       t->recEvents()->clear();
 }

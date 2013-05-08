@@ -135,6 +135,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual QString portName(void*) {
             return QString("mops");
             }
+      virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
       virtual int getState() { 
 //            if(DEBUG_DUMMY)
 //                printf("DummyAudioDevice::getState %d\n", state);
@@ -224,17 +225,22 @@ DummyAudioDevice* dummyAudio = 0;
 
 DummyAudioDevice::DummyAudioDevice() 
       {
-      // Added by Tim. p3.3.15
-      // p3.3.30
-      //posix_memalign((void**)&buffer, 16, sizeof(float) * dummyFrames);
-
-      int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::config.dummyAudioBufSize);
+      MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
+      MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
+      int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
       if(rv != 0)
       {
         fprintf(stderr, "ERROR: DummyAudioDevice ctor: posix_memalign returned error:%d. Aborting!\n", rv);
         abort();
       }
-      
+      if(MusEGlobal::config.useDenormalBias)
+      {
+        for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+          buffer[q] = MusEGlobal::denormalBias;
+      }
+      else
+        memset(buffer, 0, sizeof(float) * MusEGlobal::segmentSize);
+
       dummyThread = 0;
       realtimeFlag = false;
       seekflag = false;
@@ -310,9 +316,8 @@ static void* dummyLoop(void* ptr)
       
       // p3.3.30
       //MusEGlobal::sampleRate = 25600;
-      MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
       //MusEGlobal::segmentSize = dummyFrames;
-      MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
+//       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
 #if 0      
       //unsigned int tickRate = MusEGlobal::sampleRate / dummyFrames;
       unsigned int tickRate = MusEGlobal::sampleRate / MusEGlobal::segmentSize;

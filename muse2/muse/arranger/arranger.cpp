@@ -741,8 +741,8 @@ void Arranger::writeStatus(int level, MusECore::Xml& xml)
       xml.intTag(level, "info", ib->isChecked());
       split->writeStatus(level, xml);
 
-      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
+      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ypos", vscroll->value());
       xml.etag(level, "arranger");
       }
@@ -808,10 +808,8 @@ void Arranger::readStatus(MusECore::Xml& xml)
                               split->readStatus(xml);
                         else if (tag == "xmag")
                               hscroll->setMag(xml.parseInt());
-                        else if (tag == "xpos") {
-                              int hpos = xml.parseInt();
-                              hscroll->setPos(hpos);
-                              }
+                        else if (tag == "xpos") 
+                              hscroll->setPos(xml.parseInt());  
                         else if (tag == "ypos")
                               vscroll->setValue(xml.parseInt());
                         else

@@ -1003,17 +1003,7 @@ void DrumCanvas::keyReleased(int, bool)
       {
       // release note:
       if(_playEvents)
-      {
-        // REMOVE Tim.
-        //int pitch, port, channel;
-        //if(index2Note(index, &port, &channel, &pitch))
-        //{
-        //  MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
-        //  MusEGlobal::audio->msgPlayMidiEvent(&e);
-        //}
         stopPlayEvent();
-      }
-      //playedPitch=-1;
       }
 
 //---------------------------------------------------------

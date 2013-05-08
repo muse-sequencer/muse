@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //
 //  vst_native.cpp
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012-2013 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -598,7 +598,7 @@ void VstNativeSynth::incInstances(int val)
 //   instantiate
 //---------------------------------------------------------
 
-AEffect* VstNativeSynth::instantiate()
+AEffect* VstNativeSynth::instantiate(VstNativeSynthIF* sif)
 {
   int inst_num = _instances;
   inst_num++;
@@ -680,6 +680,7 @@ AEffect* VstNativeSynth::instantiate()
   else if(MusEGlobal::debugMsg)
     fprintf(stderr, "Plugin supports processReplacing\n");
 
+  plugin->user = sif;
   plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
 
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
@@ -693,8 +694,7 @@ AEffect* VstNativeSynth::instantiate()
 
   ++_instances;
   _handle = hnd;
-  
-  plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
+
   //plugin->dispatcher(plugin, effSetProgram, 0, 0, NULL, 0.0f); // REMOVE Tim. Or keep?
   return plugin;
 
@@ -723,8 +723,10 @@ SynthIF* VstNativeSynth::createSIF(SynthI* s)
 VstNativeSynthIF::VstNativeSynthIF(SynthI* s) : SynthIF(s)
 {
       _guiVisible = false;
+      _gw = NULL;
       _synth = NULL;
       _plugin = NULL;
+      _active = false;
       _editor = NULL;
       _inProcess = false;
        _controls = NULL;
@@ -767,6 +769,9 @@ VstNativeSynthIF::~VstNativeSynthIF()
     
   if(_controls)
     delete[] _controls;
+
+  if(_gw)
+    delete[] _gw;
 }
 
 //---------------------------------------------------------
@@ -776,10 +781,9 @@ VstNativeSynthIF::~VstNativeSynthIF()
 bool VstNativeSynthIF::init(Synth* s)
       {
       _synth = (VstNativeSynth*)s;
-      _plugin = _synth->instantiate();
+      _plugin = _synth->instantiate(this);
       if(!_plugin)
         return false;
-      _plugin->user = this;
 
       queryPrograms();
       
@@ -795,7 +799,13 @@ bool VstNativeSynthIF::init(Synth* s)
             fprintf(stderr, "ERROR: VstNativeSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
             abort();
           }
-          memset(_audioOutBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+              _audioOutBuffers[k][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(_audioOutBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
         }
       }
 
@@ -811,7 +821,13 @@ bool VstNativeSynthIF::init(Synth* s)
             fprintf(stderr, "ERROR: VstNativeSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
             abort();
           }
-          memset(_audioInBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
+          if(MusEGlobal::config.useDenormalBias)
+          {
+            for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+              _audioInBuffers[k][q] = MusEGlobal::denormalBias;
+          }
+          else
+            memset(_audioInBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
           _iUsedIdx.push_back(false); // Start out with all false.
         }
         
@@ -821,20 +837,28 @@ bool VstNativeSynthIF::init(Synth* s)
           fprintf(stderr, "ERROR: VstNativeSynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
           abort();
         }
-        memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
+        if(MusEGlobal::config.useDenormalBias)
+        {
+          for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+            _audioInSilenceBuf[q] = MusEGlobal::denormalBias;
+        }
+        else
+          memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
       }
 
+      _controls = NULL;
+      _gw = NULL;
       unsigned long controlPorts = _synth->inControls();
       if(controlPorts != 0)
+      {
         _controls = new Port[controlPorts];
-      else
-        _controls = NULL;
-
-      //_synth->midiCtl2PortMap.clear();
-      //_synth->port2MidiCtlMap.clear();
+        _gw       = new VstNativeGuiWidgets[controlPorts];
+      }
 
       for(unsigned long i = 0; i < controlPorts; ++i)
       {
+        _gw[i].pressed = false;
+        
         _controls[i].idx = i;
         //float val;  // TODO
         //ladspaDefaultValue(ld, k, &val);   // FIXME TODO
@@ -842,7 +866,6 @@ bool VstNativeSynthIF::init(Synth* s)
         _controls[i].val    = val;
         _controls[i].tmpVal = val;
         _controls[i].enCtrl  = true;
-        _controls[i].en2Ctrl = true;
 
         // Support a special block for synth ladspa controllers.
         // Put the ID at a special block after plugins (far after).
@@ -855,7 +878,7 @@ bool VstNativeSynthIF::init(Synth* s)
         float min = 0.0, max = 1.0;
 
         CtrlList* cl;
-        CtrlListList* cll = ((MusECore::AudioTrack*)synti)->controller();
+        CtrlListList* cll = track()->controller();
         iCtrlList icl = cll->find(id);
         if (icl == cll->end())
         {
@@ -941,14 +964,15 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
             case audioMasterCurrentId:
                   // returns the unique id of a plug that's currently
                   // loading
-                  return 0;
+                  ///return 0;
+                  return _plugin->uniqueID;
 
             case audioMasterIdle:
                   // call application idle routine (this will
                   // call effEditIdle for all open editors too)
                   //_plugin->updateParamValues(false);
                   //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);
-                  idleEditor();
+                  ///idleEditor();  // REMOVE Tim. Or keep.
                   return 0;
 
             case audioMasterGetTime:
@@ -958,8 +982,12 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
                   // (see valid masks above), as some items may require extensive
                   // conversions
 
+                  // FIXME TODO: Optimizations: This may be called many times in one process call
+                  //              due to our multi-run slices. Some of the (costly) info will be redundant.
+                  //             So try to add some flag to try to only call some or all of this once per cycle.
+                  
 #ifdef VST_NATIVE_DEBUG
-                  fprintf(stderr, "VstNativeSynthIF::hostCallback master time: valid: nanos:%d ppqpos:%d tempo:%d bars:%d cyclepos:%d sig:%d smpte:%d clock:%d\n",  // REMOVE Tim.
+                  fprintf(stderr, "VstNativeSynthIF::hostCallback master time: valid: nanos:%d ppqpos:%d tempo:%d bars:%d cyclepos:%d sig:%d smpte:%d clock:%d\n",  
                     (bool)(value & kVstNanosValid),
                     (bool)(value & kVstPpqPosValid),
                     (bool)(value & kVstTempoValid),
@@ -1249,9 +1277,35 @@ void VstNativeSynthIF::idleEditor()
   fprintf(stderr, "VstNativeSynthIF::idleEditor %p\n", this);
 #endif
 
-  _plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);
-  if(_editor)
-    _editor->update();
+  // REMOVE Tim. Or keep.
+  //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);
+  //if(_editor)
+  //  _editor->update();
+}
+
+//---------------------------------------------------------
+//   guiHeartBeat
+//---------------------------------------------------------
+
+void VstNativeSynthIF::guiHeartBeat()
+{
+#ifdef VST_NATIVE_DEBUG
+  fprintf(stderr, "VstNativeSynthIF::guiHeartBeat %p\n", this);
+#endif
+
+  // REMOVE Tim. Or keep.
+  if(_plugin && _active)
+  {
+//#ifdef VST_FORCE_DEPRECATED   // REMOVE Tim. Or keep
+    //_plugin->dispatcher(_plugin, effIdle, 0, 0, NULL, 0.0f);
+//#endif
+     if(_guiVisible)
+     {
+       _plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);
+       if(_editor)
+         _editor->update();
+     }
+  }
 }
 
 //---------------------------------------------------------
@@ -1330,6 +1384,66 @@ void VstNativeSynthIF::showNativeGui(bool v)
 }
 
 //---------------------------------------------------------
+//   getGeometry
+//---------------------------------------------------------
+
+void VstNativeSynthIF::getGeometry(int*x, int*y, int*w, int*h) const
+{
+  if(!_gui)
+  {
+    *x=0;*y=0;*w=0;*h=0;
+    return;
+  }
+
+  *x = _gui->x();
+  *y = _gui->y();
+  *w = _gui->width();
+  *h = _gui->height();
+}
+
+//---------------------------------------------------------
+//   setGeometry
+//---------------------------------------------------------
+
+void VstNativeSynthIF::setGeometry(int x, int y, int w, int h)
+{
+  if(!_gui)
+    return;
+
+  _gui->setGeometry(x, y, w, h);
+}
+
+//---------------------------------------------------------
+//   editorOpened
+//---------------------------------------------------------
+
+void VstNativeSynthIF::getNativeGeometry(int*x, int*y, int*w, int*h) const
+{
+  if(!_editor)
+  {
+    *x=0;*y=0;*w=0;*h=0;
+    return;
+  }
+  
+  *x = _editor->x();
+  *y = _editor->y();
+  *w = _editor->width();
+  *h = _editor->height();
+}
+
+//---------------------------------------------------------
+//   editorOpened
+//---------------------------------------------------------
+
+void VstNativeSynthIF::setNativeGeometry(int x, int y, int w, int h)
+{
+  if(!_editor)
+    return;
+
+  _editor->setGeometry(x, y, w, h);
+}
+
+//---------------------------------------------------------
 //   editorOpened
 //---------------------------------------------------------
 
@@ -1380,7 +1494,6 @@ bool VstNativeSynthIF::hasNativeGui() const
 
 int VstNativeSynthIF::channels() const
       {
-      //return _plugin->numOutputs;
       return _plugin->numOutputs > MAX_CHANNELS ? MAX_CHANNELS : _plugin->numOutputs ;
       }
 
@@ -1614,7 +1727,6 @@ float VstNativeSynthIF::getParameter(unsigned long idx) const
 
 void VstNativeSynthIF::setParameter(unsigned long idx, float value)
       {
-      //_plugin->setParameter(_plugin, idx, value);
       addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
       }
 
@@ -1624,53 +1736,44 @@ void VstNativeSynthIF::setParameter(unsigned long idx, float value)
 
 void VstNativeSynthIF::guiAutomationBegin(unsigned long param_idx)
 {
-  AutomationType at = AUTO_OFF;
-  MusECore::AudioTrack* t = track();
-  if(t)
-    at = t->automationType();
-
-  // FIXME TODO: This stuff should probably be sent as control FIFO events.
-  //             And probably not safe - accessing from gui and audio threads...
-    
-  if (at == AUTO_READ || at == AUTO_TOUCH || at == AUTO_WRITE)
-    enableController(param_idx, false);
-
+  _gw[param_idx].pressed = true;
+  AudioTrack* t = track();
   int plug_id = id();
+  if(t && plug_id != -1)
+  {
+    plug_id = genACnum(plug_id, param_idx);
 
-  if(plug_id == -1)
-    return;
+    //if(params[param].type == GuiParam::GUI_SLIDER)
+    //{
+      //double val = ((Slider*)params[param].actuator)->value();
+      float val = param(param_idx);
+      // FIXME TODO:
+      //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
+      //      val = pow(10.0, val/20.0);
+      //else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
+      //      val = rint(val);
+      //plugin->setParam(param, val);
+      //((DoubleLabel*)params[param].label)->setValue(val);
 
-  plug_id = MusECore::genACnum(plug_id, param_idx);
-
-  //if(params[param].type == GuiParam::GUI_SLIDER)
-  //{
-    //double val = ((Slider*)params[param].actuator)->value();
-    float val = param(param_idx);
-    // FIXME TODO:
-    //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-    //      val = pow(10.0, val/20.0);
-    //else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-    //      val = rint(val);
-    //plugin->setParam(param, val);
-    //((DoubleLabel*)params[param].label)->setValue(val);
-
-    if(t)
-    {
-      t->setPluginCtrlVal(plug_id, val);
-      t->startAutoRecord(plug_id, val);
-    }
-  //}
-//   else if(params[param].type == GuiParam::GUI_SWITCH)
-//   {
-//     float val = (float)((CheckBox*)params[param].actuator)->isChecked();
-//     plugin->setParam(param, val);
-// 
-//     if(t)
-//     {
-//       t->setPluginCtrlVal(plug_id, val);
-//       t->startAutoRecord(plug_id, val);
-//     }
-//   }
+      //if(t)
+      //{
+        t->startAutoRecord(plug_id, val);
+        t->setPluginCtrlVal(plug_id, val);
+      //}
+    //}
+  //   else if(params[param].type == GuiParam::GUI_SWITCH)
+  //   {
+  //     float val = (float)((CheckBox*)params[param].actuator)->isChecked();
+  //     plugin->setParam(param, val);
+  //
+  //     //if(t)
+  //     //{
+  //       t->startAutoRecord(plug_id, val);
+  //       t->setPluginCtrlVal(plug_id, val);
+  //     //}
+  //   }
+  }
+  enableController(param_idx, false);
 }
 
 //---------------------------------------------------------
@@ -1680,40 +1783,39 @@ void VstNativeSynthIF::guiAutomationBegin(unsigned long param_idx)
 void VstNativeSynthIF::guiAutomationEnd(unsigned long param_idx)
 {
   AutomationType at = AUTO_OFF;
-  MusECore::AudioTrack* t = track();
+  AudioTrack* t = track();
   if(t)
     at = t->automationType();
 
-  // FIXME TODO: This stuff should probably be sent as control FIFO events.
-  //             And probably not safe - accessing from gui and audio threads...
-    
+  int plug_id = id();
+  if(t && plug_id != -1)
+  {
+    plug_id = genACnum(plug_id, param_idx);
+
+    //if(params[param].type == GuiParam::GUI_SLIDER)
+    //{
+      //double val = ((Slider*)params[param].actuator)->value();
+      float val = param(param_idx);
+      // FIXME TODO:
+      //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
+      //      val = pow(10.0, val/20.0);
+      //else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
+      //      val = rint(val);
+      t->stopAutoRecord(plug_id, val);
+    //}
+  }
+
   // Special for switch - don't enable controller until transport stopped.
   if ((at == AUTO_OFF) ||
-      (at == AUTO_READ) ||
       (at == AUTO_TOUCH)) // && (params[param].type != GuiParam::GUI_SWITCH ||  // FIXME TODO
                          //   !MusEGlobal::audio->isPlaying()) ) )
     enableController(param_idx, true);
-
-  int plug_id = id();
-  if(!t || plug_id == -1)
-    return;
-  plug_id = MusECore::genACnum(plug_id, param_idx);
-
-  //if(params[param].type == GuiParam::GUI_SLIDER)
-  //{
-    //double val = ((Slider*)params[param].actuator)->value();
-    float val = param(param_idx);
-    // FIXME TODO:
-    //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-    //      val = pow(10.0, val/20.0);
-    //else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-    //      val = rint(val);
-    t->stopAutoRecord(plug_id, val);
-  //}
+  
+  _gw[param_idx].pressed = false;
 }
-      
+
 //---------------------------------------------------------
-//   guiControlEventHandler
+//   guiControlChanged
 //---------------------------------------------------------
 
 int VstNativeSynthIF::guiControlChanged(unsigned long param_idx, float value)
@@ -1728,37 +1830,29 @@ int VstNativeSynthIF::guiControlChanged(unsigned long param_idx, float value)
     return 0;
   }
 
-  ControlEvent ce;
-  ce.unique = false; // Not used for native vst.     
-  ce.fromGui = true; // It came form the plugin's own GUI.
-  ce.idx = param_idx;
-  ce.value = value;
-  // don't use timestamp(), because it's circular, which is making it impossible to deal
-  // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
-  ce.frame = MusEGlobal::audio->curFrame();
-
-  if(_controlFifo.put(ce))
-  {
-    fprintf(stderr, "VstNativeSynthIF::guiControlChanged: fifo overflow: in control number:%lu\n", param_idx);
-  }
-
-  // FIXME TODO: This stuff should probably be sent as control FIFO events.
-  //             And probably not safe - accessing from gui and audio threads...
-  
   // Record automation:
   // Take care of this immediately rather than in the fifo processing.
   if(id() != -1)
   {
     unsigned long pid = genACnum(id(), param_idx);
-    AutomationType at = synti->automationType();
-
-    if ((at == AUTO_WRITE) ||
-        (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()))
-      enableController(param_idx, false);
-
     synti->recordAutomation(pid, value);
   }
 
+  // Schedules a timed control change:
+  ControlEvent ce;
+  ce.unique = false; // Not used for native vst.
+  ce.fromGui = true; // It came from the plugin's own GUI.
+  ce.idx = param_idx;
+  ce.value = value;
+  // Don't use timestamp(), because it's circular, which is making it impossible to deal
+  // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
+  ce.frame = MusEGlobal::audio->curFrame();
+
+  if(_controlFifo.put(ce))
+    fprintf(stderr, "VstNativeSynthIF::guiControlChanged: fifo overflow: in control number:%lu\n", param_idx);
+
+  enableController(param_idx, false);
+  
   return 0;
 }
 
@@ -1844,7 +1938,7 @@ void VstNativeSynthIF::setVstEvent(VstMidiEvent* event, int a, int b, int c, int
 //   getData
 //---------------------------------------------------------
 
-bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEvent* event)
+bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
 {
   int type = e.type();
   int chn = e.channel();
@@ -1857,22 +1951,22 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
 
   switch(type)
   {
-    case MusECore::ME_NOTEON:
+    case ME_NOTEON:
       #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_NOTEON\n");
+      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_NOTEON\n");
       #endif
       setVstEvent(event, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
     break;
-    case MusECore::ME_NOTEOFF:
+    case ME_NOTEOFF:
       #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_NOTEOFF\n");
+      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_NOTEOFF\n");
       #endif
       setVstEvent(event, (type | chn) & 0xff, a & 0x7f, 0);
     break;
-    case MusECore::ME_PROGRAM:
+    case ME_PROGRAM:
     {
       #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_PROGRAM\n");
+      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_PROGRAM\n");
       #endif
 
       int bankH = (a >> 16) & 0xff;
@@ -1885,19 +1979,19 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
       return false;  // Event pointer not filled. Return false.
     }
     break;
-    case MusECore::ME_CONTROLLER:
+    case ME_CONTROLLER:
     {
       #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_CONTROLLER\n");
+      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER\n");
       #endif
 
       if((a == 0) || (a == 32))
         return false;
 
-      if(a == MusECore::CTRL_PROGRAM)
+      if(a == CTRL_PROGRAM)
       {
         #ifdef VST_NATIVE_DEBUG
-        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_CONTROLLER, dataA is MusECore::CTRL_PROGRAM\n");
+        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PROGRAM\n");
         #endif
 
         int bankH = (b >> 16) & 0xff;
@@ -1911,36 +2005,36 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
         return false; // Event pointer not filled. Return false.
       }
 
-      if(a == MusECore::CTRL_PITCH)
+      if(a == CTRL_PITCH)
       {
         #ifdef VST_NATIVE_DEBUG
-        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_CONTROLLER, dataA is MusECore::CTRL_PITCH\n");
+        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PITCH\n");
         #endif
         int v = b + 8192;
         setVstEvent(event, (type | chn) & 0xff, v & 0x7f, (v >> 7) & 0x7f);
         return true;
       }
 
-      if(a == MusECore::CTRL_AFTERTOUCH)
+      if(a == CTRL_AFTERTOUCH)
       {
         #ifdef VST_NATIVE_DEBUG
-        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_CONTROLLER, dataA is MusECore::CTRL_AFTERTOUCH\n");
+        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_AFTERTOUCH\n");
         #endif
         setVstEvent(event, (type | chn) & 0xff, b & 0x7f);
         return true;
       }
 
-      if((a | 0xff)  == MusECore::CTRL_POLYAFTER)
+      if((a | 0xff)  == CTRL_POLYAFTER)
       {
         #ifdef VST_NATIVE_DEBUG
-        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_CONTROLLER, dataA is MusECore::CTRL_POLYAFTER\n");
+        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_POLYAFTER\n");
         #endif
         setVstEvent(event, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
         return true;
       }
 
       #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_CONTROLLER, dataA is:%d\n", a);
+      fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_CONTROLLER, dataA is:%d\n", a);
       #endif
       
       // Regular controller. Pass it on.
@@ -1952,14 +2046,14 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
 //      
 //       const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
 // 
-//       MusECore::ciMidiCtl2LadspaPort ip = synth->midiCtl2PortMap.find(a);
+//       ciMidiCtl2LadspaPort ip = synth->midiCtl2PortMap.find(a);
 //       // Is it just a regular midi controller, not mapped to a LADSPA port (either by the plugin or by us)?
 //       // NOTE: There's no way to tell which of these controllers is supported by the plugin.
 //       // For example sustain footpedal or pitch bend may be supported, but not mapped to any LADSPA port.
 //       if(ip == synth->midiCtl2PortMap.end())
 //       {
 //         int ctlnum = a;
-//         if(MusECore::midiControllerType(a) != MusECore::MidiController::Controller7)
+//         if(midiControllerType(a) != MidiController::Controller7)
 //           return false;   // Event pointer not filled. Return false.
 //         else
 //         {
@@ -1994,7 +2088,7 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
 //           return false;
 // 
 //         // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
-//         ctlnum = k + (MusECore::CTRL_NRPN14_OFFSET + 0x2000);
+//         ctlnum = k + (CTRL_NRPN14_OFFSET + 0x2000);
 //       }
 //       else
 //       {
@@ -2020,7 +2114,7 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
 //         else
 //         if(DSSI_IS_NRPN(ctlnum))
 //         {
-//           ctlnum = DSSI_NRPN_NUMBER(c) + MusECore::CTRL_NRPN14_OFFSET;
+//           ctlnum = DSSI_NRPN_NUMBER(c) + CTRL_NRPN14_OFFSET;
 // 
 //           #ifdef VST_NATIVE_DEBUG
 //           fprintf(stderr, "VstNativeSynthIF::processEvent is NRPN ctlnum:%x(h) %d(d)\n", ctlnum, ctlnum);
@@ -2047,22 +2141,22 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
 //       return false;
     }
     break;
-    case MusECore::ME_PITCHBEND:
+    case ME_PITCHBEND:
     {
       int v = a + 8192;
       setVstEvent(event, (type | chn) & 0xff, v & 0x7f, (v >> 7) & 0x7f);
     }
     break;
-    case MusECore::ME_AFTERTOUCH:
+    case ME_AFTERTOUCH:
       setVstEvent(event, (type | chn) & 0xff, a & 0x7f);
     break;
-    case MusECore::ME_POLYAFTER:
+    case ME_POLYAFTER:
       setVstEvent(event, (type | chn) & 0xff, a & 0x7f, b & 0x7f);
     break;
-    case MusECore::ME_SYSEX:
+    case ME_SYSEX:
       {
         #ifdef VST_NATIVE_DEBUG
-        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_SYSEX\n");
+        fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_SYSEX\n");
         #endif
 
         const unsigned char* data = e.data();
@@ -2109,7 +2203,7 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
         if (QString((const char*)e.data()).startsWith("PARAMSAVE"))
         {
           #ifdef VST_NATIVE_DEBUG
-          fprintf(stderr, "VstNativeSynthIF::processEvent midi event is MusECore::ME_SYSEX PARAMSAVE\n");
+          fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_SYSEX PARAMSAVE\n");
           #endif
 
           unsigned long dlen = e.len() - 9; // Minus "PARAMSAVE"
@@ -2170,7 +2264,7 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
           //len += 2;
 
           // NOTE: There is a limit on the size of a sysex. Got this:
-          // "VstNativeSynthIF::processEvent midi event is MusECore::ME_SYSEX"
+          // "VstNativeSynthIF::processEvent midi event is ME_SYSEX"
           // "WARNING: MIDI event of type ? decoded to 367 bytes, discarding"
           // That might be ALSA doing that.
 //           snd_seq_ev_clear(event);
@@ -2193,43 +2287,48 @@ bool VstNativeSynthIF::processEvent(const MusECore::MidiPlayEvent& e, VstMidiEve
 
 //---------------------------------------------------------
 //   getData
+//   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
 iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
 {
-  // We may not be using nevents all at once - this will be just the maximum.
-  unsigned long nevents = el->size() + synti->eventFifo.getSize();
-  VstMidiEvent events[nevents];
-  char evbuf[sizeof(VstMidiEvent*) * nevents + sizeof(VstEvents)];
+  // We may not be using ev_buf_sz all at once - this will be just the maximum.
+  const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
+  VstMidiEvent events[ev_buf_sz];
+  char evbuf[sizeof(VstMidiEvent*) * ev_buf_sz + sizeof(VstEvents)];
   VstEvents *vst_events = (VstEvents*)evbuf;
   vst_events->numEvents = 0;
   vst_events->reserved  = 0;
 
-  int frameOffset = MusEGlobal::audio->getFrameOffset();
-  unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
+  const int frameOffset = MusEGlobal::audio->getFrameOffset();
+  const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
 
   #ifdef VST_NATIVE_DEBUG_PROCESS
-  fprintf(stderr, "VstNativeSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu nevents:%lu\n", pos, ports, nframes, syncFrame, nevents);
+  fprintf(stderr, "VstNativeSynthIF::getData: pos:%u ports:%d nframes:%u syncFrame:%lu ev_buf_sz:%lu\n", pos, ports, nframes, syncFrame, ev_buf_sz);
   #endif
 
-  unsigned long nop, k;
-  nop = ((unsigned long) ports) > _synth->outPorts() ? _synth->outPorts() : ((unsigned long) ports);
+  const unsigned long nop = ((unsigned long) ports) > _synth->outPorts() ? _synth->outPorts() : ((unsigned long) ports);
   unsigned long sample = 0;
 
   // I read that some plugins do not like changing sample run length (compressors etc). Some are OK with it.
   // TODO: In order to support this effectively, must be user selectable, per-plugin. ENABLED for now.
-  const bool usefixedrate = false;  
-  unsigned long fixedsize = nframes; 
+  const bool usefixedrate = false;
 
   // For now, the fixed size is clamped to the audio buffer size.
   // TODO: We could later add slower processing over several cycles -
   //  so that users can select a small audio period but a larger control period.
-  if(fixedsize > nframes)
-    fixedsize = nframes;
-
-  unsigned long min_per = MusEGlobal::config.minControlProcessPeriod;  // Must be power of 2 !
-  if(min_per > nframes)
-    min_per = nframes;
+  const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > nframes) ? nframes : MusEGlobal::config.minControlProcessPeriod;
+  const unsigned long min_per_mask = min_per-1;   // min_per must be power of 2
+  
+  AudioTrack* atrack = track();
+  const AutomationType at = atrack->automationType();
+  const bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
+  const unsigned long in_ctrls = _synth->inControls();
+  CtrlListList* cll = atrack->controller();
+  ciCtrlList icl_first;
+  const int plug_id = id();
+  if(plug_id != -1 && ports != 0)  // Don't bother if not 'running'.
+    icl_first = cll->lower_bound(genACnum(plug_id, 0));
 
   // Inform the host callback we are in the audio thread.
   _inProcess = true;
@@ -2239,71 +2338,74 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
   #endif
 
   // Handle inputs...
-  if(!((MusECore::AudioTrack*)synti)->noInRoute())
+  if(ports != 0)  // Don't bother if not 'running'.
   {
-    RouteList* irl = ((MusECore::AudioTrack*)synti)->inRoutes();
-    iRoute i = irl->begin();
-    if(!i->track->isMidiTrack())
+    if(!atrack->noInRoute())
     {
-      int ch     = i->channel       == -1 ? 0 : i->channel;
-      int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-      int chs    = i->channels      == -1 ? 0 : i->channels;
-
-      if((unsigned)ch < _synth->inPorts() && (unsigned)(ch + chs) <= _synth->inPorts())
+      RouteList* irl = atrack->inRoutes();
+      iRoute i = irl->begin();
+      if(!i->track->isMidiTrack())
       {
-        int h = remch + chs;
-        for(int j = remch; j < h; ++j)
-          _iUsedIdx[j] = true;
+        const int ch     = i->channel       == -1 ? 0 : i->channel;
+        const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
+        const int chs    = i->channels      == -1 ? 0 : i->channels;
 
-        ((MusECore::AudioTrack*)i->track)->copyData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
-      }
-    }
-
-    ++i;
-    for(; i != irl->end(); ++i)
-    {
-      if(i->track->isMidiTrack())
-        continue;
-
-      int ch     = i->channel       == -1 ? 0 : i->channel;
-      int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-      int chs    = i->channels      == -1 ? 0 : i->channels;
-
-      if((unsigned)ch < _synth->inPorts() && (unsigned)(ch + chs) <= _synth->inPorts())
-      {
-        bool u1 = _iUsedIdx[remch];
-        if(chs >= 2)
+        if((unsigned)ch < _synth->inPorts() && (unsigned)(ch + chs) <= _synth->inPorts())
         {
-          bool u2 = _iUsedIdx[remch + 1];
-          if(u1 && u2)
-            ((MusECore::AudioTrack*)i->track)->addData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
-          else
-          if(!u1 && !u2)
-            ((MusECore::AudioTrack*)i->track)->copyData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
+          const int h = remch + chs;
+          for(int j = remch; j < h; ++j)
+            _iUsedIdx[j] = true;
+
+          ((AudioTrack*)i->track)->copyData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
+        }
+      }
+
+      ++i;
+      for(; i != irl->end(); ++i)
+      {
+        if(i->track->isMidiTrack())
+          continue;
+
+        const int ch     = i->channel       == -1 ? 0 : i->channel;
+        const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
+        const int chs    = i->channels      == -1 ? 0 : i->channels;
+
+        if((unsigned)ch < _synth->inPorts() && (unsigned)(ch + chs) <= _synth->inPorts())
+        {
+          const bool u1 = _iUsedIdx[remch];
+          if(chs >= 2)
+          {
+            const bool u2 = _iUsedIdx[remch + 1];
+            if(u1 && u2)
+              ((AudioTrack*)i->track)->addData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
+            else
+            if(!u1 && !u2)
+              ((AudioTrack*)i->track)->copyData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
+            else
+            {
+              if(u1)
+                ((AudioTrack*)i->track)->addData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
+              else
+                ((AudioTrack*)i->track)->copyData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
+
+              if(u2)
+                ((AudioTrack*)i->track)->addData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
+              else
+                ((AudioTrack*)i->track)->copyData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
+            }
+          }
           else
           {
-            if(u1)
-              ((MusECore::AudioTrack*)i->track)->addData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
-            else
-              ((MusECore::AudioTrack*)i->track)->copyData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
-
-            if(u2)
-              ((MusECore::AudioTrack*)i->track)->addData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
-            else
-              ((MusECore::AudioTrack*)i->track)->copyData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
+              if(u1)
+                ((AudioTrack*)i->track)->addData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
+              else
+                ((AudioTrack*)i->track)->copyData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
           }
-        }
-        else
-        {
-            if(u1)
-              ((MusECore::AudioTrack*)i->track)->addData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
-            else
-              ((MusECore::AudioTrack*)i->track)->copyData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
-        }
 
-        int h = remch + chs;
-        for(int j = remch; j < h; ++j)
-          _iUsedIdx[j] = true;
+          const int h = remch + chs;
+          for(int j = remch; j < h; ++j)
+            _iUsedIdx[j] = true;
+        }
       }
     }
   }
@@ -2312,9 +2414,11 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
   fprintf(stderr, "VstNativeSynthIF::getData: Processing automation control values...\n");
   #endif
 
+  int cur_slice = 0;
   while(sample < nframes)
   {
-    unsigned long nsamp = usefixedrate ? fixedsize : nframes - sample;
+    unsigned long nsamp = nframes - sample;
+    const unsigned long slice_frame = pos + sample;
 
     //
     // Process automation control values, while also determining the maximum acceptable
@@ -2322,29 +2426,86 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
     //  from there, but this section determines where the next highest maximum frame
     //  absolutely needs to be for smooth playback of the controller value stream...
     //
-    if(id() != -1)
+    if(ports != 0)    // Don't bother if not 'running'.
     {
-      unsigned long frame = pos + sample;
-      AutomationType at = AUTO_OFF;
-      at = synti->automationType();
-      bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
-      AudioTrack* track = (static_cast<AudioTrack*>(synti));
-      int nextFrame;
-      const unsigned long in_ctrls = _synth->inControls();
+      ciCtrlList icl = icl_first;
       for(unsigned long k = 0; k < in_ctrls; ++k)
       {
-        const float v = track->controller()->value(genACnum(id(), k), frame,
-                                   no_auto || !_controls[k].enCtrl || !_controls[k].en2Ctrl,
-                                   &nextFrame);
-        if(_controls[k].val != v)
+        CtrlList* cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : NULL;
+        CtrlInterpolate& ci = _controls[k].interp;
+        // Always refresh the interpolate struct at first, since things may have changed.
+        // Or if the frame is outside of the interpolate range - and eStop is not true.  // FIXME TODO: Be sure these comparisons are correct.
+        if(cur_slice == 0 || (!ci.eStop && MusEGlobal::audio->isPlaying() &&
+            (slice_frame < (unsigned long)ci.sFrame || (ci.eFrame != -1 && slice_frame >= (unsigned long)ci.eFrame)) ) )
         {
-          _controls[k].val = v;
+          if(cl && plug_id != -1 && (unsigned long)cl->id() == genACnum(plug_id, k))
+          {
+            cl->getInterpolation(slice_frame, no_auto || !_controls[k].enCtrl, &ci);
+            if(icl != cll->end())
+              ++icl;
+          }
+          else
+          {
+            // No matching controller, or end. Just copy the current value into the interpolator.
+            // Keep the current icl iterator, because since they are sorted by frames,
+            //  if the IDs didn't match it means we can just let k catch up with icl.
+            ci.sFrame   = 0;
+            ci.eFrame   = -1;
+            ci.sVal     = _controls[k].val;
+            ci.eVal     = ci.sVal;
+            ci.doInterp = false;
+            ci.eStop    = false;
+          }
+        }
+        else
+        {
+          if(ci.eStop && ci.eFrame != -1 && slice_frame >= (unsigned long)ci.eFrame)  // FIXME TODO: Get that comparison right.
+          {
+            // Clear the stop condition and set up the interp struct appropriately as an endless value.
+            ci.sFrame   = 0; //ci->eFrame;
+            ci.eFrame   = -1;
+            ci.sVal     = ci.eVal;
+            ci.doInterp = false;
+            ci.eStop    = false;
+          }
+          if(cl && cll && icl != cll->end())
+            ++icl;
+        }
+
+        if(!usefixedrate && MusEGlobal::audio->isPlaying())
+        {
+          unsigned long samps = nsamp;
+          if(ci.eFrame != -1)
+            samps = (unsigned long)ci.eFrame - slice_frame;
+          
+          if(!ci.doInterp && samps > min_per)
+          {
+            samps &= ~min_per_mask;
+            if((samps & min_per_mask) != 0)
+              samps += min_per;
+          }
+          else
+            samps = min_per;
+
+          if(samps < nsamp)
+            nsamp = samps;
+
+        }
+
+        float new_val;
+        if(ci.doInterp && cl)
+          new_val = cl->interpolate(MusEGlobal::audio->isPlaying() ? slice_frame : pos, ci);
+        else
+          new_val = ci.sVal;
+        if(_controls[k].val != new_val)
+        {
+          _controls[k].val = new_val;
 #ifndef VST_VESTIGE_SUPPORT
           if(dispatch(effCanBeAutomated, k, 0, NULL, 0.0f) == 1)
           {
 #endif
-            if(_plugin->getParameter(_plugin, k) != v)
-              _plugin->setParameter(_plugin, k, v);
+            if(_plugin->getParameter(_plugin, k) != new_val)
+              _plugin->setParameter(_plugin, k, new_val);
 #ifndef VST_VESTIGE_SUPPORT
           }
   #ifdef VST_NATIVE_DEBUG
@@ -2353,33 +2514,17 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
   #endif
 #endif
         }
-            
-#ifdef VST_NATIVE_DEBUG_PROCESS
-        fprintf(stderr, "VstNativeSynthIF::getData k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, nextFrame, nsamp);
-#endif
-        if(MusEGlobal::audio->isPlaying() && !usefixedrate && nextFrame != -1)
-        {
-          // Returned value of nextFrame can be zero meaning caller replaces with some (constant) value.
-          unsigned long samps = (unsigned long)nextFrame;
-          if(samps > frame + min_per)
-          {
-            unsigned long diff = samps - frame;
-            unsigned long mask = min_per-1;   // min_per must be power of 2
-            samps = diff & ~mask;
-            if((diff & mask) != 0)
-              samps += min_per;
-          }
-          else
-            samps = min_per;
 
-          if(samps < nsamp)
-            nsamp = samps;
-        }
+#ifdef VST_NATIVE_DEBUG_PROCESS
+        fprintf(stderr, "VstNativeSynthIF::getData k:%lu sample:%lu frame:%lu ci.eFrame:%d nsamp:%lu \n", k, sample, frame, ci.eFrame, nsamp);
+#endif
+        
       }
+    }
+    
 #ifdef VST_NATIVE_DEBUG_PROCESS
       fprintf(stderr, "VstNativeSynthIF::getData sample:%lu nsamp:%lu\n", sample, nsamp);
 #endif
-    }
 
     bool found = false;
     unsigned long frame = 0;
@@ -2409,218 +2554,231 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
         continue;
       }
 
-      if(evframe >= nframes                                                        // Next events are for a later period.
-         || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
-         || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
-         || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
+      if(evframe >= nframes                                                         // Next events are for a later period.
+          || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
+          || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
+          || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
         break;
       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
-      if(v.idx >= _synth->inControls()) // Sanity check.
+      if(v.idx >= in_ctrls) // Sanity check.
         break;
+
       found = true;
       frame = evframe;
       index = v.idx;
 
-      //if(_controls[v.idx].val != v.value)  // Mm nah, force it always. REMOVE Tim.
-      //{
-        _controls[v.idx].val = v.value;
-#ifndef VST_VESTIGE_SUPPORT
-        if(dispatch(effCanBeAutomated, v.idx, 0, NULL, 0.0f) == 1)
-        {
-#endif        
-          if(v.value != _plugin->getParameter(_plugin, v.idx))
-            _plugin->setParameter(_plugin, v.idx, v.value);
-#ifndef VST_VESTIGE_SUPPORT
-        }
-  #ifdef VST_NATIVE_DEBUG
-        else
-          fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), v.idx);
-  #endif
-#endif
-        // Need to update the automation value, otherwise it overwrites later with the last automation value.
-        if(id() != -1)
-          synti->setPluginCtrlVal(genACnum(id(), v.idx), v.value);
-      //}
+      if(ports == 0)                     // Don't bother if not 'running'.
+      {
+        _controls[v.idx].val = v.value;   // Might as well at least update these.
+// #ifndef VST_VESTIGE_SUPPORT
+//         if(dispatch(effCanBeAutomated, v.idx, 0, NULL, 0.0f) == 1)
+//         {
+// #endif
+//           if(v.value != _plugin->getParameter(_plugin, v.idx))
+//             _plugin->setParameter(_plugin, v.idx, v.value);
+// #ifndef VST_VESTIGE_SUPPORT
+//         }
+//   #ifdef VST_NATIVE_DEBUG
+//         else
+//           fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), v.idx);
+//   #endif
+// #endif
+      }
+      else
+      {
+        CtrlInterpolate* ci = &_controls[v.idx].interp;
+        // Tell it to stop the current ramp at this frame, when it does stop, set this value:
+        ci->eFrame = frame;
+        ci->eVal   = v.value;
+        ci->eStop  = true;
+      }
+
+      // Need to update the automation value, otherwise it overwrites later with the last automation value.
+      if(plug_id != -1)
+        synti->setPluginCtrlVal(genACnum(plug_id, v.idx), v.value);
     }
 
     if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
       nsamp = frame - sample;
 
-    if(sample + nsamp >= nframes)         // Safety check.
+    if(sample + nsamp > nframes)         // Safety check.
       nsamp = nframes - sample;
 
     // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
     // Note this means it is still possible to get stuck in the top loop (at least for a while).
-    if(nsamp == 0)
-      continue;
-
-    nevents = 0;
-    // Process event list events...
-    for(; start_event != el->end(); ++start_event)
+    if(nsamp != 0)
     {
-      #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", start_event->time(), pos, sample, nsamp, frameOffset);
+      unsigned long nevents = 0;
+      if(ports != 0)  // Don't bother if not 'running'.
+      {
+        // Process event list events...
+        for(; start_event != el->end(); ++start_event)
+        {
+          #ifdef VST_NATIVE_DEBUG
+          fprintf(stderr, "VstNativeSynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", start_event->time(), pos, sample, nsamp, frameOffset);
+          #endif
+
+          if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+          {
+            #ifdef VST_NATIVE_DEBUG
+            fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
+            #endif
+            break;
+          }
+
+          // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+          // Same code as in MidiPort::sendEvent()
+          if(synti->midiPort() != -1)
+          {
+            MidiPort* mp = &MusEGlobal::midiPorts[synti->midiPort()];
+            if(start_event->type() == ME_CONTROLLER)
+            {
+              int da = start_event->dataA();
+              int db = start_event->dataB();
+              db = mp->limitValToInstrCtlRange(da, db);
+              if(!mp->setHwCtrlState(start_event->channel(), da, db))
+                continue;
+            }
+            else if(start_event->type() == ME_PITCHBEND)
+            {
+              int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
+              if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
+                continue;
+            }
+            else if(start_event->type() == ME_AFTERTOUCH)
+            {
+              int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
+              if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
+                continue;
+            }
+            else if(start_event->type() == ME_POLYAFTER)
+            {
+              int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
+              int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
+              if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
+                continue;
+            }
+            else if(start_event->type() == ME_PROGRAM)
+            {
+              if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, start_event->dataA()))
+                continue;
+            }
+          }
+
+          // Returns false if the event was not filled. It was handled, but some other way.
+          if(processEvent(*start_event, &events[nevents]))
+          {
+            // Time-stamp the event.
+            int ft = start_event->time() - frameOffset - pos - sample;
+            if(ft < 0)
+              ft = 0;
+
+            if (ft >= int(nsamp))
+            {
+                fprintf(stderr, "VstNativeSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
+                ft = nsamp - 1;
+            }
+
+            #ifdef VST_NATIVE_DEBUG
+            fprintf(stderr, "VstNativeSynthIF::getData eventlist: ft:%d current nevents:%lu\n", ft, nevents);
+            #endif
+
+            vst_events->events[nevents] = (VstEvent*)&events[nevents];
+            events[nevents].deltaFrames = ft;
+            ++nevents;
+          }
+        }
+      }
+      
+      // Now process putEvent events...
+      while(!synti->eventFifo.isEmpty())
+      {
+        MidiPlayEvent e = synti->eventFifo.peek();
+
+        #ifdef VST_NATIVE_DEBUG
+        fprintf(stderr, "VstNativeSynthIF::getData eventFifo event time:%d\n", e.time());
+        #endif
+
+        if(e.time() >= (pos + sample + nsamp + frameOffset))
+          break;
+
+        synti->eventFifo.remove();    // Done with ring buffer's event. Remove it.
+        if(ports != 0)  // Don't bother if not 'running'.
+        {
+          // Returns false if the event was not filled. It was handled, but some other way.
+          if(processEvent(e, &events[nevents]))
+          {
+            // Time-stamp the event.
+            int ft = e.time() - frameOffset - pos  - sample;
+            if(ft < 0)
+              ft = 0;
+            if (ft >= int(nsamp))
+            {
+                fprintf(stderr, "VstNativeSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+                ft = nsamp - 1;
+            }
+            vst_events->events[nevents] = (VstEvent*)&events[nevents];
+            events[nevents].deltaFrames = ft;
+
+            ++nevents;
+          }
+        }
+      }
+
+      #ifdef VST_NATIVE_DEBUG_PROCESS
+      fprintf(stderr, "VstNativeSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
       #endif
 
-      if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+      if(ports != 0)  // Don't bother if not 'running'.
       {
-        #ifdef VST_NATIVE_DEBUG
-        fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
-        #endif
-        break;
-      }
+        // Set the events pointer.
+        if(nevents > 0)
+        {
+          vst_events->numEvents = nevents;
+          dispatch(effProcessEvents, 0, 0, vst_events, 0.0f);
+        }
 
-      // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-      // Same code as in MidiPort::sendEvent()
-      if(synti->midiPort() != -1)
-      {
-        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[synti->midiPort()];
-        if(start_event->type() == MusECore::ME_CONTROLLER)
+        float* in_bufs[_synth->inPorts()];
+        float* out_bufs[_synth->outPorts()];
+
+        unsigned long k = 0;
+        // Connect the given buffers directly to the ports, up to a max of synth ports.
+        for(; k < nop; ++k)
+          out_bufs[k] = buffer[k] + sample;
+        // Connect the remaining ports to some local buffers (not used yet).
+        const unsigned long op =_synth->outPorts();
+        for(; k < op; ++k)
+          out_bufs[k] = _audioOutBuffers[k] + sample;
+        // Connect all inputs either to some local buffers, or a silence buffer.
+        const unsigned long ip =_synth->inPorts();
+        for(k = 0; k < ip; ++k)
         {
-          int da = start_event->dataA();
-          int db = start_event->dataB();
-          db = mp->limitValToInstrCtlRange(da, db);
-          if(!mp->setHwCtrlState(start_event->channel(), da, db))
-            continue;
+          if(_iUsedIdx[k])
+          {
+            _iUsedIdx[k] = false; // Reset
+            in_bufs[k] = _audioInBuffers[k] + sample;
+          }
+          else
+            in_bufs[k] = _audioInSilenceBuf + sample;
         }
-        else if(start_event->type() == MusECore::ME_PITCHBEND)
+
+        // Run the synth for a period of time. This processes events and gets/fills our local buffers...
+        if((_plugin->flags & effFlagsCanReplacing) && _plugin->processReplacing)
         {
-          int da = mp->limitValToInstrCtlRange(MusECore::CTRL_PITCH, start_event->dataA());
-          if(!mp->setHwCtrlState(start_event->channel(), MusECore::CTRL_PITCH, da))
-            continue;
-        }
-        else if(start_event->type() == MusECore::ME_AFTERTOUCH)
-        {
-          int da = mp->limitValToInstrCtlRange(MusECore::CTRL_AFTERTOUCH, start_event->dataA());
-          if(!mp->setHwCtrlState(start_event->channel(), MusECore::CTRL_AFTERTOUCH, da))
-            continue;
-        }
-        else if(start_event->type() == MusECore::ME_POLYAFTER)
-        {
-          int ctl = (MusECore::CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
-          int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
-          if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
-            continue;
-        }
-        else if(start_event->type() == MusECore::ME_PROGRAM)
-        {
-          if(!mp->setHwCtrlState(start_event->channel(), MusECore::CTRL_PROGRAM, start_event->dataA()))
-            continue;
+          _plugin->processReplacing(_plugin, in_bufs, out_bufs, nsamp);
         }
       }
-
-      // Returns false if the event was not filled. It was handled, but some other way.
-      if(processEvent(*start_event, &events[nevents]))
-      {
-        // Time-stamp the event.
-        int ft = start_event->time() - frameOffset - pos - sample;
-        if(ft < 0)
-          ft = 0;
-
-        if (ft >= int(nsamp))
-        {
-            fprintf(stderr, "VstNativeSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
-            ft = nsamp - 1;
-        }
-
-        #ifdef VST_NATIVE_DEBUG
-        fprintf(stderr, "VstNativeSynthIF::getData eventlist: ft:%d current nevents:%lu\n", ft, nevents);
-        #endif
-
-        vst_events->events[nevents] = (VstEvent*)&events[nevents];
-        events[nevents].deltaFrames = ft;
-        ++nevents;
-      }
+      
+      sample += nsamp;
     }
 
-    // Now process putEvent events...
-    while(!synti->eventFifo.isEmpty())
-    {
-      MusECore::MidiPlayEvent e = synti->eventFifo.peek();
-
-      #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::getData eventFifo event time:%d\n", e.time());
-      #endif
-
-      if(e.time() >= (pos + sample + nsamp + frameOffset))
-        break;
-
-      synti->eventFifo.remove();    // Done with ring buffer's event. Remove it.
-      // Returns false if the event was not filled. It was handled, but some other way.
-      if(processEvent(e, &events[nevents]))
-      {
-        // Time-stamp the event.
-        int ft = e.time() - frameOffset - pos  - sample;
-        if(ft < 0)
-          ft = 0;
-        if (ft >= int(nsamp))
-        {
-            fprintf(stderr, "VstNativeSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
-            ft = nsamp - 1;
-        }
-        vst_events->events[nevents] = (VstEvent*)&events[nevents];
-        events[nevents].deltaFrames = ft;
-
-        ++nevents;
-      }
-    }
-
-    #ifdef VST_NATIVE_DEBUG_PROCESS
-    fprintf(stderr, "VstNativeSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
-    #endif
-
-    // Set the events pointer.
-    if(nevents > 0)
-    {
-      vst_events->numEvents = nevents;
-      dispatch(effProcessEvents, 0, 0, vst_events, 0.0f);
-    }
-
-    float* in_bufs[_synth->inPorts()];
-    float* out_bufs[_synth->outPorts()];
-    
-    k = 0;
-    // Connect the given buffers directly to the ports, up to a max of synth ports.
-    for(; k < nop; ++k)
-      out_bufs[k] = buffer[k] + sample;
-    // Connect the remaining ports to some local buffers (not used yet).
-    const unsigned long op =_synth->outPorts();  
-    for(; k < op; ++k)
-      out_bufs[k] = _audioOutBuffers[k] + sample;
-    // Connect all inputs either to some local buffers, or a silence buffer.
-    const unsigned long ip =_synth->inPorts();
-    for(k = 0; k < ip; ++k)
-    {
-      if(_iUsedIdx[k])
-      {
-        _iUsedIdx[k] = false; // Reset
-        in_bufs[k] = _audioInBuffers[k] + sample;
-      }
-      else
-        in_bufs[k] = _audioInSilenceBuf + sample;
-    }
-
-    // Run the synth for a period of time. This processes events and gets/fills our local buffers...
-    if((_plugin->flags & effFlagsCanReplacing) && _plugin->processReplacing)
-    {
-      _plugin->processReplacing(_plugin, in_bufs, out_bufs, nsamp);
-    }
-#if 0 //ifdef VST_FORCE_DEPRECATED
-    else
-    {
-      // TODO: This is not right, we don't accumulate data here. Depricated now, and frowned upon anyway...
-      if(_plugin->process)
-        _plugin->process(_plugin, in_bufs, out_bufs, nsamp);
-    }
-#endif
-    
-    sample += nsamp;
+    ++cur_slice; // Slice is done. Moving on to any next slice now...
   }
-
-  // Inform the host callback we will be no longer in the audio thread.
-  _inProcess = true;
   
+  // Inform the host callback we will be no longer in the audio thread.
+  _inProcess = false;
+
   return start_event;
 }
 
@@ -2652,8 +2810,6 @@ QString VstNativeSynthIF::dirPath() const                         { return _synt
 QString VstNativeSynthIF::fileName() const                        { return _synth ? _synth->fileName() : QString(); }
 void VstNativeSynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }
 bool VstNativeSynthIF::controllerEnabled(unsigned long i) const   { return _controls[i].enCtrl;}
-void VstNativeSynthIF::enable2Controller(unsigned long i, bool v) { _controls[i].en2Ctrl = v; }
-bool VstNativeSynthIF::controllerEnabled2(unsigned long i) const  { return _controls[i].en2Ctrl; }
 void VstNativeSynthIF::enableAllControllers(bool v)
 {
   if(!_synth)
@@ -2661,14 +2817,6 @@ void VstNativeSynthIF::enableAllControllers(bool v)
   const unsigned long sic = _synth->inControls();
   for(unsigned long i = 0; i < sic; ++i)
     _controls[i].enCtrl = v;
-}
-void VstNativeSynthIF::enable2AllControllers(bool v)
-{
-  if(!_synth)
-    return;
-  const unsigned long sic = _synth->inControls();
-  for(unsigned long i = 0; i < sic; ++i)
-    _controls[i].en2Ctrl = v;
 }
 void VstNativeSynthIF::updateControllers() { }
 void VstNativeSynthIF::activate()
@@ -2694,9 +2842,11 @@ void VstNativeSynthIF::activate()
 //               controls[i].tmpVal = controls[i].val;
 //               }
 //         }
+  _active = true;
 }
 void VstNativeSynthIF::deactivate()
 {
+  _active = false;
   //for (unsigned short i = 0; i < instances(); ++i) {
 #ifndef VST_VESTIGE_SUPPORT
   //dispatch(i, effStopProcess, 0, 0, NULL, 0.0f);

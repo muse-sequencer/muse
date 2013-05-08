@@ -75,6 +75,7 @@ class AudioDevice {
       virtual void setPortName(void* p, const char* n) = 0;
       virtual void* findPort(const char* name) = 0;
       virtual QString portName(void* port) = 0;
+      virtual unsigned int portLatency(void* port, bool capture) const = 0;
       virtual int getState() = 0;
       virtual unsigned getCurFrame() const = 0;
       virtual bool isRealtime() = 0;

@@ -986,10 +986,10 @@ void DrumEdit::writeStatus(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiin",  canvas->midiin());
       xml.intTag(level, "tool", int(canvas->tool()));
       xml.intTag(level, "playEvents", _playEvents);
-      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
-      xml.intTag(level, "ypos", vscroll->pos());
+      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ymag", vscroll->mag());
+      xml.intTag(level, "ypos", vscroll->pos());
       xml.intTag(level, "ignore_hide", _ignore_hide);
       xml.tag(level, "/drumedit");
       }

@@ -1281,7 +1281,9 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       MusEGlobal::punchinAction->setChecked(MusEGlobal::song->punchin());
       MusEGlobal::punchoutAction->setChecked(MusEGlobal::song->punchout());
       MusEGlobal::loopAction->setChecked(MusEGlobal::song->loop());
-      MusEGlobal::song->update();
+      // Inform the rest of the app the song changed, with all flags MINUS
+      //  these flags which are already sent in the call to MusE::read() above:
+      MusEGlobal::song->update(~SC_TRACK_INSERTED);
       MusEGlobal::song->updatePos();
       arrangerView->clipboardChanged(); // enable/disable "Paste"
       arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"

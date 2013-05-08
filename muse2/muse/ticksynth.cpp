@@ -111,6 +111,12 @@ class MetronomeSynthIF : public SynthIF
       virtual float getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, float) {}
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
+
+      //-------------------------
+      // Methods for PluginIBase:
+      //-------------------------
+
+      virtual bool addScheduledControlEvent(unsigned long /*i*/, float /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
       };
 
 //---------------------------------------------------------

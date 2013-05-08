@@ -329,6 +329,8 @@ class Song : public QObject {
       void readRoute(Xml& xml);
       void recordEvent(MidiTrack*, Event&);
       void msgInsertTrack(Track* track, int idx, bool u = true);
+      // Enable all track and plugin controllers, and synth controllers if applicable, which are NOT in AUTO_WRITE mode.
+      void reenableTouchedControllers();  
       void clearRecAutomation(bool clearList);
       void processAutomationEvents();
       void processMasterRec();

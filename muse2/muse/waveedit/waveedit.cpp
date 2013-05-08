@@ -529,8 +529,8 @@ void WaveEdit::writeStatus(int level, MusECore::Xml& xml) const
       xml.tag(level++, "waveedit");
       MidiEditor::writeStatus(level, xml);
       xml.intTag(level, "tool", int(canvas->tool()));
-      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
+      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ymag", ymag->value());
       xml.tag(level, "/waveedit");
       }

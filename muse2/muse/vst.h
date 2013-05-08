@@ -99,6 +99,12 @@ class VstSynthIF : public SynthIF
       virtual float getParameter(unsigned long idx) const;
       virtual void setParameter(unsigned long idx, float value);
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
+
+      //-------------------------
+      // Methods for PluginIBase:
+      //-------------------------
+
+      virtual bool addScheduledControlEvent(unsigned long /*i*/, float /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
       };
 
 } // namespace MusECore

@@ -149,6 +149,8 @@ bool Mess::processEvent(const MusECore::MidiPlayEvent& ev)
                   return setController(ev.channel(), MusECore::CTRL_PITCH, ev.dataA());
             case MusECore::ME_AFTERTOUCH:       
                   return setController(ev.channel(), MusECore::CTRL_AFTERTOUCH, ev.dataA());
+            case MusECore::ME_PROGRAM:
+                return setController(ev.channel(), MusECore::CTRL_PROGRAM, ev.dataA());
             }
       return false;
       }

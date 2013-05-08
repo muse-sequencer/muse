@@ -96,6 +96,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void setPortName(void* p, const char* n) { jack_port_set_name((jack_port_t*)p, n); }
       virtual void* findPort(const char* name);
       virtual QString portName(void* port);
+      virtual unsigned int portLatency(void* port, bool capture) const;
       virtual int getState();
       virtual unsigned int getCurFrame() const;
       virtual bool isRealtime()          { return jack_is_realtime(_client); }

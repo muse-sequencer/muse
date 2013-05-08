@@ -110,7 +110,7 @@
    <item>
     <widget class="QCheckBox" name="standardCtrlsCheckBox">
      <property name="text">
-      <string>Copy standard controllers (vol, pan)</string>
+      <string>Copy standard (vol, pan) and synth controllers</string>
      </property>
      <property name="checked">
       <bool>true</bool>
@@ -119,9 +119,6 @@
    </item>
    <item>
     <widget class="QCheckBox" name="pluginsCheckBox">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text">
       <string>Copy effects rack plugins</string>
      </property>

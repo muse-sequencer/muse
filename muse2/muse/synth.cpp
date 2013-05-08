@@ -92,10 +92,7 @@ QString SynthIF::titlePrefix() const                     { return QString(); }
 MusECore::AudioTrack* SynthIF::track()                   { return static_cast < MusECore::AudioTrack* > (synti); }
 void SynthIF::enableController(unsigned long, bool)  { }
 bool SynthIF::controllerEnabled(unsigned long) const   { return true;}
-void SynthIF::enable2Controller(unsigned long, bool) { }
-bool SynthIF::controllerEnabled2(unsigned long) const  { return true; }
 void SynthIF::enableAllControllers(bool)               { }
-void SynthIF::enable2AllControllers(bool)              { }
 void SynthIF::updateControllers()                        { }
 void SynthIF::activate()                                 { }
 void SynthIF::deactivate()                               { }
@@ -310,6 +307,44 @@ SynthI::SynthI()
       setPan(0.0);
       }
 
+SynthI::SynthI(const SynthI& si, int flags)
+   : AudioTrack(si, flags)
+      {
+      synthesizer = 0;
+      _sif        = 0;
+      _rwFlags    = 1;
+      _openFlags  = 1;
+      _readEnable = false;
+      _writeEnable = false;
+
+      _curBankH = 0;
+      _curBankL = 0;
+      _curProgram  = 0;
+
+      setVolume(1.0);
+      setPan(0.0);
+      
+      Synth* s = si.synth();
+      if (s) {
+            QString n;
+            n.setNum(s->instances());
+            QString instance_name = s->name() + "-" + n;
+            if(!initInstance(s, instance_name)) {  // false if success
+                  return;
+                  }
+            }
+      fprintf(stderr, "SynthI copy ctor: error initializing synth s:%p\n", s);
+      }
+
+//---------------------------------------------------------
+//   ~SynthI
+//---------------------------------------------------------
+
+SynthI::~SynthI()
+      {
+      deactivate2();
+      deactivate3();
+      }
 
 //---------------------------------------------------------
 //   height in arranger
@@ -580,17 +615,6 @@ void MessSynthIF::deactivate3()
             _mess = 0;
             }
       }
-
-//---------------------------------------------------------
-//   ~SynthI
-//---------------------------------------------------------
-
-SynthI::~SynthI()
-      {
-      deactivate2();
-      deactivate3();
-      }
-
 
 //---------------------------------------------------------
 //   initMidiSynth
@@ -1068,7 +1092,7 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
                               fprintf(stderr, "should not happen - no _mess\n");
                         else
                         {
-                                _mess->process(buffer, curPos-pos, frame - curPos);
+                                _mess->process(pos, buffer, curPos-pos, frame - curPos);
                         }      
                   }
                   curPos = frame;
@@ -1088,7 +1112,7 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
                   fprintf(stderr, "should not happen - no _mess\n");
             else
             {
-                    _mess->process(buffer, curPos - off, endPos - curPos);
+                    _mess->process(pos, buffer, curPos - off, endPos - curPos);
             }      
       }
       return i;

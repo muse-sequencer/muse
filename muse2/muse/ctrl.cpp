@@ -6,7 +6,7 @@
 //    controller handling for mixer automation
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011-2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -359,6 +359,13 @@ CtrlList::CtrlList(int id, QString name, double min, double max, CtrlValueType v
       initColor(id);
 }
 
+CtrlList::CtrlList(const CtrlList& l, int flags)
+{
+  _id        = l._id;
+  _valueType = l._valueType;
+  assign(l, flags | ASSIGN_PROPERTIES);
+}
+
 //---------------------------------------------------------
 //   assign
 //---------------------------------------------------------
@@ -367,14 +374,12 @@ void CtrlList::assign(const CtrlList& l, int flags)
 {
   if(flags & ASSIGN_PROPERTIES)
   {
-    _id            = l._id;
     _default       = l._default;
     _curVal        = l._curVal;
     _mode          = l._mode;
     _name          = l._name;
     _min           = l._min;
     _max           = l._max;
-    _valueType     = l._valueType;
     _dontShow      = l._dontShow;
     _displayColor  = l._displayColor;
     _visible       = l._visible;
@@ -385,6 +390,129 @@ void CtrlList::assign(const CtrlList& l, int flags)
     std::map<int, CtrlVal, std::less<int> >::operator=(l); // Let map copy the items.
     _guiUpdatePending = true;
   }
+}
+
+//---------------------------------------------------------
+//   getInterpolation
+//   Fills CtrlInterpolate struct for given frame.
+//   cur_val_only means read the current 'manual' value, not from the list even if it is not empty.
+//   CtrlInterpolate member eFrame can be -1 meaning no next value (wide-open, endless).
+//---------------------------------------------------------
+
+void CtrlList::getInterpolation(int frame, bool cur_val_only, CtrlInterpolate* interp)
+{
+  interp->eStop = false; // During processing, control FIFO ring buffers will set this true.
+
+  if(cur_val_only || empty())
+  {
+    interp->sFrame = 0;
+    interp->eFrame = -1;
+    interp->sVal = _curVal;
+    interp->eVal = _curVal;
+    interp->doInterp = false;
+    return;
+  }
+  ciCtrl i = upper_bound(frame); // get the index after current frame
+  if (i == end())   // if we are past all items just return the last value
+  { 
+        --i;
+        interp->sFrame = 0;
+        interp->eFrame = -1;
+        interp->sVal = i->second.val;
+        interp->eVal = i->second.val;
+        interp->doInterp = false;
+        return;
+  }
+  else if(_mode == DISCRETE)
+  {
+    if(i == begin())
+    {
+      interp->sFrame = 0;
+      interp->eFrame = i->second.frame;
+      interp->sVal = i->second.val;
+      interp->eVal = i->second.val;
+      interp->doInterp = false;
+    }
+    else
+    {
+      interp->eFrame = i->second.frame;
+      interp->eVal = i->second.val;
+      --i;
+      interp->sFrame = i->second.frame;
+      interp->sVal = i->second.val;
+      interp->doInterp = false;
+    }
+  }
+  else   // INTERPOLATE
+  {                  
+    if(i == begin())
+    {
+      interp->sFrame = 0;
+      interp->eFrame = i->second.frame;
+      interp->sVal = i->second.val;
+      interp->eVal = i->second.val;
+      interp->doInterp = false;
+    }
+    else
+    {
+      interp->eFrame = i->second.frame;
+      interp->eVal = i->second.val;
+      --i;
+      interp->sFrame = i->second.frame;
+      interp->sVal = i->second.val;
+      interp->doInterp = (interp->eVal != interp->sVal && interp->eFrame > interp->sFrame);
+    }
+  }
+}
+
+//---------------------------------------------------------
+//   interpolate
+//   Returns interpolated value at given frame, from a CtrlInterpolate struct.
+//   For speed, no checking is done for frame = frame2, val1 = val2 or even CtrlInterpolate::doInterp.
+//   Those are to be taken care of before calling this routine. See getInterpolation().
+//---------------------------------------------------------
+
+double CtrlList::interpolate(int frame, const CtrlInterpolate& interp)
+{
+  int frame1 = interp.sFrame;
+  int frame2 = interp.eFrame;
+  double val1 = interp.sVal;
+  double val2 = interp.eVal;
+  if(frame >= frame2)        // frame2 can also be -1
+  {
+    if(_valueType == VAL_LOG)
+    {
+      const double min = exp10(MusEGlobal::config.minSlider / 20.0);  // TODO Try fastexp10
+      if(val2 < min)
+        val2 = min;
+    }
+    return val2;
+  }
+  if(frame <= frame1)
+  {
+    if(_valueType == VAL_LOG)
+    {
+      const double min = exp10(MusEGlobal::config.minSlider / 20.0);  // TODO Try fastexp10
+      if(val1 < min)
+        val1 = min;
+    }
+    return val1;
+  }
+
+  if(_valueType == VAL_LOG)
+  {
+    val1 = 20.0*fast_log10(val1);
+    if (val1 < MusEGlobal::config.minSlider)
+      val1=MusEGlobal::config.minSlider;
+    val2 = 20.0*fast_log10(val2);
+    if (val2 < MusEGlobal::config.minSlider)
+      val2=MusEGlobal::config.minSlider;
+  }
+  val2 -= val1;
+  val1 += (double(frame - frame1) * val2) / double(frame2 - frame1);
+  if (_valueType == VAL_LOG)
+    val1 = exp10(val1/20.0);
+  return val1;
 }
 
 //---------------------------------------------------------

@@ -198,7 +198,6 @@ void ScrollScale::setRange ( int min, int max )
 
 void ScrollScale::setPos ( unsigned pos )
 {
-
 	scroll->setValue ( pos );
 }
 

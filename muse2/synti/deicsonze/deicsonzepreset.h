@@ -33,6 +33,7 @@
 #include <vector>
 #include <string>
 #include "al/xml.h"
+#include "muse/midictrl.h"
 
 #define NBROP 4 //do not change
 #define MAXCHARTAG 64
@@ -46,7 +47,8 @@
 // number of ctrl
 // following the internal DX11 organization (c.f T81Z manual)
 //---------------------------------------------------------
-#define CTRLOFFSET 0x100
+//#define CTRLOFFSET 0x100
+#define CTRLOFFSET (MusECore::CTRL_NRPN14_OFFSET)
 #define DECAPAR1 13
 #define ARSTR "AR"
 #define ARLONGSTR "AttackRate"
