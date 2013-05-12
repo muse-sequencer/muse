@@ -209,7 +209,7 @@ bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
         *channel = ch;
       if(note)
         *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
-      
+
       return true;
 }
       
@@ -576,6 +576,15 @@ void DrumCanvas::itemPressed(const MusEGui::CItem* item)
       MusECore::Event e = ((DEvent*)item)->event();
       int index = e.pitch();
       // play note:
+
+      if (!old_style_drummap_mode) {
+          for (int i = 0; i < instrument_map.size(); ++i) {
+              if (instrument_map.at(i).pitch == index) {
+                  index = i;
+                  break;
+              }
+          }
+      }
       int pitch, port, channel;
       if(index2Note(index, &port, &channel, &pitch))
         startPlayEvent(pitch, e.velo(), port, channel);
