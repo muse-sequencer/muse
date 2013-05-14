@@ -622,6 +622,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrlClicked()));
 
+      connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
+
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
 
@@ -672,6 +674,38 @@ void DrumEdit::songChanged1(MusECore::SongChangedFlags_t bits)
         songChanged(bits);
       }
 
+//---------------------------------------------------------
+//   midiNote
+//---------------------------------------------------------
+void DrumEdit::midiNote(int pitch, int velo)
+{
+  //if (debugMsg)
+      printf("DrumEdit::midiNote: pitch=%i, velo=%i\n", pitch, velo);
+  int index=0;
+
+  //      *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
+
+  if ((DrumCanvas*)(canvas)->midiin())
+  {
+    if (old_style_drummap_mode()) {
+        MusECore::DrumMap *dmap= ((DrumCanvas*)canvas)->getOurDrumMap();
+        for (index = 0; index < ((DrumCanvas*)canvas)->getOurDrumMapSize(); ++index) {
+
+          if ((&dmap[index])->anote == pitch)
+            break;
+        }
+
+    }
+    else
+    {
+        for (index = 0; index < get_instrument_map().size(); ++index) {
+          if (get_instrument_map().at(index).pitch == pitch)
+            break;
+        }
+    }
+    dlist->setCurDrumInstrument(index);
+  }
+}
 //---------------------------------------------------------
 //   horizontalZoom
 //---------------------------------------------------------

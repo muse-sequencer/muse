@@ -1,3 +1,6 @@
+14.05.2013:
+         - When midi in is enabled in drum editor the selected track is moved along with
+           the triggered key (rj)
 12.05.2013:
          - Fixed bug with playback of drums clicking on notes in the new drum editor,
            it was playing the wrong instrument (rj)
