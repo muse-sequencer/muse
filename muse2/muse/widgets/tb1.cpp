@@ -36,7 +36,7 @@
 
 namespace MusEGui {
 
-static int rasterTable[] = {
+static int gArrangerRasterTable[] = {
       //------                8    4     2
       1, 4,  8, 16, 32,  64, 128, 256,  512, 1024,
       1, 6, 12, 24, 48,  96, 192, 384,  768, 1536,
@@ -61,15 +61,12 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       setObjectName("Pos/Snap/Solo-tools");
       pitch = 0;
       showPitch = sp;
-      // ORCAN - FIXME: Check this:
-      //setHorizontalStretchable(false);
-      //setHorizontalPolicy(QSizePolicy::Minimum);
-      //setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
       solo = new QToolButton();    
       solo->setText(tr("Solo"));
       solo->setCheckable(true);
       solo->setFocusPolicy(Qt::NoFocus);
+      //solo->setContentsMargins(0,0,0,0);  
       addWidget(solo);
 
       //---------------------------------------------------
@@ -79,14 +76,13 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       QLabel* label = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
+      //label->setContentsMargins(0,0,0,0);  
       addWidget(label);
       pos   = new PosLabel(0, "pos");
-      ///pos->setFixedHeight(22);
       addWidget(pos);
       if (showPitch) {
             pitch = new PitchLabel(0);
             pitch->setEnabled(false);
-            ///pitch->setFixedHeight(22);
             addWidget(pitch);
             }
 
@@ -96,6 +92,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
 
       raster = new LabelCombo(tr("Snap"), 0);
       raster->setFocusPolicy(Qt::TabFocus);
+      //raster->setContentsMargins(0,0,0,0);  
 
       rlist = new QTableWidget(10, 3);
       rlist->verticalHeader()->setDefaultSectionSize(22);
@@ -103,7 +100,7 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       rlist->setSelectionMode(QAbstractItemView::SingleSelection);
       rlist->verticalHeader()->hide();
       rlist->horizontalHeader()->hide();
-
+      //rlist->setContentsMargins(0,0,0,0);  
       rlist->setMinimumWidth(96);
 
       raster->setView(rlist);
@@ -113,11 +110,8 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
           rlist->setItem(i, j, new QTableWidgetItem(tr(rasterStrings[i + j * 10])));
        
       setRaster(r);
-
+      //setContentsMargins(0,0,0,0);  
       addWidget(raster);
-      
-      // FIXME: Not working right.
-      ///raster->setFixedHeight(38);
       
       connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
       connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));
@@ -128,12 +122,14 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
 //   rasterChanged
 //---------------------------------------------------------
 
-void Toolbar1::_rasterChanged(int /*i*/)
-//void Toolbar1::_rasterChanged(int r, int c)
+void Toolbar1::_rasterChanged(int)
       {
-      emit rasterChanged(rasterTable[rlist->currentRow() + rlist->currentColumn() * 10]);
-      //parentWidget()->setFocus();
-      //emit rasterChanged(rasterTable[r + c * 10]);
+      int rast = gArrangerRasterTable[rlist->currentRow() + rlist->currentColumn() * 10];  
+      emit rasterChanged(rast);
+      // FIXME: HACK: Force the thing to show the right item. For some reason it won't stay on the left or right columns.
+      raster->blockSignals(true);
+      setRaster(rast);
+      raster->blockSignals(false);
       }
 
 
@@ -181,8 +177,8 @@ void Toolbar1::setTime(unsigned val)
 
 void Toolbar1::setRaster(int val)
       {
-      for (unsigned i = 0; i < sizeof(rasterTable)/sizeof(*rasterTable); i++) {
-            if (val == rasterTable[i]) {
+      for (unsigned i = 0; i < sizeof(gArrangerRasterTable)/sizeof(*gArrangerRasterTable); i++) {
+            if (val == gArrangerRasterTable[i]) {
                   raster->setCurrentIndex(i);
                   return;
                   }

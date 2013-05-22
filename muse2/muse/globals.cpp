@@ -247,6 +247,7 @@ QAction* punchinAction;
 QAction* punchoutAction;
 QAction* recordAction;
 QAction* panicAction;
+QAction* metronomeAction;
 
 MusEGui::MusE* muse = 0;
 
@@ -255,6 +256,11 @@ unsigned char measureClickNote = 63;
 unsigned char measureClickVelo = 127;
 unsigned char beatClickNote    = 63;
 unsigned char beatClickVelo    = 70;
+unsigned char accentClick1     = 99;
+unsigned char accentClick1Velo = 70;
+unsigned char accentClick2     = 100;
+unsigned char accentClick2Velo = 70;
+
 unsigned char clickChan = 9;
 unsigned char clickPort = 0;
 bool precountEnableFlag = false;
@@ -266,6 +272,12 @@ bool precountPreroll = false;
 bool midiClickFlag   = true;
 bool audioClickFlag  = true;
 float audioClickVolume = 0.5f;
+float measClickVolume = 1.0f;
+float beatClickVolume = 1.0f;
+float accent1ClickVolume = 0.1f;
+float accent2ClickVolume = 0.1f;
+ClickSamples clickSamples = origSamples;
+
 
 bool rcEnable = false;
 unsigned char rcStopNote = 28;

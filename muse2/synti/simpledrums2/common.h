@@ -51,7 +51,8 @@
 #define SS_DBG_LADSPA(string1) if (SS_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1);
 #define SS_DBG_LADSPA2(string1, string2) if (SS_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1, string2);
 
-#define SS_SYSEX_INIT_DATA_VERSION           1
+#define SS_SYSEX_INIT_DATA_VERSION           2
+// version 2 added pitching support
 #define SS_SYSEX_EFFECT_INIT_DATA_VERSION    2   // Added Jun 15 2011. Original value was SS_SYSEX_INIT_DATA_VERSION (1). p4.0.27 Tim. 
 
 #define SS_NR_OF_CHANNELS                   16
@@ -67,12 +68,13 @@
 #define SS_CHANNEL_SENDFX2     5
 #define SS_CHANNEL_SENDFX3     6
 #define SS_CHANNEL_SENDFX4     7
+#define SS_CHANNEL_CTRL_PITCH  8
 
 #define SS_PLUGIN_RETURN       0
 #define SS_PLUGIN_ONOFF        1
 
 #define SS_NR_OF_MASTER_CONTROLLERS          1
-#define SS_NR_OF_CHANNEL_CONTROLLERS         8
+#define SS_NR_OF_CHANNEL_CONTROLLERS         9
 #define SS_NR_OF_PLUGIN_CONTROLLERS          2
 
 #define SS_NR_OF_CONTROLLERS                 (SS_NR_OF_MASTER_CONTROLLERS + (SS_NR_OF_CHANNELS * SS_NR_OF_CHANNEL_CONTROLLERS) + (SS_NR_OF_PLUGIN_CONTROLLERS*SS_NR_OF_SENDEFFECTS))
@@ -87,6 +89,8 @@
 #define SS_MASTER_CTRL_VOLUME                SS_FIRST_MASTER_CONTROLLER
 
 #define SS_CHANNEL_VOLUME_CONTROLLER(int)    (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_VOLUME)
+#define SS_CHANNEL_PITCH_CONTROLLER(int)    (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_PITCH)
+
 #define SS_CHANNEL_PAN_CONTROLLER(int)       (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_PAN)
 #define SS_CHANNEL_NOFF_CONTROLLER(int)      (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_NOFF)
 #define SS_CHANNEL_ONOFF_CONTROLLER(int)     (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_ONOFF)
@@ -119,7 +123,8 @@ enum {
       SS_SYSEX_SET_PLUGIN_PARAMETER_OK, // synth->gui: set plugin parameter (update gui)
       SS_SYSEX_ERRORMSG,           // synth -> gui: general error message from synth
       SS_SYSEX_GET_INIT_DATA,      // gui->synth: request init data
-      SS_SYSEX_SEND_INIT_DATA      // synth->gui: give gui init data
+      SS_SYSEX_SEND_INIT_DATA,      // synth->gui: give gui init data
+      SS_SYSEX_PITCH_SAMPLE       // gui->synth: set pitch and reload sample
       };
 
 extern int SS_samplerate;

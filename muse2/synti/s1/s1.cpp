@@ -59,7 +59,7 @@ class S1 : public MessMono {
 
       virtual void note(int channel, int pitch, int velo);
       //virtual void processMessages();
-      virtual void process(float** buffer, int offset, int n);
+      virtual void process(unsigned pos, float** buffer, int offset, int n);
       //virtual bool hasGui() const { return true; }
       //virtual bool guiVisible() const { return _showGui; }
       //virtual void showGui(bool);
@@ -143,7 +143,7 @@ void S1::note(int /*channel*/, int pitch, int velo)
 //    synthesize n samples into buffer+offset
 //---------------------------------------------------------
 
-void S1::process(float** buffer, int offset, int n)
+void S1::process(unsigned /*pos*/, float** buffer, int offset, int n)
       {
       if (gate == 0)
             return;
@@ -227,7 +227,7 @@ int S1::getControllerInfo(int id, const char** name, int* ctrl, int* min, int* m
 class QWidget;
 
 
-static Mess* instantiate(int sr, QWidget*, QString* projectPathPtr, const char*)
+static Mess* instantiate(int sr, QWidget*, QString* /* projectPathPtr */, const char*)
       {
       S1* s1 = new S1();
       s1->setSampleRate(sr);

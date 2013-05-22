@@ -97,7 +97,7 @@ class MasterEdit : public MidiEditor {
       void isDeleting(MusEGui::TopWin*);
 
    public:
-      MasterEdit();
+      MasterEdit(QWidget* parent = 0, const char* name = 0);
       ~MasterEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

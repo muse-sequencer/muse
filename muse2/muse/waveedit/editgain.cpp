@@ -94,7 +94,7 @@ void EditGain::cancelPressed()
  */
 void EditGain::gainChanged(int value)
       {
-      gain = sliderGain->maximum() - value;
+      gain = value;
       if (sliderGain->value() != 100) {
             buttonReset->setEnabled(true);
             buttonApply->setEnabled(true);

@@ -58,6 +58,7 @@ class View : public QWidget {
       int xmag, ymag;
 
       virtual void keyPressEvent(QKeyEvent* event);
+      virtual void keyReleaseEvent(QKeyEvent* event);
       virtual void mousePressEvent(QMouseEvent* event);
       virtual void mouseDoubleClickEvent(QMouseEvent* event);
       virtual void mouseMoveEvent(QMouseEvent* event);
@@ -78,6 +79,7 @@ class View : public QWidget {
 
       virtual void resizeEvent(QResizeEvent*);
       virtual void viewKeyPressEvent(QKeyEvent*);
+      virtual void viewKeyReleaseEvent(QKeyEvent*);
       virtual void viewMousePressEvent(QMouseEvent*) {}
       virtual void viewMouseDoubleClickEvent(QMouseEvent*) {}
       virtual void viewMouseMoveEvent(QMouseEvent*) {}

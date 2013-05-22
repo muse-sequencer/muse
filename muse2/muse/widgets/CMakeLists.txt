@@ -36,7 +36,8 @@ QT4_WRAP_CPP (widget_mocs
       action.h
       bigtime.h  
       canvas.h  
-      checkbox.h  
+      checkbox.h
+      colorframe.h
       comboQuant.h  
       combobox.h  
       comment.h  
@@ -158,6 +159,7 @@ file (GLOB widgets_source_files
       canvas.cpp 
       checkbox.cpp 
       citem.cpp
+      colorframe.cpp
       comboQuant.cpp 
       combobox.cpp  
       comment.cpp 

@@ -575,10 +575,12 @@ int main(int argc, char* argv[])
                      Qt::WindowStaysOnTopHint);           
                   muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
                   muse_splash->show();
+                  muse_splash->showMessage("MusE " + QString(VERSION) );
                   QTimer* stimer = new QTimer(0);
                   muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
                   stimer->setSingleShot(true);
                   stimer->start(6000);
+                  QApplication::processEvents();
                   }
             }
 
@@ -732,8 +734,8 @@ int main(int argc, char* argv[])
       int rv = app.exec();
       if(MusEGlobal::debugMsg) 
         printf("app.exec() returned:%d\nDeleting main MusE object\n", rv);
-      delete MusEGlobal::muse; 
-      MusEGui::destroy_function_dialogs();
+      delete MusEGlobal::muse;
+      
       if(MusEGlobal::debugMsg) 
         printf("Finished! Exiting main, return value:%d\n", rv);
       return rv;

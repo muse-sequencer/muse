@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Track soloing</TITLE>
+<META NAME="description" CONTENT="Track soloing">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node9.html">
+<LINK REL="previous" HREF="node7.html">
+<LINK REL="up" HREF="node3.html">
+<LINK REL="next" HREF="node9.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html291"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html287"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html281"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html289"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html292"
+  HREF="node9.html">Plugins</A>
+<B> Up:</B> <A NAME="tex2html288"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html282"
+  HREF="node7.html">Routes</A>
+ &nbsp; <B>  <A NAME="tex2html290"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html293"
+  HREF="node8.html#SECTION00351000000000000000">Phantom soloing</A>
+<LI><A NAME="tex2html294"
+  HREF="node8.html#SECTION00352000000000000000">Soloing chains</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00350000000000000000"></A> <A NAME="track_soloing"></A>
+<BR>
+Track soloing
+</H1>
+Soloing allows you to single out a track for listening while muting others,
+without you having to mute the other tracks. (See soloing track attribute
+<A HREF="node6.html#track_attr_solo">2.3.1</A>).
+
+<P>
+
+<H2><A NAME="SECTION00351000000000000000"></A> <A NAME="phantom_soloing"></A>
+<BR>
+Phantom soloing
+</H2>
+In order to solo a track and mute others so that it is heard, MusE
+employs 'phantom' soloing: When a track is soloed, MusE automatically
+solos all tracks routed to and from this track. (See routes
+<A HREF="node7.html#routes">2.4</A>). A phantom soloed track is indicated by a black square
+in the track pane solo column. (See track attributes
+<A HREF="node6.html#track_attr_solo">2.3.1</A>).
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:Soloing"></A><A NAME="295"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.10:</STRONG>
+Soloing, with phantom soloing</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="529" HEIGHT="476" ALIGN="BOTTOM" BORDER="0"
+ SRC="./soloing_window.png"
+ ALT="Image soloing_window"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<H2><A NAME="SECTION00352000000000000000"></A> <A NAME="soloing_chains"></A>
+<BR>
+Soloing chains
+</H2>
+When an audio output track sends audio to some external entity, such
+as an external running application, and audio from the external entity
+is fed back into a MusE audio input track, solo chains allow you to
+solo the input or output, and MusE will complete the path automatically
+soloing the other, and all paths that came before or after it.
+
+<P>
+Solo chains also work with MIDI tracks chained to audio inputs:
+When a MIDI track drives some MIDI device whose audio is fed into MusE,
+solo chains allow the entire chain to be soloed.
+
+<P>
+Solo chains are accessed via routing menus. (See solo chain routes
+<A HREF="node7.html#soloing_chain_routes">2.4.2</A>).
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html291"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html287"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html281"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html289"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html292"
+  HREF="node9.html">Plugins</A>
+<B> Up:</B> <A NAME="tex2html288"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html282"
+  HREF="node7.html">Routes</A>
+ &nbsp; <B>  <A NAME="tex2html290"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

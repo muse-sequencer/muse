@@ -355,7 +355,7 @@ void ISynth::processMessages()
 //   Called from host, ONLY if output path is connected.
 //---------------------------------------------------------
 
-void ISynth::process(float** ports, int offset, int n)
+void ISynth::process(unsigned /*pos*/, float** ports, int offset, int n)
       {
       if (!_busy) {
             /*

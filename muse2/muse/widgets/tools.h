@@ -39,16 +39,22 @@ enum Tool {
    PencilTool=2,
    RubberTool=4,
    CutTool=8,
-   ScoreTool=16,
-   GlueTool=32,
-   QuantTool=64,
-   DrawTool=128,
-   MuteTool=256,
-   AutomationTool=512,
-   CursorTool=1024
+   GlueTool=16,
+   RangeTool=32,
+   PanTool=64,
+   ZoomTool=128,
+   ScoreTool=256,
+   QuantTool=512,
+   DrawTool=1024,
+   MuteTool=2048,
+   AutomationTool=4096,
+   CursorTool=8192
 };
 
-const int arrangerTools = PointerTool | PencilTool | RubberTool | CutTool | GlueTool | MuteTool | AutomationTool;
+extern QMap<int,int> toolShortcuts;
+
+const int arrangerTools = PointerTool | PencilTool | RubberTool | CutTool | GlueTool | MuteTool |
+                          AutomationTool | PanTool | ZoomTool;
 
 struct ToolB {
       QPixmap** icon;
@@ -57,6 +63,7 @@ struct ToolB {
       };
 
 extern ToolB toolList[];
+extern const unsigned gNumberOfTools;
 
 //---------------------------------------------------------
 //   EditToolBar

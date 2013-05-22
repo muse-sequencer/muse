@@ -220,7 +220,7 @@ void FluidSynth::processMessages()
 //   Called from host, ONLY if output path is connected.
 //---------------------------------------------------------
 
-void FluidSynth::process(float** ports, int offset, int len)
+void FluidSynth::process(unsigned /*pos*/, float** ports, int offset, int len)
       {
       /*
       //Process messages from the gui

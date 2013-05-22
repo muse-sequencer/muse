@@ -40,6 +40,7 @@ class QAction;
 class QResizeEvent;
 class QSlider;
 class QToolButton;
+class QPoint;
 
 namespace MusECore {
 class PartList;
@@ -101,15 +102,15 @@ class WaveEdit : public MidiEditor {
    public slots:
       void configChanged();
       virtual void updateHScrollRange();
-      void horizontalZoomIn();
-      void horizontalZoomOut();
+      void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
+      void horizontalZoom(int mag, const QPoint& glob_pos);
       void focusCanvas();
 
    signals:
       void isDeleting(MusEGui::TopWin*);
 
    public:
-      WaveEdit(MusECore::PartList*);
+      WaveEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0);
       ~WaveEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;

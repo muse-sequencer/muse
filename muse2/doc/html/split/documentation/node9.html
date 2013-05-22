@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Plugins</TITLE>
+<META NAME="description" CONTENT="Plugins">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node10.html">
+<LINK REL="previous" HREF="node8.html">
+<LINK REL="up" HREF="node3.html">
+<LINK REL="next" HREF="node10.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html305"
+  HREF="node10.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html301"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html295"
+  HREF="node8.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html303"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html306"
+  HREF="node10.html">Automation</A>
+<B> Up:</B> <A NAME="tex2html302"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html296"
+  HREF="node8.html">Track soloing</A>
+ &nbsp; <B>  <A NAME="tex2html304"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html307"
+  HREF="node9.html#SECTION00361000000000000000">The audio effects rack</A>
+<UL>
+<LI><A NAME="tex2html308"
+  HREF="node9.html#SECTION00361100000000000000">Audio plugin Graphical User Interfaces (GUIs)</A>
+</UL></UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00360000000000000000"></A> <A NAME="plugins"></A>
+<BR>
+Plugins
+</H1>
+Plugins are small add-ons which can process a track's data.
+
+<P>
+MIDI plugins operate on midi and drum tracks, and are found in
+the <SPAN  CLASS="textbf">Midi</SPAN> menu.
+
+<P>
+Audio plugins can be applied to any track handling audio (that is,
+inputs, outputs, wave tracks, synth tracks). The effects rack
+section describes this. (See effects rack <A HREF="#effects_rack">2.6.1</A>).
+
+<P>
+
+<H2><A NAME="SECTION00361000000000000000"></A> <A NAME="effects_rack"></A>
+<BR>
+The audio effects rack
+</H2>
+All audio track types (Input, Output, Group, Wave, Synth, and Aux) have
+an effects rack into which audio plugins can be inserted in a chain.
+Currently each rack can accomodate up to four plugins.
+
+<P>
+MusE currently supports LADSPA plugins and DSSI synth and effects
+plugins.
+
+<P>
+Plugins can be added by double-clicking on an entry in the effect rack
+in the track info pane (which is shown at the left side of the arranger
+when the according track is selected). Right-clicking the rack items
+offers a self-explanatory popup menu.
+
+<P>
+All plugin controls can be automated. (See audio automation
+<A HREF="node10.html#audio_automation">2.7.1</A>).
+
+<P>
+One must carefully consider how many audio inputs and outputs a plugin
+has, and how may channels the particular audio track has (1 mono or
+2 stereo), and how MusE uses the plugins in the rack.
+
+<P>
+Learn more about this in the appendix Understanding the Effects Rack:
+<A HREF="node12.html#apx_effects_rack">3</A>
+
+<P>
+
+<H3><A NAME="SECTION00361100000000000000"></A> 
+<A NAME="plugin_guis"></A>
+<BR>
+Audio plugin Graphical User Interfaces (GUIs)
+</H3> Once a plugin is added, you need a way to 
+manipulate its controls, which affect its behaviour and operate
+on the sound.
+
+<P>
+MusE can show a generic GUI which contains all of the
+plugin's controls arranged in a rather plain generic fashion.
+
+<P>
+Some plugins may also have a native GUI which looks much better (it
+was specifically designed for the plugin).
+
+<P>
+Both GUI types are opened from the effects rack right-click popup menu.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html305"
+  HREF="node10.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html301"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html295"
+  HREF="node8.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html303"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html306"
+  HREF="node10.html">Automation</A>
+<B> Up:</B> <A NAME="tex2html302"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html296"
+  HREF="node8.html">Track soloing</A>
+ &nbsp; <B>  <A NAME="tex2html304"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

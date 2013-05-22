@@ -125,7 +125,8 @@ void DeicsOnze::initPluginDelay(MusECore::Plugin* pluginDelay) {
 */    
 
     //setChorusParam(i, pluginDelay->defaultValue(i));
-    setDelayParam(i, _pluginIDelay->defaultValue(i));
+    //setDelayParam(i, _pluginIDelay->defaultValue(i));
+    _pluginIDelay->putParam(i, _pluginIDelay->defaultValue(i));
   }
 
   //setDelayDryWet(1);
@@ -406,36 +407,44 @@ void DeicsOnzeGui::buildGuiChorus() {
 //of the parameter because it sends a double and does not
 //change any thing
 void DeicsOnzeGui::setReverbCheckBox(double v, int i) {
-  if(i>=256) {
-    printf("setReverbCheckBox Error : controller index >= 256\n");
-    return;    
-  }
-  float f = (float)v;
-  unsigned char message[sizeof(float)+4];
-  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
-  message[1]=DEICSONZE_UNIQUE_ID;
-  message[2]=SYSEX_REVERBPARAM;
-  message[3]=(unsigned char)i;
-  memcpy(&message[4], &f, sizeof(float));
-  sendSysex(message, sizeof(float)+4);
+// REMOVE Tim. Or keep.  TESTING...
+//   if(i>=256) {
+//     printf("setReverbCheckBox Error : controller index >= 256\n");
+//     return;    
+//   }
+//   float f = (float)v;
+//   unsigned char message[sizeof(float)+4];
+//   message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+//   message[1]=DEICSONZE_UNIQUE_ID;
+//   message[2]=SYSEX_REVERBPARAM;
+//   message[3]=(unsigned char)i;
+//   memcpy(&message[4], &f, sizeof(float));
+//   sendSysex(message, sizeof(float)+4);
+
+  // Putting directly to the control FIFO without SYSEX should be OK. Tim.
+  _deicsOnze->setReverbParam(i, v);
 }
 
 //setChorusCheckBox is used, by the way, to send the value
 //of the parameter because it sends a double and does not
 //change any thing
 void DeicsOnzeGui::setChorusCheckBox(double v, int i) {
-  if(i>=256) {
-    printf("setChorusCheckBox Error : controller index >= 256\n");
-    return;
-  }
-  float f = (float)v;
-  unsigned char message[sizeof(float)+4];
-  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
-  message[1]=DEICSONZE_UNIQUE_ID;
-  message[2]=SYSEX_CHORUSPARAM;
-  message[3]=(unsigned char)i;
-  memcpy(&message[4], &f, sizeof(float));
-  sendSysex(message, sizeof(float)+4);
+// REMOVE Tim. Or keep.  TESTING... 
+//   if(i>=256) {
+//     printf("setChorusCheckBox Error : controller index >= 256\n");
+//     return;
+//   }
+//   float f = (float)v;
+//   unsigned char message[sizeof(float)+4];
+//   message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+//   message[1]=DEICSONZE_UNIQUE_ID;
+//   message[2]=SYSEX_CHORUSPARAM;
+//   message[3]=(unsigned char)i;
+//   memcpy(&message[4], &f, sizeof(float));
+//   sendSysex(message, sizeof(float)+4);
+
+  // Putting directly to the control FIFO without SYSEX should be OK. Tim.
+  _deicsOnze->setChorusParam(i, v);
 }
 
 void DeicsOnzeGui::setReverbFloatEntry(double v, int i) {

@@ -188,8 +188,13 @@ void CtrlPanel::heartBeat()
       int cdp = ctrlcanvas->getCurDrumPitch();
       if(_track->type() == MusECore::Track::DRUM && _ctrl->isPerNoteController() && cdp != -1)
       {
+        // Default to track port if -1 and track channel if -1.
         outport = MusEGlobal::drumMap[cdp].port;
+        if(outport == -1)
+          outport = _track->outPort();
         chan = MusEGlobal::drumMap[cdp].channel;
+        if(chan == -1)
+          chan = _track->outChannel();
       }  
       else  
       {
@@ -262,12 +267,6 @@ void CtrlPanel::songChanged(MusECore::SongChangedFlags_t type)
   // Is it simply a midi controller value adjustment? Forget it.
   if(type == SC_MIDI_CONTROLLER)
     return;
-            
-  if(type & SC_CONFIG)
-  {
-    if(_veloPerNoteButton->isChecked() != MusEGlobal::config.velocityPerNote)
-      _veloPerNoteButton->setChecked(MusEGlobal::config.velocityPerNote);  
-  }
 }
 
 //---------------------------------------------------------
@@ -284,8 +283,13 @@ void CtrlPanel::labelDoubleClicked()
   int cdp = ctrlcanvas->getCurDrumPitch();
   if(_track->type() == MusECore::Track::DRUM && _ctrl->isPerNoteController() && cdp != -1)
   {
+    // Default to track port if -1 and track channel if -1.
     outport = MusEGlobal::drumMap[cdp].port;
+    if(outport == -1)
+      outport = _track->outPort();
     chan = MusEGlobal::drumMap[cdp].channel;
+    if(chan == -1)
+      chan = _track->outChannel();
   }  
   else  
   {
@@ -389,8 +393,13 @@ void CtrlPanel::ctrlChanged(double val)
       int cdp = ctrlcanvas->getCurDrumPitch();
       if(_track->type() == MusECore::Track::DRUM && _ctrl->isPerNoteController() && cdp != -1)
       {
+        // Default to track port if -1 and track channel if -1.
         outport = MusEGlobal::drumMap[cdp].port;
+        if(outport == -1)
+          outport = _track->outPort();
         chan = MusEGlobal::drumMap[cdp].channel;
+        if(chan == -1)
+          chan = _track->outChannel();
       }  
       else  
       {
@@ -465,8 +474,14 @@ void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController
   if(_track->type() == MusECore::Track::DRUM && _ctrl->isPerNoteController() && cdp != -1)
   {
     _dnum = (_dnum & ~0xff) | MusEGlobal::drumMap[cdp].anote;
-    mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[cdp].port];          
+    int mport = MusEGlobal::drumMap[cdp].port;
+    // Default to track port if -1 and track channel if -1.
+    if(mport == -1)   
+      mport = _track->outPort();
+    mp = &MusEGlobal::midiPorts[mport];
     ch = MusEGlobal::drumMap[cdp].channel;
+    if(ch == -1)
+      ch = _track->outChannel();
   }  
   else if((_track->type() == MusECore::Track::NEW_DRUM || _track->type() == MusECore::Track::MIDI) && _ctrl->isPerNoteController() && cdp != -1)
   {
@@ -672,11 +687,18 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
 
 void CtrlPanel::velPerNoteClicked()
 {
-  if(MusEGlobal::config.velocityPerNote != _veloPerNoteButton->isChecked())
-  {
-    MusEGlobal::config.velocityPerNote = _veloPerNoteButton->isChecked();  
-    MusEGlobal::muse->changeConfig(false);  // Save settings? No, wait till close.
-  }
+  if(ctrlcanvas && _veloPerNoteButton->isChecked() != ctrlcanvas->perNoteVeloMode())
+    ctrlcanvas->setPerNoteVeloMode(_veloPerNoteButton->isChecked());
+}
+
+//---------------------------------------------------------
+//   setVeloPerNoteMode
+//---------------------------------------------------------
+
+void CtrlPanel::setVeloPerNoteMode(bool v)
+{
+  if(v != _veloPerNoteButton->isChecked())
+    _veloPerNoteButton->setDown(v);
 }
 
 } // namespace MusEGui

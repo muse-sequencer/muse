@@ -59,6 +59,7 @@
 #include "drumedit.h"
 #include "filedialog.h"
 #include "gconfig.h"
+#include "genset.h"
 #include "gui.h"
 #include "helper.h"
 #include "icons.h"
@@ -67,11 +68,21 @@
 #include "marker/markerview.h"
 #include "master/masteredit.h"
 #include "metronome.h"
+#include "midifilterimpl.h"
+#include "midiitransform.h"
 #include "midiseq.h"
+#include "midisyncimpl.h"
+#include "miditransform.h"
+#include "mitplugin.h"
+#include "mittranspose.h"
 #include "mixdowndialog.h"
+#include "mrconfig.h"
 #include "pianoroll.h"
 #include "scoreedit.h"
 #include "remote/pyapi.h"
+#ifdef BUILD_EXPERIMENTAL
+  #include "rhythm.h"
+#endif
 #include "routepopup.h"
 #include "shortcutconfig.h"
 #include "songinfo.h"
@@ -97,7 +108,6 @@ extern void exitMidiAlsa();
 namespace MusEGui {
 
 extern void deleteIcons();
-
 //extern void cacheJackRouteNames();
 
 static pthread_t watchdogThread;
@@ -299,7 +309,6 @@ MusE::MusE() : QMainWindow()
       midiRemoteConfig      = 0;
       midiPortConfig        = 0;
       metronomeConfig       = 0;
-      audioConfig           = 0;
       midiFileConfig        = 0;
       midiFilterConfig      = 0;
       midiInputTransform    = 0;
@@ -318,6 +327,7 @@ MusE::MusE() : QMainWindow()
       editInstrument        = 0;
       //routingPopupMenu      = 0;
       progress              = 0;
+      saveIncrement         = 0;
       activeTopWin          = NULL;
       currentMenuSharingTopwin = NULL;
       waitingForTopwin      = NULL;
@@ -336,7 +346,12 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::heartBeatTimer->setObjectName("timer");
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), MusEGlobal::song, SLOT(beat()));
       connect(this, SIGNAL(activeTopWinChanged(MusEGui::TopWin*)), SLOT(activeTopWinChangedSlot(MusEGui::TopWin*)));
-      new MusECore::TrackDrummapUpdater(); // no need for keeping the reference, the thing autoconnects on its own.
+      connect(MusEGlobal::song, SIGNAL(sigDirty()), this, SLOT(setDirty()));
+      new MusECore::TrackDrummapUpdater(this); // no need for keeping the reference, the thing autoconnects on its own.
+
+      saveTimer = new QTimer(this);
+      connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveTimerSlot()));
+      saveTimer->start( 60 * 1000 ); // every minute
       
 #ifdef ENABLE_PYTHON
       //---------------------------------------------------
@@ -428,25 +443,29 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::stopAction->setChecked(true);
       connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setStop(bool)));
 
-      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon),
-         tr("Play"), MusEGlobal::transportAction);
+      MusEGlobal::playAction = new QAction(QIcon(*MusEGui::playIcon), tr("Play"), MusEGlobal::transportAction);
       MusEGlobal::playAction->setCheckable(true);
 
       MusEGlobal::playAction->setWhatsThis(tr("start sequencer play"));
       MusEGlobal::playAction->setChecked(false);
       connect(MusEGlobal::playAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPlay(bool)));
 
-      MusEGlobal::recordAction = new QAction(QIcon(*MusEGui::recordIcon),
-         tr("Record"), MusEGlobal::transportAction);
+      MusEGlobal::recordAction = new QAction(QIcon(*MusEGui::recordIcon), tr("Record"), MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
       MusEGlobal::recordAction->setWhatsThis(tr("to record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
 
-      MusEGlobal::panicAction = new QAction(QIcon(*MusEGui::panicIcon),
-         tr("Panic"), this);
+      MusEGlobal::panicAction = new QAction(QIcon(*MusEGui::panicIcon), tr("Panic"), this);
 
       MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(activated()), MusEGlobal::song, SLOT(panic()));
+
+      MusEGlobal::metronomeAction = new QAction(QIcon(*MusEGui::metronomeIcon), tr("Metronome"), this);
+      MusEGlobal::metronomeAction->setCheckable(true);
+      MusEGlobal::metronomeAction->setWhatsThis(tr("turn on/off metronome"));
+      MusEGlobal::metronomeAction->setChecked(MusEGlobal::song->click());
+      connect(MusEGlobal::metronomeAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
+      connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), MusEGlobal::metronomeAction, SLOT(setChecked(bool)));
 
       //----Actions
       //-------- File Actions
@@ -698,6 +717,10 @@ MusE::MusE() : QMainWindow()
       panicToolbar->setObjectName("Panic (global)");
       panicToolbar->addAction(MusEGlobal::panicAction);
 
+      QToolBar* metronomeToolbar = addToolBar(tr("Metronome"));
+      metronomeToolbar->setObjectName("Metronome");
+      metronomeToolbar->addAction(MusEGlobal::metronomeAction);
+
       requiredToolbars.push_back(tools);
       optionalToolbars.push_back(songpos_tb);
       optionalToolbars.push_back(sig_tb);
@@ -705,6 +728,7 @@ MusE::MusE() : QMainWindow()
       optionalToolbars.push_back(undoToolbar);
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);
+      optionalToolbars.push_back(metronomeToolbar);
 
        QSocketNotifier* ss = new QSocketNotifier(MusEGlobal::audio->getFromThreadFdr(), QSocketNotifier::Read, this); 
        connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));  
@@ -952,6 +976,16 @@ void MusE::setHeartBeat()
       MusEGlobal::heartBeatTimer->start(1000/MusEGlobal::config.guiRefresh);
       }
 
+//---------------------------------------------------------
+//   setDirty
+//---------------------------------------------------------
+
+void MusE::setDirty()
+      {
+      MusEGlobal::song->dirty = true;
+      setWindowTitle(projectTitle(project.absoluteFilePath()) + " <unsaved changes>");
+      }
+
 //---------------------------------------------------
 //  loadDefaultSong
 //    if no songname entered on command line:
@@ -1197,7 +1231,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             }
       if (!songTemplate) {
             addProject(project.absoluteFilePath());
-            setWindowTitle(QString("MusE: Song: ") + MusEGui::projectTitleFromFilename(project.absoluteFilePath()));
+            setWindowTitle(projectTitle(project.absoluteFilePath()));
             }
       MusEGlobal::song->dirty = false;
       progress->setValue(30);
@@ -1247,7 +1281,9 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       MusEGlobal::punchinAction->setChecked(MusEGlobal::song->punchin());
       MusEGlobal::punchoutAction->setChecked(MusEGlobal::song->punchout());
       MusEGlobal::loopAction->setChecked(MusEGlobal::song->loop());
-      MusEGlobal::song->update();
+      // Inform the rest of the app the song changed, with all flags MINUS
+      //  these flags which are already sent in the call to MusE::read() above:
+      MusEGlobal::song->update(~SC_TRACK_INSERTED);
       MusEGlobal::song->updatePos();
       arrangerView->clipboardChanged(); // enable/disable "Paste"
       arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
@@ -1303,7 +1339,7 @@ void MusE::setUntitledProject()
       MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
       QDir::setCurrent(QDir::homePath());
       project.setFile(name);
-      setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
+      setWindowTitle(projectTitle(name));
       writeTopwinState=true;
       }
 
@@ -1408,6 +1444,8 @@ bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
       else {
             popenFlag? pclose(f) : fclose(f);
             MusEGlobal::song->dirty = false;
+            setWindowTitle(projectTitle(project.absoluteFilePath()));
+            saveIncrement = 0;
             return true;
             }
       }
@@ -1536,6 +1574,10 @@ void MusE::closeEvent(QCloseEvent* event)
       if(MusEGlobal::debugMsg)
         printf("MusE: Deleting icons\n");
       deleteIcons();
+
+      if(MusEGlobal::debugMsg)
+        printf("MusE: Deleting all parentless dialogs and widgets\n");
+      deleteParentlessDialogs();
       
       qApp->quit();
       }
@@ -1710,7 +1752,7 @@ bool MusE::saveAs()
             ok = save(name, true, writeTopwinState);
             if (ok) {
                   project.setFile(name);
-                  setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
+                  setWindowTitle(projectTitle(project.absoluteFilePath()));
                   addProject(name);
                   }
             else
@@ -1853,7 +1895,7 @@ void MusE::startListEditor()
 
 void MusE::startListEditor(MusECore::PartList* pl)
       {
-      MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl);
+      MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
       toplevels.push_back(listEditor);
       listEditor->show();
       connect(listEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
@@ -1867,7 +1909,7 @@ void MusE::startListEditor(MusECore::PartList* pl)
 
 void MusE::startMasterEditor()
       {
-      MusEGui::MasterEdit* masterEditor = new MusEGui::MasterEdit();
+      MusEGui::MasterEdit* masterEditor = new MusEGui::MasterEdit(this);
       toplevels.push_back(masterEditor);
       masterEditor->show();
       connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
@@ -1880,7 +1922,7 @@ void MusE::startMasterEditor()
 
 void MusE::startLMasterEditor()
       {
-      MusEGui::LMaster* lmaster = new MusEGui::LMaster();
+      MusEGui::LMaster* lmaster = new MusEGui::LMaster(this);
       toplevels.push_back(lmaster);
       lmaster->show();
       connect(lmaster, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
@@ -1928,7 +1970,7 @@ void MusE::startWaveEditor()
 
 void MusE::startWaveEditor(MusECore::PartList* pl)
       {
-      MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl);
+      MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl, this);
       waveEditor->show();
       toplevels.push_back(waveEditor);
       connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
@@ -2225,6 +2267,9 @@ void MusE::kbAccel(int key)
             if (markerView)
               markerView->prevMarker();
             }
+      else if (key == MusEGui::shortcuts[MusEGui::SHRT_CONFIG_SHORTCUTS].key) {
+            configShortCuts();
+            }
       else {
             if (MusEGlobal::debugMsg)
                   printf("unknown kbAccel 0x%x\n", key);
@@ -2281,9 +2326,83 @@ void MusE::cmd(int cmd)
             }
       }
 
+//---------------------------------------------------------
+//   deleteParentlessDialogs
+//   All these dialogs and/or widgets have no parent,
+//    but are not considered MusE 'top-level', so could not
+//    be handled via the top-levels list...
+//---------------------------------------------------------
+
+void MusE::deleteParentlessDialogs()
+{
+  if(appearance)
+  {
+    delete appearance;
+    appearance = 0;
+  }
+  if(metronomeConfig)
+  {
+    delete metronomeConfig;
+    metronomeConfig = 0;
+  }
+  if(shortcutConfig)
+  {
+    delete shortcutConfig;
+    shortcutConfig = 0;
+  }
+  if(midiSyncConfig)
+  {
+    delete midiSyncConfig;
+    midiSyncConfig = 0;
+  }
+  if(midiFileConfig)
+  {
+    delete midiFileConfig;
+    midiFileConfig = 0;
+  }
+  if(globalSettingsConfig)
+  {
+    delete globalSettingsConfig;
+    globalSettingsConfig = 0;
+  }
+
+  destroy_function_dialogs();
 
 
+  if(MusEGlobal::mitPluginTranspose)
+  {
+    delete MusEGlobal::mitPluginTranspose;
+    MusEGlobal::mitPluginTranspose = 0;
+  }
 
+  if(midiInputTransform)
+  {
+    delete midiInputTransform;
+    midiInputTransform = 0;
+  }
+  if(midiFilterConfig)
+  {
+     delete midiFilterConfig;
+     midiFilterConfig = 0;
+  }
+  if(midiRemoteConfig)
+  {
+    delete midiRemoteConfig;
+    midiRemoteConfig = 0;
+  }
+#ifdef BUILD_EXPERIMENTAL
+  if(midiRhythmGenerator)
+  {
+    delete midiRhythmGenerator;
+    midiRhythmGenerator = 0;
+  }
+#endif
+  if(midiTransformerDialog)
+  {
+    delete midiTransformerDialog;
+    midiTransformerDialog = 0;
+  }
+}
 
 //---------------------------------------------------------
 //   configAppearance
@@ -2292,6 +2411,7 @@ void MusE::cmd(int cmd)
 void MusE::configAppearance()
       {
       if (!appearance)
+            // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
             appearance = new MusEGui::Appearance(_arranger);
       appearance->resetValues();
       if(appearance->isVisible()) {
@@ -2373,6 +2493,7 @@ void MusE::changeConfig(bool writeFlag)
 void MusE::configMetronome()
       {
       if (!metronomeConfig)
+          // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
           metronomeConfig = new MusEGui::MetronomeConfig;
 
       if(metronomeConfig->isVisible()) {
@@ -2391,12 +2512,27 @@ void MusE::configMetronome()
 void MusE::configShortCuts()
       {
       if (!shortcutConfig)
-            shortcutConfig = new MusEGui::ShortcutConfig(this);
-      shortcutConfig->_config_changed = false;
-      if (shortcutConfig->exec())
-            changeConfig(true);
+      {
+            // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
+            shortcutConfig = new MusEGui::ShortcutConfig();
+            connect(shortcutConfig, SIGNAL(saveConfig()), SLOT(configShortCutsSaveConfig()));
+      }
+      if(shortcutConfig->isVisible()) {
+          shortcutConfig->raise();
+          shortcutConfig->activateWindow();
+          }
+      else
+          shortcutConfig->show();
       }
 
+//---------------------------------------------------------
+//   configShortCutsSaveConfig
+//---------------------------------------------------------
+
+void MusE::configShortCutsSaveConfig()
+      {
+      changeConfig(true);
+      }
 
 //---------------------------------------------------------
 //   bounceToTrack
@@ -2909,7 +3045,7 @@ void MusE::updateConfiguration()
       autoClearAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_MIXER_AUTOMATION_CLEAR].key);
 
       settingsGlobalAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_GLOBAL_CONFIG].key);
-      settingsShortcutsAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_CONFIG_SHORTCUTS].key);
+      //settingsShortcutsAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_CONFIG_SHORTCUTS].key); // This is global now, handled in MusE::kbAccel
       settingsMetronomeAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_CONFIG_METRONOME].key);
       settingsMidiSyncAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_CONFIG_MIDISYNC].key);
       // settingsMidiIOAction does not have acceleration
@@ -3574,6 +3710,11 @@ void MusE::tileSubWindows()
   }
 }
 
+QString MusE::projectTitle(QString name)
+{
+  return tr("MusE: Song: ") + MusEGui::projectTitleFromFilename(name);
+}
+
 QString MusE::projectTitle() const
 { 
   return MusEGui::projectTitleFromFilename(project.fileName());
@@ -3587,6 +3728,29 @@ QString MusE::projectPath() const
 QString MusE::projectExtension() const
 {
   return MusEGui::projectExtensionFromFilename(project.fileName()); 
+}
+
+void MusE::saveTimerSlot()
+{
+    if (MusEGlobal::config.autoSave == false ||
+        MusEGlobal::museProject == MusEGlobal::museProjectInitPath ||
+        MusEGlobal::song->dirty == false)
+    {
+        //printf("conditions not met, ignore %d %d\n", MusEGlobal::config.autoSave, MusEGlobal::song->dirty);
+        return;
+    }
+    saveIncrement++;
+    if (saveIncrement > 4) {
+        // printf("five minutes passed %d %d\n", MusEGlobal::config.autoSave, MusEGlobal::song->dirty);
+        // time to see if we are allowed to save, if so. Do
+        if (MusEGlobal::audio->isPlaying() == false) {
+            printf("Performing autosave\n");
+            save(project.filePath(), false, writeTopwinState);
+        } else
+        {
+            //printf("isPlaying, can't save\n");
+        }
+    }
 }
 
 } //namespace MusEGui

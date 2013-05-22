@@ -32,7 +32,7 @@
 #include "globals.h"
 
 namespace MusEGlobal {
-MusEGui::MITPluginTranspose* mitPluginTranspose;
+MusEGui::MITPluginTranspose* mitPluginTranspose = 0;
 }
 
 namespace MusEGui {

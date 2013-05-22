@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //    $Id: canvas.h,v 1.3.2.8 2009/02/02 21:38:01 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
-//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//  Additions, modifications (C) Copyright 2011-2013 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -34,6 +34,7 @@
 #include <QKeyEvent>
 
 class QMenu;
+class QPoint;
 
 namespace MusEGui {
 
@@ -43,17 +44,19 @@ namespace MusEGui {
 
 class Canvas : public View {
       Q_OBJECT
-      int canvasTools;
       QTimer *scrollTimer;
       
       bool doScroll;
       int scrollSpeed;
-
+      
       QPoint ev_pos;
+      QPoint ev_global_pos;
+      bool ignore_mouse_move;
       bool canScrollLeft;
       bool canScrollRight;
       bool canScrollUp;
       bool canScrollDown;
+      
    protected:
       enum DragMode {
             DRAG_OFF, DRAG_NEW,
@@ -65,6 +68,7 @@ class Canvas : public View {
             DRAGX_CLONE, DRAGY_CLONE,
             DRAG_DELETE,
             DRAG_RESIZE, DRAG_LASSO_START, DRAG_LASSO,
+            DRAG_PAN, DRAG_ZOOM
             };
 
       enum DragType {
@@ -78,15 +82,22 @@ class Canvas : public View {
             VSCROLL_NONE, VSCROLL_UP, VSCROLL_DOWN
             };
       
+      enum MenuIdBase {
+            TOOLS_ID_BASE=10000
+            };
+            
       CItemList items;
       CItemList moving;
+      CItem* newCItem;
       CItem* curItem;
       MusECore::Part* curPart;
       int curPartId;
 
+      int canvasTools;
       DragMode drag;
       QRect lasso;
       QPoint start;
+      QPoint global_start;
       Tool _tool;
       unsigned pos[3];
       
@@ -99,14 +110,16 @@ class Canvas : public View {
 
       void setCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
+      virtual void viewKeyReleaseEvent(QKeyEvent* event);
       virtual void viewMousePressEvent(QMouseEvent* event);
       virtual void viewMouseMoveEvent(QMouseEvent*);
       virtual void viewMouseReleaseEvent(QMouseEvent*);
       virtual void draw(QPainter&, const QRect&);
       virtual void wheelEvent(QWheelEvent* e);
 
-      virtual bool mousePress(QMouseEvent*) { return true; }
       virtual void keyPress(QKeyEvent*);
+      virtual void keyRelease(QKeyEvent*);
+      virtual bool mousePress(QMouseEvent*) { return true; }
       virtual void mouseMove(QMouseEvent* event) = 0;
       virtual void mouseRelease(const QPoint&) {}
       virtual void drawCanvas(QPainter&, const QRect&) = 0;
@@ -118,6 +131,8 @@ class Canvas : public View {
       virtual QPoint raster(const QPoint&) const = 0;
       virtual int y2pitch(int) const = 0; //CDW
       virtual int pitch2y(int) const = 0; //CDW
+      virtual int y2height(int) const = 0; 
+      virtual int yItemOffset() const = 0;
 
       virtual CItem* newItem(const QPoint&, int state) = 0;
       virtual void resizeItem(CItem*, bool noSnap=false, bool ctrl=false) = 0;
@@ -140,7 +155,7 @@ class Canvas : public View {
          Implementing class is responsible for creating a popup to be shown when the user rightclicks an empty region of the canvas
          \return A QPopupMenu*
          */
-      QMenu* genCanvasPopup();
+      QMenu* genCanvasPopup(QMenu* menu = 0);
 
       /*!
          \brief Virtual member
@@ -162,10 +177,9 @@ class Canvas : public View {
       virtual void deleteItem(const QPoint&);
 
       // moving
-      void startMoving(const QPoint&, DragType);
-      
-      void moveItems(const QPoint&, int dir=0, bool rasterize = true);
-      virtual void endMoveItems(const QPoint&, DragType, int dir) = 0;
+      void startMoving(const QPoint&, DragType, bool rasterize = true);
+      void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
+      virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true) = 0;
 
       virtual void selectLasso(bool toggle);
 
@@ -186,8 +200,8 @@ class Canvas : public View {
       void verticalScroll(unsigned);
       void horizontalScroll(unsigned);
       void horizontalScrollNoLimit(unsigned);
-      void horizontalZoomIn();
-      void horizontalZoomOut();
+      void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
+      void horizontalZoom(int mag, const QPoint& glob_pos);
       void curPartHasChanged(MusECore::Part*);
       
    public:

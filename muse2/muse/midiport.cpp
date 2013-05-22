@@ -261,9 +261,16 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
         drum_found = true; 
         for(int i = 0; i < DRUM_MAPSIZE; ++i)
         {
-          if(MusEGlobal::drumMap[i].port != port || usedChans[MusEGlobal::drumMap[i].channel])
+          // Default to track port if -1 and track channel if -1.
+          int mport = MusEGlobal::drumMap[i].port;
+          if(mport == -1)
+            mport = (*imt)->outPort();
+          int mchan = MusEGlobal::drumMap[i].channel;
+          if(mchan == -1)
+            mchan = (*imt)->outChannel();
+          if(mport != port || usedChans[mchan])
             continue;
-          usedChans[MusEGlobal::drumMap[i].channel] = true;
+          usedChans[mchan] = true;
           ++usedChanCount;
           if(usedChanCount >= MIDI_CHANNELS)
             break;  // All are used, done searching.
@@ -383,13 +390,15 @@ int MidiPort::portno() const
 //   midiPortsPopup
 //---------------------------------------------------------
 
-QMenu* midiPortsPopup(QWidget* parent, int checkPort)
+QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
       {
       QMenu* p = new QMenu(parent);
       QMenu* subp = 0;
       QAction *act = 0;
       QString name;
-
+      const int openConfigId = MIDI_PORTS;
+      const int defaultId    = MIDI_PORTS + 1;
+      
       // Warn if no devices available. Add an item to open midi config. 
       int pi = 0;
       for( ; pi < MIDI_PORTS; ++pi)
@@ -407,11 +416,18 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       }
       act = p->addAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Open midi config...")));
       act->setCheckable(false);
-      act->setData(MIDI_PORTS);  
+      act->setData(openConfigId);  
       p->addSeparator();
       
       p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), p));
 
+      if(includeDefaultEntry)
+      {
+        act = p->addAction(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "default")));
+        act->setCheckable(false);
+        act->setData(defaultId); 
+      }
+        
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* md = port->device();

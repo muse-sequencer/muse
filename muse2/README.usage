@@ -1,0 +1,130 @@
+===============================================
+Here is some updated info about general editing
+ operations and keys/buttons in MusE as of
+ the version 2.1.2 massive changes by Tim:
+This info should be in the doc tex file.
+See also the README.shortcuts file.
+===============================================
+
+
+Arranger: Creating, moving, resizing, copying, cloning, deleting parts:
+=======================================================================
+While drawing a new part, press:
+             No keys/buttons: Part is resized horizontally in-place. Part can move vertically.
+            Right-click/Ctrl: Move part horizontally, don't resize. Part snaps to the grid.
+    Right-click/Ctrl + Shift: Same as Right-click/Ctrl, but do not snap to the grid.
+
+Moving, copying, or cloning existing parts by dragging them:
+Prior to dragging the parts, press:
+                       Shift: Constricts movement horizontally or vertically.
+                        Ctrl: A copy of the parts will be made.
+                  Ctrl + Alt: A clone of the parts will be made.
+While dragging the parts, press:
+                       Shift: Do not snap to grid.
+
+While resizing a part with the pencil tool, press:
+                       Shift: Do not snap the part's right border to the grid.
+
+To resize a part with the pointer tool, press:
+          Right-click + Ctrl: Resize part.
+  Right-click + Ctrl + Shift: Do not snap the part's right border to the grid.
+
+To delete a part, press:
+         Middle-click/Delete: Delete part.
+
+Pianoroll: Creating, moving, resizing, copying, deleting notes:
+===============================================================
+While drawing a new note, press:
+             No keys/buttons: Note is resized horizontally in-place. Note can move vertically.
+            Right-click/Ctrl: Move note horizontally, don't resize. Note snaps to the grid.
+    Right-click/Ctrl + Shift: Same as Right-click/Ctrl, but do not snap to the grid.
+
+Moving or copying existing notes by dragging them:
+Prior to dragging the notes, press:
+                       Shift: Constricts movement horizontally or vertically.
+                        Ctrl: A copy of the notes will be made.
+While dragging the notes, press:
+                       Shift: Do not snap to grid.
+
+While resizing a note with the pencil tool, press:
+                       Shift: Do not snap the note's right border to the grid.
+
+To resize a note with the pointer tool, press:
+          Right-click + Ctrl: Resize note.
+  Right-click + Ctrl + Shift: Do not snap the note's right border to the grid.
+
+To delete a note, press:
+         Middle-click/Delete: Delete note.
+
+Drum editor: Creating, moving, resizing, copying, deleting drum notes:
+======================================================================
+Prior to drawing new drum notes, press:
+                 Ctrl + Meta: Draw with velocity level 1.
+                        Meta: Draw with velocity level 2.
+             No keys/buttons: Draw with velocity level 3.
+                  Meta + Alt: Draw with velocity level 4.
+While drawing a new drum note, press:
+             No keys/buttons: Note can move horizontally and vertically. Note snaps to the grid.
+                       Shift: Do not snap to the grid.
+
+Moving or copying existing drum notes by dragging them:
+Prior to dragging the drum notes, press:
+                       Shift: Constricts movement horizontally or vertically.
+                        Ctrl: A copy of the notes will be made.
+While dragging the drum notes, press:
+                       Shift: Do not snap to grid.
+
+The pencil tool will not resize a drum note, it moves the note. Press:
+                       Shift: Do not snap to grid.
+
+To delete a drum note, press:
+         Middle-click/Delete: Delete note.
+
+Wave editor: Creating, moving, resizing, copying, deleting wave events:
+=======================================================================
+While drawing a new wave event, press:
+             No keys/buttons: Event is resized horizontally in-place.
+            Right-click/Ctrl: Move event horizontally, don't resize. Event snaps to the grid.
+    Right-click/Ctrl + Shift: Same as Right-click/Ctrl, but do not snap to the grid.
+
+Moving or copying existing wave events by dragging them:
+Prior to dragging the events, press:
+                        Ctrl: A copy of the events will be made.
+While dragging the events, press:
+                       Shift: Do not snap to grid. (Sample-accurate resolution.)
+
+While resizing a wave event with the pencil tool, press:
+                       Shift: Do not snap the event's right border to the grid.
+
+To resize a wave event with the pointer tool, press:
+          Right-click + Ctrl: Resize event.
+  Right-click + Ctrl + Shift: Do not snap the event's right border to the grid.
+
+To delete a wave event, press:
+         Middle-click/Delete: Delete event.
+
+Panning and Zooming the editors:
+================================
+There are different ways to pan and zoom:
+The default shortcut keys H and L pan the Pianoroll, Drum Editor, and Wave Editor
+ right and left.
+Shift + Mouse Wheel pans the Arranger, Pianoroll, Drum Editor, and Wave Editor.
+The Pan tool (hand) lets you pan just by dragging the canvases. Hold Shift to
+ constrict movement vertically. Hold Ctrl to constrict movement horizontally.
+And the horizontal scroll bars obviously pan all windows as well.
+
+The default shortcut keys Ctrl + PageUp and Ctrl + PageDown zoom the Arranger,
+ Pianoroll, Drum Editor, and Wave Editor about the mouse cursor position.
+Ctrl + Mouse Wheel also zooms these editors, about the mouse cursor position.
+The Zoom tool (magnifier) lets you zoom just by dragging the canvases.
+And the horizontal magnification scroll bars obviously zoom as well, but they
+ do not zoom about any cursor, they zoom from the left edge.
+
+By default, the Pan and Zoom tools have continuous, borderless motion, using a
+ special coding technique. This is great for track-ball mice for example, because
+ it lets you keep rolling and rolling without border limits!
+An alternate, more standard method is available by un-checking "Borderless zoom/pan"
+ in Global Settings -> GUI Behaviour. This method does present border limitations
+ on how far you can move before you must reposition the mouse. 
+
+ 

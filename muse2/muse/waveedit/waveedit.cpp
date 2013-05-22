@@ -38,6 +38,9 @@
 #include <QResizeEvent>
 #include <QKeyEvent>
 #include <QSettings>
+#include <QCursor>
+#include <QPoint>
+#include <QRect>
 
 #include "app.h"
 #include "xml.h"
@@ -64,7 +67,7 @@ extern QColor readColor(MusECore::Xml& xml);
 namespace MusEGui {
 
 static int waveEditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | 
-                           MusEGui::CutTool | MusEGui::CursorTool;
+                           MusEGui::CutTool | MusEGui::RangeTool | PanTool | ZoomTool;
 
 int WaveEdit::_rasterInit = 96;
 int WaveEdit::colorModeInit = 0;
@@ -88,8 +91,8 @@ void WaveEdit::closeEvent(QCloseEvent* e)
 //   WaveEdit
 //---------------------------------------------------------
 
-WaveEdit::WaveEdit(MusECore::PartList* pl)
-   : MidiEditor(TopWin::WAVE, MidiEditor::NO_RASTER, pl)
+WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
+   : MidiEditor(TopWin::WAVE, 1, pl, parent, name)
       {
       setFocusPolicy(Qt::NoFocus);
       colorMode      = colorModeInit;
@@ -158,9 +161,10 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       
       menuEdit->addSeparator();
 
-      adjustWaveOffsetAction = menuEdit->addAction(tr("Adjust wave offset..."));
-      mapper->setMapping(adjustWaveOffsetAction, WaveCanvas::CMD_ADJUST_WAVE_OFFSET);
-      connect(adjustWaveOffsetAction, SIGNAL(triggered()), mapper, SLOT(map()));
+// REMOVE Tim. Also remove CMD_ADJUST_WAVE_OFFSET and so on...      
+//       adjustWaveOffsetAction = menuEdit->addAction(tr("Adjust wave offset..."));
+//       mapper->setMapping(adjustWaveOffsetAction, WaveCanvas::CMD_ADJUST_WAVE_OFFSET);
+//       connect(adjustWaveOffsetAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       act = menuFunctions->addAction(tr("Mute Selection"));
       mapper->setMapping(act, WaveCanvas::CMD_MUTE);
@@ -295,8 +299,8 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       ymag->setFixedWidth(16);
       connect(canvas, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), canvas, SLOT(setYScale(int)));
-      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
-      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+      connect(canvas, SIGNAL(horizontalZoom(bool, const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
+      connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
 
       time->setOrigin(0, 0);
 
@@ -332,8 +336,8 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged1(MusECore::SongChangedFlags_t)));
 
       // For the wave editor, let's start with the operation range selection tool.
-      canvas->setTool(MusEGui::CursorTool);
-      tools2->set(MusEGui::CursorTool);
+      canvas->setTool(MusEGui::RangeTool);
+      tools2->set(MusEGui::RangeTool);
       
       setEventColorMode(colorMode);
       
@@ -525,8 +529,8 @@ void WaveEdit::writeStatus(int level, MusECore::Xml& xml) const
       xml.tag(level++, "waveedit");
       MidiEditor::writeStatus(level, xml);
       xml.intTag(level, "tool", int(canvas->tool()));
-      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
+      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ymag", ymag->value());
       xml.tag(level, "/waveedit");
       }
@@ -681,8 +685,16 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             tools2->set(MusEGui::CutTool);
             return;
             }
-      else if (key == shortcuts[SHRT_TOOL_CURSOR].key) {
-            tools2->set(MusEGui::CursorTool);
+      else if (key == shortcuts[SHRT_TOOL_PAN].key) {
+            tools2->set(MusEGui::PanTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_ZOOM].key) {
+            tools2->set(MusEGui::ZoomTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_RANGE].key) {
+            tools2->set(MusEGui::RangeTool);
             return;
             }
       else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
@@ -696,25 +708,11 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             
       // TODO: New WaveCanvas: Convert some of these to use frames.
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
-                  zoomlvl++;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            horizontalZoom(true, QCursor::pos());
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl > 1)
-                  zoomlvl--;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            horizontalZoom(false, QCursor::pos());
             return;
             }
       else if (key == shortcuts[SHRT_GOTO_CPOS].key) {
@@ -785,31 +783,34 @@ void WaveEdit::moveVerticalSlider(int val)
       ymag->setValue(ymag->value() + val);
       }
 
-
-void WaveEdit::horizontalZoomIn()
+void WaveEdit::horizontalZoom(bool zoom_in, const QPoint& glob_pos)
 {
   int mag = hscroll->mag();
   int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
+  if(zoom_in)
+  {
+    if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
         zoomlvl++;
-
+  }
+  else
+  {
+    if (zoomlvl > 1)
+        zoomlvl--;
+  }
   int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
-  hscroll->setMag(newmag);
-
+  QPoint cp = canvas->mapFromGlobal(glob_pos);
+  QPoint sp = mainw->mapFromGlobal(glob_pos);
+  if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < mainw->height())
+    hscroll->setMag(newmag, cp.x());
 }
 
-void WaveEdit::horizontalZoomOut()
+void WaveEdit::horizontalZoom(int mag, const QPoint& glob_pos)
 {
-  int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl > 1)
-        zoomlvl--;
-
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-
-  hscroll->setMag(newmag);
-
+  QPoint cp = canvas->mapFromGlobal(glob_pos);
+  QPoint sp = mainw->mapFromGlobal(glob_pos);
+  if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < mainw->height())
+    hscroll->setMag(hscroll->mag() + mag, cp.x());
 }
 
 //---------------------------------------------------------

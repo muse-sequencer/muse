@@ -336,7 +336,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
         event.setLoopNum(MusEGlobal::audio->loopCount());
       
       if (MusEGlobal::midiInputTrace) {
-            printf("MidiIn Jack: <%s>: ", name().toLatin1().constData());
+            fprintf(stderr, "MidiIn Jack: <%s>: ", name().toLatin1().constData());
             event.dump();
             }
             
@@ -639,7 +639,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
       #endif  
       
       if (MusEGlobal::midiOutputTrace) {
-            printf("MidiOut: Jack: <%s>: ", name().toLatin1().constData());
+            fprintf(stderr, "MidiOut: Jack: <%s>: ", name().toLatin1().constData());
             e.dump();
             }
             

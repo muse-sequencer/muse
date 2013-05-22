@@ -12,12 +12,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>27</enote>
       <anote>27</anote>
       </entry>
@@ -26,12 +26,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>28</enote>
       <anote>28</anote>
       </entry>
@@ -40,12 +40,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>29</enote>
       <anote>29</anote>
       </entry>
@@ -54,12 +54,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>30</enote>
       <anote>30</anote>
       </entry>
@@ -68,12 +68,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>31</enote>
       <anote>31</anote>
       </entry>
@@ -82,12 +82,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>32</enote>
       <anote>32</anote>
       </entry>
@@ -96,12 +96,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>33</enote>
       <anote>33</anote>
       </entry>
@@ -110,12 +110,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>34</enote>
       <anote>34</anote>
       </entry>
@@ -124,12 +124,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>35</enote>
       <anote>35</anote>
       </entry>
@@ -138,12 +138,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>36</enote>
       <anote>36</anote>
       </entry>
@@ -152,12 +152,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>37</enote>
       <anote>37</anote>
       </entry>
@@ -166,12 +166,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>38</enote>
       <anote>38</anote>
       </entry>
@@ -180,12 +180,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>39</enote>
       <anote>39</anote>
       </entry>
@@ -194,12 +194,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>40</enote>
       <anote>40</anote>
       </entry>
@@ -208,12 +208,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>41</enote>
       <anote>41</anote>
       </entry>
@@ -222,12 +222,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>42</enote>
       <anote>42</anote>
       </entry>
@@ -236,12 +236,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>43</enote>
       <anote>43</anote>
       </entry>
@@ -250,12 +250,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>44</enote>
       <anote>44</anote>
       </entry>
@@ -264,12 +264,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>45</enote>
       <anote>45</anote>
       </entry>
@@ -278,12 +278,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>46</enote>
       <anote>46</anote>
       </entry>
@@ -292,12 +292,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>47</enote>
       <anote>47</anote>
       </entry>
@@ -306,12 +306,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>48</enote>
       <anote>48</anote>
       </entry>
@@ -320,12 +320,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>49</enote>
       <anote>49</anote>
       </entry>
@@ -334,12 +334,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>50</enote>
       <anote>50</anote>
       </entry>
@@ -348,12 +348,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>51</enote>
       <anote>51</anote>
       </entry>
@@ -362,12 +362,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>52</enote>
       <anote>52</anote>
       </entry>
@@ -376,12 +376,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>53</enote>
       <anote>53</anote>
       </entry>
@@ -390,12 +390,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>54</enote>
       <anote>54</anote>
       </entry>
@@ -404,12 +404,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>55</enote>
       <anote>55</anote>
       </entry>
@@ -418,12 +418,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>56</enote>
       <anote>56</anote>
       </entry>
@@ -432,12 +432,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>57</enote>
       <anote>57</anote>
       </entry>
@@ -446,12 +446,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>58</enote>
       <anote>58</anote>
       </entry>
@@ -460,12 +460,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>59</enote>
       <anote>59</anote>
       </entry>
@@ -474,12 +474,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>60</enote>
       <anote>60</anote>
       </entry>
@@ -488,12 +488,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>61</enote>
       <anote>61</anote>
       </entry>
@@ -502,12 +502,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>62</enote>
       <anote>62</anote>
       </entry>
@@ -516,12 +516,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>63</enote>
       <anote>63</anote>
       </entry>
@@ -530,12 +530,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>64</enote>
       <anote>64</anote>
       </entry>
@@ -544,12 +544,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>65</enote>
       <anote>65</anote>
       </entry>
@@ -558,12 +558,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>66</enote>
       <anote>66</anote>
       </entry>
@@ -572,12 +572,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>67</enote>
       <anote>67</anote>
       </entry>
@@ -586,12 +586,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>68</enote>
       <anote>68</anote>
       </entry>
@@ -600,12 +600,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>69</enote>
       <anote>69</anote>
       </entry>
@@ -614,12 +614,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>70</enote>
       <anote>70</anote>
       </entry>
@@ -628,12 +628,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>71</enote>
       <anote>71</anote>
       </entry>
@@ -642,12 +642,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>72</enote>
       <anote>72</anote>
       </entry>
@@ -656,12 +656,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>73</enote>
       <anote>73</anote>
       </entry>
@@ -670,12 +670,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>74</enote>
       <anote>74</anote>
       </entry>
@@ -684,12 +684,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>75</enote>
       <anote>75</anote>
       </entry>
@@ -698,12 +698,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>76</enote>
       <anote>76</anote>
       </entry>
@@ -712,12 +712,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>77</enote>
       <anote>77</anote>
       </entry>
@@ -726,12 +726,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>78</enote>
       <anote>78</anote>
       </entry>
@@ -740,12 +740,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>79</enote>
       <anote>79</anote>
       </entry>
@@ -754,12 +754,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>80</enote>
       <anote>80</anote>
       </entry>
@@ -768,12 +768,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>81</enote>
       <anote>81</anote>
       </entry>
@@ -782,12 +782,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>82</enote>
       <anote>82</anote>
       </entry>
@@ -796,12 +796,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>83</enote>
       <anote>83</anote>
       </entry>
@@ -810,12 +810,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>84</enote>
       <anote>84</anote>
       </entry>
@@ -824,12 +824,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>85</enote>
       <anote>85</anote>
       </entry>
@@ -838,12 +838,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>86</enote>
       <anote>86</anote>
       </entry>
@@ -852,12 +852,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>87</enote>
       <anote>87</anote>
       </entry>
@@ -866,12 +866,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>88</enote>
       <anote>88</anote>
       </entry>
@@ -880,12 +880,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>89</enote>
       <anote>89</anote>
       </entry>
@@ -894,12 +894,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>90</enote>
       <anote>90</anote>
       </entry>
@@ -908,12 +908,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>91</enote>
       <anote>91</anote>
       </entry>
@@ -922,12 +922,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>92</enote>
       <anote>92</anote>
       </entry>
@@ -936,12 +936,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>93</enote>
       <anote>93</anote>
       </entry>
@@ -950,12 +950,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>94</enote>
       <anote>94</anote>
       </entry>
@@ -964,12 +964,12 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>9</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
-      <lv3>127</lv3>
-      <lv4>110</lv4>
+      <lv3>110</lv3>
+      <lv4>127</lv4>
       <enote>95</enote>
       <anote>95</anote>
       </entry>    

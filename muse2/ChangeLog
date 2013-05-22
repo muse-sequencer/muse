@@ -1,3 +1,133 @@
+14.05.2013:
+         - When midi in is enabled in drum editor the selected track is moved along with
+           the triggered key (rj)
+12.05.2013:
+         - Fixed bug with playback of drums clicking on notes in the new drum editor,
+           it was playing the wrong instrument (rj)
+08.05.2013:
+         - Yet another MAJOR audio engine and plugin/synth process chain re-write. (Tim...)
+         - Track controllers (vol, pan) now sample-accurate.
+         - Track controllers (vol, pan) slope limited for near-noiseless operation. TODO: User settings.
+         - Fixed: "Duplicate Selected Tracks" crashes. Also now copies plugins and synths too.
+         - DSSI + Native VST: Fixed not remembering generic/native GUI pos/size. TODO: DSSI native GUI.
+         - Fixed regression by flo: Sliders were recording multiple automation points at same value.
+         - Fixed canvases not remembering position/zoom - everything reopens at exact same pos/zoom now.
+         - Fixed automatable audio GUI controls 'jumpy' in TOUCH mode if heavy graphics causing slowdowns.
+           When pressed, any control now truly 'disengages' from competing/intefering controller stream.
+         - Improved audio automation modes, + READ mode can now be interrupted by GUI or ext control.
+         - MESS synths (esp Deicsonze): Controls (like Track Info program) and synth controls now mirror
+            each other, both ways.
+         - Deicsonze softsynth: Fixed several problems: Not remembering settings + ladspa plugin settings,
+            midi controllers were in wrong domain - moved to NRPN14 type. TODO: Fix 'biased' midi controllers
+            like pan and detune etc.
+         - Native VST: Call idle periodically. Makes some plugins like Glitch work, as per LAD mail.
+05.04.2013:
+         - Change window title when there are unsaved changes (rj)
+         - Add auto-save feature, when enabled tries to save after 5 minutes
+           when there has been changes, unless transport is running (rj)
+04.04.2013:
+         - Added pitch control to SimpleDrums, first version (rj)
+         - Fixed Ctrl+arrows in the arranger so the track list is scrolled (rj)
+29.03.2013:
+         - MusE 2.1.2 released! (rj)
+28.03.2013:
+         - Allow reading old drummaps for new style drumtracks (rj)
+         - Added metronome icon in main window (rj)
+27.03.2013:
+         - Fixed moving events with keyboard in Drum editor (rj)
+10.03.2013:
+         - Added color settings for: midi events in arranger,wave events in arranger, wave events in wave editor (rj)
+05.03.2013:
+         - Added shortcut printout of tools in tool menu (rj)
+03.02.2013:
+         - Generalized theming somewhat more and added a basic Ardour complementary theme (rj)
+28.02.2013:
+         - Wave Editor: Fixed some painting problems. Optimizations, speed boosts. (Tim)
+24.02.2013:
+         - Improved dark theme, midi editors now set background color, the current part of the ruler is darker.
+           Theme setting separated from the regular Ok button in the Appearance settings. Also fixed the color 
+           viewer in the color selector when using the dark theme. (rj)
+23.02.2013:
+         - Added missing line draw shortcut (F) to drum editor. (Tim)
+22.02.2013:
+         * New: Install pre-built PDF + single/split HMTL docs. Separate devel docs. Added build script. (Tim)
+           Build script is /doc/build_docs.sh You'll want to use it or a variant to get the HTML .aux files.
+           Fixed table in my Appendix in tex file so it works with HTML.
+         - For now, I've changed F1 help to open PDF, if not found fallback to HTML.
+           I've #define MUSE_USE_PDF_HELP_FILE in help.cpp. Undefine for HTML only.
+           May at least need to keep track of viewer process (don't open copies), also try context-sensitive help.
+           Help opener always been LANG ready (looks for _xx) but this new build script is not 'automatic'.
+         - TODO: For some reason the generated HTML developer docs contain nonsense. (Unknown formatters?)
+         - Added new french translation from Yann Collette (rj)
+21.02.2013:
+         - Fixed: Multiple label warnings in the LaTeX doc. Reference and formatting fixes. (Orcan)
+         - Improved: Table of contents and hyperrefs in te LaTeX doc. (Orcan)
+19.02.2013
+         * MASSIVE FIXES: MANY editor, usability, operation fixes and changes. (Tim...)
+         - Please see the files README.usage and README.shortcuts for general changes.
+         - Added: Pan and Zoom tools to editors. P + Z shortcuts. Added a Settings item for alternate behaviour.
+         - Fixed: MAJOR Canvas class re-writes/simplifications!
+         - Fixed: ALL auto-scrolling. Was 'drifting' while scrolling. Accuracy is solid now.
+         - Fixed: Moving/new parts now fit into the tracks they are hovering over.
+         - Improved: "Velocity per-note" is now per-graph. Also does not cause main window to activate (w/ Robert's new styles).
+         - Fixed: Pianoroll and Drum Editor 'Snap' boxes not remembering 1st or 3rd columns.
+         - Fixed: Arranger 'Snap' was not stored or remembered.
+         - Fixed: Accelerator buttons shift/ctrl/alt for moving/copying/cloning / restricting movement.
+         - Fixed: Shift key restricting movement: Ignore snap setting now.
+         - Fixed: Resize shift key ignore snap setting now.
+         - Fixed: Draw new item shift key ignore snap setting now.
+         - Fixed: Shift key was not snapping to vertical.
+         - Fixed/changed: Drum velocity level hot-keys/order. LV3 is default now. Re-ordered all MusE drum maps' LV3/LV4.
+         - Fixed: Open Wave Editor shortcut changed from Ctrl-W to Ctrl-Y due to ambiguity with MDI 'Close Window'.
+         - Fixed: ALL 'Speaker' related playing of notes. Works with new notes, moving notes, piano press etc.
+         - Fixed: ALL 'Speaker' related notes now send true note-offs instead of zero-velocity note-ons.
+         - Fixed: Drum 'Cursor' mode was playing double notes.
+         - Fixed: New Drums 'Cursor' mode and instrument up/down movement was broken, jumping all over the place.
+         - Fixed: Drum 'Cursor' mode was not working if no controller graphs were shown. (Silly error.)
+         - Improved: Shortcut listings: Added Wave/Score categories. Re-categorized several keys. Updated README.shortcuts
+         - Fixed: Memory leaks in CtrlEdit class (ownerships).
+         - Fixed: Drum Editor not saving tool state.
+         - Improved: Right-click menus expanded. Now also shows 'Tools' menu when clicked on parts.
+17.02.2013
+         - Added patch from Willy Foobar to remove warnings from compilation (rj)
+13.02.2013:
+         * Added basic theme support selection, currently two themes selectable, light and dark (rj)
+07.02.2013:
+         * Feature: choice of new metronome with different sounds and adjustable volume.
+           Also has additional ticks before each standard tick. The idea is to improve timing.
+           Still needs some work, especially buggy for large time signatures, e.g. 3/16 (rj)
+04.02.2013:
+         - Fixed gain adjustment with 'Other' choice in wave editor, it was reversed (rj)
+02.02.2013:
+         * Solved: "Old style" Drums: Track channel/port re-enabled, drum list columns default to them. (Tim...)
+           The drum list port and channel columns are now blank by default until overriden by user.
+           When blank they default to the track port and channel.
+           Internally, -1 is now an acceptable value for members DrumMap::port and ::channel, meaning default to track.
+           All built-in drum maps have been changed, as well as the initial and blank DrumMap structures.
+         - Since Old Style Drum and New Style Drum had the same icon, and the only way to tell the difference between them
+            was the port and channel columns, and that difference is now gone, this required some icon and colour changes.
+         - Fixed Old Style Drum lockup: Certain item channel overrides caused infinite loop in Audio::processMidi().
+28.01.2013:
+         - MusE 2.1.1 released!
+         - Added setting for default track height (rj)
+27.01.2013:
+         * Feature: Shortcuts dialog modeless + has default global shortcut Ctl+Shift+F1 + "Printable file" button. (Tim)
+         - Memory leaks! Many widgets and dialogs had no parent and were not deleted!  (Tim)
+           Including several top-level editors such as LMaster, MasterEdit, ListEdit, and WaveEditor!
+           Created MusE::deleteParentlessDialogs(), call it from MusE::closeEvent() to delete all parentless dialogs:
+            appearance, metronomeConfig, shortcutConfig, midiSyncConfig, midiFileConfig, globalSettingsConfig,
+            mitPluginTranspose, midiInputTransform, midiFilterConfig, midiRemoteConfig, midiRhythmGenerator, midiTransformerDialog.
+           Also moved call of destroy_function_dialogs() into it instead of at end of main. (Consolidation.)
+           Verified that all destructors were being called.
+25.01.2013:
+         * Feature/fix: Zoom at cursor! Zoom Ctl+PgUp/PgDown (defaults) and Ctl+MouseWheel now zoom about cursor. (Tim)
+           Eliminated redundant call in ScrollScale::setMag(), by blocking signals.
+           Consolidated all HorizontalZoomIn and HorizontalZoomOut functions into a single HorizontalZoom.
+           Added eight more 'quick zoom' levels to class ScrollScale.
+           Modified all HorizontalZoom functions to pass cursor offset, and use it in ScrollScale::setScale().
+19.01.2013:
+         - Fixed confused controllers on seek with multiple muted/off midi tracks/parts on same port/channel. (Tim)
+           In MidiDevice::handleSeek(): Re-wrote controller value sending section - fixed obeying mute/off section.
 17.01.2013:
          - Fixed song length way too big after recorded wave is added. (Tim)
            Was a simple regression in Song::cmdAddRecordedWave back when tempo recording was added.
@@ -17,6 +147,8 @@
          - Don't play midi parts if track is off.   
 13.01.2013:
          - remote should depend on widgets through #including app.h otherwise Python bindings don't compile (Orcan)
+06.01.2013:
+         - MusE 2.1 released!
 03.01.2013:
          - Fixed SimpleDrums GUI issues on AVLinux (and supposedly other debian based distros) (rj)
 01.01.2013: Happy new year!

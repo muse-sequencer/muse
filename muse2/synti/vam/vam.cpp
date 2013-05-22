@@ -206,7 +206,7 @@ class VAM : public MessMono {
       virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
       virtual void setNativeGeometry(int x, int y, int w, int h);
       virtual void processMessages();
-      virtual void process(float**, int, int);
+      virtual void process(unsigned pos, float**, int, int);
       virtual void note(int channel, int pitch, int velo);
       virtual bool setController(int channel, int ctrl, int val);
       virtual bool sysex(int, const unsigned char*);
@@ -471,7 +471,7 @@ void VAM::processMessages()
 //   Called from host, ONLY if output path is connected.
 //---------------------------------------------------------
 
-void VAM::process(float** ports, int offset, int sampleCount)
+void VAM::process(unsigned /*pos*/, float** ports, int offset, int sampleCount)
       {
       /*
       //

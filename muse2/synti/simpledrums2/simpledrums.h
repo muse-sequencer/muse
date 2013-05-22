@@ -74,14 +74,15 @@ struct SS_SendFx
 
 struct SS_Sample
    {
+      SS_Sample() { data = 0; }
       float*      data;
       int         samplerate;
-      int         bits;
+      //int         bits;
       std::string filename;
       long        samples;
       long        frames;
       int         channels;
-      SF_INFO     sfinfo;
+      //SF_INFO     sfinfo;
    };
 
 struct SS_Channel
@@ -89,6 +90,7 @@ struct SS_Channel
       SS_ChannelState state;
       const char*     name;
       SS_Sample*      sample;
+      SS_Sample*      originalSample;
       int             playoffset;
       bool            noteoff_ignore;
 
@@ -101,6 +103,7 @@ struct SS_Channel
       int             pan;
       double          balanceFactorL;
       double          balanceFactorR;
+      int             pitchInt;
 
       bool            channel_on;
 
@@ -122,6 +125,9 @@ struct SS_SampleLoader
       int          ch_no;
    };
 
+double rangeToPitch(int value);
+//int pitchToRange(double pitch);
+
 class SimpleSynth : public Mess
    {
    public:
@@ -141,7 +147,7 @@ class SimpleSynth : public Mess
       virtual const MidiPatch* getPatchInfo(int arg1, const MidiPatch* arg2) const;
       virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
       virtual void processMessages();
-      virtual void process(float** data, int offset, int len);
+      virtual void process(unsigned pos, float** data, int offset, int len);
       //virtual void showGui(bool arg1);
       virtual void showNativeGui(bool arg1);
       ///virtual void getInitData(int*, const unsigned char**) const;
@@ -168,9 +174,11 @@ private:
       bool loadSample(int ch_no, const char* filename);
       void parseInitData(const unsigned char* data);
       void updateVolume(int ch, int in_volume_ctrlval);
+      void updatePitch(int ch, int inpitch_ctrlval);
       void updateBalance(int ch, int pan);
       void guiNotifySampleCleared(int ch);
       void guiUpdateBalance(int ch, int bal);
+      void guiUpdatePitch(int ch, int bal);
       void guiUpdateVolume(int ch, int val);
       void guiUpdateNoff(int ch, bool b);
       void guiUpdateChoff(int ch, bool b);
@@ -182,6 +190,7 @@ private:
       void cleanupPlugin(int id);
       void setFxParameter(int fxid, int param, float val);
       void clearSample(int ch);
+
       double master_vol;
       int master_vol_ctrlval;
 
@@ -192,6 +201,7 @@ private:
       double* processBuffer[2];
    };
 
+void resample(SS_Sample *origSmp, SS_Sample* newSample, double pitch);
 static void* loadSampleThread(void*);
 static pthread_mutex_t SS_LoaderMutex;
 static SS_State synth_state;

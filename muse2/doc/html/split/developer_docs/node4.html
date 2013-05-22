@@ -1,0 +1,344 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Configuration</TITLE>
+<META NAME="description" CONTENT="Configuration">
+<META NAME="keywords" CONTENT="developer_docs">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="developer_docs.css">
+
+<LINK REL="next" HREF="node5.html">
+<LINK REL="previous" HREF="node3.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node5.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html102"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html98"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html92"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html100"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html103"
+  HREF="node5.html">User controls and automation</A>
+<B> Up:</B> <A NAME="tex2html99"
+  HREF="node2.html">Internals - how it</A>
+<B> Previous:</B> <A NAME="tex2html93"
+  HREF="node3.html">User interface programming</A>
+ &nbsp; <B>  <A NAME="tex2html101"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><UL>
+<LI><UL>
+<LI><A NAME="tex2html104"
+  HREF="node4.html#SECTION00220010000000000000">Reading configuration</A>
+<LI><A NAME="tex2html105"
+  HREF="node4.html#SECTION00220020000000000000">Writing configuration</A>
+<LI><A NAME="tex2html106"
+  HREF="node4.html#SECTION00220030000000000000">Song state</A>
+<LI><A NAME="tex2html107"
+  HREF="node4.html#SECTION00220040000000000000">How to add new items</A>
+</UL></UL></UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00220000000000000000"></A> <A NAME="portconfig_sucks"></A>
+<BR>
+Configuration
+</H1>
+Configuration is a bit pesky in MusE in its current state. If you get
+confused by reading this chapter, that's a sign of a sane mind.
+
+<P>
+There are three kinds of configuration items:
+
+<UL>
+<LI>(1) Global configuration, like coloring schemes, plugin categories, MDI-ness settings
+</LI>
+<LI>(2) Per-Song configuration, like whether to show or hide certain track types in the arranger
+</LI>
+<LI>(3) Something in between, like MIDI port settings etc. They obviously actually are
+      global configuration issues (or ought to be), but also obviously must be stored
+      in the song file for portability. (This problem could possibly be solved by
+      the feature proposal in <A HREF="node15.html#symbolic_ports">3.7</A>.
+</LI>
+</UL>
+
+<P>
+
+<H4><A NAME="SECTION00220010000000000000">
+Reading configuration</A>
+</H4>
+<TT>fterfirstv`v=95 _ `v=58 : 
+      `v&gt;64
+        `v&lt;91 vvv
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>oid MusECore::readConfiguration(Xml&amp;, bool, bool)</TT> in
+<TT>fterfirstc`c=95 _ `c=58 : 
+      `c&gt;64
+        `c&lt;91 ccc
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>onf.cpp</TT> is the central point
+of reading configuration. It is called when MusE is started first
+(by <TT>fterfirstb`b=95 _ `b=58 : 
+      `b&gt;64
+        `b&lt;91 bbb
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ool MusECore::readConfiguration()</TT>), and also when a
+song is loaded. 
+<BR>It can be instructed whether to read MIDI ports (3), global configuration
+and MIDI ports (1+3). Per-Song configuration is always read (2).
+
+<P>
+When adding new configuration items and thus altering <TT>fterfirstr`r=95 _ `r=58 : 
+      `r&gt;64
+        `r&lt;91 rrr
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>eadConfiguration()</TT>,
+you must take care to place your item into the correct section. The code is
+divided into the following sections:
+
+<UL>
+<LI>Global and/or per-song configuration (3)
+</LI>
+<LI>Global configuration (1)
+</LI>
+<LI>Code for skipping obsolete entries
+</LI>
+</UL>
+
+<P>
+The sections are divided by comments (they contain <TT>--</TT>, so just
+search for them). Please do not just remove code for reading obsolete entries,
+but always add an appropriate entry to the 'skipping' section in order to
+prevent error messages when reading old configs.
+
+<P>
+
+<H4><A NAME="SECTION00220020000000000000">
+Writing configuration</A>
+</H4>
+Global configuration is written using the
+<TT>fterfirstM`M=95 _ `M=58 : 
+      `M&gt;64
+        `M&lt;91 MMM
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>usEGui::MusE::writeGlobalConfiguration()</TT> functions, while
+per-song-config is written by <TT>fterfirstM`M=95 _ `M=58 : 
+      `M&gt;64
+        `M&lt;91 MMM
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>usEGui::MusE::writeConfiguration()</TT>
+(notice the missing <TT>fterfirstG`G=95 _ `G=58 : 
+      `G&gt;64
+        `G&lt;91 GGG
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>lobal</TT>; both implemented in <TT>fterfirstc`c=95 _ `c=58 : 
+      `c&gt;64
+        `c&lt;91 ccc
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>onf.cpp</TT>).
+
+<P>
+<TT>fterfirstw`w=95 _ `w=58 : 
+      `w&gt;64
+        `w&lt;91 www
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>riteConfiguration</TT> is actually just a subset of the code in
+<TT>fterfirstw`w=95 _ `w=58 : 
+      `w&gt;64
+        `w&lt;91 www
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>riteGlobalConfiguration</TT>. <SPAN  CLASS="textbf">Duplicate code!</SPAN>                  
+<P>
+
+<H4><A NAME="SECTION00220030000000000000">
+Song state</A>
+</H4>
+Additionally to per-song configuration, there is the song's state.
+This contains "the song", that is all tracks, parts and note events,
+together with information about the currently opened windows, their
+position, size, settings and so on. Adding new items here is actually
+pretty painless: Configuration is read and written using
+<TT>fterfirstM`M=95 _ `M=58 : 
+      `M&gt;64
+        `M&lt;91 MMM
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>usECore::Song::read</TT> and <TT>fterfirst:`:=95 _ `:=58 : 
+      `:&gt;64
+        `:&lt;91 :::
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>:write</TT>, both implemented in
+<TT>fterfirsts`s=95 _ `s=58 : 
+      `s&gt;64
+        `s&lt;91 sss
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ongfile.cpp</TT>. There are no caveats.
+
+<P>
+
+<H4><A NAME="SECTION00220040000000000000">
+How to add new items</A>
+</H4>
+When adding global configuration items, then add them into the second
+block ("global configuration") in <TT>fterfirstr`r=95 _ `r=58 : 
+      `r&gt;64
+        `r&lt;91 rrr
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>eadConfiguration</TT> and into
+<TT>fterfirstw`w=95 _ `w=58 : 
+      `w&gt;64
+        `w&lt;91 www
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>riteGlobalConfiguration</TT>.
+
+<P>
+When adding just-per-song items, better don't bother to touch the
+"configuration" code and just add it to the song's state (there might
+be rare exceptions).
+
+<P>
+When adding global configuration items, make sure you add them into the
+correct section of <TT>fterfirstr`r=95 _ `r=58 : 
+      `r&gt;64
+        `r&lt;91 rrr
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>eadConfiguration</TT>, and into <TT>fterfirstw`w=95 _ `w=58 : 
+      `w&gt;64
+        `w&lt;91 www
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>riteGlobalConfiguration</TT>.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html102"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html98"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html92"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html100"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html103"
+  HREF="node5.html">User controls and automation</A>
+<B> Up:</B> <A NAME="tex2html99"
+  HREF="node2.html">Internals - how it</A>
+<B> Previous:</B> <A NAME="tex2html93"
+  HREF="node3.html">User interface programming</A>
+ &nbsp; <B>  <A NAME="tex2html101"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

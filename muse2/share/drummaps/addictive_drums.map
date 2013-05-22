@@ -6,8 +6,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -20,8 +20,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -34,8 +34,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -48,8 +48,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -62,8 +62,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -76,8 +76,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -90,8 +90,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -104,8 +104,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -118,8 +118,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -132,8 +132,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -146,8 +146,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -160,8 +160,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -174,8 +174,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -188,8 +188,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -202,8 +202,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -216,8 +216,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -230,8 +230,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -244,8 +244,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -258,8 +258,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -272,8 +272,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -286,8 +286,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -300,8 +300,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -314,8 +314,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -328,8 +328,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -342,8 +342,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -356,8 +356,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -370,8 +370,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -384,8 +384,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -398,8 +398,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -412,8 +412,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -426,8 +426,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -440,8 +440,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -454,8 +454,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -468,8 +468,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -482,8 +482,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -496,8 +496,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -510,8 +510,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -524,8 +524,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -538,8 +538,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -552,8 +552,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -566,8 +566,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -580,8 +580,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -594,8 +594,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -608,8 +608,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -622,8 +622,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -636,8 +636,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -650,8 +650,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -664,8 +664,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -678,8 +678,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -692,8 +692,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -706,8 +706,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -720,8 +720,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -734,8 +734,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -748,8 +748,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -762,8 +762,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -776,8 +776,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -790,8 +790,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -804,8 +804,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -818,8 +818,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -832,8 +832,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -846,8 +846,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -860,8 +860,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -874,8 +874,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -888,8 +888,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -902,8 +902,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -916,8 +916,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -930,8 +930,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -944,8 +944,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -958,8 +958,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -972,8 +972,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -986,8 +986,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1000,8 +1000,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1014,8 +1014,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1028,8 +1028,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1042,8 +1042,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1056,8 +1056,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1070,8 +1070,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1084,8 +1084,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1098,8 +1098,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1112,8 +1112,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1126,8 +1126,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1140,8 +1140,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1154,8 +1154,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1168,8 +1168,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1182,8 +1182,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1196,8 +1196,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1210,8 +1210,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1224,8 +1224,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1238,8 +1238,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1252,8 +1252,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1266,8 +1266,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1280,8 +1280,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1294,8 +1294,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1308,8 +1308,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1322,8 +1322,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1336,8 +1336,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1350,8 +1350,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1364,8 +1364,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1378,8 +1378,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1392,8 +1392,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1406,8 +1406,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1420,8 +1420,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1434,8 +1434,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1448,8 +1448,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1462,8 +1462,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1476,8 +1476,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1490,8 +1490,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1504,8 +1504,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1518,8 +1518,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1532,8 +1532,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1546,8 +1546,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1560,8 +1560,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1574,8 +1574,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1588,8 +1588,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1602,8 +1602,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1616,8 +1616,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1630,8 +1630,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1644,8 +1644,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1658,8 +1658,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1672,8 +1672,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1686,8 +1686,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1700,8 +1700,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1714,8 +1714,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1728,8 +1728,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1742,8 +1742,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1756,8 +1756,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1770,8 +1770,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>
@@ -1784,8 +1784,8 @@
       <vol>100</vol>
       <quant>16</quant>
       <len>32</len>
-      <channel>0</channel>
-      <port>0</port>
+      <channel>-1</channel>
+      <port>-1</port>
       <lv1>70</lv1>
       <lv2>90</lv2>
       <lv3>110</lv3>

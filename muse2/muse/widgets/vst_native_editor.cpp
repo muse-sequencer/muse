@@ -157,7 +157,7 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif)
     show();
   raise();
   activateWindow();
-  _sif->idleEditor();
+  ///_sif->idleEditor();  // REMOVE Tim. Or keep.
 }
 
 #if defined(Q_WS_X11)

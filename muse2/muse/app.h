@@ -65,7 +65,6 @@ namespace MusEGui {
 class Appearance;
 class Arranger;
 class ArrangerView;
-class AudioConf;
 class AudioMixerApp;
 class AudioRecord;
 class BigTime;
@@ -193,7 +192,6 @@ class MusE : public QMainWindow
       MRConfig* midiRemoteConfig;
       RhythmGen* midiRhythmGenerator;
       MetronomeConfig* metronomeConfig;
-      AudioConf* audioConfig;
       MidiFileConfig* midiFileConfig;
       GlobalSettingsConfig* globalSettingsConfig;
       MidiFilterConfig* midiFilterConfig;
@@ -202,7 +200,8 @@ class MusE : public QMainWindow
       Appearance* appearance;
       AudioMixerApp* mixer1;
       AudioMixerApp* mixer2;
-
+      void deleteParentlessDialogs();
+      
       Arranger* _arranger;
       ToplevelList toplevels;
       ClipListEdit* clipListEdit;
@@ -237,16 +236,20 @@ class MusE : public QMainWindow
       void writeGlobalConfiguration(int level, MusECore::Xml&) const;
       void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
+      QString projectTitle(QString name);
 
       QSignalMapper *midiPluginSignalMapper;
       QSignalMapper *followSignalMapper;
       QSignalMapper *windowsMapper;
+      QTimer *saveTimer;
+      int saveIncrement;
 
    signals:
       void configChanged();
       void activeTopWinChanged(MusEGui::TopWin*);
 
    private slots:
+      void saveTimerSlot();
       void loadProject();
       bool save();
       void configGlobalSettings();
@@ -273,6 +276,7 @@ class MusE : public QMainWindow
       void configMidiSync();
       void configMidiFile();
       void configShortCuts();
+      void configShortCutsSaveConfig();
       void configMetronome();
       void configAppearance();
 
@@ -318,6 +322,7 @@ class MusE : public QMainWindow
       void arrangeSubWindowsRows();
       void arrangeSubWindowsColumns();
       void tileSubWindows();
+      void setDirty();
 
    public slots:
       bool saveAs();

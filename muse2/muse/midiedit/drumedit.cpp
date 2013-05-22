@@ -39,8 +39,12 @@
 #include <QSettings>
 #include <QComboBox>
 #include <QLabel>
+#include <QCursor>
+#include <QPoint>
+#include <QRect>
 
 #include "drumedit.h"
+#include "dcanvas.h"
 #include "mtscale.h"
 #include "scrollscale.h"
 #include "xml.h"
@@ -76,7 +80,7 @@ bool DrumEdit::_ignore_hide_init = false;
 
 static const int xscale = -10;
 static const int yscale = 1;
-static const int drumeditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool | MusEGui::DrawTool;
+static const int drumeditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool | MusEGui::DrawTool | PanTool | ZoomTool;
 
 
 //---------------------------------------------------------
@@ -93,12 +97,12 @@ void DrumEdit::setHeaderWhatsThis()
       header->setWhatsThis(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
       header->setWhatsThis(COL_NOTELENGTH, tr("note length"));
       header->setWhatsThis(COL_NOTE, tr("this is the note which is played"));
-      header->setWhatsThis(COL_OUTCHANNEL, tr("output channel (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_OUTPORT, tr("output port (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_LEVEL1, tr("shift + control key: draw velocity level 1"));
-      header->setWhatsThis(COL_LEVEL2, tr("control key: draw velocity level 2"));
-      header->setWhatsThis(COL_LEVEL3, tr("shift key: draw velocity level 3"));
-      header->setWhatsThis(COL_LEVEL4, tr("draw velocity level 4"));
+      header->setWhatsThis(COL_OUTCHANNEL, tr("override track output channel (hold ctl to affect all rows)"));
+      header->setWhatsThis(COL_OUTPORT, tr("override track output port (hold ctl to affect all rows)"));
+      header->setWhatsThis(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
+      header->setWhatsThis(COL_LEVEL2, tr("meta key: draw velocity level 2"));
+      header->setWhatsThis(COL_LEVEL3, tr("draw default velocity level 3"));
+      header->setWhatsThis(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -115,12 +119,12 @@ void DrumEdit::setHeaderToolTips()
       header->setToolTip(COL_INPUTTRIGGER, tr("this input note triggers the sound"));
       header->setToolTip(COL_NOTELENGTH, tr("note length"));
       header->setToolTip(COL_NOTE, tr("this is the note which is played"));
-      header->setToolTip(COL_OUTCHANNEL, tr("output channel (ctl: affect all rows)"));
-      header->setToolTip(COL_OUTPORT, tr("output port (ctl: affect all rows)"));
-      header->setToolTip(COL_LEVEL1, tr("shift + control key: draw velocity level 1"));
-      header->setToolTip(COL_LEVEL2, tr("control key: draw velocity level 2"));
-      header->setToolTip(COL_LEVEL3, tr("shift key: draw velocity level 3"));
-      header->setToolTip(COL_LEVEL4, tr("draw velocity level 4"));
+      header->setToolTip(COL_OUTCHANNEL, tr("override track output channel (ctl: affect all rows)"));
+      header->setToolTip(COL_OUTPORT, tr("override track output port (ctl: affect all rows)"));
+      header->setToolTip(COL_LEVEL1, tr("control + meta keys: draw velocity level 1"));
+      header->setToolTip(COL_LEVEL2, tr("meta key: draw velocity level 2"));
+      header->setToolTip(COL_LEVEL3, tr("draw default velocity level 3"));
+      header->setToolTip(COL_LEVEL4, tr("meta + alt keys: draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -430,6 +434,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 
+      tools->addAction(QWhatsThis::createAction(this));
+
       tools2 = new MusEGui::EditToolBar(this, drumeditTools);
       addToolBar(tools2);
 
@@ -504,8 +510,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       canvas->setCanvasTools(drumeditTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
-      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
-      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+      connect(canvas, SIGNAL(horizontalZoom(bool,const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
+      connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(canvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
       time->setOrigin(offset, 0);
 
@@ -565,6 +571,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(dlist, SIGNAL(keyReleased(int, bool)), canvas, SLOT(keyReleased(int, bool)));
       connect(dlist, SIGNAL(mapChanged(int, int)), canvas, SLOT(mapChanged(int, int)));
       connect(dlist, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
+      connect(dlist, SIGNAL(curDrumInstrumentChanged(int)), SLOT(setCurDrumInstrument(int)));
+      connect(dlist, SIGNAL(curDrumInstrumentChanged(int)), canvas, SLOT(setCurDrumInstrument(int)));
 
       gridS1->setRowStretch(1, 100);
       gridS1->setColumnStretch(0, 100);
@@ -613,6 +621,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(info, SIGNAL(escapePressed()), SLOT(focusCanvas()));
       
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrlClicked()));
+
+      connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
 
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
@@ -663,6 +673,72 @@ void DrumEdit::songChanged1(MusECore::SongChangedFlags_t bits)
         
         songChanged(bits);
       }
+
+//---------------------------------------------------------
+//   midiNote
+//---------------------------------------------------------
+void DrumEdit::midiNote(int pitch, int velo)
+{
+  //if (debugMsg)
+      printf("DrumEdit::midiNote: pitch=%i, velo=%i\n", pitch, velo);
+  int index=0;
+
+  //      *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
+
+  if ((DrumCanvas*)(canvas)->midiin())
+  {
+    if (old_style_drummap_mode()) {
+        MusECore::DrumMap *dmap= ((DrumCanvas*)canvas)->getOurDrumMap();
+        for (index = 0; index < ((DrumCanvas*)canvas)->getOurDrumMapSize(); ++index) {
+
+          if ((&dmap[index])->anote == pitch)
+            break;
+        }
+
+    }
+    else
+    {
+        for (index = 0; index < get_instrument_map().size(); ++index) {
+          if (get_instrument_map().at(index).pitch == pitch)
+            break;
+        }
+    }
+    dlist->setCurDrumInstrument(index);
+  }
+}
+//---------------------------------------------------------
+//   horizontalZoom
+//---------------------------------------------------------
+
+void DrumEdit::horizontalZoom(bool zoom_in, const QPoint& glob_pos)
+{
+  int mag = hscroll->mag();
+  int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
+  if(zoom_in)
+  {
+    if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
+        zoomlvl++;
+  }
+  else
+  {
+    if (zoomlvl > 1)
+        zoomlvl--;
+  }
+  int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+  QPoint cp = canvas->mapFromGlobal(glob_pos);
+  QPoint sp = split1->mapFromGlobal(glob_pos);
+  if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < split1->height())
+    hscroll->setMag(newmag, cp.x());
+}
+
+void DrumEdit::horizontalZoom(int mag, const QPoint& glob_pos)
+{
+  QPoint cp = canvas->mapFromGlobal(glob_pos);
+  QPoint sp = split1->mapFromGlobal(glob_pos);
+  if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < split1->height())
+    hscroll->setMag(hscroll->mag() + mag, cp.x());
+}
 
 //---------------------------------------------------------
 //   updateHScrollRange
@@ -942,11 +1018,12 @@ void DrumEdit::writeStatus(int level, MusECore::Xml& xml) const
       header->writeStatus(level, xml);
       xml.intTag(level, "steprec", canvas->steprec());
       xml.intTag(level, "midiin",  canvas->midiin());
+      xml.intTag(level, "tool", int(canvas->tool()));
       xml.intTag(level, "playEvents", _playEvents);
-      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
-      xml.intTag(level, "ypos", vscroll->pos());
+      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ymag", vscroll->mag());
+      xml.intTag(level, "ypos", vscroll->pos());
       xml.intTag(level, "ignore_hide", _ignore_hide);
       xml.tag(level, "/drumedit");
       }
@@ -974,6 +1051,11 @@ void DrumEdit::readStatus(MusECore::Xml& xml)
                               int val = xml.parseInt();
                               canvas->setMidiin(val);
                               midiin->setChecked(val);
+                              }
+                        else if (tag == "tool") {
+                              int tool = xml.parseInt();
+                              canvas->setTool(tool);
+                              tools2->set(tool);
                               }
                         else if (tag == "ctrledit") {
                               CtrlEdit* ctrl = addCtrl();
@@ -1338,10 +1420,9 @@ void DrumEdit::setupNewCtrl(CtrlEdit* ctrlEdit)
       connect(ctrlEdit, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
       connect(ctrlEdit, SIGNAL(destroyedCtrl(CtrlEdit*)), SLOT(removeCtrl(CtrlEdit*)));
       connect(ctrlEdit, SIGNAL(yposChanged(int)), toolbar, SLOT(setInt(int)));
+      connect(ctrlEdit, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       connect(tools2,   SIGNAL(toolChanged(int)),   ctrlEdit, SLOT(setTool(int)));
-      connect(dlist,    SIGNAL(curDrumInstrumentChanged(int)), SLOT(setCurDrumInstrument(int)));
-      connect(dlist,    SIGNAL(curDrumInstrumentChanged(int)), canvas, SLOT(setCurDrumInstrument(int)));
-      connect(canvas,    SIGNAL(curPartHasChanged(MusECore::Part*)), ctrlEdit, SLOT(curPartHasChanged(MusECore::Part*)));
+      connect(canvas,   SIGNAL(curPartHasChanged(MusECore::Part*)), ctrlEdit, SLOT(curPartHasChanged(MusECore::Part*)));
 
       setCurDrumInstrument(dlist->getSelectedInstrument());
 
@@ -1472,6 +1553,8 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             dlist->setCurDrumInstrument(dlist->getSelectedInstrument()-1);
             dlist->redraw();
             ((DrumCanvas*)canvas)->selectCursorEvent(((DrumCanvas*)canvas)->getEventAtCursorPos());
+            ((DrumCanvas*)canvas)->keyPressed(dlist->getSelectedInstrument(),100);
+
             MusEGlobal::song->update(SC_DRUMMAP);
             return;
             }
@@ -1479,6 +1562,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             dlist->setCurDrumInstrument(dlist->getSelectedInstrument()+1);
             dlist->redraw();
             ((DrumCanvas*)canvas)->selectCursorEvent(((DrumCanvas*)canvas)->getEventAtCursorPos());
+            ((DrumCanvas*)canvas)->keyPressed(dlist->getSelectedInstrument(),100);
             MusEGlobal::song->update(SC_DRUMMAP);
             return;
             }
@@ -1513,31 +1597,28 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             tools2->set(MusEGui::RubberTool);
             return;
             }
+      else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
+            tools2->set(MusEGui::DrawTool);
+            return;
+            }
       else if (key == shortcuts[SHRT_TOOL_CURSOR].key) {
             tools2->set(MusEGui::CursorTool);
             return;
             }
+      else if (key == shortcuts[SHRT_TOOL_PAN].key) {
+            tools2->set(MusEGui::PanTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_ZOOM].key) {
+            tools2->set(MusEGui::ZoomTool);
+            return;
+            }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
-                  zoomlvl++;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            horizontalZoom(true, QCursor::pos());
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl > 1)
-                  zoomlvl--;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            horizontalZoom(false, QCursor::pos());
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_LEFT].key) {

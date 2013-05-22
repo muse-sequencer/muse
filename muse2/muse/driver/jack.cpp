@@ -229,7 +229,7 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
               
               audioState = Audio::START_PLAY;
             break;  
-            //case JackTransportNetStarting:  
+            //case JackTransportNetStarting: -- only available in Jack-2!
             // FIXME: Quick and dirty hack to support both Jack-1 and Jack-2
             // Really need a config check of version...
             case 4:  
@@ -1561,6 +1561,51 @@ QString JackAudioDevice::portName(void* port)
       }
 
 //---------------------------------------------------------
+//   portLatency
+//   If capture is true get the capture latency,
+//    otherwise get the playback latency.
+//---------------------------------------------------------
+
+unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
+{
+  // TODO: Experimental code... Finish it...
+  
+  if(!checkJackClient(_client) || !port)
+    return 0;
+
+  QString s(jack_port_name((jack_port_t*)port));
+  //fprintf(stderr, "Jack::portName %p %s\n", port, s.toLatin1().constData());  
+  
+  jack_latency_range_t p_range;
+  jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
+  //fprintf(stderr, "JackAudioDevice::portLatency playback min:%u max:%u\n", p_range.min, p_range.max);  
+  if(p_range.max != p_range.min)
+  {
+    //fprintf(stderr, "JackAudioDevice::portLatency min:%u != max:%u\n", p_range.min, p_range.max);  
+    //return (p_range.max - p_range.min) / 2;
+  }
+  
+  jack_latency_range_t c_range;
+  jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
+  //fprintf(stderr, "JackAudioDevice::portLatency capture min:%u max:%u\n", c_range.min, c_range.max);  
+  if(c_range.max != c_range.min)
+  {
+    //fprintf(stderr, "JackAudioDevice::portLatency capture min:%u != max:%u\n", c_range.min, c_range.max);  
+
+    // TODO TEST Decide which method to use. Although, it is arbitrary.
+    //return (c_range.max - c_range.min) / 2;  
+    //return c_range.max;
+  }
+
+  if(capture)
+    //return (c_range.max - c_range.min) / 2;
+    return c_range.max;
+  
+  //return (p_range.max - p_range.min) / 2;
+  return p_range.max;
+}
+
+//---------------------------------------------------------
 //   unregisterPort
 //---------------------------------------------------------
 
@@ -1607,7 +1652,7 @@ int JackAudioDevice::getState()
               //printf("JackAudioDevice::getState JackTransportStarting\n");
               
               return Audio::START_PLAY;
-            //case JackTransportNetStarting:  
+            //case JackTransportNetStarting: -- only available in Jack-2!
             // FIXME: Quick and dirty hack to support both Jack-1 and Jack-2
             // Really need a config check of version...
             case 4:  

@@ -1,0 +1,591 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Introduction</TITLE>
+<META NAME="description" CONTENT="Introduction">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node5.html">
+<LINK REL="previous" HREF="node3.html">
+<LINK REL="up" HREF="node3.html">
+<LINK REL="next" HREF="node5.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html203"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html199"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html193"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html201"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html204"
+  HREF="node5.html">Basic overview</A>
+<B> Up:</B> <A NAME="tex2html200"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html194"
+  HREF="node3.html">User's manual</A>
+ &nbsp; <B>  <A NAME="tex2html202"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html205"
+  HREF="node4.html#SECTION00311000000000000000">A brief history of computer audio and MusE</A>
+<LI><A NAME="tex2html206"
+  HREF="node4.html#SECTION00312000000000000000">Definitions</A>
+<LI><A NAME="tex2html207"
+  HREF="node4.html#SECTION00313000000000000000">Getting up and running for impatient people</A>
+<LI><A NAME="tex2html208"
+  HREF="node4.html#SECTION00314000000000000000">Getting up and running</A>
+<UL>
+<LI><A NAME="tex2html209"
+  HREF="node4.html#SECTION00314100000000000000">Installation from binaries</A>
+<LI><A NAME="tex2html210"
+  HREF="node4.html#SECTION00314200000000000000">Installation from source</A>
+<LI><A NAME="tex2html211"
+  HREF="node4.html#SECTION00314300000000000000">Hardware</A>
+<LI><A NAME="tex2html212"
+  HREF="node4.html#SECTION00314400000000000000">Launching</A>
+<LI><A NAME="tex2html213"
+  HREF="node4.html#SECTION00314500000000000000">Audio preconditions</A>
+<LI><A NAME="tex2html214"
+  HREF="node4.html#SECTION00314600000000000000">Running MusE</A>
+<LI><A NAME="tex2html215"
+  HREF="node4.html#SECTION00314700000000000000">Midi only</A>
+<LI><A NAME="tex2html216"
+  HREF="node4.html#SECTION00314800000000000000">ALSA midi with Jack</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html217"
+  HREF="node4.html#SECTION00315000000000000000">Beginners tutorial</A>
+<UL>
+<LI><A NAME="tex2html218"
+  HREF="node4.html#SECTION00315100000000000000">Midi Setup</A>
+<LI><A NAME="tex2html219"
+  HREF="node4.html#SECTION00315200000000000000">Soft synth test</A>
+<LI><A NAME="tex2html220"
+  HREF="node4.html#SECTION00315300000000000000">Missing sound</A>
+<LI><A NAME="tex2html221"
+  HREF="node4.html#SECTION00315400000000000000">Recording Midi</A>
+<LI><A NAME="tex2html222"
+  HREF="node4.html#SECTION00315500000000000000">Recording Audio</A>
+</UL></UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00310000000000000000">
+Introduction</A>
+</H1>
+
+<H2><A NAME="SECTION00311000000000000000">
+A brief history of computer audio and MusE</A>
+</H2>
+To quickly summarize over a decades open source development: in 1999 Werner
+ Schweer released the first version of MusE, muse-0.0.1.tar.gz, in it's first
+few releases (actually not few, Werner relentlessly churned out new releases)
+MusE was only a midi sequencer. The target was to create a fully fledged
+midi sequencer for the Linux operating system. Over the years audio was
+added among with other things implemented and sometimes abandoned.
+Today MusE is a stable and feature rich music creation environment which
+strives to encompass most of the music recording process, creation, editing,
+mastering.
+
+<P>
+
+<H2><A NAME="SECTION00312000000000000000">
+Definitions</A>
+</H2>
+<SPAN  CLASS="textbf">CTRL</SPAN> refers to the control key on the keyboard, e.g. <SPAN  CLASS="textbf">CTRL+C</SPAN>
+means to press and hold the control key while pressing the c key. Make sure
+you know where you have it so you won't accidentally lose control
+(bad jokes are the best jokes, so say we all!).
+<BR><SPAN  CLASS="textbf">SHIFT</SPAN> refers to the shift key on the keyboard, see above for usage
+<BR><SPAN  CLASS="textbf">ALT</SPAN> refers to the alt key on the keyboard, see above for usage
+<BR><TT><SPAN  CLASS="textbf">$&gt;</SPAN></TT> is used as a generic definition for a terminal prompt. When the
+manual lists a command that shall be typed, the prompt is not part of the
+command.
+<BR>
+Keys are always referred to in bold uppercase, e.g. <SPAN  CLASS="textbf">A</SPAN>. For instance
+<SPAN  CLASS="textbf">SHIFT+A</SPAN> for the key a pressed together with the shift key.
+<BR>
+Sometimes terminal examples are written tabbed in with a fixed font to
+visualize more closely what something looks like on the screen.
+E.g.
+<BR> <TT><SPAN  CLASS="textbf">$&gt; muse2</SPAN></TT>
+<BR>
+<P>
+
+<H2><A NAME="SECTION00313000000000000000">
+Getting up and running for impatient people</A>
+</H2>
+Install MusE from the repository of your chosen distribution.
+To get decent performance start http://jackaudio.org/Jack with
+the following command in a terminal:
+<BR> <TT><SPAN  CLASS="textbf">$&gt; jackd -d alsa -d hw:0 -p 256</SPAN></TT>
+<BR>
+Or, if you prefer, use the launcher utility 
+http://qjackctl.sourceforge.net/QJackCtl to get some
+help starting Jack.
+After this, start MusE from the menu or fire up another terminal and
+type
+
+<P>
+<TT><SPAN  CLASS="textbf">muse2</SPAN></TT>.
+<BR>
+If this didn't work out read on for the slightly more complete route for
+getting things started.
+
+<P>
+
+<H2><A NAME="SECTION00314000000000000000">
+Getting up and running</A>
+</H2>
+
+<H3><A NAME="SECTION00314100000000000000">
+Installation from binaries</A>
+</H3>
+There are several ways to install MusE depending on your situation. The
+most convenient way is to install a prepackaged version from your chosen
+distribution. The drawback of this is that it may not be the most recent
+version, though often there is a more recent package from a private packager.
+
+<H3><A NAME="SECTION00314200000000000000">
+Installation from source</A>
+</H3>
+Building MusE from source is not hard, there are a number of prerequistes
+that must be met but the actual building should be painless (ha, famous
+last words).
+<BR>
+Please follow the README in the source package and/or read the instructions
+on the homepage: <TT><A NAME="tex2html2"
+  HREF="http://muse-sequencer.org/index.php/Installation">http://muse-sequencer.org/index.php/Installation</A></TT>
+<P>
+
+<H3><A NAME="SECTION00314300000000000000">
+Hardware</A>
+</H3>
+MusE on the Linux platform supports midi through ALSA and Jack-midi and audio
+through Jack. For information on what hardware is supported there are some
+convenient places to check:
+
+<UL>
+<LI>Alsa soundcard matrix at 
+<TT><A NAME="tex2html3"
+  HREF="http://www.alsa-project.org/main/index.php/Matrix:Main">http://www.alsa-project.org/main/index.php/Matrix:Main</A></TT> 
+</LI>
+<LI><TT><A NAME="tex2html4"
+  HREF="http://FFADO.org">http://FFADO.org</A></TT> for firewire devices. 
+</LI>
+</UL>
+Also, as is often a very good approach for Linux and open source, the
+various forums available on the internet often contain good information.
+Chances are someone has already tried your configuration and/or had your
+specific problem and the solution is already written down.
+
+<H3><A NAME="SECTION00314400000000000000">
+Launching</A>
+</H3>
+After installation the binary muse2 is installed on the computer. If MusE
+was installed from a distribution repository the binary may have a
+different name depending on the distribution policies. Most distributions
+do however install a menu entry so MusE should be conveniently available
+from there.
+
+<H3><A NAME="SECTION00314500000000000000">
+Audio preconditions</A>
+</H3>
+In the standard case MusE expects to find and connect to the Jack audio
+server <TT><A NAME="tex2html5"
+  HREF="http://jackaudio.org">http://jackaudio.org</A></TT>. Make sure jack is installed (if MusE was
+installed with a distribution-package Jack will very likely already be
+installed) For Jack to run with best performance your system should be
+sufficiently tuned to allow it to run with realtime capabilities. The
+realtime configuration is configuration of the operating system and roughly
+consists of two parts.
+
+<OL>
+<LI>By default on most distros only the superuser lets applications setup
+realtime capabilities. Please see the APPENDIX for setting up realtime 
+</LI>
+<LI>Maximizing performance. A standard linux installation may not able
+to reach the performance required by a power user. This requires exchanging
+the linux kernel for a so called lowlatency kernel, this is also covered by
+the realtime APPENDIX.
+</LI>
+</OL>
+
+<P>
+
+<H3><A NAME="SECTION00314600000000000000">
+Running MusE</A>
+</H3>
+Find MusE in the menu or open a terminal and enter muse2.
+
+<P>
+<TT><SPAN  CLASS="textbf">$&gt; muse2</SPAN></TT>
+<BR>
+A splash screen should pop up followed
+by the main application window and you are off!
+<BR>
+If an error like the screenshot below pops up the Jack audio server is
+either not running or started as a different user than what you are trying
+to start MusE as.
+
+<DIV ALIGN="CENTER"><A NAME="fig:no_audio"></A><A NAME="101"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.1:</STRONG>
+Jack server missing</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="506" HEIGHT="178" ALIGN="BOTTOM" BORDER="0"
+ SRC="./no_audio.png"
+ ALT="Image no_audio"></TD></TR>
+</TABLE>
+</DIV>
+
+<H3><A NAME="SECTION00314700000000000000">
+Midi only</A>
+</H3>
+MusE can be started in Midi-only mode where MusE does not have any external
+dependencies apart from ALSA midi. In this case start MusE from a terminal:
+<TT><SPAN  CLASS="textbf">$&gt; muse2 -a</SPAN></TT>
+
+<P>
+
+<H3><A NAME="SECTION00314800000000000000">
+ALSA midi with Jack</A>
+</H3>
+If Jack is running, by default MusE will not use ALSA devices, preferring
+Jack midi instead. To force ALSA devices to be used as well as Jack
+midi, start MusE with the -A option: <TT><SPAN  CLASS="textbf">$&gt; muse2 -A</SPAN></TT>
+
+<P>
+
+<H2><A NAME="SECTION00315000000000000000">
+Beginners tutorial</A>
+</H2>
+To get a quick grip of what MusE can achieve please follow this beginners
+tutorial.
+
+<H3><A NAME="SECTION00315100000000000000">
+Midi Setup</A>
+</H3>
+First off, fire up MusE as was described in the previous chapter, making
+sure that the jack audio server is started with sufficient configuration
+to allow for audio output without breakup. Also make sure your system can
+make sound. 
+
+<H3><A NAME="SECTION00315200000000000000">
+Soft synth test</A>
+</H3>
+With MusE up and running right click in the Track-pane (see
+Fig. <A HREF="node5.html#fig:Main_Window">2.8</A>) and select 
+<SPAN  CLASS="textbf">Add Synth &gt; MESS &gt; vam soft synth</SPAN>.
+A Soft Synth track called vam-0 should appear as well as a separate GUI
+for the synthesizer.
+
+<P>
+Now right click once more in the Track-pane and select <SPAN  CLASS="textbf">Add Midi
+Track</SPAN>. Another track appears called Track 1, and its track list Port
+column should show it is bound to the synth that was just created vam-0.
+If it is not, click on the Track 1 Port column to open a drop-down list
+of available devices and choose vam-0.
+
+<P>
+
+<DIV ALIGN="CENTER">
+r0.05
+<IMG
+  WIDTH="23" HEIGHT="23" ALIGN="BOTTOM" BORDER="0"
+ SRC="./arrow_tool.png"
+ ALT="Image arrow_tool">
+
+</DIV>
+Now select the drawing tool icon
+from the toolbar, alternatively press the shortcut key <SPAN  CLASS="textbf">D</SPAN>.
+Move the mouse over to the arranger canvas as referenced in 
+Fig. <A HREF="node5.html#fig:Main_Window">2.8</A>
+and point at the midi track, the mouse should have changed to a small pencil.
+Draw a Part along the midi track using the mouse. For this exercise it is
+not important where or how large the drawn Part is. When you are done double
+click on the drawn part. This will open up the Piano Roll editor. To the
+left of the Piano Roll there are piano keys in a vertical line, try clicking
+on the keys in this virtual keyboard each click should be rewarded with a
+synth sound (maybe of questionable quality, a sound nevertheless) 
+
+<DIV ALIGN="CENTER"><A NAME="fig:vam_synth"></A><A NAME="123"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.2:</STRONG>
+vam synthesizer</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="750" HEIGHT="560" ALIGN="BOTTOM" BORDER="0"
+ SRC="./vam_synth.png"
+ ALT="Image vam_synth"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<H3><A NAME="SECTION00315300000000000000">
+Missing sound</A>
+</H3>
+If you got sound from the previous exercise you can carry on to the next,
+or keep reading for further enlightenment in case you come upon trouble
+later on. If there is no sound we need to do some fault hunting. First
+off, click on Arranger window once more and select the vam-0 track in the
+track-pane.
+
+<DIV ALIGN="CENTER"><A NAME="fig:Midi_editor"></A><A NAME="129"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.3:</STRONG>
+Midi editor view</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="914" HEIGHT="679" ALIGN="BOTTOM" BORDER="0"
+ SRC="./main_window_with_midi_editor_vam.png"
+ ALT="Image main_window_with_midi_editor_vam"></TD></TR>
+</TABLE>
+</DIV>
+Now bring back Piano Roll window and align the windows so you
+can see the piano keys as well as the Meter on the Mixer Strip (see the
+5 Function by function chapter for more information on these windows).
+The result should be something like the following:
+
+<P>
+When pressing one of the keys on virtual Keyboard the Meter on the Mixer
+Strip should light up in green to visualize that the Synth is making
+sound, if it is not try to trace back your steps and and see if you did
+anything differently than described.
+Now, if the Meter lights up but there is still no sound we need to
+check the routing between the tracks. Click on the Arranger window again
+and select the Out 1 track, this is the predefined output which MusE by
+default loads at startup, at the bottom of Mixer Strip there are two
+buttons looking like tele- jacks, these bring up the inputs and outputs
+of the track, click on the right one, the output and make sure that it is
+connected to some valid outputs on your system.
+
+<DIV ALIGN="CENTER">
+r0.25
+<IMG
+  WIDTH="231" HEIGHT="318" ALIGN="BOTTOM" BORDER="0"
+ SRC="./output_routing.png"
+ ALT="Image output_routing"> 
+
+</DIV>
+Click on the outputs to select them, if you did changes here go back and
+try clicking on the Piano Roll keyboard again, hopefully it helped. If there
+still are problems make sure your system actually can make sound through
+Jack, this is however getting outside the scope of this manual.
+<BR>
+<BR><SPAN  CLASS="textit">This might be the time to bring up the concept of community support.
+Open source software could never be what it is without the support given by
+individuals on forums and mailinglists, if the information given in this
+document is not enough, try googling your problem and/or get in touch with
+one of the online forums for MusE or Linux audio in general. See some pointers
+in the Support chapter.</SPAN>
+
+<P>
+
+<H3><A NAME="SECTION00315400000000000000">
+Recording Midi</A>
+</H3>                                                TBD
+
+<H3><A NAME="SECTION00315500000000000000">
+Recording Audio</A>
+</H3>
+At this point we'll make a a slight detour into full on audio recording. Getting
+audio out of MusE has already been covered in the previous chapters so we will
+concentrate on the additional steps needed to record onto an audio track.
+<BR>
+<BR>
+When MusE is first fired up, the
+output track has already been created (more about this in the chapter about 
+templates), to proceed with audio recording we need to add two additional tracks, a 
+wave track and an input track.
+<BR>
+When MusE is first started right click in an empty space on the track view
+
+<DIV ALIGN="CENTER"><A NAME="fig:Add_track"></A><A NAME="142"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.4:</STRONG>
+Add track</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="782" HEIGHT="498" ALIGN="BOTTOM" BORDER="0"
+ SRC="./main_window_add_track.png"
+ ALT="Image main_window_add_track"></TD></TR>
+</TABLE>
+</DIV>
+and select <SPAN  CLASS="textbf">Add Audio Input</SPAN>. Right click again and also select 
+<SPAN  CLASS="textbf">Add Wave Track</SPAN>. Two additional tracks are now visible in the Arranger, 
+"Input 1" and "Track 1", bring up the mixer with <SPAN  CLASS="textbf">F10</SPAN> and you should see 
+the following configuration.
+
+<DIV ALIGN="CENTER"><A NAME="fig:Mixer_with_one_input"></A><A NAME="150"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.5:</STRONG>
+Mixer with one input</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="216" HEIGHT="418" ALIGN="BOTTOM" BORDER="0"
+ SRC="./mixer_with_one_input.png"
+ ALT="Image mixer_with_one_input"></TD></TR>
+</TABLE>
+</DIV>
+
+<BR>
+Note the buttons on each mixer strip. hover over them to see their 
+functionality. For more information on all the buttons see coming chapters 
+about the mixer. For now lets just do what we must.
+<BR>
+1. click on the stereo symbol over the slider to change the input to a mono track.
+<BR>
+2. do the same for the wave track (optional)
+<BR>
+3. click on the Mute (gray speaker) icon on the input track to unmute it.
+<BR>
+4. click on the input routing button (see the tooltip, it looks like a tele plug) 
+on the input track and select an appropriate connection from your system.
+<BR>
+5. click on the output routing button on the input track and select 
+<SPAN  CLASS="textbf">Track 1</SPAN>
+<BR>
+<BR>
+Already after the meter on the input track should be able to display that there
+is incoming sound from your sound source. If there actually is sound coming 
+from your sound source, that is.
+<BR>
+We are now nearly ready to start recording. First we need to select a location
+to store the files. MusE does not use a centralized storage of soundfiles but
+uses the path of the song-file (extension .med) as guidance as to where the
+audio files should be placed. Now as it happens MusE will prohibit us from
+starting a recording until the songfile has been stored. So lets take advantage
+of this behaviour and just go ahead and try to record. Let's get started.
+<BR>
+In the mixer click on the red <SPAN  CLASS="textbf">record</SPAN> dot on the Audio Track to arm it
+for recording (or enable if you will). Now when there is audio coming into the
+input it will also show up on the Audio Track. Also note that all the input and
+output routing buttons on the tracks now have the same gray color, this means
+that all of the tracks have a proper connection.
+
+<DIV ALIGN="CENTER"><A NAME="fig:Mixer_buttons"></A><A NAME="157"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.6:</STRONG>
+Mixer buttons</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="217" HEIGHT="166" ALIGN="BOTTOM" BORDER="0"
+ SRC="./mixer_with_one_input_buttons.png"
+ ALT="Image mixer_with_one_input_buttons"></TD></TR>
+</TABLE>
+</DIV>
+
+<BR>
+All fine and dandy. Now bring up the arranger window and find the round, red on
+white  <SPAN  CLASS="textbf">record</SPAN> button and click on it. This is your queue to MusE to
+prepare for recording. However since we have not saved our song we are presented
+with a dialog to do just that.
+<BR>
+<DIV ALIGN="CENTER"><A NAME="fig:Save_song"></A><A NAME="163"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.7:</STRONG>
+Save song</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="575" HEIGHT="405" ALIGN="BOTTOM" BORDER="0"
+ SRC="./project_my_first_song.png"
+ ALT="Image project_my_first_song"></TD></TR>
+</TABLE>
+</DIV>
+Note the check box for creating a project folder, when working with audio this
+is very much recommended or you may soon loose track of what audio files belong
+to which song.
+<BR>
+Finally we are ready to start recording! The process is completed by clicking
+on the <SPAN  CLASS="textbf">Play</SPAN> button in the Arranger. If all went well MusE then starts
+to record a wave file from the Input Track placed in your song directory.
+<BR>
+When you wish to stop recording press <SPAN  CLASS="textbf">Stop</SPAN> in the Arranger, now the 
+resulting waveform should be visible in the Arranger. After rewinding the Play 
+position and pressing <SPAN  CLASS="textbf">Play</SPAN> again the resulting sound should be audible
+through the connected output.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html203"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html199"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html193"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html201"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html204"
+  HREF="node5.html">Basic overview</A>
+<B> Up:</B> <A NAME="tex2html200"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html194"
+  HREF="node3.html">User's manual</A>
+ &nbsp; <B>  <A NAME="tex2html202"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

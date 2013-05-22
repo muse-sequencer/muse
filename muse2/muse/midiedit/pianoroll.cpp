@@ -30,6 +30,7 @@
 #include <QMenu>
 #include <QSignalMapper>
 #include <QMenuBar>
+#include <QWhatsThis>
 #include <QApplication>
 #include <QClipboard>
 #include <QDir>
@@ -42,6 +43,9 @@
 #include <QMimeData>
 #include <QScrollArea>
 #include <QSettings>
+#include <QCursor>
+#include <QPoint>
+#include <QRect>
 
 #include <stdio.h>
 
@@ -81,7 +85,7 @@ int PianoRoll::colorModeInit = 0;
 static const int xscale = -10;
 static const int yscale = 1;
 static const int pianoWidth = 40;
-static int pianorollTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::DrawTool;
+static int pianorollTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::DrawTool | PanTool | ZoomTool;
 
 
 //---------------------------------------------------------
@@ -297,6 +301,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 
+      tools->addAction(QWhatsThis::createAction(this));
+      
       tools2 = new MusEGui::EditToolBar(this, pianorollTools);
       addToolBar(tools2);
 
@@ -372,8 +378,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       canvas->setCanvasTools(pianorollTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
-      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
-      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+      connect(canvas, SIGNAL(horizontalZoom(bool, const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
+      connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       time->setOrigin(offset, 0);
 
       gridS1->setRowStretch(2, 100);
@@ -522,6 +528,40 @@ void PianoRoll::configChanged()
       {
       initShortcuts();
       }
+
+//---------------------------------------------------------
+//   horizontalZoom
+//---------------------------------------------------------
+
+void PianoRoll::horizontalZoom(bool zoom_in, const QPoint& glob_pos)
+{
+  int mag = hscroll->mag();
+  int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
+  if(zoom_in)
+  {
+    if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
+        zoomlvl++;
+  }
+  else
+  {
+    if (zoomlvl > 1)
+        zoomlvl--;
+  }
+  int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+  QPoint cp = canvas->mapFromGlobal(glob_pos);
+  QPoint sp = splitter->mapFromGlobal(glob_pos);
+  if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < splitter->height())
+    hscroll->setMag(newmag, cp.x());
+}
+
+void PianoRoll::horizontalZoom(int mag, const QPoint& glob_pos)
+{
+  QPoint cp = canvas->mapFromGlobal(glob_pos);
+  QPoint sp = splitter->mapFromGlobal(glob_pos);
+  if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < splitter->height())
+    hscroll->setMag(hscroll->mag() + mag, cp.x());
+}
 
 //---------------------------------------------------------
 //   updateHScrollRange
@@ -893,6 +933,7 @@ void PianoRoll::setupNewCtrl(CtrlEdit* ctrlEdit)
   connect(ctrlEdit, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
   connect(ctrlEdit, SIGNAL(destroyedCtrl(CtrlEdit*)), SLOT(removeCtrl(CtrlEdit*)));
   connect(ctrlEdit, SIGNAL(yposChanged(int)), toolbar, SLOT(setInt(int)));
+  connect(ctrlEdit, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
   connect(piano,    SIGNAL(curSelectedPitchChanged(int)), SLOT(setCurDrumInstrument(int)));
   //connect(piano,    SIGNAL(curSelectedPitchChanged(int)), canvas, SLOT(setCurDrumInstrument(int)));
 
@@ -1026,10 +1067,10 @@ void PianoRoll::writeStatus(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiin", canvas->midiin());
       xml.intTag(level, "tool", int(canvas->tool()));
       xml.intTag(level, "playEvents", _playEvents);
-      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
-      xml.intTag(level, "ypos", vscroll->pos());
+      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ymag", vscroll->mag());
+      xml.intTag(level, "ypos", vscroll->pos());
       xml.tag(level, "/pianoroll");
       }
 
@@ -1162,6 +1203,14 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             tools2->set(MusEGui::DrawTool);
             return;
             }
+      else if (key == shortcuts[SHRT_TOOL_PAN].key) {
+            tools2->set(MusEGui::PanTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_ZOOM].key) {
+            tools2->set(MusEGui::ZoomTool);
+            return;
+            }
       else if (key == shortcuts[SHRT_INSTRUMENT_STEP_UP].key) {
             piano->setCurSelectedPitch(piano->curSelectedPitch()+1);
             MusEGlobal::song->update(SC_DRUMMAP);
@@ -1198,25 +1247,11 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
-                  zoomlvl++;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            horizontalZoom(true, QCursor::pos());
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl > 1)
-                  zoomlvl--;
-
-            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
+            horizontalZoom(false, QCursor::pos());
             return;
             }
       else if (key == shortcuts[SHRT_GOTO_CPOS].key) {

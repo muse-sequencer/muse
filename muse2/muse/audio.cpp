@@ -353,6 +353,7 @@ void Audio::process(unsigned frames)
       
       if (state == START_PLAY && jackState == PLAY) {
             _loopCount = 0;
+            MusEGlobal::song->reenableTouchedControllers();
             startRolling();
             if (_bounce)
                   write(sigFd, "f", 1);
@@ -376,6 +377,7 @@ void Audio::process(unsigned frames)
             }
       else if (state == STOP && jackState == PLAY) {
             _loopCount = 0;
+            MusEGlobal::song->reenableTouchedControllers();
             startRolling();
             }
       else if (state == LOOP1 && jackState == PLAY)
@@ -924,20 +926,19 @@ void Audio::startRolling()
          && MusEGlobal::song->click()
          && !MusEGlobal::extSyncFlag.value()
          && MusEGlobal::song->record()) {
-// DELETETHIS 14 or keep?
-/*
+          printf("state = PRECOUNT!\n");
             state = PRECOUNT;
             int z, n;
-            if (precountFromMastertrackFlag)
-                  AL::sigmap.timesig(playTickPos, z, n);
+            if (MusEGlobal::precountFromMastertrackFlag)
+                  AL::sigmap.timesig(curTickPos, z, n);
             else {
-                  z = precountSigZ;
-                  n = precountSigN;
+                  z = MusEGlobal::precountSigZ;
+                  n = MusEGlobal::precountSigN;
                   }
-            clickno       = z * preMeasures;
+            clickno       = z * MusEGlobal::preMeasures;
             clicksMeasure = z;
-            ticksBeat     = (division * 4)/n;
-*/
+            ticksBeat     = (MusEGlobal::config.division * 4)/n;
+
             }
       else {
             //

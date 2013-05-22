@@ -48,7 +48,7 @@ class QToolButton;
 class QWidget;
 class QComboBox;
 class QPushButton;
-
+class QPoint;
 
 namespace MusECore {
 class MidiPart;
@@ -169,6 +169,7 @@ class DrumEdit : public MidiEditor {
       void display_old_new_conflict_message();
 
       void deltaModeChanged(bool);
+      void midiNote(int pitch, int velo);
 
    public slots:
       void setSelection(int tick, MusECore::Event&, MusECore::Part*, bool update);
@@ -177,6 +178,8 @@ class DrumEdit : public MidiEditor {
       void execUserScript(int);
       void focusCanvas();
       void ourDrumMapChanged(bool);
+      void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
+      void horizontalZoom(int mag, const QPoint& glob_pos);
       virtual void updateHScrollRange();
 
    signals:

@@ -55,11 +55,11 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       setObjectName(name);
       setAttribute(Qt::WA_DeleteOnClose);
       QHBoxLayout* hbox = new QHBoxLayout;
-      canvas            = new CtrlCanvas(e, 0, xmag, "ctrlcanvas");
-      panel             = new CtrlPanel(0, e, canvas, "panel");
+      canvas            = new CtrlCanvas(e, this, xmag, "ctrlcanvas");
+      panel             = new CtrlPanel(this, e, canvas, "panel");
       canvas->setPanel(panel);
       
-      QWidget* vscale   = new MusEGui::VScale;
+      QWidget* vscale   = new MusEGui::VScale(this);
 
       hbox->setContentsMargins(0, 0, 0, 0);
       hbox->setSpacing (0);
@@ -78,6 +78,7 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       connect(panel, SIGNAL(controllerChanged(int)), canvas, SLOT(setController(int)));
       connect(canvas, SIGNAL(xposChanged(unsigned)), SIGNAL(timeChanged(unsigned)));
       connect(canvas, SIGNAL(yposChanged(int)), SIGNAL(yposChanged(int)));
+      connect(canvas, SIGNAL(redirectWheelEvent(QWheelEvent*)), SIGNAL(redirectWheelEvent(QWheelEvent*)));
       }
 
 //---------------------------------------------------------
@@ -89,6 +90,7 @@ void CtrlEdit::writeStatus(int level, MusECore::Xml& xml)
       if (canvas->controller()) {
             xml.tag(level++, "ctrledit");
             xml.intTag(level, "ctrlnum", canvas->controller()->num());
+            xml.intTag(level, "perNoteVeloMode", canvas->perNoteVeloMode());
             xml.tag(level, "/ctrledit");
             }
       }
@@ -112,6 +114,11 @@ void CtrlEdit::readStatus(MusECore::Xml& xml)
                         else if (tag == "ctrlnum") {
                               int num = xml.parseInt();
                               canvas->setController(num);
+                              }
+                        else if (tag == "perNoteVeloMode") {
+                              bool v = xml.parseInt();
+                              canvas->setPerNoteVeloMode(v);
+                              panel->setVeloPerNoteMode(v);
                               }
                         else
                               xml.unknown("CtrlEdit");

@@ -30,6 +30,7 @@
 #include <vector>
 #include <fcntl.h>
 #include <dlfcn.h>
+#include <stdio.h>
 
 #include <QDir>
 #include <QString>
@@ -91,10 +92,7 @@ QString SynthIF::titlePrefix() const                     { return QString(); }
 MusECore::AudioTrack* SynthIF::track()                   { return static_cast < MusECore::AudioTrack* > (synti); }
 void SynthIF::enableController(unsigned long, bool)  { }
 bool SynthIF::controllerEnabled(unsigned long) const   { return true;}
-void SynthIF::enable2Controller(unsigned long, bool) { }
-bool SynthIF::controllerEnabled2(unsigned long) const  { return true; }
 void SynthIF::enableAllControllers(bool)               { }
-void SynthIF::enable2AllControllers(bool)              { }
 void SynthIF::updateControllers()                        { }
 void SynthIF::activate()                                 { }
 void SynthIF::deactivate()                               { }
@@ -203,7 +201,7 @@ static Synth* findSynth(const QString& sclass, const QString& label, Synth::Type
                 (type == Synth::SYNTH_TYPE_END || type == (*i)->synthType()) )
               return *i;
          }
-      printf("synthi type:%d class:%s label:%s not found\n", type, sclass.toLatin1().constData(), label.toLatin1().constData());
+      fprintf(stderr, "synthi type:%d class:%s label:%s not found\n", type, sclass.toLatin1().constData(), label.toLatin1().constData());
       return 0;
       }
 
@@ -227,7 +225,7 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
                   }
             }
       else
-            printf("createSynthInstance: synthi class:%s label:%s not found\n", sclass.toLatin1().constData(), label.toLatin1().constData());
+            fprintf(stderr, "createSynthInstance: synthi class:%s label:%s not found\n", sclass.toLatin1().constData(), label.toLatin1().constData());
       return si;
       }
 
@@ -309,6 +307,44 @@ SynthI::SynthI()
       setPan(0.0);
       }
 
+SynthI::SynthI(const SynthI& si, int flags)
+   : AudioTrack(si, flags)
+      {
+      synthesizer = 0;
+      _sif        = 0;
+      _rwFlags    = 1;
+      _openFlags  = 1;
+      _readEnable = false;
+      _writeEnable = false;
+
+      _curBankH = 0;
+      _curBankL = 0;
+      _curProgram  = 0;
+
+      setVolume(1.0);
+      setPan(0.0);
+      
+      Synth* s = si.synth();
+      if (s) {
+            QString n;
+            n.setNum(s->instances());
+            QString instance_name = s->name() + "-" + n;
+            if(!initInstance(s, instance_name)) {  // false if success
+                  return;
+                  }
+            }
+      fprintf(stderr, "SynthI copy ctor: error initializing synth s:%p\n", s);
+      }
+
+//---------------------------------------------------------
+//   ~SynthI
+//---------------------------------------------------------
+
+SynthI::~SynthI()
+      {
+      deactivate2();
+      deactivate3();
+      }
 
 //---------------------------------------------------------
 //   height in arranger
@@ -354,7 +390,7 @@ bool SynthI::putEvent(const MidiPlayEvent& ev)
   {
     if (MusEGlobal::midiOutputTrace)
     {
-          printf("MidiOut: Synth: <%s>: ", name().toLatin1().constData());
+          fprintf(stderr, "MidiOut: Synth: <%s>: ", name().toLatin1().constData());
           ev.dump();
     }
     return _sif->putEvent(ev);
@@ -561,13 +597,13 @@ void SynthI::deactivate3()
       //synthesizer->incInstances(-1); // Moved below by Tim. p3.3.14
       
       if(MusEGlobal::debugMsg)
-        printf("SynthI::deactivate3 deleting _sif...\n");
+        fprintf(stderr, "SynthI::deactivate3 deleting _sif...\n");
       
       delete _sif;
       _sif = 0;
       
       if(MusEGlobal::debugMsg)
-        printf("SynthI::deactivate3 decrementing synth instances...\n");
+        fprintf(stderr, "SynthI::deactivate3 decrementing synth instances...\n");
       
       synthesizer->incInstances(-1);
       }
@@ -581,17 +617,6 @@ void MessSynthIF::deactivate3()
       }
 
 //---------------------------------------------------------
-//   ~SynthI
-//---------------------------------------------------------
-
-SynthI::~SynthI()
-      {
-      deactivate2();
-      deactivate3();
-      }
-
-
-//---------------------------------------------------------
 //   initMidiSynth
 //    search for software MusEGlobal::synthis and advertise
 //---------------------------------------------------------
@@ -602,7 +627,7 @@ void initMidiSynth()
 
       QDir pluginDir(s, QString("*.so")); // ddskrjo
       if (MusEGlobal::debugMsg)
-            printf("searching for software synthesizer in <%s>\n", s.toLatin1().constData());
+            fprintf(stderr, "searching for software synthesizer in <%s>\n", s.toLatin1().constData());
       if (pluginDir.exists()) {
             QFileInfoList list = pluginDir.entryInfoList();
 	    QFileInfoList::iterator it=list.begin();
@@ -652,7 +677,7 @@ void initMidiSynth()
                   ++it;
                   }
             if (MusEGlobal::debugMsg)
-                  printf("%zd soft synth found\n", MusEGlobal::synthis.size());
+                  fprintf(stderr, "%zd soft synth found\n", MusEGlobal::synthis.size());
             }
       }
 
@@ -1054,20 +1079,20 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
           int frame = evTime - abs(frameOffset);
 
             if (frame >= endPos) {
-                printf("frame > endPos!! frame = %d >= endPos %d, i->time() %d, frameOffset %d curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
+                fprintf(stderr, "frame > endPos!! frame = %d >= endPos %d, i->time() %d, frameOffset %d curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
                 continue;
                 }
 
             if (frame > curPos) {
                   if (frame < (int) pos)
-                        printf("should not happen: missed event %d\n", pos -frame);
+                        fprintf(stderr, "should not happen: missed event %d\n", pos -frame);
                   else 
                   {
                         if (!_mess)
-                              printf("should not happen - no _mess\n");
+                              fprintf(stderr, "should not happen - no _mess\n");
                         else
                         {
-                                _mess->process(buffer, curPos-pos, frame - curPos);
+                                _mess->process(pos, buffer, curPos-pos, frame - curPos);
                         }      
                   }
                   curPos = frame;
@@ -1084,10 +1109,10 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
       if (endPos - curPos) 
       {
             if (!_mess)
-                  printf("should not happen - no _mess\n");
+                  fprintf(stderr, "should not happen - no _mess\n");
             else
             {
-                    _mess->process(buffer, curPos - off, endPos - curPos);
+                    _mess->process(pos, buffer, curPos - off, endPos - curPos);
             }      
       }
       return i;

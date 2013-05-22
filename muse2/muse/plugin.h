@@ -4,7 +4,7 @@
 //  $Id: plugin.h,v 1.9.2.13 2009/12/06 01:25:21 terminator356 Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -233,9 +233,8 @@ struct Port {
       unsigned long idx;
       float val;
       float tmpVal;
-      
       bool enCtrl;  // Enable controller stream.
-      bool en2Ctrl; // Second enable controller stream (and'ed with enCtrl).
+      CtrlInterpolate interp;
       };
 
 //---------------------------------------------------------
@@ -268,10 +267,7 @@ class PluginIBase
       
       virtual void enableController(unsigned long i, bool v = true) = 0;   
       virtual bool controllerEnabled(unsigned long i) const = 0;          
-      virtual void enable2Controller(unsigned long i, bool v = true) = 0; 
-      virtual bool controllerEnabled2(unsigned long i) const = 0;          
       virtual void enableAllControllers(bool v = true) = 0;
-      virtual void enable2AllControllers(bool v = true) = 0;
       virtual void updateControllers() = 0;
       
       virtual void activate() = 0;
@@ -352,14 +348,11 @@ class PluginI : public PluginIBase {
       bool initPluginInstance(Plugin*, int channels);
       void setChannels(int);
       void connect(unsigned long ports, unsigned long offset, float** src, float** dst); 
-      void apply(unsigned long n, unsigned long ports, float** bufIn, float** bufOut);    
+      void apply(unsigned pos, unsigned long n, unsigned long ports, float** bufIn, float** bufOut);    
 
       void enableController(unsigned long i, bool v = true)   { controls[i].enCtrl = v; }      
       bool controllerEnabled(unsigned long i) const           { return controls[i].enCtrl; }   
-      void enable2Controller(unsigned long i, bool v = true)  { controls[i].en2Ctrl = v; }     
-      bool controllerEnabled2(unsigned long i) const          { return controls[i].en2Ctrl; }  
       void enableAllControllers(bool v = true);
-      void enable2AllControllers(bool v = true);
       
       void activate();
       void deactivate();
@@ -418,11 +411,12 @@ class PluginI : public PluginIBase {
 //---------------------------------------------------------
 
 class Pipeline : public std::vector<PluginI*> {
+   private:
       float* buffer[MAX_CHANNELS];
-      
+      void initBuffers();
    public:
       Pipeline();
-      Pipeline(const Pipeline&);
+      Pipeline(const Pipeline&, AudioTrack*);
       ~Pipeline();
       void insert(PluginI* p, int index);
       void remove(int index);
@@ -439,14 +433,13 @@ class Pipeline : public std::vector<PluginI*> {
       void deleteAllGuis();
       bool guiVisible(int);
       bool nativeGuiVisible(int);
-      void apply(unsigned long ports, unsigned long nframes, float** buffer);  
+      void apply(unsigned pos, unsigned long ports, unsigned long nframes, float** buffer);  
       void move(int idx, bool up);
       bool empty(int idx) const;
       void setChannels(int);
       bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // returns true if event cannot be delivered
       void enableController(int track_ctrl_id, bool en); 
-      void enable2Controller(int track_ctrl_id, bool en); 
-      void controllersEnabled(int track_ctrl_id, bool* en1, bool* en2); 
+      bool controllerEnabled(int track_ctrl_id);
       };
 
 typedef Pipeline::iterator iPluginI;
@@ -489,6 +482,7 @@ struct GuiParam {
             };
       int type;
       int hint;
+      bool pressed;
       
       MusEGui::DoubleLabel* label;
       QWidget* actuator;  // Slider or Toggle Button (SWITCH)
@@ -505,6 +499,7 @@ struct GuiWidgets {
       QWidget* widget;
       int type;
       unsigned long param;   
+      bool pressed;
       };
 
 //---------------------------------------------------------

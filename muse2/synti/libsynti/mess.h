@@ -76,7 +76,7 @@ class Mess {
       void setSampleRate(int r)  { _sampleRate = r;    }
 
       virtual void processMessages() { };
-      virtual void process(float** data, int offset, int len) = 0;
+      virtual void process(unsigned pos, float** data, int offset, int len) = 0;
 
       // the synti has to (re-)implement processEvent() or provide
       // some of the next three functions:

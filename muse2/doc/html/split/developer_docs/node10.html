@@ -1,0 +1,332 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Pre-Rendering tracks</TITLE>
+<META NAME="description" CONTENT="Pre-Rendering tracks">
+<META NAME="keywords" CONTENT="developer_docs">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="developer_docs.css">
+
+<LINK REL="next" HREF="node11.html">
+<LINK REL="previous" HREF="node9.html">
+<LINK REL="up" HREF="node8.html">
+<LINK REL="next" HREF="node11.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html207"
+  HREF="node11.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html203"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html197"
+  HREF="node9.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html205"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html208"
+  HREF="node11.html">Slotted editors</A>
+<B> Up:</B> <A NAME="tex2html204"
+  HREF="node8.html">Feature requests</A>
+<B> Previous:</B> <A NAME="tex2html198"
+  HREF="node9.html">Per-Part automation and more</A>
+ &nbsp; <B>  <A NAME="tex2html206"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html209"
+  HREF="node10.html#SECTION00421000000000000000">The feature</A>
+<LI><A NAME="tex2html210"
+  HREF="node10.html#SECTION00422000000000000000">Use cases</A>
+<UL>
+<LI><A NAME="tex2html211"
+  HREF="node10.html#SECTION00422010000000000000">Saving CPU</A>
+<LI><A NAME="tex2html212"
+  HREF="node10.html#SECTION00422020000000000000">Exporting as audio project</A>
+<LI><A NAME="tex2html213"
+  HREF="node10.html#SECTION00422030000000000000">Mobile audio workstations</A>
+<LI><A NAME="tex2html214"
+  HREF="node10.html#SECTION00422040000000000000">Applying effects on MIDI tracks</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html215"
+  HREF="node10.html#SECTION00423000000000000000">Possible scenarios</A>
+<UL>
+<LI><A NAME="tex2html216"
+  HREF="node10.html#SECTION00423010000000000000">Setting it up</A>
+<LI><A NAME="tex2html217"
+  HREF="node10.html#SECTION00423020000000000000">Pre-rendering stuff</A>
+<LI><A NAME="tex2html218"
+  HREF="node10.html#SECTION00423030000000000000">Making changes</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html219"
+  HREF="node10.html#SECTION00424000000000000000">Extensions</A>
+<UL>
+<LI><A NAME="tex2html220"
+  HREF="node10.html#SECTION00424010000000000000">Automatic discovery of physical audio connections</A>
+<LI><A NAME="tex2html221"
+  HREF="node10.html#SECTION00424020000000000000">Audio export</A>
+<LI><A NAME="tex2html222"
+  HREF="node10.html#SECTION00424030000000000000">Cheap/Faked changes</A>
+<LI><A NAME="tex2html223"
+  HREF="node10.html#SECTION00424040000000000000">Intelligent re-recording</A>
+</UL></UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00420000000000000000">
+Pre-Rendering tracks</A>
+</H1>
+
+<H2><A NAME="SECTION00421000000000000000">
+The feature</A>
+</H2>
+All tracks shall be able to be "pre-renderable". Pre-rendering shall
+be "layered". Pre-rendering shall act like a transparent audio cache:
+Audio data is (redundantly) stored, wasting memory in order to save CPU.
+
+<P>
+That is: Each track owns one or more wave-recordings of the length of
+the song. If the user calls "pre-render" on a track, then this track
+is played quasi-solo (see below), and the raw audio data is recorded
+and stored in the "layer 0" wave recording. If the user has any effects
+set up to be applied, then each effect is applied on a different layer
+(creating layer 1, layer 2 etc).
+
+<P>
+This means, that also MIDI and drum tracks can have effects (which
+usually only operate on audio, but we HAVE audio data because of this
+prerendering).
+
+<P>
+Furthermore, MusE by default does not send MIDI events to the synthesizers
+but instead just plays back the last layer of the prerecording (for
+MIDI tracks), or does not pipe the audio data through the whole plugin
+chain (causing cpu usage), but instead just plays back the last layer.
+The hearable result shall be the same.
+
+<P>
+Once the user changes any parameter (automation data or plugins for
+wave tracks, MIDI events or effect plugin stuff for MIDI tracks),
+then MusE shall generate the sound for this particular track in the
+"old" way (send MIDI data to synthes, or pipe audio data through plugins).
+(So that the user will not even notice that MusE actually pre-renderered
+stuff.) Either MusE automatically records this while playback (if possible)
+or prompts the user to accordingly set up his cabling and then record
+it. Or (temporarily) disables prerecording for this track, falling back
+to the plain old way of generating sound.
+
+<P>
+<SPAN  CLASS="textit">Quasi-solo</SPAN> means: For wave tracks, just solo the track. For MIDI
+tracks, mute all tracks which are not on the same synth (channel?),
+and mute all <SPAN  CLASS="textit">note</SPAN> events which are not on the quasi-soloed track.
+This causes MusE to still play any controller events from different
+tracks, because they might have effects on the quasi-soloed track. (You
+can have notes on channel 1 on one track and controller stuff on channel
+1 on another track; then you would need quasi-solo to get proper results.)
+
+<P>
+
+<H2><A NAME="SECTION00422000000000000000">
+Use cases</A>
+</H2>
+
+<H4><A NAME="SECTION00422010000000000000">
+Saving CPU</A>
+</H4>
+On slow systems, this is neccessary for songs with lots of, or demanding
+(or both) soft synthes / plugins. Even if the synth or plugin is so
+demanding that your system is not able to produce sound in real-time,
+then with this feature you'll be able to use the synth (this will make
+editing pretty laggish, because for a change you need to re-render at
+least a part before you can listen to it, but better than being unable
+to use the synth at all!)
+
+<P>
+
+<H4><A NAME="SECTION00422020000000000000">
+Exporting as audio project</A>
+</H4>
+Using pre-rendering on all tracks, you easily can export your project
+as multi-track audio file (for use with Ardour or similar DAWs).
+Just take the last layer of each track, and write the raw audio data
+into the file, and you're done. (Maybe we are even able to write down
+the raw-raw layer0 audio data plus information about used plugins and
+settings etc..?)
+
+<P>
+
+<H4><A NAME="SECTION00422030000000000000">
+Mobile audio workstations</A>
+</H4>
+You might want to work a bit on your audio projects on your notebook
+while you're not at home, not having access to your hardware synthesizers.
+Using this feature, you could have pre-recorded the stuff in your studio
+before, and now can at least fiddle around with the non-hw-synth-dependent
+parts of your song, while still having your <SPAN  CLASS="textit">full</SPAN> song with you.
+
+<P>
+
+<H4><A NAME="SECTION00422040000000000000">
+Applying effects on MIDI tracks</A>
+</H4>
+If you have many physical audio inputs, you might already be able to
+apply effect chains on MIDI tracks, by wiring the synthes' audio
+outputs to your soundcard's inputs, and applying the effects on
+dedicated input tracks you have to create. This requires you to have
+expensive hardware, and is pretty complicated, because you need one
+additional track per MIDI synth.
+
+<P>
+This feature allows you to apply effects on single MIDI tracks, and not
+only on full MIDI synthes, and doesn't require you to be have that
+many physical audio inputs (you need to manually replug your synthes,
+however).
+
+<P>
+
+<H2><A NAME="SECTION00423000000000000000">
+Possible scenarios</A>
+</H2>
+
+<H4><A NAME="SECTION00423010000000000000">
+Setting it up</A>
+</H4>
+Create a wave track, MusE will allow you to set or unset prerendering
+for every plugin in the plugin rack (recording the actual track is
+useless because it would be a plain copy).
+Create a MIDI track, MusE will ask you on which physical audio input
+your synth is connected. Setting up multiple synthes on one physical
+audio in is allowed, see below.
+
+<P>
+
+<H4><A NAME="SECTION00423020000000000000">
+Pre-rendering stuff</A>
+</H4>
+When the user presses the "pre-render" button, all tracks which have
+been changed since their last pre-rendering will be re-rendered.
+If you have multiple hardware synthes set up as they were connected
+to one physical audio input port, MusE will prompt you to first plug
+the proper cable in.
+
+<P>
+
+<H4><A NAME="SECTION00423030000000000000">
+Making changes</A>
+</H4>
+Change a note in a MIDI part, move or delete a part or change automation
+parameters. MusE will temporarily disable the pre-rendered information
+and instead generate the sound via sending out MIDI events, piping stuff
+through effect chains or similar. If you play back the whole song, or
+if you manually trigger a re-rendering of a track via the context menu,
+MusE will play back the stuff, record it again and re-enable the
+pre-rendered information.
+
+<P>
+
+<H2><A NAME="SECTION00424000000000000000">
+Extensions</A>
+</H2>
+
+<H4><A NAME="SECTION00424010000000000000">
+Automatic discovery of physical audio connections</A>
+</H4>
+The user plugs all (or only some) synthes' audio outs into the available
+audio inputs, then runs automatic discovery. This will send MIDI events
+to each synthesizer, and look on which audio in there's activity. Then
+it will assume that the synthesizer is connected to that particular
+audio in. Audio ins which show activity before any MIDI events were
+sent are not considered, as they're probably connected to microphones
+or other noise-generating non-synthes.
+
+<P>
+
+<H4><A NAME="SECTION00424020000000000000">
+Audio export</A>
+</H4>
+As described in the Use cases, MusE can allow you to export your song
+in some multitrack audio format.
+
+<P>
+
+<H4><A NAME="SECTION00424030000000000000">
+Cheap/Faked changes</A>
+</H4>
+For expensive or unavailable synthes, changing the Volume midi controller,
+the Pan controller or similar "easy" controllers will not trigger a
+complete re-rendering, but instead "fake" the change, by changing
+the volume data directly on the recorded wave. This might require some
+learning and might even get pretty complicated.
+
+<P>
+
+<H4><A NAME="SECTION00424040000000000000">
+Intelligent re-recording</A>
+</H4>
+For tiny changes, MusE shall only re-render the relevant part. If you
+change some MIDI notes, then begin re-recording shortly before the
+changes, and end re-recording as soon as the recorded stuff doesn't
+differ to much from the stuff coming from the synth. Then properly
+blend the old recording with the updated part.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html207"
+  HREF="node11.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html203"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html197"
+  HREF="node9.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html205"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html208"
+  HREF="node11.html">Slotted editors</A>
+<B> Up:</B> <A NAME="tex2html204"
+  HREF="node8.html">Feature requests</A>
+<B> Previous:</B> <A NAME="tex2html198"
+  HREF="node9.html">Per-Part automation and more</A>
+ &nbsp; <B>  <A NAME="tex2html206"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

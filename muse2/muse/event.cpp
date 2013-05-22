@@ -231,7 +231,7 @@ const QString Event::name() const            { return ev->name();  }
 void Event::setName(const QString& s)        { ev->setName(s);     }
 int Event::spos() const                      { return ev->spos();  }
 void Event::setSpos(int s)                   { ev->setSpos(s);     }
-MusECore::SndFileR Event::sndFile() const              { return ev->sndFile(); }
+MusECore::SndFileR Event::sndFile() const    { return ev->sndFile(); }
 
 void Event::setSndFile(MusECore::SndFileR& sf) 
 { 

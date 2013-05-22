@@ -27,6 +27,7 @@
 
 #include "mtscale_flo.h"
 #include "song.h"
+#include "app.h"
 #include "icons.h"
 #include "gconfig.h"
 #include "scoreedit.h"
@@ -53,13 +54,20 @@ MTScaleFlo::MTScaleFlo(ScoreCanvas* parent_editor, QWidget* parent_widget)
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
       connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
-      
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
+
       parent=parent_editor;
 	
       setFixedHeight(28);
-      setBg(QColor(0xe0, 0xe0, 0xe0));
+      setBg(MusEGlobal::config.rulerBg);
       }
 
+void MTScaleFlo::configChanged()
+      {
+      setBg(MusEGlobal::config.rulerBg);
+
+
+      }
 //---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
@@ -192,7 +200,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
       //---------------------------------------------------
 
       int y = 12;
-      p.setPen(Qt::black);
+      p.setPen(MusEGlobal::config.rulerFg);
       p.setFont(MusEGlobal::config.fonts[5]);
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
@@ -215,7 +223,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
             if(!wr.isEmpty()) 
             {        
               if (m->second.current()) 
-                    p.fillRect(wr, Qt::white);
+                    p.fillRect(wr, MusEGlobal::config.rulerCurrent);
               
               int x2;
               if (mm != marker->end())
@@ -229,7 +237,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
               if(xp >= -1023)
               {
                 QRect r = QRect(xp+10, 0, x2-xp, 12);
-                p.setPen(Qt::black);
+                p.setPen(MusEGlobal::config.rulerFg);
                 p.drawText(r, Qt::AlignLeft|Qt::AlignVCenter, m->second.name());
               }  
               
@@ -261,7 +269,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
       //---------------------------------------------------
 
 
-      p.setPen(Qt::black);
+      p.setPen(MusEGlobal::config.rulerFg);
 
       unsigned ctick;
       int bar1, bar2, beat;

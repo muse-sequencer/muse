@@ -83,6 +83,7 @@ class CtrlPanel: public QWidget {
    public slots:
       void setHeight(int);
       void ctrlPopup();
+      void setVeloPerNoteMode(bool);
 
    public:
       CtrlPanel(QWidget*, MidiEditor*, CtrlCanvas*, const char* name = 0);

@@ -4096,7 +4096,7 @@ void DeicsOnze::processMessages()
 //   write
 //    synthesize n samples into buffer+offset
 //---------------------------------------------------------
-void DeicsOnze::process(float** buffer, int offset, int n) {
+void DeicsOnze::process(unsigned pos, float** buffer, int offset, int n) {
   /*
   //Process messages from the gui
   while (_gui->fifoSize()) {
@@ -4432,46 +4432,61 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
   //apply Filter
   if(_global.filter) _dryFilter->process(leftOutput, rightOutput, n);
   //Chorus
-  if(_pluginIChorus && _global.isChorusActivated) {
-    //apply Filter
-    if(_global.filter) _chorusFilter->process(tempOutputChorus[0],
-					      tempOutputChorus[1], n);
-    //apply Chorus
-    _pluginIChorus->apply(n, 2, tempInputChorus, tempOutputChorus);
-    for(int i = 0; i < n; i++) {
-      leftOutput[i] += 
-	tempOutputChorus[0][i] * _global.chorusReturn * _global.masterVolume;
-      rightOutput[i] +=
-	tempOutputChorus[1][i] * _global.chorusReturn * _global.masterVolume;
+  if(_pluginIChorus) {
+    if(_global.isChorusActivated)
+    {
+      //apply Filter
+      if(_global.filter) _chorusFilter->process(tempOutputChorus[0],
+                                                tempOutputChorus[1], n);
+      //apply Chorus
+      _pluginIChorus->apply(pos, n, 2, tempInputChorus, tempOutputChorus);
+      for(int i = 0; i < n; i++) {
+        leftOutput[i] +=
+          tempOutputChorus[0][i] * _global.chorusReturn * _global.masterVolume;
+        rightOutput[i] +=
+          tempOutputChorus[1][i] * _global.chorusReturn * _global.masterVolume;
+      }
     }
+    else
+      _pluginIChorus->apply(pos, n, 0, 0, 0); // Just process controls only, not audio (do not 'run'). Tim.
   }
   //Reverb
-  if(_pluginIReverb && _global.isReverbActivated) {
-    //apply Filter
-    if(_global.filter) _reverbFilter->process(tempOutputReverb[0],
-					      tempOutputReverb[1], n);
-    //apply Reverb
-    _pluginIReverb->apply(n, 2, tempInputReverb, tempOutputReverb);
-    for(int i = 0; i < n; i++) {
-      leftOutput[i] +=
-	tempOutputReverb[0][i] * _global.reverbReturn * _global.masterVolume;
-      rightOutput[i] +=
-	tempOutputReverb[1][i] * _global.reverbReturn * _global.masterVolume;
+  if(_pluginIReverb) {
+    if(_global.isReverbActivated)
+    {
+      //apply Filter
+      if(_global.filter) _reverbFilter->process(tempOutputReverb[0],
+                                                tempOutputReverb[1], n);
+      //apply Reverb
+      _pluginIReverb->apply(pos, n, 2, tempInputReverb, tempOutputReverb);
+      for(int i = 0; i < n; i++) {
+        leftOutput[i] +=
+          tempOutputReverb[0][i] * _global.reverbReturn * _global.masterVolume;
+        rightOutput[i] +=
+          tempOutputReverb[1][i] * _global.reverbReturn * _global.masterVolume;
+      }
     }
+    else
+      _pluginIReverb->apply(pos, n, 0, 0, 0);  // Just process controls only, not audio (do not 'run'). Tim.
   }
   //Delay
-  if(_pluginIDelay && _global.isDelayActivated) {
-    //apply Filter
-    if(_global.filter) _delayFilter->process(tempOutputDelay[0],
-					     tempOutputDelay[1], n);
-    //apply Delay
-    _pluginIDelay->apply(n, 2, tempInputDelay, tempOutputDelay);
-    for(int i = 0; i < n; i++) {
-      leftOutput[i] +=
-	tempOutputDelay[0][i] * _global.delayReturn * _global.masterVolume;
-      rightOutput[i] +=
-	tempOutputDelay[1][i] * _global.delayReturn * _global.masterVolume;
+  if(_pluginIDelay) {
+    if(_global.isDelayActivated)
+    {
+      //apply Filter
+      if(_global.filter) _delayFilter->process(tempOutputDelay[0],
+                                              tempOutputDelay[1], n);
+      //apply Delay
+      _pluginIDelay->apply(pos, n, 2, tempInputDelay, tempOutputDelay);
+      for(int i = 0; i < n; i++) {
+        leftOutput[i] +=
+          tempOutputDelay[0][i] * _global.delayReturn * _global.masterVolume;
+        rightOutput[i] +=
+          tempOutputDelay[1][i] * _global.delayReturn * _global.masterVolume;
+      }
     }
+    else
+      _pluginIDelay->apply(pos, n, 0, 0, 0);   // Just process controls only, not audio (do not 'run'). Tim.
   }
 }
 

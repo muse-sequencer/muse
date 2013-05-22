@@ -456,8 +456,11 @@ MusECore::Event EditCtrlDialog::event()
         {
           MusECore::DrumMap* dm = &MusEGlobal::drumMap[noteSpinBox->value() & 0x7f];
           num     = (cnum & ~0xff) | dm->anote;
-          port    = &MusEGlobal::midiPorts[dm->port];
-          channel = dm->channel;
+          // Default to track port if -1 and track channel if -1.
+          if(dm->port != -1)
+            port    = &MusEGlobal::midiPorts[dm->port];
+          if(dm->channel != -1)
+            channel = dm->channel;
         }
       }
 

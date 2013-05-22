@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Routes</TITLE>
+<META NAME="description" CONTENT="Routes">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node8.html">
+<LINK REL="previous" HREF="node6.html">
+<LINK REL="up" HREF="node3.html">
+<LINK REL="next" HREF="node8.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html277"
+  HREF="node8.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html273"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html267"
+  HREF="node6.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html275"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html278"
+  HREF="node8.html">Track soloing</A>
+<B> Up:</B> <A NAME="tex2html274"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html268"
+  HREF="node6.html">Tracks and parts</A>
+ &nbsp; <B>  <A NAME="tex2html276"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html279"
+  HREF="node7.html#SECTION00341000000000000000">Anti circular routing</A>
+<LI><A NAME="tex2html280"
+  HREF="node7.html#SECTION00342000000000000000">Soloing chain routes</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00340000000000000000"></A> <A NAME="routes"></A>
+<BR>
+Routes
+</H1>
+Routes are how tracks are connected together and to the outside world.
+(They are also how Jack midi ports connect to the outside world. See
+midi port configuration <A HREF="node11.html#midi_port_config">2.8.1</A>).
+Each track strip has two buttons whose icons look like plugs. One button
+is for input routing and the other is for output routing. Clicking on
+these buttons will pop up a menu of available input or output routes that
+you can connect to. Most audio tracks list other tracks to connect to, 
+but audio input and output tracks are special: Audio input track input
+routing menus list available Jack audio input ports. Conversely audio
+output track output routing menus list available Jack audio output ports.
+
+<P>
+
+<DIV ALIGN="CENTER">
+r0.25
+<IMG
+  WIDTH="231" HEIGHT="318" ALIGN="BOTTOM" BORDER="0"
+ SRC="./output_routing.png"
+ ALT="Image output_routing"> 
+
+</DIV>
+
+<P>
+Meanwhile MIDI and drum tracks allow you to route available MIDI ports
+and channels to the track using a handy popup matrix.
+
+<P>
+
+<DIV ALIGN="CENTER">
+r0.25
+<IMG
+  WIDTH="522" HEIGHT="158" ALIGN="BOTTOM" BORDER="0"
+ SRC="./midi_routing_matrix.png"
+ ALT="Image midi_routing_matrix"> 
+
+</DIV>
+
+<P>
+
+<H2><A NAME="SECTION00341000000000000000"></A> <A NAME="anti_circular_routing"></A>
+<BR>
+Anti circular routing
+</H2>
+Any routing menu item which would cause a circular routing condition
+is grayed out. Find out why the condition would exist by examining 
+routing paths involved and correct the situation if required.
+
+<P>
+Also, you cannot use a track's aux sends if the track has an input
+route path from ANY Aux Track. (See aux tracks <A HREF="node6.html#aux_tracks">2.3.1</A>).
+Aux send knobs and labels are disabled in that case.
+
+<P>
+
+<H2><A NAME="SECTION00342000000000000000"></A> <A NAME="soloing_chain_routes"></A>
+<BR>
+Soloing chain routes
+</H2>
+Soloing chains (see solo chains <A HREF="node8.html#soloing_chains">2.5.2</A>) are really just
+routes like any other. The available solo chaining paths are displayed
+in the routing popup menus.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html277"
+  HREF="node8.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html273"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html267"
+  HREF="node6.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html275"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html278"
+  HREF="node8.html">Track soloing</A>
+<B> Up:</B> <A NAME="tex2html274"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html268"
+  HREF="node6.html">Tracks and parts</A>
+ &nbsp; <B>  <A NAME="tex2html276"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

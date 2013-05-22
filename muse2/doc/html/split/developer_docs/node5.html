@@ -1,0 +1,860 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>User controls and automation</TITLE>
+<META NAME="description" CONTENT="User controls and automation">
+<META NAME="keywords" CONTENT="developer_docs">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="developer_docs.css">
+
+<LINK REL="previous" HREF="node4.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node6.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html116"
+  HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html112"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html108"
+  HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html114"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html117"
+  HREF="node6.html">Design decisions</A>
+<B> Up:</B> <A NAME="tex2html113"
+  HREF="node2.html">Internals - how it</A>
+<B> Previous:</B> <A NAME="tex2html109"
+  HREF="node4.html">Configuration</A>
+ &nbsp; <B>  <A NAME="tex2html115"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html118"
+  HREF="node5.html#SECTION00231000000000000000">Handling user input</A>
+<UL>
+<LI><A NAME="tex2html119"
+  HREF="node5.html#SECTION00231100000000000000">Plugins and synthesizers</A>
+<UL>
+<LI><A NAME="tex2html120"
+  HREF="node5.html#SECTION00231110000000000000">Overview</A>
+<LI><A NAME="tex2html121"
+  HREF="node5.html#SECTION00231120000000000000">Processing the input, recording</A>
+<LI><A NAME="tex2html122"
+  HREF="node5.html#SECTION00231130000000000000">How it's stored</A>
+<LI><A NAME="tex2html123"
+  HREF="node5.html#SECTION00231140000000000000">Enabling and disabling controllers</A>
+</UL></UL></UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00230000000000000000">
+User controls and automation</A>
+</H1>
+
+<H2><A NAME="SECTION00231000000000000000">
+Handling user input</A>
+</H2>
+
+<H3><A NAME="SECTION00231100000000000000">
+Plugins and synthesizers</A>
+</H3>
+
+<H4><A NAME="SECTION00231110000000000000">
+Overview</A>
+</H4>
+When the user launches a plugin's GUI, either a MusE-window with
+the relevant controls is shown, or the native GUI is launched. MusE
+will communicate with this native GUI through OSC (Open Sound Control).
+The relevant classes are <TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginGui</TT>, <TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginIBase</TT>
+(in <TT>fterfirstp`p=95 _ `p=58 : 
+      `p&gt;64
+        `p&lt;91 ppp
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>lugin.h</TT>) and <TT>fterfirstO`O=95 _ `O=58 : 
+      `O&gt;64
+        `O&lt;91 OOO
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>scIF</TT> (in <TT>fterfirsto`o=95 _ `o=58 : 
+      `o&gt;64
+        `o&lt;91 ooo
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>sc.h</TT>).
+
+<P>
+If the user changes a GUI element, first the corresponding control is
+disabled, making MusE not steadily update it through automation
+while the user operates it. Then MusE will update the plugin's parameter
+value, and also record the new value. When appropriate, the controller
+is enabled again.
+
+<P>
+
+<H4><A NAME="SECTION00231120000000000000">
+Processing the input, recording</A>
+</H4>
+Upon operating a slider, <TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginIBase::setParam</TT> is called,
+which usually writes the control change into the ringbuffer
+<TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginI::_controlFifo</TT>. (<TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginI::apply()</TT>,
+<TT>fterfirstD`D=95 _ `D=58 : 
+      `D&gt;64
+        `D&lt;91 DDD
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ssiSynthIF::getData()</TT> will read this ringbuffer and
+do the processing accordingly). Furthermore, <TT>fterfirstA`A=95 _ `A=58 : 
+      `A&gt;64
+        `A&lt;91 AAA
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>udioTrack::recordAutomation</TT>
+is called, which either directly modifies the controller lists or writes
+the change into a "to be recorded"-list (<TT>fterfirstA`A=95 _ `A=58 : 
+      `A&gt;64
+        `A&lt;91 AAA
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>udioTrack::_recEvents</TT>)
+(depending on whether the song is stopped or played).
+
+<P>
+The <TT>fterfirstA`A=95 _ `A=58 : 
+      `A&gt;64
+        `A&lt;91 AAA
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>udioTrack::_recEvents</TT> list consists of <TT>fterfirstC`C=95 _ `C=58 : 
+      `C&gt;64
+        `C&lt;91 CCC
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>trlRecVal</TT>
+items (see <TT>fterfirstc`c=95 _ `c=58 : 
+      `c&gt;64
+        `c&lt;91 ccc
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>trl.h</TT>), which hold the following data:
+
+<UL>
+<LI>the frame where the change occurred
+</LI>
+<LI>the value
+</LI>
+<LI>the type, which can be <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>RVT_START</TT>, <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>RVT_VAL</TT> or <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>RVT_STOP</TT>.
+      <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>RVT_VAL</TT> are written by every <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>udioTrack::recordAutomation</TT>
+      call, <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>RVT_START</TT> and <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>RVT_STOP</TT> are generated by
+      <TT>fterfirstA`A=95 _ `A=58 : 
+      `A&gt;64
+        `A&lt;91 AAA
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>udioTrack::startAutoRecord</TT> and <TT>fterfirsts`s=95 _ `s=58 : 
+      `s&gt;64
+        `s&lt;91 sss
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>topAutoRecord</TT>, respectively.
+</LI>
+<LI>and the id of the controller which is affected
+</LI>
+</UL>
+It is processed when the song is stopped. The call path for this is:
+<TT>fterfirstS`S=95 _ `S=58 : 
+      `S&gt;64
+        `S&lt;91 SSS
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ong::stopRolling</TT> calls <TT>fterfirstS`S=95 _ `S=58 : 
+      `S&gt;64
+        `S&lt;91 SSS
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ong::processAutomationEvents</TT>
+calls <TT>fterfirstA`A=95 _ `A=58 : 
+      `A&gt;64
+        `A&lt;91 AAA
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>udioTrack::processAutomationEvents</TT>.
+This function removes the old events from the track's controller list
+and replaces them with the new events from <TT>fterfirst_`_=95 _ `_=58 : 
+      `_&gt;64
+        `_&lt;91 ___
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>recEvents</TT>. In
+<TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>UTO_WRITE</TT> mode, just all controller events within the recorded
+range are erased; in <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>UTO_TOUCH</TT> mode, the <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>RVT_START</TT>
+and <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>RVT_STOP</TT> types of the <TT>fterfirstC`C=95 _ `C=58 : 
+      `C&gt;64
+        `C&lt;91 CCC
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>trlRecVal</TT> events are used
+to determine the range(s) which should be wiped.
+
+<P>
+
+<H4><A NAME="SECTION00231130000000000000">
+How it's stored</A>
+</H4>
+Automation data is kept                                                  in <TT>fterfirstA`A=95 _ `A=58 : 
+      `A&gt;64
+        `A&lt;91 AAA
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>udioTrack::_controller</TT>, which is a <TT>fterfirstC`C=95 _ `C=58 : 
+      `C&gt;64
+        `C&lt;91 CCC
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>trlListList</TT>,        that is, a list of <TT>fterfirstC`C=95 _ `C=58 : 
+      `C&gt;64
+        `C&lt;91 CCC
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>trlList</TT>s, that is, a list of lists of
+controller-objects which hold the control points of the automation graph.
+The <TT>fterfirstC`C=95 _ `C=58 : 
+      `C&gt;64
+        `C&lt;91 CCC
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>trlList</TT> also stores whether the list is meant discrete
+(a new control point results in a value-jump) or continuous (a new control
+point results in the value slowly sloping to the new value).
+Furthermore, it stores a <TT>fterfirst_`_=95 _ `_=58 : 
+      `_&gt;64
+        `_&lt;91 ___
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>curVal</TT> (accessed by <TT>fterfirstc`c=95 _ `c=58 : 
+      `c&gt;64
+        `c&lt;91 ccc
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>urVal()</TT>),
+which holds the currently active value, which can be different from the
+actually stored value because of user interaction. This value is also
+used when there is no stored automation data.
+
+<P>
+<TT>fterfirstA`A=95 _ `A=58 : 
+      `A&gt;64
+        `A&lt;91 AAA
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>udioTrack::addController</TT> and <TT>fterfirstr`r=95 _ `r=58 : 
+      `r&gt;64
+        `r&lt;91 rrr
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>emoveController</TT> are used        to add/remove whole controller types; the most important functions which
+access <TT>fterfirst_`_=95 _ `_=58 : 
+      `_&gt;64
+        `_&lt;91 ___
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>controller</TT> are:
+
+<UL>
+<LI><TT>fterfirstp`p=95 _ `p=58 : 
+      `p&gt;64
+        `p&lt;91 ppp
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>rocessAutomationEvents</TT>, <TT>fterfirstr`r=95 _ `r=58 : 
+      `r&gt;64
+        `r&lt;91 rrr
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ecordAutomation</TT>,
+      <TT>fterfirsts`s=95 _ `s=58 : 
+      `s&gt;64
+        `s&lt;91 sss
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>tartAutoRecord</TT>, <TT>fterfirsts`s=95 _ `s=58 : 
+      `s&gt;64
+        `s&lt;91 sss
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>topAutoRecord</TT>: see above.
+</LI>
+<LI><TT>fterfirsts`s=95 _ `s=58 : 
+      `s&gt;64
+        `s&lt;91 sss
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>eekPrevACEvent</TT>, <TT>fterfirsts`s=95 _ `s=58 : 
+      `s&gt;64
+        `s&lt;91 sss
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>eekNextACEvent</TT>, <TT>fterfirste`e=95 _ `e=58 : 
+      `e&gt;64
+        `e&lt;91 eee
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>raseACEvent</TT>,
+      <TT>fterfirste`e=95 _ `e=58 : 
+      `e&gt;64
+        `e&lt;91 eee
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>raseRangeACEvents</TT>, <TT>fterfirsta`a=95 _ `a=58 : 
+      `a&gt;64
+        `a&lt;91 aaa
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ddACEvent</TT>, <TT>fterfirstc`c=95 _ `c=58 : 
+      `c&gt;64
+        `c&lt;91 ccc
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>hangeACEvent</TT>,
+      which do the obvious
+</LI>
+<LI><TT>fterfirstp`p=95 _ `p=58 : 
+      `p&gt;64
+        `p&lt;91 ppp
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginCtrlVal</TT>, <TT>fterfirsts`s=95 _ `s=58 : 
+      `s&gt;64
+        `s&lt;91 sss
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>etPluginCtrlVal</TT>: the first
+      returns the current value according to the <TT>fterfirst_`_=95 _ `_=58 : 
+      `_&gt;64
+        `_&lt;91 ___
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>controller</TT>
+      list, the second only sets the <TT>fterfirstc`c=95 _ `c=58 : 
+      `c&gt;64
+        `c&lt;91 ccc
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>urVal</TT>, but does not
+      insert any events.
+</LI>
+</UL>
+
+<P>
+Whenever a <TT>fterfirstC`C=95 _ `C=58 : 
+      `C&gt;64
+        `C&lt;91 CCC
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>trlList</TT> has been manipulated,
+<TT>fterfirstM`M=95 _ `M=58 : 
+      `M&gt;64
+        `M&lt;91 MMM
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>usEGlobal::song-&gt;controllerChange(Track*)</TT> shall be called,
+which emits the <TT>fterfirstM`M=95 _ `M=58 : 
+      `M&gt;64
+        `M&lt;91 MMM
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>usEGlobal::song-&gt;controllerChanged(Track*)</TT>
+signal in order to inform any parts of MusE about the change (currently,
+only the arranger's part canvas utilizes this).
+
+<P>
+
+<H4><A NAME="SECTION00231140000000000000">
+Enabling and disabling controllers</A>
+</H4>
+Disabling the controller is both dependent from the current automation
+mode and from whether the GUI is native or not.
+In <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>UTO_WRITE</TT> mode, once a slider is touched (for MusE-GUIs) or
+once a OSC control change is received (for native GUIs), the control
+is disabled until the song is stopped or seeked.
+
+<P>
+In <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>UTO_TOUCH</TT> (and currently (r1492) <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>UTO_READ</TT>, but
+that's to be fixed) mode, once a MusE-GUI's slider is pressed down, the
+corresponding control is disabled. Once the slider is released, the
+control is re-enabled again. Checkboxes remain in "disabled" mode,
+however they only affect the recorded automation until the last toggle
+of the checkbox. (Example: start the song, toggle the checkbox, toggle
+it again, wait 10 seconds, stop the song. This will NOT overwrite the
+last 10 seconds of automation data, but everything between the first
+and the last toggle.). For native GUIs, this is a bit tricky, because
+we don't have direct access to the GUI widgets. That is, we have no
+way to find out whether the user doesn't touch a control at all, or
+whether he has it held down, but just doesn't operate it. The current
+behaviour for native GUIs is to behave like in <TT>fterfirstA`A=95 _ `A=58 : A
+  <`<=95 _ `<=58 : <
+  u@nderscorehyph<271>>UTO_WRITE</TT> mode.
+
+<P>
+The responsible functions are: <TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginI::oscControl</TT> and
+<TT>fterfirstD`D=95 _ `D=58 : 
+      `D&gt;64
+        `D&lt;91 DDD
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ssiSynthIF::oscControl</TT> for handling native GUIs,
+<TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginI::ctrlPressed</TT> and <TT>fterfirstc`c=95 _ `c=58 : 
+      `c&gt;64
+        `c&lt;91 ccc
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>trlReleased</TT> for MusE
+default GUIs and <TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginI::guiParamPressed</TT>,
+<TT>fterfirstg`g=95 _ `g=58 : 
+      `g&gt;64
+        `g&lt;91 ggg
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>uiParamReleased</TT>, <TT>fterfirstg`g=95 _ `g=58 : 
+      `g&gt;64
+        `g&lt;91 ggg
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>uiSliderPressed</TT> and
+<TT>fterfirstg`g=95 _ `g=58 : 
+      `g&gt;64
+        `g&lt;91 ggg
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>uiSliderReleased</TT> for MusE GUIs read from a UI file;
+<TT>fterfirstg`g=95 _ `g=58 : 
+      `g&gt;64
+        `g&lt;91 ggg
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>uiSlider*</TT> obviously handle sliders, while <TT>fterfirstg`g=95 _ `g=58 : 
+      `g&gt;64
+        `g&lt;91 ggg
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>uiParam*</TT>
+handle everything else which is not a slider. They call
+<TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginI::enableController</TT> to enable/disable it.
+
+<P>
+Furthermore, on every song stop or seek, <TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginI::enableAllControllers</TT>
+is called, which re-enables all controllers again. The call paths for
+this are:
+
+<UL>
+<LI>For stop: <TT>fterfirstS`S=95 _ `S=58 : 
+      `S&gt;64
+        `S&lt;91 SSS
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ong::stopRolling</TT> calls
+                <TT>fterfirstS`S=95 _ `S=58 : 
+      `S&gt;64
+        `S&lt;91 SSS
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ong::processAutomationEvents</TT> calls
+                <TT>fterfirstS`S=95 _ `S=58 : 
+      `S&gt;64
+        `S&lt;91 SSS
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ong::clearRecAutomation</TT> calls
+                <TT>fterfirstT`T=95 _ `T=58 : 
+      `T&gt;64
+        `T&lt;91 TTT
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>rack::clearRecAutomation</TT> calls
+                <TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginI::enableAllControllers</TT>
+</LI>
+<LI>For seek: <TT>fterfirstA`A=95 _ `A=58 : 
+      `A&gt;64
+        `A&lt;91 AAA
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>udio::seek</TT> sends a message ("<TT>fterfirstG`G=95 _ `G=58 : 
+      `G&gt;64
+        `G&lt;91 GGG
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>></TT>") to
+                <TT>fterfirstS`S=95 _ `S=58 : 
+      `S&gt;64
+        `S&lt;91 SSS
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ong::seqSignal</TT> which calls
+                <TT>fterfirstS`S=95 _ `S=58 : 
+      `S&gt;64
+        `S&lt;91 SSS
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>ong::clearRecAutomation</TT> which calls
+                <TT>fterfirstP`P=95 _ `P=58 : 
+      `P&gt;64
+        `P&lt;91 PPP
+
+                            <`<=95 _ `<=58 : 
+      `<&gt;64
+        `<&lt;91 <<<
+
+                            c@amelhyph<269>>luginI::enableAllControllers</TT>
+</LI>
+</UL>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html116"
+  HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html112"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html108"
+  HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html114"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html117"
+  HREF="node6.html">Design decisions</A>
+<B> Up:</B> <A NAME="tex2html113"
+  HREF="node2.html">Internals - how it</A>
+<B> Previous:</B> <A NAME="tex2html109"
+  HREF="node4.html">Configuration</A>
+ &nbsp; <B>  <A NAME="tex2html115"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

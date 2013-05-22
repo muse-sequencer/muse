@@ -41,7 +41,7 @@ class WavePart;
 class WaveEventBase : public EventBase {
       QString _name;
       SndFileR f;
-      int _spos;        // start sample position in WaveFile
+      int _spos;            // start sample position in WaveFile
       bool deleted;
 
       virtual EventBase* clone();

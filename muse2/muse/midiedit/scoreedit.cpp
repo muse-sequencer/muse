@@ -1271,7 +1271,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 {
 	parent      = pr;
 	setFocusPolicy(Qt::StrongFocus);
-	setBg(Qt::white);
+    setBg(MusEGlobal::config.midiCanvasBg);
 	
 	setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 	

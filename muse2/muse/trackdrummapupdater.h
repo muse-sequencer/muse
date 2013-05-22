@@ -34,7 +34,7 @@ class TrackDrummapUpdater : public QObject
   Q_OBJECT
 
   public:
-    TrackDrummapUpdater();
+    TrackDrummapUpdater(QObject* parent = 0);
     
   private slots:
     void songChanged(MusECore::SongChangedFlags_t flags);

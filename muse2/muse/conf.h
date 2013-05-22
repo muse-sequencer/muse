@@ -54,6 +54,7 @@ class MidiFileConfig : public QDialog, public Ui::ConfigMidiFileBase {
 namespace MusECore {
 class Xml;
 extern bool readConfiguration();
+extern bool readConfiguration(const char *configFile);
 extern void readConfiguration(Xml&, bool doReadMidiPorts, bool doReadGlobalConfig);
 }
 

@@ -48,6 +48,7 @@ void MusE::startMidiInputPlugin(int id)
       QAction* act = 0;
       if (id == 0) {
             if (!MusEGlobal::mitPluginTranspose) {
+                  // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
                   MusEGlobal::mitPluginTranspose = new MITPluginTranspose();
                   MusECore::mitPlugins.push_back(MusEGlobal::mitPluginTranspose);
                   connect(MusEGlobal::mitPluginTranspose, SIGNAL(hideWindow()),
@@ -58,6 +59,7 @@ void MusE::startMidiInputPlugin(int id)
             }
       else if (id == 1) {
             if (!midiInputTransform) {
+                  // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
                   midiInputTransform = new MidiInputTransformDialog();
                   connect(midiInputTransform, SIGNAL(hideWindow()),
                      SLOT(hideMidiInputTransform()));
@@ -67,6 +69,7 @@ void MusE::startMidiInputPlugin(int id)
             }
       else if (id == 2) {
             if (!midiFilterConfig) {
+                  // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
                   midiFilterConfig = new MidiFilterConfig();
                   connect(midiFilterConfig, SIGNAL(hideWindow()),
                      SLOT(hideMidiFilterConfig()));
@@ -76,6 +79,7 @@ void MusE::startMidiInputPlugin(int id)
             }
       else if (id == 3) {
             if (!midiRemoteConfig) {
+                  // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
                   midiRemoteConfig = new MRConfig();
                   connect(midiRemoteConfig, SIGNAL(hideWindow()),
                      SLOT(hideMidiRemoteConfig()));
@@ -86,6 +90,7 @@ void MusE::startMidiInputPlugin(int id)
 #ifdef BUILD_EXPERIMENTAL
       else if (id == 4) {
             if (!midiRhythmGenerator) {
+                  // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
                   midiRhythmGenerator = new RhythmGen();
                   connect(midiRhythmGenerator, SIGNAL(hideWindow()),
                      SLOT(hideMidiRhythmGenerator()));
@@ -134,6 +139,7 @@ void MusE::hideMidiRhythmGenerator()
 void MusE::startMidiTransformer()
       {
       if (midiTransformerDialog == 0)
+            // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
             midiTransformerDialog = new MidiTransformerDialog;
       midiTransformerDialog->show();
       }

@@ -65,13 +65,12 @@ class ScrollScale : public QWidget {
    public slots:
       void setPos(unsigned);
       void setPosNoLimit(unsigned); 
-      void setMag(int);
+      void setMag(int val, int pos_offset = 0);
       void setOffset(int val);
-      void setScale(int);
+      void setScale(int val, int pos_offset = 0);
 
    signals:
       void scaleChanged(int);
-      void lscaleChanged(int);
       void scrollChanged(int);
       void newPage(int);
 
@@ -97,7 +96,7 @@ class ScrollScale : public QWidget {
       int pos2offset(int pos);
       static int getQuickZoomLevel(int mag);
       static int convertQuickZoomLevelToMag(int zoomlvl);
-      const static int zoomLevels = 31;
+      const static int zoomLevels = 38;
       };
 
 } // namespace MusEGui

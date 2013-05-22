@@ -135,6 +135,7 @@ class TList : public QWidget {
       void selectionChanged(MusECore::Track*);
       void keyPressExt(QKeyEvent*);
       void redirectWheelEvent(QWheelEvent*);
+      void verticalScrollSetYpos(int ypos);
 
    public slots:
       void tracklistChanged();

@@ -256,6 +256,7 @@ QChannelDial::QChannelDial(QWidget* parent, int ch, int fxid)
       setTracking(true);
       channel = ch;
       sendfxid = fxid;
+      connect(this, SIGNAL(sliderReleased()), SLOT(forwardSliderMoved()));
       }
 
 /*!
@@ -274,6 +275,12 @@ void QChannelDial::sliderChange(SliderChange change)
   QDial::sliderChange(change);
   if(change == QAbstractSlider::SliderValueChange)
     emit valueChanged(channel, sendfxid, value());  
+}
+
+void QChannelDial::forwardSliderMoved()
+{
+    printf("forwardSliderMoved();\n");
+    emit sliderMoved(channel, value());
 }
 
 /*!
@@ -337,6 +344,15 @@ SimpleSynthGui::SimpleSynthGui()
 //            setMinimumSize(SS_VOLSLDR_WIDTH, SS_VOLSLDR_LENGTH);
             inchnlLayout->addWidget(volumeSliders[i]);
             connect(volumeSliders[i], SIGNAL(valueChanged(int, int)), SLOT(volumeChanged(int, int)));
+
+            pitchKnobs[i] = new QChannelDial(channelButtonGroups[i], i, 0);
+            pitchKnobs[i]->setRange(-63,63);
+            pitchKnobs[i]->setValue(0);
+            pitchKnobs[i]->setToolTip("Pitch, channel " + QString::number(i + 1));
+            pitchKnobs[i]->setFixedSize(30,30);
+            inchnlLayout->addWidget(pitchKnobs[i]);
+            connect(pitchKnobs[i], SIGNAL(sliderMoved(int,int)), SLOT(pitchChanged(int,int)));
+
 
             nOffLabel[i] = new QLabel(channelButtonGroups[i]);
 //            nOffLabel[i]->setMinimumSize(SS_NONOFF_LABEL_WIDTH, SS_NONOFF_LABEL_HEIGHT);
@@ -544,11 +560,13 @@ void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
                   switch(id) {
                         case SS_CHANNEL_CTRL_VOLUME:
                               volumeSliders[ch]->blockSignals(true);
-                              
-                              ///volumeSliders[ch]->setValue(SS_VOLUME_MAX_VALUE - val);
-                              volumeSliders[ch]->setValue(val);   // p4.0.27
-                              
+                              volumeSliders[ch]->setValue(val);
                               volumeSliders[ch]->blockSignals(false);
+                              break;
+                        case SS_CHANNEL_CTRL_PITCH:
+                              pitchKnobs[ch]->blockSignals(true);
+                              pitchKnobs[ch]->setValue(-(val-63));
+                              pitchKnobs[ch]->blockSignals(false);
                               break;
 
                         case SS_CHANNEL_CTRL_PAN:
@@ -767,6 +785,15 @@ void SimpleSynthGui::volumeChanged(int channel, int val)
       }
 
 /*!
+    \fn SimpleSynthGui::pitchChanged(int val)
+ */
+void SimpleSynthGui::pitchChanged(int channel, int val)
+      {
+    printf("Gui::pitchChanged %d %d\n", channel, val);
+      setChannelPitch(channel, -val+63);
+      }
+
+/*!
     \fn SimpleSynthGui::panChanged(int channel, int value)
  */
 void SimpleSynthGui::panChanged(int channel, int value)
@@ -815,6 +842,13 @@ void SimpleSynthGui::setChannelVolume(int channel, int volume)
       sendController(0, SS_CHANNEL_VOLUME_CONTROLLER(channel), (int)volume);
       }
 
+/*!
+    \fn SimpleSynthGui::setChannelPitch(int channel, byte pitch)
+ */
+void SimpleSynthGui::setChannelPitch(int channel, int pitch)
+      {
+      sendController(0, SS_CHANNEL_PITCH_CONTROLLER(channel), (int)pitch);
+      }
 
 /*!
     \fn SimpleSynthGui::loadSampleDialogue(int channel)

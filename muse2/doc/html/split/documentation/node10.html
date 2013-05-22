@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Automation</TITLE>
+<META NAME="description" CONTENT="Automation">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node11.html">
+<LINK REL="previous" HREF="node9.html">
+<LINK REL="up" HREF="node3.html">
+<LINK REL="next" HREF="node11.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html319"
+  HREF="node11.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html315"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html309"
+  HREF="node9.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html317"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html320"
+  HREF="node11.html">Configuration</A>
+<B> Up:</B> <A NAME="tex2html316"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html310"
+  HREF="node9.html">Plugins</A>
+ &nbsp; <B>  <A NAME="tex2html318"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A NAME="tex2html321"
+  HREF="node10.html#SECTION00371000000000000000">Audio automation</A>
+<UL>
+<LI><A NAME="tex2html322"
+  HREF="node10.html#SECTION00371010000000000000">Audio automation modes</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html323"
+  HREF="node10.html#SECTION00372000000000000000">Midi automation</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+
+<H1><A NAME="SECTION00370000000000000000"></A> <A NAME="automation"></A>
+<BR>
+Automation
+</H1>
+Automation is the ability to record (or construct) and playback
+exact sequences of control movements.
+
+<P>
+MIDI and audio automation are each currently uniquely different,
+but share some similarities.
+
+<P>
+
+<H2><A NAME="SECTION00371000000000000000"></A> <A NAME="audio_automation"></A>
+<BR>
+Audio automation
+</H2>
+Almost all graphical audio controls in MusE can be automated.
+
+<P>
+This includes an audio track's volume and pan, and the controls
+of any plugins in the effects rack, and if the track is a
+synthesizer track, all of the synth's controls.
+
+<P>
+Each control has a manual adjustment value. This value is shown
+when there is no automation data at all, or automation has been
+disabled.
+
+<P>
+For plugin and synth controls, it is usually more desirable to
+manipulate automation with the generic plugin GUIs, because
+MusE has full control over their behaviour. (See plugin GUIs
+<A HREF="node9.html#plugin_guis">2.6.1</A>).
+
+<P>
+There are a few ways to enter audio automation data:
+
+<UL>
+<LI>By adjusting audio controls while the transport is rolling.
+MusE will record the exact movements.
+</LI>
+<LI>By adjusting audio controls while the transport is stopped,
+at different transport positions. TOUCH mode allows this.
+</LI>
+<LI>By right-clicking any audio control and choosing an operation
+from the automation popup menu. This includes storing, erasing,
+and clearing automation events, and seeking the next or previous
+event.
+</LI>
+<LI>By drawing the data on the audio track's automation graphs.
+(See track automation <A HREF="node6.html#track_attr_automation">2.3.1</A>).
+</LI>
+</UL>
+<H4><A NAME="SECTION00371010000000000000">
+Audio automation modes</A>
+</H4> 
+Each audio track strip has an automation mode button
+at the bottom. There are four automation modes:
+<DL>
+<DT><STRONG>OFF:</STRONG></DT>
+<DD>Disables all automation, uses manual value always.
+</DD>
+<DT><STRONG>READ:</STRONG></DT>
+<DD>Automation data is applied to controls. If any
+automation data exists, the manual value is overridden and has
+no effect.
+</DD>
+<DT><STRONG>TOUCH:</STRONG></DT>
+<DD>Allows you to alter a control at any time, while
+transport is stopped or rolling, If rolling, when the control is
+released it returns to reading from automation data. 
+</DD>
+<DT><STRONG>WRITE:</STRONG></DT>
+<DD>Allows to adjust an initial value before rolling
+the transport. While rolling, when the control is released it does
+not return to reading from automation data. 
+</DD>
+</DL>
+Here is a screenshot of automation WRITE mode, and some automation
+data, with the track pane automation popup menu showing (see track
+automation <A HREF="node6.html#track_attr_automation">2.3.1</A>):
+
+<DIV ALIGN="CENTER"><A NAME="fig:audio_automation"></A><A NAME="329"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.11:</STRONG>
+Audio automation graphs</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="782" HEIGHT="524" ALIGN="BOTTOM" BORDER="0"
+ SRC="./main_window_with_automation.png"
+ ALT="Image main_window_with_automation"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<A NAME="midi_automation"></A> 
+<H2><A NAME="SECTION00372000000000000000">
+Midi automation</A>
+</H2> 
+MIDI automation is a slightly different concept: Unlike audio
+automation, currently there is no automation 'mode' and it doesn't
+record graphical control movements. Data is viewed from within
+the pianoroll and drum editors, by clicking on the 'Ctrl' button               
+on those canvases.
+
+<P>
+Similar to audio controls, each midi control has a manual adjustment
+value. This value is overridden when there is midi automation data.
+
+<P>
+There are a few ways to enter MIDI automation data:
+
+<UL>
+<LI>By adjusting external MIDI controls (such as a midi keyboard
+pitch or modulation wheel) while the transport is rolling and both
+the transport and midi track are in record mode. MusE will record
+the exact movements. As mentioned earlier, note that graphical control
+movements are not recorded.                                                    
+</LI>
+<LI>By right-clicking any midi control and choosing an operation
+from the automation popup menu. This includes storing and erasing
+automation events.                                                             
+</LI>
+<LI>By adjusting volume, pan, bank or program boxes in the midi
+trackinfo panel and clicking the corresponding volume, pan, or 
+program buttons. (See midi trackinfo <A HREF="node6.html#midi_trackinfo_sidebar">2.3.1</A>).
+</LI>
+<LI>By drawing the data on a midi part's automation graphs.
+</LI>
+</UL>
+Here is a screen shot of a midi track, containing a midi part
+which has been opened with the pianoroll editor and automation                 
+data showing.
+
+<P>
+The 'Ctrl' popup menu (bottom left) shows available midi controllers
+and the green dot indicates there is some data.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:midi_automation"></A><A NAME="339"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2.12:</STRONG>
+MIDI automation graphs</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+  WIDTH="628" HEIGHT="620" ALIGN="BOTTOM" BORDER="0"
+ SRC="./main_window_with_midi_automation.png"
+ ALT="Image main_window_with_midi_automation"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html319"
+  HREF="node11.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html315"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html309"
+  HREF="node9.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html317"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html320"
+  HREF="node11.html">Configuration</A>
+<B> Up:</B> <A NAME="tex2html316"
+  HREF="node3.html">User's manual</A>
+<B> Previous:</B> <A NAME="tex2html310"
+  HREF="node9.html">Plugins</A>
+ &nbsp; <B>  <A NAME="tex2html318"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

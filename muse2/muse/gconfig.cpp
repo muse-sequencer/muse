@@ -102,13 +102,13 @@ GlobalConfigValues config = {
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
       
       QColor(74, 150, 194),         // midiTrackLabelBg;   // Med blue
-      QColor(74, 150, 194),         // drumTrackLabelBg;   // Med blue
-      QColor(74, 150, 194),         // newDrumTrackLabelBg;   // Med blue
+      QColor(150, 177, 189),        // drumTrackLabelBg;   // Pale pastel blue
+      QColor(116, 232, 242),        // newDrumTrackLabelBg; // Light blue
       QColor(213, 128, 202),        // waveTrackLabelBg;   // magenta
       QColor(84, 185, 58),          // outputTrackLabelBg; // green
       QColor(199, 75, 64),          // inputTrackLabelBg;  // red
       QColor(236, 214, 90),         // groupTrackLabelBg;  // yellow
-      QColor(161, 234, 242),        // auxTrackLabelBg;    // Light blue
+      QColor(142, 157, 6),          // auxTrackLabelBg;    // Med olive
       QColor(229, 157, 101),        // synthTrackLabelBg;  // Med orange
       
       QColor(215, 220, 230),     // midiTrackBg;
@@ -124,6 +124,24 @@ GlobalConfigValues config = {
       QColor(98, 124, 168),      // part canvas bg
       QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
       QColor(0, 0, 0),           // mixerBg;
+
+      QColor(0xe0, 0xe0, 0xe0),     // Ruler background
+      QColor(0, 0, 0),              // Ruler text
+      QColor(255, 255, 255),        // Midi editor canvas
+      QColor(255, 255, 255),        // midiControllerViewBg
+      QColor(255, 255, 255),        // drumListBg
+      QColor(255, 255, 255),        // rulerCurrent
+
+      Qt::lightGray,                // waveNonselectedPart
+      Qt::darkGray,                 // wavePeakColor
+      Qt::black,                    // waveRmsColor
+      Qt::lightGray,                // wavePeakColorSelected
+      Qt::white,                    // waveRmsColorSelected
+
+      Qt::darkGray,                 // partWaveColorPeak
+      QColor(20,20,20),             // partWaveColorRms
+      QColor(54,54,54),             // partMidiDarkEventColor
+      QColor(200,200,200),          // partMidiLightEventColor
 
       384,                          // division;
       1024,                         // rtcTicks
@@ -205,7 +223,10 @@ GlobalConfigValues config = {
       true,                         // addHiddenTracks
       true,                         // unhideTracks
       MusEGlobal::PREFER_NEW,       // drumTrackPreference
-      true                          // smartFocus
+      true,                         // smartFocus
+      20,                           // trackHeight
+      true,                         // borderlessMouse
+      true                          // autoSave
     };
 
 } // namespace MusEGlobal

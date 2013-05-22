@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Slotted editors</TITLE>
+<META NAME="description" CONTENT="Slotted editors">
+<META NAME="keywords" CONTENT="developer_docs">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="developer_docs.css">
+
+<LINK REL="next" HREF="node12.html">
+<LINK REL="previous" HREF="node10.html">
+<LINK REL="up" HREF="node8.html">
+<LINK REL="next" HREF="node12.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A NAME="tex2html234"
+  HREF="node12.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html230"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html224"
+  HREF="node10.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html232"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html235"
+  HREF="node12.html">Controller master values</A>
+<B> Up:</B> <A NAME="tex2html231"
+  HREF="node8.html">Feature requests</A>
+<B> Previous:</B> <A NAME="tex2html225"
+  HREF="node10.html">Pre-Rendering tracks</A>
+ &nbsp; <B>  <A NAME="tex2html233"
+  HREF="node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00430000000000000000">
+Slotted editors</A>
+</H1>
+Currently, MusE has the pianoroll editor, drum editor, score editor,
+then the controller editor which is inside the pianoroll/drum editor.
+All these editors have a very similar concept: the "time axis" is
+vertical and (almost) linear, they handle parts, and events are
+manipulated similarly.
+
+<P>
+A unified editor shall be created which allows you to combine different
+kinds of editors in one window, properly aligned against each other.
+These "different kinds of editors" shall be handled as "slots"; one
+unified editor window consists of:
+
+<UL>
+<LI>A menu bar, containing stuff suitable for the complete window,
+      which might include window name, MDI-ness etc.
+</LI>
+<LI>A toolbar which contains controls suitable for every single slot.
+</LI>
+<LI>A container with one or more slots; the slots can be scrolled in
+      y-direction if there are multipe slots.
+</LI>
+<LI>A time-scrollbar with zoom
+</LI>
+</UL>
+
+<P>
+Each slot contains the following:
+
+<UL>
+<LI>A menu button, button box or control panel for setting up this
+      particular slot. This could contain "note head colors", "show
+      a transposing instrument" etc for score edit slots, "event
+      rectangle color", "grid size" and "snap to grid" for pianoroll/
+      drum editors.
+</LI>
+<LI>The actual canvas
+</LI>
+<LI>A y-direction scroll bar, possibly with zoom control (for
+      pianoroll editor)
+</LI>
+</UL>
+
+<P>
+The main window does not show its scroll bar if there is only one slot,
+because the slot's scrollbar is sufficient then.
+
+<P>
+Slots can be added, destroyed, moved around, maybe even merged (if the
+slot types allow it); basically, you can compare them with the staves
+in the score editor.
+
+<P>
+The slots shall align against each other, that is, if a score editor
+slot displays a key change with lots of accidentials, then all other
+slots shall either also display the key change (if they're score slots)
+or display a gap. Events which happen at the same time shall be at the
+same x-coordinate, regardless which slot they are.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A NAME="tex2html234"
+  HREF="node12.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html230"
+  HREF="node8.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html224"
+  HREF="node10.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html232"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html235"
+  HREF="node12.html">Controller master values</A>
+<B> Up:</B> <A NAME="tex2html231"
+  HREF="node8.html">Feature requests</A>
+<B> Previous:</B> <A NAME="tex2html225"
+  HREF="node10.html">Pre-Rendering tracks</A>
+ &nbsp; <B>  <A NAME="tex2html233"
+  HREF="node1.html">Contents</A></B> </DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

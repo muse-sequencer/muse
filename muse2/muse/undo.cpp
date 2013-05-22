@@ -684,7 +684,7 @@ void Song::addUndo(UndoOp i)
             return;
             }
       undoList->back().push_back(i);
-      dirty = true;
+      emit sigDirty();
       }
 
 //---------------------------------------------------------
@@ -812,7 +812,7 @@ void Song::doUndo3()
             }
       redoList->push_back(u); // put item on redo list
       undoList->pop_back();
-      dirty = true;
+      emit sigDirty();
       }
 
 //---------------------------------------------------------
@@ -935,7 +935,7 @@ void Song::doRedo3()
             }
       undoList->push_back(u); // put item on undo list
       redoList->pop_back();
-      dirty = true;
+      emit sigDirty();
       }
 
 

@@ -44,6 +44,7 @@ class MTScale : public View {
 
    private slots:
       void songChanged(MusECore::SongChangedFlags_t);
+      void configChanged();
 
    protected:
       virtual void pdraw(QPainter&, const QRect&);

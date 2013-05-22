@@ -40,8 +40,11 @@ struct DrumMap {
       unsigned char vol;            // playback volume, percent.
       int quant;
       int len;                      // len of event in ticks
+
+      // Default to track port if -1 and track channel if -1.
       int channel;                  // midi channel
       int port;                     // midi port
+
       char lv1, lv2, lv3, lv4;      // velocities
       char enote, anote;            // input note - output note
       bool mute;
@@ -57,6 +60,7 @@ struct DrumMap {
 extern DrumMap iNewDrumMap[128];
 extern void initNewDrumMap();
 
+extern void clearDrumMap();  // One-time only early init
 extern void initDrumMap();
 extern void writeDrumMap(int level, Xml& xml, bool external);
 extern void readDrumMap(Xml& xml, bool external);

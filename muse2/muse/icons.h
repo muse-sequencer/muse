@@ -67,7 +67,11 @@ extern QPixmap* steprecIcon;
 extern QPixmap* glueIcon;
 extern QPixmap* drawIcon;
 extern QPixmap* cursorIcon;
-
+extern QPixmap* closedHandIcon;
+extern QPixmap* openHandIcon;
+extern QPixmap* zoomIcon;
+extern QPixmap* zoomAtIcon;
+extern QPixmap* sizeAllIcon;
 
 extern QPixmap* quantIcon;
 extern QPixmap* printIcon;
@@ -121,6 +125,7 @@ extern QPixmap* configureIcon;
 extern QPixmap* editmuteIcon;
 extern QPixmap* editmuteSIcon;
 extern QPixmap* panicIcon;
+extern QPixmap* metronomeIcon;
 
 extern QIcon* pianoIconSet;
 extern QIcon* scoreIconSet;
@@ -209,6 +214,7 @@ extern QPixmap* addtrack_audioinputIcon;
 extern QPixmap* addtrack_audiooutputIcon;
 extern QPixmap* addtrack_auxsendIcon;
 extern QPixmap* addtrack_drumtrackIcon;
+extern QPixmap* addtrack_newDrumtrackIcon;
 extern QPixmap* addtrack_wavetrackIcon;
 extern QPixmap* edit_drummsIcon;
 extern QPixmap* edit_listIcon;

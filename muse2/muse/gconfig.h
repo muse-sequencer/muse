@@ -24,7 +24,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define NUM_PARTCOLORS 17
+#define NUM_PARTCOLORS 18
 #define NUM_FONTS 7
 
 #include <QColor>
@@ -134,6 +134,24 @@ struct GlobalConfigValues {
       QColor ctrlGraphFg;
       QColor mixerBg;
 
+      QColor rulerBg;
+      QColor rulerFg;
+      QColor midiCanvasBg;
+      QColor midiControllerViewBg;
+      QColor drumListBg;
+      QColor rulerCurrent;
+
+      QColor waveNonselectedPart;
+      QColor wavePeakColor;
+      QColor waveRmsColor;
+      QColor wavePeakColorSelected;
+      QColor waveRmsColorSelected;
+
+      QColor partWaveColorPeak;
+      QColor partWaveColorRms;
+      QColor partMidiDarkEventColor;
+      QColor partMidiLightEventColor;
+
       int division;
       int rtcTicks;
       bool midiSendInit;         // Send instrument initialization sequences
@@ -211,6 +229,9 @@ struct GlobalConfigValues {
       bool unhideTracks;
       drumTrackPreference_t drumTrackPreference;
       bool smartFocus;
+      int trackHeight;
+      bool borderlessMouse;
+      bool autoSave;
       };
 
 

@@ -49,6 +49,8 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QString>
+#include <QLine>
+#include <QRect>
 
 using std::set;
 
@@ -253,7 +255,7 @@ void write_new_style_drummap(int level, Xml& xml, const char* tagname,
 }
 
 void read_new_style_drummap(Xml& xml, const char* tagname,
-                            DrumMap* drummap, bool* drummap_hidden)
+                            DrumMap* drummap, bool* drummap_hidden, bool compatibility)
 {
 	for (;;)
 	{
@@ -266,7 +268,8 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
 			case Xml::TagStart:
 				if (tag == "entry")  // then read that entry with a nested loop
         {
-					DrumMap* dm=NULL;
+          DrumMap* dm=NULL;
+          DrumMap temporaryMap;
           bool* hidden=NULL;
           for (;;) // nested loop
           {
@@ -293,9 +296,13 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                 break;
               
               case Xml::TagStart:
-                if (dm==NULL)
+                if (dm==NULL && compatibility == false)
                   printf("ERROR: THIS SHOULD NEVER HAPPEN: no valid 'pitch' attribute in <entry> tag, but sub-tags follow in read_new_style_drummap()!\n");
-                else if (tag == "name")
+                else if (dm ==NULL && compatibility == true)
+                {
+                   dm = &temporaryMap;
+                }
+                if (tag == "name")
                   dm->name = xml.parse(QString("name"));
                 else if (tag == "vol")
                   dm->vol = (unsigned char)xml.parseInt();
@@ -311,8 +318,16 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                   dm->lv3 = xml.parseInt();
                 else if (tag == "lv4")
                   dm->lv4 = xml.parseInt();
-                else if (tag == "enote")
+                else if (tag == "enote") {
                   dm->enote = xml.parseInt();
+                  if (compatibility) {
+                      int pitch = temporaryMap.enote;
+                      drummap[pitch] = temporaryMap;
+                      dm = &drummap[pitch];
+                      hidden = drummap_hidden ? &drummap_hidden[pitch] : NULL;
+                      dm->anote = pitch;
+                  }
+                }
                 else if (tag == "mute")
                   dm->mute = xml.parseInt();
                 else if (tag == "hide")
@@ -457,7 +472,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool evenIgnor
 
         if (!evenIgnoreDrumPreference && (MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_NEW || MusEGlobal::config.drumTrackPreference==MusEGlobal::ONLY_NEW))
         {
-          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
                                             qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
           newdrum->setData(MusECore::Track::NEW_DRUM);
           grp->addAction(newdrum);
@@ -472,7 +487,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool evenIgnor
         }
         if (evenIgnoreDrumPreference || MusEGlobal::config.drumTrackPreference==MusEGlobal::PREFER_OLD)
         {
-          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+          QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
                                             qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add New Style Drum Track")));
           newdrum->setData(MusECore::Track::NEW_DRUM);
           grp->addAction(newdrum);
@@ -1099,6 +1114,58 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       return est_width;
       }
 
+//---------------------------------------------------
+//  clipQLine
+//---------------------------------------------------
+
+QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect)
+{
+  const int rect_x     = rect.x();
+  const int rect_y     = rect.y();
+  const int rect_right = rect_x + rect.width();
+  const int rect_bot   = rect_y + rect.height();
+  
+  if(x1 < rect_x)
+  {
+    if(x2 < rect_x)
+      return QLine();
+    x1 = rect_x;
+  }
+  else
+  if(x1 > rect_right)
+  {
+    if(x2 > rect_right)
+      return QLine();
+    x1 = rect_right;
+  }
+  
+  if(x2 < rect_x)
+    x2 = rect_x;
+  else
+  if(x2 > rect_right)
+    x2 = rect_right;
+  
+  if(y1 < rect_y)
+  {
+    if(y2 < rect_y)
+      return QLine();
+    y1 = rect_y;
+  }
+  else
+  if(y1 > rect_bot)
+  {
+    if(y2 > rect_bot)
+      return QLine();
+    y1 = rect_bot;
+  }
+  
+  if(y2 < rect_y)
+    y2 = rect_y;
+  if(y2 > rect_bot)
+    y2 = rect_bot;
+
+  return QLine(x1, y1, x2, y2);
+}
 
 
 } // namespace MusEGui

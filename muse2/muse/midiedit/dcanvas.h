@@ -32,7 +32,6 @@
 
 #define TH 18
 
-
 class QResizeEvent;
 class QDragEnterEvent;
 class QDropEvent;
@@ -109,20 +108,24 @@ class DrumCanvas : public EventCanvas {
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       void drawTopItem(QPainter& p, const QRect& rect);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
-      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType);
-      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType);
+      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true);
+      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
       virtual CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(CItem*, bool, bool);
+      virtual void resizeItem(CItem*, bool, bool) { } // Non-virt width is meaningless, such as drums.
       virtual void newItem(CItem*, bool);
       virtual void newItem(CItem*, bool, bool replace );
       virtual bool deleteItem(CItem*);
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);
+      virtual void itemMoved(const CItem*, const QPoint&);
 
       CItem* newItem(int tick, int instrument, int velocity);
 
+      bool index2Note(int index, int* port, int* channel, int* note);
       int y2pitch(int y) const;
       int pitch2y(int pitch) const;
+      inline int y2height(int) const { return TH; }
+      inline int yItemOffset() const { return -TH/2; }
       void startDrag(CItem*, bool copymode);
       void dragEnterEvent(QDragEnterEvent* event);
       void dragMoveEvent(QDragMoveEvent*);
@@ -163,6 +166,7 @@ class DrumCanvas : public EventCanvas {
       void cmd(int);
       virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);
       virtual void keyPress(QKeyEvent* event);
+      virtual void keyRelease(QKeyEvent* event);
       MusECore::Event *getEventAtCursorPos();
       void selectCursorEvent(MusECore::Event *ev);
 

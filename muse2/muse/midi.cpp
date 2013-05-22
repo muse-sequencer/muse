@@ -679,8 +679,13 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     // Map drum-notes to the drum-map values
                                    int instr = ev.pitch();
                                    pitch     = MusEGlobal::drumMap[instr].anote;
+                                   // Default to track port if -1 and track channel if -1.
                                    port      = MusEGlobal::drumMap[instr].port; //This changes to non-default port
+                                   if(port == -1)
+                                     port = track->outPort();
                                    channel   = MusEGlobal::drumMap[instr].channel;
+                                   if(channel == -1)
+                                     channel = track->outChannel();
                                    velo      = int(double(velo) * (double(MusEGlobal::drumMap[instr].vol) / 100.0)) ;
                                    }
                               else if (track->type() != Track::NEW_DRUM) {
@@ -744,8 +749,13 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                                     int instr = ctl & 0x7f;
                                     ctl &=  ~0xff;
                                     int pitch = MusEGlobal::drumMap[instr].anote & 0x7f;
+                                    // Default to track port if -1 and track channel if -1.
                                     port      = MusEGlobal::drumMap[instr].port; //This changes to non-default port
+                                    if(port == -1)
+                                      port = track->outPort();
                                     channel   = MusEGlobal::drumMap[instr].channel;
+                                    if(channel == -1)
+                                      channel = track->outChannel();
                                     MidiDevice* mdAlt = MusEGlobal::midiPorts[port].device();
                                     if(mdAlt) 
                                     {
@@ -809,7 +819,51 @@ void Audio::processMidi()
           while (s->eventsPending()) 
           {
             MusECore::MidiRecordEvent ev = s->receiveEvent();
-            md->recordEvent(ev);
+            // FIXME: This is for recording the events sent by GUI.
+            //        It never gets a chance to be processed since reading of
+            //         record FIFOs is done only by connected input ROUTES, below.
+            //        To be useful, the synth itself must be allowed to be chosen
+            //         as an input route, which is simple enough, but we currently don't
+            //         list synths as inputs for fear of too many INCOMPATIBLE messages
+            //         from DIFFERING synths. However, we could allow ONLY THIS synth
+            //         to be listed and therefore be automatically connected too, if desired.
+            //md->recordEvent(ev);
+            //
+            // For now, instead of recording, here is the minimum that we must do:
+            //
+            // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+            // Same code as in MidiPort::sendEvent()
+            if(md->midiPort() != -1)
+            {
+              MidiPort* mp = &MusEGlobal::midiPorts[md->midiPort()];
+              if(ev.type() == ME_CONTROLLER)
+              {
+                int da = ev.dataA();
+                int db = ev.dataB();
+                db = mp->limitValToInstrCtlRange(da, db);
+                mp->setHwCtrlState(ev.channel(), da, db);
+              }
+              else if(ev.type() == ME_PITCHBEND)
+              {
+                int da = mp->limitValToInstrCtlRange(CTRL_PITCH, ev.dataA());
+                mp->setHwCtrlState(ev.channel(), CTRL_PITCH, da);
+              }
+              else if(ev.type() == ME_AFTERTOUCH)
+              {
+                int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, ev.dataA());
+                mp->setHwCtrlState(ev.channel(), CTRL_AFTERTOUCH, da);
+              }
+              else if(ev.type() == ME_POLYAFTER)
+              {
+                int ctl = (CTRL_POLYAFTER & ~0xff) | (ev.dataA() & 0x7f);
+                int db = mp->limitValToInstrCtlRange(ctl, ev.dataB());
+                mp->setHwCtrlState(ev.channel(), ctl , db);
+              }
+              else if(ev.type() == ME_PROGRAM)
+              {
+                mp->setHwCtrlState(ev.channel(), CTRL_PROGRAM, ev.dataA());
+              }
+            }
           }
         }
         
@@ -911,8 +965,8 @@ void Audio::processMidi()
                   // Unlike our built-in gui controls, there is not much choice here but to 
                   //  just do this:
                   if ( (at == AUTO_WRITE) ||
-                       (at == AUTO_TOUCH && MusEGlobal::audio->isPlaying()) )
-                  //if(isPlaying() && (at == AUTO_WRITE || at == AUTO_TOUCH)) DELETETHIS
+                       (at == AUTO_READ && !MusEGlobal::audio->isPlaying()) ||
+                       (at == AUTO_TOUCH) )                                       
                     track->enableController(actrl, false);
                   if(isPlaying())
                   {
@@ -1044,11 +1098,15 @@ void Audio::processMidi()
                                             int pitch = event.dataA();
                                             //Map note that is played according to MusEGlobal::drumInmap
                                             drumRecPitch = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].enote;
+                                            // Default to track port if -1 and track channel if -1.
                                             devport = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].port;
+                                            if(devport == -1)
+                                              devport = track->outPort();
                                             event.setPort(devport);
-                                            channel = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].channel;
+                                            int mapchan = MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].channel;
+                                            if(mapchan != -1)
+                                              event.setChannel(mapchan);
                                             event.setA(MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].anote);
-                                            event.setChannel(channel);
                                       }
                                       else if (track->type() == Track::NEW_DRUM)
                                       {
@@ -1100,11 +1158,15 @@ void Audio::processMidi()
                                       int dmindex = MusEGlobal::drumInmap[pitch] & 0x7f;
                                       //Map note that is played according to MusEGlobal::drumInmap
                                       drumRecPitch = MusEGlobal::drumMap[dmindex].enote;
+                                      // Default to track port if -1 and track channel if -1.
                                       devport = MusEGlobal::drumMap[dmindex].port;
+                                      if(devport == -1)
+                                        devport = track->outPort();
                                       event.setPort(devport);
-                                      channel = MusEGlobal::drumMap[dmindex].channel;
+                                      int mapchan = MusEGlobal::drumMap[dmindex].channel;
+                                      if(mapchan != -1)
+                                        event.setChannel(mapchan);
                                       event.setA(ctl | MusEGlobal::drumMap[dmindex].anote);
-                                      event.setChannel(channel);
                                     }  
                                   }
                                   else if (track->type() == Track::NEW_DRUM) //FINDMICHJETZT TEST
@@ -1197,10 +1259,9 @@ void Audio::processMidi()
                                             MusECore::MidiPlayEvent drumRecEvent = event;
                                             drumRecEvent.setA(drumRecPitch);
                                             drumRecEvent.setB(preVelo);
-                                            // Tested: Events were not being recorded for a drum map entry pointing to a 
-                                            //  different port. This must have been wrong - buildMidiEventList would ignore this. Tim.
+                                            // Changed to 'port'. Events were not being recorded for a drum map entry pointing to a
+                                            //  different port. That must have been wrong - buildMidiEventList would ignore that. Tim.
                                             drumRecEvent.setPort(port);  //rec-event to current port
-                                            
                                             drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
                                             rl->add(drumRecEvent);
                                         }    
@@ -1233,49 +1294,90 @@ void Audio::processMidi()
       if (MusEGlobal::midiClickFlag)
             md = MusEGlobal::midiPorts[MusEGlobal::clickPort].device();
       if (MusEGlobal::song->click() && (isPlaying() || state == PRECOUNT)) {
-            int bar, beat;
+            int bar, beat, z, n;
             unsigned tick;
-            bool isMeasure = false;
+            AudioTickSound audioTickSound = MusECore::beatSound;
             while (midiClick < nextTickPos) {
                   if (isPlaying()) {
-                        AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
-                        isMeasure = beat == 0;
-                        }
+                    AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
+                    AL::sigmap.timesig(midiClick, z, n);
+
+                    //n = 2;
+                    if (tick == 0 && beat == 0) {
+                        audioTickSound = MusECore::measureSound;
+                        if (MusEGlobal::debugMsg)
+                            printf("meas: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                    }
+                    else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) {
+                        audioTickSound = MusECore::accent2Sound;
+                        if (MusEGlobal::debugMsg)
+                            printf("acc2: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                    }
+                    else if (tick == unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/n))) {
+                        audioTickSound = MusECore::accent1Sound;
+                        if (MusEGlobal::debugMsg)
+                            printf("acc1: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                    } else {
+                        if (MusEGlobal::debugMsg)
+                            printf("beat: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
+                    }
+                  }
                   else if (state == PRECOUNT) {
-                        isMeasure = (clickno % clicksMeasure) == 0;
-                        }
+                    if ((clickno % clicksMeasure) == 0) {
+                        audioTickSound = MusECore::measureSound;
+                    }
+                  }
                   int evtime = extsync ? midiClick : MusEGlobal::tempomap.tick2frame(midiClick) + frameOffset;  // p3.3.25
-                  
+
+                  MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
+                  if (audioTickSound == MusECore::measureSound) {
+                    ev.setA(MusEGlobal::measureClickNote);
+                    ev.setB(MusEGlobal::measureClickVelo);
+                  }
+                  if (audioTickSound == MusECore::accent1Sound) {
+                    ev.setA(MusEGlobal::accentClick1);
+                    ev.setB(MusEGlobal::accentClick1Velo);
+                  }
+                  if (audioTickSound == MusECore::accent2Sound) {
+                    ev.setA(MusEGlobal::accentClick2);
+                    ev.setB(MusEGlobal::accentClick2Velo);
+                  }
                   if (md) {
-                        MusECore::MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON,
-                           MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
-                        
-                        if (isMeasure) {
-                              ev.setA(MusEGlobal::measureClickNote);
-                              ev.setB(MusEGlobal::measureClickVelo);
-                              }
-                        md->addScheduledEvent(ev);
-                        
-                        ev.setB(0);
-                        ev.setTime(midiClick+10);
-                        md->addStuckNote(ev);
-                        }
+                    md->addScheduledEvent(ev);
+                    ev.setB(0);
+                    ev.setTime(midiClick+10);
+                    md->addStuckNote(ev);
+                  }
                   if (MusEGlobal::audioClickFlag) {
-                        MusECore::MidiPlayEvent ev(evtime, 0, 0, MusECore::ME_NOTEON, 0, 0);
-                        ev.setA(isMeasure ? 0 : 1);
-                        metronome->addScheduledEvent(ev);
-                        // Built-in metronome synth does not use stuck notes...
-                        }
-                  if (isPlaying())
+                    ev.setA(audioTickSound);
+                    metronome->addScheduledEvent(ev);
+                    // Built-in metronome synth does not use stuck notes...
+                  }
+                  if (isPlaying()) {
+                      // State machine to select next midiClick position.
+                      if (MusEGlobal::clickSamples == MusEGlobal::newSamples) {
+                          if (tick == 0) {//  ON key
+                              midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - ((MusEGlobal::config.division/n)));
+                          }
+                          else if (tick >= unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) { // second accent tick
+                              midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                          }
+                          else if (tick < unsigned(MusEGlobal::config.division - ((MusEGlobal::config.division/(n*2))))) { // first accent tick
+                              midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)));
+                          }
+                      }
+                      else {
                         midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                      }
+                  }
                   else if (state == PRECOUNT) {
                         midiClick += ticksBeat;
                         if (clickno)
                               --clickno;
                         else
                               state = START_PLAY;
-                        }
                   }
+               }
             }
       
       //

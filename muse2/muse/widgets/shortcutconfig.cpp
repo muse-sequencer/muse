@@ -31,11 +31,18 @@
 // Description:
 // Dialog for configuring keyboard shortcuts
 
+#include "config.h"
+
 #include <QCloseEvent>
 #include <QKeySequence>
 #include <QString>
 #include <QSettings>
 #include <QApplication>
+#include <QFileDialog>
+#include <QDir>
+#include <QFile>
+#include <QMessageBox>
+#include <QString>
 
 #include "shortcutconfig.h"
 #include "shortcutcapturedialog.h"
@@ -54,10 +61,13 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
 	     this, SLOT(categorySelChanged(QTreeWidgetItem*, int)));
    connect(scListView, SIGNAL(itemActivated(QTreeWidgetItem*, int )),
 	   this, SLOT(shortcutSelChanged(QTreeWidgetItem*, int)));
-   
+
+   okButton->setDefault(true);
    connect(defineButton, SIGNAL(pressed()), this, SLOT(assignShortcut()));
    connect(clearButton,  SIGNAL(pressed()), this, SLOT(clearShortcut()));
-   connect(applyButton,  SIGNAL(pressed()), this, SLOT(assignAll()));
+   connect(textFileButton, SIGNAL(pressed()), this, SLOT(textFileClicked()));
+   connect(applyButton,  SIGNAL(pressed()), this, SLOT(applyAll()));
+   connect(okButton,     SIGNAL(pressed()), this, SLOT(okClicked()));
 
    current_category = ALL_SHRT;
    cgListView->sortItems(SHRT_CATEGORY_COL, Qt::AscendingOrder);
@@ -110,8 +120,8 @@ void ShortcutConfig::assignShortcut()
             QKeySequence keySequence = QKeySequence(key);
             active->setText(SHRT_SHRTCUT_COL, keySequence);
             _config_changed = true;
+            clearButton->setEnabled(true);
             }
-      clearButton->setEnabled(true);
       defineButton->setDown(false);
       }
 
@@ -146,16 +156,124 @@ void ShortcutConfig::shortcutSelChanged(QTreeWidgetItem* in_item, int /*column*/
 
 void ShortcutConfig::closeEvent(QCloseEvent* /*e*/) // prevent compiler warning : unused variable
       {
+        closing();
+      }
+
+// NOTE: closeEvent was not being called when Esc was pressed, despite the implication that
+//        it should in the Qt help ("close event can't be ignored"). So this is a workaround,
+//        and the 'recommended' way according to forums.
+void ShortcutConfig::reject()
+      {
+        closing();
+        QDialog::reject();
+      }
+
+void ShortcutConfig::closing()
+{
       QSettings settings("MusE", "MusE-qt");
       settings.setValue("ShortcutConfig/geometry", saveGeometry());
-      done(_config_changed);
+      if(_config_changed)
+      {
+        emit saveConfig();
+        _config_changed = false;
       }
-
-
-void ShortcutConfig::assignAll()
+}
+      
+void ShortcutConfig::applyAll()
       {
       applyButton->setDown(false);
-      done(_config_changed);
+      closing(); // Just call closing to store everything, and don't close.
       }
+
+void ShortcutConfig::okClicked()
+      {
+      okButton->setDown(false);
+      close();
+      }
+
+void ShortcutConfig::textFileClicked()
+{
+  textFileButton->setDown(false);
+
+  QString fname = QFileDialog::getSaveFileName(this,
+                                               tr("Save printable text file"),
+                                               QDir::homePath() + "/shortcuts.txt",
+                                               tr("Text files (*.txt);;All files (*)"));
+  if(fname.isEmpty())
+  {
+    //QMessageBox::critical(this, tr("Error"), tr("Selected file name is empty"));
+    return;
+  }
+  
+  QFile qf(fname);
+  if(!qf.open(QIODevice::WriteOnly | QIODevice::Text))
+  {
+    QMessageBox::critical(this, tr("Error"), tr("Error opening file for saving"));
+    return;
+  }
+
+  bool error = false;
+
+  QString header;
+  for (int i=0; i < SHRT_NUM_OF_CATEGORIES; i++)
+  {
+    if(shortcut_category[i].id_flag == current_category)
+    {
+      header = QString(PACKAGE_NAME) + " " + tr("Shortcuts for selected category: ") + QString(shortcut_category[i].name) + "\n\n";
+      break;
+    }
+  }
+  if(!header.isEmpty() && qf.write(header.toLatin1().constData()) == -1)
+    error = true;
+
+  QString info;
+  if(current_category == ALL_SHRT)
+  {
+    info = tr("Legend:\n");
+    for (int i=0; i < SHRT_NUM_OF_CATEGORIES; i++)
+    {
+      if(shortcut_category[i].id_flag == ALL_SHRT)
+        continue;
+      info += (QString::number(i) + " : " + QString(shortcut_category[i].name) + "\n");
+    }
+    info += "\n";
+  }
+  if(!info.isEmpty() && qf.write(info.toLatin1().constData()) == -1)
+    error = true;
+  
+  for(int i=0; i < SHRT_NUM_OF_ELEMENTS; i++)
+  {
+    if(shortcuts[i].type & current_category)
+    {
+          QString s;
+          int pos = 0;
+          if(current_category == ALL_SHRT)
+          {
+            for(int j=0; j < SHRT_NUM_OF_CATEGORIES; j++)
+            {
+              if(shortcut_category[j].id_flag == ALL_SHRT)
+                continue;
+              if(shortcuts[i].type & shortcut_category[j].id_flag)
+                s.insert(pos, QString::number(j));
+              pos += 3;
+            }
+            s.insert(pos, " : ");
+            pos += 3;
+          }
+
+          s.insert(pos, QKeySequence(shortcuts[i].key).toString());
+          pos += 25;
+          s.insert(pos, qApp->translate("shortcuts", shortcuts[i].descr) + "\n");
+          if(qf.write(s.toLatin1().constData()) == -1)
+            error = true;
+    }
+  }
+  
+  qf.close();
+
+  if(error)
+    QMessageBox::critical(this, tr("Error"), tr("An error occurred while saving"));
+}
+      
 
 } // namespace MusEGui

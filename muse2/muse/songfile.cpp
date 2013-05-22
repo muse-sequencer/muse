@@ -1462,6 +1462,11 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
                         {
                               MusEGlobal::song->read(xml, isTemplate);
                               MusEGlobal::audio->msgUpdateSoloStates();
+                              // Inform the rest of the app that the song (may) have changed, using these flags.
+                              // After this function is called, the caller can do a general Song::update() MINUS these flags,
+                              //  like in MusE::loadProjectFile1() - the only place calling so far, as of this writing.
+                              // Some existing windows need this, like arranger, some don't which are dynamically created after this.
+                              MusEGlobal::song->update(SC_TRACK_INSERTED);
                         }      
                         else if (tag == "midiport")
                               readMidiport(xml);

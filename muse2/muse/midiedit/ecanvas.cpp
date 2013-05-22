@@ -43,6 +43,8 @@
 #include "shortcuts.h"
 #include "audio.h"
 #include "functions.h"
+#include "midi.h"
+#include "gconfig.h"
 
 namespace MusEGui {
 
@@ -61,8 +63,12 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       _playEvents = true;
       _setCurPartIfOnlyOneEventIsSelected = true;
       curVelo     = 70;
+      playedPitch = -1;
+      playedPitchChannel = -1;
+      playedPitchPort = -1;
+      playedVelocity = 0;
 
-      setBg(Qt::white);
+      setBg(MusEGlobal::config.midiCanvasBg);
       setAcceptDrops(true);
       setFocusPolicy(Qt::StrongFocus);
       setMouseTracking(true);
@@ -71,6 +77,12 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       curPartId = curPart->sn();
       }
 
+EventCanvas::~EventCanvas()
+{
+  if(_playEvents)
+    stopPlayEvent();
+}
+      
 //---------------------------------------------------------
 //   getCaption
 //---------------------------------------------------------
@@ -450,7 +462,7 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
 //          2     move only vertical
 //---------------------------------------------------------
 
-void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
+void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir, bool rasterize)
       {
       int dp = y2pitch(pos.y()) - y2pitch(Canvas::start.y());
       int dx = pos.x() - Canvas::start.x();
@@ -462,7 +474,7 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
       
       
       
-      MusECore::Undo operations = moveCanvasItems(moving, dp, dx, dragtype);
+      MusECore::Undo operations = moveCanvasItems(moving, dp, dx, dragtype, rasterize);
       if (operations.empty())
         songChanged(SC_EVENT_MODIFIED); //this is a hack to force the canvas to repopulate
       	                                //itself. otherwise, if a moving operation was forbidden,
@@ -483,10 +495,17 @@ void EventCanvas::startPlayEvent(int note, int velocity, int port, int channel)
       {
       if (MusEGlobal::debugMsg)
         printf("EventCanvas::startPlayEvent %d %d %d %d\n", note, velocity, port, channel);
-      playedPitch      = note + track()->transposition;
 
+      // Release any current note.
+      stopPlayEvent();
+      
+      playedPitch        = note + track()->transposition;
+      playedVelocity     = velocity;
+      playedPitchPort    = port;
+      playedPitchChannel = channel;
+      
       // play note:
-      MusECore::MidiPlayEvent e(0, port, channel, 0x90, playedPitch, velocity);
+      MusECore::MidiPlayEvent e(0, port, channel, MusECore::ME_NOTEON, playedPitch, velocity);
       MusEGlobal::audio->msgPlayMidiEvent(&e);
       }
 
@@ -503,13 +522,13 @@ void EventCanvas::startPlayEvent(int note, int velocity)
 
 void EventCanvas::stopPlayEvent()
       {
-      int port    = track()->outPort();
-      int channel = track()->outChannel();
-
+      if(playedPitch == -1 || playedPitchPort == -1 || playedPitchChannel == -1)
+        return;
       // release note:
-      MusECore::MidiPlayEvent ev(0, port, channel, 0x90, playedPitch, 0);
+      MusECore::MidiPlayEvent ev(0, playedPitchPort, playedPitchChannel, MusECore::ME_NOTEOFF, playedPitch, playedVelocity);
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
-      playedPitch = -1;
+      playedPitch = playedPitchPort = playedPitchChannel = -1;
+      playedVelocity = 0;
       }
 
 } // namespace MusEGui

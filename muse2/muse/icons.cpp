@@ -63,6 +63,11 @@
 #include "xpm/pencil.xpm"
 #include "xpm/delete.xpm"
 #include "xpm/play.xpm"
+#include "xpm/closed_hand.xpm"
+#include "xpm/open_hand.xpm"
+#include "xpm/zoom.xpm"
+#include "xpm/zoom_at.xpm"
+#include "xpm/size_all.xpm"
 
 #include "xpm/record1.xpm"
 #include "xpm/record.xpm"
@@ -174,6 +179,7 @@
 #include "xpm/buttondown.xpm"
 #include "xpm/configure.xpm"
 #include "xpm/panic.xpm"
+#include "xpm/metronome.xpm"
 
 
 // next two lines will vanish soon
@@ -220,12 +226,13 @@
 #include "xpm/velo_all.xpm"
 #include "xpm/velo_per_note.xpm"
 
-#include "xpm/addtrack_addmiditrack.xpm"
+#include "xpm/addtrack_addmiditrack_2.xpm"
 #include "xpm/addtrack_audiogroup.xpm"
 #include "xpm/addtrack_audioinput.xpm"
 #include "xpm/addtrack_audiooutput.xpm"
-#include "xpm/addtrack_auxsend.xpm"
-#include "xpm/addtrack_drumtrack.xpm"
+#include "xpm/addtrack_auxsend_2.xpm"
+#include "xpm/addtrack_old_drumtrack.xpm"
+#include "xpm/addtrack_drumtrack_2.xpm"
 #include "xpm/addtrack_wavetrack.xpm"
 #include "xpm/edit_drumms.xpm"
 #include "xpm/edit_list.xpm"
@@ -324,6 +331,11 @@ QPixmap* punchout1Icon;
 QPixmap* loopIcon;
 QPixmap* loop1Icon;
 QPixmap* playIcon;
+QPixmap* closedHandIcon;
+QPixmap* openHandIcon;
+QPixmap* zoomIcon;
+QPixmap* zoomAtIcon;
+QPixmap* sizeAllIcon;
 
 QPixmap* record1_Icon;
 QPixmap* record_on_Icon;
@@ -408,6 +420,7 @@ QPixmap* soloblksqIconOff;
 QPixmap* editmuteIcon;
 QPixmap* editmuteSIcon;
 QPixmap* panicIcon;
+QPixmap* metronomeIcon;
 
 QIcon* pianoIconSet;
 QIcon* scoreIconSet;
@@ -453,6 +466,7 @@ QPixmap* addtrack_audioinputIcon;
 QPixmap* addtrack_audiooutputIcon;
 QPixmap* addtrack_auxsendIcon;
 QPixmap* addtrack_drumtrackIcon;
+QPixmap* addtrack_newDrumtrackIcon;
 QPixmap* addtrack_wavetrackIcon;
 QPixmap* edit_drummsIcon;
 QPixmap* edit_listIcon;
@@ -536,6 +550,11 @@ void initIcons()
       loopIcon     = new MPIXMAP(loop_xpm, NULL);
       loop1Icon    = new MPIXMAP(loop1_xpm, NULL);
       playIcon     = new MPIXMAP(play_xpm, "media-playback-start");
+      closedHandIcon = new MPIXMAP(closed_hand_xpm, NULL);
+      openHandIcon = new MPIXMAP(open_hand_xpm, NULL);
+      zoomIcon     = new MPIXMAP(zoom_xpm, NULL);
+      zoomAtIcon   = new MPIXMAP(zoom_at_xpm, NULL);
+      sizeAllIcon  = new MPIXMAP(size_all_xpm, NULL);
 
       record1_Icon  = new MPIXMAP(record1_xpm, NULL);
       record_on_Icon = new MPIXMAP(record_on_xpm, NULL);
@@ -611,6 +630,7 @@ void initIcons()
       editmuteIcon  = new MPIXMAP(editmute_xpm, NULL);
       editmuteSIcon = new MPIXMAP(editmuteS_xpm, NULL);
       panicIcon  = new MPIXMAP(panic_xpm, NULL);
+      metronomeIcon  = new MPIXMAP(metronome_xpm, NULL);
 
       editcutIconSet       = new MICON(editcutS_xpm, "edit-cut"); // ddskrjo
       editcopyIconSet      = new MICON(editcopyS_xpm, "edit-copy");
@@ -700,12 +720,13 @@ void initIcons()
       veloPerNote_OnIcon   = new MPIXMAP(velo_per_note_xpm, NULL);
       veloPerNote_OffIcon  = new MPIXMAP(velo_all_xpm, NULL);
 
-      addtrack_addmiditrackIcon     = new MPIXMAP(addtrack_addmiditrack_xpm, NULL);
+      addtrack_addmiditrackIcon     = new MPIXMAP(addtrack_addmiditrack_2_xpm, NULL);
       addtrack_audiogroupIcon       = new MPIXMAP(addtrack_audiogroup_xpm, NULL);
       addtrack_audioinputIcon       = new MPIXMAP(addtrack_audioinput_xpm, NULL);
       addtrack_audiooutputIcon      = new MPIXMAP(addtrack_audiooutput_xpm, NULL);
-      addtrack_auxsendIcon          = new MPIXMAP(addtrack_auxsend_xpm, NULL);
-      addtrack_drumtrackIcon        = new MPIXMAP(addtrack_drumtrack_xpm, NULL);
+      addtrack_auxsendIcon          = new MPIXMAP(addtrack_auxsend_2_xpm, NULL);
+      addtrack_drumtrackIcon        = new MPIXMAP(addtrack_old_drumtrack_xpm, NULL);
+      addtrack_newDrumtrackIcon     = new MPIXMAP(addtrack_drumtrack_2_xpm, NULL);
       addtrack_wavetrackIcon        = new MPIXMAP(addtrack_wavetrack_xpm, NULL);
       edit_drummsIcon               = new MPIXMAP(edit_drumms_xpm, NULL);
       edit_listIcon                 = new MPIXMAP(edit_list_xpm, NULL);
@@ -791,6 +812,11 @@ void deleteIcons()
       delete loopIcon;
       delete loop1Icon;
       delete playIcon;
+      delete closedHandIcon;
+      delete openHandIcon;
+      delete zoomIcon;
+      delete zoomAtIcon;
+      delete sizeAllIcon;
 
       delete record1_Icon;
       delete record_on_Icon;
@@ -948,6 +974,7 @@ void deleteIcons()
       delete addtrack_audiooutputIcon;      
       delete addtrack_auxsendIcon;          
       delete addtrack_drumtrackIcon;        
+      delete addtrack_newDrumtrackIcon;
       delete addtrack_wavetrackIcon;        
       delete edit_drummsIcon;               
       delete edit_listIcon;                 

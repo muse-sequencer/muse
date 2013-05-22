@@ -93,6 +93,7 @@ Song::Song(const char* name)
       bounceTrack = NULL;
       bounceOutput = NULL;
       showSongInfo=true;
+      clearDrumMap(); // One-time only early init
       clear(false);
       }
 
@@ -392,10 +393,6 @@ void Song::duplicateTracks()
     if((*it)->selected()) 
     {
       Track::TrackType type = (*it)->type(); 
-      // TODO: Handle synths.   p4.0.47
-      if(type == Track::AUDIO_SOFTSYNTH)
-        continue;
-      
       if(type == Track::DRUM)
         ++drum_found;
       else if(type == Track::NEW_DRUM)
@@ -506,7 +503,6 @@ void Song::duplicateTracks()
         {
           new_track->assign(*track, flags);
   #else      
-        if(track->type() != Track::AUDIO_SOFTSYNTH)  // TODO: Handle synths.   p4.0.47
         {
           Track* new_track = track->clone(flags);  
   #endif
@@ -518,7 +514,7 @@ void Song::duplicateTracks()
           addUndo(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
           msgInsertTrack(new_track, idx, false); // No undo.
           insertTrack3(new_track, idx); 
-        }  
+        }
       }  
     }
     --trackno;
@@ -669,8 +665,13 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
         if(note == mapidx)
         {
           int tick = ev.tick() + part->tick();
+          // Default to track port if -1 and track channel if -1.
           int ch = MusEGlobal::drumMap[note].channel;
+          if(ch == -1)
+            ch = mt->outChannel();
           int port = MusEGlobal::drumMap[note].port;
+          if(port == -1)
+            port = mt->outPort();
           MidiPort* mp = &MusEGlobal::midiPorts[port];
           cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
           
@@ -738,8 +739,11 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
         if(trackmp->drumController(cntrl))
         {
           int note = cntrl & 0x7f;
-          ch = MusEGlobal::drumMap[note].channel;
-          mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+          // Default to track port if -1 and track channel if -1.
+          if(MusEGlobal::drumMap[note].channel != -1)
+            ch = MusEGlobal::drumMap[note].channel;
+          if(MusEGlobal::drumMap[note].port != -1)
+            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
           cntrl = (cntrl & ~0xff) | MusEGlobal::drumMap[note].anote;
         }
         else
@@ -1376,7 +1380,7 @@ void Song::update(MusECore::SongChangedFlags_t flags, bool allowRecursion)
       if (level && !allowRecursion) {
             printf("THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
-                   "                          probably cause windows being not up-to-date.\n", flags, level);
+                   "                          probably cause windows being not up-to-date.\n", (unsigned long)flags, level);
             return;
             }
       ++level;
@@ -2449,14 +2453,10 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     {
       CtrlList *cl = icl->second;
       canAdd = true;
-      
       frame = MusEGlobal::audio->pos().frame();       
-      
-      bool en1, en2;
-      track->controllersEnabled(acid, &en1, &en2);
-      
+      bool en = track->controllerEnabled(acid);
       AutomationType at = track->automationType();
-      if(!MusEGlobal::automation || at == AUTO_OFF || !en1 || !en2) 
+      if(!MusEGlobal::automation || at == AUTO_OFF || !en)
         ctlval = cl->curVal();  
       else  
         ctlval = cl->value(frame);
@@ -2663,8 +2663,11 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     // Change the controller event's index into the drum map to an instrument note.
     int note = ctlnum & 0x7f;
     dctl &= ~0xff;
-    channel = MusEGlobal::drumMap[note].channel;
-    mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+    // Default to track port if -1 and track channel if -1.
+    if(MusEGlobal::drumMap[note].channel != -1)
+      channel = MusEGlobal::drumMap[note].channel;
+    if(MusEGlobal::drumMap[note].port != -1)
+      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
     dctl |= MusEGlobal::drumMap[note].anote;
   }
     
@@ -2815,6 +2818,25 @@ void Song::updateSoloStates()
     (*i)->setInternalSolo(0);
   for(ciTrack i = _tracks.begin(); i != _tracks.end(); ++i)
     (*i)->updateSoloStates(true);
+}
+
+//---------------------------------------------------------
+//   reenableTouchedControllers
+//   Enable all track and plugin controllers, and synth controllers if applicable, which are NOT in AUTO_WRITE mode.
+//---------------------------------------------------------
+
+void Song::reenableTouchedControllers()
+{
+  for(iTrack it = _tracks.begin(); it != _tracks.end(); ++it)
+  {
+    if((*it)->isMidiTrack())
+      continue;
+    AudioTrack* t = static_cast<AudioTrack*>(*it);
+    AutomationType at = t->automationType();
+    if(at == AUTO_WRITE)  // Exclude write mode because controls need to remain disabled if pressed before play.
+      continue;
+    t->enableAllControllers();
+  }
 }
 
 //---------------------------------------------------------

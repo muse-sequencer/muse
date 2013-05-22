@@ -68,17 +68,24 @@ class ShortcutConfig : public QDialog, public Ui::ShortcutConfigBase {
       void updateSCListView(int category);
       void updateSCListView() { updateSCListView(current_category); }
       void closeEvent(QCloseEvent *e);
+      void closing();
 
       private slots:
       void categorySelChanged(QTreeWidgetItem*, int);
       void shortcutSelChanged(QTreeWidgetItem*, int);
       void assignShortcut();
       void clearShortcut();
-      void assignAll();
+      void applyAll();
+      void okClicked();
+      void textFileClicked();
 
-
+      protected:
+      void reject();  
+      signals:
+      void saveConfig();
+        
       public:
-      ShortcutConfig(QWidget* parent);
+      ShortcutConfig(QWidget* parent = 0);
       bool _config_changed;
 
 };

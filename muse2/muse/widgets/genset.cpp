@@ -153,6 +153,7 @@ void GlobalSettingsConfig::updateSettings()
                   }
             }
 
+      autoSaveCheckBox->setChecked(MusEGlobal::config.autoSave);
       warnIfBadTimingCheckBox->setChecked(MusEGlobal::config.warnIfBadTiming);      
       midiSendInit->setChecked(MusEGlobal::config.midiSendInit);      
       midiWarnInitPending->setChecked(MusEGlobal::config.warnInitPending);      
@@ -221,6 +222,7 @@ void GlobalSettingsConfig::updateSettings()
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
       rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       smartFocusCheckBox->setChecked(MusEGlobal::config.smartFocus);
+      borderlessMouseCheckBox->setChecked(MusEGlobal::config.borderlessMouse);
       velocityPerNoteCheckBox->setChecked(MusEGlobal::config.velocityPerNote);
       
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
@@ -233,6 +235,8 @@ void GlobalSettingsConfig::updateSettings()
         case MusEGlobal::PREFER_NEW: preferNewDrumBtn->setChecked(true); break;
         case MusEGlobal::PREFER_OLD: preferOldDrumBtn->setChecked(true); break;
       }
+
+      trackHeight->setValue(MusEGlobal::config.trackHeight);
 
       updateMdiSettings();
 }
@@ -328,6 +332,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.mixer2.geometry.setWidth(mixer2W->value());
       MusEGlobal::config.mixer2.geometry.setHeight(mixer2H->value());
 
+      MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
       MusEGlobal::config.showSplashScreen = showSplash->isChecked();
       MusEGlobal::config.showDidYouKnow   = showDidYouKnow->isChecked();
       MusEGlobal::config.externalWavEditor = externalWavEditorSelect->text();
@@ -338,6 +343,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
       MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
       MusEGlobal::config.smartFocus = smartFocusCheckBox->isChecked();
+      MusEGlobal::config.borderlessMouse = borderlessMouseCheckBox->isChecked();
       MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
 
       MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
@@ -383,7 +389,8 @@ void GlobalSettingsConfig::apply()
       else if (preferNewDrumBtn->isChecked())
         MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_NEW;
 
-      
+      MusEGlobal::config.trackHeight = trackHeight->value();
+
       applyMdiSettings();
       
       MusEGlobal::muse->changeConfig(true);    // save settings

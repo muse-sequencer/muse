@@ -92,6 +92,15 @@
 \usepackage{hyphenat}
 \usepackage{wrapfig}
 \usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\hypersetup{
+  linkcolor=blue,
+  urlcolor=blue,
+  colorlinks=true,         % hyperlinks will be blue
+  linkbordercolor=blue,     % hyperlink borders will be blue
+  %pdfborderstyle={/S/U/W 1} % border style will be underline of width 1pt
+}
 \pagestyle{fancy}
         \lhead{\scriptsize{\slshape\leftmark}}
         \chead{}
@@ -101,10 +110,6 @@
         \rfoot{}
         \renewcommand{\headrulewidth}{0.4pt}
 \usepackage{ifthen}
-
-%% Borrowed from Lyx output. "Because html converters don't know 
-%%  tabularnewline". Is required? Maybe replace with \\ ?
-\providecommand{\tabularnewline}{\\}
 
 % Hyphenate symbols before each uppercase letter, after each underscore
 % (without a "-") and after each ':' (without a "-")
@@ -139,7 +144,8 @@
 \author{Florian Jung, Robert Jonsson, Tim Donnelly}
 \title{MusE Documentation}
 
-\newcommand{\url}[1]{\texttt{#1}}
+% Orcan: not needed since the hyperref package takes care of all
+%\newcommand{\url}[1]{\texttt{#1}}
 \newcommand{\key}[1]{\textbf{#1}}
 \newcommand{\shell}[1]{\texttt{\textbf{#1}}}
 \newcommand{\menu}[1]{\textbf{#1}}
@@ -151,11 +157,11 @@
 
 
 \begin{document}
-\label{Main/Arranger}
 \begin{figure}[htp]
 \centering \includegraphics[width=1.0\textwidth]{pics/muse2}
 \label{fig:MusE}
 \end{figure}
+\tableofcontents
 \chapter{What is this?}
 You are, if you have printed this document, holding in your hand the
 written documentation for the audio and midi sequencer MusE version 2.\\ 
@@ -197,10 +203,11 @@ E.g.\\
 
 \subsection{Getting up and running for impatient people}
 Install MusE from the repository of your chosen distribution.
-To get decent performance start Jack with the following command in a
-terminal:\\
+To get decent performance start \href{http://jackaudio.org/}{Jack} with
+the following command in a terminal:\\
 \hspace*{1cm}\shell{\$> jackd -d alsa -d hw:0 -p 256}\\
-Or, if you prefer, use the launcher utility \textbf{QJackCtl} to get some
+Or, if you prefer, use the launcher utility 
+\href{http://qjackctl.sourceforge.net/}{QJackCtl} to get some
 help starting Jack.
 After this, start MusE from the menu or fire up another terminal and
 type
@@ -290,8 +297,9 @@ sure that the jack audio server is started with sufficient configuration
 to allow for audio output without breakup. Also make sure your system can
 make sound. 
 \subsubsection{Soft synth test}
-With MusE up and running right click in the Track-pane (see screenshot in
-~\ref{Main/Arranger}) and select \menu{Add Synth > MESS > vam soft synth}.
+With MusE up and running right click in the Track-pane (see
+Fig. \ref{fig:Main Window}) and select 
+\menu{Add Synth > MESS > vam soft synth}.
 A Soft Synth track called vam-0 should appear as well as a separate GUI
 for the synthesizer.
 
@@ -300,13 +308,15 @@ Track}. Another track appears called Track 1, and its track list Port
 column should show it is bound to the synth that was just created vam-0.
 If it is not, click on the Track 1 Port column to open a drop-down list
 of available devices and choose vam-0.
+
 \begin{wrapfigure}{r}{0.05\textwidth}
 \includegraphics[width=0.05\textwidth]{pics/arrow_tool}
 %\hrulefill
 \end{wrapfigure}
 Now select the drawing tool icon
 from the toolbar, alternatively press the shortcut key \key{D}.
-Move the mouse over to the arranger canvas as referenced in ~\ref{Main/Arranger}
+Move the mouse over to the arranger canvas as referenced in 
+Fig. \ref{fig:Main Window}
 and point at the midi track, the mouse should have changed to a small pencil.
 Draw a Part along the midi track using the mouse. For this exercise it is
 not important where or how large the drawn Part is. When you are done double
@@ -468,7 +478,7 @@ Track-pane, each have an icon which indicate it's type, wave-track, input,
 output etcetera, more about that later. In the Arranger canvas a number of
 parts are visible, the ones in yellow are in this composition wave files,
 the multicolored line are different Parts of a drum track.
-\label{Main/Arranger} 
+
 \begin{figure}[htp]
 \centering \includegraphics[width=\screenshotwidth]
 {pics/main_window_with_arrangement} 
@@ -1044,29 +1054,29 @@ output, MusE uses the first input or output and ignores the rest.
 For stereo tracks:
 
 \begin{tabular}{|c|c|c|c|c|}
-\hline 
+\hline
 plugin inputs & outputs & copies & track in route channels &
-track out route channels\tabularnewline
-\hline 
-\hline 
-0 & 0 & 1 & 0 & 0\tabularnewline
-\hline 
-0 & 1 & 2 & 0 & 2\tabularnewline
-\hline 
-0 & >=2 & 1 & 0 & 2\tabularnewline
-\hline 
-1 & 0 & 2 & 2 & 0\tabularnewline
-\hline 
-1 & 1 & 2 & 2 & 2\tabularnewline
-\hline 
-1 & >=2 & 1 & 1 (L only) & 2\tabularnewline
-\hline 
->=2 & 0 & 1 & 2 & 0\tabularnewline
-\hline 
->=2 & 1 & 2 & 2 & 2\tabularnewline
-\hline 
->=2 & >=2 & 1 & 2 & 2\tabularnewline
-\hline 
+track out route channels\\
+\hline
+\hline
+0 & 0 & 1 & 0 & 0\\
+\hline
+0 & 1 & 2 & 0 & 2\\
+\hline
+0 & >=2 & 1 & 0 & 2\\
+\hline
+1 & 0 & 2 & 2 & 0\\
+\hline
+1 & 1 & 2 & 2 & 2\\
+\hline
+1 & >=2 & 1 & 1 (L only) & 2\\
+\hline
+>=2 & 0 & 1 & 2 & 0\\
+\hline
+>=2 & 1 & 2 & 2 & 2\\
+\hline
+>=2 & >=2 & 1 & 2 & 2\\
+\hline
 \end{tabular}
 
 Notice that on a stereo track with a plugin having one audio input and
@@ -1111,544 +1121,5 @@ For example, for a plugin having one audio input and one audio output,
 feeding a plugin having one audio input and two audio outputs,  
 the extra copy of the first plugin is redundant and not required,
 but currently it is created anyway.
-  
-
-\chapter{Internals -- how it works}
-This chapter explains how MusE is built internally, and is meant
-to be an aid for developers wanting to quickly start up with MusE.
-For details on \emph{why} stuff is done please refer to the following
-chapter. 
-
-\section{User interface programming}
-We use the QT Toolkit for GUI- and other programming. The \emph{QT-Assistant}
-is an important tool for getting help. Almost everything can be looked
-up there.
-
-GUIs can be either be hardcoded (see \file{arranger.cpp} for an example)
-or can be created using \emph{QT-Designer} (see the dialogs under
-\file{widgets/function_dialogs/} for mostly cleanly-written examples).
-Don't forget to add your \file{cpp}, \file{h} and \file{ui} files to the
-corresponding sections in the \file{CMakeLists.txt}!
-
-Additionally, MusE offers some custom widgets, like menu title items etc.
-Following, there will be a small, unordered list about custom widgets:
-\begin{itemize}
-\item \sym{MusEGui::MenuTitleItem}: Provides a title-bar in a \sym{QMenu}. \\
-      Usage: \listing{someMenu->addAction(new MusEGui::MenuTitleItem(tr("fnord"), someMenu));} \\
-      Defined in \file{widgets/menutitleitem.h}.
-\item \sym{MusEGui::PopupMenu}: Provides a \sym{QMenu}-like menu which
-      can stay open after the user checks a checkable action.\\
-      Usage: just create a \listing{new PopupMenu( true|false )} instead of
-             a \listing{new QMenu()}. (\listing{true} means 'stay open')\\
-      Defined in \file{widgets/popupmenu.h}.
-\end{itemize}
-
-
-\section{Configuration} \label{portconfig_sucks}
-Configuration is a bit pesky in MusE in its current state. If you get
-confused by reading this chapter, that's a sign of a sane mind.
-
-There are three kinds of configuration items:
-\begin{itemize}
-\item (1) Global configuration, like coloring schemes, plugin categories, MDI-ness settings
-\item (2) Per-Song configuration, like whether to show or hide certain track types in the arranger
-\item (3) Something in between, like MIDI port settings etc. They obviously actually are
-      global configuration issues (or ought to be), but also obviously must be stored
-      in the song file for portability. (This problem could possibly be solved by
-      the feature proposal in \ref{symbolic_ports}.
-\end{itemize}
-
-\paragraph{Reading configuration}
-\sym{void MusECore::readConfiguration(Xml\&, bool, bool)} in
-\file{conf.cpp} is the central point
-of reading configuration. It is called when MusE is started first
-(by \sym{bool MusECore::readConfiguration()}), and also when a
-song is loaded. \\ %TODO: call paths!
-It can be instructed whether to read MIDI ports (3), global configuration
-and MIDI ports (1+3). Per-Song configuration is always read (2).
-
-When adding new configuration items and thus altering \sym{readConfiguration()},
-you must take care to place your item into the correct section. The code is
-divided into the following sections:
-\begin{itemize}
-\item Global and/or per-song configuration (3)
-\item Global configuration (1)
-\item Code for skipping obsolete entries
-\end{itemize}
-
-The sections are divided by comments (they contain \texttt{----}, so just
-search for them). Please do not just remove code for reading obsolete entries, 
-but always add an appropriate entry to the 'skipping' section in order to
-prevent error messages when reading old configs.
-
-\paragraph{Writing configuration}
-Global configuration is written using the
-\sym{MusEGui::MusE::writeGlobalConfiguration()} functions, while
-per-song-config is written by \sym{MusEGui::MusE::writeConfiguration()}
-(notice the missing \sym{Global}; both implemented in \file{conf.cpp}).
-
-\sym{writeConfiguration} is actually just a subset of the code in
-\sym{writeGlobalConfiguration}. \textbf{Duplicate code!}                  % TODO fix that in the sourcecode.
-
-\paragraph{Song state}
-Additionally to per-song configuration, there is the song's state.
-This contains "the song", that is all tracks, parts and note events,
-together with information about the currently opened windows, their
-position, size, settings and so on. Adding new items here is actually
-pretty painless: Configuration is read and written using
-\sym{MusECore::Song::read} and \sym{::write}, both implemented in
-\file{songfile.cpp}. There are no caveats.
-
-\paragraph{How to add new items}
-When adding global configuration items, then add them into the second
-block ("global configuration") in \sym{readConfiguration} and into
-\sym{writeGlobalConfiguration}.
-
-When adding just-per-song items, better don't bother to touch the
-"configuration" code and just add it to the song's state (there might
-be rare exceptions).
-
-When adding global configuration items, make sure you add them into the
-correct section of \sym{readConfiguration}, and into \sym{writeGlobalConfiguration}.
-
-
-%TODO: how to write config,
-%TODO: song/global stuff
-%TODO: config lesen und schreiben fuer plugingroups
-
-
-\section{User controls and automation}
-\subsection{Handling user input}
-\subsubsection{Plugins and synthesizers}
-\paragraph{Overview}
-When the user launches a plugin's GUI, either a MusE-window with
-the relevant controls is shown, or the native GUI is launched. MusE
-will communicate with this native GUI through OSC (Open Sound Control).
-The relevant classes are \sym{PluginGui}, \sym{PluginIBase}
-(in \file{plugin.h}) and \sym{OscIF} (in \sym{osc.h}).
-
-If the user changes a GUI element, first the corresponding control is
-disabled, making MusE not steadily update it through automation
-while the user operates it. Then MusE will update the plugin's parameter
-value, and also record the new value. When appropriate, the controller
-is enabled again.
-
-\paragraph{Processing the input, recording}
-Upon operating a slider, \sym{PluginIBase::setParam} is called,
-which usually writes the control change into the ringbuffer
-\sym{PluginI::{\_}controlFifo}. (\sym{PluginI::apply()},
-\sym{DssiSynthIF::getData()} will read this ringbuffer and
-do the processing accordingly). Furthermore, \sym{AudioTrack::recordAutomation}
-is called, which either directly modifies the controller lists or writes
-the change into a "to be recorded"-list (\sym{AudioTrack::{\_}recEvents})
-(depending on whether the song is stopped or played).
-
-The \sym{AudioTrack::{\_}recEvents} list consists of \sym{CtrlRecVal}
-items (see \file{ctrl.h}), which hold the following data: 
-\begin{itemize}
-\item the frame where the change occurred 
-\item the value 
-\item the type, which can be \usym{ARVT{\_}START}, \usym{ARVT{\_}VAL} or \usym{ARVT{\_}STOP}.
-      \usym{ARVT{\_}VAL} are written by every \usym{AudioTrack::recordAutomation}
-      call, \usym{ARVT{\_}START} and \usym{ARVT{\_}STOP} are generated by
-      \sym{AudioTrack::startAutoRecord} and \sym{stopAutoRecord}, respectively.
-\item and the id of the controller which is affected
-\end{itemize}
-It is processed when the song is stopped. The call path for this is:
-\sym{Song::stopRolling} calls \sym{Song::processAutomationEvents}
-calls \sym{AudioTrack::processAutomationEvents}.
-This function removes the old events from the track's controller list
-and replaces them with the new events from \sym{{\_}recEvents}. In
-\usym{AUTO{\_}WRITE} mode, just all controller events within the recorded
-range are erased; in \usym{AUTO{\_}TOUCH} mode, the \usym{ARVT{\_}START}
-and \usym{ARVT{\_}STOP} types of the \sym{CtrlRecVal} events are used
-to determine the range(s) which should be wiped.
-
-\paragraph{How it's stored}
-Automation data is kept                                                  % this is copied from
-in \sym{AudioTrack::{\_}controller}, which is a \sym{CtrlListList},        % "design decisions" -> "automation"
-that is, a list of \sym{CtrlList}s, that is, a list of lists of
-controller-objects which hold the control points of the automation graph.
-The \sym{CtrlList} also stores whether the list is meant discrete
-(a new control point results in a value-jump) or continuous (a new control
-point results in the value slowly sloping to the new value).
-Furthermore, it stores a \sym{{\_}curVal} (accessed by \sym{curVal()}),
-which holds the currently active value, which can be different from the
-actually stored value because of user interaction. This value is also
-used when there is no stored automation data.
-
-\sym{AudioTrack::addController} and \sym{removeController} are used        % TODO: swapControllerIDX??
-to add/remove whole controller types; the most important functions which
-access \sym{{\_}controller} are:
-\begin{itemize}
-\item \sym{processAutomationEvents}, \sym{recordAutomation},
-      \sym{startAutoRecord}, \sym{stopAutoRecord}: see above.
-\item \sym{seekPrevACEvent}, \sym{seekNextACEvent}, \sym{eraseACEvent},
-      \sym{eraseRangeACEvents}, \sym{addACEvent}, \sym{changeACEvent},
-      which do the obvious
-\item \sym{pluginCtrlVal}, \sym{setPluginCtrlVal}: the first
-      returns the current value according to the \sym{{\_}controller}
-      list, the second only sets the \sym{curVal}, but does not
-      insert any events.
-\end{itemize}
-
-Whenever a \sym{CtrlList} has been manipulated,
-\sym{MusEGlobal::song->controllerChange(Track{*})} shall be called,
-which emits the \sym{MusEGlobal::song->controllerChanged(Track{*})}
-signal in order to inform any parts of MusE about the change (currently,
-only the arranger's part canvas utilizes this).
-
-\paragraph{Enabling and disabling controllers}
-Disabling the controller is both dependent from the current automation
-mode and from whether the GUI is native or not.
-In \usym{AUTO{\_}WRITE} mode, once a slider is touched (for MusE-GUIs) or
-once a OSC control change is received (for native GUIs), the control
-is disabled until the song is stopped or seeked.
-
-In \usym{AUTO{\_}TOUCH} (and currently (r1492) \usym{AUTO{\_}READ}, but
-that's to be fixed) mode, once a MusE-GUI's slider is pressed down, the
-corresponding control is disabled. Once the slider is released, the
-control is re-enabled again. Checkboxes remain in "disabled" mode,
-however they only affect the recorded automation until the last toggle
-of the checkbox. (Example: start the song, toggle the checkbox, toggle
-it again, wait 10 seconds, stop the song. This will NOT overwrite the
-last 10 seconds of automation data, but everything between the first
-and the last toggle.). For native GUIs, this is a bit tricky, because
-we don't have direct access to the GUI widgets. That is, we have no
-way to find out whether the user doesn't touch a control at all, or
-whether he has it held down, but just doesn't operate it. The current
-behaviour for native GUIs is to behave like in \usym{AUTO{\_}WRITE} mode.
-
-The responsible functions are: \sym{PluginI::oscControl} and
-\sym{DssiSynthIF::oscControl} for handling native GUIs,
-\sym{PluginI::ctrlPressed} and \sym{ctrlReleased} for MusE
-default GUIs and \sym{PluginI::guiParamPressed},
-\sym{guiParamReleased}, \sym{guiSliderPressed} and
-\sym{guiSliderReleased} for MusE GUIs read from a UI file;
-\sym{guiSlider{*}} obviously handle sliders, while \sym{guiParam{*}}
-handle everything else which is not a slider. They call
-\sym{PluginI::enableController} to enable/disable it.
-
-Furthermore, on every song stop or seek, \sym{PluginI::enableAllControllers}
-is called, which re-enables all controllers again. The call paths for
-this are:
-\begin{itemize}
-\item For stop: \sym{Song::stopRolling} calls
-                \sym{Song::processAutomationEvents} calls
-                \sym{Song::clearRecAu{\-}to{\-}ma{\-}tion} calls
-                \sym{Track::clearRecAutomation} calls
-                \sym{PluginI::enableAllControllers}
-\item For seek: \sym{Audio::seek} sends a message ("\sym{G}") to
-                \sym{Song::seqSignal} which calls
-                \sym{Song::clearRecAutomation} which calls
-                \sym{PluginI::enableAllControllers}
-\end{itemize}
-
-
-
-
-\chapter{Design decisions}
-\section{Automation}
-As of revision 1490, automation is handled in two ways: User-generated
-(live) automation data (generated by the user moving sliders while playing)
-is fed into \sym{PluginI::{\_}controlFifo}. Automation data is kept
-in \sym{AudioTrack::{\_}controller}, which is a \sym{CtrlListList},
-that is, a list of \sym{CtrlList}s, that is, a list of lists of
-controller-objects which hold the control points of the automation graph.
-The \sym{CtrlList} also stores whether the list is meant discrete
-(a new control point results in a value-jump) or continous (a new control
-point results in the value slowly sloping to the new value).
-
-While \sym{PluginI::{\_}controlFifo} can be queried very quickly and
-thus is processed with a very high resolution (only limited by the
-minimum control period setting), the automation value are expensive to
-query, and are only processed once in an audio \emph{driver} period.
-This might lead to noticeable jumps in value.
-
-This could possibly be solved in two ways:
-\paragraph{Maintaining a slave control list}
-This approach would maintain a fully redundant slave control list,
-similar to \sym{PluginI::{\_}controlFifo}. This list must be updated
-every time any automation-related thing is changed, and shall contain
-every controller change as a tuple of controller number and value.
-This could be processed in the same loop as \sym{PluginI::{\_}controlFifo},
-making it comfortable to implement; furthermore, it allows to cleanly
-offer automation-settings at other places in future (such as storing
-automation data in parts or similar).
-
-\paragraph{Holding iterators}
-We also could hold a list of iterators of the single \sym{CtrlList}s.
-This would also cause low CPU usage, because usually, the iterators only
-need to be incremented once. However, it is pretty complex to implement,
-because the iterators may become totally wrong (because of a seek in the
-song), and we must iterate through a whole list of iterators.
-
-\paragraph{Just use the current data access functions}
-By just using the current functions for accessing automation data,
-we might get a quick-and-dirty solution, which however wastes way too
-much CPU ressources. This is because on \emph{every single frame}, we
-need to do a binary search on multiple controller lists.
-
-
-\chapter{Feature requests}
-\section{Per-Part automation and more on automation}                       % by flo
-Automation shall be undo-able. Automation shall reside in parts which
-are exchangeable, clonable etc (like the MIDI- and Wave-Parts).
-Global per-synth/per-audiotrack automation shall also be available, but
-this can also be implemented as special case of part automation (one
-long part).
-
-\section{Pre-Rendering tracks}
-\subsection{The feature}
-All tracks shall be able to be "pre-renderable". Pre-rendering shall
-be "layered". Pre-rendering shall act like a transparent audio cache:
-Audio data is (redundantly) stored, wasting memory in order to save CPU.
-
-That is: Each track owns one or more wave-recordings of the length of
-the song. If the user calls "pre-render" on a track, then this track
-is played quasi-solo (see below), and the raw audio data is recorded
-and stored in the "layer 0" wave recording. If the user has any effects
-set up to be applied, then each effect is applied on a different layer
-(creating layer 1, layer 2 etc).
-
-This means, that also MIDI and drum tracks can have effects (which
-usually only operate on audio, but we HAVE audio data because of this
-prerendering).
-
-Furthermore, MusE by default does not send MIDI events to the synthesizers
-but instead just plays back the last layer of the prerecording (for
-MIDI tracks), or does not pipe the audio data through the whole plugin
-chain (causing cpu usage), but instead just plays back the last layer.
-The hearable result shall be the same.
-
-Once the user changes any parameter (automation data or plugins for
-wave tracks, MIDI events or effect plugin stuff for MIDI tracks),
-then MusE shall generate the sound for this particular track in the
-"old" way (send MIDI data to synthes, or pipe audio data through plugins). 
-(So that the user will not even notice that MusE actually pre-renderered
-stuff.) Either MusE automatically records this while playback (if possible)
-or prompts the user to accordingly set up his cabling and then record
-it. Or (temporarily) disables prerecording for this track, falling back
-to the plain old way of generating sound.
-
-\emph{Quasi-solo} means: For wave tracks, just solo the track. For MIDI
-tracks, mute all tracks which are not on the same synth (channel?),
-and mute all \emph{note} events which are not on the quasi-soloed track.
-This causes MusE to still play any controller events from different
-tracks, because they might have effects on the quasi-soloed track. (You
-can have notes on channel 1 on one track and controller stuff on channel
-1 on another track; then you would need quasi-solo to get proper results.)
-
-\subsection{Use cases}
-\paragraph{Saving CPU}
-On slow systems, this is neccessary for songs with lots of, or demanding
-(or both) soft synthes / plugins. Even if the synth or plugin is so
-demanding that your system is not able to produce sound in real-time,
-then with this feature you'll be able to use the synth (this will make
-editing pretty laggish, because for a change you need to re-render at
-least a part before you can listen to it, but better than being unable
-to use the synth at all!)
-
-\paragraph{Exporting as audio project}
-Using pre-rendering on all tracks, you easily can export your project
-as multi-track audio file (for use with Ardour or similar DAWs).
-Just take the last layer of each track, and write the raw audio data
-into the file, and you're done. (Maybe we are even able to write down
-the raw-raw layer0 audio data plus information about used plugins and
-settings etc..?)
-
-\paragraph{Mobile audio workstations}
-You might want to work a bit on your audio projects on your notebook
-while you're not at home, not having access to your hardware synthesizers.
-Using this feature, you could have pre-recorded the stuff in your studio
-before, and now can at least fiddle around with the non-hw-synth-dependent
-parts of your song, while still having your \emph{full} song with you.
-
-\paragraph{Applying effects on MIDI tracks}
-If you have many physical audio inputs, you might already be able to
-apply effect chains on MIDI tracks, by wiring the synthes' audio
-outputs to your soundcard's inputs, and applying the effects on
-dedicated input tracks you have to create. This requires you to have
-expensive hardware, and is pretty complicated, because you need one
-additional track per MIDI synth.
-
-This feature allows you to apply effects on single MIDI tracks, and not
-only on full MIDI synthes, and doesn't require you to be have that
-many physical audio inputs (you need to manually replug your synthes,
-however).
-
-\subsection{Possible scenarios}
-\paragraph{Setting it up}
-Create a wave track, MusE will allow you to set or unset prerendering
-for every plugin in the plugin rack (recording the actual track is
-useless because it would be a plain copy).
-Create a MIDI track, MusE will ask you on which physical audio input
-your synth is connected. Setting up multiple synthes on one physical
-audio in is allowed, see below.
-
-\paragraph{Pre-rendering stuff}
-When the user presses the "pre-render" button, all tracks which have
-been changed since their last pre-rendering will be re-rendered.
-If you have multiple hardware synthes set up as they were connected
-to one physical audio input port, MusE will prompt you to first plug
-the proper cable in.
-
-\paragraph{Making changes}
-Change a note in a MIDI part, move or delete a part or change automation
-parameters. MusE will temporarily disable the pre-rendered information
-and instead generate the sound via sending out MIDI events, piping stuff
-through effect chains or similar. If you play back the whole song, or
-if you manually trigger a re-rendering of a track via the context menu,
-MusE will play back the stuff, record it again and re-enable the
-pre-rendered information.
-
-
-\subsection{Extensions}
-\paragraph{Automatic discovery of physical audio connections}
-The user plugs all (or only some) synthes' audio outs into the available
-audio inputs, then runs automatic discovery. This will send MIDI events
-to each synthesizer, and look on which audio in there's activity. Then
-it will assume that the synthesizer is connected to that particular
-audio in. Audio ins which show activity before any MIDI events were
-sent are not considered, as they're probably connected to microphones
-or other noise-generating non-synthes.
-
-\paragraph{Audio export}
-As described in the Use cases, MusE can allow you to export your song
-in some multitrack audio format.
-
-\paragraph{Cheap/Faked changes}
-For expensive or unavailable synthes, changing the Volume midi controller,
-the Pan controller or similar "easy" controllers will not trigger a
-complete re-rendering, but instead "fake" the change, by changing
-the volume data directly on the recorded wave. This might require some
-learning and might even get pretty complicated.
-
-\paragraph{Intelligent re-recording}
-For tiny changes, MusE shall only re-render the relevant part. If you
-change some MIDI notes, then begin re-recording shortly before the
-changes, and end re-recording as soon as the recorded stuff doesn't
-differ to much from the stuff coming from the synth. Then properly
-blend the old recording with the updated part.
-
-
-
-\section{Slotted editors}
-Currently, MusE has the pianoroll editor, drum editor, score editor,
-then the controller editor which is inside the pianoroll/drum editor.
-All these editors have a very similar concept: the "time axis" is 
-vertical and (almost) linear, they handle parts, and events are 
-manipulated similarly.
-
-A unified editor shall be created which allows you to combine different
-kinds of editors in one window, properly aligned against each other.
-These "different kinds of editors" shall be handled as "slots"; one
-unified editor window consists of:
-\begin{itemize}
-\item A menu bar, containing stuff suitable for the complete window,
-      which might include window name, MDI-ness etc.
-\item A toolbar which contains controls suitable for every single slot.
-\item A container with one or more slots; the slots can be scrolled in
-      y-direction if there are multipe slots.
-\item A time-scrollbar with zoom
-\end{itemize}
-
-Each slot contains the following: 
-\begin{itemize}
-\item A menu button, button box or control panel for setting up this
-      particular slot. This could contain "note head colors", "show
-      a transposing instrument" etc for score edit slots, "event
-      rectangle color", "grid size" and "snap to grid" for pianoroll/
-      drum editors.
-\item The actual canvas
-\item A y-direction scroll bar, possibly with zoom control (for
-      pianoroll editor)
-\end{itemize}
-
-The main window does not show its scroll bar if there is only one slot,
-because the slot's scrollbar is sufficient then.
-
-Slots can be added, destroyed, moved around, maybe even merged (if the
-slot types allow it); basically, you can compare them with the staves
-in the score editor.
-
-The slots shall align against each other, that is, if a score editor
-slot displays a key change with lots of accidentials, then all other
-slots shall either also display the key change (if they're score slots)
-or display a gap. Events which happen at the same time shall be at the
-same x-coordinate, regardless which slot they are.
-
-\section{Controller master values}
-All controllers (MIDI-controllers and also automation controllers)
-shall have one set of "master values" which allow you to set a gain and
-a bias. Instead of the actual set value, $\textrm{value} * \textrm{bias}
-+ textrm{bias}$ shall be sent to the MIDI device / the plugin. For
-controllers like "pan", the unbiased values shall be transformed, that
-is, a pan of 64, with $\textrm{bias}=2$ and $\textrm{gain}=0.5$, shall
-be transformed to 66 (because 64 is actually 0, while 0 is actually -64).
-These values shall be set in the arranger and whereever the actual
-controller/automation values can be edited.
-
-\section{Enabled-indicator while recording}
-The MusE-plugin-GUIs shall display a small LED displaying whether a
-controller is currently enabled or disabled. By clicking this LED, the
-enabled state shall be switched.
-
-Furthermore, there shall be a dedicated window which only lets you switch
-enabled/disabled states. This will be useful when using external GUIs
-or the MIDI-controller-to-automation feature, to re-enable a controller
-when in \usym{AUTO{\_}TOUCH} mode.
-
-
-
-\section{Linear automation editing}
-While holding some modifier key (like shift), operating the MusE-native-
-GUI sliders shall only generate control points when clicking and when
-releasing the slider. This will result in linear graphs for continous
-controllers, and in large steps for discrete controllers (which is in
-particular useful for stuff like "which low/high-pass filter type to use").
-
-Maybe make this behaviour default for discrete controllers?
-
-\section{Symbolic names for MIDI ports} \label{symbolic_ports}
-MIDI ports shall have a user-defined symbolic name (like "Korg" or "Yamaha DX 7").
-The mapping between these symbolic names and the hardware port (like
-"ALSA midi out port") is stored in the global configuration.
-
-Song files only specify the symbolic names as the ports associated with
-their tracks. No information about physical devices/port names, but only
-symbolic names are stored in the song file.
-
-This resolves the issues mentioned in \ref{portconfig_sucks}, and also
-allows the user to share his pieces with other people: They would only
-have to set up that symbolic-to-hardware mapping once (collisions are
-unlikely, because an equal symbolic name should usually mean the same
-device) and are happy, instead of having to re-map \emph{every} port
-for \emph{every} song.
-
 \end{document}
-
-% TODO: song type etc? kill it!
-%       song len box: same
-
-% TODO: unified automation and midi ctrls:
-%       both shall be editable through the same editors
-%       four modes: 1. discrete
-%                   2. continous (plus a global and per-port setting for the max rate)
-%                   3. switch (not necessarily ON/OFF; signals with color plus text annotation)
-%                   4. raw (no graph, instead a box with the value sent out (for "all voices off")
-%       they shall be copy-and-pastable, at least between compatible modes
-%       they shall be slotted, like pianoroll
-%       maybe also "overlapping", like arranger (?)
-%       midi recording tries to make out straight lines (like non-ended automation streams)
-%       
-
-
-% new song (in general: load as template) plus "overwrite port config"
-% should re-create the default jack devices and autoconnect them.
-
-% what's audio aux for?
-
-% bug in arranger/pcanvas/automation: if a controlpoint is directly on
-% a line of another ctrl graph, you can't click it
 

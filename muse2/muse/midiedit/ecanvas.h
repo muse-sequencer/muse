@@ -68,6 +68,9 @@ class EventCanvas : public Canvas {
 
    protected:
       int playedPitch;
+      int playedVelocity;
+      int playedPitchPort;
+      int playedPitchChannel;
       bool _playEvents;
       MidiEditor* editor;
       unsigned start_tick, end_tick;
@@ -79,9 +82,9 @@ class EventCanvas : public Canvas {
       void updateSelection();
       virtual CItem* addItem(MusECore::Part*, MusECore::Event&) = 0;
       virtual QPoint raster(const QPoint&) const;
-      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType) = 0;
-      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType) = 0;
-      virtual void endMoveItems(const QPoint&, DragType, int dir);
+      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true) = 0;
+      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true) = 0;
+      virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
       virtual void startPlayEvent(int note, int velocity);
       virtual void startPlayEvent(int note, int velocity, int port, int channel);
       virtual void stopPlayEvent();
@@ -101,6 +104,7 @@ class EventCanvas : public Canvas {
 
    public:
       EventCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0);
+      virtual ~EventCanvas();
       MusECore::MidiTrack* track() const;
       virtual unsigned start() const       { return start_tick; }
       virtual unsigned end() const         { return end_tick; }

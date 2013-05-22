@@ -23,7 +23,11 @@
 #include "audio.h"
 #include "ticksynth.h"
 #include "default_click.h"
-
+#include "klick1.h"
+#include "klick2.h"
+#include "klick3.h"
+#include "klick4.h"
+#include "midi.h"
 #include "popupmenu.h"
 
 // If sysex support is ever added, make sure this number is unique among all the MESS synths.
@@ -71,6 +75,7 @@ class MetronomeSynthIF : public SynthIF
       const float* data;
       int pos;
       int len;
+      float volume;
       void process(float** buffer, int offset, int n);
 
    public:
@@ -106,6 +111,12 @@ class MetronomeSynthIF : public SynthIF
       virtual float getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, float) {}
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
+
+      //-------------------------
+      // Methods for PluginIBase:
+      //-------------------------
+
+      virtual bool addScheduledControlEvent(unsigned long /*i*/, float /*val*/, unsigned /*frame*/) { return true; }    // returns true if event cannot be delivered
       };
 
 //---------------------------------------------------------
@@ -148,28 +159,54 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsig
 //---------------------------------------------------------
 
 bool MetronomeSynthIF::putEvent(const MidiPlayEvent& ev)
-      {
-      if (ev.dataA() == 0) {
+{
+    if (ev.dataA() == MusECore::measureSound) {
+        if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
             data = defaultClickEmphasis;
             len  = defaultClickEmphasisLength;
-            }
-      else {
+        }
+        else {
+              data = defaultKlick3;
+              len  = defaultKlick3Length;
+        }
+        volume = MusEGlobal::measClickVolume;
+    }
+    else if (ev.dataA() == MusECore::beatSound) {
+        if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
             data = defaultClick;
             len  = defaultClickLength;
-            }
-      pos = 0;
-      return false;
-      }
+        } else {
+            data = defaultKlick1;
+            len  = defaultKlick1Length;
+        }
+        volume = MusEGlobal::beatClickVolume;
+    }
+    else if (ev.dataA() == MusECore::accent1Sound) {
+             data = defaultKlick4;
+             len  = defaultKlick4Length;
+             volume = MusEGlobal::accent1ClickVolume;
+             if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
+                 volume=0.0;
+             }
+    }
+    else if (ev.dataA() == MusECore::accent2Sound) {
+             data = defaultKlick2;
+             len  = defaultKlick2Length;
+             volume = MusEGlobal::accent2ClickVolume;
+             if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
+                 volume=0.0;
+             }
+    }
 
-// DELETETHIS 9
+
+    pos = 0;
+    return false;
+}
+
 //---------------------------------------------------------
 //   createSIF
 //---------------------------------------------------------
 
-//SynthIF* MetronomeSynth::createSIF() const
-//      {
-//      return new MetronomeSynthIF();
-//      }
 SynthIF* MetronomeSynth::createSIF(SynthI* s)
       {
       return new MetronomeSynthIF(s);
@@ -195,7 +232,7 @@ void MetronomeSynthIF::process(float** buffer, int offset, int n)
       int l          = std::min(n, len);
 
       for (int i = 0; i < l; ++i)
-            *d++ += *s++ * MusEGlobal::audioClickVolume;
+            *d++ += *s++ * MusEGlobal::audioClickVolume * volume;
       pos += l;
       len -= l;
       if (len <= 0)

@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //
 //  vst_native.h
-//  (C) Copyright 2012 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012-2013 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -118,8 +118,8 @@ class VstNativeSynth : public Synth {
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
-      MusECore::MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to vst port numbers.
-      MusECore::MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps vst port numbers to midi controller numbers.
+      MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to vst port numbers.
+      MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps vst port numbers to midi controller numbers.
       bool _hasGui;
       bool _inPlaceCapable;
       bool _hasChunks;
@@ -130,7 +130,7 @@ class VstNativeSynth : public Synth {
       virtual ~VstNativeSynth() {}
       virtual Type synthType() const { return VST_NATIVE_SYNTH; }
       virtual void incInstances(int val);
-      virtual AEffect* instantiate();
+      virtual AEffect* instantiate(VstNativeSynthIF*);
       virtual SynthIF* createSIF(SynthI*);
       unsigned long inPorts()     const { return _inports; }
       unsigned long outPorts()    const { return _outports; }
@@ -140,6 +140,21 @@ class VstNativeSynth : public Synth {
       int vstVersion()  const { return _vst_version; }
       bool hasChunks()  const { return _hasChunks; }
       const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
+      };
+
+//---------------------------------------------------------
+//   VstNativeGuiWidgets
+//---------------------------------------------------------
+
+struct VstNativeGuiWidgets {
+      // TODO: Remove Tim. Or keep.
+      //enum {
+      //      SLIDER, DOUBLE_LABEL, QCHECKBOX, QCOMBOBOX
+      //      };
+      //QWidget* widget;
+      //int type;
+      //unsigned long param;
+      bool pressed;
       };
 
 //---------------------------------------------------------
@@ -154,10 +169,13 @@ class VstNativeSynthIF : public SynthIF
       
       VstNativeSynth* _synth;
       AEffect* _plugin;
+      bool _active;    // Whether it's safe to call effIdle or effEditIdle. 
       MusEGui::VstNativeEditor* _editor;
       bool _guiVisible;
       bool _inProcess; // To inform the callback of the 'process level' - are we in the audio thread?
 
+      // Struct array to keep track of pressed flags and so on. // TODO: Not used yet. REMOVE Tim. Or keep.
+      VstNativeGuiWidgets* _gw;
       Port* _controls;
       float** _audioOutBuffers;
       float** _audioInBuffers;
@@ -167,7 +185,7 @@ class VstNativeSynthIF : public SynthIF
       std::vector<VST_Program> programs;
       void queryPrograms();
       void doSelectProgram(int bankH, int bankL, int prog);
-      bool processEvent(const MusECore::MidiPlayEvent&, VstMidiEvent*);
+      bool processEvent(const MidiPlayEvent&, VstMidiEvent*);
       void setVstEvent(VstMidiEvent* event, int a = 0, int b = 0, int c = 0, int d = 0);
       
       void editorDeleted();
@@ -188,17 +206,17 @@ class VstNativeSynthIF : public SynthIF
       bool resizeEditor(int w, int h);
       
       virtual bool initGui()       { return true; };
-      virtual void guiHeartBeat()  {  }
+      virtual void guiHeartBeat();
       virtual bool guiVisible() const;
       virtual void showGui(bool);
       virtual bool hasGui() const { return true; }
       virtual bool nativeGuiVisible() const;
       virtual void showNativeGui(bool v);
       virtual bool hasNativeGui() const;
-      virtual void getGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
-      virtual void setGeometry(int, int, int, int) {}
-      virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
-      virtual void setNativeGeometry(int, int, int, int) {}
+      virtual void getGeometry(int*x, int*y, int*w, int*h) const;
+      virtual void setGeometry(int, int, int, int);
+      virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const ;
+      virtual void setNativeGeometry(int, int, int, int);
       virtual void preProcessAlways() { };
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned nframes, float** buffer) ;
       virtual bool putEvent(const MidiPlayEvent& ev);
@@ -230,10 +248,7 @@ class VstNativeSynthIF : public SynthIF
       QString fileName() const;
       void enableController(unsigned long i, bool v = true);
       bool controllerEnabled(unsigned long i) const;
-      void enable2Controller(unsigned long i, bool v = true);
-      bool controllerEnabled2(unsigned long i) const;
       void enableAllControllers(bool v = true);
-      void enable2AllControllers(bool v = true);
       void updateControllers();
       void activate();
       void deactivate();

@@ -394,6 +394,16 @@ static void loadConfigMetronom(Xml& xml)
                               MusEGlobal::audioClickFlag = xml.parseInt();
                         else if (tag == "audioClickVolume")
                               MusEGlobal::audioClickVolume = xml.parseFloat();
+                        else if (tag == "measClickVolume")
+                              MusEGlobal::measClickVolume = xml.parseFloat();
+                        else if (tag == "beatClickVolume")
+                              MusEGlobal::beatClickVolume = xml.parseFloat();
+                        else if (tag == "accent1ClickVolume")
+                              MusEGlobal::accent1ClickVolume = xml.parseFloat();
+                        else if (tag == "accent2ClickVolume")
+                              MusEGlobal::accent2ClickVolume = xml.parseFloat();
+                        else if (tag == "clickSamples")
+                              MusEGlobal::clickSamples = (MusEGlobal::ClickSamples)xml.parseInt();
                         else
                               xml.unknown("Metronome");
                         break;
@@ -519,6 +529,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               }
                         else if (tag == "geometryMain")
                               MusEGlobal::config.geometryMain = readGeometry(xml, tag);
+                        else if (tag == "trackHeight")
+                                 MusEGlobal::config.trackHeight = xml.parseInt();
 
 
                         else if (doReadMidiPortConfig==false) {
@@ -607,6 +619,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
+                        else if (tag == "autoSave")
+                              MusEGlobal::config.autoSave = xml.parseInt();
                         else if (tag == "styleSheetFile")
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
@@ -665,6 +679,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.palette[15] = readColor(xml);
                         else if (tag == "palette16")
                               MusEGlobal::config.palette[16] = readColor(xml);
+
                         else if (tag == "partColor0")
                               MusEGlobal::config.partColors[0] = readColor(xml);
                         else if (tag == "partColor1")
@@ -752,9 +767,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.mixerBg = readColor(xml);
                         else if (tag == "midiTrackLabelBg")
                               MusEGlobal::config.midiTrackLabelBg = readColor(xml);
-                        else if (tag == "drumTrackLabelBg")
+                        else if (tag == "drumTrackLabelBg2")
                               MusEGlobal::config.drumTrackLabelBg = readColor(xml);
-                        else if (tag == "newDrumTrackLabelBg")
+                        else if (tag == "newDrumTrackLabelBg2")
                               MusEGlobal::config.newDrumTrackLabelBg = readColor(xml);
                         else if (tag == "waveTrackLabelBg")
                               MusEGlobal::config.waveTrackLabelBg = readColor(xml);
@@ -764,7 +779,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.inputTrackLabelBg = readColor(xml);
                         else if (tag == "groupTrackLabelBg")
                               MusEGlobal::config.groupTrackLabelBg = readColor(xml);
-                        else if (tag == "auxTrackLabelBg")
+                        else if (tag == "auxTrackLabelBg2")
                               MusEGlobal::config.auxTrackLabelBg = readColor(xml);
                         else if (tag == "synthTrackLabelBg")
                               MusEGlobal::config.synthTrackLabelBg = readColor(xml);
@@ -847,6 +862,40 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.transportHandleColor = readColor(xml);
                         else if (tag == "waveEditBackgroundColor")
                               MusEGlobal::config.waveEditBackgroundColor = readColor(xml);
+                        else if (tag == "rulerBackgroundColor")
+                              MusEGlobal::config.rulerBg = readColor(xml);
+                        else if (tag == "rulerForegroundColor")
+                              MusEGlobal::config.rulerFg = readColor(xml);
+                        else if (tag == "rulerCurrentColor")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+
+                        else if (tag == "waveNonselectedPart")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "wavePeakColor")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "waveRmsColor")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "wavePeakColorSelected")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "waveRmsColorSelected")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+
+                        else if (tag == "partWaveColorPeak")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "partWaveColorRms")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "partMidiDarkEventColor")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+                        else if (tag == "partMidiLightEventColor")
+                              MusEGlobal::config.rulerCurrent = readColor(xml);
+
+                        else if (tag == "midiCanvasBackgroundColor")
+                              MusEGlobal::config.midiCanvasBg = readColor(xml);
+                        else if (tag == "midiControllerViewBackgroundColor")
+                              MusEGlobal::config.midiControllerViewBg = readColor(xml);
+                        else if (tag == "drumListBackgroundColor")
+                              MusEGlobal::config.drumListBg = readColor(xml);
+
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
                         /* Obsolete. done by song's toplevel list. arrangerview also handles arranger.
@@ -948,6 +997,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.unhideTracks = xml.parseInt();
                         else if (tag == "smartFocus")
                               MusEGlobal::config.smartFocus = xml.parseInt();
+                        else if (tag == "borderlessMouse")
+                              MusEGlobal::config.borderlessMouse = xml.parseInt();
                         else if (tag == "velocityPerNote")
                               MusEGlobal::config.velocityPerNote = xml.parseInt();
                         else if (tag == "plugin_groups")
@@ -1014,13 +1065,21 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 //---------------------------------------------------------
 //   readConfiguration
 //---------------------------------------------------------
-
 bool readConfiguration()
+{
+    return readConfiguration(NULL);
+}
+
+bool readConfiguration(const char *configFile)
       {
-      FILE* f = fopen(MusEGlobal::configName.toLatin1().constData(), "r");
+      if (configFile == NULL)
+        configFile = MusEGlobal::configName.toLatin1().constData();
+
+      printf("Config File <%s>\n", configFile);
+      FILE* f = fopen(configFile, "r");
       if (f == 0) {
             if (MusEGlobal::debugMsg || MusEGlobal::debugMode)
-                  fprintf(stderr, "NO Config File <%s> found\n", MusEGlobal::configName.toLatin1().constData());
+                  fprintf(stderr, "NO Config File <%s> found\n", configFile);
 
             if (MusEGlobal::config.userInstrumentsDir.isEmpty()) 
                   MusEGlobal::config.userInstrumentsDir = MusEGlobal::configPath + "/instruments";
@@ -1092,6 +1151,11 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "midiClickEnable", MusEGlobal::midiClickFlag);
       xml.intTag(level, "audioClickEnable", MusEGlobal::audioClickFlag);
       xml.floatTag(level, "audioClickVolume", MusEGlobal::audioClickVolume);
+      xml.floatTag(level, "measClickVolume", MusEGlobal::measClickVolume);
+      xml.floatTag(level, "beatClickVolume", MusEGlobal::beatClickVolume);
+      xml.floatTag(level, "accent1ClickVolume", MusEGlobal::accent1ClickVolume);
+      xml.floatTag(level, "accent2ClickVolume", MusEGlobal::accent2ClickVolume);
+      xml.intTag(level, "clickSamples", MusEGlobal::clickSamples);
       xml.tag(level--, "/metronom");
 
       xml.intTag(level, "rcEnable",   MusEGlobal::rcEnable);
@@ -1276,6 +1340,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiFilterCtrl4", MusEGlobal::midiFilterCtrl4);
       
       xml.strTag(level, "theme", MusEGlobal::config.style);
+      xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
       xml.intTag(level, "useOldStyleStopShortCut", MusEGlobal::config.useOldStyleStopShortCut);
@@ -1284,6 +1349,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "leftMouseButtonCanDecrease", MusEGlobal::config.leftMouseButtonCanDecrease);
       xml.intTag(level, "rangeMarkerWithoutMMB", MusEGlobal::config.rangeMarkerWithoutMMB);
       xml.intTag(level, "smartFocus", MusEGlobal::config.smartFocus);
+      xml.intTag(level, "borderlessMouse", MusEGlobal::config.borderlessMouse);
       xml.intTag(level, "velocityPerNote", MusEGlobal::config.velocityPerNote);
       
       xml.intTag(level, "unhideTracks", MusEGlobal::config.unhideTracks);
@@ -1297,6 +1363,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "inputTracksVisible",  MusECore::AudioInput::visible());
       xml.intTag(level, "outputTracksVisible",  MusECore::AudioOutput::visible());
       xml.intTag(level, "synthTracksVisible",  MusECore::SynthI::visible());
+      xml.intTag(level, "trackHeight",  MusEGlobal::config.trackHeight);
 
       for (int i = 0; i < NUM_FONTS; ++i) {
             char buffer[32];
@@ -1331,13 +1398,13 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
       xml.colorTag(level, "midiTrackLabelBg",   MusEGlobal::config.midiTrackLabelBg);
-      xml.colorTag(level, "drumTrackLabelBg",   MusEGlobal::config.drumTrackLabelBg);
-      xml.colorTag(level, "newDrumTrackLabelBg",MusEGlobal::config.newDrumTrackLabelBg);
+      xml.colorTag(level, "drumTrackLabelBg2",  MusEGlobal::config.drumTrackLabelBg);
+      xml.colorTag(level, "newDrumTrackLabelBg2",MusEGlobal::config.newDrumTrackLabelBg);
       xml.colorTag(level, "waveTrackLabelBg",   MusEGlobal::config.waveTrackLabelBg);
       xml.colorTag(level, "outputTrackLabelBg", MusEGlobal::config.outputTrackLabelBg);
       xml.colorTag(level, "inputTrackLabelBg",  MusEGlobal::config.inputTrackLabelBg);
       xml.colorTag(level, "groupTrackLabelBg",  MusEGlobal::config.groupTrackLabelBg);
-      xml.colorTag(level, "auxTrackLabelBg",    MusEGlobal::config.auxTrackLabelBg);
+      xml.colorTag(level, "auxTrackLabelBg2",   MusEGlobal::config.auxTrackLabelBg);
       xml.colorTag(level, "synthTrackLabelBg",  MusEGlobal::config.synthTrackLabelBg);
       
       xml.colorTag(level, "midiTrackBg",   MusEGlobal::config.midiTrackBg);
@@ -1380,6 +1447,24 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "bigtimeForegroundcolor", MusEGlobal::config.bigTimeForegroundColor);
       xml.colorTag(level, "bigtimeBackgroundcolor", MusEGlobal::config.bigTimeBackgroundColor);
       xml.colorTag(level, "waveEditBackgroundColor", MusEGlobal::config.waveEditBackgroundColor);
+      xml.colorTag(level, "rulerBackgroundColor", MusEGlobal::config.rulerBg);
+      xml.colorTag(level, "rulerForegroundColor", MusEGlobal::config.rulerFg);
+      xml.colorTag(level, "rulerCurrentColor", MusEGlobal::config.rulerCurrent);
+
+      xml.colorTag(level, "waveNonselectedPart", MusEGlobal::config.waveNonselectedPart);
+      xml.colorTag(level, "wavePeakColor", MusEGlobal::config.wavePeakColor);
+      xml.colorTag(level, "waveRmsColor", MusEGlobal::config.waveRmsColor);
+      xml.colorTag(level, "wavePeakColorSelected", MusEGlobal::config.wavePeakColorSelected);
+      xml.colorTag(level, "waveRmsColorSelected", MusEGlobal::config.waveRmsColorSelected);
+
+      xml.colorTag(level, "partWaveColorPeak", MusEGlobal::config.partWaveColorPeak);
+      xml.colorTag(level, "partWaveColorRms", MusEGlobal::config.partWaveColorRms);
+      xml.colorTag(level, "partMidiDarkEventColor", MusEGlobal::config.partMidiDarkEventColor);
+      xml.colorTag(level, "partMidiLightEventColor", MusEGlobal::config.partMidiLightEventColor);
+
+      xml.colorTag(level, "midiCanvasBackgroundColor", MusEGlobal::config.midiCanvasBg);
+      xml.colorTag(level, "midiControllerViewBackgroundColor", MusEGlobal::config.midiControllerViewBg);
+      xml.colorTag(level, "drumListBackgroundColor", MusEGlobal::config.drumListBg);
 
       MusEGlobal::writePluginGroupConfiguration(level, xml);
 
@@ -1470,6 +1555,7 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
 void MusE::configMidiSync()
       {
       if (!midiSyncConfig)
+        // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
         midiSyncConfig = new MusEGui::MidiSyncConfig;
         
       if (midiSyncConfig->isVisible()) {
@@ -1487,6 +1573,7 @@ void MusE::configMidiSync()
 void MusE::configMidiFile()
       {
       if (!midiFileConfig)
+            // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
             midiFileConfig = new MusEGui::MidiFileConfig();
       midiFileConfig->updateValues();
 
@@ -1505,6 +1592,7 @@ void MusE::configMidiFile()
 void MusE::configGlobalSettings()
       {
       if (!globalSettingsConfig)
+          // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
           globalSettingsConfig = new MusEGui::GlobalSettingsConfig();
 
       if (globalSettingsConfig->isVisible()) {

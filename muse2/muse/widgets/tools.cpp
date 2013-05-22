@@ -27,6 +27,7 @@
 
 #include "icons.h"
 #include "action.h"
+#include "shortcuts.h"
 
 namespace MusEGui {
 
@@ -52,27 +53,41 @@ const char* infoDraw = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Drawing
 const char* infoMute = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Muting Tool:\n"
       "click on part to mute/unmute");
 const char* infoAutomation = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Manipulate automation");
-const char* infoCursor = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cursor tool");
+const char* infoCursor = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Cursor (tracker mode) tool:\n"
+      "with the cursor tool you can:\n"
+      "  navigate with arrow keys\n"
+      "  use VBNM to place notes\n"
+      "  change step with 0 and 9");
+const char* infoRange = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Range Tool");
+const char* infoPan = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Panning Tool");
+const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "select Zoom Tool");
 
 ToolB toolList[] = {
       {&pointerIcon,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pointer"),        infoPointer },
       {&pencilIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pencil"),         infoPencil  },
       {&deleteIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "eraser"),         infoDel     },
       {&cutIcon,      QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cutter"),         infoCut     },
-      {&note1Icon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "score"),          infoScore   },
       {&glueIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "glue"),           infoGlue    },
+      {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "range"),          infoRange   },
+      {&openHandIcon, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "pan"),            infoPan     },
+      {&zoomIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "zoom"),           infoZoom    },
+      {&note1Icon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "score"),          infoScore   },
       {&quantIcon,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "quantize"),       infoQuant   },
       {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "draw"),           infoDraw    },
       {&editmuteIcon, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "mute parts"),     infoMute    },
       {&drawIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "edit automation"),infoAutomation},
-    {&cursorIcon,     QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor (tracker mode)\nNavigate with arrow keys\nUse VBNM to place notes\nChange step with 0 and 9"),         infoCursor},
+      {&cursorIcon,   QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "cursor"),         infoCursor}
       };
+
+QMap<int,int> toolShortcuts;
+
+
+const unsigned gNumberOfTools = sizeof(toolList) / sizeof(ToolB);
 
 //---------------------------------------------------------
 //   EditToolBar
 //---------------------------------------------------------
 
-//EditToolBar::EditToolBar(QMainWindow* parent, int tools, const char*)
 EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
    : QToolBar(tr("Edit Tools"), parent)
       {
@@ -111,7 +126,22 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
       // Note: Does not take ownership.
       addActions(action->actions());
       
-      connect(action, SIGNAL(selected(QAction*)), SLOT(toolChanged(QAction*)));   
+      connect(action, SIGNAL(selected(QAction*)), SLOT(toolChanged(QAction*)));
+
+      toolShortcuts[PointerTool] = SHRT_TOOL_CURSOR;
+      toolShortcuts[PencilTool]  = SHRT_TOOL_PENCIL;
+      toolShortcuts[RubberTool]  = SHRT_TOOL_RUBBER;
+      toolShortcuts[CutTool]     = SHRT_TOOL_SCISSORS;
+      toolShortcuts[GlueTool]    = SHRT_TOOL_GLUE;
+      toolShortcuts[RangeTool]   = SHRT_TOOL_RANGE;
+      toolShortcuts[PanTool]     = SHRT_TOOL_PAN;
+      toolShortcuts[ZoomTool]    = SHRT_TOOL_ZOOM;
+      //toolShortcuts[ScoreTool]   = SHRT_TOOL_
+      //toolShortcuts[QuantTool]    = SHRT_TOOL_
+      toolShortcuts[DrawTool]    = SHRT_TOOL_LINEDRAW;
+      toolShortcuts[MuteTool]    = SHRT_TOOL_MUTE;
+      toolShortcuts[AutomationTool] = SHRT_TOOL_LINEDRAW;
+      toolShortcuts[CursorTool]  = SHRT_TOOL_CURSOR;
       }
 
 //---------------------------------------------------------

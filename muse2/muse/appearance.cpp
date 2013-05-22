@@ -32,6 +32,7 @@
 #include <QFileInfo>
 #include <QPainter>
 #include <QtGlobal>
+#include <QMessageBox>
 
 #include "icons.h"
 #include "appearance.h"
@@ -145,7 +146,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       global_bg->setFlags(Qt::ItemIsEnabled);
       user_bg = new QTreeWidgetItem(backgroundTree, QStringList(tr("Custom")), 0);
       user_bg->setFlags(Qt::ItemIsEnabled);
-      colorframe->setAutoFillBackground(true);
+      colorwidget->setAutoFillBackground(true);
       aPalette = new QButtonGroup(aPaletteBox);
 
       aPalette->addButton(palette0, 0);
@@ -177,6 +178,14 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
              new IdListViewItem(0x400 + i, id, MusEGlobal::config.partColorNames[i]);
            
            new IdListViewItem(0x41c, aid, "part canvas background");
+           new IdListViewItem(0x41f, aid, "Ruler background");
+           new IdListViewItem(0x420, aid, "Ruler text");
+           new IdListViewItem(0x424, aid, "Ruler current marker space");
+           new IdListViewItem(0x425, aid, "part wave peak");
+           new IdListViewItem(0x426, aid, "part wave rms");
+           new IdListViewItem(0x427, aid, "part midi event for light part color");
+           new IdListViewItem(0x428, aid, "part midi event for dark part color");
+
       id = new IdListViewItem(0, aid, "Track List");
            new IdListViewItem(0x411, id, "background");
            new IdListViewItem(0x412, id, "midi background");
@@ -190,16 +199,26 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x419, id, "synth background");
            new IdListViewItem(0x41a, id, "selected track background");
            new IdListViewItem(0x41b, id, "selected track foreground");
-           //   0x41e is already used (between 413 and 414)
+           //   0x41c - 0x420 is already used (see above)
       id = new IdListViewItem(0, itemList, "BigTime");
            new IdListViewItem(0x100, id, "background");
            new IdListViewItem(0x101, id, "foreground");
       id = new IdListViewItem(0, itemList, "Transport");
            new IdListViewItem(0x200, id, "handle");
       id = new IdListViewItem(0, itemList, "Midi Editor");
-           new IdListViewItem(0x41d, id, "controller graph");
+           new IdListViewItem(0x41d, id, "controller graph color");
+           new IdListViewItem(0x423, id, "controller graph background");
+           new IdListViewItem(0x421, id, "background");
+           new IdListViewItem(0x422, id, "drum list");
+
       id = new IdListViewItem(0, itemList, "Wave Editor");
-           new IdListViewItem(0x300, id, "background");
+           new IdListViewItem(0x300, id, "Background");
+           new IdListViewItem(0x301, id, "Wave peak color");
+           new IdListViewItem(0x302, id, "Wave rms color");
+           new IdListViewItem(0x303, id, "Wave peak color selected");
+           new IdListViewItem(0x304, id, "Wave rms color selected");
+           new IdListViewItem(0x305, id, "Wave nonselected part");
+
       id = new IdListViewItem(0, itemList, "Mixer");
            new IdListViewItem(0x500, id, "background");
            new IdListViewItem(0x501, id, "midi label");
@@ -237,7 +256,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(addToPalette, SIGNAL(clicked()), SLOT(addToPaletteClicked()));
 
       //---------------------------------------------------
-	//    STYLE
+      //    STYLE
       //---------------------------------------------------
       openStyleSheet->setIcon(*openIcon);
       connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
@@ -245,7 +264,21 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(defaultStyleSheet, SIGNAL(clicked()), SLOT(setDefaultStyleSheet()));
       
       //---------------------------------------------------
-	//    Fonts
+      //    THEMES
+      //---------------------------------------------------
+      connect(changeThemeButton, SIGNAL(clicked()), SLOT(changeTheme()));
+
+      QDir themeDir(MusEGlobal::museGlobalShare + QString("/themes"));
+      QStringList list;
+
+      QStringList fileTypes;
+      fileTypes.append("*.cfg");
+      list = themeDir.entryList(fileTypes);
+
+      colorSchemeComboBox->addItems(list);
+
+      //---------------------------------------------------
+      //    Fonts
       //---------------------------------------------------
 
       fontBrowse0->setIcon(QIcon(*openIcon));
@@ -270,6 +303,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       connect(removeBgButton, SIGNAL(clicked()), SLOT(removeBackground()));
       connect(clearBgButton, SIGNAL(clicked()), SLOT(clearBackground()));
       connect(partShowevents, SIGNAL(toggled(bool)), eventButtonGroup, SLOT(setEnabled(bool)));
+
       //updateColor();
       }
 
@@ -458,36 +492,80 @@ void Appearance::updateFonts()
       }
 
 //---------------------------------------------------------
+//   changeTheme
+//
+//---------------------------------------------------------
+
+void Appearance::changeTheme()
+{
+    if (colorSchemeComboBox->currentIndex() == 0) {
+      return;
+    }
+    if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
+        tr("Do you really want to reset colors to theme default?"), tr("&Ok"), tr("&Cancel"),
+        QString::null, 0, 1 ) == 1)
+    {
+        return;
+    }
+
+
+    QString currentTheme = colorSchemeComboBox->currentText();
+    printf("Changing to theme %s\n", currentTheme.toLatin1().constData() );
+
+    QString themeDir = MusEGlobal::museGlobalShare + "/themes/";
+    backgroundTree->reset();
+    if (QFile::exists(themeDir + QFileInfo(currentTheme).baseName()+ ".qss"))
+    {
+      styleSheetPath->setText(themeDir + QFileInfo(currentTheme).baseName()+ ".qss");
+      MusEGlobal::config.styleSheetFile = styleSheetPath->text();
+    }
+    else
+    {
+      styleSheetPath->setText("arg");
+      MusEGlobal::muse->loadStyleSheetFile("");
+      MusEGlobal::config.styleSheetFile = "";
+    }
+
+    QString configPath = themeDir + currentTheme;
+    MusECore::readConfiguration(configPath.toLatin1().constData());
+    colorSchemeComboBox->setCurrentIndex(0);
+    MusEGlobal::muse->changeConfig(true);
+
+    close();
+}
+//---------------------------------------------------------
 //   apply
 //---------------------------------------------------------
 
 void Appearance::apply()
       {
+//
+//
       int showPartEvent = 0;
       int showPartType = 0;
 
-      if (partShownames->isChecked())		
+      if (partShownames->isChecked())
                 showPartType  |= 1;
-      if (partShowevents->isChecked())		
+      if (partShowevents->isChecked())
                 showPartType  |= 2;
-      if (partCakeStretch->isChecked())		
+      if (partCakeStretch->isChecked())
                 showPartType  |= 4;
 
       config->canvasShowPartType = showPartType;
 
-      if (eventNoteon->isChecked())		
+      if (eventNoteon->isChecked())
                 showPartEvent |= (1 << 0);
-      if (eventPolypressure->isChecked())	
+      if (eventPolypressure->isChecked())
                 showPartEvent |= (1 << 1);
-      if (eventController->isChecked())	
+      if (eventController->isChecked())
                 showPartEvent |= (1 << 2);
-      if (eventProgramchange->isChecked())	
+      if (eventProgramchange->isChecked())
                 showPartEvent |= (1 << 3);
-      if (eventAftertouch->isChecked())	
+      if (eventAftertouch->isChecked())
                 showPartEvent |= (1 << 4);
-      if (eventPitchbend->isChecked())		
+      if (eventPitchbend->isChecked())
                 showPartEvent |= (1 << 5);
-      if (eventSpecial->isChecked())		
+      if (eventSpecial->isChecked())
                 showPartEvent |= (1 << 6);
 
       config->canvasShowPartEvent = showPartEvent;
@@ -502,11 +580,11 @@ void Appearance::apply()
       config->canvasCustomBgList = QStringList();
       for (int i = 0; i < user_bg->childCount(); ++i)
             config->canvasCustomBgList << user_bg->child(i)->data(0, Qt::UserRole).toString();
-      
+
       config->styleSheetFile = styleSheetPath->text();
-      
+
       config->fonts[0].setFamily(fontName0->text());
-      
+
       config->fonts[0].setPointSize(fontSize0->value());
       config->fonts[0].setItalic(italic0->isChecked());
       config->fonts[0].setBold(bold0->isChecked());
@@ -543,15 +621,15 @@ void Appearance::apply()
       config->fonts[6].setBold(bold6->isChecked());
 
       config->style = themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText();
-    	// setting up a new theme might change the fontsize, so re-read
+      // setting up a new theme might change the fontsize, so re-read
       fontSize0->setValue(QApplication::font().pointSize());
 
       config->canvasShowGrid = arrGrid->isChecked();
-      
+
       config->globalAlphaBlend = globalAlphaVal->value();
-      
       // set colors...
       MusEGlobal::config = *config;
+
       MusEGlobal::muse->changeConfig(true);
       }
 
@@ -692,6 +770,12 @@ void Appearance::colorItemSelectionChanged()
             case 0x101: color = &config->bigTimeForegroundColor; break;
             case 0x200: color = &config->transportHandleColor; break;
             case 0x300: color = &config->waveEditBackgroundColor; break;
+            case 0x301: color = &config->wavePeakColor; break;
+            case 0x302: color = &config->waveRmsColor; break;
+            case 0x303: color = &config->wavePeakColorSelected; break;
+            case 0x304: color = &config->waveRmsColorSelected; break;
+            case 0x305: color = &config->waveNonselectedPart; break;
+
             case 0x411: color = &config->trackBg;       break;
             case 0x412: color = &config->midiTrackBg;   break;
             case 0x413: color = &config->drumTrackBg;   break;
@@ -706,7 +790,19 @@ void Appearance::colorItemSelectionChanged()
             case 0x41b: color = &config->selectTrackFg;  break;
             case 0x41c: color = &config->partCanvasBg; break;
             case 0x41d: color = &config->ctrlGraphFg; break;
+
             //   0x41e is already used (between 413 and 414)
+
+            case 0x41f: color = &config->rulerBg; break;
+            case 0x420: color = &config->rulerFg; break;
+            case 0x421: color = &config->midiCanvasBg; break;
+            case 0x422: color = &config->drumListBg; break;
+            case 0x423: color = &config->midiControllerViewBg; break;
+            case 0x424: color = &config->rulerCurrent; break;
+            case 0x425: color = &config->partWaveColorPeak; break;
+            case 0x426: color = &config->partWaveColorRms; break;
+            case 0x427: color = &config->partMidiDarkEventColor; break;
+            case 0x428: color = &config->partMidiLightEventColor; break;
 
             case 0x500: color = &config->mixerBg;   break;
             case 0x501: color = &config->midiTrackLabelBg;   break;
@@ -752,8 +848,8 @@ void Appearance::updateColor()
       QPalette pal;
       QColor cfc(*color);
       
-      pal.setColor(colorframe->backgroundRole(), cfc);
-      colorframe->setPalette(pal);
+      colorwidget->setColor(cfc);
+
       color->getRgb(&r, &g, &b);
       color->getHsv(&h, &s, &v);
 

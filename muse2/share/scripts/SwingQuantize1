@@ -69,6 +69,7 @@ class Quantize(QtGui.QWidget):
         testFile = file(sys.argv[1],"r")
         inputEvents = testFile.readlines()
         testFile.close()
+        random.seed()
         
         beatDiv = self.beatEdit.itemData(self.beatEdit.currentIndex()).toInt()[0]
         minSize=0 # fill in when we get the beat size value

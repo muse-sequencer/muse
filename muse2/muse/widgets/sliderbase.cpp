@@ -386,17 +386,19 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
     double ms = 0.0;
     if (d_scrollMode == ScrMouse )
     {
-  setPosition(e->pos());
-  if (d_mass > 0.0)
-  {
-      ms = double(d_time.elapsed());
-      if (ms < 1.0) ms = 1.0;
-      d_speed = (exactValue() - exactPrevValue()) / ms;
-      d_time.start();
-  }
-  if (value() != prevValue())
-     emit sliderMoved(value(), _id);
-     emit sliderMoved(value(), _id, (bool)(e->modifiers() & Qt::ShiftModifier));
+      setPosition(e->pos());
+      if (d_mass > 0.0)
+      {
+          ms = double(d_time.elapsed());
+          if (ms < 1.0) ms = 1.0;
+          d_speed = (exactValue() - exactPrevValue()) / ms;
+          d_time.start();
+      }
+      if (value() != prevValue())
+      {
+        emit sliderMoved(value(), _id);
+        emit sliderMoved(value(), _id, (bool)(e->modifiers() & Qt::ShiftModifier));
+      }
     }
 
 }

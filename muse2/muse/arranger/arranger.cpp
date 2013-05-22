@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <limits.h>
+#include <math.h>
 
 #include <QComboBox>
 #include <QGridLayout>
@@ -37,6 +38,9 @@
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QPainter>
+#include <QCursor>
+#include <QPoint>
+#include <QRect>
 
 #include "arrangerview.h"
 #include "arranger.h"
@@ -74,6 +78,10 @@ namespace MusEGui {
 std::vector<Arranger::custom_col_t> Arranger::custom_columns;     //FINDMICH TODO: eliminate all usage of new_custom_columns
 std::vector<Arranger::custom_col_t> Arranger::new_custom_columns; //and instead let the arranger update without restarting muse!
 QByteArray Arranger::header_state;
+static const char* gArrangerRasterStrings[] = {
+      QT_TRANSLATE_NOOP("MusEGui::Arranger", "Off"), QT_TRANSLATE_NOOP("MusEGui::Arranger", "Bar"), "1/2", "1/4", "1/8", "1/16"
+      };
+static int gArrangerRasterTable[] = { 1, 0, 768, 384, 192, 96 };
 
 void Arranger::writeCustomColumns(int level, MusECore::Xml& xml)
 {
@@ -235,22 +243,19 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       cursorPos->setFixedHeight(22);
       toolbar->addWidget(cursorPos);
 
-      const char* rastval[] = {
-            QT_TRANSLATE_NOOP("MusEGui::Arranger", "Off"), QT_TRANSLATE_NOOP("MusEGui::Arranger", "Bar"), "1/2", "1/4", "1/8", "1/16"
-            };
       label = new QLabel(tr("Snap"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       toolbar->addWidget(label);
-      QComboBox* raster = new QComboBox();
+      _rasterCombo = new QComboBox();
       for (int i = 0; i < 6; i++)
-            raster->insertItem(i, tr(rastval[i]));
-      raster->setCurrentIndex(1);
+            _rasterCombo->insertItem(i, tr(gArrangerRasterStrings[i]), gArrangerRasterTable[i]);
+      _rasterCombo->setCurrentIndex(1);
       // Set the audio record part snapping. Set to 0 (bar), the same as this combo box intial raster.
       MusEGlobal::song->setArrangerRaster(0);
-      toolbar->addWidget(raster);
-      connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
-      raster->setFocusPolicy(Qt::TabFocus);
+      toolbar->addWidget(_rasterCombo);
+      connect(_rasterCombo, SIGNAL(activated(int)), SLOT(rasterChanged(int)));
+      _rasterCombo->setFocusPolicy(Qt::TabFocus);
 
       // Song len
       label = new QLabel(tr("Len"));
@@ -337,7 +342,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       tpolicy.setVerticalStretch(100);
       tracklist->setSizePolicy(tpolicy);
 
-      QWidget* editor = new QWidget(split);
+      editor = new QWidget(split);
       split->setStretchFactor(split->indexOf(editor), 1);
       QSizePolicy epolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
       epolicy.setHorizontalStretch(255);
@@ -474,8 +479,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
       connect(canvas, SIGNAL(selectTrackAbove()), list, SLOT(selectTrackAbove()));
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
-      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
-      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+      connect(canvas, SIGNAL(horizontalZoom(bool, const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
+      connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(lenEntry,           SIGNAL(returnPressed()), SLOT(focusCanvas()));
       connect(lenEntry,           SIGNAL(escapePressed()), SLOT(focusCanvas()));
       connect(globalPitchSpinBox, SIGNAL(returnPressed()), SLOT(focusCanvas()));
@@ -507,6 +512,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
       connect(time,    SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
+
+      connect(list, SIGNAL(verticalScrollSetYpos(int)), vscroll, SLOT(setValue(int)));
 
       connect(canvas, SIGNAL(tracklistChanged()), list, SLOT(tracklistChanged()));
       connect(canvas, SIGNAL(dclickPart(MusECore::Track*)), SIGNAL(editPart(MusECore::Track*)));
@@ -730,11 +737,12 @@ void Arranger::trackSelectionChanged()
 void Arranger::writeStatus(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arranger");
+      xml.intTag(level, "raster", _raster);
       xml.intTag(level, "info", ib->isChecked());
       split->writeStatus(level, xml);
 
-      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
+      xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ypos", vscroll->value());
       xml.etag(level, "arranger");
       }
@@ -783,6 +791,7 @@ void Arranger::readConfiguration(MusECore::Xml& xml)
 
 void Arranger::readStatus(MusECore::Xml& xml)
       {
+      int rast = -1;  
       for (;;) {
             MusECore::Xml::Token token(xml.parse());
             const QString& tag(xml.s1());
@@ -791,16 +800,16 @@ void Arranger::readStatus(MusECore::Xml& xml)
                   case MusECore::Xml::End:
                         return;
                   case MusECore::Xml::TagStart:
-                        if (tag == "info")
+                        if (tag == "raster")
+                              rast = xml.parseInt();
+                        else if (tag == "info")
                               showTrackinfoFlag = xml.parseInt();
                         else if (tag == split->objectName())
                               split->readStatus(xml);
                         else if (tag == "xmag")
                               hscroll->setMag(xml.parseInt());
-                        else if (tag == "xpos") {
-                              int hpos = xml.parseInt();
-                              hscroll->setPos(hpos);
-                              }
+                        else if (tag == "xpos") 
+                              hscroll->setPos(xml.parseInt());  
                         else if (tag == "ypos")
                               vscroll->setValue(xml.parseInt());
                         else
@@ -809,6 +818,8 @@ void Arranger::readStatus(MusECore::Xml& xml)
                   case MusECore::Xml::TagEnd:
                         if (tag == "arranger") {
                               ib->setChecked(showTrackinfoFlag);
+                              if(rast != -1)
+                                setRasterVal(rast);
                               return;
                               }
                   default:
@@ -818,20 +829,41 @@ void Arranger::readStatus(MusECore::Xml& xml)
       }
 
 //---------------------------------------------------------
-//   setRaster
+//   rasterChanged
 //---------------------------------------------------------
 
-void Arranger::_setRaster(int index)
+void Arranger::rasterChanged(int index)
       {
-      static int rasterTable[] = {
-            1, 0, 768, 384, 192, 96
-            };
-      _raster = rasterTable[index];
+      _raster = gArrangerRasterTable[index];
       // Set the audio record part snapping.
       MusEGlobal::song->setArrangerRaster(_raster);
       canvas->redraw();
       focusCanvas();
       }
+
+//---------------------------------------------------------
+//   setRasterVal
+//---------------------------------------------------------
+
+bool Arranger::setRasterVal(int val)
+{
+  if(_raster == val)
+    return true;
+  int idx = _rasterCombo->findData(val);
+  if(idx == -1)
+  {
+    fprintf(stderr, "Arranger::setRasterVal raster:%d not found\n", val);
+    return false;
+  }
+  _raster = val;
+  _rasterCombo->blockSignals(true);
+  _rasterCombo->setCurrentIndex(idx);
+  _rasterCombo->blockSignals(false);
+  // Set the audio record part snapping.
+  MusEGlobal::song->setArrangerRaster(_raster);
+  canvas->redraw();
+  return true;
+}
 
 //---------------------------------------------------------
 //   reset
@@ -1205,41 +1237,45 @@ void Arranger::keyPressEvent(QKeyEvent* event)
         key+= Qt::CTRL;
 
   if (key == shortcuts[SHRT_ZOOM_IN].key) {
-        horizontalZoomIn();
+        horizontalZoom(true, QCursor::pos());
         return;
         }
   else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
-        horizontalZoomOut();
+        horizontalZoom(false, QCursor::pos());
         return;
         }
 
   QWidget::keyPressEvent(event);
 }
 
-void Arranger::horizontalZoomIn()
+void Arranger::horizontalZoom(bool zoom_in, const QPoint& glob_pos)
 {
   int mag = hscroll->mag();
   int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
+  if(zoom_in)
+  {
+    if (zoomlvl < MusEGui::ScrollScale::zoomLevels-1)
         zoomlvl++;
-
+  }
+  else
+  {
+    if (zoomlvl > 1)
+        zoomlvl--;
+  }
   int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
-  hscroll->setMag(newmag);
-
+  QPoint cp = canvas->mapFromGlobal(glob_pos);
+  QPoint sp = editor->mapFromGlobal(glob_pos);
+  if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < editor->height())
+    hscroll->setMag(newmag, cp.x());
 }
 
-void Arranger::horizontalZoomOut()
+void Arranger::horizontalZoom(int mag, const QPoint& glob_pos)
 {
-  int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-  if (zoomlvl > 1)
-        zoomlvl--;
-
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-
-  hscroll->setMag(newmag);
-
+  QPoint cp = canvas->mapFromGlobal(glob_pos);
+  QPoint sp = editor->mapFromGlobal(glob_pos);
+  if(cp.x() >= 0 && cp.x() < canvas->width() && sp.y() >= 0 && sp.y() < editor->height())
+    hscroll->setMag(hscroll->mag() + mag, cp.x());
 }
 
 } // namespace MusEGui

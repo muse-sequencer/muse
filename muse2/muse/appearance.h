@@ -61,6 +61,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
    private slots:
       void apply();
       void ok();
+      void changeTheme();
       void cancel();
       void addBackground();
       void removeBackground();

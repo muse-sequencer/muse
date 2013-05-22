@@ -292,7 +292,7 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
 bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
       {
       if (MusEGlobal::midiOutputTrace) {
-            printf("MidiOut: Alsa: <%s>: ", name().toLatin1().constData());
+            fprintf(stderr, "MidiOut: Alsa: <%s>: ", name().toLatin1().constData());
             e.dump();
             }
       int chn = e.channel();

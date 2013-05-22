@@ -4,7 +4,7 @@
 //  $Id: track.h,v 1.39.2.17 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011-2013 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -38,6 +38,7 @@
 #include "ctrl.h"
 #include "globaldefs.h"
 #include "cleftypes.h"
+#include "controlfifo.h"
 
 namespace MusECore {
 class MPEventList;
@@ -47,6 +48,7 @@ class SynthI;
 class Xml;
 class DrumMap;
 class ControlEvent;
+struct Port;
 
 //---------------------------------------------------------
 //   Track
@@ -88,11 +90,6 @@ class Track {
       bool _off;
       int _channels;          // 1 - mono, 2 - stereo
 
-      bool _volumeEnCtrl;
-      bool _volumeEn2Ctrl;
-      bool _panEnCtrl;
-      bool _panEn2Ctrl;
-      
       int _activity;
       int _lastActivity;
       double _meter[MAX_CHANNELS];
@@ -127,14 +124,6 @@ class Track {
       bool locked() const             { return _locked; }
       void setLocked(bool b)          { _locked = b; }
 
-      bool volumeControllerEnabled()  const  { return _volumeEnCtrl; }
-      bool volumeControllerEnabled2() const  { return _volumeEn2Ctrl; }
-      bool panControllerEnabled()     const  { return _panEnCtrl; }
-      bool panControllerEnabled2()    const  { return _panEn2Ctrl; }
-      void enableVolumeController(bool b)    { _volumeEnCtrl = b; }
-      void enable2VolumeController(bool b)   { _volumeEn2Ctrl = b; }
-      void enablePanController(bool b)       { _panEnCtrl = b; }
-      void enable2PanController(bool b)      { _panEn2Ctrl = b; }
       void clearRecAutomation(bool clearList);
       
       const QString& name() const     { return _name; }
@@ -327,7 +316,7 @@ class MidiTrack : public Track {
       //void writeOurDrumSettings(int level, Xml& xml) const; // above in private:
       //void readOurDrumSettings(Xml& xml); // above in private:
       void writeOurDrumMap(int level, Xml& xml, bool full) const;
-      void readOurDrumMap(Xml& xml, bool dont_init=false);
+      void readOurDrumMap(Xml& xml, QString tag, bool dont_init=false, bool compatibility=false);
       };
 
 //---------------------------------------------------------
@@ -340,9 +329,17 @@ class MidiTrack : public Track {
 class AudioTrack : public Track {
       bool _haveData; // Whether we have data from a previous process call during current cycle.
       
-      CtrlListList _controller;
+      CtrlListList _controller;   // Holds all controllers including internal, plugin and synth.
+      ControlFifo _controlFifo;   // For internal controllers like volume and pan. Plugins/synths have their own.
       CtrlRecList _recEvents;     // recorded automation events
 
+      unsigned long _controlPorts;
+      Port* _controls;             // For internal controllers like volume and pan. Plugins/synths have their own.
+
+      float _curVolume;
+      float _curVol1;
+      float _curVol2;
+      
       bool _prefader;               // prefader metering
       std::vector<double> _auxSend;
       void readAuxSend(Xml& xml);
@@ -352,14 +349,29 @@ class AudioTrack : public Track {
       AutomationType _automationType;
       Pipeline* _efxPipe;
       double _gain;
+
+      void initBuffers();
       void internal_assign(const Track&, int flags);
+      void processTrackCtrls(unsigned pos, int trackChans, unsigned nframes, float** buffer);
 
    protected:
+      // Cached audio data for all channels. If prefader is not on, the first two channels
+      //  have volume and pan applied if track is stereo, or the first channel has just
+      //  volume applied if track is mono.
       float** outBuffers;
+      // Extra cached audio data.
+      float** outBuffersExtraMix;
+      // Just all zeros all the time, so we don't have to clear for silence.
+      float*  audioInSilenceBuf;
+      // Just a place to connect all unused audio outputs.
+      float*  audioOutDummyBuf;
+
+      // These two are not the same as the number of track channels which is always either 1 (mono) or 2 (stereo):
+      // Total number of output channels.
       int _totalOutChannels;
+      // Total number of input channels.
       int _totalInChannels;
       
-      unsigned bufferPos;
       virtual bool getData(unsigned, int, unsigned, float**);
       SndFileR _recFile;
       Fifo fifo;                    // fifo -> _recFile
@@ -396,6 +408,10 @@ class AudioTrack : public Track {
       void setRecFile(SndFileR sf)       { _recFile = sf;   }
 
       CtrlListList* controller()         { return &_controller; }
+      // For setting/getting the _controls 'port' values.
+      unsigned long parameters() const { return _controlPorts; }
+      void setParam(unsigned long i, float val); 
+      float param(unsigned long i) const;
 
       virtual void setChannels(int n);
       virtual void setTotalOutChannels(int num);
@@ -434,7 +450,10 @@ class AudioTrack : public Track {
       Pipeline* efxPipe()                { return _efxPipe;  }
       void deleteAllEfxGuis();
       void clearEfxList();
+      // Removes any existing plugin and inserts plugin into effects rack, and calls setupPlugin.
       void addPlugin(PluginI* plugin, int idx);
+      // Assigns valid ID and track to plugin, and creates controllers for plugin.
+      void setupPlugin(PluginI* plugin, int idx);
 
       double pluginCtrlVal(int ctlID) const;
       void setPluginCtrlVal(int param, double val);
@@ -452,8 +471,10 @@ class AudioTrack : public Track {
       void processAutomationEvents();
       CtrlRecList* recEvents()                         { return &_recEvents; }
       bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // return true if event cannot be delivered
-      void enableController(int track_ctrl_id, bool en); 
-      void controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) const;
+      void enableController(int track_ctrl_id, bool en);
+      bool controllerEnabled(int track_ctrl_id) const;
+      // Enable all track and plugin controllers, and synth controllers if applicable.
+      void enableAllControllers();
       void recordAutomation(int n, double v);
       void startAutoRecord(int, double);
       void stopAutoRecord(int, double);
@@ -507,7 +528,6 @@ class AudioOutput : public AudioTrack {
       float* buffer1[MAX_CHANNELS];
       unsigned long _nframes;
       static bool _isVisible;
-      float* _monitorBuffer[MAX_CHANNELS];
       void internal_assign(const Track& t, int flags);
 
    public:
@@ -530,7 +550,6 @@ class AudioOutput : public AudioTrack {
       void silence(unsigned);
       virtual bool canRecord() const { return true; }
 
-      float** monitorBuffer() { return _monitorBuffer; }
       static void setVisible(bool t) { _isVisible = t; }
       static bool visible() { return _isVisible; }
       virtual int height() const;

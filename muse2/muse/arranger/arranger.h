@@ -41,6 +41,8 @@ class QMenu;
 class QToolButton;
 class QWheelEvent;
 class QKeyEvent;
+class QPoint;
+class QComboBox;
 
 namespace MusECore {
 class Track;
@@ -116,7 +118,9 @@ class Arranger : public QWidget {
       static QByteArray header_state;
 
       ArrangerView* _parentWin;
+      QWidget* editor;
       int _quant, _raster;
+      QComboBox* _rasterCombo;
       PartCanvas* canvas;
       ScrollScale* hscroll;
       QScrollBar* vscroll;
@@ -152,7 +156,7 @@ class Arranger : public QWidget {
       void setHeaderWhatsThis();
 
    private slots:
-      void _setRaster(int);
+      void rasterChanged(int);
       void songlenChanged(int);
       void showTrackInfo(bool);
       void trackSelectionChanged();
@@ -165,8 +169,8 @@ class Arranger : public QWidget {
       void setTempo100();
       void setTempo200();
       void verticalScrollSetYpos(unsigned);
-      void horizontalZoomIn();
-      void horizontalZoomOut();
+      void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
+      void horizontalZoom(int mag, const QPoint& glob_pos);
       
    signals:
       void editPart(MusECore::Track*);
@@ -235,6 +239,8 @@ class Arranger : public QWidget {
       unsigned cursorValue() { return cursVal; }
       
       ArrangerView* parentWin() const { return _parentWin; }
+
+      bool setRasterVal(int);
       };
 
 } // namespace MusEGui

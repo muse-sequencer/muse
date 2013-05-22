@@ -21,6 +21,8 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=========================================================
 
+#include <stdio.h>
+
 #include "mpevent.h"
 
 #include "helper.h"
@@ -67,7 +69,7 @@ MEvent::MEvent(unsigned tick, int port, int channel, const Event& e)
                   setData(e.eventData());
                   break;
             default:
-                  printf("MEvent::MEvent(): event type %d not implemented\n",
+                  fprintf(stderr, "MEvent::MEvent(): event type %d not implemented\n",
                      type());
                   break;
             }
@@ -79,16 +81,20 @@ MEvent::MEvent(unsigned tick, int port, int channel, const Event& e)
 
 void MEvent::dump() const
       {
-      printf("time:%d port:%d chan:%d ", _time, _port, _channel+1);
-      if (_type == 0x90) {   // NoteOn
+      fprintf(stderr, "time:%d port:%d chan:%d ", _time, _port, _channel+1);
+      if (_type == ME_NOTEON) {   
             QString s = pitch2string(_a);
-            printf("NoteOn %s(0x%x) %d\n", s.toLatin1().constData(), _a, _b);
+            fprintf(stderr, "NoteOn %s(0x%x) %d\n", s.toLatin1().constData(), _a, _b);
            }
-      else if (_type == 0xf0) {
-            printf("SysEx len %d 0x%0x ...\n", len(), data()[0]);
+      else if (_type == ME_NOTEOFF) {  
+            QString s = pitch2string(_a);
+            fprintf(stderr, "NoteOff %s(0x%x) %d\n", s.toLatin1().constData(), _a, _b);
+           }
+      else if (_type == ME_SYSEX) {
+            fprintf(stderr, "SysEx len %d 0x%0x ...\n", len(), data()[0]);
             }
       else
-            printf("type:0x%02x a=%d b=%d\n", _type, _a, _b);
+            fprintf(stderr, "type:0x%02x a=%d b=%d\n", _type, _a, _b);
       }
 
 //---------------------------------------------------------
@@ -184,7 +190,7 @@ int MEvent::sortingWeight() const
       return 27;  
   }
   
-  printf("FIXME: MEvent::sortingWeight: unknown event type:%d\n", _type);
+  fprintf(stderr, "FIXME: MEvent::sortingWeight: unknown event type:%d\n", _type);
   return 100;
 }
       
