@@ -41,10 +41,13 @@ class WavePart;
 class WaveEventBase : public EventBase {
       QString _name;
       SndFileR f;
+      AudioStream audiostream;
       int _spos;            // start sample position in WaveFile
       bool deleted;
 
       virtual EventBase* clone();
+      
+      unsigned streamPosition;
 
    public:
       WaveEventBase(EventType t);
@@ -63,8 +66,8 @@ class WaveEventBase : public EventBase {
       virtual SndFileR sndFile() const         { return f;      }
       virtual void setSndFile(SndFileR& sf)    { f = sf;        }
       
-      virtual void readAudio(WavePart* part, unsigned offset, 
-                             float** bpp, int channels, int nn, bool doSeek, bool overwrite);
+      virtual void readAudio(WavePart* part, unsigned firstFrame, 
+                             float** bpp, int channels, int nFrames, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite);
       };
       
 } // namespace MusECore

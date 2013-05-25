@@ -188,6 +188,13 @@ void AudioPrefetch::prefetch(bool doSeek)
                   writePos = lpos - n;
                   }
             }
+      
+      
+      // now we know we need to fetch audio data from the frame number "writePos" until "writePos+segmentSize"
+      // we need to find out which XTicks correspond to this, for stretching
+      XTick startOfSegmentXTick = MusEGlobal::tempomap.frame2xtick(writePos);
+      XTick endOfSegmentXTick = MusEGlobal::tempomap.frame2xtick(writePos+MusEGlobal::segmentSize);
+      
       WaveTrackList* tl = MusEGlobal::song->waves();
       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
             WaveTrack* track = *it;
@@ -200,7 +207,7 @@ void AudioPrefetch::prefetch(bool doSeek)
             if (track->prefetchFifo()->getWriteBuffer(ch, MusEGlobal::segmentSize, bp, writePos))
                   continue;
 
-            track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek);
+            track->fetchData(writePos, MusEGlobal::segmentSize, startOfSegmentXTick, endOfSegmentXTick, bp, doSeek);
             
             }
       writePos += MusEGlobal::segmentSize;
