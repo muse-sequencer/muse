@@ -77,11 +77,7 @@ void EventBase::dump(int n) const
 
 Event Event::clone()
       {
-      #ifdef USE_SAMPLERATE
-      return Event(ev->clone(), _audConv);
-      #else
       return Event(ev->clone());
-      #endif
       }
 
 Event::Event() 
@@ -100,43 +96,18 @@ Event::Event(const Event& e) {
             ev = e.ev;
             if(ev)
               ++(ev->refCount);
-            
-            #ifdef USE_SAMPLERATE
-            if(e._audConv)
-              _audConv = e._audConv->reference();
-            #endif
           }
 Event::Event(EventBase* eb) {
             ev = eb;
             ++(ev->refCount);
             
-            #ifdef USE_SAMPLERATE
-            if(!ev->sndFile().isNull())
-              _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-            #endif  
             }
-#ifdef USE_SAMPLERATE
-Event::Event(EventBase* eb, AudioConverter* cv) {
-            _sfCurFrame = 0;
-            _audConv = 0;
-            
-            ev = eb;
-            ++(ev->refCount);
-            
-            if(cv)
-              _audConv = cv->reference();
-            }
-#endif  
             
 Event::~Event() {
             if (ev && --(ev->refCount) == 0) {
                   delete ev;
                   ev=0;
                   }
-
-            #ifdef USE_SAMPLERATE
-            AudioConverter::release(_audConv);
-            #endif
             }
 
 bool Event::empty() const      { return ev == 0; }
@@ -166,14 +137,6 @@ Event& Event::operator=(const Event& e) {
                     ++(ev->refCount);
             }      
             
-            #ifdef USE_SAMPLERATE
-            if (_audConv != e._audConv)
-            {
-              if(_audConv)
-                AudioConverter::release(_audConv);
-              _audConv = e._audConv->reference();
-            }      
-            #endif
             return *this;
             }
 
@@ -189,16 +152,6 @@ void Event::move(int offset)      { ev->move(offset); }
 void Event::read(Xml& xml)            
 { 
   ev->read(xml); 
-  
-  #ifdef USE_SAMPLERATE
-  if(!ev->sndFile().isNull())
-  {
-    if(_audConv)
-      _audConv->setChannels(ev->sndFile().channels());
-    else
-      _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-  }  
-  #endif
 }
 
 
@@ -236,19 +189,6 @@ MusECore::SndFileR Event::sndFile() const    { return ev->sndFile(); }
 void Event::setSndFile(MusECore::SndFileR& sf) 
 { 
   ev->setSndFile(sf);   
-  
-  #ifdef USE_SAMPLERATE
-  if(_audConv)
-  { 
-    if(!sf.isNull())
-      _audConv->setChannels(sf.channels());
-  }
-  else
-  {
-    if(!sf.isNull())
-      _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-  }
-  #endif
 }
 
 void Event::readAudio(MusECore::WavePart* part, unsigned int offset, float** bpp, int channels, int nn, MusECore::XTick fromXTick, MusECore::XTick toXTick, bool doSeek, bool overwrite)

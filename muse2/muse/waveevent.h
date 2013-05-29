@@ -27,8 +27,7 @@
 #include <sys/types.h>
 
 #include "eventbase.h"
-
-class AudioConverter;
+#include "audiostream.h"
 
 namespace MusECore {
 

@@ -81,7 +81,6 @@ file (GLOB core_source_files
       app.cpp
       appearance.cpp
       audio.cpp
-      audioconvert.cpp
       audioprefetch.cpp
       audiotrack.cpp
       audiostream.cpp

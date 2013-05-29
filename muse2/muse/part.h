@@ -31,7 +31,6 @@
 #include <uuid/uuid.h>
 
 #include "event.h"
-#include "audioconvert.h"
 
 class QString;
 
@@ -158,9 +157,6 @@ class MidiPart : public Part {
 
 class WavePart : public Part {
 
-      // p3.3.31
-      AudioConvertMap _converters;
-      
    public:
       WavePart(WaveTrack* t);
       WavePart(WaveTrack* t, EventList* ev);

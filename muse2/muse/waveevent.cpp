@@ -21,7 +21,6 @@
 //
 //=========================================================
 
-#include "audioconvert.h"
 #include "globals.h"
 #include "event.h"
 #include "waveevent.h"
@@ -29,9 +28,6 @@
 #include "wave.h"
 #include <iostream>
 #include <math.h>
-
-// Added by Tim. p3.3.18
-//#define USE_SAMPLERATE
 
 //#define WAVEEVENT_DEBUG
 //#define WAVEEVENT_DEBUG_PRC
