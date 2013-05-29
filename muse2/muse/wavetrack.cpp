@@ -311,7 +311,12 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
 
             // when freewheeling, read data direct from file:
             // Indicate do not seek file before each read.
-            fetchData(framePos, nframe, bp, false);
+            // now we know we need to fetch audio data from the frame number "writePos" until "writePos+segmentSize"
+            // we need to find out which XTicks correspond to this, for stretching
+            XTick startOfSegmentXTick = MusEGlobal::tempomap.frame2xtick(framePos);
+            XTick endOfSegmentXTick = MusEGlobal::tempomap.frame2xtick(framePos+nframe);
+
+            fetchData(framePos, nframe, startOfSegmentXTick, endOfSegmentXTick, bp, false);
 
             }
       else {

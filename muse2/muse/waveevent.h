@@ -40,7 +40,7 @@ class WavePart;
 class WaveEventBase : public EventBase {
       QString _name;
       SndFileR f;
-      AudioStream audiostream;
+      AudioStream* audiostream;
       int _spos;            // start sample position in WaveFile
       bool deleted;
 

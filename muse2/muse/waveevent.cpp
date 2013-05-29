@@ -42,6 +42,7 @@ WaveEventBase::WaveEventBase(EventType t)
    : EventBase(t)
       {
       deleted = false;
+      audiostream=NULL; // TODO create!
       _spos = 0;
       }
 
@@ -155,6 +156,9 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       xml.etag(level, "event");
       }
 
+      
+#define STREAM_SEEK_THRESHOLD 10
+
 void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffer, int channel, int nFrames, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite)
 {
 // TODO: doSeek is unreliable! it does not respect moving the part or event
@@ -166,6 +170,8 @@ void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffe
   printf("WaveEventBase::readAudio audConv:%p sfCurFrame:%ld offset:%u channel:%d n:%d\n", audConv, sfCurFrame, offset, channel, n);
   #endif
   
+  if (audiostream->get_n_output_channels() != channel)
+	  printf("ERROR: THIS SHOULD NEVER HAPPEN: audiostream->get_n_output_channels() != channels in WaveEventBase::readAudio!\n");
   
   if (doSeek || firstFrame != streamPosition)
   {
@@ -174,7 +180,7 @@ void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffe
       // reading some frames from the stream into /dev/null is enough.
       fprintf(stderr, "DEBUG: WaveEventBase::readAudio has to drop frames, diff is %u, threshold is %u!\n",(int)(firstFrame-streamPosition),STREAM_SEEK_THRESHOLD);
       
-      int len = audiostream.readAudio(NULL, channel, firstFrame-streamPosition, false);
+      int len = audiostream->readAudio(NULL, firstFrame-streamPosition, false);
       streamPosition += len;
     }
     else
@@ -183,14 +189,12 @@ void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffe
       // this might cause crackles and thus is only rarely done.
       fprintf(stderr, "DEBUG: WaveEventBase::readAudio has to seek, diff is %u, threshold is %u!\n",(int)(firstFrame-streamPosition),STREAM_SEEK_THRESHOLD);
 
-      streamPosition = audiostream.seek(firstFrame,fromXTick);
+      audiostream->seek(firstFrame,fromXTick);
+      streamPosition = firstFrame;
     }
   }
   
-  // update the stretch keyframe
-  audiostream.setNextStretchingKeyframe(firstFrame+nFrames, toXTick);
-  
-  streamPosition += audiostream.readAudio(buffer, channel, nFrames, overwrite);
+  streamPosition += audiostream->readAudio(buffer, nFrames, overwrite);
   // now streamPosition == firstFrame+nFrames 
 }
 
