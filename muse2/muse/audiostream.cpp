@@ -22,52 +22,67 @@
 //=========================================================
 
 #include "audiostream.h"
-#include "samplerate.h"
-#include <rubberband/RubberBandStretcher.h>
 #include <string>
 using namespace std;
-using namespace RubberBand;
+
+#ifdef RUBBERBAND_SUPPORT
+	using namespace RubberBand;
+#endif
 
 namespace MusECore {
 
-AudioStream::AudioStream(SndFileR sndfile_, int sampling_rate, int out_chans, bool stretching)
+AudioStream::AudioStream(SndFileR sndfile_, int sampling_rate, int out_chans, bool stretching, XTick startXtick, unsigned startFrame)
 {
 	sndfile = sndfile_;
 	
 	output_sampling_rate=sampling_rate;
 	n_output_channels=out_chans;
 	doStretch=stretching;
+#ifndef RUBBERBAND_SUPPORT
+	if (doStretch) // stretching requested despite we have no support for this
+	{
+		printf("ERROR: AudioStream created with doStretch=true, but RUBBERBAND_SUPPORT not compiled in!\n");
+		doStretch=false;
+	}
+#endif
+	
+	frameStartInSong=startFrame;
+	xtickStartInSong=startXtick;
 	
 	n_input_channels = sndfile->channels();
 	input_sampling_rate=sndfile->samplerate();
 	
 	if (!doStretch)
 	{
+#ifdef RUBBERBAND_SUPPORT
 		stretcher=NULL; // not needed
+#endif
 		
 		float src_ratio = (double)output_sampling_rate/input_sampling_rate;
-		int* error;
-		srcState = src_new(SRC_SINC_MEDIUM_QUALITY, n_input_channels, error); // TODO configure this
+		int error;
+		srcState = src_new(SRC_SINC_MEDIUM_QUALITY, n_input_channels, &error); // TODO configure this
 		if (!srcState) // panic!
 		{
-			throw string("error creating new sample rate converter");
+			//TODO throw string("error creating new sample rate converter");
 		}
 		
 		if (src_set_ratio(srcState, src_ratio))
 		{
-			throw string("error setting sampling rate ratio");
+			//TODO throw string("error setting sampling rate ratio");
 		}
 	}
 	else
 	{
+#ifdef RUBBERBAND_SUPPORT
 		srcState = NULL; // not needed
 		
 		stretcher = new RubberBandStretcher(sampling_rate, n_input_channels, 
-					RubberBandStretcher::PresetOption::DefaultOptions, // TODO configure this
+					RubberBandStretcher::DefaultOptions, // TODO configure this
 					1.0, 1.0); // these values will be overridden anyway soon.
 		
 		set_pitch_ratio(1.0); // this might call stretcher.setPitch() with something
 		set_stretch_ratio(1.0); // different from 1.0, in order to do sampling rate conversion.
+#endif
 	}
 
 	
@@ -80,8 +95,10 @@ AudioStream::~AudioStream()
 	if (srcState)
 		src_delete(srcState);
 	
+#ifdef RUBBERBAND_SUPPORT
 	if (stretcher)
 		delete stretcher;
+#endif
 }
 
 void AudioStream::seek(unsigned int frame, XTick xtick)
@@ -93,7 +110,7 @@ void AudioStream::seek(unsigned int frame, XTick xtick)
 	else // we're only interested in the frame
 		destFrame = frame*input_sampling_rate/output_sampling_rate;
 	
-	sndfile->seek(destFrame);
+	sndfile->seek(destFrame, SEEK_SET);
 	
 	currentPositionInInput=destFrame; // that might be a lie if the stretcher still has stuff in behind? flush stretcher?
 	currentPositionInOutput=frame;
@@ -101,34 +118,7 @@ void AudioStream::seek(unsigned int frame, XTick xtick)
 	update_stretch_ratio();
 }
 
-
-/*unsigned int StretcherStream::readAudio(float* dest_buffer, int channel, int nFrames, bool overwrite)
-{
-	if (!bypass)
-	{
-		int n_frames_to_read = nFrames / stretch_ratio;
-		
-		float sndfile_buffer[n_frames_to_read*n_input_channels];
-		float result_buffer[nFrames*n_input_channels];
-		
-		sndfile->readDirect(sndfile_buffer, n_frames_to_read);
-
-		// TODO: do the stretching here!
-		float deinterleaved_sndfile_buffer[n_input_channels][n_frames_to_read];
-		deinterleave(n_input_channels, sndfile_buffer, deinterleaved_sndfile_buffer, n_frames_to_read);
-
-
-		stretcher->process(deinterleaved_sndfile_buffer, n_frames_to_read, /*bool final = * /false); // TODO: set final correctly!
-		size_t n_frames_to_convert = stretcher->retrieve(deinterleaved_stretched_buffer, n_frames_from_stretcher);
-		
-	}
-	else
-	{
-		sndfile->readDirect(dest_buffer, n_frames_to_read);
-	}
-
-}*/
-
+#ifdef RUBBERBAND_SUPPORT
 void AudioStream::set_stretch_ratio(double ratio)
 {
 	effective_stretch_ratio = ratio * output_sampling_rate / input_sampling_rate;
@@ -140,9 +130,9 @@ void AudioStream::set_pitch_ratio(double ratio)
 	effective_pitch_ratio = ratio * input_sampling_rate / output_sampling_rate;
 	stretcher->setPitchScale(effective_pitch_ratio);
 }
+#endif
 
-
-unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int channel, int nFrames, bool overwrite)
+unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFrames, bool overwrite)
 {
 	// convention: _buffers[] are interleaved, and deinterleaved_..._buffers[][] are deinterleaved
 	
@@ -157,14 +147,17 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int chann
 	
 	if (doStretch)
 	{
-		float deinterleaved_result_buffer[n_input_channels][nFrames];
+#ifdef RUBBERBAND_SUPPORT
+		float* deinterleaved_result_buffer[n_input_channels];
+		for (int i=0;i<n_input_channels;i++) deinterleaved_result_buffer[i]=new float[nFrames];
 		
 		size_t n_already_read = 0;
 		while (n_already_read < nFrames)
 		{
 			size_t n_frames_to_read = stretcher->getSamplesRequired();
 			float sndfile_buffer[n_frames_to_read*n_input_channels];
-			float deinterleaved_sndfile_buffer[n_input_channels][n_frames_to_read];
+			float* deinterleaved_sndfile_buffer[n_input_channels];
+			for (int i=0;i<n_input_channels;i++) deinterleaved_sndfile_buffer[i]=new float[n_frames_to_read];
 			
 			sndfile->readDirect(sndfile_buffer, n_frames_to_read);
 			deinterleave(n_input_channels, sndfile_buffer, deinterleaved_sndfile_buffer, n_frames_to_read);
@@ -175,43 +168,17 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int chann
 			
 			n_frames_retrieved = stretcher->retrieve(deinterleaved_result_buffer+n_already_read, nFrames-n_already_read);
 			
+			for (int i=0;i<n_input_channels;i++) delete[] deinterleaved_sndfile_buffer[i];
+			
 			n_already_read += n_frames_retrieved;
 		}
 		
 		copy_and_adjust_channels(n_input_channels, n_output_channels, deinterleaved_result_buffer, deinterleaved_dest_buffer, nFrames, overwrite);
 		
-		/*
-		int sndfile_buffer_nframes = nFrames / effective_stretch_ratio;
-		float sndfile_buffer[sndfile_buffer_nframes*n_input_channels];
-		float deinterleaved_sndfile_buffer[n_input_channels][sndfile_buffer_nframes];
-		float result_buffer[nFrames*n_input_channels];
-		
-		
-		int n_frames_to_read = sndfile_buffer_nframes;
-		sndfile->readDirect(sndfile_buffer, n_frames_to_read);
-		deinterleave(n_input_channels, sndfile_buffer, deinterleaved_sndfile_buffer, n_frames_to_read);
-		
-		stretcher->process(deinterleaved_sndfile_buffer, n_frames_to_read, /*bool final = * /false); // TODO: set final correctly!
-		size_t n_frames_retrieved = stretcher->retrieve(deinterleaved_dest_buffer, nFrames);
-		size_t n_total_frames = n_frames_retrieved;
-		
-		while (n_total_frames < nFrames)
-		{
-			n_frames_to_read = stretcher->getSamplesRequired();
-			if (n_frames_to_read > sndfile_buffer_nframes)
-			{
-				printf("DEBUG: uh, stretcher wants more *additional* samples than should have been neccessary in the first place\n");
-				n_frames_to_read = sndfile_buffer_nframes;
-			}
-			
-			sndfile->readDirect(sndfile_buffer, n_frames_to_read);
-			deinterleave(n_input_channels, sndfile_buffer, deinterleaved_sndfile_buffer, n_frames_to_read);
-			
-			stretcher->process(deinterleaved_sndfile_buffer, n_frames_to_read, /*bool final = * /false); // TODO: set final correctly!
-			ssize_t n_frames_retrieved = stretcher->retrieve(deinterleaved_dest_buffer+n_total_frames, nFrames-n_total_frames);
-			
-			n_total_frames+=n_frames_retrieved;
-		}*/
+		for (int i=0;i<n_input_channels;i++) delete[] deinterleaved_result_buffer[i];
+#else
+		printf("FATAL: THIS CANNOT HAPPEN: doStretch is true but RUBBERBAND_SUPPORT not compiled in!\n");
+#endif
 		
 	}
 	else
@@ -229,10 +196,10 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int chann
 		src_data.src_ratio = (double)output_sampling_rate/input_sampling_rate;
 		src_data.data_in = sndfile_buffer;
 		src_data.data_out = result_buffer;
-		src_process(srcState, src_data);
+		src_process(srcState, &src_data);
 		
 		if (src_data.input_frames_used != src_data.input_frames) // TODO
-			printf("THIS IS AN ERROR (which was thought to not happen): src_data.input_frames_used = %i != src_data.input_frames = %i!\n",  src_data.input_frames_used , src_data.input_frames);
+			printf("THIS IS AN ERROR (which was thought to not happen): src_data.input_frames_used = %li != src_data.input_frames = %li!\n",  src_data.input_frames_used , src_data.input_frames);
 		
 		int n_frames_read = src_data.output_frames_gen;
 		while(n_frames_read < nFrames)
@@ -244,10 +211,10 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int chann
 			src_data.output_frames=nFrames-n_frames_read;
 			src_data.data_in=sndfile_buffer;
 			src_data.data_out=result_buffer+n_frames_read;
-			src_process(srcState, src_data);
+			src_process(srcState, &src_data);
 
 			if (src_data.input_frames_used != src_data.input_frames)
-				printf("THIS IS AN ERROR (which was thought to not happen): src_data.input_frames_used = %i != src_data.input_frames = %i!\n",  src_data.input_frames_used , src_data.input_frames);
+				printf("THIS IS AN ERROR (which was thought to not happen): src_data.input_frames_used = %li != src_data.input_frames = %li!\n",  src_data.input_frames_used , src_data.input_frames);
 			
 			n_frames_read+=src_data.output_frames_gen;
 		}
@@ -257,63 +224,9 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int chann
 	
 	currentPositionInOutput+=nFrames;
 	maybe_update_stretch_ratio();
+	
+	return nFrames;
 }
-
-/*unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int channel, int nFrames, bool overwrite)
-{
-	// convention: _buffers[] are interleaved, and deinterleaved_..._buffers[][] are deinterleaved
-	
-	int n_frames_to_read = nFrames * input_sampling_rate / output_sampling_rate; // TODO: if doStretch: then funny calculations!
-	float sndfile_buffer[n_frames_to_read*n_input_channels];
-	float result_buffer[nFrames*n_input_channels];
-	
-	sndfile->readDirect(sndfile_buffer, n_frames_to_read);
-	
-	float* stretched_buffer;
-	if (doStretch)
-	{
-		// TODO: do the stretching here!
-		float deinterleaved_sndfile_buffer[n_input_channels][n_frames_to_read];
-		deinterleave(n_input_channels, sndfile_buffer, deinterleaved_sndfile_buffer, n_frames_to_read);
-
-
-		int n_frames_from_stretcher = 42; // TODO: funny calculations
-		
-		stretcher->process(deinterleaved_sndfile_buffer, n_frames_to_read, /*bool final = * /false); // TODO: set final correctly!
-		size_t n_frames_to_convert = stretcher->retrieve(deinterleaved_stretched_buffer, n_frames_from_stretcher);
-		
-	}
-	else
-	{
-		stretched_buffer = sndfile_buffer; // shallow copy
-	}
-	// TODO: loop the above, adjust the n_frames_to_read
-	
-	SRC_DATA src_data;
-	src_data.input_frames=n_frames_to_read;
-	src_data.output_frames=nFrames;
-	src_data.src_ratio = (double)output_sampling_rate/input_sampling_rate;
-	src_data.data_in = sndfile_buffer;
-	src_data.data_out = result_buffer;
-	src_process(srcState, src_data);
-	
-	// TODO: handle input_frames_used < input_frames!
-	
-	int n_frames_read = src_data.output_frames_gen;
-	while(nFrames>n_frames_read)
-	{
-		sndfile->readDirect(sndfile_buffer, 1);
-		src_data.input_frames=1;
-		src_data.output_frames=nFrames-n_frames_read;
-		src_data.data_in=sndfile_buffer;
-		src_data.data_out=result_buffer+n_frames_read;
-		src_process(srcState, src_data);
-		
-		n_frames_read+=src_data.output_frames_gen;
-	}
-	
-	deinterleave_and_adjust_channels(n_input_channels, n_output_channels, result_buffer, deinterleaved_dest_buffer, n_frames, overwrite);
-}*/
 
 
 void AudioStream::maybe_update_stretch_ratio()
@@ -323,9 +236,10 @@ void AudioStream::maybe_update_stretch_ratio()
 }
 void AudioStream::update_stretch_ratio()
 {
+#ifdef RUBBERBAND_SUPPORT
 	if (doStretch)
 	{
-		XTick keyframe_xtick = frameToxtick(currentPositionInOutput) + XTick(386);
+		XTick keyframe_xtick = frameToXTick(currentPositionInOutput) + XTick(386);
 		
 		unsigned keyframe_pos_in_stream = xtickToFrame(keyframe_xtick);
 		unsigned keyframe_pos_in_file = xtickToFrameInFile(keyframe_xtick);
@@ -336,6 +250,32 @@ void AudioStream::update_stretch_ratio()
 		double stretch_ratio = (double)(keyframe_pos_in_stream-currentPositionInOutput)/(keyframe_pos_in_file-currentPositionInInput);
 		set_stretch_ratio(stretch_ratio);
 	}
+#endif
+}
+
+// converts the given frame-position of the output stream into the given XTick of the input stream
+XTick AudioStream::frameToXTick(unsigned frame)
+{
+	return MusEGlobal::tempomap.frame2xtick(frame + frameStartInSong) - xtickStartInSong;
+	//return externalTempoMap.frame2xtick(frame);
+}
+
+unsigned AudioStream::xtickToFrame(XTick xtick)
+{
+	unsigned retval = MusEGlobal::tempomap.tick2frame(xtick + xtickStartInSong);
+	if (retval >= frameStartInSong) return retval-frameStartInSong;
+	else
+	{
+		printf("ERROR: THIS SHOULD NEVER HAPPEN: AudioStream::xtickToFrame(XTick xtick) called with invalid xtick\n");
+		return 0;
+	}
+	//return MusEGlobal::tempomap.tick2frame(xtick)-frameStartInSong;
+	//return externalTempoMap.tick2frame(xtick);
+}
+
+unsigned AudioStream::xtickToFrameInFile(XTick xtick)
+{
+	return fileTempoMap.tick2frame(xtick);
 }
 
 

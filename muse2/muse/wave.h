@@ -35,9 +35,9 @@ class QFileInfo;
 namespace MusECore {
 
 
-void copy_and_adjust_channels(int src_channels, int dest_channels, float** src, float** dest, int n_frames, bool overwrite=true);
-void deinterleave_and_adjust_channels(int src_channels, int dest_channels, float* src, float** dest, int n_frames, bool overwrite=true);
-void deinterleave(int channels, float* src, float** dest, int n_frames, bool overwrite=true); // only for semantic beauty, just calls the above function.
+void copy_and_adjust_channels(int src_channels, int dest_channels, float** src, float** dest, size_t n_frames, bool overwrite=true);
+void deinterleave_and_adjust_channels(int src_channels, int dest_channels, float* src, float** dest, size_t n_frames, bool overwrite=true);
+void deinterleave(int channels, float* src, float** dest, size_t n_frames, bool overwrite=true); // only for semantic beauty, just calls the above function.
 	
 	
 class Xml;

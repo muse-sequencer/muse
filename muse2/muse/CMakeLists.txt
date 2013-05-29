@@ -84,6 +84,7 @@ file (GLOB core_source_files
       audioconvert.cpp
       audioprefetch.cpp
       audiotrack.cpp
+      audiostream.cpp
       cobject.cpp
       conf.cpp
       confmport.cpp
@@ -252,6 +253,11 @@ target_link_libraries(core
       ${FST_LIB}
       dl
       )
+
+      
+if(RUBBERBAND_SUPPORT)
+      target_link_libraries(core ${RUBBERBAND_LIBRARIES})
+endif(RUBBERBAND_SUPPORT)
 
 if(HAVE_LASH)
       target_link_libraries(core ${LASH_LIBRARIES})

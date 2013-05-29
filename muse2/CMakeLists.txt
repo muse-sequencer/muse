@@ -124,6 +124,7 @@ option ( ENABLE_DSSI        "Enable Disposable Soft Synth Interface (dssi) (OSC 
 option ( ENABLE_VST         "Enable VST/win support (deprecated)"                                OFF)
 option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE "Set VST header type is Vestige"                                         ON)
+option ( ENABLE_RUBBERBAND  "Enable support for audio stretching using the Rubberband library"     ON)
 option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_EXPERIMENTAL "Enable building experimental features."                             OFF)
 option ( ENABLE_PYTHON      "Enable Python control support."                                      OFF)
@@ -260,6 +261,20 @@ if (ENABLE_OSC)
 else (ENABLE_OSC)
       message("OSC disabled")
 endif (ENABLE_OSC)
+
+##
+## find Rubberband
+##
+
+if (ENABLE_RUBBERBAND)
+	PKG_CHECK_MODULES(RUBBERBAND rubberband>=1.0)
+	if (RUBBERBAND_FOUND)
+		include_directories(${RUBBERBAND_INCLUDE_DIRS})
+		set(RUBBERBAND_SUPPORT ON)
+	endif (RUBBERBAND_FOUND)
+else (ENABLE_RUBBERBAND)
+	message("Rubberband disabled")
+endif (ENABLE_RUBBERBAND)
 
 ##
 ## check for python >= 2.4
@@ -517,6 +532,10 @@ if (ENABLE_OSC AND (NOT LIBLO_FOUND))
         message("** WARNING: liblo (>= 0.23) (Lightweight Open Sound Control) was enabled, but development files were not found.")
 endif (ENABLE_OSC AND (NOT LIBLO_FOUND))
 
+if (ENABLE_RUBBERBAND AND (NOT RUBBERBAND_FOUND))
+        message("** WARNING: rubberband (>= 1.0) was enabled, but development files were not found.")
+endif (ENABLE_RUBBERBAND AND (NOT RUBBERBAND_FOUND))
+
 if (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
         message("** WARNING: python was enabled, but development files were not found.")
 endif (ENABLE_PYTHON AND (NOT PYTHONLIBS_FOUND))
@@ -539,6 +558,7 @@ message("")
 ## Show a summary of what we got
 summary_add("Lash support" HAVE_LASH)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
+summary_add("Audio time stretching (Rubberband) support" RUBBERBAND_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)

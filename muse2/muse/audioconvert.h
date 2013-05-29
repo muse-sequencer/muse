@@ -29,9 +29,6 @@
 
 #include <map>
 
-#ifdef RUBBERBAND_SUPPORT
-#include <RubberBandStretcher.h>
-#endif
 
 #include <samplerate.h>
 #include <sys/types.h>
@@ -91,30 +88,6 @@ class SRCAudioConverter : public AudioConverter
                             int channels, int frames, bool overwrite); // Interleaved buffer if stereo.
 };
 
-#ifdef RUBBERBAND_SUPPORT
-
-//---------------------------------------------------------
-//   RubberBandAudioConverter
-//---------------------------------------------------------
-
-class RubberBandAudioConverter : public AudioConverter
-{
-      int _options;
-      int _channels;
-      RubberBandStretcher* _rbs;
-   
-   public:   
-      RubberBandAudioConverter(int channels, int options);
-      ~RubberBandAudioConverter();
-      
-      virtual bool isValid() { return _rbs != 0; }
-      virtual void reset();
-      virtual void setChannels(int ch);
-      virtual off_t process(MusECore::SndFileR& sf, float** buffer, 
-                            int channels, int frames, bool overwrite); // Interleaved buffer if stereo.
-};
-
-#endif // RUBBERBAND_SUPPORT
 
 //---------------------------------------------------------
 //   AudioConvertMap

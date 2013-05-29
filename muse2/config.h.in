@@ -21,6 +21,7 @@
 //=============================================================================
 
 #cmakedefine HAVE_LASH
+#cmakedefine RUBBERBAND_SUPPORT
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
 #cmakedefine VST_SUPPORT

@@ -52,7 +52,7 @@ namespace MusECore {
 
 const int cacheMag = 128;
 
-void copy_and_adjust_channels(int src_channels, int dest_channels, float** src, float** dest, int n_frames, bool overwrite=true)
+void copy_and_adjust_channels(int src_channels, int dest_channels, float** src, float** dest, size_t n_frames, bool overwrite)
 {
     if (src_channels == dest_channels) {
         if(overwrite)
@@ -96,7 +96,7 @@ void copy_and_adjust_channels(int src_channels, int dest_channels, float** src, 
 
 }
 
-void deinterleave_and_adjust_channels(int src_channels, int dest_channels, float* src, float** dest, int n_frames, bool overwrite)
+void deinterleave_and_adjust_channels(int src_channels, int dest_channels, float* src, float** dest, size_t n_frames, bool overwrite)
 {
     if (src_channels == dest_channels) {
         if(overwrite)
@@ -141,7 +141,7 @@ void deinterleave_and_adjust_channels(int src_channels, int dest_channels, float
 
 }
 
-void deinterleave(int channels, float* src, float** dest, int n_frames, bool overwrite)
+void deinterleave(int channels, float* src, float** dest, size_t n_frames, bool overwrite)
 {
 	deinterleave_and_adjust_channels(channels, channels, src, dest, n_frames, overwrite);
 }
@@ -210,18 +210,6 @@ bool SndFile::openRead()
       return false;
       }
       
-bool SndFilePushBack::openRead()
-      {
-	      if (SndFile::openRead())
-	      {
-		      return true; //error
-	      }
-	      else
-	      {
-		      
-	      }
-	      
-      }
 
 //---------------------------------------------------------
 //   update
