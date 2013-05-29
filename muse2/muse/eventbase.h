@@ -98,7 +98,7 @@ class EventBase : public PosLen {
       virtual EventBase* clone() = 0;
       
       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
-                             float** /*bpp*/, int /*channels*/, int /*nn*/, XTick /*fromXTick*/, XTick /*toXTick*/, bool /*doSeek*/, bool /*overwrite*/) { }
+                             float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }
       };
 
 } // namespace MusECore

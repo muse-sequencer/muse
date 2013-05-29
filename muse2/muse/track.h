@@ -627,7 +627,7 @@ class WaveTrack : public AudioTrack {
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
 
-      virtual void fetchData(unsigned pos, unsigned frames, XTick startOfSegmentXTick, XTick endOfSegmentXTick, float** bp, bool doSeek);
+      virtual void fetchData(unsigned pos, unsigned frames, float** bp, bool doSeek);
       
       virtual bool getData(unsigned, int ch, unsigned, float** bp);
 

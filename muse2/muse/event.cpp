@@ -251,9 +251,9 @@ void Event::setSndFile(MusECore::SndFileR& sf)
   #endif
 }
 
-void Event::readAudio(MusECore::WavePart* part, unsigned int offset, float** bpp, int channels, int nn, MusECore::XTick fromXTick, MusECore::XTick toXTick, bool doSeek, bool overwrite)
+void Event::readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
       {
-        ev->readAudio(part, offset, bpp, channels, nn, fromXTick, toXTick, doSeek, overwrite);
+        ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
       }
 void Event::setTick(unsigned val)       { ev->setTick(val); }
 unsigned Event::tick() const            { return ev->tick(); }

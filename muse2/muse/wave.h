@@ -28,18 +28,11 @@
 #include <sndfile.h>
 
 #include <QString>
-#include <lo/lo_osc_types.h>
 
 class QFileInfo;
 
 namespace MusECore {
 
-
-void copy_and_adjust_channels(int src_channels, int dest_channels, float** src, float** dest, int n_frames, bool overwrite=true);
-void deinterleave_and_adjust_channels(int src_channels, int dest_channels, float* src, float** dest, int n_frames, bool overwrite=true);
-void deinterleave(int channels, float* src, float** dest, int n_frames, bool overwrite=true); // only for semantic beauty, just calls the above function.
-	
-	
 class Xml;
 
 //---------------------------------------------------------
@@ -70,10 +63,10 @@ class SndFile {
 
       bool openFlag;
       bool writeFlag;
+      size_t readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer);
       
    protected:
       int refCount;
-      size_t readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer);
 
    public:
       SndFile(const QString& name);
@@ -122,20 +115,6 @@ class SndFile {
       friend class SndFileR;
       };
 
-class SndFilePushBack : public SndFile {
-	private:
-		unsigned pushback_bufsize;
-		float** pushback_buffer;
-		
-	public:
-		SndFilePushBack(const QString& name, unsigned pushback_bufsize_ = 2048) : SndFile(name)
-		{
-			pushback_bufsize=pushback_bufsize_;
-		}
-		
-		bool openRead();        // overwritten.
-};
-      
 //---------------------------------------------------------
 //   SndFileR
 //    SndFile with reference count

@@ -52,101 +52,6 @@ namespace MusECore {
 
 const int cacheMag = 128;
 
-void copy_and_adjust_channels(int src_channels, int dest_channels, float** src, float** dest, int n_frames, bool overwrite=true)
-{
-    if (src_channels == dest_channels) {
-        if(overwrite)
-            for (int ch = 0; ch < src_channels; ++ch)
-                for (size_t i = 0; i < n_frames; ++i) {
-                    dest[ch][i]=src[ch][i];
-            }
-        else
-            for (int ch = 0; ch < src_channels; ++ch)
-                for (size_t i = 0; i < n_frames; ++i) {
-                    dest[ch][i]+=src[ch][i];
-            }
-    }
-    else if ((src_channels == 1) && (dest_channels == 2)) {
-        // stereo to mono
-        if(overwrite)
-            for (size_t i = 0; i < n_frames; ++i)
-                dest[0][i]=src[0][i]+src[1][i];
-        else
-            for (size_t i = 0; i < n_frames; ++i)
-                dest[0][i]+=src[0][i]+src[1][i];
-    }
-    else if ((src_channels == 2) && (dest_channels == 1)) {
-        // mono to stereo
-        if(overwrite)
-            for (size_t i = 0; i < n_frames; ++i) {
-                dest[0][i]=src[0][i];
-                dest[1][i]=src[0][i];
-	    }
-        else
-            for (size_t i = 0; i < n_frames; ++i) {
-                dest[0][i]+=src[0][i];
-                dest[1][i]+=src[0][i];
-	    }
-    }
-    else {
-        printf("adjust_channels channel mismatch %d -> %d\n",
-               src_channels, dest_channels);
-    }
-
-
-}
-
-void deinterleave_and_adjust_channels(int src_channels, int dest_channels, float* src, float** dest, int n_frames, bool overwrite)
-{
-    if (src_channels == dest_channels) {
-        if(overwrite)
-            for (size_t i = 0; i < n_frames; ++i) {
-                for (int ch = 0; ch < src_channels; ++ch)
-                    *(dest[ch]+i) = *src++;
-            }
-        else
-            for (size_t i = 0; i < n_frames; ++i) {
-                for (int ch = 0; ch < src_channels; ++ch)
-                    *(dest[ch]+i) += *src++;
-            }
-    }
-    else if ((src_channels == 1) && (dest_channels == 2)) {
-        // stereo to mono
-        if(overwrite)
-            for (size_t i = 0; i < n_frames; ++i)
-                *(dest[0] + i) = src[i + i] + src[i + i + 1];
-        else
-            for (size_t i = 0; i < n_frames; ++i)
-                *(dest[0] + i) += src[i + i] + src[i + i + 1];
-    }
-    else if ((src_channels == 2) && (dest_channels == 1)) {
-        // mono to stereo
-        if(overwrite)
-            for (size_t i = 0; i < n_frames; ++i) {
-                float data = *src++;
-                *(dest[0]+i) = data;
-                *(dest[1]+i) = data;
-            }
-        else
-            for (size_t i = 0; i < n_frames; ++i) {
-                float data = *src++;
-                *(dest[0]+i) += data;
-                *(dest[1]+i) += data;
-            }
-    }
-    else {
-        printf("deinterleave_and_adjust_channels channel mismatch %d -> %d\n",
-               src_channels, dest_channels);
-    }
-
-}
-
-void deinterleave(int channels, float* src, float** dest, int n_frames, bool overwrite)
-{
-	deinterleave_and_adjust_channels(channels, channels, src, dest, n_frames, overwrite);
-}
-
-
 
 SndFileList SndFile::sndFiles;
 
@@ -208,19 +113,6 @@ bool SndFile::openRead()
       QString cacheName = finfo->absolutePath() + QString("/") + finfo->completeBaseName() + QString(".wca");
       readCache(cacheName, true);
       return false;
-      }
-      
-bool SndFilePushBack::openRead()
-      {
-	      if (SndFile::openRead())
-	      {
-		      return true; //error
-	      }
-	      else
-	      {
-		      
-	      }
-	      
       }
 
 //---------------------------------------------------------
@@ -587,12 +479,55 @@ size_t SndFile::read(int srcChannels, float** dst, size_t n, bool overwrite)
       return rn;
       }
 
-      
 size_t SndFile::readInternal(int srcChannels, float** dst, size_t n, bool overwrite, float *buffer)
 {
       size_t rn = sf_readf_float(sf, buffer, n);
-      deinterleave_and_adjust_channels(srcChannels, sfinfo.channels, buffer, dst, rn, overwrite);
+
+      float* src      = buffer;
+      int dstChannels = sfinfo.channels;
+      if (srcChannels == dstChannels) {
+            if(overwrite)
+              for (size_t i = 0; i < rn; ++i) {
+                  for (int ch = 0; ch < srcChannels; ++ch)
+                        *(dst[ch]+i) = *src++;
+                  }
+              else
+              for (size_t i = 0; i < rn; ++i) {
+                  for (int ch = 0; ch < srcChannels; ++ch)
+                        *(dst[ch]+i) += *src++;
+                  }
+            }
+      else if ((srcChannels == 1) && (dstChannels == 2)) {
+            // stereo to mono
+            if(overwrite)
+              for (size_t i = 0; i < rn; ++i)
+                  *(dst[0] + i) = src[i + i] + src[i + i + 1];
+            else
+              for (size_t i = 0; i < rn; ++i)
+                  *(dst[0] + i) += src[i + i] + src[i + i + 1];
+            }
+      else if ((srcChannels == 2) && (dstChannels == 1)) {
+            // mono to stereo
+            if(overwrite)
+              for (size_t i = 0; i < rn; ++i) {
+                  float data = *src++;
+                  *(dst[0]+i) = data;
+                  *(dst[1]+i) = data;
+                  }
+            else
+              for (size_t i = 0; i < rn; ++i) {
+                  float data = *src++;
+                  *(dst[0]+i) += data;
+                  *(dst[1]+i) += data;
+                  }
+            }
+      else {
+            printf("SndFile:read channel mismatch %d -> %d\n",
+               srcChannels, dstChannels);
+            }
+
       return rn;
+
 }
 
 
@@ -1326,3 +1261,4 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       }
 
 } // namespace MusEGui
+
