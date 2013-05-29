@@ -99,7 +99,7 @@ void WaveTrack::assign(const Track& t, int flags)
 //    called from prefetch thread
 //---------------------------------------------------------
 
-void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSeek)
+void WaveTrack::fetchData(unsigned pos, unsigned samples, XTick startOfSegmentXTick, XTick endOfSegmentXTick, float** bp, bool doSeek)
       {
       #ifdef WAVETRACK_DEBUG
       printf("WaveTrack::fetchData %s samples:%lu pos:%u\n", name().toLatin1().constData(), samples, pos);
@@ -127,17 +127,23 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
               if (pos >= p_epos)
                 continue;
   
+	      XTick partFromXTick = startOfSegmentXTick - part->xtick();
+	      XTick partToXTick = endOfSegmentXTick - part->xtick();
+	      
               EventList* events = part->events();
               for (iEvent ie = events->begin(); ie != events->end(); ++ie) {
                     Event& event = ie->second;
                     unsigned e_spos  = event.frame() + p_spos;
                     unsigned nn      = event.lenFrame();
                     unsigned e_epos  = e_spos + nn;
-                    
+		    
                     if (pos + n < e_spos) 
                       break;
                     if (pos >= e_epos) 
                       continue;
+
+		    XTick eventFromXTick = partFromXTick - event.xtick(); // might be negative at this moment
+		    XTick eventToXTick = partToXTick - event.xtick(); // always positive!
   
                     int offset = e_spos - pos;
   
@@ -147,19 +153,22 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                           srcOffset = 0;
                           dstOffset = offset;
                           }
-                    else {
+                    else { // if offset <= 0
                           srcOffset = -offset;
                           dstOffset = 0;
                           
                           nn += offset;
                           if (nn > n)
                                 nn = n;
-                          }
+			  
+			  eventFromXTick = XTick(0);
+                    }
                     float* bpp[channels()];
                     for (int i = 0; i < channels(); ++i)
                           bpp[i] = bp[i] + dstOffset;
   
-                    event.readAudio(part, srcOffset, bpp, channels(), nn, doSeek, false);
+                    // from|toXTick must hold startOfSegmentXTick-Part.begin-event.begin, possibly clipped, according to the above clipping.
+                    event.readAudio(part, srcOffset, bpp, channels(), nn, eventFromXTick, eventToXTick, doSeek, false);
                     
                     }
               }
