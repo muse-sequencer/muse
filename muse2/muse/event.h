@@ -108,14 +108,17 @@ class Event {
       
       void setTick(unsigned val);
       unsigned tick() const;
+      XTick xtick() const;
       unsigned frame() const;
       void setFrame(unsigned val);
       void setLenTick(unsigned val);
       void setLenFrame(unsigned val);
       unsigned lenTick() const;
+      XTick lenXTick() const;
       unsigned lenFrame() const;
       Pos end() const;
       unsigned endTick() const;
+      XTick endXTick() const;
       unsigned endFrame() const;
       void setPos(const Pos& p);
       };
