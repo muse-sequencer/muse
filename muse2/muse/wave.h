@@ -122,20 +122,7 @@ class SndFile {
       friend class SndFileR;
       };
 
-class SndFilePushBack : public SndFile {
-	private:
-		unsigned pushback_bufsize;
-		float** pushback_buffer;
-		
-	public:
-		SndFilePushBack(const QString& name, unsigned pushback_bufsize_ = 2048) : SndFile(name)
-		{
-			pushback_bufsize=pushback_bufsize_;
-		}
-		
-		bool openRead();        // overwritten.
-};
-      
+
 //---------------------------------------------------------
 //   SndFileR
 //    SndFile with reference count
