@@ -93,10 +93,12 @@ class EventBase : public PosLen {
       virtual void setName(const QString&)          { }
       virtual int spos() const                      { return 0;  }
       virtual void setSpos(int)                     { }
-      virtual SndFileR sndFile() const              { return 0;      }
-      virtual void setSndFile(SndFileR&)            { }
       virtual EventBase* clone() = 0;
       
+      virtual void setAudioFile(const QString&) { }
+      virtual QString audioFilePath()               { return QString(""); }
+      virtual AudioStream::stretch_mode_t stretchMode() { return AudioStream::NO_STRETCHING; }
+      virtual const AudioStream* getAudioStream()   { return NULL; }
       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
                              float** /*bpp*/, int /*channels*/, int /*nn*/, XTick /*fromXTick*/, XTick /*toXTick*/, bool /*doSeek*/, bool /*overwrite*/) { }
       };

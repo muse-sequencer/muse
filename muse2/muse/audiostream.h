@@ -38,14 +38,29 @@ namespace MusECore {
 	class AudioStream
 	{
 		public:
-			AudioStream(SndFileR sndfile, int sampling_rate, int out_chans, bool stretching, // the returned sampling rate cannot be changed after creation.
+			enum stretch_mode_t
+			{
+				NO_STRETCHING,
+				DO_STRETCHING,
+				NAIVE_STRETCHING
+			};
+			
+
+			/* After constructing a new AudioStream, you MUST check isGood(). If not yourStream.isGood(), then then
+			   object is in an undefined state and will not work. Delete it, then. */
+			AudioStream(SndFileR sndfile, int sampling_rate, int out_chans, bool stretching, // the sampling rate cannot be changed after creation.
 						XTick startXtick, unsigned startFrame);
 			~AudioStream();
 			
 			void seek(unsigned frame, XTick xtick);
 			unsigned readAudio(float** deinterleaved_dest_buffer, int nFrames, bool overwrite); // returns the number of frames read.
 			
-			int get_n_output_channels() { return n_output_channels; }
+			int get_n_output_channels() const { return n_output_channels; }
+			bool isGood() const { return !initalisation_failed; }
+			
+			stretch_mode_t getStretchMode() const { return doStretch ? DO_STRETCHING : NO_STRETCHING; }
+			
+			void readPeakRms(SampleV* s, int mag, unsigned pos, bool overwrite = true) const;
 			
 		private:
 			static const int update_ratio_every_n_frames = 10000;
@@ -64,6 +79,7 @@ namespace MusECore {
 			
 			
 			
+			bool initalisation_failed;
 			unsigned currentPositionInInput, currentPositionInOutput;
 			int input_sampling_rate, output_sampling_rate;
 			int n_input_channels, n_output_channels;

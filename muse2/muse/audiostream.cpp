@@ -33,6 +33,8 @@ namespace MusECore {
 
 AudioStream::AudioStream(SndFileR sndfile_, int sampling_rate, int out_chans, bool stretching, XTick startXtick, unsigned startFrame)
 {
+	initalisation_failed = false; // not yet
+	
 	sndfile = sndfile_;
 	
 	output_sampling_rate=sampling_rate;
@@ -63,12 +65,16 @@ AudioStream::AudioStream(SndFileR sndfile_, int sampling_rate, int out_chans, bo
 		srcState = src_new(SRC_SINC_MEDIUM_QUALITY, n_input_channels, &error); // TODO configure this
 		if (!srcState) // panic!
 		{
-			//TODO throw string("error creating new sample rate converter");
+			printf("error creating new sample rate converter\n");
+			initalisation_failed = true;
+			return;
 		}
 		
 		if (src_set_ratio(srcState, src_ratio))
 		{
-			//TODO throw string("error setting sampling rate ratio");
+			printf("error setting sampling rate ratio\n");
+			initalisation_failed = true;
+			return;
 		}
 	}
 	else

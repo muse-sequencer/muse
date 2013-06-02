@@ -115,7 +115,7 @@ class SndFile {
       size_t write(int channel, float**, size_t);
 
       off_t seek(off_t frames, int whence);
-      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true);
+      void readPeakRms(SampleV* s, int mag, unsigned pos, bool overwrite = true);
       QString strerror() const;
 
       static SndFile* search(const QString& name);
@@ -185,8 +185,8 @@ class SndFileR {
       off_t seek(off_t frames, int whence) {
             return sf->seek(frames, whence);
             }
-      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true) {
-            sf->read(s, mag, pos, overwrite);
+      void readPeakRms(SampleV* s, int mag, unsigned pos, bool overwrite = true) {
+            sf->readPeakRms(s, mag, pos, overwrite);
             }
       QString strerror() const { return sf->strerror(); }
       };

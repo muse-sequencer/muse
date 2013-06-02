@@ -39,8 +39,12 @@ class WavePart;
 
 class WaveEventBase : public EventBase {
       QString _name;
-      SndFileR f;
       AudioStream* audiostream;
+      QString filename;
+      AudioStream::stretch_mode_t stretch_mode;
+      
+      
+      
       int _spos;            // start sample position in WaveFile
       bool deleted;
 
@@ -62,9 +66,12 @@ class WaveEventBase : public EventBase {
       virtual void setName(const QString& s)   { _name = s;     }
       virtual int spos() const                 { return _spos;  }
       virtual void setSpos(int s)              { _spos = s;     }
-      virtual SndFileR sndFile() const         { return f;      }
-      virtual void setSndFile(SndFileR& sf)    { f = sf;        }
       
+      virtual void setAudioFile(const QString& path);
+      virtual QString audioFilePath()               { return filename; }
+      virtual AudioStream::stretch_mode_t stretchMode() { return stretch_mode; }
+      //virtual const SndFile* sndFile()              { return NULL; }
+
       virtual void readAudio(WavePart* part, unsigned firstFrame, 
                              float** bpp, int channels, int nFrames, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite);
       };

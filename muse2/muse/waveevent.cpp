@@ -42,7 +42,7 @@ WaveEventBase::WaveEventBase(EventType t)
    : EventBase(t)
       {
       deleted = false;
-      audiostream=NULL; // TODO create!
+      audiostream=NULL;
       _spos = 0;
       }
 
@@ -88,52 +88,73 @@ void WaveEventBase::dump(int n) const
       EventBase::dump(n);
       }
 
+      
+      
+void WaveEventBase::setAudioFile(const QString& path)
+{
+	filename = path;
+	if (audiostream) delete audiostream;
+
+	//audiostream = new AudioStream(filename); TODO
+	if (audiostream->isGood())
+	{
+		delete audiostream;
+		audiostream=NULL;
+	}
+}
+      
 //---------------------------------------------------------
 //   WaveEventBase::read
 //---------------------------------------------------------
 
 void WaveEventBase::read(Xml& xml)
-      {
-      for (;;) {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                  case Xml::Attribut:
-                        return;
-                  case Xml::TagStart:
-                        if (tag == "poslen")
-                              PosLen::read(xml, "poslen");
-                        else if (tag == "frame")
-                              _spos = xml.parseInt();
-                        else if (tag == "file") {
-                              SndFileR wf = getWave(xml.parse1(), true);
-                              if (wf) f = wf;
-                              }
-                        else
-                              xml.unknown("Event");
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == "event") {
-                              Pos::setType(FRAMES);   // DEBUG
-                              return;
-                              }
-                  default:
-                        break;
-                  }
-            }
-      }
+{
+	for (;;) {
+		Xml::Token token = xml.parse();
+		const QString& tag = xml.s1();
+		switch (token) {
+			case Xml::Error:
+			case Xml::End:
+			case Xml::Attribut:
+				return;
+			case Xml::TagStart:
+				if (tag == "poslen")
+					PosLen::read(xml, "poslen");
+				else if (tag == "frame")
+					_spos = xml.parseInt();
+				else if (tag == "stretch_mode")
+					stretch_mode = (AudioStream::stretch_mode_t) xml.parseInt();
+				else if (tag == "file") {
+					if (audiostream) delete audiostream;
+					
+					filename = xml.parse1();
+					//audiostream = new AudioStream(filename); TODO
+					if (audiostream->isGood())
+					{
+						delete audiostream;
+						audiostream=NULL;
+					}
+				}
+				else
+					xml.unknown("Event");
+				break;
+			case Xml::TagEnd:
+				if (tag == "event") {
+					Pos::setType(FRAMES);   // DEBUG
+					return;
+				}
+			default:
+				break;
+		}
+	}
+}
 
 //---------------------------------------------------------
 //   write
 //---------------------------------------------------------
 
-//void WaveEventBase::write(int level, Xml& xml, const Pos& offset) const
 void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath) const
       {
-      if (f.isNull())
-            return;
       xml.tag(level++, "event");
       PosLen wpos(*this);
       wpos += offset;
@@ -144,15 +165,17 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       // waves in the project dirctory are stored
       // with relative path name, others with absolute path
       //
-      QString path = f.dirPath();
 
-      if (!forcePath && path.contains(MusEGlobal::museProject)) {
+      if (!forcePath && filename.contains(MusEGlobal::museProject)) {
             // extract MusEGlobal::museProject.
-            QString newName = f.path().remove(MusEGlobal::museProject+"/");
+            QString newName = filename;
+            newName = newName.remove(MusEGlobal::museProject+"/");
             xml.strTag(level, "file", newName);
             }
       else
-            xml.strTag(level, "file", f.path());
+            xml.strTag(level, "file", filename);
+      
+      xml.intTag(level, "stretch_mode", stretch_mode);
       xml.etag(level, "event");
       }
 

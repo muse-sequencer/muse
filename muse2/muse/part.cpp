@@ -854,12 +854,16 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                   {
                   MusECore::WavePart* nPart = new MusECore::WavePart(*(MusECore::WavePart*)oPart);
                   EventList* el = nPart->events();
-                  unsigned new_partlength = MusEGlobal::tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len);
+                  unsigned new_partlength = MusEGlobal::tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len); // TODO adapt to subticks
+                  
+                  // TODO FINDMICH FIXME this is totally broken. we don't want to remove events just because they're beyond end-of-part.
+                  // we also don't want to auto-resize the last event.
 
+                  /*
                   // If new nr of frames is less than previous what can happen is:
                   // -   0 or more events are beginning after the new final position. Those are removed from the part
                   // -   The last event begins before new final position and ends after it. If so, it will be resized to end at new part length
-                  if (new_partlength < oPart->lenFrame()) {
+                  if (new_partlength < oPart->lenFrame()) { 
                         Undo operations;
 
                         for (iEvent i = el->begin(); i != el->end(); i++) {
@@ -898,7 +902,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                         // Do not do port controller values and clone parts. 
                         operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
                         MusEGlobal::song->applyOperationGroup(operations);
-                        }
+                        } */
                   }
                   break;
             case Track::MIDI:

@@ -279,7 +279,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
       for (int i = 0; i < csize; i++) {
             if (showProgress && ((i % interval) == 0))
                   progress->setValue(i);
-            seek(i * cacheMag, 0);
+            seek(i * cacheMag, 0); // TODO that's unneccessary, isn't it?
             read(channels(), fp, cacheMag);
             for (unsigned ch = 0; ch < channels(); ++ch) {
                   float rms = 0.0;
@@ -313,7 +313,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
 
 void SndFile::writeCache(const QString& path)
       {
-      FILE* cfile = fopen(path.toLatin1().constData(), "w");
+      FILE* cfile = fopen(path.toLatin1().constData(), "w"); // TODO this will break, because the format in RAM is undefined and highly machine-specific!
       if (cfile == 0)
             return;
       for (unsigned ch = 0; ch < channels(); ++ch)
@@ -325,7 +325,7 @@ void SndFile::writeCache(const QString& path)
 //   read
 //---------------------------------------------------------
 
-void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite)
+void SndFile::readPeakRms(SampleV* s, int mag, unsigned pos, bool overwrite)
       {
       if(overwrite)
         for (unsigned ch = 0; ch < channels(); ++ch) {
@@ -438,7 +438,7 @@ void SndFile::read(SampleV* s, int mag, unsigned pos, bool overwrite)
 bool SndFile::openWrite()
       {
       if (openFlag) {
-            printf("SndFile:: alread open\n");
+            printf("SndFile:: already open\n");
             return false;
             }
   QString p = path();
@@ -683,81 +683,63 @@ SndFile* SndFileList::search(const QString& name)
 //   getWave
 //---------------------------------------------------------
 
+
 SndFileR getWave(const QString& inName, bool readOnlyFlag)
-      {
-      QString name = inName;
-
-      if (QFileInfo(name).isRelative()) {
-            name = MusEGlobal::museProject + QString("/") + name;
-            }
-      else {
-            if (!QFile::exists(name)) {
-                  if (QFile::exists(MusEGlobal::museProject + QString("/") + name)) {
-                        name = MusEGlobal::museProject + QString("/") + name;
-                        }
-                  }
-            }
-
-      // only open one instance of wave file
-      SndFile* f = SndFile::sndFiles.search(name);
-      if (f == 0) {
-            if (!QFile::exists(name)) {
-                  fprintf(stderr, "wave file <%s> not found\n",
-                     name.toLatin1().constData());
-                  return NULL;
-                  }
-            f = new SndFile(name);
-            bool error;
-            if (readOnlyFlag)
-                  error = f->openRead();
-            else {
-                  error = f->openWrite();
-                  // if peak cache is older than wave file we reaquire the cache
-                  QFileInfo wavinfo(name);
-                  QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
-                  QFileInfo wcainfo(cacheName);
-                  if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-                        QFile(cacheName).remove();
-                        f->readCache(cacheName,true);
-                        }
-                  
-            }
-            if (error) {
-                  fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
-                     name.toLatin1().constData(),
-                     readOnlyFlag ? "writing" : "reading",
-                     f->strerror().toLatin1().constData());
-                     QMessageBox::critical(NULL, "MusE import error.", 
-                                      "MusE failed to import the file.\n"
-                                      "Possibly this wasn't a sound file?\n"
-                                      "If it was check the permissions, MusE\n"
-                                      "sometimes requires write access to the file.");
-
-                  delete f;
-                  f = 0;
-                  }
-            }
-      else {
-            if (!readOnlyFlag && ! f->isWritable()) {
-                  if (f->isOpen())
-                        f->close();
-                  f->openWrite();
-                  }
-            else {
-                  // if peak cache is older than wave file we reaquire the cache
-                  QFileInfo wavinfo(name);
-                  QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
-                  QFileInfo wcainfo(cacheName);
-                  if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-                        QFile(cacheName).remove();
-                        f->readCache(cacheName,true);
-                        }
-                  
-                  }
-            }
-      return f;
-      }
-
+{
+	// TODO flo: i have removed the deduplication here.
+	//           todo: remove the data structures that were used for that.
+	QString name = inName;
+	
+	if (QFileInfo(name).isRelative()) {
+		name = MusEGlobal::museProject + QString("/") + name;
+	}
+	else {
+		if (!QFile::exists(name)) {
+			if (QFile::exists(MusEGlobal::museProject + QString("/") + name)) {
+				name = MusEGlobal::museProject + QString("/") + name;
+			}
+		}
+	}
+	
+	if (!QFile::exists(name)) {
+		fprintf(stderr, "wave file <%s> not found\n",
+			name.toLatin1().constData());
+		return NULL;
+	}
+	SndFile* f = new SndFile(name);
+	bool error;
+	if (readOnlyFlag)
+		error = f->openRead();
+	else {
+		error = f->openWrite();
+		// if peak cache is older than wave file we reaquire the cache
+		QFileInfo wavinfo(name);
+		QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
+		QFileInfo wcainfo(cacheName);
+		if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
+			QFile(cacheName).remove();
+			f->readCache(cacheName,true);
+		}
+		
+	}
+	if (error) {
+		fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
+			name.toLatin1().constData(),
+			readOnlyFlag ? "writing" : "reading",
+			f->strerror().toLatin1().constData());
+		QMessageBox::critical(NULL, "MusE import error.", 
+					"MusE failed to import the file.\n"
+					"Possibly this wasn't a sound file?\n"
+					"If it was check the permissions, MusE\n"
+					"sometimes requires write access to the file.");
+		
+		delete f;
+		f = NULL;
+	}
+	
+	return f;
+}
+      
 //---------------------------------------------------------
 //   applyUndoFile
 //---------------------------------------------------------
@@ -890,8 +872,9 @@ bool SndFile::checkCopyOnWrite()
         const Event& ev = ie->second;
         if(ev.empty())
           continue;
-        const SndFileR sf = ev.sndFile();
-        QString path = sf.canonicalPath();
+        
+	QFileInfo finfo(ev.audioFilePath());
+        QString path = finfo.canonicalPath();
         if(path.isEmpty())
           continue;
         if(path == path_this)
@@ -1153,7 +1136,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
 
       // create Event
       MusECore::Event event(MusECore::Wave);
-      event.setSndFile(f);
+      event.setAudioFile(f.path());
       // We are done with the _recFile member. Set to zero. The function which 
       //  calls this function already does this immediately after. But do it here anyway.
       track->setRecFile(0);
@@ -1271,26 +1254,11 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       if (track==NULL)
             track = (MusECore::WaveTrack*)(_arranger->curTrack());
 
-      MusECore::SndFileR f = MusECore::getWave(name, true);
+      MusECore::SndFileR f = MusECore::getWave(name, true); // TODO make that nicer.
 
-      if (f.isNull()) {
-            printf("import audio file failed\n");
-            return true;
-            }
-      int samples = f->samples();
-      if ((unsigned)MusEGlobal::sampleRate != f->samplerate()) {
-            if(QMessageBox::question(this, tr("Import Wavefile"),
-                  tr("This wave file has a samplerate of %1,\n"
-                  "as opposed to current setting %2.\n"
-                  "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
-                  tr("&Yes"), tr("&No"),
-                  QString::null, 0, 1 ))
-                  {
-                  return true; // this removed f from the stack, dropping refcount maybe to zero and maybe deleting the thing
-                  }
-            }
-      track->setChannels(f->channels());
+      track->setChannels(f->channels()); // TODO oh really? don't we want to keep the setting as it was before?
 
+      int samples = f->samples(); // TODO no no no, that must be something only AudioStream might know... fix that! FIXME
       MusECore::WavePart* part = new MusECore::WavePart((MusECore::WaveTrack *)track);
       if (tick)
           part->setTick(tick);
@@ -1299,8 +1267,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
       part->setLenFrame(samples);
 
       MusECore::Event event(MusECore::Wave);
-      MusECore::SndFileR sf(f);
-      event.setSndFile(sf);
+      event.setAudioFile(name);
       event.setSpos(0);
       event.setLenFrame(samples);
       part->addEvent(event);

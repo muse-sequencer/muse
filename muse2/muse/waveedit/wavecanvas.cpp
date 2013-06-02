@@ -1091,13 +1091,14 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
           p.fillRect(sx, y1, ex - sx + 1, y2, brush);
       }
 
-      MusECore::SndFileR f = event.sndFile();
-      if(!f.isNull())
+      const MusECore::AudioStream* stream = event.getAudioStream();
+      
+      if(stream)
       {
-        int ev_channels = f.channels();
+        int ev_channels = stream->get_n_output_channels();
         if (ev_channels == 0) {
               p.setWorldMatrixEnabled(wmtxen);
-              printf("WaveCnvas::drawItem: ev_channels==0! %s\n", f.name().toLatin1().constData());
+              printf("WaveCanvas::drawItem: ev_channels==0! %s\n", event.audioFilePath().toLatin1().constData());
               return;
               }
 
@@ -1108,8 +1109,8 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
 
         for (int i = sx; i < ex; i++) {
               int y = h;
-              MusECore::SampleV sa[f.channels()];
-              f.read(sa, xScale, pos);
+              MusECore::SampleV sa[ev_channels];
+              stream->readPeakRms(sa, xScale, pos);
               pos += xScale;
               if (pos < event.spos())
                     continue;
@@ -1118,9 +1119,8 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
               int selectionStopPos  = selectionStop  - peoffset;
 
               for (int k = 0; k < ev_channels; ++k) {
-                    int kk = k % f.channels();
-                    int peak = (sa[kk].peak * (h - 1)) / yScale;
-                    int rms  = (sa[kk].rms  * (h - 1)) / yScale;
+                    int peak = (sa[k].peak * (h - 1)) / yScale;
+                    int rms  = (sa[k].rms  * (h - 1)) / yScale;
                     if (peak > h)
                           peak = h;
                     if (rms > h)
@@ -1995,8 +1995,8 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
                   MusECore::Event event  = e->second;
                   if (event.empty())
                         continue;
-                  MusECore::SndFileR file = event.sndFile();
-                  if (file.isNull())
+                  
+                  if (event.getAudioStream()==NULL) // TODO sollte passen
                         continue;
 
                   // Respect part end: Don't modify stuff outside of part boundary.
@@ -2039,6 +2039,8 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
             return selection;
       }
 
+      
+      /*
 //---------------------------------------------------------
 //   modifySelection
 //---------------------------------------------------------
@@ -2295,6 +2297,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
          MusEGlobal::song->endUndo(SC_CLIP_MODIFIED);
          redraw();
       }
+      */ // TODO migrate that to audio streams
 
 //---------------------------------------------------------
 //   copySelection

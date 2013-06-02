@@ -184,13 +184,11 @@ const QString Event::name() const            { return ev->name();  }
 void Event::setName(const QString& s)        { ev->setName(s);     }
 int Event::spos() const                      { return ev->spos();  }
 void Event::setSpos(int s)                   { ev->setSpos(s);     }
-MusECore::SndFileR Event::sndFile() const    { return ev->sndFile(); }
 
-void Event::setSndFile(MusECore::SndFileR& sf) 
-{ 
-  ev->setSndFile(sf);   
-}
-
+void Event::setAudioFile(const QString& path) { ev->setAudioFile(path); }
+QString Event::audioFilePath() const             { return ev->audioFilePath(); }
+AudioStream::stretch_mode_t Event::stretchMode() const { return ev->stretchMode(); }
+const AudioStream* Event::getAudioStream() const { return ev->getAudioStream(); }
 void Event::readAudio(MusECore::WavePart* part, unsigned int offset, float** bpp, int channels, int nn, MusECore::XTick fromXTick, MusECore::XTick toXTick, bool doSeek, bool overwrite)
       {
         ev->readAudio(part, offset, bpp, channels, nn, fromXTick, toXTick, doSeek, overwrite);

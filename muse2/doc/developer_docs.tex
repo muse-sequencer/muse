@@ -393,6 +393,18 @@ this are:
 \end{itemize}
 
 
+\section{Audio}
+\subsection{Audiofile peak cache}
+The peak cache is used for displaying the rough wave outline in the arranger
+and wave editors.
+
+\sym{SndFile::readCache} will try to read the peak cache from the filename
+given. If this file exists, it only reads the information, if it does not,
+it reads the wole audio file and writes the generated information to the
+file given. Thus, the name \sym{readCache} is a bit odd.
+
+
+
 
 
 \chapter{Design decisions}

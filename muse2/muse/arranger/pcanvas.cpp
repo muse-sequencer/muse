@@ -49,6 +49,7 @@
 #include "icons.h"
 #include "event.h"
 #include "wave.h"
+#include "audiostream.h"
 #include "audio.h"
 #include "shortcuts.h"
 #include "gconfig.h"
@@ -897,12 +898,20 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) 
                     {
                       MusECore::Event event = e->second;
-                      MusECore::SndFileR f  = event.sndFile();
-                      if (f.isNull())
-                        continue;
+                      
+                      
                       str.append(QString("\n@") + QString().setNum(event.tick()) + QString(" len:") + 
-                        QString().setNum(event.lenTick()) + QString(" ") + f.path());
-                    }  
+                        QString().setNum(event.lenTick()) + QString(" ") + event.audioFilePath() +
+                        QString(" "));
+                      
+                      using MusECore::AudioStream;
+                      switch (event.stretchMode())
+                      {
+                          case AudioStream::NO_STRETCHING: str.append("(not stretching)"); break;
+                          case AudioStream::DO_STRETCHING: str.append("(time-stretching)"); break;
+                          case AudioStream::NAIVE_STRETCHING: str.append("naive time-stretching)"); break;
+                      }
+                    }
                     QMessageBox::information(this, "File info", str, "Ok", 0);
                     break;
                   }
@@ -2569,12 +2578,12 @@ void PartCanvas::drawWavePart(QPainter& p,
       for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) {
             int cc = hh % 2 ? 0 : 1;
             MusECore::Event event = e->second;
-            MusECore::SndFileR f  = event.sndFile();
-            if (f.isNull())
+            const MusECore::AudioStream* audiostream  = event.getAudioStream();
+            if (audiostream==NULL)
                   continue;
-            unsigned channels = f.channels();
+            unsigned channels = audiostream->get_n_output_channels();
             if (channels == 0) {
-                  printf("drawWavePart: channels==0! %s\n", f.name().toLatin1().constData());
+                  printf("drawWavePart: channels==0! %s\n", event.audioFilePath().toLatin1().constData());
                   continue;
                   }
 
@@ -2605,7 +2614,7 @@ void PartCanvas::drawWavePart(QPainter& p,
                   for (; i < ex; i++) {
                         MusECore::SampleV sa[channels];
                         xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
-                        f.read(sa, xScale, pos);
+                        audiostream->readPeakRms(sa, xScale, pos);
                         postick += tickstep;
                         pos += xScale;
                         int peak = 0;
@@ -2632,7 +2641,7 @@ void PartCanvas::drawWavePart(QPainter& p,
                         y  = pr.y() + hm;
                         MusECore::SampleV sa[channels];
                         xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
-                        f.read(sa, xScale, pos);
+                        audiostream->readPeakRms(sa, xScale, pos);
                         postick += tickstep;
                         pos += xScale;
                         for (unsigned k = 0; k < channels; ++k) {
