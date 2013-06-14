@@ -919,7 +919,9 @@ bool VstNativeSynthIF::init(Synth* s)
       }
 
       activate();     
-      doSelectProgram(synti->_curBankH, synti->_curBankL, synti->_curProgram);
+
+      //doSelectProgram(synti->_curBankH & 0x7f, synti->_curBankL & 0x7f, synti->_curProgram & 0x7f); // REMOVE Tim. Use midi state for this
+
       //doSelectProgram(synti->_curProgram);
       
       return true;
@@ -1586,11 +1588,11 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
   fprintf(stderr, "VstNativeSynthIF::doSelectProgram bankH:%d bankL:%d prog:%d\n", bankH, bankL, prog);
 #endif
 
-  if(bankH == 0xff)
+  if(bankH > 127) // Map "dont care" to 0
     bankH = 0;
-  if(bankL == 0xff)
+  if(bankL > 127)
     bankL = 0;
-  if(prog == 0xff)
+  if(prog > 127)
     prog = 0;
   
   int p = (bankH << 14) | (bankL << 7) | prog;
@@ -1963,19 +1965,27 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
       #endif
       setVstEvent(event, (type | chn) & 0xff, a & 0x7f, 0);
     break;
+    // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
     case ME_PROGRAM:
     {
       #ifdef VST_NATIVE_DEBUG
       fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_PROGRAM\n");
       #endif
 
-      int bankH = (a >> 16) & 0xff;
-      int bankL = (a >> 8) & 0xff;
-      int prog = a & 0xff;
-      synti->_curBankH = bankH;
-      synti->_curBankL = bankL;
-      synti->_curProgram = prog;
-      doSelectProgram(bankH, bankL, prog);
+      int hb, lb;
+      synti->currentProg(chn, NULL, &lb, &hb);
+      
+      // REMOVE Tim.
+      //int bankH = (a >> 16) & 0xff;
+      //int bankL = (a >> 8) & 0xff;
+      //int prog = a & 0xff;
+      //synti->_curBankH = bankH;
+      //synti->_curBankL = bankL;
+      //synti->_curProgram = prog;
+      synti->setCurrentProg(chn, a, lb, hb);
+      
+      //doSelectProgram(bankH, bankL, prog);  // REMOVE Tim.
+      doSelectProgram(hb, lb, a);
       return false;  // Event pointer not filled. Return false.
     }
     break;
@@ -1998,9 +2008,11 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
         int bankL = (b >> 8) & 0xff;
         int prog = b & 0xff;
 
-        synti->_curBankH = bankH;
-        synti->_curBankL = bankL;
-        synti->_curProgram = prog;
+        // REMOVE Tim.
+        //synti->_curBankH = bankH;
+        //synti->_curBankL = bankL;
+        //synti->_curProgram = prog;
+        synti->setCurrentProg(chn, prog, bankL, bankH);
         doSelectProgram(bankH, bankL, prog);
         return false; // Event pointer not filled. Return false.
       }
@@ -2290,7 +2302,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
+iMPEvent VstNativeSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
 {
   // We may not be using ev_buf_sz all at once - this will be just the maximum.
   const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
@@ -2319,7 +2331,7 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
   //  so that users can select a small audio period but a larger control period.
   const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > nframes) ? nframes : MusEGlobal::config.minControlProcessPeriod;
   const unsigned long min_per_mask = min_per-1;   // min_per must be power of 2
-  
+
   AudioTrack* atrack = track();
   const AutomationType at = atrack->automationType();
   const bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
@@ -2629,42 +2641,48 @@ iMPEvent VstNativeSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent s
 
           // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
           // Same code as in MidiPort::sendEvent()
-          if(synti->midiPort() != -1)
-          {
-            MidiPort* mp = &MusEGlobal::midiPorts[synti->midiPort()];
-            if(start_event->type() == ME_CONTROLLER)
-            {
-              int da = start_event->dataA();
-              int db = start_event->dataB();
-              db = mp->limitValToInstrCtlRange(da, db);
-              if(!mp->setHwCtrlState(start_event->channel(), da, db))
-                continue;
-            }
-            else if(start_event->type() == ME_PITCHBEND)
-            {
-              int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
-              if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
-                continue;
-            }
-            else if(start_event->type() == ME_AFTERTOUCH)
-            {
-              int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
-              if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
-                continue;
-            }
-            else if(start_event->type() == ME_POLYAFTER)
-            {
-              int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
-              int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
-              if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
-                continue;
-            }
-            else if(start_event->type() == ME_PROGRAM)
-            {
-              if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, start_event->dataA()))
-                continue;
-            }
-          }
+// REMOVE Tim.          
+//           if(synti->midiPort() != -1)
+//           {
+//             MidiPort* mp = &MusEGlobal::midiPorts[synti->midiPort()];
+//             if(start_event->type() == ME_CONTROLLER)
+//             {
+//               int da = start_event->dataA();
+//               int db = start_event->dataB();
+//               db = mp->limitValToInstrCtlRange(da, db);
+//               if(!mp->setHwCtrlState(start_event->channel(), da, db))
+//                 continue;
+//             }
+//             else if(start_event->type() == ME_PITCHBEND)
+//             {
+//               int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
+//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
+//                 continue;
+//             }
+//             else if(start_event->type() == ME_AFTERTOUCH)
+//             {
+//               int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
+//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
+//                 continue;
+//             }
+//             else if(start_event->type() == ME_POLYAFTER)
+//             {
+//               int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
+//               int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
+//               if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
+//                 continue;
+//             }
+//             // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
+//             else if(start_event->type() == ME_PROGRAM)
+//             {
+//               int hb, lb;
+//               synti->currentProg(NULL, &lb, &hb);
+//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, (hb << 16) | (lb << 8) | start_event->dataA()))
+//                 continue;
+//             }
+//           }
+          if(mp && !mp->sendHwCtrlState(*start_event, false))
+            continue;
 
           // Returns false if the event was not filled. It was handled, but some other way.
           if(processEvent(*start_event, &events[nevents]))

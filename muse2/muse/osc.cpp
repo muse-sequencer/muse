@@ -734,6 +734,10 @@ int OscIF::oscExiting(lo_arg**)
 
 void OscIF::oscSendProgram(unsigned long prog, unsigned long bank, bool force)
 {
+  if(bank > 127)  // Map "dont care" to 0
+    bank = 0;
+  if(prog > 127)
+    prog = 0;
   if(_uiOscTarget && _uiOscProgramPath &&
      (bank!=old_bank || prog!=old_prog || force) )
   {

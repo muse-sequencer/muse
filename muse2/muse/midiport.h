@@ -52,11 +52,12 @@ class MidiPort {
       MidiCtrlValListList* _controller;
       MidiDevice* _device;
       QString _state;               // result of device open
-      MidiInstrument* _instrument;
+      MidiInstrument* _inputInstrument;
+      MidiInstrument* _outputInstrument;
       AutomationType _automationType[MIDI_CHANNELS];
       // Holds sync settings and detection monitors.
       MidiSyncInfo _syncInfo;
-      // p3.3.50 Just a flag to say the port was found in the song file, even if it has no device right now.
+      // Just a flag to say the port was found in the song file, even if it has no device right now.
       bool _foundInSongFile;
       // When creating a new midi track, add these global default channel routes to/from this port. Ignored if 0.
       int _defaultInChannels;    // These are bit-wise channel masks.
@@ -102,8 +103,10 @@ class MidiPort {
       void setState(const QString& s)           { _state = s; }
       void setMidiDevice(MidiDevice* dev);
       const QString& portname() const;
-      MidiInstrument* instrument() const        { return _instrument; }
-      void setInstrument(MidiInstrument* i);
+      MidiInstrument* inputInstrument() const    { return _inputInstrument; }
+      void setInputInstrument(MidiInstrument* i);
+      MidiInstrument* outputInstrument() const   { return _outputInstrument; }
+      void setOutputInstrument(MidiInstrument* i);
       MidiController* midiController(int num) const;
       MidiCtrlValList* addManagedController(int channel, int ctrl);
       void tryCtrlInitVal(int chan, int ctl, int val);

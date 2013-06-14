@@ -99,7 +99,8 @@ enum {
       AUDIO_ERASE_RANGE_AC_EVENTS,
       AUDIO_ADD_AC_EVENT,
       AUDIO_CHANGE_AC_EVENT,
-      AUDIO_SET_SOLO, AUDIO_SET_SEND_METRONOME, 
+      AUDIO_SET_SOLO, AUDIO_SET_MUTE, AUDIO_SET_TRACKOFF,
+      AUDIO_SET_SEND_METRONOME,
       AUDIO_START_MIDI_LEARN,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
       SEQM_IDLE, SEQM_SEEK,
@@ -265,7 +266,7 @@ class Audio {
       void msgAddRoute(Route, Route);
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
-      void msgSetMute(AudioTrack*, bool val);
+      //void msgSetMute(AudioTrack*, bool val);  // REMOVE Tim.
       //void msgSetVolume(AudioTrack*, double val); DELETETHIS
       //void msgSetPan(AudioTrack*, double val);    DELETETHIS
       void msgAddSynthI(SynthI* synth);
@@ -273,7 +274,7 @@ class Audio {
       void msgSetSegSize(int, int);
       void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
-      void msgSetOff(AudioTrack*, bool);
+      //void msgSetOff(AudioTrack*, bool);  // REMOVE Tim.
       void msgSetRecord(AudioTrack*, bool);
       void msgUndo();
       void msgRedo();
@@ -292,6 +293,8 @@ class Audio {
       void msgAddACEvent(AudioTrack*, int, int, double);
       void msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame, double val);
       void msgSetSolo(Track*, bool);
+      void msgSetTrackMute(Track*, bool);
+      void msgSetTrackOff(Track*, bool);
       void msgSetHwCtrlState(MidiPort*, int, int, int);
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);
       void msgSetTrackOutChannel(MidiTrack*, int);

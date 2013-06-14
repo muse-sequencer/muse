@@ -28,6 +28,7 @@
 #include "midi.h"
 //#include "mididev.h"
 #include "../midiport.h"
+#include "minstrument.h"
 #include "../midiseq.h"
 #include "../midictrl.h"
 #include "../audio.h"
@@ -287,17 +288,28 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
     
 //---------------------------------------------------------
 //   putEvent
+//    return true if event cannot be delivered
+//    TODO: retry on controller putMidiEvent
+//    (Note: Since putEvent is virtual and there are different versions,
+//     a retry facility is now found in putEventWithRetry. )
 //---------------------------------------------------------
 
-bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
+bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
       {
+      if(!_writeEnable)
+        //return true;
+        return false;
+
       if (MusEGlobal::midiOutputTrace) {
             fprintf(stderr, "MidiOut: Alsa: <%s>: ", name().toLatin1().constData());
-            e.dump();
+            ev.dump();
             }
-      int chn = e.channel();
-      int a   = e.dataA();
-      int b   = e.dataB();
+            
+      //unsigned t = ev.time();
+      //int port   = ev.port();
+      int chn    = ev.channel();
+      int a      = ev.dataA();
+      int b      = ev.dataB();
 
       snd_seq_event_t event;
       memset(&event, 0, sizeof(event));
@@ -305,143 +317,751 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
       event.source  = musePort;
       event.dest    = adr;
 
-      switch(e.type()) {
-            case ME_NOTEON:
-                  snd_seq_ev_set_noteon(&event, chn, a, b);
-                  break;
-            case ME_NOTEOFF:
-                  snd_seq_ev_set_noteoff(&event, chn, a, 0);
-                  break;
-            case ME_PROGRAM:
-                  snd_seq_ev_set_pgmchange(&event, chn, a);
-                  break;
-            case ME_CONTROLLER:
-                  {
-                    if(a == CTRL_PROGRAM)
-                    {
-                      snd_seq_ev_set_pgmchange(&event, chn, b);
-                      break;
-                    }
-                    else if(a == CTRL_PITCH)
-                    {
-                      snd_seq_ev_set_pitchbend(&event, chn, b);
-                      break;
-                    }
-                    else if((a | 0xff) == CTRL_POLYAFTER)
-                    {
-                      snd_seq_ev_set_keypress(&event, chn, a & 0x7f, b & 0x7f);
-                      break;
-                    }
-                    else if(a == CTRL_AFTERTOUCH)
-                    {
-                      snd_seq_ev_set_chanpress(&event, chn, b);
-                      break;
-                    }
+      switch(ev.type())
+      {
+        case ME_NOTEON:
+              snd_seq_ev_set_noteon(&event, chn, a, b);
+              break;
+        case ME_NOTEOFF:
+              //snd_seq_ev_set_noteoff(&event, chn, a, 0);  // REMOVE Tim.
+              snd_seq_ev_set_noteoff(&event, chn, a, b);
+              break;
+        case ME_PROGRAM:
+              {
+                _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+                _curOutParamNums[chn].setPROG(a);
+                snd_seq_ev_set_pgmchange(&event, chn, a);
+              }
+              break;
+        case ME_PITCHBEND:
+              snd_seq_ev_set_pitchbend(&event, chn, a);
+              break;
+        case ME_POLYAFTER:
+              snd_seq_ev_set_keypress(&event, chn, a, b);
+              break;
+        case ME_AFTERTOUCH:
+              snd_seq_ev_set_chanpress(&event, chn, a);
+              break;
+        case ME_SYSEX:
+              {
+              resetCurOutParamNums();  // Probably best to reset all.
+              const unsigned char* p = ev.data();
+              int n                  = ev.len();
+              int len                = n + sizeof(event) + 2;
+              char buf[len];
+              event.type             = SND_SEQ_EVENT_SYSEX;
+              event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
+              event.data.ext.len     = n + 2;
+              event.data.ext.ptr  = (void*)(buf + sizeof(event));
+              memcpy(buf, &event, sizeof(event));
+              char* pp = buf + sizeof(event);
+              *pp++ = 0xf0;
+              memcpy(pp, p, n);
+              pp += n;
+              *pp = 0xf7;
+              return putEvent(&event);
+              }
+        case ME_SONGPOS:
+              event.data.control.value = a;
+              event.type = SND_SEQ_EVENT_SONGPOS;
+              break;
+        case ME_CLOCK:
+              event.type = SND_SEQ_EVENT_CLOCK;
+              break;
+        case ME_START:
+              event.type = SND_SEQ_EVENT_START;
+              break;
+        case ME_CONTINUE:
+              event.type = SND_SEQ_EVENT_CONTINUE;
+              break;
+        case ME_STOP:
+              event.type = SND_SEQ_EVENT_STOP;
+              break;
+        case ME_CONTROLLER:
+        {
+            int a = ev.dataA();
+            int b = ev.dataB();
+            int chn = ev.channel();
+            int nvh = 0xff;
+            int nvl = 0xff;
+            if(_port != -1)
+            {
+              int nv = MusEGlobal::midiPorts[_port].nullSendValue();
+              if(nv != -1)
+              {
+                nvh = (nv >> 8) & 0xff;
+                nvl = nv & 0xff;
+              }
+            }
+
+            if(a == CTRL_PITCH)
+              snd_seq_ev_set_pitchbend(&event, chn, b);
+            else if((a | 0xff) == CTRL_POLYAFTER)
+              snd_seq_ev_set_keypress(&event, chn, a & 0x7f, b & 0x7f);
+            else if(a == CTRL_AFTERTOUCH)
+              snd_seq_ev_set_chanpress(&event, chn, b);
+            else if(a == CTRL_PROGRAM) {
+                        _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+                        int hb = (b >> 16) & 0xff;
+                        int lb = (b >> 8) & 0xff;
+                        int pr = b & 0xff;
+                        _curOutParamNums[chn].setCurrentProg(pr, lb, hb);
+                        if(hb != 0xff)
+                        {
+                          snd_seq_ev_set_controller(&event, chn, CTRL_HBANK, hb);
+                          if(putEvent(&event))
+                            return true;
+                        }
+                        if(lb != 0xff)
+                        {
+                          snd_seq_ev_set_controller(&event, chn, CTRL_LBANK, lb);
+                          if(putEvent(&event))
+                            return true;
+                        }
+                        if(pr != 0xff)
+                        {
+                          snd_seq_ev_set_pgmchange(&event, chn, pr);
+                          if(putEvent(&event))
+                            return true;
+                        }
+                        return false;
                   }
-                  
+
+// Set this to 1 if ALSA cannot handle RPN NRPN etc.
+// NOTE: Although ideally it should be 0, there are problems with
+//        letting ALSA do the 'composition' of the messages in putMidiEvent() -
+//        chiefly that ALSA does not handle 7-bit (N)RPN controllers.
+//       This define is kept because it is important to understand, try, and see
+//        the difference between the two techniques, and possibly make it work...
+//       Also see the corresponding define in MidiAlsaDevice::putMidiEvent().
 #if 1
-                  snd_seq_ev_set_controller(&event, chn, a, b);
-#else
+
+            else if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
+                  if(a == CTRL_HRPN)
+                    _curOutParamNums[chn].setRPNH(b);
+                  else if(a == CTRL_LRPN)
+                    _curOutParamNums[chn].setRPNL(b);
+                  else if(a == CTRL_HNRPN)
+                    _curOutParamNums[chn].setNRPNH(b);
+                  else if(a == CTRL_LNRPN)
+                    _curOutParamNums[chn].setNRPNL(b);
+                  else if(a == CTRL_HBANK)
                   {
-                  int a   = e.dataA();
-                  int b   = e.dataB();
-                  int chn = e.channel();
-                  if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
-                        snd_seq_ev_set_controller(&event, chn, a, b);
-                        }
-                  else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
-                        int ctrlH = (a >> 8) & 0x7f;
-                        int ctrlL = a & 0x7f;
-                        a = (ctrlH << 7) + ctrlL;
-                        snd_seq_ev_set_controller(&event, chn, a, b);
-                        event.type = SND_SEQ_EVENT_CONTROL14;
-                        }
-                  else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
-                        int ctrlH = (a >> 8) & 0x7f;
-                        int ctrlL = a & 0x7f;
-                        a = (ctrlH << 7) + ctrlL;
-                        b <<= 7;
-                        snd_seq_ev_set_controller(&event, chn, a, b);
-                        event.type = SND_SEQ_EVENT_REGPARAM;
-                        }
-                  else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
-                        int ctrlH = (a >> 8) & 0x7f;
-                        int ctrlL = a & 0x7f;
-                        a = (ctrlH << 7) + ctrlL;
-                        b <<= 7;
-                        snd_seq_ev_set_controller(&event, chn, a, b);
-                        event.type = SND_SEQ_EVENT_NONREGPARAM;
-                        }
-                  else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
-                        int ctrlH = (a >> 8) & 0x7f;
-                        int ctrlL = a & 0x7f;
-                        a = (ctrlH << 7) + ctrlL;
-                        snd_seq_ev_set_controller(&event, chn, a, b);
-                        event.type = SND_SEQ_EVENT_REGPARAM;
-                        }
-                  else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
-                        int ctrlH = (a >> 8) & 0x7f;
-                        int ctrlL = a & 0x7f;
-                        a = (ctrlH << 7) + ctrlL;
-                        snd_seq_ev_set_controller(&event, chn, a, b);
-                        event.type = SND_SEQ_EVENT_NONREGPARAM;
-                        }
-                  else {
-                        printf("putEvent: unknown controller type 0x%x\n", a);
-                        }
+                    _curOutParamNums[chn].setBANKH(b);
+                    _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
                   }
-#endif
-                  break;
-            case ME_PITCHBEND:
-                  snd_seq_ev_set_pitchbend(&event, chn, a);
-                  break;
-            case ME_POLYAFTER:
-                  snd_seq_ev_set_keypress(&event, chn, a, b);
-                  break;
-            case ME_AFTERTOUCH:
-                  snd_seq_ev_set_chanpress(&event, chn, a);
-                  break;
-            case ME_SYSEX:
+                  else if(a == CTRL_LBANK)
                   {
-                  const unsigned char* p = e.data();
-                  int n                  = e.len();
-                  int len                = n + sizeof(event) + 2;
-                  char buf[len];
-                  event.type             = SND_SEQ_EVENT_SYSEX;
-                  event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
-                  event.data.ext.len     = n + 2;
-                  event.data.ext.ptr  = (void*)(buf + sizeof(event));
-                  memcpy(buf, &event, sizeof(event));
-                  char* pp = buf + sizeof(event);
-                  *pp++ = 0xf0;
-                  memcpy(pp, p, n);
-                  pp += n;
-                  *pp = 0xf7;
+                    _curOutParamNums[chn].setBANKH(b);
+                    _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+                  }
+                  else if(a == CTRL_RESET_ALL_CTRL)
+                    _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+                    
+                  snd_seq_ev_set_controller(&event, chn, a, b);
+                  }
+            else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
+                  int ctrlH = (a >> 8) & 0x7f;
+                  int ctrlL = a & 0x7f;
+                  int dataH = (b >> 7) & 0x7f;
+                  int dataL = b & 0x7f;
+                  snd_seq_ev_set_controller(&event, chn, ctrlH, dataH);
+                  if(putEvent(&event))
+                    return true;
+                  snd_seq_ev_set_controller(&event, chn, ctrlL, dataL);
                   return putEvent(&event);
                   }
-            case ME_SONGPOS:
-                  event.data.control.value = a;
-                  event.type = SND_SEQ_EVENT_SONGPOS;
-                  break;
-            case ME_CLOCK:
-                  event.type = SND_SEQ_EVENT_CLOCK;
-                  break;
-            case ME_START:
-                  event.type = SND_SEQ_EVENT_START;
-                  break;
-            case ME_CONTINUE:
-                  event.type = SND_SEQ_EVENT_CONTINUE;
-                  break;
-            case ME_STOP:
-                  event.type = SND_SEQ_EVENT_STOP;
-                  break;
+            else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
+                  int ctrlH = (a >> 8) & 0x7f;
+                  int ctrlL = a & 0x7f;
+                  if(ctrlL != _curOutParamNums[chn].RPNL)
+                  {
+                    _curOutParamNums[chn].setRPNL(ctrlL);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, ctrlL);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  if(ctrlH != _curOutParamNums[chn].RPNH)
+                  {
+                    _curOutParamNums[chn].setRPNH(ctrlH);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, ctrlH);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, b);
+                  if(putEvent(&event))
+                    return true;
+
+                  // Select null parameters so that subsequent data controller
+                  //  events do not upset the last *RPN controller.  Tim.
+                  //sendNullRPNParams(t, port, chn, false);
+                  if(nvh != 0xff)
+                  {
+                    _curOutParamNums[chn].setRPNH(nvh & 0x7f);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, nvh & 0x7f);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  if(nvl != 0xff)
+                  {
+                    _curOutParamNums[chn].setRPNL(nvl & 0x7f);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, nvl & 0x7f);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  return false;
+                }
+            else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
+                  int ctrlH = (a >> 8) & 0x7f;
+                  int ctrlL = a & 0x7f;
+                  if(ctrlL != _curOutParamNums[chn].NRPNL)
+                  {
+                    _curOutParamNums[chn].setNRPNL(ctrlL);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, ctrlL);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  if(ctrlH != _curOutParamNums[chn].NRPNH)
+                  {
+                    _curOutParamNums[chn].setNRPNH(ctrlH);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, ctrlH);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, b);
+                  if(putEvent(&event))
+                    return true;
+
+                  //sendNullRPNParams(t, port, chn, true);
+                  if(nvh != 0xff)
+                  {
+                    _curOutParamNums[chn].setNRPNH(nvh & 0x7f);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, nvh & 0x7f);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  if(nvl != 0xff)
+                  {
+                    _curOutParamNums[chn].setNRPNL(nvl & 0x7f);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, nvl & 0x7f);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  return false;
+                  }
+            else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
+                  return true;
+            else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
+                  int ctrlH = (a >> 8) & 0x7f;
+                  int ctrlL = a & 0x7f;
+                  int dataH = (b >> 7) & 0x7f;
+                  int dataL = b & 0x7f;
+                  if(ctrlL != _curOutParamNums[chn].RPNL)
+                  {
+                    _curOutParamNums[chn].setRPNL(ctrlL);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, ctrlL);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  if(ctrlH != _curOutParamNums[chn].RPNH)
+                  {
+                    _curOutParamNums[chn].setRPNH(ctrlH);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, ctrlH);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, dataH);
+                  if(putEvent(&event))
+                      return true;
+                  snd_seq_ev_set_controller(&event, chn, CTRL_LDATA, dataL);
+                  if(putEvent(&event))
+                      return true;
+
+                  //sendNullRPNParams(t, port, chn, false);
+                  if(nvh != 0xff)
+                  {
+                    _curOutParamNums[chn].setRPNH(nvh & 0x7f);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, nvh & 0x7f);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  if(nvl != 0xff)
+                  {
+                    _curOutParamNums[chn].setRPNL(nvl & 0x7f);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, nvl & 0x7f);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  return false;
+                  }
+            else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
+                  int ctrlH = (a >> 8) & 0x7f;
+                  int ctrlL = a & 0x7f;
+                  int dataH = (b >> 7) & 0x7f;
+                  int dataL = b & 0x7f;
+                  if(ctrlL != _curOutParamNums[chn].NRPNL)
+                  {
+                    _curOutParamNums[chn].setNRPNL(ctrlL);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, ctrlL);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  if(ctrlH != _curOutParamNums[chn].NRPNH)
+                  {
+                    _curOutParamNums[chn].setNRPNH(ctrlH);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, ctrlH);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, dataH);
+                  if(putEvent(&event))
+                    return true;
+                  snd_seq_ev_set_controller(&event, chn, CTRL_LDATA, dataL);
+                  if(putEvent(&event))
+                    return true;
+
+                  //sendNullRPNParams(t, port, chn, true);
+                  if(nvh != 0xff)
+                  {
+                    _curOutParamNums[chn].setNRPNH(nvh & 0x7f);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, nvh & 0x7f);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  if(nvl != 0xff)
+                  {
+                    _curOutParamNums[chn].setNRPNL(nvl & 0x7f);
+                    snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, nvl & 0x7f);
+                    if(putEvent(&event))
+                      return true;
+                  }
+                  return false;
+                  }
+            else {
+                  fprintf(stderr, "putEvent: unknown controller type 0x%x\n", a);
+                  }
+            return false;
+#endif
+        }
+        break;  // ME_CONTROLLER
+        
             default:
                   if(MusEGlobal::debugMsg)
-                    printf("MidiAlsaDevice::putEvent(): event type %d not implemented\n", e.type());
+                    printf("MidiAlsaDevice::putEvent(): event type %d not implemented\n", ev.type());
                   return true;
-            }
+      }
+
       return putEvent(&event);
       }
+
+// REMOVE Tim.
+// //---------------------------------------------------------
+// //   putMidiEvent
+// //---------------------------------------------------------
+// 
+// bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
+//       {
+//       if (MusEGlobal::midiOutputTrace) {
+//             fprintf(stderr, "MidiOut: Alsa: <%s>: ", name().toLatin1().constData());
+//             e.dump();
+//             }
+//       int chn = e.channel();
+//       int a   = e.dataA();
+//       int b   = e.dataB();
+// 
+//       snd_seq_event_t event;
+//       memset(&event, 0, sizeof(event));
+//       event.queue   = SND_SEQ_QUEUE_DIRECT;
+//       event.source  = musePort;
+//       event.dest    = adr;
+// 
+//       switch(e.type()) {
+//             case ME_NOTEON:
+//                   snd_seq_ev_set_noteon(&event, chn, a, b);
+//                   break;
+//             case ME_NOTEOFF:
+//                   snd_seq_ev_set_noteoff(&event, chn, a, 0);
+//                   break;
+//             case ME_PROGRAM:
+//                   {
+// //                     _curOutParamNums[chn].reset();  // Probably best to reset.
+// //                     int hb = (b >> 16) & 0xff;
+// //                     int lb = (b >> 8) & 0xff;
+// //                     int pr = b & 0x7f;
+// //                     if (hb != 0xff)
+// //                           putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb));
+// //                     if (lb != 0xff)
+// //                           putMidiEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb));
+// //                     return putMidiEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0));
+// 
+// 
+// 
+// 
+//                     
+//                     //_curOutParamNums[chn].reset();  // Probably best to reset.  // REMOVE Tim.
+//                     snd_seq_ev_set_pgmchange(&event, chn, a);
+//                   }
+//                   break;
+//             case ME_CONTROLLER:
+//                   {
+//                     if(a == CTRL_PROGRAM)
+//                     {
+//                       //_curOutParamNums[chn].reset();  // Probably best to reset.  // REMOVE Tim.
+//                       snd_seq_ev_set_pgmchange(&event, chn, b);
+//                       break;
+//                     }
+//                     else if(a == CTRL_PITCH)
+//                     {
+//                       snd_seq_ev_set_pitchbend(&event, chn, b);
+//                       break;
+//                     }
+//                     else if((a | 0xff) == CTRL_POLYAFTER)
+//                     {
+//                       snd_seq_ev_set_keypress(&event, chn, a & 0x7f, b & 0x7f);
+//                       break;
+//                     }
+//                     else if(a == CTRL_AFTERTOUCH)
+//                     {
+//                       snd_seq_ev_set_chanpress(&event, chn, b);
+//                       break;
+//                     }
+//                   //}
+//                   
+// // Set this to 1 if ALSA cannot handle RPN NRPN etc.
+// // NOTE: Although ideally it should be 0, there are problems with letting ALSA do the
+// //        'composition' of the messages here instead of us in MidiDevice::putEvent() -
+// //        chiefly that ALSA does not handle 7-bit (N)RPN controllers.
+// //       This define is kept because it is important to understand, try, and see
+// //        the difference between the two techniques, and possibly make it work...
+// //       Also see the corresponding define in MidiDevice::putEvent().
+// #if 1
+// 
+// // REMOVE Tim.
+// //                   else if(a == CTRL_HRPN)
+// //                   {
+// //                     if(b == _curOutParamNums[chn].RPNH)
+// //                       return false;
+// //                     _curOutParamNums[chn].RPNH = b;
+// //                     _curOutParamNums[chn].NRPNH = -1; // Reset. Data MSB/LSB can only be for either RPN or NRPN.
+// //                     _curOutParamNums[chn].NRPNL = -1; //
+// //                   }
+// //                   else if(a == CTRL_LRPN)
+// //                   {
+// //                     if(b == _curOutParamNums[chn].RPNL)
+// //                       return false;
+// //                     _curOutParamNums[chn].RPNL = b;
+// //                     _curOutParamNums[chn].NRPNH = -1;
+// //                     _curOutParamNums[chn].NRPNL = -1;
+// //                   }
+// //                   else if(a == CTRL_HNRPN)
+// //                   {
+// //                     if(b == _curOutParamNums[chn].NRPNH)
+// //                       return false;
+// //                     _curOutParamNums[chn].NRPNH = b;
+// //                     _curOutParamNums[chn].RPNH = -1;
+// //                     _curOutParamNums[chn].RPNL = -1;
+// //                   }
+// //                   else if(a == CTRL_LNRPN)
+// //                   {
+// //                     if(b == _curOutParamNums[chn].NRPNL)
+// //                       return false;
+// //                     _curOutParamNums[chn].NRPNL = b;
+// //                     _curOutParamNums[chn].RPNH = -1;
+// //                     _curOutParamNums[chn].RPNL = -1;
+// //                   }
+// //                   else if((a == CTRL_RESET_ALL_CTRL) ||
+// //                           a == CTRL_HBANK || a == CTRL_LBANK || a == CTRL_PROGRAM)
+// //                     _curOutParamNums[chn].reset();  // Probably best to reset.
+// 
+//                   snd_seq_ev_set_controller(&event, chn, a, b);
+// #else
+//                   //{
+//                   //int a   = e.dataA(); // REMOVE Tim.
+//                   //int b   = e.dataB();
+//                   //int chn = e.channel();
+//                   if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
+// 
+// 
+//                         if(a == CTRL_HRPN)
+//                           _curOutParamNums[chn].setRPNH(b);
+//                         else if(a == CTRL_LRPN)
+//                           _curOutParamNums[chn].setRPNL(b);
+//                         else if(a == CTRL_HNRPN)
+//                           _curOutParamNums[chn].setNRPNH(b);
+//                         else if(a == CTRL_LNRPN)
+//                           _curOutParamNums[chn].setNRPNL(b);
+//                         else if(a == CTRL_RESET_ALL_CTRL || a == CTRL_HBANK || a == CTRL_LBANK) // || a == CTRL_PROGRAM)
+//                           _curOutParamNums[chn].reset();  // Probably best to reset.
+// 
+//                         snd_seq_ev_set_controller(&event, chn, a, b);
+//                         }
+//                   else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
+//                         int ctrlH = (a >> 8) & 0x7f;
+//                         int ctrlL = a & 0x7f;
+//                         a = (ctrlH << 7) + ctrlL;
+//                         snd_seq_ev_set_controller(&event, chn, a, b);
+//                         event.type = SND_SEQ_EVENT_CONTROL14;
+//                         }
+//                   else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
+//                         int ctrlH = (a >> 8) & 0x7f;
+//                         int ctrlL = a & 0x7f;
+//                         if(ctrlL != _curOutParamNums[chn].RPNL)
+//                           _curOutParamNums[chn].setRPNL(ctrlL);
+//                         if(ctrlH != _curOutParamNums[chn].RPNH)
+//                           _curOutParamNums[chn].setRPNH(ctrlH);
+//                         a = (ctrlH << 7) + ctrlL;
+//                         b <<= 7;
+//                         snd_seq_ev_set_controller(&event, chn, a, b);
+//                         event.type = SND_SEQ_EVENT_REGPARAM;
+// 
+// // REMOVE Tim. Did not work. How the heck does ALSA, on the receiving end,
+// //              know that this is a SND_SEQ_EVENT_USR_VARX event?
+// //             It must be transmitting extra info or use weird status bytes?
+// //                         int len                = 7;
+// //                         char buf[len];
+// //                         event.type             = SND_SEQ_EVENT_USR_VAR0;
+// //                         event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
+// //                         event.data.ext.len     = len;
+// //                         event.data.ext.ptr     = (void*)buf;
+// //                         buf[0] = ME_CONTROLLER | chn;
+// //                         buf[1] = CTRL_LRPN;
+// //                         buf[2] = ctrlL;
+// //                         buf[3] = CTRL_HRPN;
+// //                         buf[4] = ctrlH;
+// //                         buf[5] = CTRL_HDATA;
+// //                         buf[6] = b;
+// //                         return putEvent(&event);
+// 
+//                         }
+//                   else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
+//                         int ctrlH = (a >> 8) & 0x7f;
+//                         int ctrlL = a & 0x7f;
+//                         if(ctrlL != _curOutParamNums[chn].NRPNL)
+//                           _curOutParamNums[chn].setNRPNL(ctrlL);
+//                         if(ctrlH != _curOutParamNums[chn].NRPNH)
+//                           _curOutParamNums[chn].setNRPNH(ctrlH);
+//                         a = (ctrlH << 7) + ctrlL;
+//                         b <<= 7;
+//                         snd_seq_ev_set_controller(&event, chn, a, b);
+//                         event.type = SND_SEQ_EVENT_NONREGPARAM;
+// 
+// // REMOVE Tim. Did not work. How the heck does ALSA, on the receiving end,
+// //              know that this is a SND_SEQ_EVENT_USR_VARX event?
+// //             It must be transmitting extra info or use weird status bytes?
+// //
+// //                         int len                = 7;
+// //                         char buf[len];
+// //                         event.type             = SND_SEQ_EVENT_USR_VAR1;
+// //                         event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
+// //                         event.data.ext.len     = len;
+// //                         event.data.ext.ptr     = (void*)buf;
+// //                         buf[0] = ME_CONTROLLER | chn;
+// //                         buf[1] = CTRL_LNRPN;
+// //                         buf[2] = ctrlL;
+// //                         buf[3] = CTRL_HNRPN;
+// //                         buf[4] = ctrlH;
+// //                         buf[5] = CTRL_HDATA;
+// //                         buf[6] = b;
+// //                         return putEvent(&event);
+// 
+//                         }
+//                   else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
+//                         return true;
+//                   else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
+//                         int ctrlH = (a >> 8) & 0x7f;
+//                         int ctrlL = a & 0x7f;
+//                         if(ctrlL != _curOutParamNums[chn].RPNL)
+//                           _curOutParamNums[chn].setRPNL(ctrlL);
+//                         if(ctrlH != _curOutParamNums[chn].RPNH)
+//                           _curOutParamNums[chn].setRPNH(ctrlH);
+//                         a = (ctrlH << 7) + ctrlL;
+//                         snd_seq_ev_set_controller(&event, chn, a, b);
+//                         event.type = SND_SEQ_EVENT_REGPARAM;
+//                         }
+//                   else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
+//                         int ctrlH = (a >> 8) & 0x7f;
+//                         int ctrlL = a & 0x7f;
+//                         if(ctrlL != _curOutParamNums[chn].NRPNL)
+//                           _curOutParamNums[chn].setNRPNL(ctrlL);
+//                         if(ctrlH != _curOutParamNums[chn].NRPNH)
+//                           _curOutParamNums[chn].setNRPNH(ctrlH);
+//                         a = (ctrlH << 7) + ctrlL;
+//                         snd_seq_ev_set_controller(&event, chn, a, b);
+//                         event.type = SND_SEQ_EVENT_NONREGPARAM;
+//                         }
+//                   else {
+//                         printf("putEvent: unknown controller type 0x%x\n", a);
+//                         }
+//                   //}
+// #endif
+// 
+// //                   if(a == CTRL_HRPN)
+// //                   {
+// //                     if(b == _curParamNums[chn].RPNH)
+// //                       return false;  
+// //                     _curParamNums[chn].RPNH = b;  
+// //                   }
+// //                   else
+// //                   if(a == CTRL_LRPN)
+// //                   {
+// //                     if(b == _curParamNums[chn].RPNL)
+// //                       return false;
+// //                     _curParamNums[chn].RPNL = b;
+// //                   }
+// //                   else
+// //                   if(a == CTRL_HNRPN)
+// //                   {
+// //                     if(b == _curParamNums[chn].NRPNH)
+// //                       return false;
+// //                     _curParamNums[chn].NRPNH = b;
+// //                   }
+// //                   else
+// //                   if(a == CTRL_LNRPN)
+// //                   {
+// //                     if(b == _curParamNums[chn].NRPNL)
+// //                       return false;
+// //                     _curParamNums[chn].NRPNL = b;
+// //                   }
+// //                   
+// //                   snd_seq_ev_set_controller(&event, chn, a, b);
+// 
+// //                   if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
+// //                         snd_seq_ev_set_controller(&event, chn, a, b);
+// //                         }
+// //                   else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
+// //                         //int ctrlH = (a >> 8) & 0x7f;
+// //                         //int ctrlL = a & 0x7f;
+// //                         //a = (ctrlH << 7) + ctrlL;
+// //                         snd_seq_ev_set_controller(&event, chn, a, b);
+// //                         //event.type = SND_SEQ_EVENT_CONTROL14;
+// //                         }
+// //                   else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
+// //                         int ctrlH = (a >> 8) & 0x7f;
+// //                         int ctrlL = a & 0x7f;
+// //                         a = (ctrlH << 7) + ctrlL;
+// //                         b <<= 7;
+// //                         snd_seq_ev_set_controller(&event, chn, a, b);
+// //                         event.type = SND_SEQ_EVENT_REGPARAM;
+// 
+// // REMOVE Tim. Did not work. How the heck does ALSA, on the receiving end,
+// //              know that this is a SND_SEQ_EVENT_USR_VARX event?
+// //             It must be transmitting extra info or use weird status bytes?
+// //                         int len                = 7;
+// //                         char buf[len];
+// //                         event.type             = SND_SEQ_EVENT_USR_VAR0;
+// //                         event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
+// //                         event.data.ext.len     = len;
+// //                         event.data.ext.ptr     = (void*)buf;
+// //                         buf[0] = ME_CONTROLLER | chn;
+// //                         buf[1] = CTRL_LRPN;
+// //                         buf[2] = ctrlL;
+// //                         buf[3] = CTRL_HRPN;
+// //                         buf[4] = ctrlH;
+// //                         buf[5] = CTRL_HDATA;
+// //                         buf[6] = b;
+// //                         return putEvent(&event);
+// 
+// //                         }
+// //                   else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
+// //                         int ctrlH = (a >> 8) & 0x7f;
+// //                         int ctrlL = a & 0x7f;
+// //                         a = (ctrlH << 7) + ctrlL;
+// //                         b <<= 7;
+// //                         snd_seq_ev_set_controller(&event, chn, a, b);
+// //                         event.type = SND_SEQ_EVENT_NONREGPARAM;
+// 
+// // REMOVE Tim. Did not work. How the heck does ALSA, on the receiving end,
+// //              know that this is a SND_SEQ_EVENT_USR_VARX event?
+// //             It must be transmitting extra info or use weird status bytes?
+// //
+// //                         int len                = 7;
+// //                         char buf[len];
+// //                         event.type             = SND_SEQ_EVENT_USR_VAR1;
+// //                         event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
+// //                         event.data.ext.len     = len;
+// //                         event.data.ext.ptr     = (void*)buf;
+// //                         buf[0] = ME_CONTROLLER | chn;
+// //                         buf[1] = CTRL_LNRPN;
+// //                         buf[2] = ctrlL;
+// //                         buf[3] = CTRL_HNRPN;
+// //                         buf[4] = ctrlH;
+// //                         buf[5] = CTRL_HDATA;
+// //                         buf[6] = b;
+// //                         return putEvent(&event);
+// 
+// //                         }
+// //                   else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
+// //                         return true;
+// //                   else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
+// //                         int ctrlH = (a >> 8) & 0x7f;
+// //                         int ctrlL = a & 0x7f;
+// //                         a = (ctrlH << 7) + ctrlL;
+// //                         snd_seq_ev_set_controller(&event, chn, a, b);
+// //                         event.type = SND_SEQ_EVENT_REGPARAM;
+// //                         }
+// //                   else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
+// //                         int ctrlH = (a >> 8) & 0x7f;
+// //                         int ctrlL = a & 0x7f;
+// //                         a = (ctrlH << 7) + ctrlL;
+// //                         snd_seq_ev_set_controller(&event, chn, a, b);
+// //                         event.type = SND_SEQ_EVENT_NONREGPARAM;
+// //                         }
+// //                   else {
+// //                         printf("putEvent: unknown controller type 0x%x\n", a);
+// //                         }
+//                   }
+//                   break;
+//             case ME_PITCHBEND:
+//                   snd_seq_ev_set_pitchbend(&event, chn, a);
+//                   break;
+//             case ME_POLYAFTER:
+//                   snd_seq_ev_set_keypress(&event, chn, a, b);
+//                   break;
+//             case ME_AFTERTOUCH:
+//                   snd_seq_ev_set_chanpress(&event, chn, a);
+//                   break;
+//             case ME_SYSEX:
+//                   {
+//                   resetCurOutParamNums();  // Probably best to reset all.
+//                   const unsigned char* p = e.data();
+//                   int n                  = e.len();
+//                   int len                = n + sizeof(event) + 2;
+//                   char buf[len];
+//                   event.type             = SND_SEQ_EVENT_SYSEX;
+//                   event.flags            = SND_SEQ_EVENT_LENGTH_VARIABLE;
+//                   event.data.ext.len     = n + 2;
+//                   event.data.ext.ptr  = (void*)(buf + sizeof(event));
+//                   memcpy(buf, &event, sizeof(event));
+//                   char* pp = buf + sizeof(event);
+//                   *pp++ = 0xf0;
+//                   memcpy(pp, p, n);
+//                   pp += n;
+//                   *pp = 0xf7;
+//                   return putEvent(&event);
+//                   }
+//             case ME_SONGPOS:
+//                   event.data.control.value = a;
+//                   event.type = SND_SEQ_EVENT_SONGPOS;
+//                   break;
+//             case ME_CLOCK:
+//                   event.type = SND_SEQ_EVENT_CLOCK;
+//                   break;
+//             case ME_START:
+//                   event.type = SND_SEQ_EVENT_START;
+//                   break;
+//             case ME_CONTINUE:
+//                   event.type = SND_SEQ_EVENT_CONTINUE;
+//                   break;
+//             case ME_STOP:
+//                   event.type = SND_SEQ_EVENT_STOP;
+//                   break;
+//             default:
+//                   if(MusEGlobal::debugMsg)
+//                     printf("MidiAlsaDevice::putEvent(): event type %d not implemented\n", e.type());
+//                   return true;
+//             }
+//       return putEvent(&event);
+//       }
 
 //---------------------------------------------------------
 //   putEvent
@@ -676,8 +1296,11 @@ void MidiAlsaDevice::processMidi()
           if (mp->sendEvent(*i, true))  // Force the event to be sent.
             break;
               }
-        else 
-          if(putMidiEvent(*i))
+        else
+          // REMOVE Tim. This could not possibly work properly with given ALSA putEvent code
+          //  unless the code was switched to the alternate ALSA specific calls.
+          //if(putMidiEvent(*i))  
+          if(putEvent(*i))
             break;
         }
   _playEvents.erase(_playEvents.begin(), i);
@@ -1264,13 +1887,56 @@ void alsaProcessMidiInput()
             // find real source device
             //
             for (iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) {
-                  MidiAlsaDevice* d = dynamic_cast<MidiAlsaDevice*>(*i);
-                  if (d  && d->adr.client == ev->source.client
-                     && d->adr.port == ev->source.port) {
+                  if((*i)->deviceType() != MidiDevice::ALSA_MIDI)
+                    continue;
+                  MidiAlsaDevice* d = static_cast<MidiAlsaDevice*>(*i);
+                  if(d->adr.client == ev->source.client
+                    && d->adr.port == ev->source.port) {
                         curPort = d->midiPort();
                         mdev = d;
                         }
                   }
+            
+            if(mdev)
+            {
+              switch(ev->type)
+              {
+                case SND_SEQ_EVENT_CONTROLLER:
+                {
+                  const unsigned char chn = ev->data.control.channel;
+                  const unsigned int a = ev->data.control.param;
+                  const int b = ev->data.control.value;
+                  if(a < 128 && b >= 0 && b < 128)
+                  {
+                    MidiCtrlState* mcs = mdev->inputState(chn);
+                    mcs->ctrls[a] = b; 
+                    if(a == CTRL_HRPN || a == CTRL_LRPN)
+                      //mcs->ctrls[CTRL_HNRPN] = mcs->ctrls[CTRL_HNRPN] = -1;  // Reset others. Data control should only apply to one.
+                      mcs->modeIsNRP = false;
+                    else if(a == CTRL_HNRPN || a == CTRL_LNRPN)
+                      //mcs->ctrls[CTRL_HRPN] = mcs->ctrls[CTRL_HRPN] = -1;    //
+                      mcs->modeIsNRP = true;
+                    else if(a == CTRL_HDATA)
+                    {
+                      if(!mcs->modeIsNRP && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
+                        mcs->RPNH[ (mcs->ctrls[CTRL_HRPN] << 7) + mcs->ctrls[CTRL_LRPN] ] = b;
+                      else
+                      if(mcs->modeIsNRP && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
+                        mcs->NRPNH[ (mcs->ctrls[CTRL_HNRPN] << 7) + mcs->ctrls[CTRL_LNRPN] ] = b;
+                    }
+                    else if(a == CTRL_LDATA)
+                    {
+                      if(!mcs->modeIsNRP && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
+                        mcs->RPNL[ (mcs->ctrls[CTRL_HRPN] << 7) + mcs->ctrls[CTRL_LRPN] ] = b;
+                      else
+                      if(mcs->modeIsNRP && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
+                        mcs->NRPNL[ (mcs->ctrls[CTRL_HNRPN] << 7) + mcs->ctrls[CTRL_LNRPN] ] = b;
+                    }
+                  }
+                }
+                break;
+              }
+            }
             
             if (mdev == 0 || curPort == -1) {
                   if (MusEGlobal::debugMsg) {
@@ -1280,11 +1946,13 @@ void alsaProcessMidiInput()
                   snd_seq_free_event(ev);
                   return;
                   }
-            
+
             event.setType(0);      // mark as unused
             event.setPort(curPort);
             event.setB(0);
 
+            MidiInstrument* instr = MusEGlobal::midiPorts[curPort].inputInstrument();
+            
             switch(ev->type) 
             {
                   case SND_SEQ_EVENT_NOTEON:
@@ -1327,10 +1995,241 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_CONTROLLER:
-                        event.setChannel(ev->data.control.channel);
-                        event.setType(ME_CONTROLLER);
-                        event.setA(ev->data.control.param);
-                        event.setB(ev->data.control.value);
+                        {
+                          const unsigned char chn = ev->data.control.channel;
+                          const unsigned int a = ev->data.control.param;
+                          const int b = ev->data.control.value;
+                          MidiCtrlState* mcs =  mdev->inputState(chn);
+                          bool is_7bit   = false;
+                          //bool is_14bitH = false;
+                          //bool is_14bitL = false;
+                          bool is_14bit  = false;
+                          bool is_RPN    = false;
+                          bool is_NRPN   = false;
+                          bool is_RPN14  = false;
+                          bool is_NRPN14 = false;
+                          bool RPNH_reserved  = false;
+                          bool RPNL_reserved  = false;
+                          bool NRPNH_reserved = false;
+                          bool NRPNL_reserved = false;
+                          bool DATAH_reserved = false;
+                          bool DATAL_reserved = false;
+                          bool is_reserved = (a == CTRL_HRPN || a == CTRL_LRPN || a == CTRL_HNRPN || a == CTRL_LNRPN ||
+                                              a == CTRL_HBANK || a == CTRL_LBANK ||
+                                              a == CTRL_HDATA || a == CTRL_LDATA);
+
+                          if(instr)
+                          {
+                            int num;
+                            int ctrlH;
+                            int ctrlL;
+                            MidiController* mc;
+                            MidiControllerList* mcl = instr->controller();
+                            for(ciMidiController imc = mcl->begin(); imc != mcl->end(); ++imc)
+                            {
+                              mc = imc->second;
+                              num = mc->num();
+                              ctrlH = (num >> 8) & 0x7f;
+                              ctrlL = num & 0xff;
+                              if(num < CTRL_14_OFFSET)           // 7-bit controller  0 - 0x10000
+                              {
+                                if(ctrlL == 0xff || ctrlL == a)
+                                  is_7bit = true;
+                                
+                                if(ctrlL == 0xff)
+                                  RPNH_reserved = RPNL_reserved = NRPNH_reserved = NRPNL_reserved = DATAH_reserved = DATAL_reserved = true;
+                                else if(ctrlL == CTRL_HRPN)
+                                  RPNH_reserved = true;
+                                else if(ctrlL == CTRL_LRPN)
+                                  RPNL_reserved = true;
+                                else if(ctrlL == CTRL_HNRPN)
+                                  NRPNH_reserved = true;
+                                else if(ctrlL == CTRL_LNRPN)
+                                  NRPNL_reserved = true;
+                                else if(ctrlL == CTRL_HDATA)
+                                  DATAH_reserved = true;
+                                else if(ctrlL == CTRL_LDATA)
+                                  DATAL_reserved = true;
+                              }
+                              else if(num < CTRL_RPN_OFFSET)     // 14-bit controller 0x10000 - 0x20000
+                              {
+                                if(ctrlH == a)
+                                {
+                                  //is_14bitH = true;
+                                  is_14bit = true;
+                                  if(!instr->waitForLSB())
+                                  {
+                                    MidiRecordEvent single_ev;
+                                    single_ev.setChannel(chn);
+                                    single_ev.setType(ME_CONTROLLER);
+                                    single_ev.setA(CTRL_14_OFFSET + (a << 8) + ctrlL);
+                                    single_ev.setB((b << 7) + mcs->ctrls[ctrlL]);
+                                    mdev->recordEvent(single_ev);
+                                  }
+                                }
+                                if(ctrlL == 0xff || ctrlL == a)
+                                {
+                                  //is_14bitL = true;
+                                  is_14bit = true;
+                                  MidiRecordEvent single_ev;
+                                  single_ev.setChannel(chn);
+                                  single_ev.setType(ME_CONTROLLER);
+                                  single_ev.setA(CTRL_14_OFFSET + (ctrlH << 8) + a);
+                                  single_ev.setB((mcs->ctrls[ctrlH] << 7) + b);
+                                  mdev->recordEvent(single_ev);
+                                }
+
+                                if(ctrlL == 0xff)
+                                  RPNH_reserved = RPNL_reserved = NRPNH_reserved = NRPNL_reserved = DATAH_reserved = DATAL_reserved = true;
+                                else if(ctrlL == CTRL_HRPN || ctrlH == CTRL_HRPN)
+                                  RPNH_reserved = true;
+                                else if(ctrlL == CTRL_LRPN || ctrlH == CTRL_LRPN)
+                                  RPNL_reserved = true;
+                                else if(ctrlL == CTRL_HNRPN || ctrlH == CTRL_HNRPN)
+                                  NRPNH_reserved = true;
+                                else if(ctrlL == CTRL_LNRPN || ctrlH == CTRL_LNRPN)
+                                  NRPNL_reserved = true;
+                                else if(ctrlL == CTRL_HDATA || ctrlH == CTRL_HDATA)
+                                  DATAH_reserved = true;
+                                else if(ctrlL == CTRL_LDATA || ctrlH == CTRL_LDATA)
+                                  DATAL_reserved = true;
+                              }
+                              else if(num < CTRL_NRPN_OFFSET)     // RPN 7-Bit Controller 0x20000 - 0x30000
+                              {
+                                //if(a == CTRL_HDATA && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
+                                if(a == CTRL_HDATA && !mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LRPN]))
+                                  is_RPN = true;
+                              }
+                              else if(num < CTRL_INTERNAL_OFFSET) // NRPN 7-Bit Controller 0x30000 - 0x40000
+                              {
+                                //if(a == CTRL_HDATA && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
+                                if(a == CTRL_HDATA && mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HNRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LNRPN]))
+                                  is_NRPN = true;
+                              }
+                              else if(num < CTRL_RPN14_OFFSET)    // Unaccounted for internal controller  0x40000 - 0x50000
+                                 continue;
+                              else if(num < CTRL_NRPN14_OFFSET)   // RPN14 Controller  0x50000 - 0x60000
+                              {
+                                //if(a == CTRL_LDATA && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
+                                if(a == CTRL_LDATA && !mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LRPN]))
+                                  is_RPN14 = true;
+                              }
+                              else if(num < CTRL_NONE_OFFSET)     // NRPN14 Controller 0x60000 - 0x70000
+                              {
+                                //if(a == CTRL_LDATA && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
+                                if(a == CTRL_LDATA && mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HNRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LNRPN]))
+                                  is_NRPN14 = true;
+                              }
+                            }
+                          }
+
+                          //if((is_reserved && is_7bit) || (!is_reserved && !is_14bit))
+                          if(is_7bit || (!is_reserved && !is_14bit))
+                          {
+                            MidiRecordEvent single_ev;
+                            single_ev.setChannel(chn);
+                            single_ev.setType(ME_CONTROLLER);
+                            single_ev.setA(a);
+                            single_ev.setB(b);
+                            mdev->recordEvent(single_ev);
+                          }
+                          //else  // Not is_reserved
+                          //{
+                            if(a == CTRL_HDATA)
+                            {
+                              //if(mcs->modeIsNRP)
+                              if(!is_7bit || is_RPN || is_NRPN || is_RPN14 || is_NRPN14)
+                              {
+
+                              }
+                              MidiRecordEvent single_ev;
+                              single_ev.setChannel(chn);
+                              single_ev.setType(ME_CONTROLLER);
+                              single_ev.setA(a);
+                              single_ev.setB(b);
+                              mdev->recordEvent(single_ev);
+                            }
+
+                          //}
+                           
+
+/*                          
+                          // Register these as single controllers, only if the instrument specifically defines them.
+                          if((a == CTRL_HRPN || a == CTRL_LRPN || a == CTRL_HNRPN || a == CTRL_LNRPN ||
+                              a == CTRL_HBANK || a == CTRL_LBANK || 
+                              a == CTRL_HDATA || a == CTRL_LDATA) &&
+                              instr && instr->controller()->find(a) != instr->controller()->end())
+                          {
+//                             MidiRecordEvent single_ev;
+//                             single_ev.setChannel(chn);
+//                             single_ev.setType(ME_CONTROLLER);
+//                             single_ev.setA(a);
+//                             single_ev.setB(b);
+//                             mdev->recordEvent(single_ev);
+                            event.setChannel(chn);
+                            event.setType(ME_CONTROLLER);
+                            event.setA(a);
+                            event.setB(b);
+                            break;
+                          }
+
+                          if(a == CTRL_HDATA)
+                          {
+                            //mpar->set(b);
+                            break;
+                          }
+                          else if(a == CTRL_LDATA)
+                          {
+                            //mpar->setRPNH(b);
+                            break;
+                          }
+                          else if(a == CTRL_HRPN)
+                          {
+                            mpar->setRPNH(b);
+                            break;
+                          }
+                          else if(a == CTRL_LRPN)
+                          {
+                            mpar->setRPNL(b);
+                            break;
+                          }
+                          else if(a == CTRL_HNRPN)
+                          {
+                            mpar->setNRPNH(b);
+                            break;
+                          }
+                          else if(a == CTRL_LNRPN)
+                          {
+                            mpar->setNRPNL(b);
+                            break;
+                          }
+                          else if(a == CTRL_HBANK)
+                          {
+                            mpar->setBANKH(b);
+                            mpar->resetParamNums();  // Probably best to reset.
+                            break;
+                          }
+                          else if(a == CTRL_LBANK)
+                          {
+                            mpar->setBANKL(b);
+                            mpar->resetParamNums();
+                            break;
+                          }
+                          else if(a == CTRL_RESET_ALL_CTRL)
+                            mpar->resetParamNums();  // Probably best to reset.*/
+                          
+                          event.setChannel(chn);
+                          event.setType(ME_CONTROLLER);
+                          event.setA(a);
+                          event.setB(b);
+
+
+                          snd_seq_free_event(ev);
+                          if(rv == 0)
+                            return;
+
+                          continue;
+                        }
                         break;
 
                   case SND_SEQ_EVENT_CLOCK:
@@ -1397,7 +2296,16 @@ void alsaProcessMidiInput()
 
                   // case SND_SEQ_EVENT_NOTE:
                   // case SND_SEQ_EVENT_CONTROL14:
-                  // case SND_SEQ_EVENT_NONREGPARAM:
+                  case SND_SEQ_EVENT_NONREGPARAM:
+                        fprintf(stderr, "ALSA Midi input: NONREGPARAM ch:%u param:%u value:%d\n",
+                                        ev->data.control.channel,
+                                        ev->data.control.param,
+                                        ev->data.control.value);
+                        event.setChannel(ev->data.control.channel);
+                        event.setType(ME_CONTROLLER);
+                        event.setA(ev->data.control.param);
+                        event.setB(ev->data.control.value);
+                    break;
                   // case SND_SEQ_EVENT_REGPARAM:
                   default:
                         printf("ALSA Midi input: type %d not handled\n", ev->type);

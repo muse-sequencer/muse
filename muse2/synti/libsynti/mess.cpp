@@ -149,8 +149,9 @@ bool Mess::processEvent(const MusECore::MidiPlayEvent& ev)
                   return setController(ev.channel(), MusECore::CTRL_PITCH, ev.dataA());
             case MusECore::ME_AFTERTOUCH:       
                   return setController(ev.channel(), MusECore::CTRL_AFTERTOUCH, ev.dataA());
-            case MusECore::ME_PROGRAM:
-                return setController(ev.channel(), MusECore::CTRL_PROGRAM, ev.dataA());
+            // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore - only CTRL_PROGRAM.
+            //case MusECore::ME_PROGRAM:
+            //    return setController(ev.channel(), MusECore::CTRL_PROGRAM, ev.dataA());
             }
       return false;
       }

@@ -532,7 +532,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
       bool isMidi        = track->type() == MusECore::Track::MIDI;
       MusECore::MidiCtrlValListList* cll = port->controller();
       int channel        = track->outChannel();
-      MusECore::MidiInstrument* instr = port->instrument();
+      MusECore::MidiInstrument* instr = port->outputInstrument();
       MusECore::MidiControllerList* mcl = instr->controller();
       int val = 0;
       int ev_num = 0;
@@ -692,7 +692,7 @@ void EditCtrlDialog::newController()
       bool isDrum      = track->type() == MusECore::Track::DRUM;
       bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
       bool isMidi      = track->type() == MusECore::Track::MIDI;
-      MusECore::MidiInstrument* instr   = port->instrument();
+      MusECore::MidiInstrument* instr   = port->outputInstrument();
       MusECore::MidiControllerList* mcl = instr->controller();
       
       MusECore::MidiCtrlValListList* cll = port->controller();
@@ -829,7 +829,7 @@ void EditCtrlDialog::updatePatch(int val)
       MusECore::MidiTrack* track      = part->track();
       int port              = track->outPort();
       int channel           = track->outChannel();
-      MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
+      MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].outputInstrument();
       patchName->setText(instr->getPatchName(channel, val, track->isDrumTrack()));
 
       int hb = ((val >> 16) & 0xff) + 1;
@@ -864,7 +864,7 @@ void EditCtrlDialog::instrPopup()
       MusECore::MidiTrack* track = part->track();
       int channel = track->outChannel();
       int port    = track->outPort();
-      MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
+      MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].outputInstrument();
       
       MusEGui::PopupMenu* pup = new MusEGui::PopupMenu(this);
       instr->populatePatchPopup(pup, channel, track->isDrumTrack());

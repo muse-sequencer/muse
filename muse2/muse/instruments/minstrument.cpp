@@ -293,6 +293,7 @@ void MidiInstrument::init()
       _tmpMidiStateVersion = 1; // Assume old version. readMidiState will overwrite anyway.
       _nullvalue = -1;
       _initScript = 0;
+      _waitForLSB = true;
       _midiInit  = new EventList();
       _midiReset = new EventList();
       _midiState = new EventList();
@@ -375,6 +376,7 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   _controller->clear();
   
   _nullvalue = ins._nullvalue;
+  _waitForLSB = ins._waitForLSB;
   
   // Assignment
   for(ciMidiController i = ins._controller->begin(); i != ins._controller->end(); ++i)

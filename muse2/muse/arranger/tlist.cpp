@@ -488,7 +488,7 @@ void TList::paint(const QRect& r)
                                   }
                                   else
                                   {
-                                    MusECore::MidiInstrument* instr = mp->instrument();
+                                    MusECore::MidiInstrument* instr = mp->outputInstrument();
                                     QString name;
                                     if (val!=MusECore::CTRL_VAL_UNKNOWN)
                                       name = instr->getPatchName(mt->outChannel(), val, mt->isDrumTrack());
@@ -1216,11 +1216,11 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), 0);
       if (ract == gact) {
             bool show = !port->guiVisible();
-            port->instrument()->showGui(show);
+            port->outputInstrument()->showGui(show);
             }
       else if (ract == nact) {
             bool show = !port->nativeGuiVisible();
-            port->instrument()->showNativeGui(show);
+            port->outputInstrument()->showNativeGui(show);
             }
       delete p;
       
@@ -1886,15 +1886,17 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   
             case COL_MUTE:
                   mode = START_DRAG;
-                  // p3.3.29
                   if ((button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier))
-                    t->setOff(!t->off());
+                    //t->setOff(!t->off()); // REMOVE Tim.
+                    MusEGlobal::audio->msgSetTrackOff(t, !t->off());
                   else
                   {
                     if (t->off())
-                          t->setOff(false);
+                          //t->setOff(false);  // REMOVE Tim.
+                          MusEGlobal::audio->msgSetTrackOff(t, false);
                     else
-                          t->setMute(!t->mute());
+                          //t->setMute(!t->mute());  // REMOVE Tim.
+                          MusEGlobal::audio->msgSetTrackMute(t, !t->mute());
                   }        
                   MusEGlobal::song->update(SC_MUTE);
                   break;
@@ -2132,7 +2134,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       }
                       else
                       {
-                        MusECore::MidiInstrument* instr = mp->instrument();
+                        MusECore::MidiInstrument* instr = mp->outputInstrument();
                         if (delta>0) val=instr->getNextPatch(mt->outChannel(), val, false);
                         else if (delta<0) val=instr->getPrevPatch(mt->outChannel(), val, false);   
                       }
@@ -2176,7 +2178,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                         MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
                         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                        MusECore::MidiInstrument* instr = mp->instrument();
+                        MusECore::MidiInstrument* instr = mp->outputInstrument();
                         
                         PopupMenu* pup = new PopupMenu(true);
                         instr->populatePatchPopup(pup, mt->outChannel(), mt->isDrumTrack());

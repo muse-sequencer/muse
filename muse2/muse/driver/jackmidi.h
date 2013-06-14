@@ -67,7 +67,7 @@ class MidiJackDevice : public MidiDevice {
       // Port is not midi port, it is the port(s) created for MusE.
       bool queueEvent(const MidiPlayEvent&);
       
-      virtual bool putMidiEvent(const MidiPlayEvent&);
+      //virtual bool putMidiEvent(const MidiPlayEvent&);  // REMOVE Tim.
       //bool sendEvent(const MidiPlayEvent&);
       
       void eventReceived(jack_midi_event_t*);

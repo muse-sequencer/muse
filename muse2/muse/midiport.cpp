@@ -77,8 +77,8 @@ void initMidiPorts()
             //
             port->addDefaultControllers();
             
-            ///port->setInstrument(genericMidiInstrument);
-            port->setInstrument(registerMidiInstrument("GM")); // Changed by Tim. 
+            port->setOutputInstrument(registerMidiInstrument("GM")); 
+            port->setInputInstrument(registerMidiInstrument("GM")); 
             port->syncInfo().setPort(i);
             // p4.0.17 Set the first channel on the first port to auto-connect to midi track outputs.
             if(i == 0)
@@ -97,7 +97,8 @@ MidiPort::MidiPort()
       _defaultInChannels  = (1 << MIDI_CHANNELS) -1;  // p4.0.17 Default is now to connect to all channels.
       _defaultOutChannels = 0;
       _device     = 0;
-      _instrument = 0;
+      _outputInstrument = 0;
+      _inputInstrument  = 0;
       _controller = new MidiCtrlValListList();
       _foundInSongFile = false;
       }
@@ -117,7 +118,7 @@ MidiPort::~MidiPort()
 
 bool MidiPort::guiVisible() const
       {
-      return _instrument ? _instrument->guiVisible() : false;
+      return _outputInstrument ? _outputInstrument->guiVisible() : false;
       }
 
 //---------------------------------------------------------
@@ -126,7 +127,7 @@ bool MidiPort::guiVisible() const
 
 bool MidiPort::hasGui() const
       {
-      return _instrument ? _instrument->hasGui() : false;
+      return _outputInstrument ? _outputInstrument->hasGui() : false;
       }
 
 //---------------------------------------------------------
@@ -135,7 +136,7 @@ bool MidiPort::hasGui() const
 
 bool MidiPort::nativeGuiVisible() const
       {
-      return _instrument ? _instrument->nativeGuiVisible() : false;
+      return _outputInstrument ? _outputInstrument->nativeGuiVisible() : false;
       }
 
 //---------------------------------------------------------
@@ -144,7 +145,7 @@ bool MidiPort::nativeGuiVisible() const
 
 bool MidiPort::hasNativeGui() const
       {
-      return _instrument ? _instrument->hasNativeGui() : false;
+      return _outputInstrument ? _outputInstrument->hasNativeGui() : false;
       }
 
 //---------------------------------------------------------
@@ -154,8 +155,10 @@ bool MidiPort::hasNativeGui() const
 void MidiPort::setMidiDevice(MidiDevice* dev)
       {
       if (_device) {
-            if (_device->isSynti())
-                  _instrument = genericMidiInstrument;
+            if (_device->isSynti()) {
+                  _inputInstrument = genericMidiInstrument;
+                  _outputInstrument = genericMidiInstrument;
+            }
             _device->setPort(-1);
             _device->close();
             _initializationsSent = false;
@@ -165,7 +168,10 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                   MidiPort* mp = &MusEGlobal::midiPorts[i];
                   if (mp->device() == dev) {
                         if(dev->isSynti())
-                          mp->setInstrument(genericMidiInstrument);
+                        {
+                          mp->setInputInstrument(genericMidiInstrument);
+                          mp->setOutputInstrument(genericMidiInstrument);
+                        }
                         // move device
                         _state = mp->state();
                         mp->clearDevice();
@@ -175,7 +181,8 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             _device = dev;
             if (_device->isSynti()) {
                   SynthI* s = (SynthI*)_device;
-                  _instrument = s;
+                  _inputInstrument = s;
+                  _outputInstrument = s;
                   }
             _state = _device->open();
             _device->setPort(portno());
@@ -204,7 +211,7 @@ bool MidiPort::sendPendingInitializations(bool force)
   //
 
   unsigned last_tick = 0;
-  MusECore::MidiInstrument* instr = instrument();
+  MusECore::MidiInstrument* instr = outputInstrument();
   if(instr && MusEGlobal::config.midiSendInit && (force || !_initializationsSent))
   {
     // Send the Instrument Init sequences.
@@ -290,9 +297,9 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
   }
 
   // NOT for syntis. Use midiState and/or initParams for that. 
-  if(MusEGlobal::config.midiSendInit && MusEGlobal::config.midiSendCtlDefaults && _instrument && !_device->isSynti())
+  if(MusEGlobal::config.midiSendInit && MusEGlobal::config.midiSendCtlDefaults && _outputInstrument && !_device->isSynti())
   {
-    MidiControllerList* cl = _instrument->controller();
+    MidiControllerList* cl = _outputInstrument->controller();
     MidiController* mc;
     for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc) 
     {
@@ -353,12 +360,21 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
 }
       
 //---------------------------------------------------------
-//   setInstrument
+//   setInputInstrument
 //---------------------------------------------------------
 
-void MidiPort::setInstrument(MidiInstrument* i)
+void MidiPort::setInputInstrument(MidiInstrument* i)
 {
-  _instrument = i;
+  _inputInstrument = i;
+}
+
+//---------------------------------------------------------
+//   setOutputInstrument
+//---------------------------------------------------------
+
+void MidiPort::setOutputInstrument(MidiInstrument* i)
+{
+  _outputInstrument = i;
   _initializationsSent = false;
 }
 
@@ -497,9 +513,9 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
   }
   
   // No initial value was found in the song for this midi controller on this midi channel. Try the instrument...
-  if(_instrument)
+  if(_outputInstrument)
   {
-    MidiControllerList* cl = _instrument->controller();
+    MidiControllerList* cl = _outputInstrument->controller();
     ciMidiController imc = cl->find(ctl);  
     if(imc != cl->end())
     {
@@ -780,7 +796,7 @@ void MidiPort::addDefaultControllers()
 
 int MidiPort::limitValToInstrCtlRange(MidiController* mc, int val)
 {
-  if(!_instrument || !mc || val == CTRL_VAL_UNKNOWN)
+  if(!_outputInstrument || !mc || val == CTRL_VAL_UNKNOWN)
     return val;
     
   //MidiController* mc = imc->second;
@@ -806,10 +822,10 @@ int MidiPort::limitValToInstrCtlRange(MidiController* mc, int val)
             
 int MidiPort::limitValToInstrCtlRange(int ctl, int val)
 {
-  if(!_instrument || val == CTRL_VAL_UNKNOWN)
+  if(!_outputInstrument || val == CTRL_VAL_UNKNOWN)
     return val;
     
-  MidiControllerList* cl = _instrument->controller();
+  MidiControllerList* cl = _outputInstrument->controller();
 
   // FIXME: This might be optimized by calling midiController instead,
   //         and simply asking if it's a drum controller. Saves one list iteration.
@@ -841,9 +857,47 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
       
             int da = ev.dataA();
             int db = ev.dataB();
-            db = limitValToInstrCtlRange(da, db);
 
-            if(!setHwCtrlState(ev.channel(), da, db)) {
+            int chn = ev.channel();
+
+            // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
+            //        defined by the user in the controller list.
+            if(da == CTRL_HBANK)
+            {
+              int hb = da & 0xff;
+              int lb = 0xff;
+              int pr = 0xff;
+              if(_device)
+              {
+                _device->curOutParamNums(chn)->currentProg(&pr, &lb, NULL);
+                _device->curOutParamNums(chn)->BANKH = hb;
+              }
+              db = (hb << 16) | (lb << 8) | pr;
+              da = CTRL_PROGRAM;
+            }
+            else if(da == CTRL_LBANK)
+            {
+              int hb = 0xff;
+              int lb = da & 0xff;
+              int pr = 0xff;
+              if(_device)
+              {
+                _device->curOutParamNums(chn)->currentProg(&pr, NULL, &hb);
+                _device->curOutParamNums(chn)->BANKL = lb;
+              }
+              db = (hb << 16) | (lb << 8) | pr;
+              da = CTRL_PROGRAM;
+            }
+            else if(da == CTRL_PROGRAM)
+            {
+              // TODO: Maybe update CTRL_HBANK/CTRL_LBANK - but ONLY if they are specifically
+              //        defined by the user in the controller list.
+            }
+            else
+              db = limitValToInstrCtlRange(da, db);
+              
+            
+            if(!setHwCtrlState(chn, da, db)) {
                 if (MusEGlobal::debugMsg && forceSend)
                   printf("sendHwCtrlState: State already set. Forcing anyway...\n");
                 if (!forceSend)
@@ -882,7 +936,17 @@ bool MidiPort::sendHwCtrlState(const MidiPlayEvent& ev, bool forceSend)
       else
       if (ev.type() == ME_PROGRAM) 
       {
-        if(!setHwCtrlState(ev.channel(), CTRL_PROGRAM, ev.dataA())) {
+        int chn = ev.channel();
+        int hb = 0xff;
+        int lb = 0xff;
+        int pr = ev.dataA() & 0xff;
+        if(_device)
+        {
+          _device->curOutParamNums(chn)->currentProg(NULL, &lb, &hb);
+          _device->curOutParamNums(chn)->PROG = pr;
+        }
+        int full_prog = (hb << 16) | (lb << 8) | pr;
+        if(!setHwCtrlState(chn, CTRL_PROGRAM, full_prog)) {
           if (!forceSend)
               return false;
         }
@@ -1034,8 +1098,8 @@ void MidiPort::deleteController(int ch, int tick, int ctrl, Part* part)
 
 MidiController* MidiPort::midiController(int num) const
       {
-      if (_instrument) {
-            MidiControllerList* mcl = _instrument->controller();
+      if (_outputInstrument) {
+            MidiControllerList* mcl = _outputInstrument->controller();
             for (iMidiController i = mcl->begin(); i != mcl->end(); ++i) {
                   int cn = i->second->num();
                   if (cn == num)
@@ -1097,10 +1161,10 @@ MidiController* MidiPort::midiController(int num) const
 
 MidiController* MidiPort::drumController(int ctl)
 {
-  if(!_instrument)
+  if(!_outputInstrument)
     return 0;
     
-  MidiControllerList* cl = _instrument->controller();
+  MidiControllerList* cl = _outputInstrument->controller();
   
   // If it's an RPN, NRPN, RPN14, or NRPN14 controller...
   if(((ctl - CTRL_RPN_OFFSET >= 0) && (ctl - CTRL_RPN_OFFSET <= 0xffff)) ||
@@ -1121,13 +1185,13 @@ MidiController* MidiPort::drumController(int ctl)
             
 int MidiPort::nullSendValue()
 { 
-  return _instrument ? _instrument->nullSendValue() : -1; 
+  return _outputInstrument ? _outputInstrument->nullSendValue() : -1;
 }
 
 void MidiPort::setNullSendValue(int v)              
 { 
-  if(_instrument) 
-    _instrument->setNullSendValue(v); 
+  if(_outputInstrument)
+    _outputInstrument->setNullSendValue(v);
 }
 
 //---------------------------------------------------------

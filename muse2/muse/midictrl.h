@@ -233,6 +233,61 @@ class MidiCtrlValListList : public std::map<int, MidiCtrlValList*, std::less<int
       void clearDelete(bool deleteLists);      
       };
 
+// REMOVE Tim.      
+// //---------------------------------------------------------
+// //   MidiCtrlState
+// //    Like MidiCtrlValList, this simpler list also represents the controller state
+// //     of a midi port. But it does not hold complete graphs, only current values.
+// //    It needs to be RT friendly because it is used by the audio thread Jack midi code,
+// //     as well as the ALSA thread code.      
+// //     index = (channelNumber << 24) + ctrlNumber
+// //    TODO: Alloc using our memory pools (memory.h, example of use: MPEventList).
+// //---------------------------------------------------------
+// 
+// typedef std::map<int, int, std::less<int> >::iterator iMidiCtrlState;
+// typedef std::map<int, int, std::less<int> >::const_iterator ciMidiCtrlState;
+// 
+// class MidiCtrlState : public std::map<int, int, std::less<int> > {
+//    public:
+//       void add(int channel, int ctrl, int val) {
+//             insert(std::pair<const int, int>((channel << 24) + ctrl, val));
+//             }
+//       iMidiCtrlValList find(int channel, int ctrl) {
+//             return std::map<int, int, std::less<int> >::find((channel << 24) + ctrl);
+//             }
+//       };
+
+//---------------------------------------------------------
+//   MidiCtrlState
+//---------------------------------------------------------
+      
+//struct MidiCtrlState {
+class MidiCtrlState {
+  public:
+    unsigned char* ctrls; //[128];
+    unsigned char* RPNH; //[16384];
+    unsigned char* RPNL; //[16384];
+    unsigned char* NRPNH; //[16384];
+    unsigned char* NRPNL; //[16384];
+    bool  modeIsNRP;
+    //char* data;
+
+  public:
+    MidiCtrlState();
+    ~MidiCtrlState();
+
+    //char* ctrls() { return data; }
+    //char* RPN()   { return data + 128; }
+    //char* NRPN()  { return data + 128 + 32768; }
+
+//     char* ctrls()  { return ctrls; }
+//     char* RPNH()   { return RPNH; }
+//     char* RPNL()   { return RPNL; }
+//     char* NRPNH()  { return NRPNH; }
+//     char* NRPNL()  { return NRPNL; }
+    void init();
+};
+      
 //---------------------------------------------------------
 //   MidiControllerList
 //    this is a list of used midi controllers created

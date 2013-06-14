@@ -1569,36 +1569,43 @@ unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
   if(!checkJackClient(_client) || !port)
     return 0;
 
+// REMOVE Tim.  
   QString s(jack_port_name((jack_port_t*)port));
-  //fprintf(stderr, "Jack::portName %p %s\n", port, s.toLatin1().constData());  
-  
+  //fprintf(stderr, "Jack::portName %p %s\n", port, s.toLatin1().constData());
+
   jack_latency_range_t p_range;
   jack_port_get_latency_range((jack_port_t*)port, JackPlaybackLatency, &p_range);
-  //fprintf(stderr, "JackAudioDevice::portLatency playback min:%u max:%u\n", p_range.min, p_range.max);  
-  if(p_range.max != p_range.min)
-  {
-    //fprintf(stderr, "JackAudioDevice::portLatency min:%u != max:%u\n", p_range.min, p_range.max);  
+  //fprintf(stderr, "JackAudioDevice::portLatency playback min:%u max:%u\n", p_range.min, p_range.max);
+  //if(p_range.max != p_range.min)
+  //{
+  //  fprintf(stderr, "JackAudioDevice::portLatency min:%u != max:%u\n", p_range.min, p_range.max);
     //return (p_range.max - p_range.min) / 2;
-  }
-  
+  //}
+
   jack_latency_range_t c_range;
   jack_port_get_latency_range((jack_port_t*)port, JackCaptureLatency, &c_range);
-  //fprintf(stderr, "JackAudioDevice::portLatency capture min:%u max:%u\n", c_range.min, c_range.max);  
-  if(c_range.max != c_range.min)
-  {
-    //fprintf(stderr, "JackAudioDevice::portLatency capture min:%u != max:%u\n", c_range.min, c_range.max);  
+  //fprintf(stderr, "JackAudioDevice::portLatency capture min:%u max:%u\n", c_range.min, c_range.max);
+  //if(c_range.max != c_range.min)
+  //{
+    //fprintf(stderr, "JackAudioDevice::portLatency capture min:%u != max:%u\n", c_range.min, c_range.max);
 
     // TODO TEST Decide which method to use. Although, it is arbitrary.
-    //return (c_range.max - c_range.min) / 2;  
+    //return (c_range.max - c_range.min) / 2;
     //return c_range.max;
-  }
+  //}
 
   if(capture)
     //return (c_range.max - c_range.min) / 2;
     return c_range.max;
-  
+
   //return (p_range.max - p_range.min) / 2;
   return p_range.max;
+
+
+//   // Hm... for speed, maybe cache the values?
+//   jack_latency_range_t l_range;
+//   jack_port_get_latency_range((jack_port_t*)port, capture ? JackCaptureLatency : JackPlaybackLatency, &l_range);
+//   return l_range.max;
 }
 
 //---------------------------------------------------------

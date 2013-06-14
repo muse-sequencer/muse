@@ -287,6 +287,7 @@ class PluginIBase
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
       virtual LADSPA_PortRangeHint range(unsigned long i) = 0;
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i) = 0;
+      virtual float latency() = 0;
       
       virtual CtrlValueType ctrlValueType(unsigned long i) const = 0;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const = 0;
@@ -317,6 +318,8 @@ class PluginI : public PluginIBase {
 
       unsigned long controlPorts;      
       unsigned long controlOutPorts;    
+      bool          _hasLatencyOutPort;
+      unsigned long _latencyOutPort;
       
       bool _on;
       bool initControlValues;
@@ -400,6 +403,7 @@ class PluginI : public PluginIBase {
       bool isAudioOut(unsigned long k) { return (_plugin->portd(k) & AUDIO_OUT) == AUDIO_OUT; }
       LADSPA_PortRangeHint range(unsigned long i) { return _plugin->range(controls[i].idx); }
       LADSPA_PortRangeHint rangeOut(unsigned long i) { return _plugin->range(controlsOut[i].idx); }
+      float latency();
       bool inPlaceCapable() const { return _plugin->inPlaceCapable(); }
       CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
       CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); };
@@ -440,6 +444,7 @@ class Pipeline : public std::vector<PluginI*> {
       bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // returns true if event cannot be delivered
       void enableController(int track_ctrl_id, bool en); 
       bool controllerEnabled(int track_ctrl_id);
+      float latency();
       };
 
 typedef Pipeline::iterator iPluginI;

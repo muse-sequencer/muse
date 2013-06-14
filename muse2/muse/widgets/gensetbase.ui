@@ -1761,8 +1761,8 @@ Disable to use an alternate standard
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>500</width>
-               <height>460</height>
+               <width>474</width>
+               <height>439</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

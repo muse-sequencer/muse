@@ -587,7 +587,8 @@ void MidiStrip::labelDoubleClicked(int idx)
 
 void MidiStrip::offToggled(bool val)
       {
-      track->setOff(val);
+      //track->setOff(val);  // REMOVE Tim.
+      MusEGlobal::audio->msgSetTrackOff(track, val);
       MusEGlobal::song->update(SC_MUTE);
       }
 

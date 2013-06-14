@@ -103,6 +103,8 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             //      }
             l->add(MidiPlayEvent(tick+tickoffset, port, channel, ME_PROGRAM, pr, 0));
             }
+      else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
+            return;
       else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
@@ -477,7 +479,7 @@ void MusE::exportMidi()
             {
               if(port >= 0 && port < MIDI_PORTS)
               {
-                MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
+                MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].outputInstrument();
                 if(instr)
                 {
                   if(i == 0 || MusEGlobal::config.smfFormat != 0)

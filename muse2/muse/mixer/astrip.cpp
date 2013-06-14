@@ -351,7 +351,8 @@ void AudioStrip::updatePan()
 
 void AudioStrip::offToggled(bool val)
       {
-      track->setOff(val);
+      //track->setOff(val);  // REMOVE Tim.
+      MusEGlobal::audio->msgSetTrackOff(track, val);
       MusEGlobal::song->update(SC_MUTE);
       }
 

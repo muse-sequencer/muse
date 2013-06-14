@@ -37,6 +37,73 @@
 namespace MusECore {
 
 class Xml;
+class MidiCtrlState;
+
+// REMOVE Tim.
+// struct MidiInputParams {
+//       unsigned char CTRL14H[128];
+//       int BANKH;
+//       int BANKL;
+//       int PROG;
+//       int RPNL;
+//       int RPNH;
+//       int NRPNL;
+//       int NRPNH;
+//       int DATAH;
+//       int DATAL;
+// 
+//       void reset() { BANKH = BANKL = PROG = 0xff; RPNL = RPNH = NRPNL = NRPNH = -1; CTRL14H = CTRL14L = DATAH = DATAL = 0; }
+//       void resetParamNums() { RPNL = RPNH = NRPNL = NRPNH = DATAH = DATAL = -1; }
+//       void resetPatch() { BANKH = BANKL = PROG = 0xff; }
+//       void setCTRL14H(int a)  { CTRL14H = a;}
+//       void setCTRL14L(int a)  { CTRL14L = a;}
+//       void setRPNL(int a)  { RPNL = a;  NRPNL = NRPNH = -1; }
+//       void setRPNH(int a)  { RPNH = a;  NRPNL = NRPNH = -1; }
+//       void setNRPNL(int a) { NRPNL = a; RPNL  = RPNH = -1; }
+//       void setNRPNH(int a) { NRPNH = a; RPNL  = RPNH = -1; }
+//       void setBANKH(int a) { BANKH = a;}
+//       void setBANKL(int a) { BANKL = a;}
+//       void setPROG(int a)  { PROG = a;}
+//       void setDATAH(int a) { DATAH = a;}
+//       void setDATAL(int a) { DATAL = a;}
+//       //void currentProg(unsigned long *prg, unsigned long *lbank, unsigned long *hbank)
+//       //     {  if(prg) *prg=PROG&0xff; if(lbank) *lbank=BANKL&0xff; if(hbank) *hbank=BANKH & 0xff;  }
+//       //void setCurrentProg(unsigned long prg, unsigned long lbank, unsigned long hbank)
+//       //     {  PROG=prg&0xff; BANKL=lbank&0xff; BANKH=hbank&0xff;  }
+//       void currentProg(int *prg, int *lbank, int *hbank)
+//            {  if(prg) *prg=PROG&0xff; if(lbank) *lbank=BANKL&0xff; if(hbank) *hbank=BANKH&0xff;  }
+//       void setCurrentProg(int prg, int lbank, int hbank)
+//            {  PROG=prg&0xff; BANKL=lbank&0xff; BANKH=hbank&0xff;  }
+// };
+
+struct MidiOutputParams {
+      int BANKH;
+      int BANKL;
+      int PROG;
+      int RPNL;
+      int RPNH;
+      int NRPNL;
+      int NRPNH;
+      
+      void reset() { BANKH = BANKL = PROG = 0xff; RPNL = RPNH = NRPNL = NRPNH = -1; }
+      void resetParamNums() { RPNL = RPNH = NRPNL = NRPNH = -1; }
+      void resetPatch() { BANKH = BANKL = PROG = 0xff; }
+      void setRPNL(int a)  { RPNL = a;  NRPNL = NRPNH = -1; }
+      void setRPNH(int a)  { RPNH = a;  NRPNL = NRPNH = -1; }
+      void setNRPNL(int a) { NRPNL = a; RPNL  = RPNH = -1; }
+      void setNRPNH(int a) { NRPNH = a; RPNL  = RPNH = -1; }
+      void setBANKH(int a) { BANKH = a;}
+      void setBANKL(int a) { BANKL = a;}
+      void setPROG(int a)  { PROG = a;}
+      //void currentProg(unsigned long *prg, unsigned long *lbank, unsigned long *hbank)
+      //     {  if(prg) *prg=PROG&0xff; if(lbank) *lbank=BANKL&0xff; if(hbank) *hbank=BANKH & 0xff;  }
+      //void setCurrentProg(unsigned long prg, unsigned long lbank, unsigned long hbank)
+      //     {  PROG=prg&0xff; BANKL=lbank&0xff; BANKH=hbank&0xff;  }
+      void currentProg(int *prg, int *lbank, int *hbank)
+           {  if(prg) *prg=PROG&0xff; if(lbank) *lbank=BANKL&0xff; if(hbank) *hbank=BANKH&0xff;  }
+      void setCurrentProg(int prg, int lbank, int hbank)
+           {  PROG=prg&0xff; BANKL=lbank&0xff; BANKH=hbank&0xff;  }
+};
 
 //---------------------------------------------------------
 //   MidiDevice
@@ -57,7 +124,7 @@ class MidiDevice {
       
       bool _sysexReadingChunks;
       
-      MPEventList _stuckNotes;
+      MPEventList _stuckNotes; // Playback: Pending note-offs put directly to the device corresponding to currently playing notes
       MPEventList _playEvents;
       
       // Fifo for midi events sent from gui direct to midi port:
@@ -65,13 +132,17 @@ class MidiDevice {
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
       MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   
 
+      //MidiInputParams  _curInParamNums[MIDI_CHANNELS];  // To hold current input RPN/NRPN parameter numbers.
+      MidiCtrlState* _inputState;  // Current input controls and RPN/NRPN parameters.
+      MidiOutputParams _curOutParamNums[MIDI_CHANNELS]; // To hold current output RPN/NRPN parameter numbers.
+      
       volatile bool stopPending;         
       volatile bool seekPending;
       
       RouteList _inRoutes, _outRoutes;
       
       void init();
-      virtual bool putMidiEvent(const MidiPlayEvent&) = 0;
+      //virtual bool putMidiEvent(const MidiPlayEvent&) = 0;  // REMOVE Tim.
       virtual void processStuckNotes();
 
    public:
@@ -79,7 +150,7 @@ class MidiDevice {
       
       MidiDevice();
       MidiDevice(const QString& name);
-      virtual ~MidiDevice() {}
+      virtual ~MidiDevice();
 
       virtual int deviceType() const = 0;
       
@@ -121,10 +192,16 @@ class MidiDevice {
       // Add a stuck note. Returns false if event cannot be delivered.
       virtual bool addStuckNote(const MidiPlayEvent& ev) { _stuckNotes.add(ev); return true; }
       // Put an event for immediate playback.
-      virtual bool putEvent(const MidiPlayEvent&);
+      //virtual bool putEvent(const MidiPlayEvent&);  // REMOVE Tim.
+      virtual bool putEvent(const MidiPlayEvent&) = 0;
       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
       // Since it waits, it should not be used in RT or other time-sensitive threads. p4.0.15
       bool putEventWithRetry(const MidiPlayEvent&, int tries = 2, long delayUs = 50000);  // 2 tries, 50 mS by default.
+      //MidiInputParams*  curInParamNums(int chan)  { return &_curInParamNums[chan]; }  // REMOVE Tim.
+      MidiCtrlState* inputState(int /*chan*/)  { return _inputState; }
+      MidiOutputParams* curOutParamNums(int chan) { return &_curOutParamNums[chan]; }
+      //void resetCurInParamNums(int chan = -1);  // Reset channel's current parameter numbers to -1. All channels if chan = -1.  // REMOVE Tim.
+      void resetCurOutParamNums(int chan = -1); // Reset channel's current parameter numbers to -1. All channels if chan = -1.
       
       virtual void handleStop();  
       virtual void handleSeek();
@@ -140,7 +217,7 @@ class MidiDevice {
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
       bool sysexReadingChunks() { return _sysexReadingChunks; }
       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
-      bool sendNullRPNParams(unsigned time, int port, int chan, bool);
+      //bool sendNullRPNParams(unsigned time, int port, int chan, bool);  // REMOVE Tim.
       };
 
 //---------------------------------------------------------

@@ -24,6 +24,8 @@
 
 #include "track.h"
 #include "event.h"
+#include "mpevent.h"
+#include "midi.h"
 #include "mididev.h"
 #include "midiport.h"
 #include "song.h"
@@ -470,6 +472,8 @@ MidiTrack::MidiTrack()
       init();
       _events = new EventList;
       _mpevents = new MPEventList;
+      _stuckNotes = new MPEventList;
+      _stuckLiveNotes = new MPEventList;
       clefType=trebleClef;
       
       _drummap=new DrumMap[128];
@@ -483,6 +487,8 @@ MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
 {
       _events   = new EventList;
       _mpevents = new MPEventList;
+      _stuckNotes = new MPEventList;
+      _stuckLiveNotes = new MPEventList;
 
       _drummap=new DrumMap[128];
       _drummap_hidden=new bool[128];
@@ -630,6 +636,8 @@ MidiTrack::~MidiTrack()
       {
       delete _events;
       delete _mpevents;
+      delete _stuckNotes;
+      delete _stuckLiveNotes;
       delete [] _drummap;
       delete [] _drummap_hidden;
       
@@ -909,6 +917,86 @@ Part* MidiTrack::newPart(Part*p, bool clone)
       
       return part;
       }
+
+//---------------------------------------------------------
+//   addStuckNote
+//---------------------------------------------------------
+
+bool MidiTrack::addStuckNote(const MidiPlayEvent& ev)
+{
+  _stuckNotes->add(ev);
+  return true;
+}
+      
+// //---------------------------------------------------------
+// //   processStuckLiveNotes
+// //---------------------------------------------------------
+// 
+// void MidiTrack::processStuckLiveNotes(MidiDevice* dev)   // REMOVE Tim.
+// //void MidiTrack::processStuckLiveNotes()
+// {
+//   for(ciMPEvent k = _stuckLiveNotes->begin(); k != _stuckLiveNotes->end(); ++k)
+//   {
+//     MidiPlayEvent ev(*k);
+//     ev.setTime(0);       // Mark it for immediate playback.
+// 
+//     //dev->addScheduledEvent(*k);  // TODO: Use putEvent ?  // REMOVE Tim.
+//     dev->putEvent(*k);
+//     
+//   }
+//   _stuckLiveNotes->clear();
+// }
+
+//---------------------------------------------------------
+//   addStuckLiveNote
+//   Return true if note was removed.
+//---------------------------------------------------------
+
+bool MidiTrack::addStuckLiveNote(int port, int chan, int note, int vel)
+{
+  _stuckLiveNotes->add(MidiPlayEvent(0, port, chan, ME_NOTEOFF, note, vel)); // Mark for immediate playback
+  return true;
+}
+
+//---------------------------------------------------------
+//   removeStuckLiveNote
+//   Return true if note was removed.
+//---------------------------------------------------------
+
+// REMOVE Tim.
+// bool MidiTrack::removeStuckLiveNote(const MidiPlayEvent& ev)
+// {
+//   for(ciMPEvent k = _stuckLiveNotes->begin(); k != _stuckLiveNotes->end(); ++k)
+//   {
+//     MidiPlayEvent event(*k);
+// 
+//     // We're looking for port, channel, and note. Time and velocity are not relevant.
+//     if((*k).port() == ev.port() &&
+//        (*k).channel() == ev.channel() &&
+//        (*k).dataA() == ev.dataA())
+//     {
+//       _stuckLiveNotes->erase(k);
+//       return true;
+//     }
+//   }
+//   return false;
+// }
+
+bool MidiTrack::removeStuckLiveNote(int port, int chan, int note)
+{
+  for(ciMPEvent k = _stuckLiveNotes->begin(); k != _stuckLiveNotes->end(); ++k)
+  {
+    // We're looking for port, channel, and note. Time and velocity are not relevant.
+    if((*k).port() == port &&
+       (*k).channel() == chan &&
+       (*k).dataA() == note)
+    {
+      _stuckLiveNotes->erase(k);
+      return true;
+    }
+  }
+  return false;
+}
 
 //---------------------------------------------------------
 //   automationType
@@ -1408,7 +1496,7 @@ bool MidiTrack::auto_update_drummap()
   if (_drummap_tied_to_patch)
   {
     int patch = getFirstControllerValue(CTRL_PROGRAM,0);
-    const DrumMap* new_drummap = MusEGlobal::midiPorts[_outPort].instrument()->drummap_for_patch(patch);
+    const DrumMap* new_drummap = MusEGlobal::midiPorts[_outPort].outputInstrument()->drummap_for_patch(patch);
     
     if (!drummaps_almost_equal(new_drummap, this->drummap(), 128))
     {

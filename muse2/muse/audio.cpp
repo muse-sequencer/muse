@@ -114,7 +114,8 @@ const char* seqMsgList[] = {
       "AUDIO_ERASE_RANGE_AC_EVENTS",
       "AUDIO_ADD_AC_EVENT",
       "AUDIO_CHANGE_AC_EVENT",
-      "AUDIO_SET_SOLO", "AUDIO_SET_SEND_METRONOME", 
+      "AUDIO_SET_SOLO", "AUDIO_SET_MUTE", "AUDIO_SET_TRACKOFF",
+      "AUDIO_SET_SEND_METRONOME", 
       "AUDIO_START_MIDI_LEARN",
       "MS_PROCESS", "MS_STOP", "MS_SET_RTC", "MS_UPDATE_POLL_FD",
       "SEQM_IDLE", "SEQM_SEEK"
@@ -676,6 +677,12 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_SET_SOLO:
                   msg->track->setSolo((bool)msg->ival);
                   break;
+            case AUDIO_SET_MUTE:
+                  msg->track->setMute((bool)msg->ival);
+                  break;
+            case AUDIO_SET_TRACKOFF:
+                  msg->track->setOff((bool)msg->ival);
+                  break;
 
             case AUDIO_SET_SEND_METRONOME:
                   msg->snode->setSendMetronome((bool)msg->ival);
@@ -704,7 +711,7 @@ void Audio::processMsg(AudioMsg* msg)
                   for (int i = 0; i < MIDI_PORTS; ++i)                         
                   {      
                     if(MusEGlobal::midiPorts[i].device())                       
-                      MusEGlobal::midiPorts[i].instrument()->reset(i);
+                      MusEGlobal::midiPorts[i].outputInstrument()->reset(i);
                   }      
                   break;
             case SEQM_INIT_DEVICES:

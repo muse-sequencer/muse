@@ -176,6 +176,7 @@ class MidiInstrument {
       std::list<patch_drummap_mapping_t> patch_drummap_mapping;
       bool _dirty;
       int _nullvalue;
+      bool _waitForLSB; // Whether 14-bit controllers wait for LSB, or MSB and LSB are separate.
 
       void init();
 
@@ -227,7 +228,9 @@ class MidiInstrument {
       MidiControllerList* controller() const { return _controller; }
       int nullSendValue() { return _nullvalue; }
       void setNullSendValue(int v) { _nullvalue = v; }
-
+      bool waitForLSB() { return _waitForLSB; }
+      void setWaitForLSB(bool v) { _waitForLSB = v; }
+      
       void readMidiState(Xml& xml);
       virtual bool guiVisible() const   { return false; }
       virtual void showGui(bool)        {}

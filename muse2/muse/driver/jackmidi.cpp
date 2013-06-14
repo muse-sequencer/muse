@@ -310,19 +310,20 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
         }
       }
 }
-    
-//---------------------------------------------------------
-//   putEvent
-//---------------------------------------------------------
 
-/* FIX: if we fail to transmit the event,
- *      we return false (indicating OK). Otherwise
- *      it seems muse will retry forever
- */
-bool MidiJackDevice::putMidiEvent(const MidiPlayEvent& /*event*/)
-{
-  return false;
-}
+// REMOVE Tim.
+// //---------------------------------------------------------
+// //   putEvent
+// //---------------------------------------------------------
+// 
+// /* FIX: if we fail to transmit the event,
+//  *      we return false (indicating OK). Otherwise
+//  *      it seems muse will retry forever
+//  */
+// bool MidiJackDevice::putMidiEvent(const MidiPlayEvent& /*event*/)
+// {
+//   return false;
+// }
 
 //---------------------------------------------------------
 //   recordEvent
@@ -644,10 +645,54 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
             }
             
       switch(e.type()) {
+
+
+            case ME_CONTROLLER:
+// REMOVE Tim.              
+//                 {
+//                   int chn = e.channel();
+//                   int a   = e.dataA();
+//                   int b   = e.dataB();
+//                   if(a == CTRL_HRPN)
+//                   {
+//                     if(b == _curOutParamNums[chn].RPNH)
+//                       return true;
+//                     _curOutParamNums[chn].RPNH = b;
+//                     _curOutParamNums[chn].NRPNH = -1; // Reset. Data MSB/LSB can only be for either RPN or NRPN.
+//                     _curOutParamNums[chn].NRPNL = -1; //
+//                   }
+//                   else if(a == CTRL_LRPN)
+//                   {
+//                     if(b == _curOutParamNums[chn].RPNL)
+//                       return true;
+//                     _curOutParamNums[chn].RPNL = b;
+//                     _curOutParamNums[chn].NRPNH = -1;
+//                     _curOutParamNums[chn].NRPNL = -1;
+//                   }
+//                   else if(a == CTRL_HNRPN)
+//                   {
+//                     if(b == _curOutParamNums[chn].NRPNH)
+//                       return true;
+//                     _curOutParamNums[chn].NRPNH = b;
+//                     _curOutParamNums[chn].RPNH = -1;
+//                     _curOutParamNums[chn].RPNL = -1;
+//                   }
+//                   else if(a == CTRL_LNRPN)
+//                   {
+//                     if(b == _curOutParamNums[chn].NRPNL)
+//                       return true;
+//                     _curOutParamNums[chn].NRPNL = b;
+//                     _curOutParamNums[chn].RPNH = -1;
+//                     _curOutParamNums[chn].RPNL = -1;
+//                   }
+//                   else if((a == CTRL_RESET_ALL_CTRL) ||
+//                           a == CTRL_HBANK || a == CTRL_LBANK || a == CTRL_PROGRAM)
+//                     _curOutParamNums[chn].reset();  // Probably best to reset.
+//                 }
+//                 // Fall through...
             case ME_NOTEON:
             case ME_NOTEOFF:
             case ME_POLYAFTER:
-            case ME_CONTROLLER:
             case ME_PITCHBEND:
                   {
                   #ifdef JACK_MIDI_DEBUG
@@ -668,6 +713,9 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   break;
 
             case ME_PROGRAM:
+// REMOVE Tim.              
+//                     _curOutParamNums[e.channel()].reset();  // Probably best to reset.
+//                     // Fall through...
             case ME_AFTERTOUCH:
                   {
                   #ifdef JACK_MIDI_DEBUG
@@ -691,6 +739,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
                   printf("MidiJackDevice::queueEvent sysex\n");
                   #endif  
                   
+//                   resetCurOutParamNums();  // Probably best to reset all.   // REMOVE Tim.
                   const unsigned char* data = e.data();
                   int len = e.len();
                   unsigned char* p = jack_midi_event_reserve(pb, ft, len+2);
@@ -793,42 +842,55 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       
   if(event.type() == ME_PROGRAM) 
   {
+    //_curOutParamNums[chn].resetParamNums();  // Probably best to reset.
     // don't output program changes for GM drum channel
     //if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
-          int hb = (a >> 16) & 0xff;
-          int lb = (a >> 8) & 0xff;
-          int pr = a & 0x7f;
-          
-          //printf("MidiJackDevice::processEvent ME_PROGRAM time:%d type:%d ch:%d A:%d B:%d hb:%d lb:%d pr:%d\n", 
-          //       event.time(), event.type(), event.channel(), event.dataA(), event.dataB(), hb, lb, pr);
-          
-          if (hb != 0xff)
-          {  
-                if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb)))
-                  return false;  // p4.0.15 Inform that processing the event in general failed. Ditto all below... 
-///            t += 1;      
-          }
-          if (lb != 0xff)
-          {
-                if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
-                  return false;
-///            t += 1;      
-          }
-          if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0)))
+
+// REMOVE Tim.      
+//           int hb = (a >> 16) & 0xff;
+//           int lb = (a >> 8) & 0xff;
+//           int pr = a & 0xff;
+//           
+//           //printf("MidiJackDevice::processEvent ME_PROGRAM time:%d type:%d ch:%d A:%d B:%d hb:%d lb:%d pr:%d\n", 
+//           //       event.time(), event.type(), event.channel(), event.dataA(), event.dataB(), hb, lb, pr);
+//           
+//           _curOutParamNums[chn].setCurrentProg(pr, lb, hb);
+//           if (hb != 0xff)
+//           {  
+//                 if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb)))
+//                   return false;  // p4.0.15 Inform that processing the event in general failed. Ditto all below... 
+//           }
+//           if (lb != 0xff)
+//           {
+//                 if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
+//                   return false;
+//           }
+//           if (pr != 0xff)
+//           {
+//                 if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0)))
+//                   return false;
+//           }
+          _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+          _curOutParamNums[chn].setPROG(a);
+          if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, a, 0)))
             return false;
-            
+          
     //      }
   }
-  else
-  if(event.type() == ME_PITCHBEND) 
+  else if(event.type() == ME_PITCHBEND)
   {
       int v = a + 8192;
       //printf("MidiJackDevice::processEvent ME_PITCHBEND v:%d time:%d type:%d ch:%d A:%d B:%d\n", v, event.time(), event.type(), event.channel(), event.dataA(), event.dataB());
       if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PITCHBEND, v & 0x7f, (v >> 7) & 0x7f)))
         return false;
   }
-  else
-  if(event.type() == ME_CONTROLLER) 
+  else if(event.type() == ME_SYSEX)
+  {
+    resetCurOutParamNums();  // Probably best to reset all.
+    if(!queueEvent(event))
+      return false;
+  }
+  else if(event.type() == ME_CONTROLLER)
   {
     // Perhaps we can find use for this value later, together with the Jack midi MusE port(s).
     // No big deal if not. Not used for now.
@@ -867,28 +929,31 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     }
     else if (a == CTRL_PROGRAM) 
     {
+      _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
       // don't output program changes for GM drum channel
       //if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
             int hb = (b >> 16) & 0xff;
             int lb = (b >> 8) & 0xff;
-            int pr = b & 0x7f;
+            int pr = b & 0xff;
             //printf("MidiJackDevice::processEvent CTRL_PROGRAM time:%d type:%d ch:%d A:%d B:%d hb:%d lb:%d pr:%d\n", 
             //       event.time(), event.type(), event.channel(), event.dataA(), event.dataB(), hb, lb, pr);
-          
+
+            _curOutParamNums[chn].setCurrentProg(pr, lb, hb);
             if (hb != 0xff)
             {
                   if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HBANK, hb)))
                     return false;
-///                  t += 1;      
             }
             if (lb != 0xff)
             {
                   if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LBANK, lb)))
                     return false;
-///                  t += 1;      
             }
-            if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0)))
-              return false;
+            if (pr != 0xff)
+            {
+                  if(!queueEvent(MidiPlayEvent(t, port, chn, ME_PROGRAM, pr, 0)))
+                    return false;
+            }
               
       //      }
     }
@@ -905,6 +970,27 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     }
     else if (a < CTRL_14_OFFSET) 
     {              // 7 Bit Controller
+      if(a == CTRL_HRPN)
+        _curOutParamNums[chn].setRPNH(b);
+      else if(a == CTRL_LRPN)
+        _curOutParamNums[chn].setRPNL(b);
+      else if(a == CTRL_HNRPN)
+        _curOutParamNums[chn].setNRPNH(b);
+      else if(a == CTRL_LNRPN)
+        _curOutParamNums[chn].setNRPNL(b);
+      else if(a == CTRL_HBANK)
+      {
+        _curOutParamNums[chn].setBANKH(b);
+        _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+      }
+      else if(a == CTRL_LBANK)
+      {
+        _curOutParamNums[chn].setBANKL(b);
+        _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+      }
+      else if(a == CTRL_RESET_ALL_CTRL) 
+        _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+
       //queueEvent(museport, MidiPlayEvent(t, port, chn, event));
       if(!queueEvent(event))
         return false;
@@ -917,7 +1003,6 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int dataL = b & 0x7f;
       if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, ctrlH, dataH)))
         return false;
-///     t += 1;      
       if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, ctrlL, dataL)))
         return false;
     }
@@ -925,89 +1010,104 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     {     // RPN 7-Bit Controller
       int ctrlH = (a >> 8) & 0x7f;
       int ctrlL = a & 0x7f;
-      if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
-        return false;
-///     t += 1;      
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
-        return false;
-///     t += 1;      
+      if(ctrlH != _curOutParamNums[chn].RPNH)
+      {
+        _curOutParamNums[chn].setRPNH(ctrlH);
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
+          return false;
+      }
+      if(ctrlL != _curOutParamNums[chn].RPNL)
+      {
+        _curOutParamNums[chn].setRPNL(ctrlL);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
+          return false;
+      }
       if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b)))
         return false;
-///     t += 1;      
       
-      //t += 3;  
       // Select null parameters so that subsequent data controller events do not upset the last *RPN controller.
       //sendNullRPNParams(chn, false);
       if(nvh != 0xff)
       {
+        _curOutParamNums[chn].setRPNH(nvh & 0x7f);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f)))
           return false;
-///        t += 1;  
       }
       if(nvl != 0xff)
       {
+        _curOutParamNums[chn].setRPNL(nvl & 0x7f);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, nvl & 0x7f)))
           return false;
       }    
     }
-    //else if (a < CTRL_RPN14_OFFSET) 
     else if (a < CTRL_INTERNAL_OFFSET) 
     {     // NRPN 7-Bit Controller
       int ctrlH = (a >> 8) & 0x7f;
       int ctrlL = a & 0x7f;
-      if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
-        return false;
-///     t += 1;      
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
-        return false;
-///     t += 1;      
+      if(ctrlH != _curOutParamNums[chn].NRPNH)
+      {
+        _curOutParamNums[chn].setNRPNH(ctrlH);
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
+          return false;
+      }
+      if(ctrlL != _curOutParamNums[chn].NRPNL)
+      {
+        _curOutParamNums[chn].setNRPNL(ctrlL);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
+          return false;
+      }
       if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, b)))
         return false;
-///     t += 1;      
                   
-      //t += 3;  
       //sendNullRPNParams(chn, true);
       if(nvh != 0xff)
       {
+        _curOutParamNums[chn].setNRPNH(nvh & 0x7f);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f)))
           return false;
-///        t += 1;  
       }
       if(nvl != 0xff)
       {
+        _curOutParamNums[chn].setNRPNL(nvl & 0x7f);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, nvl & 0x7f)))
           return false;
       }    
     }
+    else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
+      return false;
     else if (a < CTRL_NRPN14_OFFSET) 
     {     // RPN14 Controller
       int ctrlH = (a >> 8) & 0x7f;
       int ctrlL = a & 0x7f;
       int dataH = (b >> 7) & 0x7f;
       int dataL = b & 0x7f;
-      if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
-        return false;
-///     t += 1;      
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
-        return false;
-///     t += 1;      
+      if(ctrlH != _curOutParamNums[chn].RPNH)
+      {
+        _curOutParamNums[chn].setRPNH(ctrlH);
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HRPN, ctrlH)))
+          return false;
+      }
+      if(ctrlL != _curOutParamNums[chn].RPNL)
+      {
+        _curOutParamNums[chn].setRPNL(ctrlL);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL)))
+          return false;
+      }
       if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
         return false;
-///     t += 1;      
       if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
         return false;
-///     t += 1;      
       
-      //t += 4;  
       //sendNullRPNParams(chn, false);
       if(nvh != 0xff)
       {
+        _curOutParamNums[chn].setRPNH(nvh & 0x7f);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HRPN, nvh & 0x7f)))
           return false;
-///        t += 1;  
       }
       if(nvl != 0xff)
       {
+        _curOutParamNums[chn].setRPNL(nvl & 0x7f);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LRPN, nvl & 0x7f)))
           return false;
       }    
@@ -1018,29 +1118,33 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
       int ctrlL = a & 0x7f;
       int dataH = (b >> 7) & 0x7f;
       int dataL = b & 0x7f;
-      if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
-        return false;
-///     t += 1;      
-      if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
-        return false;
-///     t += 1;      
+      if(ctrlH != _curOutParamNums[chn].NRPNH)
+      {
+        _curOutParamNums[chn].setNRPNH(ctrlH);
+        if(!queueEvent(MidiPlayEvent(t,   port, chn, ME_CONTROLLER, CTRL_HNRPN, ctrlH)))
+          return false;
+      }
+      if(ctrlL != _curOutParamNums[chn].NRPNL)
+      {
+        _curOutParamNums[chn].setNRPNL(ctrlL);
+        if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, ctrlL)))
+          return false;
+      }
       if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HDATA, dataH)))
         return false;
-///     t += 1;      
       if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LDATA, dataL)))
         return false;
-///     t += 1;      
     
-      //t += 4;  
       //sendNullRPNParams(chn, true);
       if(nvh != 0xff)
       {
+        _curOutParamNums[chn].setNRPNH(nvh & 0x7f);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_HNRPN, nvh & 0x7f)))
           return false;
-///        t += 1;  
       }
       if(nvl != 0xff)
       {
+        _curOutParamNums[chn].setNRPNL(nvl & 0x7f);
         if(!queueEvent(MidiPlayEvent(t, port, chn, ME_CONTROLLER, CTRL_LNRPN, nvl & 0x7f)))
          return false;
       }   
@@ -1234,7 +1338,8 @@ void MidiJackDevice::processMidi()
   {
     //printf("MidiJackDevice::processMidi playEvent time:%d type:%d ch:%d A:%d B:%d\n", i->time(), i->type(), i->channel(), i->dataA(), i->dataB()); 
     // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.   
-    if(mp && !mp->sendHwCtrlState(*i, true)) // Force the event to be sent.
+    //if(mp && !mp->sendHwCtrlState(*i, true)) // Force the event to be sent.   // REMOVE Tim.
+    if(mp && !mp->sendHwCtrlState(*i, false)) 
       continue;
   
     // Try to process only until full, keep rest for next cycle. If no out client port or no write enable, eat up events.  p4.0.15 

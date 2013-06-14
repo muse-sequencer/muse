@@ -228,7 +228,8 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
       // I had said this may cause HW problems by sending out GM sysEx when really the HW might not be GM.
       // But this really needs to be done, one way or another. 
       // FIXME: TODO: Make this user-configurable!
-      QString instrument("GM"); 
+      QString out_instrument("GM");
+      QString in_instrument("GM");
       
       int rwFlags = 3;
       int openFlags = 1;
@@ -277,10 +278,17 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               doc = xml.parseInt(); 
                         else if (tag == "midiSyncInfo")
                               tmpSi.read(xml);
-                        else if (tag == "instrument") {
-                              instrument = xml.parse1();
+                        else if (tag == "instrument") {    // Obsolete
+                              out_instrument = xml.parse1();
                               //MusEGlobal::midiPorts[idx].setInstrument(    // Moved below
                               //   registerMidiInstrument(instrument)
+                              //   );
+                              }
+                        else if (tag == "outputInstrument") {
+                              out_instrument = xml.parse1();
+                              }
+                        else if (tag == "inputInstrument") {
+                              in_instrument = xml.parse1();
                               //   );
                               }
                         else if (tag == "midithru")
@@ -322,7 +330,8 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               
                               MidiPort* mp = &MusEGlobal::midiPorts[idx];
                               
-                              mp->setInstrument(registerMidiInstrument(instrument));  
+                              mp->setInputInstrument(registerMidiInstrument(in_instrument));
+                              mp->setOutputInstrument(registerMidiInstrument(out_instrument));
                               if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
                                 mp->setDefaultInChannels(dic);
                               if(doc != -1)
@@ -1183,7 +1192,8 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   //  or ALSA reorders or renames devices etc etc, then we have at least kept the track <-> port routes.
                      mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1 ||   // p4.0.17 Default is now to connect to all channels.
                      mport->defaultOutChannels() ||
-                     (!mport->instrument()->iname().isEmpty() && mport->instrument()->midiType() != MT_GM) ||
+                     (!mport->inputInstrument()->iname().isEmpty() && mport->inputInstrument()->midiType() != MT_GM) ||
+                     (!mport->outputInstrument()->iname().isEmpty() && mport->outputInstrument()->midiType() != MT_GM) ||
                      !mport->syncInfo().isDefault()) 
                     used = true;  
                   else  
@@ -1209,10 +1219,12 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   if(mport->defaultOutChannels())
                     xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());
                   
-                  if(!mport->instrument()->iname().isEmpty() &&                      // Tim.
-                     (mport->instrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable. 
-                     //(mport->instrument()->midiType() != MT_GM))
-                    xml.strTag(level, "instrument", mport->instrument()->iname());
+                  if(!mport->inputInstrument()->iname().isEmpty() &&                      // Tim.
+                     (mport->inputInstrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable.
+                    xml.strTag(level, "inputInstrument", mport->inputInstrument()->iname());
+                  if(!mport->outputInstrument()->iname().isEmpty() &&
+                     (mport->outputInstrument()->iname() != "GM"))                         // TODO Same here
+                    xml.strTag(level, "outputInstrument", mport->outputInstrument()->iname());
                     
                   if (dev) {
                         xml.strTag(level, "name",   dev->name());

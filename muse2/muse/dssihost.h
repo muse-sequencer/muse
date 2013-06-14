@@ -120,6 +120,8 @@ class DssiSynthIF : public SynthIF
       
       Port* _controls;
       Port* _controlsOut;
+      bool          _hasLatencyOutPort;
+      unsigned long _latencyOutPort;
       
       #ifdef OSC_SUPPORT
       OscDssiIF _oscif;
@@ -218,6 +220,7 @@ class DssiSynthIF : public SynthIF
       const char* paramOutName(unsigned long i);
       LADSPA_PortRangeHint range(unsigned long i);
       LADSPA_PortRangeHint rangeOut(unsigned long i);
+      float latency();
       CtrlValueType ctrlValueType(unsigned long i) const; 
       CtrlList::Mode ctrlMode(unsigned long i) const; 
 

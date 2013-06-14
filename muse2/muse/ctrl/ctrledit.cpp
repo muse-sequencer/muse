@@ -160,7 +160,7 @@ void CtrlEdit::setController(const QString& name)
 {
   int portno = canvas->track()->outPort();
   MusECore::MidiPort* port = &MusEGlobal::midiPorts[portno];
-  MusECore::MidiInstrument* instr = port->instrument();
+  MusECore::MidiInstrument* instr = port->outputInstrument();
   MusECore::MidiControllerList* mcl = instr->controller();
 
   for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 

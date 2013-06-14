@@ -319,7 +319,7 @@ class Song : public QObject {
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
       void swapTracks(int i1, int i2);
-      void setChannelMute(int channel, bool flag);
+      //void setChannelMute(int channel, bool flag);  // REMOVE Tim.
       void setRecordFlag(Track*, bool);
       void insertTrack0(Track*, int idx);
       void insertTrack1(Track*, int idx);

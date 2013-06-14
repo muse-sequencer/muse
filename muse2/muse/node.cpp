@@ -79,6 +79,79 @@ bool AudioTrack::isMute() const
       return _mute;
       }
 
+// REMOVE Tim.      
+// //---------------------------------------------------
+// //    flushStuckNotes
+// //    Sends all pending playback and live (rec) note-offs
+// //---------------------------------------------------
+// 
+// void MidiTrack::flushStuckNotes()
+// {      
+//   //------------------------------------------------------------
+//   //    Flush out any playback stuck notes
+//   //------------------------------------------------------------
+// 
+//   for(iMPEvent i = _stuckNotes->begin(); i != _stuckNotes->end(); ++i)
+//   {
+//     MidiPlayEvent ev = *i;
+//     int port = ev.port();
+//     if(port == -1)
+//       continue;
+//     MidiDevice* dev = MusEGlobal::midiPorts[port].device();
+//     if(!dev)
+//       continue;
+// 
+//     ev.setTime(0);
+//     dev->putEvent(ev);
+//   }
+//   _stuckNotes->clear();
+// 
+//   //---------------------------------------------------
+//   //    Flush out any 'live' stuck notes
+//   //     (for which we don't know the note-off time yet)
+//   //---------------------------------------------------
+// 
+//   for(iMPEvent i = _stuckLiveNotes->begin(); i != _stuckLiveNotes->end(); ++i)
+//   {
+//     MidiPlayEvent ev = *i;
+//     int port = ev.port();
+//     if(port == -1)
+//       continue;
+//     MidiDevice* dev = MusEGlobal::midiPorts[port].device();
+//     if(!dev)
+//       continue;
+// 
+//     ev.setTime(0);
+//     dev->putEvent(ev);
+//   }
+//   _stuckLiveNotes->clear();
+// }
+
+//---------------------------------------------------------
+//   setMute
+//---------------------------------------------------------
+
+void MidiTrack::setMute(bool val)
+      {
+      //if(_mute == val)   // REMOVE Tim.
+      //  return;
+      _mute = val;
+      //if(val)
+      //  flushStuckNotes();
+      }
+
+//---------------------------------------------------------
+//   setOff
+//---------------------------------------------------------
+
+void MidiTrack::setOff(bool val)
+      {
+      //if(_off == val)       // REMOVE Tim.
+      //  return;
+      _off = val;
+      //if(val)
+      //  flushStuckNotes();
+      }
 
 //---------------------------------------------------------
 //   setSolo

@@ -121,6 +121,7 @@ LADSPA_PortRangeHint SynthIF::rangeOut(unsigned long)
   h.UpperBound = 1.0;
   return h;
 }
+float SynthIF::latency() { return 0.0; }
 CtrlValueType SynthIF::ctrlValueType(unsigned long) const { return VAL_LINEAR; }
 CtrlList::Mode SynthIF::ctrlMode(unsigned long) const     { return CtrlList::INTERPOLATE; };
 
@@ -299,9 +300,9 @@ SynthI::SynthI()
       _readEnable = false;
       _writeEnable = false;
       
-      _curBankH = 0;
-      _curBankL = 0;
-      _curProgram  = 0;
+      //_curBankH = 0;  // REMOVE Tim. Use midi state for this
+      //_curBankL = 0;
+      //_curProgram  = 0;
 
       setVolume(1.0);
       setPan(0.0);
@@ -317,9 +318,9 @@ SynthI::SynthI(const SynthI& si, int flags)
       _readEnable = false;
       _writeEnable = false;
 
-      _curBankH = 0;
-      _curBankL = 0;
-      _curProgram  = 0;
+      //_curBankH = 0;  // REMOVE Tim. Use midi state for this
+      //_curBankL = 0;
+      //_curProgram  = 0;
 
       setVolume(1.0);
       setPan(0.0);
@@ -417,20 +418,6 @@ void SynthI::setName(const QString& s)
       AudioTrack::setName(s);
       MidiDevice::setName(s);
       }
-
-//---------------------------------------------------------
-//   currentProg
-//---------------------------------------------------------
-
-void SynthI::currentProg(unsigned long *prog, unsigned long *bankL, unsigned long *bankH)
-{
-  if(prog)
-    *prog  = _curProgram;
-  if(bankL)
-    *bankL = _curBankL;
-  if(bankH)
-    *bankH = _curBankH;
-}
 
 //---------------------------------------------------------
 //   init
@@ -768,7 +755,7 @@ void SynthI::write(int level, Xml& xml) const
 
       _stringParamMap.write(level, xml, "stringParam");
       
-      xml.tag(level, "curProgram bankH=\"%ld\" bankL=\"%ld\" prog=\"%ld\"/", _curBankH, _curBankL, _curProgram);
+      //xml.tag(level, "curProgram bankH=\"%ld\" bankL=\"%ld\" prog=\"%ld\"/", _curBankH & 0x7f, _curBankL & 0x7f, _curProgram & 0x7f);  // REMOVE Tim. Use midi state for this.
       
       _sif->write(level, xml);
       xml.etag(level, "SynthI");
@@ -802,44 +789,45 @@ void MessSynthIF::write(int level, Xml& xml) const
             }
       }
 
-//---------------------------------------------------------
-//   SynthI::readProgram
-//---------------------------------------------------------
-
-void SynthI::readProgram(Xml& xml, const QString& name)
-{
-  for (;;) 
-  {
-    Xml::Token token = xml.parse();
-    const QString tag = xml.s1();
-    switch (token) 
-    {
-          case Xml::Error:
-          case Xml::End:
-                return;
-          case Xml::TagStart:
-                xml.unknown(name.toAscii().constData());
-                break;
-          case Xml::Attribut:
-                if(tag == "bankH") 
-                  _curBankH = xml.s2().toUInt();
-                else
-                if(tag == "bankL") 
-                  _curBankL = xml.s2().toUInt();
-                else
-                if(tag == "prog") 
-                  _curProgram = xml.s2().toUInt();
-                else
-                  xml.unknown(name.toAscii().constData());
-                break;
-          case Xml::TagEnd:
-                if(tag == name) 
-                  return;
-          default:
-                break;
-    }
-  }
-}
+// REMOVE Tim. Use midi state for this
+// //---------------------------------------------------------
+// //   SynthI::readProgram
+// //---------------------------------------------------------
+// 
+// void SynthI::readProgram(Xml& xml, const QString& name)
+// {
+//   for (;;) 
+//   {
+//     Xml::Token token = xml.parse();
+//     const QString tag = xml.s1();
+//     switch (token) 
+//     {
+//           case Xml::Error:
+//           case Xml::End:
+//                 return;
+//           case Xml::TagStart:
+//                 xml.unknown(name.toAscii().constData());
+//                 break;
+//           case Xml::Attribut:
+//                 if(tag == "bankH") 
+//                   _curBankH = xml.s2().toUInt() & 0x7f;
+//                 else
+//                 if(tag == "bankL") 
+//                   _curBankL = xml.s2().toUInt() & 0x7f;
+//                 else
+//                 if(tag == "prog") 
+//                   _curProgram = xml.s2().toUInt() & 0x7f;
+//                 else
+//                   xml.unknown(name.toAscii().constData());
+//                 break;
+//           case Xml::TagEnd:
+//                 if(tag == name) 
+//                   return;
+//           default:
+//                 break;
+//     }
+//   }
+// }
 
 //---------------------------------------------------------
 //   SynthI::read
@@ -884,8 +872,8 @@ void SynthI::read(Xml& xml)
                               }
                         else if (tag == "stringParam") 
                               _stringParamMap.read(xml, tag);
-                        else if (tag == "curProgram") 
-                              readProgram(xml, tag);
+                        //else if (tag == "curProgram")   // REMOVE Tim. Use midi state for this.
+                        //      readProgram(xml, tag);
                         else if (tag == "geometry")
                               r = readGeometry(xml, tag);
                         else if (tag == "nativeGeometry")
@@ -1124,16 +1112,91 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
 //---------------------------------------------------------
 
 bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
-      {
+{
       //if (MusEGlobal::midiOutputTrace) DELETETHIS or re-enable?
       //{
       //      printf("MidiOut: MESS: <%s>: ", synti->name().toLatin1().constData());
       //      ev.dump();
       //}
-      if (_mess)
-            return _mess->processEvent(ev);
-      return true;
+      if (!_mess)
+        return true;
+      int chn = ev.channel();
+      switch(ev.type())
+      {
+        // Special for program, hi bank, and lo bank: Virtually all synths encapsulate banks and program together
+        //  call rather than breaking them out into three separate controllers. Therefore we need to 'compose' a
+        //  CTRL_PROGRAM which supports the full complement of hi/lo bank and program. The synths should therefore NEVER
+        //  be allowed to receive ME_PROGRAM or CTRL_HBANK or CTRL_LBANK alone (it also saves them the management trouble)...
+        // TODO: Try to move this into the individual synths and since we must not talk directly to them, rely on feedback
+        //        from them (in midi.cpp) to update our HOST current program absolutely when they change their own program !
+        case ME_PROGRAM:
+          {
+            int hb;
+            int lb;
+            synti->currentProg(chn, NULL, &lb, &hb);
+            int pr = ev.dataA() & 0x7f;
+            synti->setCurrentProg(chn, pr, lb, hb);
+            if(hb > 127) // Map "dont care" to 0
+              hb = 0;
+            if(lb > 127)
+              lb = 0;
+            int full_prog = (hb >> 16) | (lb >> 8) | pr;
+            return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+          }
+          break;
+        case ME_CONTROLLER:
+          {
+            int a = ev.dataA();
+            int b = ev.dataB();
+            if(a == CTRL_PROGRAM)
+            {
+              int hb = (b >> 16) & 0xff;
+              int lb = (b >> 8)  & 0xff;
+              int pr = b & 0x7f;
+              synti->setCurrentProg(chn, pr, lb, hb);
+              if(hb > 127)
+                hb = 0;
+              if(lb > 127)
+                lb = 0;
+              int full_prog = (hb << 16) | (lb << 8) | pr;
+              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+            }
+            else if(a == CTRL_HBANK)
+            {
+              int lb;
+              int pr;
+              synti->currentProg(chn, &pr, &lb, NULL);
+              int hb = ev.dataB() & 0x7f;
+              synti->setCurrentProg(chn, pr, lb, hb);
+              if(lb > 127)
+                lb = 0;
+              if(pr > 127)
+                pr = 0;
+              int full_prog = (hb << 16) | (lb >> 8) | pr;
+              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+            }
+            else if(a == CTRL_LBANK)
+            {
+              int hb;
+              int pr;
+              synti->currentProg(chn, &pr, NULL, &hb);
+              int lb = ev.dataB() & 0x7f;
+              if(hb > 127)
+                hb = 0;
+              if(pr > 127)
+                pr = 0;
+              synti->setCurrentProg(chn, pr, lb, hb);
+              int full_prog = (hb >> 16) | (lb << 8) | pr;
+              return _mess->processEvent(MidiPlayEvent(ev.time(), ev.port(), chn, ME_CONTROLLER, CTRL_PROGRAM, full_prog));
+            }
+          }
+          break;
+
+        default:
+          break;
       }
+      return _mess->processEvent(ev);
+}
 
 //unsigned long MessSynthIF::uniqueID() const  DELETETHIS
 //{ 

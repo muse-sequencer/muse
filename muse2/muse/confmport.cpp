@@ -63,7 +63,7 @@ extern std::vector<MusECore::Synth*> synthis;
 
 namespace MusEGui {
 
-enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
+enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INPUT_INSTR, DEVCOL_OUTPUT_INSTR, DEVCOL_NAME,
        DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };  
 
 //---------------------------------------------------------
@@ -438,7 +438,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         return;
                   if (port->hasNativeGui())
                   {
-                        port->instrument()->showNativeGui(!port->nativeGuiVisible());
+                        port->outputInstrument()->showNativeGui(!port->nativeGuiVisible());
                         item->setIcon(port->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
                   return;
@@ -455,12 +455,12 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   {
                     if(dev->openFlags() & 2)  
                     {
-                      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon(*buttondownIcon));
+                      //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon(*buttondownIcon));  // REMOVE Tim.
                      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText(tr("in"));
                     }
                     else
                     {
-                      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon());
+                      //item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon());  // REMOVE Tim.
                       item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText("");
                     }  
                   }
@@ -478,12 +478,12 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   {
                     if(dev->openFlags() & 1)  
                     {
-                      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon(*buttondownIcon));
+                      //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon(*buttondownIcon));  // REMOVE Tim.
                       item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText(tr("out"));
                     }
                     else  
                     {
-                      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon());
+                      //item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon());  // REMOVE Tim.
                       item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText("");
                     }
                   }
@@ -965,7 +965,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   }
                   return;
 
-            case DEVCOL_INSTR:
+            case DEVCOL_INPUT_INSTR:
+            case DEVCOL_OUTPUT_INSTR:
                   {
                   if (dev && dev->isSynti())
                         return;
@@ -989,11 +990,14 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   if(!act)
                     return;
                   QString s = act->text();
-                  item->tableWidget()->item(item->row(), DEVCOL_INSTR)->setText(s);
+                  item->tableWidget()->item(item->row(), col)->setText(s);
                   for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
                      != MusECore::midiInstruments.end(); ++i) {
                         if ((*i)->iname() == s) {
-                              port->setInstrument(*i);
+                              if(col == DEVCOL_INPUT_INSTR)
+                                port->setInputInstrument(*i);
+                              else
+                                port->setOutputInstrument(*i);
                               break;
                               }
                         }
@@ -1014,7 +1018,8 @@ void MPConfig::setToolTip(QTableWidgetItem *item, int col)
             case DEVCOL_GUI:    item->setToolTip(tr("Enable gui")); break;
             case DEVCOL_REC:    item->setToolTip(tr("Enable reading")); break;
             case DEVCOL_PLAY:   item->setToolTip(tr("Enable writing")); break;
-            case DEVCOL_INSTR:  item->setToolTip(tr("Port instrument")); break;
+            case DEVCOL_INPUT_INSTR:  item->setToolTip(tr("Input instrument")); break;
+            case DEVCOL_OUTPUT_INSTR:  item->setToolTip(tr("Output instrument")); break;
             case DEVCOL_NAME:   item->setToolTip(tr("Midi device name. Click to edit (Jack)")); break;
             case DEVCOL_INROUTES:  item->setToolTip(tr("Connections from Jack Midi outputs")); break;
             case DEVCOL_OUTROUTES: item->setToolTip(tr("Connections to Jack Midi inputs")); break;
@@ -1048,8 +1053,10 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
             case DEVCOL_NAME:
                   item->setWhatsThis(tr("Name of the midi device associated with"
                                         " this port number. Click to edit Jack midi name.")); break;
-            case DEVCOL_INSTR:
-                  item->setWhatsThis(tr("Instrument connected to port")); break;
+            case DEVCOL_INPUT_INSTR:
+                  item->setWhatsThis(tr("Instrument connected to port input")); break;
+            case DEVCOL_OUTPUT_INSTR:
+                  item->setWhatsThis(tr("Instrument connected to port output")); break;
             case DEVCOL_INROUTES:
                   item->setWhatsThis(tr("Connections from Jack Midi output ports")); break;
             case DEVCOL_OUTROUTES:
@@ -1108,7 +1115,8 @@ MPConfig::MPConfig(QWidget* parent)
 		  << tr("GUI")
 		  << tr("I")
 		  << tr("O")
-		  << tr("Instrument")
+                  << tr("In instr")
+		  << tr("Out instr")
 		  << tr("Device Name")
 		  << tr("In routes")
 		  << tr("Out routes")
@@ -1196,11 +1204,16 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             QTableWidgetItem* itemstate = new QTableWidgetItem(port->state());
             addItem(i, DEVCOL_STATE, itemstate, mdevView);
             itemstate->setFlags(Qt::ItemIsEnabled);
-            QTableWidgetItem* iteminstr = new QTableWidgetItem(port->instrument() ?
-                           port->instrument()->iname() :
+            QTableWidgetItem* iteminstr_in = new QTableWidgetItem(port->inputInstrument() ?
+                           port->inputInstrument()->iname() :
                            tr("<unknown>"));
-            addItem(i, DEVCOL_INSTR, iteminstr, mdevView);
-            iteminstr->setFlags(Qt::ItemIsEnabled);
+            addItem(i, DEVCOL_INPUT_INSTR, iteminstr_in, mdevView);
+            iteminstr_in->setFlags(dev && dev->isSynti() ? Qt::NoItemFlags : Qt::ItemIsEnabled);  // Disable if synth.
+            QTableWidgetItem* iteminstr_out = new QTableWidgetItem(port->outputInstrument() ?
+                           port->outputInstrument()->iname() :
+                           tr("<unknown>"));
+            addItem(i, DEVCOL_OUTPUT_INSTR, iteminstr_out, mdevView);
+            iteminstr_out->setFlags(dev && dev->isSynti() ? Qt::NoItemFlags : Qt::ItemIsEnabled); // Disable if synth.
             QTableWidgetItem* itemname = new QTableWidgetItem;
             addItem(i, DEVCOL_NAME, itemname, mdevView);
             itemname->setFlags(Qt::ItemIsEnabled);
@@ -1235,7 +1248,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             else
             {
               itemdefin->setFlags(Qt::ItemIsEnabled);
-              itemdefin->setIcon(QIcon(*buttondownIcon));
+              //itemdefin->setIcon(QIcon(*buttondownIcon));  // REMOVE Tim.
             }  
             #endif
             
@@ -1260,7 +1273,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             }  
             addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
             itemdefout->setFlags(Qt::ItemIsEnabled);
-            itemdefout->setIcon(QIcon(*buttondownIcon));
+            //itemdefout->setIcon(QIcon(*buttondownIcon));
 	    #endif
             
             mdevView->blockSignals(false);
@@ -1292,9 +1305,10 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             else
                   itemgui->setIcon(QIcon(QPixmap()));
 
-            if (!(dev && dev->isSynti()))
-                  iteminstr->setIcon(QIcon(*buttondownIcon));
-
+            // REMOVE Tim.
+            //if (!(dev && dev->isSynti()))
+            //      iteminstr_out->setIcon(QIcon(*buttondownIcon));
+            
             itemname->setIcon(QIcon(*buttondownIcon));
 
 
@@ -1304,7 +1318,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
               {
                 if(dev->openFlags() & 1)  
                 {
-                  itemout->setIcon(QIcon(*buttondownIcon));
+                  //itemout->setIcon(QIcon(*buttondownIcon));
                   itemout->setText(tr("out"));
                 }  
               }  
@@ -1312,7 +1326,7 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
               {
                 if(dev->openFlags() & 2)  
                 {
-                  itemin->setIcon(QIcon(*buttondownIcon));
+                  //itemin->setIcon(QIcon(*buttondownIcon));
                   itemin->setText(tr("in"));
                 }  
               }  

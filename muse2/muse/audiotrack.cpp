@@ -1035,6 +1035,17 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
 }
 
 //---------------------------------------------------------
+//   latency
+//---------------------------------------------------------
+
+float AudioTrack::latency(int /*channel*/)
+{
+  if(!_efxPipe)
+    return 0.0;
+  return _efxPipe->latency();
+} 
+
+//---------------------------------------------------------
 //   volume
 //---------------------------------------------------------
 
@@ -1776,6 +1787,23 @@ AudioInput::~AudioInput()
           if(jackPorts[i])
               MusEGlobal::audioDevice->unregisterPort(jackPorts[i]);
       }
+
+//---------------------------------------------------------
+//   latency
+//---------------------------------------------------------
+
+float AudioInput::latency(int channel)
+{
+  float l = AudioTrack::latency(channel);
+
+  if(!MusEGlobal::checkAudioDevice())
+    return l;
+  
+  void* jackPort = jackPorts[channel];
+  if(jackPort)
+    l += MusEGlobal::audioDevice->portLatency(jackPort, true);
+  return l;
+}
 
 //---------------------------------------------------------
 //   write

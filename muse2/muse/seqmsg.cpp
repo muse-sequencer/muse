@@ -634,6 +634,32 @@ void Audio::msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame
 }
 
 //---------------------------------------------------------
+//   msgSetTrackMute
+//---------------------------------------------------------
+
+void Audio::msgSetTrackMute(Track* track, bool val)
+{
+      AudioMsg msg;
+      msg.id     = AUDIO_SET_MUTE;
+      msg.track  = track;
+      msg.ival   = int(val);
+      sendMsg(&msg);
+}
+
+//---------------------------------------------------------
+//   msgSetTrackOff
+//---------------------------------------------------------
+
+void Audio::msgSetTrackOff(Track* track, bool val)
+{
+      AudioMsg msg;
+      msg.id     = AUDIO_SET_TRACKOFF;
+      msg.track  = track;
+      msg.ival   = int(val);
+      sendMsg(&msg);
+}
+
+//---------------------------------------------------------
 //   msgSetSolo
 //---------------------------------------------------------
 
@@ -1130,7 +1156,7 @@ void Audio::msgInitMidiDevices(bool force)
           MidiPort* mp = &MusEGlobal::midiPorts[MusEGlobal::clickPort];
           if(mp->device() && 
              (mp->device()->openFlags() & 1) && 
-             mp->instrument() && !mp->instrument()->midiInit()->empty() && 
+             mp->outputInstrument() && !mp->outputInstrument()->midiInit()->empty() &&
              !mp->initSent())
             found = true;
         }
@@ -1141,7 +1167,7 @@ void Audio::msgInitMidiDevices(bool force)
           {
             MidiPort* mp = &MusEGlobal::midiPorts[i];
             if(mp->device() && (mp->device()->openFlags() & 1) && 
-              mp->instrument() && !mp->instrument()->midiInit()->empty() && 
+              mp->outputInstrument() && !mp->outputInstrument()->midiInit()->empty() &&
               !mp->initSent())
             {
               found = true;

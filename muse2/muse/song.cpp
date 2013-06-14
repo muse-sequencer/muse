@@ -1399,22 +1399,23 @@ void Song::updatePos()
       emit posChanged(2, pos[2].tick(), false);
       }
 
-//---------------------------------------------------------
-//   setChannelMute
-//    mute all midi tracks associated with channel
-//---------------------------------------------------------
-
-void Song::setChannelMute(int channel, bool val)
-      {
-      for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-            MidiTrack* track = dynamic_cast<MidiTrack*>(*i);
-            if (track == 0)
-                  continue;
-            if (track->outChannel() == channel)
-                  track->setMute(val);
-            }
-      emit songChanged(SC_MUTE);
-      }
+// REMOVE Tim.      
+// //---------------------------------------------------------
+// //   setChannelMute
+// //    mute all midi tracks associated with channel
+// //---------------------------------------------------------
+// 
+// void Song::setChannelMute(int channel, bool val)
+//       {
+//       for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
+//             MidiTrack* track = dynamic_cast<MidiTrack*>(*i);
+//             if (track == 0)
+//                   continue;
+//             if (track->outChannel() == channel)
+//                   track->setMute(val);
+//             }
+//       emit songChanged(SC_MUTE);
+//       }
 
 //---------------------------------------------------------
 //   len

@@ -911,6 +911,43 @@ bool MidiControllerList::ctrlAvailable(int find_num, MidiController* ignore_this
   return imc == end();
 }
 
+//---------------------------------------------------------
+//   MidiCtrlState
+//---------------------------------------------------------
+
+MidiCtrlState::MidiCtrlState()
+{
+  ctrls  = new unsigned char[128];
+  RPNH   = new unsigned char[16384];
+  RPNL   = new unsigned char[16384];
+  NRPNH  = new unsigned char[16384];
+  NRPNL  = new unsigned char[16384];
+
+  //data = new char[128 + 16384 + 16384 + 16384 + 16384];
+
+  init();
+}
+
+MidiCtrlState::~MidiCtrlState()
+{
+  delete ctrls;
+  delete RPNH;
+  delete RPNL;
+  delete NRPNH;
+  delete NRPNL;
+
+  //delete data;
+}
+
+void MidiCtrlState::init()
+{
+  memset(ctrls, 0, sizeof(unsigned char) * 128);
+  memset(RPNH,  0, sizeof(unsigned char) * 16384);
+  memset(RPNL,  0, sizeof(unsigned char) * 16384);
+  memset(NRPNH, 0, sizeof(unsigned char) * 16384);
+  memset(NRPNL, 0, sizeof(unsigned char) * 16384);
+  modeIsNRP = false;
+}
 
 
 } // namespace MusECore

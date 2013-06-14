@@ -187,7 +187,8 @@ void Strip::setLabelText()
 
 void Strip::muteToggled(bool val)
       {
-      track->setMute(val);
+      //track->setMute(val);  // REMOVE Tim.
+      MusEGlobal::audio->msgSetTrackMute(track, val);
       MusEGlobal::song->update(SC_MUTE);
       }
 

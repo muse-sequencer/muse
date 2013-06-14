@@ -700,6 +700,12 @@ bool DssiSynthIF::init(DssiSynth* s)
           }
           else if (LADSPA_IS_PORT_OUTPUT(pd))
           {
+            const char* pname = ld->PortNames[k];
+            if(pname == QString("latency") || pname == QString("_latency"))
+            {
+              _hasLatencyOutPort = true;
+              _latencyOutPort = cop;
+            }
             _controlsOut[cop].idx = k;
             _controlsOut[cop].val    = 0.0;
             _controlsOut[cop].tmpVal = 0.0;
@@ -744,8 +750,8 @@ bool DssiSynthIF::init(DssiSynth* s)
       }
             
       // Set current program.
-      if(dssi->select_program)
-        doSelectProgram(_handle, synti->_curBankL, synti->_curProgram);
+      //if(dssi->select_program)
+      //  doSelectProgram(_handle, synti->_curBankL, synti->_curProgram);  // REMOVE Tim. Use midi state for this
       
       //
       // For stored initial control values, let SynthI::initInstance() take care of that via ::setParameter().
@@ -768,6 +774,8 @@ DssiSynthIF::DssiSynthIF(SynthI* s)
       _handle = NULL;
       _controls = 0;
       _controlsOut = 0;
+      _hasLatencyOutPort = false;
+      _latencyOutPort = 0;
       _audioInBuffers = 0;
       _audioInSilenceBuf = 0;
       _audioOutBuffers = 0;
@@ -863,6 +871,18 @@ int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const
   return 2; 
 }
         
+//---------------------------------------------------------
+//   latency
+//---------------------------------------------------------
+
+float DssiSynthIF::latency()
+{
+  if(!_hasLatencyOutPort)
+    return 0.0;
+  return _controlsOut[_latencyOutPort].val;
+}
+
+
 //---------------------------------------------------------
 //   getParameter
 //---------------------------------------------------------
@@ -1116,24 +1136,30 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       event->queue = SND_SEQ_QUEUE_DIRECT;
       snd_seq_ev_set_noteoff(event, chn, a, 0);
     break;
+    // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
     case ME_PROGRAM:
     {
-      #ifdef DSSI_DEBUG 
+      #ifdef DSSI_DEBUG
       fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_PROGRAM\n");
       #endif
-      
-      int bank = (a >> 8) & 0xff;
-      int prog = a & 0xff;
-      synti->_curBankH = 0;
-      synti->_curBankL = bank;
-      synti->_curProgram = prog;
-      
+
+      int lb;
+      synti->currentProg(chn, NULL, &lb, NULL);
+      // REMOVE Tim.
+      //int bank = (a >> 8) & 0xff;
+      //int prog = a & 0xff;       
+      //synti->_curBankH = 0;      
+      //synti->_curBankL = bank;
+      //synti->_curProgram = prog;
+      synti->setCurrentProg(chn, a, lb, 0);
+
       if(dssi->select_program)
-        doSelectProgram(_handle, bank, prog);
+        //doSelectProgram(_handle, bank, prog);  // REMOVE Tim.
+        doSelectProgram(_handle, lb, a);
 
       // Event pointer not filled. Return false.
       return false;
-    }    
+    }
     break;
     case ME_CONTROLLER:
     {
@@ -1150,15 +1176,18 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PROGRAM\n");
         #endif
         
-        int bank = (b >> 8) & 0xff;
-        int prog = b & 0xff;
-        
-        synti->_curBankH = 0;
-        synti->_curBankL = bank;
-        synti->_curProgram = prog;
+        int hb = (b >> 16) & 0xff;
+        int lb = (b >> 8) & 0xff;
+        int pr = b & 0xff;
+
+        // REMOVE Tim.
+        //synti->_curBankH = 0;
+        //synti->_curBankL = bank;
+        //synti->_curProgram = prog;
+        synti->setCurrentProg(chn, pr, lb, hb);
         
         if(dssi->select_program)
-          doSelectProgram(_handle, bank, prog);
+          doSelectProgram(_handle, lb, pr);
 
         // Event pointer not filled. Return false.
         return false;
@@ -1433,7 +1462,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
 //   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
+iMPEvent DssiSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent start_event, unsigned pos, int ports, unsigned nframes, float** buffer)
 {
   // We may not be using ev_buf_sz all at once - this will be just the maximum.
   const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
@@ -1751,43 +1780,49 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent start_
 
           // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
           // Same code as in MidiPort::sendEvent()
-          if(synti->midiPort() != -1)
-          {
-            MidiPort* mp = &MusEGlobal::midiPorts[synti->midiPort()];
-            if(start_event->type() == ME_CONTROLLER)
-            {
-              int da = start_event->dataA();
-              int db = start_event->dataB();
-              db = mp->limitValToInstrCtlRange(da, db);
-              if(!mp->setHwCtrlState(start_event->channel(), da, db))
-                continue;
-            }
-            else if(start_event->type() == ME_PITCHBEND)
-            {
-              int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
-              if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
-                continue;
-            }
-            else if(start_event->type() == ME_AFTERTOUCH)
-            {
-              int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
-              if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
-                continue;
-            }
-            else if(start_event->type() == ME_POLYAFTER)
-            {
-              int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
-              int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
-              if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
-                continue;
-            }
-            else if(start_event->type() == ME_PROGRAM)
-            {
-              if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, start_event->dataA()))
-                continue;
-            }
-          }
-
+// REMOVE Tim.          
+//           if(synti->midiPort() != -1)
+//           {
+//             MidiPort* mp = &MusEGlobal::midiPorts[synti->midiPort()];
+//             if(start_event->type() == ME_CONTROLLER)
+//             {
+//               int da = start_event->dataA();
+//               int db = start_event->dataB();
+//               db = mp->limitValToInstrCtlRange(da, db);
+//               if(!mp->setHwCtrlState(start_event->channel(), da, db))
+//                 continue;
+//             }
+//             else if(start_event->type() == ME_PITCHBEND)
+//             {
+//               int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
+//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
+//                 continue;
+//             }
+//             else if(start_event->type() == ME_AFTERTOUCH)
+//             {
+//               int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
+//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
+//                 continue;
+//             }
+//             else if(start_event->type() == ME_POLYAFTER)
+//             {
+//               int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
+//               int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
+//               if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
+//                 continue;
+//             }
+//             // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
+//             else if(start_event->type() == ME_PROGRAM)
+//             {
+//               int hb, lb;
+//               synti->currentProg(NULL, &lb, &hb);
+//               if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, (hb << 16) | (lb << 8) | (start_event->dataA() & 0x7f) ) )
+//                 continue;
+//             }
+//           }
+          if(mp && !mp->sendHwCtrlState(*start_event, false))
+            continue;
+          
           // Returns false if the event was not filled. It was handled, but some other way.
           if(processEvent(*start_event, &events[nevents]))
           {
@@ -1965,8 +2000,12 @@ bool DssiSynthIF::initGui()
 void DssiSynthIF::guiHeartBeat()
 {
   #ifdef OSC_SUPPORT
+  int chn = 0;  // TODO: Channel?
+  int hb, lb, pr;
+  synti->currentProg(chn, &pr, &lb, &hb);
   // Update the gui's program if needed.
-  _oscif.oscSendProgram(synti->_curProgram, synti->_curBankL);
+  //_oscif.oscSendProgram(synti->_curProgram, synti->_curBankL);  // REMOVE Tim.
+  _oscif.oscSendProgram(pr, lb);
   
   // Update the gui's controls if needed.
   unsigned long ports = _synth->_controlInPorts;
@@ -1998,7 +2037,11 @@ int DssiSynthIF::oscUpdate()
       }  
       
       // Send current bank and program.
-      _oscif.oscSendProgram(synti->_curProgram, synti->_curBankL, true /*force*/);
+      int chn = 0;  // TODO: Channel?
+      int hb, lb, pr;
+      synti->currentProg(chn, &pr, &lb, &hb);
+      //_oscif.oscSendProgram(synti->_curProgram, synti->_curBankL, true /*force*/);   // REMOVE Tim.
+      _oscif.oscSendProgram(pr, lb, true /*force*/);
       
       // Send current control values.
       unsigned long ports = _synth->_controlInPorts;
@@ -2022,16 +2065,27 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
       int ch      = 0;        // TODO: ??
       int port    = synti->midiPort();        
       
-      synti->_curBankH = 0;
-      synti->_curBankL = bank;
-      synti->_curProgram = program;
+      //synti->_curBankH = 0;          // REMOVE Tim.
+      //synti->_curBankL = bank;
+      //synti->_curProgram = program;  
+      //synti->setCurrentProg(program, bank, 0);
       
-      bank    &= 0xff;
-      program &= 0xff;
+      bank    &= 0x7f;  
+      program &= 0x7f;
+
+      int hb;
+      synti->currentProg(ch, NULL, NULL, &hb);
+      hb &= 0xff;
+      if(hb > 127)  // Map "dont care" to 0
+        hb = 0;
+      
+      synti->setCurrentProg(ch, program, bank, hb);
       
       if(port != -1)
       {
-        MidiPlayEvent event(0, port, ch, ME_PROGRAM, (bank << 8) + program, 0);
+        // REMOVE Tim. Synths are not allowed to receive ME_PROGRAM, CTRL_HBANK, or CTRL_LBANK alone anymore.
+        //MidiPlayEvent event(0, port, ch, ME_PROGRAM, (bank << 8) + program, 0);
+        MidiPlayEvent event(0, port, ch, ME_CONTROLLER, CTRL_PROGRAM, (hb << 16) | (bank << 8) | program);
       
         #ifdef DSSI_DEBUG 
         fprintf(stderr, "DssiSynthIF::oscProgram midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());
@@ -2241,6 +2295,11 @@ void DssiSynthIF::queryPrograms()
 void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bank, int prog)
 {
   const DSSI_Descriptor* dssi = _synth->dssi;
+  if(bank > 127) // Map "dont care" to 0
+    bank = 0;
+  if(prog > 127)
+    prog = 0;
+
   dssi->select_program(handle, bank, prog);
   
   // Need to update the automation value, otherwise it overwrites later with the last automation value.

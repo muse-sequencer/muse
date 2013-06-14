@@ -42,6 +42,7 @@
 
 namespace MusECore {
 class MPEventList;
+class MidiPlayEvent;
 class Pipeline;
 class PluginI;
 class SynthI;
@@ -214,6 +215,8 @@ class MidiTrack : public Track {
 
       EventList* _events;     // tmp Events during midi import
       MPEventList* _mpevents; // tmp Events druring recording
+      MPEventList* _stuckLiveNotes; // Live (rec): Currently sounding note-ons that we don't know the note-off time yet. Event times = 0.
+      MPEventList* _stuckNotes; // Playback: Currently sounding note-ons contributed by track - not sent directly to device
       static bool _isVisible;
       clefTypes clefType;
 
@@ -234,6 +237,10 @@ class MidiTrack : public Track {
       void readOurDrumSettings(Xml& xml);
       //void writeOurDrumMap(int level, Xml& xml, bool full) const; //below in public:
       //void readOurDrumMap(Xml& xml, bool dont_init=false); //below in public:
+
+      // REMOVE Tim.
+      // Sends all pending playback and live (rec) note-offs
+      //void flushStuckNotes();  
 
    public:
       MidiTrack();
@@ -257,6 +264,8 @@ class MidiTrack : public Track {
 
       EventList* events() const          { return _events; }
       MPEventList* mpevents() const      { return _mpevents; }
+      MPEventList* stuckNotes() const    { return _stuckNotes; }
+      MPEventList* stuckLiveNotes() const { return _stuckLiveNotes; }
 
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
@@ -283,10 +292,21 @@ class MidiTrack : public Track {
       int outChannel() const          { return _outChannel;  }
       bool recEcho() const            { return _recEcho; }
 
+      virtual void setMute(bool val);
+      virtual void setOff(bool val);
       virtual bool isMute() const;
       virtual void setSolo(bool val);
       virtual void updateSoloStates(bool noDec);
       virtual void updateInternalSoloStates();
+
+      virtual bool addStuckNote(const MidiPlayEvent& ev);
+      //virtual bool removeStuckNote(const MidiPlayEvent& ev);  // REMOVE Tim.
+      // These are only for 'live' (rec) notes for which we don't have a note-off time yet. Even times = 0.
+      //virtual bool addStuckLiveNote(const MidiPlayEvent& ev) { _stuckLiveNotes->add(ev); return true; }  // REMOVE Tim.
+      //virtual bool removeStuckLiveNote(const MidiPlayEvent& ev);
+      virtual bool addStuckLiveNote(int port, int chan, int note, int vel = 64);
+      virtual bool removeStuckLiveNote(int port, int chan, int note);
+      //virtual void processStuckLiveNotes();
       
       virtual bool canRecord() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }
@@ -347,7 +367,6 @@ class AudioTrack : public Track {
       
       bool _sendMetronome;
       AutomationType _automationType;
-      Pipeline* _efxPipe;
       double _gain;
 
       void initBuffers();
@@ -372,6 +391,7 @@ class AudioTrack : public Track {
       // Total number of input channels.
       int _totalInChannels;
       
+      Pipeline* _efxPipe;
       virtual bool getData(unsigned, int, unsigned, float**);
       SndFileR _recFile;
       Fifo fifo;                    // fifo -> _recFile
@@ -464,6 +484,8 @@ class AudioTrack : public Track {
       virtual void  addData(unsigned samplePos, int channels, int srcStartChan, int srcChannels, unsigned frames, float** buffer);
       virtual void copyData(unsigned samplePos, int channels, int srcStartChan, int srcChannels, unsigned frames, float** buffer, bool add=false);
       virtual bool hasAuxSend() const { return false; }
+
+      virtual float latency(int channel); 
       
       // automation
       virtual AutomationType automationType() const    { return _automationType; }
@@ -503,6 +525,7 @@ class AudioInput : public AudioTrack {
       AudioInput(const AudioInput&, int flags);
       virtual ~AudioInput();
 
+      virtual float latency(int channel); 
       virtual void assign(const Track&, int flags);
       AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
       virtual AudioInput* newTrack() const { return new AudioInput(); }

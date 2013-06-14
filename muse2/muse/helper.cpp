@@ -897,7 +897,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       bool isDrum      = track->type() == MusECore::Track::DRUM;
       bool isNewDrum   = track->type() == MusECore::Track::NEW_DRUM;
       bool isMidi      = track->type() == MusECore::Track::MIDI;
-      MusECore::MidiInstrument* instr = port->instrument();
+      MusECore::MidiInstrument* instr = port->outputInstrument();
       MusECore::MidiControllerList* mcl = instr->controller();
       MusECore::MidiCtrlValListList* cll = port->controller();
       const int min = channel << 24;

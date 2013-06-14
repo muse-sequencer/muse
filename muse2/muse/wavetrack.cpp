@@ -254,17 +254,33 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       {
       bool have_data = false;
       if ((MusEGlobal::song->bounceTrack != this) && !noInRoute()) {
+            float t_latency = 0.0;
+            float lat;
+            AudioTrack* atrack;
             RouteList* irl = inRoutes();
             for(ciRoute i = irl->begin(); i != irl->end(); ++i)
             {
               if(i->track->isMidiTrack())
                 continue;
-
-              ((AudioTrack*)i->track)->copyData(framePos, channels,
-                                               i->channel,
-                                               i->channels,
-                                               nframe, bp, have_data);
+              atrack = static_cast<AudioTrack*>(i->track);
+              atrack->copyData(framePos, channels,
+                               i->channel,
+                               i->channels,
+                               nframe, bp, have_data);
               have_data = true;
+
+              // FIXME TODO: Just a quick HACK to get AUTOMATIC record latency compensation to work
+              //              with a SINGLE DIRECT ROUTE from Audio Input Track to Wave Track ONLY !
+              //             For now, this should satisfy a majority of users.
+              if(!atrack->off())
+              {
+                // TODO We can't take advantage of per-channel latency yet, so just take channel 0.
+                //      Would require mods to fifo.put below...
+                lat = atrack->latency(0);
+                //fprintf(stderr, "WaveTrack::getData track:%s, latency:%f\n", atrack->name().toLatin1().constData(), lat);  // REMOVE Tim.
+                if(lat > t_latency)
+                  t_latency = lat;
+              }
             }
             
             if (recordFlag()) {
@@ -285,9 +301,16 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                               // Tested: This line is OK for track-to-track recording, the waves are in sync:
 #endif                              
                               if (fifo.put(channels, nframe, bp, MusEGlobal::audio->pos().frame()))  
-                                    printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n",
-                                       framePos, channels, nframe);
-                              }
+                                      printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n",
+                                        framePos, channels, nframe);
+// TODO Work In Progress. Tests OK but we now need output latency correction as well...
+//                               if(framePos >= (unsigned int)t_latency)
+//                               {
+//                                 if (fifo.put(channels, nframe, bp, framePos - (unsigned int)t_latency))
+//                                       printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n",
+//                                         framePos, channels, nframe);
+//                               }
+                            }
                         }
                   //return true;  // REMOVE Tim. Can't hear existing parts while recording, even while simply armed.
                   // FIXME TODO Remove this. But first code below needs to become ADDITIVE/REPLACING (don't just take over buffers).

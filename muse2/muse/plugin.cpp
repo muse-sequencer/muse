@@ -1251,6 +1251,23 @@ void Pipeline::initBuffers()
 }
       
 //---------------------------------------------------------
+//  latency
+//---------------------------------------------------------
+
+float Pipeline::latency()
+{
+  float l = 0.0;
+  PluginI* p;
+  for(int i = 0; i < PipelineDepth; ++i)
+  {
+    p = (*this)[i];
+    if(p)
+      l+= p->latency();
+  }
+  return l;
+}
+
+//---------------------------------------------------------
 //   addScheduledControlEvent
 //   track_ctrl_id is the fully qualified track audio controller number
 //   Returns true if event cannot be delivered
@@ -1721,16 +1738,18 @@ QString PluginIBase::dssi_ui_filename() const
 
 void PluginI::init()
       {
-      _plugin           = 0;
-      instances         = 0;
-      handle            = 0;
-      controls          = 0;
-      controlsOut       = 0;
-      controlPorts      = 0;
-      controlOutPorts   = 0;
-      //_gui              = 0;
-      _on               = true;
-      initControlValues = false;
+      _plugin            = 0;
+      instances          = 0;
+      handle             = 0;
+      controls           = 0;
+      controlsOut        = 0;
+      controlPorts       = 0;
+      controlOutPorts    = 0;
+      _hasLatencyOutPort = false;
+      _latencyOutPort = 0;
+      //_gui               = 0;
+      _on                = true;
+      initControlValues  = false;
       _showNativeGuiPending = false;
       }
 
@@ -1981,6 +2000,12 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
           else
           if(pd & LADSPA_PORT_OUTPUT)
           {
+            const char* pname = _plugin->portName(k);
+            if(pname == QString("latency") || pname == QString("_latency"))
+            {
+              _hasLatencyOutPort = true;
+              _latencyOutPort = curOutPort;
+            }
             controlsOut[curOutPort].idx = k;
             controlsOut[curOutPort].val     = 0.0;
             controlsOut[curOutPort].tmpVal  = 0.0;
@@ -2054,6 +2079,18 @@ void PluginI::activate()
             }
       }
 
+//---------------------------------------------------------
+//   latency
+//---------------------------------------------------------
+
+float PluginI::latency()
+{
+  if(!_hasLatencyOutPort)
+    return 0.0;
+  return controlsOut[_latencyOutPort].val;
+}
+
+      
 //---------------------------------------------------------
 //   setControl
 //    set plugin instance controller value by name

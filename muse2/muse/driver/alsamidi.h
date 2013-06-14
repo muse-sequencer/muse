@@ -55,7 +55,7 @@ class MidiAlsaDevice : public MidiDevice {
       virtual int selectWfd();
 
       bool putEvent(snd_seq_event_t*);
-      virtual bool putMidiEvent(const MidiPlayEvent&);
+      //virtual bool putMidiEvent(const MidiPlayEvent&); // REMOVE Tim.
 
    public:
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);
@@ -74,6 +74,7 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void processMidi();
       //virtual void handleStop();
       //virtual void handleSeek();
+      virtual bool putEvent(const MidiPlayEvent&);
       };
 
 extern bool initMidiAlsa();

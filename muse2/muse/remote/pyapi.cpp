@@ -1064,7 +1064,8 @@ bool Song::event(QEvent* _e)
                         return false;
 
                   bool muted = e->getP1() == 1;
-                  track->setMute(muted);
+                  //track->setMute(muted);
+                  MusEGlobal::audio->msgSetTrackMute(track, muted);  // Tim
                   this->update(SC_MUTE | SC_TRACK_MODIFIED);
                   break;
                   }

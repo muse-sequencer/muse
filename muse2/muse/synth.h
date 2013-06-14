@@ -196,6 +196,7 @@ class SynthIF : public PluginIBase {
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
       virtual LADSPA_PortRangeHint range(unsigned long i);
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
+      virtual float latency();
       virtual CtrlValueType ctrlValueType(unsigned long i) const;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const;
       };
@@ -225,11 +226,12 @@ class SynthI : public AudioTrack, public MidiDevice,
       // Initial, and running, string parameters for synths which use them, like dssi.
       StringParamMap _stringParamMap; 
 
+      // REMOVE Tim. 
       // Current bank and program for synths which use them, like dssi. 
       // In cases like dssi which have no 'hi' and 'lo' bank, just use _curBankL.
-      unsigned long _curBankH;
-      unsigned long _curBankL;
-      unsigned long _curProgram;
+      //unsigned long _curBankH;   
+      //unsigned long _curBankL;
+      //unsigned long _curProgram;
 
       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
@@ -237,7 +239,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual QString open();
       virtual void close();
       
-      virtual bool putMidiEvent(const MidiPlayEvent&) {return true;}
+      //virtual bool putMidiEvent(const MidiPlayEvent&) {return true;}  // REMOVE Tim.
       
       virtual Track* newTrack() const { return 0; }
 
@@ -257,8 +259,9 @@ class SynthI : public AudioTrack, public MidiDevice,
       
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s, const QString& instanceName);
+      virtual float latency(int channel) { return _sif->latency() + AudioTrack::latency(channel); }
 
-      void readProgram(Xml&, const QString&);
+      //void readProgram(Xml&, const QString&);  // REMOVE Tim. Use midi state for this
       void read(Xml&);
       virtual void write(int, Xml&) const;
 
@@ -275,8 +278,16 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual void populatePatchPopup(MusEGui::PopupMenu* m, int i, bool d) {
             _sif->populatePatchPopup(m, i, d);
             }
-      
-      void currentProg(unsigned long *prog, unsigned long *bankL, unsigned long *bankH);
+
+      // REMOVE Tim.      
+      //void currentProg(unsigned long *prog, unsigned long *bankL, unsigned long *bankH)
+      //     {  if(prog) *prog=_curProgram & 0x7f; if(bankL) *bankL=_curBankL & 0x7f; if(bankH) *bankH=_curBankH & 0x7f;  }
+      //void setCurrentProg(unsigned long prog, unsigned long bankL, unsigned long bankH)
+      //     {  _curProgram = prog & 0x7f; _curBankL = bankL & 0x7f; _curBankH = bankH & 0x7f;  }
+      void currentProg(int chan, int *prog, int *bankL, int *bankH)
+           {  _curOutParamNums[chan].currentProg(prog, bankL, bankH);  }
+      void setCurrentProg(int chan, int prog, int bankL, int bankH)
+           {  _curOutParamNums[chan].setCurrentProg(prog, bankL, bankH);  }
 
       void guiHeartBeat()     { return _sif->guiHeartBeat(); }
       bool initGui()    const { return _sif->initGui(); }

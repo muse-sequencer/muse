@@ -229,8 +229,8 @@ bool MusE::importMidi(const QString name, bool merge)
         if(!md || (md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI))  
         {
           // this overwrites any instrument set for this port:
-          if(mp->instrument() != instr)
-            mp->setInstrument(instr);
+          if(mp->outputInstrument() != instr)
+            mp->setOutputInstrument(instr);
         }
       }
       
@@ -511,7 +511,7 @@ void MusE::processTrack(MusECore::MidiTrack* track)
 
 void MusE::importController(int channel, MusECore::MidiPort* mport, int n)
       {
-      MusECore::MidiInstrument* instr = mport->instrument();
+      MusECore::MidiInstrument* instr = mport->outputInstrument();
       MusECore::MidiCtrlValListList* vll = mport->controller();
       MusECore::iMidiCtrlValList i = vll->find(channel, n);
       if (i != vll->end())
