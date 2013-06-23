@@ -142,6 +142,7 @@ file (GLOB core_source_files
       waveevent.cpp 
       wavetrack.cpp 
       xml.cpp
+      xtick.cpp
       steprec.cpp
       )
 file (GLOB main_source_files

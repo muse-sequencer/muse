@@ -25,40 +25,12 @@
 #ifndef __POS_H__
 #define __POS_H__
 
+#include "xtick.h"
+
 class QString;
 
 namespace MusECore
 {
-
-
-	struct XTick				// eXtended tick with subticks.
-	{
-		unsigned tick;			// do NOT just grab this and ignore subtick if
-		// you're doing integer calculations!
-		// use to_uint() instead, which takes care of proper rounding.
-		double subtick;
-		bool invalid;
-
-		XTick(unsigned t = 0, double s = 0.0)
-		{
-			tick = t;
-			subtick = s;
-			invalid = false;
-		}
-		static XTick from_double(double d);
-		double to_double() const;
-		unsigned to_uint() const; // TODO: possibly add a cast to unsigned later, and find and remove all .to_uint()
-
-		XTick operator+(const XTick& t2) const;
-		XTick operator-(const XTick& t2) const;
-		bool operator>=(const XTick& t2) const;
-		bool operator>(const XTick& t2) const;
-		bool operator<=(const XTick& t2) const;
-		bool operator<(const XTick& t2) const;
-		bool operator==(const XTick& t2) const;
-		
-		static XTick createInvalidXTick() { XTick tmp; tmp.invalid=true; return tmp; }
-	};
 
 	class Xml;
 
