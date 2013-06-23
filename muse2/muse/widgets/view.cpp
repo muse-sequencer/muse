@@ -684,125 +684,6 @@ QPoint View::mapDev(const QPoint& r) const
       return QPoint(mapxDev(r.x()), mapyDev(r.y()));
       }
 
-#if 0
-  //
-  // Calculations using integer rounding methods...
-  //
-
-QRect View::map(const QRect& r) const
-      {
-      int x, y, w, h;
-      //printf("View::map xmag:%d xpos:%d xorg:%d\n", xmag, xpos, xorg);  
-      if (xmag < 0) {
-            x = r.x()/(-xmag) - (xpos + rmapx(xorg));  // round down
-            w = (r.width()-xmag-1)  / (-xmag);  // round up
-            }
-      else {
-            x = r.x()*xmag - (xpos + rmapx(xorg));
-            w = r.width() * xmag;
-            }
-      if (ymag < 0) {
-            y = r.y()/-ymag - (ypos + rmapy(yorg));
-            h = (r.height()-ymag-1) / (-ymag);
-            }
-      else {
-            y = r.y() * ymag - (ypos + rmapy(yorg));
-            h = r.height() * ymag;
-            }
-      return QRect(x, y, w, h);
-      }
-
-QPoint View::map(const QPoint& p) const
-      {
-      int x, y;
-      if (xmag < 0) {
-            x = p.x()/(-xmag) - (xpos + rmapx(xorg));  // round down
-            }
-      else {
-            x = p.x()*xmag - (xpos + rmapx(xorg));
-            }
-      if (ymag < 0) {
-            y = p.y()/-ymag - (ypos + rmapy(yorg));
-            }
-      else {
-            y = p.y() * ymag - (ypos + rmapy(yorg));
-            }
-      return QPoint(x, y);
-      }
-
-int View::mapx(int x) const
-      {
-      if (xmag < 0) {
-            return (x-xmag/2)/(-xmag) - (xpos + rmapx(xorg));  // round
-            }
-      else {
-            return (x * xmag) - (xpos + rmapx(xorg));
-            }
-      }
-int View::mapy(int y) const
-      {
-      if (ymag < 0) {
-            return (y-ymag/2)/(-ymag) - (ypos + rmapy(yorg));  // round
-            }
-      else {
-            return (y * ymag) - (ypos + rmapy(yorg));
-            }
-      }
-int View::mapxDev(int x) const
-      {
-      int val;
-      if (xmag <= 0)
-            val = (x + xpos + rmapx(xorg)) * (-xmag);
-      else
-            val = (x + xpos + rmapx(xorg) + xmag / 2) / xmag;
-      if (val < 0)            // DEBUG
-            val = 0;
-      return val;
-      }
-
-int View::mapyDev(int y) const
-      {
-      if (ymag <= 0)
-            return (y + ypos + rmapy(yorg)) * (-ymag);
-      else
-            return (y + ypos + rmapy(yorg) + ymag / 2) / ymag;
-      }
-
-// r == relative conversion
-int View::rmapx(int x) const
-      {
-      if (xmag < 0)
-            return (x-xmag/2) / (-xmag);
-      else
-            return x * xmag;
-      }
-int View::rmapy(int y) const
-      {
-      if (ymag < 0)
-            return (y-ymag/2) / (-ymag);
-      else
-            return y * ymag;
-      }
-int View::rmapxDev(int x) const
-      {
-      if (xmag <= 0)
-            return x * (-xmag);
-      else
-            return (x + xmag/2) / xmag;
-      }
-int View::rmapyDev(int y) const
-      {
-      if (ymag <= 0)
-            return y * (-ymag);
-      else
-            return (y + ymag/2) / ymag;
-      }
-
-
-#else
-  //
-  // Calculations using more accurate methods...  p4.0.29 Tim.
-  //
 
 QRect View::map(const QRect& r) const
       {
@@ -839,22 +720,6 @@ QRect View::map(const QRect& r) const
 
 QPoint View::map(const QPoint& p) const
       {
-      /*
-      int x, y;
-      if (xmag < 0) {
-            x = lrint(double(p.x())/double(-xmag) - rmapx_f(xorg)) - xpos;  
-            }
-      else {
-            x = p.x()*xmag - xpos - lrint(rmapx_f(xorg));
-            }
-      if (ymag < 0) {
-            y = lrint(double(p.y())/double(-ymag) - rmapy_f(yorg)) - ypos;
-            }
-      else {
-            y = p.y()*ymag - ypos - lrint(rmapy_f(yorg));
-            }
-      return QPoint(x, y);
-      */
       return QPoint(mapx(p.x()), mapy(p.y()));
       }
 
@@ -925,7 +790,6 @@ int View::rmapyDev(int y) const
       else
             return lrint(double(y) / double(ymag));
       }
-#endif
 
 double View::rmapx_f(double x) const
       {
