@@ -285,4 +285,9 @@ unsigned AudioStream::xtickToFrameInFile(XTick xtick)
 }
 
 
+void AudioStream::readPeakRms(SampleV* s, int mag, unsigned pos, bool overwrite) const
+{
+	// TODO implement. just get the data from the SndFile and stretch it naively
+}
+
 } // namespace MusECore

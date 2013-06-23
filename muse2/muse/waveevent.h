@@ -67,6 +67,7 @@ class WaveEventBase : public EventBase {
       virtual int spos() const                 { return _spos;  }
       virtual void setSpos(int s)              { _spos = s;     }
       
+      virtual void reloadAudioFile();
       virtual void setAudioFile(const QString& path);
       virtual QString audioFilePath()               { return filename; }
       virtual AudioStream::stretch_mode_t stretchMode() { return stretch_mode; }
@@ -74,6 +75,8 @@ class WaveEventBase : public EventBase {
 
       virtual void readAudio(WavePart* part, unsigned firstFrame, 
                              float** bpp, int channels, int nFrames, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite);
+      
+      virtual bool needCopyOnWrite();
       };
       
 } // namespace MusECore

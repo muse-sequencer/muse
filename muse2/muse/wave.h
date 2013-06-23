@@ -93,7 +93,6 @@ class SndFile {
       bool isOpen() const     { return openFlag; }
       bool isWritable() const { return writeFlag; }
       void update();
-      bool checkCopyOnWrite();      //!< check if the file should be copied before writing to it
 
       QString basename() const;     //!< filename without extension
       QString dirPath() const;      //!< path
@@ -154,7 +153,6 @@ class SndFileR {
       bool isOpen() const     { return sf->isOpen(); }
       bool isWritable() const { return sf->isWritable(); }
       void update()           { sf->update(); }
-      bool checkCopyOnWrite() { return sf->checkCopyOnWrite(); };  
 
       QString basename() const { return sf->basename(); }
       QString dirPath() const  { return sf->dirPath(); }

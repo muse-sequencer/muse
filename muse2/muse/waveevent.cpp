@@ -25,7 +25,9 @@
 #include "event.h"
 #include "waveevent.h"
 #include "xml.h"
+#include "song.h"
 #include "wave.h"
+#include "track.h"
 #include <iostream>
 #include <math.h>
 
@@ -89,6 +91,10 @@ void WaveEventBase::dump(int n) const
       }
 
       
+void WaveEventBase::reloadAudioFile()
+{
+	setAudioFile(filename);
+}
       
 void WaveEventBase::setAudioFile(const QString& path)
 {
@@ -219,6 +225,58 @@ void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffe
   
   streamPosition += audiostream->readAudio(buffer, nFrames, overwrite);
   // now streamPosition == firstFrame+nFrames 
+}
+
+bool WaveEventBase::needCopyOnWrite()
+{
+	QFileInfo this_finfo(this->audioFilePath());
+	QString path_this = this_finfo.canonicalPath();
+	if(path_this.isEmpty())
+		return false;  
+	
+	bool fwrite = this_finfo.isWritable();
+	
+	// No exceptions: Even if this wave event is a clone, if it ain't writeable we gotta copy the wave.
+	if(!fwrite)
+		return true;
+	
+	
+	
+	// Count the number of non-clone part wave events (including possibly this one) using this file.
+	// Search all active wave events
+	int use_count = 0;
+	WaveTrackList* wtl = MusEGlobal::song->waves();
+	for(ciTrack it = wtl->begin(); it != wtl->end(); ++it)
+	{
+		PartList* pl = (*it)->parts();
+		for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+		{
+			EventList* el = ip->second->events();
+			// We are looking for active independent non-clone parts
+			if(el->arefCount() > 1) // TODO i think this is wrong. (flo)
+				continue;
+			for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+			{
+				if(ie->second.type() != Wave)
+					continue;
+				const Event& ev = ie->second;
+				if(ev.empty())
+					continue;
+				
+				QFileInfo finfo(ev.audioFilePath());
+				QString path = finfo.canonicalPath();
+				if(path.isEmpty())
+					continue;
+				if(path == path_this)
+					++use_count;
+				// If more than one non-clone part wave event is using the file, signify that the caller should make a copy of it.
+				if(use_count > 1)
+					return true;
+			}
+		}
+	}
+	
+	return false;
 }
 
 } // namespace MusECore

@@ -100,12 +100,13 @@ class Event {
 
       const QString name() const;
       void setName(const QString& s);
-      int spos() const;
+      int spos() const; // TODO FINDMICH remove the spos work from Event etc, this has to go only in AudioStream!
       void setSpos(int s);
       
       virtual void readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite);
       QString audioFilePath() const;
       void setAudioFile(const QString& path);
+      void reloadAudioFile();
       AudioStream::stretch_mode_t stretchMode() const;
       const AudioStream* getAudioStream() const;
       
@@ -124,6 +125,7 @@ class Event {
       XTick endXTick() const;
       unsigned endFrame() const;
       void setPos(const Pos& p);
+      bool needCopyOnWrite();
       };
 
 typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;

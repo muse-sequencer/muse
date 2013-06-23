@@ -35,7 +35,7 @@
 
 namespace MusECore {
 
-	class AudioStream
+	class AudioStream // TODO findmich handle and replace Event.spos
 	{
 		public:
 			enum stretch_mode_t
@@ -54,6 +54,9 @@ namespace MusECore {
 			
 			void seek(unsigned frame, XTick xtick);
 			unsigned readAudio(float** deinterleaved_dest_buffer, int nFrames, bool overwrite); // returns the number of frames read.
+			
+			unsigned relTick2frame(XTick xtick) const;  // TODO implement!
+			XTick relFrame2XTick(unsigned frame) const;
 			
 			int get_n_output_channels() const { return n_output_channels; }
 			bool isGood() const { return !initalisation_failed; }

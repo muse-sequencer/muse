@@ -27,6 +27,8 @@
 #include "waveevent.h"
 #include "midievent.h"
 
+// TODO FIXME remove this wrapping class
+
 namespace MusECore {
 
 //---------------------------------------------------------
@@ -186,6 +188,7 @@ int Event::spos() const                      { return ev->spos();  }
 void Event::setSpos(int s)                   { ev->setSpos(s);     }
 
 void Event::setAudioFile(const QString& path) { ev->setAudioFile(path); }
+void Event::reloadAudioFile()                 { ev->reloadAudioFile(); }
 QString Event::audioFilePath() const             { return ev->audioFilePath(); }
 AudioStream::stretch_mode_t Event::stretchMode() const { return ev->stretchMode(); }
 const AudioStream* Event::getAudioStream() const { return ev->getAudioStream(); }
@@ -209,4 +212,5 @@ XTick Event::endXTick() const         { return ev->end().xtick(); }
 unsigned Event::endFrame() const        { return ev->end().frame(); }
 void Event::setPos(const Pos& p)        { ev->setPos(p); }
 
+bool Event::needCopyOnWrite() { return ev->needCopyOnWrite(); }
 } // namespace MusECore
