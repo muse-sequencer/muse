@@ -131,8 +131,8 @@ WaveCanvas::WaveCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());
       yScale = sy;
       mode = NORMAL;
-      selectionStart = 0;
-      selectionStop  = 0;
+      selectionStart = XTick::createInvalidXTick();
+      selectionStop  = XTick::createInvalidXTick();
       lastGainvalue = 100;
 
       songChanged(SC_TRACK_INSERTED);
@@ -890,13 +890,13 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                         case Qt::LeftButton:
                               if (mode == NORMAL) {
                                     // redraw and reset:
-                                    if (selectionStart != selectionStop) {
-                                          selectionStart = selectionStop = 0;
+                                    if (!selectionStart.invalid) {
+                                          selectionStart = selectionStop = XTick::createInvalidXTick();
                                           redraw();
                                           }
                                     mode = DRAG;
-                                    dragstartx = x;
-                                    selectionStart = selectionStop = x;
+                                    dragstartx = MusEGlobal::tempomap.frame2xtick(x);
+                                    selectionStart = selectionStop = dragstartx;
                                     drag = DRAG_LASSO_START;
                                     Canvas::start = pt;
                                     return false;
@@ -939,17 +939,18 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
       //emit timeChanged(editor->rasterVal(x));
       //emit timeChanged(AL::sigmap.raster(x, *_raster));
 
+      XTick x_xtick = MusEGlobal::tempomap.frame2xtick(x);
+      
       switch (button) {
             case Qt::LeftButton:
                   if (mode == DRAG) {
                         int mx      = mapx(x);
-                        int mstart  = mapx(selectionStart);
-                        int mstop   = mapx(selectionStop);
-                        //int mdstart = mapx(dragstartx);
+                        int mstart  = mapx(MusEGlobal::tempomap.tick2frame(selectionStart));
+                        int mstop   = mapx(MusEGlobal::tempomap.tick2frame(selectionStop));
                         QRect r(0, 0, 0, height());
                         
-                        if (x < dragstartx) {
-                              if(x < selectionStart)
+                        if (x_xtick < dragstartx) {
+                              if(x_xtick < selectionStart)
                               {
                                 r.setLeft(mx);
                                 r.setWidth((selectionStop >= dragstartx ? mstop : mstart) - mx);
@@ -959,11 +960,11 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                                 r.setLeft(mstart);
                                 r.setWidth(mx - mstart);
                               }
-                              selectionStart = x;
+                              selectionStart = x_xtick;
                               selectionStop = dragstartx;
                               }
                         else {
-                              if(x >= selectionStop)
+                              if(x_xtick >= selectionStop)
                               {
                                 r.setLeft(selectionStart < dragstartx ? mstart : mstop);
                                 r.setWidth(mx - (selectionStart < dragstartx ? mstart : mstop));
@@ -974,7 +975,7 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                                 r.setWidth(mstop - mx);
                               }
                               selectionStart = dragstartx;
-                              selectionStop = x;
+                              selectionStop = x_xtick;
                               }
                         update(r);
                         }
@@ -1115,8 +1116,8 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
               if (pos < event.spos())
                     continue;
 
-              int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
-              int selectionStopPos  = selectionStop  - peoffset;
+              int selectionStartPos = MusEGlobal::tempomap.tick2frame(selectionStart) - peoffset; // Offset transformed to event coords
+              int selectionStopPos  = MusEGlobal::tempomap.tick2frame(selectionStop)  - peoffset;
 
               for (int k = 0; k < ev_channels; ++k) {
                     int peak = (sa[k].peak * (h - 1)) / yScale;
@@ -1748,8 +1749,8 @@ void WaveCanvas::cmd(int cmd)
                           iEnd--;
                           MusECore::WavePart* beg = (MusECore::WavePart*) iBeg->second;
                           MusECore::WavePart* end = (MusECore::WavePart*) iEnd->second;
-                          selectionStart = beg->frame();
-                          selectionStop  = end->frame() + end->lenFrame();
+                          selectionStart = beg->xtick();
+                          selectionStop  = end->endXTick();
                           redraw();
                           }
                   }
@@ -1759,7 +1760,7 @@ void WaveCanvas::cmd(int cmd)
                         }
                   break;
             case CMD_SELECT_NONE:     // select none
-                  selectionStart = selectionStop = 0;
+                  selectionStart = selectionStop = XTick::createInvalidXTick();
                   deselectAll();
                   break;
             case CMD_SELECT_INVERT:     // invert selection
@@ -1952,7 +1953,7 @@ void WaveCanvas::cmd(int cmd)
             }
             
       if (modifyoperation != -1) {
-            if (selectionStart == selectionStop && modifyoperation!=PASTE) {
+            if ((selectionStart.invalid || selectionStart == selectionStop) && modifyoperation!=PASTE) {
                   printf("No selection. Ignoring\n"); //@!TODO: Disable menu options when no selection
                   QMessageBox::information(this, 
                      QString("MusE"),
@@ -1980,82 +1981,72 @@ void WaveCanvas::cmd(int cmd)
 //---------------------------------------------------------
 //   getSelection
 //---------------------------------------------------------
-MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned stoppos)
-      {
-      MusECore::WaveSelectionList selection;
-
-      for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
-            MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
-            unsigned part_offset = wp->frame();
-            
-            MusECore::EventList* el = wp->events();
-            //printf("eventlist length=%d\n",el->size());
-
-            for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) {
-                  MusECore::Event event  = e->second;
-                  if (event.empty())
-                        continue;
-                  
-                  if (event.getAudioStream()==NULL) // TODO sollte passen
-                        continue;
-
-                  // Respect part end: Don't modify stuff outside of part boundary.
-                  unsigned elen = event.lenFrame();
-                  if(event.frame() + event.lenFrame() >= wp->lenFrame())
-                  {
-                    // Adjust apparent operation length:
-                    if(event.frame() > wp->lenFrame())
-                      elen = 0;
-                    else
-                      elen = wp->lenFrame() - event.frame();
-                  }
-                  
-                  unsigned event_offset = event.frame() + part_offset;
-                  unsigned event_startpos  = event.spos();
-                  unsigned event_length = elen + event.spos();
-                  unsigned event_end    = event_offset + event_length;
-                  //printf("startpos=%d stoppos=%d part_offset=%d event_offset=%d event_startpos=%d event_length=%d event_end=%d\n", startpos, stoppos, part_offset, event_offset, event_startpos, event_length, event_end);
-
-                  if (!(event_end <= startpos || event_offset > stoppos)) {
-                        int tmp_sx = startpos - event_offset + event_startpos;
-                        int tmp_ex = stoppos  - event_offset + event_startpos;
-                        unsigned sx;
-                        unsigned ex;
-
-                        tmp_sx < (int)event_startpos ? sx = event_startpos : sx = tmp_sx;
-                        tmp_ex > (int)event_length   ? ex = event_length   : ex = tmp_ex;
-
-                        //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLatin1().constData());
-                        MusECore::WaveEventSelection s;
-                        s.event = event;  
-                        s.startframe = sx;
-                        s.endframe   = ex+1;
-                        //printf("sx=%d ex=%d\n",sx,ex);
-                        selection.push_back(s);
-                        }
-                  }
-            }
-
-            return selection;
-      }
+MusECore::WaveSelectionList WaveCanvas::getSelection(XTick startpos, XTick stoppos) // TODO FINDMICHJETZT
+{
+	MusECore::WaveSelectionList selection;
+	
+	for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
+		MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
+		XTick part_offset = wp->xtick();
+		
+		MusECore::EventList* el = wp->events();
+		
+		for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) {
+			MusECore::Event event  = e->second;
+			if (event.empty())
+				continue;
+			
+			if (event.getAudioStream()==NULL) // TODO sollte passen
+				continue;
+			
+			// Respect part end: Don't modify stuff outside of part boundary.
+			XTick event_length = event.lenXTick();
+			if(event.xtick() + event.lenXTick() >= wp->lenXTick())
+			{
+				// Adjust apparent operation length:
+				if(event.xtick() > wp->lenXTick())
+					continue; // ignore this event
+				else
+					               event_length = wp->lenXTick() - event.xtick();
+			}
+			
+			XTick event_begin = event.xtick() + part_offset;
+			XTick event_end    = event_begin + event_length;
+			
+			if (!(event_end <= startpos || event_begin > stoppos)) { // if event is affected by selection
+				XTick temp_startpos = (startpos < event_begin) ? event_begin : startpos;
+				XTick temp_stoppos  = (stoppos  > event_end)   ? event_end   : stoppos;
+				
+				MusECore::WaveEventSelection s;
+				s.event = event;
+				s.startframe = event.getAudioStream()->relTick2frame(temp_startpos);
+				s.endframe   = event.getAudioStream()->relTick2frame(temp_stoppos)+1;
+				selection.push_back(s);
+			}
+		}
+	}
+	
+	return selection;
+}
 
       
-      /*
 //---------------------------------------------------------
 //   modifySelection
 //---------------------------------------------------------
-void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stoppos, double paramA)
+void WaveCanvas::modifySelection(int operation, XTick startpos, XTick stoppos, double paramA)
       {
-        if (operation == PASTE) {
-          // we need to redefine startpos and stoppos
+	         
+    
+        if (operation == PASTE) { // TODO FINDMICHJETZT migrate PASTE
+          /* // we need to redefine startpos and stoppos
           if (copiedPart =="")
             return;
           MusECore::SndFile pasteFile(copiedPart);
           pasteFile.openRead();
           startpos = pos[0];
-          stoppos = startpos+ pasteFile.samples(); // possibly this is wrong if there are tempo changes
+          stoppos = startpos+ pasteFile. DONOTCOMPILE samples(); // this is WRONG! this will cast samples implicitly into XTicks and then run havoc!
           pasteFile.close();
-          pos[0]=stoppos;
+          pos[0]=stoppos; */
         }
 
         //
@@ -2064,29 +2055,28 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
         //
         
         MusECore::WaveSelectionList selection = getSelection(startpos, stoppos);
-        std::vector<MusECore::SndFileR> copy_files_proj_dir;
-        for(MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++) 
+        std::vector<QString> copy_files_proj_dir;
+        for(MusECore::iWaveSelection wavesel_it = selection.begin(); wavesel_it != selection.end(); wavesel_it++) 
         {
-          MusECore::WaveEventSelection w = *i;
-          MusECore::SndFileR file = w.event.sndFile();
-          if(file.checkCopyOnWrite())
+          if(wavesel_it->event.needCopyOnWrite())
           {
-            std::vector<MusECore::SndFileR>::iterator i = copy_files_proj_dir.begin();
+            QString canonical_path = QFileInfo(wavesel_it->event.audioFilePath()).canonicalPath();
+            std::vector<QString>::iterator i = copy_files_proj_dir.begin();
             for( ; i != copy_files_proj_dir.end(); ++i)
             {
-              if(i->canonicalPath() == file.canonicalPath())
+              if(*i == canonical_path)
                 break; 
             }  
             if(i == copy_files_proj_dir.end())
-              copy_files_proj_dir.push_back(file);
+              copy_files_proj_dir.push_back(canonical_path);
           }
         }
         if(!copy_files_proj_dir.empty())
         {
           CopyOnWriteDialog* dlg = new CopyOnWriteDialog();
-          for(std::vector<MusECore::SndFileR>::iterator i = copy_files_proj_dir.begin(); i != copy_files_proj_dir.end(); ++i)
+          for(std::vector<QString>::iterator i = copy_files_proj_dir.begin(); i != copy_files_proj_dir.end(); ++i)
           {
-            qint64 sz = QFile(i->canonicalPath()).size();
+            qint64 sz = QFile(*i).size();
             QString s;
             if(sz > 1048576)
               s += QString::number(sz / 1048576) + "MB ";
@@ -2095,7 +2085,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
               s += QString::number(sz / 1024) + "KB ";
             else
               s += QString::number(sz) + "B ";
-            s += i->canonicalPath();
+            s += *i;
             dlg->addProjDirFile(s);
           }
           int rv = dlg->exec();
@@ -2110,18 +2100,17 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
               return; // No project, don't want to copy without one.
             //setFocus(); // For some reason focus is given away to Arranger
           }
-          for(MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++)
+          for(MusECore::iWaveSelection wavesel_it = selection.begin(); wavesel_it != selection.end(); wavesel_it++)
           {
-            MusECore::WaveEventSelection w = *i;
-            MusECore::SndFileR file = w.event.sndFile();
-            if(!file.checkCopyOnWrite()) // Make sure to re-check
+            if(!wavesel_it->event.needCopyOnWrite()) // Make sure to re-check
               continue;
-            QString filePath = MusEGlobal::museProject + QString("/") + file.name();
+            
+            QString filePath = MusEGlobal::museProject + QString("/") + QFileInfo(wavesel_it->event.audioFilePath()).fileName();
             QString newFilePath;
             if(MusECore::getUniqueFileName(filePath, newFilePath))
             {
               {
-                QFile qf(file.canonicalPath());
+                QFile qf(QFileInfo(wavesel_it->event.audioFilePath()).canonicalPath());
                 if(!qf.copy(newFilePath)) // Copy the file
                 {
                   printf("MusE Error: Could not copy to new sound file (file exists?): %s\n", newFilePath.toLatin1().constData());
@@ -2167,15 +2156,8 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                   continue; 
                 }
               }
-              MusECore::SndFile* newSF = new MusECore::SndFile(newFilePath);
-              MusECore::SndFileR newSFR(newSF);  // Create a sndFileR for the new file
-              if(newSFR.openRead())  
-              {
-                printf("MusE Error: Could not open new sound file: %s\n", newSFR.canonicalPath().toLatin1().constData());
-                continue; // newSF will be deleted when newSFR goes out of scope and is deleted
-              }
+
               MusEGlobal::audio->msgIdle(true); 
-              w.event.sndFile().close();             // Close the old file.
               // NOTE: For now, don't bother providing undo for this. Reason: If the user undoes
               //  and then modifies again, it will prompt to create new copies each time. There is
               //  no mechanism ("touched"?) to tell if an existing copy would be suitable to just 'drop in'.
@@ -2185,7 +2167,7 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
               //  NEW wave file (as if they always did). It also means the user CANNOT change back 
               //  to the old file...    Oh well, this IS Copy On Write.
               // FIXME: Find a conceptual way to make undo work with or without deleting the copies. 
-              w.event.setSndFile(newSFR);            // Set the new file.
+              wavesel_it->event.setAudioFile(newFilePath);            // Set the new file.
               MusEGlobal::audio->msgIdle(false); 
             }
           }
@@ -2194,9 +2176,13 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
          MusEGlobal::song->startUndo();
          for (MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++) {
                MusECore::WaveEventSelection w = *i;
-               MusECore::SndFileR file         = w.event.sndFile();
-               unsigned sx            = w.startframe;
-               unsigned ex            = w.endframe;
+               MusECore::SndFile file         = MusECore::SndFile(w.event.audioFilePath());
+               if (file.openRead()) {
+                     MusEGlobal::audio->msgIdle(false);
+                     printf("Could not open original file...\n");
+                     break;
+                     }
+	       
                unsigned file_channels = file.channels();
 
                QString tmpWavFile = QString::null;
@@ -2214,10 +2200,10 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                      }
 
                //
-               // Write out data that will be changed to temp file
+               // Write out original data that will be changed to temp file (i.e. save it, for being able to undo it later)
                //
-               unsigned tmpdatalen = ex - sx;
-               off_t    tmpdataoffset = sx;
+               unsigned tmpdatalen = w.endframe - w.startframe;
+               off_t    tmpdataoffset = w.startframe;
                float*   tmpdata[file_channels];
 
                for (unsigned i=0; i<file_channels; i++) {
@@ -2284,20 +2270,20 @@ void WaveCanvas::modifySelection(int operation, unsigned startpos, unsigned stop
                file.write(file_channels, tmpdata, tmpdatalen);
                file.update();
                file.close();
-               file.openRead();
+	       
+	       w.event.reloadAudioFile();
 
                for (unsigned i=0; i<file_channels; i++) {
                      delete[] tmpdata[i];
                      }
 
                // Undo handling
-               MusEGlobal::song->cmdChangeWave(file.dirPath() + "/" + file.name(), tmpWavFile, sx, ex);
+               MusEGlobal::song->cmdChangeWave(file.dirPath() + "/" + file.name(), tmpWavFile, w.startframe, w.endframe);
                MusEGlobal::audio->msgIdle(false); // Not good with playback during operations
                }
          MusEGlobal::song->endUndo(SC_CLIP_MODIFIED);
          redraw();
       }
-      */ // TODO migrate that to audio streams
 
 //---------------------------------------------------------
 //   copySelection

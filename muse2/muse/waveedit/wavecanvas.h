@@ -27,6 +27,7 @@
 #ifndef __WAVECANVAS_H__
 #define __WAVECANVAS_H__
 
+#include "xtick.h"
 #include "type_defs.h"
 #include "ecanvas.h"
 #include <QDragEnterEvent>
@@ -47,8 +48,8 @@ class WaveTrack;
 
 struct WaveEventSelection {
       Event event;         
-      unsigned startframe;
-      unsigned endframe;
+      unsigned startframe; // that's the frame in the raw file. inclusive
+      unsigned endframe; // exclusive
       };
 
 typedef std::list<WaveEventSelection> WaveSelectionList;
@@ -56,6 +57,7 @@ typedef std::list<WaveEventSelection>::iterator iWaveSelection;
 }
 
 namespace MusEGui {
+using MusECore::XTick;
 
 //---------------------------------------------------------
 //   WEvent
@@ -82,13 +84,13 @@ class WaveCanvas : public EventCanvas {
       unsigned startSample;
       unsigned endSample;
       int colorMode;
-      int selectionStart, selectionStop, dragstartx;
+      XTick selectionStart, selectionStop, dragstartx;
       int lastGainvalue; //!< Stores the last used gainvalue when specifiying gain value in the editgain dialog
       QString copiedPart;
       
       //bool getUniqueTmpfileName(QString& newFilename); //!< Generates unique filename for temporary SndFile
-      MusECore::WaveSelectionList getSelection(unsigned startpos, unsigned stoppos);
-      void modifySelection(int operation, unsigned startpos, unsigned stoppos, double paramA); //!< Modifies selection
+      MusECore::WaveSelectionList getSelection(XTick startpos, XTick stoppos);
+      void modifySelection(int operation, XTick startpos, XTick stoppos, double paramA); //!< Modifies selection
       void muteSelection(unsigned channels, float** data, unsigned length); //!< Mutes selection
       void normalizeSelection(unsigned channels, float** data, unsigned length); //!< Normalizes selection
       void fadeInSelection(unsigned channels, float** data, unsigned length); //!< Linear fade in of selection
