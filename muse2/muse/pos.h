@@ -37,11 +37,13 @@ namespace MusECore
 		// you're doing integer calculations!
 		// use to_uint() instead, which takes care of proper rounding.
 		double subtick;
+		bool invalid;
 
 		XTick(unsigned t = 0, double s = 0.0)
 		{
 			tick = t;
 			subtick = s;
+			invalid = false;
 		}
 		static XTick from_double(double d);
 		double to_double() const;
@@ -54,6 +56,8 @@ namespace MusECore
 		bool operator<=(const XTick& t2) const;
 		bool operator<(const XTick& t2) const;
 		bool operator==(const XTick& t2) const;
+		
+		static XTick createInvalidXTick() { XTick tmp; tmp.invalid=true; return tmp; }
 	};
 
 	class Xml;
