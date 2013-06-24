@@ -30,7 +30,6 @@
 #include "pos.h"
 #include "evdata.h"
 #include "audiostream.h"
-#include "wave.h" // for SndFileR
 
 class QString;
 

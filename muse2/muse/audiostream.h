@@ -55,9 +55,11 @@ namespace MusECore {
 			void seek(unsigned frame, XTick xtick);
 			unsigned readAudio(float** deinterleaved_dest_buffer, int nFrames, bool overwrite); // returns the number of frames read.
 			
-			unsigned relTick2frame(XTick xtick) const;  // TODO implement!
 			XTick relFrame2XTick(unsigned frame) const;
-			
+			XTick relFrameInFile2XTick(unsigned frame) const;
+			unsigned relTick2Frame(XTick xtick) const;        // those are relative to the AudioStream's beginning.
+			unsigned relTick2FrameInFile(XTick xtick) const;
+
 			int get_n_output_channels() const { return n_output_channels; }
 			bool isGood() const { return !initalisation_failed; }
 			
@@ -70,10 +72,6 @@ namespace MusECore {
 			
 			void maybe_update_stretch_ratio();
 			void update_stretch_ratio();
-
-			XTick frameToXTick(unsigned frame);
-			unsigned xtickToFrame(XTick xtick);
-			unsigned xtickToFrameInFile(XTick xtick);
 
 #ifdef RUBBERBAND_SUPPORT			
 			void set_stretch_ratio(double ratio); // 2.0 makes it slower

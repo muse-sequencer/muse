@@ -112,7 +112,7 @@ void AudioStream::seek(unsigned int frame, XTick xtick)
 	unsigned int destFrame; // which frame in the input file to seek to.
 	
 	if (doStretch) // we're only interested in the xtick
-		destFrame = xtickToFrameInFile(xtick);
+		destFrame = relTick2FrameInFile(xtick);
 	else // we're only interested in the frame
 		destFrame = frame*input_sampling_rate/output_sampling_rate;
 	
@@ -245,10 +245,10 @@ void AudioStream::update_stretch_ratio()
 #ifdef RUBBERBAND_SUPPORT
 	if (doStretch)
 	{
-		XTick keyframe_xtick = frameToXTick(currentPositionInOutput) + XTick(386);
+		XTick keyframe_xtick = relFrame2XTick(currentPositionInOutput) + XTick(386);
 		
-		unsigned keyframe_pos_in_stream = xtickToFrame(keyframe_xtick);
-		unsigned keyframe_pos_in_file = xtickToFrameInFile(keyframe_xtick);
+		unsigned keyframe_pos_in_stream = relTick2Frame(keyframe_xtick);
+		unsigned keyframe_pos_in_file = relTick2FrameInFile(keyframe_xtick);
 		
 		// so we must play the file's frames from currentPositionInInput to keyframe_pos_in_file
 		// within (keyframe_pos_in_stream-currentPositionInOutput) frames.
@@ -260,13 +260,13 @@ void AudioStream::update_stretch_ratio()
 }
 
 // converts the given frame-position of the output stream into the given XTick of the input stream
-XTick AudioStream::frameToXTick(unsigned frame)
+XTick AudioStream::relFrame2XTick(unsigned frame) const
 {
 	return MusEGlobal::tempomap.frame2xtick(frame + frameStartInSong) - xtickStartInSong;
 	//return externalTempoMap.frame2xtick(frame);
 }
 
-unsigned AudioStream::xtickToFrame(XTick xtick)
+unsigned AudioStream::relTick2Frame(XTick xtick) const
 {
 	unsigned retval = MusEGlobal::tempomap.tick2frame(xtick + xtickStartInSong);
 	if (retval >= frameStartInSong) return retval-frameStartInSong;
@@ -279,7 +279,7 @@ unsigned AudioStream::xtickToFrame(XTick xtick)
 	//return externalTempoMap.tick2frame(xtick);
 }
 
-unsigned AudioStream::xtickToFrameInFile(XTick xtick)
+unsigned AudioStream::relTick2FrameInFile(XTick xtick) const
 {
 	return fileTempoMap.tick2frame(xtick);
 }

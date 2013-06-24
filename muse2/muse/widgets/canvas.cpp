@@ -952,8 +952,7 @@ void Canvas::scrollTimerDone()
         //printf("Canvas::scrollTimerDone starting scrollTimer: Currently active?%d\n", scrollTimer->isActive());
         
         // Make sure to yield to other events, otherwise other events take a long time to reach us,
-        //  causing scrolling to take a painfully long time to stop. Try up to 100 ms for each yield: 
-        //qApp->processEvents(100);       // FIXME: Didn't help at all.
+        //  causing scrolling to take a painfully long time to stop.
         scrollTimer->setSingleShot(true);
         scrollTimer->start(80);           // OK, setting a timeout 80 helped.
       }

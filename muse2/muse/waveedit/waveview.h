@@ -34,7 +34,6 @@ class QRect;
 
 namespace MusECore {
 class PartList;
-class SndFileR;
 class WavePart;
 
 struct WaveEventSelection {

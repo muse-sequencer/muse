@@ -1981,7 +1981,7 @@ void WaveCanvas::cmd(int cmd)
 //---------------------------------------------------------
 //   getSelection
 //---------------------------------------------------------
-MusECore::WaveSelectionList WaveCanvas::getSelection(XTick startpos, XTick stoppos) // TODO FINDMICHJETZT
+MusECore::WaveSelectionList WaveCanvas::getSelection(XTick startpos, XTick stoppos)
 {
 	MusECore::WaveSelectionList selection;
 	
@@ -2019,8 +2019,8 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(XTick startpos, XTick stopp
 				
 				MusECore::WaveEventSelection s;
 				s.event = event;
-				s.startframe = event.getAudioStream()->relTick2frame(temp_startpos);
-				s.endframe   = event.getAudioStream()->relTick2frame(temp_stoppos)+1;
+				s.startframe = event.getAudioStream()->relTick2FrameInFile(temp_startpos);
+				s.endframe   = event.getAudioStream()->relTick2FrameInFile(temp_stoppos)+1;
 				selection.push_back(s);
 			}
 		}

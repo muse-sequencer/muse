@@ -42,7 +42,6 @@
 class QRect;
 
 namespace MusECore {
-class SndFileR;
 class WavePart;
 class WaveTrack;
 

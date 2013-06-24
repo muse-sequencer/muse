@@ -2699,6 +2699,8 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       if (checkRegionNotNull())
             return;
       
+      // TODO FIXME FINDMICH here, and probably at some other
+      // places, add tempo information to the generated .wav files.
       MusECore::SndFile* sf = MusECore::getSndFile(0, this);
       if (sf == 0)
             return;

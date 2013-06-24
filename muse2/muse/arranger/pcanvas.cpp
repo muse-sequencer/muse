@@ -1951,7 +1951,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       
       // NOTE: Optimization: For each item, hasHiddenEvents() is called once in Canvas::draw(), and we use cachedHasHiddenEvents().
       // Not used for now.
-      //int het = part->cachedHasHiddenEvents(); DELETETHIS or FIXME or whatever?
       int het = part->hasHiddenEvents();
         
       int xs_0 = rr.x();
