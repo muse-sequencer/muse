@@ -67,11 +67,10 @@ void WaveTrack::internal_assign(const Track& t, int flags)
               if(!clone) {
                     // Copy Events
                     MusECore::EventList* se = spart->events();
-                    MusECore::EventList* de = dpart->events();
                     for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
                           MusECore::Event oldEvent = i->second;
                           MusECore::Event ev = oldEvent.clone();
-                          de->add(ev);
+                          dpart->addEvent(ev);
                           }
                     }
 

@@ -355,7 +355,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 }
                                 else 
                                 {
-                                  npart->events()->add(e);
+                                  npart->addEvent(e);
                                 }      
                               }
                               else // ...Otherwise a clone was created, so we don't need the events.

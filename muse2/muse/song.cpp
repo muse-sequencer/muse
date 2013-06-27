@@ -585,7 +585,7 @@ bool Song::addEvent(Event& event, Part* part)
         return false;
       }
       
-      part->events()->add(event);
+      part->addEvent(event);
       return true;
       }
 
@@ -606,7 +606,7 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
       else
         part->events()->erase(i);
         
-      part->events()->add(newEvent);
+      part->addEvent(newEvent);
 }
 
 //---------------------------------------------------------
@@ -863,7 +863,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   // addEvent also adds port controller values. So does msgAddPart, below. Let msgAddPart handle them.
                   //addEvent(event, part);
                   if(part->events()->find(event) == part->events()->end())
-                    part->events()->add(event);
+                    part->addEvent(event);
                   }
             MusEGlobal::audio->msgAddPart(part);
             updateFlags |= SC_PART_INSERTED;
@@ -932,7 +932,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   addUndo(UndoOp(UndoOp::AddEvent, e, event, newPart, true, true));
                   
                   if(newPart->events()->find(event) == newPart->events()->end())
-                    newPart->events()->add(event);
+                    newPart->addEvent(event);
                   
                   // Add the event to the new part's port controller values, and do all clone parts.
                   addPortCtrlEvents(event, newPart, true);
@@ -961,7 +961,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   addUndo(UndoOp(UndoOp::AddEvent, event, part, true, true));
                   
                   if(part->events()->find(event) == part->events()->end())
-                    part->events()->add(event);
+                    part->addEvent(event);
                   
                   // Add the event to the part's port controller values, and do all clone parts.
                   addPortCtrlEvents(event, part, true);
@@ -2402,7 +2402,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
             part->setLenTick(endTick - startTick);
             part->setName(mt->name());
             event.move(-startTick);
-            part->events()->add(event);
+            part->addEvent(event);
             MusEGlobal::audio->msgAddPart(part);
             return;
             }
@@ -2785,7 +2785,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
               part->setLenTick(endTick - startTick);
               part->setName(mt->name());
               e.setTick(tick - startTick);
-              part->events()->add(e);
+              part->addEvent(e);
               // Allow undo.
               MusEGlobal::audio->msgAddPart(part);
             }

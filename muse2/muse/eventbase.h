@@ -31,6 +31,7 @@
 
 namespace MusECore {
 class WavePart;
+class Part;
 
 //---------------------------------------------------------
 //   EventBase
@@ -42,6 +43,7 @@ class EventBase : public PosLen {
    protected:
       int refCount;
       bool _selected;
+      Part* parental_part;
 
    public:
       EventBase(EventType t);
@@ -103,6 +105,10 @@ class EventBase : public PosLen {
       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
                              float** /*bpp*/, int /*channels*/, int /*nn*/, XTick /*fromXTick*/, XTick /*toXTick*/, bool /*doSeek*/, bool /*overwrite*/) { }
       virtual bool needCopyOnWrite() { return false; }
+      
+      void setParentalPart(Part* p) { parental_part = p; }
+      Part* getParentalPart() { return parental_part; }
+
       };
 
 } // namespace MusECore

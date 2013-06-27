@@ -621,6 +621,7 @@ void removePortCtrlEvents(Part* part, bool doClones)
 iEvent Part::addEvent(Event& p)
       {
       return _events->add(p);
+      p.setParentalPart(this);
       }
 
 //---------------------------------------------------------
@@ -665,7 +666,7 @@ Part::Part(const Part& p) : PosLen(p)
   _colorIndex=p._colorIndex;
   _hiddenEvents=p._hiddenEvents;
   _track=p._track;
-  _events=p._events;
+  _events=p._events; // TODO FIXME do a deep copy instead. make sure to setParentalPart on the events correctly
   _prevClone=p._prevClone;
   _nextClone=p._nextClone;
   
@@ -697,7 +698,7 @@ Part::Part(Track* t, EventList* ev)
       _selected   = false;
       _mute       = false;
       _colorIndex = 0;
-      _events     = ev;
+      _events     = ev; // TODO FIXME do a deep copy instead. make sure to setParentalPart on the events correctly
       _events->incRef(1);
       _events->incARef(1);
       }
@@ -721,7 +722,7 @@ MidiPart::MidiPart(const MidiPart& p) : Part(p)
 WavePart::WavePart(WaveTrack* t)
    : Part(t)
       {
-      setType(TICKS);
+      setType(TICKS); // DELETETHIS, this might be unneccessary due to the XTicks changes, and below.
       }
 
 WavePart::WavePart(WaveTrack* t, EventList* ev)
@@ -990,8 +991,6 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
       p2->setSn(p2->newSn());
 
       EventList* se  = part->events();
-      EventList* de1 = p1->events();
-      EventList* de2 = p2->events();
 
       if (type() == WAVE) {
             int ps   = part->frame();
@@ -1006,11 +1005,11 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
                   
                   if ((s2 > d1p1) && (s1 < d2p1)) {
                         Event si = event.mid(d1p1 - ps, d2p1 - ps);
-                        de1->add(si);
+                        p1->addEvent(si);
                         }
                   if ((s2 > d1p2) && (s1 < d2p2)) {
                         Event si = event.mid(d1p2 - ps, d2p2 - ps);
-                        de2->add(si);
+                        p2->addEvent(si);
                         }
                   }
             }
@@ -1020,10 +1019,10 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
                   int t = event.tick();
                   if (t >= l1) {
                         event.move(-l1);
-                        de2->add(event);
+                        p2->addEvent(event);
                         }
                   else
-                        de1->add(event);
+                        p1->addEvent(event);
                   }
             }
       }
@@ -1107,7 +1106,7 @@ void Song::cmdGluePart(Track* track, Part* oPart)
       EventList* dl  = nPart->events();
 
       for (iEvent ie = sl1->begin(); ie != sl1->end(); ++ie)
-            dl->add(ie->second);
+            nPart->addEvent(ie->second); // TODO don't we need to clone()?
 
       EventList* sl2 = nextPart->events();
       
@@ -1118,7 +1117,7 @@ void Song::cmdGluePart(Track* track, Part* oPart)
         {
               Event event = ie->second.clone();
               event.setFrame(event.frame() + frameOffset);
-              dl->add(event);
+              nPart->addEvent(event);
         }
       }
       else
@@ -1129,7 +1128,7 @@ void Song::cmdGluePart(Track* track, Part* oPart)
         {
               Event event = ie->second.clone();
               event.setTick(event.tick() + tickOffset);
-              dl->add(event);
+              nPart->addEvent(event);
         }
       }
             

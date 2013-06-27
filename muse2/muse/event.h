@@ -38,6 +38,7 @@ namespace MusECore {
 class Xml;
 class EventBase;
 class WavePart;
+class Part;
 
 // NOTICE: The values 3 and 4 (PAfter and CAfter) are reserved for the support of those two obsolete
 //          channel and key pressure events in old files. They are converted to controllers upon load.
@@ -47,7 +48,7 @@ enum EventType { Note=0, Controller=1, Sysex=2, /*PAfter=3,*/ /*CAfter=4,*/ Meta
 //   Event
 //---------------------------------------------------------
 
-class Event {
+class Event { // TODO FINDMICH remove this layer around *EventBase!
       EventBase* ev;
 
    public:
@@ -125,6 +126,8 @@ class Event {
       unsigned endFrame() const;
       void setPos(const Pos& p);
       bool needCopyOnWrite();
+      
+      void setParentalPart(Part*); // TODO implement NOW FINDMICHJETZT
       };
 
 typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;
@@ -153,10 +156,9 @@ class EventList : public EL {
       int arefCount() const { return aref; }
 
       iEvent find(const Event&);
-      iEvent add(Event& event);
+      iEvent add(Event& event); // never call this on a part's EventList! use part->addEvent() instead!
       void move(Event& event, unsigned tick);
       void dump() const;
-      void read(Xml& xml, const char* name, bool midi);
       };
 
 } // namespace MusECore

@@ -391,11 +391,10 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       if (t == MOVE_COPY && !clone) {
             // Copy Events
             MusECore::EventList* se = spart->events();
-            MusECore::EventList* de = dpart->events();
             for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
                   MusECore::Event oldEvent = i->second;
                   MusECore::Event ev = oldEvent.clone();
-                  de->add(ev);
+                  spart->addEvent(ev);
                   }
             }
 
@@ -861,11 +860,10 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   MusECore::Part* dpart  = track->newPart(spart, false);
 
                   MusECore::EventList* se = spart->events();
-                  MusECore::EventList* de = dpart->events();
                   for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
                         MusECore::Event oldEvent = i->second;
                         MusECore::Event ev = oldEvent.clone();
-                        de->add(ev);
+                        dpart->addEvent(ev);
                         }
                   // Indicate undo, and do port controller values but not clone parts. 
                   // changed by flo93: removed start and endUndo, instead changed first bool to true

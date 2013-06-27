@@ -213,4 +213,7 @@ unsigned Event::endFrame() const        { return ev->end().frame(); }
 void Event::setPos(const Pos& p)        { ev->setPos(p); }
 
 bool Event::needCopyOnWrite() { return ev->needCopyOnWrite(); }
+
+void Event::setParentalPart(Part* p) { ev->setParentalPart(p); }
+
 } // namespace MusECore
