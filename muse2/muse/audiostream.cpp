@@ -31,15 +31,23 @@ using namespace std;
 
 namespace MusECore {
 
-AudioStream::AudioStream(SndFileR sndfile_, int sampling_rate, int out_chans, bool stretching, XTick startXtick, unsigned startFrame)
+AudioStream::AudioStream(QString filename, int sampling_rate, int out_chans, stretch_mode_t stretch_mode, XTick startXtick, unsigned startFrame)
 {
+	if (stretch_mode==NAIVE_STRETCHING) printf("ERROR: NAIVE_STRETCHING is not implemented yet!\n");
+	
 	initalisation_failed = false; // not yet
-	
-	sndfile = sndfile_;
-	
+
+	sndfile = new MusECore::SndFile(filename); // TODO FINDMICH FIXME delete sndfile where appropriate!
+	if (sndfile->openRead())
+	{
+		printf("ERROR: AudioStream could not open file '%s'!\n", filename.toAscii().data());
+		initalisation_failed = true;
+		return;
+	}
+
 	output_sampling_rate=sampling_rate;
 	n_output_channels=out_chans;
-	doStretch=stretching;
+	doStretch = (stretch_mode == DO_STRETCHING) ? true : false;
 #ifndef RUBBERBAND_SUPPORT
 	if (doStretch) // stretching requested despite we have no support for this
 	{
@@ -118,7 +126,7 @@ void AudioStream::seek(unsigned int frame, XTick xtick)
 	
 	sndfile->seek(destFrame, SEEK_SET);
 	
-	currentPositionInInput=destFrame; // that might be a lie if the stretcher still has stuff in behind? flush stretcher?
+	currentPositionInInput=destFrame; // TODO that might be a lie if the stretcher still has stuff in behind? flush stretcher?
 	currentPositionInOutput=frame;
 	
 	update_stretch_ratio();

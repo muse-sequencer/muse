@@ -42,17 +42,17 @@ namespace MusECore {
 			{
 				NO_STRETCHING,
 				DO_STRETCHING,
-				NAIVE_STRETCHING
+				NAIVE_STRETCHING // not implemented yet, TODO
 			};
 			
 
-			/* After constructing a new AudioStream, you MUST check isGood(). If not yourStream.isGood(), then then
+			/* After constructing a new AudioStream, you MUST check isGood(). If not yourStream.isGood(), then the
 			   object is in an undefined state and will not work. Delete it, then. */
-			AudioStream(SndFileR sndfile, int sampling_rate, int out_chans, bool stretching, // the sampling rate cannot be changed after creation.
-						XTick startXtick, unsigned startFrame);
+			AudioStream(QString filename, int sampling_rate, int out_chans, stretch_mode_t stretch_mode, // the sampling rate cannot be changed after creation.
+			            XTick startXtick, unsigned startFrame);
 			~AudioStream();
 			
-			void seek(unsigned frame, XTick xtick);
+			void seek(unsigned frame, XTick xtick); // which output-frame / xtick relative to the beginning of the AudioStream to seek to
 			unsigned readAudio(float** deinterleaved_dest_buffer, int nFrames, bool overwrite); // returns the number of frames read.
 			
 			XTick relFrame2XTick(unsigned frame) const;
@@ -86,7 +86,7 @@ namespace MusECore {
 			int n_input_channels, n_output_channels;
 			bool doStretch;
 
-			SndFileR sndfile;
+			SndFile* sndfile;
 			SRC_STATE* srcState; // sampling rate converter state
 #ifdef RUBBERBAND_SUPPORT
 			RubberBand::RubberBandStretcher* stretcher;

@@ -38,23 +38,29 @@ class WavePart;
 //---------------------------------------------------------
 
 class WaveEventBase : public EventBase {
+      // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+      // @@                                       @@
+      // @@  When changing members, don't forget  @@
+      // @@  to update the copy-constructor!      @@
+      // @@                                       @@
+      // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
       QString _name;
-      AudioStream* audiostream;
       QString filename;
+
+      AudioStream* audiostream;
+      unsigned streamPosition;
       AudioStream::stretch_mode_t stretch_mode;
-      
-      
       
       int _spos;            // start sample position in WaveFile
       bool deleted;
-
+      
       virtual EventBase* clone();
       
-      unsigned streamPosition;
-
    public:
       WaveEventBase(EventType t);
-      virtual ~WaveEventBase() {}
+      WaveEventBase(const WaveEventBase& src);
+      virtual ~WaveEventBase();
 
       virtual void read(Xml&);
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const;
@@ -71,7 +77,7 @@ class WaveEventBase : public EventBase {
       virtual void setAudioFile(const QString& path);
       virtual QString audioFilePath()               { return filename; }
       virtual AudioStream::stretch_mode_t stretchMode() { return stretch_mode; }
-      //virtual const SndFile* sndFile()              { return NULL; }
+      virtual const AudioStream* getAudioStream()   { return audiostream; }
 
       virtual void readAudio(WavePart* part, unsigned firstFrame, 
                              float** bpp, int channels, int nFrames, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite);

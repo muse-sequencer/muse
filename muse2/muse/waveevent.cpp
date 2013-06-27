@@ -47,6 +47,23 @@ WaveEventBase::WaveEventBase(EventType t)
       _spos = 0;
       }
 
+      
+WaveEventBase::WaveEventBase(const WaveEventBase& src) : EventBase(src)
+{
+	this->_name = src._name;
+	this->stretch_mode = src.stretch_mode;
+	this->_spos = src._spos;
+	this->deleted = src.deleted;
+	
+	setAudioFile(src.filename); // this will set filename, audiostream and streamPosition
+}
+
+WaveEventBase::~WaveEventBase()
+{
+	// TODO FINDMICH delete the audiostream
+}
+
+      
 //---------------------------------------------------------
 //   WaveEventBase::clone
 //---------------------------------------------------------
@@ -100,12 +117,18 @@ void WaveEventBase::setAudioFile(const QString& path)
 	filename = path;
 	if (audiostream) delete audiostream;
 
-	//audiostream = new AudioStream(filename); TODO
-	if (audiostream->isGood())
+	
+	XTick startXtick = this->xtick() + parental_part->xtick();
+	unsigned startFrame = MusEGlobal::tempomap.tick2frame(startXtick);
+	audiostream = new MusECore::AudioStream(filename, MusEGlobal::sampleRate, 2, stretch_mode, startXtick, startFrame);
+
+	if (!audiostream->isGood())
 	{
 		delete audiostream;
 		audiostream=NULL;
 	}
+	
+	streamPosition = 0; // cause a seek on the next readAudio call.
 }
       
 //---------------------------------------------------------
@@ -133,12 +156,7 @@ void WaveEventBase::read(Xml& xml)
 					if (audiostream) delete audiostream;
 					
 					filename = xml.parse1();
-					//audiostream = new AudioStream(filename); TODO
-					if (audiostream->isGood())
-					{
-						delete audiostream;
-						audiostream=NULL;
-					}
+					setAudioFile(filename);
 				}
 				else
 					xml.unknown("Event");
@@ -189,14 +207,11 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
 
 void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffer, int channel, int nFrames, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite)
 {
-// TODO: doSeek is unreliable! it does not respect moving the part or event
-// offset is the sample position to read from. usually, that's the last offset + the last n
+// doSeek is unreliable! it does not respect moving the part or event!
+	
+// firstFrame is the sample position to read from. usually, that's the last firstFrame + the last nFrames
 
 // TODO: this will horribly break with clone parts! each clone must have its own audiostream (and streamPosition)!.
-  
-  #ifdef WAVEEVENT_DEBUG_PRC
-  printf("WaveEventBase::readAudio audConv:%p sfCurFrame:%ld offset:%u channel:%d n:%d\n", audConv, sfCurFrame, offset, channel, n);
-  #endif
   
   if (audiostream->get_n_output_channels() != channel)
 	  printf("ERROR: THIS SHOULD NEVER HAPPEN: audiostream->get_n_output_channels() != channels in WaveEventBase::readAudio!\n");
