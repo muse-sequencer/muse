@@ -296,6 +296,11 @@ unsigned AudioStream::relTick2FrameInFile(XTick xtick) const
 void AudioStream::readPeakRms(SampleV* s, int mag, unsigned pos, bool overwrite) const
 {
 	// TODO implement. just get the data from the SndFile and stretch it naively
+	
+	unsigned pos_in_file = relTick2Frame(relFrame2XTick(pos));
+	unsigned endpos_in_file = relTick2Frame(relFrame2XTick(pos+mag));
+		
+	sndfile->readPeakRms(s, endpos_in_file-pos_in_file, pos_in_file, overwrite);
 }
 
 } // namespace MusECore
