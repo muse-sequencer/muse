@@ -32,7 +32,6 @@
 #include <math.h>
 
 //#define WAVEEVENT_DEBUG
-//#define WAVEEVENT_DEBUG_PRC
 
 namespace MusECore {
 

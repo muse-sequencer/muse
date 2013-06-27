@@ -1093,7 +1093,6 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
       }
 
       const MusECore::AudioStream* stream = event.getAudioStream();
-      
       if(stream)
       {
         int ev_channels = stream->get_n_output_channels();

@@ -61,7 +61,7 @@ class SndFileList;
 class SndFile {
       QFileInfo* finfo;
       SNDFILE* sf;
-      SNDFILE* sfUI;
+      SNDFILE* sfUI; // TODO remove
       SF_INFO sfinfo;
       SampleV** cache;
       int csize;                    //!< frames in cache

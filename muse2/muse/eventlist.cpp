@@ -27,36 +27,7 @@
 
 namespace MusECore {
 
-//---------------------------------------------------------
-//   readEventList
-//---------------------------------------------------------
 
-void EventList::read(Xml& xml, const char* name, bool midi)
-      {
-      for (;;) {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return;
-                  case Xml::TagStart:
-                        if (tag == "event") {
-                              Event e(midi ? Note : Wave);
-                              e.read(xml);
-                              add(e);
-                              }
-                        else
-                              xml.unknown("readEventList");
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == name)
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
 
 //---------------------------------------------------------
 //   add
