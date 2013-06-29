@@ -22,7 +22,6 @@
 
 #include "midieditor.h"
 #include "midiedit/ecanvas.h"
-#include "waveedit/waveview.h"
 #include "scrollscale.h"
 #include "mtscale.h"
 #include "xml.h"

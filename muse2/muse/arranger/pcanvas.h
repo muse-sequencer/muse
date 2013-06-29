@@ -31,7 +31,6 @@
 #include "type_defs.h"
 #include "song.h"
 #include "canvas.h"
-#include "trackautomationview.h"
 
 class QDropEvent;
 class QMouseEvent;

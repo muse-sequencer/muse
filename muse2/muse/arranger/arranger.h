@@ -32,7 +32,6 @@
 #include "type_defs.h"
 #include "midieditor.h"
 #include "pcanvas.h"
-#include "trackautomationview.h"
 
 class QAction;
 class QCheckBox;
