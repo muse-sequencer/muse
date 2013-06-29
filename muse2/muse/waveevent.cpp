@@ -120,7 +120,7 @@ void WaveEventBase::setAudioFile(const QString& path)
 	
 	XTick startXtick = this->xtick() + parental_part->xtick();
 	unsigned startFrame = MusEGlobal::tempomap.tick2frame(startXtick);
-	audiostream = new MusECore::AudioStream(filename, MusEGlobal::sampleRate, 2, stretch_mode, startXtick, startFrame);
+	audiostream = new MusECore::AudioStream(filename, MusEGlobal::sampleRate, 2, AudioStream::DO_STRETCHING, startXtick, startFrame);
 
 	if (!audiostream->isGood())
 	{

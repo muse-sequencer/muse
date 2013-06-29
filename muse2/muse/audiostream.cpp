@@ -197,6 +197,7 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFram
 	}
 	else
 	{
+		int src_retval;
 		int n_frames_to_read = nFrames * input_sampling_rate / output_sampling_rate;
 		float sndfile_buffer[n_frames_to_read*n_input_channels];
 		float result_buffer[nFrames*n_input_channels];
@@ -210,7 +211,11 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFram
 		src_data.src_ratio = (double)output_sampling_rate/input_sampling_rate;
 		src_data.data_in = sndfile_buffer;
 		src_data.data_out = result_buffer;
-		src_process(srcState, &src_data);
+		src_data.end_of_input = 0; // TODO set this correctly, also below.
+		src_retval = src_process(srcState, &src_data);
+		
+		if (src_retval)
+			printf("ERROR: src_process returned the error #%i: %s\n",src_retval, src_strerror(src_retval));
 		
 		if (src_data.input_frames_used != src_data.input_frames) // TODO
 			printf("THIS IS AN ERROR (which was thought to not happen): src_data.input_frames_used = %li != src_data.input_frames = %li!\n",  src_data.input_frames_used , src_data.input_frames);
@@ -225,8 +230,12 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFram
 			src_data.output_frames=nFrames-n_frames_read;
 			src_data.data_in=sndfile_buffer;
 			src_data.data_out=result_buffer+n_frames_read;
-			src_process(srcState, &src_data);
-
+			src_retval = src_process(srcState, &src_data);
+			src_data.end_of_input = 0;
+			
+			if (src_retval)
+				printf("ERROR: src_process returned the error #%i: %s\n",src_retval, src_strerror(src_retval));
+			
 			if (src_data.input_frames_used != src_data.input_frames)
 				printf("THIS IS AN ERROR (which was thought to not happen): src_data.input_frames_used = %li != src_data.input_frames = %li!\n",  src_data.input_frames_used , src_data.input_frames);
 			
