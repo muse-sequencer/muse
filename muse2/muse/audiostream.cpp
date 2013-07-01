@@ -49,10 +49,10 @@ AudioStream::AudioStream(QString filename, int sampling_rate, int out_chans, str
 	n_output_channels=out_chans;
 	doStretch = (stretch_mode == DO_STRETCHING) ? true : false;
 #ifndef RUBBERBAND_SUPPORT
-	if (doStretch) // stretching requested despite we have no support for this
+	if (stretch_mode==DO_STRETCHING) // stretching requested despite we have no support for this
 	{
-		printf("ERROR: AudioStream created with doStretch=true, but RUBBERBAND_SUPPORT not compiled in!\n");
-		doStretch=false;
+		printf("ERROR: AudioStream created with stretch_mode=DO_STRETCHING, but RUBBERBAND_SUPPORT not compiled in!\n");
+		stretch_mode=NO_STRETCHING;
 	}
 #endif
 	
@@ -91,7 +91,7 @@ AudioStream::AudioStream(QString filename, int sampling_rate, int out_chans, str
 		srcState = NULL; // not needed
 		
 		stretcher = new RubberBandStretcher(sampling_rate, n_input_channels, 
-					RubberBandStretcher::DefaultOptions, // TODO configure this
+					RubberBandStretcher::DefaultOptions | RubberBandStretcher::OptionProcessRealTime, // TODO configure this
 					1.0, 1.0); // these values will be overridden anyway soon.
 		
 		set_pitch_ratio(1.0); // this might call stretcher.setPitch() with something
@@ -162,8 +162,10 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFram
 	if (doStretch)
 	{
 #ifdef RUBBERBAND_SUPPORT
-		float* deinterleaved_result_buffer[n_input_channels];
-		for (int i=0;i<n_input_channels;i++) deinterleaved_result_buffer[i]=new float[nFrames];
+		float* deinterleaved_result_buffer[n_input_channels]; // will point always to frame0
+		float* deinterleaved_result_buffer_temp[n_input_channels]; // will have advances pointers
+		for (int i=0;i<n_input_channels;i++)
+			deinterleaved_result_buffer_temp[i]=deinterleaved_result_buffer[i]=new float[nFrames];
 		
 		size_t n_already_read = 0;
 		while (n_already_read < nFrames)
@@ -180,7 +182,15 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFram
 			stretcher->process(deinterleaved_sndfile_buffer, n_frames_to_read, /*bool final = */false); // TODO: set final correctly!
 			size_t n_frames_retrieved;
 			
-			n_frames_retrieved = stretcher->retrieve(deinterleaved_result_buffer+n_already_read, nFrames-n_already_read);
+			int n_frames_to_retrieve = stretcher->available();
+			if (nFrames-n_already_read < n_frames_to_retrieve)
+				n_frames_to_retrieve = nFrames-n_already_read;
+
+			//DELETETHIS FIXME FINDMICH TODO printf("DEBUG: before retrieving frames from rubberband: available=%i, already read=%i, needed=%i\n", stretcher->available(), n_already_read, n_frames_to_retrieve);
+			
+			n_frames_retrieved = stretcher->retrieve(deinterleaved_result_buffer_temp, n_frames_to_retrieve);
+			for (int i=0;i<n_input_channels;i++)
+				deinterleaved_result_buffer_temp[i]+=n_frames_retrieved;
 			
 			for (int i=0;i<n_input_channels;i++) delete[] deinterleaved_sndfile_buffer[i];
 			
@@ -304,7 +314,8 @@ unsigned AudioStream::relTick2FrameInFile(XTick xtick) const
 
 void AudioStream::readPeakRms(SampleV* s, int mag, unsigned pos, bool overwrite) const
 {
-	// TODO implement. just get the data from the SndFile and stretch it naively
+	// TODO don't stretch when no_stretching!
+	// TODO FIXME the above rel*to* functions must respect No_stretching!
 	
 	unsigned pos_in_file = relTick2Frame(relFrame2XTick(pos));
 	unsigned endpos_in_file = relTick2Frame(relFrame2XTick(pos+mag));
