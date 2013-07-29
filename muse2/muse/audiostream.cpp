@@ -22,7 +22,9 @@
 //=========================================================
 
 #include "audiostream.h"
+#include "globals.h" // FIXME DELETETHIS
 #include <string>
+
 using namespace std;
 
 #ifdef RUBBERBAND_SUPPORT
@@ -308,7 +310,7 @@ unsigned AudioStream::relTick2Frame(XTick xtick) const
 
 unsigned AudioStream::relTick2FrameInFile(XTick xtick) const
 {
-	return fileTempoMap.tick2frame(xtick);
+	return fileTempoMap.tick2frame(xtick) * input_sampling_rate/ MusEGlobal::sampleRate ; // FIXME this is just a workaround! fix tempomap, which may not rely on MusEGLobal::sampleRate FINDMICHJETZT TODO
 }
 
 
@@ -317,8 +319,8 @@ void AudioStream::readPeakRms(SampleV* s, int mag, unsigned pos, bool overwrite)
 	// TODO don't stretch when no_stretching!
 	// TODO FIXME the above rel*to* functions must respect No_stretching!
 	
-	unsigned pos_in_file = relTick2Frame(relFrame2XTick(pos));
-	unsigned endpos_in_file = relTick2Frame(relFrame2XTick(pos+mag));
+	unsigned pos_in_file = relTick2FrameInFile(relFrame2XTick(pos));
+	unsigned endpos_in_file = relTick2FrameInFile(relFrame2XTick(pos+mag));
 		
 	sndfile->readPeakRms(s, endpos_in_file-pos_in_file, pos_in_file, overwrite);
 }

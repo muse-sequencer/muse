@@ -68,8 +68,6 @@ namespace MusECore {
 			void readPeakRms(SampleV* s, int mag, unsigned pos, bool overwrite = true) const;
 			
 		private:
-			static const int update_ratio_every_n_frames = 10000;
-			
 			void maybe_update_stretch_ratio();
 			void update_stretch_ratio();
 
