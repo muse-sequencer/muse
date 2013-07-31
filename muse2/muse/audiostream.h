@@ -94,9 +94,8 @@ namespace MusECore {
 #endif
 			
 			
-			unsigned frameStartInSong;  // TODO, remove this, or externalTempoMap!
-			XTick xtickStartInSong;     // TODO, remove this, or externalTempoMap!
-			//TempoList externalTempoMap; // this is a copy of the MusEGlobal::tempomap, however stored with an xtick-offset of -PositionInSong
+			unsigned frameStartInSong;
+			XTick xtickStartInSong;
 			TempoList fileTempoMap;     // this maps which xtick corresponds to which frame in the audio file
 	};
 	

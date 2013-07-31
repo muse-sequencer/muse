@@ -646,18 +646,6 @@ void Audio::msgSetSolo(Track* track, bool val)
       sendMsg(&msg);
 }
 
-//---------------------------------------------------------
-//   msgSetSegSize
-//---------------------------------------------------------
-
-void Audio::msgSetSegSize(int bs, int sr)
-      {
-      AudioMsg msg;
-      msg.id = AUDIO_SET_SEG_SIZE;
-      msg.ival = bs;
-      msg.iival = sr;
-      sendMsg(&msg);
-      }
 
 //---------------------------------------------------------
 //   msgSeek

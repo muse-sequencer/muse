@@ -63,6 +63,7 @@ AudioStream::AudioStream(QString filename, int sampling_rate, int out_chans, str
 	
 	n_input_channels = sndfile->channels();
 	input_sampling_rate=sndfile->samplerate();
+    fileTempoMap.setSampRate(input_sampling_rate);
 	
 	if (!doStretch)
 	{
@@ -310,7 +311,7 @@ unsigned AudioStream::relTick2Frame(XTick xtick) const
 
 unsigned AudioStream::relTick2FrameInFile(XTick xtick) const
 {
-	return fileTempoMap.tick2frame(xtick) * input_sampling_rate/ MusEGlobal::sampleRate ; // FIXME this is just a workaround! fix tempomap, which may not rely on MusEGLobal::sampleRate FINDMICHJETZT TODO
+	return fileTempoMap.tick2frame(xtick);
 }
 
 

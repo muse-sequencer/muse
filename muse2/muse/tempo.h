@@ -80,10 +80,13 @@ class TempoList : public TEMPOLIST {
       void change(unsigned tick, int newTempo);
       void del(iTEvent);
       void del(unsigned tick);
+	  
+	  int sampRate;
 
    public:
-      TempoList();
+      TempoList(int sampling_rate=0);
       ~TempoList();
+	  void setSampRate(int s) {sampRate=s;}
       void normalize();
       void clear();
       void eraseRange(unsigned stick, unsigned etick);

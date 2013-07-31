@@ -103,7 +103,6 @@ const char* seqMsgList[] = {
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
       //"AUDIO_VOL", "AUDIO_PAN", DELETETHIS
       "AUDIO_ADDPLUGIN",
-      "AUDIO_SET_SEG_SIZE",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
       //"AUDIO_SET_PLUGIN_CTRL_VAL", DELETETHIS
       "AUDIO_SWAP_CONTROLLER_IDX",
@@ -688,18 +687,6 @@ void Audio::processMsg(AudioMsg* msg)
                   MusEGlobal::midiLearnCtrl = -1;
                   break;
             
-            case AUDIO_SET_SEG_SIZE:
-                  MusEGlobal::segmentSize = msg->ival;
-                  MusEGlobal::sampleRate  = msg->iival;
-#if 0 //TODO or DELETETHIS ?
-                  audioOutput.MusEGlobal::segmentSizeChanged();
-                  for (int i = 0; i < mixerGroups; ++i)
-                        audioGroups[i].MusEGlobal::segmentSizeChanged();
-                  for (iSynthI ii = synthiInstances.begin(); ii != synthiInstances.end();++ii)
-                        (*ii)->MusEGlobal::segmentSizeChanged();
-#endif
-                  break;
-
             case SEQM_RESET_DEVICES:
                   for (int i = 0; i < MIDI_PORTS; ++i)                         
                   {      

@@ -88,7 +88,6 @@ enum {
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
       //AUDIO_VOL, AUDIO_PAN,  DELETETHIS
       AUDIO_ADDPLUGIN,
-      AUDIO_SET_SEG_SIZE,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
       //AUDIO_SET_PLUGIN_CTRL_VAL,  DELETETHIS
       AUDIO_SWAP_CONTROLLER_IDX,
@@ -270,7 +269,6 @@ class Audio {
       //void msgSetPan(AudioTrack*, double val);    DELETETHIS
       void msgAddSynthI(SynthI* synth);
       void msgRemoveSynthI(SynthI* synth);
-      void msgSetSegSize(int, int);
       void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
       void msgSetOff(AudioTrack*, bool);

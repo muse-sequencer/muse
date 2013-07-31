@@ -644,6 +644,9 @@ int main(int argc, char* argv[])
             }
       else
             MusEGlobal::realTimeScheduling = MusEGlobal::audioDevice->isRealtime();
+      
+      // at this point, init*Audio has set MusEGlobal::sampling_rate appropriately
+      MusEGlobal::tempomap.setSampRate(MusEGlobal::sampleRate);
 
       // ??? With Jack2 this reports true even if it is not running realtime. 
       // Jack says: "Cannot use real-time scheduling (RR/10)(1: Operation not permitted)". The kernel is non-RT.
@@ -712,7 +715,7 @@ int main(int argc, char* argv[])
             }
 
       MusEGlobal::muse->show();
-      MusEGlobal::muse->seqStart();  
+      MusEGlobal::muse->seqStart();
 
       //--------------------------------------------------
       // Auto-fill the midi ports, if appropriate.         

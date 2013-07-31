@@ -41,8 +41,13 @@ namespace MusECore {
 //   TempoList
 //---------------------------------------------------------
 
-TempoList::TempoList()
+TempoList::TempoList(int sampling_rate)
       {
+      if (sampling_rate==0)
+          sampRate=MusEGlobal::sampleRate;
+      else
+          sampRate=sampling_rate;
+      
       _tempo   = 500000;
       insert(std::pair<const unsigned, TEvent*> (MAX_TICK+1, new TEvent(_tempo, 0)));
       _tempoSN     = 1;
@@ -90,7 +95,7 @@ void TempoList::normalize()
             e->second->frame = frame;
             unsigned dtick = e->first - e->second->tick;
             double dtime = double(dtick) / (MusEGlobal::config.division * _globalTempo * 10000.0/e->second->tempo);
-            frame += lrint(dtime * MusEGlobal::sampleRate);
+            frame += lrint(dtime * sampRate);
             }
       }
 
@@ -317,12 +322,12 @@ unsigned TempoList::tick2frame(XTick tick, int* sn) const
                   }
             double dtick = tick.tick + tick.subtick - i->second->tick; 
             double dtime   = dtick / (MusEGlobal::config.division * _globalTempo * 10000.0/ i->second->tempo);
-            unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
+            unsigned dframe   = lrint(dtime * sampRate);
             f = i->second->frame + dframe;
             }
       else {
             double t = (double(tick.tick+tick.subtick) * double(_tempo)) / (double(MusEGlobal::config.division) * _globalTempo * 10000.0);
-            f = lrint(t * MusEGlobal::sampleRate);
+            f = lrint(t * sampRate);
             }
       if (sn)
             *sn = _tempoSN;
@@ -359,7 +364,7 @@ XTick TempoList::frame2xtick(unsigned frame, int* sn) const
                   }
             unsigned te  = e->second->tempo;
             int dframe   = frame - e->second->frame;
-            double dtime = double(dframe) / double(MusEGlobal::sampleRate);
+            double dtime = double(dframe) / double(sampRate);
             
             double dticks = dtime * _globalTempo * MusEGlobal::config.division * 10000.0 / te;
             tick.tick = e->second->tick + floor(dticks);
@@ -367,7 +372,7 @@ XTick TempoList::frame2xtick(unsigned frame, int* sn) const
             }
       else
       {
-            double dticks = (double(frame)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEGlobal::config.division * 10000.0 / double(_tempo);
+            double dticks = (double(frame)/double(sampRate)) * _globalTempo * MusEGlobal::config.division * 10000.0 / double(_tempo);
             tick.tick = floor(dticks);
             tick.subtick = dticks-floor(dticks);
       }
