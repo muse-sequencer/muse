@@ -119,9 +119,6 @@ void MidiSeq::processMsg(const ThreadMsg* m)
             case MusECore::SEQM_REMOVE_PART:
                   MusEGlobal::song->cmdRemovePart((Part*)msg->p1);
                   break;
-            case MusECore::SEQM_CHANGE_PART:
-                  MusEGlobal::song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2, msg->a, msg->b);
-                  break;
                   
                   
             case MusECore::SEQM_SET_TRACK_OUT_CHAN:

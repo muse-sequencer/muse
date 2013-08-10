@@ -2,7 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //    $Id: functions.cpp,v 1.20.2.19 2011/05/05 20:10 flo93 Exp $
-//  (C) Copyright 2011 Florian Jung (flo93@sourceforge.net)
+//  (C) Copyright 2011,2013 Florian Jung (flo93@sourceforge.net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -1310,11 +1310,7 @@ void shrink_parts(int raster)
 				if (len<min_len) len=min_len;
 				
 				if (len < part->second->lenTick())
-				{
-					MidiPart* new_part = new MidiPart(*(MidiPart*)part->second);
-					new_part->setLenTick(len);
-					operations.push_back(UndoOp(UndoOp::ModifyPart, part->second, new_part, true, false));
-				}
+					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenTick(), len, true, false));
 			}
 	
 	MusEGlobal::song->applyOperationGroup(operations);
@@ -1326,8 +1322,8 @@ void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo
 	QSet<const Part*> already_done;
 	
 	for (Undo::iterator op_it=operations.begin(); op_it!=operations.end();op_it++)
-		if (op_it->type==UndoOp::ModifyPart || op_it->type==UndoOp::DeletePart)
-			already_done.insert(op_it->nPart);
+		if (op_it->type==UndoOp::DeletePart)
+			already_done.insert(op_it->part);
 			
 	unsigned old_len= part->type() == Pos::FRAMES ? part->lenFrame() : part->lenTick();
 	if (old_len!=new_len)
@@ -1338,18 +1334,12 @@ void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo
 			if (part->type() == Pos::FRAMES)
 			{
 			  if (part_it->lenFrame()==old_len && !already_done.contains(part_it))
-			  {
-				  WavePart* new_part = new WavePart(*(WavePart*)part_it);
-				  new_part->setLenFrame(new_len);
-				  operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
-			  }
+				  operations.push_back(UndoOp(UndoOp::ModifyPartLengthFrames, part_it, part_it->lenFrame(), new_len, true, false)); // FIXME FINDMICH frames suck :(
 			}
 			else
 			if (part_it->lenTick()==old_len && !already_done.contains(part_it))
 			{
-				MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);
-				new_part->setLenTick(new_len);
-				operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
+				operations.push_back(UndoOp(UndoOp::ModifyPartLength, part_it, part_it->lenTick(), new_len, true, false));
 			}
 			
 			part_it=part_it->nextClone();
@@ -1381,11 +1371,7 @@ void expand_parts(int raster)
 				if (len<min_len) len=min_len;
 								
 				if (len > part->second->lenTick())
-				{
-					MidiPart* new_part = new MidiPart(*(MidiPart*)part->second);
-					new_part->setLenTick(len);
-					operations.push_back(UndoOp(UndoOp::ModifyPart, part->second, new_part, true, false));
-				}
+					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenTick(), len, true, false));
 			}
 			
 	MusEGlobal::song->applyOperationGroup(operations);

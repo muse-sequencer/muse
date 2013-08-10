@@ -298,12 +298,10 @@ class Song : public QObject {
 
       void addPart(Part* part);
       void removePart(Part* part);
-      void changePart(Part*, Part*);
       PartList* getSelectedMidiParts() const;
       PartList* getSelectedWaveParts() const;
       bool msgRemoveParts();
 
-      void cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones);
       void cmdRemovePart(Part* part);
       void cmdAddPart(Part* part);
       int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts

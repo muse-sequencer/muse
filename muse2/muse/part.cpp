@@ -372,8 +372,6 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
 {
   // Traverse and process the clone chain ring until we arrive at the same part again.
   // The loop is a safety net.
-  // Update: Due to the varying calls, and order of, incARefcount, (msg)ChangePart, replaceClone, and remove/addPortCtrlEvents,
-  //  we can not rely on the reference count as a safety net in these routines. We will just have to trust the clone chain.
   Part* p = part; 
   while(1)
   {
@@ -434,8 +432,6 @@ void addPortCtrlEvents(Part* part, bool doClones)
 {
   // Traverse and process the clone chain ring until we arrive at the same part again.
   // The loop is a safety net.
-  // Update: Due to the varying calls, and order of, incARefcount, (msg)ChangePart, replaceClone, and remove/addPortCtrlEvents,
-  //  we can not rely on the reference count as a safety net in these routines. We will just have to trust the clone chain.
   Part* p = part; 
   while(1)
   {
@@ -499,8 +495,6 @@ void removePortCtrlEvents(Event& event, Part* part, bool doClones)
 {
   // Traverse and process the clone chain ring until we arrive at the same part again.
   // The loop is a safety net.
-  // Update: Due to the varying calls, and order of, incARefcount, (msg)ChangePart, replaceClone, and remove/addPortCtrlEvents,
-  //  we can not rely on the reference count as a safety net in these routines. We will just have to trust the clone chain.
   Part* p = part; 
   while(1)
   {
@@ -555,8 +549,6 @@ void removePortCtrlEvents(Part* part, bool doClones)
 {
   // Traverse and process the clone chain ring until we arrive at the same part again.
   // The loop is a safety net.
-  // Update: Due to the varying calls, and order of, incARefcount, (msg)ChangePart, replaceClone, and remove/addPortCtrlEvents,
-  //  we can not rely on the reference count as a safety net in these routines. We will just have to trust the clone chain.
   Part* p = part; 
   while(1)
   {
@@ -850,6 +842,10 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                   EventList* el = nPart->events();
                   unsigned new_partlength = MusEGlobal::tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len);
 
+                  // TODO FINDMICH FIXME this is totally broken. we don't want to remove events just because they're beyond end-of-part.
+                  // we also don't want to auto-resize the last event.
+                  
+                  /*
                   // If new nr of frames is less than previous what can happen is:
                   // -   0 or more events are beginning after the new final position. Those are removed from the part
                   // -   The last event begins before new final position and ends after it. If so, it will be resized to end at new part length
@@ -865,7 +861,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                               }
                         nPart->setLenFrame(new_partlength);
                         // Do not do port controller values and clone parts. 
-                        operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
+                        operations.push_back(UndoOp(UndoOp::Modify***Part, oPart, nPart, false, false));
 
                         MusEGlobal::song->applyOperationGroup(operations);
                         }
@@ -890,9 +886,9 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                         
                         nPart->setLenFrame(new_partlength);
                         // Do not do port controller values and clone parts. 
-                        operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
+                        operations.push_back(UndoOp(UndoOp::Modify***Part, oPart, nPart, false, false));
                         MusEGlobal::song->applyOperationGroup(operations);
-                        }
+                        } */
                   }
                   break;
             case Track::MIDI:
@@ -907,10 +903,8 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
 									{
 										if (part_it->lenTick()==orig_len)
 										{
-											MidiPart* newPart = new MidiPart(*part_it);
-											newPart->setLenTick(len);
 											// Do port controller values but not clone parts. 
-											operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, newPart, true, false));
+											operations.push_back(UndoOp(UndoOp::ModifyPartLength, part_it, part_it->lenTick(), len, true, false));
 										}
 										
 										part_it=(MidiPart*)part_it->nextClone();
@@ -1032,45 +1026,23 @@ void Song::cmdSplitPart(Track* track, Part* part, int tick)
       Part* p2;
       track->splitPart(part, tick, p1, p2);
       
-      //MusEGlobal::song->informAboutNewParts(part, p1); // is unneccessary because of ChangePart below
+      MusEGlobal::song->informAboutNewParts(part, p1);
       MusEGlobal::song->informAboutNewParts(part, p2);
 
-      startUndo();
-      // Indicate no undo, and do port controller values but not clone parts. 
-      MusEGlobal::audio->msgChangePart(part, p1, false, true, false);
-      MusEGlobal::audio->msgAddPart(p2, false);
-      endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
+      Undo operations;
+      operations.push_back(UndoOp(UndoOp::DeletePart, part));
+      operations.push_back(UndoOp(UndoOp::AddPart, p1));
+      operations.push_back(UndoOp(UndoOp::AddPart, p2));
+      applyOperationGroup(operations);
       }
 
-//---------------------------------------------------------
-//   changePart
-//---------------------------------------------------------
-
-void Song::changePart(Part* oPart, Part* nPart)
-      {
-      nPart->setSn(oPart->sn());
-
-      Track* oTrack = oPart->track();
-      Track* nTrack = nPart->track();
-
-      oTrack->parts()->remove(oPart);
-      nTrack->parts()->add(nPart);
-      
-      
-      // Added by T356. 
-      // adjust song len:
-      unsigned epos = nPart->tick() + nPart->lenTick();
-      if (epos > len())
-            _len = epos;
-      
-      }
 
 //---------------------------------------------------------
 //   cmdGluePart
 //---------------------------------------------------------
 
 void Song::cmdGluePart(Track* track, Part* oPart)
-      {
+      { /* disabled for now, to be deleted
       // p3.3.54
       if(track->type() != Track::WAVE && !track->isMidiTrack())
         return;
@@ -1126,8 +1098,8 @@ void Song::cmdGluePart(Track* track, Part* oPart)
       startUndo();
       MusEGlobal::audio->msgRemovePart(nextPart, false);
       // Indicate no undo, and do port controller values but not clone parts. 
-      MusEGlobal::audio->msgChangePart(oPart, nPart, false, true, false);
-      endUndo(SC_PART_MODIFIED | SC_PART_REMOVED);
+      MusEGlobal::audio->msgChange***Part(oPart, nPart, false, true, false);
+      endUndo(SC_PART_MODIFIED | SC_PART_REMOVED); */
       }
 
 //---------------------------------------------------------

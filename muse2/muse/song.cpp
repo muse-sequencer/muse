@@ -886,42 +886,23 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             // Round the end up (again) using the Arranger part snap raster value. 
             endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
             
-            
-            removePortCtrlEvents(part, false); // Remove all of the part's port controller values. Don't do clone parts.
-
-            // Clone the part. This doesn't increment aref count, and doesn't chain clones.
-            // It also gives the new part a new serial number, but it is 
-            //  overwritten with the old one by Song::changePart(), below. 
-            Part* newPart = part->clone();
-            
-            newPart->setLenTick(endTick);  // Set the new part's length.
-            changePart(part, newPart);     // Change the part.
-            
-            part->events()->incARef(-1);   // Manually adjust reference counts. HACK!
-            newPart->events()->incARef(1);
-            
-            replaceClone(part, newPart);   // Replace the part in the clone chain with the new part.
-            
-            // Now add all of the new part's port controller values. Indicate do not do clone parts.
-            addPortCtrlEvents(newPart, false);
-            
             // Create an undo op. Indicate do port controller values but not clone parts. 
-            addUndo(UndoOp(UndoOp::ModifyPart, part, newPart, true, false));
+            addUndo(UndoOp(UndoOp::ModifyPartLength, part, part->lenTick(), endTick, true, false)); // FIXME XTICKS! FINDMICHJETZT!
             updateFlags |= SC_PART_MODIFIED;
             
             if (_recMode == REC_REPLACE)
             {
-                  iEvent si = newPart->events()->lower_bound(startTick - newPart->tick());
-                  iEvent ei = newPart->events()->lower_bound(newPart->endTick() - newPart->tick());
+                  iEvent si = part->events()->lower_bound(startTick - part->tick());
+                  iEvent ei = part->events()->lower_bound(part->endTick() - part->tick());
                   for (iEvent i = si; i != ei; ++i) 
                   {
                     Event event = i->second;
                     // Indicate do port controller values and clone parts. 
-                    addUndo(UndoOp(UndoOp::DeleteEvent, event, newPart, true, true));
+                    addUndo(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
                     // Remove the event from the new part's port controller values, and do all clone parts.
-                    removePortCtrlEvents(event, newPart, true);
+                    removePortCtrlEvents(event, part, true);
                   }
-                  newPart->events()->erase(si, ei);
+                  part->events()->erase(si, ei);
             }
             
             for (iEvent i = s; i != e; ++i) {
@@ -929,13 +910,13 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   event.setTick(event.tick() - partTick);
                   Event e;
                   // Create an undo op. Indicate do port controller values and clone parts. 
-                  addUndo(UndoOp(UndoOp::AddEvent, e, event, newPart, true, true));
+                  addUndo(UndoOp(UndoOp::AddEvent, e, event, part, true, true));
                   
-                  if(newPart->events()->find(event) == newPart->events()->end())
-                    newPart->events()->add(event);
+                  if(part->events()->find(event) == part->events()->end())
+                    part->events()->add(event);
                   
                   // Add the event to the new part's port controller values, and do all clone parts.
-                  addPortCtrlEvents(event, newPart, true);
+                  addPortCtrlEvents(event, part, true);
                   }
             }
       else {
@@ -1886,7 +1867,6 @@ void Song::processMsg(AudioMsg* msg)
                   updateFlags = SC_EVENT_MODIFIED;
                   break;
             
-            // Moved here from MidiSeq::processMsg   p4.0.34
             case SEQM_ADD_TRACK:
                   insertTrack2(msg->track, msg->ival);
                   break;
@@ -1898,9 +1878,6 @@ void Song::processMsg(AudioMsg* msg)
                   break;
             case SEQM_REMOVE_PART:
                   cmdRemovePart((Part*)msg->p1);
-                  break;
-            case SEQM_CHANGE_PART:
-                  cmdChangePart((Part*)msg->p1, (Part*)msg->p2, msg->a, msg->b);
                   break;
             
             case SEQM_ADD_TEMPO:
@@ -1977,32 +1954,6 @@ void Song::cmdRemovePart(Part* part)
       part->events()->incARef(-1);
       unchainClone(part);
       updateFlags = SC_PART_REMOVED;
-      }
-
-//---------------------------------------------------------
-//   cmdChangePart
-//---------------------------------------------------------
-
-void Song::cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones)
-      {
-      if(doCtrls)
-        removePortCtrlEvents(oldPart, doClones);
-      
-      changePart(oldPart, newPart);
-      
-      addUndo(UndoOp(UndoOp::ModifyPart, oldPart, newPart, doCtrls, doClones));
-      
-      // Changed by T356. Do not decrement ref count if the new part is a clone of the old part, since the event list
-      //  will still be active.
-      if(oldPart->cevents() != newPart->cevents())
-        oldPart->events()->incARef(-1);
-      
-      replaceClone(oldPart, newPart);
-
-      if(doCtrls)
-        addPortCtrlEvents(newPart, doClones);
-      
-      updateFlags = SC_PART_MODIFIED;
       }
 
 //---------------------------------------------------------

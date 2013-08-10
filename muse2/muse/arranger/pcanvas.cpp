@@ -64,6 +64,10 @@
 #include "utils.h"
 #include "dialogs.h"
 #include "widgets/pastedialog.h"
+#include "undo.h"
+
+using MusECore::Undo;
+using MusECore::UndoOp;
 
 #define ABS(x) (abs(x))
 
@@ -189,12 +193,12 @@ void PartCanvas::returnPressed()
       if (editMode) {
           //this check is neccessary, because it returnPressed may be called
           //twice. the second call would cause a crash, however!
-          MusECore::Part* oldPart = editPart->part();
-          MusECore::Part* newPart = oldPart->clone();
-          
-          newPart->setName(lineEditor->text());
+          MusECore::Part* part = editPart->part();
           // Indicate do undo, and do port controller values but not clone parts. 
-          MusEGlobal::audio->msgChangePart(oldPart, newPart, true, true, false);
+          
+          Undo operations;
+          operations.push_back(UndoOp(UndoOp::ModifyPartName,part, part->name().toUtf8().data(), lineEditor->text().toUtf8().data())); // FIXME char sucks, better use QString directly.
+          MusEGlobal::song->applyOperationGroup(operations);
           
           editMode = false;
           
@@ -314,7 +318,7 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     
     bool result=moveItem(operations, ci, newpos, dtype);
     if (result)
-    	ci->move(newpos);
+        ci->move(newpos);
     
     if(moving.size() == 1) {
           itemReleased(curItem, newpos);
@@ -333,102 +337,89 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 //---------------------------------------------------------
 
 bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& newpos, DragType t)
-      {
-      NPart* npart    = (NPart*) item;
-      MusECore::Part* spart     = npart->part();
-      MusECore::Track* track    = npart->track();
-      MusECore::Track* dtrack=NULL;
-      unsigned dtick  = newpos.x();
-      unsigned ntrack = y2pitch(item->mp().y());
-      MusECore::Track::TrackType type = track->type();
-      if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
-            return false;
-            }
-      if (ntrack >= tracks->size()) {
-            ntrack = tracks->size();
-            if (MusEGlobal::debugMsg)
-                printf("PartCanvas::moveItem - add new track\n");
-            dtrack = MusEGlobal::song->addTrack(operations, type);  // Add at end of list.
-
-            if (type == MusECore::Track::WAVE) {
-                  MusECore::WaveTrack* st = (MusECore::WaveTrack*) track;
-                  MusECore::WaveTrack* dt = (MusECore::WaveTrack*) dtrack;
-                  dt->setChannels(st->channels());
-                  }
-            emit tracklistChanged();
-            }
-      else
-      {      
-            dtrack = tracks->index(ntrack);
-            if (dtrack->type() != type) {
-                  QMessageBox::critical(this, QString("MusE"),
-                     tr("Cannot copy/move/clone to different Track-Type"));
-                  return false;
-                  }
-            }
-      
-      MusECore::Part* dpart;
-      bool clone = (t == MOVE_CLONE || (t == MOVE_COPY && spart->events()->arefCount() > 1));
-      
-      if(t == MOVE_MOVE)
-      {
-        // This doesn't increment aref count, and doesn't chain clones.
-        // It also gives the new part a new serial number, but it is 
-        //  overwritten with the old one by Song::changePart(), from Audio::msgChangePart() below. 
-        dpart = spart->clone();
-        dpart->setTrack(dtrack);
-      }  
-      else
+{
+    NPart* npart    = (NPart*) item;
+    MusECore::Part* spart     = npart->part();
+    MusECore::Track* track    = npart->track();
+    MusECore::Track* dtrack=NULL;
+    unsigned dtick  = newpos.x(); // FIXME TODO make subtick-compatible!
+    unsigned ntrack = y2pitch(item->mp().y());
+    MusECore::Track::TrackType type = track->type();
+    int new_partend;
+    if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
+        return false;
+    }
+    if (ntrack >= tracks->size()) {
+        ntrack = tracks->size();
+        if (MusEGlobal::debugMsg)
+            printf("PartCanvas::moveItem - add new track\n");
+        dtrack = MusEGlobal::song->addTrack(operations, type);  // Add at end of list.
+        
+        if (type == MusECore::Track::WAVE) {
+            MusECore::WaveTrack* st = (MusECore::WaveTrack*) track;
+            MusECore::WaveTrack* dt = (MusECore::WaveTrack*) dtrack;
+            dt->setChannels(st->channels());
+        }
+        emit tracklistChanged();
+    }
+    else
+    {      
+        dtrack = tracks->index(ntrack);
+        if (dtrack->type() != type) {
+            QMessageBox::critical(this, QString("MusE"),
+                                  tr("Cannot copy/move/clone to different Track-Type"));
+                                  return false;
+        }
+    }
+    
+    
+    
+    if(t == MOVE_MOVE)
+    {
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartTick,spart,spart->tick(),dtick));
+        
+        new_partend=(spart->lenTick() + dtick);
+    }  
+    else
+    {
+        MusECore::Part* dpart;
+        bool clone = (t == MOVE_CLONE || (t == MOVE_COPY && spart->events()->arefCount() > 1));
+        
         // This increments aref count if cloned, and chains clones.
         // It also gives the new part a new serial number.
         dpart = dtrack->newPart(spart, clone);
-
-      dpart->setTick(dtick);
-
-      if(t == MOVE_MOVE) 
-        item->setPart(dpart);
-      if (t == MOVE_COPY && !clone) {
+        
+        dpart->setTick(dtick);
+        if (t == MOVE_COPY && !clone) {
             // Copy Events
             MusECore::EventList* se = spart->events();
             MusECore::EventList* de = dpart->events();
             for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
-                  MusECore::Event oldEvent = i->second;
-                  MusECore::Event ev = oldEvent.clone();
-                  de->add(ev);
-                  }
+                MusECore::Event oldEvent = i->second;
+                MusECore::Event ev = oldEvent.clone();
+                de->add(ev);
             }
-
-
-      if (t == MOVE_COPY || t == MOVE_CLONE) {
-            dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-                                          // so we must decrement it first :/
-            // These will not increment ref count, and will not chain clones... 
-            // TODO DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
-            }
-      else if (t == MOVE_MOVE) {
-            // In all cases found ev lists were same. So this is redundant - Redo incs then decs the same list.
-            // But just in case we ever have two different lists...
-            dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-                                          // so we must decrement it first :/
-            spart->events()->incARef(1);  // the later MusEGlobal::song->applyOperationGroup() will decrement it
-                                          // so we must increment it first :/
-            dpart->setSelected(spart->selected());
-            // These will increment ref count if not a clone, and will chain clones...
-            // TODO DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPart,spart, dpart, true, false));
-            
-            spart->setSelected(false);
-            }
-      // else // will never happen -> operations will never be empty
-      
-      if (MusEGlobal::song->len() < (dpart->lenTick() + dpart->tick()))
+        }
+        
+        dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
+        // so we must decrement it first :/
+        // These will not increment ref count, and will not chain clones... 
+        // TODO DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
+        
+        new_partend=(dpart->lenTick() + dpart->tick());
+        
+    }
+    
+    if (MusEGlobal::song->len() < new_partend) // FIXME this is buggy anyway.
             operations.push_back(  MusECore::UndoOp(MusECore::UndoOp::ModifySongLen, 
-                                                    dpart->lenTick() + dpart->tick(),
+                                                    new_partend,
                                                     MusEGlobal::song->len() )  );
-      
-      return true;
-      }
+            
+            
+            
+    return true;
+}
 
 //---------------------------------------------------------
 //   raster
@@ -866,9 +857,10 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                         MusECore::Event ev = oldEvent.clone();
                         de->add(ev);
                         }
-                  // Indicate undo, and do port controller values but not clone parts. 
-                  // changed by flo93: removed start and endUndo, instead changed first bool to true
-                  MusEGlobal::audio->msgChangePart(spart, dpart, true, true, false);
+                  Undo operations;
+                  operations.push_back(UndoOp(UndoOp::DeletePart, spart));
+                  operations.push_back(UndoOp(UndoOp::AddPart, dpart));
+                  MusEGlobal::song->applyOperationGroup(operations);
                   break;
                   }
             case 16: // Export to file

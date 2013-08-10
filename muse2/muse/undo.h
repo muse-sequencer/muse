@@ -46,7 +46,7 @@ extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files
 struct UndoOp {
       enum UndoType {
             AddTrack, DeleteTrack,
-            AddPart,  DeletePart,  ModifyPart,
+            AddPart,  DeletePart,  ModifyPartTick, ModifyPartLength, ModifyPartLengthFrames, /* FINDMICH FIXME frames are to be deprecated */ ModifyPartName,
             AddEvent, DeleteEvent, ModifyEvent,
             AddTempo, DeleteTempo,
             AddSig,   DeleteSig,
@@ -71,11 +71,9 @@ struct UndoOp {
                   int trackno;
                   };
             struct {
-                  Part* oPart;
-                  Part* nPart;
-                  };
-            struct {
-                  Part* part; // this part is only relevant for EVENT operations, NOT for part ops!
+                  Part* part;
+                  unsigned old_partlen_or_tick; // FIXME FINDMICHJETZT XTicks!!
+                  unsigned new_partlen_or_tick;
                   };
             struct {
                   int channel;
@@ -94,16 +92,14 @@ struct UndoOp {
                   Marker* copyMarker;
                 };
             struct {
-                  Track* _renamedTrack;
-                  char* _oldName;
-                  char* _newName;
-                };
-            struct {
                   Track* _propertyTrack;
                   int _oldPropValue;
                   int _newPropValue;
                 };
             };
+
+      char* _oldName;
+      char* _newName;
       Event oEvent;
       Event nEvent;
       bool doCtrls;
@@ -115,10 +111,11 @@ struct UndoOp {
       UndoOp();
       UndoOp(UndoType type, int a, int b, int c=0);
       UndoOp(UndoType type, int n, Track* track);
-      UndoOp(UndoType type, Part* part);
+      UndoOp(UndoType type, Part* part, unsigned old_len_or_tick=-1, unsigned new_len_or_tick=-1, bool doCtrls=false, bool doClones=false); // FIXME these bools are UNUSED!!
+      UndoOp(UndoType type, Part* part, const char* old_name, const char* new_name);
       UndoOp(UndoType type, Event& oev, Event& nev, Part* part, bool doCtrls, bool doClones);
       UndoOp(UndoType type, Event& nev, Part* part, bool doCtrls, bool doClones);
-      UndoOp(UndoType type, Part* oPart, Part* nPart, bool doCtrls, bool doClones);
+      UndoOp(UndoType type, Part* part, unsigned tick, bool doCtrls, bool doClones); // FIXME FINDMICHJETZT XTicks!
       UndoOp(UndoType type, int c, int ctrl, int ov, int nv);
       UndoOp(UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker);

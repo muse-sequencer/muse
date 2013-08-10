@@ -60,9 +60,9 @@ class Track;
 //---------------------------------------------------------
 
 enum {
-      SEQM_ADD_TRACK, SEQM_REMOVE_TRACK,   //SEQM_CHANGE_TRACK,   DELETETHIS
+      SEQM_ADD_TRACK, SEQM_REMOVE_TRACK,
       SEQM_MOVE_TRACK,
-      SEQM_ADD_PART, SEQM_REMOVE_PART, SEQM_CHANGE_PART,
+      SEQM_ADD_PART, SEQM_REMOVE_PART,
       SEQM_ADD_EVENT, SEQM_REMOVE_EVENT, SEQM_CHANGE_EVENT,
       SEQM_ADD_TEMPO, SEQM_SET_TEMPO, SEQM_REMOVE_TEMPO, SEQM_ADD_SIG, SEQM_REMOVE_SIG,
       SEQM_ADD_KEY, SEQM_REMOVE_KEY,
@@ -234,11 +234,9 @@ class Audio {
 
       void msgRemoveTrack(Track*, bool u = true);
       void msgRemoveTracks();
-      //void msgChangeTrack(Track* oldTrack, Track* newTrack, bool u = true); DELETETHIS
       void msgMoveTrack(int idx1, int dx2, bool u = true);
       void msgAddPart(Part*, bool u = true);
       void msgRemovePart(Part*, bool u = true);
-      void msgChangePart(Part* oldPart, Part* newPart, bool u = true, bool doCtrls = true, bool doClones = false);
       void msgAddEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
       void msgDeleteEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
       void msgChangeEvent(Event&, Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);

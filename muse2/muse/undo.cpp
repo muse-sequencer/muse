@@ -50,7 +50,7 @@ const char* UndoOp::typeName()
       {
       static const char* name[] = {
             "AddTrack", "DeleteTrack", 
-            "AddPart",  "DeletePart",  "ModifyPart",
+            "AddPart",  "DeletePart",  "ModifyPartTick", "ModifyPartLength", "ModifyPartLengthFrames", "ModifyPartName",
             "AddEvent", "DeleteEvent", "ModifyEvent",
             "AddTempo", "DeleteTempo",
             "AddSig", "DeleteSig",
@@ -77,7 +77,10 @@ void UndoOp::dump()
                   break;
             case AddPart:
             case DeletePart:
-            case ModifyPart:
+            case ModifyPartTick:
+            case ModifyPartLength:
+            case ModifyPartLengthFrames:
+            case ModifyPartName:
                   break;
             case AddEvent:
             case DeleteEvent:
@@ -136,11 +139,7 @@ void UndoList::clearDelete()
                   break;
                   
             case UndoOp::DeletePart:
-                  delete i->oPart;
-                  break;
-
-            case UndoOp::ModifyPart:
-                  delete i->oPart;
+                  delete i->part;
                   break;
 
             case UndoOp::ModifyMarker:
@@ -176,12 +175,9 @@ void UndoList::clearDelete()
                   break;
                   
             case UndoOp::AddPart:
-                  delete i->oPart;
+                  delete i->part;
                   break;
 
-            case UndoOp::ModifyPart:
-                  delete i->nPart;
-                  break;
             case UndoOp::ModifyMarker:
                   if (i->realMarker)
                     delete i->realMarker;
@@ -295,12 +291,12 @@ void cleanOperationGroup(Undo& group)
 			else
 				processed_tracks.insert(op->track);
 		}
-		else if ((op->type==UndoOp::ModifyPart) || (op->type==UndoOp::DeletePart))
+		else if (op->type==UndoOp::DeletePart)
 		{
-			if (processed_parts.find(op->oPart)!=processed_parts.end())
+			if (processed_parts.find(op->part)!=processed_parts.end())
 				group.erase(op);
 			else
-				processed_parts.insert(op->oPart);
+				processed_parts.insert(op->part);
 		}
 		
 		op=op_;
@@ -370,28 +366,33 @@ void Song::doUndo2()
                         break;
                   case UndoOp::AddPart:
                         {
-                        Part* part = i->oPart;
+                        Part* part = i->part;
                         removePart(part);
                         updateFlags |= SC_PART_REMOVED;
-                        i->oPart->events()->incARef(-1);
-                        unchainClone(i->oPart);
+                        i->part->events()->incARef(-1);
+                        unchainClone(i->part);
                         }
                         break;
                   case UndoOp::DeletePart:
-                        addPart(i->oPart);
+                        addPart(i->part);
                         updateFlags |= SC_PART_INSERTED;
-                        i->oPart->events()->incARef(1);
-                        chainClone(i->oPart);
+                        i->part->events()->incARef(1);
+                        chainClone(i->part);
                         break;
-                  case UndoOp::ModifyPart:
-                        if(i->doCtrls)
-                          removePortCtrlEvents(i->nPart, i->doClones);
-                        changePart(i->nPart, i->oPart);
-                        i->nPart->events()->incARef(-1);
-                        i->oPart->events()->incARef(1);
-                        replaceClone(i->nPart, i->oPart);
-                        if(i->doCtrls)
-                          addPortCtrlEvents(i->oPart, i->doClones);
+                  case UndoOp::ModifyPartName:
+                        i->part->setName(i->_oldName);
+                        updateFlags |= SC_PART_MODIFIED;
+                        break;
+                  case UndoOp::ModifyPartTick: // TODO FIXME (?) do port ctrls/clones?
+                        i->part->setTick(i->old_partlen_or_tick);
+                        updateFlags |= SC_PART_MODIFIED;
+                        break;
+                  case UndoOp::ModifyPartLength: // TODO FIXME (?) do port ctrls/clones?
+                        i->part->setLenTick(i->old_partlen_or_tick);
+                        updateFlags |= SC_PART_MODIFIED;
+                        break;
+                  case UndoOp::ModifyPartLengthFrames: // TODO FIXME  FINDMICH frames deprecated!   do port ctrls/clones?
+                        i->part->setLenFrame(i->old_partlen_or_tick);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::AddEvent:
@@ -484,26 +485,31 @@ void Song::doRedo2()
                         }
                         break;
                   case UndoOp::AddPart:
-                        addPart(i->oPart);
+                        addPart(i->part);
                         updateFlags |= SC_PART_INSERTED;
-                        i->oPart->events()->incARef(1);
-                        chainClone(i->oPart);
+                        i->part->events()->incARef(1);
+                        chainClone(i->part);
                         break;
                   case UndoOp::DeletePart:
-                        removePart(i->oPart);
+                        removePart(i->part);
                         updateFlags |= SC_PART_REMOVED;
-                        i->oPart->events()->incARef(-1);
-                        unchainClone(i->oPart);
+                        i->part->events()->incARef(-1);
+                        unchainClone(i->part);
                         break;
-                  case UndoOp::ModifyPart:
-                        if(i->doCtrls)
-                          removePortCtrlEvents(i->oPart, i->doClones);
-                        changePart(i->oPart, i->nPart);
-                        i->nPart->events()->incARef(1);
-                        i->oPart->events()->incARef(-1);
-                        replaceClone(i->oPart, i->nPart);
-                        if(i->doCtrls)
-                          addPortCtrlEvents(i->nPart, i->doClones);
+                  case UndoOp::ModifyPartName:
+                        i->part->setName(i->_newName);
+                        updateFlags |= SC_PART_MODIFIED;
+                        break;
+                  case UndoOp::ModifyPartTick: // TODO FIXME (?) do port ctrls/clones?
+                        i->part->setTick(i->new_partlen_or_tick);
+                        updateFlags |= SC_PART_MODIFIED;
+                        break;
+                  case UndoOp::ModifyPartLength: // TODO FIXME (?) do port ctrls/clones?
+                        i->part->setLenTick(i->new_partlen_or_tick);
+                        updateFlags |= SC_PART_MODIFIED;
+                        break;
+                  case UndoOp::ModifyPartLengthFrames: // TODO FIXME  FINDMICH frames deprecated!   do port ctrls/clones?
+                        i->part->setLenFrame(i->new_partlen_or_tick);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::AddEvent:
@@ -590,10 +596,12 @@ UndoOp::UndoOp(UndoType type_, int n, Track* track_)
       track  = track_;
       }
 
-UndoOp::UndoOp(UndoType type_, Part* part)
+UndoOp::UndoOp(UndoType type_, Part* part, unsigned old_len_or_tick, unsigned new_len_or_tick, bool, bool)
       {
       type  = type_;
-      oPart = part;
+      part = part;
+      old_partlen_or_tick=old_len_or_tick;
+      new_partlen_or_tick=new_len_or_tick;
       }
 
 UndoOp::UndoOp(UndoType type_, Event& oev, Event& nev, Part* part_, bool doCtrls_, bool doClones_)
@@ -611,15 +619,6 @@ UndoOp::UndoOp(UndoType type_, Event& nev, Part* part_, bool doCtrls_, bool doCl
       type   = type_;
       nEvent = nev;
       part   = part_;
-      doCtrls = doCtrls_;
-      doClones = doClones_;
-      }
-
-UndoOp::UndoOp(UndoType type_, Part* oPart_, Part* nPart_, bool doCtrls_, bool doClones_)
-      {
-      type  = type_;
-      oPart = oPart_;
-      nPart = nPart_;
       doCtrls = doCtrls_;
       doClones = doClones_;
       }
@@ -649,10 +648,20 @@ UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, 
       endframe   = endframe_;
       }
 
+UndoOp::UndoOp(UndoOp::UndoType type_, Part* part_, const char* old_name, const char* new_name)
+{
+    type=type_;
+    part=part_;
+    _oldName = new char[strlen(old_name) + 1];
+    _newName = new char[strlen(new_name) + 1];
+    strcpy(_oldName, old_name);
+    strcpy(_newName, new_name);
+}
+
 UndoOp::UndoOp(UndoOp::UndoType type_, Track* track_, const char* old_name, const char* new_name)
 {
   type = type_;
-  _renamedTrack = track_;
+  track = track_;
   _oldName = new char[strlen(old_name) + 1];
   _newName = new char[strlen(new_name) + 1];
   strcpy(_oldName, old_name);
@@ -727,7 +736,7 @@ bool Song::doUndo1()
 
                         break;
                   case UndoOp::ModifyTrackName:
-                          i->_renamedTrack->setName(i->_oldName);
+                          i->track->setName(i->_oldName);
                           updateFlags |= SC_TRACK_MODIFIED;
                         break;
                   case UndoOp::ModifyClip:
@@ -851,7 +860,7 @@ bool Song::doRedo1()
                         removeTrack1(i->track);
                         break;
                   case UndoOp::ModifyTrackName:
-                          i->_renamedTrack->setName(i->_newName);
+                          i->track->setName(i->_newName);
                           updateFlags |= SC_TRACK_MODIFIED;
                         break;
                   case UndoOp::ModifyClip:

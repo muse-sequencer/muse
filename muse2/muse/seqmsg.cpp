@@ -923,21 +923,6 @@ bool Song::msgRemoveParts()
       }
 
 //---------------------------------------------------------
-//   msgChangePart
-//---------------------------------------------------------
-
-void Audio::msgChangePart(Part* oldPart, Part* newPart, bool doUndoFlag, bool doCtrls, bool doClones)
-      {
-      AudioMsg msg;
-      msg.id = SEQM_CHANGE_PART;
-      msg.p1 = oldPart;
-      msg.p2 = newPart;
-      msg.a = doCtrls;
-      msg.b = doClones;
-      sendMessage(&msg, doUndoFlag);
-      }
-
-//---------------------------------------------------------
 //   msgAddEvent
 //---------------------------------------------------------
 
