@@ -762,13 +762,6 @@ void Audio::processMsg(AudioMsg* msg)
                         frameOffset   = syncFrame - samplePos;
                         }
                   break;
-            // DELETETHIS 6
-            //case SEQM_ADD_TRACK:
-            //case SEQM_REMOVE_TRACK:
-            //case SEQM_CHANGE_TRACK:
-            //case SEQM_ADD_PART:
-            //case SEQM_REMOVE_PART:
-            //case SEQM_CHANGE_PART:
             case SEQM_SET_TRACK_OUT_CHAN:
             case SEQM_SET_TRACK_OUT_PORT:
             case SEQM_REMAP_PORT_DRUM_CTL_EVS:

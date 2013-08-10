@@ -567,15 +567,9 @@ void removePortCtrlEvents(Part* part, bool doClones)
       MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
       int ch = mt->outChannel();
       const EventList* el = p->cevents();
-      //unsigned len = p->lenTick();
       for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
       {
         const Event& ev = ie->second;
-        // Added by T356. Do not remove events which are past the end of the part. DELETETHIS 5
-        // No, actually, do remove ALL of them belonging to the part.
-        // Just in case there are stray values left after the part end.
-        //if(ev.tick() >= len)
-        //  break;
                           
         if(ev.type() == Controller)
         {

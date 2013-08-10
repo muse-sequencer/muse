@@ -113,10 +113,6 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   MusEGlobal::song->cmdRemoveTrack(msg->track);
                   updatePollFd();
                   break;
-            //case MusECore::SEQM_CHANGE_TRACK: DELETETHIS 4
-            //      MusEGlobal::song->changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
-            //      updatePollFd();
-            //      break;
             case MusECore::SEQM_ADD_PART:
                   MusEGlobal::song->cmdAddPart((Part*)msg->p1);
                   break;

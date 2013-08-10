@@ -172,7 +172,20 @@ class Song : public QObject {
       ~Song();
 
       bool applyOperationGroup(Undo& group, bool doUndo=true);
+      
+      /** this sends emits a signal to each MidiEditor or whoever is interested.
+       *  For each part which is 1) opened in this MidiEditor and 2) which is
+       *  a key in this map, the Editors shall no more edit this part, but instead
+       *  all parts in the_map[old_part] (which is a std::set<Part*>)
+       */
       void informAboutNewParts(const std::map< Part*, std::set<Part*> >&);
+      /** this sends emits a signal to each MidiEditor or whoever is interested.
+       *  For each part which is 1) opened in this MidiEditor and 2) which is
+       *  a key in this map, the Editors shall no more edit this part, but instead
+       *  all parts in the_map[old_part] (which is a std::set<Part*>)
+       *  this is a special case of the general function, which only replaces one part
+       *  by up to nine different.
+       */
       void informAboutNewParts(Part* orig, Part* p1, Part* p2=NULL, Part* p3=NULL, Part* p4=NULL, Part* p5=NULL, Part* p6=NULL, Part* p7=NULL, Part* p8=NULL, Part* p9=NULL);
 
       void putEvent(int pv);

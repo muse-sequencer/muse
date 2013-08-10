@@ -1893,9 +1893,6 @@ void Song::processMsg(AudioMsg* msg)
             case SEQM_REMOVE_TRACK:
                   cmdRemoveTrack(msg->track);
                   break;
-            //case SEQM_CHANGE_TRACK:     DELETETHIS 3
-            //      changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
-            //      break;
             case SEQM_ADD_PART:
                   cmdAddPart((Part*)msg->p1);
                   break;
