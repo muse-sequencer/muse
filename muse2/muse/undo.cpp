@@ -596,10 +596,10 @@ UndoOp::UndoOp(UndoType type_, int n, Track* track_)
       track  = track_;
       }
 
-UndoOp::UndoOp(UndoType type_, Part* part, unsigned old_len_or_tick, unsigned new_len_or_tick, bool, bool)
+UndoOp::UndoOp(UndoType type_, Part* part_, unsigned old_len_or_tick, unsigned new_len_or_tick, bool, bool)
       {
       type  = type_;
-      part = part;
+      part = part_;
       old_partlen_or_tick=old_len_or_tick;
       new_partlen_or_tick=new_len_or_tick;
       }
