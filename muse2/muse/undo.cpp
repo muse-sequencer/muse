@@ -577,11 +577,6 @@ UndoOp::UndoOp()
   type=UndoOp::DoNothing;
 }
 
-UndoOp::UndoOp(UndoType type_)
-{
-	type = type_;
-}
-
 UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
       {
       assert(type_==AddKey || type_==DeleteKey ||
@@ -642,16 +637,6 @@ UndoOp::UndoOp(UndoType type_, Event& nev, Part* part_, bool doCtrls_, bool doCl
       doClones = doClones_;
       }
 
-UndoOp::UndoOp(UndoType type_, int c, int ctrl_, int ov, int nv)
-      {
-      assert(false); // DELETETHIS whole ctor.
-      
-      type    = type_;
-      channel = c;
-      ctrl    = ctrl_;
-      oVal    = ov;
-      nVal    = nv;
-      }
 
 UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_)
       {

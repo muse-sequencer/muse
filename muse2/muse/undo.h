@@ -111,17 +111,14 @@ struct UndoOp {
       UndoOp();
       UndoOp(UndoType type, int a, int b, int c=0);
       UndoOp(UndoType type, int n, Track* track);
-      UndoOp(UndoType type, Part* part, unsigned old_len_or_tick=-1, unsigned new_len_or_tick=-1, bool doCtrls=false, bool doClones=false); // FIXME these bools are UNUSED!!
+      UndoOp(UndoType type, Part* part, unsigned old_len_or_tick=-1, unsigned new_len_or_tick=-1, bool doCtrls=false, bool doClones=false); // FIXME these bools are UNUSED!!. XTICKS!
       UndoOp(UndoType type, Part* part, const char* old_name, const char* new_name);
       UndoOp(UndoType type, Event& oev, Event& nev, Part* part, bool doCtrls, bool doClones);
       UndoOp(UndoType type, Event& nev, Part* part, bool doCtrls, bool doClones);
-      UndoOp(UndoType type, Part* part, unsigned tick, bool doCtrls, bool doClones); // FIXME FINDMICHJETZT XTicks!
-      UndoOp(UndoType type, int c, int ctrl, int ov, int nv);
       UndoOp(UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker);
       UndoOp(UndoType type, Track* track, const char* old_name, const char* new_name);
       UndoOp(UndoType type, Track* track, int old_chan, int new_chan);
-      UndoOp(UndoType type);
 };
 
 class Undo : public std::list<UndoOp> {
