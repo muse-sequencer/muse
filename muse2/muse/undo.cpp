@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include "assert.h"
+
 //#include "sig.h"
 #include "al/sig.h"  
 #include "keyevent.h"
@@ -582,6 +584,11 @@ UndoOp::UndoOp(UndoType type_)
 
 UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
       {
+      assert(type_==AddKey || type_==DeleteKey ||
+             type_==AddTempo || type_==DeleteTempo ||
+             type_==AddSig || type_==DeleteSig ||
+             type_==ModifySongLen || type_==SwapTrack);
+      
       type = type_;
       a  = a_;
       b  = b_;
@@ -591,6 +598,9 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
 
 UndoOp::UndoOp(UndoType type_, int n, Track* track_)
       {
+      assert(type_==AddTrack || type_==DeleteTrack);
+      assert(track_);
+      
       type    = type_;
       trackno = n;
       track  = track_;
@@ -598,6 +608,9 @@ UndoOp::UndoOp(UndoType type_, int n, Track* track_)
 
 UndoOp::UndoOp(UndoType type_, Part* part_, unsigned old_len_or_tick, unsigned new_len_or_tick, bool, bool)
       {
+      assert(type_==AddPart || type_==DeletePart || type_==ModifyPartLength || type_==ModifyPartLengthFrames || type_==ModifyPartTick );
+      assert(part_);
+      
       type  = type_;
       part = part_;
       old_partlen_or_tick=old_len_or_tick;
@@ -606,6 +619,9 @@ UndoOp::UndoOp(UndoType type_, Part* part_, unsigned old_len_or_tick, unsigned n
 
 UndoOp::UndoOp(UndoType type_, Event& oev, Event& nev, Part* part_, bool doCtrls_, bool doClones_)
       {
+      assert(type_==ModifyEvent);
+      assert(part_);
+      
       type   = type_;
       nEvent = nev;
       oEvent = oev;
@@ -616,6 +632,9 @@ UndoOp::UndoOp(UndoType type_, Event& oev, Event& nev, Part* part_, bool doCtrls
 
 UndoOp::UndoOp(UndoType type_, Event& nev, Part* part_, bool doCtrls_, bool doClones_)
       {
+      assert(type_==DeleteEvent || type_==AddEvent);
+      assert(part_);
+      
       type   = type_;
       nEvent = nev;
       part   = part_;
@@ -625,6 +644,8 @@ UndoOp::UndoOp(UndoType type_, Event& nev, Part* part_, bool doCtrls_, bool doCl
 
 UndoOp::UndoOp(UndoType type_, int c, int ctrl_, int ov, int nv)
       {
+      assert(false); // DELETETHIS whole ctor.
+      
       type    = type_;
       channel = c;
       ctrl    = ctrl_;
@@ -634,6 +655,10 @@ UndoOp::UndoOp(UndoType type_, int c, int ctrl_, int ov, int nv)
 
 UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_)
       {
+      assert(type_==ModifyMarker);
+      assert(copyMarker_);
+      assert(realMarker_);
+      
       type    = type_;
       realMarker  = realMarker_;
       copyMarker  = copyMarker_;
@@ -641,6 +666,8 @@ UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_)
 
 UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, int startframe_, int endframe_)
       {
+      assert(type_==ModifyClip);
+      
       type = type_;
       filename   = changedFile;
       tmpwavfile = changeData;
@@ -650,6 +677,11 @@ UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, 
 
 UndoOp::UndoOp(UndoOp::UndoType type_, Part* part_, const char* old_name, const char* new_name)
 {
+    assert(type_==ModifyPartName);
+    assert(part_);
+    assert(old_name);
+    assert(new_name);
+    
     type=type_;
     part=part_;
     _oldName = new char[strlen(old_name) + 1];
@@ -660,6 +692,11 @@ UndoOp::UndoOp(UndoOp::UndoType type_, Part* part_, const char* old_name, const 
 
 UndoOp::UndoOp(UndoOp::UndoType type_, Track* track_, const char* old_name, const char* new_name)
 {
+  assert(type_==ModifyTrackName);
+  assert(track_);
+  assert(old_name);
+  assert(new_name);    
+    
   type = type_;
   track = track_;
   _oldName = new char[strlen(old_name) + 1];
@@ -670,6 +707,9 @@ UndoOp::UndoOp(UndoOp::UndoType type_, Track* track_, const char* old_name, cons
 
 UndoOp::UndoOp(UndoOp::UndoType type_, Track* track_, int old_chan, int new_chan)
 {
+  assert(type_==ModifyTrackChannel);
+  assert(track_);
+  
   type = type_;
   _propertyTrack = track_;
   _oldPropValue = old_chan;
