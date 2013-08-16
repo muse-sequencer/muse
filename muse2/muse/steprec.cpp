@@ -76,10 +76,10 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 		chord_timer->stop();
 
 		// extend len of last note?
-		EventList* events = part->events();
+		const EventList& events = part->events();
 		if (ctrl)
 		{
-			for (iEvent i = events->begin(); i != events->end(); ++i)
+			for (iEvent i = events.begin(); i != events.end(); ++i)
 			{
 				Event ev = i->second;
 				if (ev.isNote() && ev.pitch() == pitch && ((ev.tick() + ev.lenTick() + part->tick()) == tick))
@@ -106,8 +106,8 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 			// if we would find a note after part->lenTick(), the above "if"
 			// avoids this. this has to be avoided because then part->hasHiddenEvents() is true
 			// which results in forbidding any action beyond its end
-			EventRange range = events->equal_range(tick - part->tick());
-			for (iEvent i = range.first; i != range.second; ++i)
+			EventRange range = events.equal_range(tick - part->tick());
+			for (ciEvent i = range.first; i != range.second; ++i)
 			{
 				Event ev = i->second;
 				if (ev.isNote() && ev.pitch() == pitch)
@@ -161,18 +161,18 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 			// extend len of last note(s)
 			using std::set;
 			
-			set<Event*> extend_set;
-			EventList* events = part->events();
-			for (iEvent i = events->begin(); i != events->end(); ++i)
+			set<const Event*> extend_set;
+			const EventList& events = part->events();
+			for (iEvent i = events.begin(); i != events.end(); ++i)
 			{
 				Event& ev = i->second;
 				if (ev.isNote() && note_held_down[ev.pitch()] && ((ev.tick() + ev.lenTick() + part->tick()) == tick))
 					extend_set.insert(&ev);
 			}
 			
-			for (set<Event*>::iterator it=extend_set.begin(); it!=extend_set.end(); it++)
+			for (set<const Event*>::iterator it=extend_set.begin(); it!=extend_set.end(); it++)
 			{
-				Event& ev=**it;
+				const Event& ev=**it;
 				Event e = ev.clone();
 				e.setLenTick(ev.lenTick() + len);
 				operations.push_back(UndoOp(UndoOp::ModifyEvent,e, ev, part, false, false));

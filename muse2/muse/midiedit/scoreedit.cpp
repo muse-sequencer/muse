@@ -1787,11 +1787,10 @@ void staff_t::create_appropriate_eventlist()
 	for (set<MusECore::Part*>::const_iterator part_it=parts.begin(); part_it!=parts.end(); part_it++)
 	{
 		MusECore::Part* part=*part_it;
-		MusECore::EventList* el=part->events();
 		
-		for (MusECore::iEvent it=el->begin(); it!=el->end(); it++)
+		for (MusECore::ciEvent it=part->events().begin(); it!=part->events().end(); it++)
 		{
-			MusECore::Event& event=it->second;
+			const MusECore::Event& event=it->second;
 			
 			if ( ( event.isNote() && !event.isNoteOff() &&
 			       // (event.endTick() <= part->lenTick()) ) &&
@@ -4508,7 +4507,7 @@ void ScoreCanvas::deselect_all()
 	set<MusECore::Part*> all_parts=get_all_parts();
 
 	for (set<MusECore::Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
-		for (MusECore::iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
+		for (MusECore::ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
 			event->second.setSelected(false);
 	
 	MusEGlobal::song->update(SC_SELECTION);

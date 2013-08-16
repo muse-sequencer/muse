@@ -66,9 +66,9 @@ void addPortCtrlEvents(MidiTrack* t)
   for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
   {
     Part* part = ip->second;
-    const EventList* el = part->cevents();
+    const EventList& el = part->events();
     unsigned len = part->lenTick();
-    for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+    for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
     {
       const Event& ev = ie->second;
       // Added by T356. Do not add events which are past the end of the part.
@@ -116,8 +116,8 @@ void removePortCtrlEvents(MidiTrack* t)
   for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
   {
     Part* part = ip->second;
-    const EventList* el = part->cevents();
-    for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+    const EventList& el = part->events();
+    for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
     {
       const Event& ev = ie->second;
                     
@@ -468,8 +468,6 @@ MidiTrack::MidiTrack()
    : Track(MIDI)
       {
       init();
-      _events = new EventList;
-      _mpevents = new MPEventList;
       clefType=trebleClef;
       
       _drummap=new DrumMap[128];
@@ -481,9 +479,6 @@ MidiTrack::MidiTrack()
 MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
   : Track(mt, flags)
 {
-      _events   = new EventList;
-      _mpevents = new MPEventList;
-
       _drummap=new DrumMap[128];
       _drummap_hidden=new bool[128];
       
@@ -592,27 +587,11 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
               Part* spart = ip->second;
-              bool clone = spart->events()->arefCount() > 1;
-              // This increments aref count if cloned, and chains clones.
-              // It also gives the new part a new serial number.
-              Part* dpart = newPart(spart, clone);
-              if(!clone) {
-                    // Copy Events
-                    MusECore::EventList* se = spart->events();
-                    MusECore::EventList* de = dpart->events();
-                    for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
-                          MusECore::Event oldEvent = i->second;
-                          MusECore::Event ev = oldEvent.clone();
-                          de->add(ev);
-                          }
-                    }
-
-              // TODO: Should we include the parts in the undo?      
-              //      dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-              //                                    // so we must decrement it first :/
-              //      // These will not increment ref count, and will not chain clones...
-              //      // DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
-              //      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
+              Part* dpart;
+              if (spart->hasClones())
+                  dpart = spart->createNewClone()
+              else
+                  dpart = spart->duplicate();
 
               parts()->add(dpart);
               }
@@ -628,8 +607,6 @@ void MidiTrack::assign(const Track& t, int flags)
 
 MidiTrack::~MidiTrack()
       {
-      delete _events;
-      delete _mpevents;
       delete [] _drummap;
       delete [] _drummap_hidden;
       
@@ -810,7 +787,7 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
 
 Part* MidiTrack::newPart(Part*p, bool clone)
       {
-      MidiPart* part = clone ? new MidiPart(this, p->events()) : new MidiPart(this);
+      MidiPart* part = clone ? p->createNewClone() : new MidiPart(this);
       if (p) {
             part->setName(p->name());
             part->setColorIndex(p->colorIndex());
@@ -818,10 +795,6 @@ Part* MidiTrack::newPart(Part*p, bool clone)
             *(PosLen*)part = *(PosLen*)p;
             part->setMute(p->mute());
             }
-      
-      if(clone)
-        //p->chainClone(part);
-        chainClone(p, part);
       
       return part;
       }
@@ -933,10 +906,7 @@ void MidiTrack::read(Xml& xml)
                         else if (tag == "compression")
                               compression = xml.parseInt();
                         else if (tag == "part") {
-                              //Part* p = newPart();
-                              //p->read(xml);
-                              Part* p = 0;
-                              p = readXmlPart(xml, this);
+                              Part* p = Part::readFromXml(xml, this);
                               if(p)
                                 parts()->add(p);
                               }
@@ -1251,7 +1221,7 @@ int MidiTrack::getFirstControllerValue(int ctrl, int def)
   {
     Part* part=pit->second;
     if (part->tick() > tick) break; // ignore this and the rest. we won't find anything new.
-    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    for (ciEvent eit=part->events().begin(); eit!=part->events().end(); eit++)
     {
       if (eit->first+part->tick() >= tick) break;
       if (eit->first > part->lenTick()) break; // ignore events past the end of the part
@@ -1275,7 +1245,7 @@ int MidiTrack::getControllerChangeAtTick(unsigned tick, int ctrl, int def)
     Part* part=pit->second;
     if (part->tick() > tick) break; // ignore this and the rest. we'd find nothing any more
     if (part->endTick() < tick) continue; // ignore only this.
-    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    for (ciEvent eit=part->events().begin(); eit!=part->events().end(); eit++)
     {
       if (eit->first+part->tick() > tick) break; // we won't find anything in this part from now on.
       if (eit->first > part->lenTick()) break; // ignore events past the end of the part
@@ -1301,7 +1271,7 @@ unsigned MidiTrack::getControllerValueLifetime(unsigned tick, int ctrl)
     Part* part=pit->second;
     if (part->tick() > result) break; // ignore this and the rest. we won't find anything new.
     if (part->endTick() < tick) continue; // ignore only this part, we won't find anything there.
-    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    for (ciEvent eit=part->events().begin(); eit!=part->events().end(); eit++)
     {
       if (eit->first+part->tick() >= result) break;
       if (eit->first > part->lenTick()) break; // ignore events past the end of the part

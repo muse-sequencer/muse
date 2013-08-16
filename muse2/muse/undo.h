@@ -113,8 +113,8 @@ struct UndoOp {
       UndoOp(UndoType type, int n, Track* track);
       UndoOp(UndoType type, Part* part, unsigned old_len_or_tick=-1, unsigned new_len_or_tick=-1, bool doCtrls=false, bool doClones=false); // FIXME these bools are UNUSED!!. XTICKS!
       UndoOp(UndoType type, Part* part, const char* old_name, const char* new_name);
-      UndoOp(UndoType type, Event& oev, Event& nev, Part* part, bool doCtrls, bool doClones);
-      UndoOp(UndoType type, Event& nev, Part* part, bool doCtrls, bool doClones);
+      UndoOp(UndoType type, const Event& oev, const Event& nev, Part* part, bool doCtrls, bool doClones);
+      UndoOp(UndoType type, const Event& nev, Part* part, bool doCtrls, bool doClones);
       UndoOp(UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker);
       UndoOp(UndoType type, Track* track, const char* old_name, const char* new_name);

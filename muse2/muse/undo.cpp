@@ -350,7 +350,7 @@ void Song::doUndo2()
                         removeTrack2(i->track);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
-                  case UndoOp::DeleteTrack:
+                  case UndoOp::DeleteTrack: // FINDMICHJETZT FIXME TODO: DeletePart on all parts, only empty tracks may be deleted! this removes the necessarity of unchainTrackParts...
                         insertTrack2(i->track, i->trackno);
                         chainTrackParts(i->track, true);
                         
@@ -371,15 +371,14 @@ void Song::doUndo2()
                         Part* part = i->part;
                         removePart(part);
                         updateFlags |= SC_PART_REMOVED;
-                        i->part->events()->incARef(-1);
-                        unchainClone(i->part);
+                        Part* i->part->nextClone();
+                        i->part->unchainClone();
                         }
                         break;
                   case UndoOp::DeletePart:
                         addPart(i->part);
                         updateFlags |= SC_PART_INSERTED;
-                        i->part->events()->incARef(1);
-                        chainClone(i->part);
+                        i->part->rechainClone();
                         break;
                   case UndoOp::ModifyPartName:
                         i->part->setName(i->_oldName);
@@ -489,14 +488,12 @@ void Song::doRedo2()
                   case UndoOp::AddPart:
                         addPart(i->part);
                         updateFlags |= SC_PART_INSERTED;
-                        i->part->events()->incARef(1);
-                        chainClone(i->part);
+                        i->part->rechainClone();
                         break;
                   case UndoOp::DeletePart:
                         removePart(i->part);
                         updateFlags |= SC_PART_REMOVED;
-                        i->part->events()->incARef(-1);
-                        unchainClone(i->part);
+                        i->part->unchainClone();
                         break;
                   case UndoOp::ModifyPartName:
                         i->part->setName(i->_newName);
@@ -612,7 +609,7 @@ UndoOp::UndoOp(UndoType type_, Part* part_, unsigned old_len_or_tick, unsigned n
       new_partlen_or_tick=new_len_or_tick;
       }
 
-UndoOp::UndoOp(UndoType type_, Event& oev, Event& nev, Part* part_, bool doCtrls_, bool doClones_)
+UndoOp::UndoOp(UndoType type_, const Event& oev, const Event& nev, Part* part_, bool doCtrls_, bool doClones_)
       {
       assert(type_==ModifyEvent);
       assert(part_);
@@ -625,7 +622,7 @@ UndoOp::UndoOp(UndoType type_, Event& oev, Event& nev, Part* part_, bool doCtrls
       doClones = doClones_;
       }
 
-UndoOp::UndoOp(UndoType type_, Event& nev, Part* part_, bool doCtrls_, bool doClones_)
+UndoOp::UndoOp(UndoType type_, const Event& nev, Part* part_, bool doCtrls_, bool doClones_)
       {
       assert(type_==DeleteEvent || type_==AddEvent);
       assert(part_);

@@ -635,11 +635,10 @@ void PianoCanvas::pianoCmd(int cmd)
                   if (part == 0)
                         break;
 
-                  MusECore::EventList* el = part->events();
                   MusECore::Undo operations;
 
                   std::list <MusECore::Event> elist;
-                  for (MusECore::iEvent e = el->lower_bound(pos[0] - part->tick()); e != el->end(); ++e)
+                  for (MusECore::ciEvent e = part->events().lower_bound(pos[0] - part->tick()); e != part->events().end(); ++e)
                         elist.push_back((MusECore::Event)e->second);
                   for (std::list<MusECore::Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
                         MusECore::Event event = *i;
@@ -663,10 +662,8 @@ void PianoCanvas::pianoCmd(int cmd)
                         break;
                   
                   MusECore::Undo operations;
-                  MusECore::EventList* el = part->events();
-
                   std::list<MusECore::Event> elist;
-                  for (MusECore::iEvent e = el->lower_bound(pos[0]); e != el->end(); ++e)
+                  for (MusECore::ciEvent e = part->events().lower_bound(pos[0]); e != part->events().end(); ++e)
                         elist.push_back((MusECore::Event)e->second);
                   for (std::list<MusECore::Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
                         MusECore::Event event = *i;

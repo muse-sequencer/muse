@@ -1027,19 +1027,17 @@ void Audio::recordStop()
       MidiTrackList* ml = MusEGlobal::song->midis();
       for (iMidiTrack it = ml->begin(); it != ml->end(); ++it) {
             MidiTrack* mt     = *it;
-            MPEventList* mpel = mt->mpevents();
-            EventList* el     = mt->events();
 
             //---------------------------------------------------
             //    resolve NoteOff events, Controller etc.
             //---------------------------------------------------
 
             // Do SysexMeta. Do loops.
-            buildMidiEventList(el, mpel, mt, MusEGlobal::config.division, true, true);
-            MusEGlobal::song->cmdAddRecordedEvents(mt, el, 
+            buildMidiEventList(&mt->events, mt->mpevents, mt, MusEGlobal::config.division, true, true);
+            MusEGlobal::song->cmdAddRecordedEvents(mt, mt->events, 
                  MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
-            el->clear();
-            mpel->clear();
+            mt->events.clear();
+            mt->mpevents.clear();
             }
       
       //

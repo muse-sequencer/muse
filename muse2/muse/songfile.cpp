@@ -167,10 +167,10 @@ void Scale::read(Xml& xml)
       }
 
 //---------------------------------------------------------
-//   readXmlPart
+//   Part::readFromXml
 //---------------------------------------------------------
 
-Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
+Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
       {
       int id = -1;
       Part* npart = 0;
@@ -347,7 +347,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 }
                                 else 
                                 {
-                                  npart->events()->add(e);
+                                  npart->_events.add(e);
                                 }      
                               }
                               else // ...Otherwise a clone was created, so we don't need the events.
@@ -395,7 +395,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
 
 void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       {
-      const EventList* el = cevents();
       int id              = -1;
       uuid_t uuid; 
       uuid_clear(uuid);
@@ -406,7 +405,7 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       {
         for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
         {
-          if(i->cp->cevents() == el) 
+          if(i->cp->isCloneOf(this)) 
           {
             uuid_copy(uuid, i->uuid);
             dumpEvents = false;
@@ -422,11 +421,11 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       }  
       else
       {
-        if (el->arefCount() > 1) 
+        if (this->hasClones()) 
         {
           for (iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
           {
-            if (i->cp->cevents() == el) 
+            if (i->cp->isCloneOf(this)) 
             {
               id = i->id;
               dumpEvents = false;
@@ -455,7 +454,7 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
         else  
           xml.nput(level, "<part uuid=\"%s\"", sid);
         
-        if(el->arefCount() > 1)
+        if(hasClones())
           xml.nput(" isclone=\"1\"");
         xml.put(">");
         level++;  
@@ -476,7 +475,7 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       if (_mute)
             xml.intTag(level, "mute", _mute);
       if (dumpEvents) {
-            for (ciEvent e = el->begin(); e != el->end(); ++e)
+            for (ciEvent e = events().begin(); e != events().end(); ++e)
                   e->second.write(level, xml, *this, forceWavePaths);
             }
       xml.etag(level, "part");

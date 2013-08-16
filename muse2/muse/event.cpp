@@ -74,7 +74,7 @@ void EventBase::dump(int n) const
 //   clone
 //---------------------------------------------------------
 
-Event Event::clone()
+Event Event::clone() const
       {
       #ifdef USE_SAMPLERATE
       return Event(ev->clone(), _audConv);

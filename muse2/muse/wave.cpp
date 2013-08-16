@@ -826,11 +826,11 @@ bool SndFile::checkCopyOnWrite()
     PartList* pl = (*it)->parts();
     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
     {
-      EventList* el = ip->second->events();
+      const EventList& el = ip->second->events();
       // We are looking for active independent non-clone parts
-      if(el->arefCount() > 1)
+      if(ip->second->hasClones())
         continue;
-      for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+      for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
       {
         if(ie->second.type() != Wave)
           continue;

@@ -723,7 +723,7 @@ void TList::ctrlValueFinished()
         {
           if (p->second->tick()==0)
           {
-            for (MusECore::iEvent ev=p->second->events()->begin(); ev!=p->second->events()->end(); ev++)
+            for (MusECore::ciEvent ev=p->second->events().begin(); ev!=p->second->events().end(); ev++)
             {
               if (ev->second.tick()!=0) break;
               else if (ev->second.type()==MusECore::Controller && ev->second.dataA()==ctrl_num)
@@ -2150,7 +2150,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                           {
                             if (p->second->tick()==0)
                             {
-                              for (MusECore::iEvent ev=p->second->events()->begin(); ev!=p->second->events()->end(); ev++)
+                              for (MusECore::ciEvent ev=p->second->events().begin(); ev!=p->second->events().end(); ev++)
                               {
                                 if (ev->second.tick()!=0) break;
                                 else if (ev->second.type()==MusECore::Controller && ev->second.dataA()==ctrl_num)
@@ -2550,8 +2550,7 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
             MusECore::PartList* pl = t->parts();
             MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
             for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-                  MusECore::EventList* el = ip->second->events();
-                  for (MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie) {
+                  for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
                         MusECore::Event ev = ie->second;
                         if(ev.type() == MusECore::Note)
                         {
@@ -2590,8 +2589,7 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
             MusECore::PartList* pl = t->parts();
             MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
             for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-                  MusECore::EventList* el = ip->second->events();
-                  for (MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie) {
+                  for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
                         MusECore::Event ev = ie->second;
                         if (ev.type() == MusECore::Note)
                         {

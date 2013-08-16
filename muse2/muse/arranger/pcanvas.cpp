@@ -383,28 +383,17 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
     else
     {
         MusECore::Part* dpart;
-        bool clone = (t == MOVE_CLONE || (t == MOVE_COPY && spart->events()->arefCount() > 1));
+        bool clone = (t == MOVE_CLONE || (t == MOVE_COPY && spart->hasClones()));
         
         // This increments aref count if cloned, and chains clones.
         // It also gives the new part a new serial number.
-        dpart = dtrack->newPart(spart, clone);
+        if (clone)
+            dpart = spart->createNewClone();
+        else
+            dpart = spart->duplicate();
         
         dpart->setTick(dtick);
-        if (t == MOVE_COPY && !clone) {
-            // Copy Events
-            MusECore::EventList* se = spart->events();
-            MusECore::EventList* de = dpart->events();
-            for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
-                MusECore::Event oldEvent = i->second;
-                MusECore::Event ev = oldEvent.clone();
-                de->add(ev);
-            }
-        }
         
-        dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-        // so we must decrement it first :/
-        // These will not increment ref count, and will not chain clones... 
-        // TODO DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
         
         new_partend=(dpart->lenTick() + dpart->tick());
@@ -713,7 +702,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       act_copy->setShortcut(Qt::CTRL+Qt::Key_C);
 
       partPopup->addSeparator();
-      int rc = npart->part()->events()->arefCount();
+      int rc = npart->part()->nClones();
       QString st = QString(tr("s&elect "));
       if(rc > 1)
         st += (QString().setNum(rc) + QString(" "));
@@ -847,16 +836,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
             case 15:    // declone
                   {
                   MusECore::Part* spart  = npart->part();
-                  MusECore::Track* track = npart->track();
-                  MusECore::Part* dpart  = track->newPart(spart, false);
+                  MusECore::Part* dpart  = spart->duplicate(); // dpart will not be member of any clone chain!
 
-                  MusECore::EventList* se = spart->events();
-                  MusECore::EventList* de = dpart->events();
-                  for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
-                        MusECore::Event oldEvent = i->second;
-                        MusECore::Event ev = oldEvent.clone();
-                        de->add(ev);
-                        }
                   Undo operations;
                   operations.push_back(UndoOp(UndoOp::DeletePart, spart));
                   operations.push_back(UndoOp(UndoOp::AddPart, dpart));
@@ -884,9 +865,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
             case 17: // File info
                   {
                     MusECore::Part* p = item->part();
-                    MusECore::EventList* el = p->events();
                     QString str = tr("Part name: %1\nFiles:").arg(p->name());
-                    for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) 
+                    for (MusECore::ciEvent e = p->events().begin(); e != p->events().end(); ++e) 
                     {
                       MusECore::Event event = e->second;
                       MusECore::SndFileR f  = event.sndFile();
@@ -905,16 +885,13 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     // Traverse and process the clone chain ring until we arrive at the same part again.
                     // The loop is a safety net.
                     MusECore::Part* p = part; 
-                    int j = part->cevents()->arefCount();
-                    if(j > 0)
+                    
+                    if(part->hasClones())
                     {
-                      for(int i = 0; i < j; ++i)
-                      {
-                        p->setSelected(true);
-                        p = p->nextClone();
-                        if(p == part)
-                          break;
-                      }
+                      p->setSelected(true);
+                      for(MusECore::Part* it = p->nextClone(); it!=p; it=it->nextClone())
+                        it->setSelected(true);
+
                       MusEGlobal::song->update(SC_SELECTION);
                     }
                     
@@ -1498,7 +1475,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if((unsigned int)to > part->lenTick())
         to = part->lenTick();  
 
-      bool clone = part->events()->arefCount() > 1;
       QBrush brush;
       
       QRect r    = item->bbox();
@@ -1723,12 +1699,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           drawWavePart(p, rect, wp, r);
       else if (mp)
       {
-          drawMidiPart(p, rect, mp->events(), (MusECore::MidiTrack*)part->track(), mp, r, mp->tick(), from, to);  
+          drawMidi*** /* FIXME: just give it the mp, not mp->whatever*/Part(p, rect, mp->events(), (MusECore::MidiTrack*)part->track(), mp, r, mp->tick(), from, to);  
       }
 
       p.setWorldMatrixEnabled(false);
         
-  #if 1 // DELETETHIS remove wrapping #if
         //
         // Now draw the borders, using custom segments...
         //
@@ -1756,7 +1731,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         penNormal2V.setCosmetic(true);
                 
         QVector<qreal> customDashPattern;
-        if(clone)
+        if(part->hasClones())
         {
           customDashPattern << 4.0 << 6.0;
           penSelect1H.setDashPattern(customDashPattern);
@@ -1819,8 +1794,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         QLine l3(lbx_c, ye_0, rbx_c, ye_0);
         p.drawLine(l3);  // Bottom line
         
-  #endif
-      
       if (MusEGlobal::config.canvasShowPartType & 1) {     // show names
             // draw name
             // FN: Set text color depending on part color (black / white)
@@ -2140,8 +2113,7 @@ void PartCanvas::drawWavePart(QPainter& p,
       int h  = hh/2;
       int y  = pr.y() + h;
 
-      MusECore::EventList* el = wp->events();
-      for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) {
+      for (MusECore::ciEvent e = wp->events().begin(); e != wp->events().end(); ++e) {
             int cc = hh % 2 ? 0 : 1;
             MusECore::Event event = e->second;
             MusECore::SndFileR f  = event.sndFile();
@@ -2350,8 +2322,6 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
           MusECore::Part* p2;
           
           track->splitPart(part, lpos, p1, p2);
-          p1->events()->incARef(-1);
-          p2->events()->incARef(-1);
           
           part=p2;
         }
@@ -2362,8 +2332,6 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
           MusECore::Part* p2;
           
           track->splitPart(part, rpos, p1, p2);
-          p1->events()->incARef(-1);
-          p2->events()->incARef(-1);
 
           part=p1;
         }
@@ -2459,7 +2427,7 @@ MusECore::Undo PartCanvas::pasteAt(const QString& pt, MusECore::Track* track, un
                         if (tag == "part") {                              
                               // Read the part.
                               MusECore::Part* p = 0;
-                              p = readXmlPart(xml, track, clone, toTrack);
+                              p = Part::readFromXml(xml, track, clone, toTrack);
 
                               // If it could not be created...
                               if(!p)
@@ -2469,9 +2437,6 @@ MusECore::Undo PartCanvas::pasteAt(const QString& pt, MusECore::Track* track, un
                                 break;
                               } 
 
-                              p->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-                                                        // so we must decrement it first :/
-                              
                               // Increment the number of parts done.
                               ++done;
                               
@@ -3045,10 +3010,9 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
                MusECore::MidiTrack *mt = (MusECore::MidiTrack*)track;
                QRect partRect(startPos,yPos, MusEGlobal::song->cpos()-startPos, track->height()); // probably the wrong rect
                MusECore::EventList myEventList;
-	       MusECore::MPEventList *el = mt->mpevents();
-               if (el->size()) {
+               if (mt->mpevents.size()) {
 
-                 for (MusECore::ciMPEvent i = el->begin(); i != el->end(); ++i) {
+                 for (MusECore::ciMPEvent i = mt->mpevents.begin(); i != mt->mpevents.end(); ++i) {
                     MusECore::MidiPlayEvent pe = *i;
 
                     if (pe.isNote() && !pe.isNoteOff()) {

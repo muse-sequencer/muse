@@ -1850,8 +1850,8 @@ void DrumEdit::hideUnusedInstruments()
     for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
       if (p->second->track() == track)
       {
-        const EventList* el = p->second->cevents();
-        for (ciEvent ev=el->begin(); ev!=el->end(); ev++)
+        const EventList& el = p->second->events();
+        for (ciEvent ev=el.begin(); ev!=el.end(); ev++)
           hide[ev->second.pitch()]=false;
       }
     
@@ -1883,8 +1883,8 @@ void DrumEdit::hideEmptyInstruments()
     for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
       if (p->second->track() == track)
       {
-        const EventList* el = p->second->cevents();
-        for (ciEvent ev=el->begin(); ev!=el->end(); ev++)
+        const EventList& el = p->second->events();
+        for (ciEvent ev=el.begin(); ev!=el.end(); ev++)
           hide[ev->second.pitch()]=false;
       }
     

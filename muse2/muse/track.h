@@ -32,6 +32,7 @@
 
 #include "wave.h" // for SndFileR
 #include "part.h"
+#include "mpevent.h"
 #include "key.h"
 #include "node.h"
 #include "route.h"
@@ -41,7 +42,6 @@
 #include "controlfifo.h"
 
 namespace MusECore {
-class MPEventList;
 class Pipeline;
 class PluginI;
 class SynthI;
@@ -212,8 +212,11 @@ class MidiTrack : public Track {
       int _outChannel;
       bool _recEcho;              // For midi (and audio). Whether to echo incoming record events to output device.
 
-      EventList* _events;     // tmp Events during midi import
-      MPEventList* _mpevents; // tmp Events druring recording
+   public:
+      EventList events;     // tmp Events during midi import
+      MPEventList mpevents; // tmp Events druring recording
+
+   private:
       static bool _isVisible;
       clefTypes clefType;
 
@@ -254,9 +257,6 @@ class MidiTrack : public Track {
 
       virtual bool setRecordFlag1(bool f) { _recordFlag = f; return true;}
       virtual void setRecordFlag2(bool) {}
-
-      EventList* events() const          { return _events; }
-      MPEventList* mpevents() const      { return _mpevents; }
 
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;

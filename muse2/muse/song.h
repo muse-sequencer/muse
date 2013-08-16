@@ -276,7 +276,7 @@ class Song : public QObject {
       //-----------------------------------------
 
       void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);  
-      void cmdAddRecordedEvents(MidiTrack*, EventList*, unsigned);
+      void cmdAddRecordedEvents(MidiTrack*, const EventList&, unsigned);
       bool addEvent(Event&, Part*);
       void changeEvent(Event&, Event&, Part*);
       void deleteEvent(Event&, Part*);

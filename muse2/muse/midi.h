@@ -126,7 +126,7 @@ QString midiMetaName(int);
 
 class MPEventList;
 class MidiTrack;
-extern void buildMidiEventList(EventList* mel, const MPEventList* el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);
+extern void buildMidiEventList(EventList* mel, const MPEventList& el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);
 
 } // namespace MusECore
 

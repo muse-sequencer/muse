@@ -941,8 +941,8 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
             if (i == sList.end()) {
                   bool used = false;
                   for (MusECore::iPart ip = part_list->begin(); ip != part_list->end(); ++ip) {
-                        MusECore::EventList* el = ip->second->events();
-                        for (MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie) {
+                        const MusECore::EventList& el = ip->second->events();
+                        for (MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie) {
                               MusECore::Event e = ie->second;
                               if(e.type() != MusECore::Controller)
                                 continue;

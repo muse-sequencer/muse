@@ -516,11 +516,10 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
     event.setPitch(npitch);
     // check for existing event
     //    if found change command semantic from insert to delete
-    MusECore::EventList* el = part->events();
-    MusECore::iEvent lower  = el->lower_bound(event.tick());
-    MusECore::iEvent upper  = el->upper_bound(event.tick());
+    MusECore::ciEvent lower  = part->events().lower_bound(event.tick());
+    MusECore::ciEvent upper  = part->events().upper_bound(event.tick());
 
-    for (MusECore::iEvent i = lower; i != upper; ++i) {
+    for (MusECore::ciEvent i = lower; i != upper; ++i) {
           MusECore::Event ev = i->second;
           if(!ev.isNote())
             continue;
@@ -1027,10 +1026,10 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
    if (old_style_drummap_mode)
    {
       MusECore::Undo operations;
-      std::vector< std::pair<MusECore::Part*, MusECore::Event*> > delete_events;
+      std::vector< std::pair<MusECore::Part*, MusECore::Event> > delete_events;
       std::vector< std::pair<MusECore::Part*, MusECore::Event> > add_events;
       
-      typedef std::vector< std::pair<MusECore::Part*, MusECore::Event*> >::iterator idel_ev;
+      typedef std::vector< std::pair<MusECore::Part*, MusECore::Event> >::iterator idel_ev;
       typedef std::vector< std::pair<MusECore::Part*, MusECore::Event> >::iterator iadd_ev;
       
       MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
@@ -1042,9 +1041,9 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
             MusECore::MidiPort* mp = &MusEGlobal::midiPorts[curTrack->outPort()];
             MusECore::PartList* parts= curTrack->parts();
             for (MusECore::iPart part = parts->begin(); part != parts->end(); ++part) {
-                  MusECore::EventList* events = part->second->events();
+                  const MusECore::EventList& events = part->second->events();
                   MusECore::Part* thePart = part->second;
-                  for (MusECore::iEvent i = events->begin(); i != events->end(); ++i) {
+                  for (MusECore::ciEvent i = events.begin(); i != events.end(); ++i) {
                         MusECore::Event event = i->second;
                         if(event.type() != MusECore::Controller && event.type() != MusECore::Note)
                           continue;
@@ -1058,9 +1057,9 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
                         }
                         
                         if (pitch == spitch) {
-                              MusECore::Event* spitch_event = &(i->second);
-                              delete_events.push_back(std::pair<MusECore::Part*, MusECore::Event*>(thePart, spitch_event));
-                              MusECore::Event newEvent = spitch_event->clone();
+                              const MusECore::Event& spitch_event = i->second;
+                              delete_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, spitch_event));
+                              MusECore::Event newEvent = spitch_event.clone();
                               if(drc)
                                 newEvent.setA((newEvent.dataA() & ~0xff) | dpitch);
                               else
@@ -1068,9 +1067,9 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
                               add_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, newEvent));
                               }
                         else if (pitch == dpitch) {
-                              MusECore::Event* dpitch_event = &(i->second);
-                              delete_events.push_back(std::pair<MusECore::Part*, MusECore::Event*>(thePart, dpitch_event));
-                              MusECore::Event newEvent = dpitch_event->clone();
+                              const MusECore::Event& dpitch_event = i->second;
+                              delete_events.push_back(std::pair<MusECore::Part*, MusECore::Event>(thePart, dpitch_event));
+                              MusECore::Event newEvent = dpitch_event.clone();
                               if(drc)
                                 newEvent.setA((newEvent.dataA() & ~0xff) | spitch);
                               else
@@ -1083,8 +1082,8 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
 
       for (idel_ev i = delete_events.begin(); i != delete_events.end(); i++) {
             MusECore::Part*  thePart = (*i).first;
-            MusECore::Event* theEvent = (*i).second;
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, *theEvent, thePart, true, false));
+            const MusECore::Event& theEvent = (*i).second;
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, theEvent, thePart, true, false));
             }
 
       MusECore::DrumMap dm = MusEGlobal::drumMap[spitch];
@@ -1481,18 +1480,17 @@ void DrumCanvas::setStep(int v)
 //---------------------------------------------------------
 //   getEventAtCursorPos
 //---------------------------------------------------------
-MusECore::Event *DrumCanvas::getEventAtCursorPos()
+const MusECore::Event* DrumCanvas::getEventAtCursorPos()
 {
     if (_tool != CursorTool)
       return 0;
     if (instrument_map[cursorPos.y()].tracks.contains(curPart->track()))
     {
-      MusECore::EventList* el = curPart->events();
-      MusECore::iEvent lower  = el->lower_bound(cursorPos.x()-curPart->tick());
-      MusECore::iEvent upper  = el->upper_bound(cursorPos.x()-curPart->tick());
+      MusECore::ciEvent lower  = curPart->events().lower_bound(cursorPos.x()-curPart->tick());
+      MusECore::ciEvent upper  = curPart->events().upper_bound(cursorPos.x()-curPart->tick());
       int curPitch = instrument_map[cursorPos.y()].pitch;
-      for (MusECore::iEvent i = lower; i != upper; ++i) {
-        MusECore::Event &ev = i->second;
+      for (MusECore::ciEvent i = lower; i != upper; ++i) {
+        const MusECore::Event& ev = i->second;
         if (ev.isNote()  &&  ev.pitch() == curPitch)
           return &ev;
       }
@@ -1503,7 +1501,7 @@ MusECore::Event *DrumCanvas::getEventAtCursorPos()
 //---------------------------------------------------------
 //   selectCursorEvent
 //---------------------------------------------------------
-void DrumCanvas::selectCursorEvent(MusECore::Event *ev)
+void DrumCanvas::selectCursorEvent(const MusECore::Event* ev)
 {
   for (iCItem i = items.begin(); i != items.end(); ++i)
   {

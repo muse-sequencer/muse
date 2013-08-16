@@ -577,15 +577,15 @@ bool Song::addEvent(Event& event, Part* part)
       {
       // Return false if the event is already found. 
       // (But allow a port controller value, above, in case it is not already stored.)
-      if(part->events()->find(event) != part->events()->end())
+      if(part->events().find(event) != part->events().end())
       {
         // This can be normal for some (redundant) operations.
         if(MusEGlobal::debugMsg)
-          printf("Song::addEvent event already found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
+          printf("Song::addEvent event already found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events().size());
         return false;
       }
       
-      part->events()->add(event);
+      part->nonconst_events().add(event);
       return true;
       }
 
@@ -595,18 +595,18 @@ bool Song::addEvent(Event& event, Part* part)
 
 void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
 {
-      iEvent i = part->events()->find(oldEvent);
+      iEvent i = part->nonconst_events().find(oldEvent);
       
-      if (i == part->events()->end()) {
+      if (i == part->nonconst_events().end()) {
             // This can be normal for some (redundant) operations.
             if(MusEGlobal::debugMsg)
-              printf("Song::changeEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
+              printf("Song::changeEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->nonconst_events().size());
             // no "return;" because: Allow it to add the new event.  (And remove the old one from the midi port controller!) (tim)
             }
       else
-        part->events()->erase(i);
+        part->nonconst_events().erase(i);
         
-      part->events()->add(newEvent);
+      part->nonconst_events().add(newEvent);
 }
 
 //---------------------------------------------------------
@@ -615,14 +615,14 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
 
 void Song::deleteEvent(Event& event, Part* part)
       {
-      iEvent ev = part->events()->find(event);
-      if (ev == part->events()->end()) {
+      iEvent ev = part->nonconst_events().find(event);
+      if (ev == part->nonconst_events().end()) {
             // This can be normal for some (redundant) operations.
             if(MusEGlobal::debugMsg)
-              printf("Song::deleteEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
+              printf("Song::deleteEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->nonconst_events().size());
             return;
             }
-      part->events()->erase(ev);
+      part->nonconst_events().erase(ev);
       }
 
 //---------------------------------------------------------
@@ -717,17 +717,10 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip) 
     {
       MidiPart* part = (MidiPart*)(ip->second);
-      const EventList* el = part->cevents();
-      // unsigned len = part->lenTick(); // Commented out by flo, see below
-      for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+      for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
       {
         const Event& ev = ie->second;
-        // Added by T356. Do not handle events which are past the end of the part.
-        // Commented out by flo: yes, DO handle them! these are "hidden events"
-        //                       which may be revealed later again!
-        // if(ev.tick() >= len)
-        //   break;
-                    
+
         if(ev.type() != Controller)
           continue;
           
@@ -780,30 +773,30 @@ void Song::changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, doubl
 //    add recorded Events into part
 //---------------------------------------------------------
 
-void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned startTick)
+void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned startTick)
       {
-      if (events->empty()) {
+      if (events.empty()) {
             if (MusEGlobal::debugMsg)
                   printf("no events recorded\n");
             return;
             }
-      iEvent s;
-      iEvent e;
+      ciEvent s;
+      ciEvent e;
       unsigned endTick;
 
       if((MusEGlobal::audio->loopCount() > 0 && startTick > lPos().tick()) || (punchin() && startTick < lPos().tick()))
       {
             startTick = lpos();
-            s = events->lower_bound(startTick);
+            s = events.lower_bound(startTick);
       }
       else 
       {
-            s = events->begin();
+            s = events.begin();
       }
       
       // search for last noteOff:
       endTick = 0;
-      for (iEvent i = events->begin(); i != events->end(); ++i) {
+      for (ciEvent i = events.begin(); i != events.end(); ++i) {
             Event ev   = i->second;
             unsigned l = ev.endTick();
             if (l > endTick)
@@ -813,10 +806,10 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
       if((MusEGlobal::audio->loopCount() > 0) || (punchout() && endTick > rPos().tick()) )
       {
             endTick = rpos();
-            e = events->lower_bound(endTick);
+            e = events.lower_bound(endTick);
       }
       else
-            e = events->end();
+            e = events.end();
 
       if (startTick > endTick) {
             if (MusEGlobal::debugMsg)
@@ -856,14 +849,14 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             part->setLenTick(endTick - startTick);
             part->setName(mt->name());
             // copy events
-            for (iEvent i = s; i != e; ++i) {
+            for (ciEvent i = s; i != e; ++i) {
                   Event old = i->second;
                   Event event = old.clone();
                   event.setTick(old.tick() - startTick);
                   // addEvent also adds port controller values. So does msgAddPart, below. Let msgAddPart handle them.
                   //addEvent(event, part);
-                  if(part->events()->find(event) == part->events()->end())
-                    part->events()->add(event);
+                  if(part->events().find(event) == part->events().end())
+                    part->nonconst_events().add(event);
                   }
             MusEGlobal::audio->msgAddPart(part);
             updateFlags |= SC_PART_INSERTED;
@@ -892,8 +885,8 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             
             if (_recMode == REC_REPLACE)
             {
-                  iEvent si = part->events()->lower_bound(startTick - part->tick());
-                  iEvent ei = part->events()->lower_bound(part->endTick() - part->tick());
+                  iEvent si = part->nonconst_events().lower_bound(startTick - part->tick());
+                  iEvent ei = part->nonconst_events().lower_bound(part->endTick() - part->tick());
                   for (iEvent i = si; i != ei; ++i) 
                   {
                     Event event = i->second;
@@ -902,7 +895,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                     // Remove the event from the new part's port controller values, and do all clone parts.
                     removePortCtrlEvents(event, part, true);
                   }
-                  part->events()->erase(si, ei);
+                  part->nonconst_events().erase(si, ei);
             }
             
             for (iEvent i = s; i != e; ++i) {
@@ -912,8 +905,8 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   // Create an undo op. Indicate do port controller values and clone parts. 
                   addUndo(UndoOp(UndoOp::AddEvent, e, event, part, true, true));
                   
-                  if(part->events()->find(event) == part->events()->end())
-                    part->events()->add(event);
+                  if(part->nonconst_events().find(event) == part->nonconst_events().end())
+                    part->nonconst_events().add(event);
                   
                   // Add the event to the new part's port controller values, and do all clone parts.
                   addPortCtrlEvents(event, part, true);
@@ -921,8 +914,8 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             }
       else {
             if (_recMode == REC_REPLACE) {
-                  iEvent si = part->events()->lower_bound(startTick - part->tick());
-                  iEvent ei = part->events()->lower_bound(endTick   - part->tick());
+                  iEvent si = part->nonconst_events().lower_bound(startTick - part->tick());
+                  iEvent ei = part->nonconst_events().lower_bound(endTick   - part->tick());
 
                   for (iEvent i = si; i != ei; ++i) {
                         Event event = i->second;
@@ -931,7 +924,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                         // Remove the event from the part's port controller values, and do all clone parts.
                         removePortCtrlEvents(event, part, true);
                         }
-                  part->events()->erase(si, ei);
+                  part->nonconst_events().erase(si, ei);
                   }
             for (iEvent i = s; i != e; ++i) {
                   Event event = i->second;
@@ -941,8 +934,8 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
                   // Indicate that controller values and clone parts were handled.
                   addUndo(UndoOp(UndoOp::AddEvent, event, part, true, true));
                   
-                  if(part->events()->find(event) == part->events()->end())
-                    part->events()->add(event);
+                  if(part->nonconst_events().find(event) == part->nonconst_events().end())
+                    part->nonconst_events().add(event);
                   
                   // Add the event to the part's port controller values, and do all clone parts.
                   addPortCtrlEvents(event, part, true);
@@ -1951,8 +1944,7 @@ void Song::cmdRemovePart(Part* part)
       {
       removePart(part);
       addUndo(UndoOp(UndoOp::DeletePart, part));
-      part->events()->incARef(-1);
-      unchainClone(part);
+      part->unchainClone();
       updateFlags = SC_PART_REMOVED;
       }
 
@@ -2331,7 +2323,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
 
       unsigned tick  = event.tick();
       PartList* pl   = mt->parts();
-      MidiPart* part = 0;
+      const MidiPart* part = 0;
       iPart ip;
       for (ip = pl->begin(); ip != pl->end(); ++ip) {
             part = (MidiPart*)(ip->second);
@@ -2343,14 +2335,14 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
       updateFlags |= SC_EVENT_INSERTED;
       if (ip == pl->end()) {
             // create new part
-            part          = new MidiPart(mt);
+            MidiPart* part = new MidiPart(mt);
             int startTick = roundDownBar(tick);
             int endTick   = roundUpBar(tick + 1);
             part->setTick(startTick);
             part->setLenTick(endTick - startTick);
             part->setName(mt->name());
             event.move(-startTick);
-            part->events()->add(event);
+            part->nonconst_events().add(event);
             MusEGlobal::audio->msgAddPart(part);
             return;
             }
@@ -2361,8 +2353,8 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
       Event ev;
       if(event.type() == Controller)
       {
-        EventRange range = part->events()->equal_range(tick);
-        for(iEvent i = range.first; i != range.second; ++i) 
+        EventRange range = part->events().equal_range(tick);
+        for(ciEvent i = range.first; i != range.second; ++i) 
         {
           ev = i->second;
           if(ev.type() == Controller && ev.dataA() == event.dataA())
@@ -2653,7 +2645,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     unsigned partEnd   = partStart + part->lenTick();
     if(tick >= partStart && tick < partEnd)
     {
-      EventRange range = part->events()->equal_range(tick - partStart);
+      EventRange range = part->events().equal_range(tick - partStart);
       for(iEvent i = range.first; i != range.second; ++i) 
       {
         ev = i->second;
@@ -2733,7 +2725,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
               part->setLenTick(endTick - startTick);
               part->setName(mt->name());
               e.setTick(tick - startTick);
-              part->events()->add(e);
+              part->nonconst_events().add(e);
               // Allow undo.
               MusEGlobal::audio->msgAddPart(part);
             }
@@ -3387,7 +3379,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             fprintf(fp, "BEATLEN %d\n", AL::sigmap.ticksBeat(0));
             fprintf(fp, "QUANTLEN %d\n", quant);
 
-            for (iEvent e = part->events()->begin(); e != part->events()->end(); e++) {
+            for (ciEvent e = part->events().begin(); e != part->events().end(); e++) {
                 Event ev = e->second;
 
                 if (ev.isNote())

@@ -166,8 +166,8 @@ void globalCut(bool onlySelectedTracks)
                       if (part->nextClone()==part) // no clones
                       {
                             // cut Events
-                            EventList* el = part->events();
-                            for (iEvent ie = el->lower_bound(len); ie != el->end(); ++ie)
+                            const EventList& el = part->events();
+                            for (iEvent ie = el.lower_bound(len); ie != el.end(); ++ie)
                                     operations.push_back(UndoOp(UndoOp::DeleteEvent,ie->second, part, false, false));
                       }
                       operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenTick(), len, true, true));
@@ -184,8 +184,6 @@ void globalCut(bool onlySelectedTracks)
                         track->splitPart(part, rpos, p2, p3);
                         delete p2;
                         p3->setTick(lpos);
-                        p1->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
-                        p3->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
 
                         MusEGlobal::song->informAboutNewParts(part,p1,p3);
                         operations.push_back(UndoOp(UndoOp::DeletePart,part));
@@ -200,7 +198,6 @@ void globalCut(bool onlySelectedTracks)
                         track->splitPart(part, rpos, p1, p2);
                         delete p1;
                         p2->setTick(lpos);
-                        p2->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
                         
                         MusEGlobal::song->informAboutNewParts(part,p2);
                         operations.push_back(UndoOp(UndoOp::DeletePart,part));
@@ -259,8 +256,6 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
                         Part* p2;
                         track->splitPart(part, startTicks, p1, p2);
                         p2->setTick(startTicks+moveTicks);
-                        p2->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
-                        p1->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
 
                         MusEGlobal::song->informAboutNewParts(part,p1,p2);
                         operations.push_back(UndoOp(UndoOp::DeletePart, part));
@@ -310,19 +305,11 @@ Undo partSplitter(unsigned int pos, bool onlySelectedTracks)
                     Part* p2;
                     track->splitPart(part, pos, p1, p2);
 
-                    p1->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-                    p2->events()->incARef(-1); // so we must decrement it first :/
-
                     MusEGlobal::song->informAboutNewParts(part, p1);
                     MusEGlobal::song->informAboutNewParts(part, p2);
                     operations.push_back(UndoOp(UndoOp::DeletePart,part));
                     operations.push_back(UndoOp(UndoOp::AddPart,p1));
                     operations.push_back(UndoOp(UndoOp::AddPart,p2));
-                    if (MusEGlobal::debugMsg)
-                    {
-                          printf("in partSplitter: part1 %d\n",p1->events()->refCount());
-                          printf("in partSplitter: part2 %d\n",p2->events()->refCount());
-                    }
                     break;
               }
         }

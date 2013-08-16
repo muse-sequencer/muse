@@ -95,7 +95,7 @@ class EventBase : public PosLen {
       virtual void setSpos(int)                     { }
       virtual SndFileR sndFile() const              { return 0;      }
       virtual void setSndFile(SndFileR&)            { }
-      virtual EventBase* clone() = 0;
+      virtual EventBase* clone() const = 0;
       
       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
                              float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }

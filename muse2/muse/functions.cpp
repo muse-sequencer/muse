@@ -142,7 +142,7 @@ map<Event*, Part*> get_events(const set<Part*>& parts, int range)
 	map<Event*, Part*> events;
 	
 	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
+		for (ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
 			if (is_relevant(event->second, *part, range))
 				events.insert(pair<Event*, Part*>(&event->second, *part));
 	
@@ -784,7 +784,7 @@ bool delete_overlaps(const set<Part*>& parts, int range)
 				Event& event2=*(it2->first);
 				Part* part2=it2->second;
 				
-				if ( (part1->events()==part2->events()) && // part1 and part2 are the same or are duplicates
+				if ( (part1->isCloneOf(part2)) &&          // part1 and part2 are the same or are duplicates
 				     (&event1 != &event2) &&               // and event1 and event2 aren't the same
 				     (deleted_events.find(&event2) == deleted_events.end()) ) //and event2 hasn't been deleted before
 				{
@@ -844,7 +844,7 @@ bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 				if (dont_shorten)
 					relevant = relevant && (event2.tick() >= event1.endTick());
 				
-				if ( (part1->events()==part2->events()) &&  // part1 and part2 are the same or are duplicates
+				if ( (part1->isCloneOf(part2)) &&           // part1 and part2 are the same or are duplicates
 				      relevant &&                           // they're not too near (respect min_len and dont_shorten)
 				     (event2.tick()-event1.tick() < len ) ) // that's the nearest relevant following note
 					len=event2.tick()-event1.tick();
@@ -956,7 +956,7 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
 
     for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-        for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
+        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
             if (is_relevant(ev->second, *part, range))
                 if (ev->second.tick() < start_tick)
                     start_tick=ev->second.tick();
@@ -981,7 +981,7 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
     for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
     {
         xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
-        for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
+        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
             if (is_relevant(ev->second, *part, range))
                 ev->second.write(level, xml, -start_tick);
         xml.etag(--level, "eventlist");
@@ -1158,8 +1158,6 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 								if (create_new_part)
 								{
 									dest_part = dest_track->newPart();
-									dest_part->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-																										// so we must decrement it first :/
 									dest_part->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
 
 									new_part_map[old_dest_part].insert(dest_part);
@@ -1231,7 +1229,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 void select_all(const std::set<Part*>& parts)
 {
 	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			Event& event=ev_it->second;
 			event.setSelected(true);
@@ -1242,7 +1240,7 @@ void select_all(const std::set<Part*>& parts)
 void select_none(const std::set<Part*>& parts)
 {
 	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			Event& event=ev_it->second;
 			event.setSelected(false);
@@ -1253,7 +1251,7 @@ void select_none(const std::set<Part*>& parts)
 void select_invert(const std::set<Part*>& parts)
 {
 	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			Event& event=ev_it->second;
 			event.setSelected(!event.selected());
@@ -1265,7 +1263,7 @@ void select_in_loop(const std::set<Part*>& parts)
 {
 	select_none(parts);
 	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			Event& event=ev_it->second;
 			event.setSelected((event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()));
@@ -1277,7 +1275,7 @@ void select_not_in_loop(const std::set<Part*>& parts)
 {
 	select_none(parts);
 	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		for (diEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			Event& event=ev_it->second;
 			event.setSelected(!(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()));
@@ -1299,10 +1297,9 @@ void shrink_parts(int raster)
 		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
 			if (part->second->selected())
 			{
-				EventList* events=part->second->events();
 				unsigned len=0;
 				
-				for (iEvent ev=events->begin(); ev!=events->end(); ev++)
+				for (ciEvent ev=part->second->events().begin(); ev!=part->second->events().end(); ev++)
 					if (ev->second.endTick() > len)
 						len=ev->second.endTick();
 				
@@ -1360,10 +1357,9 @@ void expand_parts(int raster)
 		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
 			if (part->second->selected())
 			{
-				EventList* events=part->second->events();
 				unsigned len=part->second->lenTick();
 				
-				for (iEvent ev=events->begin(); ev!=events->end(); ev++)
+				for (ciEvent ev=part->second->events().begin(); ev!=part->second->events().end(); ev++)
 					if (ev->second.endTick() > len)
 						len=ev->second.endTick();
 
@@ -1405,8 +1401,7 @@ void clean_parts()
 				
 				// erase all events exceeding the longest clone of this part
 				// (i.e., erase all hidden events) or shorten them
-				EventList* el = part->second->events();
-				for (iEvent ev=el->begin(); ev!=el->end(); ev++)
+				for (ciEvent ev=part->second->events().begin(); ev!=part->second->events().end(); ev++)
 					if (ev->second.tick() >= len)
 						operations.push_back(UndoOp(UndoOp::DeleteEvent, ev->second, part->second, true, true));
 					else if (ev->second.endTick() > len)
@@ -1465,16 +1460,12 @@ bool merge_parts(const set<Part*>& parts)
 		}
 		
 		// create and prepare the new part
-		Part* new_part = track->newPart(first_part); 
+		Part* new_part = first_part->duplicateEmpty();
 		new_part->setTick(begin);
 		new_part->setLenTick(end-begin);
 		
-		EventList* new_el = new_part->events();
-		new_el->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-		                     // so we must decrement it first :/
-		new_el->clear();
-		
 		// copy all events from the source parts into the new part
+        EventList& new_el = new_part->events();
 		for (set<Part*>::iterator p_it=parts.begin(); p_it!=parts.end(); p_it++)
 			if ((*p_it)->track()==track)
 			{
@@ -1483,7 +1474,7 @@ bool merge_parts(const set<Part*>& parts)
 				{
 					Event new_event=ev_it->second;
 					new_event.setTick( new_event.tick() + (*p_it)->tick() - new_part->tick() );
-					new_el->add(new_event);
+					new_part->nonconst_events().add(new_event);
 				}
 			}
 		

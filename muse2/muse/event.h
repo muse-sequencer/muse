@@ -73,7 +73,7 @@ class Event {
       void read(Xml& xml);
       void write(int a, Xml& xml, const Pos& offset, bool ForceWavePaths = false) const;
       void dump(int n = 0) const;
-      Event clone();
+      Event clone() const;
       Event mid(unsigned a, unsigned b);
 
       bool isNote() const;
@@ -124,7 +124,7 @@ typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;
 typedef EL::iterator iEvent;
 typedef EL::reverse_iterator riEvent;
 typedef EL::const_iterator ciEvent;
-typedef std::pair <iEvent, iEvent> EventRange;
+typedef std::pair <ciEvent, ciEvent> EventRange;
 
 //---------------------------------------------------------
 //   EventList
@@ -132,19 +132,9 @@ typedef std::pair <iEvent, iEvent> EventRange;
 //---------------------------------------------------------
 
 class EventList : public EL {
-      int ref;          // number of references to this EventList
-      int aref;         // number of active references (exclude undo list)
       void deselect();
 
    public:
-      EventList()           { ref = 0; aref = 0;  }
-      ~EventList()          {}
-
-      void incRef(int n)    { ref += n;    }
-      int refCount() const  { return ref;  }
-      void incARef(int n)   { aref += n;   }
-      int arefCount() const { return aref; }
-
       iEvent find(const Event&);
       iEvent add(Event& event);
       void move(Event& event, unsigned tick);
