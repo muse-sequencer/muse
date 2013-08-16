@@ -340,14 +340,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 e.move( -npart->tick() );
                                 int tick = e.tick();  
                                 
-                                // DELETETHIS 7
-                                // Do not discard events belonging to clone parts,
-                                //  at least not yet. A later clone might have a longer, 
-                                //  fully accommodating part length!
-                                //if ((tick < 0) || (tick >= (int) lenTick())) {
-                                //if ((tick < 0) || ( id == -1 && !clone && (tick >= (int)lenTick()) )) 
-                                // No way to tell at the moment whether there will be clones referencing this...
-                                // No choice but to accept all events past 0.
                                 if(tick < 0) 
                                 {
                                   printf("readClone: warning: event at tick:%d not in part:%s, discarded\n",
@@ -373,25 +365,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                         else if (tag == "cloneId")
                         {
                           id = xml.s2().toInt();
-                          //if(id != -1) DELETETHIS 19
-                          //{
-                          //  for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
-                          //  {
-                              // Is a matching part found in the clone list?
-                          //    if(i->id == id) 
-                          //    {
-                                // If it's a regular paste (not paste clone), and the original part is
-                                //  not a clone, defer so that a new copy is created in TagStart above.
-                                //if(!doClone && i->cp->cevents()->arefCount() <= 1)
-                                //if(!doClone && !isclone)
-                                //  break;
-                                  
-                                // This makes a clone, chains the part, and increases ref counts.
-                          //      npart = track->newPart((Part*)i->cp, true);
-                          //      break;
-                          //    }
-                          //  }
-                          //}  
                         }      
                         else if (tag == "uuid")
                         {
@@ -399,55 +372,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                           if(!uuid_is_null(uuid))
                           {
                             uuidvalid = true;
-                            /* DELETETHIS 50
-                            for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
-                            {
-                              // Is a matching part found in the clone list?
-                              if(uuid_compare(uuid, i->uuid) == 0) 
-                              {
-                                Track* cpt = i->cp->track();
-                                // If we want to paste to the given track...
-                                if(toTrack)
-                                {
-                                  // If the given track type is not the same as the part's 
-                                  //  original track type, we can't continue. Just return.
-                                  if(!track || cpt->type() != track->type())
-                                  {
-                                    xml.skip("part");
-                                    return 0;
-                                  }  
-                                }
-                                else
-                                // ...else we want to paste to the part's original track.
-                                {
-                                  // Make sure the track exists (has not been deleted).
-                                  if((cpt->isMidiTrack() && MusEGlobal::song->midis()->find(cpt) != MusEGlobal::song->midis()->end()) || 
-                                     (cpt->type() == Track::WAVE && MusEGlobal::song->waves()->find(cpt) != MusEGlobal::song->waves()->end()))
-                                    track = cpt;   
-                                  else
-                                  // Track was not found. Try pasting to the given track, as above...
-                                  {
-                                    if(!track || cpt->type() != track->type())
-                                    {
-                                      // No luck. Just return.
-                                      xml.skip("part");
-                                      return 0;
-                                    }  
-                                  }
-                                }
-                                
-                                // If it's a regular paste (not paste clone), and the original part is
-                                //  not a clone, defer so that a new copy is created in TagStart above.
-                                //if(!doClone && i->cp->cevents()->arefCount() <= 1)
-                                if(!doClone && !isclone)
-                                  break;
-                                  
-                                // This makes a clone, chains the part, and increases ref counts.
-                                npart = track->newPart((Part*)i->cp, true);
-                                break;
-                              }
-                            }
-                            */  
                           }
                         }      
                         else if(tag == "isclone")        
