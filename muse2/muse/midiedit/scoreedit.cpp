@@ -3970,7 +3970,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 		if (!ctrl)
 			deselect_all();
 		
-		set<MusECore::Event*> already_processed;
+		set<const MusECore::Event*> already_processed;
 		
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 			it->apply_lasso(lasso.translated(x_pos-x_left, y_pos - it->y_draw), already_processed);
@@ -4559,7 +4559,7 @@ set<MusECore::Part*> staff_t::parts_at_tick(unsigned tick)
 	return result;
 }
 
-void staff_t::apply_lasso(QRect rect, set<MusECore::Event*>& already_processed)
+void staff_t::apply_lasso(QRect rect, set<const MusECore::Event*>& already_processed)
 {
 	for (ScoreItemList::iterator it=itemlist.begin(); it!=itemlist.end(); it++)
 		for (set<FloItem>::iterator it2=it->second.begin(); it2!=it->second.end(); it2++)

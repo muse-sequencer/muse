@@ -130,7 +130,7 @@ class DrumCanvas : public EventCanvas {
       void dragEnterEvent(QDragEnterEvent* event);
       void dragMoveEvent(QDragMoveEvent*);
       void dragLeaveEvent(QDragLeaveEvent*);
-      virtual CItem* addItem(MusECore::Part*, MusECore::Event&);
+      virtual CItem* addItem(MusECore::Part*, const MusECore::Event&);
       virtual void resizeEvent(QResizeEvent*);
       virtual void curPartChanged();
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);

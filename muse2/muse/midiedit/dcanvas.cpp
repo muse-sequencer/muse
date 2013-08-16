@@ -80,7 +80,7 @@ DEvent::DEvent(MusECore::Event e, MusECore::Part* p, int instr)
 //   addItem
 //---------------------------------------------------------
 
-CItem* DrumCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
+CItem* DrumCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
       {
       if (signed(event.tick())<0) {
             printf("ERROR: trying to add event before current part!\n");

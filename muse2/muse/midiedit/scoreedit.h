@@ -258,7 +258,7 @@ class FloEvent
 		typeEnum type;
 		unsigned tick;
 		MusECore::Part* source_part;
-		MusECore::Event* source_event;
+		const MusECore::Event* source_event;
 		
 		int pitch;
 		mutable int vel;
@@ -270,7 +270,7 @@ class FloEvent
 		MusECore::key_enum key;
 		
 		
-		FloEvent(unsigned ti, int p,int v,int l,typeEnum t, MusECore::Part* part=NULL, MusECore::Event* event=NULL)
+		FloEvent(unsigned ti, int p,int v,int l,typeEnum t, MusECore::Part* part=NULL, const MusECore::Event* event=NULL)
 		{
 			pitch=p;
 			vel=v;
@@ -312,7 +312,7 @@ class FloItem
 		enum typeEnum { NOTE=21, REST=22, NOTE_END=01, REST_END=02, BAR =10, KEY_CHANGE=13, TIME_SIG=16}; //the order matters!
 		typeEnum type;
 		unsigned begin_tick;
-		MusECore::Event* source_event;
+		const MusECore::Event* source_event;
 		MusECore::Part* source_part;
 		
 		note_pos_t pos;
@@ -343,7 +343,7 @@ class FloItem
 		
 
 		
-		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, MusECore::Part* part=NULL, MusECore::Event* event=NULL)
+		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, MusECore::Part* part=NULL, const MusECore::Event* event=NULL)
 		{
 			pos=p;
 			dots=d;
@@ -568,7 +568,7 @@ struct staff_t
 	void process_itemlist();
 	void calc_item_pos();
 	
-	void apply_lasso(QRect rect, set<MusECore::Event*>& already_processed);
+	void apply_lasso(QRect rect, set<const MusECore::Event*>& already_processed);
 	
 	void recalculate()
 	{
@@ -746,7 +746,7 @@ class ScoreCanvas : public MusEGui::View
 		int dragged_event_part_index;
 		MusECore::Event dragged_event;
 		MusECore::Event original_dragged_event;
-		MusECore::Event* clicked_event_ptr;
+		const MusECore::Event* clicked_event_ptr;
 		
 		int old_pitch;
 		unsigned old_dest_tick;
