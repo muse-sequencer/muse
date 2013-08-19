@@ -71,7 +71,7 @@ class MidiEventBase : public EventBase {
       virtual void dump(int n = 0) const;
       virtual void read(Xml&);
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const;
-      virtual EventBase* mid(unsigned, unsigned);
+      virtual EventBase* mid(unsigned, unsigned) const;
       };
 
 } // namespace MusECore

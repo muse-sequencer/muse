@@ -758,7 +758,7 @@ void MidiTransformerDialog::processEvent(MusECore::Event& event, MusECore::MidiP
 //    return true if event is selected
 //---------------------------------------------------------
 
-bool MidiTransformerDialog::isSelected(MusECore::Event& event, MusECore::MidiPart*)
+bool MidiTransformerDialog::isSelected(const MusECore::Event& event)
       {
       MusECore::MidiTransformation* cmt = data->cmt;
 
@@ -926,8 +926,8 @@ void MidiTransformerDialog::apply()
       bool copyExtract = (data->cmt->funcOp == MusECore::Copy)
                          || (data->cmt->funcOp == MusECore::Extract);
 
-      std::vector< MusECore::EventList* > doneList;
-      typedef std::vector< MusECore::EventList* >::iterator iDoneList;
+      QSet< int > doneList;
+      typedef std::set< int >::iterator iDoneList;
       iDoneList idl;
       
       MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
@@ -941,21 +941,18 @@ void MidiTransformerDialog::apply()
                   // check wether we must generate a new track
                   for (MusECore::iPart p = pl->begin(); p != pl->end(); ++p) {
                         MusECore::MidiPart* part = (MusECore::MidiPart *) p->second;
-                        MusECore::EventList* el = part->events();
+                        const MusECore::EventList& el = part->events();
                         // Check if the event list has already been done. Skip repeated clones.
-                        for(idl = doneList.begin(); idl != doneList.end(); ++idl)
-                          if(*idl == el)
-                            break;
-                        if(idl != doneList.end())
+                        if (doneList.contains(part->clonemaster_sn()))
                           break;
-                        doneList.push_back(el);
+                        doneList.insert(part->clonemaster_sn());
                         
-                        for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
-                              MusECore::Event event = i->second;
+                        for (MusECore::ciEvent i = el.begin(); i != el.end(); ++i) {
+                              const MusECore::Event& event = i->second;
                               unsigned tick = event.tick();
                               if (data->cmt->insideLoop && (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos()))
                                     continue;
-                              if (isSelected(event, part)) {
+                              if (isSelected(event)) {
                                     newTrack = new MusECore::MidiTrack();
                                     tl.push_back(newTrack);
                                     break;
@@ -969,23 +966,20 @@ void MidiTransformerDialog::apply()
             for (MusECore::iPart p = pl->begin(); p != pl->end(); ++p) {
                   MusECore::MidiPart* part = (MusECore::MidiPart *) p->second;
                   MusECore::MidiPart* newPart = 0;
-                  MusECore::EventList* el = part->events();
+                  const MusECore::EventList& el = part->events();
                   // Check if the event list has already been done. Skip repeated clones.
-                  for(idl = doneList.begin(); idl != doneList.end(); ++idl)
-                    if(*idl == el)
+                  if (doneList.contains(part->clonemaster_sn()))
                       break;
-                  if(idl != doneList.end())
-                    break;
-                  doneList.push_back(el);
+                  doneList.insert(part->clonemaster_sn());
                   
                   if (copyExtract) {
                         // check wether we must generate a new part
-                        for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
-                              MusECore::Event event = i->second;
+                        for (MusECore::ciEvent i = el.begin(); i != el.end(); ++i) {
+                              const MusECore::Event& event = i->second;
                               unsigned tick = event.tick();
                               if (data->cmt->insideLoop && (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos()))
                                     continue;
-                              if (isSelected(event, part)) {
+                              if (isSelected(event)) {
                                     newPart = new MusECore::MidiPart(newTrack);
                                     newPart->setName(part->name());
                                     newPart->setColorIndex(part->colorIndex());
@@ -998,12 +992,12 @@ void MidiTransformerDialog::apply()
                               }
                         }
                   MusECore::EventList pel;
-                  for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
-                        MusECore::Event event = i->second;
+                  for (MusECore::ciEvent i = el.begin(); i != el.end(); ++i) {
+                        const MusECore::Event& event = i->second;
                         unsigned tick = event.tick();
                         if (data->cmt->insideLoop && (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos()))
                               continue;
-                        int flag = isSelected(event, part);
+                        int flag = isSelected(event);
                         if (data->cmt->funcOp == MusECore::Select)
                               event.setSelected(flag);
                         else if (flag)
@@ -1705,9 +1699,9 @@ void MidiTransformerDialog::insideLoopChanged(bool val)
 
 
 /*!
-    \fn MidiTransformerDialog::typesMatch(MusECore::MidiEvent e, unsigned t)
+    \fn MidiTransformerDialog::typesMatch(const MusECore::MidiEvent e, unsigned t)
  */
-bool MidiTransformerDialog::typesMatch(MusECore::Event& e, unsigned selType)
+bool MidiTransformerDialog::typesMatch(const MusECore::Event& e, unsigned selType)
       {
       bool matched = false;
       switch (selType)

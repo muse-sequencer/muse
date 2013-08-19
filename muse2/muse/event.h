@@ -74,7 +74,7 @@ class Event {
       void write(int a, Xml& xml, const Pos& offset, bool ForceWavePaths = false) const;
       void dump(int n = 0) const;
       Event clone() const;
-      Event mid(unsigned a, unsigned b);
+      Event mid(unsigned a, unsigned b) const;
 
       bool isNote() const;
       bool isNoteOff() const;
@@ -135,6 +135,7 @@ class EventList : public EL {
       void deselect();
 
    public:
+      ciEvent find(const Event&) const;
       iEvent find(const Event&);
       iEvent add(Event& event);
       void move(Event& event, unsigned tick);

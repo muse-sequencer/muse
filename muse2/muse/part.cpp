@@ -56,6 +56,8 @@ void Part::unchainClone()
   // Isolate the part.
   _prevClone = this;
   _nextClone = this;
+  
+  _clonemaster_sn = this->_sn;
 }
 
 void Part::chainClone(Part* p)
@@ -63,17 +65,21 @@ void Part::chainClone(Part* p)
   // FIXME assertion
   
   this->unchainClone();
-  
+
   // Make our links to the chain
   this->_prevClone = p;
-  this->_nextClone = p->nextClone;
+  this->_nextClone = p->_nextClone;
   
   // Make the chain's links to us
   this->_nextClone->_prevClone = this;
   p->_nextClone = this;
   
-  // Synchronize this->_events to p->_events
-  this->_events = p->_events;
+  // Synchronize this->_events to p->_events. Need to deep-copy, i.e. clone() the Events.
+  this->_events.clear();
+  for (ciEvent it = p->_events.begin(); it!=p->_events.end(); it++)
+      this->_events.insert(std::pair<unsigned, Event>(it->first, it->second.clone()));
+
+  this->_clonemaster_sn = p->_sn;
 }
 
 void Part::rechainClone()
@@ -94,22 +100,7 @@ void unchainTrackParts(Track* t, bool decRefCount)
 {
   PartList* pl = t->parts();
   for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
-  {
-    Part* p = ip->second;
-    chainCheckErr(p);
-    
-    // Do we want to decrease the reference count?
-    if(decRefCount)
-      p->events()->incARef(-1);
-      
-    // Unchain the part.
-    p->prevClone()->setNextClone(p->nextClone());
-    p->nextClone()->setPrevClone(p->prevClone());
-    
-    // Isolate the part.
-    p->setPrevClone(p);
-    p->setNextClone(p);
-  }
+    ip->second->unchainClone();
 }
 
 //---------------------------------------------------------
@@ -119,80 +110,8 @@ void unchainTrackParts(Track* t, bool decRefCount)
 void chainTrackParts(Track* t, bool incRefCount)
 {
   PartList* pl = t->parts();
-  for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
-  {
-    Part* p = ip->second;
-    chainCheckErr(p);
-    
-    // Do we want to increase the reference count?
-    if(incRefCount)
-      p->events()->incARef(1);
-      
-    Part* p1 = 0;
-    
-    // Look for a part with the same event list, that we can chain to.
-    // It's faster if track type is known...
-    
-    if(!t || (t && t->isMidiTrack()))
-    {
-      MidiTrack* mt = 0;
-      MidiTrackList* mtl = MusEGlobal::song->midis();
-      for(ciMidiTrack imt = mtl->begin(); imt != mtl->end(); ++imt)
-      {
-        mt = *imt;
-        const PartList* pl = mt->cparts();
-        for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-        {
-          if(ip->second != p && ip->second->cevents() == p->cevents())
-          {
-            p1 = ip->second;
-            break;
-          }
-        }
-        // If a suitable part was found on a different track, we're done. We will chain to it.
-        // Otherwise keep looking for parts on another track. If no others found, then we
-        //  chain to any suitable part which was found on the same given track t.
-        if(p1 && mt != t)
-          break;
-      }
-    }  
-    if((!p1 && !t) || (t && t->type() == Track::WAVE))
-    {
-      MusECore::WaveTrack* wt = 0;
-      MusECore::WaveTrackList* wtl = MusEGlobal::song->waves();
-      for(MusECore::ciWaveTrack iwt = wtl->begin(); iwt != wtl->end(); ++iwt)
-      {
-        wt = *iwt;
-        const PartList* pl = wt->cparts();
-        for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-        {
-          if(ip->second != p && ip->second->cevents() == p->cevents())
-          {
-            p1 = ip->second;
-            break;
-          }
-        }
-        if(p1 && wt != t)
-          break;
-      }
-    }
-    
-    // No part found with same event list? Done.
-    if(!p1)
-      continue;
-      
-    // Make sure the part to be chained is unchained first.
-    p->prevClone()->setNextClone(p->nextClone());
-    p->nextClone()->setPrevClone(p->prevClone());
-    
-    // Link the part to be chained.
-    p->setPrevClone(p1);
-    p->setNextClone(p1->nextClone());
-    
-    // Re-link the existing part.
-    p1->nextClone()->setPrevClone(p);
-    p1->setNextClone(p);
-  }
+  for(riPart ip = pl->rbegin(); ip != pl->rend(); ++ip) // walk through in opposite direction than we unchained them.
+    ip->second->rechainClone();
 }
 
 //---------------------------------------------------------
@@ -487,7 +406,8 @@ Part::Part(Track* t)
       _prevClone = this;
       _nextClone = this;
       _backupClone = NULL;
-      setSn(newSn());
+      _sn = newSn();
+      _clonemaster_sn = _sn;
       _track      = t;
       _selected   = false;
       _mute       = false;
@@ -529,13 +449,6 @@ WavePart::WavePart(WaveTrack* t)
       {
       setType(FRAMES);
       }
-
-WavePart::WavePart(WaveTrack* t, EventList* ev)
-   : Part(t, ev)
-      {
-      setType(FRAMES);
-      }
-
 
 
 //---------------------------------------------------------
@@ -730,21 +643,21 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
 //    create two new parts p1 and p2
 //---------------------------------------------------------
 
-void Part::splitPart(int tickpos, Part*& p1, Part*& p2)
+void Part::splitPart(int tickpos, Part*& p1, Part*& p2) const
       {
       int l1 = 0;       // len of first new part (ticks or samples)
       int l2 = 0;       // len of second new part
 
       int samplepos = MusEGlobal::tempomap.tick2frame(tickpos);
 
-      switch (type()) {
-            case WAVE:
+      switch (track()->type()) {
+          case Track::WAVE:
                   l1 = samplepos - frame();
                   l2 = lenFrame() - l1;
                   break;
-            case MIDI:
-            case DRUM:
-            case NEW_DRUM:
+          case Track::MIDI:
+          case Track::DRUM:
+          case Track::NEW_DRUM:
                   l1 = tickpos - tick();
                   l2 = lenTick() - l1;
                   break;
@@ -758,15 +671,15 @@ void Part::splitPart(int tickpos, Part*& p1, Part*& p2)
       p1 = this->duplicateEmpty();   // new left part
       p2 = this->duplicateEmpty();   // new right part
 
-      switch (type()) {
-            case WAVE:
+      switch (track()->type()) {
+          case Track::WAVE:
                   p1->setLenFrame(l1);
                   p2->setFrame(samplepos);
                   p2->setLenFrame(l2);
                   break;
-            case MIDI:
-            case DRUM:
-            case NEW_DRUM:
+          case Track::MIDI:
+          case Track::DRUM:
+          case Track::NEW_DRUM:
                   p1->setLenTick(l1);
                   p2->setTick(tickpos);
                   p2->setLenTick(l2);
@@ -775,16 +688,14 @@ void Part::splitPart(int tickpos, Part*& p1, Part*& p2)
                   break;
             }
 
-      p2->setSn(p2->newSn());
-
-      if (type() == WAVE) {
+      if (track()->type() == Track::WAVE) {
             int ps   = this->frame();
             int d1p1 = p1->frame();
             int d2p1 = p1->endFrame();
             int d1p2 = p2->frame();
             int d2p2 = p2->endFrame();
-            for (iEvent ie = _events.begin(); ie != _events.end(); ++ie) {
-                  Event event = ie->second;
+            for (ciEvent ie = _events.begin(); ie != _events.end(); ++ie) {
+                  const Event& event = ie->second;
                   int s1 = event.frame() + ps;
                   int s2 = event.endFrame() + ps;
                   
@@ -799,7 +710,7 @@ void Part::splitPart(int tickpos, Part*& p1, Part*& p2)
                   }
             }
       else {
-            for (iEvent ie = se->begin(); ie != se->end(); ++ie) {
+            for (ciEvent ie = _events.begin(); ie != _events.end(); ++ie) {
                   Event event = ie->second.clone();
                   int t = event.tick();
                   if (t >= l1) {
@@ -824,7 +735,7 @@ void Song::cmdSplitPart(Track* track, Part* part, int tick)
             return;
       Part* p1;
       Part* p2;
-      track->splitPart(part, tick, p1, p2);
+      part->splitPart(tick, p1, p2);
       
       MusEGlobal::song->informAboutNewParts(part, p1);
       MusEGlobal::song->informAboutNewParts(part, p2);

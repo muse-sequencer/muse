@@ -653,7 +653,7 @@ void ScoreEdit::song_changed(MusECore::SongChangedFlags_t flags)
 	
 	if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
 	{
-		map<MusECore::Event*, MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
+		map<const MusECore::Event*, const MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
 		if (selection.empty())
 		{
 			apply_velo_to_label->setText(tr("Apply to new notes:"));
@@ -664,7 +664,7 @@ void ScoreEdit::song_changed(MusECore::SongChangedFlags_t flags)
 			
 			int velo=-1;
 			int velo_off=-1;
-			for (map<MusECore::Event*, MusECore::Part*>::iterator it=selection.begin(); it!=selection.end(); it++)
+			for (map<const MusECore::Event*, const MusECore::Part*>::iterator it=selection.begin(); it!=selection.end(); it++)
 				if (it->first->type()==MusECore::Note)
 				{
 					if (velo==-1) velo=it->first->velo();
@@ -1520,9 +1520,9 @@ void ScoreCanvas::move_staff_below(list<staff_t>::iterator dest, list<staff_t>::
 	move_staff_above(dest, src);
 }
 
-set<MusECore::Part*> ScoreCanvas::get_all_parts()
+set<const MusECore::Part*> ScoreCanvas::get_all_parts()
 {
-	set<MusECore::Part*> result;
+	set<const MusECore::Part*> result;
 	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		result.insert(it->parts.begin(), it->parts.end());
@@ -4504,9 +4504,9 @@ void ScoreCanvas::set_velo_off(int velo)
 
 void ScoreCanvas::deselect_all()
 {
-	set<MusECore::Part*> all_parts=get_all_parts();
+	set<const MusECore::Part*> all_parts=get_all_parts();
 
-	for (set<MusECore::Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
+	for (set<const MusECore::Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
 		for (MusECore::ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
 			event->second.setSelected(false);
 	

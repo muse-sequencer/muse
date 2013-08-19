@@ -66,6 +66,7 @@ class Part : public PosLen {
    private:
       static int snGen;
       int _sn;
+      int _clonemaster_sn; // the serial number of some clone in the chain. every member of the chain has the same value here.
 
       QString _name;
       bool _selected;
@@ -83,12 +84,13 @@ class Part : public PosLen {
    public:
       Part(Track*);
       virtual ~Part();
-      virtual Part* duplicate() = 0;
-      virtual Part* duplicateEmpty() = 0;
-      virtual Part* createNewClone() = 0;
+      virtual Part* duplicate() const = 0;
+      virtual Part* duplicateEmpty() const = 0;
+      virtual Part* createNewClone() const = 0;
+      virtual void splitPart(int tickpos, Part*& p1, Part*& p2) const;
       
-      int sn()                         { return _sn; }
-      void setSn(int n)                { _sn = n; }
+      int clonemaster_sn() const       { return _clonemaster_sn; }
+      int sn() const                   { return _sn; }
       int newSn()                      { return snGen++; }
 
       const QString& name() const      { return _name; }
@@ -104,20 +106,18 @@ class Part : public PosLen {
       int colorIndex() const           { return _colorIndex; }
       void setColorIndex(int idx)      { _colorIndex = idx; }
       
-      bool hasClones()                 { return _prevClone!=this || _nextClone!=this; }
-      int nClones();
-      Part* prevClone()                { return _prevClone; }
-      Part* nextClone()                { return _nextClone; }
+      bool isCloneOf(const Part*) const;
+      bool hasClones() const           { return _prevClone!=this || _nextClone!=this; }
+      int nClones() const;
+      Part* prevClone() const          { return _prevClone; } // FINDMICHJETZT DELETETHIS 2x
+      Part* nextClone() const          { return _nextClone; }
       
       void unchainClone();
       void chainClone(Part* p); // *this is made a sibling of p! p is not touched (except for its clone-chain), whereas this->events will get altered
       void rechainClone(); // re-chains the part to the same clone chain it was unchained before
       
       // Returns combination of HiddenEventsType enum.
-      virtual int hasHiddenEvents() = 0;
-      // If repeated calls to hasHiddenEvents() are desired, then to avoid re-iteration of the event list, 
-      //  call this after hasHiddenEvents().
-      int cachedHasHiddenEvents() const { return _hiddenEvents; }
+      virtual int hasHiddenEvents() const { return _hiddenEvents; }
       
       iEvent addEvent(Event& p); // DEPRECATED. requires the part to be NOT a clone. FIXME remove!
 
@@ -136,9 +136,9 @@ class MidiPart : public Part {
    public:
       MidiPart(MidiTrack* t) : Part((Track*)t) {}
       virtual ~MidiPart() {}
-      virtual MidiPart* duplicate();
-      virtual MidiPart* duplicateEmpty();
-      virtual MidiPart* createNewClone();
+      virtual MidiPart* duplicate() const;
+      virtual MidiPart* duplicateEmpty() const;
+      virtual MidiPart* createNewClone() const;
 
       
       MidiTrack* track() const   { return (MidiTrack*)Part::track(); }
@@ -160,11 +160,10 @@ class WavePart : public Part {
 
    public:
       WavePart(WaveTrack* t);
-      WavePart(WaveTrack* t, EventList* ev);
       virtual ~WavePart() {}
-      virtual WavePart* duplicate();
-      virtual WavePart* duplicateEmpty();
-      virtual WavePart* createNewClone();
+      virtual WavePart* duplicate() const;
+      virtual WavePart* duplicateEmpty() const;
+      virtual WavePart* createNewClone() const;
 
       WaveTrack* track() const   { return (WaveTrack*)Part::track(); }
       // Returns combination of HiddenEventsType enum.
@@ -196,8 +195,6 @@ class PartList : public std::multimap<int, Part*, std::less<unsigned> > {
             }
       };
 
-extern void chainClone(Part* p1, Part* p2);
-extern void unchainClone(Part* p);
 extern void chainCheckErr(Part* p);
 extern void unchainTrackParts(Track* t, bool decRefCount);
 extern void chainTrackParts(Track* t, bool incRefCount);

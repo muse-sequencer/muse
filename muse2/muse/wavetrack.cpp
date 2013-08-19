@@ -62,7 +62,7 @@ void WaveTrack::internal_assign(const Track& t, int flags)
               Part* spart = ip->second;
               Part* dpart;
               if (spart->hasClones())
-                  dpart = spart->createNewClone()
+                  dpart = spart->createNewClone();
               else
                   dpart = spart->duplicate();
               
@@ -214,7 +214,7 @@ void WaveTrack::read(Xml& xml)
 
 Part* WaveTrack::newPart(Part*p, bool clone)
       {
-      WavePart* part = clone ? p->createNewClone() : new WavePart(this);
+      WavePart* part = clone ? (WavePart*)p->createNewClone() : new WavePart(this);
       if (p) {
             part->setName(p->name());
             part->setColorIndex(p->colorIndex());

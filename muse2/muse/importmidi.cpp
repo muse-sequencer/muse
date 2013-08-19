@@ -379,7 +379,7 @@ bool MusE::importMidi(const QString name, bool merge)
 
 void MusE::processTrack(MusECore::MidiTrack* track)
       {
-      const MusECore::EventList& tevents = track->events;
+      MusECore::EventList& tevents = track->events;
       if (tevents.empty())
             return;
 
@@ -394,8 +394,8 @@ void MusE::processTrack(MusECore::MidiTrack* track)
       MusECore::PartList* pl = track->parts();
 
       int lastTick = 0;
-      for (MusECore::iEvent i = tevents.begin(); i != tevents.end(); ++i) {
-            MusECore::Event event = i->second;
+      for (MusECore::ciEvent i = tevents.begin(); i != tevents.end(); ++i) {
+            const MusECore::Event& event = i->second;
             int epos = event.tick() + event.lenTick();
             if (epos > lastTick)
                   lastTick = epos;
@@ -440,8 +440,8 @@ void MusE::processTrack(MusECore::MidiTrack* track)
                           st = x1;    // begin new  part
                     //HACK:
                     //lastOff:
-                    for (MusECore::iEvent i = i1; i != i2; ++i) {
-                          MusECore::Event event = i->second;
+                    for (MusECore::ciEvent i = i1; i != i2; ++i) {
+                          const MusECore::Event& event = i->second;
                           if (event.type() == MusECore::Note) {
                                 int off = event.tick() + event.lenTick();
                                 if (off > lastOff)
@@ -481,7 +481,7 @@ void MusE::processTrack(MusECore::MidiTrack* track)
             int startTick = part->tick();
 
             for (MusECore::iEvent i = r1; i != r2; ++i) {
-                  MusECore::Event ev = i->second;
+                  MusECore::Event& ev = i->second;
                   int ntick = ev.tick() - startTick;
                   ev.setTick(ntick);
                   part->nonconst_events().add(ev);
@@ -615,7 +615,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
                   if (tag == "part") {
                         // Read the part.
                         MusECore::Part* p = 0;
-                        p = Part::readFromXml(xml, track);
+                        p = MusECore::Part::readFromXml(xml, track);
                         // If it could not be created...
                         if(!p)
                         {

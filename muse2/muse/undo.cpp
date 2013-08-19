@@ -278,8 +278,8 @@ void cleanOperationGroup(Undo& group)
 {
 	using std::set;
 	
-	set<Track*> processed_tracks;
-	set<Part*> processed_parts;
+	set<const Track*> processed_tracks;
+	set<const Part*> processed_parts;
 
 	for (iUndoOp op=group.begin(); op!=group.end();)
 	{
@@ -588,7 +588,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
       }
 
 
-UndoOp::UndoOp(UndoType type_, int n, Track* track_)
+UndoOp::UndoOp(UndoType type_, int n, const Track* track_)
       {
       assert(type_==AddTrack || type_==DeleteTrack);
       assert(track_);
@@ -598,7 +598,7 @@ UndoOp::UndoOp(UndoType type_, int n, Track* track_)
       track  = track_;
       }
 
-UndoOp::UndoOp(UndoType type_, Part* part_, unsigned old_len_or_tick, unsigned new_len_or_tick, bool, bool)
+UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned old_len_or_tick, unsigned new_len_or_tick, bool, bool)
       {
       assert(type_==AddPart || type_==DeletePart || type_==ModifyPartLength || type_==ModifyPartLengthFrames || type_==ModifyPartTick );
       assert(part_);
@@ -609,7 +609,7 @@ UndoOp::UndoOp(UndoType type_, Part* part_, unsigned old_len_or_tick, unsigned n
       new_partlen_or_tick=new_len_or_tick;
       }
 
-UndoOp::UndoOp(UndoType type_, const Event& oev, const Event& nev, Part* part_, bool doCtrls_, bool doClones_)
+UndoOp::UndoOp(UndoType type_, const Event& oev, const Event& nev, const Part* part_, bool doCtrls_, bool doClones_)
       {
       assert(type_==ModifyEvent);
       assert(part_);
@@ -622,7 +622,7 @@ UndoOp::UndoOp(UndoType type_, const Event& oev, const Event& nev, Part* part_, 
       doClones = doClones_;
       }
 
-UndoOp::UndoOp(UndoType type_, const Event& nev, Part* part_, bool doCtrls_, bool doClones_)
+UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool doCtrls_, bool doClones_)
       {
       assert(type_==DeleteEvent || type_==AddEvent);
       assert(part_);
@@ -657,7 +657,7 @@ UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, 
       endframe   = endframe_;
       }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, Part* part_, const char* old_name, const char* new_name)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const char* old_name, const char* new_name)
 {
     assert(type_==ModifyPartName);
     assert(part_);
@@ -672,7 +672,7 @@ UndoOp::UndoOp(UndoOp::UndoType type_, Part* part_, const char* old_name, const 
     strcpy(_newName, new_name);
 }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, Track* track_, const char* old_name, const char* new_name)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const char* old_name, const char* new_name)
 {
   assert(type_==ModifyTrackName);
   assert(track_);
@@ -687,7 +687,7 @@ UndoOp::UndoOp(UndoOp::UndoType type_, Track* track_, const char* old_name, cons
   strcpy(_newName, new_name);
 }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, Track* track_, int old_chan, int new_chan)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int old_chan, int new_chan)
 {
   assert(type_==ModifyTrackChannel);
   assert(track_);

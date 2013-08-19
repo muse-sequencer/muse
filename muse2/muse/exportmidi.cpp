@@ -490,7 +490,7 @@ void MusE::exportMidi()
                     {
                       MusECore::EventList* el = instr->midiInit();
                       if(!el->empty())
-                        MusECore::addEventList(el, l, NULL, NULL, port, channel); // No track or part passed for init sequences
+                        MusECore::addEventList(*el, l, NULL, NULL, port, channel); // No track or part passed for init sequences
                     }
                     
                     //--------------------------

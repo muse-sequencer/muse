@@ -71,9 +71,9 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
       virtual void accept();
       void setValOp(QWidget* a, QWidget* b, MusECore::ValOp op);
       void processEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*);
-      bool isSelected(MusECore::Event&, MusECore::MidiPart*);
+      bool isSelected(const MusECore::Event&);
       void transformEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*);
-      bool typesMatch(MusECore::Event& e, unsigned selType);
+      bool typesMatch(const MusECore::Event& e, unsigned selType);
       
       void updatePresetList();
 

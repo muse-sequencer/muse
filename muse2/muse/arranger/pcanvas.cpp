@@ -2321,7 +2321,7 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
           MusECore::Part* p1;
           MusECore::Part* p2;
           
-          track->splitPart(part, lpos, p1, p2);
+          part->splitPart(lpos, p1, p2);
           
           part=p2;
         }
@@ -2331,7 +2331,7 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
           MusECore::Part* p1;
           MusECore::Part* p2;
           
-          track->splitPart(part, rpos, p1, p2);
+          part->splitPart(rpos, p1, p2);
 
           part=p1;
         }
@@ -2427,7 +2427,7 @@ MusECore::Undo PartCanvas::pasteAt(const QString& pt, MusECore::Track* track, un
                         if (tag == "part") {                              
                               // Read the part.
                               MusECore::Part* p = 0;
-                              p = Part::readFromXml(xml, track, clone, toTrack);
+                              p = MusECore::Part::readFromXml(xml, track, clone, toTrack);
 
                               // If it could not be created...
                               if(!p)

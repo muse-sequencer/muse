@@ -589,7 +589,7 @@ void MidiTrack::internal_assign(const Track& t, int flags)
               Part* spart = ip->second;
               Part* dpart;
               if (spart->hasClones())
-                  dpart = spart->createNewClone()
+                  dpart = spart->createNewClone();
               else
                   dpart = spart->duplicate();
 
@@ -787,7 +787,7 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
 
 Part* MidiTrack::newPart(Part*p, bool clone)
       {
-      MidiPart* part = clone ? p->createNewClone() : new MidiPart(this);
+      MidiPart* part = clone ? (MidiPart*)p->createNewClone() : new MidiPart(this);
       if (p) {
             part->setName(p->name());
             part->setColorIndex(p->colorIndex());

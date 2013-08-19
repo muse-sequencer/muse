@@ -108,7 +108,7 @@ Part* partFromSerialNumber(int serial)
 	return NULL;
 }
 
-bool any_event_selected(const set<Part*>& parts, bool in_range)
+bool any_event_selected(const set<const Part*>& parts, bool in_range)
 {
   return !get_events(parts, in_range ? 3 : 1).empty();
 }
@@ -942,8 +942,8 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
                   bool used = false;
                   for (MusECore::iPart ip = part_list->begin(); ip != part_list->end(); ++ip) {
                         const MusECore::EventList& el = ip->second->events();
-                        for (MusECore::iEvent ie = el.begin(); ie != el.end(); ++ie) {
-                              MusECore::Event e = ie->second;
+                        for (MusECore::ciEvent ie = el.begin(); ie != el.end(); ++ie) {
+                              const MusECore::Event& e = ie->second;
                               if(e.type() != MusECore::Controller)
                                 continue;
                               int ctl_num = e.dataA();

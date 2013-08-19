@@ -79,9 +79,9 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 		const EventList& events = part->events();
 		if (ctrl)
 		{
-			for (iEvent i = events.begin(); i != events.end(); ++i)
+			for (ciEvent i = events.begin(); i != events.end(); ++i)
 			{
-				Event ev = i->second;
+				const Event& ev = i->second;
 				if (ev.isNote() && ev.pitch() == pitch && ((ev.tick() + ev.lenTick() + part->tick()) == tick))
 				{
 					Event e = ev.clone();
@@ -109,7 +109,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 			EventRange range = events.equal_range(tick - part->tick());
 			for (ciEvent i = range.first; i != range.second; ++i)
 			{
-				Event ev = i->second;
+				const Event& ev = i->second;
 				if (ev.isNote() && ev.pitch() == pitch)
 				{
 					MusEGlobal::audio->msgDeleteEvent(ev, part, true, false, false);
@@ -163,9 +163,9 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 			
 			set<const Event*> extend_set;
 			const EventList& events = part->events();
-			for (iEvent i = events.begin(); i != events.end(); ++i)
+			for (ciEvent i = events.begin(); i != events.end(); ++i)
 			{
-				Event& ev = i->second;
+				const Event& ev = i->second;
 				if (ev.isNote() && note_held_down[ev.pitch()] && ((ev.tick() + ev.lenTick() + part->tick()) == tick))
 					extend_set.insert(&ev);
 			}

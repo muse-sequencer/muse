@@ -167,7 +167,7 @@ void globalCut(bool onlySelectedTracks)
                       {
                             // cut Events
                             const EventList& el = part->events();
-                            for (iEvent ie = el.lower_bound(len); ie != el.end(); ++ie)
+                            for (ciEvent ie = el.lower_bound(len); ie != el.end(); ++ie)
                                     operations.push_back(UndoOp(UndoOp::DeleteEvent,ie->second, part, false, false));
                       }
                       operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenTick(), len, true, true));
@@ -179,9 +179,9 @@ void globalCut(bool onlySelectedTracks)
                         Part* p1;
                         Part* p2;
                         Part* p3;
-                        track->splitPart(part, lpos, p1, p2);
+                        part->splitPart(lpos, p1, p2);
                         delete p2;
-                        track->splitPart(part, rpos, p2, p3);
+                        part->splitPart(rpos, p2, p3);
                         delete p2;
                         p3->setTick(lpos);
 
@@ -195,7 +195,7 @@ void globalCut(bool onlySelectedTracks)
                         
                         Part* p1;
                         Part* p2;
-                        track->splitPart(part, rpos, p1, p2);
+                        part->splitPart(rpos, p1, p2);
                         delete p1;
                         p2->setTick(lpos);
                         
@@ -254,7 +254,7 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
                         // split part to insert new space
                         Part* p1;
                         Part* p2;
-                        track->splitPart(part, startTicks, p1, p2);
+                        part->splitPart(startTicks, p1, p2);
                         p2->setTick(startTicks+moveTicks);
 
                         MusEGlobal::song->informAboutNewParts(part,p1,p2);
@@ -303,7 +303,7 @@ Undo partSplitter(unsigned int pos, bool onlySelectedTracks)
               if (pos > p1 && pos < (p1+l0)) {
                     Part* p1;
                     Part* p2;
-                    track->splitPart(part, pos, p1, p2);
+                    part->splitPart(pos, p1, p2);
 
                     MusEGlobal::song->informAboutNewParts(part, p1);
                     MusEGlobal::song->informAboutNewParts(part, p2);

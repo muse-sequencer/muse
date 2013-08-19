@@ -53,7 +53,7 @@ WaveEventBase::WaveEventBase(EventType t)
 //   WaveEventBase::clone
 //---------------------------------------------------------
 
-EventBase* WaveEventBase::clone() 
+EventBase* WaveEventBase::clone() const
 { 
   return new WaveEventBase(*this); 
 }
@@ -62,7 +62,7 @@ EventBase* WaveEventBase::clone()
 //   WaveEvent::mid
 //---------------------------------------------------------
 
-EventBase* WaveEventBase::mid(unsigned b, unsigned e)
+EventBase* WaveEventBase::mid(unsigned b, unsigned e) const
       {
       WaveEventBase* ev = new WaveEventBase(*this);
       unsigned fr = frame();

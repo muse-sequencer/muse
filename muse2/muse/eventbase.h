@@ -60,7 +60,7 @@ class EventBase : public PosLen {
       virtual void read(Xml&) = 0;
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const = 0;
       virtual void dump(int n = 0) const;
-      virtual EventBase* mid(unsigned, unsigned) = 0;
+      virtual EventBase* mid(unsigned, unsigned) const = 0;
       friend class Event;
 
       virtual bool isNote() const                   { return false; }

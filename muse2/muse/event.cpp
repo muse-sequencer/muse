@@ -203,7 +203,7 @@ void Event::read(Xml& xml)
 
 void Event::write(int a, Xml& xml, const Pos& o, bool forceWavePaths) const { ev->write(a, xml, o, forceWavePaths); }
 void Event::dump(int n) const     { ev->dump(n); }
-Event Event::mid(unsigned a, unsigned b) { return Event(ev->mid(a, b)); }
+Event Event::mid(unsigned a, unsigned b) const { return Event(ev->mid(a, b)); }
 
 bool Event::isNote() const                   { return ev->isNote();        }
 bool Event::isNoteOff() const                { return ev->isNoteOff();     }

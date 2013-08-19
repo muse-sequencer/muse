@@ -45,7 +45,7 @@ MidiEventBase::MidiEventBase(EventType t)
 //   MidiEventBase::mid
 //---------------------------------------------------------
 
-EventBase* MidiEventBase::mid(unsigned b, unsigned e)
+EventBase* MidiEventBase::mid(unsigned b, unsigned e) const
       {
       if (tick() < b || tick() >= e)
             return 0;

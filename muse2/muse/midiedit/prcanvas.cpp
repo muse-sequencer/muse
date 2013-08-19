@@ -986,7 +986,7 @@ void PianoCanvas::curPartChanged()
 
 void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
       {
-      QList< QPair<MusECore::EventList*,MusECore::Event> > already_done;
+      QList< QPair<int,MusECore::Event> > already_done;
       MusEGlobal::audio->msgIdle(true);
       MusEGlobal::song->startUndo();
       for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
@@ -999,7 +999,7 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
 
             MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
             
-            if (already_done.contains(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event)))
+            if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
               continue;
             
             MusECore::Event newEvent = event.clone();
@@ -1069,7 +1069,7 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
             // Indicate do not do port controller values and clone parts. 
             MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
 
-            already_done.append(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event));
+            already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
             }
       MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
       MusEGlobal::audio->msgIdle(false);

@@ -860,7 +860,7 @@ class ScoreCanvas : public MusEGui::View
 		MusECore::Part* get_dragged_event_part() {return dragged_event_part;}
 		void set_dragged_event_part(MusECore::Part* p) {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->sn();}
 		
-		set<MusECore::Part*> get_all_parts();
+		set<const MusECore::Part*> get_all_parts();
 		
 		void write_staves(int level, MusECore::Xml& xml) const;
 

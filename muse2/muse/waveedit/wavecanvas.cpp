@@ -1936,7 +1936,7 @@ void WaveCanvas::cmd(int cmd)
                           newEvent->setLenTick(MusEGlobal::song->rpos() - MusEGlobal::song->lpos());
                           tempPart->addEvent(*newEvent);
                       }
-                      std::set<MusECore::Part*> partList;
+                      std::set<const MusECore::Part*> partList;
                       partList.insert(tempPart);
 
                       QMimeData *mimeData =  MusECore::parts_to_mime(partList);
@@ -2585,7 +2585,7 @@ void WaveCanvas::curPartChanged()
 void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
       {
       // TODO: New WaveCanvas: Convert this routine to frames and remove unneeded operations. 
-      QList< QPair<MusECore::EventList*,MusECore::Event> > already_done;
+      QList< QPair<int,MusECore::Event> > already_done;
       MusEGlobal::audio->msgIdle(true);
       MusEGlobal::song->startUndo();
       for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
@@ -2598,7 +2598,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
 
             MusECore::WavePart* part = (MusECore::WavePart*)(e->part());
             
-            if (already_done.contains(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event)))
+            if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
               continue;
             
             MusECore::Event newEvent = event.clone();
@@ -2668,7 +2668,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
             // Indicate do not do port controller values and clone parts. 
             MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
 
-            already_done.append(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event));
+            already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
             }
       MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
       MusEGlobal::audio->msgIdle(false);

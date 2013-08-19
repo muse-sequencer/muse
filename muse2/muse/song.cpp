@@ -646,8 +646,8 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip) 
     {
       MidiPart* part = (MidiPart*)(ip->second);
-      const EventList* el = part->cevents();
-      for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+      const EventList& el = part->events();
+      for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
       {
         const Event& ev = ie->second;
         if(ev.type() != Controller)
@@ -850,7 +850,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             part->setName(mt->name());
             // copy events
             for (ciEvent i = s; i != e; ++i) {
-                  Event old = i->second;
+                  const Event& old = i->second;
                   Event event = old.clone();
                   event.setTick(old.tick() - startTick);
                   // addEvent also adds port controller values. So does msgAddPart, below. Let msgAddPart handle them.
@@ -869,8 +869,8 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
       if (endTick > part->endTick()) {
             // Determine new part length...
             endTick = 0;
-            for (iEvent i = s; i != e; ++i) {
-                  Event event = i->second;
+            for (ciEvent i = s; i != e; ++i) {
+                  const Event& event = i->second;
                   unsigned tick = event.tick() - partTick + event.lenTick();
                   if (endTick < tick)
                         endTick = tick;
@@ -898,12 +898,11 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
                   part->nonconst_events().erase(si, ei);
             }
             
-            for (iEvent i = s; i != e; ++i) {
-                  Event event = i->second;
+            for (ciEvent i = s; i != e; ++i) {
+                  Event event = i->second.clone();
                   event.setTick(event.tick() - partTick);
-                  Event e;
                   // Create an undo op. Indicate do port controller values and clone parts. 
-                  addUndo(UndoOp(UndoOp::AddEvent, e, event, part, true, true));
+                  addUndo(UndoOp(UndoOp::AddEvent, event, part, true, true));
                   
                   if(part->nonconst_events().find(event) == part->nonconst_events().end())
                     part->nonconst_events().add(event);
@@ -926,8 +925,8 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
                         }
                   part->nonconst_events().erase(si, ei);
                   }
-            for (iEvent i = s; i != e; ++i) {
-                  Event event = i->second;
+            for (ciEvent i = s; i != e; ++i) {
+                  Event event = i->second.clone();
                   int tick = event.tick() - partTick;
                   event.setTick(tick);
                   
