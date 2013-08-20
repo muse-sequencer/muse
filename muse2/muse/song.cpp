@@ -2645,7 +2645,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     if(tick >= partStart && tick < partEnd)
     {
       EventRange range = part->events().equal_range(tick - partStart);
-      for(iEvent i = range.first; i != range.second; ++i) 
+      for(ciEvent i = range.first; i != range.second; ++i) 
       {
         ev = i->second;
         if(ev.type() == Controller)
