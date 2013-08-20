@@ -96,7 +96,7 @@ void Part::rechainClone()
 //   unchainTrackParts
 //---------------------------------------------------------
 
-void unchainTrackParts(Track* t, bool decRefCount)
+void unchainTrackParts(Track* t)
 {
   PartList* pl = t->parts();
   for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
@@ -107,7 +107,7 @@ void unchainTrackParts(Track* t, bool decRefCount)
 //   chainTrackParts
 //---------------------------------------------------------
 
-void chainTrackParts(Track* t, bool incRefCount)
+void chainTrackParts(Track* t)
 {
   PartList* pl = t->parts();
   for(riPart ip = pl->rbegin(); ip != pl->rend(); ++ip) // walk through in opposite direction than we unchained them.

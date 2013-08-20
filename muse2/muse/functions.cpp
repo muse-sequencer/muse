@@ -1228,59 +1228,64 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 
 void select_all(const set<const Part*>& parts)
 {
+	Undo operations;
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			event.setSelected(true);
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, true, event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 void select_none(const set<const Part*>& parts)
 {
+	Undo operations;
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			event.setSelected(false);
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, false, event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 void select_invert(const set<const Part*>& parts)
 {
+	Undo operations;
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			event.setSelected(!event.selected());
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, !event.selected(), event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 void select_in_loop(const set<const Part*>& parts)
 {
-	select_none(parts);
+	select_none(parts); // this will automatically be grouped into one OperationGroup
+	Undo operations;
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			event.setSelected((event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()));
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, (event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 void select_not_in_loop(const set<const Part*>& parts)
 {
-	select_none(parts);
+	select_none(parts); // this will automatically be grouped into one OperationGroup
+	Undo operations;
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			event.setSelected(!(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()));
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, !(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 

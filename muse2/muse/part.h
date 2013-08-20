@@ -196,8 +196,8 @@ class PartList : public std::multimap<int, Part*, std::less<unsigned> > {
       };
 
 extern void chainCheckErr(Part* p);
-extern void unchainTrackParts(Track* t, bool decRefCount);
-extern void chainTrackParts(Track* t, bool incRefCount);
+extern void unchainTrackParts(Track* t);
+extern void chainTrackParts(Track* t);
 extern void addPortCtrlEvents(Part* part, bool doClones);
 extern void addPortCtrlEvents(Event& event, Part* part, bool doClones);
 extern void removePortCtrlEvents(Part* part, bool doClones);

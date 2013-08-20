@@ -484,14 +484,23 @@ void PartCanvas::partsChanged()
 //---------------------------------------------------------
 
 void PartCanvas::updateSelection()
-      {
+{
+      Undo operations;
+      bool changed=false;
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             NPart* part = (NPart*)(i->second);
-            part->part()->setSelected(i->second->isSelected());
+            operations.push_back(UndoOp(UndoOp::SelectPart, part->part(), i->second->isSelected(), part->part()->selected()));
+            if (i->second->isSelected() != part->part()->selected())
+                changed=true;
       }
-      emit selectionChanged();
-      redraw();
+      
+      if (changed)
+      {
+            MusEGlobal::song->applyOperationGroup(operations);
+            emit selectionChanged();
+            redraw();
       }
+}
 
 //---------------------------------------------------------
 //   resizeItem
@@ -886,13 +895,14 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     // The loop is a safety net.
                     MusECore::Part* p = part; 
                     
+                    Undo operations;
                     if(part->hasClones())
                     {
-                      p->setSelected(true);
+                      operations.push_back(UndoOp(UndoOp::SelectPart, p, true, p->selected()));
                       for(MusECore::Part* it = p->nextClone(); it!=p; it=it->nextClone())
-                        it->setSelected(true);
+                        operations.push_back(UndoOp(UndoOp::SelectPart, it, true, it->selected()));
 
-                      MusEGlobal::song->update(SC_SELECTION);
+                      MusEGlobal::song->applyOperationGroup(operations);
                     }
                     
                     break;

@@ -52,8 +52,8 @@ const char* UndoOp::typeName()
       {
       static const char* name[] = {
             "AddTrack", "DeleteTrack", 
-            "AddPart",  "DeletePart",  "ModifyPartTick", "ModifyPartLength", "ModifyPartLengthFrames", "ModifyPartName",
-            "AddEvent", "DeleteEvent", "ModifyEvent",
+            "AddPart",  "DeletePart",  "ModifyPartTick", "ModifyPartLength", "ModifyPartLengthFrames", "ModifyPartName", "SelectPart",
+            "AddEvent", "DeleteEvent", "ModifyEvent", "SelectEvent",
             "AddTempo", "DeleteTempo",
             "AddSig", "DeleteSig",
             "AddKey", "DeleteKey",
@@ -305,6 +305,12 @@ void cleanOperationGroup(Undo& group)
 	}
 }
 
+bool Song::applyOperation(const UndoOp& op, bool doUndo)
+{
+	Undo operations;
+	operations.push_back(op);
+	return applyOperationGroup(operations, doUndo);
+}
 
 bool Song::applyOperationGroup(Undo& group, bool doUndo)
 {
@@ -353,9 +359,9 @@ void Song::doUndo2()
                         removeTrack2(editable_track);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
-                  case UndoOp::DeleteTrack: // FINDMICHJETZT FIXME TODO: DeletePart on all parts, only empty tracks may be deleted! this removes the necessarity of unchainTrackParts...
+                  case UndoOp::DeleteTrack: // FINDMICHJETZT FIXME TODO: DeletePart on all parts, only empty tracks may be deleted! this removes the necessarity of un...
                         insertTrack2(editable_track, i->trackno);
-                        chainTrackParts(editable_track, true);
+                        chainTrackParts(editable_track);
                         
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
@@ -472,7 +478,7 @@ void Song::doRedo2()
             switch(i->type) {
                   case UndoOp::AddTrack:
                         insertTrack2(editable_track, i->trackno);
-                        chainTrackParts(editable_track, true);
+                        chainTrackParts(editable_track);
                         
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
@@ -613,6 +619,18 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned old_len_or_tick, unsi
       old_partlen_or_tick=old_len_or_tick;
       new_partlen_or_tick=new_len_or_tick;
       }
+      
+UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_)
+{
+    assert(type_==SelectPart);
+    assert(part);
+    
+    type=type_;
+    part = part_;
+    selected=selected_;
+    selected_old=sel_old_;
+}
+
 
 UndoOp::UndoOp(UndoType type_, const Event& oev, const Event& nev, const Part* part_, bool doCtrls_, bool doClones_)
       {
@@ -638,6 +656,16 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool doCtrls
       doCtrls = doCtrls_;
       doClones = doClones_;
       }
+      
+UndoOp::UndoOp(UndoType type_, const Event& nev, bool selected_, bool sel_old_)
+{
+    assert(type_==SelectEvent);
+    
+    type=type_;
+    nEvent = nev;
+    selected=selected_;
+    selected_old=sel_old_;
+}
 
 
 UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_)
@@ -737,8 +765,17 @@ bool Song::doUndo1()
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
             Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
-// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
+            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
+                  case UndoOp::SelectPart:
+                        editable_part->setSelected(i->selected_old);
+                        updateFlags |= SC_SELECTION;
+                        break;
+                  case UndoOp::SelectEvent:
+                        i->nEvent.setSelected(i->selected_old);
+                        updateFlags |= SC_SELECTION;
+                        break;
+                        
                   case UndoOp::AddTrack:
                         removeTrack1(editable_track);
                         break;
@@ -871,8 +908,17 @@ bool Song::doRedo1()
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
             Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
-// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
+            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
+                  case UndoOp::SelectPart:
+                        editable_part->setSelected(i->selected);
+                        updateFlags |= SC_SELECTION;
+                        break;
+                  case UndoOp::SelectEvent:
+                        i->nEvent.setSelected(i->selected);
+                        updateFlags |= SC_SELECTION;
+                        break;
+                        
                   case UndoOp::AddTrack:
                         insertTrack1(editable_track, i->trackno);
 

@@ -171,7 +171,8 @@ class Song : public QObject {
       Song(const char* name = 0);
       ~Song();
 
-      bool applyOperationGroup(Undo& group, bool doUndo=true);
+      bool applyOperationGroup(Undo& group, bool doUndo=true); // group may be changed! cleanOperationGroup is called on group!
+      bool applyOperation(const UndoOp& op, bool doUndo=true);
       
       /** this sends emits a signal to each MidiEditor or whoever is interested.
        *  For each part which is 1) opened in this MidiEditor and 2) which is

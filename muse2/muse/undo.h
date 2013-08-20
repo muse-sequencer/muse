@@ -46,8 +46,8 @@ extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files
 struct UndoOp {
       enum UndoType {
             AddTrack, DeleteTrack,
-            AddPart,  DeletePart,  ModifyPartTick, ModifyPartLength, ModifyPartLengthFrames, /* FINDMICH FIXME frames are to be deprecated */ ModifyPartName,
-            AddEvent, DeleteEvent, ModifyEvent,
+            AddPart,  DeletePart,  ModifyPartTick, ModifyPartLength, ModifyPartLengthFrames, /* FINDMICH FIXME frames are to be deprecated */ ModifyPartName, SelectPart,
+            AddEvent, DeleteEvent, ModifyEvent, SelectEvent,
             AddTempo, DeleteTempo,
             AddSig,   DeleteSig,
             AddKey,   DeleteKey,
@@ -102,6 +102,8 @@ struct UndoOp {
       char* _newName;
       Event oEvent;
       Event nEvent;
+      bool selected;
+      bool selected_old;
       bool doCtrls;
       bool doClones;
       
@@ -113,8 +115,10 @@ struct UndoOp {
       UndoOp(UndoType type, int n, const Track* track);
       UndoOp(UndoType type, const Part* part, unsigned old_len_or_tick=-1, unsigned new_len_or_tick=-1, bool doCtrls=false, bool doClones=false); // FIXME these bools are UNUSED!!. XTICKS!
       UndoOp(UndoType type, const Part* part, const char* old_name, const char* new_name);
+      UndoOp(UndoType type, const Part* part, bool selected, bool selected_old);
       UndoOp(UndoType type, const Event& oev, const Event& nev, const Part* part, bool doCtrls, bool doClones);
       UndoOp(UndoType type, const Event& nev, const Part* part, bool doCtrls, bool doClones);
+      UndoOp(UndoType type, const Event& nev, bool selected, bool selected_old);
       UndoOp(UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker);
       UndoOp(UndoType type, const Track* track, const char* old_name, const char* new_name);

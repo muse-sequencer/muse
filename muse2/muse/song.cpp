@@ -3224,12 +3224,12 @@ void Song::removeTrack2(Track* track)
             case Track::DRUM:
             case Track::NEW_DRUM:
                   removePortCtrlEvents(((MidiTrack*)track));
-                  unchainTrackParts(track, true);
+                  unchainTrackParts(track);
                   
                   _midis.erase(track);
                   break;
             case Track::WAVE:
-                  unchainTrackParts(track, true);
+                  unchainTrackParts(track);
                   
                   _waves.erase(track);
                   break;

@@ -73,6 +73,7 @@ using namespace std;
 
 using MusEGlobal::debugMsg;
 using MusEGlobal::heavyDebugMsg;
+using MusECore::UndoOp;
 
 namespace MusEGui {
 
@@ -3927,9 +3928,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 				if (!ctrl)
 					deselect_all();
 
-			clicked_event_ptr->setSelected(!clicked_event_ptr->selected());
-
-			MusEGlobal::song->update(SC_SELECTION);
+			MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, !clicked_event_ptr->selected(), clicked_event_ptr->selected()));
 		}
 		
 		setMouseTracking(false);
@@ -4028,9 +4027,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					if (!ctrl)
 						deselect_all();
 					
-					clicked_event_ptr->setSelected(true);
-					
-					MusEGlobal::song->update(SC_SELECTION);
+					MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, true, clicked_event_ptr->selected()));
 				}
 				
 				old_pitch=-1;
@@ -4508,9 +4505,7 @@ void ScoreCanvas::deselect_all()
 
 	for (set<const MusECore::Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
 		for (MusECore::ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
-			event->second.setSelected(false);
-	
-	MusEGlobal::song->update(SC_SELECTION);
+			MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, event->second, false, event->second.selected()));
 }
 
 bool staff_t::cleanup_parts()
@@ -4568,7 +4563,7 @@ void staff_t::apply_lasso(QRect rect, set<const MusECore::Event*>& already_proce
 				if (rect.contains(it2->x, it2->y))
 					if (already_processed.find(it2->source_event)==already_processed.end())
 					{
-						it2->source_event->setSelected(!it2->source_event->selected());
+						MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent,*it2->source_event,!it2->source_event->selected(),it2->source_event->selected()));
 						already_processed.insert(it2->source_event);
 					}
 			}
