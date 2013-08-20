@@ -137,11 +137,11 @@ void UndoList::clearDelete()
           {
             case UndoOp::DeleteTrack:
                   if(i->track)
-                    delete i->track;
+                    delete const_cast<Track*>(i->track);
                   break;
                   
             case UndoOp::DeletePart:
-                  delete i->part;
+                  delete const_cast<Part*>(i->part);
                   break;
 
             case UndoOp::ModifyMarker:
@@ -345,14 +345,17 @@ void Song::doUndo2()
       {
       Undo& u = undoList->back();
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
+            Track* editable_track = const_cast<Track*>(i->track);
+// uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
+            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        removeTrack2(i->track);
+                        removeTrack2(editable_track);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
                   case UndoOp::DeleteTrack: // FINDMICHJETZT FIXME TODO: DeletePart on all parts, only empty tracks may be deleted! this removes the necessarity of unchainTrackParts...
-                        insertTrack2(i->track, i->trackno);
-                        chainTrackParts(i->track, true);
+                        insertTrack2(editable_track, i->trackno);
+                        chainTrackParts(editable_track, true);
                         
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
@@ -368,52 +371,51 @@ void Song::doUndo2()
                         break;
                   case UndoOp::AddPart:
                         {
-                        Part* part = i->part;
+                        Part* part = editable_part;
                         removePart(part);
                         updateFlags |= SC_PART_REMOVED;
-                        Part* i->part->nextClone();
-                        i->part->unchainClone();
+                        editable_part->unchainClone();
                         }
                         break;
                   case UndoOp::DeletePart:
-                        addPart(i->part);
+                        addPart(editable_part);
                         updateFlags |= SC_PART_INSERTED;
-                        i->part->rechainClone();
+                        editable_part->rechainClone();
                         break;
                   case UndoOp::ModifyPartName:
-                        i->part->setName(i->_oldName);
+                        editable_part->setName(i->_oldName);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::ModifyPartTick: // TODO FIXME (?) do port ctrls/clones?
-                        i->part->setTick(i->old_partlen_or_tick);
+                        editable_part->setTick(i->old_partlen_or_tick);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::ModifyPartLength: // TODO FIXME (?) do port ctrls/clones?
-                        i->part->setLenTick(i->old_partlen_or_tick);
+                        editable_part->setLenTick(i->old_partlen_or_tick);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::ModifyPartLengthFrames: // TODO FIXME  FINDMICH frames deprecated!   do port ctrls/clones?
-                        i->part->setLenFrame(i->old_partlen_or_tick);
+                        editable_part->setLenFrame(i->old_partlen_or_tick);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::AddEvent:
                         if(i->doCtrls)
-                          removePortCtrlEvents(i->nEvent, i->part, i->doClones);
-                        deleteEvent(i->nEvent, i->part);
+                          removePortCtrlEvents(i->nEvent, editable_part, i->doClones);
+                        deleteEvent(i->nEvent, editable_part);
                         updateFlags |= SC_EVENT_REMOVED;
                         break;
                   case UndoOp::DeleteEvent:
-                        addEvent(i->nEvent, i->part);
+                        addEvent(i->nEvent, editable_part);
                         if(i->doCtrls)
-                          addPortCtrlEvents(i->nEvent, i->part, i->doClones);
+                          addPortCtrlEvents(i->nEvent, editable_part, i->doClones);
                         updateFlags |= SC_EVENT_INSERTED;
                         break;
                   case UndoOp::ModifyEvent:
                         if(i->doCtrls)
-                          removePortCtrlEvents(i->oEvent, i->part, i->doClones);
-                        changeEvent(i->oEvent, i->nEvent, i->part);
+                          removePortCtrlEvents(i->oEvent, editable_part, i->doClones);
+                        changeEvent(i->oEvent, i->nEvent, editable_part);
                         if(i->doCtrls)
-                          addPortCtrlEvents(i->nEvent, i->part, i->doClones);
+                          addPortCtrlEvents(i->nEvent, editable_part, i->doClones);
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
                   case UndoOp::AddTempo:
@@ -464,15 +466,18 @@ void Song::doRedo2()
       {
       Undo& u = redoList->back();
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
+            Track* editable_track = const_cast<Track*>(i->track);
+// uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
+            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        insertTrack2(i->track, i->trackno);
-                        chainTrackParts(i->track, true);
+                        insertTrack2(editable_track, i->trackno);
+                        chainTrackParts(editable_track, true);
                         
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
                   case UndoOp::DeleteTrack:
-                        removeTrack2(i->track);
+                        removeTrack2(editable_track);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
                         
@@ -486,49 +491,49 @@ void Song::doRedo2()
                         }
                         break;
                   case UndoOp::AddPart:
-                        addPart(i->part);
+                        addPart(editable_part);
                         updateFlags |= SC_PART_INSERTED;
-                        i->part->rechainClone();
+                        editable_part->rechainClone();
                         break;
                   case UndoOp::DeletePart:
-                        removePart(i->part);
+                        removePart(editable_part);
                         updateFlags |= SC_PART_REMOVED;
-                        i->part->unchainClone();
+                        editable_part->unchainClone();
                         break;
                   case UndoOp::ModifyPartName:
-                        i->part->setName(i->_newName);
+                        editable_part->setName(i->_newName);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::ModifyPartTick: // TODO FIXME (?) do port ctrls/clones?
-                        i->part->setTick(i->new_partlen_or_tick);
+                        editable_part->setTick(i->new_partlen_or_tick);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::ModifyPartLength: // TODO FIXME (?) do port ctrls/clones?
-                        i->part->setLenTick(i->new_partlen_or_tick);
+                        editable_part->setLenTick(i->new_partlen_or_tick);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::ModifyPartLengthFrames: // TODO FIXME  FINDMICH frames deprecated!   do port ctrls/clones?
-                        i->part->setLenFrame(i->new_partlen_or_tick);
+                        editable_part->setLenFrame(i->new_partlen_or_tick);
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::AddEvent:
-                        addEvent(i->nEvent, i->part);
+                        addEvent(i->nEvent, editable_part);
                         if(i->doCtrls)
-                          addPortCtrlEvents(i->nEvent, i->part, i->doClones);
+                          addPortCtrlEvents(i->nEvent, editable_part, i->doClones);
                         updateFlags |= SC_EVENT_INSERTED;
                         break;
                   case UndoOp::DeleteEvent:
                         if(i->doCtrls)
-                          removePortCtrlEvents(i->nEvent, i->part, i->doClones);
-                        deleteEvent(i->nEvent, i->part);
+                          removePortCtrlEvents(i->nEvent, editable_part, i->doClones);
+                        deleteEvent(i->nEvent, editable_part);
                         updateFlags |= SC_EVENT_REMOVED;
                         break;
                   case UndoOp::ModifyEvent:
                         if(i->doCtrls)
-                          removePortCtrlEvents(i->nEvent, i->part, i->doClones);
-                        changeEvent(i->nEvent, i->oEvent, i->part);
+                          removePortCtrlEvents(i->nEvent, editable_part, i->doClones);
+                        changeEvent(i->nEvent, i->oEvent, editable_part);
                         if(i->doCtrls)
-                          addPortCtrlEvents(i->oEvent, i->part, i->doClones);
+                          addPortCtrlEvents(i->oEvent, editable_part, i->doClones);
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
                   case UndoOp::AddTempo:
@@ -730,26 +735,29 @@ bool Song::doUndo1()
             return true;
       Undo& u = undoList->back();
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
+            Track* editable_track = const_cast<Track*>(i->track);
+            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
+// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        removeTrack1(i->track);
+                        removeTrack1(editable_track);
                         break;
                   case UndoOp::DeleteTrack:
-                        insertTrack1(i->track, i->trackno);
+                        insertTrack1(editable_track, i->trackno);
 
                         // FIXME: Would like to put this part in Undo2, but indications
                         //  elsewhere are that (dis)connecting jack routes must not be
                         //  done in the realtime thread. The result is that we get a few
                         //  "PANIC Process init: No buffer from audio device" messages
                         //  before the routes are (dis)connected. So far seems to do no harm though...
-                        switch(i->track->type())
+                        switch(editable_track->type())
                         {
                               case Track::AUDIO_OUTPUT:
                               case Track::AUDIO_INPUT:
-                                      connectJackRoutes((AudioTrack*)i->track, false);
+                                      connectJackRoutes((AudioTrack*)editable_track, false);
                                     break;
                               //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
-                                      //SynthI* si = (SynthI*)i->track;
+                                      //SynthI* si = (SynthI*)editable_track;
                                       //si->synth()->init(
                               //      break;
                               default:
@@ -758,16 +766,16 @@ bool Song::doUndo1()
 
                         break;
                   case UndoOp::ModifyTrackName:
-                          i->track->setName(i->_oldName);
+                          editable_track->setName(i->_oldName);
                           updateFlags |= SC_TRACK_MODIFIED;
                         break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
                   case UndoOp::ModifyTrackChannel:
-                        if (i->_propertyTrack->isMidiTrack()) 
+                        if (editable_property_track->isMidiTrack()) 
                         {
-                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editable_property_track);
                           if (mt == 0 || mt->type() == MusECore::Track::DRUM)
                             break;
                           if (i->_oldPropValue != mt->outChannel()) 
@@ -787,9 +795,9 @@ bool Song::doUndo1()
                         }
                         else
                         {
-                            if(i->_propertyTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            if(editable_property_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_propertyTrack);
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(editable_property_track);
                               if (at == 0)
                                 break;
                               if (i->_oldPropValue != at->channels()) {
@@ -816,12 +824,15 @@ void Song::doUndo3()
       {
       Undo& u = undoList->back();
       for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
+            Track* editable_track = const_cast<Track*>(i->track);
+// uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
+// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        removeTrack3(i->track);
+                        removeTrack3(editable_track);
                         break;
                   case UndoOp::DeleteTrack:
-                        insertTrack3(i->track, i->trackno);
+                        insertTrack3(editable_track, i->trackno);
                         break;
                   case UndoOp::ModifyMarker:
                         {
@@ -858,19 +869,22 @@ bool Song::doRedo1()
             return true;
       Undo& u = redoList->back();
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
+            Track* editable_track = const_cast<Track*>(i->track);
+            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
+// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        insertTrack1(i->track, i->trackno);
+                        insertTrack1(editable_track, i->trackno);
 
                         // FIXME: See comments in Undo1.
-                        switch(i->track->type())
+                        switch(editable_track->type())
                         {
                               case Track::AUDIO_OUTPUT:
                               case Track::AUDIO_INPUT:
-                                      connectJackRoutes((AudioTrack*)i->track, false);
+                                      connectJackRoutes((AudioTrack*)editable_track, false);
                                     break;
                               //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
-                                      //SynthI* si = (SynthI*)i->track;
+                                      //SynthI* si = (SynthI*)editable_track;
                                       //si->synth()->init(
                               //      break;
                               default:
@@ -879,19 +893,19 @@ bool Song::doRedo1()
 
                         break;
                   case UndoOp::DeleteTrack:
-                        removeTrack1(i->track);
+                        removeTrack1(editable_track);
                         break;
                   case UndoOp::ModifyTrackName:
-                          i->track->setName(i->_newName);
+                          editable_track->setName(i->_newName);
                           updateFlags |= SC_TRACK_MODIFIED;
                         break;
                   case UndoOp::ModifyClip:
                         MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
                   case UndoOp::ModifyTrackChannel:
-                        if (i->_propertyTrack->isMidiTrack()) 
+                        if (editable_property_track->isMidiTrack()) 
                         {
-                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(i->_propertyTrack);
+                          MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(editable_property_track);
                           if (mt == 0 || mt->type() == MusECore::Track::DRUM)
                             break;
                           if (i->_newPropValue != mt->outChannel()) 
@@ -911,9 +925,9 @@ bool Song::doRedo1()
                         }
                         else
                         {
-                            if(i->_propertyTrack->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            if(editable_property_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(i->_propertyTrack);
+                              MusECore::AudioTrack* at = dynamic_cast<MusECore::AudioTrack*>(editable_property_track);
                               if (at == 0)
                                 break;
                               if (i->_newPropValue != at->channels()) {
@@ -940,12 +954,15 @@ void Song::doRedo3()
       {
       Undo& u = redoList->back();
       for (iUndoOp i = u.begin(); i != u.end(); ++i) {
+            Track* editable_track = const_cast<Track*>(i->track);
+// uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
+// uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        insertTrack3(i->track, i->trackno);
+                        insertTrack3(editable_track, i->trackno);
                         break;
                   case UndoOp::DeleteTrack:
-                        removeTrack3(i->track);
+                        removeTrack3(editable_track);
                         break;
                   case UndoOp::ModifyMarker:
                         {
