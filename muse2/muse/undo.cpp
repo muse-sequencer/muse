@@ -418,10 +418,10 @@ void Song::doUndo2()
                         break;
                   case UndoOp::ModifyEvent:
                         if(i->doCtrls)
-                          removePortCtrlEvents(i->oEvent, editable_part, i->doClones);
-                        changeEvent(i->oEvent, i->nEvent, editable_part);
+                          removePortCtrlEvents(i->nEvent, editable_part, i->doClones);
+                        changeEvent(i->nEvent, i->oEvent, editable_part);
                         if(i->doCtrls)
-                          addPortCtrlEvents(i->nEvent, editable_part, i->doClones);
+                          addPortCtrlEvents(i->oEvent, editable_part, i->doClones);
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
                   case UndoOp::AddTempo:
@@ -536,10 +536,10 @@ void Song::doRedo2()
                         break;
                   case UndoOp::ModifyEvent:
                         if(i->doCtrls)
-                          removePortCtrlEvents(i->nEvent, editable_part, i->doClones);
-                        changeEvent(i->nEvent, i->oEvent, editable_part);
+                          removePortCtrlEvents(i->oEvent, editable_part, i->doClones);
+                        changeEvent(i->oEvent, i->nEvent, editable_part);
                         if(i->doCtrls)
-                          addPortCtrlEvents(i->oEvent, editable_part, i->doClones);
+                          addPortCtrlEvents(i->nEvent, editable_part, i->doClones);
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
                   case UndoOp::AddTempo:
@@ -631,8 +631,7 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_)
     selected_old=sel_old_;
 }
 
-
-UndoOp::UndoOp(UndoType type_, const Event& oev, const Event& nev, const Part* part_, bool doCtrls_, bool doClones_)
+UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* part_, bool doCtrls_, bool doClones_)
       {
       assert(type_==ModifyEvent);
       assert(part_);
