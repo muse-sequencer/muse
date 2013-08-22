@@ -2979,7 +2979,7 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
 void Song::insertTrack0(Track* track, int idx)
       {
       insertTrack1(track, idx);
-      insertTrack2(track, idx);  // MusEGlobal::audio->msgInsertTrack(track, idx, false); DELETETHIS or is this somehow explanatory?
+      insertTrack2(track, idx);  // the same as MusEGlobal::audio->msgInsertTrack(track, idx, false);
       insertTrack3(track, idx);
       }
 

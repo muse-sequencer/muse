@@ -32,6 +32,7 @@ class QDialog;
 
 namespace MusECore {
 
+class Undo;
 class Event;
 class MidiPart;
 class MidiTransformation;
@@ -70,9 +71,9 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
 
       virtual void accept();
       void setValOp(QWidget* a, QWidget* b, MusECore::ValOp op);
-      void processEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*);
+      void processEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*, MusECore::Undo& operations);
       bool isSelected(const MusECore::Event&);
-      void transformEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*);
+      void transformEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*, MusECore::Undo& operations);
       bool typesMatch(const MusECore::Event& e, unsigned selType);
       
       void updatePresetList();
