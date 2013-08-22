@@ -926,7 +926,7 @@ unsigned get_clipboard_len()
 	return get_groupedevents_len(s);
 }
 
-bool paste_notes(Part* paste_into_part)
+bool paste_notes(const Part* paste_into_part)
 {
 	unsigned temp_begin = AL::sigmap.raster1(MusEGlobal::song->cpos(),0);
 	unsigned temp_end = AL::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
@@ -943,7 +943,7 @@ bool paste_notes(Part* paste_into_part)
 	return true;
 }
 
-void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part, int amount, int raster)
+void paste_notes(int max_distance, bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster)
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);  // TODO CHECK Tim.
@@ -1102,11 +1102,11 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id) // true on s
 	}
 }
 
-void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part, int amount, int raster)
+void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster)
 {
 	Undo operations;
-	map<Part*, unsigned> expand_map;
-	map<Part*, set<Part*> > new_part_map;
+	map<const Part*, unsigned> expand_map;
+	map<const Part*, set<const Part*> > new_part_map;
 	
 	QByteArray pt_= pt.toLatin1();
 	Xml xml(pt_.constData());
@@ -1128,9 +1128,9 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 		
 					if (read_eventlist_and_part(xml, &el, &part_id))
 					{
-						Part* dest_part;
+						const Part* dest_part;
 						Track* dest_track;
-						Part* old_dest_part;
+						const Part* old_dest_part;
 						
 						if (paste_into_part == NULL)
 							dest_part = partFromSerialNumber(part_id);
@@ -1157,11 +1157,12 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 								
 								if (create_new_part)
 								{
-									dest_part = dest_track->newPart();
-									dest_part->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
+									Part* newpart = dest_track->newPart();
+									newpart->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
 
 									new_part_map[old_dest_part].insert(dest_part);
 									operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
+									dest_part = newpart;
 								}
 								
 								for (iEvent i = el.begin(); i != el.end(); ++i)
@@ -1216,7 +1217,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 	
 	out_of_paste_at_for:
 	
-	for (map<Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
+	for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
 		if (it->second != it->first->lenTick())
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 

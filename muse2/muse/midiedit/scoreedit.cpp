@@ -520,7 +520,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	selection_changed();
 
 	connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(song_changed(MusECore::SongChangedFlags_t)));	
-	connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)));	
+	connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)));	
 
 	score_canvas->fully_recalculate();
 	score_canvas->goto_tick(initPos,true);
@@ -898,7 +898,7 @@ void staff_t::write_status(int level, MusECore::Xml& xml) const
 	xml.tag(level++, "staff");
 	xml.intTag(level, "type", type);
 	xml.intTag(level, "clef", clef);
-	for (set<MusECore::Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+	for (set<const MusECore::Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 	{
 		MusECore::Track* track = (*part)->track();
 		int trkIdx   = MusEGlobal::song->tracks()->index(track);
@@ -963,7 +963,7 @@ void ScoreEdit::writeStatus(int level, MusECore::Xml& xml) const
 	xml.intTag(level, "preambleContainsKeysig", preamble_keysig_action->isChecked());
 	xml.intTag(level, "preambleContainsTimesig", preamble_timesig_action->isChecked());
 
-	MusECore::Part* selected_part=score_canvas->get_selected_part();
+	const MusECore::Part* selected_part=score_canvas->get_selected_part();
 	if (selected_part==NULL)
 	{
 		xml.put(level, "<selectedPart>none</selectedPart>");
@@ -1785,9 +1785,9 @@ void staff_t::create_appropriate_eventlist()
 	// phase one: fill the list -----------------------------------------
 	
 	//insert note on events
-	for (set<MusECore::Part*>::const_iterator part_it=parts.begin(); part_it!=parts.end(); part_it++)
+	for (set<const MusECore::Part*>::const_iterator part_it=parts.begin(); part_it!=parts.end(); part_it++)
 	{
-		MusECore::Part* part=*part_it;
+		const MusECore::Part* part=*part_it;
 		
 		for (MusECore::ciEvent it=part->events().begin(); it!=part->events().end(); it++)
 		{
@@ -3804,7 +3804,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				
 				if ((mouse_erases_notes) || (event->button()==Qt::MidButton)) //erase?
 				{
-					MusEGlobal::audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
+					MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent,dragged_event, dragged_event_part,  false, false));
 				}
 				else if (event->button()==Qt::LeftButton) //edit?
 				{
@@ -3818,8 +3818,8 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				{
 					if (mouse_inserts_notes)
 					{
-						MusECore::Part* curr_part = NULL;
-						set<MusECore::Part*> possible_dests=staff_it->parts_at_tick(tick);
+						const MusECore::Part* curr_part = NULL;
+						set<const MusECore::Part*> possible_dests=staff_it->parts_at_tick(tick);
 
 						if (!possible_dests.empty())
 						{
@@ -3866,7 +3866,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 								newevent.setLenTick(curr_part->lenTick() - newevent.tick());
 							}
 							
-							MusEGlobal::audio->msgAddEvent(newevent, curr_part, true, false, false);
+							MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, newevent, curr_part,false, false));
 							
 							set_dragged_event_part(curr_part);
 							dragged_event=newevent;
@@ -3913,7 +3913,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 			{
 				if (debugMsg) cout << "new length <= 0, erasing item" << endl;
 				if (undo_started) MusEGlobal::song->undo();
-				MusEGlobal::audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
+				MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent,dragged_event, dragged_event_part, false, false));
 			}
 			else
 			{
@@ -4512,7 +4512,7 @@ bool staff_t::cleanup_parts()
 {
 	bool did_something=false;
 	
-	for (set<MusECore::Part*>::iterator it=parts.begin(); it!=parts.end();)
+	for (set<const MusECore::Part*>::iterator it=parts.begin(); it!=parts.end();)
 	{
 		bool valid=false;
 		
@@ -4543,11 +4543,11 @@ bool staff_t::cleanup_parts()
 	return did_something;
 }
 
-set<MusECore::Part*> staff_t::parts_at_tick(unsigned tick)
+set<const MusECore::Part*> staff_t::parts_at_tick(unsigned tick)
 {
-	set<MusECore::Part*> result;
+	set<const MusECore::Part*> result;
 	
-	for (set<MusECore::Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+	for (set<const MusECore::Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
 		if ((tick >= (*it)->tick()) && (tick<=(*it)->endTick()))
 			result.insert(*it);
 	
@@ -4611,7 +4611,7 @@ void staff_t::update_part_indices()
 {
 	part_indices.clear();
 	
-	for (set<MusECore::Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+	for (set<const MusECore::Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
 		part_indices.insert((*it)->sn());
 }
 
@@ -4648,15 +4648,15 @@ void ScoreEdit::keyPressEvent(QKeyEvent* event)
 }
 
 
-void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >& param)
+void ScoreCanvas::add_new_parts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >& param)
 {
 	for (list<staff_t>::iterator staff=staves.begin(); staff!=staves.end(); staff++)
 	{
-		for (std::map< MusECore::Part*, set<MusECore::Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
+		for (std::map< const MusECore::Part*, set<const MusECore::Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
 			if (staff->parts.find(it->first)!=staff->parts.end())
 				staff->parts.insert(it->second.begin(), it->second.end());
 		
-		//staff->cleanup_parts(); // don't cleanup here, because at this point, the parts may only exist
+		//staff->cleanup_parts(); // don't cleanup here, because at this point, the parts might exist only
 		                          // in the operation group. cleanup could remove them immediately
 		staff->update_part_indices();
 	}

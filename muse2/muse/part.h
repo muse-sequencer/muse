@@ -186,7 +186,7 @@ class PartList : public std::multimap<int, Part*, std::less<unsigned> > {
       iPart findPart(unsigned tick);
       iPart add(Part*);
       void remove(Part* part);
-      int index(Part*);
+      int index(const Part*) const;
       Part* find(int idx);
       void clearDelete() {
             for (iPart i = begin(); i != end(); ++i)

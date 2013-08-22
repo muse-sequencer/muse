@@ -179,7 +179,7 @@ class Song : public QObject {
        *  a key in this map, the Editors shall no more edit this part, but instead
        *  all parts in the_map[old_part] (which is a std::set<Part*>)
        */
-      void informAboutNewParts(const std::map< Part*, std::set<Part*> >&);
+      void informAboutNewParts(const std::map< const Part*, std::set<const Part*> >&);
       /** this sends emits a signal to each MidiEditor or whoever is interested.
        *  For each part which is 1) opened in this MidiEditor and 2) which is
        *  a key in this map, the Editors shall no more edit this part, but instead
@@ -187,7 +187,7 @@ class Song : public QObject {
        *  this is a special case of the general function, which only replaces one part
        *  by up to nine different.
        */
-      void informAboutNewParts(Part* orig, Part* p1, Part* p2=NULL, Part* p3=NULL, Part* p4=NULL, Part* p5=NULL, Part* p6=NULL, Part* p7=NULL, Part* p8=NULL, Part* p9=NULL);
+      void informAboutNewParts(const Part* orig, const Part* p1, const Part* p2=NULL, const Part* p3=NULL, const Part* p4=NULL, const Part* p5=NULL, const Part* p6=NULL, const Part* p7=NULL, const Part* p8=NULL, const Part* p9=NULL);
 
       void putEvent(int pv);
       void endMsgCmd();
@@ -444,7 +444,7 @@ class Song : public QObject {
       void midiPortsChanged();
       void midiNote(int pitch, int velo);  
       void controllerChanged(MusECore::Track*, int); 
-      void newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
+      void newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
       void sigDirty();
       };
 

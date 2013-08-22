@@ -55,7 +55,7 @@ void StepRec::timeout()
 	}
 }
 
-void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ctrl, bool shift, int incoming_pitch)
+void StepRec::record(const Part* part, int pitch, int len, int step, int velo, bool ctrl, bool shift, int incoming_pitch)
 {
 	unsigned tick = MusEGlobal::song->cpos();
 	unsigned lasttick=0;

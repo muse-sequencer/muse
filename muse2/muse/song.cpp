@@ -3520,14 +3520,14 @@ QString Song::getScriptPath(int id, bool isdelivered)
       return path;
 }
 
-void Song::informAboutNewParts(const std::map< Part*, std::set<Part*> >& param)
+void Song::informAboutNewParts(const std::map< const Part*, std::set<const Part*> >& param)
 {
   emit newPartsCreated(param);
 }
 
-void Song::informAboutNewParts(Part* orig, Part* p1, Part* p2, Part* p3, Part* p4, Part* p5, Part* p6, Part* p7, Part* p8, Part* p9)
+void Song::informAboutNewParts(const Part* orig, const Part* p1, const Part* p2, const Part* p3, const Part* p4, const Part* p5, const Part* p6, const Part* p7, const Part* p8, const Part* p9)
 {
-  std::map< Part*, std::set<Part*> > temp;
+  std::map<const Part*, std::set<const Part*> > temp;
   
   temp[orig].insert(p1);
   temp[orig].insert(p2);
@@ -3538,7 +3538,7 @@ void Song::informAboutNewParts(Part* orig, Part* p1, Part* p2, Part* p3, Part* p
   temp[orig].insert(p7);
   temp[orig].insert(p8);
   temp[orig].insert(p9);
-  temp[orig].erase(static_cast<Part*>(NULL));
+  temp[orig].erase(static_cast<const Part*>(NULL));
   temp[orig].erase(orig);
   
   informAboutNewParts(temp);

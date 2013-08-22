@@ -375,10 +375,10 @@ iEvent Part::addEvent(Event& p)
 //   index
 //---------------------------------------------------------
 
-int PartList::index(Part* part)
+int PartList::index(const Part* part) const
       {
       int index = 0;
-      for (iPart i = begin(); i != end(); ++i, ++index)
+      for (ciPart i = begin(); i != end(); ++i, ++index)
             if (i->second == part) {
                   return index;
                   }

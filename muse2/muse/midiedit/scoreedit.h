@@ -257,7 +257,7 @@ class FloEvent
 		enum typeEnum { NOTE_ON = 30, NOTE_OFF = 10, BAR = 20, KEY_CHANGE=23, TIME_SIG=26 }; //the order matters!
 		typeEnum type;
 		unsigned tick;
-		MusECore::Part* source_part;
+		const MusECore::Part* source_part;
 		const MusECore::Event* source_event;
 		
 		int pitch;
@@ -270,7 +270,7 @@ class FloEvent
 		MusECore::key_enum key;
 		
 		
-		FloEvent(unsigned ti, int p,int v,int l,typeEnum t, MusECore::Part* part=NULL, const MusECore::Event* event=NULL)
+		FloEvent(unsigned ti, int p,int v,int l,typeEnum t, const MusECore::Part* part=NULL, const MusECore::Event* event=NULL)
 		{
 			pitch=p;
 			vel=v;
@@ -313,7 +313,7 @@ class FloItem
 		typeEnum type;
 		unsigned begin_tick;
 		const MusECore::Event* source_event;
-		MusECore::Part* source_part;
+		const MusECore::Part* source_part;
 		
 		note_pos_t pos;
 		int len;
@@ -343,7 +343,7 @@ class FloItem
 		
 
 		
-		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, MusECore::Part* part=NULL, const MusECore::Event* event=NULL)
+		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, const MusECore::Part* part=NULL, const MusECore::Event* event=NULL)
 		{
 			pos=p;
 			dots=d;
@@ -546,7 +546,7 @@ enum staff_mode_t
 
 struct staff_t
 {
-	set<MusECore::Part*> parts;
+	set<const MusECore::Part*> parts;
 	set<int> part_indices;
 	ScoreEventList eventlist;
 	ScoreItemList itemlist;
@@ -585,7 +585,7 @@ struct staff_t
 		parent=parent_;
 	}
 	
-	staff_t (ScoreCanvas* parent_, staff_type_t type_, clef_t clef_, set<MusECore::Part*> parts_)
+	staff_t (ScoreCanvas* parent_, staff_type_t type_, clef_t clef_, set<const MusECore::Part*> parts_)
 	{
 		type=type_;
 		clef=clef_;
@@ -596,7 +596,7 @@ struct staff_t
 	
 	bool cleanup_parts();
 	
-	set<MusECore::Part*> parts_at_tick(unsigned tick);
+	set<const MusECore::Part*> parts_at_tick(unsigned tick);
 	
 	void read_status(MusECore::Xml& xml);
 	void write_status(int level, MusECore::Xml& xml) const;
@@ -718,7 +718,7 @@ class ScoreCanvas : public MusEGui::View
 		float y_scroll_speed;
 		float y_scroll_pos;
 
-		MusECore::Part* selected_part;
+		const MusECore::Part* selected_part;
 		int selected_part_index;
 		
 		int last_len;
@@ -742,7 +742,7 @@ class ScoreCanvas : public MusEGui::View
 		bool inserting;
 		bool dragging;
 		bool drag_cursor_changed;
-		MusECore::Part* dragged_event_part;
+		const MusECore::Part* dragged_event_part;
 		int dragged_event_part_index;
 		MusECore::Event dragged_event;
 		MusECore::Event original_dragged_event;
@@ -790,7 +790,7 @@ class ScoreCanvas : public MusEGui::View
 		void deselect_all();
 		void midi_note(int pitch, int velo);
 		
-		void add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
+		void add_new_parts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
 
 	public slots:
 		void x_scroll_event(int);
@@ -855,10 +855,10 @@ class ScoreCanvas : public MusEGui::View
 		int get_last_len() {return last_len;}
 		void set_last_len(int l) {last_len=l;}
 		
-		MusECore::Part* get_selected_part() {return selected_part;}
-		void set_selected_part(MusECore::Part* p) {selected_part=p; if (selected_part) selected_part_index=selected_part->sn();}
-		MusECore::Part* get_dragged_event_part() {return dragged_event_part;}
-		void set_dragged_event_part(MusECore::Part* p) {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->sn();}
+		const MusECore::Part* get_selected_part() const {return selected_part;}
+		void set_selected_part(const MusECore::Part* p) {selected_part=p; if (selected_part) selected_part_index=selected_part->sn();}
+		const MusECore::Part* get_dragged_event_part() const {return dragged_event_part;}
+		void set_dragged_event_part(const MusECore::Part* p) {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->sn();}
 		
 		set<const MusECore::Part*> get_all_parts();
 		

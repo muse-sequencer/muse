@@ -40,7 +40,7 @@ namespace MusECore {
 class Undo;
 
 std::set<const Part*> partlist_to_set(PartList* pl);
-std::set<const Part*> part_to_set(Part* p);
+std::set<const Part*> part_to_set(const Part* p);
 std::map<const Event*, const Part*> get_events(const std::set<const Part*>& parts, int range);
 
 //these functions simply do their job, non-interactively
