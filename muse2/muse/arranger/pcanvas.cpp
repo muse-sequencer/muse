@@ -1698,19 +1698,15 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       MusECore::MidiPart* mp = 0;
       MusECore::WavePart* wp = 0;
       MusECore::Track::TrackType type = part->track()->type();
-      if (type == MusECore::Track::WAVE) {
+      if (type == MusECore::Track::WAVE)
             wp =(MusECore::WavePart*)part;
-            }
-      else {
+      else
             mp = (MusECore::MidiPart*)part;
-            }
 
       if (wp)
           drawWavePart(p, rect, wp, r);
       else if (mp)
-      {
-          drawMidi*** /* FIXME: just give it the mp, not mp->whatever*/Part(p, rect, mp->events(), (MusECore::MidiTrack*)part->track(), mp, r, mp->tick(), from, to);  
-      }
+          drawMidiPart(p, rect, mp, r, from, to);
 
       p.setWorldMatrixEnabled(false);
         
@@ -1867,7 +1863,12 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 //    pr - part rectangle
 //---------------------------------------------------------
 
-void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* events, MusECore::MidiTrack *mt, MusECore::MidiPart *pt, const QRect& r, int pTick, int from, int to)
+void PartCanvas::drawMidiPart(QPainter& p, const QRect& rect, MusECore::MidiPart* midipart, const QRect& r, int from, int to)
+{
+	drawMidiPart(p, rect, midipart->events(), midipart->track(), midipart, r, midipart->tick(), from, to);
+}
+
+void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventList& events, MusECore::MidiTrack *mt, MusECore::MidiPart *pt, const QRect& r, int pTick, int from, int to)
 {
   int color_brightness;
   QColor eventColor;
@@ -1896,9 +1897,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
             // Do not allow this, causes segfault.
             if(from <= to)
             {
-              MusECore::iEvent ito(events->lower_bound(to));
+              MusECore::ciEvent ito(events.lower_bound(to));
 
-              for (MusECore::iEvent i = events->lower_bound(from); i != ito; ++i) {
+              for (MusECore::ciEvent i = events.lower_bound(from); i != ito; ++i) {
                     MusECore::EventType type = i->second.type();
                     int a = i->second.dataA() | 0xff;
                     if (
@@ -1924,12 +1925,12 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
       using std::map;
       using std::pair;
       
-      MusECore::iEvent ito(events->lower_bound(to));
+      MusECore::ciEvent ito(events.lower_bound(to));
       bool isdrum = (mt->type() == MusECore::Track::DRUM  ||  mt->type() == MusECore::Track::NEW_DRUM);
 
       // draw controllers ------------------------------------------
       p.setPen(QColor(192,192,color_brightness/2));
-      for (MusECore::iEvent i = events->begin(); i != ito; ++i) { // PITCH BEND
+      for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PITCH BEND
             int t  = i->first + pTick;
 
             MusECore::EventType type = i->second.type();
@@ -1946,7 +1947,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
       }
 
       p.setPen(QColor(192,color_brightness/2,color_brightness/2));
-      for (MusECore::iEvent i = events->begin(); i != ito; ++i) { // PAN
+      for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PAN
             int t  = i->first + pTick;
 
             MusECore::EventType type = i->second.type();
@@ -1963,7 +1964,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
       }
 
       p.setPen(QColor(color_brightness/2,192,color_brightness/2));
-      for (MusECore::iEvent i = events->begin(); i != ito; ++i) { // VOLUME
+      for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // VOLUME
             int t  = i->first + pTick;
 
             MusECore::EventType type = i->second.type();
@@ -1980,7 +1981,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
       }
 
       p.setPen(QColor(0,0,255));
-      for (MusECore::iEvent i = events->begin(); i != ito; ++i) { // PROGRAM CHANGE
+      for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PROGRAM CHANGE
             int t  = i->first + pTick;
 
             MusECore::EventType type = i->second.type();
@@ -2007,7 +2008,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
       
       if (MusEGlobal::config.canvasShowPartType & 4) //y-stretch?
       {
-        for (MusECore::iEvent i = events->begin(); i != events->end(); ++i)
+        for (MusECore::ciEvent i = events.begin(); i != events.end(); ++i)
         {
           if (i->second.type()==MusECore::Note)
           {
@@ -2046,13 +2047,13 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
         if (MusEGlobal::heavyDebugMsg)
         {
             if (!isdrum)
-                printf("DEBUG: arranger: cakewalk enabled, y-stretching from %i to %i. eventlist=%p\n",lowest_pitch, highest_pitch, events);
+                printf("DEBUG: arranger: cakewalk enabled, y-stretching from %i to %i.\n",lowest_pitch, highest_pitch);
             else
             {
                 printf("DEBUG: arranger: cakewalk enabled, y-stretching drums: ");;
                 for (map<int,int>::iterator it=y_mapper.begin(); it!=y_mapper.end(); it++)
                     printf("%i ", it->first);
-                printf("; eventlist=%p\n",events); 
+                printf("\n"); 
             }
         }
       }
@@ -2069,7 +2070,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
       }
 
       p.setPen(eventColor);
-      for (MusECore::iEvent i = events->begin(); i != ito; ++i) {
+      for (MusECore::ciEvent i = events.begin(); i != ito; ++i) {
             int t  = i->first + pTick;
             int te = t + i->second.lenTick();
 
@@ -3045,7 +3046,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
                     }
                  }
                }
-               drawMidiPart(p, rect, &myEventList, mt, 0, partRect,startPos,0,MusEGlobal::song->cpos()-startPos);
+               drawMidiPart(p, rect, myEventList, mt, 0, partRect,startPos,0,MusEGlobal::song->cpos()-startPos);
            }
            yPos+=track->height();
       }
