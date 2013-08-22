@@ -81,11 +81,6 @@ void MidiSeq::processMsg(const ThreadMsg* m)
       {
       MusECore::AudioMsg* msg = (MusECore::AudioMsg*)m;
       switch(msg->id) {
-            // This does not appear to be used anymore. Was sent in Audio::process1,  DELETETHIS 5 ??
-            //  now Audio::processMidi is called directly. p4.0.15 Tim.
-            //case MusECore::MS_PROCESS:
-            //      audio->processMidi();
-            //      break;
             
             case MusECore::SEQM_SEEK:
                   processSeek();
@@ -101,23 +96,6 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   break;
             case MusECore::MS_UPDATE_POLL_FD:
                   updatePollFd();
-                  break;
-                  
-                  
-            // Moved into Song::processMsg p4.0.34  ...
-            case MusECore::SEQM_ADD_TRACK:
-                  MusEGlobal::song->insertTrack2(msg->track, msg->ival);
-                  updatePollFd();
-                  break;
-            case MusECore::SEQM_REMOVE_TRACK:
-                  MusEGlobal::song->cmdRemoveTrack(msg->track);
-                  updatePollFd();
-                  break;
-            case MusECore::SEQM_ADD_PART:
-                  MusEGlobal::song->cmdAddPart((Part*)msg->p1);
-                  break;
-            case MusECore::SEQM_REMOVE_PART:
-                  MusEGlobal::song->cmdRemovePart((Part*)msg->p1);
                   break;
                   
                   
