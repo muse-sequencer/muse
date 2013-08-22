@@ -74,11 +74,8 @@ void Part::chainClone(Part* p)
   this->_nextClone->_prevClone = this;
   p->_nextClone = this;
   
-  // Synchronize this->_events to p->_events. Need to deep-copy, i.e. clone() the Events.
-  this->_events.clear();
-  for (ciEvent it = p->_events.begin(); it!=p->_events.end(); it++)
-      this->_events.insert(std::pair<unsigned, Event>(it->first, it->second.clone()));
-
+  // we only chain clones. we must trust in the GUI thread that the eventlist is consistent.
+  
   this->_clonemaster_sn = p->_sn;
 }
 
@@ -89,6 +86,22 @@ void Part::rechainClone()
     this->chainClone(_backupClone);
     _backupClone = NULL;
 }
+
+bool Part::isCloneOf(const Part* other) const
+{
+	return this->_clonemaster_sn == other->_clonemaster_sn;
+}
+
+int Part::nClones() const
+{
+	int n=1;
+	
+	for(const Part* it = this->_nextClone; it!=this; it=it->_nextClone)
+		n++;
+	
+	return n;
+}
+
 
 // FIXME FINDMICHJETZT TODO: weg damit!
 
@@ -414,30 +427,68 @@ Part::Part(Track* t)
       _colorIndex = 0;
       }
 
-      
-/* FINDMICHJETZT FIXME! 
-Part* Part::duplicate() const
+WavePart* WavePart::duplicateEmpty() const
 {
-    Part* dup = duplicateEmpty();
+	WavePart* part = new WavePart((WaveTrack*)this->_track);
+	part->setName(name());
+	part->setColorIndex(colorIndex());
 
-    // copy the eventlist; duplicate each Event(Ptr!).
-    for (MusECore::ciEvent i = _events.begin(); i != _events.end(); ++i)
-        dup->_events.add(i->second.clone())    
-   
-    return dup;
+	*(PosLen*)part = *(PosLen*)this;
+	part->setMute(mute());
+	
+	return part;
 }
 
-Part* Part::duplicateEmpty() const
+WavePart* WavePart::duplicate() const
 {
-    MidiPart* part = new MidiPart(this->_track);
-    part->setName(name());
-    part->setColorIndex(colorIndex());
+	return (WavePart*)Part::duplicate();
+}
 
-    *(PosLen*)part = *(PosLen*)this;
-    part->setMute(mute());
-    
-    return part;
-} */
+WavePart* WavePart::createNewClone() const
+{
+	return (WavePart*)Part::createNewClone();
+}
+
+MidiPart* MidiPart::duplicateEmpty() const
+{
+	MidiPart* part = new MidiPart((MidiTrack*)this->_track);
+	part->setName(name());
+	part->setColorIndex(colorIndex());
+
+	*(PosLen*)part = *(PosLen*)this;
+	part->setMute(mute());
+	
+	return part;
+}
+
+MidiPart* MidiPart::duplicate() const
+{
+	return (MidiPart*)Part::duplicate();
+}
+
+MidiPart* MidiPart::createNewClone() const
+{
+	return (MidiPart*)Part::createNewClone();
+}
+
+
+Part* Part::createNewClone() const
+{
+	Part* clone = duplicate();
+	clone->_backupClone=const_cast<Part*>(this);
+	return clone;
+}
+
+Part* Part::duplicate() const
+{
+	Part* dup = duplicateEmpty();
+
+	// copy the eventlist; duplicate each Event(Ptr!).
+	for (MusECore::ciEvent i = _events.begin(); i != _events.end(); ++i)
+		dup->_events.add(i->second.clone());
+
+	return dup;
+}
 
 
 //---------------------------------------------------------

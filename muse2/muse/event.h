@@ -137,7 +137,7 @@ class EventList : public EL {
    public:
       ciEvent find(const Event&) const;
       iEvent find(const Event&);
-      iEvent add(Event& event);
+      iEvent add(Event event);
       void move(Event& event, unsigned tick);
       void dump() const;
       void read(Xml& xml, const char* name, bool midi);

@@ -62,7 +62,7 @@ void EventList::read(Xml& xml, const char* name, bool midi)
 //   add
 //---------------------------------------------------------
 
-iEvent EventList::add(Event& event)
+iEvent EventList::add(Event event)
       {
       // Changed by Tim. An event list containing wave events should be sorted by
       //  frames. WaveTrack::fetchData() relies on the sorting order, and
