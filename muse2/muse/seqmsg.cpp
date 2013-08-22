@@ -319,38 +319,6 @@ void Audio::msgSetRecord(AudioTrack* node, bool val)
       sendMsg(&msg);
       }
 
-/* DELETETHIS 34
-//---------------------------------------------------------
-//   msgSetVolume
-//---------------------------------------------------------
-
-void Audio::msgSetVolume(AudioTrack* src, double val)
-      {
-      AudioMsg msg;
-      msg.id    = AUDIO_VOL;
-      msg.snode    = src;
-      msg.dval  = val;
-      sendMsg(&msg);
-      //muse->arranger->controllerChanged(src);
-      MusEGlobal::song->controllerChange(src);
-      }
-
-//---------------------------------------------------------
-//   msgSetPan
-//---------------------------------------------------------
-
-void Audio::msgSetPan(AudioTrack* node, double val)
-      {
-      AudioMsg msg;
-      msg.id    = AUDIO_PAN;
-      msg.snode = node;
-      msg.dval  = val;
-      sendMsg(&msg);
-      //muse->arranger->controllerChanged(node);
-      MusEGlobal::song->controllerChange(node);
-      }
-*/
-
 //---------------------------------------------------------
 //   msgSetPrefader
 //---------------------------------------------------------
@@ -492,26 +460,6 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
       sendMsg(&msg);
       }
 
-/* DELETETHIS 20
-//---------------------------------------------------------
-//   msgSetPluginCtrlVal
-//---------------------------------------------------------
-
-void Audio::msgSetPluginCtrlVal(AudioTrack* track, int param, double val)
-{
-      AudioMsg msg;
-      
-      msg.id     = AUDIO_SET_PLUGIN_CTRL_VAL;
-      msg.ival   = param;
-      msg.dval   = val;
-      //msg.plugin = plugin;
-      msg.snode  = track;
-      sendMsg(&msg);
-      //muse->arranger->controllerChanged(track);
-      MusEGlobal::song->controllerChange(track);
-}
-*/
-
 //---------------------------------------------------------
 //   msgSwapControllerIDX
 //---------------------------------------------------------
@@ -646,18 +594,6 @@ void Audio::msgSetSolo(Track* track, bool val)
       sendMsg(&msg);
 }
 
-//---------------------------------------------------------
-//   msgSetSegSize
-//---------------------------------------------------------
-
-void Audio::msgSetSegSize(int bs, int sr)
-      {
-      AudioMsg msg;
-      msg.id = AUDIO_SET_SEG_SIZE;
-      msg.ival = bs;
-      msg.iival = sr;
-      sendMsg(&msg);
-      }
 
 //---------------------------------------------------------
 //   msgSeek
@@ -713,38 +649,6 @@ void Audio::msgPlay(bool val)
             _bounce = false;
             }
       }
-
-/* DELETETHIS 31
-//---------------------------------------------------------
-//   msgShowInstrumentGui
-//---------------------------------------------------------
-
-void Audio::msgShowInstrumentGui(MidiInstrument* instr, bool val)
-      {
-      instr->showGui(val);
-      // No need for this - it called msgUpdatePollFd which has nothing
-      //  to do with showing a gui.
-      //AudioMsg msg;
-      //msg.id = MIDI_SHOW_INSTR_GUI;
-      //msg.p1 = instr;
-      //msg.a  = val;
-      //sendMessage(&msg, false);
-      }
-
-//---------------------------------------------------------
-//   msgShowInstrumentNativeGui
-//---------------------------------------------------------
-
-void Audio::msgShowInstrumentNativeGui(MidiInstrument* instr, bool val)
-      {
-      instr->showNativeGui(val);
-      //AudioMsg msg;
-      //msg.id = MIDI_SHOW_INSTR_NATIVE_GUI;
-      //msg.p1 = instr;
-      //msg.a  = val;
-      //sendMessage(&msg, false);
-      }
-*/
 
 //---------------------------------------------------------
 //   msgAddTrack
@@ -1075,16 +979,6 @@ void Audio::msgRemoveKey(int tick, int key, bool doUndoFlag)
       sendMessage(&msg, doUndoFlag);
       }
 
-//---------------------------------------------------------
-//   msgScanAlsaMidiPorts
-//---------------------------------------------------------
-
-void Audio::msgScanAlsaMidiPorts()
-      {
-      AudioMsg msg;
-      msg.id = SEQM_SCAN_ALSA_MIDI_PORTS;
-      sendMessage(&msg, false);
-      }
 
 //---------------------------------------------------------
 //   msgResetMidiDevices
@@ -1270,32 +1164,6 @@ void Audio::msgSetHwCtrlStates(MidiPort* port, int ch, int ctrl, int val, int la
       }
 
 //---------------------------------------------------------
-//   msgSetTrackOutChannel
-//---------------------------------------------------------
-
-void Audio::msgSetTrackOutChannel(MidiTrack* track, int ch)
-{
-      AudioMsg msg;
-      msg.id = SEQM_SET_TRACK_OUT_CHAN;
-      msg.p1 = track;
-      msg.a = ch;
-      sendMessage(&msg, false);
-}
-
-//---------------------------------------------------------
-//   msgSetTrackOutPort
-//---------------------------------------------------------
-
-void Audio::msgSetTrackOutPort(MidiTrack* track, int port)
-{
-      AudioMsg msg;
-      msg.id = SEQM_SET_TRACK_OUT_PORT;
-      msg.p1 = track;
-      msg.a = port;
-      sendMessage(&msg, false);
-}
-
-//---------------------------------------------------------
 //   msgSetTrackAutomationType
 //---------------------------------------------------------
 
@@ -1308,34 +1176,6 @@ void Audio::msgSetTrackAutomationType(Track* track, int type)
       sendMessage(&msg, false);
 }
       
-//---------------------------------------------------------
-//   msgRemapPortDrumCtlEvents
-//---------------------------------------------------------
-
-void Audio::msgRemapPortDrumCtlEvents(int mapidx, int newnote, int newchan, int newport)
-{
-      AudioMsg msg;
-      msg.id = SEQM_REMAP_PORT_DRUM_CTL_EVS;
-      msg.ival = mapidx;
-      msg.a = newnote;
-      msg.b = newchan;
-      msg.c = newport;
-      sendMessage(&msg, false);
-}
-
-//---------------------------------------------------------
-//   msgChangeAllPortDrumCtlEvents
-//---------------------------------------------------------
-
-void Audio::msgChangeAllPortDrumCtrlEvents(bool add, bool drumonly)
-{
-      AudioMsg msg;
-      msg.id = SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS;
-      msg.a = (int)add;
-      msg.b = (int)drumonly;
-      sendMessage(&msg, false);
-}
-
 //---------------------------------------------------------
 //   msgSetSendMetronome
 //---------------------------------------------------------

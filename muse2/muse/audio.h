@@ -70,27 +70,16 @@ enum {
       SEQM_UNDO, SEQM_REDO,
       SEQM_RESET_DEVICES, SEQM_INIT_DEVICES, SEQM_PANIC,
       SEQM_MIDI_LOCAL_OFF,
-      SEQM_SET_MIDI_DEVICE,
       SEQM_PLAY_MIDI_EVENT,
       SEQM_SET_HW_CTRL_STATE,
       SEQM_SET_HW_CTRL_STATES,
-      SEQM_SET_TRACK_OUT_PORT,
-      SEQM_SET_TRACK_OUT_CHAN,
       SEQM_SET_TRACK_AUTO_TYPE,
-      SEQM_REMAP_PORT_DRUM_CTL_EVS,
-      SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS,
-      SEQM_SCAN_ALSA_MIDI_PORTS,
       SEQM_SET_AUX,
       SEQM_UPDATE_SOLO_STATES,
-      //MIDI_SHOW_INSTR_GUI,  DELETETHIS
-      //MIDI_SHOW_INSTR_NATIVE_GUI, DELETETHIS
       AUDIO_RECORD,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
-      //AUDIO_VOL, AUDIO_PAN,  DELETETHIS
       AUDIO_ADDPLUGIN,
-      AUDIO_SET_SEG_SIZE,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
-      //AUDIO_SET_PLUGIN_CTRL_VAL,  DELETETHIS
       AUDIO_SWAP_CONTROLLER_IDX,
       AUDIO_CLEAR_CONTROLLER_EVENTS,
       AUDIO_SEEK_PREV_AC_EVENT,
@@ -240,19 +229,16 @@ class Audio {
       void msgAddEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
       void msgDeleteEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
       void msgChangeEvent(Event&, Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
-      void msgScanAlsaMidiPorts();
       void msgAddTempo(int tick, int tempo, bool doUndoFlag = true);
       void msgSetTempo(int tick, int tempo, bool doUndoFlag = true);
+      void msgDeleteTempo(int tick, int tempo, bool doUndoFlag = true);
       void msgUpdateSoloStates();
       void msgSetAux(AudioTrack*, int, double);
       void msgSetGlobalTempo(int val);
-      void msgDeleteTempo(int tick, int tempo, bool doUndoFlag = true);
       void msgAddSig(int tick, int z, int n, bool doUndoFlag = true);
       void msgRemoveSig(int tick, int z, int n, bool doUndoFlag = true);
       void msgAddKey(int tick, int key, bool doUndoFlag = true);
       void msgRemoveKey(int tick, int key, bool doUndoFlag = true);
-      //void msgShowInstrumentGui(MidiInstrument*, bool);   DELETETHIS
-      //void msgShowInstrumentNativeGui(MidiInstrument*, bool);  DELETETHIS
       void msgPanic();
       void sendMsg(AudioMsg*);
       bool sendMessage(AudioMsg* m, bool doUndo);
@@ -263,15 +249,8 @@ class Audio {
       void msgAddRoute(Route, Route);
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
-      void msgSetMute(AudioTrack*, bool val);
-      //void msgSetVolume(AudioTrack*, double val); DELETETHIS
-      //void msgSetPan(AudioTrack*, double val);    DELETETHIS
-      void msgAddSynthI(SynthI* synth);
-      void msgRemoveSynthI(SynthI* synth);
-      void msgSetSegSize(int, int);
       void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
-      void msgSetOff(AudioTrack*, bool);
       void msgSetRecord(AudioTrack*, bool);
       void msgUndo();
       void msgRedo();
@@ -280,7 +259,6 @@ class Audio {
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgBounce();
-      //void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);  DELETETHIS
       void msgSwapControllerIDX(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);
@@ -292,17 +270,11 @@ class Audio {
       void msgSetSolo(Track*, bool);
       void msgSetHwCtrlState(MidiPort*, int, int, int);
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);
-      void msgSetTrackOutChannel(MidiTrack*, int);
-      void msgSetTrackOutPort(MidiTrack*, int);
       void msgSetTrackAutomationType(Track*, int);
-      void msgRemapPortDrumCtlEvents(int, int, int, int);
-      void msgChangeAllPortDrumCtrlEvents(bool, bool);
       void msgSetSendMetronome(AudioTrack*, bool);
       void msgStartMidiLearn();
-
       void msgPlayMidiEvent(const MidiPlayEvent* event);
-      void rescanAlsaPorts();
-
+      
       void midiPortsChanged();
 
       const Pos& pos() const { return _pos; }

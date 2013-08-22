@@ -99,28 +99,6 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   break;
                   
                   
-            case MusECore::SEQM_SET_TRACK_OUT_CHAN:
-                  {
-                  MidiTrack* track = (MidiTrack*)(msg->p1);
-                  track->setOutChanAndUpdate(msg->a);
-                  }
-                  break;
-            case MusECore::SEQM_SET_TRACK_OUT_PORT:
-                  {
-                  MidiTrack* track = (MidiTrack*)(msg->p1);
-                  track->setOutPortAndUpdate(msg->a);
-                  }
-                  break;
-            case MusECore::SEQM_REMAP_PORT_DRUM_CTL_EVS:
-                    MusEGlobal::song->remapPortDrumCtrlEvents(msg->ival, msg->a, msg->b, msg->c);
-                  break;
-            case MusECore::SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS:      
-                    MusEGlobal::song->changeAllPortDrumCtrlEvents((bool)msg->a, (bool)msg->b);
-                  break;
-            case MusECore::SEQM_SET_MIDI_DEVICE:
-                  ((MidiPort*)(msg->p1))->setMidiDevice((MidiDevice*)(msg->p2));
-                  updatePollFd();
-                  break;
             case MusECore::SEQM_IDLE:
                   idle = msg->a;
                   break;
