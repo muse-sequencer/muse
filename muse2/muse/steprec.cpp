@@ -112,7 +112,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 				const Event& ev = i->second;
 				if (ev.isNote() && ev.pitch() == pitch)
 				{
-					MusEGlobal::audio->msgDeleteEvent(ev, part, true, false, false);
+					MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent,ev, part, true,true));
 
 					if (!shift)
 					{

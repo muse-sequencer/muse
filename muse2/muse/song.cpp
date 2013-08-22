@@ -2360,15 +2360,13 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
           {
             if(ev.dataB() == event.dataB()) // Don't bother if already set.
               return;
-            // Indicate do undo, and do port controller values and clone parts. 
-            MusEGlobal::audio->msgChangeEvent(ev, event, part, true, true, true);
+            MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyEvent,event,ev,part,true,true));
             return;
           }
         }
       }  
       
-      // Indicate do undo, and do port controller values and clone parts. 
-      MusEGlobal::audio->msgAddEvent(event, part, true, true, true);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, event, part, true,true));
       }
 
 //---------------------------------------------------------
