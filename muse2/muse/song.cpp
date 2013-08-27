@@ -1829,8 +1829,7 @@ void Song::processMsg(AudioMsg* msg)
             case SEQM_ADD_EVENT:
                   updateFlags = SC_EVENT_INSERTED;
                   if (addEvent(msg->ev1, (MidiPart*)msg->p2)) {
-                        Event ev;
-                        addUndo(UndoOp(UndoOp::AddEvent, ev, msg->ev1, (Part*)msg->p2, msg->a, msg->b));
+                        addUndo(UndoOp(UndoOp::AddEvent, msg->ev1, (Part*)msg->p2, msg->a, msg->b));
                         }
                   else
                         updateFlags = 0;
@@ -1843,8 +1842,7 @@ void Song::processMsg(AudioMsg* msg)
                   MidiPart* part = (MidiPart*)msg->p2;
                   if(msg->a)
                     removePortCtrlEvents(event, part, msg->b);
-                  Event e;
-                  addUndo(UndoOp(UndoOp::DeleteEvent, e, event, (Part*)part, msg->a, msg->b));
+                  addUndo(UndoOp(UndoOp::DeleteEvent, event, (Part*)part, msg->a, msg->b));
                   deleteEvent(event, part);
                   updateFlags = SC_EVENT_REMOVED;
                   }
