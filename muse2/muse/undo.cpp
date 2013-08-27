@@ -274,12 +274,10 @@ void Song::setUndoRedoText()
 }
 
 
-void cleanOperationGroup(Undo& group)
+void prepareOperationGroup(Undo& group)
 {
-	using std::set;
-	
-	set<const Track*> processed_tracks;
-	set<const Part*> processed_parts;
+	QSet<const Track*> deleted_tracks;
+	QSet<const Part*> deleted_parts;
 
 	for (iUndoOp op=group.begin(); op!=group.end();)
 	{
@@ -288,20 +286,60 @@ void cleanOperationGroup(Undo& group)
 		
 		if (op->type==UndoOp::DeleteTrack)
 		{
-			if (processed_tracks.find(op->track)!=processed_tracks.end())
+			if (deleted_tracks.contains(op->track))
+			{
 				group.erase(op);
+			}
 			else
-				processed_tracks.insert(op->track);
+			{
+				const PartList* pl = op->track->cparts();
+				for (ciPart part = pl->begin(); part != pl->end(); part++)
+					if (!deleted_parts.contains(part->second))
+					{
+						// they will be inserted between op and op_
+						// because we set op=op_ below, the inserted
+						// elements will be skipped.
+						group.insert(op, UndoOp(UndoOp::DeletePart, part->second));
+						deleted_parts.insert(part->second);
+					}
+					
+				deleted_tracks.insert(op->track);
+			}
 		}
 		else if (op->type==UndoOp::DeletePart)
 		{
-			if (processed_parts.find(op->part)!=processed_parts.end())
+			if (deleted_parts.contains(op->part))
 				group.erase(op);
 			else
-				processed_parts.insert(op->part);
+				deleted_parts.insert(op->part);
 		}
 		
 		op=op_;
+	}
+	
+	// replicate Event modifications to keep clones up to date
+	for (iUndoOp op=group.begin(); op!=group.end(); op++)
+	{
+		if (op->type==UndoOp::AddEvent || op->type==UndoOp::DeleteEvent || op->type==UndoOp::ModifyEvent || op->type==UndoOp::SelectEvent)
+		{
+			for (const Part* it = op->part->nextClone(); it!=op->part; it=it->nextClone())
+			{
+				UndoOp newop;
+				if (op->type==UndoOp::AddEvent) // we need to clone the event
+					newop = UndoOp(UndoOp::AddEvent, op->nEvent.clone(), it, op->doCtrls, op->doClones);
+				else if (op->type==UndoOp::DeleteEvent)
+					newop = UndoOp(UndoOp::DeleteEvent, it->events().findSimilar(op->nEvent)->second, it, op->doCtrls, op->doClones);
+				else if (op->type==UndoOp::ModifyEvent)
+					newop = UndoOp(UndoOp::ModifyEvent, op->nEvent.clone(), it->events().findSimilar(op->oEvent)->second, it, op->doCtrls, op->doClones);
+				else if (op->type==UndoOp::SelectEvent)
+				{
+					const Event& found = it->events().findSimilar(op->nEvent)->second;
+					newop= UndoOp(UndoOp::SelectEvent, found, op->selected, found.selected());
+				}
+				
+				group.insert(op, newop);
+			}
+		}
 	}
 }
 
@@ -316,7 +354,7 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
 {
       if (!group.empty())
       {
-            cleanOperationGroup(group);
+            prepareOperationGroup(group);
             //this is a HACK! but it works :)    (added by flo93)
             redoList->push_back(group);
             redo();

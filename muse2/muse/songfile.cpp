@@ -197,7 +197,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                             {
                               if(i->id == id) // Is a matching part found in the clone list?
                               {
-                                // This makes a clone, chains the part, and increases ref counts.
+                                // Create a clone. It must still be added later in a operationgroup
                                 npart = track->newPart((Part*)i->cp, true);
                                 break;
                               }
@@ -242,7 +242,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 if(!doClone && !isclone)
                                   break;
                                   
-                                // This makes a clone, chains the part, and increases ref counts.
+                                // Create a clone. It must still be added later in a operationgroup
                                 npart = track->newPart((Part*)i->cp, true);
                                 break;
                               }

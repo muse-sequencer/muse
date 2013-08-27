@@ -109,8 +109,9 @@ class Part : public PosLen {
       bool isCloneOf(const Part*) const;
       bool hasClones() const           { return _prevClone!=this || _nextClone!=this; }
       int nClones() const;
-      Part* prevClone() const          { return _prevClone; } // FINDMICHJETZT DELETETHIS 2x
+      Part* prevClone() const          { return _prevClone; } // FINDMICHJETZT make it const Part*!
       Part* nextClone() const          { return _nextClone; }
+      Part* backupClone() const        { return _backupClone; }
       
       void unchainClone();
       void chainClone(Part* p); // *this is made a sibling of p! p is not touched (except for its clone-chain), whereas this->events will get altered

@@ -171,7 +171,11 @@ class Song : public QObject {
       Song(const char* name = 0);
       ~Song();
 
-      bool applyOperationGroup(Undo& group, bool doUndo=true); // group may be changed! cleanOperationGroup is called on group!
+      /** It is not allowed nor checked(!) to AddPart a clone, and
+       *  to AddEvent/DeleteEvent/ModifyEvent/SelectEvent events which
+       *  would need to be replicated to the newly added clone part!
+       */
+      bool applyOperationGroup(Undo& group, bool doUndo=true); // group may be changed! prepareOperationGroup is called on group!
       bool applyOperation(const UndoOp& op, bool doUndo=true);
       
       /** this sends emits a signal to each MidiEditor or whoever is interested.
@@ -424,7 +428,7 @@ class Song : public QObject {
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);
-      Track* addTrack(Undo& operations, Track::TrackType type, Track* insertAt = 0);
+      Track* addTrack(Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       void duplicateTracks();
       QString getScriptPath(int id, bool delivered);

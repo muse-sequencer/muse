@@ -353,7 +353,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
         ntrack = tracks->size();
         if (MusEGlobal::debugMsg)
             printf("PartCanvas::moveItem - add new track\n");
-        dtrack = MusEGlobal::song->addTrack(operations, type);  // Add at end of list.
+        dtrack = MusEGlobal::song->addTrack(type);  // Add at end of list. Creates additional Undo entry.
         
         if (type == MusECore::Track::WAVE) {
             MusECore::WaveTrack* st = (MusECore::WaveTrack*) track;
@@ -385,8 +385,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
         MusECore::Part* dpart;
         bool clone = (t == MOVE_CLONE || (t == MOVE_COPY && spart->hasClones()));
         
-        // This increments aref count if cloned, and chains clones.
-        // It also gives the new part a new serial number.
+        // Gives the new part a new serial number.
         if (clone)
             dpart = spart->createNewClone();
         else
@@ -2756,13 +2755,9 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 
                 if (!track) { // we need to create a track for this drop
                     if (text.endsWith(".mpt", Qt::CaseInsensitive)) {
-                        MusECore::Undo operations;
-                        track = MusEGlobal::song->addTrack(operations, MusECore::Track::MIDI);    // Add at end of list.
-                        MusEGlobal::song->applyOperationGroup(operations);
+                        track = MusEGlobal::song->addTrack(MusECore::Track::MIDI);    // Add at end of list.
                     } else {
-                        MusECore::Undo operations;
-                        track = MusEGlobal::song->addTrack(operations, MusECore::Track::WAVE);    // Add at end of list.
-                        MusEGlobal::song->applyOperationGroup(operations);
+                        track = MusEGlobal::song->addTrack(MusECore::Track::WAVE);    // Add at end of list.
                     }
                 }
                 if (track->type() == MusECore::Track::WAVE &&

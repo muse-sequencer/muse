@@ -1477,7 +1477,6 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
         
         if (diff > 0)// part must be extended?
         {
-              //schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
               schedule_resize_all_same_len_clone_parts(part, event.endFrame(), operations);
               printf("newItem: extending\n");
         }
