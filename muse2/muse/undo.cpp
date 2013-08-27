@@ -623,7 +623,7 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned old_len_or_tick, unsi
 UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_)
 {
     assert(type_==SelectPart);
-    assert(part);
+    assert(part_);
     
     type=type_;
     part = part_;

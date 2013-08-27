@@ -81,10 +81,11 @@ void Part::chainClone(Part* p)
 
 void Part::rechainClone()
 {
-    assert(_backupClone);
-    
-    this->chainClone(_backupClone);
-    _backupClone = NULL;
+    if(_backupClone)
+    {
+        this->chainClone(_backupClone);
+        _backupClone = NULL;
+    }
 }
 
 bool Part::isCloneOf(const Part* other) const
