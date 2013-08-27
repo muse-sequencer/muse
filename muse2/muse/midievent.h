@@ -41,6 +41,8 @@ class MidiEventBase : public EventBase {
    public:
       MidiEventBase(EventType t);
       virtual ~MidiEventBase() {}
+      
+      virtual bool isSimilarTo(const EventBase& other) const;
 
       virtual bool isNote() const                   { return type() == Note; }
       virtual bool isNoteOff() const;

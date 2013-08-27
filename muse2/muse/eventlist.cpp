@@ -151,6 +151,29 @@ ciEvent EventList::find(const Event& event) const
       return end();
       }
 
+iEvent EventList::findSimilar(const Event& event)
+{
+      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      for (iEvent i = range.first; i != range.second; ++i) {
+            if (i->second.isSimilarTo(event))
+                  return i;
+            }
+      return end();
+}
+
+ciEvent EventList::findSimilar(const Event& event) const
+      {
+      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      
+      for (ciEvent i = range.first; i != range.second; ++i) {
+            if (i->second.isSimilarTo(event))
+                  return i;
+            }
+      return end();
+      }
+
 //---------------------------------------------------------
 //   dump
 //---------------------------------------------------------

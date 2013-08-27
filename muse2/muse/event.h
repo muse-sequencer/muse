@@ -64,6 +64,7 @@ class Event {
       void setType(EventType t);
       Event& operator=(const Event& e);
       bool operator==(const Event& e) const;
+      bool isSimilarTo(const Event& other) const;
 
       int getRefCount() const;
       bool selected() const;
@@ -137,6 +138,8 @@ class EventList : public EL {
    public:
       ciEvent find(const Event&) const;
       iEvent find(const Event&);
+      ciEvent findSimilar(const Event&) const;
+      iEvent findSimilar(const Event&);
       iEvent add(Event event);
       void move(Event& event, unsigned tick);
       void dump() const;

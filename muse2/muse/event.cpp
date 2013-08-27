@@ -179,6 +179,10 @@ Event& Event::operator=(const Event& e) {
 bool Event::operator==(const Event& e) const {
             return ev == e.ev;
             }
+bool Event::isSimilarTo(const Event& other) const
+{
+		return ev->isSimilarTo(*other.ev);
+}
 
 int Event::getRefCount() const    { return ev->getRefCount(); }
 bool Event::selected() const      { return ev->_selected; }

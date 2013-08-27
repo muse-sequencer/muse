@@ -56,6 +56,8 @@ class EventBase : public PosLen {
       void setSelected(bool val) { _selected = val; }
 
       void move(int offset);
+      
+      virtual bool isSimilarTo(const EventBase& other) const = 0;
 
       virtual void read(Xml&) = 0;
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const = 0;

@@ -49,6 +49,8 @@ class WaveEventBase : public EventBase {
    public:
       WaveEventBase(EventType t);
       virtual ~WaveEventBase() {}
+      
+      virtual bool isSimilarTo(const EventBase& other) const;
 
       virtual void read(Xml&);
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const;
