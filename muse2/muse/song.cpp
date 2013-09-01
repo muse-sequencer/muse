@@ -1647,6 +1647,7 @@ void Song::undo()
       
       MusEGlobal::audio->msgRevertOperationGroup(opGroup);
       
+      redoList->push_back(opGroup);
       undoList->pop_back();
       
       MusEGlobal::redoAction->setEnabled(true);
@@ -1675,6 +1676,7 @@ void Song::redo()
       
       MusEGlobal::audio->msgExecuteOperationGroup(opGroup);
       
+      undoList->push_back(opGroup);
       redoList->pop_back();
       
       MusEGlobal::undoAction->setEnabled(true);

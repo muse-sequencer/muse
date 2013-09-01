@@ -317,10 +317,11 @@ void prepareOperationGroup(Undo& group)
 		op=op_;
 	}
 	
-	// replicate Event modifications to keep clones up to date
+	// replicate Event modifications to keep clones up to date.
+	// do not replicate SelectEvent because... umm, it just doesn't feel right.
 	for (iUndoOp op=group.begin(); op!=group.end(); op++)
 	{
-		if (op->type==UndoOp::AddEvent || op->type==UndoOp::DeleteEvent || op->type==UndoOp::ModifyEvent || op->type==UndoOp::SelectEvent)
+		if (op->type==UndoOp::AddEvent || op->type==UndoOp::DeleteEvent || op->type==UndoOp::ModifyEvent)
 		{
 			for (const Part* it = op->part->nextClone(); it!=op->part; it=it->nextClone())
 			{
@@ -331,11 +332,6 @@ void prepareOperationGroup(Undo& group)
 					newop = UndoOp(UndoOp::DeleteEvent, it->events().findSimilar(op->nEvent)->second, it, op->doCtrls, op->doClones);
 				else if (op->type==UndoOp::ModifyEvent)
 					newop = UndoOp(UndoOp::ModifyEvent, op->nEvent.clone(), it->events().findSimilar(op->oEvent)->second, it, op->doCtrls, op->doClones);
-				else if (op->type==UndoOp::SelectEvent)
-				{
-					const Event& found = it->events().findSimilar(op->nEvent)->second;
-					newop= UndoOp(UndoOp::SelectEvent, found, op->selected, found.selected());
-				}
 				
 				group.insert(op, newop);
 			}
