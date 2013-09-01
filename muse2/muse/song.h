@@ -282,33 +282,28 @@ class Song : public QObject {
 
       void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);  
       void cmdAddRecordedEvents(MidiTrack*, const EventList&, unsigned);
-      bool addEvent(Event&, Part*);
-      void changeEvent(Event&, Event&, Part*);
-      void deleteEvent(Event&, Part*);
-      void cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex);
-      void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport);
-      void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false);
+      bool addEvent(Event&, Part*);                 // only called from audio thread. FIXME TODO: move functionality into undo.cpp
+      void changeEvent(Event&, Event&, Part*);      // only called from audio thread. FIXME TODO: move functionality into undo.cpp
+      void deleteEvent(Event&, Part*);              // only called from audio thread. FIXME TODO: move functionality into undo.cpp
+      void cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex); // FIXME TODO broken, fix that.
+      void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport); // called from GUI thread
+      void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false); // called from GUI thread
       
-      void addACEvent(AudioTrack* t, int acid, int frame, double val);
-      void changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val);
       void addExternalTempo(const TempoRecEvent& e) { _tempoFifo.put(e); }
       
       //-----------------------------------------
       //   part manipulations
       //-----------------------------------------
 
-      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doClones=false);
-      void cmdSplitPart(Track* t, Part* p, int tick);
-      void cmdGluePart(Track* t, Part* p);
+      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doClones=false); // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.
 
       void addPart(Part* part);
       void removePart(Part* part);
-      PartList* getSelectedMidiParts() const;
-      PartList* getSelectedWaveParts() const;
-      bool msgRemoveParts();
 
-      void cmdRemovePart(Part* part);
-      void cmdAddPart(Part* part);
+      
+      PartList* getSelectedMidiParts() const; // FIXME TODO move functionality into function.cpp
+      PartList* getSelectedWaveParts() const;
+
       int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
       void setArrangerRaster(int r) { _arrangerRaster = r; }  // Used by Arranger snap combo box
 
@@ -325,17 +320,12 @@ class Song : public QObject {
       AuxList* auxs()           { return &_auxs;    }
       SynthIList* syntis()      { return &_synthIs; }
       
-      void cmdRemoveTrack(Track* track);
-      void removeTrack0(Track* track);
       void removeTrack1(Track* track);
       void removeTrack2(Track* track);
       void removeTrack3(Track* track);
-      void removeMarkedTracks();
-      //void changeTrack(Track* oldTrack, Track* newTrack); DELETETHIS
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
       void swapTracks(int i1, int i2);
-      void setChannelMute(int channel, bool flag);
       void setRecordFlag(Track*, bool);
       void insertTrack0(Track*, int idx);
       void insertTrack1(Track*, int idx);
@@ -344,7 +334,6 @@ class Song : public QObject {
       void deselectTracks();
       void readRoute(Xml& xml);
       void recordEvent(MidiTrack*, Event&);
-      void msgInsertTrack(Track* track, int idx, bool u = true);
       // Enable all track and plugin controllers, and synth controllers if applicable, which are NOT in AUTO_WRITE mode.
       void reenableTouchedControllers();  
       void clearRecAutomation(bool clearList);
@@ -362,7 +351,7 @@ class Song : public QObject {
       void startUndo();
       void endUndo(MusECore::SongChangedFlags_t);
 
-      void undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
+	  void undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
 
       void executeOperationGroup1(Undo& operations);
       void executeOperationGroup2(Undo& operations);

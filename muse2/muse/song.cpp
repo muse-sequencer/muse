@@ -434,7 +434,8 @@ void Song::duplicateTracks()
   QString track_name;
   int idx;
   int trackno = tl.size();
-  MusEGlobal::song->startUndo();
+  
+  Undo operations;
   for(TrackList::reverse_iterator it = tl.rbegin(); it != tl.rend(); ++it) 
   {
     Track* track = *it;
@@ -444,114 +445,23 @@ void Song::duplicateTracks()
       
       for(int cp = 0; cp < copies; ++cp)
       {
-        // There are two ways to copy a track now. Using the copy constructor or using new + assign(). 
-        // Tested: Both ways seem OK. Prefer copy constructors for simplicity. But new + assign() may be 
-        //  required for fine-grained control over initializing various track types.
-        //
-        
-        //  Set to 0 to use the copy constructor. Set to 1 to use new + assign().
-        // DELETETHIS is this still necessary to keep around?
-        //            also consider removing and adding a hint to a revision number instead
-  #if 0      
-        
-        Track* new_track = 0;
-        int lastAuxIdx = _auxs.size();
-        switch(track->type()) 
-        {
-          case Track::AUDIO_SOFTSYNTH:  // TODO: Handle synths.   p4.0.47
-                // ((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
-                break;
-            
-          case Track::MIDI:
-                new_track = new MidiTrack();
-                new_track->setType(Track::MIDI);
-                break;
-          case Track::DRUM:
-                new_track = new MidiTrack();
-                new_track->setType(Track::DRUM);
-                //((MidiTrack*)new_track)->setOutChannel(9); DELETETHIS?
-                break;
-          case Track::WAVE:
-                new_track = new MusECore::WaveTrack();
-                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
-                break;
-          case Track::AUDIO_OUTPUT:
-                new_track = new AudioOutput();
-                break;
-          case Track::AUDIO_GROUP:
-                new_track = new AudioGroup();
-                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
-                break;
-          case Track::AUDIO_AUX:
-                new_track = new AudioAux();
-                break;
-          case Track::AUDIO_INPUT:
-                new_track = new AudioInput();
-                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
-                break;
-          default:
-                printf("Song::duplicateTracks: Illegal type %d\n", track->type());
-                break;
-        }
-            
-        if(new_track)   
-        {
-          new_track->assign(*track, flags);
-  #else      
-        {
           Track* new_track = track->clone(flags);  
-  #endif
           
           //new_track->setDefaultName(track_name);  // Handled in class now.
 
           idx = trackno + cp;
-          insertTrack1(new_track, idx);         
-          addUndo(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
-          msgInsertTrack(new_track, idx, false); // No undo.
-          insertTrack3(new_track, idx); 
-        }
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
       }  
     }
     --trackno;
   }
   
-  MusECore::SongChangedFlags_t update_flags = SC_TRACK_INSERTED;
-  if(flags & (Track::ASSIGN_ROUTES | Track::ASSIGN_DEFAULT_ROUTES))
-    update_flags |= SC_ROUTE;
-  MusEGlobal::song->endUndo(update_flags);
+  MusEGlobal::song->applyOperationGroup(operations);
   MusEGlobal::audio->msgUpdateSoloStates();
 }          
       
-//---------------------------------------------------------
-//   cmdRemoveTrack
-//---------------------------------------------------------
 
-void Song::cmdRemoveTrack(Track* track)
-      {
-      int idx = _tracks.index(track);
-      addUndo(UndoOp(UndoOp::DeleteTrack, idx, track));
-      removeTrack2(track);
-      updateFlags |= SC_TRACK_REMOVED;
-      }
 
-//---------------------------------------------------------
-//   removeMarkedTracks
-//---------------------------------------------------------
-
-void Song::removeMarkedTracks()
-      {
-      bool loop;
-      do {
-            loop = false;
-            for (iTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
-                  if ((*t)->selected()) {
-                        removeTrack2(*t);
-                        loop = true;
-                        break;
-                        }
-                  }
-            } while (loop);
-      }
 
 //---------------------------------------------------------
 //   deselectTracks
@@ -751,16 +661,6 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
       }
     }  
   }
-}
-
-void Song::addACEvent(AudioTrack* t, int acid, int frame, double val)
-{
-  MusEGlobal::audio->msgAddACEvent(t, acid, frame, val);
-}
-
-void Song::changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val)
-{
-  MusEGlobal::audio->msgChangeACEvent(t, acid, frame, newFrame, val);
 }
 
 //---------------------------------------------------------
@@ -1368,23 +1268,6 @@ void Song::updatePos()
       }
 
 //---------------------------------------------------------
-//   setChannelMute
-//    mute all midi tracks associated with channel
-//---------------------------------------------------------
-
-void Song::setChannelMute(int channel, bool val)
-      {
-      for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-            MidiTrack* track = dynamic_cast<MidiTrack*>(*i);
-            if (track == 0)
-                  continue;
-            if (track->outChannel() == channel)
-                  track->setMute(val);
-            }
-      emit songChanged(SC_MUTE);
-      }
-
-//---------------------------------------------------------
 //   len
 //---------------------------------------------------------
 
@@ -1822,63 +1705,8 @@ void Song::processMsg(AudioMsg* msg)
             case SEQM_REVERT_OPERATION_GROUP:
                   revertOperationGroup2(*msg->operations);
                   break;
-            case SEQM_MOVE_TRACK:
-                  if (msg->a > msg->b) {
-                        for (int i = msg->a; i > msg->b; --i) {
-                              swapTracks(i, i-1);
-                              }
-                        }
-                  else {
-                        for (int i = msg->a; i < msg->b; ++i) {
-                              swapTracks(i, i+1);
-                              }
-                        }
-                  updateFlags = SC_TRACK_MODIFIED;
-                  break;
-            case SEQM_ADD_EVENT:
-                  updateFlags = SC_EVENT_INSERTED;
-                  if (addEvent(msg->ev1, (MidiPart*)msg->p2)) {
-                        addUndo(UndoOp(UndoOp::AddEvent, msg->ev1, (Part*)msg->p2, msg->a, msg->b));
-                        }
-                  else
-                        updateFlags = 0;
-                  if(msg->a)
-                    addPortCtrlEvents(msg->ev1, (Part*)msg->p2, msg->b);
-                  break;
-            case SEQM_REMOVE_EVENT:
-                  {
-                  Event event = msg->ev1;
-                  MidiPart* part = (MidiPart*)msg->p2;
-                  if(msg->a)
-                    removePortCtrlEvents(event, part, msg->b);
-                  addUndo(UndoOp(UndoOp::DeleteEvent, event, (Part*)part, msg->a, msg->b));
-                  deleteEvent(event, part);
-                  updateFlags = SC_EVENT_REMOVED;
-                  }
-                  break;
-            case SEQM_CHANGE_EVENT:
-                  if(msg->a)
-                    removePortCtrlEvents(msg->ev1, (MidiPart*)msg->p3, msg->b);
-                  changeEvent(msg->ev1, msg->ev2, (MidiPart*)msg->p3);
-                  if(msg->a)
-                    addPortCtrlEvents(msg->ev2, (Part*)msg->p3, msg->b);
-                  addUndo(UndoOp(UndoOp::ModifyEvent, msg->ev2, msg->ev1, (Part*)msg->p3, msg->a, msg->b));
-                  updateFlags = SC_EVENT_MODIFIED;
-                  break;
             
-            case SEQM_ADD_TRACK:
-                  insertTrack2(msg->track, msg->ival);
-                  break;
-            case SEQM_REMOVE_TRACK:
-                  cmdRemoveTrack(msg->track);
-                  break;
-            case SEQM_ADD_PART:
-                  cmdAddPart((Part*)msg->p1);
-                  break;
-            case SEQM_REMOVE_PART:
-                  cmdRemovePart((Part*)msg->p1);
-                  break;
-            
+
             case SEQM_ADD_TEMPO:
                   addUndo(UndoOp(UndoOp::AddTempo, msg->a, msg->b));
                   MusEGlobal::tempomap.addTempo(msg->a, msg->b);
@@ -1929,29 +1757,6 @@ void Song::processMsg(AudioMsg* msg)
                   printf("unknown seq message %d\n", msg->id);
                   break;
             }
-      }
-
-//---------------------------------------------------------
-//   cmdAddPart
-//---------------------------------------------------------
-
-void Song::cmdAddPart(Part* part)
-      {
-      addPart(part);
-      addUndo(UndoOp(UndoOp::AddPart, part));
-      updateFlags = SC_PART_INSERTED;
-      }
-
-//---------------------------------------------------------
-//   cmdRemovePart
-//---------------------------------------------------------
-
-void Song::cmdRemovePart(Part* part)
-      {
-      removePart(part);
-      addUndo(UndoOp(UndoOp::DeletePart, part));
-      part->unchainClone();
-      updateFlags = SC_PART_REMOVED;
       }
 
 //---------------------------------------------------------
@@ -3163,18 +2968,6 @@ void Song::insertTrack2(Track* track, int idx)
 void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning: unused parameter
 {
 }
-
-//---------------------------------------------------------
-//   removeTrack0
-//---------------------------------------------------------
-
-void Song::removeTrack0(Track* track)
-      {
-      removeTrack1(track);
-      MusEGlobal::audio->msgRemoveTrack(track);
-      removeTrack3(track);
-      update(SC_TRACK_REMOVED);
-      }
 
 //---------------------------------------------------------
 //   removeTrack1

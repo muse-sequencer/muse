@@ -61,10 +61,6 @@ class Undo;
 //---------------------------------------------------------
 
 enum {
-      SEQM_ADD_TRACK, SEQM_REMOVE_TRACK,
-      SEQM_MOVE_TRACK,
-      SEQM_ADD_PART, SEQM_REMOVE_PART,
-      SEQM_ADD_EVENT, SEQM_REMOVE_EVENT, SEQM_CHANGE_EVENT,
       SEQM_ADD_TEMPO, SEQM_SET_TEMPO, SEQM_REMOVE_TEMPO, SEQM_ADD_SIG, SEQM_REMOVE_SIG,
       SEQM_ADD_KEY, SEQM_REMOVE_KEY,
       SEQM_SET_GLOBAL_TEMPO,
@@ -226,18 +222,18 @@ class Audio {
       void msgExecuteOperationGroup(Undo&); // calls exe1, then calls exe2 in audio context, then calls exe3
       void msgRevertOperationGroup(Undo&); // similar.
 
-      void msgRemoveTrack(Track*, bool u = true);
       void msgRemoveTracks();
-      void msgMoveTrack(int idx1, int dx2, bool u = true);
-      void msgAddPart(Part*, bool u = true);
-      void msgRemovePart(Part*, bool u = true);
-      void msgAddEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
-      void msgDeleteEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
-      void msgChangeEvent(Event&, Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
-      void msgAddTempo(int tick, int tempo, bool doUndoFlag = true);
-      void msgSetTempo(int tick, int tempo, bool doUndoFlag = true);
-      void msgDeleteTempo(int tick, int tempo, bool doUndoFlag = true);
-      void msgUpdateSoloStates();
+      void msgRemoveTrack(Track*, bool u = true); // only does applyOperation
+      void msgMoveTrack(int idx1, int dx2, bool u = true); // only does applyOperation
+      void msgAddPart(Part*, bool u = true); // only does applyOperation
+      void msgRemovePart(Part*, bool u = true); // only does applyOperation
+      void msgAddEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false); // only does applyOperation
+      void msgDeleteEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false); // only does applyOperation
+      void msgChangeEvent(Event&, Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false); // only does applyOperation
+      void msgAddTempo(int tick, int tempo, bool doUndoFlag = true); // only does applyOperation
+      void msgSetTempo(int tick, int tempo, bool doUndoFlag = true); // FIXME FINDMICHJETZT TODO!
+      void msgDeleteTempo(int tick, int tempo, bool doUndoFlag = true); // only does applyOperation
+      void msgUpdateSoloStates(); // TODO and below
       void msgSetAux(AudioTrack*, int, double);
       void msgSetGlobalTempo(int val);
       void msgAddSig(int tick, int z, int n, bool doUndoFlag = true);

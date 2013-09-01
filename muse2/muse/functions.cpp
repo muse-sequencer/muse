@@ -1422,6 +1422,40 @@ void clean_parts()
 	MusEGlobal::song->applyOperationGroup(operations);
 }
 
+
+bool merge_with_next_part(const Part* oPart)
+{
+	const Track* track = oPart->track();
+	
+	if(track->type() != Track::WAVE && !track->isMidiTrack())
+		return false;
+	
+	const PartList* pl   = track->cparts();
+	const Part* nextPart = 0;
+
+	for (ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+	{
+			if (ip->second == oPart)
+			{
+				++ip;
+				if (ip == pl->end())
+						return false;
+				nextPart = ip->second;
+				break;
+				}
+			}
+	
+	if (nextPart)
+	{
+		set<const Part*> parts;
+		parts.insert(oPart);
+		parts.insert(nextPart);
+		return merge_parts(parts);
+	}
+	else
+		return false;
+}
+
 bool merge_selected_parts()
 {
 	set<const Part*> temp = get_all_selected_parts();
@@ -1492,6 +1526,51 @@ bool merge_parts(const set<const Part*>& parts)
 	}
 	
 	return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool split_part(const Part* part, int tick)
+{
+	int l1 = tick - part->tick();
+	int l2 = part->lenTick() - l1;
+	if (l1 <= 0 || l2 <= 0)
+			return false;
+	Part* p1;
+	Part* p2;
+	part->splitPart(tick, p1, p2);
+	
+	MusEGlobal::song->informAboutNewParts(part, p1);
+	MusEGlobal::song->informAboutNewParts(part, p2);
+
+	Undo operations;
+	operations.push_back(UndoOp(UndoOp::DeletePart, part));
+	operations.push_back(UndoOp(UndoOp::AddPart, p1));
+	operations.push_back(UndoOp(UndoOp::AddPart, p2));
+	return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool delete_selected_parts()
+{
+	Undo operations;
+	bool partSelected = false;
+
+	TrackList* tl = MusEGlobal::song->tracks();
+
+	for (iTrack it = tl->begin(); it != tl->end(); ++it)
+	{
+		PartList* pl = (*it)->parts();
+		for (iPart ip = pl->begin(); ip != pl->end(); ++ip)
+		{
+				if (ip->second->selected())
+				{
+					operations.push_back(UndoOp(UndoOp::DeletePart,ip->second));
+					partSelected = true;
+					}
+				}
+		}
+	
+	MusEGlobal::song->applyOperationGroup(operations);
+	
+	return partSelected;
 }
 
 } // namespace MusECore

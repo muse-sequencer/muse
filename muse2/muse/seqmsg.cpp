@@ -661,24 +661,7 @@ void Audio::msgPlay(bool val)
             }
       }
 
-//---------------------------------------------------------
-//   msgAddTrack
-//---------------------------------------------------------
 
-void Song::msgInsertTrack(Track* track, int idx, bool doUndoFlag)
-      {
-      AudioMsg msg;
-      msg.id = SEQM_ADD_TRACK;
-      msg.track = track;
-      msg.ival  = idx;
-      if (doUndoFlag) {
-            MusEGlobal::song->startUndo();
-            addUndo(UndoOp(UndoOp::AddTrack, idx, track));
-            }
-      MusEGlobal::audio->sendMsg(&msg);
-      if (doUndoFlag)
-            endUndo(SC_TRACK_INSERTED);
-      }
 
 //---------------------------------------------------------
 //   msgRemoveTrack
@@ -686,10 +669,7 @@ void Song::msgInsertTrack(Track* track, int idx, bool doUndoFlag)
 
 void Audio::msgRemoveTrack(Track* track, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_REMOVE_TRACK;
-      msg.track = track;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
       }
 
 //---------------------------------------------------------
@@ -749,23 +729,6 @@ void Audio::msgRemoveTracks()
             
 }
 
-/*    DELETETHIS 18
-//---------------------------------------------------------
-//   msgChangeTrack
-//    oldTrack - copy of the original track befor modification
-//    newTrack - modified original track
-//---------------------------------------------------------
-
-void Audio::msgChangeTrack(Track* oldTrack, Track* newTrack, bool doUndoFlag)   
-      {
-      AudioMsg msg;
-      msg.id = SEQM_CHANGE_TRACK;
-      msg.p1 = oldTrack;
-      msg.p2 = newTrack;
-      sendMessage(&msg, doUndoFlag);
-      }
-*/
-     
 //---------------------------------------------------------
 //   msgMoveTrack
 //    move track idx1 to slot idx2
@@ -778,11 +741,7 @@ void Audio::msgMoveTrack(int idx1, int idx2, bool doUndoFlag)
       int n = MusEGlobal::song->tracks()->size();
       if (idx1 >= n || idx2 >= n)   // sanity check
             return;
-      AudioMsg msg;
-      msg.id = SEQM_MOVE_TRACK;
-      msg.a = idx1;
-      msg.b = idx2;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::SwapTrack, idx1, idx2), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -791,10 +750,7 @@ void Audio::msgMoveTrack(int idx1, int idx2, bool doUndoFlag)
 
 void Audio::msgAddPart(Part* part, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_ADD_PART;
-      msg.p1 = part;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddPart, part), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -803,39 +759,9 @@ void Audio::msgAddPart(Part* part, bool doUndoFlag)
 
 void Audio::msgRemovePart(Part* part, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_REMOVE_PART;
-      msg.p1 = part;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeletePart, part), doUndoFlag);
       }
 
-//---------------------------------------------------------
-//   msgRemoveParts
-//    remove selected parts; return true if any part was
-//    removed
-//---------------------------------------------------------
-
-bool Song::msgRemoveParts()
-      {
-      Undo operations;
-      bool partSelected = false;
-
-            TrackList* tl = MusEGlobal::song->tracks();
-
-            for (iTrack it = tl->begin(); it != tl->end(); ++it) {
-                  PartList* pl = (*it)->parts();
-                  for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-                        if (ip->second->selected()) {
-                              operations.push_back(UndoOp(UndoOp::DeletePart,ip->second));
-                              partSelected = true;
-                              }
-                        }
-                  }
-      
-      MusEGlobal::song->applyOperationGroup(operations);
-      
-      return partSelected;
-      }
 
 //---------------------------------------------------------
 //   msgAddEvent
@@ -843,13 +769,7 @@ bool Song::msgRemoveParts()
 
 void Audio::msgAddEvent(Event& event, Part* part, bool doUndoFlag, bool doCtrls, bool doClones)
       {
-      AudioMsg msg;
-      msg.id = SEQM_ADD_EVENT;
-      msg.ev1 = event;
-      msg.p2 = part;
-      msg.a = doCtrls;
-      msg.b = doClones;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, event,part, doCtrls, doClones), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -858,13 +778,7 @@ void Audio::msgAddEvent(Event& event, Part* part, bool doUndoFlag, bool doCtrls,
 
 void Audio::msgDeleteEvent(Event& event, Part* part, bool doUndoFlag, bool doCtrls, bool doClones)
       {
-      AudioMsg msg;
-      msg.id = SEQM_REMOVE_EVENT;
-      msg.ev1 = event;
-      msg.p2 = part;
-      msg.a = doCtrls;
-      msg.b = doClones;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent, event,part, doCtrls, doClones), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -873,14 +787,7 @@ void Audio::msgDeleteEvent(Event& event, Part* part, bool doUndoFlag, bool doCtr
 
 void Audio::msgChangeEvent(Event& oe, Event& ne, Part* part, bool doUndoFlag, bool doCtrls, bool doClones)
       {
-      AudioMsg msg;
-      msg.id = SEQM_CHANGE_EVENT;
-      msg.ev1 = oe;
-      msg.ev2 = ne;
-      msg.p3 = part;
-      msg.a = doCtrls;
-      msg.b = doClones;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyEvent, ne,oe, part, doCtrls, doClones), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -889,11 +796,7 @@ void Audio::msgChangeEvent(Event& oe, Event& ne, Part* part, bool doUndoFlag, bo
 
 void Audio::msgAddTempo(int tick, int tempo, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_ADD_TEMPO;
-      msg.a = tick;
-      msg.b = tempo;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTempo, tick, tempo), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -927,11 +830,7 @@ void Audio::msgSetGlobalTempo(int val)
 
 void Audio::msgDeleteTempo(int tick, int tempo, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_REMOVE_TEMPO;
-      msg.a = tick;
-      msg.b = tempo;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTempo, tick, tempo), doUndoFlag);
       }
 
 //---------------------------------------------------------

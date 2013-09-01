@@ -609,59 +609,24 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
       switch(track->type()) {
             case Track::WAVE:
                   {
-                  // TODO FINDMICH FIXME this is totally broken. we don't want to remove events just because they're beyond end-of-part.
-                  // we also don't want to auto-resize the last event.
+                  Undo operations;
+									
+									unsigned orig_len=oPart->lenFrame();
+									WavePart* part_it=(WavePart*)oPart;
+									do
+									{
+										if (part_it->lenFrame()==orig_len)
+										{
+											// Do port controller values but not clone parts. 
+											operations.push_back(UndoOp(UndoOp::ModifyPartLengthFrames, part_it, part_it->lenFrame(), len, true, false));
+										}
+										
+										part_it=(WavePart*)part_it->nextClone();
+									} while (doClones && (part_it != (WavePart*)oPart));
                   
-                  /*
-                  MusECore::WavePart* nPart = new MusECore::WavePart(*(MusECore::WavePart*)oPart);
-                  EventList* el = nPart->events();
-                  unsigned new_partlength = MusEGlobal::tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len);
-
-                  // If new nr of frames is less than previous what can happen is:
-                  // -   0 or more events are beginning after the new final position. Those are removed from the part
-                  // -   The last event begins before new final position and ends after it. If so, it will be resized to end at new part length
-                  if (new_partlength < oPart->lenFrame()) {
-                        Undo operations;
-
-                        for (iEvent i = el->begin(); i != el->end(); i++) {
-                              Event e = i->second;
-                              unsigned event_startframe = e.frame();
-                              unsigned event_endframe = event_startframe + e.lenFrame();
-                              if (event_endframe < new_partlength)
-                                    continue;
-                              }
-                        nPart->setLenFrame(new_partlength);
-                        // Do not do port controller values and clone parts. 
-                        operations.push_back(UndoOp(UndoOp::Modify***Part, oPart, nPart, false, false));
-
-                        MusEGlobal::song->applyOperationGroup(operations);
-                        }
-                  // If the part is expanded there can be no additional events beginning after the previous final position
-                  // since those are removed if the part has been shrunk at some time (see above)
-                  // The only thing we need to check is the final event: If it has data after the previous final position,
-                  // we'll expand that event
-                  else {
-                        Undo operations;
-                        if(!el->empty())
-                        {
-                          iEvent i = el->end();
-                          i--;
-                          Event last = i->second;
-                          MusECore::SndFileR file = last.sndFile();
-                          if (file.isNull())
-                                return;
-                          Event newEvent = last.clone();
-                          // Do not do port controller values and clone parts. 
-                          operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, last, nPart, false, false));
-                        }  
-                        
-                        nPart->setLenFrame(new_partlength);
-                        // Do not do port controller values and clone parts. 
-                        operations.push_back(UndoOp(UndoOp::Modify***Part, oPart, nPart, false, false));
-                        MusEGlobal::song->applyOperationGroup(operations);
-                        } */
-                  }
+                  MusEGlobal::song->applyOperationGroup(operations);
                   break;
+                  }
             case Track::MIDI:
             case Track::DRUM:
             case Track::NEW_DRUM:
@@ -775,95 +740,6 @@ void Part::splitPart(int tickpos, Part*& p1, Part*& p2) const
             }
       }
 
-//---------------------------------------------------------
-//   cmdSplitPart
-//---------------------------------------------------------
-
-void Song::cmdSplitPart(Track* track, Part* part, int tick)
-      {
-      int l1 = tick - part->tick();
-      int l2 = part->lenTick() - l1;
-      if (l1 <= 0 || l2 <= 0)
-            return;
-      Part* p1;
-      Part* p2;
-      part->splitPart(tick, p1, p2);
-      
-      MusEGlobal::song->informAboutNewParts(part, p1);
-      MusEGlobal::song->informAboutNewParts(part, p2);
-
-      Undo operations;
-      operations.push_back(UndoOp(UndoOp::DeletePart, part));
-      operations.push_back(UndoOp(UndoOp::AddPart, p1));
-      operations.push_back(UndoOp(UndoOp::AddPart, p2));
-      applyOperationGroup(operations);
-      }
-
-
-//---------------------------------------------------------
-//   cmdGluePart
-//---------------------------------------------------------
-
-void Song::cmdGluePart(Track* track, Part* oPart)
-      { /* disabled for now, to be deleted
-      // p3.3.54
-      if(track->type() != Track::WAVE && !track->isMidiTrack())
-        return;
-      
-      PartList* pl   = track->parts();
-      Part* nextPart = 0;
-
-      for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-            if (ip->second == oPart) {
-                  ++ip;
-                  if (ip == pl->end())
-                        return;
-                  nextPart = ip->second;
-                  break;
-                  }
-            }
-
-      Part* nPart = track->newPart(oPart);
-      nPart->setLenTick(nextPart->tick() + nextPart->lenTick() - oPart->tick());
-
-      // populate nPart with Events from oPart and nextPart
-
-      EventList* sl1 = oPart->events();
-      EventList* dl  = nPart->events();
-
-      for (iEvent ie = sl1->begin(); ie != sl1->end(); ++ie)
-            dl->add(ie->second);
-
-      EventList* sl2 = nextPart->events();
-      
-      if(track->type() == Track::WAVE)
-      {
-        int frameOffset = nextPart->frame() - oPart->frame();
-        for (iEvent ie = sl2->begin(); ie != sl2->end(); ++ie) 
-        {
-              Event event = ie->second.clone();
-              event.setFrame(event.frame() + frameOffset);
-              dl->add(event);
-        }
-      }
-      else
-      if(track->isMidiTrack())
-      {
-        int tickOffset  = nextPart->tick() - oPart->tick();
-        for (iEvent ie = sl2->begin(); ie != sl2->end(); ++ie) 
-        {
-              Event event = ie->second.clone();
-              event.setTick(event.tick() + tickOffset);
-              dl->add(event);
-        }
-      }
-            
-      startUndo();
-      MusEGlobal::audio->msgRemovePart(nextPart, false);
-      // Indicate no undo, and do port controller values but not clone parts. 
-      MusEGlobal::audio->msgChange***Part(oPart, nPart, false, true, false);
-      endUndo(SC_PART_MODIFIED | SC_PART_REMOVED); */
-      }
 
 //---------------------------------------------------------
 //   dump

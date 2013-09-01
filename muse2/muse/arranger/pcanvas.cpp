@@ -668,12 +668,11 @@ bool PartCanvas::deleteItem(CItem* i)
 void PartCanvas::splitItem(CItem* item, const QPoint& pt)
       {
       NPart* np = (NPart*) item;
-      MusECore::Track* t = np->track();
       MusECore::Part*  p = np->part();
       int x = pt.x();
       if (x < 0)
             x = 0;
-      MusEGlobal::song->cmdSplitPart(t, p, AL::sigmap.raster(x, *_raster));
+      split_part(p,AL::sigmap.raster(x, *_raster));
       }
 
 //---------------------------------------------------------
@@ -683,9 +682,7 @@ void PartCanvas::splitItem(CItem* item, const QPoint& pt)
 void PartCanvas::glueItem(CItem* item)
       {
       NPart* np = (NPart*) item;
-      MusECore::Track* t = np->track();
-      MusECore::Part*  p = np->part();
-      MusEGlobal::song->cmdGluePart(t, p);
+      merge_with_next_part(np->part());
       }
 
 //---------------------------------------------------------
@@ -1116,7 +1113,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             if (getCurrentDrag())
                   return;
                 
-            MusEGlobal::song->msgRemoveParts();
+            MusECore::delete_selected_parts();
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC].key) {

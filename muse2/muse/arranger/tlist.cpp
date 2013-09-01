@@ -75,6 +75,8 @@
 #include "dssihost.h"
 #endif
 
+using MusECore::UndoOp;
+
 namespace MusEGui {
 
 static const int MIN_TRACKHEIGHT = 20;
@@ -599,13 +601,10 @@ void TList::returnPressed()
                             }
                       }
                       
-                MusEGlobal::song->startUndo();
-                MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackName, 
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackName, 
                                                           editTrack, 
                                                           editTrack->name().toLatin1().constData(), 
                                                           editor->text().toLatin1().constData()));
-                editTrack->setName(editor->text());
-                MusEGlobal::song->endUndo(-1);                   //uagh, why "-1", why no proper flags?
                 }
         }    
         
@@ -640,16 +639,10 @@ void TList::chanValueFinished()
           channel = 0;
         if(channel != mt->outChannel()) 
         {
-              MusEGlobal::song->startUndo();
-              MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, 
+              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, 
                                                           editTrack, 
                                                           mt->outChannel(), 
                                                           channel));
-              MusEGlobal::audio->msgIdle(true);
-              mt->setOutChanAndUpdate(channel);
-              MusEGlobal::audio->msgIdle(false);
-              MusEGlobal::audio->msgUpdateSoloStates();                   
-              MusEGlobal::song->endUndo(SC_MIDI_TRACK_PROP);
         }      
       }
     }
@@ -667,13 +660,10 @@ void TList::chanValueFinished()
                   n = 1;
             if(n != at->channels()) 
             {
-                  MusEGlobal::song->startUndo();
-                  MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, 
+                  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, 
                                                               editTrack, 
                                                               at->channels(), 
                                                               n));
-                  MusEGlobal::audio->msgSetChannels(at, n);
-                  MusEGlobal::song->endUndo(SC_CHANNELS);
             }
           }       
         }         
@@ -1962,8 +1952,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                               {
                                 switch (n) {
                                     case 1001:     // delete track
-                                          MusEGlobal::song->removeTrack0(t);
-                                          MusEGlobal::audio->msgUpdateSoloStates();
+                                          MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(t), t));
                                           break;
 
                                     case 1002:     // show track comment
