@@ -606,26 +606,37 @@ void Audio::msgSeek(const Pos& pos)
       }
 
 //---------------------------------------------------------
-//   msgUndo
+//   msgExecuteOperationGroup
 //---------------------------------------------------------
 
-void Audio::msgUndo()
-      {
-      AudioMsg msg;
-      msg.id = SEQM_UNDO;
-      sendMsg(&msg);
-      }
+void Audio::msgExecuteOperationGroup(Undo& operations)
+{
+	MusEGlobal::song->executeOperationGroup1(operations);
+	
+	AudioMsg msg;
+	msg.id = SEQM_EXECUTE_OPERATION_GROUP;
+	msg.operations=&operations;
+	sendMsg(&msg);
+
+	MusEGlobal::song->executeOperationGroup3(operations);
+}
 
 //---------------------------------------------------------
-//   msgRedo
+//   msgRevertOperationGroup
 //---------------------------------------------------------
 
-void Audio::msgRedo()
-      {
-      AudioMsg msg;
-      msg.id = SEQM_REDO;
-      sendMsg(&msg);
-      }
+void Audio::msgRevertOperationGroup(Undo& operations)
+{
+	MusEGlobal::song->revertOperationGroup1(operations);
+	
+	
+	AudioMsg msg;
+	msg.id = SEQM_REVERT_OPERATION_GROUP;
+	msg.operations=&operations;
+	sendMsg(&msg);
+
+	MusEGlobal::song->revertOperationGroup3(operations);
+}
 
 //---------------------------------------------------------
 //   msgPlay

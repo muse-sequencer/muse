@@ -52,6 +52,7 @@ class Part;
 class PluginI;
 class SynthI;
 class Track;
+class Undo;
 
 //---------------------------------------------------------
 //   AudioMsgId
@@ -67,7 +68,7 @@ enum {
       SEQM_ADD_TEMPO, SEQM_SET_TEMPO, SEQM_REMOVE_TEMPO, SEQM_ADD_SIG, SEQM_REMOVE_SIG,
       SEQM_ADD_KEY, SEQM_REMOVE_KEY,
       SEQM_SET_GLOBAL_TEMPO,
-      SEQM_UNDO, SEQM_REDO,
+      SEQM_REVERT_OPERATION_GROUP, SEQM_EXECUTE_OPERATION_GROUP,
       SEQM_RESET_DEVICES, SEQM_INIT_DEVICES, SEQM_PANIC,
       SEQM_MIDI_LOCAL_OFF,
       SEQM_PLAY_MIDI_EVENT,
@@ -121,6 +122,7 @@ struct AudioMsg : public ThreadMsg {   // this should be an union
       char port, channel, ctrl;
       int a, b, c;
       Pos pos;
+      Undo* operations;
       };
 
 class AudioOutput;
@@ -221,6 +223,9 @@ class Audio {
       void msgSeek(const Pos&);
       void msgPlay(bool val);
 
+      void msgExecuteOperationGroup(Undo&); // calls exe1, then calls exe2 in audio context, then calls exe3
+      void msgRevertOperationGroup(Undo&); // similar.
+
       void msgRemoveTrack(Track*, bool u = true);
       void msgRemoveTracks();
       void msgMoveTrack(int idx1, int dx2, bool u = true);
@@ -252,8 +257,6 @@ class Audio {
       void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
       void msgSetRecord(AudioTrack*, bool);
-      void msgUndo();
-      void msgRedo();
       void msgLocalOff();
       void msgInitMidiDevices(bool force = true);
       void msgResetMidiDevices();

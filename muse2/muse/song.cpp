@@ -1756,10 +1756,16 @@ void Song::endMsgCmd()
 void Song::undo()
       {
       updateFlags = 0;
-      if (doUndo1())
+      
+      Undo& opGroup = undoList->back();
+      
+      if (opGroup.empty())
             return;
-      MusEGlobal::audio->msgUndo();
-      doUndo3();
+      
+      MusEGlobal::audio->msgRevertOperationGroup(opGroup);
+      
+      undoList->pop_back();
+      
       MusEGlobal::redoAction->setEnabled(true);
       MusEGlobal::undoAction->setEnabled(!undoList->empty());
       setUndoRedoText();
@@ -1768,6 +1774,7 @@ void Song::undo()
         MusEGlobal::audio->msgUpdateSoloStates();
 
       emit songChanged(updateFlags);
+      emit sigDirty();
       }
 
 //---------------------------------------------------------
@@ -1777,10 +1784,16 @@ void Song::undo()
 void Song::redo()
       {
       updateFlags = 0;
-      if (doRedo1())
+
+      Undo& opGroup = redoList->back();
+      
+      if (opGroup.empty())
             return;
-      MusEGlobal::audio->msgRedo();
-      doRedo3();
+      
+      MusEGlobal::audio->msgExecuteOperationGroup(opGroup);
+      
+      redoList->pop_back();
+      
       MusEGlobal::undoAction->setEnabled(true);
       MusEGlobal::redoAction->setEnabled(!redoList->empty());
       setUndoRedoText();
@@ -1789,6 +1802,7 @@ void Song::redo()
         MusEGlobal::audio->msgUpdateSoloStates();
 
       emit songChanged(updateFlags);
+      emit sigDirty();
       }
 
 //---------------------------------------------------------
@@ -1802,11 +1816,11 @@ void Song::processMsg(AudioMsg* msg)
             case SEQM_UPDATE_SOLO_STATES:
                   updateSoloStates();
                   break;
-            case SEQM_UNDO:
-                  doUndo2();
+            case SEQM_EXECUTE_OPERATION_GROUP:
+                  executeOperationGroup2(*msg->operations);
                   break;
-            case SEQM_REDO:
-                  doRedo2();
+            case SEQM_REVERT_OPERATION_GROUP:
+                  revertOperationGroup2(*msg->operations);
                   break;
             case SEQM_MOVE_TRACK:
                   if (msg->a > msg->b) {

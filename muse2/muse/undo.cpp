@@ -211,9 +211,9 @@ void UndoList::clearDelete()
 void Song::startUndo()
       {
       redoList->clearDelete(); // redo must be invalidated when a new undo is started
-			MusEGlobal::redoAction->setEnabled(false);
+      MusEGlobal::redoAction->setEnabled(false);
       setUndoRedoText();
-			
+      
       undoList->push_back(Undo());
       updateFlags = 0;
       undoMode = true;
@@ -355,23 +355,19 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
       if (!group.empty())
       {
             prepareOperationGroup(group);
-            //this is a HACK! but it works :)    (added by flo93)
-            redoList->push_back(group);
-            redo();
             
-            if (!doUndo)
-            {
-                  undoList->pop_back();
-                  MusEGlobal::undoAction->setEnabled(!undoList->empty());
-                  setUndoRedoText();
-            }
-            else
-            {
-                  redoList->clearDelete(); // redo must be invalidated when a new undo is started
-                  MusEGlobal::redoAction->setEnabled(false);
-                  setUndoRedoText();
-            }
+            if (doUndo)
+                 startUndo();
+
+            MusEGlobal::audio->msgExecuteOperationGroup(group);
             
+            // append all elements from "group" to the end of undoList->back().
+            Undo& curUndo = undoList->back();
+            curUndo.insert(curUndo.end(), group.begin(), group.end());
+            
+            if (doUndo)
+                 endUndo(0);
+
             return doUndo;
       }
       else
@@ -381,14 +377,13 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
 
 
 //---------------------------------------------------------
-//   doUndo2
+//   revertOperationGroup2
 //    real time part
 //---------------------------------------------------------
 
-void Song::doUndo2()
+void Song::revertOperationGroup2(Undo& operations)
       {
-      Undo& u = undoList->back();
-      for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
+      for (riUndoOp i = operations.rbegin(); i != operations.rend(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
             Part* editable_part = const_cast<Part*>(i->part);
@@ -503,13 +498,12 @@ void Song::doUndo2()
       }
 
 //---------------------------------------------------------
-//   Song::doRedo2
+//   Song::executeOperationGroup2
 //---------------------------------------------------------
 
-void Song::doRedo2()
+void Song::executeOperationGroup2(Undo& operations)
       {
-      Undo& u = redoList->back();
-      for (iUndoOp i = u.begin(); i != u.end(); ++i) {
+      for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
             Part* editable_part = const_cast<Part*>(i->part);
@@ -789,17 +783,14 @@ void Song::addUndo(UndoOp i)
       }
 
 //---------------------------------------------------------
-//   doUndo1
+//   revertOperationGroup1
 //    non realtime context
 //    return true if nothing to do
 //---------------------------------------------------------
 
-bool Song::doUndo1()
+void Song::revertOperationGroup1(Undo& operations)
       {
-      if (undoList->empty())
-            return true;
-      Undo& u = undoList->back();
-      for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
+      for (riUndoOp i = operations.rbegin(); i != operations.rend(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
             Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
             Part* editable_part = const_cast<Part*>(i->part);
@@ -886,18 +877,17 @@ bool Song::doUndo1()
                         break;
                   }
             }
-      return false;
+      return;
       }
 
 //---------------------------------------------------------
-//   doUndo3
+//   revertOperationGroup3
 //    non realtime context
 //---------------------------------------------------------
 
-void Song::doUndo3()
+void Song::revertOperationGroup3(Undo& operations)
       {
-      Undo& u = undoList->back();
-      for (riUndoOp i = u.rbegin(); i != u.rend(); ++i) {
+      for (riUndoOp i = operations.rbegin(); i != operations.rend(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
 // uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
@@ -926,23 +916,17 @@ void Song::doUndo3()
                         break;
                   }
             }
-      redoList->push_back(u); // put item on redo list
-      undoList->pop_back();
-      emit sigDirty();
       }
 
 //---------------------------------------------------------
-//   doRedo1
+//   executeOperationGroup1
 //    non realtime context
 //    return true if nothing to do
 //---------------------------------------------------------
 
-bool Song::doRedo1()
+void Song::executeOperationGroup1(Undo& operations)
       {
-      if (redoList->empty())
-            return true;
-      Undo& u = redoList->back();
-      for (iUndoOp i = u.begin(); i != u.end(); ++i) {
+      for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
             Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
             Part* editable_part = const_cast<Part*>(i->part);
@@ -1025,18 +1009,16 @@ bool Song::doRedo1()
                         break;
                   }
             }
-      return false;
       }
 
 //---------------------------------------------------------
-//   doRedo3
+//   executeOperationGroup3
 //    non realtime context
 //---------------------------------------------------------
 
-void Song::doRedo3()
+void Song::executeOperationGroup3(Undo& operations)
       {
-      Undo& u = redoList->back();
-      for (iUndoOp i = u.begin(); i != u.end(); ++i) {
+      for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
 // uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
@@ -1064,9 +1046,6 @@ void Song::doRedo3()
                         break;
                   }
             }
-      undoList->push_back(u); // put item on undo list
-      redoList->pop_back();
-      emit sigDirty();
       }
 
 

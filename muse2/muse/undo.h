@@ -132,6 +132,8 @@ class Undo : public std::list<UndoOp> {
 
 typedef Undo::iterator iUndoOp;
 typedef Undo::reverse_iterator riUndoOp;
+typedef Undo::const_iterator ciUndoOp;
+typedef Undo::const_reverse_iterator criUndoOp;
 
 class UndoList : public std::list<Undo> {
    protected:

@@ -356,7 +356,7 @@ class Song : public QObject {
       void updateSoloStates();
 
       //-----------------------------------------
-      //   undo, redo
+      //   undo, redo, operation groups
       //-----------------------------------------
 
       void startUndo();
@@ -364,12 +364,12 @@ class Song : public QObject {
 
       void undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
 
-      bool doUndo1();
-      void doUndo2();
-      void doUndo3();
-      bool doRedo1();
-      void doRedo2();
-      void doRedo3();
+      void executeOperationGroup1(Undo& operations);
+      void executeOperationGroup2(Undo& operations);
+      void executeOperationGroup3(Undo& operations);
+      void revertOperationGroup1(Undo& operations);
+      void revertOperationGroup2(Undo& operations);
+      void revertOperationGroup3(Undo& operations);
 
       void addUndo(UndoOp i);
       void setUndoRedoText();
