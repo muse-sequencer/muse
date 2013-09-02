@@ -376,6 +376,9 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
     
     if(t == MOVE_MOVE)
     {
+        if (dtrack!=track)
+           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::MovePartToTrack,spart,dtrack,track));
+        
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartTick,spart,spart->tick(),dtick));
         
         new_partend=(spart->lenTick() + dtick);
@@ -392,11 +395,11 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
             dpart = spart->duplicate();
         
         dpart->setTick(dtick);
+        dpart->setTrack(dtrack);
         
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
         
         new_partend=(dpart->lenTick() + dpart->tick());
-        
     }
     
     if (MusEGlobal::song->len() < new_partend) // FIXME this is buggy anyway.

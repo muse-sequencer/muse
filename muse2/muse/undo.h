@@ -47,6 +47,7 @@ struct UndoOp {
       enum UndoType {
             AddTrack, DeleteTrack,
             AddPart,  DeletePart,  ModifyPartTick, ModifyPartLength, ModifyPartLengthFrames, /* FINDMICH FIXME frames are to be deprecated */ ModifyPartName, SelectPart,
+            MovePartToTrack,
             AddEvent, DeleteEvent, ModifyEvent, SelectEvent,
             AddTempo, DeleteTempo,
             AddSig,   DeleteSig,
@@ -65,10 +66,6 @@ struct UndoOp {
                   int a;
                   int b;
                   int c;
-                  };
-            struct {
-                  const Track* track;
-                  int trackno;
                   };
             struct {
                   const Part* part;
@@ -106,6 +103,9 @@ struct UndoOp {
       bool selected_old;
       bool doCtrls;
       bool doClones;
+      const Track* track;
+      const Track* oldTrack;
+      int trackno;
       
       const char* typeName();
       void dump();
@@ -116,6 +116,7 @@ struct UndoOp {
       UndoOp(UndoType type, const Part* part, unsigned old_len_or_tick=-1, unsigned new_len_or_tick=-1, bool doCtrls=false, bool doClones=false); // FIXME these bools are UNUSED!!. XTICKS!
       UndoOp(UndoType type, const Part* part, const char* old_name, const char* new_name);
       UndoOp(UndoType type, const Part* part, bool selected, bool selected_old);
+      UndoOp(UndoType type, const Part* part, const Track* nTrack, const Track* oTrack);
       UndoOp(UndoType type, const Event& nev, const Event& oev, const Part* part, bool doCtrls, bool doClones);
       UndoOp(UndoType type, const Event& nev, const Part* part, bool doCtrls, bool doClones);
       UndoOp(UndoType type, const Event& nev, bool selected, bool selected_old);

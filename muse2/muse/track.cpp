@@ -787,7 +787,16 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
 
 Part* MidiTrack::newPart(Part*p, bool clone)
       {
-      MidiPart* part = clone ? (MidiPart*)p->createNewClone() : new MidiPart(this);
+      MidiPart* part;
+      if (clone)
+      {
+            part = (MidiPart*)p->createNewClone();
+            part->setTrack(this);
+      }
+      else
+            part= new MidiPart(this);
+      
+      
       if (p) {
             part->setName(p->name());
             part->setColorIndex(p->colorIndex());

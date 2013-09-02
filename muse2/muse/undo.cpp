@@ -53,6 +53,7 @@ const char* UndoOp::typeName()
       static const char* name[] = {
             "AddTrack", "DeleteTrack", 
             "AddPart",  "DeletePart",  "ModifyPartTick", "ModifyPartLength", "ModifyPartLengthFrames", "ModifyPartName", "SelectPart",
+            "MovePartToTrack",
             "AddEvent", "DeleteEvent", "ModifyEvent", "SelectEvent",
             "AddTempo", "DeleteTempo",
             "AddSig", "DeleteSig",
@@ -83,6 +84,7 @@ void UndoOp::dump()
             case ModifyPartLength:
             case ModifyPartLengthFrames:
             case ModifyPartName:
+            case MovePartToTrack:
                   break;
             case AddEvent:
             case DeleteEvent:
@@ -405,17 +407,20 @@ void Song::revertOperationGroup2(Undo& operations)
                         }
                         break;
                   case UndoOp::AddPart:
-                        {
-                        Part* part = editable_part;
-                        removePart(part);
+                        removePart(editable_part);
                         updateFlags |= SC_PART_REMOVED;
                         editable_part->unchainClone();
-                        }
                         break;
                   case UndoOp::DeletePart:
                         addPart(editable_part);
                         updateFlags |= SC_PART_INSERTED;
                         editable_part->rechainClone();
+                        break;
+                  case UndoOp::MovePartToTrack:
+                        removePart(editable_part); // remove it from the track it currently lives on. (does not touch the clone chain)
+                        editable_part->setTrack(const_cast<Track*>(i->oldTrack));
+                        addPart(editable_part); // add it to the track we just set.
+                        updateFlags |= SC_PART_INSERTED | SC_PART_REMOVED;
                         break;
                   case UndoOp::ModifyPartName:
                         editable_part->setName(i->_oldName);
@@ -533,6 +538,12 @@ void Song::executeOperationGroup2(Undo& operations)
                         removePart(editable_part);
                         updateFlags |= SC_PART_REMOVED;
                         editable_part->unchainClone();
+                        break;
+                  case UndoOp::MovePartToTrack:
+                        removePart(editable_part); // remove it from the track it currently lives on. (does not touch the clone chain)
+                        editable_part->setTrack(editable_track);
+                        addPart(editable_part); // add it to the track we just set.
+                        updateFlags |= SC_PART_INSERTED | SC_PART_REMOVED;
                         break;
                   case UndoOp::ModifyPartName:
                         editable_part->setName(i->_newName);
@@ -657,6 +668,19 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_)
     part = part_;
     selected=selected_;
     selected_old=sel_old_;
+}
+
+UndoOp::UndoOp(UndoType type_, const Part* part_, const Track* nTrack, const Track* oTrack)
+{
+    assert(type_==MovePartToTrack);
+    assert(part_);
+    assert(nTrack);
+    assert(oTrack);
+    
+    type=type_;
+    part = part_;
+    track=nTrack;
+    oldTrack=oTrack;
 }
 
 UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* part_, bool doCtrls_, bool doClones_)

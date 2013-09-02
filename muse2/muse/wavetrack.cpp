@@ -214,7 +214,16 @@ void WaveTrack::read(Xml& xml)
 
 Part* WaveTrack::newPart(Part*p, bool clone)
       {
-      WavePart* part = clone ? (WavePart*)p->createNewClone() : new WavePart(this);
+      WavePart* part;
+      if (clone)
+      {
+            part = (WavePart*)p->createNewClone();
+            part->setTrack(this);
+      }
+      else
+            part = new WavePart(this);
+      
+      
       if (p) {
             part->setName(p->name());
             part->setColorIndex(p->colorIndex());
