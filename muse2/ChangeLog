@@ -1,3 +1,6 @@
+02.09.2013:
+         - Display git hash and date in the about box instead of svn revision (Orcan)
+         - Bumped the year string to 2013 in the about box
 01.09.2013:
          - Mods/fixes to Midi Input Transformator plugin: (Tim)
            Fixed some bugs when reading procVal2Op from song.
