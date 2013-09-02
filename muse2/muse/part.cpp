@@ -63,8 +63,13 @@ void Part::unchainClone()
 void Part::chainClone(Part* p)
 {
   // FIXME assertion
+  assert(p);
   
-  this->unchainClone();
+  if (! (_prevClone==this && _nextClone==this)) // the part is still part of a clone chain!
+  {
+    printf("ERROR: THIS SHOULD NEVER HAPPEN: Part::chainClone() called, but part is already chained! I'll unchain for now, but better fix that!\n");
+    this->unchainClone();
+  }
 
   // Make our links to the chain
   this->_prevClone = p;
