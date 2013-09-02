@@ -49,7 +49,21 @@ enum TransformFunction {
 
 enum TransformOperator {
       Keep, Plus, Minus, Multiply, Divide, Fix, Value, Invert,
-      ScaleMap, Flip, Dynamic, Random
+      ScaleMap, Flip, Dynamic, Random, Toggle
+      };
+
+class TransformToggleState {
+    private:
+      bool _ctrlStates[128];
+
+    public:
+      TransformToggleState() 
+      {
+        for(int i = 0; i < 128; ++i)
+          _ctrlStates[i] = false;
+      }
+      bool ctrlState(int ctl_num) { return _ctrlStates[ctl_num & 0x7f]; }
+      void setCtrlState(int ctl_num, bool state) { _ctrlStates[ctl_num & 0x7f] = state; }
       };
 
 extern void writeMidiTransforms(int level, Xml& xml);
@@ -92,6 +106,7 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
       void procEventTypeSel(int);
       void procVal1OpSel(int);
       void procVal2OpSel(int);
+      void procVal2OpUpdate(MusECore::TransformOperator op);
       void procLenOpSel(int);
       void procPosOpSel(int);
       void funcOpSel(int);
