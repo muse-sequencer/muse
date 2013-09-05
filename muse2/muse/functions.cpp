@@ -1230,6 +1230,8 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 void select_all(const set<const Part*>& parts)
 {
 	Undo operations;
+	operations.combobreaker=true;
+	
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
@@ -1242,6 +1244,8 @@ void select_all(const set<const Part*>& parts)
 void select_none(const set<const Part*>& parts)
 {
 	Undo operations;
+	operations.combobreaker=true;
+	
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
@@ -1254,6 +1258,8 @@ void select_none(const set<const Part*>& parts)
 void select_invert(const set<const Part*>& parts)
 {
 	Undo operations;
+	operations.combobreaker=true;
+	
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
@@ -1265,8 +1271,10 @@ void select_invert(const set<const Part*>& parts)
 
 void select_in_loop(const set<const Part*>& parts)
 {
-	select_none(parts); // this will automatically be grouped into one OperationGroup
+	select_none(parts);
 	Undo operations;
+	operations.combobreaker=true;
+	
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
@@ -1278,8 +1286,10 @@ void select_in_loop(const set<const Part*>& parts)
 
 void select_not_in_loop(const set<const Part*>& parts)
 {
-	select_none(parts); // this will automatically be grouped into one OperationGroup
+	select_none(parts);
 	Undo operations;
+	operations.combobreaker=true;
+	
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{

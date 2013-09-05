@@ -227,6 +227,15 @@ void Song::startUndo()
 
 void Song::endUndo(SongChangedFlags_t flags)
       {
+      riUndo prev_undo = undoList->rbegin();
+      prev_undo++;
+      if (prev_undo!=undoList->rend())
+      {
+            // try to merge the current Undo with the last one
+            if (prev_undo->merge_combo(undoList->back()))
+                  undoList->pop_back();
+      }
+      
       updateFlags |= flags;
       endMsgCmd();
       undoMode = false;
@@ -275,6 +284,42 @@ void Song::setUndoRedoText()
   }
 }
 
+
+bool Undo::merge_combo(const Undo& other)
+{
+	if (this->combobreaker || other.combobreaker)
+		return false;
+	
+	bool has_select_event=false;
+	bool has_select_part=false;
+	bool has_other=false;
+	
+	for (ciUndoOp op=this->begin(); op!=this->end(); op++)
+		switch(op->type)
+		{
+			case UndoOp::DoNothing: break;
+			case UndoOp::SelectEvent: has_select_event=true; break;
+			case UndoOp::SelectPart: has_select_part=true; break;
+			default: has_other=true; break;
+		}
+	
+	for (ciUndoOp op=other.begin(); op!=other.end(); op++)
+		switch(op->type)
+		{
+			case UndoOp::DoNothing: break;
+			case UndoOp::SelectEvent: has_select_event=true; break;
+			case UndoOp::SelectPart: has_select_part=true; break;
+			default: has_other=true; break;
+		}
+	
+	bool mergeable = (has_select_event && !has_select_part && !has_other) ||
+	                 (has_select_part && !has_select_event && !has_other);
+	
+	if (mergeable)
+		this->insert(this->end(), other.begin(), other.end());
+	
+	return mergeable;
+}
 
 void prepareOperationGroup(Undo& group)
 {
@@ -362,6 +407,8 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
             // append all elements from "group" to the end of undoList->back().
             Undo& curUndo = undoList->back();
             curUndo.insert(curUndo.end(), group.begin(), group.end());
+            if (group.combobreaker)
+               curUndo.combobreaker=true;
             
             if (doUndo)
                  endUndo(0);

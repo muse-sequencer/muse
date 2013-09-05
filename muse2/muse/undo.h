@@ -128,7 +128,23 @@ struct UndoOp {
 
 class Undo : public std::list<UndoOp> {
    public:
+      Undo() : std::list<UndoOp>() { combobreaker=false; }
+      Undo(const Undo& other) : std::list<UndoOp>(other) { this->combobreaker=other.combobreaker; }
+      Undo& operator=(const Undo& other) { std::list<UndoOp>::operator=(other); this->combobreaker=other.combobreaker; return *this;}
+
       bool empty() const;
+      
+      
+      /** if set, forbid merging (below).
+       *  Defaults to false */
+      bool combobreaker; 
+      
+      /** is possible, merges itself and other by appending
+       *  all contents of other at this->end().
+       *  returns true if merged, false otherwise.
+       *  in case of success, the caller has to ensure that
+       *  other is deleted from the UndoList. */
+      bool merge_combo(const Undo& other);
 };
 
 typedef Undo::iterator iUndoOp;

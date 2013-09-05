@@ -74,6 +74,7 @@ using namespace std;
 using MusEGlobal::debugMsg;
 using MusEGlobal::heavyDebugMsg;
 using MusECore::UndoOp;
+using MusECore::Undo;
 
 namespace MusEGui {
 
@@ -4502,10 +4503,15 @@ void ScoreCanvas::set_velo_off(int velo)
 void ScoreCanvas::deselect_all()
 {
 	set<const MusECore::Part*> all_parts=get_all_parts();
+	
+	Undo operations;
+	operations.combobreaker=true;
 
 	for (set<const MusECore::Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
 		for (MusECore::ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
-			MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, event->second, false, event->second.selected()));
+			operations.push_back(UndoOp(UndoOp::SelectEvent, event->second, false, event->second.selected()));
+	
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 bool staff_t::cleanup_parts()
