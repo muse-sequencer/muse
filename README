@@ -8,6 +8,35 @@ MusE is distributed under the GNU General Public License (GPL).
 Please check out the file COPYING in this directory for more
 details.
 
+
+  =============================
+      Features:
+  =============================
+      
+      MIDI sequencing:
+         - Realtime record/playback
+         - Midi file import/export
+         - Input filter
+         - Support for internal softsynth plugins using
+           DSSI, VST and MESS
+         - much more
+
+      Audio sequencing:
+         - Realtime Record/Playback several mono/stereo inputs/outputs
+         - Graphical editing of automation
+         - Support for LADSPA, DSSI, VST plugins
+
+      Technologies supported:
+         - LASH - for session control with external LASH enabled applications 
+         - JACK - The Jack Audio Connection Kit can be used for audio and midi
+         - ALSA midi output
+         - Plugin formats: DSSI, VST(i), MESS
+         - FLAM plugin guis.
+         - Built on QT4
+
+
+
+
 ,-----------------------------------------------------------------.
 | NOTICE                                                          |
 |-----------------------------------------------------------------|
