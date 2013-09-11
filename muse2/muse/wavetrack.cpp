@@ -126,23 +126,23 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, XTick startOfSegmentXT
               if (pos >= p_epos)
                 continue;
   
-	      XTick partFromXTick = startOfSegmentXTick - part->xtick();
-	      XTick partToXTick = endOfSegmentXTick - part->xtick();
-	      
+              XTick partFromXTick = startOfSegmentXTick - part->xtick();
+              XTick partToXTick = endOfSegmentXTick - part->xtick();
+          
               EventList* events = part->events();
               for (iEvent ie = events->begin(); ie != events->end(); ++ie) {
                     Event& event = ie->second;
                     unsigned e_spos  = event.frame() + p_spos;
                     unsigned nn      = event.lenFrame();
                     unsigned e_epos  = e_spos + nn;
-		    
+            
                     if (pos + n < e_spos) 
                       break;
                     if (pos >= e_epos) 
                       continue;
 
-		    XTick eventFromXTick = partFromXTick - event.xtick(); // might be negative at this moment
-		    XTick eventToXTick = partToXTick - event.xtick(); // always positive!
+                    XTick eventFromXTick = partFromXTick - event.xtick(); // might be negative at this moment, meaning that the event will sound in the future.
+                    XTick eventToXTick = partToXTick - event.xtick(); // always positive!
   
                     int offset = e_spos - pos;
   
@@ -151,7 +151,7 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, XTick startOfSegmentXT
                           nn = n - offset;
                           srcOffset = 0;
                           dstOffset = offset;
-                          }
+                    }
                     else { // if offset <= 0
                           srcOffset = -offset;
                           dstOffset = 0;
@@ -169,8 +169,8 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, XTick startOfSegmentXT
                     // from|toXTick must hold startOfSegmentXTick-Part.begin-event.begin, possibly clipped, according to the above clipping.
                     event.readAudio(part, srcOffset, bpp, channels(), nn, eventFromXTick, eventToXTick, doSeek, false);
                     
-                    }
               }
+        }
       }
               
       if(MusEGlobal::config.useDenormalBias) {
