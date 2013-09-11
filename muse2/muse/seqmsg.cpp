@@ -1301,7 +1301,7 @@ void Audio::msgSetHwCtrlState(MidiPort* port, int ch, int ctrl, int val)
 void Audio::msgSetHwCtrlStates(MidiPort* port, int ch, int ctrl, int val, int lastval)
       {
       AudioMsg msg;
-      msg.id = SEQM_SET_HW_CTRL_STATE;
+      msg.id = SEQM_SET_HW_CTRL_STATES;
       msg.p1 = port;
       msg.a = ch;
       msg.b = ctrl;

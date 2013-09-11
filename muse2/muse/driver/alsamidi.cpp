@@ -463,6 +463,7 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
             else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
+#if 0                  
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
                   snd_seq_ev_set_controller(&event, chn, ctrlH, dataH);
@@ -470,6 +471,18 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
                     return true;
                   snd_seq_ev_set_controller(&event, chn, ctrlL, dataL);
                   return putEvent(&event);
+#else
+                  snd_seq_event_t ev;
+                  memset(&ev, 0, sizeof(ev));
+                  ev.queue   = SND_SEQ_QUEUE_DIRECT;
+                  ev.source  = musePort;
+                  ev.dest    = adr;
+                  int n = (ctrlH << 7) + ctrlL;
+                  snd_seq_ev_set_controller(&ev, chn, n, b);
+                  ev.type = SND_SEQ_EVENT_CONTROL14;
+                  return putEvent(&ev);
+#endif
+                  
                   }
             else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
@@ -597,6 +610,7 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
             else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
+#if 0
                   int dataH = (b >> 7) & 0x7f;
                   int dataL = b & 0x7f;
                   if(ctrlL != _curOutParamNums[chn].NRPNL)
@@ -620,6 +634,14 @@ bool MidiAlsaDevice::putEvent(const MidiPlayEvent& ev)
                   if(putEvent(&event))
                     return true;
 
+#else                  
+                  int n = (ctrlH << 7) + ctrlL;
+                  snd_seq_ev_set_controller(&event, chn, n, b);
+                  event.type = SND_SEQ_EVENT_NONREGPARAM;
+                  if(putEvent(&event))
+                    return true;
+#endif
+                  
                   //sendNullRPNParams(t, port, chn, true);
                   if(nvh != 0xff)
                   {

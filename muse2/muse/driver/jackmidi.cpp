@@ -631,7 +631,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
             ft = 0;
       if (ft >= (int)MusEGlobal::segmentSize) {
             printf("MidiJackDevice::queueEvent: Event time:%d out of range. offset:%d ft:%d (seg=%d)\n", e.time(), frameOffset, ft, MusEGlobal::segmentSize);
-            if (ft > (int)MusEGlobal::segmentSize)
+            // if (ft > (int)MusEGlobal::segmentSize) // REMOVE Tim.  Mistake propagated here by copy and paste from muse_evolution.
                   ft = MusEGlobal::segmentSize - 1;
             }
       
