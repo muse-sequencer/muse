@@ -149,6 +149,7 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, XTick startOfSegmentXT
                     unsigned srcOffset, dstOffset;
                     if (offset > 0) {
                           nn = n - offset;
+                          eventFromXTick = XTick(0);
                           srcOffset = 0;
                           dstOffset = offset;
                     }
@@ -159,8 +160,6 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, XTick startOfSegmentXT
                           nn += offset;
                           if (nn > n)
                                 nn = n;
-			  
-			  eventFromXTick = XTick(0);
                     }
                     float* bpp[channels()];
                     for (int i = 0; i < channels(); ++i)
