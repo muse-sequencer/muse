@@ -542,7 +542,7 @@ int get_paste_len()
                                     if (p->endTick() > end_tick)
                                           end_tick=p->endTick();
                                     
-                                    p->unchainClone();
+                                    p->unchainClone(); // just for safety; shouldn't be chained anyway.
                                     delete p;
                                     }
                               }

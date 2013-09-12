@@ -669,7 +669,7 @@ void Audio::msgPlay(bool val)
 
 void Audio::msgRemoveTrack(Track* track, bool doUndoFlag)
       {
-      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -689,9 +689,7 @@ void Audio::msgRemoveTracks()
           Track* tr = *t;
           if (tr->selected()) 
           {
-            MusEGlobal::song->removeTrack1(tr);
-            msgRemoveTrack(tr, false);
-            MusEGlobal::song->removeTrack3(tr);
+            MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(tr), tr), false);
             loop = true;
             break;
           }
