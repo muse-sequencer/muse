@@ -56,49 +56,6 @@ MusECore::CloneList cloneList;
 namespace MusECore {
 
 
-/* DELETETHIS 42
-//---------------------------------------------------------
-//   updateCloneList
-//---------------------------------------------------------
-
-void updateCloneList(Part* oPart, Part* nPart)
-{
-  for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
-  {
-    if(i->cp == oPart) 
-    {
-      i->cp = nPart;
-      break;
-    }
-  }
-}
-
-void updateCloneList(PartList* oParts, PartList* nParts)
-{
-  for(iPart ip = oParts->begin(); ip != oParts->end(); ++ip) 
-  {
-    for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
-    {
-      if(i->cp == oPart) 
-      {
-        i->cp = nPart;
-        break;
-      }
-    }  
-  }
-}
-
-//---------------------------------------------------------
-//   clearClipboardAndCloneList
-//---------------------------------------------------------
-
-void clearClipboardAndCloneList()
-{
-  //QApplication::clipboard()->clear(QClipboard::Clipboard);
-  MusEGlobal::cloneList.clear();
-}
-*/
-
 //---------------------------------------------------------
 //   NKey::write
 //---------------------------------------------------------
