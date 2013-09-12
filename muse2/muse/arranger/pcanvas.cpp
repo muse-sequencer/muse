@@ -499,9 +499,14 @@ void PartCanvas::updateSelection()
       if (changed)
       {
             MusEGlobal::song->applyOperationGroup(operations);
-            emit selectionChanged();
             redraw();
       }
+
+      // TODO FIXME: this must be emitted always, because CItem is broken by design:
+      //             CItems hold an Event smart-pointer which allows write access.
+      //             This means, that items can (and will!) be selected bypassing the
+      //             UndoOp::SelectEvent message! FIX THAT! (flo93)
+      emit selectionChanged();
 }
 
 //---------------------------------------------------------
