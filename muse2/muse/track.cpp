@@ -902,7 +902,7 @@ void MidiTrack::read(Xml& xml)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        return;
+                        goto out_of_MidiTrackRead_forloop;
                   case Xml::TagStart:
                         if (tag == "transposition")
                               transposition = xml.parseInt();
@@ -989,12 +989,15 @@ void MidiTrack::read(Xml& xml)
                         if (tag == "miditrack" || tag == "drumtrack" || tag == "newdrumtrack") 
                         {
                           setInPortAndChannelMask(portmask, chanmask); // Support old files.
-                          return;
+                          goto out_of_MidiTrackRead_forloop;
                         }
                   default:
                         break;
                   }
             }
+      
+out_of_MidiTrackRead_forloop:
+      chainTrackParts(this);
       }
 
 void MidiTrack::readOurDrumSettings(Xml& xml)

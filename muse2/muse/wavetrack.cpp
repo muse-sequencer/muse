@@ -184,7 +184,7 @@ void WaveTrack::read(Xml& xml)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        return;
+                        goto out_of_WaveTrackRead_forloop;
                   case Xml::TagStart:
                         if (tag == "part") {
                               Part* p = 0;
@@ -200,12 +200,14 @@ void WaveTrack::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "wavetrack") {
                               mapRackPluginsToControllers();
-                              return;
+                              goto out_of_WaveTrackRead_forloop;
                               }
                   default:
                         break;
                   }
             }
+out_of_WaveTrackRead_forloop:
+      chainTrackParts(this);
       }
 
 //---------------------------------------------------------
