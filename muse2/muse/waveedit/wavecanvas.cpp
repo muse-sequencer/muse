@@ -2269,8 +2269,8 @@ void WaveCanvas::modifySelection(int operation, XTick startpos, XTick stoppos, d
                file.write(file_channels, tmpdata, tmpdatalen);
                file.update();
                file.close();
-	       
-	       w.event.reloadAudioFile();
+               
+               w.event.reloadAudioFile();
 
                for (unsigned i=0; i<file_channels; i++) {
                      delete[] tmpdata[i];

@@ -248,7 +248,7 @@ void AudioPrefetch::seek(unsigned seekTo)
       
       bool isFirstPrefetch = true;
       for (unsigned int i = 0; i < (MusEGlobal::fifoLength)-1; ++i)//prevent compiler warning: comparison of signed/unsigned
-      {      
+      {
             // Indicate do a seek command before read, but only on the first pass. 
             prefetch(isFirstPrefetch);
             
@@ -259,7 +259,7 @@ void AudioPrefetch::seek(unsigned seekTo)
             {
               --seekCount;
               return;
-            }  
+            }
       }
             
       seekPos  = seekTo;

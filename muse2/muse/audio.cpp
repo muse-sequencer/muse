@@ -832,7 +832,7 @@ void Audio::seek(const Pos& p)
             //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
             MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true);
       }
-            
+      
       write(sigFd, "G", 1);   // signal seek to gui
       }
 
