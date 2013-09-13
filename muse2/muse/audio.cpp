@@ -735,7 +735,8 @@ void Audio::processMsg(AudioMsg* msg)
             case SEQM_ADD_TEMPO:
             case SEQM_REMOVE_TEMPO:
             case SEQM_SET_GLOBAL_TEMPO:
-            case SEQM_SET_TEMPO:
+            case SEQM_SET_TEMPO: {
+                  unsigned old_frame = _pos.frame();
                   MusEGlobal::song->processMsg(msg);
                   if (isPlaying()) {
                         if (!MusEGlobal::checkAudioDevice()) return;
@@ -748,6 +749,9 @@ void Audio::processMsg(AudioMsg* msg)
                         syncTime      = curTime();
                         frameOffset   = syncFrame - samplePos;
                         }
+                  if (abs( (int)old_frame - _pos.frame()) > 200) // TODO FIXME this is a HACK for making MusE not misbehave that badly when changing tempo while playing audiostreams
+                      MusEGlobal::audioPrefetch->msgSeek(_pos.frame()); // still, muse *will* glitch if you do that.
+                  }
                   break;
             // DELETETHIS 6
             //case SEQM_ADD_TRACK:
