@@ -29,6 +29,7 @@ using namespace std;
 
 #ifdef RUBBERBAND_SUPPORT
 	using namespace RubberBand;
+	#define RATIO_LIMIT 5
 #endif
 
 namespace MusECore {
@@ -138,6 +139,16 @@ void AudioStream::seek(unsigned int frame, XTick xtick)
 #ifdef RUBBERBAND_SUPPORT
 void AudioStream::set_stretch_ratio(double ratio)
 {
+	if (ratio > RATIO_LIMIT)
+	{
+		printf("AudioStream::set_stretch_ratio: limiting upwards!\n");
+		ratio=RATIO_LIMIT;
+	}
+	if (ratio < 1.0/RATIO_LIMIT)
+	{
+		printf("AudioStream::set_stretch_ratio: limiting downwards!\n");
+		ratio=1.0/RATIO_LIMIT;
+	}
 	effective_stretch_ratio = ratio * output_sampling_rate / input_sampling_rate;
 	stretcher->setTimeRatio(effective_stretch_ratio);
 }
