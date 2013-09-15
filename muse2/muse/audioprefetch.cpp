@@ -147,8 +147,8 @@ void AudioPrefetch::msgTick()
 //    called from audio RT context
 //---------------------------------------------------------
 
-void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
-      {
+void AudioPrefetch::msgSeek(unsigned samplePos, bool force, bool may_block)
+{
       if (samplePos == seekPos && !force)
             return;
 
@@ -161,11 +161,19 @@ void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
       PrefetchMsg msg;
       msg.id  = PREFETCH_SEEK;
       msg.pos = samplePos;
-      while (sendMsg1(&msg, sizeof(msg))) {
-            printf("AudioPrefetch::msgSeek::sleep(1)\n");
-            sleep(1);
+      
+      if (may_block)
+      {
+            while (sendMsg1(&msg, sizeof(msg))) {
+                  printf("AudioPrefetch::msgSeek::sleep(1)\n");
+                  sleep(1);
             }
       }
+      else
+      {
+            sendMsg1(&msg, sizeof(msg));
+      }
+}
 
 //---------------------------------------------------------
 //   prefetch

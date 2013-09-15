@@ -750,7 +750,8 @@ void Audio::processMsg(AudioMsg* msg)
                         frameOffset   = syncFrame - samplePos;
                         }
                   if (abs( (int)old_frame - _pos.frame()) > 200) // TODO FIXME this is a HACK for making MusE not misbehave that badly when changing tempo while playing audiostreams
-                      MusEGlobal::audioPrefetch->msgSeek(_pos.frame()); // still, muse *will* glitch if you do that.
+                                                                 // still, muse *will* glitch if you do that.
+                      MusEGlobal::audioPrefetch->msgSeek(_pos.frame()); // never block. may silently fail to send the message if control fifo is full.
                   }
                   break;
             // DELETETHIS 6
@@ -836,7 +837,7 @@ void Audio::seek(const Pos& p)
             // We need to force prefetch to update, to ensure the most recent data. 
             // Things can happen to a part before play is pressed - such as part muting, 
             //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
-            MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true);
+            MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true, true); // force. may block until sent.
       }
       
       write(sigFd, "G", 1);   // signal seek to gui

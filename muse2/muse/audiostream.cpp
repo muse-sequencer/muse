@@ -104,9 +104,7 @@ AudioStream::AudioStream(QString filename, int sampling_rate, int out_chans, str
 #endif
 	}
 
-	
-	currentPositionInInput=0;
-	currentPositionInOutput=0;
+	seek(0, XTick(0,0.0));
 }
 
 AudioStream::~AudioStream()

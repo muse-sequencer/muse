@@ -200,7 +200,7 @@ bool MusE::seqStart()
       
       MusEGlobal::audioPrefetch->start(pfprio);
       
-      MusEGlobal::audioPrefetch->msgSeek(0, true); // force
+      MusEGlobal::audioPrefetch->msgSeek(0, true, true); // force. may block until sent.
       
       MusEGlobal::midiSeq->start(midiprio);
       

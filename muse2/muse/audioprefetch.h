@@ -49,7 +49,13 @@ class AudioPrefetch : public Thread {
       virtual void start(int);
 
       void msgTick();
-      void msgSeek(unsigned samplePos, bool force=false);
+      
+      /** is may_block is true, then msgSeek will block until the message has been sent.
+       *  upon return, it is guaranteed that the message was sent successfully.
+       *  if may_block is false, then msgSeek will not block. The message may have been lost,
+       *  however, if the control fifo is full.
+       *  In both cases is no guarantee made that the message will be processed at a given time */
+      void msgSeek(unsigned samplePos, bool force=false, bool may_block=false);
       
       bool seekDone() const { return seekCount == 0; }
       };

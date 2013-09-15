@@ -53,6 +53,7 @@
 #include "amixer.h"
 #include "midiseq.h"
 #include "audiodev.h"
+#include "audioprefetch.h"
 #include "gconfig.h"
 #include "sync.h"
 #include "midictrl.h"
@@ -3084,6 +3085,7 @@ void Song::insertTrack2(Track* track, int idx)
                   break;
             case Track::WAVE:
                   _waves.push_back((MusECore::WaveTrack*)track);
+                  MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
                   break;
             case Track::AUDIO_OUTPUT:
                   _outputs.push_back((AudioOutput*)track);
