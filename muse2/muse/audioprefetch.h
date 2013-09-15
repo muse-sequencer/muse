@@ -44,8 +44,12 @@ class AudioPrefetch : public Thread {
       
    public:
       AudioPrefetch(const char* name);
-      
       ~AudioPrefetch();
+      
+      /** determines whether the samples between begin and end might be
+       *  already prefetched */
+      bool range_possibly_prefetched(unsigned begin, unsigned end);
+      
       virtual void start(int);
 
       void msgTick();

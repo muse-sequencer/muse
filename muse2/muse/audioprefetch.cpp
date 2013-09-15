@@ -274,5 +274,15 @@ void AudioPrefetch::seek(unsigned seekTo)
       --seekCount;
       }
 
+bool AudioPrefetch::range_possibly_prefetched(unsigned begin, unsigned end)
+{
+    // this is a bit ugly because of usage of unsigned :/
+    unsigned first = (writePos>MusEGlobal::segmentSize*MusEGlobal::fifoLength) ? (writePos - MusEGlobal::segmentSize*MusEGlobal::fifoLength) : 0;
+    unsigned last = writePos+ MusEGlobal::segmentSize*MusEGlobal::fifoLength/2;
+    
+    return ( (first<=begin && begin<=last) || (first<=end && end<=last) ||
+             (begin<=first && first<=end)  || (begin<=last && last<=end) );
+}
+
 } // namespace MusECore
 

@@ -587,6 +587,11 @@ bool Song::addEvent(Event& event, Part* part)
       }
       
       part->addEvent(event);
+      
+      if (event.type()==Wave)
+          if (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame()+event.frame(), part->frame()+event.endFrame()))
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
+         
       return true;
       }
 
@@ -608,6 +613,11 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
         part->events()->erase(i);
         
       part->addEvent(newEvent);
+
+      if (oldEvent.type()==Wave)
+          if ( (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame()+oldEvent.frame(), part->frame()+oldEvent.endFrame())) ||
+               (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame()+newEvent.frame(), part->frame()+newEvent.endFrame())) )
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
 }
 
 //---------------------------------------------------------
@@ -624,6 +634,10 @@ void Song::deleteEvent(Event& event, Part* part)
             return;
             }
       part->events()->erase(ev);
+
+      if (event.type()==Wave)
+          if (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame()+event.frame(), part->frame()+event.endFrame()))
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
       }
 
 //---------------------------------------------------------

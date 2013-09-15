@@ -26,6 +26,7 @@
 #include <cmath>
 
 #include "song.h"
+#include "audioprefetch.h"
 #include "part.h"
 #include "track.h"
 #include "globals.h"
@@ -827,6 +828,10 @@ void Song::addPart(Part* part)
       if (epos > len())
             _len = epos;
       part->track()->addPart(part);
+
+      if (part->track()->type()==Track::WAVE)
+          if (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame(), part->endFrame()))
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
       
       // Indicate do not do clones.
       addPortCtrlEvents(part, false);
@@ -842,6 +847,10 @@ void Song::removePart(Part* part)
       removePortCtrlEvents(part, false);
       Track* track = part->track();
       track->parts()->remove(part);
+
+      if (part->track()->type()==Track::WAVE)
+          if (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame(), part->endFrame()))
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
       }
 
 //---------------------------------------------------------
@@ -1072,6 +1081,10 @@ void Song::changePart(Part* oPart, Part* nPart)
       if (epos > len())
             _len = epos;
       
+      if (oPart->track()->type()==Track::WAVE)
+          if ( (MusEGlobal::audioPrefetch->range_possibly_prefetched(oPart->frame(), oPart->endFrame())) ||
+               (MusEGlobal::audioPrefetch->range_possibly_prefetched(nPart->frame(), nPart->endFrame())) )
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
       }
 
 //---------------------------------------------------------
