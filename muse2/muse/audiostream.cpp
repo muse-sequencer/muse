@@ -93,6 +93,7 @@ AudioStream::AudioStream(QString filename, int sampling_rate, int out_chans, str
 	{
 #ifdef RUBBERBAND_SUPPORT
 		srcState = NULL; // not needed
+		rubberband_discard_frames = 0;
 		
 		stretcher = new RubberBandStretcher(sampling_rate, n_input_channels, 
 					RubberBandStretcher::DefaultOptions | RubberBandStretcher::OptionProcessRealTime, // TODO configure this
@@ -130,10 +131,19 @@ void AudioStream::seek(unsigned int frame, XTick xtick)
 	
 	sndfile->seek(destFrame, SEEK_SET);
 	
-	currentPositionInInput=destFrame; // TODO that might be a lie if the stretcher still has stuff in behind? flush stretcher?
+	currentPositionInInput=destFrame;
 	currentPositionInOutput=frame;
 	
 	update_stretch_ratio();
+#ifdef RUBBERBAND_SUPPORT
+	if (doStretch)
+	{
+		// need to flush the stretcher.
+		stretcher->reset();
+		rubberband_discard_frames = stretcher->getLatency();
+	}
+#endif
+	
 }
 
 #ifdef RUBBERBAND_SUPPORT
@@ -181,6 +191,14 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFram
 		for (int i=0;i<n_input_channels;i++)
 			deinterleaved_result_buffer_temp[i]=deinterleaved_result_buffer[i]=new float[nFrames];
 		
+		float* deinterleaved_discard_buffer[n_input_channels]; // unused data to be discarded.
+		for (int i=0;i<n_input_channels;i++)
+			if (rubberband_discard_frames > 0)
+				deinterleaved_discard_buffer[i] = new float[rubberband_discard_frames];
+			else
+				deinterleaved_discard_buffer[i] = NULL;
+
+		
 		size_t n_already_read = 0;
 		while (n_already_read < nFrames)
 		{
@@ -194,26 +212,39 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFram
 			currentPositionInInput+=n_frames_to_read;
 			
 			stretcher->process(deinterleaved_sndfile_buffer, n_frames_to_read, /*bool final = */false); // TODO: set final correctly!
-			size_t n_frames_retrieved;
 			
-			int n_frames_to_retrieve = stretcher->available();
-			if (nFrames-n_already_read < n_frames_to_retrieve)
-				n_frames_to_retrieve = nFrames-n_already_read;
+			if (rubberband_discard_frames > 0)
+				rubberband_discard_frames -= stretcher->retrieve(deinterleaved_discard_buffer, rubberband_discard_frames);
+			
+			if (rubberband_discard_frames == 0)
+			{
+				size_t n_frames_retrieved;
+				
+				int n_frames_to_retrieve = stretcher->available();
+				if (nFrames-n_already_read < n_frames_to_retrieve)
+					n_frames_to_retrieve = nFrames-n_already_read;
 
-			//DELETETHIS FIXME FINDMICH TODO printf("DEBUG: before retrieving frames from rubberband: available=%i, already read=%i, needed=%i\n", stretcher->available(), n_already_read, n_frames_to_retrieve);
-			
-			n_frames_retrieved = stretcher->retrieve(deinterleaved_result_buffer_temp, n_frames_to_retrieve);
-			for (int i=0;i<n_input_channels;i++)
-				deinterleaved_result_buffer_temp[i]+=n_frames_retrieved;
-			
-			for (int i=0;i<n_input_channels;i++) delete[] deinterleaved_sndfile_buffer[i];
-			
-			n_already_read += n_frames_retrieved;
+				//DELETETHIS FIXME FINDMICH TODO printf("DEBUG: before retrieving frames from rubberband: available=%i, already read=%i, needed=%i\n", stretcher->available(), n_already_read, n_frames_to_retrieve);
+				
+				n_frames_retrieved = stretcher->retrieve(deinterleaved_result_buffer_temp, n_frames_to_retrieve);
+				for (int i=0;i<n_input_channels;i++)
+					deinterleaved_result_buffer_temp[i]+=n_frames_retrieved;
+				
+				for (int i=0;i<n_input_channels;i++) delete[] deinterleaved_sndfile_buffer[i];
+				
+				n_already_read += n_frames_retrieved;
+			}
 		}
 		
 		copy_and_adjust_channels(n_input_channels, n_output_channels, deinterleaved_result_buffer, deinterleaved_dest_buffer, nFrames, overwrite);
 		
-		for (int i=0;i<n_input_channels;i++) delete[] deinterleaved_result_buffer[i];
+		for (int i=0;i<n_input_channels;i++)
+		{
+			delete[] deinterleaved_result_buffer[i];
+			
+			if (deinterleaved_discard_buffer[i])
+				delete[] deinterleaved_discard_buffer[i];
+		}
 #else
 		printf("FATAL: THIS CANNOT HAPPEN: doStretch is true but RUBBERBAND_SUPPORT not compiled in!\n");
 #endif

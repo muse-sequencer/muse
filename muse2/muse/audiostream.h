@@ -88,9 +88,10 @@ namespace MusECore {
 			SRC_STATE* srcState; // sampling rate converter state
 #ifdef RUBBERBAND_SUPPORT
 			RubberBand::RubberBandStretcher* stretcher;
-			double currentStretchRate;       // these are pretty useless when RUBBERBAND_SUPPORT
-			double effective_pitch_ratio;    // is disabled. but for the sake of code-simplicity
-			double effective_stretch_ratio;  // i'll just let here, doesn't waste too much.
+			double currentStretchRate;
+			double effective_pitch_ratio;
+			double effective_stretch_ratio;
+			int rubberband_discard_frames;
 #endif
 			
 			
