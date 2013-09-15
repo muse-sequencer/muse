@@ -64,8 +64,8 @@ struct PrefetchMsg : public ThreadMsg {
 AudioPrefetch::AudioPrefetch(const char* name)
    : Thread(name)
       {
-      seekPos  = ~0;
-      writePos = ~0;
+      seekPos  = ~0U;
+      writePos = ~0U;
       seekCount = 0;
       }
 
@@ -113,7 +113,7 @@ void AudioPrefetch::processMsg1(const void* m)
                   // Indicate do not seek file before each read.
                   prefetch(false);
                   
-                  seekPos = ~0;     // invalidate cached last seek position
+                  seekPos = ~0U;     // invalidate cached last seek position
                   break;
             case PREFETCH_SEEK:
                   #ifdef AUDIOPREFETCH_DEBUG

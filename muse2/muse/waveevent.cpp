@@ -207,8 +207,10 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
 
 void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffer, int channel, int nFrames, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite)
 {
+  if (MusEGlobal::heavyDebugMsg)
+    printf("readAudio, firstFrame=%i\n", firstFrame);
 // doSeek is unreliable! it does not respect moving the part or event!
-	
+  
 // firstFrame is the sample position to read from. usually, that's the last firstFrame + the last nFrames
 
 // TODO: this will horribly break with clone parts! each clone must have its own audiostream (and streamPosition)!.
@@ -221,7 +223,7 @@ void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffe
     if (!doSeek && firstFrame >= streamPosition && firstFrame <= streamPosition+STREAM_SEEK_THRESHOLD)
     {
       // reading some frames from the stream into /dev/null is enough.
-      fprintf(stderr, "DEBUG: WaveEventBase::readAudio has to drop frames, diff is %u, threshold is %u!\n",(int)(firstFrame-streamPosition),STREAM_SEEK_THRESHOLD);
+      fprintf(stderr, "DEBUG: WaveEventBase::readAudio has to drop frames, diff is %i, threshold is %u!\n",(int)(firstFrame-streamPosition),STREAM_SEEK_THRESHOLD);
       
       int len = audiostream->readAudio(NULL, firstFrame-streamPosition, false);
       streamPosition += len;
@@ -230,7 +232,7 @@ void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffe
     {
       // we need to seek.
       // this might cause crackles and thus is only rarely done.
-      fprintf(stderr, "DEBUG: WaveEventBase::readAudio has to seek, diff is %u, threshold is %u!\n",(int)(firstFrame-streamPosition),STREAM_SEEK_THRESHOLD);
+      fprintf(stderr, "DEBUG: WaveEventBase::readAudio has to seek, diff is %i, threshold is %u!\n",(int)(firstFrame-streamPosition),STREAM_SEEK_THRESHOLD);
 
       audiostream->seek(firstFrame,fromXTick);
       streamPosition = firstFrame;

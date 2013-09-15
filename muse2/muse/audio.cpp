@@ -792,7 +792,7 @@ void Audio::seek(const Pos& p)
       {
       if (_pos == p) {
             if(MusEGlobal::debugMsg)
-              printf("Audio::seek already there\n");
+              printf("Audio::seek already there. frame:%d\n",p.frame());
             return;        
             }
       if (MusEGlobal::heavyDebugMsg)
@@ -831,6 +831,8 @@ void Audio::seek(const Pos& p)
       
       if (state != LOOP2 && !freewheel())
       {
+            if (MusEGlobal::heavyDebugMsg)
+                printf("Audio::seek sending out audioPrefetch->msgSeek!\n");
             // We need to force prefetch to update, to ensure the most recent data. 
             // Things can happen to a part before play is pressed - such as part muting, 
             //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
