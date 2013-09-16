@@ -1084,6 +1084,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
 
       // create Event
       MusECore::Event event(MusECore::Wave);
+      event.setParentalPart(part);
       event.setAudioFile(f.path());
       // We are done with the _recFile member. Set to zero. The function which 
       //  calls this function already does this immediately after. But do it here anyway.
