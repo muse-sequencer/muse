@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <cmath>
+#include <stdio.h>
 
 #include <QDateTime>
 #include <QFileInfo>
@@ -1010,6 +1011,8 @@ int ClipList::idx(const Clip& clip) const
 
 //---------------------------------------------------------
 //   cmdAddRecordedWave
+//   Execution context: GUI thread
+//   Called from Audio::recordStop()
 //---------------------------------------------------------
 
 void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e) 
@@ -1084,12 +1087,6 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
 
       // create Event
       MusECore::Event event(MusECore::Wave);
-      event.setParentalPart(part);
-      event.setAudioFile(f.path());
-      // We are done with the _recFile member. Set to zero. The function which 
-      //  calls this function already does this immediately after. But do it here anyway.
-      track->setRecFile(0);
-      
       event.setSpos(0);
       // Since the part start was snapped down, we must apply the difference so that the
       //  wave event tick lines up with when the user actually started recording.
@@ -1097,6 +1094,28 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       // NO Can't use this. SF reports too long samples at first part recorded in sequence. See samples() - funny business with SEEK ?
       //event.setLenFrame(f.samples()); 
       event.setLenFrame(e.frame() - s.frame());
+
+      event.setParentalPart(part);
+      
+      FILE* file=fopen( (f.path()+".tempo").toLatin1().constData(), "w" );
+      if (file)
+      {
+          MusECore::Xml xml(file);
+          MusEGlobal::tempomap.extractRange(event.tick()+part->tick(), event.endTick()+part->tick()).write(0,xml);
+          fclose(file);
+      }
+      else
+      {
+          printf("ERROR: could not write %s.tempo\n", f.path().toLatin1().constData());
+      }
+      
+      
+      event.setAudioFile(f.path());
+      // We are done with the _recFile member. Set to zero. The function which 
+      //  calls this function already does this immediately after. But do it here anyway.
+      track->setRecFile(0);
+      
+
       part->addEvent(event);
 
       MusEGlobal::song->cmdAddPart(part);

@@ -137,11 +137,11 @@ void TempoList::eraseRange(unsigned stick, unsigned etick)
     if(etick > MAX_TICK)
       etick = MAX_TICK;
     
-    iTEvent se = MusEGlobal::tempomap.upper_bound(stick);
+    iTEvent se = upper_bound(stick);
     if(se == end() || (se->first == MAX_TICK+1))
       return;
 
-    iTEvent ee = MusEGlobal::tempomap.upper_bound(etick);
+    iTEvent ee = upper_bound(etick);
 
     ee->second->tempo = se->second->tempo;
     ee->second->tick = se->second->tick;
@@ -152,7 +152,45 @@ void TempoList::eraseRange(unsigned stick, unsigned etick)
     normalize();
     ++_tempoSN;
 }
-      
+
+TempoList TempoList::extractRange(XTick stick_, XTick etick_) const
+{
+	TempoList result;
+	
+	result.useList=useList;
+	result._tempo=_tempo;
+	result._globalTempo=_globalTempo;
+	
+	unsigned stick=stick_.tick, etick=etick_.tick; // TODO FINDMICH FIXME use XTicks everywhere!
+	if (stick >= etick || stick > MAX_TICK)
+		return result;
+	
+	if (etick > MAX_TICK)
+		etick=MAX_TICK;
+	
+	ciTEvent se = upper_bound(stick);
+	ciTEvent ee = upper_bound(etick);
+	// se->second is relevant for stick, and ee->second is relevant for etick.
+
+	if(se == end() || (se->first == MAX_TICK+1))
+	{
+		printf ("ERROR: nothing copied in TempoList::extractRange!\n");
+	}
+	else
+	{
+		ee++;
+		for (ciTEvent it = se; it!=ee; it++)
+		{
+			unsigned tick = (it->second->tick > stick) ? (it->second->tick - stick) : 0;
+			result.add(tick,it->second->tempo,false);
+		}
+	}
+	
+	result.normalize();
+	return result;
+}
+
+
 //---------------------------------------------------------
 //   tempo
 //---------------------------------------------------------

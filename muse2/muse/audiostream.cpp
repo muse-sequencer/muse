@@ -24,6 +24,8 @@
 #include "audiostream.h"
 #include "globals.h" // FIXME DELETETHIS
 #include <string>
+#include <stdio.h>
+#include "xml.h"
 
 using namespace std;
 
@@ -63,8 +65,25 @@ AudioStream::AudioStream(QString filename, int sampling_rate, stretch_mode_t str
 	
 	n_input_channels = sndfile->channels();
 	input_sampling_rate=sndfile->samplerate();
-    fileTempoMap.setSampRate(input_sampling_rate);
-	
+
+	FILE* tempofile=fopen( (filename+".tempo").toLatin1().constData(), "r" );
+	if (tempofile)
+	{
+		MusECore::Xml xml(tempofile);
+		MusECore::Xml::Token token = xml.parse();
+		const QString& tag = xml.s1();
+		if (token==MusECore::Xml::TagStart && tag=="tempolist")
+			fileTempoMap.read(xml);
+		else
+			printf("ERROR: Invalid .tempo file in AudioStream::AudioStream. file is %s.tempo\n", filename.toLatin1().constData());
+		fclose(tempofile);
+	}
+	else
+	{
+		printf("AudioStream::AudioStream could not find %s.tempo\n",filename.toLatin1().constData());
+	}
+	fileTempoMap.setSampRate(input_sampling_rate);
+
 	if (!doStretch)
 	{
 #ifdef RUBBERBAND_SUPPORT
