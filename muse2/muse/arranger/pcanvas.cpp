@@ -2578,7 +2578,7 @@ void PartCanvas::drawWavePart(QPainter& p,
             const MusECore::AudioStream* audiostream  = event.getAudioStream();
             if (audiostream==NULL)
                   continue;
-            unsigned channels = audiostream->get_n_output_channels();
+            unsigned channels = audiostream->get_n_input_channels();
             if (channels == 0) {
                   printf("drawWavePart: channels==0! %s\n", event.audioFilePath().toLatin1().constData());
                   continue;

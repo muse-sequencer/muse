@@ -1095,7 +1095,7 @@ void WaveCanvas::drawItem(QPainter& p, const MusEGui::CItem* item, const QRect& 
       const MusECore::AudioStream* stream = event.getAudioStream();
       if(stream)
       {
-        int ev_channels = stream->get_n_output_channels();
+        int ev_channels = stream->get_n_input_channels();
         if (ev_channels == 0) {
               p.setWorldMatrixEnabled(wmtxen);
               printf("WaveCanvas::drawItem: ev_channels==0! %s\n", event.audioFilePath().toLatin1().constData());

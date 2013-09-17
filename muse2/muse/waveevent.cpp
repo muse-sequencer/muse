@@ -120,7 +120,7 @@ void WaveEventBase::setAudioFile(const QString& path)
 	
 	XTick startXtick = this->xtick() + parental_part->xtick();
 	unsigned startFrame = MusEGlobal::tempomap.tick2frame(startXtick);
-	audiostream = new MusECore::AudioStream(filename, MusEGlobal::sampleRate, 2 /* oooh FIXME */, AudioStream::DO_STRETCHING /*DEBUG FIXME TODO stretch_mode*/, startXtick, startFrame);
+	audiostream = new MusECore::AudioStream(filename, MusEGlobal::sampleRate, AudioStream::DO_STRETCHING /*DEBUG FIXME TODO stretch_mode*/, startXtick, startFrame);
 
 	if (!audiostream->isGood())
 	{
@@ -205,18 +205,15 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       
 #define STREAM_SEEK_THRESHOLD 10
 
-void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffer, int channel, int nFrames, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite)
+void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffer, int channels, int nFrames, XTick fromXTick, XTick toXTick, bool doSeek, bool overwrite)
 {
   if (MusEGlobal::heavyDebugMsg)
-    printf("readAudio, firstFrame=%i\n", firstFrame);
+    printf("readAudio, firstFrame=%i, channels=%i\n", firstFrame, channels);
 // doSeek is unreliable! it does not respect moving the part or event!
   
 // firstFrame is the sample position to read from. usually, that's the last firstFrame + the last nFrames
 
 // TODO: this will horribly break with clone parts! each clone must have its own audiostream (and streamPosition)!.
-  
-  if (audiostream->get_n_output_channels() != channel)
-	  printf("ERROR: THIS SHOULD NEVER HAPPEN: audiostream->get_n_output_channels() != channels in WaveEventBase::readAudio!\n");
   
   if (doSeek || firstFrame != streamPosition)
   {
@@ -225,7 +222,7 @@ void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffe
       // reading some frames from the stream into /dev/null is enough.
       fprintf(stderr, "DEBUG: WaveEventBase::readAudio has to drop frames, diff is %i, threshold is %u!\n",(int)(firstFrame-streamPosition),STREAM_SEEK_THRESHOLD);
       
-      int len = audiostream->readAudio(NULL, firstFrame-streamPosition, false);
+      int len = audiostream->readAudio(NULL, channels, firstFrame-streamPosition, false);
       streamPosition += len;
     }
     else
@@ -239,7 +236,7 @@ void WaveEventBase::readAudio(WavePart* part, unsigned firstFrame, float** buffe
     }
   }
   
-  streamPosition += audiostream->readAudio(buffer, nFrames, overwrite);
+  streamPosition += audiostream->readAudio(buffer, channels, nFrames, overwrite);
   // now streamPosition == firstFrame+nFrames 
 }
 

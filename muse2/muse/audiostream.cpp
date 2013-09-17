@@ -34,7 +34,7 @@ using namespace std;
 
 namespace MusECore {
 
-AudioStream::AudioStream(QString filename, int sampling_rate, int out_chans, stretch_mode_t stretch_mode, XTick startXtick, unsigned startFrame)
+AudioStream::AudioStream(QString filename, int sampling_rate, stretch_mode_t stretch_mode, XTick startXtick, unsigned startFrame)
 {
 	if (stretch_mode==NAIVE_STRETCHING) printf("ERROR: NAIVE_STRETCHING is not implemented yet!\n");
 	
@@ -49,7 +49,6 @@ AudioStream::AudioStream(QString filename, int sampling_rate, int out_chans, str
 	}
 
 	output_sampling_rate=sampling_rate;
-	n_output_channels=out_chans;
 	doStretch = (stretch_mode == DO_STRETCHING) ? true : false;
 #ifndef RUBBERBAND_SUPPORT
 	if (stretch_mode==DO_STRETCHING) // stretching requested despite we have no support for this
@@ -168,7 +167,7 @@ void AudioStream::set_pitch_ratio(double ratio)
 }
 #endif
 
-unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFrames, bool overwrite)
+unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int n_output_channels, int nFrames, bool overwrite)
 {
 	// convention: _buffers[] are interleaved, and deinterleaved_..._buffers[][] are deinterleaved
 	
@@ -234,7 +233,8 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFram
 			}
 		}
 		
-		copy_and_adjust_channels(n_input_channels, n_output_channels, deinterleaved_result_buffer, deinterleaved_dest_buffer, nFrames, overwrite);
+		if (deinterleaved_dest_buffer)
+			copy_and_adjust_channels(n_input_channels, n_output_channels, deinterleaved_result_buffer, deinterleaved_dest_buffer, nFrames, overwrite);
 		
 		for (int i=0;i<n_input_channels;i++)
 		{
@@ -295,7 +295,8 @@ unsigned int AudioStream::readAudio(float** deinterleaved_dest_buffer, int nFram
 			n_frames_read+=src_data.output_frames_gen;
 		}
 		
-		deinterleave_and_adjust_channels(n_input_channels, n_output_channels, result_buffer, deinterleaved_dest_buffer, nFrames, overwrite);
+		if (deinterleaved_dest_buffer)
+			deinterleave_and_adjust_channels(n_input_channels, n_output_channels, result_buffer, deinterleaved_dest_buffer, nFrames, overwrite);
 	}
 	
 	currentPositionInOutput+=nFrames;

@@ -48,19 +48,19 @@ namespace MusECore {
 
 			/* After constructing a new AudioStream, you MUST check isGood(). If not yourStream.isGood(), then the
 			   object is in an undefined state and will not work. Delete it, then. */
-			AudioStream(QString filename, int sampling_rate, int out_chans, stretch_mode_t stretch_mode, // the sampling rate cannot be changed after creation.
+			AudioStream(QString filename, int sampling_rate, stretch_mode_t stretch_mode, // the sampling rate cannot be changed after creation.
 			            XTick startXtick, unsigned startFrame);
 			~AudioStream();
 			
 			void seek(unsigned frame, XTick xtick); // which output-frame / xtick relative to the beginning of the AudioStream to seek to
-			unsigned readAudio(float** deinterleaved_dest_buffer, int nFrames, bool overwrite); // returns the number of frames read.
+			unsigned readAudio(float** deinterleaved_dest_buffer, int n_output_channels, int nFrames, bool overwrite); // returns the number of frames read.
 			
 			XTick relFrame2XTick(unsigned frame) const;
 			XTick relFrameInFile2XTick(unsigned frame) const;
 			unsigned relTick2Frame(XTick xtick) const;        // those are relative to the AudioStream's beginning.
 			unsigned relTick2FrameInFile(XTick xtick) const;
 
-			int get_n_output_channels() const { return n_output_channels; }
+			int get_n_input_channels() const { return n_input_channels; }
 			bool isGood() const { return !initalisation_failed; }
 			
 			stretch_mode_t getStretchMode() const { return doStretch ? DO_STRETCHING : NO_STRETCHING; }
@@ -81,7 +81,7 @@ namespace MusECore {
 			bool initalisation_failed;
 			unsigned currentPositionInInput, currentPositionInOutput;
 			int input_sampling_rate, output_sampling_rate;
-			int n_input_channels, n_output_channels;
+			int n_input_channels;
 			bool doStretch;
 
 			SndFile* sndfile;
