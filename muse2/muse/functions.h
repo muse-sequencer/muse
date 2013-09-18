@@ -39,36 +39,36 @@ class QMimeData;
 namespace MusECore {
 class Undo;
 
-std::set<Part*> partlist_to_set(PartList* pl);
-std::set<Part*> part_to_set(Part* p);
-std::map<Event*, Part*> get_events(const std::set<Part*>& parts, int range);
+std::set<const Part*> partlist_to_set(PartList* pl);
+std::set<const Part*> part_to_set(const Part* p);
+std::map<const Event*, const Part*> get_events(const std::set<const Part*>& parts, int range);
 
 //these functions simply do their job, non-interactively
-bool modify_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
-bool modify_off_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
-bool modify_notelen(const std::set<Part*>& parts, int range, int rate, int offset=0);
-bool quantize_notes(const std::set<Part*>& parts, int range, int raster, bool len=false, int strength=100, int swing=0, int threshold=0);
-bool erase_notes(const std::set<Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
-bool delete_overlaps(const std::set<Part*>& parts, int range);
-bool set_notelen(const std::set<Part*>& parts, int range, int len);
-bool move_notes(const std::set<Part*>& parts, int range, signed int ticks);
-bool transpose_notes(const std::set<Part*>& parts, int range, signed int halftonesteps);
-bool crescendo(const std::set<Part*>& parts, int range, int start_val, int end_val, bool absolute);
-bool legato(const std::set<Part*>& parts, int range, int min_len=1, bool dont_shorten=false);
+bool modify_velocity(const std::set<const Part*>& parts, int range, int rate, int offset=0);
+bool modify_off_velocity(const std::set<const Part*>& parts, int range, int rate, int offset=0);
+bool modify_notelen(const std::set<const Part*>& parts, int range, int rate, int offset=0);
+bool quantize_notes(const std::set<const Part*>& parts, int range, int raster, bool len=false, int strength=100, int swing=0, int threshold=0);
+bool erase_notes(const std::set<const Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+bool delete_overlaps(const std::set<const Part*>& parts, int range);
+bool set_notelen(const std::set<const Part*>& parts, int range, int len);
+bool move_notes(const std::set<const Part*>& parts, int range, signed int ticks);
+bool transpose_notes(const std::set<const Part*>& parts, int range, signed int halftonesteps);
+bool crescendo(const std::set<const Part*>& parts, int range, int start_val, int end_val, bool absolute);
+bool legato(const std::set<const Part*>& parts, int range, int min_len=1, bool dont_shorten=false);
 
 
 //the below functions automatically open the dialog
 //they return true if you click "ok" and false if "abort"
-bool modify_velocity(const std::set<Part*>& parts);
-bool modify_notelen(const std::set<Part*>& parts);
-bool quantize_notes(const std::set<Part*>& parts);
-bool set_notelen(const std::set<Part*>& parts);
-bool move_notes(const std::set<Part*>& parts);
-bool transpose_notes(const std::set<Part*>& parts);
-bool crescendo(const std::set<Part*>& parts);
-bool erase_notes(const std::set<Part*>& parts);
-bool delete_overlaps(const std::set<Part*>& parts);
-bool legato(const std::set<Part*>& parts);
+bool modify_velocity(const std::set<const Part*>& parts);
+bool modify_notelen(const std::set<const Part*>& parts);
+bool quantize_notes(const std::set<const Part*>& parts);
+bool set_notelen(const std::set<const Part*>& parts);
+bool move_notes(const std::set<const Part*>& parts);
+bool transpose_notes(const std::set<const Part*>& parts);
+bool crescendo(const std::set<const Part*>& parts);
+bool erase_notes(const std::set<const Part*>& parts);
+bool delete_overlaps(const std::set<const Part*>& parts);
+bool legato(const std::set<const Part*>& parts);
 
 //the below functions operate on selected parts
 bool modify_velocity();
@@ -84,29 +84,32 @@ bool legato();
 
 
 //functions for copy'n'paste
-void copy_notes(const std::set<Part*>& parts, int range);
-bool paste_notes(Part* paste_into_part=NULL); // shows a dialog
-void paste_notes(int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL, int amount=1, int raster=3072);
-QMimeData* selected_events_to_mime(const std::set<Part*>& parts, int range);
-QMimeData* parts_to_mime(const std::set<Part*>& parts);
+void copy_notes(const std::set<const Part*>& parts, int range);
+bool paste_notes(const Part* paste_into_part=NULL); // shows a dialog
+void paste_notes(int max_distance=3072, bool always_new_part=false, bool never_new_part=false, const Part* paste_into_part=NULL, int amount=1, int raster=3072);
+QMimeData* selected_events_to_mime(const std::set<const Part*>& parts, int range);
+QMimeData* parts_to_mime(const std::set<const Part*>& parts);
 
 
-void paste_at(const QString& pt, int pos, int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL, int amount=1, int raster=3072);
+void paste_at(const QString& pt, int pos, int max_distance=3072, bool always_new_part=false, bool never_new_part=false, const Part* paste_into_part=NULL, int amount=1, int raster=3072);
 
 //functions for selections
-void select_all(const std::set<Part*>& parts);
-void select_none(const std::set<Part*>& parts);
-void select_invert(const std::set<Part*>& parts);
-void select_in_loop(const std::set<Part*>& parts);
-void select_not_in_loop(const std::set<Part*>& parts);
+void select_all(const std::set<const Part*>& parts);
+void select_none(const std::set<const Part*>& parts);
+void select_invert(const std::set<const Part*>& parts);
+void select_in_loop(const std::set<const Part*>& parts);
+void select_not_in_loop(const std::set<const Part*>& parts);
 
 //functions for parts
 void shrink_parts(int raster=-1); //negative values mean "config.division"
 void expand_parts(int raster=-1);
-void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations);
+void schedule_resize_all_same_len_clone_parts(const Part* part, unsigned new_len, Undo& operations);
 void clean_parts();
+bool merge_with_next_part(const Part* part);
 bool merge_selected_parts();
-bool merge_parts(const std::set<Part*>& parts);
+bool merge_parts(const std::set<const Part*>& parts);
+bool split_part(const Part* part, int tick);
+bool delete_selected_parts();
 
 // internal
 QMimeData* file_to_mimedata(FILE *datafile, QString mimeType);

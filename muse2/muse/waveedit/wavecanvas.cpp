@@ -79,7 +79,7 @@ namespace MusEGui {
 //   WEvent
 //---------------------------------------------------------
 
-WEvent::WEvent(MusECore::Event& e, MusECore::Part* p, int height) : MusEGui::CItem(e, p)
+WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : MusEGui::CItem(e, p)
       {
       unsigned frame = e.frame() + p->frame();
       setPos(QPoint(frame, 0));
@@ -93,7 +93,7 @@ WEvent::WEvent(MusECore::Event& e, MusECore::Part* p, int height) : MusEGui::CIt
 //   addItem
 //---------------------------------------------------------
 
-CItem* WaveCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
+CItem* WaveCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
       {
       if (signed(event.frame())<0) {
             printf("ERROR: trying to add event before current part!\n");
@@ -183,9 +183,8 @@ void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
                   if (esample > endSample)
                         endSample = esample;
 
-                  MusECore::EventList* el = part->events();
-                  for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
-                        MusECore::Event e = i->second;
+                  for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
+                        const MusECore::Event& e = i->second;
                         // Do not add events which are past the end of the part.
                         if(e.frame() > len)      
                           break;
@@ -578,9 +577,9 @@ void WaveCanvas::draw(QPainter& p, const QRect& r)
           if(ci->isSelected()) 
             list4.push_back(ci);
           // Draw clone parts, and parts with hidden events, in front of others all except selected.
-          //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents()))
+          //else if(ci->event().empty() && (ci->part()->hasClones() || ci->part()->cachedHasHiddenEvents()))
           // Draw clone parts in front of others all except selected.
-          //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1))
+          //else if(ci->event().empty() && ci->part()->hasClones())
           //  list3.push_back(ci);
           else  
             // Draw unselected parts.
@@ -1327,9 +1326,9 @@ MusECore::Undo WaveCanvas::moveCanvasItems(MusEGui::CItemList& items, int /*dp*/
     MusECore::Part* opart = ip2c->first;
     if (opart->hasHiddenEvents())
     {
-                        forbidden=true;
-                        break;
-                }
+        forbidden=true;
+        break;
+    }
   }    
 
         
@@ -1478,7 +1477,6 @@ void WaveCanvas::newItem(MusEGui::CItem* item, bool noSnap)
         
         if (diff > 0)// part must be extended?
         {
-              //schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
               schedule_resize_all_same_len_clone_parts(part, event.endFrame(), operations);
               printf("newItem: extending\n");
         }
@@ -1686,11 +1684,11 @@ void WaveCanvas::waveCmd(int cmd)
                   if (part == 0)
                         break;
 
-                  MusECore::EventList* el = part->events();
+                  const MusECore::EventList& el = part->events();
                   MusECore::Undo operations;
 
                   std::list <MusECore::Event> elist;
-                  for (MusECore::iEvent e = el->lower_bound(pos[0] - part->tick()); e != el->end(); ++e)
+                  for (MusECore::ciEvent e = el.lower_bound(pos[0] - part->tick()); e != el.end(); ++e)
                         elist.push_back((MusECore::Event)e->second);
                   for (std::list<MusECore::Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
                         MusECore::Event event = *i;
@@ -1714,10 +1712,10 @@ void WaveCanvas::waveCmd(int cmd)
                         break;
                   
                   MusECore::Undo operations;
-                  MusECore::EventList* el = part->events();
+                  const MusECore::EventList& el = part->events();
 
                   std::list<MusECore::Event> elist;
-                  for (MusECore::iEvent e = el->lower_bound(pos[0]); e != el->end(); ++e)
+                  for (MusECore::ciEvent e = el.lower_bound(pos[0]); e != el.end(); ++e)
                         elist.push_back((MusECore::Event)e->second);
                   for (std::list<MusECore::Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
                         MusECore::Event event = *i;
@@ -1927,17 +1925,17 @@ void WaveCanvas::cmd(int cmd)
                       tempPart->setPos(MusEGlobal::song->lpos());
                       tempPart->setLenTick(MusEGlobal::song->rpos() - MusEGlobal::song->lpos());
                       // loop through the events and set them accordingly
-                      for (MusECore::iEvent iWaveEvent = origPart->events()->begin(); iWaveEvent != origPart->events()->end(); iWaveEvent++)
+                      for (MusECore::ciEvent iWaveEvent = origPart->events().begin(); iWaveEvent != origPart->events().end(); iWaveEvent++)
                       {
                           // TODO: handle multiple events correctly,
                           // the math for subsequent events isn't correct
-                          MusECore::Event &ev = iWaveEvent->second;
+                          const MusECore::Event& ev = iWaveEvent->second;
                           MusECore::Event *newEvent = new MusECore::Event(ev.clone());
                           newEvent->setSpos(ev.spos() + frameDistance);
                           newEvent->setLenTick(MusEGlobal::song->rpos() - MusEGlobal::song->lpos());
                           tempPart->addEvent(*newEvent);
                       }
-                      std::set<MusECore::Part*> partList;
+                      std::set<const MusECore::Part*> partList;
                       partList.insert(tempPart);
 
                       QMimeData *mimeData =  MusECore::parts_to_mime(partList);
@@ -1993,10 +1991,9 @@ MusECore::WaveSelectionList WaveCanvas::getSelection(unsigned startpos, unsigned
             MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
             unsigned part_offset = wp->frame();
             
-            MusECore::EventList* el = wp->events();
-            //printf("eventlist length=%d\n",el->size());
+            const MusECore::EventList& el = wp->events();
 
-            for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) {
+            for (MusECore::ciEvent e = el.begin(); e != el.end(); ++e) {
                   MusECore::Event event  = e->second;
                   if (event.empty())
                         continue;
@@ -2587,7 +2584,7 @@ void WaveCanvas::curPartChanged()
 void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
       {
       // TODO: New WaveCanvas: Convert this routine to frames and remove unneeded operations. 
-      QList< QPair<MusECore::EventList*,MusECore::Event> > already_done;
+      QList< QPair<int,MusECore::Event> > already_done;
       MusEGlobal::audio->msgIdle(true);
       MusEGlobal::song->startUndo();
       for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
@@ -2600,7 +2597,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
 
             MusECore::WavePart* part = (MusECore::WavePart*)(e->part());
             
-            if (already_done.contains(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event)))
+            if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
               continue;
             
             MusECore::Event newEvent = event.clone();
@@ -2670,7 +2667,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
             // Indicate do not do port controller values and clone parts. 
             MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
 
-            already_done.append(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event));
+            already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
             }
       MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
       MusEGlobal::audio->msgIdle(false);

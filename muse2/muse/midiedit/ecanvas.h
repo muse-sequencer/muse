@@ -80,7 +80,7 @@ class EventCanvas : public Canvas {
       bool _setCurPartIfOnlyOneEventIsSelected;
 
       void updateSelection();
-      virtual CItem* addItem(MusECore::Part*, MusECore::Event&) = 0;
+      virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) = 0;
       virtual QPoint raster(const QPoint&) const;
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType, bool rasterize = true) = 0;
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true) = 0;

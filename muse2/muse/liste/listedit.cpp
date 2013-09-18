@@ -247,8 +247,8 @@ void ListEdit::songChanged(MusECore::SongChangedFlags_t type)
                         MusECore::MidiPart* part = (MusECore::MidiPart*) (p->second);
                         if (part->sn() == curPartId)
                               curPart  = part;
-                        MusECore::EventList* el = part->events();
-                        for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
+                        
+                        for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
                               EventListItem* item = new EventListItem(liste, i->second, part);
                               for (int col = 0; col < liste->columnCount(); ++col)
                                     item->setText(col, item->text(col));

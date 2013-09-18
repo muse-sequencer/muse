@@ -119,9 +119,8 @@ void WaveView::pdraw(QPainter& p, const QRect& rr)
             int channels = wp->track()->channels();
             int px = wp->frame();
 
-            MusECore::EventList* el = wp->events();
-            for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) {
-                  MusECore::Event event  = e->second;
+            for (MusECore::ciEvent e = wp->events().begin(); e != wp->events().end(); ++e) {
+                  const MusECore::Event event&  = e->second;
                   if (event.empty())
                         continue;
                   MusECore::SndFileR f = event.sndFile();

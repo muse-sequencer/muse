@@ -56,11 +56,13 @@ class EventBase : public PosLen {
       void setSelected(bool val) { _selected = val; }
 
       void move(int offset);
+      
+      virtual bool isSimilarTo(const EventBase& other) const = 0;
 
       virtual void read(Xml&) = 0;
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const = 0;
       virtual void dump(int n = 0) const;
-      virtual EventBase* mid(unsigned, unsigned) = 0;
+      virtual EventBase* mid(unsigned, unsigned) const = 0;
       friend class Event;
 
       virtual bool isNote() const                   { return false; }
@@ -95,7 +97,7 @@ class EventBase : public PosLen {
       virtual void setSpos(int)                     { }
       virtual SndFileR sndFile() const              { return 0;      }
       virtual void setSndFile(SndFileR&)            { }
-      virtual EventBase* clone() = 0;
+      virtual EventBase* clone() const = 0;
       
       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
                              float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }

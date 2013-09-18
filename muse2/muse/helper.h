@@ -43,7 +43,7 @@ class PartList;
 
 QString pitch2string(int v);
 Part* partFromSerialNumber(int serial);
-bool any_event_selected(const std::set<Part*>&, bool in_range=false);
+bool any_event_selected(const std::set<const Part*>&, bool in_range=false);
 
 bool drummaps_almost_equal(const DrumMap* one, const DrumMap* two, int drummap_size=128);
 

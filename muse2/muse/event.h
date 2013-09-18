@@ -64,6 +64,7 @@ class Event {
       void setType(EventType t);
       Event& operator=(const Event& e);
       bool operator==(const Event& e) const;
+      bool isSimilarTo(const Event& other) const;
 
       int getRefCount() const;
       bool selected() const;
@@ -73,8 +74,8 @@ class Event {
       void read(Xml& xml);
       void write(int a, Xml& xml, const Pos& offset, bool ForceWavePaths = false) const;
       void dump(int n = 0) const;
-      Event clone();
-      Event mid(unsigned a, unsigned b);
+      Event clone() const;
+      Event mid(unsigned a, unsigned b) const;
 
       bool isNote() const;
       bool isNoteOff() const;
@@ -124,7 +125,7 @@ typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;
 typedef EL::iterator iEvent;
 typedef EL::reverse_iterator riEvent;
 typedef EL::const_iterator ciEvent;
-typedef std::pair <iEvent, iEvent> EventRange;
+typedef std::pair <ciEvent, ciEvent> EventRange;
 
 //---------------------------------------------------------
 //   EventList
@@ -132,21 +133,14 @@ typedef std::pair <iEvent, iEvent> EventRange;
 //---------------------------------------------------------
 
 class EventList : public EL {
-      int ref;          // number of references to this EventList
-      int aref;         // number of active references (exclude undo list)
       void deselect();
 
    public:
-      EventList()           { ref = 0; aref = 0;  }
-      ~EventList()          {}
-
-      void incRef(int n)    { ref += n;    }
-      int refCount() const  { return ref;  }
-      void incARef(int n)   { aref += n;   }
-      int arefCount() const { return aref; }
-
+      ciEvent find(const Event&) const;
       iEvent find(const Event&);
-      iEvent add(Event& event);
+      ciEvent findSimilar(const Event&) const;
+      iEvent findSimilar(const Event&);
+      iEvent add(Event event);
       void move(Event& event, unsigned tick);
       void dump() const;
       void read(Xml& xml, const char* name, bool midi);

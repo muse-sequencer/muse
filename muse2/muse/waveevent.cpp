@@ -53,16 +53,25 @@ WaveEventBase::WaveEventBase(EventType t)
 //   WaveEventBase::clone
 //---------------------------------------------------------
 
-EventBase* WaveEventBase::clone() 
+EventBase* WaveEventBase::clone() const
 { 
   return new WaveEventBase(*this); 
+}
+
+bool WaveEventBase::isSimilarTo(const EventBase& other_) const
+{
+	const WaveEventBase* other = dynamic_cast<const WaveEventBase*>(&other_);
+	if (other==NULL) // dynamic cast hsa failed: "other_" is not of type WaveEventBase.
+		return false;
+	
+	return f.dirPath()==other->f.dirPath() && _spos==other->_spos && this->PosLen::operator==(*other);
 }
 
 //---------------------------------------------------------
 //   WaveEvent::mid
 //---------------------------------------------------------
 
-EventBase* WaveEventBase::mid(unsigned b, unsigned e)
+EventBase* WaveEventBase::mid(unsigned b, unsigned e) const
       {
       WaveEventBase* ev = new WaveEventBase(*this);
       unsigned fr = frame();

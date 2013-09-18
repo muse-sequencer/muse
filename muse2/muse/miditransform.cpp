@@ -41,6 +41,9 @@
 #include "gconfig.h"
 #include "midictrl.h"
 
+using MusECore::Undo;
+using MusECore::UndoOp;
+
 namespace MusECore {
 
 //
@@ -484,8 +487,7 @@ void MidiTransformerDialog::accept()
 //    subfunction of processEvent()
 //---------------------------------------------------------
 
-void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::MidiPart* part,
-  MusECore::MidiPart* newPart)
+void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::MidiPart* part, MusECore::MidiPart* newPart, MusECore::Undo& operations)
       {
       MusECore::MidiTransformation* cmt = data->cmt;
       MusECore::Event newEvent = event.clone();
@@ -676,33 +678,16 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
             pos = 0;
       newEvent.setTick(pos);
 
-      MusECore::Event dummy;
       switch(data->cmt->funcOp) {
             case MusECore::Transform:
-                  // Indicate do clone parts. 
-                  removePortCtrlEvents(event, part, true);
-                  MusEGlobal::song->changeEvent(event, newEvent, part);
-                  // Indicate do clone parts. 
-                  addPortCtrlEvents(newEvent, part, true);
-                  // Indicate do port controller values and clone parts. 
-                  MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, true, true));
-                  MusEGlobal::song->addUpdateFlags(SC_EVENT_MODIFIED);
+                  operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, true, true));
                   break;
             case MusECore::Insert:
                   // Indicate do port controller values and clone parts. 
-                  MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::AddEvent, dummy, newEvent, part, true, true));
-                  MusEGlobal::song->addEvent(newEvent, part);
-                  // Indicate do clone parts. 
-                  addPortCtrlEvents(newEvent, part, true);
-                  MusEGlobal::song->addUpdateFlags(SC_EVENT_INSERTED);
+                  operations.push_back(UndoOp(UndoOp::AddEvent, newEvent, part, true, true));
                   break;
             case MusECore::Extract:
-                  // Indicate do port controller values and clone parts. 
-                  MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, dummy, event, part, true, true));
-                  // Indicate do clone parts. 
-                  removePortCtrlEvents(event, part, true);
-                  MusEGlobal::song->deleteEvent(event, part);
-                  MusEGlobal::song->addUpdateFlags(SC_EVENT_REMOVED);
+                  operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
             case MusECore::Copy:
                   newPart->addEvent(newEvent);
                   break;
@@ -715,7 +700,7 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
 //   processEvent
 //---------------------------------------------------------
 
-void MidiTransformerDialog::processEvent(MusECore::Event& event, MusECore::MidiPart* part, MusECore::MidiPart* newPart)
+void MidiTransformerDialog::processEvent(MusECore::Event& event, MusECore::MidiPart* part, MusECore::MidiPart* newPart, MusECore::Undo& operations)
       {
       switch(data->cmt->funcOp) {
             case MusECore::Select:
@@ -725,35 +710,22 @@ void MidiTransformerDialog::processEvent(MusECore::Event& event, MusECore::MidiP
                   int tick = event.tick();
                   int rt = AL::sigmap.raster(tick, data->cmt->quantVal) - tick;
                   if (tick != rt) {
-                        // Indicate do clone parts. 
-                        removePortCtrlEvents(event, part, true);
                         MusECore::Event newEvent = event.clone();
                         newEvent.setTick(rt);
-                        MusEGlobal::song->changeEvent(event, newEvent, part);
-                        // Indicate do clone parts. 
-                        addPortCtrlEvents(newEvent, part, true);
-                        // Indicate do port controller values and clone parts. 
-                        MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, true, true));
-                        MusEGlobal::song->addUpdateFlags(SC_EVENT_MODIFIED);
+						operations.push_back(UndoOp(UndoOp::ModifyEvent,newEvent,event,part,true,true));
                         }
                   }
                   break;
             case MusECore::Delete:
                   {
-                  MusECore::Event ev;
-                  // Indicate do port controller values and clone parts. 
-                  MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, ev, event, part, true, true));
-                  // Indicate do clone parts. 
-                  removePortCtrlEvents(event, part, true);
-                  MusEGlobal::song->deleteEvent(event, part);
-                  MusEGlobal::song->addUpdateFlags(SC_EVENT_REMOVED);
+                  operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
                   }
                   break;
             case MusECore::Transform:
             case MusECore::Insert:
             case MusECore::Copy:
             case MusECore::Extract:
-                  transformEvent(event, part, newPart);
+                  transformEvent(event, part, newPart, operations);
                   break;
             }
       }
@@ -764,7 +736,7 @@ void MidiTransformerDialog::processEvent(MusECore::Event& event, MusECore::MidiP
 //    return true if event is selected
 //---------------------------------------------------------
 
-bool MidiTransformerDialog::isSelected(MusECore::Event& event, MusECore::MidiPart*)
+bool MidiTransformerDialog::isSelected(const MusECore::Event& event)
       {
       MusECore::MidiTransformation* cmt = data->cmt;
 
@@ -927,13 +899,13 @@ bool MidiTransformerDialog::isSelected(MusECore::Event& event, MusECore::MidiPar
 void MidiTransformerDialog::apply()
       {
       MusECore::SongChangedFlags_t flags = 0;
-      MusEGlobal::song->startUndo();
-      MusEGlobal::audio->msgIdle(true);
+	  
+	  Undo operations;
       bool copyExtract = (data->cmt->funcOp == MusECore::Copy)
                          || (data->cmt->funcOp == MusECore::Extract);
 
-      std::vector< MusECore::EventList* > doneList;
-      typedef std::vector< MusECore::EventList* >::iterator iDoneList;
+      QSet< int > doneList;
+      typedef std::set< int >::iterator iDoneList;
       iDoneList idl;
       
       MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
@@ -947,21 +919,18 @@ void MidiTransformerDialog::apply()
                   // check wether we must generate a new track
                   for (MusECore::iPart p = pl->begin(); p != pl->end(); ++p) {
                         MusECore::MidiPart* part = (MusECore::MidiPart *) p->second;
-                        MusECore::EventList* el = part->events();
+                        const MusECore::EventList& el = part->events();
                         // Check if the event list has already been done. Skip repeated clones.
-                        for(idl = doneList.begin(); idl != doneList.end(); ++idl)
-                          if(*idl == el)
-                            break;
-                        if(idl != doneList.end())
-                          break;
-                        doneList.push_back(el);
+                        if (doneList.contains(part->clonemaster_sn()))
+                             continue;
+                        doneList.insert(part->clonemaster_sn());
                         
-                        for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
-                              MusECore::Event event = i->second;
+                        for (MusECore::ciEvent i = el.begin(); i != el.end(); ++i) {
+                              const MusECore::Event& event = i->second;
                               unsigned tick = event.tick();
                               if (data->cmt->insideLoop && (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos()))
                                     continue;
-                              if (isSelected(event, part)) {
+                              if (isSelected(event)) {
                                     newTrack = new MusECore::MidiTrack();
                                     tl.push_back(newTrack);
                                     break;
@@ -975,82 +944,56 @@ void MidiTransformerDialog::apply()
             for (MusECore::iPart p = pl->begin(); p != pl->end(); ++p) {
                   MusECore::MidiPart* part = (MusECore::MidiPart *) p->second;
                   MusECore::MidiPart* newPart = 0;
-                  MusECore::EventList* el = part->events();
+                  const MusECore::EventList& el = part->events();
                   // Check if the event list has already been done. Skip repeated clones.
-                  for(idl = doneList.begin(); idl != doneList.end(); ++idl)
-                    if(*idl == el)
-                      break;
-                  if(idl != doneList.end())
-                    break;
-                  doneList.push_back(el);
+                  if (doneList.contains(part->clonemaster_sn()))
+                      continue;
+                  doneList.insert(part->clonemaster_sn());
                   
                   if (copyExtract) {
                         // check wether we must generate a new part
-                        for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
-                              MusECore::Event event = i->second;
+                        for (MusECore::ciEvent i = el.begin(); i != el.end(); ++i) {
+                              const MusECore::Event& event = i->second;
                               unsigned tick = event.tick();
                               if (data->cmt->insideLoop && (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos()))
                                     continue;
-                              if (isSelected(event, part)) {
+                              if (isSelected(event)) {
                                     newPart = new MusECore::MidiPart(newTrack);
                                     newPart->setName(part->name());
                                     newPart->setColorIndex(part->colorIndex());
                                     newPart->setTick(part->tick());
                                     newPart->setLenTick(part->lenTick());
-                                    MusEGlobal::song->addPart(newPart);
+                                    operations.push_back(UndoOp(UndoOp::AddPart,newPart));
                                     flags |= SC_PART_INSERTED;
                                     break;
                                     }
                               }
                         }
                   MusECore::EventList pel;
-                  for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
-                        MusECore::Event event = i->second;
+                  for (MusECore::ciEvent i = el.begin(); i != el.end(); ++i) {
+                        const MusECore::Event& event = i->second;
                         unsigned tick = event.tick();
                         if (data->cmt->insideLoop && (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos()))
                               continue;
-                        int flag = isSelected(event, part);
+                        int flag = isSelected(event);
                         if (data->cmt->funcOp == MusECore::Select)
-                              event.setSelected(flag);
+                              operations.push_back(UndoOp(UndoOp::SelectEvent, event,flag, event.selected()));
                         else if (flag)
-                              pel.add(event);
+                              pel.add(const_cast<MusECore::Event&>(event)); // ough, FIXME, what an ugly hack.
                         }
                   for (MusECore::iEvent i = pel.begin(); i != pel.end(); ++i) {
                         MusECore::Event event = i->second;
-                        processEvent(event, part, newPart);
+                        processEvent(event, part, newPart, operations);
                         }
                   }
             }
       if (!tl.empty()) {
             flags |= SC_TRACK_INSERTED;
-            for (MusECore::iTrack t = tl.begin(); t != tl.end(); ++t) {
-                  MusEGlobal::song->insertTrack0(*t, -1);
-                  }
-            }
+            for (MusECore::iTrack t = tl.begin(); t != tl.end(); ++t)
+                  operations.push_back(UndoOp(UndoOp::AddTrack, -1, *t));
+      }
 
-      switch(data->cmt->funcOp) {
-            case MusECore::Select:
-                  flags |= SC_SELECTION;
-                  break;
-            case MusECore::Quantize:
-                  flags |= SC_EVENT_MODIFIED;
-                  break;
-            case MusECore::Delete:
-                  flags |= SC_EVENT_REMOVED;
-                  break;
-            case MusECore::Transform:
-                  flags |= SC_EVENT_MODIFIED;
-                  break;
-            case MusECore::Insert:
-                  flags |= SC_EVENT_INSERTED;
-                  break;
-            case MusECore::Copy:
-                  flags |= SC_EVENT_INSERTED;
-            case MusECore::Extract:
-                  break;
-            }
-      MusEGlobal::audio->msgIdle(false);
-      MusEGlobal::song->endUndo(flags);
+      MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
@@ -1721,9 +1664,9 @@ void MidiTransformerDialog::insideLoopChanged(bool val)
 
 
 /*!
-    \fn MidiTransformerDialog::typesMatch(MusECore::MidiEvent e, unsigned t)
+    \fn MidiTransformerDialog::typesMatch(const MusECore::MidiEvent e, unsigned t)
  */
-bool MidiTransformerDialog::typesMatch(MusECore::Event& e, unsigned selType)
+bool MidiTransformerDialog::typesMatch(const MusECore::Event& e, unsigned selType)
       {
       bool matched = false;
       switch (selType)

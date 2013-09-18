@@ -76,36 +76,22 @@ void initAudio()
 extern double curTime();
 
 const char* seqMsgList[] = {
-      "SEQM_ADD_TRACK", "SEQM_REMOVE_TRACK", //"SEQM_CHANGE_TRACK",   DELETETHIS
-      "SEQM_MOVE_TRACK",
-      "SEQM_ADD_PART", "SEQM_REMOVE_PART", "SEQM_CHANGE_PART",
-      "SEQM_ADD_EVENT", "SEQM_REMOVE_EVENT", "SEQM_CHANGE_EVENT",
       "SEQM_ADD_TEMPO", "SEQM_SET_TEMPO", "SEQM_REMOVE_TEMPO", "SEQM_ADD_SIG", "SEQM_REMOVE_SIG",
+      "SEQM_ADD_KEY", "SEQM_REMOVE_KEY",
       "SEQM_SET_GLOBAL_TEMPO",
-      "SEQM_UNDO", "SEQM_REDO",
+      "SEQM_REVERT_OPERATION_GROUP", "SEQM_EXECUTE_OPERATION_GROUP",
       "SEQM_RESET_DEVICES", "SEQM_INIT_DEVICES", "SEQM_PANIC",
       "SEQM_MIDI_LOCAL_OFF",
-      "SEQM_SET_MIDI_DEVICE",
       "SEQM_PLAY_MIDI_EVENT",
       "SEQM_SET_HW_CTRL_STATE",
       "SEQM_SET_HW_CTRL_STATES",
-      "SEQM_SET_TRACK_OUT_PORT",
-      "SEQM_SET_TRACK_OUT_CHAN",
       "SEQM_SET_TRACK_AUTO_TYPE",
-      "SEQM_REMAP_PORT_DRUM_CTL_EVS",
-      "SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS",
-      "SEQM_SCAN_ALSA_MIDI_PORTS",
       "SEQM_SET_AUX",
       "SEQM_UPDATE_SOLO_STATES",
-      //"MIDI_SHOW_INSTR_GUI", DELETETHIS
-      //"MIDI_SHOW_INSTR_NATIVE_GUI", DELETETHIS
       "AUDIO_RECORD",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
-      //"AUDIO_VOL", "AUDIO_PAN", DELETETHIS
       "AUDIO_ADDPLUGIN",
-      "AUDIO_SET_SEG_SIZE",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
-      //"AUDIO_SET_PLUGIN_CTRL_VAL", DELETETHIS
       "AUDIO_SWAP_CONTROLLER_IDX",
       "AUDIO_CLEAR_CONTROLLER_EVENTS",
       "AUDIO_SEEK_PREV_AC_EVENT",
@@ -688,17 +674,6 @@ void Audio::processMsg(AudioMsg* msg)
                   MusEGlobal::midiLearnCtrl = -1;
                   break;
             
-            case AUDIO_SET_SEG_SIZE:
-                  MusEGlobal::segmentSize = msg->ival;
-                  MusEGlobal::sampleRate  = msg->iival;
-#if 0 //TODO or DELETETHIS ?
-                  audioOutput.MusEGlobal::segmentSizeChanged();
-                  for (int i = 0; i < mixerGroups; ++i)
-                        audioGroups[i].MusEGlobal::segmentSizeChanged();
-                  for (iSynthI ii = synthiInstances.begin(); ii != synthiInstances.end();++ii)
-                        (*ii)->MusEGlobal::segmentSizeChanged();
-#endif
-                  break;
 
             case SEQM_RESET_DEVICES:
                   for (int i = 0; i < MIDI_PORTS; ++i)                         
@@ -735,16 +710,6 @@ void Audio::processMsg(AudioMsg* msg)
                   port->setHwCtrlStates(msg->a, msg->b, msg->c, msg->ival);
                   }
                   break;
-            case SEQM_SCAN_ALSA_MIDI_PORTS:
-                  alsaScanMidiPorts();
-                  break;
-            //DELETETHIS 6
-            //case MIDI_SHOW_INSTR_GUI:
-            //      MusEGlobal::midiSeq->msgUpdatePollFd();
-            //      break;
-            //case MIDI_SHOW_INSTR_NATIVE_GUI:   
-            //      MusEGlobal::midiSeq->msgUpdatePollFd();
-            //      break;
             case SEQM_ADD_TEMPO:
             case SEQM_REMOVE_TEMPO:
             case SEQM_SET_GLOBAL_TEMPO:
@@ -761,19 +726,6 @@ void Audio::processMsg(AudioMsg* msg)
                         syncTime      = curTime();
                         frameOffset   = syncFrame - samplePos;
                         }
-                  break;
-            // DELETETHIS 6
-            //case SEQM_ADD_TRACK:
-            //case SEQM_REMOVE_TRACK:
-            //case SEQM_CHANGE_TRACK:
-            //case SEQM_ADD_PART:
-            //case SEQM_REMOVE_PART:
-            //case SEQM_CHANGE_PART:
-            case SEQM_SET_TRACK_OUT_CHAN:
-            case SEQM_SET_TRACK_OUT_PORT:
-            case SEQM_REMAP_PORT_DRUM_CTL_EVS:
-            case SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS:
-                  MusEGlobal::midiSeq->sendMsg(msg);
                   break;
 
             case SEQM_SET_TRACK_AUTO_TYPE:
@@ -1034,19 +986,17 @@ void Audio::recordStop()
       MidiTrackList* ml = MusEGlobal::song->midis();
       for (iMidiTrack it = ml->begin(); it != ml->end(); ++it) {
             MidiTrack* mt     = *it;
-            MPEventList* mpel = mt->mpevents();
-            EventList* el     = mt->events();
 
             //---------------------------------------------------
             //    resolve NoteOff events, Controller etc.
             //---------------------------------------------------
 
             // Do SysexMeta. Do loops.
-            buildMidiEventList(el, mpel, mt, MusEGlobal::config.division, true, true);
-            MusEGlobal::song->cmdAddRecordedEvents(mt, el, 
+            buildMidiEventList(&mt->events, mt->mpevents, mt, MusEGlobal::config.division, true, true);
+            MusEGlobal::song->cmdAddRecordedEvents(mt, mt->events, 
                  MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
-            el->clear();
-            mpel->clear();
+            mt->events.clear();
+            mt->mpevents.clear();
             }
       
       //

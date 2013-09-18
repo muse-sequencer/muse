@@ -62,7 +62,7 @@ void EventList::read(Xml& xml, const char* name, bool midi)
 //   add
 //---------------------------------------------------------
 
-iEvent EventList::add(Event& event)
+iEvent EventList::add(Event event)
       {
       // Changed by Tim. An event list containing wave events should be sorted by
       //  frames. WaveTrack::fetchData() relies on the sorting order, and
@@ -129,12 +129,46 @@ void EventList::move(Event& event, unsigned tick)
 //---------------------------------------------------------
 
 iEvent EventList::find(const Event& event)
+{
+      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      for (iEvent i = range.first; i != range.second; ++i) {
+            if (i->second == event)
+                  return i;
+            }
+      return end();
+}
+
+ciEvent EventList::find(const Event& event) const
       {
       EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
 
       
-      for (iEvent i = range.first; i != range.second; ++i) {
+      for (ciEvent i = range.first; i != range.second; ++i) {
             if (i->second == event)
+                  return i;
+            }
+      return end();
+      }
+
+iEvent EventList::findSimilar(const Event& event)
+{
+      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      for (iEvent i = range.first; i != range.second; ++i) {
+            if (i->second.isSimilarTo(event))
+                  return i;
+            }
+      return end();
+}
+
+ciEvent EventList::findSimilar(const Event& event) const
+      {
+      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      
+      for (ciEvent i = range.first; i != range.second; ++i) {
+            if (i->second.isSimilarTo(event))
                   return i;
             }
       return end();

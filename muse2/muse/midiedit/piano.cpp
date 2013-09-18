@@ -570,8 +570,7 @@ void Piano::draw(QPainter& p, const QRect& r)
         int num = cl->num();
         int pitch = num & 0x7f;
         bool used = false;
-        MusECore::EventList* el = cur_part->events();
-        for (MusECore::ciEvent ie = el->begin(); ie != el->end(); ++ie)
+        for (MusECore::ciEvent ie = cur_part->events().begin(); ie != cur_part->events().end(); ++ie)
         {
           MusECore::Event e = ie->second;
           if(e.type() != MusECore::Controller)
