@@ -109,14 +109,22 @@ SET(MusE_SHARE_DIR ${SHARE_INSTALL_PREFIX}/${MusE_INSTALL_NAME})
 ## Lib directory
 SET(MusE_LIB_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME})
 
-FIND_PROGRAM(SVNVER svnversion)
-if (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
-      SET (MusE_SVNVER 0)
-else (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
-      EXEC_PROGRAM( svnversion
-            ARGS ${PROJECT_SOURCE_DIR}
-            OUTPUT_VARIABLE MusE_SVNVER )
-endif (${SVNVER} STREQUAL "SVNVER-NOTFOUND")
+include(FindGit)
+if (GIT_FOUND)
+      EXEC_PROGRAM( ${GIT_EXECUTABLE}
+            ARGS "log -1 --format='%ci'"
+            OUTPUT_VARIABLE MusE_GITDATE )
+      EXEC_PROGRAM( ${GIT_EXECUTABLE}
+            ARGS "log -1 --format='%t'"
+            OUTPUT_VARIABLE MusE_GITHASH )
+      EXEC_PROGRAM( ${GIT_EXECUTABLE}
+            ARGS "rev-parse --abbrev-ref HEAD"
+            OUTPUT_VARIABLE MusE_GITBRANCH )
+      SET(MusE_GITSTRING "git: ${MusE_GITBRANCH} - ${MusE_GITHASH} - ${MusE_GITDATE}")
+else (GIT_FOUND)
+      SET(MusE_GITSTRING "")
+endif (GIT_FOUND)
+
 
 option ( ENABLE_LASH        "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
 option ( ENABLE_OSC         "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)

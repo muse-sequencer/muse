@@ -51,20 +51,21 @@
 #define MIDITRANSFORM_PITCHBEND   4
 #define MIDITRANSFORM_NRPN        5
 #define MIDITRANSFORM_RPN         6
+#define MIDITRANSFORM_PROGRAM     7
 
 namespace MusECore {
 
 static int selTypeTable[] = {
       MIDITRANSFORM_NOTE, MIDITRANSFORM_POLY, MIDITRANSFORM_CTRL, MIDITRANSFORM_ATOUCH,
-         MIDITRANSFORM_PITCHBEND, MIDITRANSFORM_NRPN, MIDITRANSFORM_RPN
+         MIDITRANSFORM_PITCHBEND, MIDITRANSFORM_NRPN, MIDITRANSFORM_RPN, MIDITRANSFORM_PROGRAM
       };
       
 static int procTypeTable[] = {
       MIDITRANSFORM_POLY, MIDITRANSFORM_CTRL, MIDITRANSFORM_ATOUCH,
-         MIDITRANSFORM_PITCHBEND, MIDITRANSFORM_NRPN, MIDITRANSFORM_RPN
+         MIDITRANSFORM_PITCHBEND, MIDITRANSFORM_NRPN, MIDITRANSFORM_RPN, MIDITRANSFORM_PROGRAM
       };
 
-static int procVal2Map[] = { 0, 1, 2, 3, 4, 5, 6, 7, 10, 11 };
+static int procVal2Map[] = { 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12 };
 
 struct TDict {
       TransformFunction id;
@@ -86,6 +87,8 @@ class MidiInputTransformation {
       QString name;
       QString comment;
 
+      MusECore::TransformToggleState toggleState;
+      
       ValOp selEventOp;
       int selType;
 
@@ -145,7 +148,7 @@ class MidiInputTransformation {
             procChannelb = 0;
             }
       void write(int level, Xml& xml) const;
-      int apply(MidiRecordEvent& ev) const;
+      int apply(MidiRecordEvent& ev);
       bool typesMatch(MidiRecordEvent& e, int selType) const;
       };
 
@@ -234,7 +237,7 @@ static bool filterValOp(ValOp op, int val, int val1, int val2)
 //            2 - event changed
 //---------------------------------------------------------
 
-int MidiInputTransformation::apply(MidiRecordEvent& event) const
+int MidiInputTransformation::apply(MidiRecordEvent& event)
       {
       int t = event.type();
       
@@ -312,6 +315,9 @@ int MidiInputTransformation::apply(MidiRecordEvent& event) const
             event.setType(ME_CONTROLLER);
           }  
           break;
+          case MIDITRANSFORM_PROGRAM:
+            event.setType(ME_PROGRAM);
+          break;
           default:
           break;
         }
@@ -366,6 +372,8 @@ int MidiInputTransformation::apply(MidiRecordEvent& event) const
                         val = procVal1a;
                   }
                   break;
+            default:
+                  break;
             }
       if (val < 0)
             val = 0;
@@ -412,6 +420,28 @@ int MidiInputTransformation::apply(MidiRecordEvent& event) const
                         val = (rand() % -range) + procVal2b;
                   else
                         val = procVal2a;
+                  }
+                  break;
+            case Toggle:
+                  {
+                    if(event.type() == ME_CONTROLLER)
+                    {
+                      int num = event.dataA();
+                      bool state = toggleState.ctrlState(num);
+                      if(state)
+                      {
+                        state = false;
+                        val = procVal2a;
+                      }
+                      else
+                      {
+                        state = true;
+                        val = procVal2b;
+                      }
+                      toggleState.setCtrlState(num, state);
+                    }
+                    else
+                      printf("toggle implemented only for controllers\n");
                   }
                   break;
             case ScaleMap:
@@ -469,6 +499,7 @@ int MidiInputTransformation::apply(MidiRecordEvent& event) const
             case ScaleMap:
             case Keep:
             case Flip:
+            case Toggle:
                   break;
             }
       if (val < 0)
@@ -521,6 +552,7 @@ int MidiInputTransformation::apply(MidiRecordEvent& event) const
             case ScaleMap:
             case Keep:
             case Flip:
+            case Toggle:
                   break;
             }
       if (val < 0)
@@ -577,6 +609,9 @@ bool MidiInputTransformation::typesMatch(MidiRecordEvent& e, int selType) const
                   matched = (c == MidiController::RPN);
                   }
             }
+            break;
+         case MIDITRANSFORM_PROGRAM:
+            matched = (t == ME_PROGRAM);
             break;
          default:
             fprintf(stderr, "Error matching type in MidiTransformerDialog: unknown eventtype!\n");
@@ -1116,6 +1151,7 @@ void MidiInputTransformDialog::procVal1OpSel(int val)
             case MusECore::Random:
             case MusECore::ScaleMap:
             case MusECore::Dynamic:
+            case MusECore::Toggle:
                   procVal1a->setDecimals(0);
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(true);
@@ -1133,7 +1169,15 @@ void MidiInputTransformDialog::procVal2OpSel(int val)
       {
       MusECore::TransformOperator op = MusECore::TransformOperator(MusECore::procVal2Map[val]);
       cmt->procVal2 = op;
+      procVal2OpUpdate(op);
+      }
 
+//---------------------------------------------------------
+//   procVal2OpUpdate
+//---------------------------------------------------------
+
+void MidiInputTransformDialog::procVal2OpUpdate(MusECore::TransformOperator op)
+      {
       switch (op) {
             case MusECore::Keep:
             case MusECore::Invert:
@@ -1156,6 +1200,7 @@ void MidiInputTransformDialog::procVal2OpSel(int val)
                   break;
             case MusECore::Random:
             case MusECore::Dynamic:
+            case MusECore::Toggle:
                   procVal2a->setDecimals(0);
                   procVal2a->setEnabled(true);
                   procVal2b->setEnabled(true);
@@ -1192,7 +1237,7 @@ void MidiInputTransformDialog::funcOpSel(int val)
       if (isFuncOp) {
             procEventOpSel(cmt->procEvent);
             procVal1OpSel(cmt->procVal1);
-            procVal2OpSel(cmt->procVal2);
+            procVal2OpUpdate(cmt->procVal2);
             procPortOpSel(cmt->procPort);
             procChannelOpSel(cmt->procChannel);
             }
@@ -1507,6 +1552,7 @@ void MidiInputTransformDialog::procPortOpSel(int val)
             case MusECore::Random:
             case MusECore::ScaleMap:
             case MusECore::Dynamic:
+            case MusECore::Toggle:
                   procPortVala->setDecimals(0);
                   procPortVala->setEnabled(true);
                   procPortValb->setEnabled(true);
@@ -1563,6 +1609,7 @@ void MidiInputTransformDialog::procChannelOpSel(int val)
             case MusECore::Random:
             case MusECore::ScaleMap:
             case MusECore::Dynamic:
+            case MusECore::Toggle:
                   procChannelVala->setDecimals(0);
                   procChannelVala->setEnabled(true);
                   procChannelValb->setEnabled(true);

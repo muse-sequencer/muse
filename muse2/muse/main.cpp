@@ -127,7 +127,10 @@ static void getCapabilities()
 
 static void printVersion(const char* prog)
       {
-      fprintf(stderr, "%s: Linux Music Editor; Version %s, (svn revision %s)\n", prog, VERSION, SVNVERSION);
+      if (strcmp("", GITSTRING))
+            fprintf(stderr, "%s: Linux Music Editor; Version %s, (%s)\n", prog, VERSION, GITSTRING);
+      else
+            fprintf(stderr, "%s: Linux Music Editor; Version %s\n", prog, VERSION);
       }
 
 //---------------------------------------------------------

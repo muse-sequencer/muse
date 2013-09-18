@@ -31,8 +31,8 @@ AboutBoxImpl::AboutBoxImpl()
   setupUi(this);
   imageLabel->setPixmap(*aboutMuseImage);
   QString version(VERSION);
-  QString svnrevision(SVNVERSION);
-  versionLabel->setText("Version: " + version + " (svn  revision: "+ svnrevision +")");
+  QString gitstring(GITSTRING);
+  versionLabel->setText("Version: " + version + (gitstring == QString() ? "" : "\n("+ gitstring + ")"));
 }
 
 }

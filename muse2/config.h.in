@@ -29,7 +29,7 @@
 #cmakedefine USE_SSE
 
 #define VERSION          "${MusE_VERSION_FULL}"
-#define SVNVERSION       "${MusE_SVNVER}"
+#define GITSTRING        "${MusE_GITSTRING}"
 #define PACKAGE_NAME     "MusE"
 #define DOCDIR           "${MusE_DOC_DIR}"
 #define SHAREDIR         "${MusE_SHARE_DIR}"

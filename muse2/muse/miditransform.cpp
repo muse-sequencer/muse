@@ -48,7 +48,7 @@ namespace MusECore {
 
 //
 // Order of events:
-// Note, Poly Pressure, Control, AfterTouch, Pitch Bend, NRPN, RPN
+// Note, Poly Pressure, Control, AfterTouch, Pitch Bend, NRPN, RPN, Program
 //
 #define MIDITRANSFORM_NOTE        0
 #define MIDITRANSFORM_POLY        1
@@ -57,11 +57,12 @@ namespace MusECore {
 #define MIDITRANSFORM_PITCHBEND   4
 #define MIDITRANSFORM_NRPN        5
 #define MIDITRANSFORM_RPN         6
+#define MIDITRANSFORM_PROGRAM     7
 
 
 static int eventTypeTable[] = {
       MIDITRANSFORM_NOTE, MIDITRANSFORM_POLY, MIDITRANSFORM_CTRL, MIDITRANSFORM_ATOUCH,
-         MIDITRANSFORM_PITCHBEND, MIDITRANSFORM_NRPN, MIDITRANSFORM_RPN
+         MIDITRANSFORM_PITCHBEND, MIDITRANSFORM_NRPN, MIDITRANSFORM_RPN, MIDITRANSFORM_PROGRAM
       };
 
 static int procVal2Map[] = { 0, 1, 2, 3, 4, 5, 6, 7, 10, 11 };
@@ -545,6 +546,8 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
                         val = cmt->procVal1a;
                   }
                   break;
+            default:
+                  break;
             }
       if (val < 0)
             val = 0;
@@ -598,6 +601,7 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
             case MusECore::ScaleMap:
             case MusECore::Keep:
             case MusECore::Flip:
+            case MusECore::Toggle:
                   break;
             }
       if (val < 0)
@@ -634,6 +638,7 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
             case MusECore::Keep:
             case MusECore::Flip:
             case MusECore::Value:
+            case MusECore::Toggle:
                   break;
             }
       if (len < 0)
@@ -666,6 +671,7 @@ void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::Mid
             case MusECore::Keep:
             case MusECore::Flip:
             case MusECore::Value:
+            case MusECore::Toggle:
                   break;
             }
       if (pos < 0)
@@ -1139,6 +1145,8 @@ void MidiTransformerDialog::procVal1OpSel(int val)
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(true);
                   break;
+            default:
+                  break;
             }
       procVal1aChanged(data->cmt->procVal1a);
       procVal1bChanged(data->cmt->procVal1b);
@@ -1152,7 +1160,15 @@ void MidiTransformerDialog::procVal2OpSel(int val)
       {
       MusECore::TransformOperator op = MusECore::TransformOperator(MusECore::procVal2Map[val]);
       data->cmt->procVal2 = op;
+      procVal2OpUpdate(op);
+      }
 
+//---------------------------------------------------------
+//   procVal2OpUpdate
+//---------------------------------------------------------
+
+void MidiTransformerDialog::procVal2OpUpdate(MusECore::TransformOperator op)
+      {
       switch (op) {
             case MusECore::Keep:
             case MusECore::Invert:
@@ -1698,6 +1714,14 @@ bool MidiTransformerDialog::typesMatch(const MusECore::Event& e, unsigned selTyp
                   MusECore::MidiController::ControllerType c = MusECore::midiControllerType(e.dataA());
                   matched = (c == MusECore::MidiController::RPN);
                   }
+            }
+         case MIDITRANSFORM_PROGRAM:
+            {
+            if (e.type() == MusECore::Controller) {
+                  MusECore::MidiController::ControllerType c = MusECore::midiControllerType(e.dataA());
+                  matched = (c == MusECore::MidiController::Program);
+                  }
+            break;
             }
          default:
             fprintf(stderr, "Error matching type in MidiTransformerDialog: unknown eventtype!\n");
