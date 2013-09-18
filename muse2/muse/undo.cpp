@@ -326,6 +326,9 @@ void prepareOperationGroup(Undo& group)
 	QSet<const Track*> deleted_tracks;
 	QSet<const Part*> deleted_parts;
 
+	int songlen = MusEGlobal::song->len();
+	
+
 	for (iUndoOp op=group.begin(); op!=group.end();)
 	{
 		iUndoOp op_=op;
@@ -360,9 +363,31 @@ void prepareOperationGroup(Undo& group)
 			else
 				deleted_parts.insert(op->part);
 		}
+		else if (op->type==UndoOp::AddPart || op->type==UndoOp::ModifyPartLength ||
+		         op->type==UndoOp::ModifyPartTick)
+		{
+			if (op->type==UndoOp::AddPart)
+			{
+				if (songlen < op->part->endTick())
+					songlen = op->part->endTick();
+			}
+			else if (op->type==UndoOp::ModifyPartTick)
+			{
+				if (songlen < op->new_partlen_or_tick+op->part->lenTick())
+					songlen = op->new_partlen_or_tick+op->part->lenTick();
+			}
+			else if (op->type==UndoOp::ModifyPartLength)
+			{
+				if (songlen < op->part->tick()+op->new_partlen_or_tick)
+					songlen=op->part->tick()+op->new_partlen_or_tick;
+			}
+		}
 		
 		op=op_;
 	}
+	
+	if (songlen >= MusEGlobal::song->len())
+		group.push_back(UndoOp(UndoOp::ModifySongLen, songlen, MusEGlobal::song->len()));
 	
 	// replicate Event modifications to keep clones up to date.
 	// do not replicate SelectEvent because... umm, it just doesn't feel right.
