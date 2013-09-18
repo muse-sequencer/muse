@@ -720,7 +720,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
       //---------------------------------------------------
 
       PartList* pl = mt->parts();
-      MidiPart* part = 0;
+      const MidiPart* part = 0;
       iPart ip;
       for (ip = pl->begin(); ip != pl->end(); ++ip) {
             part = (MidiPart*)(ip->second);
@@ -733,16 +733,17 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             if (MusEGlobal::debugMsg)
                   printf("create new part for recorded events\n");
             // create new part
-            part      = new MidiPart(mt);
+            MidiPart* newpart;
+            newpart      = new MidiPart(mt);
             
             // Round the start down using the Arranger part snap raster value. 
             startTick = AL::sigmap.raster1(startTick, arrangerRaster());
             // Round the end up using the Arranger part snap raster value. 
             endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
             
-            part->setTick(startTick);
-            part->setLenTick(endTick - startTick);
-            part->setName(mt->name());
+            newpart->setTick(startTick);
+            newpart->setLenTick(endTick - startTick);
+            newpart->setName(mt->name());
             // copy events
             for (ciEvent i = s; i != e; ++i) {
                   const Event& old = i->second;
@@ -750,15 +751,17 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
                   event.setTick(old.tick() - startTick);
                   // addEvent also adds port controller values. So does msgAddPart, below. Let msgAddPart handle them.
                   //addEvent(event, part);
-                  if(part->events().find(event) == part->events().end())
-                    part->nonconst_events().add(event);
+                  if(newpart->events().find(event) == newpart->events().end())
+                    newpart->nonconst_events().add(event);
                   }
-            MusEGlobal::audio->msgAddPart(part);
+            MusEGlobal::audio->msgAddPart(newpart);
             updateFlags |= SC_PART_INSERTED;
             return;
             }
 
       updateFlags |= SC_EVENT_INSERTED;
+
+      Undo operations;
 
       unsigned partTick = part->tick();
       if (endTick > part->endTick()) {
@@ -775,67 +778,30 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
             
             // Create an undo op. Indicate do port controller values but not clone parts. 
-            addUndo(UndoOp(UndoOp::ModifyPartLength, part, part->lenTick(), endTick, true, false)); // FIXME XTICKS! FINDMICHJETZT!
+            operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenTick(), endTick, true, false)); // FIXME XTICKS! FINDMICHJETZT!
             updateFlags |= SC_PART_MODIFIED;
+      }
             
-            if (_recMode == REC_REPLACE)
-            {
-                  iEvent si = part->nonconst_events().lower_bound(startTick - part->tick());
-                  iEvent ei = part->nonconst_events().lower_bound(part->endTick() - part->tick());
-                  for (iEvent i = si; i != ei; ++i) 
-                  {
-                    Event event = i->second;
-                    // Indicate do port controller values and clone parts. 
-                    addUndo(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
-                    // Remove the event from the new part's port controller values, and do all clone parts.
-                    removePortCtrlEvents(event, part, true);
-                  }
-                  part->nonconst_events().erase(si, ei);
-            }
-            
-            for (ciEvent i = s; i != e; ++i) {
-                  Event event = i->second.clone();
-                  event.setTick(event.tick() - partTick);
-                  // Create an undo op. Indicate do port controller values and clone parts. 
-                  addUndo(UndoOp(UndoOp::AddEvent, event, part, true, true));
-                  
-                  if(part->nonconst_events().find(event) == part->nonconst_events().end())
-                    part->nonconst_events().add(event);
-                  
-                  // Add the event to the new part's port controller values, and do all clone parts.
-                  addPortCtrlEvents(event, part, true);
-                  }
-            }
-      else {
-            if (_recMode == REC_REPLACE) {
-                  iEvent si = part->nonconst_events().lower_bound(startTick - part->tick());
-                  iEvent ei = part->nonconst_events().lower_bound(endTick   - part->tick());
 
-                  for (iEvent i = si; i != ei; ++i) {
-                        Event event = i->second;
-                        // Indicate that controller values and clone parts were handled.
-                        addUndo(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
-                        // Remove the event from the part's port controller values, and do all clone parts.
-                        removePortCtrlEvents(event, part, true);
-                        }
-                  part->nonconst_events().erase(si, ei);
-                  }
-            for (ciEvent i = s; i != e; ++i) {
-                  Event event = i->second.clone();
-                  int tick = event.tick() - partTick;
-                  event.setTick(tick);
-                  
+      if (_recMode == REC_REPLACE) {
+            ciEvent si = part->events().lower_bound(startTick - part->tick());
+            ciEvent ei = part->events().lower_bound(endTick   - part->tick());
+
+            for (ciEvent i = si; i != ei; ++i) {
+                  const Event& event = i->second;
                   // Indicate that controller values and clone parts were handled.
-                  addUndo(UndoOp(UndoOp::AddEvent, event, part, true, true));
-                  
-                  if(part->nonconst_events().find(event) == part->nonconst_events().end())
-                    part->nonconst_events().add(event);
-                  
-                  // Add the event to the part's port controller values, and do all clone parts.
-                  addPortCtrlEvents(event, part, true);
-                  }
+                  operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
             }
       }
+      for (ciEvent i = s; i != e; ++i) {
+            Event event = i->second.clone();
+            event.setTick(event.tick() - partTick);
+            // Indicate that controller values and clone parts were handled.
+            operations.push_back(UndoOp(UndoOp::AddEvent, event, part, true, true));
+      }
+      
+      applyOperationGroup(operations,false); // don't do undo, startUndo must have been called from outside.
+}
 
 //---------------------------------------------------------
 //   findTrack
