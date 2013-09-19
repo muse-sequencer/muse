@@ -386,7 +386,6 @@ void removePortCtrlEvents(Part* part, bool doClones)
 
 iEvent Part::addEvent(Event& p)
       {
-      assert(!hasClones());
       return _events.add(p);
       }
 
@@ -491,7 +490,10 @@ Part* Part::duplicate() const
 
 	// copy the eventlist; duplicate each Event(Ptr!).
 	for (MusECore::ciEvent i = _events.begin(); i != _events.end(); ++i)
-		dup->addEvent(i->second.clone());
+	{
+		Event nev = i->second.clone();
+		dup->addEvent(nev);
+	}
 
 	return dup;
 }
