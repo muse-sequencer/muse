@@ -46,7 +46,7 @@ namespace MusEGui {
 
 class NEvent : public CItem {
    public:
-      NEvent(MusECore::Event& e, MusECore::Part* p, int y);
+      NEvent(const MusECore::Event& e, MusECore::Part* p, int y);
       };
 
 class ScrollScale;
@@ -80,7 +80,7 @@ class PianoCanvas : public EventCanvas {
       virtual void dragEnterEvent(QDragEnterEvent* event);
       virtual void dragMoveEvent(QDragMoveEvent*);
       virtual void dragLeaveEvent(QDragLeaveEvent*);
-      virtual CItem* addItem(MusECore::Part*, MusECore::Event&);
+      virtual CItem* addItem(MusECore::Part*, const MusECore::Event&);
 
       int y2pitch(int) const;
       int pitch2y(int) const;

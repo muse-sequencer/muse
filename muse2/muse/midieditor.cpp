@@ -61,7 +61,7 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
       mainGrid->setSpacing(0);  
       setCentralWidget(mainw);
       
-      connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)), SLOT(addNewParts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)));	
+      connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)), SLOT(addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&)));
       }
 
 //---------------------------------------------------------
@@ -244,15 +244,15 @@ void MidiEditor::setCurCanvasPart(MusECore::Part* part)
     canvas->setCurrentPart(part); 
 }
 
-void MidiEditor::addNewParts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >& param)
+void MidiEditor::addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >& param)
 {
   using std::map;
   using std::set;
   
-  for (map< MusECore::Part*, set<MusECore::Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
+  for (map< const MusECore::Part*, set<const MusECore::Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
     if (_pl->index(it->first) != -1)
-      for (set<MusECore::Part*>::const_iterator it2=it->second.begin(); it2!=it->second.end(); it2++)
-        addPart(*it2);
+      for (set<const MusECore::Part*>::const_iterator it2=it->second.begin(); it2!=it->second.end(); it2++)
+        addPart(const_cast<MusECore::Part*>(*it2)); // FIXME make this const-correct!
 }
 
 } // namespace MusEGui

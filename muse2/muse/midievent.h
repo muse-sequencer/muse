@@ -36,11 +36,13 @@ class MidiEventBase : public EventBase {
       int a, b, c;                  // pitch, velo-on, velo-off
       EvData edata;
 
-      virtual EventBase* clone() { return new MidiEventBase(*this); }
+      virtual EventBase* clone() const { return new MidiEventBase(*this); }
 
    public:
       MidiEventBase(EventType t);
       virtual ~MidiEventBase() {}
+      
+      virtual bool isSimilarTo(const EventBase& other) const;
 
       virtual bool isNote() const                   { return type() == Note; }
       virtual bool isNoteOff() const;
@@ -71,7 +73,7 @@ class MidiEventBase : public EventBase {
       virtual void dump(int n = 0) const;
       virtual void read(Xml&);
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const;
-      virtual EventBase* mid(unsigned, unsigned);
+      virtual EventBase* mid(unsigned, unsigned) const;
       };
 
 } // namespace MusECore

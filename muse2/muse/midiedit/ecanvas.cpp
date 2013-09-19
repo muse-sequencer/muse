@@ -192,8 +192,7 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
                   if (etick > end_tick)
                         end_tick = etick;
 
-                  MusECore::EventList* el = part->events();
-                  for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
+                  for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
                         MusECore::Event e = i->second;
                         // Do not add events which are past the end of the part.
                         if(e.tick() > len)      

@@ -84,6 +84,7 @@ class MidiInputTransformDialog : public QDialog, public Ui::MidiInputTransformDi
       void procEventTypeSel(int);
       void procVal1OpSel(int);
       void procVal2OpSel(int);
+      void procVal2OpUpdate(MusECore::TransformOperator op);
       void funcOpSel(int);
       void presetChanged(QListWidgetItem*);
       void nameChanged(const QString&);

@@ -60,26 +60,11 @@ void WaveTrack::internal_assign(const Track& t, int flags)
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
               Part* spart = ip->second;
-              bool clone = spart->events()->arefCount() > 1;
-              // This increments aref count if cloned, and chains clones.
-              // It also gives the new part a new serial number.
-              Part* dpart = newPart(spart, clone);
-              if(!clone) {
-                    // Copy Events
-                    MusECore::EventList* se = spart->events();
-                    for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
-                          MusECore::Event oldEvent = i->second;
-                          MusECore::Event ev = oldEvent.clone();
-                          dpart->addEvent(ev);
-                          }
-                    }
-
-              // TODO: Should we include the parts in the undo?
-              //      dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-              //                                    // so we must decrement it first :/
-              //      // These will not increment ref count, and will not chain clones...
-              //      // DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
-              //      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
+              Part* dpart;
+              if (spart->hasClones())
+                  dpart = spart->createNewClone();
+              else
+                  dpart = spart->duplicate();
               
               parts()->add(dpart);
               }
@@ -129,8 +114,7 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, XTick startOfSegmentXT
               XTick partFromXTick = startOfSegmentXTick - part->xtick();
               XTick partToXTick = endOfSegmentXTick - part->xtick();
           
-              EventList* events = part->events();
-              for (iEvent ie = events->begin(); ie != events->end(); ++ie) {
+              for (iEvent ie = part->nonconst_events().begin(); ie != part->nonconst_events().end(); ++ie) {
                     Event& event = ie->second;
                     unsigned e_spos  = event.frame() + p_spos;
                     unsigned nn      = event.lenFrame();
@@ -208,11 +192,11 @@ void WaveTrack::read(Xml& xml)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        return;
+                        goto out_of_WaveTrackRead_forloop;
                   case Xml::TagStart:
                         if (tag == "part") {
                               Part* p = 0;
-                              p = readXmlPart(xml, this);
+                              p = Part::readFromXml(xml, this);
                               if(p)
                                 parts()->add(p);
                               }
@@ -224,12 +208,14 @@ void WaveTrack::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "wavetrack") {
                               mapRackPluginsToControllers();
-                              return;
+                              goto out_of_WaveTrackRead_forloop;
                               }
                   default:
                         break;
                   }
             }
+out_of_WaveTrackRead_forloop:
+      chainTrackParts(this);
       }
 
 //---------------------------------------------------------
@@ -238,7 +224,16 @@ void WaveTrack::read(Xml& xml)
 
 Part* WaveTrack::newPart(Part*p, bool clone)
       {
-      WavePart* part = clone ? new WavePart(this, p->events()) : new WavePart(this);
+      WavePart* part;
+      if (clone)
+      {
+            part = (WavePart*)p->createNewClone();
+            part->setTrack(this);
+      }
+      else
+            part = new WavePart(this);
+      
+      
       if (p) {
             part->setName(p->name());
             part->setColorIndex(p->colorIndex());
@@ -246,9 +241,6 @@ Part* WaveTrack::newPart(Part*p, bool clone)
             *(PosLen*)part = *(PosLen*)p;
             part->setMute(p->mute());
             }
-      
-      if(clone)
-        chainClone(p, part);
       
       return part;
       }

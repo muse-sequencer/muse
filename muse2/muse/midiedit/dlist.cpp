@@ -208,8 +208,7 @@ void DList::draw(QPainter& p, const QRect& rect)
                                           continue;
 
                                         found = true;
-                                        MusECore::EventList* el = cur_part->events();
-                                        for(MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie)
+                                        for(MusECore::ciEvent ie = cur_part->events().begin(); ie != cur_part->events().end(); ++ie)
                                         {
                                           MusECore::Event e = ie->second;
                                           if(e.type() != MusECore::Controller)
@@ -303,14 +302,14 @@ void DList::draw(QPainter& p, const QRect& rect)
                                               continue;
 
                                             found = true;
-                                            MusECore::EventList* el = cur_part->events();
+                                            const MusECore::EventList& el = cur_part->events();
                                             //MusECore::PartList* part_list = dcanvas->drumEdit()->parts();
                                             //for(MusECore::ciPart ip = part_list->cbegin(); ip != part_list->cend(); ++ip)
                                             {
                                               //MusECore::Part* part = ip->second;
                                               ///if(part->track() != 
-                                              //MusECore::EventList* el = part->events();
-                                              for(MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie)
+                                              //const MusECore::EventList& el = part->events();
+                                              for(MusECore::ciEvent ie = el.begin(); ie != el.end(); ++ie)
                                               {
                                                 MusECore::Event e = ie->second;
                                                 if(e.type() != MusECore::Controller)

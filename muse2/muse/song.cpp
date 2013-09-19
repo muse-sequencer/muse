@@ -217,9 +217,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       if((Track::TrackType)n >= Track::AUDIO_SOFTSYNTH)
         return 0;
       
-      Undo operations;
-      Track* t = addTrack(operations, (Track::TrackType)n, insertAt);
-      applyOperationGroup(operations);
+      Track* t = addTrack((Track::TrackType)n, insertAt);
       if (t->isVisible()) {
         deselectTracks();
         t->setSelected(true);
@@ -237,7 +235,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
 //    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
-Track* Song::addTrack(Undo& /*operations*/, Track::TrackType type, Track* insertAt)
+Track* Song::addTrack(Track::TrackType type, Track* insertAt)
       {
       Track* track = 0;
       int lastAuxIdx = _auxs.size();
@@ -294,12 +292,9 @@ Track* Song::addTrack(Undo& /*operations*/, Track::TrackType type, Track* insert
       
       int idx = insertAt ? _tracks.index(insertAt) : -1;
       
-      insertTrack1(track, idx);         // this and the below are replaced
-      msgInsertTrack(track, idx, true); // by the UndoOp-operation
-      insertTrack3(track, idx); // does nothing
-      // No, can't do this. insertTrack2 needs to be called now, not later, otherwise it sees
+      // Apply it *now*. insertTrack2 needs to be called now, not later, otherwise it sees
       //  that the track may have routes, and reciprocates them, causing duplicate routes.
-      ///operations.push_back(UndoOp(UndoOp::AddTrack, idx, track));  
+      applyOperation(UndoOp(UndoOp::AddTrack, idx, track));
 
       // Add default track <-> midiport routes. 
       if(track->isMidiTrack()) 
@@ -440,7 +435,8 @@ void Song::duplicateTracks()
   QString track_name;
   int idx;
   int trackno = tl.size();
-  MusEGlobal::song->startUndo();
+  
+  Undo operations;
   for(TrackList::reverse_iterator it = tl.rbegin(); it != tl.rend(); ++it) 
   {
     Track* track = *it;
@@ -450,114 +446,23 @@ void Song::duplicateTracks()
       
       for(int cp = 0; cp < copies; ++cp)
       {
-        // There are two ways to copy a track now. Using the copy constructor or using new + assign(). 
-        // Tested: Both ways seem OK. Prefer copy constructors for simplicity. But new + assign() may be 
-        //  required for fine-grained control over initializing various track types.
-        //
-        
-        //  Set to 0 to use the copy constructor. Set to 1 to use new + assign().
-        // DELETETHIS is this still necessary to keep around?
-        //            also consider removing and adding a hint to a revision number instead
-  #if 0      
-        
-        Track* new_track = 0;
-        int lastAuxIdx = _auxs.size();
-        switch(track->type()) 
-        {
-          case Track::AUDIO_SOFTSYNTH:  // TODO: Handle synths.   p4.0.47
-                // ((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
-                break;
-            
-          case Track::MIDI:
-                new_track = new MidiTrack();
-                new_track->setType(Track::MIDI);
-                break;
-          case Track::DRUM:
-                new_track = new MidiTrack();
-                new_track->setType(Track::DRUM);
-                //((MidiTrack*)new_track)->setOutChannel(9); DELETETHIS?
-                break;
-          case Track::WAVE:
-                new_track = new MusECore::WaveTrack();
-                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
-                break;
-          case Track::AUDIO_OUTPUT:
-                new_track = new AudioOutput();
-                break;
-          case Track::AUDIO_GROUP:
-                new_track = new AudioGroup();
-                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
-                break;
-          case Track::AUDIO_AUX:
-                new_track = new AudioAux();
-                break;
-          case Track::AUDIO_INPUT:
-                new_track = new AudioInput();
-                //((AudioTrack*)new_track)->addAuxSend(lastAuxIdx); DELETETHIS?
-                break;
-          default:
-                printf("Song::duplicateTracks: Illegal type %d\n", track->type());
-                break;
-        }
-            
-        if(new_track)   
-        {
-          new_track->assign(*track, flags);
-  #else      
-        {
           Track* new_track = track->clone(flags);  
-  #endif
           
           //new_track->setDefaultName(track_name);  // Handled in class now.
 
           idx = trackno + cp;
-          insertTrack1(new_track, idx);         
-          addUndo(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
-          msgInsertTrack(new_track, idx, false); // No undo.
-          insertTrack3(new_track, idx); 
-        }
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
       }  
     }
     --trackno;
   }
   
-  MusECore::SongChangedFlags_t update_flags = SC_TRACK_INSERTED;
-  if(flags & (Track::ASSIGN_ROUTES | Track::ASSIGN_DEFAULT_ROUTES))
-    update_flags |= SC_ROUTE;
-  MusEGlobal::song->endUndo(update_flags);
+  MusEGlobal::song->applyOperationGroup(operations);
   MusEGlobal::audio->msgUpdateSoloStates();
 }          
       
-//---------------------------------------------------------
-//   cmdRemoveTrack
-//---------------------------------------------------------
 
-void Song::cmdRemoveTrack(Track* track)
-      {
-      int idx = _tracks.index(track);
-      addUndo(UndoOp(UndoOp::DeleteTrack, idx, track));
-      removeTrack2(track);
-      updateFlags |= SC_TRACK_REMOVED;
-      }
 
-//---------------------------------------------------------
-//   removeMarkedTracks
-//---------------------------------------------------------
-
-void Song::removeMarkedTracks()
-      {
-      bool loop;
-      do {
-            loop = false;
-            for (iTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
-                  if ((*t)->selected()) {
-                        removeTrack2(*t);
-                        loop = true;
-                        break;
-                        }
-                  }
-            } while (loop);
-      }
 
 //---------------------------------------------------------
 //   deselectTracks
@@ -578,11 +483,11 @@ bool Song::addEvent(Event& event, Part* part)
       {
       // Return false if the event is already found. 
       // (But allow a port controller value, above, in case it is not already stored.)
-      if(part->events()->find(event) != part->events()->end())
+      if(part->events().find(event) != part->events().end())
       {
         // This can be normal for some (redundant) operations.
         if(MusEGlobal::debugMsg)
-          printf("Song::addEvent event already found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
+          printf("Song::addEvent event already found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events().size());
         return false;
       }
       
@@ -601,16 +506,16 @@ bool Song::addEvent(Event& event, Part* part)
 
 void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
 {
-      iEvent i = part->events()->find(oldEvent);
+      iEvent i = part->nonconst_events().find(oldEvent);
       
-      if (i == part->events()->end()) {
+      if (i == part->nonconst_events().end()) {
             // This can be normal for some (redundant) operations.
             if(MusEGlobal::debugMsg)
-              printf("Song::changeEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
+              printf("Song::changeEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->nonconst_events().size());
             // no "return;" because: Allow it to add the new event.  (And remove the old one from the midi port controller!) (tim)
             }
       else
-        part->events()->erase(i);
+        part->nonconst_events().erase(i);
         
       part->addEvent(newEvent);
 
@@ -626,14 +531,14 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
 
 void Song::deleteEvent(Event& event, Part* part)
       {
-      iEvent ev = part->events()->find(event);
-      if (ev == part->events()->end()) {
+      iEvent ev = part->nonconst_events().find(event);
+      if (ev == part->nonconst_events().end()) {
             // This can be normal for some (redundant) operations.
             if(MusEGlobal::debugMsg)
-              printf("Song::deleteEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->events()->size());
+              printf("Song::deleteEvent event not found in part:%s size:%zd\n", part->name().toLatin1().constData(), part->nonconst_events().size());
             return;
             }
-      part->events()->erase(ev);
+      part->nonconst_events().erase(ev);
 
       if (event.type()==Wave)
           if (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame()+event.frame(), part->frame()+event.endFrame()))
@@ -661,8 +566,8 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip) 
     {
       MidiPart* part = (MidiPart*)(ip->second);
-      const EventList* el = part->cevents();
-      for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+      const EventList& el = part->events();
+      for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
       {
         const Event& ev = ie->second;
         if(ev.type() != Controller)
@@ -732,17 +637,10 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip) 
     {
       MidiPart* part = (MidiPart*)(ip->second);
-      const EventList* el = part->cevents();
-      // unsigned len = part->lenTick(); // Commented out by flo, see below
-      for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+      for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
       {
         const Event& ev = ie->second;
-        // Added by T356. Do not handle events which are past the end of the part.
-        // Commented out by flo: yes, DO handle them! these are "hidden events"
-        //                       which may be revealed later again!
-        // if(ev.tick() >= len)
-        //   break;
-                    
+
         if(ev.type() != Controller)
           continue;
           
@@ -780,45 +678,35 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
   }
 }
 
-void Song::addACEvent(AudioTrack* t, int acid, int frame, double val)
-{
-  MusEGlobal::audio->msgAddACEvent(t, acid, frame, val);
-}
-
-void Song::changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val)
-{
-  MusEGlobal::audio->msgChangeACEvent(t, acid, frame, newFrame, val);
-}
-
 //---------------------------------------------------------
 //   cmdAddRecordedEvents
 //    add recorded Events into part
 //---------------------------------------------------------
 
-void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned startTick)
+void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned startTick)
       {
-      if (events->empty()) {
+      if (events.empty()) {
             if (MusEGlobal::debugMsg)
                   printf("no events recorded\n");
             return;
             }
-      iEvent s;
-      iEvent e;
+      ciEvent s;
+      ciEvent e;
       unsigned endTick;
 
       if((MusEGlobal::audio->loopCount() > 0 && startTick > lPos().tick()) || (punchin() && startTick < lPos().tick()))
       {
             startTick = lpos();
-            s = events->lower_bound(startTick);
+            s = events.lower_bound(startTick);
       }
       else 
       {
-            s = events->begin();
+            s = events.begin();
       }
       
       // search for last noteOff:
       endTick = 0;
-      for (iEvent i = events->begin(); i != events->end(); ++i) {
+      for (ciEvent i = events.begin(); i != events.end(); ++i) {
             Event ev   = i->second;
             unsigned l = ev.endTick();
             if (l > endTick)
@@ -828,10 +716,10 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
       if((MusEGlobal::audio->loopCount() > 0) || (punchout() && endTick > rPos().tick()) )
       {
             endTick = rpos();
-            e = events->lower_bound(endTick);
+            e = events.lower_bound(endTick);
       }
       else
-            e = events->end();
+            e = events.end();
 
       if (startTick > endTick) {
             if (MusEGlobal::debugMsg)
@@ -847,7 +735,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
       //---------------------------------------------------
 
       PartList* pl = mt->parts();
-      MidiPart* part = 0;
+      const MidiPart* part = 0;
       iPart ip;
       for (ip = pl->begin(); ip != pl->end(); ++ip) {
             part = (MidiPart*)(ip->second);
@@ -860,39 +748,42 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             if (MusEGlobal::debugMsg)
                   printf("create new part for recorded events\n");
             // create new part
-            part      = new MidiPart(mt);
+            MidiPart* newpart;
+            newpart      = new MidiPart(mt);
             
             // Round the start down using the Arranger part snap raster value. 
             startTick = AL::sigmap.raster1(startTick, arrangerRaster());
             // Round the end up using the Arranger part snap raster value. 
             endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
             
-            part->setTick(startTick);
-            part->setLenTick(endTick - startTick);
-            part->setName(mt->name());
+            newpart->setTick(startTick);
+            newpart->setLenTick(endTick - startTick);
+            newpart->setName(mt->name());
             // copy events
-            for (iEvent i = s; i != e; ++i) {
-                  Event old = i->second;
+            for (ciEvent i = s; i != e; ++i) {
+                  const Event& old = i->second;
                   Event event = old.clone();
                   event.setTick(old.tick() - startTick);
                   // addEvent also adds port controller values. So does msgAddPart, below. Let msgAddPart handle them.
                   //addEvent(event, part);
-                  if(part->events()->find(event) == part->events()->end())
-                    part->addEvent(event);
+                  if(newpart->events().find(event) == newpart->events().end())
+                    newpart->addEvent(event);
                   }
-            MusEGlobal::audio->msgAddPart(part);
+            MusEGlobal::audio->msgAddPart(newpart);
             updateFlags |= SC_PART_INSERTED;
             return;
             }
 
       updateFlags |= SC_EVENT_INSERTED;
 
+      Undo operations;
+
       unsigned partTick = part->tick();
       if (endTick > part->endTick()) {
             // Determine new part length...
             endTick = 0;
-            for (iEvent i = s; i != e; ++i) {
-                  Event event = i->second;
+            for (ciEvent i = s; i != e; ++i) {
+                  const Event& event = i->second;
                   unsigned tick = event.tick() - partTick + event.lenTick();
                   if (endTick < tick)
                         endTick = tick;
@@ -901,88 +792,31 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             // Round the end up (again) using the Arranger part snap raster value. 
             endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
             
-            
-            removePortCtrlEvents(part, false); // Remove all of the part's port controller values. Don't do clone parts.
-
-            // Clone the part. This doesn't increment aref count, and doesn't chain clones.
-            // It also gives the new part a new serial number, but it is 
-            //  overwritten with the old one by Song::changePart(), below. 
-            Part* newPart = part->clone();
-            
-            newPart->setLenTick(endTick);  // Set the new part's length.
-            changePart(part, newPart);     // Change the part.
-            
-            part->events()->incARef(-1);   // Manually adjust reference counts. HACK!
-            newPart->events()->incARef(1);
-            
-            replaceClone(part, newPart);   // Replace the part in the clone chain with the new part.
-            
-            // Now add all of the new part's port controller values. Indicate do not do clone parts.
-            addPortCtrlEvents(newPart, false);
-            
             // Create an undo op. Indicate do port controller values but not clone parts. 
-            addUndo(UndoOp(UndoOp::ModifyPart, part, newPart, true, false));
+            operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenTick(), endTick, true, false)); // FIXME XTICKS! FINDMICHJETZT!
             updateFlags |= SC_PART_MODIFIED;
+      }
             
-            if (_recMode == REC_REPLACE)
-            {
-                  iEvent si = newPart->events()->lower_bound(startTick - newPart->tick());
-                  iEvent ei = newPart->events()->lower_bound(newPart->endTick() - newPart->tick());
-                  for (iEvent i = si; i != ei; ++i) 
-                  {
-                    Event event = i->second;
-                    // Indicate do port controller values and clone parts. 
-                    addUndo(UndoOp(UndoOp::DeleteEvent, event, newPart, true, true));
-                    // Remove the event from the new part's port controller values, and do all clone parts.
-                    removePortCtrlEvents(event, newPart, true);
-                  }
-                  newPart->events()->erase(si, ei);
-            }
-            
-            for (iEvent i = s; i != e; ++i) {
-                  Event event = i->second;
-                  event.setTick(event.tick() - partTick);
-                  Event e;
-                  // Create an undo op. Indicate do port controller values and clone parts. 
-                  addUndo(UndoOp(UndoOp::AddEvent, e, event, newPart, true, true));
-                  
-                  if(newPart->events()->find(event) == newPart->events()->end())
-                    newPart->addEvent(event);
-                  
-                  // Add the event to the new part's port controller values, and do all clone parts.
-                  addPortCtrlEvents(event, newPart, true);
-                  }
-            }
-      else {
-            if (_recMode == REC_REPLACE) {
-                  iEvent si = part->events()->lower_bound(startTick - part->tick());
-                  iEvent ei = part->events()->lower_bound(endTick   - part->tick());
 
-                  for (iEvent i = si; i != ei; ++i) {
-                        Event event = i->second;
-                        // Indicate that controller values and clone parts were handled.
-                        addUndo(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
-                        // Remove the event from the part's port controller values, and do all clone parts.
-                        removePortCtrlEvents(event, part, true);
-                        }
-                  part->events()->erase(si, ei);
-                  }
-            for (iEvent i = s; i != e; ++i) {
-                  Event event = i->second;
-                  int tick = event.tick() - partTick;
-                  event.setTick(tick);
-                  
+      if (_recMode == REC_REPLACE) {
+            ciEvent si = part->events().lower_bound(startTick - part->tick());
+            ciEvent ei = part->events().lower_bound(endTick   - part->tick());
+
+            for (ciEvent i = si; i != ei; ++i) {
+                  const Event& event = i->second;
                   // Indicate that controller values and clone parts were handled.
-                  addUndo(UndoOp(UndoOp::AddEvent, event, part, true, true));
-                  
-                  if(part->events()->find(event) == part->events()->end())
-                    part->addEvent(event);
-                  
-                  // Add the event to the part's port controller values, and do all clone parts.
-                  addPortCtrlEvents(event, part, true);
-                  }
+                  operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, true, true));
             }
       }
+      for (ciEvent i = s; i != e; ++i) {
+            Event event = i->second.clone();
+            event.setTick(event.tick() - partTick);
+            // Indicate that controller values and clone parts were handled.
+            operations.push_back(UndoOp(UndoOp::AddEvent, event, part, true, true));
+      }
+      
+      applyOperationGroup(operations,false); // don't do undo, startUndo must have been called from outside.
+}
 
 //---------------------------------------------------------
 //   findTrack
@@ -1415,23 +1249,6 @@ void Song::updatePos()
       }
 
 //---------------------------------------------------------
-//   setChannelMute
-//    mute all midi tracks associated with channel
-//---------------------------------------------------------
-
-void Song::setChannelMute(int channel, bool val)
-      {
-      for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-            MidiTrack* track = dynamic_cast<MidiTrack*>(*i);
-            if (track == 0)
-                  continue;
-            if (track->outChannel() == channel)
-                  track->setMute(val);
-            }
-      emit songChanged(SC_MUTE);
-      }
-
-//---------------------------------------------------------
 //   len
 //---------------------------------------------------------
 
@@ -1803,10 +1620,17 @@ void Song::endMsgCmd()
 void Song::undo()
       {
       updateFlags = 0;
-      if (doUndo1())
+      
+      Undo& opGroup = undoList->back();
+      
+      if (opGroup.empty())
             return;
-      MusEGlobal::audio->msgUndo();
-      doUndo3();
+      
+      MusEGlobal::audio->msgRevertOperationGroup(opGroup);
+      
+      redoList->push_back(opGroup);
+      undoList->pop_back();
+      
       MusEGlobal::redoAction->setEnabled(true);
       MusEGlobal::undoAction->setEnabled(!undoList->empty());
       setUndoRedoText();
@@ -1815,6 +1639,7 @@ void Song::undo()
         MusEGlobal::audio->msgUpdateSoloStates();
 
       emit songChanged(updateFlags);
+      emit sigDirty();
       }
 
 //---------------------------------------------------------
@@ -1824,10 +1649,17 @@ void Song::undo()
 void Song::redo()
       {
       updateFlags = 0;
-      if (doRedo1())
+
+      Undo& opGroup = redoList->back();
+      
+      if (opGroup.empty())
             return;
-      MusEGlobal::audio->msgRedo();
-      doRedo3();
+      
+      MusEGlobal::audio->msgExecuteOperationGroup(opGroup);
+      
+      undoList->push_back(opGroup);
+      redoList->pop_back();
+      
       MusEGlobal::undoAction->setEnabled(true);
       MusEGlobal::redoAction->setEnabled(!redoList->empty());
       setUndoRedoText();
@@ -1836,6 +1668,7 @@ void Song::redo()
         MusEGlobal::audio->msgUpdateSoloStates();
 
       emit songChanged(updateFlags);
+      emit sigDirty();
       }
 
 //---------------------------------------------------------
@@ -1849,78 +1682,14 @@ void Song::processMsg(AudioMsg* msg)
             case SEQM_UPDATE_SOLO_STATES:
                   updateSoloStates();
                   break;
-            case SEQM_UNDO:
-                  doUndo2();
+            case SEQM_EXECUTE_OPERATION_GROUP:
+                  executeOperationGroup2(*msg->operations);
                   break;
-            case SEQM_REDO:
-                  doRedo2();
-                  break;
-            case SEQM_MOVE_TRACK:
-                  if (msg->a > msg->b) {
-                        for (int i = msg->a; i > msg->b; --i) {
-                              swapTracks(i, i-1);
-                              }
-                        }
-                  else {
-                        for (int i = msg->a; i < msg->b; ++i) {
-                              swapTracks(i, i+1);
-                              }
-                        }
-                  updateFlags = SC_TRACK_MODIFIED;
-                  break;
-            case SEQM_ADD_EVENT:
-                  updateFlags = SC_EVENT_INSERTED;
-                  if (addEvent(msg->ev1, (MidiPart*)msg->p2)) {
-                        Event ev;
-                        addUndo(UndoOp(UndoOp::AddEvent, ev, msg->ev1, (Part*)msg->p2, msg->a, msg->b));
-                        }
-                  else
-                        updateFlags = 0;
-                  if(msg->a)
-                    addPortCtrlEvents(msg->ev1, (Part*)msg->p2, msg->b);
-                  break;
-            case SEQM_REMOVE_EVENT:
-                  {
-                  Event event = msg->ev1;
-                  MidiPart* part = (MidiPart*)msg->p2;
-                  if(msg->a)
-                    removePortCtrlEvents(event, part, msg->b);
-                  Event e;
-                  addUndo(UndoOp(UndoOp::DeleteEvent, e, event, (Part*)part, msg->a, msg->b));
-                  deleteEvent(event, part);
-                  updateFlags = SC_EVENT_REMOVED;
-                  }
-                  break;
-            case SEQM_CHANGE_EVENT:
-                  if(msg->a)
-                    removePortCtrlEvents(msg->ev1, (MidiPart*)msg->p3, msg->b);
-                  changeEvent(msg->ev1, msg->ev2, (MidiPart*)msg->p3);
-                  if(msg->a)
-                    addPortCtrlEvents(msg->ev2, (Part*)msg->p3, msg->b);
-                  addUndo(UndoOp(UndoOp::ModifyEvent, msg->ev2, msg->ev1, (Part*)msg->p3, msg->a, msg->b));
-                  updateFlags = SC_EVENT_MODIFIED;
+            case SEQM_REVERT_OPERATION_GROUP:
+                  revertOperationGroup2(*msg->operations);
                   break;
             
-            // Moved here from MidiSeq::processMsg   p4.0.34
-            case SEQM_ADD_TRACK:
-                  insertTrack2(msg->track, msg->ival);
-                  break;
-            case SEQM_REMOVE_TRACK:
-                  cmdRemoveTrack(msg->track);
-                  break;
-            //case SEQM_CHANGE_TRACK:     DELETETHIS 3
-            //      changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
-            //      break;
-            case SEQM_ADD_PART:
-                  cmdAddPart((Part*)msg->p1);
-                  break;
-            case SEQM_REMOVE_PART:
-                  cmdRemovePart((Part*)msg->p1);
-                  break;
-            case SEQM_CHANGE_PART:
-                  cmdChangePart((Part*)msg->p1, (Part*)msg->p2, msg->a, msg->b);
-                  break;
-            
+
             case SEQM_ADD_TEMPO:
                   addUndo(UndoOp(UndoOp::AddTempo, msg->a, msg->b));
                   MusEGlobal::tempomap.addTempo(msg->a, msg->b);
@@ -1971,56 +1740,6 @@ void Song::processMsg(AudioMsg* msg)
                   printf("unknown seq message %d\n", msg->id);
                   break;
             }
-      }
-
-//---------------------------------------------------------
-//   cmdAddPart
-//---------------------------------------------------------
-
-void Song::cmdAddPart(Part* part)
-      {
-      addPart(part);
-      addUndo(UndoOp(UndoOp::AddPart, part));
-      updateFlags = SC_PART_INSERTED;
-      }
-
-//---------------------------------------------------------
-//   cmdRemovePart
-//---------------------------------------------------------
-
-void Song::cmdRemovePart(Part* part)
-      {
-      removePart(part);
-      addUndo(UndoOp(UndoOp::DeletePart, part));
-      part->events()->incARef(-1);
-      unchainClone(part);
-      updateFlags = SC_PART_REMOVED;
-      }
-
-//---------------------------------------------------------
-//   cmdChangePart
-//---------------------------------------------------------
-
-void Song::cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones)
-      {
-      if(doCtrls)
-        removePortCtrlEvents(oldPart, doClones);
-      
-      changePart(oldPart, newPart);
-      
-      addUndo(UndoOp(UndoOp::ModifyPart, oldPart, newPart, doCtrls, doClones));
-      
-      // Changed by T356. Do not decrement ref count if the new part is a clone of the old part, since the event list
-      //  will still be active.
-      if(oldPart->cevents() != newPart->cevents())
-        oldPart->events()->incARef(-1);
-      
-      replaceClone(oldPart, newPart);
-
-      if(doCtrls)
-        addPortCtrlEvents(newPart, doClones);
-      
-      updateFlags = SC_PART_MODIFIED;
       }
 
 //---------------------------------------------------------
@@ -2398,7 +2117,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
 
       unsigned tick  = event.tick();
       PartList* pl   = mt->parts();
-      MidiPart* part = 0;
+      const MidiPart* part = 0;
       iPart ip;
       for (ip = pl->begin(); ip != pl->end(); ++ip) {
             part = (MidiPart*)(ip->second);
@@ -2410,7 +2129,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
       updateFlags |= SC_EVENT_INSERTED;
       if (ip == pl->end()) {
             // create new part
-            part          = new MidiPart(mt);
+            MidiPart* part = new MidiPart(mt);
             int startTick = roundDownBar(tick);
             int endTick   = roundUpBar(tick + 1);
             part->setTick(startTick);
@@ -2428,23 +2147,21 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
       Event ev;
       if(event.type() == Controller)
       {
-        EventRange range = part->events()->equal_range(tick);
-        for(iEvent i = range.first; i != range.second; ++i) 
+        EventRange range = part->events().equal_range(tick);
+        for(ciEvent i = range.first; i != range.second; ++i) 
         {
           ev = i->second;
           if(ev.type() == Controller && ev.dataA() == event.dataA())
           {
             if(ev.dataB() == event.dataB()) // Don't bother if already set.
               return;
-            // Indicate do undo, and do port controller values and clone parts. 
-            MusEGlobal::audio->msgChangeEvent(ev, event, part, true, true, true);
+            MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyEvent,event,ev,part,true,true));
             return;
           }
         }
       }  
       
-      // Indicate do undo, and do port controller values and clone parts. 
-      MusEGlobal::audio->msgAddEvent(event, part, true, true, true);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent, event, part, true,true));
       }
 
 //---------------------------------------------------------
@@ -2720,8 +2437,8 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
     unsigned partEnd   = partStart + part->lenTick();
     if(tick >= partStart && tick < partEnd)
     {
-      EventRange range = part->events()->equal_range(tick - partStart);
-      for(iEvent i = range.first; i != range.second; ++i) 
+      EventRange range = part->events().equal_range(tick - partStart);
+      for(ciEvent i = range.first; i != range.second; ++i) 
       {
         ev = i->second;
         if(ev.type() == Controller)
@@ -3055,7 +2772,7 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
 void Song::insertTrack0(Track* track, int idx)
       {
       insertTrack1(track, idx);
-      insertTrack2(track, idx);  // MusEGlobal::audio->msgInsertTrack(track, idx, false); DELETETHIS or is this somehow explanatory?
+      insertTrack2(track, idx);  // the same as MusEGlobal::audio->msgInsertTrack(track, idx, false);
       insertTrack3(track, idx);
       }
 
@@ -3237,18 +2954,6 @@ void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning
 }
 
 //---------------------------------------------------------
-//   removeTrack0
-//---------------------------------------------------------
-
-void Song::removeTrack0(Track* track)
-      {
-      removeTrack1(track);
-      MusEGlobal::audio->msgRemoveTrack(track);
-      removeTrack3(track);
-      update(SC_TRACK_REMOVED);
-      }
-
-//---------------------------------------------------------
 //   removeTrack1
 //    non realtime part of removeTrack
 //---------------------------------------------------------
@@ -3301,12 +3006,12 @@ void Song::removeTrack2(Track* track)
             case Track::DRUM:
             case Track::NEW_DRUM:
                   removePortCtrlEvents(((MidiTrack*)track));
-                  unchainTrackParts(track, true);
+                  unchainTrackParts(track);
                   
                   _midis.erase(track);
                   break;
             case Track::WAVE:
-                  unchainTrackParts(track, true);
+                  unchainTrackParts(track);
                   
                   _waves.erase(track);
                   break;
@@ -3455,7 +3160,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             fprintf(fp, "BEATLEN %d\n", AL::sigmap.ticksBeat(0));
             fprintf(fp, "QUANTLEN %d\n", quant);
 
-            for (iEvent e = part->events()->begin(); e != part->events()->end(); e++) {
+            for (ciEvent e = part->events().begin(); e != part->events().end(); e++) {
                 Event ev = e->second;
 
                 if (ev.isNote())
@@ -3599,14 +3304,14 @@ QString Song::getScriptPath(int id, bool isdelivered)
       return path;
 }
 
-void Song::informAboutNewParts(const std::map< Part*, std::set<Part*> >& param)
+void Song::informAboutNewParts(const std::map< const Part*, std::set<const Part*> >& param)
 {
   emit newPartsCreated(param);
 }
 
-void Song::informAboutNewParts(Part* orig, Part* p1, Part* p2, Part* p3, Part* p4, Part* p5, Part* p6, Part* p7, Part* p8, Part* p9)
+void Song::informAboutNewParts(const Part* orig, const Part* p1, const Part* p2, const Part* p3, const Part* p4, const Part* p5, const Part* p6, const Part* p7, const Part* p8, const Part* p9)
 {
-  std::map< Part*, std::set<Part*> > temp;
+  std::map<const Part*, std::set<const Part*> > temp;
   
   temp[orig].insert(p1);
   temp[orig].insert(p2);
@@ -3617,7 +3322,7 @@ void Song::informAboutNewParts(Part* orig, Part* p1, Part* p2, Part* p3, Part* p
   temp[orig].insert(p7);
   temp[orig].insert(p8);
   temp[orig].insert(p9);
-  temp[orig].erase(static_cast<Part*>(NULL));
+  temp[orig].erase(static_cast<const Part*>(NULL));
   temp[orig].erase(orig);
   
   informAboutNewParts(temp);

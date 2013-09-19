@@ -77,7 +77,7 @@ void EventBase::dump(int n) const
 //   clone
 //---------------------------------------------------------
 
-Event Event::clone()
+Event Event::clone() const
       {
       return Event(ev->clone());
       }
@@ -145,6 +145,10 @@ Event& Event::operator=(const Event& e) {
 bool Event::operator==(const Event& e) const {
             return ev == e.ev;
             }
+bool Event::isSimilarTo(const Event& other) const
+{
+		return ev->isSimilarTo(*other.ev);
+}
 
 int Event::getRefCount() const    { return ev->getRefCount(); }
 bool Event::selected() const      { return ev->_selected; }
@@ -159,7 +163,7 @@ void Event::read(Xml& xml)
 
 void Event::write(int a, Xml& xml, const Pos& o, bool forceWavePaths) const { ev->write(a, xml, o, forceWavePaths); }
 void Event::dump(int n) const     { ev->dump(n); }
-Event Event::mid(unsigned a, unsigned b) { return Event(ev->mid(a, b)); }
+Event Event::mid(unsigned a, unsigned b) const { return Event(ev->mid(a, b)); }
 
 bool Event::isNote() const                   { return ev->isNote();        }
 bool Event::isNoteOff() const                { return ev->isNoteOff();     }

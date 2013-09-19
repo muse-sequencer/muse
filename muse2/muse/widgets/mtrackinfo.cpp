@@ -682,18 +682,11 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       if (channel != track->outChannel()) {
             ++_blockHeartbeatCount;
-            // Changed by T356.
-            //track->setOutChannel(channel);
             MusEGlobal::audio->msgIdle(true);
-            //audio->msgSetTrackOutChannel(track, channel);
             track->setOutChanAndUpdate(channel);
             MusEGlobal::audio->msgIdle(false);
             
-            // may result in adding/removing mixer strip:
-            //MusEGlobal::song->update(-1);
-            //MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
             MusEGlobal::audio->msgUpdateSoloStates();                   // p4.0.14
-            //MusEGlobal::song->update(SC_MIDI_TRACK_PROP | SC_ROUTE);  //
             MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
             --_blockHeartbeatCount;
             }
@@ -714,16 +707,11 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       if (port_num == track->outPort())
             return;
       ++_blockHeartbeatCount;
-      // Changed by T356.
-      //track->setOutPort(port_num);
       MusEGlobal::audio->msgIdle(true);
-      //audio->msgSetTrackOutPort(track, port_num);
       track->setOutPortAndUpdate(port_num);
       MusEGlobal::audio->msgIdle(false);
       
-      //MusEGlobal::song->update(SC_MIDI_TRACK_PROP);  
       MusEGlobal::audio->msgUpdateSoloStates();                   // p4.0.14
-      //MusEGlobal::song->update(SC_MIDI_TRACK_PROP | SC_ROUTE);  //
       MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
       --_blockHeartbeatCount;
       }

@@ -2,7 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //    $Id: functions.cpp,v 1.20.2.19 2011/05/05 20:10 flo93 Exp $
-//  (C) Copyright 2011 Florian Jung (flo93@sourceforge.net)
+//  (C) Copyright 2011,2013 Florian Jung (flo93@sourceforge.net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -71,9 +71,9 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id);
 
 
 
-set<Part*> partlist_to_set(PartList* pl)
+set<const Part*> partlist_to_set(PartList* pl)
 {
-	set<Part*> result;
+	set<const Part*> result;
 	
 	for (PartList::iterator it=pl->begin(); it!=pl->end(); it++)
 		result.insert(it->second);
@@ -81,16 +81,16 @@ set<Part*> partlist_to_set(PartList* pl)
 	return result;
 }
 
-set<Part*> part_to_set(Part* p)
+set<const Part*> part_to_set(const Part* p)
 {
-	set<Part*> result;
+	set<const Part*> result;
 	result.insert(p);
 	return result;
 }
 
-set<Part*> get_all_parts()
+set<const Part*> get_all_parts()
 {
-	set<Part*> result;
+	set<const Part*> result;
 	
 	TrackList* tracks=MusEGlobal::song->tracks();
 	for (TrackList::const_iterator t_it=tracks->begin(); t_it!=tracks->end(); t_it++)
@@ -103,9 +103,9 @@ set<Part*> get_all_parts()
 	return result;
 }
 
-set<Part*> get_all_selected_parts()
+set<const Part*> get_all_selected_parts()
 {
-	set<Part*> result;
+	set<const Part*> result;
 	
 	TrackList* tracks=MusEGlobal::song->tracks();
 	for (TrackList::const_iterator t_it=tracks->begin(); t_it!=tracks->end(); t_it++)
@@ -137,14 +137,14 @@ bool is_relevant(const Event& event, const Part* part, int range)
 }
 
 
-map<Event*, Part*> get_events(const set<Part*>& parts, int range)
+map<const Event*, const Part*> get_events(const set<const Part*>& parts, int range)
 {
-	map<Event*, Part*> events;
+	map<const Event*, const Part*> events;
 	
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
+	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
 			if (is_relevant(event->second, *part, range))
-				events.insert(pair<Event*, Part*>(&event->second, *part));
+				events.insert(pair<const Event*, const Part*>(&event->second, *part));
 	
 	return events;
 }
@@ -152,7 +152,7 @@ map<Event*, Part*> get_events(const set<Part*>& parts, int range)
 
 
 
-bool modify_notelen(const set<Part*>& parts)
+bool modify_notelen(const set<const Part*>& parts)
 {
 	if (!MusEGui::gatetime_dialog->exec())
 		return false;
@@ -162,7 +162,7 @@ bool modify_notelen(const set<Part*>& parts)
 	return true;
 }
 
-bool modify_velocity(const set<Part*>& parts)
+bool modify_velocity(const set<const Part*>& parts)
 {
 	if (!MusEGui::velocity_dialog->exec())
 		return false;
@@ -172,7 +172,7 @@ bool modify_velocity(const set<Part*>& parts)
 	return true;
 }
 
-bool quantize_notes(const set<Part*>& parts)
+bool quantize_notes(const set<const Part*>& parts)
 {
 	if (!MusEGui::quantize_dialog->exec())
 		return false;
@@ -185,7 +185,7 @@ bool quantize_notes(const set<Part*>& parts)
 	return true;
 }
 
-bool erase_notes(const set<Part*>& parts)
+bool erase_notes(const set<const Part*>& parts)
 {
 	if (!MusEGui::erase_dialog->exec())
 		return false;
@@ -196,7 +196,7 @@ bool erase_notes(const set<Part*>& parts)
 	return true;
 }
 
-bool delete_overlaps(const set<Part*>& parts)
+bool delete_overlaps(const set<const Part*>& parts)
 {
 	if (!MusEGui::del_overlaps_dialog->exec())
 		return false;
@@ -206,7 +206,7 @@ bool delete_overlaps(const set<Part*>& parts)
 	return true;
 }
 
-bool set_notelen(const set<Part*>& parts)
+bool set_notelen(const set<const Part*>& parts)
 {
 	if (!MusEGui::set_notelen_dialog->exec())
 		return false;
@@ -216,7 +216,7 @@ bool set_notelen(const set<Part*>& parts)
 	return true;
 }
 
-bool move_notes(const set<Part*>& parts)
+bool move_notes(const set<const Part*>& parts)
 {
 	if (!MusEGui::move_notes_dialog->exec())
 		return false;
@@ -226,7 +226,7 @@ bool move_notes(const set<Part*>& parts)
 	return true;
 }
 
-bool transpose_notes(const set<Part*>& parts)
+bool transpose_notes(const set<const Part*>& parts)
 {
 	if (!MusEGui::transpose_dialog->exec())
 		return false;
@@ -236,7 +236,7 @@ bool transpose_notes(const set<Part*>& parts)
 	return true;
 }
 
-bool crescendo(const set<Part*>& parts)
+bool crescendo(const set<const Part*>& parts)
 {
 	if (MusEGlobal::song->rpos() <= MusEGlobal::song->lpos())
 	{
@@ -252,7 +252,7 @@ bool crescendo(const set<Part*>& parts)
 	return true;
 }
 
-bool legato(const set<Part*>& parts)
+bool legato(const set<const Part*>& parts)
 {
 	if (!MusEGui::legato_dialog->exec())
 		return false;
@@ -269,7 +269,7 @@ bool modify_notelen()
 	if (!MusEGui::gatetime_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::gatetime_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -285,7 +285,7 @@ bool modify_velocity()
 	if (!MusEGui::velocity_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::velocity_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -301,7 +301,7 @@ bool quantize_notes()
 	if (!MusEGui::quantize_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -320,7 +320,7 @@ bool erase_notes()
 	if (!MusEGui::erase_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -337,7 +337,7 @@ bool delete_overlaps()
 	if (!MusEGui::del_overlaps_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::del_overlaps_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -353,7 +353,7 @@ bool set_notelen()
 	if (!MusEGui::set_notelen_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::set_notelen_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -369,7 +369,7 @@ bool move_notes()
 	if (!MusEGui::move_notes_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::move_notes_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -385,7 +385,7 @@ bool transpose_notes()
 	if (!MusEGui::transpose_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::transpose_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -407,7 +407,7 @@ bool crescendo()
 	if (!MusEGui::crescendo_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::crescendo_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -423,7 +423,7 @@ bool legato()
 	if (!MusEGui::legato_dialog->exec())
 		return false;
 		
-	set<Part*> parts;
+	set<const Part*> parts;
 	if (MusEGui::legato_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
@@ -439,17 +439,17 @@ bool legato()
 
 
 
-bool modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
+bool modify_velocity(const set<const Part*>& parts, int range, int rate, int offset)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
 	
 	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
-		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event& event=*(it->first);
-			Part* part=it->second;
+			const Event& event=*(it->first);
+			const Part* part=it->second;
 			
 			int velo = event.velo();
 
@@ -475,17 +475,17 @@ bool modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 		return false;
 }
 
-bool modify_off_velocity(const set<Part*>& parts, int range, int rate, int offset)
+bool modify_off_velocity(const set<const Part*>& parts, int range, int rate, int offset)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
 	
 	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
-		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event& event=*(it->first);
-			Part* part=it->second;
+			const Event& event=*(it->first);
+			const Part* part=it->second;
 			
 			int velo = event.veloOff();
 
@@ -511,18 +511,18 @@ bool modify_off_velocity(const set<Part*>& parts, int range, int rate, int offse
 		return false;
 }
 
-bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
+bool modify_notelen(const set<const Part*>& parts, int range, int rate, int offset)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
-	map<Part*, int> partlen;
+	map<const Part*, int> partlen;
 	
 	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
-		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event& event=*(it->first);
-			Part* part=it->second;
+			const Event& event=*(it->first);
+			const Part* part=it->second;
 
 			unsigned int len = event.lenTick(); //prevent compiler warning: comparison singed/unsigned
 
@@ -543,7 +543,7 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 			}
 		}
 		
-		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+		for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, MusECore::Pos::TICKS, operations);
 
 		return MusEGlobal::song->applyOperationGroup(operations);
@@ -552,7 +552,7 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 		return false;
 }
 
-bool set_notelen(const set<Part*>& parts, int range, int len)
+bool set_notelen(const set<const Part*>& parts, int range, int len)
 {
 	return modify_notelen(parts, range, 0, len);
 }
@@ -579,17 +579,17 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 		return tick_dest1;
 }
 
-bool quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_len, int strength, int swing, int threshold)
+bool quantize_notes(const set<const Part*>& parts, int range, int raster, bool quant_len, int strength, int swing, int threshold)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
 	
 	if (!events.empty())
 	{
-		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event& event=*(it->first);
-			Part* part=it->second;
+			const Event& event=*(it->first);
+			const Part* part=it->second;
 
 			unsigned begin_tick = event.tick() + part->tick();
 			int begin_diff = quantize_tick(begin_tick, raster, swing) - begin_tick;
@@ -625,17 +625,17 @@ bool quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_l
 		return false;
 }
 
-bool erase_notes(const set<Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
+bool erase_notes(const set<const Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
 	
 	if (!events.empty())
 	{
-		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event& event=*(it->first);
-			Part* part=it->second;
+			const Event& event=*(it->first);
+			const Part* part=it->second;
 
 			if ( (!velo_thres_used && !len_thres_used) ||
 			     (velo_thres_used && event.velo() < velo_threshold) ||
@@ -649,17 +649,17 @@ bool erase_notes(const set<Part*>& parts, int range, int velo_threshold, bool ve
 		return false;
 }
 
-bool transpose_notes(const set<Part*>& parts, int range, signed int halftonesteps)
+bool transpose_notes(const set<const Part*>& parts, int range, signed int halftonesteps)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
 	
 	if ( (!events.empty()) && (halftonesteps!=0) )
 	{
-		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event& event=*(it->first);
-			Part* part=it->second;
+			const Event& event=*(it->first);
+			const Part* part=it->second;
 
 			Event newEvent = event.clone();
 			int pitch = event.pitch()+halftonesteps;
@@ -675,9 +675,9 @@ bool transpose_notes(const set<Part*>& parts, int range, signed int halftonestep
 		return false;
 }
 
-bool crescendo(const set<Part*>& parts, int range, int start_val, int end_val, bool absolute)
+bool crescendo(const set<const Part*>& parts, int range, int start_val, int end_val, bool absolute)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
 	
 	int from=MusEGlobal::song->lpos();
@@ -685,10 +685,10 @@ bool crescendo(const set<Part*>& parts, int range, int start_val, int end_val, b
 	
 	if ( (!events.empty()) && (to>from) )
 	{
-		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event& event=*(it->first);
-			Part* part=it->second;
+			const Event& event=*(it->first);
+			const Part* part=it->second;
 			
 			unsigned tick = event.tick() + part->tick();
 			float curr_val= (float)start_val  +  (float)(end_val-start_val) * (tick-from) / (to-from);
@@ -713,18 +713,18 @@ bool crescendo(const set<Part*>& parts, int range, int start_val, int end_val, b
 		return false;
 }
 
-bool move_notes(const set<Part*>& parts, int range, signed int ticks)
+bool move_notes(const set<const Part*>& parts, int range, signed int ticks)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
-	map<Part*, int> partlen;
+	map<const Part*, int> partlen;
 	
 	if ( (!events.empty()) && (ticks!=0) )
 	{
-		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		for (map<const Event*, const Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event& event=*(it->first);
-			Part* part=it->second;
+			const Event& event=*(it->first);
+			const Part* part=it->second;
 			bool del=false;
 
 			Event newEvent = event.clone();
@@ -752,7 +752,7 @@ bool move_notes(const set<Part*>& parts, int range, signed int ticks)
 				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
 		}
 		
-		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+		for (map<const Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, MusECore::Pos::TICKS, operations);
 		
 		return MusEGlobal::song->applyOperationGroup(operations);
@@ -762,29 +762,29 @@ bool move_notes(const set<Part*>& parts, int range, signed int ticks)
 }
 
 
-bool delete_overlaps(const set<Part*>& parts, int range)
+bool delete_overlaps(const set<const Part*>& parts, int range)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
 	
-	set<Event*> deleted_events;
+	set<const Event*> deleted_events;
 	
 	if (!events.empty())
 	{
-		for (map<Event*, Part*>::iterator it1=events.begin(); it1!=events.end(); it1++)
+		for (map<const Event*, const Part*>::iterator it1=events.begin(); it1!=events.end(); it1++)
 		{
-			Event& event1=*(it1->first);
-			Part* part1=it1->second;
+			const Event& event1=*(it1->first);
+			const Part* part1=it1->second;
 			
 			// we may NOT optimize by letting it2 start at (it1 +1); this optimisation
 			// is only allowed when events was sorted by time. it is, however, sorted
 			// randomly by pointer.
-			for (map<Event*, Part*>::iterator it2=events.begin(); it2!=events.end(); it2++)
+			for (map<const Event*, const Part*>::iterator it2=events.begin(); it2!=events.end(); it2++)
 			{
-				Event& event2=*(it2->first);
-				Part* part2=it2->second;
+				const Event& event2=*(it2->first);
+				const Part* part2=it2->second;
 				
-				if ( (part1->events()==part2->events()) && // part1 and part2 are the same or are duplicates
+				if ( (part1->isCloneOf(part2)) &&          // part1 and part2 are the same or are duplicates
 				     (&event1 != &event2) &&               // and event1 and event2 aren't the same
 				     (deleted_events.find(&event2) == deleted_events.end()) ) //and event2 hasn't been deleted before
 				{
@@ -817,34 +817,34 @@ bool delete_overlaps(const set<Part*>& parts, int range)
 		return false;
 }
 
-bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
+bool legato(const set<const Part*>& parts, int range, int min_len, bool dont_shorten)
 {
-	map<Event*, Part*> events = get_events(parts, range);
+	map<const Event*, const Part*> events = get_events(parts, range);
 	Undo operations;
 	
 	if (min_len<=0) min_len=1;
 	
 	if (!events.empty())
 	{
-		for (map<Event*, Part*>::iterator it1=events.begin(); it1!=events.end(); it1++)
+		for (map<const Event*, const Part*>::iterator it1=events.begin(); it1!=events.end(); it1++)
 		{
-			Event& event1=*(it1->first);
-			Part* part1=it1->second;
+			const Event& event1=*(it1->first);
+			const Part* part1=it1->second;
 			
 			unsigned len=INT_MAX;
 			// we may NOT optimize by letting it2 start at (it1 +1); this optimisation
 			// is only allowed when events was sorted by time. it is, however, sorted
 			// randomly by pointer.
-			for (map<Event*, Part*>::iterator it2=events.begin(); it2!=events.end(); it2++)
+			for (map<const Event*, const Part*>::iterator it2=events.begin(); it2!=events.end(); it2++)
 			{
-				Event& event2=*(it2->first);
-				Part* part2=it2->second;
+				const Event& event2=*(it2->first);
+				const Part* part2=it2->second;
 				
 				bool relevant = (event2.tick() >= event1.tick() + min_len);
 				if (dont_shorten)
 					relevant = relevant && (event2.tick() >= event1.endTick());
 				
-				if ( (part1->events()==part2->events()) &&  // part1 and part2 are the same or are duplicates
+				if ( (part1->isCloneOf(part2)) &&           // part1 and part2 are the same or are duplicates
 				      relevant &&                           // they're not too near (respect min_len and dont_shorten)
 				     (event2.tick()-event1.tick() < len ) ) // that's the nearest relevant following note
 					len=event2.tick()-event1.tick();
@@ -869,7 +869,7 @@ bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 
 
 
-void copy_notes(const set<Part*>& parts, int range)
+void copy_notes(const set<const Part*>& parts, int range)
 {
 	QMimeData* drag = selected_events_to_mime(parts,range);
 
@@ -926,7 +926,7 @@ unsigned get_clipboard_len()
 	return get_groupedevents_len(s);
 }
 
-bool paste_notes(Part* paste_into_part)
+bool paste_notes(const Part* paste_into_part)
 {
 	unsigned temp_begin = AL::sigmap.raster1(MusEGlobal::song->cpos(),0);
 	unsigned temp_end = AL::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
@@ -943,7 +943,7 @@ bool paste_notes(Part* paste_into_part)
 	return true;
 }
 
-void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part, int amount, int raster)
+void paste_notes(int max_distance, bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster)
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);  // TODO CHECK Tim.
@@ -951,12 +951,12 @@ void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Pa
 }
 
 // if nothing is selected/relevant, this function returns NULL
-QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
+QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
 {
     unsigned start_tick = INT_MAX; //will be the tick of the first event or INT_MAX if no events are there
 
-    for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-        for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
+    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
             if (is_relevant(ev->second, *part, range))
                 if (ev->second.tick() < start_tick)
                     start_tick=ev->second.tick();
@@ -978,10 +978,10 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
     Xml xml(tmp);
     int level = 0;
 
-    for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+    for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
     {
         xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
-        for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
+        for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
             if (is_relevant(ev->second, *part, range))
                 ev->second.write(level, xml, -start_tick);
         xml.etag(--level, "eventlist");
@@ -993,7 +993,7 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 }
 
 // if nothing is selected/relevant, this function returns NULL
-QMimeData* parts_to_mime(const set<Part*>& parts)
+QMimeData* parts_to_mime(const set<const Part*>& parts)
 {
 	
 	//---------------------------------------------------
@@ -1012,7 +1012,7 @@ QMimeData* parts_to_mime(const set<Part*>& parts)
 	
     bool midi=false;
     bool wave=false;
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 	{
         if ((*part)->track()->type() == MusECore::Track::MIDI)
             midi=true;
@@ -1102,11 +1102,11 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id) // true on s
 	}
 }
 
-void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part, int amount, int raster)
+void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part, bool never_new_part, const Part* paste_into_part, int amount, int raster)
 {
 	Undo operations;
-	map<Part*, unsigned> expand_map;
-	map<Part*, set<Part*> > new_part_map;
+	map<const Part*, unsigned> expand_map;
+	map<const Part*, set<const Part*> > new_part_map;
 	
 	QByteArray pt_= pt.toLatin1();
 	Xml xml(pt_.constData());
@@ -1128,9 +1128,9 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 		
 					if (read_eventlist_and_part(xml, &el, &part_id))
 					{
-						Part* dest_part;
+						const Part* dest_part;
 						Track* dest_track;
-						Part* old_dest_part;
+						const Part* old_dest_part;
 						
 						if (paste_into_part == NULL)
 							dest_part = partFromSerialNumber(part_id);
@@ -1157,13 +1157,12 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 								
 								if (create_new_part)
 								{
-									dest_part = dest_track->newPart();
-									dest_part->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-																										// so we must decrement it first :/
-									dest_part->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
+									Part* newpart = dest_track->newPart();
+									newpart->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
 
 									new_part_map[old_dest_part].insert(dest_part);
 									operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
+									dest_part = newpart;
 								}
 								
 								for (iEvent i = el.begin(); i != el.end(); ++i)
@@ -1218,7 +1217,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 	
 	out_of_paste_at_for:
 	
-	for (map<Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
+	for (map<const Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
 		if (it->second != it->first->lenTick())
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, MusECore::Pos::TICKS, operations);
 
@@ -1228,61 +1227,76 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 	MusEGlobal::song->update(SC_SELECTION);
 }
 
-void select_all(const std::set<Part*>& parts)
+void select_all(const set<const Part*>& parts)
 {
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+	Undo operations;
+	operations.combobreaker=true;
+	
+	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
-			Event& event=ev_it->second;
-			event.setSelected(true);
+			const Event& event=ev_it->second;
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, true, event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
-void select_none(const std::set<Part*>& parts)
+void select_none(const set<const Part*>& parts)
 {
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+	Undo operations;
+	operations.combobreaker=true;
+	
+	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
-			Event& event=ev_it->second;
-			event.setSelected(false);
+			const Event& event=ev_it->second;
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, false, event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
-void select_invert(const std::set<Part*>& parts)
+void select_invert(const set<const Part*>& parts)
 {
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+	Undo operations;
+	operations.combobreaker=true;
+	
+	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
-			Event& event=ev_it->second;
-			event.setSelected(!event.selected());
+			const Event& event=ev_it->second;
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, !event.selected(), event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
-void select_in_loop(const std::set<Part*>& parts)
+void select_in_loop(const set<const Part*>& parts)
 {
 	select_none(parts);
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+	Undo operations;
+	operations.combobreaker=true;
+	
+	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
-			Event& event=ev_it->second;
-			event.setSelected((event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()));
+			const Event& event=ev_it->second;
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, (event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
-void select_not_in_loop(const std::set<Part*>& parts)
+void select_not_in_loop(const set<const Part*>& parts)
 {
 	select_none(parts);
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+	Undo operations;
+	operations.combobreaker=true;
+	
+	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
-			Event& event=ev_it->second;
-			event.setSelected(!(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()));
+			const Event& event=ev_it->second;
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, !(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
 		}
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 
@@ -1299,10 +1313,9 @@ void shrink_parts(int raster)
 		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
 			if (part->second->selected())
 			{
-				EventList* events=part->second->events();
 				unsigned len=0;
 				
-				for (iEvent ev=events->begin(); ev!=events->end(); ev++)
+				for (ciEvent ev=part->second->events().begin(); ev!=part->second->events().end(); ev++)
 					if (ev->second.endTick() > len)
 						len=ev->second.endTick();
 				
@@ -1310,18 +1323,14 @@ void shrink_parts(int raster)
 				if (len<min_len) len=min_len;
 				
 				if (len < part->second->lenTick())
-				{
-					MidiPart* new_part = new MidiPart(*(MidiPart*)part->second);
-					new_part->setLenTick(len);
-					operations.push_back(UndoOp(UndoOp::ModifyPart, part->second, new_part, true, false));
-				}
+					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenTick(), len, true, false));
 			}
 	
 	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 
-void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Pos::TType lentype, Undo& operations)
+void schedule_resize_all_same_len_clone_parts(const Part* part, unsigned new_len, Pos::TType lentype, Undo& operations)
 {
 	QSet<const Part*> already_done;
 	
@@ -1329,39 +1338,26 @@ void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Pos:
 		printf("warning: part length type mismatch in schedule_resize_all_same_len_clone_parts. it should work, though.\n");
 	
 	for (Undo::iterator op_it=operations.begin(); op_it!=operations.end();op_it++)
-		if (op_it->type==UndoOp::ModifyPart || op_it->type==UndoOp::DeletePart)
-			already_done.insert(op_it->nPart);
+		if (op_it->type==UndoOp::DeletePart)
+			already_done.insert(op_it->part);
 			
 	unsigned old_len_orig = (part->lenType() == Pos::FRAMES) ? part->lenFrame() : part->lenTick();
 	unsigned old_len = (lentype == Pos::FRAMES) ? part->lenFrame() : part->lenTick();
 	
 	if (old_len!=new_len)
 	{
-		Part* part_it=part;
+		const Part* part_it=part;
 		do
 		{
-			unsigned this_len = (part_it->lenType() == Pos::FRAMES) ? part_it->lenFrame() : part_it->lenTick();
-			
-			if (this_len==old_len_orig && !already_done.contains(part_it))
+			if (part->type() == Pos::FRAMES)
 			{
-				if (part->type() == Pos::FRAMES)
-				{
-					WavePart* new_part = new WavePart(*(WavePart*)part_it);
-					if (lentype==Pos::FRAMES)
-						new_part->setLenFrame(new_len);
-					else
-						new_part->setLenTick(new_len);
-					operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
-				}
-				else
-				{
-					MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);
-					if (lentype==Pos::FRAMES)
-						new_part->setLenFrame(new_len);
-					else
-						new_part->setLenTick(new_len);
-					operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
-				}
+			  if (part_it->lenFrame()==old_len && !already_done.contains(part_it))
+				  operations.push_back(UndoOp(UndoOp::ModifyPartLengthFrames, part_it, part_it->lenFrame(), new_len, true, false)); // FIXME FINDMICH frames suck :(
+			}
+			else
+			if (part_it->lenTick()==old_len && !already_done.contains(part_it))
+			{
+				operations.push_back(UndoOp(UndoOp::ModifyPartLength, part_it, part_it->lenTick(), new_len, true, false));
 			}
 			part_it=part_it->nextClone();
 		} while (part_it!=part);
@@ -1381,10 +1377,9 @@ void expand_parts(int raster)
 		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
 			if (part->second->selected())
 			{
-				EventList* events=part->second->events();
 				unsigned len=part->second->lenTick();
 				
-				for (iEvent ev=events->begin(); ev!=events->end(); ev++)
+				for (ciEvent ev=part->second->events().begin(); ev!=part->second->events().end(); ev++)
 					if (ev->second.endTick() > len)
 						len=ev->second.endTick();
 
@@ -1392,11 +1387,7 @@ void expand_parts(int raster)
 				if (len<min_len) len=min_len;
 								
 				if (len > part->second->lenTick())
-				{
-					MidiPart* new_part = new MidiPart(*(MidiPart*)part->second);
-					new_part->setLenTick(len);
-					operations.push_back(UndoOp(UndoOp::ModifyPart, part->second, new_part, true, false));
-				}
+					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenTick(), len, true, false));
 			}
 			
 	MusEGlobal::song->applyOperationGroup(operations);
@@ -1405,7 +1396,7 @@ void expand_parts(int raster)
 void clean_parts()
 {
 	Undo operations;
-	set<Part*> already_processed;
+	set<const Part*> already_processed;
 	
 	TrackList* tracks = MusEGlobal::song->tracks();
 	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
@@ -1417,7 +1408,7 @@ void clean_parts()
 				// multiple clones)
 				unsigned len=0;
 				
-				Part* part_it=part->second;
+				const Part* part_it=part->second;
 				do
 				{
 					if (part_it->lenTick() > len)
@@ -1430,8 +1421,7 @@ void clean_parts()
 				
 				// erase all events exceeding the longest clone of this part
 				// (i.e., erase all hidden events) or shorten them
-				EventList* el = part->second->events();
-				for (iEvent ev=el->begin(); ev!=el->end(); ev++)
+				for (ciEvent ev=part->second->events().begin(); ev!=part->second->events().end(); ev++)
 					if (ev->second.tick() >= len)
 						operations.push_back(UndoOp(UndoOp::DeleteEvent, ev->second, part->second, true, true));
 					else if (ev->second.endTick() > len)
@@ -1446,33 +1436,67 @@ void clean_parts()
 	MusEGlobal::song->applyOperationGroup(operations);
 }
 
+
+bool merge_with_next_part(const Part* oPart)
+{
+	const Track* track = oPart->track();
+	
+	if(track->type() != Track::WAVE && !track->isMidiTrack())
+		return false;
+	
+	const PartList* pl   = track->cparts();
+	const Part* nextPart = 0;
+
+	for (ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+	{
+			if (ip->second == oPart)
+			{
+				++ip;
+				if (ip == pl->end())
+						return false;
+				nextPart = ip->second;
+				break;
+				}
+			}
+	
+	if (nextPart)
+	{
+		set<const Part*> parts;
+		parts.insert(oPart);
+		parts.insert(nextPart);
+		return merge_parts(parts);
+	}
+	else
+		return false;
+}
+
 bool merge_selected_parts()
 {
-	set<Part*> temp = get_all_selected_parts();
+	set<const Part*> temp = get_all_selected_parts();
 	return merge_parts(temp);
 }
 
-bool merge_parts(const set<Part*>& parts)
+bool merge_parts(const set<const Part*>& parts)
 {
-	set<Track*> tracks;
-	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+	set<const Track*> tracks;
+	for (set<const Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
 		tracks.insert( (*it)->track() );
 
 	Undo operations;
 	
 	// process tracks separately
-	for (set<Track*>::iterator t_it=tracks.begin(); t_it!=tracks.end(); t_it++)
+	for (set<const Track*>::iterator t_it=tracks.begin(); t_it!=tracks.end(); t_it++)
 	{
-		Track* track=*t_it;
+		const Track* track=*t_it;
 
 		unsigned begin=INT_MAX, end=0;
-		Part* first_part=NULL;
+		const Part* first_part=NULL;
 		
 		// find begin of the first and end of the last part
-		for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+		for (set<const Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
 			if ((*it)->track()==track)
 			{
-				Part* p=*it;
+				const Part* p=*it;
 				if (p->tick() < begin)
 				{
 					begin=p->tick();
@@ -1490,30 +1514,25 @@ bool merge_parts(const set<Part*>& parts)
 		}
 		
 		// create and prepare the new part
-		Part* new_part = track->newPart(first_part); 
+		Part* new_part = first_part->duplicateEmpty();
 		new_part->setTick(begin);
 		new_part->setLenTick(end-begin);
 		
-		EventList* new_el = new_part->events();
-		new_el->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-		                     // so we must decrement it first :/
-		new_el->clear();
-		
 		// copy all events from the source parts into the new part
-		for (set<Part*>::iterator p_it=parts.begin(); p_it!=parts.end(); p_it++)
+		for (set<const Part*>::iterator p_it=parts.begin(); p_it!=parts.end(); p_it++)
 			if ((*p_it)->track()==track)
 			{
-				EventList* old_el= (*p_it)->events();
-				for (iEvent ev_it=old_el->begin(); ev_it!=old_el->end(); ev_it++)
+				const EventList& old_el= (*p_it)->events();
+				for (ciEvent ev_it=old_el.begin(); ev_it!=old_el.end(); ev_it++)
 				{
-					Event new_event=ev_it->second;
+					Event new_event=ev_it->second.clone();
 					new_event.setTick( new_event.tick() + (*p_it)->tick() - new_part->tick() );
-					new_el->add(new_event);
+					new_part->nonconst_events().add(new_event);
 				}
 			}
 		
 		// delete all the source parts
-		for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+		for (set<const Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
 			if ((*it)->track()==track)
 				operations.push_back( UndoOp(UndoOp::DeletePart, *it) );
 		// and add the new one
@@ -1521,6 +1540,51 @@ bool merge_parts(const set<Part*>& parts)
 	}
 	
 	return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool split_part(const Part* part, int tick)
+{
+	int l1 = tick - part->tick();
+	int l2 = part->lenTick() - l1;
+	if (l1 <= 0 || l2 <= 0)
+			return false;
+	Part* p1;
+	Part* p2;
+	part->splitPart(tick, p1, p2);
+	
+	MusEGlobal::song->informAboutNewParts(part, p1);
+	MusEGlobal::song->informAboutNewParts(part, p2);
+
+	Undo operations;
+	operations.push_back(UndoOp(UndoOp::DeletePart, part));
+	operations.push_back(UndoOp(UndoOp::AddPart, p1));
+	operations.push_back(UndoOp(UndoOp::AddPart, p2));
+	return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool delete_selected_parts()
+{
+	Undo operations;
+	bool partSelected = false;
+
+	TrackList* tl = MusEGlobal::song->tracks();
+
+	for (iTrack it = tl->begin(); it != tl->end(); ++it)
+	{
+		PartList* pl = (*it)->parts();
+		for (iPart ip = pl->begin(); ip != pl->end(); ++ip)
+		{
+				if (ip->second->selected())
+				{
+					operations.push_back(UndoOp(UndoOp::DeletePart,ip->second));
+					partSelected = true;
+					}
+				}
+		}
+	
+	MusEGlobal::song->applyOperationGroup(operations);
+	
+	return partSelected;
 }
 
 } // namespace MusECore

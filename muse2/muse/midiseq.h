@@ -78,7 +78,6 @@ class MidiSeq : public Thread {
       void processTimerTick();
       void processSeek();
       void processStop();
-      void processMidiClock();
       virtual void processMsg(const ThreadMsg*);
       void updatePollFd();
 

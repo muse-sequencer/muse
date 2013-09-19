@@ -47,16 +47,6 @@ WaveEventBase::WaveEventBase(EventType t)
       _spos = 0;
       }
 
-      
-WaveEventBase::WaveEventBase(const WaveEventBase& src) : EventBase(src)
-{
-	this->_name = src._name;
-	this->stretch_mode = src.stretch_mode;
-	this->_spos = src._spos;
-	this->deleted = src.deleted;
-	
-	setAudioFile(src.filename); // this will set filename, audiostream and streamPosition
-}
 
 WaveEventBase::~WaveEventBase()
 {
@@ -68,16 +58,25 @@ WaveEventBase::~WaveEventBase()
 //   WaveEventBase::clone
 //---------------------------------------------------------
 
-EventBase* WaveEventBase::clone() 
+EventBase* WaveEventBase::clone() const
 { 
   return new WaveEventBase(*this); 
+}
+
+bool WaveEventBase::isSimilarTo(const EventBase& other_) const
+{
+	const WaveEventBase* other = dynamic_cast<const WaveEventBase*>(&other_);
+	if (other==NULL) // dynamic cast hsa failed: "other_" is not of type WaveEventBase.
+		return false;
+	
+	return filename==other->filename && _spos==other->_spos && this->PosLen::operator==(*other);
 }
 
 //---------------------------------------------------------
 //   WaveEvent::mid
 //---------------------------------------------------------
 
-EventBase* WaveEventBase::mid(unsigned b, unsigned e)
+EventBase* WaveEventBase::mid(unsigned b, unsigned e) const
       {
       WaveEventBase* ev = new WaveEventBase(*this);
       unsigned fr = frame();
@@ -264,11 +263,11 @@ bool WaveEventBase::needCopyOnWrite()
 		PartList* pl = (*it)->parts();
 		for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
 		{
-			EventList* el = ip->second->events();
+			const EventList& el = ip->second->events();
 			// We are looking for active independent non-clone parts
-			if(el->arefCount() > 1) // TODO i think this is wrong. (flo)
+			if(ip->second->hasClones()) // TODO i think this is wrong. (flo)
 				continue;
-			for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+			for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
 			{
 				if(ie->second.type() != Wave)
 					continue;

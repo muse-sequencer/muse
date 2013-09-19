@@ -56,49 +56,6 @@ MusECore::CloneList cloneList;
 namespace MusECore {
 
 
-/* DELETETHIS 42
-//---------------------------------------------------------
-//   updateCloneList
-//---------------------------------------------------------
-
-void updateCloneList(Part* oPart, Part* nPart)
-{
-  for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
-  {
-    if(i->cp == oPart) 
-    {
-      i->cp = nPart;
-      break;
-    }
-  }
-}
-
-void updateCloneList(PartList* oParts, PartList* nParts)
-{
-  for(iPart ip = oParts->begin(); ip != oParts->end(); ++ip) 
-  {
-    for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
-    {
-      if(i->cp == oPart) 
-      {
-        i->cp = nPart;
-        break;
-      }
-    }  
-  }
-}
-
-//---------------------------------------------------------
-//   clearClipboardAndCloneList
-//---------------------------------------------------------
-
-void clearClipboardAndCloneList()
-{
-  //QApplication::clipboard()->clear(QClipboard::Clipboard);
-  MusEGlobal::cloneList.clear();
-}
-*/
-
 //---------------------------------------------------------
 //   NKey::write
 //---------------------------------------------------------
@@ -167,10 +124,10 @@ void Scale::read(Xml& xml)
       }
 
 //---------------------------------------------------------
-//   readXmlPart
+//   Part::readFromXml
 //---------------------------------------------------------
 
-Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
+Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
       {
       int id = -1;
       Part* npart = 0;
@@ -197,7 +154,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                             {
                               if(i->id == id) // Is a matching part found in the clone list?
                               {
-                                // This makes a clone, chains the part, and increases ref counts.
+                                // Create a clone. It must still be added later in a operationgroup
                                 npart = track->newPart((Part*)i->cp, true);
                                 break;
                               }
@@ -242,7 +199,7 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 if(!doClone && !isclone)
                                   break;
                                   
-                                // This makes a clone, chains the part, and increases ref counts.
+                                // Create a clone. It must still be added later in a operationgroup
                                 npart = track->newPart((Part*)i->cp, true);
                                 break;
                               }
@@ -340,14 +297,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 e.move( -npart->tick() );
                                 int tick = e.tick();  
                                 
-                                // DELETETHIS 7
-                                // Do not discard events belonging to clone parts,
-                                //  at least not yet. A later clone might have a longer, 
-                                //  fully accommodating part length!
-                                //if ((tick < 0) || (tick >= (int) lenTick())) {
-                                //if ((tick < 0) || ( id == -1 && !clone && (tick >= (int)lenTick()) )) 
-                                // No way to tell at the moment whether there will be clones referencing this...
-                                // No choice but to accept all events past 0.
                                 if(tick < 0) 
                                 {
                                   printf("readClone: warning: event at tick:%d not in part:%s, discarded\n",
@@ -373,25 +322,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                         else if (tag == "cloneId")
                         {
                           id = xml.s2().toInt();
-                          //if(id != -1) DELETETHIS 19
-                          //{
-                          //  for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
-                          //  {
-                              // Is a matching part found in the clone list?
-                          //    if(i->id == id) 
-                          //    {
-                                // If it's a regular paste (not paste clone), and the original part is
-                                //  not a clone, defer so that a new copy is created in TagStart above.
-                                //if(!doClone && i->cp->cevents()->arefCount() <= 1)
-                                //if(!doClone && !isclone)
-                                //  break;
-                                  
-                                // This makes a clone, chains the part, and increases ref counts.
-                          //      npart = track->newPart((Part*)i->cp, true);
-                          //      break;
-                          //    }
-                          //  }
-                          //}  
                         }      
                         else if (tag == "uuid")
                         {
@@ -399,55 +329,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
                           if(!uuid_is_null(uuid))
                           {
                             uuidvalid = true;
-                            /* DELETETHIS 50
-                            for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
-                            {
-                              // Is a matching part found in the clone list?
-                              if(uuid_compare(uuid, i->uuid) == 0) 
-                              {
-                                Track* cpt = i->cp->track();
-                                // If we want to paste to the given track...
-                                if(toTrack)
-                                {
-                                  // If the given track type is not the same as the part's 
-                                  //  original track type, we can't continue. Just return.
-                                  if(!track || cpt->type() != track->type())
-                                  {
-                                    xml.skip("part");
-                                    return 0;
-                                  }  
-                                }
-                                else
-                                // ...else we want to paste to the part's original track.
-                                {
-                                  // Make sure the track exists (has not been deleted).
-                                  if((cpt->isMidiTrack() && MusEGlobal::song->midis()->find(cpt) != MusEGlobal::song->midis()->end()) || 
-                                     (cpt->type() == Track::WAVE && MusEGlobal::song->waves()->find(cpt) != MusEGlobal::song->waves()->end()))
-                                    track = cpt;   
-                                  else
-                                  // Track was not found. Try pasting to the given track, as above...
-                                  {
-                                    if(!track || cpt->type() != track->type())
-                                    {
-                                      // No luck. Just return.
-                                      xml.skip("part");
-                                      return 0;
-                                    }  
-                                  }
-                                }
-                                
-                                // If it's a regular paste (not paste clone), and the original part is
-                                //  not a clone, defer so that a new copy is created in TagStart above.
-                                //if(!doClone && i->cp->cevents()->arefCount() <= 1)
-                                if(!doClone && !isclone)
-                                  break;
-                                  
-                                // This makes a clone, chains the part, and increases ref counts.
-                                npart = track->newPart((Part*)i->cp, true);
-                                break;
-                              }
-                            }
-                            */  
                           }
                         }      
                         else if(tag == "isclone")        
@@ -471,7 +352,6 @@ Part* readXmlPart(Xml& xml, Track* track, bool doClone, bool toTrack)
 
 void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       {
-      const EventList* el = cevents();
       int id              = -1;
       uuid_t uuid; 
       uuid_clear(uuid);
@@ -482,7 +362,7 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       {
         for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
         {
-          if(i->cp->cevents() == el) 
+          if(i->cp->isCloneOf(this)) 
           {
             uuid_copy(uuid, i->uuid);
             dumpEvents = false;
@@ -498,11 +378,11 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       }  
       else
       {
-        if (el->arefCount() > 1) 
+        if (this->hasClones()) 
         {
           for (iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
           {
-            if (i->cp->cevents() == el) 
+            if (i->cp->isCloneOf(this)) 
             {
               id = i->id;
               dumpEvents = false;
@@ -531,7 +411,7 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
         else  
           xml.nput(level, "<part uuid=\"%s\"", sid);
         
-        if(el->arefCount() > 1)
+        if(hasClones())
           xml.nput(" isclone=\"1\"");
         xml.put(">");
         level++;  
@@ -552,7 +432,7 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       if (_mute)
             xml.intTag(level, "mute", _mute);
       if (dumpEvents) {
-            for (ciEvent e = el->begin(); e != el->end(); ++e)
+            for (ciEvent e = events().begin(); e != events().end(); ++e)
                   e->second.write(level, xml, *this, forceWavePaths);
             }
       xml.etag(level, "part");

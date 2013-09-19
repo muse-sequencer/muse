@@ -85,7 +85,7 @@ class MidiEditor : public TopWin  {
       void genPartlist();
 
    private slots:
-      void addNewParts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
+      void addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
 
    public slots:
       void songChanged(MusECore::SongChangedFlags_t type);

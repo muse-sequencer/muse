@@ -198,7 +198,7 @@ QString nameSysex(unsigned int len, const unsigned char* buf)
 //      generally: how to handle incomplete messages
 //---------------------------------------------------------
 
-void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
+void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
    int div, bool addSysexMeta, bool doLoops)
       {
       int hbank    = 0xff;
@@ -211,7 +211,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
 
       EventList mel;
 
-      for (iMPEvent i = el->begin(); i != el->end(); ++i) {
+      for (iMPEvent i = el.begin(); i != el.end(); ++i) {
             MidiPlayEvent ev = *i;
             if (!addSysexMeta && (ev.type() == ME_SYSEX || ev.type() == ME_META))
                   continue;
@@ -305,7 +305,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     iMPEvent ii = i;
                                     ++ii;
                                     bool found = false;
-                                    for (; ii != el->end(); ++ii) {
+                                    for (; ii != el.end(); ++ii) {
                                           MidiPlayEvent ev = *ii;
                                           if (ev.type() == ME_CONTROLLER) {
                                                 if (ev.dataA() == CTRL_LDATA) {
@@ -471,7 +471,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                   e.setTick(tick);
                   mel.add(e);
                   }
-            }  // i != el->end()
+            }  // i != el.end()
 
 
       //---------------------------------------------------
@@ -625,7 +625,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
             // dont play muted parts
             if (part->mute())
                   continue;
-            EventList* events = part->events();
+            const EventList& events = part->events();
             unsigned partTick = part->tick();
             unsigned partLen  = part->lenTick();
             int delay         = track->delay;
@@ -644,8 +644,8 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
             if(etick > partLen)
               continue;
               
-            iEvent ie   = events->lower_bound(stick);
-            iEvent iend = events->lower_bound(etick);
+            ciEvent ie   = events.lower_bound(stick);
+            ciEvent iend = events.lower_bound(etick);
 
             for (; ie != iend; ++ie) {
                   Event ev = ie->second;
@@ -1009,7 +1009,6 @@ void Audio::processMidi()
             //
             if (track->recordFlag()) 
             {
-                  MusECore::MPEventList* rl = track->mpevents();
                   MusECore::MidiPort* tport = &MusEGlobal::midiPorts[port];
                   RouteList* irl = track->inRoutes();
                   for(ciRoute r = irl->begin(); r != irl->end(); ++r)
@@ -1063,7 +1062,7 @@ void Audio::processMidi()
                                 event.setTime(MusEGlobal::tempomap.frame2tick(event.time()));
                                 
                               if(recording) 
-                                rl->add(event);
+                                track->mpevents.add(event);
                             }      
                             dev->setSysexFIFOProcessed(true);
                           }
@@ -1252,7 +1251,7 @@ void Audio::processMidi()
                                             drumRecEvent.setB(preVelo);
                                             drumRecEvent.setPort(port); //rec-event to current port
                                             drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
-                                            rl->add(drumRecEvent);
+                                            track->mpevents.add(drumRecEvent);
                                         }
                                         else
                                         {
@@ -1263,7 +1262,7 @@ void Audio::processMidi()
                                             //  different port. That must have been wrong - buildMidiEventList would ignore that. Tim.
                                             drumRecEvent.setPort(port);  //rec-event to current port
                                             drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
-                                            rl->add(drumRecEvent);
+                                            track->mpevents.add(drumRecEvent);
                                         }    
                                       }
                                       else 
@@ -1277,7 +1276,7 @@ void Audio::processMidi()
                                             recEvent.setPort(port);
                                             recEvent.setChannel(track->outChannel());
                                                   
-                                            rl->add(recEvent);
+                                            track->mpevents.add(recEvent);
                                       }
                                 }
                             }

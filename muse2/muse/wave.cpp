@@ -1118,7 +1118,10 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
 
       part->addEvent(event);
 
-      MusEGlobal::song->cmdAddPart(part);
+      // TODO FIXME that's ugly (flo)
+      addPart(part);
+      addUndo(UndoOp(UndoOp::AddPart, part));
+      updateFlags = SC_PART_INSERTED;
 
       if (MusEGlobal::song->len() < etick)
             MusEGlobal::song->setLen(etick);
