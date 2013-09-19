@@ -491,7 +491,7 @@ Part* Part::duplicate() const
 
 	// copy the eventlist; duplicate each Event(Ptr!).
 	for (MusECore::ciEvent i = _events.begin(); i != _events.end(); ++i)
-		dup->_events.add(i->second.clone());
+		dup->addEvent(i->second.clone());
 
 	return dup;
 }
@@ -723,11 +723,11 @@ void Part::splitPart(int tickpos, Part*& p1, Part*& p2) const
                   
                   if ((s2 > d1p1) && (s1 < d2p1)) {
                         Event si = event.mid(d1p1 - ps, d2p1 - ps);
-                        p1->_events.add(si);
+                        p1->addEvent(si);
                         }
                   if ((s2 > d1p2) && (s1 < d2p2)) {
                         Event si = event.mid(d1p2 - ps, d2p2 - ps);
-                        p2->_events.add(si);
+                        p2->addEvent(si);
                         }
                   }
             }
@@ -737,10 +737,10 @@ void Part::splitPart(int tickpos, Part*& p1, Part*& p2) const
                   int t = event.tick();
                   if (t >= l1) {
                         event.move(-l1);
-                        p2->_events.add(event);
+                        p2->addEvent(event);
                         }
                   else
-                        p1->_events.add(event);
+                        p1->addEvent(event);
                   }
             }
       }

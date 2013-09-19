@@ -484,7 +484,7 @@ void MusE::processTrack(MusECore::MidiTrack* track)
                   MusECore::Event& ev = i->second;
                   int ntick = ev.tick() - startTick;
                   ev.setTick(ntick);
-                  part->nonconst_events().add(ev);
+                  part->addEvent(ev);
                   }
             tevents.erase(r1, r2);
             }

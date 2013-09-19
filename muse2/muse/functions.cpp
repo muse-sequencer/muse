@@ -1523,7 +1523,7 @@ bool merge_parts(const set<const Part*>& parts)
 				{
 					Event new_event=ev_it->second.clone();
 					new_event.setTick( new_event.tick() + (*p_it)->tick() - new_part->tick() );
-					new_part->nonconst_events().add(new_event);
+					new_part->addEvent(new_event);
 				}
 			}
 		

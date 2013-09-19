@@ -490,7 +490,7 @@ bool Song::addEvent(Event& event, Part* part)
         return false;
       }
       
-      part->nonconst_events().add(event);
+      part->addEvent(event);
       return true;
       }
 
@@ -511,7 +511,7 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
       else
         part->nonconst_events().erase(i);
         
-      part->nonconst_events().add(newEvent);
+      part->addEvent(newEvent);
 }
 
 //---------------------------------------------------------
@@ -752,7 +752,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
                   // addEvent also adds port controller values. So does msgAddPart, below. Let msgAddPart handle them.
                   //addEvent(event, part);
                   if(newpart->events().find(event) == newpart->events().end())
-                    newpart->nonconst_events().add(event);
+                    newpart->addEvent(event);
                   }
             MusEGlobal::audio->msgAddPart(newpart);
             updateFlags |= SC_PART_INSERTED;
@@ -2121,7 +2121,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
             part->setLenTick(endTick - startTick);
             part->setName(mt->name());
             event.move(-startTick);
-            part->nonconst_events().add(event);
+            part->addEvent(event);
             MusEGlobal::audio->msgAddPart(part);
             return;
             }
@@ -2502,7 +2502,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
               part->setLenTick(endTick - startTick);
               part->setName(mt->name());
               e.setTick(tick - startTick);
-              part->nonconst_events().add(e);
+              part->addEvent(e);
               // Allow undo.
               MusEGlobal::audio->msgAddPart(part);
             }

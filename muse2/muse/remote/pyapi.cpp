@@ -331,7 +331,7 @@ bool addPyPartEventsToMusePart(MidiPart* npart, PyObject* part)
                   event.setC(data[2]);
                   event.setTick(etick);
                   event.setLenTick(elen);
-                  npart->nonconst_events().add(event);
+                  npart->addEvent(event);
                   }
             else
                   printf("Unhandled event type from python: %s\n", type.c_str());
@@ -409,7 +409,7 @@ PyObject* modifyPart(PyObject*, PyObject* part)
             if (event.type() == Note || event.type() == Controller) 
                   continue;
 
-            npart->nonconst_events()->add(event);
+            npart->addEvent(event);
             }
 
       addPyPartEventsToMusePart(npart, part);
