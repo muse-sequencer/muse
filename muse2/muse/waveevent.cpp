@@ -47,6 +47,17 @@ WaveEventBase::WaveEventBase(EventType t)
       _spos = 0;
       }
 
+      
+WaveEventBase::WaveEventBase(const WaveEventBase& src) : EventBase(src)
+{
+	this->_name = src._name;
+	this->stretch_mode = src.stretch_mode;
+	this->_spos = src._spos;
+	this->deleted = src.deleted;
+	audiostream=NULL;
+	
+	setAudioFile(src.filename); // this will set filename, audiostream and streamPosition
+}
 
 WaveEventBase::~WaveEventBase()
 {

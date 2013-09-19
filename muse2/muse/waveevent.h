@@ -59,6 +59,7 @@ class WaveEventBase : public EventBase {
       
    public:
       WaveEventBase(EventType t);
+      WaveEventBase(const WaveEventBase&);
       virtual ~WaveEventBase();
       
       virtual bool isSimilarTo(const EventBase& other) const;
