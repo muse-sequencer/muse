@@ -122,7 +122,7 @@ class Part : public PosLen {
       // Returns combination of HiddenEventsType enum.
       virtual int hasHiddenEvents() const { return _hiddenEvents; }
       
-      iEvent addEvent(Event& p); // DEPRECATED. requires the part to be NOT a clone. FIXME remove!
+      iEvent addEvent(Event& p); // this does not care about clones! If the part is a clone, be sure to execute this on all clones (with duplicated Events, that is!)
 
       virtual void write(int, Xml&, bool isCopy = false, bool forceWavePaths = false) const;
       
