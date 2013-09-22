@@ -4562,6 +4562,7 @@ set<const MusECore::Part*> staff_t::parts_at_tick(unsigned tick)
 
 void staff_t::apply_lasso(QRect rect, set<const MusECore::Event*>& already_processed)
 {
+	Undo operations;
 	for (ScoreItemList::iterator it=itemlist.begin(); it!=itemlist.end(); it++)
 		for (set<FloItem>::iterator it2=it->second.begin(); it2!=it->second.end(); it2++)
 			if (it2->type==FloItem::NOTE)
@@ -4569,10 +4570,11 @@ void staff_t::apply_lasso(QRect rect, set<const MusECore::Event*>& already_proce
 				if (rect.contains(it2->x, it2->y))
 					if (already_processed.find(it2->source_event)==already_processed.end())
 					{
-						MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent,*it2->source_event,!it2->source_event->selected(),it2->source_event->selected()));
+						operations.push_back(UndoOp(UndoOp::SelectEvent,*it2->source_event,!it2->source_event->selected(),it2->source_event->selected()));
 						already_processed.insert(it2->source_event);
 					}
 			}
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 void ScoreCanvas::set_steprec(bool flag)
