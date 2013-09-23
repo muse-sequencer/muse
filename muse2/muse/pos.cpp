@@ -65,27 +65,12 @@ namespace MusECore
 		recalc_frames();
 	}
 
-	/*Pos::Pos(unsigned t)
+	Pos::Pos(unsigned t) // TODO: use XTicks instead
 	{
 		_type = TICKS;
 		_tick = XTick(t);
 		recalc_frames();
-	}*/
-
-	Pos::Pos(unsigned t, bool ticks)	// TODO: considered evil.
-	{
-		if (ticks)
-		{
-			_type = TICKS;
-			_tick = XTick(t);
-			recalc_frames();
-		}
-		else
-		{
-			_type = FRAMES;
-			printf("DEBUG: warning: Pos::Pos(t, use_frames=true) called\n");
-			setFrame(t);
-		}
+		
 		sn = -1;
 	}
 
@@ -330,7 +315,7 @@ namespace MusECore
 			case TICKS:
 				xml.nput("tick=\"%d\"", _tick.tick); // TODO FINDMICH also save subtick!
 				break;
-				case FRAMES:xml.nput("frame=\"%d\"", _frame);
+			case FRAMES:xml.nput("frame=\"%d\"", _frame);
 				break;
 		}
 		xml.put(" />", name);

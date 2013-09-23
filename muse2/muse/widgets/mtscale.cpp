@@ -198,7 +198,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       if(i== 0 && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
             MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(x);
             if (!alreadyExists) {
-                  MusEGlobal::song->addMarker(QString(""), x, false);         
+                  MusEGlobal::song->addMarker(QString(""), x);
                   // Removed p3.3.43 
                   // Song::addMarker() already emits a 'markerChanged'.
                   //emit addMarker(x);

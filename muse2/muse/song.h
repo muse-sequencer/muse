@@ -226,7 +226,7 @@ class Song : public QObject {
       //-----------------------------------------
 
       MarkerList* marker() const { return _markerList; }
-      Marker* addMarker(const QString& s, int t, bool lck);
+      Marker* addMarker(const QString& s, int t);
       Marker* getMarkerAt(int t);
       void removeMarker(Marker*);
       Marker* setMarkerName(Marker*, const QString&);

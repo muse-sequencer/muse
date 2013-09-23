@@ -1727,7 +1727,7 @@ void JackAudioDevice::stopTransport()
 //   seekTransport
 //---------------------------------------------------------
 
-void JackAudioDevice::seekTransport(unsigned frame)
+void JackAudioDevice::seekTransport(audioframe_t frame)
     {
       if (JACK_DEBUG)
             printf("JackAudioDevice::seekTransport() frame:%d\n", frame);
@@ -1735,28 +1735,6 @@ void JackAudioDevice::seekTransport(unsigned frame)
       if(!MusEGlobal::useJackTransport.value())
       {
         _dummyPosPending   = frame;
-        // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
-        _dummyStatePending = (dummyState == Audio::STOP ? Audio::STOP : Audio::START_PLAY);
-        return;
-      }
-      
-      if(!checkJackClient(_client)) return;
-//      printf("JACK: seekTransport %d\n", frame);
-      jack_transport_locate(_client, frame);
-    }
-
-//---------------------------------------------------------
-//   seekTransport
-//---------------------------------------------------------
-
-void JackAudioDevice::seekTransport(const Pos &p)
-      {
-      if (JACK_DEBUG)
-            printf("JackAudioDevice::seekTransport(Pos) frame:%d\n", p.frame());
-      
-      if(!MusEGlobal::useJackTransport.value())
-      {
-        _dummyPosPending   = p.frame();
         // STOP -> STOP means seek in stop mode. PLAY -> START_PLAY means seek in play mode.
         _dummyStatePending = (dummyState == Audio::STOP ? Audio::STOP : Audio::START_PLAY);
         return;
@@ -1786,8 +1764,10 @@ void JackAudioDevice::seekTransport(const Pos &p)
 //       jp.beats_per_minute = (60000000.0 / tempo) * MusEGlobal::tempomap.globalTempo()/100.0;
 //       jack_transport_reposition(_client, &jp);
       
-      jack_transport_locate(_client, p.frame());
-      }
+      //      printf("JACK: seekTransport %d\n", frame);
+      jack_transport_locate(_client, frame);
+    }
+
 
 //---------------------------------------------------------
 //   findPort

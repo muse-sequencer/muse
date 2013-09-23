@@ -226,7 +226,7 @@ bool Audio::start()
 
       MusEGlobal::audioDevice->stopTransport();  
       
-      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());   
+      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos().frame());   
       
       return true;
       }
@@ -462,8 +462,7 @@ void Audio::process(unsigned frames)
                                 }
                             }
 
-                        Pos lp(_loopFrame, false);
-                        MusEGlobal::audioDevice->seekTransport(lp);
+                        MusEGlobal::audioDevice->seekTransport(_loopFrame);
                         }
                   }
             

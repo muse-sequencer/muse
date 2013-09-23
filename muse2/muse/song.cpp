@@ -1119,12 +1119,12 @@ void Song::setPos(int idx, const Pos& val, bool sig,
       if (idx == CPOS) {
             _vcpos = val;
             if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
-                  if (val == MusEGlobal::audio->framePos())  
+                  if (val.frame() == MusEGlobal::audio->framePos())  
                   {
                       if (MusEGlobal::heavyDebugMsg) printf("Song::setPos seek MusEGlobal::audio->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
                       return;
                   }     
-                  MusEGlobal::audio->msgSeek(val);
+                  MusEGlobal::audio->msgSeek(val.frame());
                   if (MusEGlobal::heavyDebugMsg) printf("Song::setPos after MusEGlobal::audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
                   return;
                   }
@@ -1193,7 +1193,7 @@ void Song::setPos(int idx, const Pos& val, bool sig,
 void Song::forward()
       {
       unsigned newPos = pos[0].tick() + MusEGlobal::config.division;
-      MusEGlobal::audio->msgSeek(Pos(newPos));
+      MusEGlobal::audio->msgSeek(MusEGlobal::tempomap.tick2frame(newPos));
       }
 
 //---------------------------------------------------------
@@ -1207,7 +1207,7 @@ void Song::rewind()
             newPos = 0;
       else
             newPos = pos[0].tick() - MusEGlobal::config.division;
-      MusEGlobal::audio->msgSeek(Pos(newPos));
+      MusEGlobal::audio->msgSeek(MusEGlobal::tempomap.tick2frame(newPos));
       }
 
 //---------------------------------------------------------
@@ -1216,7 +1216,7 @@ void Song::rewind()
 
 void Song::rewindStart()
       {
-      MusEGlobal::audio->msgSeek(Pos(0));
+      MusEGlobal::audio->msgSeek(0);
       }
 
 //---------------------------------------------------------
@@ -1513,9 +1513,9 @@ void Song::setLen(unsigned l)
 //   addMarker
 //---------------------------------------------------------
 
-Marker* Song::addMarker(const QString& s, int t, bool lck)
+Marker* Song::addMarker(const QString& s, int t)
       {
-      Marker* marker = _markerList->add(s, t, lck);
+      Marker* marker = _markerList->add(s, t);
       emit markerChanged(MARKER_ADD);
       return marker;
       }

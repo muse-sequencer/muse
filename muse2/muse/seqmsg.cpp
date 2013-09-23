@@ -599,7 +599,7 @@ void Audio::msgSetSolo(Track* track, bool val)
 //   msgSeek
 //---------------------------------------------------------
 
-void Audio::msgSeek(const Pos& pos)
+void Audio::msgSeek(audioframe_t pos)
       {
       if (!MusEGlobal::checkAudioDevice()) return;
       MusEGlobal::audioDevice->seekTransport(pos);
@@ -650,7 +650,7 @@ void Audio::msgPlay(bool val)
                 unsigned sfr = MusEGlobal::song->cPos().frame();
                 unsigned dcfr = MusEGlobal::audioDevice->getCurFrame();
                 if(dcfr != sfr)
-                  MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());
+                  MusEGlobal::audioDevice->seekTransport(sfr);
                 MusEGlobal::audioDevice->startTransport();
             }
               
@@ -1118,7 +1118,7 @@ void Audio::msgBounce()
       {
       _bounce = true;
       if (!MusEGlobal::checkAudioDevice()) return;
-      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->lPos());
+      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->lPos().frame());
       }
 
 //---------------------------------------------------------

@@ -168,7 +168,7 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
       if(i== 0 && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
             MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(tick);
             if (!alreadyExists)
-                  MusEGlobal::song->addMarker(QString(""), tick, false);         
+                  MusEGlobal::song->addMarker(QString(""), tick);
             }
       else if (i== 2 && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
             MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(tick);

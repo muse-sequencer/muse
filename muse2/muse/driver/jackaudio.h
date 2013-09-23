@@ -25,6 +25,7 @@
 
 #include <jack/jack.h>
 #include "audiodev.h"
+#include "../audio.h"
 
 namespace MusEGlobal {
 bool checkAudioDevice();
@@ -103,8 +104,7 @@ class JackAudioDevice : public AudioDevice {
       virtual int realtimePriority() const;
       virtual void startTransport();
       virtual void stopTransport();
-      virtual void seekTransport(unsigned frame);
-      virtual void seekTransport(const Pos &p);
+      virtual void seekTransport(audioframe_t frame);
       virtual void setFreewheel(bool f);
       jack_transport_state_t transportQuery(jack_position_t* pos);
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);

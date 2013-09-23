@@ -180,24 +180,7 @@ class DummyAudioDevice : public AudioDevice {
             }
       virtual int setMaster(bool) { return 1; }
 
-      virtual void seekTransport(const Pos &p)
-      {
-            if(DEBUG_DUMMY)
-                printf("DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
-#if 0            
-            Msg trcmd;
-            trcmd.cmd = trSeek;
-            trcmd.arg = p.frame();
-            cmdQueue.push_front(trcmd);
-            playPos = p.frame();
-#else
-            seekflag = true;
-            //pos = n;
-            playPos = p.frame();
-#endif            
-            
-      }
-      virtual void seekTransport(unsigned pos) {
+      virtual void seekTransport(audioframe_t pos) {
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
 #if 0            

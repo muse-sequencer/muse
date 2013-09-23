@@ -25,6 +25,7 @@
 #define __AUDIODEV_H__
 
 #include <list>
+#include "../audio.h"
 
 class QString;
 
@@ -82,8 +83,7 @@ class AudioDevice {
       virtual int realtimePriority() const = 0; // return zero if not realtime
       virtual void startTransport() = 0;
       virtual void stopTransport() = 0;
-      virtual void seekTransport(unsigned frame) = 0;
-      virtual void seekTransport(const Pos &p) = 0;
+      virtual void seekTransport(audioframe_t frame) = 0;
       virtual void setFreewheel(bool f) = 0;
       virtual void graphChanged() {}
       virtual void registrationChanged() {}

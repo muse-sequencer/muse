@@ -582,8 +582,7 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
                         int type = (p[6] >> 5) & 3;
                         int mmcPos = lrint(mtc.time(type) * MusEGlobal::sampleRate);
 
-                        Pos tp(mmcPos, false);
-                        MusEGlobal::audioDevice->seekTransport(tp);
+                        MusEGlobal::audioDevice->seekTransport(mmcPos);
                         alignAllTicks();
                         if (MusEGlobal::debugSync) {
                               printf("MMC: LOCATE mtc type:%d time:%lf frame:%d mtc: ", type, mtc.time(), mmcPos);
@@ -723,8 +722,7 @@ void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
         // MTC in not turned on? Forget it.
         if(msync.MTCIn())
         {
-          Pos tp(lrint(MusEGlobal::mtcCurTime.time(type) * MusEGlobal::sampleRate), false);
-          MusEGlobal::audioDevice->seekTransport(tp);
+          MusEGlobal::audioDevice->seekTransport(lrint(MusEGlobal::mtcCurTime.time(type) * MusEGlobal::sampleRate));
           alignAllTicks();
         }
       }    
@@ -777,7 +775,7 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
       
       if (!MusEGlobal::checkAudioDevice()) return;
 
-      MusEGlobal::audioDevice->seekTransport(pos);
+      MusEGlobal::audioDevice->seekTransport(pos.frame());
       alignAllTicks(pos.frame());
       if (MusEGlobal::debugSync)
             printf("setSongPosition %d\n", pos.tick());
@@ -1337,7 +1335,7 @@ void MidiSeq::realtimeSystemInput(int port, int c, double time)
                         {
                           MusEGlobal::curExtMidiSyncTick = 0;
                           MusEGlobal::lastExtMidiSyncTick = MusEGlobal::curExtMidiSyncTick;
-                          MusEGlobal::audioDevice->seekTransport(Pos(0, false));
+                          MusEGlobal::audioDevice->seekTransport(0);
                         }  
 
                         alignAllTicks();

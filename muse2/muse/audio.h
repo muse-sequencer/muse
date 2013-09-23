@@ -217,7 +217,7 @@ class Audio {
       //   message interface
       //-----------------------------------------
 
-      void msgSeek(const Pos&);
+      void msgSeek(audioframe_t pos);
       void msgPlay(bool val);
 
       void msgExecuteOperationGroup(Undo&); // calls exe1, then calls exe2 in audio context, then calls exe3

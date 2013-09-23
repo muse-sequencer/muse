@@ -61,7 +61,7 @@ namespace MusECore
 		Pos(const Pos&);
 		Pos(int measure, int beat, int tick, float subtick = 0.0);
 		Pos(int min, int sec, int frame, int subframe);
-		Pos(unsigned, bool ticks = true);	// never use frames, except for internal audio timing stuff.
+		Pos(unsigned);
 		Pos(XTick t);
 		Pos(const QString&); // expects a string like "mmmm.bb.ttt", where m,b,t means measure(range 1..inf), beat(range usually 1..4), tick(range 0..config.division)
 		                     // only use for PosEdits! This ctor cannot handle subticks!

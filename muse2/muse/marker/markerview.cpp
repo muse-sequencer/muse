@@ -389,7 +389,7 @@ void MarkerView::addMarker(int i)
       //MarkerItem* newItem = new MarkerItem(table, m);
       //table->setSelected(newItem, true);
       //
-      MusEGlobal::song->addMarker(QString(""), i, false);
+      MusEGlobal::song->addMarker(QString(""), i);
       }
 
 //---------------------------------------------------------

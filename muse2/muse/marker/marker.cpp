@@ -31,10 +31,10 @@ Marker* MarkerList::add(const Marker& marker)
       return &i->second;
       }
 
-Marker* MarkerList::add(const QString& s, int t, bool lck)
+Marker* MarkerList::add(const QString& s, int t)
       {
       Marker marker(s);
-      marker.setType(lck ? Pos::FRAMES : Pos::TICKS);
+      marker.setType(Pos::TICKS);
       marker.setTick(t);
       iMarker i = insert(std::pair<const int, Marker> (t, marker));
       return &i->second;
@@ -60,7 +60,7 @@ void Marker::read(Xml& xml)
                         if (tag == "tick")
                               setTick(xml.s2().toInt());
                         else if (tag == "lock")
-                              setType(xml.s2().toInt() ? FRAMES:TICKS);
+                              printf("WARNING: Marker was set to be locked to the current frame. Ignoring this, as it's no more supported!\n");
                         else if (tag == "name")
                         {
                               _name = xml.s2();
