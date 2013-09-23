@@ -1628,7 +1628,7 @@ int JackAudioDevice::getState()
       if(!MusEGlobal::useJackTransport.value())
       {
         //pos.valid = jack_position_bits_t(0);
-        //pos.frame = MusEGlobal::audio->pos().frame();
+        //pos.frame = MusEGlobal::audio->framePos();
         //return MusEGlobal::audio->getState();
         //if (JACK_DEBUG)
         //  printf("JackAudioDevice::getState dummyState:%d\n", dummyState);

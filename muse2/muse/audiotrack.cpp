@@ -928,7 +928,7 @@ void AudioTrack::seekPrevACEvent(int id)
     if(cl->empty())
       return;
     
-    iCtrl s = cl->lower_bound(MusEGlobal::audio->pos().frame());    
+    iCtrl s = cl->lower_bound(MusEGlobal::audio->framePos());    
     if(s != cl->begin())
       --s;
     
@@ -950,7 +950,7 @@ void AudioTrack::seekNextACEvent(int id)
     if(cl->empty())
       return;
     
-    iCtrl s = cl->upper_bound(MusEGlobal::audio->pos().frame());         
+    iCtrl s = cl->upper_bound(MusEGlobal::audio->framePos());         
     
     if(s == cl->end())
     {

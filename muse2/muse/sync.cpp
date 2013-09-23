@@ -792,7 +792,7 @@ void MidiSeq::alignAllTicks(int frameOverride)
       {
       unsigned curFrame;
       if (!frameOverride)
-        curFrame = MusEGlobal::audio->pos().frame();
+        curFrame = MusEGlobal::audio->framePos();
       else
         curFrame = frameOverride;
 
@@ -1084,7 +1084,7 @@ void MidiSeq::realtimeSystemInput(int port, int c, double time)
                         //BEGIN standard setup:
                         recTick  += MusEGlobal::config.division / 24; // The one we're syncing to
                         int tempo = MusEGlobal::tempomap.tempo(0);
-                        unsigned curFrame = MusEGlobal::audio->pos().frame();
+                        unsigned curFrame = MusEGlobal::audio->framePos();
                         double songtick = (double(curFrame)/double(MusEGlobal::sampleRate)) *
                                            double(MusEGlobal::config.division * 1000000.0) / double(tempo);
 
@@ -1199,7 +1199,7 @@ void MidiSeq::realtimeSystemInput(int port, int c, double time)
                         //BEGIN standard setup:
                         recTick  += MusEGlobal::config.division / 24; // The one we're syncing to
                         int tempo = MusEGlobal::tempomap.tempo(0);
-                        //unsigned curFrame = MusEGlobal::audio->pos().frame();
+                        //unsigned curFrame = MusEGlobal::audio->framePos();
                         //double songtick = (double(curFrame)/double(MusEGlobal::sampleRate)) *
                         //                   double(MusEGlobal::config.division * 1000000.0) / double(tempo);
                         double songtick = MusEGlobal::tempomap.curTickExt(mclock0);
@@ -1215,7 +1215,7 @@ void MidiSeq::realtimeSystemInput(int port, int c, double time)
                               int song_beat = b + m*4; // if the time-signature is different than 4/4, this will be wrong.
                               int sync_beat = recTick/MusEGlobal::config.division;
                               printf("pT=%.3f rT=%d diff=%.3f songB=%d syncB=%d scale=%.3f, curFrame=%d averagetimediff:%.3lf", 
-                                      songtick, recTick, tickdiff, song_beat, sync_beat, scale, MusEGlobal::audio->pos().frame(), averagetimediff);
+                                      songtick, recTick, tickdiff, song_beat, sync_beat, scale, MusEGlobal::audio->framePos(), averagetimediff);
                               }
 
                         //if ((mclock2 !=0.0) && (tdiff1 > 0.0) && fabs(tickdiff) > 0.5 && lastTempo != 0) {

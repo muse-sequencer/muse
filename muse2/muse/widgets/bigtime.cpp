@@ -231,7 +231,7 @@ bool BigTime::setString(unsigned v)
             }
 
       // Quick fix: Not much to do but ignore the supplied tick: We need the exact frame here.
-      unsigned absFrame = MusEGlobal::audio->pos().frame();
+      unsigned absFrame = MusEGlobal::audio->framePos();
       
       int bar, beat;
       unsigned tick;

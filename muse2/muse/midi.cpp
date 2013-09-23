@@ -243,7 +243,7 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   if(cmode == Song::CYCLE_NORMAL)
                   {
                     // Not sure of accuracy here. Adjust? Adjusted when used elsewhere?
-                    unsigned endRec = MusEGlobal::audio->getEndRecordPos().tick();
+                    unsigned endRec = MusEGlobal::audio->getEndRecordPos().xtick().tick;
                     if((tick < endRec && loopn < loopc) || (tick >= endRec && loopn < (loopc - 1)))
                       continue;
                   } 
@@ -939,9 +939,9 @@ void Audio::processMidi()
                   unsigned int t = ev_t;
                   
 #ifdef _AUDIO_USE_TRUE_FRAME_
-                  unsigned int pframe = _previousPos.frame();
+                  unsigned int pframe = _previousFrame;
 #else
-                  unsigned int pframe = _pos.frame();
+                  unsigned int pframe = _frame;
 #endif
                   if(pframe > t)  // Technically that's an error, shouldn't happen
                     t = 0;

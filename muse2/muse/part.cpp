@@ -596,7 +596,7 @@ void Song::addPart(Part* part)
 
       if (part->track()->type()==Track::WAVE)
           if (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame(), part->endFrame()))
-              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->framePos(), true, false); // force (seek even if already there) but do not block. may lose messages.
       
       // Indicate do not do clones.
       addPortCtrlEvents(part, false);
@@ -615,7 +615,7 @@ void Song::removePart(Part* part)
 
       if (part->track()->type()==Track::WAVE)
           if (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame(), part->endFrame()))
-              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->framePos(), true, false); // force (seek even if already there) but do not block. may lose messages.
       }
 
 //---------------------------------------------------------

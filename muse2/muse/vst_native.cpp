@@ -999,7 +999,7 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
 #endif
                   memset(&_timeInfo, 0, sizeof(_timeInfo));
 
-                  unsigned int curr_frame = MusEGlobal::audio->pos().frame();
+                  unsigned int curr_frame = MusEGlobal::audio->framePos();
                   _timeInfo.samplePos = (double)curr_frame;
                   _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
                   _timeInfo.flags = 0;

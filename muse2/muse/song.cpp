@@ -495,7 +495,7 @@ bool Song::addEvent(Event& event, Part* part)
       
       if (event.type()==Wave)
           if (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame()+event.frame(), part->frame()+event.endFrame()))
-              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->framePos(), true, false); // force (seek even if already there) but do not block. may lose messages.
          
       return true;
       }
@@ -522,7 +522,7 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
       if (oldEvent.type()==Wave)
           if ( (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame()+oldEvent.frame(), part->frame()+oldEvent.endFrame())) ||
                (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame()+newEvent.frame(), part->frame()+newEvent.endFrame())) )
-              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->framePos(), true, false); // force (seek even if already there) but do not block. may lose messages.
 }
 
 //---------------------------------------------------------
@@ -542,7 +542,7 @@ void Song::deleteEvent(Event& event, Part* part)
 
       if (event.type()==Wave)
           if (MusEGlobal::audioPrefetch->range_possibly_prefetched(part->frame()+event.frame(), part->frame()+event.endFrame()))
-              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
+              MusEGlobal::audioPrefetch->msgSeek( MusEGlobal::audio->framePos(), true, false); // force (seek even if already there) but do not block. may lose messages.
       }
 
 //---------------------------------------------------------
@@ -683,7 +683,7 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
 //    add recorded Events into part
 //---------------------------------------------------------
 
-void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned startTick)
+void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, XTick startTick)
       {
       if (events.empty()) {
             if (MusEGlobal::debugMsg)
@@ -692,12 +692,12 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             }
       ciEvent s;
       ciEvent e;
-      unsigned endTick;
+      XTick endTick;
 
-      if((MusEGlobal::audio->loopCount() > 0 && startTick > lPos().tick()) || (punchin() && startTick < lPos().tick()))
+      if((MusEGlobal::audio->loopCount() > 0 && startTick > lPos().xtick()) || (punchin() && startTick < lPos().xtick()))
       {
-            startTick = lpos();
-            s = events.lower_bound(startTick);
+            startTick = lPos().tick();
+            s = events.lower_bound(startTick.tick);
       }
       else 
       {
@@ -705,18 +705,18 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
       }
       
       // search for last noteOff:
-      endTick = 0;
+      endTick = XTick(0,0);
       for (ciEvent i = events.begin(); i != events.end(); ++i) {
             Event ev   = i->second;
-            unsigned l = ev.endTick();
+            XTick l = ev.endXTick();
             if (l > endTick)
                   endTick = l;
             }
 
-      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && endTick > rPos().tick()) )
+      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && endTick > rPos().xtick()) )
       {
-            endTick = rpos();
-            e = events.lower_bound(endTick);
+            endTick = rPos().xtick();
+            e = events.lower_bound(endTick.tick);
       }
       else
             e = events.end();
@@ -739,8 +739,8 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
       iPart ip;
       for (ip = pl->begin(); ip != pl->end(); ++ip) {
             part = (MidiPart*)(ip->second);
-            unsigned partStart = part->tick();
-            unsigned partEnd   = part->endTick();
+            XTick partStart = part->xtick();
+            XTick partEnd   = part->endXTick();
             if (startTick >= partStart && startTick < partEnd)
                   break;
             }
@@ -752,9 +752,9 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             newpart      = new MidiPart(mt);
             
             // Round the start down using the Arranger part snap raster value. 
-            startTick = AL::sigmap.raster1(startTick, arrangerRaster());
+            startTick = XTick(AL::sigmap.raster1(startTick.tick, arrangerRaster()));
             // Round the end up using the Arranger part snap raster value. 
-            endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
+            endTick   = XTick(AL::sigmap.raster2(endTick.tick, arrangerRaster()));
             
             newpart->setTick(startTick);
             newpart->setLenTick(endTick - startTick);
@@ -763,7 +763,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             for (ciEvent i = s; i != e; ++i) {
                   const Event& old = i->second;
                   Event event = old.clone();
-                  event.setTick(old.tick() - startTick);
+                  event.setTick((old.xtick() - startTick).tick); // FIXME
                   // addEvent also adds port controller values. So does msgAddPart, below. Let msgAddPart handle them.
                   //addEvent(event, part);
                   if(newpart->events().find(event) == newpart->events().end())
@@ -778,29 +778,29 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
 
       Undo operations;
 
-      unsigned partTick = part->tick();
-      if (endTick > part->endTick()) {
+      XTick partTick = part->xtick();
+      if (endTick > part->endXTick()) {
             // Determine new part length...
-            endTick = 0;
+            endTick = XTick(0,0);
             for (ciEvent i = s; i != e; ++i) {
                   const Event& event = i->second;
-                  unsigned tick = event.tick() - partTick + event.lenTick();
+                  XTick tick = event.xtick() - partTick + event.lenXTick();
                   if (endTick < tick)
                         endTick = tick;
                   }
             
             // Round the end up (again) using the Arranger part snap raster value. 
-            endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
+            endTick   = XTick(AL::sigmap.raster2(endTick.tick, arrangerRaster()));
             
             // Create an undo op. Indicate do port controller values but not clone parts. 
-            operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenTick(), endTick, true, false)); // FIXME XTICKS! FINDMICHJETZT!
+            operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenTick(), endTick.tick, true, false)); // FIXME XTICKS! FINDMICHJETZT!
             updateFlags |= SC_PART_MODIFIED;
       }
             
 
       if (_recMode == REC_REPLACE) {
-            ciEvent si = part->events().lower_bound(startTick - part->tick());
-            ciEvent ei = part->events().lower_bound(endTick   - part->tick());
+            ciEvent si = part->events().lower_bound((startTick - part->xtick()).tick); // FIXME
+            ciEvent ei = part->events().lower_bound((endTick   - part->xtick()).tick);
 
             for (ciEvent i = si; i != ei; ++i) {
                   const Event& event = i->second;
@@ -810,7 +810,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
       }
       for (ciEvent i = s; i != e; ++i) {
             Event event = i->second.clone();
-            event.setTick(event.tick() - partTick);
+            event.setTick((event.xtick() - partTick).tick);
             // Indicate that controller values and clone parts were handled.
             operations.push_back(UndoOp(UndoOp::AddEvent, event, part, true, true));
       }
@@ -1119,7 +1119,7 @@ void Song::setPos(int idx, const Pos& val, bool sig,
       if (idx == CPOS) {
             _vcpos = val;
             if (isSeek && !MusEGlobal::extSyncFlag.value()) {  
-                  if (val == MusEGlobal::audio->pos())  
+                  if (val == MusEGlobal::audio->framePos())  
                   {
                       if (MusEGlobal::heavyDebugMsg) printf("Song::setPos seek MusEGlobal::audio->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
                       return;
@@ -2185,7 +2185,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     {
       CtrlList *cl = icl->second;
       canAdd = true;
-      frame = MusEGlobal::audio->pos().frame();       
+      frame = MusEGlobal::audio->framePos();       
       bool en = track->controllerEnabled(acid);
       AutomationType at = track->automationType();
       if(!MusEGlobal::automation || at == AUTO_OFF || !en)
@@ -2644,7 +2644,7 @@ void Song::processMasterRec()
     //MusEGlobal::tempomap.eraseRange(MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getStartRecordPos().frame()), 
     //                                MusEGlobal::tempo_rec_list.frame2tick(MusEGlobal::audio->getEndRecordPos().frame()));
     // This is more accurate but lacks resolution:
-    MusEGlobal::tempomap.eraseRange(MusEGlobal::audio->getStartExternalRecTick(), MusEGlobal::audio->getEndExternalRecTick());
+    MusEGlobal::tempomap.eraseRange(MusEGlobal::audio->getStartExternalRecTick().tick, MusEGlobal::audio->getEndExternalRecTick().tick);
 
     // Add the recorded tempos to the master tempo list:
     for(int i = 0; i < tempo_rec_list_sz; ++i)
@@ -2816,7 +2816,7 @@ void Song::insertTrack2(Track* track, int idx)
                   break;
             case Track::WAVE:
                   _waves.push_back((MusECore::WaveTrack*)track);
-                  MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame(), true, false); // force (seek even if already there) but do not block. may lose messages.
+                  MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->framePos(), true, false); // force (seek even if already there) but do not block. may lose messages.
                   break;
             case Track::AUDIO_OUTPUT:
                   _outputs.push_back((AudioOutput*)track);

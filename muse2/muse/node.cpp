@@ -1195,7 +1195,7 @@ void AudioOutput::setChannels(int n)
 
 void AudioTrack::putFifo(int channels, unsigned long n, float** bp)
       {
-      if (fifo.put(channels, n, bp, MusEGlobal::audio->pos().frame())) {
+      if (fifo.put(channels, n, bp, MusEGlobal::audio->framePos())) {
             printf("   overrun ???\n");
             }
       }
@@ -1572,9 +1572,9 @@ void AudioOutput::processWrite()
       if (sendMetronome() && MusEGlobal::audioClickFlag && MusEGlobal::song->click()) {
             
             #ifdef METRONOME_DEBUG
-            printf("MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", MusEGlobal::audio->pos().frame(), _channels, _nframes);
+            printf("MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", MusEGlobal::audio->framePos(), _channels, _nframes);
             #endif
-            metronome->addData(MusEGlobal::audio->pos().frame(), _channels, -1, -1, _nframes, buffer);
+            metronome->addData(MusEGlobal::audio->framePos(), _channels, -1, -1, _nframes, buffer);
             }
       }
 //---------------------------------------------------------

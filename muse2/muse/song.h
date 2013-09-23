@@ -281,7 +281,7 @@ class Song : public QObject {
       //-----------------------------------------
 
       void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);  
-      void cmdAddRecordedEvents(MidiTrack*, const EventList&, unsigned);
+      void cmdAddRecordedEvents(MidiTrack*, const EventList&, XTick);
       bool addEvent(Event&, Part*);                 // only called from audio thread. FIXME TODO: move functionality into undo.cpp
       void changeEvent(Event&, Event&, Part*);      // only called from audio thread. FIXME TODO: move functionality into undo.cpp
       void deleteEvent(Event&, Part*);              // only called from audio thread. FIXME TODO: move functionality into undo.cpp

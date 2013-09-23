@@ -125,8 +125,7 @@ Audio::Audio()
       _loopFrame    = 0;
       _loopCount    = 0;
 
-      _pos.setType(Pos::FRAMES);
-      _pos.setFrame(0);
+      _frame        = 0;
 #ifdef _AUDIO_USE_TRUE_FRAME_
       _previousPos.setType(Pos::FRAMES);
       _previousPos.setFrame(0);
@@ -145,8 +144,8 @@ Audio::Audio()
       state         = STOP;
       msg           = 0;
 
-      startRecordPos.setType(Pos::FRAMES);  // Tim
-      endRecordPos.setType(Pos::FRAMES);
+      startRecordPos.setType(Pos::TICKS);
+      endRecordPos.setType(Pos::TICKS);
       startExternalRecTick = 0;
       endExternalRecTick = 0;
       
@@ -264,17 +263,16 @@ bool Audio::sync(int jackState, unsigned frame)
             //  PLAY -> START_PLAY  seek in play state
 
             if (state != START_PLAY) {
-                Pos p(frame, false);
-                seek(p);
+                seek(frame);
                 if (!_freewheel)
                       done = MusEGlobal::audioPrefetch->seekDone();
                 if (s == START_PLAY)
                       state = START_PLAY;
                 }
             else {
-                if (frame != _pos.frame()) {
+                if (frame != _frame) {
                         // seek during seek
-                            seek(Pos(frame, false));
+                            seek(frame);
                         }
                 done = MusEGlobal::audioPrefetch->seekDone();
                   }
@@ -346,8 +344,7 @@ void Audio::process(unsigned frames)
             }
       else if (state == LOOP2 && jackState == PLAY) {
             ++_loopCount;                  // Number of times we have looped so far
-            Pos newPos(_loopFrame, false);
-            seek(newPos);
+            seek(_loopFrame);
             startRolling();
             }
       else if (isPlaying() && jackState == STOP) {
@@ -375,7 +372,7 @@ void Audio::process(unsigned frames)
             printf("JACK: state transition %s -> %s ?\n",
                audioStates[state], audioStates[jackState]);
 
-      // printf("p %s %s %d\n", audioStates[jackState], audioStates[state], _pos.frame());
+      // printf("p %s %s %d\n", audioStates[jackState], audioStates[state], _frame);
 
       //
       // clear aux send buffers
@@ -390,7 +387,7 @@ void Audio::process(unsigned frames)
 
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
             (*i)->processInit(frames);
-      int samplePos = _pos.frame();
+      int samplePos = _frame;
       int offset    = 0;      // buffer offset in audio buffers
 #ifdef _JACK_TIMEBASE_DRIVES_MIDI_              
       bool use_jack_timebase = false;
@@ -400,7 +397,7 @@ void Audio::process(unsigned frames)
             if (!freewheel())
                   MusEGlobal::audioPrefetch->msgTick();
 
-            if (_bounce && _pos >= MusEGlobal::song->rPos()) {
+            if (_bounce && _frame >= MusEGlobal::song->rPos().frame()) {
                   _bounce = false;
                   write(sigFd, "F", 1);
                   return;
@@ -487,9 +484,7 @@ void Audio::process(unsigned frames)
               else
 #endif                
               {
-                Pos ppp(_pos);
-                ppp += frames;
-                nextTickPos = ppp.tick();
+                nextTickPos = MusEGlobal::tempomap.frame2tick(_frame+frames);
               }
             }
           }
@@ -508,7 +503,7 @@ void Audio::process(unsigned frames)
       _previousPos = _pos;
 #endif
       if (isPlaying()) {
-            _pos += frames;
+            _frame += frames;
             // With jack timebase this might not be accurate if we 
             //  set curTickPos (above) from the reported current tick.
             curTickPos = nextTickPos; 
@@ -714,22 +709,22 @@ void Audio::processMsg(AudioMsg* msg)
             case SEQM_REMOVE_TEMPO:
             case SEQM_SET_GLOBAL_TEMPO:
             case SEQM_SET_TEMPO: {
-                  unsigned old_frame = _pos.frame();
+                  unsigned old_frame = _frame;
                   MusEGlobal::song->processMsg(msg);
                   if (isPlaying()) {
                         if (!MusEGlobal::checkAudioDevice()) return;
 #ifdef _AUDIO_USE_TRUE_FRAME_
                         _previousPos = _pos;
 #endif
-                        _pos.setTick(curTickPos);
-                        int samplePos = _pos.frame();
+                        _frame= MusEGlobal::tempomap.tick2frame(curTickPos);
+                        int samplePos = _frame;
                         syncFrame     = MusEGlobal::audioDevice->framePos();
                         syncTime      = curTime();
                         frameOffset   = syncFrame - samplePos;
                         }
-                  if (abs( (int)old_frame - _pos.frame()) > 200) // TODO FIXME this is a HACK for making MusE not misbehave that badly when changing tempo while playing audiostreams
+                  if (abs( (int)old_frame - _frame) > 200) // TODO FIXME this is a HACK for making MusE not misbehave that badly when changing tempo while playing audiostreams
                                                                  // still, muse *will* glitch if you do that.
-                      MusEGlobal::audioPrefetch->msgSeek(_pos.frame()); // never block. may silently fail to send the message if control fifo is full.
+                      MusEGlobal::audioPrefetch->msgSeek(_frame); // never block. may silently fail to send the message if control fifo is full.
                   }
                   break;
 
@@ -754,23 +749,23 @@ void Audio::processMsg(AudioMsg* msg)
 //    - initiated from gui
 //---------------------------------------------------------
 
-void Audio::seek(const Pos& p)
+void Audio::seek(audioframe_t p)
       {
-      if (_pos == p) {
+      if (_frame == p) {
             if(MusEGlobal::debugMsg)
-              printf("Audio::seek already there. frame:%d\n",p.frame());
+              printf("Audio::seek already there. frame:%d\n",p);
             return;        
             }
       if (MusEGlobal::heavyDebugMsg)
-        printf("Audio::seek frame:%d\n", p.frame());
+        printf("Audio::seek frame:%d\n", p);
         
 #ifdef _AUDIO_USE_TRUE_FRAME_
       _previousPos = _pos;
 #endif
-      _pos        = p;
+      _frame = p;
       if (!MusEGlobal::checkAudioDevice()) return;
       syncFrame   = MusEGlobal::audioDevice->framePos();
-      frameOffset = syncFrame - _pos.frame();
+      frameOffset = syncFrame - _frame;
       
 #ifdef _JACK_TIMEBASE_DRIVES_MIDI_
       unsigned curr_jt_tick;
@@ -783,7 +778,7 @@ void Audio::seek(const Pos& p)
         curTickPos = curr_jt_tick;
       else
 #endif
-      curTickPos  = _pos.tick();
+      curTickPos  = MusEGlobal::tempomap.frame2tick(_frame);
 
 // ALSA support       
 #if 1 
@@ -802,7 +797,7 @@ void Audio::seek(const Pos& p)
             // We need to force prefetch to update, to ensure the most recent data. 
             // Things can happen to a part before play is pressed - such as part muting, 
             //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
-            MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true, true); // force. may block until sent.
+            MusEGlobal::audioPrefetch->msgSeek(_frame, true, true); // force. may block until sent.
       }
       
       write(sigFd, "G", 1);   // signal seek to gui
@@ -837,10 +832,10 @@ void Audio::writeTick()
 void Audio::startRolling()
       {
       if (MusEGlobal::debugMsg)
-        printf("startRolling - loopCount=%d, _pos=%d\n", _loopCount, _pos.tick());
+        printf("startRolling - loopCount=%d, _pos=%d\n", _loopCount, MusEGlobal::tempomap.frame2tick(_frame));
 
       if(_loopCount == 0) {
-        startRecordPos = _pos;
+        startRecordPos.setFrame(_frame);
         startExternalRecTick = curTickPos;
       }
       if (MusEGlobal::song->record()) {
@@ -954,7 +949,7 @@ void Audio::stopRolling()
             track->resetMeter();
             }
       recording    = false;
-      endRecordPos = _pos;
+      endRecordPos.setFrame(_frame);
       endExternalRecTick = curTickPos;
       write(sigFd, "0", 1);   // STOP
       }
@@ -969,7 +964,7 @@ void Audio::recordStop()
       MusEGlobal::song->processMasterRec();   
         
       if (MusEGlobal::debugMsg)
-        printf("recordStop - startRecordPos=%d\n", MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
+        printf("recordStop - startRecordPos=%d\n", MusEGlobal::extSyncFlag.value() ? startExternalRecTick.tick : startRecordPos.xtick().tick);
 
       MusEGlobal::audio->msgIdle(true); // gain access to all data structures
 
@@ -979,7 +974,7 @@ void Audio::recordStop()
       for (iWaveTrack it = wl->begin(); it != wl->end(); ++it) {
             WaveTrack* track = *it;
             if (track->recordFlag() || MusEGlobal::song->bounceTrack == track) {
-                  MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, endRecordPos);   
+                  MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, endRecordPos);
                   // The track's _recFile pointer may have been kept and turned
                   //  into a SndFileR and added to a new part.
                   // Or _recFile may have been discarded (no new recorded part created).
@@ -1001,7 +996,7 @@ void Audio::recordStop()
             // Do SysexMeta. Do loops.
             buildMidiEventList(&mt->events, mt->mpevents, mt, MusEGlobal::config.division, true, true);
             MusEGlobal::song->cmdAddRecordedEvents(mt, mt->events, 
-                 MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.tick());
+                 MusEGlobal::extSyncFlag.value() ? startExternalRecTick : startRecordPos.xtick());
             mt->events.clear();
             mt->mpevents.clear();
             }
@@ -1049,7 +1044,7 @@ unsigned Audio::framesSinceCycleStart() const
 
 unsigned Audio::curFramePos() const
 {
-  return _pos.frame() + (isPlaying() ? framesSinceCycleStart() : 0);
+  return _frame + (isPlaying() ? framesSinceCycleStart() : 0);
 }
 
 //---------------------------------------------------------

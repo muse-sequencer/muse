@@ -54,6 +54,7 @@ class SynthI;
 class Track;
 class Undo;
 
+typedef unsigned audioframe_t;
 //---------------------------------------------------------
 //   AudioMsgId
 //    this are the messages send from the GUI thread to
@@ -140,10 +141,10 @@ class Audio {
       unsigned _loopFrame;     // Startframe of loop if in LOOP mode. Not quite the same as left marker !
       int _loopCount;         // Number of times we have looped so far
 
-      Pos _pos;               // current play position
+      audioframe_t _frame;            // current play position
       
 #ifdef _AUDIO_USE_TRUE_FRAME_
-      Pos _previousPos;       // previous play position
+      audioframe_t _previousFrame;       // previous play position
 #endif
       
       unsigned curTickPos;   // pos at start of frame during play/record
@@ -170,8 +171,8 @@ class Audio {
       // record values:
       Pos startRecordPos;
       Pos endRecordPos;
-      unsigned startExternalRecTick;
-      unsigned endExternalRecTick;
+      XTick startExternalRecTick;
+      XTick endExternalRecTick;
       
       AudioOutput* _audioMaster;
       AudioOutput* _audioMonitor;
@@ -204,7 +205,7 @@ class Audio {
       // transport:
       bool start();
       void stop(bool);
-      void seek(const Pos& pos);
+      void seek(audioframe_t frame);
 
       bool isStarting() const   { return state == START_PLAY; }
       bool isPlaying() const    { return state == PLAY || state == LOOP1 || state == LOOP2; }
@@ -276,14 +277,14 @@ class Audio {
       
       void midiPortsChanged();
 
-      const Pos& pos() const { return _pos; }
+      audioframe_t framePos() const { return _frame; }
 #ifdef _AUDIO_USE_TRUE_FRAME_
-      const Pos& previousPos() const { return _previousPos; }
+      audioframe_t previousFramePos() const { return _previousFrame; }
 #endif
       const Pos& getStartRecordPos() const { return startRecordPos; }
       const Pos& getEndRecordPos() const { return endRecordPos; }
-      unsigned getStartExternalRecTick() const { return startExternalRecTick; }
-      unsigned getEndExternalRecTick() const { return endExternalRecTick; }
+      XTick getStartExternalRecTick() const { return startExternalRecTick; }
+      XTick getEndExternalRecTick() const { return endExternalRecTick; }
       int loopCount() { return _loopCount; }         // Number of times we have looped so far
       unsigned loopFrame() { return _loopFrame; }          
 

@@ -450,9 +450,9 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
 #ifdef _AUDIO_USE_TRUE_FRAME_
-      event.setTime(MusEGlobal::audio->previousPos().frame() + ev->time);
+      event.setTime(MusEGlobal::audio->previousFramePos() + ev->time);
 #else
-      event.setTime(MusEGlobal::audio->pos().frame() + ev->time);
+      event.setTime(MusEGlobal::audio->framePos() + ev->time);
 #endif
       event.setTick(MusEGlobal::lastExtMidiSyncTick);    
 
@@ -623,7 +623,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
     
       //unsigned frameCounter = ->frameTime();
       int frameOffset = MusEGlobal::audio->getFrameOffset();
-      unsigned pos = MusEGlobal::audio->pos().frame();
+      unsigned pos = MusEGlobal::audio->framePos();
       int ft = e.time() - frameOffset - pos;
       
       if (ft < 0)
@@ -766,7 +766,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
 bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
 {    
   //int frameOffset = MusEGlobal::audio->getFrameOffset();
-  //unsigned pos = MusEGlobal::audio->pos().frame();
+  //unsigned pos = MusEGlobal::audio->framePos();
 
   int chn    = event.channel();
   unsigned t = event.time();
@@ -784,7 +784,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   // p4.0.15 Or, is the event marked to be played immediately?
   // Nothing to do but stamp the event to be queued for frame 0+.
   if(t == 0 || MusEGlobal::extSyncFlag.value())    
-    t = MusEGlobal::audio->getFrameOffset() + MusEGlobal::audio->pos().frame();
+    t = MusEGlobal::audio->getFrameOffset() + MusEGlobal::audio->framePos();
     //t = frameOffset + pos;
       
   #ifdef JACK_MIDI_DEBUG

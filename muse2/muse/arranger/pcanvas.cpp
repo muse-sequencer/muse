@@ -2970,7 +2970,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
           yy += th;
           }
 
-    unsigned int startPos = MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->getStartExternalRecTick() : MusEGlobal::audio->getStartRecordPos().tick(); 
+    unsigned int startPos = MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->getStartExternalRecTick().tick : MusEGlobal::audio->getStartRecordPos().xtick().tick;
     if (MusEGlobal::song->punchin())
       startPos=MusEGlobal::song->lpos();
     int startx = mapx(startPos);
