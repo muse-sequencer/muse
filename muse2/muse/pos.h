@@ -48,7 +48,6 @@ namespace MusECore
 		enum TType { TICKS, FRAMES };
 
 	  private:
-		TType _type;
 		mutable int sn;
 		
 		mutable XTick _tick;
@@ -72,11 +71,6 @@ namespace MusECore
 		void invalidSn()
 		{
 			sn = -1;
-		}
-
-		TType type() const
-		{
-			return _type;
 		}
 
 		Pos& operator+=(Pos a);

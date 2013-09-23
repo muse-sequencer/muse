@@ -45,7 +45,7 @@
 
 namespace MusEGui {
 
-enum { COL_TICK = 0, COL_SMPTE, COL_LOCK, COL_NAME };
+enum { COL_TICK = 0, COL_SMPTE, COL_NAME };
 
 //---------------------------------------------------------
 //   tick
@@ -66,15 +66,6 @@ const QString MarkerItem::name() const
       }
 
 //---------------------------------------------------------
-//   lock
-//---------------------------------------------------------
-
-bool MarkerItem::lock() const
-      {
-      return _marker->type() == MusECore::Pos::FRAMES;
-      }
-
-//---------------------------------------------------------
 //   MarkerItem
 //---------------------------------------------------------
 
@@ -84,8 +75,6 @@ MarkerItem::MarkerItem(QTreeWidget* parent, MusECore::Marker* m)
       _marker = m;
       setText(COL_NAME, m->name());
       setTick(m->tick());
-      if (m->type() == MusECore::Pos::FRAMES)
-            setIcon(COL_LOCK, QIcon(*lockIcon));
       }
 
 //---------------------------------------------------------
@@ -512,8 +501,8 @@ void MarkerView::markerSelectionChanged()
             editName->setText(item->name());
             editName->setEnabled(true);
             
-            editSMPTE->setEnabled(item->lock());
-            editTick->setEnabled(!item->lock());
+            editSMPTE->setEnabled(true);
+            editTick->setEnabled(true);
             }
       }
 

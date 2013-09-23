@@ -1349,12 +1349,6 @@ void schedule_resize_all_same_len_clone_parts(const Part* part, unsigned new_len
 		const Part* part_it=part;
 		do
 		{
-			if (part->type() == Pos::FRAMES)
-			{
-			  if (part_it->lenFrame()==old_len && !already_done.contains(part_it))
-				  operations.push_back(UndoOp(UndoOp::ModifyPartLengthFrames, part_it, part_it->lenFrame(), new_len, true, false)); // FIXME FINDMICH frames suck :(
-			}
-			else
 			if (part_it->lenTick()==old_len && !already_done.contains(part_it))
 			{
 				operations.push_back(UndoOp(UndoOp::ModifyPartLength, part_it, part_it->lenTick(), new_len, true, false));

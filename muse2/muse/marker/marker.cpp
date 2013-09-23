@@ -83,7 +83,7 @@ void MarkerList::write(int level, Xml& xml) const
       for (ciMarker i = begin(); i != end(); ++i) {
             const Marker& m = i->second;
             xml.put(level, "<marker tick=\"%d\" lock=\"%d\" name=\"%s\" />",
-               m.tick(), m.type()==Pos::FRAMES, Xml::xmlString(m.name()).toLatin1().constData());
+               m.tick(), false, Xml::xmlString(m.name()).toLatin1().constData());
             }
       }
 
