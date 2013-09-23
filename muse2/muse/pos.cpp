@@ -147,7 +147,7 @@ namespace MusECore
 
 	Pos operator+(Pos a, int b)
 	{
-		Pos c;
+		Pos c = a;
 		return c += b;
 	}
 
@@ -241,7 +241,7 @@ namespace MusECore
 	void Pos::write(int level, Xml& xml, const char* name) const
 	{
 		xml.nput(level++, "<%s ", name);
-		xml.nput("tick=\"%d\"", _tick.tick); // TODO FINDMICH also save subtick!
+		xml.nput("tick=\"%d\" subtick=\"%f\"", _tick.tick, _tick.subtick);
 		xml.put(" />", name);
 	}
 
@@ -269,16 +269,14 @@ namespace MusECore
 				case Xml::Attribut:
 					if (tag == "tick")
 					{
-						_tick = XTick(xml.s2().toInt()); // TODO FINDMICH also read subtick!
+						_tick = XTick(xml.s2().toInt());
 					}
-					else if (tag == "frame")
+					else if (tag == "subtick")
 					{
-						// TODO flo
-						printf("DEBUG: Pos::read wants type=FRAMES, but this is denied.\n");
-						setFrame(xml.s2().toInt());
+						_tick.subtick = xml.s2().toDouble();
 					}
-					else if (tag == "sample")
-					{			// obsolete
+					else if (tag == "sample" || tag == "frame") // obsolete
+					{
 						printf("DEBUG: Pos::read wants type=FRAMES, but this is denied.\n");
 						setFrame(xml.s2().toInt());
 					}
@@ -349,9 +347,9 @@ namespace MusECore
 		xml.nput(level++, "<%s ", name);
 		
 		if (_lenType==Pos::TICKS)
-			xml.nput("tick=\"%d\" len=\"%d\"", tick(), _lenTick.tick); // TODO FINDMICH write subtick
+			xml.nput("tick=\"%d\" subtick=\"%f\" len=\"%d\" lensubtick=\"%f\"", xtick().tick, xtick().subtick, _lenTick.tick, _lenTick.subtick);
 		else
-			xml.nput("tick=\"%d\" lenframes=\"%d\"", tick(), _lenFrame); // TODO FINDMICH write subtick
+			xml.nput("tick=\"%d\" subtick=\"%f\" lenframes=\"%d\"", xtick().tick, xtick().subtick, _lenFrame);
 		
 		xml.put(" />", name);
 	}
@@ -368,6 +366,7 @@ namespace MusECore
 		   means "lenframes", but was stored using an old MusE version. */
 		bool in_deprecated_sample_mode = false;
 		
+		setLenType(TICKS);
 		sn = -1;
 		for (;;)
 		{
@@ -386,20 +385,34 @@ namespace MusECore
 				case Xml::Attribut:
 					if (tag == "tick")
 					{
-						setLenType(TICKS);
 						setTick(xml.s2().toInt());
+					}
+					if (tag == "subtick")
+					{
+						XTick temp = xtick();
+						temp.subtick=xml.s2().toDouble();
+						setTick(temp);
 					}
 					else if (tag == "sample")
 					{
 						printf("PosLen::read wants FRAMES but this is denied.\n");
 						in_deprecated_sample_mode = true;
-						setLenType(TICKS);
 						setFrame(xml.s2().toInt());
 					}
 					else if ((tag == "len") && !in_deprecated_sample_mode)
 					{
 						_lenType=Pos::TICKS;
 						setLenTick(xml.s2().toInt());
+					}
+					else if (tag == "lensubtick")
+					{
+						if (in_deprecated_sample_mode)
+							printf("THIS CANNOT HAPPEN in PosLen::read: lensubtick was read, but in_deprecated_sample_mode==true!\n");
+						else
+						{
+							_lenTick.subtick = xml.s2().toDouble();
+							setLenTick(_lenTick); // this is necessary!
+						}
 					}
 					else if ((tag == "lenframes") || ((tag == "len") && in_deprecated_sample_mode))
 					{
