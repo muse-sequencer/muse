@@ -168,7 +168,7 @@ Pos& Pos::operator+=(int a)
 
 Pos operator+(Pos a, int b)
       {
-      Pos c;
+      Pos c = a;
       c.setType(a.type());
       return c += b;
       }
