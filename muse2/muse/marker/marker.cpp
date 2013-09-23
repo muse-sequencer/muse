@@ -34,7 +34,6 @@ Marker* MarkerList::add(const Marker& marker)
 Marker* MarkerList::add(const QString& s, int t)
       {
       Marker marker(s);
-      marker.setType(Pos::TICKS);
       marker.setTick(t);
       iMarker i = insert(std::pair<const int, Marker> (t, marker));
       return &i->second;

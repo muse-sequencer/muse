@@ -78,7 +78,6 @@ namespace MusECore
 		{
 			return _type;
 		}
-		void setType(TType t);
 
 		Pos& operator+=(Pos a);
 		Pos& operator+=(int a);

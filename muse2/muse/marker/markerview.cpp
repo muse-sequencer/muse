@@ -86,7 +86,6 @@ MarkerItem::MarkerItem(QTreeWidget* parent, MusECore::Marker* m)
       setTick(m->tick());
       if (m->type() == MusECore::Pos::FRAMES)
             setIcon(COL_LOCK, QIcon(*lockIcon));
-      setLock(m->type() == MusECore::Pos::FRAMES);
       }
 
 //---------------------------------------------------------
@@ -99,15 +98,6 @@ void MarkerItem::setName(const QString& s)
       _marker = MusEGlobal::song->setMarkerName(_marker, s);
       }
 
-//---------------------------------------------------------
-//   setLock
-//---------------------------------------------------------
-
-void MarkerItem::setLock(bool lck)
-      {
-      setIcon(COL_LOCK, QIcon(lck ? *lockIcon : 0));
-      _marker = MusEGlobal::song->setMarkerLock(_marker, lck);
-      }
 
 //---------------------------------------------------------
 //   setTick
@@ -209,9 +199,8 @@ MarkerView::MarkerView(QWidget* parent)
       
       QStringList columnnames;
       columnnames << tr("Bar:Beat:Tick")
-		  << tr("Hr:Mn:Sc:Fr:Sf")
-		  << tr("Lock")
-		  << tr("Text");
+          << tr("Hr:Mn:Sc:Fr:Sf")
+          << tr("Text");
 
       table->setHeaderLabels(columnnames);
       table->setColumnWidth(2, 40);      
@@ -235,17 +224,12 @@ MarkerView::MarkerView(QWidget* parent)
       editSMPTE->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Fixed));
 
-      lock = new QToolButton;
-      lock->setIcon(*lockIcon);
-      lock->setCheckable(true);
-
       editName = new QLineEdit;
       editName->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,
-					  QSizePolicy::Preferred));
+                      QSizePolicy::Preferred));
 
       hbox->addWidget(editTick);
       hbox->addWidget(editSMPTE);
-      hbox->addWidget(lock);
       hbox->addWidget(editName);
       props->setLayout(hbox);
 
@@ -259,8 +243,6 @@ MarkerView::MarkerView(QWidget* parent)
          editTick, SLOT(setValue(const MusECore::Pos&)));
       connect(editTick, SIGNAL(valueChanged(const MusECore::Pos&)),
          editSMPTE, SLOT(setValue(const MusECore::Pos&)));
-      connect(lock, SIGNAL(toggled(bool)),
-         SLOT(lockChanged(bool)));
       connect(MusEGlobal::song, SIGNAL(markerChanged(int)),
          SLOT(markerChanged(int)));
 
@@ -520,10 +502,8 @@ void MarkerView::markerSelectionChanged()
             editTick->setValue(0);
             editSMPTE->setValue(0);
             editName->setText(QString(""));
-            lock->setChecked(false);
             editSMPTE->setEnabled(false);
             editTick->setEnabled(false);
-            lock->setEnabled(false);
             editName->setEnabled(false);
             }
       else {
@@ -531,8 +511,6 @@ void MarkerView::markerSelectionChanged()
             editSMPTE->setValue(item->tick());
             editName->setText(item->name());
             editName->setEnabled(true);
-            lock->setChecked(item->lock());
-            lock->setEnabled(true);
             
             editSMPTE->setEnabled(item->lock());
             editTick->setEnabled(!item->lock());
@@ -571,20 +549,6 @@ void MarkerView::tickChanged(const MusECore::Pos& pos)
             item->setTick(pos.tick());
             MusEGlobal::song->setPos(0, MusECore::Pos(pos.xtick()), true, true, false);
             table->sortByColumn(COL_TICK, Qt::AscendingOrder);
-            }
-      }
-
-//---------------------------------------------------------
-//   lockChanged
-//---------------------------------------------------------
-
-void MarkerView::lockChanged(bool lck)
-      {
-      MarkerItem* item = (MarkerItem*)table->currentItem();
-      if (item) {
-            item->setLock(lck);
-            editSMPTE->setEnabled(item->lock());
-            editTick->setEnabled(!item->lock());
             }
       }
 

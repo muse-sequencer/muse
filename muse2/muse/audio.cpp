@@ -144,8 +144,6 @@ Audio::Audio()
       state         = STOP;
       msg           = 0;
 
-      startRecordPos.setType(Pos::TICKS);
-      endRecordPos.setType(Pos::TICKS);
       startExternalRecTick = 0;
       endExternalRecTick = 0;
       

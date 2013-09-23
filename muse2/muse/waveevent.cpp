@@ -173,7 +173,6 @@ void WaveEventBase::read(Xml& xml)
 				break;
 			case Xml::TagEnd:
 				if (tag == "event") {
-					Pos::setType(FRAMES);   // DEBUG
 					return;
 				}
 			default:

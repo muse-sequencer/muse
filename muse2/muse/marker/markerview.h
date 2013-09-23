@@ -61,7 +61,6 @@ class MarkerItem : public QTreeWidgetItem {
       bool lock() const;
       void setName(const QString& s);
       void setTick(unsigned t);
-      void setLock(bool lck);
       };
 
 //---------------------------------------------------------
@@ -75,7 +74,6 @@ class MarkerView : public TopWin {
       QLineEdit* editName;
       Awl::PosEdit* editSMPTE;
       Awl::PosEdit* editTick;
-      QToolButton* lock;
       QToolBar* tools;
       
       
@@ -88,7 +86,6 @@ class MarkerView : public TopWin {
       void markerSelectionChanged();
       void nameChanged(const QString&);
       void tickChanged(const MusECore::Pos&);
-      void lockChanged(bool);
       void markerChanged(int);
       void clicked(QTreeWidgetItem*);
       void updateList();

@@ -124,30 +124,6 @@ namespace MusECore
 		_frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
 	}
 
-	// ---------------------------------------------------------
-	// setType
-	// ---------------------------------------------------------
-
-	void Pos::setType(TType t)
-	{
-		if (t == _type)
-			return;
-		
-		if (t == FRAMES)
-			printf("DEBUG: warning: Pos::setType(FRAMES) called\n");
-		
-		if (_type == TICKS)
-		{
-			// convert from ticks to frames
-			_frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
-		}
-		else
-		{
-			// convert from frames to ticks
-			_tick = MusEGlobal::tempomap.frame2xtick(_frame, _tick, &sn);
-		}
-		_type = t;
-	}
 
 	// ---------------------------------------------------------
 	// operator+=
@@ -194,7 +170,6 @@ namespace MusECore
 	Pos operator+(Pos a, int b)
 	{
 		Pos c;
-		c.setType(a.type());
 		return c += b;
 	}
 
@@ -474,14 +449,12 @@ namespace MusECore
 				case Xml::Attribut:
 					if (tag == "tick")
 					{
-						setType(TICKS);
 						setLenType(TICKS);
 						setTick(xml.s2().toInt());
 					}
 					else if (tag == "sample") // FINDMICH
 					{
 						printf("PosLen::read wants FRAMES but this is denied.\n");
-						setType(TICKS);
 						setLenType(TICKS);
 						setFrame(xml.s2().toInt());
 					}

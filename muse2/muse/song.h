@@ -231,7 +231,6 @@ class Song : public QObject {
       void removeMarker(Marker*);
       Marker* setMarkerName(Marker*, const QString&);
       Marker* setMarkerTick(Marker*, int);
-      Marker* setMarkerLock(Marker*, bool);
       void setMarkerCurrent(Marker* m, bool f);
 
       //-----------------------------------------

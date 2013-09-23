@@ -1561,12 +1561,6 @@ Marker* Song::setMarkerTick(Marker* m, int t)
       return m;
       }
 
-Marker* Song::setMarkerLock(Marker* m, bool f)
-      {
-      m->setType(f ? Pos::FRAMES : Pos::TICKS);
-      emit markerChanged(MARKER_LOCK);
-      return m;
-      }
 
 
 //---------------------------------------------------------

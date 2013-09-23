@@ -509,7 +509,6 @@ Part* Part::duplicate() const
 WavePart::WavePart(WaveTrack* t)
    : Part(t)
       {
-      setType(TICKS); // DELETETHIS, this might be unneccessary due to the XTicks changes, and below.
       }
 
 
