@@ -1,3 +1,8 @@
+28.09.2013:
+         - Changed default shortcut in PianoRoll for moving to current position from C to I
+           the former was conflicting with the default global shortcut for metronome (rj)
+27.09.2013:
+         - Changed beat lines to a darker shade (rj)
 02.09.2013:
          - Display git hash and date in the about box instead of svn revision (Orcan)
          - Bumped the year string to 2013 in the about box

@@ -192,7 +192,7 @@ void initShortCuts()
       defShrt(SHRT_DEC_POS,          Qt::CTRL + Qt::Key_Left,   QT_TRANSLATE_NOOP("shortcuts", "Edit: Decrease event position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_dec_pos");
       defShrt(SHRT_ZOOM_IN,          Qt::CTRL + Qt::Key_PageUp,   QT_TRANSLATE_NOOP("shortcuts", "View: Zoom in"),  PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT + WAVE_SHRT, "zoom_in");
       defShrt(SHRT_ZOOM_OUT,         Qt::CTRL + Qt::Key_PageDown, QT_TRANSLATE_NOOP("shortcuts", "View: Zoom out"), PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT + WAVE_SHRT, "zoom_out");
-      defShrt(SHRT_GOTO_CPOS,        Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "View: Goto Current Position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "goto_cpos");
+      defShrt(SHRT_GOTO_CPOS,        Qt::Key_I, QT_TRANSLATE_NOOP("shortcuts", "View: Goto Current Position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "goto_cpos");
       defShrt(SHRT_SCROLL_LEFT,      Qt::Key_H, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_left");
       defShrt(SHRT_SCROLL_RIGHT,     Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_right");
 
