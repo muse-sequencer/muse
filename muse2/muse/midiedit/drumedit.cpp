@@ -1680,6 +1680,34 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             else
                   return;
             }
+      else if (key == shortcuts[SHRT_MOVE_PLAY_TO_NOTE].key){
+        movePlayPointerToSelectedEvent();
+        return;
+      }
+      else if (key == shortcuts[SHRT_STEP_RECORD].key) {
+          canvas->setSteprec(!srec->isChecked());
+          srec->setChecked(!srec->isChecked());
+          return;
+      }
+      else if (key == shortcuts[SHRT_MIDI_INPUT].key) {
+          canvas->setMidiin(!midiin->isChecked());
+          midiin->setChecked(!midiin->isChecked());
+          return;
+
+      }
+      else if (key == shortcuts[SHRT_PLAY_EVENTS].key) {
+          canvas->playEvents(!speaker->isChecked());
+          speaker->setChecked(!speaker->isChecked());
+          return;
+      }
+      else if (key == shortcuts[SHRT_INC_VELOCITY].key) {
+          modify_velocity(partlist_to_set(parts()), 1, 100, 1);
+          return;
+      }
+      else if (key == shortcuts[SHRT_DEC_VELOCITY].key) {
+          modify_velocity(partlist_to_set(parts()), 1, 100, -1);
+          return;
+      }
       else { //Default:
             event->ignore();
             return;

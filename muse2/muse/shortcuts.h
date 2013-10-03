@@ -218,6 +218,12 @@ enum {
       SHRT_DEC_PITCH,
       SHRT_INC_POS,
       SHRT_DEC_POS,
+
+      SHRT_STEP_RECORD,
+      SHRT_MIDI_INPUT,
+      SHRT_PLAY_EVENTS,
+      SHRT_INC_VELOCITY,
+      SHRT_DEC_VELOCITY,
       
       SHRT_POS_INC_NOSNAP,
       SHRT_POS_DEC_NOSNAP,
@@ -298,6 +304,8 @@ enum {
       SHRT_TOGGLE_PUNCT2, // ,
 
       SHRT_EVENT_COLOR, //e
+
+      SHRT_MOVE_PLAY_TO_NOTE,
 
       // Shortcuts for tools
       // global

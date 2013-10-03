@@ -92,6 +92,27 @@ void MidiEditor::genPartlist()
 //---------------------------------------------------------
 //   addPart
 //---------------------------------------------------------
+void MidiEditor::movePlayPointerToSelectedEvent()
+{
+    const MusECore::EventList & evl = curCanvasPart()->events();
+    int tickPos = -1;
+    for (MusECore::ciEvent ev=evl.begin(); ev!=evl.end(); ev++) {
+       if (ev->second.selected()) {
+        tickPos = ev->second.tick();
+        printf("found selected event, moving to pos %d\n", tickPos);
+        break;
+       }
+    }
+    if (tickPos > -1)
+    {
+        MusECore::Pos p0(curCanvasPart()->tick() + tickPos, true);
+        MusEGlobal::song->setPos(0, p0);
+    }
+}
+
+//---------------------------------------------------------
+//   addPart
+//---------------------------------------------------------
 
 void MidiEditor::addPart(MusECore::Part* p)
 {
