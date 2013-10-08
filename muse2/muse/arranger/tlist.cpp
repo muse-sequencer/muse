@@ -2460,7 +2460,8 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
                       // loop through all tracks and set the levels for all tracks
                       for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
                           MusECore::AudioTrack *trk = (MusECore::AudioTrack*)*t;
-                          if (trk->hasAuxSend())
+
+                          if (!trk->isMidiTrack() && trk->hasAuxSend())
                           {
                               std::vector<double> oldAuxValue;
                               for (unsigned i = 0 ; i < auxCopy.size(); i++)
