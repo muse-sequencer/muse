@@ -1,7 +1,8 @@
+08.10.2013:
+         - Added line drawing of tempo in graphical master track editor (rj)
 03.10.2013:
          - Added keyboard shortcuts in midi editors for functions, Step record, Midi input,
            Play events, Inc/Dec velocity (rj)
-
 28.09.2013:
          - Changed default shortcut in PianoRoll for moving to current position from C to I
            the former was conflicting with the default global shortcut for metronome (rj)

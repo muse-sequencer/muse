@@ -57,6 +57,11 @@ class Master : public MusEGui::View {
       DragMode drag;
       MidiEditor* editor;
 
+      int line1x;
+      int line1y;
+      int line2x;
+      int line2y;
+      bool drawLineMode;
       
       virtual void pdraw(QPainter&, const QRect&);
       virtual void viewMouseMoveEvent(QMouseEvent* event);
@@ -68,6 +73,8 @@ class Master : public MusEGui::View {
       void newVal(int x1, int x2, int y);
       bool deleteVal1(unsigned int x1, unsigned int x2);
       void deleteVal(int x1, int x2);
+
+      void newValRamp(int x1, int y1, int x2, int y2);
 
    private slots:
       void songChanged(MusECore::SongChangedFlags_t);
