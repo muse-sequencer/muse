@@ -206,6 +206,7 @@ void Master::pdraw(QPainter& p, const QRect& rect)
             p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
             }
+
       }
 
 //---------------------------------------------------------
@@ -220,11 +221,12 @@ void Master::draw(QPainter& p, const QRect& rect)
       if ((tool == MusEGui::DrawTool) && drawLineMode) {
             p.setPen(Qt::black);
             p.drawLine(line1x, line1y, line2x, line2y);
+            p.drawLine(line1x, line1y+1, line2x, line2y+1);
             }
       }
 
-      //---------------------------------------------------------
-//   changeValRamp
+//---------------------------------------------------------
+//   newValRamp
 //---------------------------------------------------------
 
 void Master::newValRamp(int x1, int y1, int x2, int y2)
@@ -247,7 +249,7 @@ void Master::newValRamp(int x1, int y1, int x2, int y2)
     int stick = mapx(i->second->tick);
     int startOldTick = i->second->tick;
     //printf("stick=%d startOldTick=%d tickEnd=%d\n",stick, startOldTick, tickEnd);
-    if (startOldTick > tickStart && startOldTick < tickEnd ) {
+    if (startOldTick > tickStart && startOldTick <= tickEnd ) {
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo, startOldTick, e->tempo));
         //printf("tempo = %f %d %d\n", 60000000.0/e->tempo, endOldTick, startOldTick);
     }
@@ -256,8 +258,9 @@ void Master::newValRamp(int x1, int y1, int x2, int y2)
   int priorTick = editor->rasterVal1(x1);
   int tempoVal = int(60000000000.0/(280000 - y1));
   operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTempo, tickStart, tempoVal));
-  for (int i = x1; i < x2; i++) {
-    int tick = editor->rasterVal1(i);
+  int tick = editor->rasterVal1(x1);
+  for (int i = x1; tick < tickEnd; i++) {
+    tick = editor->rasterVal1(i);
     if (tick > priorTick) {
         double xproportion = double(tick-tickStart)/double(tickEnd-tickStart);
         int yproportion = double(y2 - y1) * xproportion;
