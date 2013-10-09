@@ -59,7 +59,7 @@ const char* UndoOp::typeName()
             "AddSig", "DeleteSig",
             "AddKey", "DeleteKey",
             "ModifyTrackName", "ModifyTrackChannel",
-            "SwapTrack", 
+            "MoveTrack",
             "ModifyClip", "ModifyMarker",
             "ModifySongLen", "DoNothing"
             };
@@ -106,7 +106,7 @@ void UndoOp::dump()
             case AddTempo:
             case DeleteTempo:
             case AddSig:
-            case SwapTrack:
+            case MoveTrack:
             case DeleteSig:
             case ModifyClip:
             case ModifyMarker:
@@ -469,12 +469,14 @@ void Song::revertOperationGroup2(Undo& operations)
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
                         
-                  case UndoOp::SwapTrack:
+                  case UndoOp::MoveTrack:
                         {
-                        updateFlags |= SC_TRACK_MODIFIED;
-                        Track* track  = _tracks[i->a];
-                        _tracks[i->a] = _tracks[i->b];
-                        _tracks[i->b] = track;
+                        moveTrack(i->b, i->a);
+                        if (i->b > i->a)
+                          i->a++;
+                        else
+                          i->b--;
+
                         updateFlags |= SC_TRACK_MODIFIED;
                         }
                         break;
@@ -593,11 +595,14 @@ void Song::executeOperationGroup2(Undo& operations)
                         break;
                         
                         
-                  case UndoOp::SwapTrack:
+                  case UndoOp::MoveTrack:
                         {
-                        Track* track  = _tracks[i->a];
-                        _tracks[i->a] = _tracks[i->b];
-                        _tracks[i->b] = track;
+                        moveTrack(i->a, i->b);
+                        if (i->a > i->b){
+                          i->b++;
+                        }
+                        else
+                          i->a--;
                         updateFlags |= SC_TRACK_MODIFIED;
                         }
                         break;
@@ -701,7 +706,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
       assert(type_==AddKey || type_==DeleteKey ||
              type_==AddTempo || type_==DeleteTempo ||
              type_==AddSig || type_==DeleteSig ||
-             type_==ModifySongLen || type_==SwapTrack);
+             type_==ModifySongLen || type_==MoveTrack);
       
       type = type_;
       a  = a_;

@@ -325,7 +325,7 @@ class Song : public QObject {
       void removeTrack3(Track* track);
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
-      void swapTracks(int i1, int i2);
+      void moveTrack(int i1, int i2);
       void setRecordFlag(Track*, bool);
       void insertTrack0(Track*, int idx);
       void insertTrack1(Track*, int idx);

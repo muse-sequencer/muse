@@ -53,7 +53,7 @@ struct UndoOp {
             AddSig,   DeleteSig,
             AddKey,   DeleteKey,
             ModifyTrackName, ModifyTrackChannel,
-            SwapTrack,
+            MoveTrack,
             ModifyClip,
             ModifyMarker,
             ModifySongLen, // a = new len, b = old len

@@ -1062,16 +1062,29 @@ void Song::setStopPlay(bool f)
       }
 
 //---------------------------------------------------------
-//   swapTracks
+//   moveTrack
+//
 //---------------------------------------------------------
 
-void Song::swapTracks(int i1, int i2)
-      {
-      addUndo(UndoOp(UndoOp::SwapTrack, i1, i2));
-      Track* track = _tracks[i1];
-      _tracks[i1]  = _tracks[i2];
-      _tracks[i2]  = track;
-      }
+void Song::moveTrack(int fromI, int toI)
+{
+  //addUndo(UndoOp(UndoOp::MoveTrack, fromI, toI));
+  Track* toTrack = _tracks[toI];
+  Track* fromTrack = _tracks[fromI];
+  for(TrackList::iterator toIt = _tracks.begin(); toIt != _tracks.end(); ++toIt)
+  {
+    if ((*toIt) == toTrack) {
+        for(TrackList::iterator fromIt = _tracks.begin(); fromIt != _tracks.end(); ++fromIt)
+        {
+            if ((*fromIt) == fromTrack) {
+                _tracks.erase(fromIt);
+                _tracks.insert(toIt,fromTrack);
+            }
+        }
+
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   seekTo

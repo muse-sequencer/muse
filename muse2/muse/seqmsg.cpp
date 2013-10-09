@@ -739,7 +739,7 @@ void Audio::msgMoveTrack(int idx1, int idx2, bool doUndoFlag)
       int n = MusEGlobal::song->tracks()->size();
       if (idx1 >= n || idx2 >= n)   // sanity check
             return;
-      MusEGlobal::song->applyOperation(UndoOp(UndoOp::SwapTrack, idx1, idx2), doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::MoveTrack, idx1, idx2), doUndoFlag);
       }
 
 //---------------------------------------------------------
