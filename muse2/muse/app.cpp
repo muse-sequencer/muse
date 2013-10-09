@@ -114,7 +114,7 @@ static pthread_t watchdogThread;
 //ErrorHandler *error;
 
 #define PROJECT_LIST_LEN  6
-static QString* projectList[PROJECT_LIST_LEN];
+QStringList projectRecentList;
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -267,33 +267,19 @@ bool MusE::seqRestart()
 }
 
 //---------------------------------------------------------
-//   addProject
+//   addProject to recent list
 //---------------------------------------------------------
 
 void addProject(const QString& name)
-      {
-      for (int i = 0; i < PROJECT_LIST_LEN; ++i) {
-            if (projectList[i] == 0)
-                  break;
-            if (name == *projectList[i]) {
-                  int dst = i;
-                  int src = i+1;
-                  int n = PROJECT_LIST_LEN - i - 1;
-                  delete projectList[i];
-                  for (int k = 0; k < n; ++k)
-                        projectList[dst++] = projectList[src++];
-                  projectList[dst] = 0;
-                  break;
-                  }
-            }
-      QString** s = &projectList[PROJECT_LIST_LEN - 2];
-      QString** d = &projectList[PROJECT_LIST_LEN - 1];
-      if (*d)
-            delete *d;
-      for (int i = 0; i < PROJECT_LIST_LEN-1; ++i)
-            *d-- = *s--;
-      projectList[0] = new QString(name);
-      }
+{
+  if (projectRecentList.contains(name))
+    return;
+
+  projectRecentList.append(name);
+  if (projectRecentList.size() > PROJECT_LIST_LEN)
+    projectRecentList.pop_back();
+
+}
 
 //---------------------------------------------------------
 //   MusE
@@ -932,24 +918,22 @@ MusE::MusE() : QMainWindow()
       prjPath += QString("/projects");
       FILE* f = fopen(prjPath.toLatin1().constData(), "r");
       if (f == 0) {
-            perror("open projectfile");
-            for (int i = 0; i < PROJECT_LIST_LEN; ++i)
-                  projectList[i] = 0;
-            }
+        perror("open projectfile");
+        projectRecentList.clear();
+      }
       else {
-            for (int i = 0; i < PROJECT_LIST_LEN; ++i) {
-                  char buffer[256];
-                  if (fgets(buffer, 256, f)) {
-                        int n = strlen(buffer);
-                        if (n && buffer[n-1] == '\n')
-                              buffer[n-1] = 0;
-                        projectList[i] = *buffer ? new QString(buffer) : 0;
-                        }
-                  else
-                        break;
-                  }
-            fclose(f);
-            }
+        for (int i = 0; i < PROJECT_LIST_LEN; ++i)
+        {
+          char buffer[256];
+          if (fgets(buffer, 256, f))
+          {
+            projectRecentList.append(QString(buffer).simplified());
+          }
+          else
+            break;
+        }
+          fclose(f);
+      }
 
       arrangerView->populateAddTrack();
       arrangerView->updateShortcuts();
@@ -1003,7 +987,7 @@ void MusE::loadDefaultSong(int argc, char** argv)
         name = argv[0];
   else if (MusEGlobal::config.startMode == 0) {
         if (argc < 2)
-              name = projectList[0] ? *projectList[0] : MusEGui::getUniqueUntitledName();  
+              name = !projectRecentList.isEmpty() ? projectRecentList.first() : MusEGui::getUniqueUntitledName();
         else
               name = argv[0];
         printf("starting with selected song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
@@ -1514,8 +1498,8 @@ void MusE::closeEvent(QCloseEvent* event)
       prjPath += "/projects";
       FILE* f = fopen(prjPath.toLatin1().constData(), "w");
       if (f) {
-            for (int i = 0; i < PROJECT_LIST_LEN; ++i) {
-                  fprintf(f, "%s\n", projectList[i] ? projectList[i]->toLatin1().constData() : "");
+            for (int i = 0; i < projectRecentList.size(); ++i) {
+                  fprintf(f, "%s\n", projectRecentList[i].toLatin1().constData());
                   }
             fclose(f);
             }
@@ -2055,22 +2039,25 @@ void MusE::startClipList(bool checked)
 //---------------------------------------------------------
 
 void MusE::openRecentMenu()
-      {
-      openRecent->clear();
-      for (int i = 0; i < PROJECT_LIST_LEN; ++i) {
-            if (projectList[i] == 0)
-                  break;
-            QByteArray ba = projectList[i]->toLatin1();
-            const char* path = ba.constData();
-            const char* p = strrchr(path, '/');
-            if (p == 0)
-                  p = path;
-            else
-                  ++p;
-	    QAction *act = openRecent->addAction(QString(p));
-	    act->setData(i);
-            }
-      }
+{
+  openRecent->clear();
+  for (int i = 0; i < projectRecentList.size(); ++i)
+  {
+    QByteArray ba = projectRecentList[i].toLatin1();
+    const char* path = ba.constData();
+
+    if (!QFileInfo(path).exists())
+        continue;
+
+    const char* p = strrchr(path, '/');
+    if (p == 0)
+          p = path;
+    else
+          ++p;
+    QAction *act = openRecent->addAction(QString(p));
+    act->setData(i);
+  }
+}
 
 //---------------------------------------------------------
 //   selectProject
@@ -2081,15 +2068,15 @@ void MusE::selectProject(QAction* act)
       if (!act)
             return;
       int id = act->data().toInt();
-      if (!(id < PROJECT_LIST_LEN))
+      if (id > projectRecentList.size()-1)
       {
         printf("THIS SHOULD NEVER HAPPEN: id(%i) < PROJECT_LIST_LEN(%i) in MusE::selectProject!\n",id, PROJECT_LIST_LEN);
         return;
       }
-      QString* name = projectList[id];
-      if (name == 0)
+      QString name = projectRecentList[id];
+      if (name == "")
             return;
-      loadProjectFile(*name, false, true);
+      loadProjectFile(name, false, true);
       }
 
 //---------------------------------------------------------

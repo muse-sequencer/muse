@@ -1,5 +1,6 @@
 09.10.2013:
          - Changed track dragging to move instead of swap (rj)
+         - Removed projects from 'recent' menu if they no longer exist (rj)
 08.10.2013:
          - Added line drawing of tempo in graphical master track editor (rj)
          - Fixed bug (issue #342 Moving Aux sends crashes muse) (rj)
