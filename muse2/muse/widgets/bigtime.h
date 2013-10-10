@@ -24,6 +24,9 @@
 #define __BIGTIME_H__
 
 #include <QWidget>
+#include <QPaintEvent>
+#include <QPainter>
+#include <cmath>
 
 class QCheckBox;
 class QLabel;
@@ -31,6 +34,41 @@ class QLabel;
 namespace MusEGui {
 
 class MusE;
+
+class VerticalMetronomeWidget : public QWidget
+{
+   float metronomePosition;
+
+
+protected:
+    void paintEvent (QPaintEvent  *ev )
+    {
+      QRect rr(ev->rect());
+      QPainter p(this);
+
+      //p.fillRect(rr,Qt::yellow);
+      int y = (rr.height() - (rr.height()*fabs(metronomePosition)))-1;
+      if (metronomePosition > -0.05 and metronomePosition < 0.15) {
+        p.setPen(Qt::red);
+        p.drawLine(0,y-1,rr.width(),y-1);
+      }
+      else {
+        p.setPen(Qt::yellow);
+      }
+      p.drawLine(0,y,rr.width(),y);
+    }
+public:
+    VerticalMetronomeWidget(QWidget* parent) : QWidget(parent) {
+      metronomePosition=0.0;
+    }
+
+    void setMetronome(float v)
+    {
+      metronomePosition = v;
+      update();
+    }
+};
+
 
 //---------------------------------------------------------
 //   BigTime
@@ -42,9 +80,9 @@ class BigTime : public QWidget {
       bool tickmode;
       MusE* seq;
       
-
       bool setString(unsigned);
 
+      VerticalMetronomeWidget *metronome;
       QWidget *dwin;
       QCheckBox *fmtButton;
       QLabel *absTickLabel;
@@ -64,6 +102,7 @@ class BigTime : public QWidget {
    protected:
       virtual void resizeEvent(QResizeEvent*);
       virtual void closeEvent(QCloseEvent*);
+      //void paintEvent (QPaintEvent  *event );
 
    public slots:
       void setPos(int, unsigned, bool);

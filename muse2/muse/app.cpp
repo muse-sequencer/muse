@@ -275,7 +275,7 @@ void addProject(const QString& name)
   if (projectRecentList.contains(name))
     return;
 
-  projectRecentList.append(name);
+  projectRecentList.push_front(name);
   if (projectRecentList.size() > PROJECT_LIST_LEN)
     projectRecentList.pop_back();
 

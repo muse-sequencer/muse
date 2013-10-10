@@ -1,3 +1,5 @@
+10.10.2013:
+         - Added a visual metronome to Bigtime (rj)
 09.10.2013:
          - Changed track dragging to move instead of swap (rj)
          - Removed projects from 'recent' menu if they no longer exist (rj)
