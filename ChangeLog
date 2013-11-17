@@ -1,3 +1,5 @@
+17.10.2013:
+         - Fixed drag&drop plugins sometimes not working when built with optimize (rj)
 10.10.2013:
          - Added a visual metronome to Bigtime (rj)
 09.10.2013:
