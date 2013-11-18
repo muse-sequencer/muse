@@ -548,7 +548,6 @@ QStringList EffectRack::mimeTypes() const
 
 void EffectRack::dropEvent(QDropEvent *event)
 {
-      QString text;
       QListWidgetItem *i = itemAt( event->pos() );
       if (!i)
             return;
@@ -588,29 +587,22 @@ void EffectRack::dropEvent(QDropEvent *event)
             
             if(event->mimeData()->hasFormat(MUSE_MIME_TYPE))
             {
-              char *mimedata = new char[event->mimeData()->data(MUSE_MIME_TYPE).size() + 2];
-              strcpy(mimedata, event->mimeData()->data(MUSE_MIME_TYPE).constData());
-              MusECore::Xml xml(mimedata);
-              if (MusEGlobal::debugMsg) {
-                  QString xmlconf;
-                  xml.dump(xmlconf);
-                  printf("received %d [%s]\n", event->mimeData()->data(MUSE_MIME_TYPE).size(), mimedata);
-              }
+              QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE).constData();
+              MusECore::Xml xml(mimeData.constData());
+              if (MusEGlobal::debugMsg)
+                  printf("received %d [%s]\n", mimeData.size(), mimeData.constData());
 
               initPlugin(xml, idx);
-              delete mimedata;
             }
-            else
-            if (event->mimeData()->hasUrls()) 
+            else if (event->mimeData()->hasUrls())
             {
               // Multiple urls not supported here. Grab the first one.
-              text = event->mimeData()->urls()[0].path();
+              QString text = event->mimeData()->urls()[0].path();
                
               if (text.endsWith(".pre", Qt::CaseInsensitive) || 
                   text.endsWith(".pre.gz", Qt::CaseInsensitive) || 
                   text.endsWith(".pre.bz2", Qt::CaseInsensitive))
               {
-                  //bool popenFlag = false;
                   bool popenFlag;
                   FILE* fp = MusEGui::fileOpen(this, text, ".pre", "r", popenFlag, false, false);
                   if (fp) 
@@ -618,7 +610,6 @@ void EffectRack::dropEvent(QDropEvent *event)
                       MusECore::Xml xml(fp);
                       initPlugin(xml, idx);
                       
-                      // Added by T356.
                       if (popenFlag)
                             pclose(fp);
                       else
