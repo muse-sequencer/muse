@@ -30,16 +30,25 @@
 
 #include <QString>
 
+#define _MIDI_CTRL_DEBUG_   // REMOVE Tim. (Remember to clear this.)
+// For finding exactly who may be calling insert, erase clear etc. in
+//  the controller list classes. (KDevelop 'Find uses'.)
+#define _MIDI_CTRL_METHODS_DEBUG_   // REMOVE Tim. (Remember to clear this.)
+
 namespace MusECore {
 
 class Xml;
 class Part;
+class MidiRecordEvent;
 
 const int CTRL_HBANK = 0x00;
 const int CTRL_LBANK = 0x20;
 
 const int CTRL_HDATA = 0x06;
 const int CTRL_LDATA = 0x26;
+
+const int CTRL_DATA_INC = 0x60;
+const int CTRL_DATA_DEC = 0x61;
 
 const int CTRL_HNRPN = 0x63;
 const int CTRL_LNRPN = 0x62;
@@ -92,12 +101,15 @@ const int CTRL_POLYAFTER = CTRL_INTERNAL_OFFSET     + 0x1FF;  // 100 to 1FF !
 
 const int CTRL_VAL_UNKNOWN   = 0x10000000; // used as unknown hwVal
 
+const int CTRL_7_OFFSET      = 0x00000;
 const int CTRL_14_OFFSET     = 0x10000;
 const int CTRL_RPN_OFFSET    = 0x20000;
 const int CTRL_NRPN_OFFSET   = 0x30000;
 const int CTRL_RPN14_OFFSET  = 0x50000;
 const int CTRL_NRPN14_OFFSET = 0x60000;
 const int CTRL_NONE_OFFSET   = 0x70000;
+
+const int CTRL_OFFSET_MASK   = 0xf0000;
 
 //---------------------------------------------------------
 //   MidiController
@@ -223,14 +235,52 @@ typedef std::map<int, MidiCtrlValList*, std::less<int> >::iterator iMidiCtrlValL
 typedef std::map<int, MidiCtrlValList*, std::less<int> >::const_iterator ciMidiCtrlValList;
 
 class MidiCtrlValListList : public std::map<int, MidiCtrlValList*, std::less<int> > {
+      bool _RPN_Ctrls_Reserved; 
+  
    public:
-      void add(int channel, MidiCtrlValList* vl) {
-            insert(std::pair<const int, MidiCtrlValList*>((channel << 24) + vl->num(), vl));
-            }
+      MidiCtrlValListList();
+      //MidiCtrlValListList(const MidiCtrlValListList&); // TODO
+      
       iMidiCtrlValList find(int channel, int ctrl) {
             return std::map<int, MidiCtrlValList*, std::less<int> >::find((channel << 24) + ctrl);
             }
       void clearDelete(bool deleteLists);      
+      // Like 'find', finds a controller given fully qualified type + number. 
+      // But it returns controller with highest priority if multiple controllers use the 
+      //  given number such as {Controller7, num = 0x55} + {Controller14, num = 0x5544}.
+      // Note if given number is one of the eight reserved General Midi (N)RPN controllers,
+      //  this will only return Controller7 or Controller14, not anything (N)RPN related.
+      // That is, it will not 'encode' (N)RPNs. Use a MidiEncoder instance for that. 
+      iMidiCtrlValList searchControllers(int channel, int ctl);
+      // Returns true if any of the EIGHT reserved General Midi (N)RPN control numbers are ALREADY 
+      //  defined as Controller7 or part of Controller14. Cached, for speed.
+      // Used (at least) by midi input encoders to quickly arbitrate new input.
+      bool RPN_Ctrls_Reserved() { return _RPN_Ctrls_Reserved; }
+      // Manual check and update of the flag. For convenience, returns the flag.
+      // Cost depends on types and number of list controllers, so it is good for deferring 
+      //  an update until AFTER some lengthy list operation. JUST BE SURE to call this!
+      bool update_RPN_Ctrls_Reserved();
+      
+      // NOTICE: If update is false or these are bypassed by using insert, erase, clear etc. for speed, 
+      //          then BE SURE to call update_RPN_Ctrls_Reserved() later. 
+      void add(int channel, MidiCtrlValList* vl, bool update = true);
+      void del(iMidiCtrlValList ictl, bool update = true);
+      size_type del(int num, bool update = true);
+      void del(iMidiCtrlValList first, iMidiCtrlValList last, bool update = true);
+      void clr();
+      
+#ifdef _MIDI_CTRL_METHODS_DEBUG_      
+      // Need to catch all insert, erase, clear etc...
+      void swap(MidiCtrlValListList&);
+      std::pair<iMidiCtrlValList, bool> insert(const std::pair<int, MidiCtrlValList*>& p);
+      iMidiCtrlValList insert(iMidiCtrlValList ic, const std::pair<int, MidiCtrlValList*>& p);
+      void erase(iMidiCtrlValList ictl);
+      size_type erase(int num);
+      void erase(iMidiCtrlValList first, iMidiCtrlValList last);
+      void clear();
+#endif       
+      // Some IDEs won't "Find uses" of operators. So, no choice but to trust always catching it here.
+      MidiCtrlValListList& operator=(const MidiCtrlValListList&);
       };
 
 // REMOVE Tim.      
@@ -257,6 +307,7 @@ class MidiCtrlValListList : public std::map<int, MidiCtrlValList*, std::less<int
 //             }
 //       };
 
+// REMOVE Tim.      
 //---------------------------------------------------------
 //   MidiCtrlState
 //---------------------------------------------------------
@@ -289,25 +340,92 @@ class MidiCtrlState {
 };
       
 //---------------------------------------------------------
+//   MidiEncoder
+//---------------------------------------------------------
+
+class MidiEncoder {
+  public:
+    enum Mode { EncIdle, EncCtrl14, EncRPN, EncNRPN, EncRPN14, EncNRPN14 };
+
+  private:  
+    Mode _curMode;
+    unsigned int  _timer;    // 
+    unsigned char _curCtrl;  // Ctl num of first event
+    unsigned char _curData;  // Data of first event
+    unsigned int  _curTime;  // Time of first event
+    unsigned char _nextCtrl; // Expected next event ctl num (for ctrl14 only)
+    unsigned char _curRPNH;
+    unsigned char _curRPNL;
+    unsigned char _curNRPNH;
+    unsigned char _curNRPNL;
+
+  public:
+    MidiEncoder();
+
+    void encodeEvent(const MidiRecordEvent& ev, int port, int channel);
+    void endCycle(unsigned int blockSize);
+};
+
+//---------------------------------------------------------
 //   MidiControllerList
 //    this is a list of used midi controllers created
 //    - excplicit by user
 //    - implicit during import of a midi file
 //---------------------------------------------------------
 
+typedef std::map<int, MidiController*, std::less<int> >::iterator iMidiController;
+typedef std::map<int, MidiController*, std::less<int> >::const_iterator ciMidiController;
+
 class MidiControllerList : public std::map<int, MidiController*, std::less<int> > 
 {
-   public:
-      MidiControllerList() {}
-      MidiControllerList(const MidiControllerList& mcl);
+      bool _RPN_Ctrls_Reserved; 
       
-      void add(MidiController* mc) { insert(std::pair<int, MidiController*>(mc->num(), mc)); }
+   public:
+      MidiControllerList();
+      MidiControllerList(const MidiControllerList& mcl);
+
+      // Like 'find', finds a controller given fully qualified type + number. 
+      // But it returns controller with highest priority if multiple controllers use the 
+      //  given number such as {Controller7, num = 0x55} + {Controller14, num = 0x5544}.
+      // Note if given number is one of the eight reserved General Midi (N)RPN controllers,
+      //  this will only return Controller7 or Controller14, not anything (N)RPN related.
+      // That is, it will not 'encode' (N)RPNs. Use a MidiEncoder instance for that. 
+      iMidiController searchControllers(int ctl);
+      // Check if either a per-note controller, or else a regular controller already exists.
       bool ctrlAvailable(int find_num, MidiController* ignore_this = 0);
+      // Returns true if any of the EIGHT reserved General Midi (N)RPN control numbers are  
+      //  ALREADY defined as Controller7 or part of Controller14. Cached, for speed.
+      // Used (at least) by midi input encoders to quickly arbitrate new input.
+      bool RPN_Ctrls_Reserved() { return _RPN_Ctrls_Reserved; }
+      // Manual check and update of the flag. For convenience, returns the flag.
+      bool update_RPN_Ctrls_Reserved();
+      
+      // NOTICE: If update is false or these are bypassed by using insert, erase, clear etc. for speed, 
+      //          then BE SURE to call update_RPN_Ctrls_Reserved() later. 
+      void add(MidiController* mc, bool update = true);
+      void del(iMidiController ictl, bool update = true);
+      size_type del(int num, bool update = true);
+      void del(iMidiController first, iMidiController last, bool update = true);
+      void clr();
+
+#ifdef _MIDI_CTRL_METHODS_DEBUG_      
+      // Need to catch all insert, erase, clear etc...
+      void swap(MidiControllerList&);
+      std::pair<iMidiController, bool> insert(const std::pair<int, MidiController*>& p);
+      iMidiController insert(iMidiController ic, const std::pair<int, MidiController*>& p);
+      void erase(iMidiController ictl);
+      size_type erase(int num);
+      void erase(iMidiController first, iMidiController last);
+      void clear();
+#endif       
+      // Some IDEs won't "Find uses" of operators. So, no choice but to trust always catching it here.
+      MidiControllerList& operator=(const MidiControllerList&);
 };
 
-typedef MidiControllerList::iterator iMidiController;
-typedef MidiControllerList::const_iterator ciMidiController;
-typedef MidiControllerList MidiControllerList;
+// REMOVE Tim. Moved above.
+// typedef MidiControllerList::iterator iMidiController;
+// typedef MidiControllerList::const_iterator ciMidiController;
+// typedef MidiControllerList MidiControllerList;
 
 extern MidiControllerList defaultMidiController;
 extern void initMidiController();

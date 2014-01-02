@@ -373,7 +373,7 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
   
   for(iMidiController i = _controller->begin(); i != _controller->end(); ++i) 
       delete i->second;
-  _controller->clear();
+  _controller->clr();
   
   _nullvalue = ins._nullvalue;
   _waitForLSB = ins._waitForLSB;
@@ -920,7 +920,6 @@ void MidiInstrument::read(Xml& xml)
                         else if (tag == "Controller") {
                               MidiController* mc = new MidiController();
                               mc->read(xml);
-                              // Added by Tim. Copied from muse 2.
                               //
                               // HACK: make predefined "Program" controller overloadable
                               //
@@ -928,7 +927,7 @@ void MidiInstrument::read(Xml& xml)
                                     for (iMidiController i = _controller->begin(); i != _controller->end(); ++i) {
                                           if (i->second->name() == mc->name()) {
                                                 delete i->second;
-                                                _controller->erase(i);
+                                                _controller->del(i);
                                                 break;
                                                 }
                                           }

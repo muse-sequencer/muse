@@ -485,7 +485,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
                   break;
             
             
-            // Added by T356. Override existing program controller.
+            // Override existing program controller.
             iMidiController i = cl->end();
             if(ctrl == CTRL_PROGRAM)
             {
@@ -494,7 +494,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
                 if(i->second->num() == CTRL_PROGRAM)
                 {
                   delete i->second;
-                  cl->erase(i);
+                  cl->del(i);
                   
                   break;
                 }

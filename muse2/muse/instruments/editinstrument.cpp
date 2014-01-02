@@ -1965,7 +1965,7 @@ void EditInstrument::ctrlTypeChanged(int idx)
          return;
       }
       
-      cl->erase(c->num());
+      cl->del(c->num());
       c->setNum(new_num);
       cl->add(c);
       
@@ -2207,7 +2207,7 @@ void EditInstrument::ctrlNumChanged()
       }
       ctrlValidLabel->setPixmap(*greendotIcon);
       enableNonCtrlControls(true);
-      if(cl->erase(c->num()) == 0)
+      if(cl->del(c->num()) == 0)
         printf("EditInstrument::ctrlNumChanged Warning: Erase failed! Proceeding anyway.\n");
       c->setNum(new_num);
       cl->add(c);
@@ -2927,7 +2927,7 @@ void EditInstrument::deleteControllerClicked()
       if(!ctrl)
         return;
         
-      workingInstrument.controller()->erase(ctrl->num());   
+      workingInstrument.controller()->del(ctrl->num());   
       // Now delete the controller.
       delete ctrl;
       

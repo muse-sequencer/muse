@@ -24,9 +24,16 @@
 
 #include <stdio.h>
 
+#include "globaldefs.h"
 #include "midictrl.h"
 #include "xml.h"
 #include "globals.h"
+
+// REMOVE Tim. If necessary.
+#include "midi.h"
+#include "mpevent.h"
+#include "midiport.h"
+#include "minstrument.h"
 
 namespace MusECore {
 
@@ -686,6 +693,93 @@ MidiCtrlValList::MidiCtrlValList(int c)
       }
 
 //---------------------------------------------------------
+//   MidiCtrlValListList
+//---------------------------------------------------------
+
+MidiCtrlValListList::MidiCtrlValListList()
+{
+  _RPN_Ctrls_Reserved = false;
+}
+
+// TODO: Finish copy constructor, but first MidiCtrlValList might need one too ?
+// MidiCtrlValListList::MidiCtrlValListList(const MidiCtrlValListList& mcvl) : std::map<int, MidiCtrlValList*>()
+// {
+//   for(ciMidiCtrlValList i = mcvl.begin(); i != mcvl.end(); ++i)
+//   {
+//     MidiCtrlValList* mcl = i->second;
+//     add(new MidiCtrlValList(*mcl));
+//   }  
+//   update_RPN_Ctrls_Reserved();
+// }
+
+void MidiCtrlValListList::add(int channel, MidiCtrlValList* vl, bool update) 
+{
+  // TODO: If per-channel instruments are ever added to MusE, this routine would need changing.
+
+  const int num = vl->num();
+  if(!_RPN_Ctrls_Reserved && update)
+  {
+    const bool isCtl7  = ((num & CTRL_OFFSET_MASK) == CTRL_7_OFFSET);
+    const bool isCtl14 = ((num & CTRL_OFFSET_MASK) == CTRL_14_OFFSET);
+    if(isCtl14 || isCtl7)
+    {
+      const int l = num & 0xff;
+      if(l == CTRL_HDATA    ||
+         l == CTRL_LDATA    ||
+         l == CTRL_DATA_INC ||
+         l == CTRL_DATA_DEC ||
+         l == CTRL_HNRPN    ||
+         l == CTRL_LNRPN    ||
+         l == CTRL_HRPN     ||
+         l == CTRL_LRPN)
+        _RPN_Ctrls_Reserved = true;
+    }
+    if(!_RPN_Ctrls_Reserved && isCtl14)
+    {    
+      const int h = (num >> 8) & 0xff;
+      if(h == CTRL_HDATA    ||
+         h == CTRL_LDATA    ||
+         h == CTRL_DATA_INC ||
+         h == CTRL_DATA_DEC ||
+         h == CTRL_HNRPN    ||
+         h == CTRL_LNRPN    ||
+         h == CTRL_HRPN     ||
+         h == CTRL_LRPN)     
+        _RPN_Ctrls_Reserved = true;
+    }
+  }
+  insert(std::pair<const int, MidiCtrlValList*>((channel << 24) + num, vl));
+}
+
+void MidiCtrlValListList::del(iMidiCtrlValList ictl, bool update) 
+{ 
+  erase(ictl); 
+  if(update)
+    update_RPN_Ctrls_Reserved();
+}
+
+MidiCtrlValListList::size_type MidiCtrlValListList::del(int num, bool update) 
+{ 
+  MidiCtrlValListList::size_type res = erase(num);
+  if(update)
+    update_RPN_Ctrls_Reserved();
+  return res;
+}
+
+void MidiCtrlValListList::del(iMidiCtrlValList first, iMidiCtrlValList last, bool update) 
+{ 
+  erase(first, last); 
+  if(update)
+    update_RPN_Ctrls_Reserved();
+}
+
+void MidiCtrlValListList::clr() 
+{ 
+  clear(); 
+  update_RPN_Ctrls_Reserved();
+}
+
+//---------------------------------------------------------
 //   clearDelete
 //---------------------------------------------------------
 
@@ -701,9 +795,212 @@ void MidiCtrlValListList::clearDelete(bool deleteLists)
     }  
   }
   if(deleteLists)
-    clear();
+    clr();
 }
       
+//---------------------------------------------------------
+// searchControllers
+//---------------------------------------------------------
+
+iMidiCtrlValList MidiCtrlValListList::searchControllers(int channel, int ctl)
+{
+  const int type = ctl & CTRL_OFFSET_MASK;
+  const unsigned ch_bits = (channel << 24);
+  int n;
+  
+  // Looking for Controller7? See if any Controller14 contains the number and should be used instead.
+  if(type == CTRL_7_OFFSET)
+  {
+    const int num = ctl & 0xff;
+    for(iMidiCtrlValList imc = lower_bound(ch_bits | CTRL_14_OFFSET); imc != end(); ++imc)
+    {
+      // There is ->second->num(), but this is only way to get channel.
+      n = imc->first; 
+      // Stop if we went beyond this channel number or this ctrl14 block. 
+      if((n & 0xff000000) != ch_bits || (n & CTRL_OFFSET_MASK) != CTRL_14_OFFSET)
+        break;
+      if(((n >> 8) & 0xff) == num || (n & 0xff) == num)
+        return imc;
+    }
+  }
+  // Looking for RPN? See if any RPN14 also uses the number and should be used instead.
+  else if (type == CTRL_RPN_OFFSET)
+  {
+    const int num = ctl & 0xffff;
+    for(iMidiCtrlValList imc = lower_bound(ch_bits | CTRL_RPN14_OFFSET); imc != end(); ++imc)
+    {
+      // There is ->second->num(), but this is only way to get channel.
+      n = imc->first; 
+      // Stop if we went beyond this channel number or this RPN14 block. 
+      if((n & 0xff000000) != ch_bits || (n & CTRL_OFFSET_MASK) != CTRL_RPN14_OFFSET)
+        break;
+      if((n & 0xffff) == num)
+        return imc;
+    }
+  }
+  // Looking for NRPN? See if any NRPN14 also uses the number and should be used instead.
+  else if (type == CTRL_NRPN_OFFSET)
+  {
+    const int num = ctl & 0xffff;
+    for(iMidiCtrlValList imc = lower_bound(ch_bits | CTRL_NRPN14_OFFSET); imc != end(); ++imc)
+    {
+      // There is ->second->num(), but this is only way to get channel.
+      n = imc->first; 
+      // Stop if we went beyond this channel number or this NRPN14 block. 
+      if((n & 0xff000000) != ch_bits || (n & CTRL_OFFSET_MASK) != CTRL_NRPN14_OFFSET)
+        break;
+      if((n & 0xffff) == num)
+        return imc;
+    }
+  }
+  
+  // Looking for any other type? Do a regular find.
+  return std::map<int, MidiCtrlValList*, std::less<int> >::find(ch_bits | ctl);
+}
+
+//---------------------------------------------------------
+//   update_RPN_Ctrls_Reserved
+//   Manual check and update of the flag. For convenience, returns the flag.
+//   Cost depends on types and number of list controllers, so it is good for deferring 
+//    an update until AFTER some lengthy list operation. JUST BE SURE to call this!
+//---------------------------------------------------------
+
+bool MidiCtrlValListList::update_RPN_Ctrls_Reserved()
+{
+  // TODO: If per-channel instruments are ever added to MusE, this routine would need changing.
+  
+  int num, h, l;
+  for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+  {
+    const unsigned ch_bits = (ch << 24);
+    
+    if(find(ch, CTRL_HDATA) != end() ||
+      find(ch, CTRL_LDATA) != end() ||
+      find(ch, CTRL_DATA_INC) != end() ||
+      find(ch, CTRL_DATA_DEC) != end() ||
+      find(ch, CTRL_HNRPN) != end() ||
+      find(ch, CTRL_LNRPN) != end() ||
+      find(ch, CTRL_HRPN) != end() ||
+      find(ch, CTRL_LRPN) != end())
+    {
+      _RPN_Ctrls_Reserved = true;
+      return true;
+    }
+  
+    // Search: Get a head-start by taking lower bound.
+    for(iMidiCtrlValList imc = lower_bound(ch_bits | CTRL_14_OFFSET); imc != end(); ++imc)
+    {
+      // There is ->second->num(), but this is only way to get channel.
+      num = imc->first; 
+      // Stop if we went beyond this channel number or its ctrl14 block. 
+      if((num & 0xff000000) != ch_bits || (num & CTRL_OFFSET_MASK) != CTRL_14_OFFSET)
+      {
+        _RPN_Ctrls_Reserved = false;
+        return false;
+      }
+      h = (num >> 8) & 0xff;
+      l = num & 0xff;
+      if(h == CTRL_HDATA    || l == CTRL_HDATA    ||
+         h == CTRL_LDATA    || l == CTRL_LDATA    ||
+         h == CTRL_DATA_INC || l == CTRL_DATA_INC ||
+         h == CTRL_DATA_DEC || l == CTRL_DATA_DEC ||
+         h == CTRL_HNRPN    || l == CTRL_HNRPN    ||
+         h == CTRL_LNRPN    || l == CTRL_LNRPN    ||
+         h == CTRL_HRPN     || l == CTRL_HRPN     ||
+         h == CTRL_LRPN     || l == CTRL_LRPN)
+      {
+        _RPN_Ctrls_Reserved = true;
+        return true;
+      }
+    }
+  }
+  
+  _RPN_Ctrls_Reserved = false;
+  return false;
+}
+
+//---------------------------------------------------------
+//     Catch all insert, erase, clear etc.
+//---------------------------------------------------------
+
+MidiCtrlValListList& MidiCtrlValListList::operator=(const MidiCtrlValListList& cl)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiCtrlValListList::operator=\n");  
+#endif
+  _RPN_Ctrls_Reserved = cl._RPN_Ctrls_Reserved;
+  
+  // Let map copy the items.
+  std::map<int, MidiCtrlValList*, std::less<int> >::operator=(cl);
+  return *this;
+}
+
+//=========================================================
+#ifdef _MIDI_CTRL_METHODS_DEBUG_      
+
+void MidiCtrlValListList::swap(MidiCtrlValListList& cl)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiCtrlValListList::swap\n");  
+#endif
+  std::map<int, MidiCtrlValList*, std::less<int> >::swap(cl);
+}
+
+std::pair<iMidiCtrlValList, bool> MidiCtrlValListList::insert(const std::pair<int, MidiCtrlValList*>& p)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiCtrlValListList::insert num:%d\n", p.second->num());  
+#endif
+  std::pair<iMidiCtrlValList, bool> res = std::map<int, MidiCtrlValList*, std::less<int> >::insert(p);
+  return res;
+}
+
+iMidiCtrlValList MidiCtrlValListList::insert(iMidiCtrlValList ic, const std::pair<int, MidiCtrlValList*>& p)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiCtrlValListList::insertAt num:%d\n", p.second->num()); 
+#endif
+  iMidiCtrlValList res = std::map<int, MidiCtrlValList*, std::less<int> >::insert(ic, p);
+  return res;
+}
+
+void MidiCtrlValListList::erase(iMidiCtrlValList ictl)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiCtrlValListList::erase iMidiCtrlValList num:%d\n", ictl->second->num());  
+#endif
+  std::map<int, MidiCtrlValList*, std::less<int> >::erase(ictl);
+}
+
+MidiCtrlValListList::size_type MidiCtrlValListList::erase(int num)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiCtrlValListList::erase num:%d\n", num);  
+#endif
+  size_type res = std::map<int, MidiCtrlValList*, std::less<int> >::erase(num);
+  return res;
+}
+
+void MidiCtrlValListList::erase(iMidiCtrlValList first, iMidiCtrlValList last)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiCtrlValListList::erase range first num:%d second num:%d\n", 
+         first->second->num(), last->second->num());  
+#endif
+  std::map<int, MidiCtrlValList*, std::less<int> >::erase(first, last);
+}
+
+void MidiCtrlValListList::clear()
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiCtrlValListList::clear\n");  
+#endif
+  std::map<int, MidiCtrlValList*, std::less<int> >::clear();
+}
+
+#endif
+// =========================================================
+
 //---------------------------------------------------------
 //   setHwVal
 //   Returns false if value is already equal, true if value is changed.
@@ -878,6 +1175,11 @@ iMidiCtrlVal MidiCtrlValList::findMCtlVal(int tick, Part* part)
 //   MidiControllerList
 //---------------------------------------------------------
 
+MidiControllerList::MidiControllerList() 
+{
+  _RPN_Ctrls_Reserved = false;
+}
+
 MidiControllerList::MidiControllerList(const MidiControllerList& mcl) : std::map<int, MidiController*>()
 {
   for(ciMidiController i = mcl.begin(); i != mcl.end(); ++i)
@@ -885,10 +1187,266 @@ MidiControllerList::MidiControllerList(const MidiControllerList& mcl) : std::map
     MidiController* mc = i->second;
     add(new MidiController(*mc));
   }  
+  update_RPN_Ctrls_Reserved();
+}
+
+void MidiControllerList::add(MidiController* mc, bool update) 
+{ 
+  const int num = mc->num();
+  if(!_RPN_Ctrls_Reserved && update)
+  {
+    const bool isCtl7  = ((num & CTRL_OFFSET_MASK) == CTRL_7_OFFSET);
+    const bool isCtl14 = ((num & CTRL_OFFSET_MASK) == CTRL_14_OFFSET);
+    if(isCtl14 || isCtl7)
+    {
+      const int l = num & 0xff;
+      if(l == CTRL_HDATA    ||
+         l == CTRL_LDATA    ||
+         l == CTRL_DATA_INC ||
+         l == CTRL_DATA_DEC ||
+         l == CTRL_HNRPN    ||
+         l == CTRL_LNRPN    ||
+         l == CTRL_HRPN     ||
+         l == CTRL_LRPN)
+        _RPN_Ctrls_Reserved = true;
+    }
+    if(!_RPN_Ctrls_Reserved && isCtl14)
+    {    
+      const int h = (num >> 8) & 0xff;
+      if(h == CTRL_HDATA    ||
+         h == CTRL_LDATA    ||
+         h == CTRL_DATA_INC ||
+         h == CTRL_DATA_DEC ||
+         h == CTRL_HNRPN    ||
+         h == CTRL_LNRPN    ||
+         h == CTRL_HRPN     ||
+         h == CTRL_LRPN)     
+        _RPN_Ctrls_Reserved = true;
+    }
+  }
+  insert(std::pair<int, MidiController*>(num, mc)); 
+}
+
+void MidiControllerList::del(iMidiController ictl, bool update) 
+{ 
+  erase(ictl); 
+  if(update)
+    update_RPN_Ctrls_Reserved();
+}
+
+MidiControllerList::size_type MidiControllerList::del(int num, bool update) 
+{ 
+  MidiControllerList::size_type res = erase(num);
+  if(update)
+    update_RPN_Ctrls_Reserved();
+  return res;
+}
+
+void MidiControllerList::del(iMidiController first, iMidiController last, bool update) 
+{ 
+  erase(first, last); 
+  if(update)
+    update_RPN_Ctrls_Reserved();
+}
+
+void MidiControllerList::clr() 
+{ 
+  clear(); 
+  update_RPN_Ctrls_Reserved();
 }
 
 //---------------------------------------------------------
-//   ctrlAvailable (static)
+//   update_RPN_Ctrls_Reserved
+//   Manual check and update of the flag. For convenience, returns the flag.
+//   Cost depends on types and number of list controllers, so it is good for deferring 
+//    an update until AFTER some lengthy list operation. JUST BE SURE to call this!
+//---------------------------------------------------------
+
+bool MidiControllerList::update_RPN_Ctrls_Reserved()
+{
+  if(find(CTRL_HDATA) != end() ||
+     find(CTRL_LDATA) != end() ||
+     find(CTRL_DATA_INC) != end() ||
+     find(CTRL_DATA_DEC) != end() ||
+     find(CTRL_HNRPN) != end() ||
+     find(CTRL_LNRPN) != end() ||
+     find(CTRL_HRPN) != end() ||
+     find(CTRL_LRPN) != end())
+  {
+    _RPN_Ctrls_Reserved = true;
+    return true;
+  }
+  
+  int num, h, l;
+  // Search: Get a head-start by taking lower bound.
+  for(iMidiController imc = lower_bound(CTRL_14_OFFSET); imc != end(); ++imc)
+  {
+    num = imc->second->num();
+    // Stop if we went beyond this ctrl14 block. 
+    if((num & CTRL_OFFSET_MASK) != CTRL_14_OFFSET)
+    {
+      _RPN_Ctrls_Reserved = false;
+      return false;
+    }
+    h = (num >> 8) & 0xff;
+    l = num & 0xff;
+    if(h == CTRL_HDATA    || l == CTRL_HDATA    ||
+       h == CTRL_LDATA    || l == CTRL_LDATA    ||
+       h == CTRL_DATA_INC || l == CTRL_DATA_INC ||
+       h == CTRL_DATA_DEC || l == CTRL_DATA_DEC ||
+       h == CTRL_HNRPN    || l == CTRL_HNRPN    ||
+       h == CTRL_LNRPN    || l == CTRL_LNRPN    ||
+       h == CTRL_HRPN     || l == CTRL_HRPN     ||
+       h == CTRL_LRPN     || l == CTRL_LRPN)
+    {
+      _RPN_Ctrls_Reserved = true;
+      return true;
+    }
+  }
+  _RPN_Ctrls_Reserved = false;
+  return false;
+}
+
+//---------------------------------------------------------
+//     Catch all insert, erase, clear etc.
+//---------------------------------------------------------
+
+MidiControllerList& MidiControllerList::operator=(const MidiControllerList& cl)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiControllerList::operator=\n");  
+#endif
+  _RPN_Ctrls_Reserved = cl._RPN_Ctrls_Reserved;
+  
+  // Let map copy the items.
+  std::map<int, MidiController*, std::less<int> >::operator=(cl);
+  return *this;
+}
+
+//=========================================================
+#ifdef _MIDI_CTRL_METHODS_DEBUG_      
+
+void MidiControllerList::swap(MidiControllerList& cl)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiControllerList::swap\n");  
+#endif
+  std::map<int, MidiController*, std::less<int> >::swap(cl);
+}
+
+std::pair<iMidiController, bool> MidiControllerList::insert(const std::pair<int, MidiController*>& p)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiControllerList::insert num:%d\n", p.second->num());  
+#endif
+  std::pair<iMidiController, bool> res = std::map<int, MidiController*, std::less<int> >::insert(p);
+  return res;
+}
+
+iMidiController MidiControllerList::insert(iMidiController ic, const std::pair<int, MidiController*>& p)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiControllerList::insertAt num:%d\n", p.second->num()); 
+#endif
+  iMidiController res = std::map<int, MidiController*, std::less<int> >::insert(ic, p);
+  return res;
+}
+
+void MidiControllerList::erase(iMidiController ictl)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiControllerList::erase iMidiController num:%d\n", ictl->second->num());  
+#endif
+  std::map<int, MidiController*, std::less<int> >::erase(ictl);
+}
+
+MidiControllerList::size_type MidiControllerList::erase(int num)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiControllerList::erase num:%d\n", num);  
+#endif
+  size_type res = std::map<int, MidiController*, std::less<int> >::erase(num);
+  return res;
+}
+
+void MidiControllerList::erase(iMidiController first, iMidiController last)
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiControllerList::erase range first num:%d second num:%d\n", 
+         first->second->num(), last->second->num());  
+#endif
+  std::map<int, MidiController*, std::less<int> >::erase(first, last);
+}
+
+void MidiControllerList::clear()
+{
+#ifdef _MIDI_CTRL_DEBUG_
+  printf("MidiControllerList::clear\n");  
+#endif
+  std::map<int, MidiController*, std::less<int> >::clear();
+}
+
+#endif
+// =========================================================
+
+//---------------------------------------------------------
+// searchControllers
+//---------------------------------------------------------
+
+iMidiController MidiControllerList::searchControllers(int ctl)
+{
+  const int type = ctl & CTRL_OFFSET_MASK;
+  int n;
+  
+  // Looking for Controller7? See if any Controller14 contains the number and should be used instead.
+  if(type == CTRL_7_OFFSET)
+  {
+    const int num = ctl & 0xff;
+    for(iMidiController imc = lower_bound(CTRL_14_OFFSET); imc != end(); ++imc)
+    {
+      n = imc->second->num();
+      // Stop if we went beyond this ctrl14 block. 
+      if((n & CTRL_OFFSET_MASK) != CTRL_14_OFFSET)
+        break;
+      if(((n >> 8) & 0xff) == num || (n & 0xff) == num)
+        return imc;
+    }
+  }
+  // Looking for RPN? See if any RPN14 also uses the number and should be used instead.
+  else if (type == CTRL_RPN_OFFSET)
+  {
+    const int num = ctl & 0xffff;
+    for(iMidiController imc = lower_bound(CTRL_RPN14_OFFSET); imc != end(); ++imc)
+    {
+      n = imc->second->num();
+      // Stop if we went beyond this RPN14 block. 
+      if((n & CTRL_OFFSET_MASK) != CTRL_RPN14_OFFSET)
+        break;
+      if((n & 0xffff) == num)
+        return imc;
+    }
+  }
+  // Looking for NRPN? See if any NRPN14 also uses the number and should be used instead.
+  else if (type == CTRL_NRPN_OFFSET)
+  {
+    const int num = ctl & 0xffff;
+    for(iMidiController imc = lower_bound(CTRL_NRPN14_OFFSET); imc != end(); ++imc)
+    {
+      n = imc->second->num();
+      // Stop if we went beyond this NRPN14 block. 
+      if((n & CTRL_OFFSET_MASK) != CTRL_NRPN14_OFFSET)
+        break;
+      if((n & 0xffff) == num)
+        return imc;
+    }
+  }
+  
+  // Looking for any other type? Do a regular find.
+  return find(ctl);
+}
+
+//---------------------------------------------------------
+//   ctrlAvailable 
 //   Check if either a per-note controller, or else a regular controller already exists.
 //---------------------------------------------------------
 
@@ -949,5 +1507,388 @@ void MidiCtrlState::init()
   modeIsNRP = false;
 }
 
+//---------------------------------------------------------
+//   MidiEncoder
+//---------------------------------------------------------
+
+MidiEncoder::MidiEncoder()
+{
+  _curMode  = EncIdle;
+  _curData  = 0;
+  _curTime  = 0; 
+  _timer    = 0;
+  _curCtrl  = 0;
+  _nextCtrl = 0;
+  _curRPNH  = 0;
+  _curRPNL  = 0;
+  _curNRPNL = 0;
+  _curNRPNH = 0;
+}
+
+//---------------------------------------------------------
+//   encodeEvent
+//---------------------------------------------------------
+
+void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
+{
+  const int type = ev.type();
+  if(type != ME_PITCHBEND || type != ME_AFTERTOUCH || type != ME_POLYAFTER || type != ME_PROGRAM || type != ME_CONTROLLER)
+    return;
+
+  MidiPort* mp = &MusEGlobal::midiPorts[port];
+
+//   int num;
+// 
+//   switch(type)
+//   {
+//     // TODO
+//     case ME_PITCHBEND:
+//       num = CTRL_PITCH;
+//     break;
+//     case ME_AFTERTOUCH:
+//       num = CTRL_AFTERTOUCH;
+//     break;
+//     case ME_POLYAFTER:
+//       num = CTRL_POLYAFTER | (ev.dataA() & 0x7f);
+//     break;
+//     case ME_PROGRAM:
+//       num = CTRL_PROGRAM;
+//     break;
+// 
+//     case ME_CONTROLLER:
+//     {
+//       //num = CTRL_;
+//     }
+//     break;
+//     
+//     default:
+//       return;
+//   }
+
+  MidiCtrlValListList* mcvll = mp->controller();
+  MidiInstrument*      instr = mp->outputInstrument();
+  MidiControllerList*    mcl = instr->controller();
+
+  int num;
+  int data;
+  //int ctrlH;
+  //int ctrlL;
+
+  if(_curMode != EncIdle)
+  {
+    if(_curMode == EncCtrl14)
+      num = CTRL_14_OFFSET + ((_curCtrl << 8) | _nextCtrl);
+    else if(_curMode == EncRPN14)
+      num = CTRL_RPN14_OFFSET + ((_curRPNH << 8) | _curRPNL);
+    else if(_curMode == EncNRPN14)
+      num = CTRL_NRPN14_OFFSET + ((_curNRPNH << 8) | _curNRPNL);
+    else
+    {
+      // Error
+      _curMode = EncIdle;
+      return;
+    }
+
+    iMidiCtrlValList imcvl = mcvll->find(channel, num);
+    if(imcvl == mcvll->end())
+    {
+      // Error, controller should exist
+      _curMode = EncIdle;
+      return;                  
+    }
+    MidiCtrlValList* mcvl = imcvl->second;
+
+    if(type == ME_CONTROLLER && ev.dataA() == _nextCtrl)
+    {
+      data = (_curData << 7) | (ev.dataB() & 0x7f);
+      mcvl->setHwVal(data);
+      _curMode = EncIdle;
+      return;
+    }
+    else
+    {
+      data = (_curData << 7) | (mcvl->hwVal() & 0x7f);
+      mcvl->setHwVal(data);
+      //_curMode = EncIdle;
+      //return;
+    }
+
+    //return;
+  }
+
+  if(type == ME_CONTROLLER)
+  {
+    num = ev.dataA();
+    int val = ev.dataB();
+    // Is it one of the 8 reserved GM controllers for RPN/NRPN?
+    if(num == CTRL_HDATA || num == CTRL_LDATA || num == CTRL_DATA_INC || num == CTRL_DATA_DEC ||
+       num == CTRL_HNRPN || num == CTRL_LNRPN || num == CTRL_HRPN || num == CTRL_LRPN)
+    {
+      // Does the working controller list, and instrument, allow RPN/NRPN?
+      // (If EITHER the working controller list or instrument defines ANY of these
+      //  8 controllers as plain 7-bit, then we cannot accept this data as RPN/NRPN.)
+      const bool rpn_reserved = mcvll->RPN_Ctrls_Reserved() | mcl->RPN_Ctrls_Reserved();
+      if(!rpn_reserved)
+      {
+        switch(num)
+        {
+          case CTRL_HDATA:
+          break;
+          case CTRL_LDATA:
+          break;
+          case CTRL_DATA_INC: 
+          break;
+          case CTRL_DATA_DEC:
+          break;
+          case CTRL_HNRPN:
+            _curNRPNH = val;
+            return;
+          case CTRL_LNRPN:
+            _curNRPNL = val;
+            return;
+          case CTRL_HRPN:
+            _curRPNH = val;
+            return;
+          case CTRL_LRPN:
+            _curRPNL = val;
+            return;
+          default:
+          break;  
+        }
+      }
+    }
+    
+//     for(iMidiCtrlValList imcvl = mcvll->begin(); imcvl != mcvll->end(); ++imcvl)
+//     {
+//       if(((imcvl->first >> 24) & 0xf) != channel)
+//         continue;
+//       MidiCtrlValList* mcvl = imcvl->second;
+//     }
+  }
+  
+  _curMode = EncIdle;
+  return;
+
+  
+//   if(_curMode != EncIdle)
+//   {
+//     if(_curMode == EncCtrl14 && type == ME_CONTROLLER && ev.dataA() == _nextCtrl)
+//     {
+//       num = CTRL_14_OFFSET + ((_curCtrl << 8) | (_nextCtrl & 0x7f));
+//       iMidiCtrlValList imcvl = mcvll->find(channel, num);
+//       if(imcvl == mcvll->end())
+//         return;                  // Error, controller should exist
+//       MidiCtrlValList* mcvl = imcvl->second;
+//       data = (_curData << 7) | (ev.dataB() & 0x7f);
+//       mcvl->setHwVal(data);
+//       //_timer = 0;
+//       _curMode = EncIdle;
+//       return;
+//     }
+//     else if(_curMode == EncRPN14 && type == ME_CONTROLLER && ev.dataA() == CTRL_LDATA)
+//     {
+// 
+//     }
+//   }
+  
+  //mcvl->find();
+
+//   for(ciMidiCtrlValList imcvl = mcvl->begin(); imcvl != mcvl->end(); ++imcvl)
+//   {
+//     const int ch = imcvl->first >> 24;
+//     if(ch != channel)
+//       continue; 
+//     MidiCtrlValList* mcvl = imcvl->second;
+//     num = mcvl->num();
+//     ctrlH = (num >> 8) & 0x7f;
+//     ctrlL = num & 0xff;
+//     if(type == ME_CONTROLLER)
+//     {
+//       const int ev_num = ev.dataA();
+//       if(num < CTRL_14_OFFSET)           // 7-bit controller  0 - 0x10000
+//       {
+//         if(ev_num == num)
+//         {
+// 
+//         }
+//       }
+//       else if(num < CTRL_RPN_OFFSET)     // 14-bit controller 0x10000 - 0x20000
+//       {
+// 
+//       }
+//     }
+//   }
+
+  
+//   if(instr)
+//   {
+//     int num;
+//     int ctrlH;
+//     int ctrlL;
+//     MidiControllerList* mcl = instr->controller();
+//     MidiController* mc;
+// 
+//     if (_outputInstrument) {
+//           MidiControllerList* mcl = _outputInstrument->controller();
+//           for (iMidiController i = mcl->begin(); i != mcl->end(); ++i) {
+//                 int cn = i->second->num();
+//                 if (cn == num)
+//                       return i->second;
+//                 // wildcard?
+//                 if (i->second->isPerNoteController() && ((cn & ~0xff) == (num & ~0xff)))
+//                       return i->second;
+//                 }
+//           }
+// 
+//     for (iMidiController i = defaultMidiController.begin(); i != defaultMidiController.end(); ++i) {
+//           int cn = i->second->num();
+//           if (cn == num)
+//                 return i->second;
+//           // wildcard?
+//           if (i->second->isPerNoteController() && ((cn & ~0xff) == (num & ~0xff)))
+//                 return i->second;
+//           }
+// 
+// 
+//     QString name = midiCtrlName(num);
+//     int min = 0;
+//     int max = 127;
+// 
+//     MidiController::ControllerType t = midiControllerType(num);
+//     switch (t) {
+//           case MidiController::RPN:
+//           case MidiController::NRPN:
+//           case MidiController::Controller7:
+//           case MidiController::PolyAftertouch:
+//           case MidiController::Aftertouch:
+//                 max = 127;
+//                 break;
+//           case MidiController::Controller14:
+//           case MidiController::RPN14:
+//           case MidiController::NRPN14:
+//                 max = 16383;
+//                 break;
+//           case MidiController::Program:
+//                 max = 0xffffff;
+//                 break;
+//           case MidiController::Pitch:
+//                 max = 8191;
+//                 min = -8192;
+//                 break;
+//           case MidiController::Velo:        // cannot happen
+//                 break;
+//           }
+//     MidiController* c = new MidiController(name, num, min, max, 0);
+//     defaultMidiController.add(c);
+//     return c;
+// 
+//     for(ciMidiController imc = mcl->begin(); imc != mcl->end(); ++imc)
+//     {
+//       mc = imc->second;
+//       num = mc->num();
+//       ctrlH = (num >> 8) & 0x7f;
+//       ctrlL = num & 0xff;
+//       if(num < CTRL_14_OFFSET)           // 7-bit controller  0 - 0x10000
+//       {
+//         if(ctrlL == 0xff || ctrlL == a)
+//           is_7bit = true;
+// 
+//         if(ctrlL == 0xff)
+//           RPNH_reserved = RPNL_reserved = NRPNH_reserved = NRPNL_reserved = DATAH_reserved = DATAL_reserved = true;
+//         else if(ctrlL == CTRL_HRPN)
+//           RPNH_reserved = true;
+//         else if(ctrlL == CTRL_LRPN)
+//           RPNL_reserved = true;
+//         else if(ctrlL == CTRL_HNRPN)
+//           NRPNH_reserved = true;
+//         else if(ctrlL == CTRL_LNRPN)
+//           NRPNL_reserved = true;
+//         else if(ctrlL == CTRL_HDATA)
+//           DATAH_reserved = true;
+//         else if(ctrlL == CTRL_LDATA)
+//           DATAL_reserved = true;
+//       }
+//       else if(num < CTRL_RPN_OFFSET)     // 14-bit controller 0x10000 - 0x20000
+//       {
+//         if(ctrlH == a)
+//         {
+//           //is_14bitH = true;
+//           is_14bit = true;
+//           if(!instr->waitForLSB())
+//           {
+//             MidiRecordEvent single_ev;
+//             single_ev.setChannel(chn);
+//             single_ev.setType(ME_CONTROLLER);
+//             single_ev.setA(CTRL_14_OFFSET + (a << 8) + ctrlL);
+//             single_ev.setB((b << 7) + mcs->ctrls[ctrlL]);
+//             mdev->recordEvent(single_ev);
+//           }
+//         }
+//         if(ctrlL == 0xff || ctrlL == a)
+//         {
+//           //is_14bitL = true;
+//           is_14bit = true;
+//           MidiRecordEvent single_ev;
+//           single_ev.setChannel(chn);
+//           single_ev.setType(ME_CONTROLLER);
+//           single_ev.setA(CTRL_14_OFFSET + (ctrlH << 8) + a);
+//           single_ev.setB((mcs->ctrls[ctrlH] << 7) + b);
+//           mdev->recordEvent(single_ev);
+//         }
+// 
+//         if(ctrlL == 0xff)
+//           RPNH_reserved = RPNL_reserved = NRPNH_reserved = NRPNL_reserved = DATAH_reserved = DATAL_reserved = true;
+//         else if(ctrlL == CTRL_HRPN || ctrlH == CTRL_HRPN)
+//           RPNH_reserved = true;
+//         else if(ctrlL == CTRL_LRPN || ctrlH == CTRL_LRPN)
+//           RPNL_reserved = true;
+//         else if(ctrlL == CTRL_HNRPN || ctrlH == CTRL_HNRPN)
+//           NRPNH_reserved = true;
+//         else if(ctrlL == CTRL_LNRPN || ctrlH == CTRL_LNRPN)
+//           NRPNL_reserved = true;
+//         else if(ctrlL == CTRL_HDATA || ctrlH == CTRL_HDATA)
+//           DATAH_reserved = true;
+//         else if(ctrlL == CTRL_LDATA || ctrlH == CTRL_LDATA)
+//           DATAL_reserved = true;
+//       }
+//       else if(num < CTRL_NRPN_OFFSET)     // RPN 7-Bit Controller 0x20000 - 0x30000
+//       {
+//         //if(a == CTRL_HDATA && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
+//         if(a == CTRL_HDATA && !mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LRPN]))
+//           is_RPN = true;
+//       }
+//       else if(num < CTRL_INTERNAL_OFFSET) // NRPN 7-Bit Controller 0x30000 - 0x40000
+//       {
+//         //if(a == CTRL_HDATA && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
+//         if(a == CTRL_HDATA && mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HNRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LNRPN]))
+//           is_NRPN = true;
+//       }
+//       else if(num < CTRL_RPN14_OFFSET)    // Unaccounted for internal controller  0x40000 - 0x50000
+//           continue;
+//       else if(num < CTRL_NRPN14_OFFSET)   // RPN14 Controller  0x50000 - 0x60000
+//       {
+//         //if(a == CTRL_LDATA && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
+//         if(a == CTRL_LDATA && !mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LRPN]))
+//           is_RPN14 = true;
+//       }
+//       else if(num < CTRL_NONE_OFFSET)     // NRPN14 Controller 0x60000 - 0x70000
+//       {
+//         //if(a == CTRL_LDATA && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
+//         if(a == CTRL_LDATA && mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HNRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LNRPN]))
+//           is_NRPN14 = true;
+//       }
+//     }
+//   }
+
+}
+
+//---------------------------------------------------------
+//   endCycle
+//---------------------------------------------------------
+
+void MidiEncoder::endCycle(unsigned int /*blockSize*/)
+{
+  // TODO
+}
 
 } // namespace MusECore
