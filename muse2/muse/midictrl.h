@@ -345,15 +345,17 @@ class MidiCtrlState {
 
 class MidiEncoder {
   public:
-    enum Mode { EncIdle, EncCtrl14, EncRPN, EncNRPN, EncRPN14, EncNRPN14 };
+    enum Mode { EncIdle, EncCtrl14, EncDiscoverRPN, EncDiscoverNRPN, EncRPN, EncNRPN, EncRPN14, EncNRPN14 };
+    enum ParamMode { ParamModeUnknown, ParamModeRPN, ParamModeNRPN };
 
   private:  
-    Mode _curMode;
-    unsigned int  _timer;    // 
-    unsigned char _curCtrl;  // Ctl num of first event
-    unsigned char _curData;  // Data of first event
-    unsigned int  _curTime;  // Time of first event
-    unsigned char _nextCtrl; // Expected next event ctl num (for ctrl14 only)
+    Mode          _curMode;
+    ParamMode     _curParamMode;
+    unsigned int  _timer;        // 
+    unsigned char _curCtrl;      // Ctl num of first event
+    unsigned char _curData;      // Data of first event
+    unsigned int  _curTime;      // Time of first event
+    unsigned char _nextCtrl;     // Expected next event ctl num (for ctrl14 only)
     unsigned char _curRPNH;
     unsigned char _curRPNL;
     unsigned char _curNRPNH;

@@ -1514,6 +1514,11 @@ void MidiCtrlState::init()
 MidiEncoder::MidiEncoder()
 {
   _curMode  = EncIdle;
+  // Try starting with ParamModeUnknown. Requires either RPN or NRPN params at least once.
+  // Possibly may want to start with ParamModeRPN or ParamModeNRPN,
+  //  possibly make it depend on planned all-encompassing 'Optimizations' Setting,
+  //  and provide reset with 'Panic' button, just as it now resets output optimizations.
+  _curParamMode = ParamModeUnknown; 
   _curData  = 0;
   _curTime  = 0; 
   _timer    = 0;
@@ -1537,34 +1542,6 @@ void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
 
   MidiPort* mp = &MusEGlobal::midiPorts[port];
 
-//   int num;
-// 
-//   switch(type)
-//   {
-//     // TODO
-//     case ME_PITCHBEND:
-//       num = CTRL_PITCH;
-//     break;
-//     case ME_AFTERTOUCH:
-//       num = CTRL_AFTERTOUCH;
-//     break;
-//     case ME_POLYAFTER:
-//       num = CTRL_POLYAFTER | (ev.dataA() & 0x7f);
-//     break;
-//     case ME_PROGRAM:
-//       num = CTRL_PROGRAM;
-//     break;
-// 
-//     case ME_CONTROLLER:
-//     {
-//       //num = CTRL_;
-//     }
-//     break;
-//     
-//     default:
-//       return;
-//   }
-
   MidiCtrlValListList* mcvll = mp->controller();
   MidiInstrument*      instr = mp->outputInstrument();
   MidiControllerList*    mcl = instr->controller();
@@ -1573,6 +1550,7 @@ void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
   int data;
   //int ctrlH;
   //int ctrlL;
+  //const int ch_bits = channel << 24;
 
   if(_curMode != EncIdle)
   {
@@ -1619,7 +1597,7 @@ void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
   if(type == ME_CONTROLLER)
   {
     num = ev.dataA();
-    int val = ev.dataB();
+    const int val = ev.dataB();
     // Is it one of the 8 reserved GM controllers for RPN/NRPN?
     if(num == CTRL_HDATA || num == CTRL_LDATA || num == CTRL_DATA_INC || num == CTRL_DATA_DEC ||
        num == CTRL_HNRPN || num == CTRL_LNRPN || num == CTRL_HRPN || num == CTRL_LRPN)
@@ -1633,27 +1611,81 @@ void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
         switch(num)
         {
           case CTRL_HDATA:
-          break;
+          {
+            _curData = val;
+            switch(_curParamMode)
+            {
+              case ParamModeUnknown:
+                return;              // Sorry, we shouldn't accept it without valid (N)RPN numbers.
+              case ParamModeRPN:
+              {
+                const int param_num = (_curRPNH << 8) | _curRPNL; 
+                iMidiCtrlValList imcvl = mcvll->searchControllers(channel, CTRL_RPN_OFFSET | param_num);
+                if(imcvl == mcvll->end())
+                {
+                  // Set mode, _curTime, and _timer to wait for next event.
+                  _curMode = EncDiscoverRPN;   
+                  // _curTime = ;  TODO
+                  _timer = 0;            
+                  return;
+                }
+                else if((imcvl->first & CTRL_OFFSET_MASK) == CTRL_RPN_OFFSET)
+                {
+                  // Done. Take _curData and param_num and compose something to return,
+                  //  and set the HWval...  TODO
+                  _curMode = EncIdle;   
+                  return;
+                }
+                else if((imcvl->first & CTRL_OFFSET_MASK) == CTRL_RPN14_OFFSET)
+                {
+                  // Set mode, _curTime, and _timer to wait for next event.
+                  _curMode = EncRPN14;   
+                  // _curTime = ;  TODO
+                  _timer = 0;            
+                  return;
+                }
+                else
+                {
+                  fprintf(stderr, "MidiEncoder::encodeEvent unknown type %d\n", imcvl->first & CTRL_OFFSET_MASK);
+                  return;
+                }
+                
+                break;  
+              }
+              case ParamModeNRPN:
+                break;  
+              default:
+                fprintf(stderr, "MidiEncoder::encodeEvent unknown ParamMode %d\n", _curParamMode);
+                return;
+            }
+            
+            break;
+          }
+
           case CTRL_LDATA:
-          break;
+            break;
           case CTRL_DATA_INC: 
-          break;
+            break;
           case CTRL_DATA_DEC:
-          break;
-          case CTRL_HNRPN:
-            _curNRPNH = val;
-            return;
-          case CTRL_LNRPN:
-            _curNRPNL = val;
-            return;
+            break;
           case CTRL_HRPN:
             _curRPNH = val;
+            _curParamMode = ParamModeRPN;
             return;
           case CTRL_LRPN:
             _curRPNL = val;
+            _curParamMode = ParamModeRPN;
+            return;
+          case CTRL_HNRPN:
+            _curNRPNH = val;
+            _curParamMode = ParamModeNRPN;
+            return;
+          case CTRL_LNRPN:
+            _curNRPNL = val;
+            _curParamMode = ParamModeNRPN;
             return;
           default:
-          break;  
+            break;  
         }
       }
     }
@@ -1719,6 +1751,36 @@ void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
 //     }
 //   }
 
+  
+//   int num;
+// 
+//   switch(type)
+//   {
+//     // TODO
+//     case ME_PITCHBEND:
+//       num = CTRL_PITCH;
+//     break;
+//     case ME_AFTERTOUCH:
+//       num = CTRL_AFTERTOUCH;
+//     break;
+//     case ME_POLYAFTER:
+//       num = CTRL_POLYAFTER | (ev.dataA() & 0x7f);
+//     break;
+//     case ME_PROGRAM:
+//       num = CTRL_PROGRAM;
+//     break;
+// 
+//     case ME_CONTROLLER:
+//     {
+//       //num = CTRL_;
+//     }
+//     break;
+//     
+//     default:
+//       return;
+//   }
+
+  
   
 //   if(instr)
 //   {
