@@ -1371,17 +1371,42 @@ int JackAudioDevice::framePos() const
       return (int)n;
       }
 
-#if 0
+//---------------------------------------------------------
+//   framesAtCycleStart
+//   Frame count at the start of current cycle. 
+//   This is meant to be called from inside process thread only.      
+//---------------------------------------------------------
+
+unsigned JackAudioDevice::framesAtCycleStart() const 
+{ 
+      if(!checkJackClient(_client)) return 0;
+      jack_nframes_t n = jack_last_frame_time(_client);
+      //if (JACK_DEBUG)
+      //  printf("JackAudioDevice::framesAtCycleStart jack frame:%d\n", (unsigned)n);
+      return (unsigned)n;
+}
+
 //---------------------------------------------------------
 //   framesSinceCycleStart
+//   Estimated frames since the last process cycle began
+//   This is meant to be called from inside process thread only.      
 //---------------------------------------------------------
 
-int JackAudioDevice::framesSinceCycleStart() const
-      {
-      jack_nframes_t n = jack_frames_since_cycle_start(client);
-      return (int)n;
-      }
+unsigned JackAudioDevice::framesSinceCycleStart() const 
+{ 
+      if(!checkJackClient(_client)) return 0;
+      jack_nframes_t n = jack_frames_since_cycle_start(_client);
+      //if (JACK_DEBUG)
+      //  printf("JackAudioDevice::framesSinceCycleStart jack frame:%d\n", (unsigned)n);
 
+      // Safety due to inaccuracies. It cannot be after the segment, right?
+      if(n >= MusEGlobal::segmentSize)
+        n = MusEGlobal::segmentSize - 1;
+      
+      return (unsigned)n;
+}
+
+#if 0
 //---------------------------------------------------------
 //   framesDelay
 //    TODO

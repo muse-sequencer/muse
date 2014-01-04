@@ -1079,8 +1079,20 @@ void Audio::recordStop()
       }
 
 //---------------------------------------------------------
+//   framesAtCycleStart  
+//    Frame count at the start of current cycle. 
+//    This is meant to be called from inside process thread only.      
+//---------------------------------------------------------
+
+unsigned Audio::framesAtCycleStart() const
+{
+      return MusEGlobal::audioDevice->framesAtCycleStart();  
+}
+
+//---------------------------------------------------------
 //   framesSinceCycleStart
 //    Estimated frames since the last process cycle began
+//    This can be called from outside process thread.
 //---------------------------------------------------------
 
 unsigned Audio::framesSinceCycleStart() const
@@ -1090,6 +1102,10 @@ unsigned Audio::framesSinceCycleStart() const
   if(f >= MusEGlobal::segmentSize)
     f = MusEGlobal::segmentSize - 1;
   return f;
+  
+  // REMOVE Tim. Or keep? (During midi_engine_fixes.) 
+  // Can't use this since for the Jack driver, jack_frames_since_cycle_start is designed to be called ONLY from inside process.
+  // return MusEGlobal::audioDevice->framesSinceCycleStart();   
 }
 
 //---------------------------------------------------------
@@ -1113,7 +1129,11 @@ unsigned Audio::curFramePos() const
 unsigned int Audio::curFrame() const
       {
       //return lrint((curTime() - syncTime) * MusEGlobal::sampleRate) + syncFrame;
-      return framesSinceCycleStart() + syncFrame;
+      return framesSinceCycleStart() + syncFrame; 
+      
+      // REMOVE Tim. Or keep? (During midi_engine_fixes.) 
+      // Can't use this since for the Jack driver, jack_frames_since_cycle_start is designed to be called ONLY from inside process.
+      //return framesAtCycleStart() + framesSinceCycleStart(); 
       }
 
 //---------------------------------------------------------

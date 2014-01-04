@@ -54,6 +54,10 @@ class AudioDevice {
       virtual unsigned frameTime() const = 0;
       virtual double systemTime() const = 0;
 
+      // These are meant to be called from inside process thread only.      
+      virtual unsigned framesAtCycleStart() const = 0;
+      virtual unsigned framesSinceCycleStart() const = 0;
+
       virtual float* getBuffer(void* port, unsigned long nframes) = 0;
 
       virtual std::list<QString> outputPorts(bool midi = false, int aliases = -1) = 0;

@@ -30,6 +30,7 @@
 #include "globals.h"
 
 // REMOVE Tim. If necessary.
+#include "audio.h"
 #include "midi.h"
 #include "mpevent.h"
 #include "midiport.h"
@@ -1625,7 +1626,7 @@ void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
                 {
                   // Set mode, _curTime, and _timer to wait for next event.
                   _curMode = EncDiscoverRPN;   
-                  // _curTime = ;  TODO
+                  _curTime = MusEGlobal::audio->curFrame();  
                   _timer = 0;            
                   return;
                 }
@@ -1640,7 +1641,7 @@ void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
                 {
                   // Set mode, _curTime, and _timer to wait for next event.
                   _curMode = EncRPN14;   
-                  // _curTime = ;  TODO
+                  _curTime = MusEGlobal::audio->curFrame();  
                   _timer = 0;            
                   return;
                 }

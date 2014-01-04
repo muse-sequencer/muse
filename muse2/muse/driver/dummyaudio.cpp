@@ -75,6 +75,8 @@ class DummyAudioDevice : public AudioDevice {
       std::list<Msg> cmdQueue;
       Audio::State state;
       int _framePos;
+      unsigned _framesAtCycleStart;
+      double _timeAtCycleStart;
       int playPos;
       bool realtimeFlag;
       bool seekflag;
@@ -97,6 +99,17 @@ class DummyAudioDevice : public AudioDevice {
                 printf("DummyAudioDevice::framePos %d\n", _framePos);
             return _framePos; 
             }
+
+      // These are meant to be called from inside process thread only.      
+      virtual unsigned framesAtCycleStart() const { return _framesAtCycleStart; }
+      virtual unsigned framesSinceCycleStart() const 
+      { 
+        unsigned f =  lrint((curTime() - _timeAtCycleStart) * MusEGlobal::sampleRate);
+        // Safety due to inaccuracies. It cannot be after the segment, right?
+        if(f >= MusEGlobal::segmentSize)
+          f = MusEGlobal::segmentSize - 1;
+        return f;
+      }
 
       virtual float* getBuffer(void* /*port*/, unsigned long nframes)
             {
@@ -247,6 +260,8 @@ DummyAudioDevice::DummyAudioDevice()
       state = Audio::STOP;
       //startTime = curTime();
       _framePos = 0;
+      _framesAtCycleStart = 0;
+      _timeAtCycleStart = 0.0;
       playPos = 0;
       cmdQueue.clear();
       }
@@ -475,6 +490,7 @@ static void* dummyLoop(void* ptr)
       // Adapted from muse_qt4_evolution. p4.0.20       
       for(;;) 
       {
+            drvPtr->_timeAtCycleStart = curTime();
             //if(audioState == AUDIO_RUNNING)
             if(MusEGlobal::audio->isRunning())
               //MusEGlobal::audio->process(MusEGlobal::segmentSize, drvPtr->state);
@@ -497,6 +513,7 @@ static void* dummyLoop(void* ptr)
             //if(dummyAudio->state == Audio::PLAY) 
             //  dummyAudio->pos += dummyFrames;
             drvPtr->_framePos += MusEGlobal::segmentSize;
+            drvPtr->_framesAtCycleStart += MusEGlobal::segmentSize;
             if(drvPtr->state == Audio::PLAY) 
               drvPtr->playPos += MusEGlobal::segmentSize;
       }

@@ -325,10 +325,14 @@ class Audio {
       unsigned nextTick() const   { return nextTickPos; }
       int timestamp() const;
       void processMidi();
-      unsigned framesSinceCycleStart() const;   
       unsigned curFrame() const;
       unsigned curSyncFrame() const { return syncFrame; }
       unsigned curFramePos() const;
+      // This is meant to be called from inside process thread only.      
+      unsigned framesAtCycleStart() const;
+      // This can be called from outside process thread. 
+      unsigned framesSinceCycleStart() const;   
+      
       void recordStop();
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);

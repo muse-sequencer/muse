@@ -73,6 +73,10 @@ class JackAudioDevice : public AudioDevice {
       virtual unsigned frameTime() const     { return _frameCounter; }  
       virtual double systemTime() const;
 
+      // These are meant to be called from inside process thread only.      
+      virtual unsigned framesAtCycleStart() const;
+      virtual unsigned framesSinceCycleStart() const;
+
       virtual float* getBuffer(void* port, unsigned long nframes) {
             return (float*)jack_port_get_buffer((jack_port_t*)port, nframes);
             }
