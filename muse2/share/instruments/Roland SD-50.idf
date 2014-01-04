@@ -176,7 +176,7 @@
       <Patch name="Wire Lead" hbank="121" lbank="1" prog="85" />
       <Patch name="Solo Vox" hbank="121" lbank="0" prog="86" />
       <Patch name="5th Saw Wave" hbank="121" lbank="0" prog="87" />
-      <Patch name="Bass &amp; Lead&quot; mode=" lbank="0" prog="88" />
+      <Patch name="Bass &amp; Lead" hbank="121" lbank="0" prog="88" />
       <Patch name="Delayed Lead" hbank="121" lbank="1" prog="88" />
       <Patch name="Fantasia" hbank="121" lbank="0" prog="89" />
       <Patch name="Warm Pad" hbank="121" lbank="0" prog="90" />
@@ -286,7 +286,7 @@
       <Patch name="R&amp;B T-Analog" hbank="86" lbank="0" prog="8" drum="1" />
       <Patch name="R&amp;B Mini Kit" hbank="86" lbank="0" prog="9" drum="1" />
       <Patch name="HipHop Kit" hbank="86" lbank="0" prog="10" drum="1" />
-      <Patch name="R&amp;B Kit&quot; mode=" hbank="86" lbank="0" prog="11" />
+      <Patch name="R&amp;B Kit" hbank="86" lbank="0" prog="11" drum="1"/>
       <Patch name="Dance Kit 1" hbank="86" lbank="0" prog="12" drum="1" />
       <Patch name="Dance Kit 2" hbank="86" lbank="0" prog="13" drum="1" />
       <Patch name="Dance Kit 3" hbank="86" lbank="0" prog="14" drum="1" />
@@ -894,7 +894,7 @@
       <Patch name="Charang" hbank="121" lbank="0" prog="84" />
       <Patch name="Solo Vox" hbank="121" lbank="0" prog="85" />
       <Patch name="5th Saw Wave" hbank="121" lbank="0" prog="86" />
-      <Patch name="Bass &amp; Lead&quot; mode=" lbank="0" prog="87" />
+      <Patch name="Bass &amp; Lead" hbank="121" lbank="0" prog="87" />
       <Patch name="MG Square" hbank="121" lbank="1" prog="80" />
       <Patch name="OB2 Saw" hbank="121" lbank="1" prog="81" />
       <Patch name="Wire Lead" hbank="121" lbank="1" prog="84" />
@@ -1106,7 +1106,7 @@
       <Patch name="Computer 2" hbank="87" lbank="3" prog="122" />
       <Patch name="S&amp;H Noise" hbank="87" lbank="3" prog="123" />
       <Patch name="S&amp;H Ramp" hbank="87" lbank="3" prog="124" />
-      <Patch name="S&amp;H PWM&quot; mode=" lbank="3" prog="125" />
+      <Patch name="S&amp;H PWM" hbank="87" lbank="3" prog="125" />
       <Patch name="S&amp;H Saw 1" hbank="87" lbank="3" prog="126" />
       <Patch name="S&amp;H Saw 2" hbank="87" lbank="3" prog="127" />
       <Patch name="Electrostar" hbank="87" lbank="4" prog="55" />
@@ -1236,7 +1236,7 @@
       <Patch name="R&amp;B T-Analog" hbank="86" lbank="0" prog="7" />
       <Patch name="R&amp;B Mini Kit" hbank="86" lbank="0" prog="8" />
       <Patch name="HipHop Kit" hbank="86" lbank="0" prog="9" />
-      <Patch name="R&amp;B Kit&quot; mode=" lbank="0" prog="10" />
+      <Patch name="R&amp;B Kit" hbank="86" lbank="0" prog="10" />
       <Patch name="Dance Kit 1" hbank="86" lbank="0" prog="11" />
       <Patch name="Dance Kit 2" hbank="86" lbank="0" prog="12" />
       <Patch name="Dance Kit 3" hbank="86" lbank="0" prog="13" />
