@@ -1,3 +1,10 @@
+06.01.2014:
+         - Midi instrument can now be changed from midi track info panel. (Tim) 
+         - Some minor code tweaks, code cleanup in mtrackinfo.cpp, confmport.cpp. 
+06.01.2014:
+         - Added (and fixed) Roland SD-50 .idf file by Patrick. Needs more work: split in two .idfs (Tim)
+         - Added GM2 .idf file created by me Tim.
+         - Fixed a couple of improper "&apos" xml substitutions in xml.cpp
 17.10.2013:
          - Fixed drag&drop plugins sometimes not working when built with optimize (rj)
 10.10.2013:

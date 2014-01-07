@@ -66,6 +66,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       void iKomprChanged(int);
       void iPanChanged(int);
       void iPanDoubleClicked();
+      void patchPopup();
       void instrPopup();
       void recordClicked();
       void progRecClicked();
@@ -74,7 +75,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       void recEchoToggled(bool);
       void inRoutesPressed();
       void outRoutesPressed();
-      void instrPopupActivated(QAction*);
+      void patchPopupActivated(QAction*);
       
    protected slots:
       virtual void heartBeat();

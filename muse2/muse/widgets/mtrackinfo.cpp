@@ -125,6 +125,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   progRecButton->setFocusPolicy(Qt::NoFocus);
   volRecButton->setFocusPolicy(Qt::NoFocus);
   panRecButton->setFocusPolicy(Qt::NoFocus);
+  instrPushButton->setFocusPolicy(Qt::NoFocus);
   iPatch->setFocusPolicy(Qt::NoFocus);
 
   iOutput->setFocusPolicy(Qt::NoFocus);
@@ -153,33 +154,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   //trackNameLabel->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
   
   if(selected)
-  {
     trackNameLabel->setObjectName(selected->cname());
-    
-    /*QPalette pal;
-    QColor c;
-    //pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
-    if(selected->type() == MusECore::Track::DRUM)
-      c = MusEGlobal::config.drumTrackLabelBg; 
-    else  
-      c = MusEGlobal::config.midiTrackLabelBg; 
-    
-    QLinearGradient gradient(trackNameLabel->geometry().topLeft(), trackNameLabel->geometry().bottomLeft());
-    //gradient.setColorAt(0, c.darker());
-    //gradient.setColorAt(0, c);
-    //gradient.setColorAt(1, c.darker());
-    gradient.setColorAt(0, c.lighter());
-    gradient.setColorAt(1, c);
-    //palette.setBrush(QPalette::Button, gradient);
-    //palette.setBrush(QPalette::Window, gradient);
-    pal.setBrush(trackNameLabel->backgroundRole(), gradient);
-    trackNameLabel->setPalette(pal);  */
-  } 
-  //else
-  //{
-  //  pal.setColor(trackNameLabel->backgroundRole(), MusEGlobal::config.midiTrackLabelBg); 
-  //  trackNameLabel->setPalette(pal);
-  //}  
   
   //trackNameLabel->setStyleSheet(QString("background-color: ") + QColor(0, 160, 255).name()); // Med blue
   trackNameLabel->setWordWrap(true);
@@ -192,18 +167,27 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   setLabelText();
   setLabelFont();
 
+  MusECore::MidiInstrument* minstr = NULL; 
+  MusECore::MidiTrack* track = static_cast<MusECore::MidiTrack*>(selected);
+  if(track)
+    minstr = MusEGlobal::midiPorts[track->outPort()].instrument();
+  if(minstr)
+  {
+    instrPushButton->setText(minstr->iname());
+    if(minstr->isSynti())
+      instrPushButton->setEnabled(false);
+    else
+      instrPushButton->setEnabled(true);
+  }
+  else
+    instrPushButton->setText(tr("<unknown>"));
+  
   //setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding));
   
-  connect(iPatch, SIGNAL(released()), SLOT(instrPopup()));
+  connect(instrPushButton, SIGNAL(released()), SLOT(instrPopup()));
+  connect(iPatch, SIGNAL(released()), SLOT(patchPopup()));
 
-  //pop = new QMenu(iPatch);
-  //pop->setCheckable(false); // not needed in Qt4
-
-  // Removed by Tim. p3.3.9
-  //connect(iName, SIGNAL(returnPressed()), SLOT(iNameChanged()));
-  
   connect(iOutputChannel, SIGNAL(valueChanged(int)), SLOT(iOutputChannelChanged(int)));
-  ///connect(iInputChannel, SIGNAL(textChanged(const QString&)), SLOT(iInputChannelChanged(const QString&)));
   connect(iHBank, SIGNAL(valueChanged(int)), SLOT(iProgHBankChanged()));
   connect(iLBank, SIGNAL(valueChanged(int)), SLOT(iProgLBankChanged()));
   connect(iProgram, SIGNAL(valueChanged(int)), SLOT(iProgramChanged()));
@@ -220,7 +204,6 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   connect(iPan, SIGNAL(valueChanged(int)), SLOT(iPanChanged(int)));
   connect(iPan, SIGNAL(ctrlDoubleClicked()), SLOT(iPanDoubleClicked()));
   connect(iOutput, SIGNAL(activated(int)), SLOT(iOutputPortChanged(int)));
-  ///connect(iInput, SIGNAL(textChanged(const QString&)), SLOT(iInputPortChanged(const QString&)));
   connect(recordButton, SIGNAL(clicked()), SLOT(recordClicked()));
   connect(progRecButton, SIGNAL(clicked()), SLOT(progRecClicked()));
   connect(volRecButton, SIGNAL(clicked()), SLOT(volRecClicked()));
@@ -259,11 +242,6 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   connect(iLen, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
   connect(iKompr, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
   connect(iPan, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
-  
-  // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
-  // Enabled (for Midi Port to Audio Input routing). p4.0.14 Tim.
-  //oRButton->setEnabled(false);
-  //oRButton->setVisible(false);
   connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
   
   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), SLOT(songChanged(MusECore::SongChangedFlags_t)));
@@ -278,7 +256,6 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
 
 void MidiTrackInfo::heartBeat()
 {
-  ///if(!showTrackinfoFlag || !selected)
   if(_blockHeartbeatCount < 0)  // error
   {
     fprintf(stderr, "ERROR: MidiTrackInfo::heartBeat: _blockHeartbeatCount is < 0, resetting to 0\n");
@@ -297,81 +274,44 @@ void MidiTrackInfo::heartBeat()
       
       int outChannel = track->outChannel();
       int outPort    = track->outPort();
-      ///int ichMask    = track->inChannelMask();
-      //int iptMask    = track->inPortMask();
-      ///unsigned int iptMask    = track->inPortMask();
-      
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outPort];
-      
-      // Set record echo.
-      //if(recEchoButton->isChecked() != track->recEcho())
-      //{
-      //  recEchoButton->blockSignals(true);
-      //  recEchoButton->setChecked(track->recEcho());
-      //  recEchoButton->blockSignals(false);
-      //}
       
       // Check for detection of midi general activity on chosen channels...
       int mpt = 0;
-      //int mch = 0;
       MusECore::RouteList* rl = track->inRoutes();
       
       MusECore::ciRoute r = rl->begin();
-      //for( ; mpt < MIDI_PORTS; ++mpt)
       for( ; r != rl->end(); ++r)
       {
-        //if(!r->isValid() || ((r->type != Route::ALSA_MIDI_ROUTE) && (r->type != Route::JACK_MIDI_ROUTE)))
-        //if(!r->isValid() || (r->type != Route::MIDI_DEVICE_ROUTE))
-        if(!r->isValid() || (r->type != MusECore::Route::MIDI_PORT_ROUTE))   // p3.3.49
+        if(!r->isValid() || (r->type != MusECore::Route::MIDI_PORT_ROUTE))
           continue;
         
         // NOTE: TODO: Code for channelless events like sysex, ** IF we end up using the 'special channel 17' method.
         //if(r->channel == -1)
-        if(r->channel == -1 || r->channel == 0)  // p3.3.50
+        if(r->channel == -1 || r->channel == 0)
           continue;
         
         // No port assigned to the device?
-        //mpt = r->device->midiPort();
-        mpt = r->midiPort;              // p3.3.49
+        mpt = r->midiPort;
         if(mpt < 0 || mpt >= MIDI_PORTS)
           continue;
         
-        //for(; mch < MIDI_CHANNELS; ++mch)
-        //{
-          //if(MusEGlobal::midiPorts[mpt].syncInfo().actDetect(mch) && (iptMask & (1 << mpt)) && (ichMask & (1 << mch)) )
-          //if((iptMask & bitShiftLU[mpt]) && (MusEGlobal::midiPorts[mpt].syncInfo().actDetectBits() & ichMask) )
-          //if(MusEGlobal::midiPorts[mpt].syncInfo().actDetectBits() & bitShiftLU[r->channel]) 
-          if(MusEGlobal::midiPorts[mpt].syncInfo().actDetectBits() & r->channel)          // p3.3.50 Use new channel mask.
+        if(MusEGlobal::midiPorts[mpt].syncInfo().actDetectBits() & r->channel)
+        {
+          if(!_midiDetect)
           {
-            //if(iChanTextLabel->paletteBackgroundColor() != green)
-            //  iChanTextLabel->setPaletteBackgroundColor(green);
-            //if(iChanDetectLabel->pixmap() != greendotIcon)
-            if(!_midiDetect)
-            {
-              //printf("Arranger::midiTrackInfoHeartBeat setting green icon\n");
-          
-              _midiDetect = true;
-              //iChanDetectLabel->setPixmap(*greendotIcon);
-              iChanDetectLabel->setPixmap(*redLedIcon);
-            }  
-            break;  
-          }
-        //}
+            _midiDetect = true;
+            iChanDetectLabel->setPixmap(*redLedIcon);
+          }  
+          break;  
+        }
       }
       // No activity detected?
-      //if(mch == MIDI_CHANNELS)
-      //if(mpt == MIDI_PORTS)
       if(r == rl->end())
       {
-        //if(iChanTextLabel->paletteBackgroundColor() != darkGreen)
-        //  iChanTextLabel->setPaletteBackgroundColor(darkGreen);
-        //if(iChanDetectLabel->pixmap() != darkgreendotIcon)
         if(_midiDetect)
         {
-          //printf("Arranger::midiTrackInfoHeartBeat setting darkgreen icon\n");
-          
           _midiDetect = false;
-          //iChanDetectLabel->setPixmap(*darkgreendotIcon);
           iChanDetectLabel->setPixmap(*darkRedLedIcon);
         }  
       }
@@ -381,8 +321,6 @@ void MidiTrackInfo::heartBeat()
       {
         if(program != MusECore::CTRL_VAL_UNKNOWN)
         {
-          //printf("Arranger::midiTrackInfoHeartBeat setting program to unknown\n");
-          
           program = MusECore::CTRL_VAL_UNKNOWN;
           if(iHBank->value() != 0)
           {
@@ -427,7 +365,7 @@ void MidiTrackInfo::heartBeat()
       }
       else
       {
-        // p4.0.27 The optimizing below, to avoid repeatedly calling getPatchName, generally worked OK. 
+        // The optimizing below, to avoid repeatedly calling getPatchName, generally worked OK. 
         // But Fluidsynth revealed a flaw. When loading a song, updateTrackInfo is called which correctly 
         //  sets program = nprogram. But a synth will not receive midistate sysexes until later. 
         // With Fluidsynth, that messed up our optimizing because the soundfont has not loaded yet. 
@@ -447,30 +385,20 @@ void MidiTrackInfo::heartBeat()
         {
               program = nprogram;
   
-              //int hb, lb, pr;
-              //if (program == MusECore::CTRL_VAL_UNKNOWN) {
-              //      hb = lb = pr = 0;
-              //      iPatch->setText("---");
-              //      }
-              //else 
-              //{
-                    MusECore::MidiInstrument* instr = mp->instrument();
-                    const QString name = instr->getPatchName(outChannel, program, track->isDrumTrack());
-                    if(iPatch->text() != name)
-                      iPatch->setText(name);
-  
-                    int hb = ((program >> 16) & 0xff) + 1;
-                    if (hb == 0x100)
-                          hb = 0;
-                    int lb = ((program >> 8) & 0xff) + 1;
-                    if (lb == 0x100)
-                          lb = 0;
-                    int pr = (program & 0xff) + 1;
-                    if (pr == 0x100)
-                          pr = 0;
-              //}
-              
-              //printf("Arranger::midiTrackInfoHeartBeat setting program\n");
+              MusECore::MidiInstrument* instr = mp->instrument();
+              const QString name = instr->getPatchName(outChannel, program, track->isDrumTrack());
+              if(iPatch->text() != name)
+                iPatch->setText(name);
+
+              int hb = ((program >> 16) & 0xff) + 1;
+              if (hb == 0x100)
+                    hb = 0;
+              int lb = ((program >> 8) & 0xff) + 1;
+              if (lb == 0x100)
+                    lb = 0;
+              int pr = (program & 0xff) + 1;
+              if (pr == 0x100)
+                    pr = 0;
             
               if(iHBank->value() != hb)
               {
@@ -498,12 +426,7 @@ void MidiTrackInfo::heartBeat()
       int mn = mc->minVal();
       int v = mp->hwCtrlState(outChannel, MusECore::CTRL_VOLUME);
       if(v == MusECore::CTRL_VAL_UNKNOWN)
-      //{
-        //v = mc->initVal();
-        //if(v == MusECore::CTRL_VAL_UNKNOWN)
-        //  v = 0;
         v = mn - 1;
-      //}  
       else
         // Auto bias...
         v -= mc->bias();
@@ -512,10 +435,7 @@ void MidiTrackInfo::heartBeat()
         volume = v;
         if(iLautst->value() != v)
         {
-          //printf("Arranger::midiTrackInfoHeartBeat setting volume\n");
-          
           iLautst->blockSignals(true);
-          //iLautst->setRange(mn - 1, mc->maxVal());
           iLautst->setValue(v);
           iLautst->blockSignals(false);
         }
@@ -525,12 +445,7 @@ void MidiTrackInfo::heartBeat()
       mn = mc->minVal();
       v = mp->hwCtrlState(outChannel, MusECore::CTRL_PANPOT);
       if(v == MusECore::CTRL_VAL_UNKNOWN)
-      //{
-        //v = mc->initVal();
-        //if(v == MusECore::CTRL_VAL_UNKNOWN)
-        //  v = 0;
         v = mn - 1;
-      //}  
       else
         // Auto bias...
         v -= mc->bias();
@@ -539,31 +454,11 @@ void MidiTrackInfo::heartBeat()
         pan = v;
         if(iPan->value() != v)
         {
-          //printf("Arranger::midiTrackInfoHeartBeat setting pan\n");
-          
           iPan->blockSignals(true);
-          //iPan->setRange(mn - 1, mc->maxVal());
           iPan->setValue(v);
           iPan->blockSignals(false);
         }  
       }  
-      
-      // Does it include a midi controller value adjustment? Then handle it...
-      //if(flags & SC_MIDI_CONTROLLER)
-      //  seek();
-
-      /*
-      if(iTransp->value() != track->transposition)
-        iTransp->setValue(track->transposition);
-      if(iAnschl->value() != track->velocity)
-        iAnschl->setValue(track->velocity);
-      if(iVerz->value() != track->delay)
-        iVerz->setValue(track->delay);
-      if(iLen->value() != track->len)
-        iLen->setValue(track->len);
-      if(iKompr->value() != track->compression)
-        iKompr->setValue(track->compression);
-      */  
     }  
     break;
     
@@ -583,8 +478,6 @@ void MidiTrackInfo::heartBeat()
 
 void MidiTrackInfo::configChanged()
       {
-      //printf("MidiTrackInfo::configChanged\n");
-      
       //if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
       //      canvas->setBg(MusEGlobal::config.partCanvasBg);
       //      canvas->setBg(QPixmap());
@@ -629,7 +522,6 @@ void MidiTrackInfo::setLabelText()
       {  
         QPalette pal;
         QColor c;
-        //pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
         if(track->type() == MusECore::Track::DRUM)
           c = MusEGlobal::config.drumTrackLabelBg; 
         else if (track->type() == MusECore::Track::MIDI)
@@ -640,14 +532,9 @@ void MidiTrackInfo::setLabelText()
           printf("THIS SHOULD NEVER HAPPEN: track is not a MIDI track in MidiTrackInfo::setLabelText()!\n");
         
         QLinearGradient gradient(trackNameLabel->geometry().topLeft(), trackNameLabel->geometry().bottomLeft());
-        //gradient.setColorAt(0, c.darker());
-        //gradient.setColorAt(0, c);
-        //gradient.setColorAt(1, c.darker());
         gradient.setColorAt(0, c);
         gradient.setColorAt(0.5, c.lighter());
         gradient.setColorAt(1, c);
-        //palette.setBrush(QPalette::Button, gradient);
-        //palette.setBrush(QPalette::Window, gradient);
         pal.setBrush(trackNameLabel->backgroundRole(), gradient);
         trackNameLabel->setPalette(pal);
       }  
@@ -659,10 +546,6 @@ void MidiTrackInfo::setLabelText()
 
 void MidiTrackInfo::setLabelFont()
 {
-      //if(!selected)
-      //  return;
-      //MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-        
       // Use the new font #6 I created just for these labels (so far).
       // Set the label's font.
       trackNameLabel->setFont(MusEGlobal::config.fonts[6]);
@@ -686,8 +569,8 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
             track->setOutChanAndUpdate(channel);
             MusEGlobal::audio->msgIdle(false);
             
-            MusEGlobal::audio->msgUpdateSoloStates();                   // p4.0.14
-            MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
+            MusEGlobal::audio->msgUpdateSoloStates();
+            MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
             --_blockHeartbeatCount;
             }
       }
@@ -711,8 +594,8 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       track->setOutPortAndUpdate(port_num);
       MusEGlobal::audio->msgIdle(false);
       
-      MusEGlobal::audio->msgUpdateSoloStates();                   // p4.0.14
-      MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
+      MusEGlobal::audio->msgUpdateSoloStates();
+      MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
       --_blockHeartbeatCount;
       }
 
@@ -727,7 +610,6 @@ void MidiTrackInfo::inRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  //RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
   RoutePopupMenu* pup = new RoutePopupMenu();
   pup->exec(QCursor::pos(), selected, false);
   delete pup;
@@ -745,7 +627,6 @@ void MidiTrackInfo::outRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  //RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
   RoutePopupMenu* pup = new RoutePopupMenu();
   pup->exec(QCursor::pos(), selected, true);
   delete pup;
@@ -1128,13 +1009,11 @@ void MidiTrackInfo::iPanChanged(int val)
     }
 
 //---------------------------------------------------------
-//   instrPopupActivated
+//   patchPopupActivated
 //---------------------------------------------------------
 
-void MidiTrackInfo::instrPopupActivated(QAction* act)
+void MidiTrackInfo::patchPopupActivated(QAction* act)
 {
-  //printf("MidiTrackInfo::instrPopupActivated\n"); 
-  
   if(act && selected) 
   {
     int rv = act->data().toInt();
@@ -1160,6 +1039,46 @@ void MidiTrackInfo::instrPopup()
       {
       if(!selected)
         return;
+      MusECore::MidiTrack* track = static_cast<MusECore::MidiTrack*>(selected);
+      int port = track->outPort();
+      MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
+      PopupMenu* pup = new PopupMenu(false);
+      
+      MusECore::MidiInstrument::populateInstrPopup(pup, instr, false);
+
+      if(pup->actions().count() == 0)
+      {
+        delete pup;
+        return;
+      }  
+      
+      QAction *act = pup->exec(instrPushButton->mapToGlobal(QPoint(10,5)));
+      if(act) 
+      {
+        QString s = act->text();
+        for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) 
+        {
+          if((*i)->iname() == s) 
+          {
+            MusEGlobal::midiPorts[port].setInstrument(*i);
+            // Make sure device initializations are sent if necessary.
+            MusEGlobal::audio->msgInitMidiDevices(false);  // false = Don't force
+            MusEGlobal::song->update();
+            break;
+          }
+        }
+      }
+      delete pup;      
+      }
+
+//---------------------------------------------------------
+//   patchPopup
+//---------------------------------------------------------
+
+void MidiTrackInfo::patchPopup()
+      {
+      if(!selected)
+        return;
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
@@ -1174,8 +1093,7 @@ void MidiTrackInfo::instrPopup()
         return;
       }  
       
-      connect(pup, SIGNAL(triggered(QAction*)), SLOT(instrPopupActivated(QAction*)));
-      //connect(pup, SIGNAL(hovered(QAction*)), SLOT(instrPopupActivated(QAction*)));
+      connect(pup, SIGNAL(triggered(QAction*)), SLOT(patchPopupActivated(QAction*)));
       
       QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
       if(act) 
@@ -1234,20 +1152,10 @@ void MidiTrackInfo::iProgHBankDoubleCLicked()
     if(lastv == MusECore::CTRL_VAL_UNKNOWN)
     {
       int kiv = mctl->initVal();
-      //int kiv = lrint(_knob->value());
       if(kiv == MusECore::CTRL_VAL_UNKNOWN)
         kiv = 0;
-      //else
-      //{  
-        //if(kiv < mctrl->minVal())
-        //  kiv = mctrl->minVal();
-        //if(kiv > mctrl->maxVal())
-        //  kiv = mctrl->maxVal();
-        //kiv += mctrl->bias();
-      //}    
 
       ++_blockHeartbeatCount;
-      //MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, num, kiv);
       MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, kiv);
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
       --_blockHeartbeatCount;
@@ -1290,8 +1198,6 @@ void MidiTrackInfo::iProgHBankDoubleCLicked()
       MusEGlobal::audio->msgSetHwCtrlState(mp, chan, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
       --_blockHeartbeatCount;
     }
-//     MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, curv);
-//     MusEGlobal::audio->msgPlayMidiEvent(&ev);
   }
   
   MusEGlobal::song->update(SC_MIDI_CONTROLLER);
@@ -1324,17 +1230,8 @@ void MidiTrackInfo::iProgLBankDoubleCLicked()
     if(lastv == MusECore::CTRL_VAL_UNKNOWN)
     {
       int kiv = mctl->initVal();
-      //int kiv = lrint(_knob->value());
       if(kiv == MusECore::CTRL_VAL_UNKNOWN)
         kiv = 0xff0000;
-      //else
-      //{  
-        //if(kiv < mctrl->minVal())
-        //  kiv = mctrl->minVal();
-        //if(kiv > mctrl->maxVal())
-        //  kiv = mctrl->maxVal();
-        //kiv += mctrl->bias();
-      //}    
       
       //MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, num, kiv);
       MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, kiv);
@@ -1420,19 +1317,9 @@ void MidiTrackInfo::iProgramDoubleClicked()
     if(lastv == MusECore::CTRL_VAL_UNKNOWN)
     {
       int kiv = mctl->initVal();
-      //int kiv = lrint(_knob->value());
       if(kiv == MusECore::CTRL_VAL_UNKNOWN)
         kiv = 0xffff00;
-      //else
-      //{  
-        //if(kiv < mctrl->minVal())
-        //  kiv = mctrl->minVal();
-        //if(kiv > mctrl->maxVal())
-        //  kiv = mctrl->maxVal();
-        //kiv += mctrl->bias();
-      //}    
       
-      //MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, num, kiv);
       MusECore::MidiPlayEvent ev(0, port, chan, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, kiv);
       MusEGlobal::audio->msgPlayMidiEvent(&ev);
     }
@@ -1478,7 +1365,6 @@ void MidiTrackInfo::iLautstDoubleClicked()
     if(lastv == MusECore::CTRL_VAL_UNKNOWN)
     {
       int kiv = mctl->initVal();
-      //int kiv = lrint(_knob->value());
       if(kiv == MusECore::CTRL_VAL_UNKNOWN)
         // Set volume to 78% of range, so that if range is 0 - 127, then value is 100.
         kiv = lround(double(mctl->maxVal() - mctl->minVal()) * 0.7874);
@@ -1536,7 +1422,6 @@ void MidiTrackInfo::iPanDoubleClicked()
     if(lastv == MusECore::CTRL_VAL_UNKNOWN)
     {
       int kiv = mctl->initVal();
-      //int kiv = lrint(_knob->value());
       if(kiv == MusECore::CTRL_VAL_UNKNOWN)
         // Set volume to 50% of range, so that if range is 0 - 127, then value is 64.
         kiv = lround(double(mctl->maxVal() - mctl->minVal()) * 0.5);
@@ -1608,22 +1493,17 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
         iKompr->blockSignals(false);
         
         int outChannel = track->outChannel();
-        ///int inChannel  = track->inChannelMask();
         int outPort    = track->outPort();
-        //int inPort     = track->inPortMask();
-        ///unsigned int inPort     = track->inPortMask();
   
         iOutput->blockSignals(true);
-        //iInput->clear();
         iOutput->clear();
   
         int item_idx = 0;
         for (int i = 0; i < MIDI_PORTS; ++i) {
               MusECore::MidiDevice* md = MusEGlobal::midiPorts[i].device(); 
-              if(!md)  // In the case of this combo box, don't bother listing empty ports.             p4.0.41
+              if(!md)  // In the case of this combo box, don't bother listing empty ports.
                 continue;
-              //if(!(md->rwFlags() & 1 || md->isSynti()) && (i != outPort))  
-              if(!(md->rwFlags() & 1) && (i != outPort))   // Only writeable ports, or current one.    p4.0.41
+              if(!(md->rwFlags() & 1) && (i != outPort))   // Only writeable ports, or current one.
                 continue;
               QString name;
               name.sprintf("%d:%s", i+1, MusEGlobal::midiPorts[i].portname().toLatin1().constData());
@@ -1634,21 +1514,21 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
               }
         iOutput->blockSignals(false);
         
-        //iInput->setText(bitmap2String(inPort));
-        ///iInput->setText(u32bitmap2String(inPort));
-        
-        //iInputChannel->setText(bitmap2String(inChannel));
-  
-        // Removed by Tim. p3.3.9
-        //if (iName->text() != selected->name()) {
-        //      iName->setText(selected->name());
-        //      iName->home(false);
-        //      }
+        MusECore::MidiInstrument* minstr = MusEGlobal::midiPorts[outPort].instrument();
+        if(minstr)
+        {
+          instrPushButton->setText(minstr->iname());
+          if(minstr->isSynti())
+            instrPushButton->setEnabled(false);
+          else
+            instrPushButton->setEnabled(true);
+        }
+        else
+          instrPushButton->setText(tr("<unknown>"));
         
         iOutputChannel->blockSignals(true);
         iOutputChannel->setValue(outChannel+1);
         iOutputChannel->blockSignals(false);
-        ///iInputChannel->setText(bitmap2String(inChannel));
         
         // Set record echo.
         if(recEchoButton->isChecked() != track->recEcho())
@@ -1658,112 +1538,91 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
           recEchoButton->blockSignals(false);
         }
         recEchoButton->setIcon(track->recEcho() ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
-        //recEchoButton->setIconSize(midiThruOnIcon->size());  
       }
         
-        int outChannel = track->outChannel();
-        int outPort    = track->outPort();
-        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outPort];
-        int nprogram = mp->hwCtrlState(outChannel, MusECore::CTRL_PROGRAM);
+      int outChannel = track->outChannel();
+      int outPort    = track->outPort();
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outPort];
+      int nprogram = mp->hwCtrlState(outChannel, MusECore::CTRL_PROGRAM);
+      if(nprogram == MusECore::CTRL_VAL_UNKNOWN)
+      {
+        iHBank->blockSignals(true);
+        iLBank->blockSignals(true);
+        iProgram->blockSignals(true);
+        iHBank->setValue(0);
+        iLBank->setValue(0);
+        iProgram->setValue(0);
+        iHBank->blockSignals(false);
+        iLBank->blockSignals(false);
+        iProgram->blockSignals(false);
+        
+        program = MusECore::CTRL_VAL_UNKNOWN;
+        nprogram = mp->lastValidHWCtrlState(outChannel, MusECore::CTRL_PROGRAM);
         if(nprogram == MusECore::CTRL_VAL_UNKNOWN)
+          iPatch->setText(tr("<unknown>"));
+        else
         {
-          iHBank->blockSignals(true);
-          iLBank->blockSignals(true);
-          iProgram->blockSignals(true);
-          iHBank->setValue(0);
-          iLBank->setValue(0);
-          iProgram->setValue(0);
-          iHBank->blockSignals(false);
-          iLBank->blockSignals(false);
-          iProgram->blockSignals(false);
-          
-          program = MusECore::CTRL_VAL_UNKNOWN;
-          nprogram = mp->lastValidHWCtrlState(outChannel, MusECore::CTRL_PROGRAM);
-          if(nprogram == MusECore::CTRL_VAL_UNKNOWN)
-            //iPatch->setText(QString("<unknown>"));
-            iPatch->setText(tr("<unknown>"));
-          else
-          {
+          MusECore::MidiInstrument* instr = mp->instrument();
+          iPatch->setText(instr->getPatchName(outChannel, nprogram, track->isDrumTrack()));
+        }         
+      }
+      else
+      {
+            program = nprogram;
+
             MusECore::MidiInstrument* instr = mp->instrument();
-            iPatch->setText(instr->getPatchName(outChannel, nprogram, track->isDrumTrack()));
-          }         
-        }
-        else
-        //if (program != nprogram) 
-        {
-              program = nprogram;
+            iPatch->setText(instr->getPatchName(outChannel, program, track->isDrumTrack()));
 
-              //int hb, lb, pr;
-              //if (program == MusECore::CTRL_VAL_UNKNOWN) {
-              //      hb = lb = pr = 0;
-              //      iPatch->setText("---");
-              //      }
-              //else 
-              //{
-                    MusECore::MidiInstrument* instr = mp->instrument();
-                    iPatch->setText(instr->getPatchName(outChannel, program, track->isDrumTrack()));
+            int hb = ((program >> 16) & 0xff) + 1;
+            if (hb == 0x100)
+                  hb = 0;
+            int lb = ((program >> 8) & 0xff) + 1;
+            if (lb == 0x100)
+                  lb = 0;
+            int pr = (program & 0xff) + 1;
+            if (pr == 0x100)
+                  pr = 0;
+                  
+            iHBank->blockSignals(true);
+            iLBank->blockSignals(true);
+            iProgram->blockSignals(true);
 
-                    int hb = ((program >> 16) & 0xff) + 1;
-                    if (hb == 0x100)
-                          hb = 0;
-                    int lb = ((program >> 8) & 0xff) + 1;
-                    if (lb == 0x100)
-                          lb = 0;
-                    int pr = (program & 0xff) + 1;
-                    if (pr == 0x100)
-                          pr = 0;
-              //}
-              iHBank->blockSignals(true);
-              iLBank->blockSignals(true);
-              iProgram->blockSignals(true);
+            iHBank->setValue(hb);
+            iLBank->setValue(lb);
+            iProgram->setValue(pr);
 
-              iHBank->setValue(hb);
-              iLBank->setValue(lb);
-              iProgram->setValue(pr);
-
-              iHBank->blockSignals(false);
-              iLBank->blockSignals(false);
-              iProgram->blockSignals(false);
-        }
-        
-        MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME);
-        int mn = mc->minVal();
-        int v = mp->hwCtrlState(outChannel, MusECore::CTRL_VOLUME);
-        volume = v;
-        if(v == MusECore::CTRL_VAL_UNKNOWN)
-        //{
-          //v = mc->initVal();
-          //if(v == MusECore::CTRL_VAL_UNKNOWN)
-          //  v = 0;
-          v = mn - 1;
-        //}  
-        else
-          // Auto bias...
-          v -= mc->bias();
-        iLautst->blockSignals(true);
-        iLautst->setRange(mn - 1, mc->maxVal());
-        iLautst->setValue(v);
-        iLautst->blockSignals(false);
-        
-        mc = mp->midiController(MusECore::CTRL_PANPOT);
-        mn = mc->minVal();
-        v = mp->hwCtrlState(outChannel, MusECore::CTRL_PANPOT);
-        pan = v;
-        if(v == MusECore::CTRL_VAL_UNKNOWN)
-        //{
-          //v = mc->initVal();
-          //if(v == MusECore::CTRL_VAL_UNKNOWN)
-          //  v = 0;
-          v = mn - 1;
-        //}  
-        else
-          // Auto bias...
-          v -= mc->bias();
-        iPan->blockSignals(true);
-        iPan->setRange(mn - 1, mc->maxVal());
-        iPan->setValue(v);
-        iPan->blockSignals(false);
-      //}
+            iHBank->blockSignals(false);
+            iLBank->blockSignals(false);
+            iProgram->blockSignals(false);
+      }
+      
+      MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME);
+      int mn = mc->minVal();
+      int v = mp->hwCtrlState(outChannel, MusECore::CTRL_VOLUME);
+      volume = v;
+      if(v == MusECore::CTRL_VAL_UNKNOWN)
+        v = mn - 1;
+      else
+        // Auto bias...
+        v -= mc->bias();
+      iLautst->blockSignals(true);
+      iLautst->setRange(mn - 1, mc->maxVal());
+      iLautst->setValue(v);
+      iLautst->blockSignals(false);
+      
+      mc = mp->midiController(MusECore::CTRL_PANPOT);
+      mn = mc->minVal();
+      v = mp->hwCtrlState(outChannel, MusECore::CTRL_PANPOT);
+      pan = v;
+      if(v == MusECore::CTRL_VAL_UNKNOWN)
+        v = mn - 1;
+      else
+        // Auto bias...
+        v -= mc->bias();
+      iPan->blockSignals(true);
+      iPan->setRange(mn - 1, mc->maxVal());
+      iPan->setValue(v);
+      iPan->blockSignals(false);
       
       --_blockHeartbeatCount;
 }
@@ -1888,7 +1747,6 @@ void MidiTrackInfo::recordClicked()
 
 void MidiTrackInfo::resizeEvent(QResizeEvent* ev)
 {
-  //printf("MidiTrackInfo::resizeEvent\n");  
   QWidget::resizeEvent(ev);
   setLabelText();  
   setLabelFont();
