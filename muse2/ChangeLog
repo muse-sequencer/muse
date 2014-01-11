@@ -1,3 +1,7 @@
+11.01.2014:
+         - Fix song not 'dirty' on most operations (close was not prompting to save). (Tim)
+           Added 'emit sigDirty()' at end of Song::executeOperationGroup3() and ::revertOperationGroup3()
+            if operations list not empty.
 10.01.2014:
          - Instrument Editor now basically complete: Added Initialization Sequence editor. (Tim)
            Initialization sequence sysex's can be entered manually or chosen from pre-defined list

@@ -1013,6 +1013,8 @@ void Song::revertOperationGroup3(Undo& operations)
                         break;
                   }
             }
+            if(!operations.empty())
+              emit sigDirty();
       }
 
 //---------------------------------------------------------
@@ -1143,6 +1145,8 @@ void Song::executeOperationGroup3(Undo& operations)
                         break;
                   }
             }
+            if(!operations.empty())
+              emit sigDirty();
       }
 
 
