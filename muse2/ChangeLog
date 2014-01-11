@@ -1,3 +1,12 @@
+10.01.2014:
+         - Instrument Editor now basically complete: Added Initialization Sequence editor. (Tim)
+           Initialization sequence sysex's can be entered manually or chosen from pre-defined list
+            using sysex event editor.
+         - Sysex event editor now allows selection from pre-defined Instrument Sysex list.
+         - Revised and edited Roland SD-50.idf by Patrick (split into GM2/nonGM2). 
+         - Fixed GM2.idf file prog numbers wrong.
+         - MusE now imports GM2 midi files. (Properly selects GM2 instrument.)
+         - Fixed several build-system ordering problems. Also some code cleanups, tweaks.
 06.01.2014:
          - Midi instrument can now be changed from midi track info panel. (Tim) 
          - Some minor code tweaks, code cleanup in mtrackinfo.cpp, confmport.cpp. 

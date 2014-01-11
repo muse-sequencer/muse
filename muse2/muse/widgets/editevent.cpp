@@ -51,6 +51,7 @@
 #include "instruments/minstrument.h"
 #include "midi.h"
 #include "popupmenu.h"
+#include "choose_sysex.h"
 
 namespace MusEGui {
 
@@ -77,7 +78,7 @@ QString string2hex(const unsigned char* data, int len)
 //   hex2string
 //---------------------------------------------------------
 
-char* hex2string(QWidget* parent, const char* src, int& len)
+char* hex2string(QWidget* parent, const char* src, int& len, bool warn = true)
       {
       char buffer[2048];
       char* dst = buffer;
@@ -88,17 +89,19 @@ char* hex2string(QWidget* parent, const char* src, int& len)
             char* ep;
             long val =  strtol(src, &ep, 16);
             if (ep == src) {
-                  QMessageBox::information(parent,
-                     QString("MusE"),
-                     QWidget::tr("Cannot convert sysex string"));
+                  if(warn)
+                    QMessageBox::information(parent,
+                      QString("MusE"),
+                      QWidget::tr("Cannot convert sysex string"));
                   return 0;
                   }
             src    = ep;
             *dst++ = val;
             if (dst - buffer >= 2048) {
-                  QMessageBox::information(parent,
-                     QString("MusE"),
-                     QWidget::tr("Hex String too long (2048 bytes limit)"));
+                  if(warn)
+                    QMessageBox::information(parent,
+                      QString("MusE"),
+                      QWidget::tr("Hex String too long (2048 bytes limit)"));
                   return 0;
                   }
             }
@@ -126,9 +129,9 @@ MusECore::Event EditNoteDialog::getEvent(int tick, const MusECore::Event& event,
       return nevent;
       }
 
-MusECore::Event EditSysexDialog::getEvent(int tick, const MusECore::Event& event, QWidget* parent)
+MusECore::Event EditSysexDialog::getEvent(int tick, const MusECore::Event& event, QWidget* parent, MusECore::MidiInstrument* instr)
       {
-      EditSysexDialog* dlg = new EditSysexDialog(tick, event, parent);
+      EditSysexDialog* dlg = new EditSysexDialog(tick, event, parent, instr);
       MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
             nevent = dlg->event();
@@ -224,18 +227,26 @@ MusECore::Event EditNoteDialog::event()
 //---------------------------------------------------------
 
 EditSysexDialog::EditSysexDialog(int tick, const MusECore::Event& event,
-   QWidget* parent)
+   QWidget* parent, MusECore::MidiInstrument* instr)
    : QDialog(parent)
       {
       setupUi(this);
       sysex = 0;
+      _instr = instr;
       if (!event.empty()) {
             epos->setValue(tick);
             edit->setText(string2hex(event.data(), event.dataLen()));
+            if(_instr)
+            {
+              typeLabel->setText(MusECore::nameSysex(event.dataLen(), event.data(), _instr));              
+              commentLabel->setText(MusECore::sysexComment(event.dataLen(), event.data(), _instr));              
+            }
             }
       else {
             epos->setValue(tick);
             }
+      connect(edit, SIGNAL(textChanged()), SLOT(editChanged()));      
+      connect(buttonSelect, SIGNAL(clicked(bool)), SLOT(selectSysex()));      
       }
 
 //---------------------------------------------------------
@@ -274,6 +285,53 @@ void EditSysexDialog::accept()
       if (sysex)
             QDialog::accept();
       }
+
+//---------------------------------------------------------
+//   editChanged
+//---------------------------------------------------------
+
+void EditSysexDialog::editChanged()
+{
+  if(!_instr)
+    return;
+  
+  QString qsrc = edit->toPlainText();
+  QByteArray ba = qsrc.toLatin1();
+  const char* src = ba.constData();
+
+  int l;
+  unsigned char* data = (unsigned char*)hex2string(this, src, l, false); // false = Don't warn with popups
+  if(data && l > 0)
+  {
+    typeLabel->setText(MusECore::nameSysex(l, data, _instr));
+    commentLabel->setText(MusECore::sysexComment(l, data, _instr));              
+  }
+  else
+  {
+   typeLabel->clear();
+   commentLabel->clear();
+  }
+}
+      
+//---------------------------------------------------------
+//   selectSysex
+//---------------------------------------------------------
+
+void EditSysexDialog::selectSysex()
+{
+  ChooseSysexDialog* dlg = new ChooseSysexDialog(this, _instr);
+  if(dlg->exec() == QDialog::Accepted) 
+  {
+    MusECore::SysEx* s = dlg->sysex();
+    if(s)
+    {
+      edit->setText(string2hex(s->data, s->dataLen));
+      typeLabel->setText(s->name);
+      commentLabel->setText(s->comment);              
+    }
+  }
+  delete dlg;
+}
 
 //---------------------------------------------------------
 //   EditMetaDialog

@@ -25,33 +25,13 @@
 ## Expand Qt macros in source files
 ##
 QT4_WRAP_CPP ( liste_mocs
-      # listedit.h
-      # ctrllistedit.h
-      # tracklistedit.h
-      # partlistedit.h
-      # ieventdialog.h
-      editevent.h      
       listedit.h 
       )
-
-##
-## UI files
-##
-file (GLOB liste_ui_files
-      editctrlbase.ui
-      )
-QT4_WRAP_UI ( liste_uis ${liste_ui_files} )
 
 ##
 ## List of source files to compile
 ##
 file (GLOB liste_source_files
-      # listedit.cpp
-      # ctrllistedit.cpp
-      # partlistedit.cpp
-      # tracklistedit.cpp
-      # ieventdialog.cpp
-      editevent.cpp
       listedit.cpp
       )
 
@@ -61,7 +41,6 @@ file (GLOB liste_source_files
 add_library ( liste ${MODULES_BUILD}
       ${liste_source_files}
       ${liste_mocs}
-      ${liste_uis}
       )
 
 ##
@@ -70,7 +49,6 @@ add_library ( liste ${MODULES_BUILD}
 set (FILES_TO_TRANSLATE
       ${FILES_TO_TRANSLATE}
       ${liste_source_files}
-      ${liste_ui_files}
       CACHE INTERNAL ""
       )
 
@@ -88,7 +66,6 @@ set_target_properties( liste
 target_link_libraries ( liste
       ${QT_LIBRARIES}
       awl
-      widgets
       )
 
 ##

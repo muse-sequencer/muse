@@ -45,6 +45,7 @@
 #include "event.h"
 #include "midiport.h"
 #include "midictrl.h"
+#include "minstrument.h"
 #include "app.h"
 #include "gconfig.h"
 
@@ -201,7 +202,8 @@ void ListEdit::songChanged(MusECore::SongChangedFlags_t type)
        
       if (type == 0)
             return;
-      if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
+      if (type & (// SC_MIDI_TRACK_PROP  FIXME Needed, but might make it slow!
+           SC_PART_REMOVED | SC_PART_MODIFIED 
          | SC_PART_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
          | SC_EVENT_INSERTED | SC_SELECTION)) {
             if (type & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED))
@@ -285,7 +287,6 @@ void ListEdit::songChanged(MusECore::SongChangedFlags_t type)
 QString EventListItem::text(int col) const
       {
       QString s;
-      QString commentLabel;
       switch(col) {
             case 0:
                   s.setNum(event.tick());
@@ -324,30 +325,9 @@ QString EventListItem::text(int col) const
                               }
                               break;
                         case MusECore::Sysex:
-                              {
-                              commentLabel = QString("len ");
-                              QString k;
-                              k.setNum(event.dataLen());
-                              commentLabel += k;
-                              commentLabel += QString(" ");
-
-                              commentLabel += MusECore::nameSysex(event.dataLen(), event.data());
-                              int i;
-                              for (i = 0; i < 10; ++i) {
-                                    if (i >= event.dataLen())
-                                          break;
-                                    commentLabel += QString(" 0x");
-                                    QString k;
-                                    k.setNum(event.data()[i] & 0xff, 16);
-                                    commentLabel += k;
-                                    }
-                              if (i == 10)
-                                    commentLabel += QString("...");
-                              }
                               s = QString("SysEx");
                               break;
                         case MusECore::Meta:
-                              commentLabel = midiMetaComment(event);
                               s = QString("Meta");
                               break;
                         case MusECore::Wave:
@@ -357,7 +337,14 @@ QString EventListItem::text(int col) const
                         }
                   break;
             case 3:
-                  s.setNum(part->track()->outChannel() + 1);
+                  switch(event.type()) {
+                    case MusECore::Sysex:
+                    case MusECore::Meta:
+                      break;
+                      
+                    default:
+                       s.setNum(part->track()->outChannel() + 1);
+                  }
                   break;
             case 4:
                   if (event.isNote())
@@ -365,7 +352,16 @@ QString EventListItem::text(int col) const
                   else if (event.type() == MusECore::Controller)
                         s.setNum(event.dataA() & 0xffff);  // mask off type bits
                   else
-                        s.setNum(event.dataA());
+                  {
+                    switch(event.type()) {
+                      case MusECore::Sysex:
+                      case MusECore::Meta:
+                        break;
+                        
+                    default:
+                      s.setNum(event.dataA());
+                    }
+                  }
                   break;
             case 5:
                   if(event.type() == MusECore::Controller &&
@@ -384,13 +380,41 @@ QString EventListItem::text(int col) const
                     s.sprintf("%d-%d-%d", hb, lb, pr);
                   }
                   else        
-                    s.setNum(event.dataB());
+                  {
+                    switch(event.type()) {
+                      case MusECore::Sysex:
+                      case MusECore::Meta:
+                        break;
+                        
+                    default:
+                      s.setNum(event.dataB());
+                    }
+                  }
                   break;
             case 6:
-                  s.setNum(event.dataC());
+                  switch(event.type()) {
+                    case MusECore::Sysex:
+                    case MusECore::Meta:
+                      break;
+                      
+                    default:
+                      s.setNum(event.dataC());
+                  }
                   break;
             case 7:
-                  s.setNum(event.lenTick());
+                  switch(event.type()) {
+                        case MusECore::Sysex:
+                        case MusECore::Meta:
+                          s.setNum(event.dataLen());
+                        break;
+                        
+                        case MusECore::Controller:
+                        break;
+                        
+                        default:
+                          s.setNum(event.lenTick());
+                        break;
+                  }
                   break;
             case 8:
                   switch(event.type()) {
@@ -402,14 +426,13 @@ QString EventListItem::text(int col) const
                               }
                               break;
                         case MusECore::Sysex:
+                        case MusECore::Meta:
                               {
-                              s = QString("len ");
-                              QString k;
-                              k.setNum(event.dataLen());
-                              s += k;
-                              s += QString(" ");
-
-                              commentLabel += MusECore::nameSysex(event.dataLen(), event.data());
+                              if(event.type() == MusECore::Sysex)
+                                s = MusECore::nameSysex(event.dataLen(), event.data(),
+                                      MusEGlobal::midiPorts[part->track()->outPort()].instrument()) + QString(" ");
+                              else if(event.type() == MusECore::Meta)  
+                                s = midiMetaComment(event) + QString(" ");
                               int i;
                               for (i = 0; i < 10; ++i) {
                                     if (i >= event.dataLen())
@@ -421,10 +444,8 @@ QString EventListItem::text(int col) const
                                     }
                               if (i == 10)
                                     s += QString("...");
+                              
                               }
-                              break;
-                        case MusECore::Meta:
-                              s = midiMetaComment(event);
                               break;
                         default:
                               break;
@@ -623,7 +644,10 @@ void ListEdit::editInsertSysEx()
       if(!curPart)
         return;
       
-      MusECore::Event event = EditSysexDialog::getEvent(curPart->tick(), MusECore::Event(), this);
+      MusECore::MidiInstrument* minstr = NULL;
+      if(curPart->track())
+        minstr = MusEGlobal::midiPorts[curPart->track()->outPort()].instrument();
+      MusECore::Event event = EditSysexDialog::getEvent(curPart->tick(), MusECore::Event(), this, minstr);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
             unsigned tick = event.tick();
@@ -699,7 +723,12 @@ void ListEdit::editEvent(MusECore::Event& event, MusECore::MidiPart* part)
                   nevent = EditCtrlDialog::getEvent(tick, event, part, this);
                   break;
             case MusECore::Sysex:
-                  nevent = EditSysexDialog::getEvent(tick, event, this);
+                  {
+                    MusECore::MidiInstrument* minstr = NULL;
+                    if(part->track())
+                      minstr = MusEGlobal::midiPorts[part->track()->outPort()].instrument();
+                    nevent = EditSysexDialog::getEvent(tick, event, this, minstr);
+                  }
                   break;
             case MusECore::Meta:
                   nevent = EditMetaDialog::getEvent(tick, event, this);

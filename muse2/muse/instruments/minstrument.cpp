@@ -457,6 +457,8 @@ MType MidiInstrument::midiType() const
 {
   if(_name == "GM")
     return MT_GM;
+  if(_name == "GM2")
+    return MT_GM2;
   if(_name == "GS")
     return MT_GS;
   if(_name == "XG")

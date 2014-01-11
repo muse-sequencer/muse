@@ -33,6 +33,7 @@
 #include "midictrl.h"
 #include "marker/marker.h"
 #include "midiport.h"
+#include "minstrument.h"
 #include "midictrl.h"
 #include "sync.h"
 #include "audio.h"
@@ -52,11 +53,15 @@ extern void dump(const unsigned char* p, int n);
 
 
 const unsigned char gmOnMsg[]   = { 0x7e, 0x7f, 0x09, 0x01 };
+const unsigned char gm2OnMsg[]  = { 0x7e, 0x7f, 0x09, 0x03 };
+const unsigned char gmOffMsg[]  = { 0x7e, 0x7f, 0x09, 0x02 };
 const unsigned char gsOnMsg[]   = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41 };
 const unsigned char gsOnMsg2[]  = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x33, 0x50, 0x3c };
 const unsigned char gsOnMsg3[]  = { 0x41, 0x10, 0x42, 0x12, 0x40, 0x01, 0x34, 0x50, 0x3b };
 const unsigned char xgOnMsg[]   = { 0x43, 0x10, 0x4c, 0x00, 0x00, 0x7e, 0x00 };
 const unsigned int  gmOnMsgLen  = sizeof(gmOnMsg);
+const unsigned int  gm2OnMsgLen = sizeof(gm2OnMsg);
+const unsigned int  gmOffMsgLen = sizeof(gmOffMsg);
 const unsigned int  gsOnMsgLen  = sizeof(gsOnMsg);
 const unsigned int  gsOnMsg2Len = sizeof(gsOnMsg2);
 const unsigned int  gsOnMsg3Len = sizeof(gsOnMsg3);
@@ -115,11 +120,12 @@ QString midiMetaName(int meta)
 //   QString nameSysex
 //---------------------------------------------------------
 
-QString nameSysex(unsigned int len, const unsigned char* buf)
+QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* instr)
       {
       QString s;
       if(len == 0)
         return s;
+      
       switch(buf[0]) {
             case 0x00:
                   if(len < 3)
@@ -127,12 +133,12 @@ QString nameSysex(unsigned int len, const unsigned char* buf)
                   if (buf[1] == 0 && buf[2] == 0x41)
                         s = "Microsoft";
                   break;
-            case 0x01:  s = "Sequential Circuits: "; break;
-            case 0x02:  s = "Big Briar: "; break;
-            case 0x03:  s = "Octave / Plateau: "; break;
-            case 0x04:  s = "Moog: "; break;
-            case 0x05:  s = "Passport Designs: "; break;
-            case 0x06:  s = "Lexicon: "; break;
+            case 0x01:  s = "Sequential Circuits"; break;
+            case 0x02:  s = "Big Briar"; break;
+            case 0x03:  s = "Octave / Plateau"; break;
+            case 0x04:  s = "Moog"; break;
+            case 0x05:  s = "Passport Designs"; break;
+            case 0x06:  s = "Lexicon"; break;
             case 0x07:  s = "Kurzweil"; break;
             case 0x08:  s = "Fender"; break;
             case 0x09:  s = "Gulbransen"; break;
@@ -142,18 +148,18 @@ QString nameSysex(unsigned int len, const unsigned char* buf)
             case 0x0d:  s = "Techmar"; break;
             case 0x0e:  s = "Matthews Research"; break;
             case 0x10:  s = "Oberheim"; break;
-            case 0x11:  s = "PAIA: "; break;
-            case 0x12:  s = "Simmons: "; break;
+            case 0x11:  s = "PAIA"; break;
+            case 0x12:  s = "Simmons"; break;
             case 0x13:  s = "DigiDesign"; break;
-            case 0x14:  s = "Fairlight: "; break;
+            case 0x14:  s = "Fairlight"; break;
             case 0x15:  s = "JL Cooper"; break;
             case 0x16:  s = "Lowery"; break;
             case 0x17:  s = "Lin"; break;
             case 0x18:  s = "Emu"; break;
             case 0x1b:  s = "Peavy"; break;
-            case 0x20:  s = "Bon Tempi: "; break;
-            case 0x21:  s = "S.I.E.L: "; break;
-            case 0x23:  s = "SyntheAxe: "; break;
+            case 0x20:  s = "Bon Tempi"; break;
+            case 0x21:  s = "S.I.E.L"; break;
+            case 0x23:  s = "SyntheAxe"; break;
             case 0x24:  s = "Hohner"; break;
             case 0x25:  s = "Crumar"; break;
             case 0x26:  s = "Solton"; break;
@@ -163,28 +169,77 @@ QString nameSysex(unsigned int len, const unsigned char* buf)
             case 0x2f:  s = "Elka"; break;
             case 0x36:  s = "Cheetah"; break;
             case 0x3e:  s = "Waldorf"; break;
-            case 0x40:  s = "Kawai: "; break;
-            case 0x41:  s = "Roland: "; break;
-            case 0x42:  s = "Korg: "; break;
-            case 0x43:  s = "Yamaha: "; break;
+            case 0x40:  s = "Kawai"; break;
+            case 0x41:  s = "Roland"; break;
+            case 0x42:  s = "Korg"; break;
+            case 0x43:  s = "Yamaha"; break;
             case 0x44:  s = "Casio"; break;
             case 0x45:  s = "Akai"; break;
             case MUSE_SYNTH_SYSEX_MFG_ID:  s = "MusE Soft Synth"; break;     
             case 0x7d:  s = "Educational Use"; break;
             case 0x7e:  s = "Universal: Non Real Time"; break;
             case 0x7f:  s = "Universal: Real Time"; break;
-            default:    s = "??: "; break;
+            default:    s = "??"; break;
             }
+
+      if(instr)
+      {
+        // Check for user-defined sysex in instrument...
+        foreach(const MusECore::SysEx* sx, instr->sysex()) 
+        {
+          if(len == sx->dataLen && memcmp(buf, sx->data, len) == 0)
+            return s + QString(": ") + sx->name;
+        }
+      }
+      
       //
       // following messages should not show up in event list
       // they are filtered while importing midi files
       //
       if ((len == gmOnMsgLen) && memcmp(buf, gmOnMsg, gmOnMsgLen) == 0)
-            s += "GM-ON";
+            s += ": GM-ON";
+      else if ((len == gm2OnMsgLen) && memcmp(buf, gm2OnMsg, gm2OnMsgLen) == 0)
+            s += ": GM2-ON";
+      else if ((len == gmOffMsgLen) && memcmp(buf, gmOffMsg, gmOffMsgLen) == 0)
+            s += ": GM-OFF";
       else if ((len == gsOnMsgLen) && memcmp(buf, gsOnMsg, gsOnMsgLen) == 0)
-            s += "GS-ON";
+            s += ": GS-ON";
       else if ((len == xgOnMsgLen) && memcmp(buf, xgOnMsg, xgOnMsgLen) == 0)
-            s += "XG-ON";
+            s += ": XG-ON";
+      return s;
+      }
+
+//---------------------------------------------------------
+//   QString sysexComment
+//---------------------------------------------------------
+
+QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument* instr)
+      {
+      QString s;
+      if(len == 0)
+        return s;
+      
+      if(instr)
+      {
+        // Check for user-defined sysex in instrument...
+        foreach(const MusECore::SysEx* sx, instr->sysex()) 
+        {
+          if(len == sx->dataLen && memcmp(buf, sx->data, len) == 0)
+            return sx->comment;
+        }
+      }
+      
+      // These are the common ones we know about so far...
+      if ((len == gmOnMsgLen) && memcmp(buf, gmOnMsg, gmOnMsgLen) == 0)
+            s = QObject::tr("Switch on General Midi Level 1 mode");
+      else if ((len == gm2OnMsgLen) && memcmp(buf, gm2OnMsg, gm2OnMsgLen) == 0)
+            s = QObject::tr("Switch on General Midi Level 2 mode");
+      else if ((len == gmOffMsgLen) && memcmp(buf, gmOffMsg, gmOffMsgLen) == 0)
+            s = QObject::tr("Switch off General Midi Level 1 or 2");
+      else if ((len == gsOnMsgLen) && memcmp(buf, gsOnMsg, gsOnMsgLen) == 0)
+            s = QObject::tr("Switch on Roland GS mode");
+      else if ((len == xgOnMsgLen) && memcmp(buf, xgOnMsg, xgOnMsgLen) == 0)
+            s = QObject::tr("Switch on Yamaha XG mode");
       return s;
       }
 

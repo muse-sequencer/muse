@@ -40,6 +40,7 @@
 #include "audiodev.h"
 #include "midi.h"
 #include "midiseq.h"
+#include "midictrl.h"
 #include "popupmenu.h"
 #include "menutitleitem.h"
 

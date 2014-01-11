@@ -36,11 +36,11 @@
 
 #include <math.h>
 
+#include "globaldefs.h"
 #include "app.h"
 #include "globals.h"
 #include "midictrl.h"
 #include "instruments/minstrument.h"
-#include "editinstrument.h"
 #include "midiport.h"
 #include "mididev.h"
 #include "xml.h"
@@ -646,7 +646,7 @@ void CtrlPanel::ctrlPopupTriggered(QAction* act)
         }
   else if (rv == edit_ins) {            // edit instrument
         MusECore::MidiInstrument* instr = port->instrument();
-        MusEGlobal::muse->startEditInstrument(instr ? instr->iname() : QString(), EditInstrument::Controllers);
+        MusEGlobal::muse->startEditInstrument(instr ? instr->iname() : QString(), EditInstrumentControllers);
         }
   else {                           // Select a control
         MusECore::iMidiCtrlValList i = cll->find(channel, rv);

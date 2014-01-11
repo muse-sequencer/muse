@@ -26,8 +26,8 @@
 #define __EDITINSTRUMENT_H__
 
 #include "ui_editinstrumentbase.h"
-#include "minstrument.h"
-#include "midictrl.h"
+
+#include "globaldefs.h"
 
 class QDialog;
 class QMenu;
@@ -36,6 +36,15 @@ class QGridLayout;
 class QStringListModel;
 class QString;
 class QAction;
+
+namespace MusECore {
+
+class MidiInstrument;
+class MidiController;
+class Patch;
+class PatchGroup;
+class SysEx;
+}
 
 namespace MusEGui {
 
@@ -49,7 +58,7 @@ class DList;
 class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
     Q_OBJECT
 
-      MusECore::MidiInstrument workingInstrument;
+      MusECore::MidiInstrument* workingInstrument;
       QListWidgetItem*  oldMidiInstrument;
       QTreeWidgetItem* oldPatchItem;
 
@@ -70,6 +79,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void updatePatchGroup(MusECore::MidiInstrument*, MusECore::PatchGroup*);
       void updateSysex(MusECore::MidiInstrument*, MusECore::SysEx*);
       void changeInstrument();
+      void populateInitEventList();
       QTreeWidgetItem* addControllerToView(MusECore::MidiController* mctrl);
       QString getPatchItemText(int);
       void enableDefaultControls(bool, bool);
@@ -116,6 +126,10 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void newSysexClicked();
       void ctrlNullParamHChanged(int);
       void ctrlNullParamLChanged(int);
+      void editInitListItem(QTreeWidgetItem* item);
+      void initListDeleteClicked();
+      void initListAddClicked();
+      void initListChangeClicked();
       
       void patchCollectionSpinboxChanged(int);
       void patchCollectionCheckboxChanged(bool);
@@ -130,11 +144,10 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void fetchPatchCollection();
 
    public:
-      enum TabType { Patches=0, DrumMaps=1, Controllers=2, Sysex=3 };
-      
       EditInstrument(QWidget* parent = 0, Qt::WFlags fl = Qt::Window);
+      virtual ~EditInstrument();
       void findInstrument(const QString& find_instrument);
-      void showTab(TabType);
+      void showTab(EditInstrumentTabType);
       };
 
 } // namespace MusEGui

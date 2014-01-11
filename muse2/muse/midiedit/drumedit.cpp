@@ -43,6 +43,7 @@
 #include <QPoint>
 #include <QRect>
 
+#include "globaldefs.h"
 #include "drumedit.h"
 #include "dcanvas.h"
 #include "mtscale.h"
@@ -69,7 +70,6 @@
 #include "popupmenu.h"
 #include "menutitleitem.h"
 #include "widgets/function_dialogs/quantize.h"
-#include "editinstrument.h"
 
 namespace MusEGui {
 
@@ -1350,7 +1350,7 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
         }
   else if (rv == edit_ins) {             // edit instrument
         MusECore::MidiInstrument* instr = port->instrument();
-        MusEGlobal::muse->startEditInstrument(instr ? instr->iname() : QString(), EditInstrument::Controllers);
+        MusEGlobal::muse->startEditInstrument(instr ? instr->iname() : QString(), EditInstrumentControllers);
         }
   else {                           // Select a control
         if(cll->find(channel, rv) == cll->end())

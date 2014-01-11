@@ -49,6 +49,7 @@
 
 #include <stdio.h>
 
+#include "globaldefs.h"
 #include "xml.h"
 #include "mtscale.h"
 #include "prcanvas.h"
@@ -69,8 +70,6 @@
 #include "helper.h"
 #include "popupmenu.h"
 #include "menutitleitem.h"
-#include "editinstrument.h"
-
 
 #include "cmd.h"
 #include "shortcuts.h"
@@ -868,7 +867,7 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
         }
   else if (rv == edit_ins) {             // edit instrument
         MusECore::MidiInstrument* instr = port->instrument();
-        MusEGlobal::muse->startEditInstrument(instr ? instr->iname() : QString(), EditInstrument::Controllers);
+        MusEGlobal::muse->startEditInstrument(instr ? instr->iname() : QString(), EditInstrumentControllers);
         }
   else {                           // Select a control
         if(cll->find(channel, rv) == cll->end())

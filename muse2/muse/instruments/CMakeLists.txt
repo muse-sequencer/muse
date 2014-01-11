@@ -43,9 +43,7 @@ QT4_WRAP_UI ( instruments_uis ${instruments_ui_files} )
 ##
 file (GLOB instruments_source_files
    editinstrument.cpp
-   editinstrument.h
    minstrument.cpp
-   minstrument.h
    )
 
 ##

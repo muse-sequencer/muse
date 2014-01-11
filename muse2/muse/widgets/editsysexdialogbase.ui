@@ -42,7 +42,7 @@
       </widget>
      </item>
      <item>
-      <widget class="Awl::PosEdit" name="epos"/>
+      <widget class="Awl::PosEdit" name="epos" native="true"/>
      </item>
      <item>
       <spacer name="Spacer2">
@@ -82,6 +82,26 @@
    <item>
     <widget class="QLabel" name="TextLabel2">
      <property name="text">
+      <string>Name:</string>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="typeLabel">
+     <property name="frameShape">
+      <enum>QFrame::Panel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="TextLabel3">
+     <property name="text">
       <string>Comment:</string>
      </property>
      <property name="wordWrap">
@@ -90,7 +110,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QTextEdit" name="comment"/>
+    <widget class="QLabel" name="commentLabel">
+     <property name="frameShape">
+      <enum>QFrame::Panel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout">
@@ -117,9 +144,16 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="buttonSelect">
+       <property name="text">
+        <string>&amp;Select...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="buttonOk">
        <property name="text">
-        <string>OK</string>
+        <string>&amp;OK</string>
        </property>
        <property name="shortcut">
         <number>0</number>
@@ -135,7 +169,7 @@
      <item>
       <widget class="QPushButton" name="buttonCancel">
        <property name="text">
-        <string>Cancel</string>
+        <string>&amp;Cancel</string>
        </property>
        <property name="shortcut">
         <number>0</number>
@@ -155,7 +189,6 @@
    <class>Awl::PosEdit</class>
    <extends>QWidget</extends>
    <header>awl/posedit.h</header>
-   <container>0</container>
   </customwidget>
  </customwidgets>
  <resources/>

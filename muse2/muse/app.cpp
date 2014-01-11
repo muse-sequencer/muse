@@ -2864,7 +2864,7 @@ again:
 //   startEditInstrument
 //---------------------------------------------------------
 
-void MusE::startEditInstrument(const QString& find_instrument, EditInstrument::TabType show_tab)
+void MusE::startEditInstrument(const QString& find_instrument, EditInstrumentTabType show_tab)
     {
       if(editInstrument == 0)
       {
