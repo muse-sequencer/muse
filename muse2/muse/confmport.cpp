@@ -63,7 +63,7 @@ extern std::vector<MusECore::Synth*> synthis;
 
 namespace MusEGui {
 
-enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INPUT_INSTR, DEVCOL_OUTPUT_INSTR, DEVCOL_NAME,
+enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
        DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };  
 
 //---------------------------------------------------------
@@ -438,7 +438,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         return;
                   if (port->hasNativeGui())
                   {
-                        port->outputInstrument()->showNativeGui(!port->nativeGuiVisible());
+                        port->instrument()->showNativeGui(!port->nativeGuiVisible());
                         item->setIcon(port->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
                   return;
@@ -965,8 +965,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   }
                   return;
 
-            case DEVCOL_INPUT_INSTR:
-            case DEVCOL_OUTPUT_INSTR:
+            case DEVCOL_INSTR:
                   {
                   if (dev && dev->isSynti())
                         return;
@@ -994,10 +993,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
                      != MusECore::midiInstruments.end(); ++i) {
                         if ((*i)->iname() == s) {
-                              if(col == DEVCOL_INPUT_INSTR)
-                                port->setInputInstrument(*i);
-                              else
-                                port->setOutputInstrument(*i);
+                              port->setInstrument(*i);
                               break;
                               }
                         }
@@ -1018,8 +1014,7 @@ void MPConfig::setToolTip(QTableWidgetItem *item, int col)
             case DEVCOL_GUI:    item->setToolTip(tr("Enable gui")); break;
             case DEVCOL_REC:    item->setToolTip(tr("Enable reading")); break;
             case DEVCOL_PLAY:   item->setToolTip(tr("Enable writing")); break;
-            case DEVCOL_INPUT_INSTR:  item->setToolTip(tr("Input instrument")); break;
-            case DEVCOL_OUTPUT_INSTR:  item->setToolTip(tr("Output instrument")); break;
+            case DEVCOL_INSTR:  item->setToolTip(tr("Output instrument")); break;
             case DEVCOL_NAME:   item->setToolTip(tr("Midi device name. Click to edit (Jack)")); break;
             case DEVCOL_INROUTES:  item->setToolTip(tr("Connections from Jack Midi outputs")); break;
             case DEVCOL_OUTROUTES: item->setToolTip(tr("Connections to Jack Midi inputs")); break;
@@ -1053,9 +1048,7 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
             case DEVCOL_NAME:
                   item->setWhatsThis(tr("Name of the midi device associated with"
                                         " this port number. Click to edit Jack midi name.")); break;
-            case DEVCOL_INPUT_INSTR:
-                  item->setWhatsThis(tr("Instrument connected to port input")); break;
-            case DEVCOL_OUTPUT_INSTR:
+            case DEVCOL_INSTR:
                   item->setWhatsThis(tr("Instrument connected to port output")); break;
             case DEVCOL_INROUTES:
                   item->setWhatsThis(tr("Connections from Jack Midi output ports")); break;
@@ -1115,8 +1108,7 @@ MPConfig::MPConfig(QWidget* parent)
 		  << tr("GUI")
 		  << tr("I")
 		  << tr("O")
-                  << tr("In instr")
-		  << tr("Out instr")
+		  << tr("Instrument")
 		  << tr("Device Name")
 		  << tr("In routes")
 		  << tr("Out routes")
@@ -1204,15 +1196,10 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             QTableWidgetItem* itemstate = new QTableWidgetItem(port->state());
             addItem(i, DEVCOL_STATE, itemstate, mdevView);
             itemstate->setFlags(Qt::ItemIsEnabled);
-            QTableWidgetItem* iteminstr_in = new QTableWidgetItem(port->inputInstrument() ?
-                           port->inputInstrument()->iname() :
+            QTableWidgetItem* iteminstr_out = new QTableWidgetItem(port->instrument() ?
+                           port->instrument()->iname() :
                            tr("<unknown>"));
-            addItem(i, DEVCOL_INPUT_INSTR, iteminstr_in, mdevView);
-            iteminstr_in->setFlags(dev && dev->isSynti() ? Qt::NoItemFlags : Qt::ItemIsEnabled);  // Disable if synth.
-            QTableWidgetItem* iteminstr_out = new QTableWidgetItem(port->outputInstrument() ?
-                           port->outputInstrument()->iname() :
-                           tr("<unknown>"));
-            addItem(i, DEVCOL_OUTPUT_INSTR, iteminstr_out, mdevView);
+            addItem(i, DEVCOL_INSTR, iteminstr_out, mdevView);
             iteminstr_out->setFlags(dev && dev->isSynti() ? Qt::NoItemFlags : Qt::ItemIsEnabled); // Disable if synth.
             QTableWidgetItem* itemname = new QTableWidgetItem;
             addItem(i, DEVCOL_NAME, itemname, mdevView);

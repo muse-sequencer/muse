@@ -1544,7 +1544,7 @@ void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
   MidiPort* mp = &MusEGlobal::midiPorts[port];
 
   MidiCtrlValListList* mcvll = mp->controller();
-  MidiInstrument*      instr = mp->outputInstrument();
+  MidiInstrument*      instr = mp->instrument();
   MidiControllerList*    mcl = instr->controller();
 
   int num;

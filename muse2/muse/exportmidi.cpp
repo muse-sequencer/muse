@@ -479,7 +479,7 @@ void MusE::exportMidi()
             {
               if(port >= 0 && port < MIDI_PORTS)
               {
-                MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].outputInstrument();
+                MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
                 if(instr)
                 {
                   if(i == 0 || MusEGlobal::config.smfFormat != 0)

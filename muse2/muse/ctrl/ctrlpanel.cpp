@@ -645,7 +645,7 @@ void CtrlPanel::ctrlPopupTriggered(QAction* act)
         emit controllerChanged(MusECore::CTRL_VELOCITY);
         }
   else if (rv == edit_ins) {            // edit instrument
-        MusECore::MidiInstrument* instr = port->outputInstrument();
+        MusECore::MidiInstrument* instr = port->instrument();
         MusEGlobal::muse->startEditInstrument(instr ? instr->iname() : QString(), EditInstrument::Controllers);
         }
   else {                           // Select a control

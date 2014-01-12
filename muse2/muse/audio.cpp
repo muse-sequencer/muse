@@ -711,7 +711,7 @@ void Audio::processMsg(AudioMsg* msg)
                   for (int i = 0; i < MIDI_PORTS; ++i)                         
                   {      
                     if(MusEGlobal::midiPorts[i].device())                       
-                      MusEGlobal::midiPorts[i].outputInstrument()->reset(i);
+                      MusEGlobal::midiPorts[i].instrument()->reset(i);
                   }      
                   break;
             case SEQM_INIT_DEVICES:

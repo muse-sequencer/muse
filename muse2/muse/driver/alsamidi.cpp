@@ -28,7 +28,6 @@
 #include "midi.h"
 //#include "mididev.h"
 #include "../midiport.h"
-#include "minstrument.h"
 #include "../midiseq.h"
 #include "../midictrl.h"
 #include "../audio.h"
@@ -1919,6 +1918,7 @@ void alsaProcessMidiInput()
                         }
                   }
             
+            // Some new stuff working on... REMOVE Tim. Or keep.
             if(mdev)
             {
               switch(ev->type)
@@ -1959,6 +1959,7 @@ void alsaProcessMidiInput()
                 break;
               }
             }
+
             
             if (mdev == 0 || curPort == -1) {
                   if (MusEGlobal::debugMsg) {
@@ -1973,7 +1974,7 @@ void alsaProcessMidiInput()
             event.setPort(curPort);
             event.setB(0);
 
-            MidiInstrument* instr = MusEGlobal::midiPorts[curPort].inputInstrument();
+            //MidiInstrument* instr = MusEGlobal::midiPorts[curPort].inputInstrument();
             
             switch(ev->type) 
             {
@@ -2040,110 +2041,113 @@ void alsaProcessMidiInput()
                                               a == CTRL_HBANK || a == CTRL_LBANK ||
                                               a == CTRL_HDATA || a == CTRL_LDATA);
 
-                          if(instr)
-                          {
-                            int num;
-                            int ctrlH;
-                            int ctrlL;
-                            MidiController* mc;
-                            MidiControllerList* mcl = instr->controller();
-                            for(ciMidiController imc = mcl->begin(); imc != mcl->end(); ++imc)
-                            {
-                              mc = imc->second;
-                              num = mc->num();
-                              ctrlH = (num >> 8) & 0x7f;
-                              ctrlL = num & 0xff;
-                              if(num < CTRL_14_OFFSET)           // 7-bit controller  0 - 0x10000
-                              {
-                                if(ctrlL == 0xff || ctrlL == a)
-                                  is_7bit = true;
-                                
-                                if(ctrlL == 0xff)
-                                  RPNH_reserved = RPNL_reserved = NRPNH_reserved = NRPNL_reserved = DATAH_reserved = DATAL_reserved = true;
-                                else if(ctrlL == CTRL_HRPN)
-                                  RPNH_reserved = true;
-                                else if(ctrlL == CTRL_LRPN)
-                                  RPNL_reserved = true;
-                                else if(ctrlL == CTRL_HNRPN)
-                                  NRPNH_reserved = true;
-                                else if(ctrlL == CTRL_LNRPN)
-                                  NRPNL_reserved = true;
-                                else if(ctrlL == CTRL_HDATA)
-                                  DATAH_reserved = true;
-                                else if(ctrlL == CTRL_LDATA)
-                                  DATAL_reserved = true;
-                              }
-                              else if(num < CTRL_RPN_OFFSET)     // 14-bit controller 0x10000 - 0x20000
-                              {
-                                if(ctrlH == a)
-                                {
-                                  //is_14bitH = true;
-                                  is_14bit = true;
-                                  if(!instr->waitForLSB())
-                                  {
-                                    MidiRecordEvent single_ev;
-                                    single_ev.setChannel(chn);
-                                    single_ev.setType(ME_CONTROLLER);
-                                    single_ev.setA(CTRL_14_OFFSET + (a << 8) + ctrlL);
-                                    single_ev.setB((b << 7) + mcs->ctrls[ctrlL]);
-                                    mdev->recordEvent(single_ev);
-                                  }
-                                }
-                                if(ctrlL == 0xff || ctrlL == a)
-                                {
-                                  //is_14bitL = true;
-                                  is_14bit = true;
-                                  MidiRecordEvent single_ev;
-                                  single_ev.setChannel(chn);
-                                  single_ev.setType(ME_CONTROLLER);
-                                  single_ev.setA(CTRL_14_OFFSET + (ctrlH << 8) + a);
-                                  single_ev.setB((mcs->ctrls[ctrlH] << 7) + b);
-                                  mdev->recordEvent(single_ev);
-                                }
-
-                                if(ctrlL == 0xff)
-                                  RPNH_reserved = RPNL_reserved = NRPNH_reserved = NRPNL_reserved = DATAH_reserved = DATAL_reserved = true;
-                                else if(ctrlL == CTRL_HRPN || ctrlH == CTRL_HRPN)
-                                  RPNH_reserved = true;
-                                else if(ctrlL == CTRL_LRPN || ctrlH == CTRL_LRPN)
-                                  RPNL_reserved = true;
-                                else if(ctrlL == CTRL_HNRPN || ctrlH == CTRL_HNRPN)
-                                  NRPNH_reserved = true;
-                                else if(ctrlL == CTRL_LNRPN || ctrlH == CTRL_LNRPN)
-                                  NRPNL_reserved = true;
-                                else if(ctrlL == CTRL_HDATA || ctrlH == CTRL_HDATA)
-                                  DATAH_reserved = true;
-                                else if(ctrlL == CTRL_LDATA || ctrlH == CTRL_LDATA)
-                                  DATAL_reserved = true;
-                              }
-                              else if(num < CTRL_NRPN_OFFSET)     // RPN 7-Bit Controller 0x20000 - 0x30000
-                              {
-                                //if(a == CTRL_HDATA && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
-                                if(a == CTRL_HDATA && !mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LRPN]))
-                                  is_RPN = true;
-                              }
-                              else if(num < CTRL_INTERNAL_OFFSET) // NRPN 7-Bit Controller 0x30000 - 0x40000
-                              {
-                                //if(a == CTRL_HDATA && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
-                                if(a == CTRL_HDATA && mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HNRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LNRPN]))
-                                  is_NRPN = true;
-                              }
-                              else if(num < CTRL_RPN14_OFFSET)    // Unaccounted for internal controller  0x40000 - 0x50000
-                                 continue;
-                              else if(num < CTRL_NRPN14_OFFSET)   // RPN14 Controller  0x50000 - 0x60000
-                              {
-                                //if(a == CTRL_LDATA && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
-                                if(a == CTRL_LDATA && !mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LRPN]))
-                                  is_RPN14 = true;
-                              }
-                              else if(num < CTRL_NONE_OFFSET)     // NRPN14 Controller 0x60000 - 0x70000
-                              {
-                                //if(a == CTRL_LDATA && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
-                                if(a == CTRL_LDATA && mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HNRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LNRPN]))
-                                  is_NRPN14 = true;
-                              }
-                            }
-                          }
+// // //                           if(instr)
+// // //                           {
+// // //                             int num;
+// // //                             int ctrlH;
+// // //                             int ctrlL;
+// // //                             MidiController* mc;
+// // //                             MidiControllerList* mcl = instr->controller();
+// // //                             for(ciMidiController imc = mcl->begin(); imc != mcl->end(); ++imc)
+// // //                             {
+// // //                               mc = imc->second;
+// // //                               num = mc->num();
+// // //                               ctrlH = (num >> 8) & 0x7f;
+// // //                               ctrlL = num & 0xff;
+// // //                               if(num < CTRL_14_OFFSET)           // 7-bit controller  0 - 0x10000
+// // //                               {
+// // //                                 if(ctrlL == 0xff || ctrlL == a)
+// // //                                   is_7bit = true;
+// // //                                 
+// // //                                 if(ctrlL == 0xff)
+// // //                                   RPNH_reserved = RPNL_reserved = NRPNH_reserved = NRPNL_reserved = DATAH_reserved = DATAL_reserved = true;
+// // //                                 else if(ctrlL == CTRL_HRPN)
+// // //                                   RPNH_reserved = true;
+// // //                                 else if(ctrlL == CTRL_LRPN)
+// // //                                   RPNL_reserved = true;
+// // //                                 else if(ctrlL == CTRL_HNRPN)
+// // //                                   NRPNH_reserved = true;
+// // //                                 else if(ctrlL == CTRL_LNRPN)
+// // //                                   NRPNL_reserved = true;
+// // //                                 else if(ctrlL == CTRL_HDATA)
+// // //                                   DATAH_reserved = true;
+// // //                                 else if(ctrlL == CTRL_LDATA)
+// // //                                   DATAL_reserved = true;
+// // //                               }
+// // //                               else if(num < CTRL_RPN_OFFSET)     // 14-bit controller 0x10000 - 0x20000
+// // //                               {
+// // //                                 if(ctrlH == a)
+// // //                                 {
+// // //                                   //is_14bitH = true;
+// // //                                   is_14bit = true;
+// // //                                   if(!instr->waitForLSB())
+// // //                                   {
+// // //                                     MidiRecordEvent single_ev;
+// // //                                     single_ev.setChannel(chn);
+// // //                                     single_ev.setType(ME_CONTROLLER);
+// // //                                     single_ev.setA(CTRL_14_OFFSET + (a << 8) + ctrlL);
+// // //                                     single_ev.setB((b << 7) + mcs->ctrls[ctrlL]);
+// // //                                     mdev->recordEvent(single_ev);
+// // //                                   }
+// // //                                 }
+// // //                                 if(ctrlL == 0xff || ctrlL == a)
+// // //                                 {
+// // //                                   //is_14bitL = true;
+// // //                                   is_14bit = true;
+// // //                                   MidiRecordEvent single_ev;
+// // //                                   single_ev.setChannel(chn);
+// // //                                   single_ev.setType(ME_CONTROLLER);
+// // //                                   single_ev.setA(CTRL_14_OFFSET + (ctrlH << 8) + a);
+// // //                                   single_ev.setB((mcs->ctrls[ctrlH] << 7) + b);
+// // //                                   mdev->recordEvent(single_ev);
+// // //                                 }
+// // // 
+// // //                                 if(ctrlL == 0xff)
+// // //                                   RPNH_reserved = RPNL_reserved = NRPNH_reserved = NRPNL_reserved = DATAH_reserved = DATAL_reserved = true;
+// // //                                 else if(ctrlL == CTRL_HRPN || ctrlH == CTRL_HRPN)
+// // //                                   RPNH_reserved = true;
+// // //                                 else if(ctrlL == CTRL_LRPN || ctrlH == CTRL_LRPN)
+// // //                                   RPNL_reserved = true;
+// // //                                 else if(ctrlL == CTRL_HNRPN || ctrlH == CTRL_HNRPN)
+// // //                                   NRPNH_reserved = true;
+// // //                                 else if(ctrlL == CTRL_LNRPN || ctrlH == CTRL_LNRPN)
+// // //                                   NRPNL_reserved = true;
+// // //                                 else if(ctrlL == CTRL_HDATA || ctrlH == CTRL_HDATA)
+// // //                                   DATAH_reserved = true;
+// // //                                 else if(ctrlL == CTRL_LDATA || ctrlH == CTRL_LDATA)
+// // //                                   DATAL_reserved = true;
+// // //                               }
+// // //                               else if(num < CTRL_NRPN_OFFSET)     // RPN 7-Bit Controller 0x20000 - 0x30000
+// // //                               {
+// // //                                 //if(a == CTRL_HDATA && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
+// // //                                 if(a == CTRL_HDATA && !mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LRPN]))
+// // //                                   is_RPN = true;
+// // //                               }
+// // //                               else if(num < CTRL_INTERNAL_OFFSET) // NRPN 7-Bit Controller 0x30000 - 0x40000
+// // //                               {
+// // //                                 //if(a == CTRL_HDATA && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
+// // //                                 if(a == CTRL_HDATA && mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HNRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LNRPN]))
+// // //                                   is_NRPN = true;
+// // //                               }
+// // //                               else if(num < CTRL_RPN14_OFFSET)    // Unaccounted for internal controller  0x40000 - 0x50000
+// // //                                  continue;
+// // //                               else if(num < CTRL_NRPN14_OFFSET)   // RPN14 Controller  0x50000 - 0x60000
+// // //                               {
+// // //                                 //if(a == CTRL_LDATA && mcs->ctrls[CTRL_HRPN] < 128 && mcs->ctrls[CTRL_LRPN] < 128)
+// // //                                 if(a == CTRL_LDATA && !mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LRPN]))
+// // //                                   is_RPN14 = true;
+// // //                               }
+// // //                               else if(num < CTRL_NONE_OFFSET)     // NRPN14 Controller 0x60000 - 0x70000
+// // //                               {
+// // //                                 //if(a == CTRL_LDATA && mcs->ctrls[CTRL_HNRPN] < 128 && mcs->ctrls[CTRL_LNRPN] < 128)
+// // //                                 if(a == CTRL_LDATA && mcs->modeIsNRP && ctrlH == mcs->ctrls[CTRL_HNRPN] && (ctrlL == 0xff || ctrlL == mcs->ctrls[CTRL_LNRPN]))
+// // //                                   is_NRPN14 = true;
+// // //                               }
+// // //                             }
+// // //                           }
+                          
+                          
+                          
 
                           //if((is_reserved && is_7bit) || (!is_reserved && !is_14bit))
                           if(is_7bit || (!is_reserved && !is_14bit))

@@ -1156,7 +1156,7 @@ void Audio::msgInitMidiDevices(bool force)
           MidiPort* mp = &MusEGlobal::midiPorts[MusEGlobal::clickPort];
           if(mp->device() && 
              (mp->device()->openFlags() & 1) && 
-             mp->outputInstrument() && !mp->outputInstrument()->midiInit()->empty() &&
+             mp->instrument() && !mp->instrument()->midiInit()->empty() &&
              !mp->initSent())
             found = true;
         }
@@ -1167,7 +1167,7 @@ void Audio::msgInitMidiDevices(bool force)
           {
             MidiPort* mp = &MusEGlobal::midiPorts[i];
             if(mp->device() && (mp->device()->openFlags() & 1) && 
-              mp->outputInstrument() && !mp->outputInstrument()->midiInit()->empty() &&
+              mp->instrument() && !mp->instrument()->midiInit()->empty() &&
               !mp->initSent())
             {
               found = true;

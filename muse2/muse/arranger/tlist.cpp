@@ -488,7 +488,7 @@ void TList::paint(const QRect& r)
                                   }
                                   else
                                   {
-                                    MusECore::MidiInstrument* instr = mp->outputInstrument();
+                                    MusECore::MidiInstrument* instr = mp->instrument();
                                     QString name;
                                     if (val!=MusECore::CTRL_VAL_UNKNOWN)
                                       name = instr->getPatchName(mt->outChannel(), val, mt->isDrumTrack());
@@ -1216,11 +1216,11 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), 0);
       if (ract == gact) {
             bool show = !port->guiVisible();
-            port->outputInstrument()->showGui(show);
+            port->instrument()->showGui(show);
             }
       else if (ract == nact) {
             bool show = !port->nativeGuiVisible();
-            port->outputInstrument()->showNativeGui(show);
+            port->instrument()->showNativeGui(show);
             }
       delete p;
       
@@ -2134,7 +2134,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       }
                       else
                       {
-                        MusECore::MidiInstrument* instr = mp->outputInstrument();
+                        MusECore::MidiInstrument* instr = mp->instrument();
                         if (delta>0) val=instr->getNextPatch(mt->outChannel(), val, false);
                         else if (delta<0) val=instr->getPrevPatch(mt->outChannel(), val, false);   
                       }
@@ -2178,7 +2178,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                         MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
                         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-                        MusECore::MidiInstrument* instr = mp->outputInstrument();
+                        MusECore::MidiInstrument* instr = mp->instrument();
                         
                         PopupMenu* pup = new PopupMenu(true);
                         instr->populatePatchPopup(pup, mt->outChannel(), mt->isDrumTrack());

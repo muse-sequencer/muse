@@ -839,7 +839,7 @@ void MidiDevice::handleSeek()
     return;
   
   MidiPort* mp = &MusEGlobal::midiPorts[_port];
-  MidiInstrument* instr = mp->outputInstrument();
+  MidiInstrument* instr = mp->instrument();
   MidiCtrlValListList* cll = mp->controller();
   unsigned pos = MusEGlobal::audio->tickPos();
   

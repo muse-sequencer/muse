@@ -1496,7 +1496,7 @@ bool MidiTrack::auto_update_drummap()
   if (_drummap_tied_to_patch)
   {
     int patch = getFirstControllerValue(CTRL_PROGRAM,0);
-    const DrumMap* new_drummap = MusEGlobal::midiPorts[_outPort].outputInstrument()->drummap_for_patch(patch);
+    const DrumMap* new_drummap = MusEGlobal::midiPorts[_outPort].instrument()->drummap_for_patch(patch);
     
     if (!drummaps_almost_equal(new_drummap, this->drummap(), 128))
     {
