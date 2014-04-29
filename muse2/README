@@ -75,6 +75,7 @@ details.
 
       - LADSPA (development file ladspa.h)
          www.ladspa.org
+
          
   =============================
       Optional:
@@ -85,6 +86,7 @@ details.
 
       - liblo    Lightweight OSC (Open Sound Control) (development files)   
           http://liblo.sourceforge.net/
+
       - DSSI     Disposable Soft Synth Interface (development files)   
           http://dssi.sourceforge.net/
         (Both recommended - DSSI alone will have no native GUIs, OSC alone does nothing, for now.)
@@ -102,15 +104,17 @@ details.
           Python support is required for some experimental features.
           Currently it's NOT recommended to build with python support.
 
+      - PyQt4 is used by some of the bundled midi scripts
+
   =============================
       Building MusE:
   =============================
 
-      - Download source from http://lmuse.sourceforge.net/
+      - Download source from http://muse-sequencer.org/
 
       - Unpack the source somewhere.  
 
-        You may also try the various MusE development SVN branches for 
+        You may also try the various MusE development GIT branches for
          up-to-the-minute features and fixes, but they may be less stable. 
 
       - To compile MusE, run the following commands from the 
@@ -221,7 +225,7 @@ details.
         start MusE by typing:
             muse2 <options>
 
-          Some <options> are:
+          Some <options> are (complete list is printed by running muse2 -h):
             -h       help
             -v       print version
             -d       debug mode: no threads, no RT
@@ -232,6 +236,7 @@ details.
             -M       debug mode: trace midi Output
             -s       debug mode: trace sync
             -a       no audio
+            -A       Force inclusion of ALSA midi even if using Jack
             -P  n    set audio driver real time priority to n
                       (Dummy only, default 40. Else fixed by Jack.)
             -Y  n    force midi real time priority to n (default: audio driver prio +2)
@@ -249,10 +254,15 @@ details.
       known bugs
   =============================
 
-      - not so many: only some usability quirks we're working on currently
-      - automation recording displays odd things in the arranger
-        while recording; the display is corrected once recording is
-        complete.
+      The odd wierdness happens and some things may not be completely implemeneted
+      though we hope it is as stable for you as it is for us!
+
+      If you differ in this opinion we are grateful for all reported issues.
+
+      See the bug tracker for a better view of issues
+      https://github.com/muse-sequencer/muse/issues
+
+
 
 ====================================================================
 Let us know whether MusE works for you !!!

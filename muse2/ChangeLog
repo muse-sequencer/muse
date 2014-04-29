@@ -1,11 +1,25 @@
+29.04.2014:
+         - Added more hints to DidYouKnow dialog (rj)
+         - Improved README.txt for share/scripts (rj)
+         - Improved scripting interface, picks time signature from the start of the
+           part, with -D argument extra debug info is written and the data file
+           used for data transfer isn't removed. (rj)
+         - Added new midi script TempoDelay (rj)
+         - Improved swedish translation (rj)
+         - Changed behaviour of selecting midi device for new midi tracks. Now there
+           is no default set, instead the most recent midi device is selected. Though
+           if a default midi channel is selected this will take precedence (rj)
+         -
+28.04.2014:
+         - Fixed issue #350 (rj)
 11.01.2014:
          - Fix song not 'dirty' on most operations (close was not prompting to save). (Tim)
            Added 'emit sigDirty()' at end of Song::executeOperationGroup3() and ::revertOperationGroup3()
-            if operations list not empty.
+           if operations list not empty.
 10.01.2014:
          - Instrument Editor now basically complete: Added Initialization Sequence editor. (Tim)
            Initialization sequence sysex's can be entered manually or chosen from pre-defined list
-            using sysex event editor.
+           using sysex event editor.
          - Sysex event editor now allows selection from pre-defined Instrument Sysex list.
          - Revised and edited Roland SD-50.idf by Patrick (split into GM2/nonGM2). 
          - Fixed GM2.idf file prog numbers wrong.

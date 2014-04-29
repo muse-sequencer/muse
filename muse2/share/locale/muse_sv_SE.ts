@@ -7071,7 +7071,7 @@ klicka på en part för att Tysta/Avtysta</translation>
     <name>MusEGui::MPConfig</name>
     <message>
         <source>Default input connections</source>
-        <translation>Standard ingång anslutning</translation>
+        <translation>Standard inputs</translation>
     </message>
     <message>
         <source>Are you sure you want to apply to all existing midi tracks now?</source>
@@ -7079,41 +7079,41 @@ klicka på en part för att Tysta/Avtysta</translation>
     </message>
     <message>
         <source>Default output connections</source>
-        <translation>Standard utgångsanslutning</translation>
+        <translation type="unfinished">Standard outputs</translation>
     </message>
     <message>
         <source>Setting will apply to new midi tracks.
 Do you want to apply to all existing midi tracks now?</source>
-        <translation>Den sjuste gäller nya MIDI-spår.
-Vill du att gälla för alla befintliga MIDI-spår?</translation>
+        <translation type="unfinished">Inställningen gäller för nya MIDI-spår.
+Vill du också använda för alla befintliga MIDI-spår?</translation>
     </message>
     <message>
         <source>MusE: bad device name</source>
-        <translation>Muse: Enhetsnamn fel</translation>
+        <translation type="unfinished">Muse: Felaktigt enhetsnamn</translation>
     </message>
     <message>
         <source>please choose a unique device name</source>
-        <translation>Enhetens namn finns redan</translation>
+        <translation type="unfinished">Välj ett unikt enhetsnamn</translation>
     </message>
     <message>
         <source>in</source>
-        <translation>Entry</translation>
+        <translation type="unfinished">in</translation>
     </message>
     <message>
         <source>out</source>
-        <translation>Utsignal</translation>
+        <translation type="unfinished">ut</translation>
     </message>
     <message>
         <source>Show first aliases</source>
-        <translation>Visa första alias</translation>
+        <translation type="unfinished">Visa först alias</translation>
     </message>
     <message>
         <source>Show second aliases</source>
-        <translation>Visa de alias efter</translation>
+        <translation type="unfinished">Visa andra alias</translation>
     </message>
     <message>
         <source>Toggle all</source>
-        <translation>ändra alla</translation>
+        <translation type="unfinished">Ändra alla</translation>
     </message>
     <message>
         <source>Change all tracks now</source>
@@ -7121,7 +7121,7 @@ Vill du att gälla för alla befintliga MIDI-spår?</translation>
     </message>
     <message>
         <source>Create Jack device</source>
-        <translation>Skapa anslutning Jack</translation>
+        <translation type="unfinished">Skapa Jackanslutning</translation>
     </message>
     <message>
         <source>Port Number</source>
@@ -7129,19 +7129,19 @@ Vill du att gälla för alla befintliga MIDI-spår?</translation>
     </message>
     <message>
         <source>Enable gui</source>
-        <translation>Aktivera visa</translation>
+        <translation type="unfinished">Aktivera gui</translation>
     </message>
     <message>
         <source>Enable reading</source>
-        <translation>Möjliggöra läsning</translation>
+        <translation type="unfinished">Aktivera läsning</translation>
     </message>
     <message>
         <source>Enable writing</source>
-        <translation>Aktivera skriva</translation>
+        <translation type="unfinished">Aktivera skrivning</translation>
     </message>
     <message>
         <source>Port instrument</source>
-        <translation>Redskapsöppning</translation>
+        <translation type="unfinished">Instrument-port</translation>
     </message>
     <message>
         <source>Midi device name. Click to edit (Jack)</source>
@@ -7149,23 +7149,23 @@ Vill du att gälla för alla befintliga MIDI-spår?</translation>
     </message>
     <message>
         <source>Connections from Jack Midi outputs</source>
-        <translation>MIDI utgångar av Jack</translation>
+        <translation type="unfinished">MIDI utgångar från Jack</translation>
     </message>
     <message>
         <source>Connections to Jack Midi inputs</source>
-        <translation>MIDI anslutningar av Jack</translation>
+        <translation type="unfinished">MIDI ingångar från Jack</translation>
     </message>
     <message>
         <source>Auto-connect these channels to new midi tracks</source>
-        <translation>Anslut automatiskt till dessa nya spår midi-kanaler</translation>
+        <translation type="unfinished">Anslut automatiskt dessa kanaler till nya midi-spår</translation>
     </message>
     <message>
         <source>Auto-connect new midi tracks to these channels</source>
-        <translation>Conectar nuevas pistas MIDI a estos canales</translation>
+        <translation type="unfinished">Anslut automatiskt dessa midi spår till dessa kanaler</translation>
     </message>
     <message>
         <source>Auto-connect new midi tracks to this channel</source>
-        <translation>AutoConnect nya MIDI-spår till den här kanalen</translation>
+        <translation type="unfinished">Koppla automatiskt nya MIDI-spår till den här kanalen</translation>
     </message>
     <message>
         <source>Device state</source>
@@ -7173,19 +7173,19 @@ Vill du att gälla för alla befintliga MIDI-spår?</translation>
     </message>
     <message>
         <source>Enable gui for device</source>
-        <translation>Aktivera visa för enheten</translation>
+        <translation type="unfinished">Aktivera gui för enheten</translation>
     </message>
     <message>
         <source>Enable reading from device</source>
-        <translation>Möjliggöra läsning från anordningen</translation>
+        <translation type="unfinished">Aktivera läsning från enheten</translation>
     </message>
     <message>
         <source>Enable writing to device</source>
-        <translation>Aktivera skriva till enheten</translation>
+        <translation type="unfinished">Aktivera skrivning till enheten</translation>
     </message>
     <message>
         <source>Name of the midi device associated with this port number. Click to edit Jack midi name.</source>
-        <translation>MIDI enhetsnamn i samband med denna port. Klicka för att ändra MIDI enhetsnamnet Jack.</translation>
+        <translation type="unfinished">MIDI enhetsnamn associerat med detta portnummer. Klicka för att ändra MIDI enhetsnamnet i Jack.</translation>
     </message>
     <message>
         <source>Instrument connected to port</source>
@@ -7193,47 +7193,47 @@ Vill du att gälla för alla befintliga MIDI-spår?</translation>
     </message>
     <message>
         <source>Connections from Jack Midi output ports</source>
-        <translation>Anslutningar MIDI utgångsportar av Jack</translation>
+        <translation type="unfinished">Anslutningar från Jack MIDI utgångsportar</translation>
     </message>
     <message>
         <source>Connections to Jack Midi input ports</source>
-        <translation>Anslutningar MIDI ingångsportar av Jack</translation>
+        <translation type="unfinished">Anslutningar till Jack MIDI ingångsportar</translation>
     </message>
     <message>
         <source>Auto-connect these channels, on this port, to new midi tracks.</source>
-        <translation>Automatisk anslutning av dessa kanaler, i denna hamn, nya MIDI spår.</translation>
+        <translation type="unfinished">Anslut automatisks dessa kanaler, på denna port, till nya MIDI spår.</translation>
     </message>
     <message>
         <source>Connect new midi tracks to these channels, on this port.</source>
-        <translation>Anslut nya MIDI-spår till dessa kanaler, i denna port.</translation>
+        <translation type="unfinished">Anslut nya MIDI-spår till dessa kanaler, för denna port.</translation>
     </message>
     <message>
         <source>Connect new midi tracks to this channel, on this port.</source>
-        <translation>Anslut MIDI-spår nya för den här kanalen på den här porten.</translation>
+        <translation type="unfinished">Anslut nya MIDI-spår till denna kanal, på den här porten.</translation>
     </message>
     <message>
         <source>State: result of opening the device</source>
-        <translation>Status: resultat av öppning av enhet</translation>
+        <translation type="unfinished">Status: resultat av enhetsöppning</translation>
     </message>
     <message>
         <source>Port</source>
-        <translation>Porten</translation>
+        <translation type="unfinished">Port</translation>
     </message>
     <message>
         <source>GUI</source>
-        <translation>Gränssnitt</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>I</source>
-        <translation>På</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>O</source>
-        <translation>Av</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Instrument</source>
-        <translation>Instrument</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Device Name</source>
@@ -7245,19 +7245,19 @@ Vill du att gälla för alla befintliga MIDI-spår?</translation>
     </message>
     <message>
         <source>Out routes</source>
-        <translation>Utrymningsvägar</translation>
+        <translation type="unfinished">Utgångsvägar</translation>
     </message>
     <message>
         <source>Def in ch</source>
-        <translation>Definiera ingångskanaler</translation>
+        <translation type="unfinished">Std inkanal</translation>
     </message>
     <message>
         <source>Def out ch</source>
-        <translation>Utgångskanaler fastställa</translation>
+        <translation type="unfinished">Std utg kanal</translation>
     </message>
     <message>
         <source>State</source>
-        <translation>Tillstånd</translation>
+        <translation type="unfinished">Tillstånd</translation>
     </message>
     <message>
         <source>&lt;unknown&gt;</source>

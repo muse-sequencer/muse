@@ -35,6 +35,7 @@ class DidYouKnowWidget : public QDialog, public Ui::DidYouKnow
       Q_OBJECT
 
       int currTip;
+      bool showTeaser;
    public:
       QStringList tipList;
 
@@ -45,6 +46,7 @@ class DidYouKnowWidget : public QDialog, public Ui::DidYouKnow
           tipText->setForegroundRole(QPalette::Foreground);
           tipText->setOpenExternalLinks(true);
           currTip=0;
+          showTeaser=false;
           connect(nextButton,SIGNAL(clicked()),SLOT(nextTip()));
       }
 
@@ -54,8 +56,21 @@ class DidYouKnowWidget : public QDialog, public Ui::DidYouKnow
         if (currTip > tipList.size()-1){
             currTip=0;
         }
-        tipText->setText(tipList[currTip]);
-        currTip++;
+        if (currTip==5 && !showTeaser)
+        {
+          tipText->setText("Still not started playing?");
+          showTeaser=true;
+        }
+        else if (currTip==10 && !showTeaser)
+        {
+          tipText->setText("What are you waiting for? Make music! :)");
+          showTeaser=true;
+        }
+        else {
+          tipText->setText(tipList[currTip]);
+          currTip++;
+          showTeaser=false;
+        }
       }
       void show()
       {
