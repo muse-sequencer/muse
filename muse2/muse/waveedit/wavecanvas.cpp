@@ -211,14 +211,10 @@ void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
 
       int n  = 0;       // count selections
       for (iCItem k = items.begin(); k != items.end(); ++k) {
-            MusECore::Event ev = k->second->event();
-            bool selected = ev.selected();
-            if (selected) {
-                  k->second->setSelected(true);
+            if (k->second->event().selected()) {
                   ++n;
                   if (!nevent) {
                         nevent   =  k->second;
-                        MusECore::Event mi = nevent->event();
                         }
                   }
             }
@@ -2585,8 +2581,7 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
       {
       // TODO: New WaveCanvas: Convert this routine to frames and remove unneeded operations. 
       QList< QPair<int,MusECore::Event> > already_done;
-      MusEGlobal::audio->msgIdle(true);
-      MusEGlobal::song->startUndo();
+      MusECore::Undo operations;
       for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
                   continue;
@@ -2663,14 +2658,11 @@ void WaveCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool d
                         break;
                   }
             
-            MusEGlobal::song->changeEvent(event, newEvent, part);
-            // Indicate do not do port controller values and clone parts. 
-            MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
 
             already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
             }
-      MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
-      MusEGlobal::audio->msgIdle(false);
+      MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------

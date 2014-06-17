@@ -837,10 +837,7 @@ bool MidiCtrlValList::addMCtlVal(int tick, int val, Part* part)
             return false;
           }
             
-      MidiCtrlVal v;
-      v.val = val;
-      v.part = part;
-      insert(std::pair<const int, MidiCtrlVal> (tick, v));
+      insert(std::pair<const int, MidiCtrlVal> (tick, MidiCtrlVal(part, val)));
       return true;
       }
 

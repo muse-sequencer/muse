@@ -78,8 +78,13 @@ class Pos {
 
       unsigned tick() const;
       unsigned frame() const;
+      unsigned posValue() const;
+      unsigned posValue(TType time_type) const;
       void setTick(unsigned);
       void setFrame(unsigned);
+      void setPosValue(unsigned val);     
+      void setPosValue(unsigned val, TType time_type);     
+      static unsigned convert(unsigned val, TType from_type, TType to_type);
 
       void write(int level, Xml&, const char*) const;
       void read(Xml& xml, const char*);
@@ -106,12 +111,17 @@ class PosLen : public Pos {
       void read(Xml& xml, const char*);
       void setLenTick(unsigned);
       void setLenFrame(unsigned);
+      void setLenValue(unsigned val);
+      void setLenValue(unsigned val, TType time_type);     
       unsigned lenTick() const;
       unsigned lenFrame() const;
+      unsigned lenValue() const;
+      unsigned lenValue(TType time_type) const;
       Pos end() const;
       unsigned endTick() const    { return end().tick(); }
       unsigned endFrame() const   { return end().frame(); }
       void setPos(const Pos&);
+      static unsigned convertLen(unsigned val, unsigned len, TType from_type, TType to_type);
       };
 
 } // namespace MusECore

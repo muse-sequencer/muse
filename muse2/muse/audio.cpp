@@ -76,9 +76,6 @@ void initAudio()
 extern double curTime();
 
 const char* seqMsgList[] = {
-      "SEQM_ADD_TEMPO", "SEQM_SET_TEMPO", "SEQM_REMOVE_TEMPO", "SEQM_ADD_SIG", "SEQM_REMOVE_SIG",
-      "SEQM_ADD_KEY", "SEQM_REMOVE_KEY",
-      "SEQM_SET_GLOBAL_TEMPO",
       "SEQM_REVERT_OPERATION_GROUP", "SEQM_EXECUTE_OPERATION_GROUP",
       "SEQM_RESET_DEVICES", "SEQM_INIT_DEVICES", "SEQM_PANIC",
       "SEQM_MIDI_LOCAL_OFF",
@@ -150,9 +147,6 @@ Audio::Audio()
       startExternalRecTick = 0;
       endExternalRecTick = 0;
       
-      _audioMonitor = 0;
-      _audioMaster  = 0;
-
       //---------------------------------------------------
       //  establish pipes/sockets
       //---------------------------------------------------
@@ -174,10 +168,6 @@ Audio::Audio()
             }
       sigFd = filedes[1];
       sigFdr = filedes[0];
-
-      // Moved to MusE::MusE
-      //QSocketNotifier* ss = new QSocketNotifier(filedes[0], QSocketNotifier::Read);
-      //MusEGlobal::song->connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));
       }
 
 //---------------------------------------------------------
@@ -284,6 +274,26 @@ bool Audio::sync(int jackState, unsigned frame)
       
       }
 
+//---------------------------------------------------------
+//   reSyncAudio
+//---------------------------------------------------------
+
+void Audio::reSyncAudio()
+{
+  if (isPlaying()) 
+  {
+    if (!MusEGlobal::checkAudioDevice()) return;
+#ifdef _AUDIO_USE_TRUE_FRAME_
+    _previousPos = _pos;
+#endif
+    _pos.setTick(curTickPos);
+    int samplePos = _pos.frame();
+    syncFrame     = MusEGlobal::audioDevice->framePos();
+    syncTime      = curTime();
+    frameOffset   = syncFrame - samplePos;
+  }
+}  
+      
 //---------------------------------------------------------
 //   setFreewheel
 //---------------------------------------------------------
@@ -709,23 +719,6 @@ void Audio::processMsg(AudioMsg* msg)
                   MidiPort* port = (MidiPort*)(msg->p1);
                   port->setHwCtrlStates(msg->a, msg->b, msg->c, msg->ival);
                   }
-                  break;
-            case SEQM_ADD_TEMPO:
-            case SEQM_REMOVE_TEMPO:
-            case SEQM_SET_GLOBAL_TEMPO:
-            case SEQM_SET_TEMPO:
-                  MusEGlobal::song->processMsg(msg);
-                  if (isPlaying()) {
-                        if (!MusEGlobal::checkAudioDevice()) return;
-#ifdef _AUDIO_USE_TRUE_FRAME_
-                        _previousPos = _pos;
-#endif
-                        _pos.setTick(curTickPos);
-                        int samplePos = _pos.frame();
-                        syncFrame     = MusEGlobal::audioDevice->framePos();
-                        syncTime      = curTime();
-                        frameOffset   = syncFrame - samplePos;
-                        }
                   break;
 
             case SEQM_SET_TRACK_AUTO_TYPE:

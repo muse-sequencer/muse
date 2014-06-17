@@ -170,7 +170,8 @@ void globalCut(bool onlySelectedTracks)
                             for (ciEvent ie = el.lower_bound(len); ie != el.end(); ++ie)
                                     operations.push_back(UndoOp(UndoOp::DeleteEvent,ie->second, part, false, false));
                       }
-                      operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenTick(), len, true, true));
+                      // TODO FIXME Suspect this section may need a wee bit more rework with the events above...
+                      operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenValue(), len, Pos::TICKS));  
                   }
                   else if ((t < lpos) && ((t+l) > lpos) && ((t+l) > rpos)) {
                         //----------------------
@@ -206,7 +207,7 @@ void globalCut(bool onlySelectedTracks)
                   else if (t >= rpos) {
                         // move part to the left
                         int nt = part->tick();
-                        operations.push_back(UndoOp(UndoOp::ModifyPartTick,part,part->tick(), nt - (rpos -lpos) ));
+                        operations.push_back(UndoOp(UndoOp::MovePart, part, part->posValue(), nt - (rpos -lpos), Pos::TICKS ));
                         }
                   }
             }
@@ -263,7 +264,7 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
                         operations.push_back(UndoOp(UndoOp::AddPart, p2));
                         }
                   else if (t >= startTicks) {
-                        operations.push_back(UndoOp(UndoOp::ModifyPartTick, part, part->tick(), t + moveTicks));
+                        operations.push_back(UndoOp(UndoOp::MovePart, part, part->posValue(), t + moveTicks, Pos::TICKS));
                         }
                   }
             }

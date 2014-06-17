@@ -37,6 +37,7 @@
 namespace MusECore {
 
 class Xml;
+class PendingOperationList;
 
 //---------------------------------------------------------
 //   MidiDevice
@@ -156,6 +157,7 @@ class MidiDeviceList : public std::list<MidiDevice*>
       void remove(MidiDevice* dev);
       MidiDevice* find(const QString& name, int typeHint = -1);
       iMidiDevice find(const MidiDevice* dev);
+      void addOperation(MidiDevice* dev, PendingOperationList& ops);
 };
 
 extern void initMidiDevices();

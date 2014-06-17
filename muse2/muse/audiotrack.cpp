@@ -656,6 +656,17 @@ void AudioTrack::addAuxSend(int n)
       }
 
 //---------------------------------------------------------
+//   addAuxSendOperation
+//---------------------------------------------------------
+
+void AudioTrack::addAuxSendOperation(int n, PendingOperationList& ops)
+      {
+      int nn = _auxSend.size();
+      for (int i = nn; i < n; ++i)
+            ops.add(PendingOperationItem(&_auxSend, 0.0, PendingOperationItem::AddAuxSendValue));
+      }
+
+//---------------------------------------------------------
 //   addController
 //---------------------------------------------------------
 

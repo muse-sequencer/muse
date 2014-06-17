@@ -30,6 +30,7 @@
 #include "gconfig.h"
 #include "xml.h"
 #include "keyevent.h"
+#include "operations.h"
 
 namespace MusEGlobal {
   MusECore::KeyList keymap;
@@ -68,6 +69,47 @@ void KeyList::add(unsigned tick, key_enum key)
             insert(std::pair<const unsigned, KeyEvent> (tick, ev));
             }
       }
+
+void KeyList::add(KeyEvent e)
+{
+  int tick = e.tick;
+  key_enum k = e.key;
+  std::pair<iKeyEvent, bool> res = insert(std::pair<const unsigned, KeyEvent> (tick, e));
+  if(!res.second)
+  {
+    fprintf(stderr, "KeyList::add insert failed: keylist:%p key:%d tick:%d\n", 
+                      this, e.key, e.tick);
+  }
+  else
+  {
+    iKeyEvent ike = res.first;
+    ++ike; // There is always a 'next' key event - there is always one at index MAX_TICK.
+    KeyEvent& ne = ike->second;
+    
+    // Swap the values. (This is how the key list works.)
+    e.key = ne.key;
+    e.tick = ne.tick;
+    ne.key = k;
+    ne.tick = tick;
+  }
+}
+
+//---------------------------------------------------------
+//   addOperation
+//---------------------------------------------------------
+
+void KeyList::addOperation(unsigned tick, key_enum key, PendingOperationList& ops)
+{
+  if (tick > MAX_TICK)
+    tick = MAX_TICK;
+  
+  iKeyEvent e = upper_bound(tick);
+  if(tick == e->second.tick)
+    ops.add(PendingOperationItem(this, e, key, PendingOperationItem::ModifyKey));
+  else 
+    // These are the desired tick and key but add will do the proper swapping with next event.
+    ops.add(MusECore::PendingOperationItem(this, key, tick, PendingOperationItem::AddKey));
+}
 
 //---------------------------------------------------------
 //   KeyList::dump
@@ -135,15 +177,19 @@ void KeyList::del(iKeyEvent e)
       }
 
 //---------------------------------------------------------
-//   change
+//   delOperation
 //---------------------------------------------------------
 
-void KeyList::change(unsigned tick, key_enum newkey)
-      {
-      iKeyEvent e = find(tick);
-      e->second.key = newkey;
-      }
-
+void KeyList::delOperation(unsigned tick, PendingOperationList& ops)
+{
+  iKeyEvent e = find(tick);
+  if (e == end()) {
+        printf("KeyList::delOperation tick:%d not found\n", tick);
+        return;
+        }
+  PendingOperationItem poi(this, e, PendingOperationItem::DeleteKey);
+  ops.add(poi);
+}
 
 //---------------------------------------------------------
 //   addKey

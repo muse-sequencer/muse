@@ -803,23 +803,16 @@ void Audio::msgAddTempo(int tick, int tempo, bool doUndoFlag)
 
 void Audio::msgSetTempo(int tick, int tempo, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_SET_TEMPO;
-      msg.a = tick;
-      msg.b = tempo;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTempo, tick, tempo), doUndoFlag);
       }
 
 //---------------------------------------------------------
 //   msgSetGlobalTempo
 //---------------------------------------------------------
 
-void Audio::msgSetGlobalTempo(int val)
+void Audio::msgSetGlobalTempo(int val, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_SET_GLOBAL_TEMPO;
-      msg.a = val;
-      sendMessage(&msg, false);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::SetGlobalTempo, val, 0), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -837,12 +830,7 @@ void Audio::msgDeleteTempo(int tick, int tempo, bool doUndoFlag)
 
 void Audio::msgAddSig(int tick, int z, int n, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_ADD_SIG;
-      msg.a = tick;
-      msg.b = z;
-      msg.c = n;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddSig, tick, z, n), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -852,12 +840,7 @@ void Audio::msgAddSig(int tick, int z, int n, bool doUndoFlag)
 
 void Audio::msgRemoveSig(int tick, int z, int n, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_REMOVE_SIG;
-      msg.a = tick;
-      msg.b = z;
-      msg.c = n;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteSig, tick, z, n), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -866,11 +849,7 @@ void Audio::msgRemoveSig(int tick, int z, int n, bool doUndoFlag)
 
 void Audio::msgAddKey(int tick, int key, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_ADD_KEY;
-      msg.a = tick;
-      msg.b = key;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddKey, tick, key), doUndoFlag);
       }
 
 //---------------------------------------------------------
@@ -880,11 +859,7 @@ void Audio::msgAddKey(int tick, int key, bool doUndoFlag)
 
 void Audio::msgRemoveKey(int tick, int key, bool doUndoFlag)
       {
-      AudioMsg msg;
-      msg.id = SEQM_REMOVE_KEY;
-      msg.a = tick;
-      msg.b = key;
-      sendMessage(&msg, doUndoFlag);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteKey, tick, key), doUndoFlag);
       }
 
 

@@ -840,10 +840,12 @@ void ListEdit::writeConfiguration(int level, MusECore::Xml& xml)
 void ListEdit::selectionChanged()
       {
       bool update = false;
+      EventListItem* eli;
       for (int row = 0; row < liste->topLevelItemCount(); ++row) {
             QTreeWidgetItem* i = liste->topLevelItem(row);
-            if (i->isSelected() ^ ((EventListItem*)i)->event.selected()) {
-                  ((EventListItem*)i)->event.setSelected(i->isSelected());
+            eli = (EventListItem*)i;
+            if (i->isSelected() ^ eli->event.selected()) {
+                  MusEGlobal::song->selectEvent(eli->event, eli->part, i->isSelected());
                   update = true;
                   }
             }

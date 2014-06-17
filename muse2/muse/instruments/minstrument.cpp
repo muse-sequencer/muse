@@ -285,6 +285,21 @@ void removeMidiInstrument(const MidiInstrument* instr)
       }
 
 //---------------------------------------------------------
+//   findMidiInstrument
+//---------------------------------------------------------
+
+iMidiInstrument MidiInstrumentList::find(const MidiInstrument* instr)
+      {
+      for (iMidiInstrument i = begin();
+         i != end(); ++i) {
+            if (*i == instr) {
+                  return i;
+                  }
+            }
+      return end();
+      }
+
+//---------------------------------------------------------
 //   MidiInstrument
 //---------------------------------------------------------
 

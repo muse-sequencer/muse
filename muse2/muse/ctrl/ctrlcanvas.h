@@ -65,8 +65,8 @@ class CEvent {
       CEvent(MusECore::Event e, MusECore::MidiPart* part, int v);
       MusECore::Event event() const          { return _event; }
       void setEvent(MusECore::Event& ev)     { _event = ev; }
-      bool selected() const { return !_event.empty() && _event.selected(); }
-      void setSelected(bool v) { if(!_event.empty()) _event.setSelected(v); }
+      bool selected() const { return _event.selected(); }
+      void setSelected(bool v);
       int val() const              { return _val;   }
       void setVal(int v)           { _val = v; }
       void setEX(int v)            { ex = v; }

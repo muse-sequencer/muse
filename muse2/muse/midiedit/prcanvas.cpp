@@ -987,8 +987,8 @@ void PianoCanvas::curPartChanged()
 void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
       {
       QList< QPair<int,MusECore::Event> > already_done;
-      MusEGlobal::audio->msgIdle(true);
-      MusEGlobal::song->startUndo();
+      MusECore::Undo operations;
+      
       for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
                   continue;
@@ -1064,15 +1064,10 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
                         }
                         break;
                   }
-            
-            MusEGlobal::song->changeEvent(event, newEvent, part);
-            // Indicate do not do port controller values and clone parts. 
-            MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
-
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
             already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
             }
-      MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
-      MusEGlobal::audio->msgIdle(false);
+      MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------

@@ -345,7 +345,6 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
     unsigned dtick  = newpos.x(); // FIXME TODO make subtick-compatible!
     unsigned ntrack = y2pitch(item->mp().y());
     MusECore::Track::TrackType type = track->type();
-    int new_partend;
     if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
         return false;
     }
@@ -375,14 +374,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
     
     
     if(t == MOVE_MOVE)
-    {
-        if (dtrack!=track)
-           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::MovePartToTrack,spart,dtrack,track));
-        
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPartTick,spart,spart->tick(),dtick));
-        
-        new_partend=(spart->lenTick() + dtick);
-    }  
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::MovePart, spart, spart->posValue(), dtick, MusECore::Pos::TICKS, track, dtrack));  
     else
     {
         MusECore::Part* dpart;
@@ -398,17 +390,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
         dpart->setTrack(dtrack);
         
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
-        
-        new_partend=(dpart->lenTick() + dpart->tick());
     }
-    
-    if (MusEGlobal::song->len() < new_partend) // FIXME this is buggy anyway.
-            operations.push_back(  MusECore::UndoOp(MusECore::UndoOp::ModifySongLen, 
-                                                    new_partend,
-                                                    MusEGlobal::song->len() )  );
-            
-            
-            
     return true;
 }
 
@@ -461,7 +443,7 @@ void PartCanvas::partsChanged()
                   if (i->second->selected())
                         selectItem(np, true);
                   
-                  // Check for touching borders. p4.0.29
+                  // Check for touching borders.
                   MusECore::Part* pp;
                   for(MusECore::ciPart ii = pl->begin(); ii != pl->end(); ++ii) 
                   {
@@ -1814,7 +1796,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             tr.setX(tr.x() + 3);
             MusECore::gGradientFromQColor(MusEGlobal::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
-            //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving(); DELETETHIS
             bool rev = brightness >= 12000 && !part->selected();
             p.setFont(MusEGlobal::config.fonts[4]);
             if (rev)
@@ -2327,8 +2308,6 @@ void PartCanvas::copy_in_range(MusECore::PartList* pl_)
     for(MusECore::ciPart p = pl.begin(); p != pl.end(); ++p) 
     {
       MusECore::Part* part=p->second;
-      MusECore::Track* track=part->track();
-      
       if ((part->tick() < rpos) && (part->endTick() > lpos)) //is the part in the range?
       {
         if ((lpos > part->tick()) && (lpos < part->endTick()))
@@ -2810,11 +2789,9 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 {
       int x = rect.x();
-      //int y = rect.y();
       int w = rect.width();
-      //int h = rect.height();
       
-      // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
+      // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim.
       
       //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
       QRect mr = map(rect);                      // Use our own map instead.
@@ -2918,7 +2895,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             //
             // Here is a different situation than PartCanvas::drawItem which uses un-clipped part bounding boxes and 
             //  does NOT depend on the update rectangle (except to check intersection). That's why this issue 
-            //  does not show up there. Should probably try to make that routine more efficient, just like here.   Tim. p4.0.30
+            //  does not show up there. Should probably try to make that routine more efficient, just like here.   Tim.
             QRect r(mx, yy, mw, th);
             {
               if (!track->isMidiTrack() && (track->type() != MusECore::Track::WAVE)) {
@@ -3078,15 +3055,7 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, 
       gradient.setColorAt(0, c);
       gradient.setColorAt(1, c.darker());
       QBrush brush(gradient);
-      p.fillRect(mr, brush);       // p4.0.30  ...
-      
-      // DELETETHIS 6
-      //int xx = -rmapx(xorg) - xpos;           
-      //printf("PartCanvas::drawAudioTrack x:%d y:%d w:%d h:%d th:%d xx:%d\n", r.x(), r.y(), r.width(), r.height(), t->height(), xx);  
-      //if(r.x() <= xx)
-      //  p.drawLine(r.x(), r.y(), r.x(), r.y() + r.height());                          // The left edge
-      //p.drawLine(r.x(), r.y(), r.x() + r.width(), r.y());                             // The top edge
-      //p.drawLine(r.x(), r.y() + r.height(), r.x() + r.width(), r.y() + r.height());   // The bottom edge
+      p.fillRect(mr, brush);
       
       if(mex >= mx && mex <= mx + mw)
         p.drawLine(mex, my, mex, my + mh - 1);                // The left edge
@@ -3104,10 +3073,6 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, 
 
 void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTrack *t)
 {
-    //QRect rr = p.worldMatrix().mapRect(r);
-    //p.save();
-    //p.resetTransform();
-
     int bottom = rr.bottom() - 2;
     int height = bottom - rr.top() - 2; // limit height
 
@@ -3462,7 +3427,7 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     
     // A perfectly straight vertical line (two points with same frame) is impossible:
     //  there is only one value at t, and the next value at t+1, and so on.
-    // Also these are maps, not multimaps.           p4.0.32 Tim.
+    // Also these are maps, not multimaps. Tim.
     int newFrame = MusEGlobal::tempomap.tick2frame(pos.x());
 
     if (newFrame <= prevFrame) 

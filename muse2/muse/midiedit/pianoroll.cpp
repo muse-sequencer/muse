@@ -515,7 +515,8 @@ void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
         songChanged(bits);
 
         // We'll receive SC_SELECTION if a different part is selected.
-        if (bits & SC_SELECTION)
+        // Addition - also need to respond here to moving part to another track. (Tim)
+        if (bits & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
           updateTrackInfo();  
       }
 

@@ -49,6 +49,11 @@ class Xml;
 class DrumMap;
 class ControlEvent;
 struct Port;
+class PendingOperationList;
+
+
+typedef std::vector<double> AuxSendValueList;
+typedef std::vector<double>::iterator iAuxSendValue;
 
 //---------------------------------------------------------
 //   Track
@@ -340,7 +345,7 @@ class AudioTrack : public Track {
       float _curVol2;
       
       bool _prefader;               // prefader metering
-      std::vector<double> _auxSend;
+      AuxSendValueList _auxSend;
       void readAuxSend(Xml& xml);
       int recFileNumber;
       
@@ -444,6 +449,7 @@ class AudioTrack : public Track {
       double auxSend(int idx) const;
       void setAuxSend(int idx, double v);
       void addAuxSend(int n);
+      void addAuxSendOperation(int n, PendingOperationList& ops);
 
       void setPrefader(bool val);
       Pipeline* efxPipe()                { return _efxPipe;  }
@@ -770,7 +776,8 @@ typedef tracklist<SynthI*> SynthIList;
 
 extern void addPortCtrlEvents(MidiTrack* t);
 extern void removePortCtrlEvents(MidiTrack* t);
-
+extern void addPortCtrlEvents(Track* track, PendingOperationList& ops);
+extern void removePortCtrlEvents(Track* track, PendingOperationList& ops);
 } // namespace MusECore
 
 #endif

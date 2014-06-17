@@ -256,6 +256,7 @@ class MidiInstrumentList : public std::list<MidiInstrument*> {
 
    public:
       MidiInstrumentList() {}
+      iterator find(const MidiInstrument* instr);
       };
 
 typedef MidiInstrumentList::iterator iMidiInstrument;

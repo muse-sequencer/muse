@@ -61,9 +61,6 @@ class Undo;
 //---------------------------------------------------------
 
 enum {
-      SEQM_ADD_TEMPO, SEQM_SET_TEMPO, SEQM_REMOVE_TEMPO, SEQM_ADD_SIG, SEQM_REMOVE_SIG,
-      SEQM_ADD_KEY, SEQM_REMOVE_KEY,
-      SEQM_SET_GLOBAL_TEMPO,
       SEQM_REVERT_OPERATION_GROUP, SEQM_EXECUTE_OPERATION_GROUP,
       SEQM_RESET_DEVICES, SEQM_INIT_DEVICES, SEQM_PANIC,
       SEQM_MIDI_LOCAL_OFF,
@@ -121,8 +118,6 @@ struct AudioMsg : public ThreadMsg {   // this should be an union
       Undo* operations;
       };
 
-class AudioOutput;
-
 //---------------------------------------------------------
 //   Audio
 //---------------------------------------------------------
@@ -173,9 +168,6 @@ class Audio {
       unsigned startExternalRecTick;
       unsigned endExternalRecTick;
       
-      AudioOutput* _audioMaster;
-      AudioOutput* _audioMonitor;
-
       void sendLocalOff();
       bool filterEvent(const MidiPlayEvent* event, int type, bool thru);
 
@@ -198,6 +190,8 @@ class Audio {
       
       void process(unsigned frames);
       bool sync(int state, unsigned frame);
+      // Called whenever the audio needs to re-sync, such as after any tempo changes.
+      void reSyncAudio();
       void shutdown();
       void writeTick();
 
@@ -235,7 +229,7 @@ class Audio {
       void msgDeleteTempo(int tick, int tempo, bool doUndoFlag = true); // only does applyOperation
       void msgUpdateSoloStates(); // TODO and below
       void msgSetAux(AudioTrack*, int, double);
-      void msgSetGlobalTempo(int val);
+      void msgSetGlobalTempo(int val, bool doUndoFlag = true);
       void msgAddSig(int tick, int z, int n, bool doUndoFlag = true);
       void msgRemoveSig(int tick, int z, int n, bool doUndoFlag = true);
       void msgAddKey(int tick, int key, bool doUndoFlag = true);
@@ -301,10 +295,6 @@ class Audio {
       int getFrameOffset() const   { return frameOffset; }
       void initDevices(bool force = true);
 
-      AudioOutput* audioMaster() const { return _audioMaster; }
-      AudioOutput* audioMonitor() const { return _audioMonitor; }
-      void setMaster(AudioOutput* track) { _audioMaster = track; }
-      void setMonitor(AudioOutput* track) { _audioMonitor = track; }
       void sendMsgToGui(char c);
       bool bounce() const { return _bounce; }
       };

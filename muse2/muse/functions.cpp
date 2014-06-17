@@ -1176,7 +1176,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 									}
 
 									e.setTick(tick);
-									e.setSelected(true);
+									e.setSelected(true);  // No need to select clones, AddEvent operation below will take care of that.
 									
 									if (e.endTick() > dest_part->lenTick()) // event exceeds part?
 									{
@@ -1236,7 +1236,7 @@ void select_all(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			operations.push_back(UndoOp(UndoOp::SelectEvent,event, true, event.selected()));
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, true, event.selected()));
 		}
 	MusEGlobal::song->applyOperationGroup(operations);
 }
@@ -1250,7 +1250,7 @@ void select_none(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			operations.push_back(UndoOp(UndoOp::SelectEvent,event, false, event.selected()));
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, false, event.selected()));
 		}
 	MusEGlobal::song->applyOperationGroup(operations);
 }
@@ -1264,7 +1264,7 @@ void select_invert(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			operations.push_back(UndoOp(UndoOp::SelectEvent,event, !event.selected(), event.selected()));
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, !event.selected(), event.selected()));
 		}
 	MusEGlobal::song->applyOperationGroup(operations);
 }
@@ -1279,7 +1279,7 @@ void select_in_loop(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			operations.push_back(UndoOp(UndoOp::SelectEvent,event, (event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, (event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
 		}
 	MusEGlobal::song->applyOperationGroup(operations);
 }
@@ -1294,7 +1294,7 @@ void select_not_in_loop(const set<const Part*>& parts)
 		for (ciEvent ev_it=(*part)->events().begin(); ev_it!=(*part)->events().end(); ev_it++)
 		{
 			const Event& event=ev_it->second;
-			operations.push_back(UndoOp(UndoOp::SelectEvent,event, !(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
+			operations.push_back(UndoOp(UndoOp::SelectEvent,event, *part, !(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()), event.selected()));
 		}
 	MusEGlobal::song->applyOperationGroup(operations);
 }
@@ -1323,7 +1323,7 @@ void shrink_parts(int raster)
 				if (len<min_len) len=min_len;
 				
 				if (len < part->second->lenTick())
-					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenTick(), len, true, false));
+					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenValue(), len, Pos::TICKS));
 			}
 	
 	MusEGlobal::song->applyOperationGroup(operations);
@@ -1338,22 +1338,14 @@ void schedule_resize_all_same_len_clone_parts(const Part* part, unsigned new_len
 		if (op_it->type==UndoOp::DeletePart)
 			already_done.insert(op_it->part);
 			
-	unsigned old_len= part->type() == Pos::FRAMES ? part->lenFrame() : part->lenTick();
+	unsigned old_len = part->lenValue();
 	if (old_len!=new_len)
 	{
 		const Part* part_it=part;
 		do
 		{
-			if (part->type() == Pos::FRAMES)
-			{
-			  if (part_it->lenFrame()==old_len && !already_done.contains(part_it))
-				  operations.push_back(UndoOp(UndoOp::ModifyPartLengthFrames, part_it, part_it->lenFrame(), new_len, true, false)); // FIXME FINDMICH frames suck :(
-			}
-			else
-			if (part_it->lenTick()==old_len && !already_done.contains(part_it))
-			{
-				operations.push_back(UndoOp(UndoOp::ModifyPartLength, part_it, part_it->lenTick(), new_len, true, false));
-			}
+			if (part_it->lenValue()==old_len && !already_done.contains(part_it))
+				operations.push_back(UndoOp(UndoOp::ModifyPartLength, part_it, old_len, new_len, part->type()));
 			
 			part_it=part_it->nextClone();
 		} while (part_it!=part);
@@ -1383,7 +1375,7 @@ void expand_parts(int raster)
 				if (len<min_len) len=min_len;
 								
 				if (len > part->second->lenTick())
-					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenTick(), len, true, false));
+					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenValue(), len, Pos::TICKS));
 			}
 			
 	MusEGlobal::song->applyOperationGroup(operations);

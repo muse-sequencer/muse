@@ -45,6 +45,8 @@
 #include "midiitransform.h"
 #include "part.h"
 #include "drummap.h"
+#include "operations.h"
+
 
 namespace MusEGlobal {
 MusECore::MidiDeviceList midiDevices;
@@ -362,6 +364,58 @@ void MidiDeviceList::add(MidiDevice* dev)
       
       push_back(dev);
       }
+
+//---------------------------------------------------------
+//   addOperation
+//---------------------------------------------------------
+
+void MidiDeviceList::addOperation(MidiDevice* dev, PendingOperationList& ops)
+{
+  bool gotUniqueName=false;
+  int increment = 0;
+  QString origname = dev->name();
+  PendingOperationItem poi(this, dev, PendingOperationItem::AddMidiDevice);
+  // check if the name's been taken
+  while(!gotUniqueName) 
+  {
+    if(increment >= 10000)
+    {
+      fprintf(stderr, "MusE Error: MidiDeviceList::addOperation(): Out of 10000 unique midi device names!\n");
+      return;        
+    }
+    gotUniqueName = true;
+    // In the case of type AddMidiDevice, this searches for the name only.
+    iPendingOperation ipo = ops.findAllocationOp(poi);
+    if(ipo != ops.end())
+    {
+      PendingOperationItem& poif = *ipo;
+      if(poif._midi_device == poi._midi_device)
+        return;  // Device itself is already added! 
+        
+      // TODO: This and section below should be changed to simply: dev->setName(origname + QString::number(increment))  
+      //        but first must be careful of localizations - will it give differing results?
+      char incstr[4];
+      sprintf(incstr,"_%d",++increment);
+      dev->setName(origname + QString(incstr));
+      
+      gotUniqueName = false;
+    }    
+    
+    for(iMidiDevice i = begin(); i != end(); ++i) 
+    {
+      const QString s = (*i)->name();
+      if(s == dev->name())
+      {
+        char incstr[4];
+        sprintf(incstr,"_%d",++increment);
+        dev->setName(origname + QString(incstr));    
+        gotUniqueName = false;
+      }
+    }
+  }
+  
+  ops.add(poi);
+}
 
 //---------------------------------------------------------
 //   remove

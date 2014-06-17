@@ -41,6 +41,40 @@ MidiEventBase::MidiEventBase(EventType t)
       c = 0;
       }
 
+MidiEventBase::MidiEventBase(const MidiEventBase& ev, bool duplicate_not_clone)
+   : EventBase(ev, duplicate_not_clone)
+{
+      a = ev.a;
+      b = ev.b;
+      c = ev.c;
+      if(duplicate_not_clone)
+        edata.setData(ev.data(), ev.dataLen()); // Makes a copy.
+      else
+        // NOTE: Even non-shared clone events ALWAYS share edata. edata does NOT currently require 
+        //        separate instances, unlike wave events which absolutely do.
+        //       Be aware when iterating or modifying clones for example. (It can save time.)
+        edata = ev.edata;
+}
+
+//---------------------------------------------------------
+//   assign
+//---------------------------------------------------------
+
+void MidiEventBase::assign(const EventBase& ev)  
+{
+  if(ev.type() != type())
+    return;
+  EventBase::assign(ev);
+  a = ev.dataA();
+  b = ev.dataB();
+  c = ev.dataC();
+  // NOTE: Even non-shared clone events ALWAYS share edata. edata does NOT currently require 
+  //        separate instances, unlike wave events which absolutely do.
+  //       Be aware when iterating or modifying clones for example. (It can save time.)
+  if(edata.data != ev.data())
+    edata.setData(ev.data(), ev.dataLen()); // Makes a copy.
+}
+
 bool MidiEventBase::isSimilarTo(const EventBase& other_) const
 {
 	const MidiEventBase* other = dynamic_cast<const MidiEventBase*>(&other_);

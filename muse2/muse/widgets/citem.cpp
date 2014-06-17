@@ -22,6 +22,8 @@
 
 #include "part.h"
 #include "citem.h"
+#include "undo.h"
+#include "song.h"
 #include <stdio.h>
 
 namespace MusEGui {
@@ -65,7 +67,7 @@ bool CItem::isSelected() const
 
 void CItem::setSelected(bool f)
       {
-      _event.empty() ? _part->setSelected(f) : _event.setSelected(f);
+      _event.empty() ? _part->setSelected(f) : MusEGlobal::song->selectEvent(_event, _part, f);
       }
 
 //---------------------------------------------------------

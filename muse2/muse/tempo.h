@@ -38,6 +38,8 @@
 namespace MusECore {
 
 class Xml;
+class PendingOperationList;
+class PendingOperationItem;
 
 //---------------------------------------------------------
 //   Tempo Event
@@ -70,15 +72,18 @@ typedef TEMPOLIST::reverse_iterator riTEvent;
 typedef TEMPOLIST::const_reverse_iterator criTEvent;
 
 class TempoList : public TEMPOLIST {
+    
+   friend PendingOperationItem;
+    
       int _tempoSN;           // serial no to track tempo changes
       bool useList;
       int _tempo;             // tempo if not using tempo list
       int _globalTempo;       // %percent 50-200%
 
       void add(unsigned tick, int tempo, bool do_normalize = true);
-      void change(unsigned tick, int newTempo);
-      void del(iTEvent);
-      void del(unsigned tick);
+      void add(unsigned tick, TEvent* e, bool do_normalize = true);
+      void del(iTEvent, bool do_normalize = true);
+      void del(unsigned tick, bool do_normalize = true);
 
    public:
       TempoList();
@@ -103,12 +108,14 @@ class TempoList : public TEMPOLIST {
       int tempoSN() const { return _tempoSN; }
       void setTempo(unsigned tick, int newTempo);
       void addTempo(unsigned t, int tempo, bool do_normalize = true);
-      void delTempo(unsigned tick);
-      void changeTempo(unsigned tick, int newTempo);
+      void delTempo(unsigned tick, bool do_normalize = true);
       bool masterFlag() const { return useList; }
       bool setMasterFlag(unsigned tick, bool val);
       int globalTempo() const           { return _globalTempo; }
       void setGlobalTempo(int val);
+      
+      void addOperation(unsigned tick, int tempo, PendingOperationList& ops); 
+      void delOperation(unsigned tick, PendingOperationList& ops);
       };
 
 //---------------------------------------------------------

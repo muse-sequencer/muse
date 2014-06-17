@@ -3852,7 +3852,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							newevent.setVeloOff(note_velo_off);
 							newevent.setTick(relative_tick);
 							newevent.setLenTick((new_len>0)?new_len:last_len);
-							newevent.setSelected(true);
+							newevent.setSelected(true); // No need to select clones, AddEvent operation below will take care of that.
 
 							if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
 							{
@@ -3929,7 +3929,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 				if (!ctrl)
 					deselect_all();
 
-			MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, !clicked_event_ptr->selected(), clicked_event_ptr->selected()));
+			MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part, !clicked_event_ptr->selected(), clicked_event_ptr->selected()));
 		}
 		
 		setMouseTracking(false);
@@ -4028,7 +4028,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					if (!ctrl)
 						deselect_all();
 					
-					MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, true, clicked_event_ptr->selected()));
+					MusEGlobal::song->applyOperation(UndoOp(UndoOp::SelectEvent, *clicked_event_ptr, selected_part, true, clicked_event_ptr->selected()));
 				}
 				
 				old_pitch=-1;
@@ -4509,7 +4509,7 @@ void ScoreCanvas::deselect_all()
 
 	for (set<const MusECore::Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
 		for (MusECore::ciEvent event=(*part)->events().begin(); event!=(*part)->events().end(); event++)
-			operations.push_back(UndoOp(UndoOp::SelectEvent, event->second, false, event->second.selected()));
+			operations.push_back(UndoOp(UndoOp::SelectEvent, event->second, *part, false, event->second.selected()));
 	
 	MusEGlobal::song->applyOperationGroup(operations);
 }
@@ -4570,7 +4570,7 @@ void staff_t::apply_lasso(QRect rect, set<const MusECore::Event*>& already_proce
 				if (rect.contains(it2->x, it2->y))
 					if (already_processed.find(it2->source_event)==already_processed.end())
 					{
-						operations.push_back(UndoOp(UndoOp::SelectEvent,*it2->source_event,!it2->source_event->selected(),it2->source_event->selected()));
+						operations.push_back(UndoOp(UndoOp::SelectEvent,*it2->source_event,it2->source_part,!it2->source_event->selected(),it2->source_event->selected()));
 						already_processed.insert(it2->source_event);
 					}
 			}

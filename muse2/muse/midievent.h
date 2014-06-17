@@ -34,13 +34,24 @@ namespace MusECore {
 
 class MidiEventBase : public EventBase {
       int a, b, c;                  // pitch, velo-on, velo-off
+      // Sysex event data.
+      // NOTE: Even non-shared clone events ALWAYS share edata. edata does NOT currently require
+      //        separate instances, unlike wave events which absolutely do.
+      //       Be aware when iterating or modifying clones for example. (It can save time.)
       EvData edata;
 
-      virtual EventBase* clone() const { return new MidiEventBase(*this); }
+      // Creates a non-shared clone (copies event base), including the same 'group' id.
+      virtual EventBase* clone() const { return new MidiEventBase(*this); } 
+      // Creates a copy of the event base, excluding the 'group' _id.
+      virtual EventBase* duplicate() const { return new MidiEventBase(*this, true); }  
 
    public:
       MidiEventBase(EventType t);
+      // Creates a non-shared clone with same id, or duplicate with unique id, and 0 ref count and invalid Pos sn. 
+      MidiEventBase(const MidiEventBase& ev, bool duplicate_not_clone = false);
       virtual ~MidiEventBase() {}
+      
+      virtual void assign(const EventBase& ev); // Assigns to this event, excluding the _id. 
       
       virtual bool isSimilarTo(const EventBase& other) const;
 

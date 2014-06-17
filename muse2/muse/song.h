@@ -29,6 +29,7 @@
 
 #include <map>
 #include <set>
+#include <list>
 
 #include "type_defs.h"
 #include "pos.h"
@@ -38,6 +39,7 @@
 #include "undo.h"
 #include "track.h"
 #include "synth.h"
+#include "operations.h"
 
 class QAction;
 class QFont;
@@ -142,6 +144,9 @@ class Song : public QObject {
 
       UndoList* undoList;
       UndoList* redoList;
+      // New items created in GUI thread awaiting addition in audio thread.
+      PendingOperationList pendingOperations;
+      
       Pos pos[3];
       Pos _vcpos;               // virtual CPOS (locate in progress)
       MarkerList* _markerList;
@@ -167,6 +172,13 @@ class Song : public QObject {
       QStringList deliveredScriptNames;
       QStringList userScriptNames;
 
+      // These are called from non-RT thread operations execution stage 1.
+      void insertTrackOperation(Track* track, int idx, PendingOperationList& ops);
+      void removeTrackOperation(Track* track, PendingOperationList& ops);
+      bool addEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+      void changeEventOperation(const Event&, const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+      void deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+      
    public:
       Song(const char* name = 0);
       ~Song();
@@ -269,12 +281,11 @@ class Song : public QObject {
       //-----------------------------------------
 
       unsigned len() const { return _len; }
-      void setLen(unsigned l);     // set songlen in ticks
+      void setLen(unsigned l, bool do_update = true);     // set songlen in ticks
       int roundUpBar(int tick) const;
       int roundUpBeat(int tick) const;
       int roundDownBar(int tick) const;
       void initLen();
-      void tempoChanged();
 
       //-----------------------------------------
       //   event manipulations
@@ -282,9 +293,12 @@ class Song : public QObject {
 
       void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);  
       void cmdAddRecordedEvents(MidiTrack*, const EventList&, unsigned);
-      bool addEvent(Event&, Part*);                 // only called from audio thread. FIXME TODO: move functionality into undo.cpp
-      void changeEvent(Event&, Event&, Part*);      // only called from audio thread. FIXME TODO: move functionality into undo.cpp
-      void deleteEvent(Event&, Part*);              // only called from audio thread. FIXME TODO: move functionality into undo.cpp
+
+      // May be called from GUI or audio thread. Also selects events in clone parts. Safe for now because audio/midi processing doesn't 
+      //  depend on it, and all calls to part altering functions from GUI are synchronized with (wait for) audio thread.
+      void selectEvent(Event&, Part*, bool select);   
+      void selectAllEvents(Part*, bool select); // See selectEvent().  
+
       void cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex); // FIXME TODO broken, fix that.
       void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport); // called from GUI thread
       void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false); // called from GUI thread
@@ -325,7 +339,6 @@ class Song : public QObject {
       void removeTrack3(Track* track);
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
-      void moveTrack(int i1, int i2);
       void setRecordFlag(Track*, bool);
       void insertTrack0(Track*, int idx);
       void insertTrack1(Track*, int idx);

@@ -39,6 +39,7 @@
 #include "limits.h"
 #include "dssihost.h"
 #include "gconfig.h"
+#include "operations.h"
 #include <QMessageBox>
 
 namespace MusECore {
@@ -106,6 +107,18 @@ void addPortCtrlEvents(MidiTrack* t)
   }
 }
 
+void addPortCtrlEvents(Track* track, PendingOperationList& ops)
+{
+  if(!track || !track->isMidiTrack())
+    return;
+  const PartList* pl = track->cparts();
+  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+  {
+    Part* part = ip->second;
+    addPortCtrlEvents(part, part->tick(), part->lenTick(), track, ops);
+  }
+}
+
 //---------------------------------------------------------
 //   removePortCtrlEvents
 //---------------------------------------------------------
@@ -148,6 +161,18 @@ void removePortCtrlEvents(MidiTrack* t)
         mp->deleteController(ch, tick, cntrl, part);
       }
     }
+  }
+}
+
+void removePortCtrlEvents(Track* track, PendingOperationList& ops)
+{
+  if(!track || !track->isMidiTrack())
+    return;
+  const PartList* pl = track->cparts();
+  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+  {
+    Part* part = ip->second;
+    removePortCtrlEvents(part, track, ops);
   }
 }
 
@@ -794,17 +819,10 @@ Part* MidiTrack::newPart(Part*p, bool clone)
             part->setTrack(this);
       }
       else
-            part= new MidiPart(this);
-      
-      
-      if (p) {
-            part->setName(p->name());
-            part->setColorIndex(p->colorIndex());
-
-            *(PosLen*)part = *(PosLen*)p;
-            part->setMute(p->mute());
-            }
-      
+      {
+            part = (MidiPart*)p->duplicate();
+            part->setTrack(this);
+      }
       return part;
       }
 

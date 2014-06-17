@@ -977,7 +977,7 @@ void MidiTransformerDialog::apply()
                               continue;
                         int flag = isSelected(event);
                         if (data->cmt->funcOp == MusECore::Select)
-                              operations.push_back(UndoOp(UndoOp::SelectEvent, event,flag, event.selected()));
+                              operations.push_back(UndoOp(UndoOp::SelectEvent, event, part, flag, event.selected()));
                         else if (flag)
                               pel.add(const_cast<MusECore::Event&>(event)); // ough, FIXME, what an ugly hack.
                         }

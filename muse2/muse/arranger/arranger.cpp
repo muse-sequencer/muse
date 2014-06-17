@@ -643,7 +643,7 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
       // Is it simply a midi controller value adjustment? Forget it.
       if(type != SC_MIDI_CONTROLLER)
       {
-        // TEST p4.0.36 Try these, may need more/less. 
+        // Try these, may need more/less. 
         if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))  
         {
@@ -666,10 +666,10 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
         if(type & (SC_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
           trackSelectionChanged();
         
-        // Keep this light, partsChanged is a heavy move!       TEST p4.0.36 Try these, may need more.
+        // Keep this light, partsChanged is a heavy move! Try these, may need more. Maybe sig. Requires tempo.
         if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
                    SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
-                   SC_SIG | SC_TEMPO | SC_MASTER)) // Maybe sig. Requires tempo.
+                   SC_SIG | SC_TEMPO | SC_MASTER)) 
           canvas->partsChanged();
         
         if (type & SC_SIG)
@@ -698,11 +698,10 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
           } 
         }
         
-        // TEST p4.0.36 Try this DELETETHIS and below and even more below
-        if(type & ( //SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
-           SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
-           SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED)) //|
-           //SC_SIG | SC_TEMPO))  // Maybe sig. and tempo. No, moved above.
+        // Try these:
+        if(type & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
+                   SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
+                   SC_CLIP_MODIFIED))
         canvas->redraw();
         
       }
@@ -936,7 +935,6 @@ void Arranger::globalPitchChanged(int val)
 void Arranger::globalTempoChanged(int val)
       {
       MusEGlobal::audio->msgSetGlobalTempo(val);
-      MusEGlobal::song->tempoChanged();
       }
 
 //---------------------------------------------------------
@@ -945,7 +943,7 @@ void Arranger::globalTempoChanged(int val)
 
 void Arranger::setTempo50()
       {
-      setGlobalTempo(50);
+      MusEGlobal::audio->msgSetGlobalTempo(50);
       }
 
 //---------------------------------------------------------
@@ -954,7 +952,7 @@ void Arranger::setTempo50()
 
 void Arranger::setTempo100()
       {
-      setGlobalTempo(100);
+      MusEGlobal::audio->msgSetGlobalTempo(100);
       }
 
 //---------------------------------------------------------
@@ -963,7 +961,7 @@ void Arranger::setTempo100()
 
 void Arranger::setTempo200()
       {
-      setGlobalTempo(200);
+      MusEGlobal::audio->msgSetGlobalTempo(200);
       }
 
 //---------------------------------------------------------
@@ -973,7 +971,11 @@ void Arranger::setTempo200()
 void Arranger::setGlobalTempo(int val)
       {
       if(val != globalTempoSpinBox->value())
+      {
+        globalTempoSpinBox->blockSignals(true);
         globalTempoSpinBox->setValue(val);
+        globalTempoSpinBox->blockSignals(false);
+      }
       }
 
 //---------------------------------------------------------
@@ -1194,13 +1196,13 @@ void Arranger::switchInfo(int n)
                   if (w)
                         delete w;
                   w = new AudioStrip(trackInfo, (MusECore::AudioTrack*)selected);
-                  //w->setFocusPolicy(Qt::TabFocus);  // p4.0.9
+                  //w->setFocusPolicy(Qt::TabFocus);
                   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
                   trackInfo->addWidget(w, 2);
                   w->show();
-                  //setTabOrder(midiTrackInfo, w); // p4.0.9
+                  //setTabOrder(midiTrackInfo, w);
                   tgrid->activate();
                   tgrid->update();   // muse-2 Qt4
                   }
@@ -1211,20 +1213,6 @@ void Arranger::switchInfo(int n)
       tgrid->activate();
       tgrid->update();   // muse-2 Qt4
       }
-
-/* DELETETHIS 12
-QSize WidgetStack::minimumSize() const 
-{ 
-  printf("WidgetStack::minimumSize\n");  
-  return minimumSizeHint(); 
-}
-
-int WidgetStack::minimumHeight() const 
-{ 
-  printf("WidgetStack::minimumHeight\n");  
-  return minimumSizeHint().height(); 
-}
-*/
 
 void Arranger::keyPressEvent(QKeyEvent* event)
 {

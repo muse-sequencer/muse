@@ -233,8 +233,6 @@ void Master::newValRamp(int x1, int y1, int x2, int y2)
 {
   MusECore::Undo operations;
 
-  int h   = height();
-
 // loop through all tick positions between x1 and x2
 // remove all tempo changes and add new ones for changed
 
@@ -244,12 +242,9 @@ void Master::newValRamp(int x1, int y1, int x2, int y2)
   const MusECore::TempoList* tl = &MusEGlobal::tempomap;
   for (MusECore::ciTEvent i = tl->begin(); i != tl->end(); ++i) {
     MusECore::TEvent* e = i->second;
-    int etick = mapx(i->first);
-    int endOldTick = i->first;
-    int stick = mapx(i->second->tick);
     int startOldTick = i->second->tick;
-    //printf("stick=%d startOldTick=%d tickEnd=%d\n",stick, startOldTick, tickEnd);
-    if (startOldTick > tickStart && startOldTick <= tickEnd ) {
+    //if (startOldTick > tickStart && startOldTick <= tickEnd ) {    // REMOVE Tim. Sharing. Wrong comparison?
+    if (startOldTick >= tickStart && startOldTick > 0 && startOldTick < tickEnd ) {  // Erasure at tick 0 forbidden.
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo, startOldTick, e->tempo));
         //printf("tempo = %f %d %d\n", 60000000.0/e->tempo, endOldTick, startOldTick);
     }
@@ -287,9 +282,6 @@ void Master::viewMousePressEvent(QMouseEvent* event)
       int ypos = start.y();
 
       MusEGui::Tool activeTool = tool;
-      bool ctrlKey = event->modifiers() & Qt::ControlModifier;
-
-      //MusECore::MidiController::ControllerType type = MusECore::midiControllerType(_controller->num());
 
       switch (activeTool) {
             case MusEGui::PointerTool:

@@ -161,13 +161,14 @@ class MidiController {
       static int genNum(ControllerType, int, int);
       };
 
-// Added by T356.
 struct MidiCtrlVal
 {
   // The part containing the event which this value came from. Used for searching and deleting.
   Part* part;
   // The stored value.
   int val;
+  MidiCtrlVal(Part* p, int v) { part = p; val = v; }
+  bool operator==(const MidiCtrlVal& mcv) { return part == mcv.part && val == mcv.val; }
 };
 
 //---------------------------------------------------------

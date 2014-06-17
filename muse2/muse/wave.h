@@ -289,7 +289,7 @@ typedef ClipList::const_iterator ciClip;
 extern ClipBase* readClip(Xml& xml);
 #endif
 
-extern SndFileR getWave(const QString& name, bool readOnlyFlag);
+extern SndFileR getWave(const QString& name, bool readOnlyFlag, bool openFlag = true, bool showErrorBox = true);
 
 } // namespace MusECore
 

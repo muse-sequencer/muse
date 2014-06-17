@@ -223,17 +223,11 @@ Part* WaveTrack::newPart(Part*p, bool clone)
             part->setTrack(this);
       }
       else
-            part = new WavePart(this);
-      
-      
-      if (p) {
-            part->setName(p->name());
-            part->setColorIndex(p->colorIndex());
+      {
+            part = (WavePart*)p->duplicate();
+            part->setTrack(this);
+      }
 
-            *(PosLen*)part = *(PosLen*)p;
-            part->setMute(p->mute());
-            }
-      
       return part;
       }
 

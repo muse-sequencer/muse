@@ -25,7 +25,7 @@
 #ifndef __PART_H__
 #define __PART_H__
 
-#include <map>
+#include <map> 
 
 // Added by T356.
 #include <uuid/uuid.h>
@@ -42,6 +42,7 @@ class Track;
 class Xml;
 class Part;
 class WaveTrack;
+class PendingOperationList;
 
 struct ClonePart {
       const Part* cp;
@@ -194,15 +195,24 @@ class PartList : public std::multimap<int, Part*, std::less<unsigned> > {
                   delete i->second;
             clear();
             }
+            
+      void addOperation(Part* part, PendingOperationList& ops); 
+      void delOperation(Part* part, PendingOperationList& ops);
+      void movePartOperation(Part* part, int new_pos, PendingOperationList& ops, Track* track = 0);
       };
 
 extern void chainCheckErr(Part* p);
 extern void unchainTrackParts(Track* t);
 extern void chainTrackParts(Track* t);
 extern void addPortCtrlEvents(Part* part, bool doClones);
-extern void addPortCtrlEvents(Event& event, Part* part, bool doClones);
+extern void addPortCtrlEvents(const Event& event, Part* part, int tick, int len, Track* track, PendingOperationList& ops);
+extern void addPortCtrlEvents(Event& event, Part* part);
+extern void addPortCtrlEvents(Part* part, int tick, int len, Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Part* part, bool doClones);
-extern void removePortCtrlEvents(Event& event, Part* part, bool doClones);
+extern void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops);
+extern void removePortCtrlEvents(Event& event, Part* part);
+extern void removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops);
+extern void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops);
 
 } // namespace MusECore
 

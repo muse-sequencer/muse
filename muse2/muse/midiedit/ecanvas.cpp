@@ -34,6 +34,7 @@
 #include <QMimeData>
 #include <QByteArray>
 #include <QDrag>
+#include <QSet>
 
 #include "xml.h"
 #include "midieditor.h"
@@ -221,14 +222,12 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
       int n  = 0;       // count selections
       for (iCItem k = items.begin(); k != items.end(); ++k) {
             MusECore::Event ev = k->second->event();
-            bool selected = ev.selected();
-            if (selected) {
-                  k->second->setSelected(true);
+            
+            if (ev.selected()) {
                   ++n;
                   if (!nevent) {
                         nevent   =  k->second;
-                        MusECore::Event mi = nevent->event();
-                        curVelo  = mi.velo();
+                        curVelo = ev.velo();
                         }
                   }
             }
@@ -487,6 +486,24 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir, bo
       updateSelection();
       redraw();
       }
+
+//---------------------------------------------------------
+//   deselectAll
+//---------------------------------------------------------
+
+void EventCanvas::deselectAll()
+{
+  QSet<MusECore::Part*> already_done;
+  MusECore::Part* p;
+  for(iCItem i = items.begin(); i != items.end(); ++i)
+  {
+    p = i->second->part();
+    if(already_done.contains(p) || !p)
+      continue;
+    MusEGlobal::song->selectAllEvents(p, false);
+    already_done.insert(p);
+  }
+}
 
 //---------------------------------------------------------
 //   startPlayEvent
