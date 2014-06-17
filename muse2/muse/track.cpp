@@ -654,6 +654,19 @@ void MidiTrack::remove_ourselves_from_drum_ordering()
 void MidiTrack::init()
       {
       _outPort       = 0;
+
+      // let's set the port to the last instantiated device
+      // if midi-channel defaults are set in the configuration it
+      // will override this setting
+      for (int i = MIDI_PORTS; i > -1; i--)
+      {
+        if (MusEGlobal::midiPorts[i].device() != NULL)
+        {
+          _outPort = i;
+          break;
+        }
+      }
+
       _outChannel    = (type()==NEW_DRUM) ? 9 : 0;
 
       transposition  = 0;

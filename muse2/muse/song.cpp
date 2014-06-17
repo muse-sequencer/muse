@@ -313,7 +313,10 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
               MusEGlobal::audio->msgAddRoute(Route(i, c), Route(track, c));
               updateFlags |= SC_ROUTE;
             }
-          }  
+          }
+          else {
+            continue;
+          }
           
           if(!defOutFound)                       ///
           {
@@ -326,6 +329,7 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
               MusEGlobal::audio->msgAddRoute(Route(track, c), Route(i, c));
               updateFlags |= SC_ROUTE;
         #else 
+
               for(ch = 0; ch < MIDI_CHANNELS; ++ch)   
               {
                 cbi = 1 << ch;
@@ -3163,6 +3167,14 @@ void Song::removeTrack3(Track* /*track*/)//prevent of compiler warning: unused p
 {
 }
 
+
+void writeStringToFile(FILE *filePointer, char *writeString)
+{
+  if (MusEGlobal::debugMsg)
+    printf(writeString);
+  fputs(writeString, filePointer);
+}
+
 //---------------------------------------------------------
 //   removeTrackOperation
 //---------------------------------------------------------
@@ -3227,6 +3239,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
       // will be extended if there is a need
       //
       // Semantics:
+      // TIMESIG <n> <z>
       // PARTLEN <len in ticks>
       // BEATLEN <len in ticks>
       // QUANTLEN <len in ticks>
@@ -3237,35 +3250,47 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
       for (iPart i = parts->begin(); i != parts->end(); i++) {
             //const char* tmp = tmpnam(NULL);
             char tmp[16] = "muse-tmp-XXXXXX";
+            char tempStr[200];
             int fd = mkstemp(tmp);
             if (MusEGlobal::debugMsg)
               printf("executeScript: script input filename=%s\n",tmp);
+
             FILE *fp = fdopen(fd , "w");
             MidiPart *part = (MidiPart*)(i->second);
-            int partStart = part->endTick()-part->lenTick();
+            if (MusEGlobal::debugMsg)
+              printf("SENDING TO SCRIPT, part start: %d\n", part->tick());
+
             int z, n;
-            AL::sigmap.timesig(0, z, n);
-            fprintf(fp, "TIMESIG %d %d\n", z, n);
-            fprintf(fp, "PART %d %d\n", partStart, part->lenTick());
-            fprintf(fp, "BEATLEN %d\n", AL::sigmap.ticksBeat(0));
-            fprintf(fp, "QUANTLEN %d\n", quant);
+            AL::sigmap.timesig(part->tick(), z, n);
+            sprintf(tempStr, "TIMESIG %d %d\n", z, n);
+            writeStringToFile(fp,tempStr);
+            sprintf(tempStr, "PART %d %d\n", part->tick(), part->lenTick());
+            writeStringToFile(fp,tempStr);
+            sprintf(tempStr, "BEATLEN %d\n", AL::sigmap.ticksBeat(part->tick()));
+            writeStringToFile(fp,tempStr);
+            sprintf(tempStr, "QUANTLEN %d\n", quant);
+            writeStringToFile(fp,tempStr);
 
-            for (ciEvent e = part->events().begin(); e != part->events().end(); e++) {
-                Event ev = e->second;
+            for (ciEvent e = part->events().begin(); e != part->events().end(); e++)
+            {
+              Event ev = e->second;
 
-                if (ev.isNote())
-                {
-                      if (onlyIfSelected && ev.selected() == false)
-                            continue;
+              if (ev.isNote())
+              {
+                if (onlyIfSelected && ev.selected() == false)
+                  continue;
 
-                      fprintf(fp,"NOTE %d %d %d %d\n", ev.tick(), ev.dataA(),  ev.lenTick(), ev.dataB());
-                      // Indicate no undo, and do not do port controller values and clone parts.
-                      MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
-                } else if (ev.type()==Controller) {
-                      fprintf(fp,"CONTROLLER %d %d %d %d\n", ev.tick(), ev.dataA(), ev.dataB(), ev.dataC());
-                      // Indicate no undo, and do not do port controller values and clone parts.
-                      MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
-                }
+                sprintf(tempStr,"NOTE %d %d %d %d\n", ev.tick(), ev.dataA(),  ev.lenTick(), ev.dataB());
+                writeStringToFile(fp,tempStr);
+
+                // Indicate no undo, and do not do port controller values and clone parts.
+                MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
+              } else if (ev.type()==Controller) {
+                sprintf(tempStr,"CONTROLLER %d %d %d %d\n", ev.tick(), ev.dataA(), ev.dataB(), ev.dataC());
+                writeStringToFile(fp,tempStr);
+                // Indicate no undo, and do not do port controller values and clone parts.
+                MusEGlobal::audio->msgDeleteEvent(ev, part, false, false, false);
+              }
             }
             fclose(fp);
 
@@ -3287,47 +3312,56 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
               printf("script execution produced the following error:\n%s\n", QString(errStr).toLatin1().data());
             }
             QFile file(tmp);
-            if ( file.open( QIODevice::ReadOnly ) ) {
-                QTextStream stream( &file );
-                QString line;
-                while ( !stream.atEnd() ) {
-                    line = stream.readLine(); // line of text excluding '\n'
-                    if (line.startsWith("NOTE"))
-                    {
-                        QStringList sl = line.split(" ");
-
-                          Event e(Note);
-                          int tick = sl[1].toInt();
-                          int pitch = sl[2].toInt();
-                          int len = sl[3].toInt();
-                          int velo = sl[4].toInt();
-                          e.setTick(tick);
-                          e.setPitch(pitch);
-                          e.setVelo(velo);
-                          e.setLenTick(len);
-                          // Indicate no undo, and do not do port controller values and clone parts.
-                          MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
-                    }
-                    if (line.startsWith("CONTROLLER"))
-                    {
-                          QStringList sl = line.split(" ");
-
-                          Event e(Controller);
-                          int a = sl[2].toInt();
-                          int b = sl[3].toInt();
-                          int c = sl[4].toInt();
-                          e.setA(a);
-                          e.setB(b);
-                          e.setB(c);
-                          // Indicate no undo, and do not do port controller values and clone parts.
-                          MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
-                        }
+            if ( file.open( QIODevice::ReadOnly ) )
+            {
+              QTextStream stream( &file );
+              QString line;
+              if (MusEGlobal::debugMsg)
+                printf("RECEIVED FROM SCRIPT:\n");
+              while ( !stream.atEnd() )
+              {
+                line = stream.readLine(); // line of text excluding '\n'
+                if (MusEGlobal::debugMsg) {
+                  printf(line.toLatin1().data());
+                  printf("\n");
                 }
-                file.close();
+
+                if (line.startsWith("NOTE"))
+                {
+                  QStringList sl = line.split(" ");
+
+                  Event e(Note);
+                  int tick = sl[1].toInt();
+                  int pitch = sl[2].toInt();
+                  int len = sl[3].toInt();
+                  int velo = sl[4].toInt();
+                  e.setTick(tick);
+                  e.setPitch(pitch);
+                  e.setVelo(velo);
+                  e.setLenTick(len);
+                  // Indicate no undo, and do not do port controller values and clone parts.
+                  MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
+                }
+                if (line.startsWith("CONTROLLER"))
+                {
+                  QStringList sl = line.split(" ");
+
+                  Event e(Controller);
+                  int a = sl[2].toInt();
+                  int b = sl[3].toInt();
+                  int c = sl[4].toInt();
+                  e.setA(a);
+                  e.setB(b);
+                  e.setB(c);
+                  // Indicate no undo, and do not do port controller values and clone parts.
+                  MusEGlobal::audio->msgAddEvent(e, part, false, false, false);
+                }
+              }
+              file.close();
             }
 
-
-      remove(tmp);
+            if (!MusEGlobal::debugMsg) // if we are writing debug info we also keep the script data
+              remove(tmp);
       }
 
       endUndo(SC_EVENT_REMOVED);

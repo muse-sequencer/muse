@@ -821,7 +821,10 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
         
       QPoint pos  = event->pos();
       QPoint dist = pos - start;
-      bool moving = dist.y() >= 3 || dist.y() <= 3 || dist.x() >= 3 || dist.x() <= 3;
+
+      bool moving =     dist.y() >= 3 || dist.y() <= -3
+                    ||  dist.x() >= 3 || dist.x() <= -3;
+
       switch (drag) {
             case DRAG_LASSO_START:
                   if (!moving)

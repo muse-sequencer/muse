@@ -39,6 +39,7 @@
 #include <QStyleFactory>
 
 #include <iostream>
+#include <algorithm>
 
 #include "app.h"
 #include "master/lmaster.h"
@@ -1997,12 +1998,13 @@ void MusE::showDidYouKnowDialog()
           return;
         }
 
+        // All tip is on one line. empty lines or lines starting with # are ignored
         while (!file.atEnd())  {
-          dyk.tipList.append(file.readLine());
+          QString str = file.readLine();
+          if (!str.simplified().isEmpty() && str.at(0) != QChar('#'))
+            dyk.tipList.append(str);
         }
-
-        //dyk.tipList.append(tr("To get started with MusE why don't you visit the tutorials at <br><a href=\"http://muse-sequencer.org\">http://muse-sequencer.org/index.php/Support</a>"));
-        //dyk.tipList.append(tr("MusE can act as a realtime audio mixer if you connect it to jack!"));
+        std::random_shuffle(dyk.tipList.begin(),dyk.tipList.end());
 
         dyk.show();
         if( dyk.exec()) {
