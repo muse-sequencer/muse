@@ -1,3 +1,9 @@
+16.06.2014:
+         - Transformation to non-shared event lists (started by Florian) is virtually complete. (Tim) 
+           Events have an ID now, shared among clone parts. 
+           New: Fast pending operations lists: They replace RT "execute/revert ops stage-2". 
+         - A few more commands support Undo/Redo now, like setting global tempo. 
+         - Handful of (un)related fixes along the way.       
 29.04.2014:
          - Added more hints to DidYouKnow dialog (rj)
          - Improved README.txt for share/scripts (rj)
