@@ -238,7 +238,7 @@ struct PendingOperationItem
   void executeRTStage(); 
   // Execute the operation. Called only from post RT stage 3.
   void executeNonRTStage(); 
-  // Get an appropriate indexing value from ops like AddEvent that use it. Other ops like AddMidiCtrlValList return zero.
+  // Get an appropriate indexing value from ops like AddEvent that use it. Other ops like AddMidiCtrlValList return their type (rather than say, zero).
   int getIndex() const;
   // Whether the two special allocating ops (like AddMidiCtrlValList) are the same. 
   // The comparison ignores the actual allocated value, so that such commands can be found before they do their allocating.
@@ -249,12 +249,12 @@ class PendingOperationList : public std::list<PendingOperationItem>
 {
   private:
     // Holds sorted version of list. Index is time value for items which have it like events or parts,
-    //  otherwise it is zero for other items. It doesn't matter too much that ticks and frames
+    //  otherwise it is the operation type for other items. It doesn't matter too much that ticks and frames
     //  are mixed here, sorting by time is just to speed up searches, we look for operation types.
     std::multimap<int, iterator, std::less<int> > _map; 
   
   public: 
-    // Add an operation. Returns false if already exists, otherwise true.
+    // Add an operation. Returns false if already exists, otherwise true. Optimizes all added items (merge, discard, alter, embellish etc.)
     bool add(PendingOperationItem);       
     // Execute the RT portion of the operations contained in the list. Called only from RT stage 2.
     void executeRTStage();                 
