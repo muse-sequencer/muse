@@ -26,7 +26,6 @@
 #include "ui_editnotedialogbase.h"
 #include "ui_editsysexdialogbase.h"
 #include "ui_editctrlbase.h"
-#include "event.h"
 
 class QDialog;
 class QLabel;
@@ -41,14 +40,15 @@ namespace Awl {
       };
 
 namespace MusECore {
+class Event;
 class MidiPart;
+class MidiInstrument;
 }
 
 namespace MusEGui {
 
 class IntLabel;
 class PitchEdit;
-
 
 //---------------------------------------------------------
 //   EditEventDialog
@@ -87,6 +87,7 @@ class EditNoteDialog : public QDialog, public Ui::EditNoteDialogBase {
 class EditSysexDialog : public QDialog, public Ui::EditSysexDialogBase {
       Q_OBJECT
 
+      MusECore::MidiInstrument* _instr;
       unsigned char* sysex;
       int len;
 
@@ -95,13 +96,15 @@ class EditSysexDialog : public QDialog, public Ui::EditSysexDialogBase {
 
    private slots:
       virtual void accept();
+      virtual void editChanged();
+      virtual void selectSysex();
 
    public:
       EditSysexDialog(int tick, const MusECore::Event&,
-         QWidget* parent=0);
+         QWidget* parent=0, MusECore::MidiInstrument* instr = 0);
       ~EditSysexDialog();
       static MusECore::Event getEvent(int tick, const MusECore::Event&,
-         QWidget* parent = 0);
+         QWidget* parent = 0, MusECore::MidiInstrument* instr = 0);
       virtual MusECore::Event event();
       };
 

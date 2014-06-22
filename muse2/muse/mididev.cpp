@@ -45,6 +45,8 @@
 #include "midiitransform.h"
 #include "part.h"
 #include "drummap.h"
+#include "operations.h"
+
 
 namespace MusEGlobal {
 MusECore::MidiDeviceList midiDevices;
@@ -373,6 +375,58 @@ void MidiDeviceList::add(MidiDevice* dev)
       
       push_back(dev);
       }
+
+//---------------------------------------------------------
+//   addOperation
+//---------------------------------------------------------
+
+void MidiDeviceList::addOperation(MidiDevice* dev, PendingOperationList& ops)
+{
+  bool gotUniqueName=false;
+  int increment = 0;
+  QString origname = dev->name();
+  PendingOperationItem poi(this, dev, PendingOperationItem::AddMidiDevice);
+  // check if the name's been taken
+  while(!gotUniqueName) 
+  {
+    if(increment >= 10000)
+    {
+      fprintf(stderr, "MusE Error: MidiDeviceList::addOperation(): Out of 10000 unique midi device names!\n");
+      return;        
+    }
+    gotUniqueName = true;
+    // In the case of type AddMidiDevice, this searches for the name only.
+    iPendingOperation ipo = ops.findAllocationOp(poi);
+    if(ipo != ops.end())
+    {
+      PendingOperationItem& poif = *ipo;
+      if(poif._midi_device == poi._midi_device)
+        return;  // Device itself is already added! 
+        
+      // TODO: This and section below should be changed to simply: dev->setName(origname + QString::number(increment))  
+      //        but first must be careful of localizations - will it give differing results?
+      char incstr[4];
+      sprintf(incstr,"_%d",++increment);
+      dev->setName(origname + QString(incstr));
+      
+      gotUniqueName = false;
+    }    
+    
+    for(iMidiDevice i = begin(); i != end(); ++i) 
+    {
+      const QString s = (*i)->name();
+      if(s == dev->name())
+      {
+        char incstr[4];
+        sprintf(incstr,"_%d",++increment);
+        dev->setName(origname + QString(incstr));    
+        gotUniqueName = false;
+      }
+    }
+  }
+  
+  ops.add(poi);
+}
 
 //---------------------------------------------------------
 //   remove
@@ -789,10 +843,10 @@ void MidiDevice::handleStop()
   
   for(ciMidiTrack imt = MusEGlobal::song->midis()->begin(); imt != MusEGlobal::song->midis()->end(); ++imt)
   {
-    MPEventList* mel = (*imt)->stuckNotes();
+    MPEventList& mel = (*imt)->stuckNotes;
     //MidiDevice* mdev;  // REMOVE Tim.
     //int mport;
-    for(iMPEvent i = mel->begin(), i_next = i; i != mel->end(); i = i_next) 
+    for(iMPEvent i = mel.begin(), i_next = i; i != mel.end(); i = i_next) 
     {
       ++i_next;
 
@@ -809,7 +863,7 @@ void MidiDevice::handleStop()
       //  continue;
       ev.setTime(0);
       putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
-      mel->erase(i);
+      mel.erase(i);
     }
     //mel->clear();
   }
@@ -898,11 +952,11 @@ void MidiDevice::handleSeek()
     //    While we are at it, flush out any track-related playback stuck notes
     //     (NOT 'live' notes) which were not put directly to the device
     //------------------------------------------------------------
-    MPEventList* mel = (*imt)->stuckNotes();
+    MPEventList& mel = (*imt)->stuckNotes;
     //MidiDevice* mdev;       // REMOVE Tim.
     //int mport;
     //for(iMPEvent i = mel->begin(); i != mel->end(); ++i)
-    for(iMPEvent i = mel->begin(), i_next = i; i != mel->end(); i = i_next)
+    for(iMPEvent i = mel.begin(), i_next = i; i != mel.end(); i = i_next)
     {
       ++i_next;
 
@@ -919,7 +973,7 @@ void MidiDevice::handleSeek()
       //  continue;
       ev.setTime(0);
       putEvent(ev); // For immediate playback try putEvent, putMidiEvent, or sendEvent (for the optimizations).
-      mel->erase(i);
+      mel.erase(i);
     }
     //mel->clear();
     

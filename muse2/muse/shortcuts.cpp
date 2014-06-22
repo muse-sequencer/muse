@@ -192,9 +192,15 @@ void initShortCuts()
       defShrt(SHRT_DEC_POS,          Qt::CTRL + Qt::Key_Left,   QT_TRANSLATE_NOOP("shortcuts", "Edit: Decrease event position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_dec_pos");
       defShrt(SHRT_ZOOM_IN,          Qt::CTRL + Qt::Key_PageUp,   QT_TRANSLATE_NOOP("shortcuts", "View: Zoom in"),  PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT + WAVE_SHRT, "zoom_in");
       defShrt(SHRT_ZOOM_OUT,         Qt::CTRL + Qt::Key_PageDown, QT_TRANSLATE_NOOP("shortcuts", "View: Zoom out"), PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT + WAVE_SHRT, "zoom_out");
-      defShrt(SHRT_GOTO_CPOS,        Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "View: Goto Current Position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "goto_cpos");
+      defShrt(SHRT_GOTO_CPOS,        Qt::Key_I, QT_TRANSLATE_NOOP("shortcuts", "View: Goto Current Position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "goto_cpos");
       defShrt(SHRT_SCROLL_LEFT,      Qt::Key_H, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_left");
       defShrt(SHRT_SCROLL_RIGHT,     Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_right");
+
+      defShrt(SHRT_STEP_RECORD,      Qt::CTRL + Qt::Key_R, QT_TRANSLATE_NOOP("shortcuts", "Transport: Step record"), PROLL_SHRT + DEDIT_SHRT, "step_record");
+      defShrt(SHRT_MIDI_INPUT,       Qt::CTRL + Qt::Key_U, QT_TRANSLATE_NOOP("shortcuts", "Transport: Midi input"), PROLL_SHRT + DEDIT_SHRT, "midi_input");
+      defShrt(SHRT_PLAY_EVENTS,      Qt::CTRL + Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "Transport: Play events"), PROLL_SHRT + DEDIT_SHRT, "play_events");
+      defShrt(SHRT_INC_VELOCITY,     Qt::ALT + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Edit: Increase velocity"), PROLL_SHRT + DEDIT_SHRT, "increase_velocity");
+      defShrt(SHRT_DEC_VELOCITY,     Qt::ALT + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Edit: Decrease velocity"), PROLL_SHRT + DEDIT_SHRT, "decrease_velocity");
 
       //-----------------------------------------------------------
       //Drum:
@@ -220,6 +226,7 @@ void initShortCuts()
       defShrt(SHRT_DELETE_MEASURE,   0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Delete Measure"), PROLL_SHRT + DEDIT_SHRT, "midi_delete_measure");
       defShrt(SHRT_CREATE_MEASURE,   0, QT_TRANSLATE_NOOP("shortcuts", "Edit: Create Measure"), PROLL_SHRT + DEDIT_SHRT, "midi_create_measure");
       defShrt(SHRT_EVENT_COLOR,      Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Edit: Change Event Color"), PROLL_SHRT + SCORE_SHRT, "change_event_color");
+      defShrt(SHRT_MOVE_PLAY_TO_NOTE,    Qt::CTRL + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Move: Move to selected note"), PROLL_SHRT + DEDIT_SHRT, "move_to_note");
 
 
       // Shortcuts for tools

@@ -64,7 +64,7 @@ namespace MusEGui {
 
 class WEvent : public CItem {
    public:
-      WEvent(MusECore::Event& e, MusECore::Part* p, int height);
+      WEvent(const MusECore::Event& e, MusECore::Part* p, int height);
       };
 
 //---------------------------------------------------------
@@ -124,7 +124,7 @@ class WaveCanvas : public EventCanvas {
       virtual void dragEnterEvent(QDragEnterEvent* event);
       virtual void dragMoveEvent(QDragMoveEvent*);
       virtual void dragLeaveEvent(QDragLeaveEvent*);
-      virtual CItem* addItem(MusECore::Part*, MusECore::Event&);
+      virtual CItem* addItem(MusECore::Part*, const MusECore::Event&);
 
       int y2pitch(int) const;
       int pitch2y(int) const;

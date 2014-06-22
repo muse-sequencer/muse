@@ -29,6 +29,7 @@
 #include "globals.h"
 #include "gconfig.h"
 #include "xml.h"
+#include "operations.h"
 
 namespace MusEGlobal {
 MusECore::TempoList tempomap;
@@ -78,6 +79,63 @@ void TempoList::add(unsigned tick, int tempo, bool do_normalize)
       if(do_normalize)      
         normalize();
       }
+
+
+void TempoList::add(unsigned tick, TEvent* e, bool do_normalize)
+{
+  int tempo = e->tempo;
+  std::pair<iTEvent, bool> res = insert(std::pair<const unsigned, TEvent*> (tick, e));
+  if(!res.second)
+  {
+    fprintf(stderr, "TempoList::add insert failed: tempolist:%p tempo:%p %d tick:%d\n", 
+                      this, e, tempo, e->tick);
+  }
+  else
+  {
+    iTEvent ine = res.first;
+    ++ine; // There is always a 'next' tempo event - there is always one at index MAX_TICK + 1.
+    TEvent* ne = ine->second;
+    
+    // Swap the values. (This is how the tempo list works.)
+    e->tempo = ne->tempo;
+    e->tick = ne->tick;
+    ne->tempo = tempo;
+    ne->tick = tick;
+    
+    if(do_normalize)      
+      normalize();
+  }
+}
+
+//---------------------------------------------------------
+//   addOperation
+//---------------------------------------------------------
+
+void TempoList::addOperation(unsigned tick, int tempo, PendingOperationList& ops)
+{
+  if (tick > MAX_TICK)
+    tick = MAX_TICK;
+  iTEvent e = upper_bound(tick);
+
+  if(tick == e->second->tick)
+    ops.add(PendingOperationItem(this, e, tempo, PendingOperationItem::ModifyTempo));
+  else 
+  {
+    PendingOperationItem poi(this, 0, tick, PendingOperationItem::AddTempo);
+    iPendingOperation ipo = ops.findAllocationOp(poi);
+    if(ipo != ops.end())
+    {
+      PendingOperationItem& poi = *ipo;
+      // Simply replace the value.
+      poi._tempo_event->tempo = tempo;
+    }
+    else
+    {
+      poi._tempo_event = new TEvent(tempo, tick); // These are the desired tick and tempo but...
+      ops.add(poi);                               //  add will do the proper swapping with next event.
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   TempoList::normalize
@@ -185,18 +243,18 @@ int TempoList::tempoAt(unsigned tick) const
 //   del
 //---------------------------------------------------------
 
-void TempoList::del(unsigned tick)
+void TempoList::del(unsigned tick, bool do_normalize)
       {
       iTEvent e = find(tick);
       if (e == end()) {
             printf("TempoList::del(%d): not found\n", tick);
             return;
             }
-      del(e);
+      del(e, do_normalize);
       ++_tempoSN;
       }
 
-void TempoList::del(iTEvent e)
+void TempoList::del(iTEvent e, bool do_normalize)
       {
       iTEvent ne = e;
       ++ne;
@@ -207,21 +265,26 @@ void TempoList::del(iTEvent e)
       ne->second->tempo = e->second->tempo;
       ne->second->tick  = e->second->tick;
       erase(e);
-      normalize();
+      if(do_normalize)
+        normalize();
       ++_tempoSN;
       }
 
 //---------------------------------------------------------
-//   change
+//   delOperation
 //---------------------------------------------------------
 
-void TempoList::change(unsigned tick, int newTempo)
-      {
-      iTEvent e = find(tick);
-      e->second->tempo = newTempo;
-      normalize();
-      ++_tempoSN;
-      }
+void TempoList::delOperation(unsigned tick, PendingOperationList& ops)
+{
+  iTEvent e = find(tick);
+  if (e == end()) {
+        printf("TempoList::delOperation tick:%d not found\n", tick);
+        return;
+        }
+  PendingOperationItem poi(this, e, PendingOperationItem::DeleteTempo);
+  // NOTE: Deletion is done in post-RT stage 3.
+  ops.add(poi);
+}
 
 //---------------------------------------------------------
 //   setTempo
@@ -263,19 +326,9 @@ void TempoList::addTempo(unsigned t, int tempo, bool do_normalize)
 //   delTempo
 //---------------------------------------------------------
 
-void TempoList::delTempo(unsigned tick)
+void TempoList::delTempo(unsigned tick, bool do_normalize)
       {
-      del(tick);
-      ++_tempoSN;
-      }
-
-//---------------------------------------------------------
-//   changeTempo
-//---------------------------------------------------------
-
-void TempoList::changeTempo(unsigned tick, int newTempo)
-      {
-      change(tick, newTempo);
+      del(tick, do_normalize);
       ++_tempoSN;
       }
 

@@ -168,7 +168,7 @@ Pos& Pos::operator+=(int a)
 
 Pos operator+(Pos a, int b)
       {
-      Pos c;
+      Pos c = a;
       c.setType(a.type());
       return c += b;
       }
@@ -242,6 +242,38 @@ unsigned Pos::frame() const
       }
 
 //---------------------------------------------------------
+//   posValue
+//---------------------------------------------------------
+
+unsigned Pos::posValue() const
+{
+  switch(type())
+  {
+    case FRAMES:
+      return _frame;
+    case TICKS:
+      return _tick;
+  }
+  return _tick;
+}
+      
+unsigned Pos::posValue(TType time_type) const
+{
+  switch(time_type)
+  {
+    case FRAMES:
+      if (_type == TICKS)
+            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
+      return _frame;
+    case TICKS:
+      if (_type == FRAMES)
+            _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
+      return _tick;
+  }
+  return _tick;
+}
+      
+//---------------------------------------------------------
 //   setTick
 //---------------------------------------------------------
 
@@ -264,6 +296,66 @@ void Pos::setFrame(unsigned pos)
       if (_type == TICKS)
             _tick = MusEGlobal::tempomap.frame2tick(pos, &sn);
       }
+
+//---------------------------------------------------------
+//   setPosValue
+//---------------------------------------------------------
+
+void Pos::setPosValue(unsigned val)
+{
+  sn = -1;
+  switch(type()) {
+    case FRAMES:
+          _frame = val;
+          break;
+    case TICKS:
+          _tick = val;
+          break;
+  }
+}
+      
+void Pos::setPosValue(unsigned val, TType time_type)
+{
+  sn = -1;
+  switch(time_type) {
+    case FRAMES:
+          _frame = val;
+          if (_type == TICKS)
+                _tick = MusEGlobal::tempomap.frame2tick(_frame, &sn);
+          break;
+    case TICKS:
+          _tick = val;
+          if (_type == FRAMES)
+                _frame = MusEGlobal::tempomap.tick2frame(_tick, &sn);
+          break;
+  }
+}
+
+//---------------------------------------------------------
+//   convert (static)
+//---------------------------------------------------------
+
+unsigned Pos::convert(unsigned val, TType from_type, TType to_type)
+{
+  switch(from_type) {
+    case FRAMES:
+      switch(to_type) 
+      {
+        case FRAMES: return val; 
+        case TICKS:  return MusEGlobal::tempomap.frame2tick(val);
+      }
+    break;
+          
+    case TICKS:
+      switch(to_type) 
+      {
+        case FRAMES: return MusEGlobal::tempomap.tick2frame(val);
+        case TICKS:  return val; 
+      }
+    break;
+  }
+  return val;
+}
 
 //---------------------------------------------------------
 //   write
@@ -473,6 +565,69 @@ void PosLen::setLenFrame(unsigned len)
       }
 
 //---------------------------------------------------------
+//   setLenValue
+//---------------------------------------------------------
+
+void PosLen::setLenValue(unsigned val)
+{
+  sn      = -1;
+  switch(type())
+  {
+    case FRAMES:
+        _lenFrame = val;
+      break;
+    case TICKS:
+        _lenTick = val;
+      break;
+  }
+}
+
+void PosLen::setLenValue(unsigned val, TType time_type)
+{
+  sn      = -1;
+  switch(time_type)
+  {
+    case FRAMES:
+        _lenFrame = val;
+        if (type() == TICKS)
+          _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
+      break;
+    case TICKS:
+        _lenTick = val;
+        if (type() == FRAMES)
+          _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn);
+      break;
+  }
+}
+
+//---------------------------------------------------------
+//   convertLen (static)
+//---------------------------------------------------------
+
+unsigned PosLen::convertLen(unsigned val, unsigned len, TType from_type, TType to_type)
+{
+  switch(from_type) 
+  {
+    case FRAMES:
+      switch(to_type) 
+      {
+        case FRAMES: return val; 
+        case TICKS:  return MusEGlobal::tempomap.deltaFrame2tick(val, val + len);
+      }
+    break;
+          
+    case TICKS:
+      switch(to_type) 
+      {
+        case FRAMES: return MusEGlobal::tempomap.deltaTick2frame(val, val + len);
+        case TICKS:  return val; 
+      }
+    break;
+  }
+  return len;
+}
+
+//---------------------------------------------------------
 //   lenTick
 //---------------------------------------------------------
 
@@ -492,6 +647,38 @@ unsigned PosLen::lenFrame() const
       if (type() == TICKS)
             _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn); 
       return _lenFrame;
+      }
+
+//---------------------------------------------------------
+//   lenValue
+//---------------------------------------------------------
+
+unsigned PosLen::lenValue() const
+      {
+        switch(type())
+        {
+          case FRAMES:
+              return _lenFrame;
+          case TICKS:
+              return _lenTick;
+        }
+        return _lenTick;
+      }
+
+unsigned PosLen::lenValue(TType time_type) const
+      {
+        switch(time_type)
+        {
+          case FRAMES:
+                if (type() == TICKS)
+                      _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn); 
+                return _lenFrame;
+          case TICKS:
+                if (type() == FRAMES)
+                      _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
+                return _lenTick;
+        }
+        return _lenTick;
       }
 
 //---------------------------------------------------------

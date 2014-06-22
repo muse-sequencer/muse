@@ -97,6 +97,8 @@ enum AudioTickSound {
 };
 
 extern const unsigned char gmOnMsg[];
+extern const unsigned char gm2OnMsg[];
+extern const unsigned char gmOffMsg[];
 
 extern const unsigned char gsOnMsg[];
 extern const unsigned char gsOnMsg2[];
@@ -107,6 +109,8 @@ extern const unsigned char mmcStopMsg[];
 extern const unsigned char mmcLocateMsg[];
 
 extern const unsigned int gmOnMsgLen;
+extern const unsigned int gm2OnMsgLen;
+extern const unsigned int gmOffMsgLen;
 extern const unsigned int gsOnMsgLen;
 extern const unsigned int gsOnMsg2Len;
 extern const unsigned int gsOnMsg3Len;
@@ -115,7 +119,9 @@ extern const unsigned int mmcDeferredPlayMsgLen;
 extern const unsigned int mmcStopMsgLen;
 extern const unsigned int mmcLocateMsgLen;
 
-QString nameSysex(unsigned int len, const unsigned char* buf);
+class MidiInstrument;
+QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
+QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
 QString midiMetaName(int);
 
 // Use these in all the synths and their guis.
@@ -126,7 +132,7 @@ QString midiMetaName(int);
 
 class MPEventList;
 class MidiTrack;
-extern void buildMidiEventList(EventList* mel, const MPEventList* el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);
+extern void buildMidiEventList(EventList* mel, const MPEventList& el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);
 
 } // namespace MusECore
 

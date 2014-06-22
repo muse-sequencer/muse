@@ -199,9 +199,9 @@ PyObject* getParts(PyObject*, PyObject* args)
                   Py_DECREF(pstrtick2);
 
                   // Pack midi events into list before wrapping it all up
-                  EventList* events = mpart->events();
+                  const EventList& events = mpart->events();
                   PyObject* pyevents = Py_BuildValue("[]");
-                  for (ciEvent e = events->begin(); e != events->end(); e++) {
+                  for (ciEvent e = events.begin(); e != events.end(); e++) {
                         PyObject* pyevent = PyDict_New(); // The event structure - a dictionary with keys 'type','tick','data'
 
                         const Event& event = e->second;
@@ -331,7 +331,7 @@ bool addPyPartEventsToMusePart(MidiPart* npart, PyObject* part)
                   event.setC(data[2]);
                   event.setTick(etick);
                   event.setLenTick(elen);
-                  npart->events()->add(event);
+                  npart->addEvent(event);
                   }
             else
                   printf("Unhandled event type from python: %s\n", type.c_str());
@@ -404,12 +404,12 @@ PyObject* modifyPart(PyObject*, PyObject* part)
       npart->setLenTick(opart->lenTick());
       npart->setSn(opart->sn());
        
-      for (iEvent e = opart->events()->begin(); e != opart->events()->end(); e++) {
+      for (ciEvent e = opart->events().begin(); e != opart->events().end(); e++) {
             Event& event = e->second;
             if (event.type() == Note || event.type() == Controller) 
                   continue;
 
-            npart->events()->add(event);
+            npart->addEvent(event);
             }
 
       addPyPartEventsToMusePart(npart, part);
@@ -1132,9 +1132,7 @@ bool Song::event(QEvent* _e)
                   break;
                   }
             case QPybridgeEvent::SONG_ADD_TRACK: {
-                  MusECore::Undo operations;
-                  MusEGlobal::song->addTrack(operations, (Track::TrackType)e->getP1());  // Add at end of list.
-                  MusEGlobal::song->applyOperationGroup(operations);
+                  MusEGlobal::song->addTrack((Track::TrackType)e->getP1());  // Add at end of list.
                   break;
                   }
             case QPybridgeEvent::SONG_CHANGE_TRACKNAME: {

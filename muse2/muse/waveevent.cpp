@@ -45,24 +45,53 @@ namespace MusECore {
 WaveEventBase::WaveEventBase(EventType t)
    : EventBase(t)
       {
-      deleted = false;
       _spos = 0;
       }
 
+WaveEventBase::WaveEventBase(const WaveEventBase& ev, bool duplicate_not_clone)
+   : EventBase(ev, duplicate_not_clone)
+{
+      _name = ev._name;
+      _spos = ev._spos;
+      
+      // NOTE: It is necessary to create copies always. Unlike midi events, no shared data is allowed for 
+      //        wave events because sndfile handles and audio stretchers etc. ABSOLUTELY need separate instances always. 
+      //       So duplicate_not_clone is not used here. 
+      if(!ev.f.isNull() && !ev.f.canonicalPath().isEmpty())
+        f = getWave(ev.f.canonicalPath(), !ev.f.isWritable(), ev.f.isOpen(), false); // Don't show error box.
+}
+
 //---------------------------------------------------------
-//   WaveEventBase::clone
+//   assign
 //---------------------------------------------------------
 
-EventBase* WaveEventBase::clone() 
-{ 
-  return new WaveEventBase(*this); 
+void WaveEventBase::assign(const EventBase& ev)  
+{
+  if(ev.type() != type())
+    return;
+  EventBase::assign(ev);
+
+  _name = ev.name();
+  _spos = ev.spos();
+
+  SndFileR sf = ev.sndFile();
+  setSndFile(sf);
+}
+
+bool WaveEventBase::isSimilarTo(const EventBase& other_) const
+{
+	const WaveEventBase* other = dynamic_cast<const WaveEventBase*>(&other_);
+	if (other==NULL) // dynamic cast hsa failed: "other_" is not of type WaveEventBase.
+		return false;
+	
+	return f.dirPath()==other->f.dirPath() && _spos==other->_spos && this->PosLen::operator==(*other);
 }
 
 //---------------------------------------------------------
 //   WaveEvent::mid
 //---------------------------------------------------------
 
-EventBase* WaveEventBase::mid(unsigned b, unsigned e)
+EventBase* WaveEventBase::mid(unsigned b, unsigned e) const
       {
       WaveEventBase* ev = new WaveEventBase(*this);
       unsigned fr = frame();

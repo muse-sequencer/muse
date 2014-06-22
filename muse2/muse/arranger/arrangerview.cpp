@@ -519,14 +519,14 @@ void ArrangerView::cmd(int cmd)
                   arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
                   break;
             case CMD_DELETE:
-                  if (!MusEGlobal::song->msgRemoveParts()) //automatically does undo if neccessary and returns true then
+                  if (!MusECore::delete_selected_parts())
                   {
                       QMessageBox::StandardButton btn = QMessageBox::warning(
                           this,tr("Remove track(s)"),tr("Are you sure you want to remove this track(s)?"),
                           QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok);
 
                       if (btn == QMessageBox::Cancel)
-                          break;                            //msgRemoveParts() returned false -> no parts to remove?
+                          break;
                       MusEGlobal::song->startUndo();
                       MusEGlobal::audio->msgRemoveTracks(); //TODO FINDME this could still be speeded up!
                       MusEGlobal::song->endUndo(SC_TRACK_REMOVED);

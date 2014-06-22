@@ -26,6 +26,7 @@
 
 #include <sys/types.h>
 
+#include "type_defs.h"
 #include "pos.h"
 #include "event.h"
 
@@ -38,6 +39,11 @@ class WavePart;
 
 class EventBase : public PosLen {
       EventType _type;
+      static EventID_t idGen;
+      // An always unique id.
+      EventID_t _uniqueId; 
+      // Can be either _uniqueId or the same _uniqueId as other clone 'group' events. De-cloning restores it to _uniqueId.
+      EventID_t _id;       
 
    protected:
       int refCount;
@@ -45,22 +51,31 @@ class EventBase : public PosLen {
 
    public:
       EventBase(EventType t);
-      EventBase(const EventBase& ev);
+      // Creates a non-shared clone with same id, or duplicate with unique id, and 0 ref count and invalid Pos sn. 
+      EventBase(const EventBase& ev, bool duplicate_not_clone = false); 
 
-      virtual ~EventBase() {}
+      virtual ~EventBase() { }
 
       int getRefCount() const    { return refCount; }
+
+      EventID_t id() const       { return _id; }
+      EventID_t newId()          { return idGen++; }
+      void shareId(const EventBase* ev) { _id = ev->_id; } // Makes id same as given event's. Effectively makes the events non-shared clones.
+      virtual void assign(const EventBase& ev);            // Assigns to this event, excluding the _id. 
+      
       EventType type() const     { return _type;  }
       void setType(EventType t)  { _type = t;  }
       bool selected() const      { return _selected; }
       void setSelected(bool val) { _selected = val; }
 
       void move(int offset);
+      
+      virtual bool isSimilarTo(const EventBase& other) const = 0;
 
       virtual void read(Xml&) = 0;
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const = 0;
       virtual void dump(int n = 0) const;
-      virtual EventBase* mid(unsigned, unsigned) = 0;
+      virtual EventBase* mid(unsigned, unsigned) const = 0;
       friend class Event;
 
       virtual bool isNote() const                   { return false; }
@@ -95,7 +110,15 @@ class EventBase : public PosLen {
       virtual void setSpos(int)                     { }
       virtual SndFileR sndFile() const              { return 0;      }
       virtual void setSndFile(SndFileR&)            { }
-      virtual EventBase* clone() = 0;
+      // Creates a non-shared clone, having the same 'group' _id.
+      // NOTE: Certain pointer members may still be SHARED. Such as the sysex MidiEventBase::edata.
+      //       Be aware when iterating or modifying clones.
+      virtual EventBase* clone() const = 0; 
+      
+      // Restores _id to _uniqueId, removing the event from any clone 'group'. 
+      virtual void deClone() { _id = _uniqueId; } 
+      // Creates a copy of the event base, excluding the 'group' _id. 
+      virtual EventBase* duplicate() const = 0; 
       
       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
                              float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }

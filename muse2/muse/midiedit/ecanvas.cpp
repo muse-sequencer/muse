@@ -34,6 +34,7 @@
 #include <QMimeData>
 #include <QByteArray>
 #include <QDrag>
+#include <QSet>
 
 #include "xml.h"
 #include "midieditor.h"
@@ -192,8 +193,7 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
                   if (etick > end_tick)
                         end_tick = etick;
 
-                  MusECore::EventList* el = part->events();
-                  for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
+                  for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
                         MusECore::Event e = i->second;
                         // Do not add events which are past the end of the part.
                         if(e.tick() > len)      
@@ -222,14 +222,12 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
       int n  = 0;       // count selections
       for (iCItem k = items.begin(); k != items.end(); ++k) {
             MusECore::Event ev = k->second->event();
-            bool selected = ev.selected();
-            if (selected) {
-                  k->second->setSelected(true);
+            
+            if (ev.selected()) {
                   ++n;
                   if (!nevent) {
                         nevent   =  k->second;
-                        MusECore::Event mi = nevent->event();
-                        curVelo  = mi.velo();
+                        curVelo = ev.velo();
                         }
                   }
             }
@@ -488,6 +486,24 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir, bo
       updateSelection();
       redraw();
       }
+
+//---------------------------------------------------------
+//   deselectAll
+//---------------------------------------------------------
+
+void EventCanvas::deselectAll()
+{
+  QSet<MusECore::Part*> already_done;
+  MusECore::Part* p;
+  for(iCItem i = items.begin(); i != items.end(); ++i)
+  {
+    p = i->second->part();
+    if(already_done.contains(p) || !p)
+      continue;
+    MusEGlobal::song->selectAllEvents(p, false);
+    already_done.insert(p);
+  }
+}
 
 //---------------------------------------------------------
 //   startPlayEvent

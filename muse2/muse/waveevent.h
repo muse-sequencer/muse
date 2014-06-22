@@ -42,17 +42,25 @@ class WaveEventBase : public EventBase {
       QString _name;
       SndFileR f;
       int _spos;            // start sample position in WaveFile
-      bool deleted;
 
-      virtual EventBase* clone();
+      // Creates a non-shared clone (copies event base), including the same 'group' id.
+      virtual EventBase* clone() const { return new WaveEventBase(*this); }
+      // Creates a copy of the event base, excluding the 'group' _id. 
+      virtual EventBase* duplicate() const { return new WaveEventBase(*this, true); } 
 
    public:
       WaveEventBase(EventType t);
+      // Creates a non-shared clone with same id, or duplicate with unique id, and 0 ref count and invalid Pos sn. 
+      WaveEventBase(const WaveEventBase& ev, bool duplicate_not_clone = false);
       virtual ~WaveEventBase() {}
+      
+      virtual void assign(const EventBase& ev); // Assigns to this event, excluding the _id. 
+      
+      virtual bool isSimilarTo(const EventBase& other) const;
 
       virtual void read(Xml&);
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const;
-      virtual EventBase* mid(unsigned, unsigned);
+      virtual EventBase* mid(unsigned, unsigned) const;
       
       virtual void dump(int n = 0) const;
 

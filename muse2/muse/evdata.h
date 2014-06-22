@@ -83,9 +83,12 @@ class EvData {
             }
       void setData(const unsigned char* p, int l) {
             if(data)
-              delete[] data;                  // p4.0.27
-            data = new unsigned char[l];
-            memcpy(data, p, l);
+              delete[] data;
+            data = 0;  
+            if(l > 0) {
+              data = new unsigned char[l];
+              memcpy(data, p, l);
+            }
             dataLen = l;
             }
       };

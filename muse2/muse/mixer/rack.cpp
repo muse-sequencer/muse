@@ -48,6 +48,8 @@
 
 namespace MusEGui {
 
+QString MUSE_MIME_TYPE = "text/x-muse-plugin";
+
 //---------------------------------------------------------
 //   class EffectRackDelegate
 //---------------------------------------------------------
@@ -517,14 +519,13 @@ void EffectRack::startDrag(int idx)
       
       QString xmlconf;
       xml.dump(xmlconf);
-      printf("[%s]\n", xmlconf.toLatin1().constData());
-
-      
-      QByteArray data(xmlconf.toLatin1().constData());
-      //printf("sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
       QMimeData* md = new QMimeData();
-      
-      md->setData("text/x-muse-plugin", data);
+      QByteArray data(xmlconf.toLatin1().constData());
+
+      if (MusEGlobal::debugMsg)
+          printf("Sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
+
+      md->setData(MUSE_MIME_TYPE, data);
       
       QDrag* drag = new QDrag(this);
       drag->setMimeData(md);
@@ -541,13 +542,12 @@ QStringList EffectRack::mimeTypes() const
       {
       QStringList mTypes;
       mTypes << "text/uri-list";
-      mTypes << "text/x-muse-plugin";
+      mTypes << MUSE_MIME_TYPE;
       return mTypes;
       }
 
 void EffectRack::dropEvent(QDropEvent *event)
-      {
-      QString text;
+{
       QListWidgetItem *i = itemAt( event->pos() );
       if (!i)
             return;
@@ -585,22 +585,24 @@ void EffectRack::dropEvent(QDropEvent *event)
                       }
                 }
             
-            if(event->mimeData()->hasFormat("text/x-muse-plugin"))
+            if(event->mimeData()->hasFormat(MUSE_MIME_TYPE))
             {
-              MusECore::Xml xml(event->mimeData()->data("text/x-muse-plugin").data());
+              QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE).constData();
+              MusECore::Xml xml(mimeData.constData());
+              if (MusEGlobal::debugMsg)
+                  printf("received %d [%s]\n", mimeData.size(), mimeData.constData());
+
               initPlugin(xml, idx);
             }
-            else
-            if (event->mimeData()->hasUrls()) 
+            else if (event->mimeData()->hasUrls())
             {
               // Multiple urls not supported here. Grab the first one.
-              text = event->mimeData()->urls()[0].path();
+              QString text = event->mimeData()->urls()[0].path();
                
               if (text.endsWith(".pre", Qt::CaseInsensitive) || 
                   text.endsWith(".pre.gz", Qt::CaseInsensitive) || 
                   text.endsWith(".pre.bz2", Qt::CaseInsensitive))
               {
-                  //bool popenFlag = false;
                   bool popenFlag;
                   FILE* fp = MusEGui::fileOpen(this, text, ".pre", "r", popenFlag, false, false);
                   if (fp) 
@@ -608,7 +610,6 @@ void EffectRack::dropEvent(QDropEvent *event)
                       MusECore::Xml xml(fp);
                       initPlugin(xml, idx);
                       
-                      // Added by T356.
                       if (popenFlag)
                             pclose(fp);
                       else
@@ -617,7 +618,7 @@ void EffectRack::dropEvent(QDropEvent *event)
               }
             }
       }
-      }
+}
 
 void EffectRack::dragEnterEvent(QDragEnterEvent *event)
       {

@@ -297,81 +297,6 @@ void MPConfig::mdevViewItemRenamed(QTableWidgetItem* item)
     return;
   switch(col)
   {
-    // Enabled: Use editor (Not good - only responds if text changed. We need to respond always).
-    // Disabled: Use pop-up menu. DELETETHIS?
-    #if 0
-    case DEVCOL_DEF_IN_CHANS:
-    {
-      QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
-      int no = atoi(id.toLatin1().constData()) - 1;
-      if(no < 0 || no >= MIDI_PORTS)
-        return;
-      int allch = (1 << MIDI_CHANNELS) - 1;  
-      int ch = allch & string2bitmap(s);  
-      MusEGlobal::midiPorts[no].setDefaultInChannels(ch);
-      
-      if(!MusEGlobal::song->midis()->empty() && MusEGlobal::midiPorts[no].device())  // Only if there are tracks, and device is valid. 
-      {
-        int ret = QMessageBox::question(this, tr("Default input connections"),
-                                      tr("Setting will apply to new midi tracks.\n"
-                                          "Do you want to apply to all existing midi tracks now?"),
-                                      QMessageBox::Yes | QMessageBox::No,
-                                      QMessageBox::No);
-        if(ret == QMessageBox::Yes) 
-        {
-          MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
-          for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-          {
-            // Remove all routes from this port to the tracks first.
-            MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
-            if(ch)
-              MusEGlobal::audio->msgAddRoute(MusECore::Route(no, ch), MusECore::Route(*it, ch));
-          }  
-        }  
-      }
-      MusEGlobal::song->update();
-    }
-    break;    
-    #endif
-    
-    // Enabled: Use editor (Not good - only responds if text changed. We need to respond always).
-    // Disabled: Use pop-up menu.
-    // Only turn on if and when multiple output routes are supported. DELETETHIS?
-    #if 0
-    case DEVCOL_DEF_OUT_CHANS:
-    {
-      QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
-      int no = atoi(id.toLatin1().constData()) - 1;
-      if(no < 0 || no >= MIDI_PORTS)
-        return;
-      int allch = (1 << MIDI_CHANNELS) - 1;  
-      int ch = allch & string2bitmap(s);  
-      MusEGlobal::midiPorts[no].setDefaultOutChannels(ch);
-      
-      if(!MusEGlobal::song->midis()->empty() && MusEGlobal::midiPorts[no].device())  // Only if there are tracks, and device is valid. 
-      {
-        int ret = QMessageBox::question(this, tr("Default output connections"),
-                                      tr("Setting will apply to new midi tracks.\n"
-                                          "Do you want to apply to all existing midi tracks now?"),
-                                      QMessageBox::Yes | QMessageBox::No,
-                                      QMessageBox::No);
-        if(ret == QMessageBox::Yes) 
-        {
-          MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
-          for(MusECore::iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
-          {
-            // Remove all routes from the tracks to this port first.
-            MusEGlobal::audio->msgRemoveRoute(MusECore::Route(*it, allch), MusECore::Route(no, allch));
-            if(ch)
-              MusEGlobal::audio->msgAddRoute(MusECore::Route(*it, ch), MusECore::Route(no, ch));
-          }  
-        }  
-      }
-      MusEGlobal::song->update();
-    }
-    break;    
-    # endif
-    
     case DEVCOL_NAME:
     {
       QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
@@ -652,9 +577,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act->setEnabled(!MusEGlobal::song->midis()->empty());  // && MusEGlobal::midiPorts[no].device()); DELETETHIS
                     
                     connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefInputRoutes(QAction*)));
-                    // DELETETHIS 2
-                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingPopupMenuAboutToHide()));
-                    //defpup->popup(QCursor::pos());
                     defpup->exec(QCursor::pos());
                     delete defpup;
                     defpup = 0;
@@ -763,16 +685,12 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
                         {
                           int idx = i->second;
-                          //if(idx > sz)           // Sanity check DELETETHIS 2
-                          //  continue;
                           QString s(i->first.c_str());
                           MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::ALSA_MIDI);
                           if(md)
                           {
-                            //if(!dynamic_cast<MidiAlsaDevice*>(md)) DELETETHIS
                             if(md->deviceType() != MusECore::MidiDevice::ALSA_MIDI)  
                               continue;
-                              
                             act = pup->addAction(md->name());
                             act->setData(idx);
                             act->setCheckable(true);
@@ -970,20 +888,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   if (dev && dev->isSynti())
                         return;
                   if (instrPopup == 0)
-                        instrPopup = new QMenu(this);
-                  instrPopup->clear();
-                  for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
-                     != MusECore::midiInstruments.end(); ++i) 
-                     {
-                        // By T356.
-                        // Do not list synths. Although it is possible to assign a synth
-                        //  as an instrument to a non-synth device, we should not allow this.
-                        // (One reason is that the 'show gui' column is then enabled, which
-                        //  makes no sense for a non-synth device).
-                        MusECore::SynthI* si = dynamic_cast<MusECore::SynthI*>(*i);
-                        if(!si)
-                          instrPopup->addAction((*i)->iname());
-                     }
+                        instrPopup = new PopupMenu(this);
+                  MusECore::MidiInstrument::populateInstrPopup(instrPopup, port->instrument(), false);   
                   
                   QAction* act = instrPopup->exec(ppt);
                   if(!act)

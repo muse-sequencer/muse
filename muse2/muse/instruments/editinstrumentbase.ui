@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>772</width>
-    <height>421</height>
+    <height>431</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -289,22 +289,6 @@
                 <item>
                  <layout class="QHBoxLayout">
                   <item>
-                   <widget class="QCheckBox" name="checkBoxDrum">
-                    <property name="toolTip">
-                     <string>Drum patch</string>
-                    </property>
-                    <property name="whatsThis">
-                     <string>If set, the patch is available only for drum channels.</string>
-                    </property>
-                    <property name="text">
-                     <string>Drum</string>
-                    </property>
-                    <property name="shortcut">
-                     <string/>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
                    <widget class="QCheckBox" name="checkBoxGM">
                     <property name="toolTip">
                      <string>GM patch</string>
@@ -348,6 +332,44 @@
                   </item>
                   <item>
                    <spacer name="horizontalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_9">
+                  <item>
+                   <widget class="QLabel" name="label_11">
+                    <property name="text">
+                     <string>Show in tracks:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="showPatchInMidiButton">
+                    <property name="text">
+                     <string>Midi</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="showPatchInDrumsButton">
+                    <property name="text">
+                     <string>Drum</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_5">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
                     </property>
@@ -1799,6 +1821,67 @@ Caution! Watch out for controllers such as
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="initTab">
+        <attribute name="title">
+         <string>&amp;Initialization</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Instrument initialization sequence:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTreeWidget" name="initEventList">
+           <column>
+            <property name="text">
+             <string notr="true">1</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QToolButton" name="initAddButton">
+             <property name="text">
+              <string>&amp;Add...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="initChangeButton">
+             <property name="text">
+              <string>&amp;Change...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="initDeleteButton">
+             <property name="text">
+              <string>&amp;Delete</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </widget>
     </item>
@@ -1825,7 +1908,7 @@ Caution! Watch out for controllers such as
      <x>0</x>
      <y>0</y>
      <width>772</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="defaultUp">
@@ -1959,7 +2042,6 @@ Caution! Watch out for controllers such as
   <tabstop>spinBoxHBank</tabstop>
   <tabstop>spinBoxLBank</tabstop>
   <tabstop>spinBoxProgram</tabstop>
-  <tabstop>checkBoxDrum</tabstop>
   <tabstop>checkBoxGM</tabstop>
   <tabstop>checkBoxGS</tabstop>
   <tabstop>checkBoxXG</tabstop>

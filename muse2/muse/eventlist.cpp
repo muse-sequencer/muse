@@ -62,7 +62,7 @@ void EventList::read(Xml& xml, const char* name, bool midi)
 //   add
 //---------------------------------------------------------
 
-iEvent EventList::add(Event& event)
+iEvent EventList::add(Event event)
       {
       // Changed by Tim. An event list containing wave events should be sorted by
       //  frames. WaveTrack::fetchData() relies on the sorting order, and
@@ -129,12 +129,130 @@ void EventList::move(Event& event, unsigned tick)
 //---------------------------------------------------------
 
 iEvent EventList::find(const Event& event)
+{
+      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      for (iEvent i = range.first; i != range.second; ++i) {
+            if (i->second == event)
+                  return i;
+            }
+      return end();
+}
+
+ciEvent EventList::find(const Event& event) const
       {
       EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
 
       
-      for (iEvent i = range.first; i != range.second; ++i) {
+      for (ciEvent i = range.first; i != range.second; ++i) {
             if (i->second == event)
+                  return i;
+            }
+      return end();
+      }
+
+iEvent EventList::findSimilar(const Event& event)
+{
+      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      for (iEvent i = range.first; i != range.second; ++i) {
+            if (i->second.isSimilarTo(event))
+                  return i;
+            }
+      return end();
+}
+
+ciEvent EventList::findSimilar(const Event& event) const
+      {
+      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      
+      for (ciEvent i = range.first; i != range.second; ++i) {
+            if (i->second.isSimilarTo(event))
+                  return i;
+            }
+      return end();
+      }
+
+iEvent EventList::findId(const Event& event)
+{
+      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      for (iEvent i = range.first; i != range.second; ++i) {
+            if (i->second.id() == event.id())
+                  return i;
+            }
+      return end();
+}
+
+ciEvent EventList::findId(const Event& event) const
+      {
+      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      
+      for (ciEvent i = range.first; i != range.second; ++i) {
+            if (i->second.id() == event.id())
+                  return i;
+            }
+      return end();
+      }
+
+iEvent EventList::findId(unsigned t, EventID_t id)
+{
+      std::pair<iEvent,iEvent> range = equal_range(t);
+      for (iEvent i = range.first; i != range.second; ++i) {
+            if (i->second.id() == id)
+                  return i;
+            }
+      return end();
+}
+
+ciEvent EventList::findId(unsigned t, EventID_t id) const
+      {
+      EventRange range = equal_range(t);
+      for (ciEvent i = range.first; i != range.second; ++i) {
+            if (i->second.id() == id)
+                  return i;
+            }
+      return end();
+      }
+
+iEvent EventList::findId(EventID_t id)
+{
+      for (iEvent i = begin(); i != end(); ++i) {
+            if (i->second.id() == id)
+                  return i;
+            }
+      return end();
+}
+
+ciEvent EventList::findId(EventID_t id) const
+      {
+      for (ciEvent i = begin(); i != end(); ++i) {
+            if (i->second.id() == id)
+                  return i;
+            }
+      return end();
+      }
+
+iEvent EventList::findWithId(const Event& event)
+{
+      std::pair<iEvent,iEvent> range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      for (iEvent i = range.first; i != range.second; ++i) {
+            if (i->second == event || i->second.id() == event.id())
+                  return i;
+            }
+      return end();
+}
+
+ciEvent EventList::findWithId(const Event& event) const
+      {
+      EventRange range = equal_range(event.type() == Wave ? event.frame() : event.tick());
+
+      
+      for (ciEvent i = range.first; i != range.second; ++i) {
+            if (i->second == event || i->second.id() == event.id())
                   return i;
             }
       return end();

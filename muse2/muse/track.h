@@ -32,6 +32,7 @@
 
 #include "wave.h" // for SndFileR
 #include "part.h"
+#include "mpevent.h"
 #include "key.h"
 #include "node.h"
 #include "route.h"
@@ -41,8 +42,6 @@
 #include "controlfifo.h"
 
 namespace MusECore {
-class MPEventList;
-class MidiPlayEvent;
 class Pipeline;
 class PluginI;
 class SynthI;
@@ -50,6 +49,11 @@ class Xml;
 class DrumMap;
 class ControlEvent;
 struct Port;
+class PendingOperationList;
+
+
+typedef std::vector<double> AuxSendValueList;
+typedef std::vector<double>::iterator iAuxSendValue;
 
 //---------------------------------------------------------
 //   Track
@@ -159,7 +163,6 @@ class Track {
 
       virtual Part* newPart(Part*p=0, bool clone = false) = 0;
       void dump() const;
-      virtual void splitPart(Part*, int, Part*&, Part*&);
 
       virtual void setMute(bool val);
       virtual void setOff(bool val);
@@ -213,10 +216,7 @@ class MidiTrack : public Track {
       int _outChannel;
       bool _recEcho;              // For midi (and audio). Whether to echo incoming record events to output device.
 
-      EventList* _events;     // tmp Events during midi import
-      MPEventList* _mpevents; // tmp Events druring recording
-      MPEventList* _stuckLiveNotes; // Live (rec): Currently sounding note-ons that we don't know the note-off time yet. Event times = 0.
-      MPEventList* _stuckNotes; // Playback: Currently sounding note-ons contributed by track - not sent directly to device
+   private:
       static bool _isVisible;
       clefTypes clefType;
 
@@ -243,6 +243,11 @@ class MidiTrack : public Track {
       //void flushStuckNotes();  
 
    public:
+      EventList events;           // tmp Events during midi import
+      MPEventList mpevents;       // tmp Events druring recording
+      MPEventList stuckLiveNotes; // Live (rec): Currently sounding note-ons that we don't know the note-off time yet. Event times = 0.
+      MPEventList stuckNotes;     // Playback: Currently sounding note-ons contributed by track - not sent directly to device
+      
       MidiTrack();
       MidiTrack(const MidiTrack&, int flags);
       virtual ~MidiTrack();
@@ -261,11 +266,6 @@ class MidiTrack : public Track {
 
       virtual bool setRecordFlag1(bool f) { _recordFlag = f; return true;}
       virtual void setRecordFlag2(bool) {}
-
-      EventList* events() const          { return _events; }
-      MPEventList* mpevents() const      { return _mpevents; }
-      MPEventList* stuckNotes() const    { return _stuckNotes; }
-      MPEventList* stuckLiveNotes() const { return _stuckLiveNotes; }
 
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
@@ -361,7 +361,7 @@ class AudioTrack : public Track {
       float _curVol2;
       
       bool _prefader;               // prefader metering
-      std::vector<double> _auxSend;
+      AuxSendValueList _auxSend;
       void readAuxSend(Xml& xml);
       int recFileNumber;
       
@@ -465,6 +465,7 @@ class AudioTrack : public Track {
       double auxSend(int idx) const;
       void setAuxSend(int idx, double v);
       void addAuxSend(int n);
+      void addAuxSendOperation(int n, PendingOperationList& ops);
 
       void setPrefader(bool val);
       Pipeline* efxPipe()                { return _efxPipe;  }
@@ -794,7 +795,8 @@ typedef tracklist<SynthI*> SynthIList;
 
 extern void addPortCtrlEvents(MidiTrack* t);
 extern void removePortCtrlEvents(MidiTrack* t);
-
+extern void addPortCtrlEvents(Track* track, PendingOperationList& ops);
+extern void removePortCtrlEvents(Track* track, PendingOperationList& ops);
 } // namespace MusECore
 
 #endif

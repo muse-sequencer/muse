@@ -532,7 +532,7 @@ int get_paste_len()
                         if (tag == "part")
                               {
                               Part* p = 0;
-                              p = readXmlPart(xml, NULL, false, false);
+                              p = Part::readFromXml(xml, NULL, false, false);
 
                               if (p)
                                     {
@@ -542,7 +542,7 @@ int get_paste_len()
                                     if (p->endTick() > end_tick)
                                           end_tick=p->endTick();
                                     
-                                    unchainClone(p);
+                                    p->unchainClone(); // just for safety; shouldn't be chained anyway.
                                     delete p;
                                     }
                               }

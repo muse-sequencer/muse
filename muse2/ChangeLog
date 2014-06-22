@@ -1,3 +1,73 @@
+16.06.2014:
+         - Transformation to non-shared event lists (started by Florian) is virtually complete. (Tim) 
+           Events have an ID now, shared among clone parts. 
+           New: Fast pending operations lists: They replace RT "execute/revert ops stage-2". 
+         - A few more commands support Undo/Redo now, like setting global tempo. 
+         - Handful of (un)related fixes along the way.       
+29.04.2014:
+         - Added more hints to DidYouKnow dialog (rj)
+         - Improved README.txt for share/scripts (rj)
+         - Improved scripting interface, picks time signature from the start of the
+           part, with -D argument extra debug info is written and the data file
+           used for data transfer isn't removed. (rj)
+         - Added new midi script TempoDelay (rj)
+         - Improved swedish translation (rj)
+         - Changed behaviour of selecting midi device for new midi tracks. Now there
+           is no default set, instead the most recent midi device is selected. Though
+           if a default midi channel is selected this will take precedence (rj)
+         -
+28.04.2014:
+         - Fixed issue #350 (rj)
+11.01.2014:
+         - Fix song not 'dirty' on most operations (close was not prompting to save). (Tim)
+           Added 'emit sigDirty()' at end of Song::executeOperationGroup3() and ::revertOperationGroup3()
+           if operations list not empty.
+10.01.2014:
+         - Instrument Editor now basically complete: Added Initialization Sequence editor. (Tim)
+           Initialization sequence sysex's can be entered manually or chosen from pre-defined list
+           using sysex event editor.
+         - Sysex event editor now allows selection from pre-defined Instrument Sysex list.
+         - Revised and edited Roland SD-50.idf by Patrick (split into GM2/nonGM2). 
+         - Fixed GM2.idf file prog numbers wrong.
+         - MusE now imports GM2 midi files. (Properly selects GM2 instrument.)
+         - Fixed several build-system ordering problems. Also some code cleanups, tweaks.
+06.01.2014:
+         - Midi instrument can now be changed from midi track info panel. (Tim) 
+         - Some minor code tweaks, code cleanup in mtrackinfo.cpp, confmport.cpp. 
+06.01.2014:
+         - Added (and fixed) Roland SD-50 .idf file by Patrick. Needs more work: split in two .idfs (Tim)
+         - Added GM2 .idf file created by me Tim.
+         - Fixed a couple of improper "&apos" xml substitutions in xml.cpp
+17.10.2013:
+         - Fixed drag&drop plugins sometimes not working when built with optimize (rj)
+10.10.2013:
+         - Added a visual metronome to Bigtime (rj)
+09.10.2013:
+         - Changed track dragging to move instead of swap (rj)
+         - Removed projects from 'recent' menu if they no longer exist (rj)
+08.10.2013:
+         - Added line drawing of tempo in graphical master track editor (rj)
+         - Fixed bug (issue #342 Moving Aux sends crashes muse) (rj)
+03.10.2013:
+         - Added keyboard shortcuts in midi editors for functions, Step record, Midi input,
+           Play events, Inc/Dec velocity (rj)
+28.09.2013:
+         - Changed default shortcut in PianoRoll for moving to current position from C to I
+           the former was conflicting with the default global shortcut for metronome (rj)
+27.09.2013:
+         - Changed beat lines to a darker shade (rj)
+02.09.2013:
+         - Display git hash and date in the about box instead of svn revision (Orcan)
+         - Bumped the year string to 2013 in the about box
+01.09.2013:
+         - Mods/fixes to Midi Input Transformator plugin: (Tim)
+           Fixed some bugs when reading procVal2Op from song.
+           'Program' is now allowed 'Event type' selection.
+           'Toggle' is a new Processing Value#2 Operation. It toggles between Value#1 and Value#2.
+           This means for example a standard midi foot controller (which only sends program changes)
+            can now be used to send TOGGLED midi CC values, say back to an effects unit
+            thus the foot controller becomes like regular 'chained' stomp boxes, operating
+            upon individual effects.
 14.05.2013:
          - When midi in is enabled in drum editor the selected track is moved along with
            the triggered key (rj)

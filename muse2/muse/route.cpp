@@ -130,6 +130,16 @@ Route::Route()
       type     = TRACK_ROUTE;
       }
 
+Route::Route(RouteType type_, int midi_port_num_, void* void_pointer_, int channel_, int channels_, int remote_channel_)
+      {
+      type          = type_;
+      midiPort      = midi_port_num_;
+      voidPointer   = void_pointer_;
+      channel       = channel_;
+      channels      = channels_;
+      remoteChannel = remote_channel_;
+      }
+      
 //---------------------------------------------------------
 //   addRoute
 //---------------------------------------------------------
@@ -1036,7 +1046,7 @@ void Route::read(Xml& xml)
       QString s;
       int dtype = MidiDevice::ALSA_MIDI;
       int port = -1;                             
-      unsigned char rtype = Route::TRACK_ROUTE;  
+      RouteType rtype = Route::TRACK_ROUTE;
       
       for (;;) 
       {
@@ -1052,7 +1062,7 @@ void Route::read(Xml& xml)
                         printf("Route::read(): attribute:%s\n", tag.toLatin1().constData());
                         #endif
                         if(tag == "type")
-                          rtype = xml.s2().toInt();
+                          rtype = RouteType(xml.s2().toInt());
                         else
                         if(tag == "devtype")
                         {
@@ -1295,6 +1305,19 @@ void RouteList::removeRoute(const Route& r)
                   }
             }
       printf("internal error: cannot remove Route\n");
+      }
+
+//---------------------------------------------------------
+//   find
+//---------------------------------------------------------
+
+iRoute RouteList::find(const Route& r)
+      {
+      for(iRoute i = begin(); i != end(); ++i) {
+            if(r == *i) 
+              return i;
+            }
+      return end();
       }
 
 //---------------------------------------------------------

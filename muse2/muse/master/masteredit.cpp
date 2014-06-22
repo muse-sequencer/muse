@@ -116,7 +116,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       settingsMenu->addAction(fullscreenAction);
 
       // Toolbars ---------------------------------------------------------
-      MusEGui::EditToolBar* tools2 = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool);
+      MusEGui::EditToolBar* tools2 = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool| MusEGui::DrawTool);
       addToolBar(tools2);
 
       QToolBar* enableMaster = addToolBar(tr("Enable master"));

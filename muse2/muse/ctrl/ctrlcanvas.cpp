@@ -167,6 +167,14 @@ bool CEvent::contains(int x1, int x2) const
       }
 
 //---------------------------------------------------------
+//   setSelected
+//---------------------------------------------------------
+void CEvent::setSelected(bool v) 
+{ 
+  MusEGlobal::song->selectEvent(_event, _part, v);
+}
+
+//---------------------------------------------------------
 //   clearDelete
 //---------------------------------------------------------
 
@@ -608,14 +616,13 @@ void CtrlCanvas::updateItems()
               if (filterTrack && part->track() != curTrack)
                 continue;
               
-              MusECore::EventList* el = part->events();
               MusECore::MidiCtrlValList* mcvl;
               partControllers(part, _cnum, 0, 0, 0, &mcvl);
               unsigned len = part->lenTick();
 
-              for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) 
+              for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) 
               {
-                    MusECore::Event e = i->second;
+                    const MusECore::Event& e = i->second;
                     // Do not add events which are past the end of the part.
                     if(e.tick() >= len)
                       break;
@@ -814,7 +821,10 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
         
       QPoint pos  = event->pos();
       QPoint dist = pos - start;
-      bool moving = dist.y() >= 3 || dist.y() <= 3 || dist.x() >= 3 || dist.x() <= 3;
+
+      bool moving =     dist.y() >= 3 || dist.y() <= -3
+                    ||  dist.x() >= 3 || dist.x() <= -3;
+
       switch (drag) {
             case DRAG_LASSO_START:
                   if (!moving)
@@ -964,13 +974,10 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             if (event.empty())
                   continue;
             int x = event.tick() + curPartTick;
-            
             if (x < xx1)
                   continue;
-
             if (x >= xx2)
                   break;
-            
             // Do port controller values and clone parts. 
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, event, curPart, true, true));
             }
@@ -1004,7 +1011,6 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             }
             else  
               event.setB(nval);
-            
             // Do port controller values and clone parts. 
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, event, curPart, true, true));
             }
@@ -1052,7 +1058,6 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                         if ((event.velo() != nval)) {
                               MusECore::Event newEvent = event.clone();
                               newEvent.setVelo(nval);
-                              ev->setEvent(newEvent);
                               // Do not do port controller values and clone parts. 
                               operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, false, false));
                               }
@@ -1062,7 +1067,6 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                               if ((event.dataB() != nval)) {
                                     MusECore::Event newEvent = event.clone();
                                     newEvent.setB(nval);
-                                    ev->setEvent(newEvent);
                                     // Do port controller values and clone parts. 
                                     operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, curPart, true, true));
                                     }
@@ -1100,7 +1104,6 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
                         ev->setVal(newval);
                         MusECore::Event newEvent = event.clone();
                         newEvent.setVelo(newval);
-                        ev->setEvent(newEvent);
                         // Indicate no undo, and do not do port controller values and clone parts. 
                         MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, false, false);
                         changed = true;
@@ -1121,7 +1124,6 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
                         if ((event.dataB() != nval)) {
                               MusECore::Event newEvent = event.clone();
                               newEvent.setB(nval);
-                              ev->setEvent(newEvent);
                               // Indicate no undo, and do port controller values and clone parts. 
                               MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
                               changed = true;
@@ -1226,9 +1228,6 @@ void CtrlCanvas::newVal(int x1, int y)
               {
                 MusECore::Event newEvent = event.clone();
                 newEvent.setB(nval);
-                
-                ev->setEvent(newEvent);
-                
                 // Indicate no undo, and do port controller values and clone parts. 
                 MusEGlobal::audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
                 
@@ -1332,7 +1331,7 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       // But with the raster 'off' there were some problems not catching some items, and jagged drawing.
       // Possibly there are slight differences between rasterVal1() and rasterVal2() - not reciprocals of each other? 
       // Also the loops below were getting complicated to ignore that first position.
-      // So I draw from the first x. (TODO The idea may work now since I wrote this - more work was done.) p4.0.18 Tim.
+      // So I draw from the first x. (TODO The idea may work now since I wrote this - more work was done.) Tim.
       
       int xx1 = editor->rasterVal1(x1);
       

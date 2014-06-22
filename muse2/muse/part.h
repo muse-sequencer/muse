@@ -25,7 +25,7 @@
 #ifndef __PART_H__
 #define __PART_H__
 
-#include <map>
+#include <map> 
 
 // Added by T356.
 #include <uuid/uuid.h>
@@ -42,6 +42,7 @@ class Track;
 class Xml;
 class Part;
 class WaveTrack;
+class PendingOperationList;
 
 struct ClonePart {
       const Part* cp;
@@ -60,16 +61,13 @@ typedef CloneList::iterator iClone;
 class Part : public PosLen {
    public:
       enum HiddenEventsType { NoEventsHidden = 0, LeftEventsHidden, RightEventsHidden };
-   
-   // @@@@@@@@@@@ IMPORTANT @@@@@@@@@@@@
-   // @@ when adding member variables @@
-   // @@ here, don't forget to update @@
-   // @@ the copy-constructor!        @@
-   // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+      
+      static Part* readFromXml(Xml&, Track*, bool doClone = false, bool toTrack = true);
    
    private:
       static int snGen;
       int _sn;
+      int _clonemaster_sn; // the serial number of some clone in the chain. every member of the chain has the same value here.
 
       QString _name;
       bool _selected;
@@ -78,21 +76,23 @@ class Part : public PosLen {
                    
    protected:
       Track* _track;
-      EventList* _events;
+      EventList _events;
       Part* _prevClone;
       Part* _nextClone;
+      Part* _backupClone; // when a part gets removed, it's still there; and for undo-ing the remove, it must know about where it was clone-chained to.
       int _hiddenEvents;   // Combination of HiddenEventsType.
-                   
+
    public:
       Part(Track*);
-      Part(Track*, EventList*);
-      Part(const Part& p);
       virtual ~Part();
-      int sn()                         { return _sn; }
-      void setSn(int n)                { _sn = n; }
+      virtual Part* duplicate() const;
+      virtual Part* duplicateEmpty() const = 0;
+      virtual Part* createNewClone() const; // this does NOT chain clones yet. Chain is updated only when the part is really added!
+      virtual void splitPart(int tickpos, Part*& p1, Part*& p2) const;
+      
+      int clonemaster_sn() const       { return _clonemaster_sn; }
+      int sn() const                   { return _sn; }
       int newSn()                      { return snGen++; }
-
-      virtual Part* clone() const = 0;
 
       const QString& name() const      { return _name; }
       void setName(const QString& s)   { _name = s; }
@@ -102,23 +102,26 @@ class Part : public PosLen {
       void setMute(bool b)             { _mute = b; }
       Track* track() const             { return _track; }
       void setTrack(Track*t)           { _track = t; }
-      EventList* events() const        { return _events; }
-      const EventList* cevents() const { return _events; }
+      const EventList& events() const  { return _events; }
+      EventList& nonconst_events()     { return _events; }
       int colorIndex() const           { return _colorIndex; }
       void setColorIndex(int idx)      { _colorIndex = idx; }
       
-      Part* prevClone()                { return _prevClone; }
-      Part* nextClone()                { return _nextClone; }
-      void setPrevClone(Part* p)       { _prevClone = p; }
-      void setNextClone(Part* p)       { _nextClone = p; }
+      bool isCloneOf(const Part*) const;
+      bool hasClones() const           { return _prevClone!=this || _nextClone!=this; }
+      int nClones() const;
+      Part* prevClone() const          { return _prevClone; } // FINDMICHJETZT make it const Part*!
+      Part* nextClone() const          { return _nextClone; }
+      Part* backupClone() const        { return _backupClone; }
+      
+      void unchainClone();
+      void chainClone(Part* p); // *this is made a sibling of p! p is not touched (except for its clone-chain), whereas this->events will get altered
+      void rechainClone(); // re-chains the part to the same clone chain it was unchained before
       
       // Returns combination of HiddenEventsType enum.
-      virtual int hasHiddenEvents() = 0;
-      // If repeated calls to hasHiddenEvents() are desired, then to avoid re-iteration of the event list, 
-      //  call this after hasHiddenEvents().
-      int cachedHasHiddenEvents() const { return _hiddenEvents; }
+      virtual int hasHiddenEvents() const { return _hiddenEvents; }
       
-      iEvent addEvent(Event& p);
+      iEvent addEvent(Event& p); // this does not care about clones! If the part is a clone, be sure to execute this on all clones (with duplicated Events, that is!)
 
       virtual void write(int, Xml&, bool isCopy = false, bool forceWavePaths = false) const;
       
@@ -134,10 +137,12 @@ class MidiPart : public Part {
 
    public:
       MidiPart(MidiTrack* t) : Part((Track*)t) {}
-      MidiPart(MidiTrack* t, EventList* ev) : Part((Track*)t, ev) {}
-      MidiPart(const MidiPart& p);
       virtual ~MidiPart() {}
-      virtual MidiPart* clone() const;
+      virtual MidiPart* duplicate() const;
+      virtual MidiPart* duplicateEmpty() const;
+      virtual MidiPart* createNewClone() const;
+
+      
       MidiTrack* track() const   { return (MidiTrack*)Part::track(); }
       // Returns combination of HiddenEventsType enum.
       int hasHiddenEvents();
@@ -154,13 +159,14 @@ class WavePart : public Part {
 
       // p3.3.31
       AudioConvertMap _converters;
-      
+
    public:
       WavePart(WaveTrack* t);
-      WavePart(WaveTrack* t, EventList* ev);
-      WavePart(const WavePart& p);
       virtual ~WavePart() {}
-      virtual WavePart* clone() const;
+      virtual WavePart* duplicate() const;
+      virtual WavePart* duplicateEmpty() const;
+      virtual WavePart* createNewClone() const;
+
       WaveTrack* track() const   { return (WaveTrack*)Part::track(); }
       // Returns combination of HiddenEventsType enum.
       int hasHiddenEvents();
@@ -182,27 +188,31 @@ class PartList : public std::multimap<int, Part*, std::less<unsigned> > {
       iPart findPart(unsigned tick);
       iPart add(Part*);
       void remove(Part* part);
-      int index(Part*);
+      int index(const Part*) const;
       Part* find(int idx);
       void clearDelete() {
             for (iPart i = begin(); i != end(); ++i)
                   delete i->second;
             clear();
             }
+            
+      void addOperation(Part* part, PendingOperationList& ops); 
+      void delOperation(Part* part, PendingOperationList& ops);
+      void movePartOperation(Part* part, int new_pos, PendingOperationList& ops, Track* track = 0);
       };
 
-extern void chainClone(Part* p);
-extern void chainClone(Part* p1, Part* p2);
-extern void unchainClone(Part* p);
-extern void replaceClone(Part* p1, Part* p2);
 extern void chainCheckErr(Part* p);
-extern void unchainTrackParts(Track* t, bool decRefCount);
-extern void chainTrackParts(Track* t, bool incRefCount);
+extern void unchainTrackParts(Track* t);
+extern void chainTrackParts(Track* t);
 extern void addPortCtrlEvents(Part* part, bool doClones);
-extern void addPortCtrlEvents(Event& event, Part* part, bool doClones);
+extern void addPortCtrlEvents(const Event& event, Part* part, int tick, int len, Track* track, PendingOperationList& ops);
+extern void addPortCtrlEvents(Event& event, Part* part);
+extern void addPortCtrlEvents(Part* part, int tick, int len, Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Part* part, bool doClones);
-extern void removePortCtrlEvents(Event& event, Part* part, bool doClones);
-extern Part* readXmlPart(Xml&, Track*, bool doClone = false, bool toTrack = true);
+extern void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops);
+extern void removePortCtrlEvents(Event& event, Part* part);
+extern void removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops);
+extern void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops);
 
 } // namespace MusECore
 

@@ -654,7 +654,8 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
                                }
                         //xx = xxx;
                         }
-            p.setPen(Qt::gray);
+
+            p.setPen(Qt::darkGray);
             for (int beat = 1; beat < z; beat++) {
                         ///int xx = AL::sigmap.bar2tick(bar, beat, 0);
                         xx = mapx(AL::sigmap.bar2tick(bar, beat, 0));

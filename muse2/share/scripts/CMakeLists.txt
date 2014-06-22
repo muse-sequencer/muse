@@ -29,6 +29,7 @@ file(GLOB script_files
       SwingQuantize1
       RandomQuantize1
       Rhythm1
+      TempoDelay
       )
 
 install (PROGRAMS ${script_files}

@@ -29,6 +29,8 @@
 namespace MusECore {
 
 typedef int64_t SongChangedFlags_t;
+typedef int64_t EventID_t;
+#define MUSE_INVALID_EVENT_ID   -1
 
 }   // namespace MusECore
 

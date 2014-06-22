@@ -29,6 +29,7 @@
 
 #include <map>
 #include <set>
+#include <list>
 
 #include "type_defs.h"
 #include "pos.h"
@@ -38,6 +39,7 @@
 #include "undo.h"
 #include "track.h"
 #include "synth.h"
+#include "operations.h"
 
 class QAction;
 class QFont;
@@ -142,6 +144,9 @@ class Song : public QObject {
 
       UndoList* undoList;
       UndoList* redoList;
+      // New items created in GUI thread awaiting addition in audio thread.
+      PendingOperationList pendingOperations;
+      
       Pos pos[3];
       Pos _vcpos;               // virtual CPOS (locate in progress)
       MarkerList* _markerList;
@@ -167,13 +172,38 @@ class Song : public QObject {
       QStringList deliveredScriptNames;
       QStringList userScriptNames;
 
+      // These are called from non-RT thread operations execution stage 1.
+      void insertTrackOperation(Track* track, int idx, PendingOperationList& ops);
+      void removeTrackOperation(Track* track, PendingOperationList& ops);
+      bool addEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+      void changeEventOperation(const Event&, const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+      void deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+      
    public:
       Song(const char* name = 0);
       ~Song();
 
-      bool applyOperationGroup(Undo& group, bool doUndo=true);
-      void informAboutNewParts(const std::map< Part*, std::set<Part*> >&);
-      void informAboutNewParts(Part* orig, Part* p1, Part* p2=NULL, Part* p3=NULL, Part* p4=NULL, Part* p5=NULL, Part* p6=NULL, Part* p7=NULL, Part* p8=NULL, Part* p9=NULL);
+      /** It is not allowed nor checked(!) to AddPart a clone, and
+       *  to AddEvent/DeleteEvent/ModifyEvent/SelectEvent events which
+       *  would need to be replicated to the newly added clone part!
+       */
+      bool applyOperationGroup(Undo& group, bool doUndo=true); // group may be changed! prepareOperationGroup is called on group!
+      bool applyOperation(const UndoOp& op, bool doUndo=true);
+      
+      /** this sends emits a signal to each MidiEditor or whoever is interested.
+       *  For each part which is 1) opened in this MidiEditor and 2) which is
+       *  a key in this map, the Editors shall no more edit this part, but instead
+       *  all parts in the_map[old_part] (which is a std::set<Part*>)
+       */
+      void informAboutNewParts(const std::map< const Part*, std::set<const Part*> >&);
+      /** this sends emits a signal to each MidiEditor or whoever is interested.
+       *  For each part which is 1) opened in this MidiEditor and 2) which is
+       *  a key in this map, the Editors shall no more edit this part, but instead
+       *  all parts in the_map[old_part] (which is a std::set<Part*>)
+       *  this is a special case of the general function, which only replaces one part
+       *  by up to nine different.
+       */
+      void informAboutNewParts(const Part* orig, const Part* p1, const Part* p2=NULL, const Part* p3=NULL, const Part* p4=NULL, const Part* p5=NULL, const Part* p6=NULL, const Part* p7=NULL, const Part* p8=NULL, const Part* p9=NULL);
 
       void putEvent(int pv);
       void endMsgCmd();
@@ -251,48 +281,43 @@ class Song : public QObject {
       //-----------------------------------------
 
       unsigned len() const { return _len; }
-      void setLen(unsigned l);     // set songlen in ticks
+      void setLen(unsigned l, bool do_update = true);     // set songlen in ticks
       int roundUpBar(int tick) const;
       int roundUpBeat(int tick) const;
       int roundDownBar(int tick) const;
       void initLen();
-      void tempoChanged();
 
       //-----------------------------------------
       //   event manipulations
       //-----------------------------------------
 
       void cmdAddRecordedWave(WaveTrack* track, Pos, Pos);  
-      void cmdAddRecordedEvents(MidiTrack*, EventList*, unsigned);
-      bool addEvent(Event&, Part*);
-      void changeEvent(Event&, Event&, Part*);
-      void deleteEvent(Event&, Part*);
-      void cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex);
-      void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport);
-      void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false);
+      void cmdAddRecordedEvents(MidiTrack*, const EventList&, unsigned);
+
+      // May be called from GUI or audio thread. Also selects events in clone parts. Safe for now because audio/midi processing doesn't 
+      //  depend on it, and all calls to part altering functions from GUI are synchronized with (wait for) audio thread.
+      void selectEvent(Event&, Part*, bool select);   
+      void selectAllEvents(Part*, bool select); // See selectEvent().  
+
+      void cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex); // FIXME TODO broken, fix that.
+      void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport); // called from GUI thread
+      void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false); // called from GUI thread
       
-      void addACEvent(AudioTrack* t, int acid, int frame, double val);
-      void changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val);
       void addExternalTempo(const TempoRecEvent& e) { _tempoFifo.put(e); }
       
       //-----------------------------------------
       //   part manipulations
       //-----------------------------------------
 
-      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doClones=false);
-      void cmdSplitPart(Track* t, Part* p, int tick);
-      void cmdGluePart(Track* t, Part* p);
+      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doClones=false); // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.
 
       void addPart(Part* part);
       void removePart(Part* part);
-      void changePart(Part*, Part*);
-      PartList* getSelectedMidiParts() const;
-      PartList* getSelectedWaveParts() const;
-      bool msgRemoveParts();
 
-      void cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones);
-      void cmdRemovePart(Part* part);
-      void cmdAddPart(Part* part);
+      
+      PartList* getSelectedMidiParts() const; // FIXME TODO move functionality into function.cpp
+      PartList* getSelectedWaveParts() const;
+
       int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
       void setArrangerRaster(int r) { _arrangerRaster = r; }  // Used by Arranger snap combo box
 
@@ -309,16 +334,11 @@ class Song : public QObject {
       AuxList* auxs()           { return &_auxs;    }
       SynthIList* syntis()      { return &_synthIs; }
       
-      void cmdRemoveTrack(Track* track);
-      void removeTrack0(Track* track);
       void removeTrack1(Track* track);
       void removeTrack2(Track* track);
       void removeTrack3(Track* track);
-      void removeMarkedTracks();
-      //void changeTrack(Track* oldTrack, Track* newTrack); DELETETHIS
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
-      void swapTracks(int i1, int i2);
       //void setChannelMute(int channel, bool flag);  // REMOVE Tim.
       void setRecordFlag(Track*, bool);
       void insertTrack0(Track*, int idx);
@@ -328,7 +348,6 @@ class Song : public QObject {
       void deselectTracks();
       void readRoute(Xml& xml);
       void recordEvent(MidiTrack*, Event&);
-      void msgInsertTrack(Track* track, int idx, bool u = true);
       // Enable all track and plugin controllers, and synth controllers if applicable, which are NOT in AUTO_WRITE mode.
       void reenableTouchedControllers();  
       void clearRecAutomation(bool clearList);
@@ -340,20 +359,20 @@ class Song : public QObject {
       void updateSoloStates();
 
       //-----------------------------------------
-      //   undo, redo
+      //   undo, redo, operation groups
       //-----------------------------------------
 
       void startUndo();
       void endUndo(MusECore::SongChangedFlags_t);
 
-      void undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
+	  void undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
 
-      bool doUndo1();
-      void doUndo2();
-      void doUndo3();
-      bool doRedo1();
-      void doRedo2();
-      void doRedo3();
+      void executeOperationGroup1(Undo& operations);
+      void executeOperationGroup2(Undo& operations);
+      void executeOperationGroup3(Undo& operations);
+      void revertOperationGroup1(Undo& operations);
+      void revertOperationGroup2(Undo& operations);
+      void revertOperationGroup3(Undo& operations);
 
       void addUndo(UndoOp i);
       void setUndoRedoText();
@@ -412,7 +431,7 @@ class Song : public QObject {
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);
-      Track* addTrack(Undo& operations, Track::TrackType type, Track* insertAt = 0);
+      Track* addTrack(Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       void duplicateTracks();
       QString getScriptPath(int id, bool delivered);
@@ -432,7 +451,7 @@ class Song : public QObject {
       void midiPortsChanged();
       void midiNote(int pitch, int velo);  
       void controllerChanged(MusECore::Track*, int); 
-      void newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
+      void newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
       void sigDirty();
       };
 

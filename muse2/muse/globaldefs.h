@@ -28,8 +28,9 @@
 //    MT_GM  - General Midi
 //    MT_GS  - Roland GS
 //    MT_XG  - Yamaha XG
+//    MT_GM2 - General Midi Level 2
 
-enum MType { MT_UNKNOWN=0, MT_GM, MT_GS, MT_XG };
+enum MType { MT_UNKNOWN=0, MT_GM, MT_GS, MT_XG, MT_GM2 };
 
 enum AutomationType {
       AUTO_OFF, AUTO_READ, AUTO_TOUCH, AUTO_WRITE
@@ -48,6 +49,10 @@ const int MIDI_PORTS   = 200;  // max Number of Midi Ports
 #ifndef MIDI_CHANNELS
 #define MIDI_CHANNELS 16       // Channels per Port
 #endif
+
+namespace MusEGui {
+enum EditInstrumentTabType { EditInstrumentPatches=0, EditInstrumentDrumMaps=1, EditInstrumentControllers=2, EditInstrumentSysex=3, EditInstrumentInitSeq=4 };
+}
 
 #endif
 

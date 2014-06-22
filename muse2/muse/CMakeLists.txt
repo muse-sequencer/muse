@@ -115,6 +115,7 @@ file (GLOB core_source_files
       mpevent.cpp
       mtc.cpp
       node.cpp
+      operations.cpp
       osc.cpp
       part.cpp
       plugin.cpp

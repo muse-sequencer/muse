@@ -5,6 +5,7 @@
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011  Robert Jonsson (rj@spamatica.se)
+//  (C) Copyright 2013  Florian Jung (flo93@sourceforge.net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -161,19 +162,16 @@ void globalCut(bool onlySelectedTracks)
                   else if ((t < lpos) && ((t+l) > lpos) && ((t+l) <= rpos)) {
                       // remove part tail
                       int len = lpos - t;
-                      Part *nPart;
-                      if (track->isMidiTrack())
-                        nPart = new MidiPart(*(MidiPart*)part);
-                      else
-                        nPart = new WavePart(*(WavePart*)part);
-
-                      nPart->setLenTick(len);
-                      // cut Events in nPart
-                      EventList* el = nPart->events();
-                      for (iEvent ie = el->lower_bound(len); ie != el->end(); ++ie)
-                            operations.push_back(UndoOp(UndoOp::DeleteEvent,ie->second, nPart, false, false));
-
-                      operations.push_back(UndoOp(UndoOp::ModifyPart,part, nPart, true, true));
+                      
+                      if (part->nextClone()==part) // no clones
+                      {
+                            // cut Events
+                            const EventList& el = part->events();
+                            for (ciEvent ie = el.lower_bound(len); ie != el.end(); ++ie)
+                                    operations.push_back(UndoOp(UndoOp::DeleteEvent,ie->second, part, false, false));
+                      }
+                      // TODO FIXME Suspect this section may need a wee bit more rework with the events above...
+                      operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenValue(), len, Pos::TICKS));  
                   }
                   else if ((t < lpos) && ((t+l) > lpos) && ((t+l) > rpos)) {
                         //----------------------
@@ -182,16 +180,15 @@ void globalCut(bool onlySelectedTracks)
                         Part* p1;
                         Part* p2;
                         Part* p3;
-                        track->splitPart(part, lpos, p1, p2);
+                        part->splitPart(lpos, p1, p2);
                         delete p2;
-                        track->splitPart(part, rpos, p2, p3);
+                        part->splitPart(rpos, p2, p3);
                         delete p2;
                         p3->setTick(lpos);
-                        p1->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
-                        p3->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
 
-                        // Indicate no undo, and do port controller values and clone parts.
-                        operations.push_back(UndoOp(UndoOp::ModifyPart,part, p1, true, true));
+                        MusEGlobal::song->informAboutNewParts(part,p1,p3);
+                        operations.push_back(UndoOp(UndoOp::DeletePart,part));
+                        operations.push_back(UndoOp(UndoOp::AddPart,p1));
                         operations.push_back(UndoOp(UndoOp::AddPart,p3));
                         }
                   else if ((t >= lpos) && (t < rpos) && (t+l) > rpos) {
@@ -199,23 +196,18 @@ void globalCut(bool onlySelectedTracks)
                         
                         Part* p1;
                         Part* p2;
-                        track->splitPart(part, rpos, p1, p2);
+                        part->splitPart(rpos, p1, p2);
                         delete p1;
                         p2->setTick(lpos);
-                        p2->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
-                        operations.push_back(UndoOp(UndoOp::ModifyPart,part, p2, true, true));
+                        
+                        MusEGlobal::song->informAboutNewParts(part,p2);
+                        operations.push_back(UndoOp(UndoOp::DeletePart,part));
+                        operations.push_back(UndoOp(UndoOp::AddPart,p2));
                         }
                   else if (t >= rpos) {
                         // move part to the left
-                        Part *nPart;
-                        if (track->isMidiTrack())
-                          nPart = new MidiPart(*(MidiPart*)part);
-                        else
-                          nPart = new WavePart(*(WavePart*)part);
                         int nt = part->tick();
-                        nPart->setTick(nt - (rpos -lpos));
-                        // Indicate no undo, and do port controller values but not clone parts.
-                        operations.push_back(UndoOp(UndoOp::ModifyPart,part, nPart, true, false));
+                        operations.push_back(UndoOp(UndoOp::MovePart, part, part->posValue(), nt - (rpos -lpos), Pos::TICKS ));
                         }
                   }
             }
@@ -263,22 +255,16 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
                         // split part to insert new space
                         Part* p1;
                         Part* p2;
-                        track->splitPart(part, startTicks, p1, p2);
+                        part->splitPart(startTicks, p1, p2);
                         p2->setTick(startTicks+moveTicks);
-                        p2->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
-                        p1->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it so we must decrement it first :/
 
-                        operations.push_back(UndoOp(UndoOp::ModifyPart, part, p1, true, true));
+                        MusEGlobal::song->informAboutNewParts(part,p1,p2);
+                        operations.push_back(UndoOp(UndoOp::DeletePart, part));
+                        operations.push_back(UndoOp(UndoOp::AddPart, p1));
                         operations.push_back(UndoOp(UndoOp::AddPart, p2));
                         }
                   else if (t >= startTicks) {
-                        Part *nPart;
-                        if (track->isMidiTrack())
-                          nPart = new MidiPart(*(MidiPart*)part);
-                        else
-                          nPart = new WavePart(*(WavePart*)part);
-                        nPart->setTick(t + moveTicks);
-                        operations.push_back(UndoOp(UndoOp::ModifyPart, part, nPart, true, false));
+                        operations.push_back(UndoOp(UndoOp::MovePart, part, part->posValue(), t + moveTicks, Pos::TICKS));
                         }
                   }
             }
@@ -318,24 +304,17 @@ Undo partSplitter(unsigned int pos, bool onlySelectedTracks)
               if (pos > p1 && pos < (p1+l0)) {
                     Part* p1;
                     Part* p2;
-                    track->splitPart(part, pos, p1, p2);
+                    part->splitPart(pos, p1, p2);
 
-                    p1->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-                    p2->events()->incARef(-1); // so we must decrement it first :/
-
-                    //MusEGlobal::song->informAboutNewParts(part, p1); // is unneccessary because of ModifyPart
+                    MusEGlobal::song->informAboutNewParts(part, p1);
                     MusEGlobal::song->informAboutNewParts(part, p2);
-                    operations.push_back(UndoOp(UndoOp::ModifyPart,part, p1, true, false));
+                    operations.push_back(UndoOp(UndoOp::DeletePart,part));
+                    operations.push_back(UndoOp(UndoOp::AddPart,p1));
                     operations.push_back(UndoOp(UndoOp::AddPart,p2));
-                    if (MusEGlobal::debugMsg)
-                    {
-                          printf("in partSplitter: part1 %d\n",p1->events()->refCount());
-                          printf("in partSplitter: part2 %d\n",p2->events()->refCount());
-                          }
                     break;
-                    }
               }
         }
+    }
     return operations;
 }
 

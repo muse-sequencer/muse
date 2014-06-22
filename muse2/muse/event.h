@@ -27,6 +27,7 @@
 #include <map>
 #include <sys/types.h>
 
+#include "type_defs.h"
 #include "pos.h"
 #include "evdata.h"
 #include "wave.h" // for SndFileR
@@ -53,18 +54,25 @@ class Event {
    public:
       Event();
       Event(EventType t);
-      Event(const Event& e);
-      Event(EventBase* eb);
+      Event(const Event& e); // Creates a true shared clone of the event. They share the same event base pointer.
+      Event(EventBase* eb);  // Wraps an event base in an event and increases the event base's ref count.
       
       virtual ~Event();
 
       bool empty() const;
       EventType type() const;
+      // Shared and non-shared clone events have the same id. An empty event returns MUSE_INVALID_EVENT_ID.
+      EventID_t id() const; 
+      void shareId(const Event& e); // Makes id same as given event's. Effectively makes the events non-shared clones.
 
       void setType(EventType t);
-      Event& operator=(const Event& e);
+      Event& operator=(const Event& e); // Makes the two events true shared clones. They share the same event base pointer.
+      
+      virtual void assign(const Event&); // Assigns to this event, excluding the id. Including its clones.
+      
       bool operator==(const Event& e) const;
-
+      bool isSimilarTo(const Event& other) const;
+      
       int getRefCount() const;
       bool selected() const;
       void setSelected(bool val);
@@ -73,8 +81,17 @@ class Event {
       void read(Xml& xml);
       void write(int a, Xml& xml, const Pos& offset, bool ForceWavePaths = false) const;
       void dump(int n = 0) const;
-      Event clone();
-      Event mid(unsigned a, unsigned b);
+      // Creates a non-shared clone of the event base, having the same 'group' id.
+      // NOTE: Certain pointer members may still be SHARED. Such as the sysex MidiEventBase::edata.
+      //       Be aware when iterating or modifying clones.
+      Event clone() const; 
+      
+      // Restores id to original uniqueId, removing the event from any clone 'group'. 
+      void deClone(); 
+      // Creates a copy of the event base, excluding the 'group' _id. 
+      Event duplicate() const; 
+
+      Event mid(unsigned a, unsigned b) const;
 
       bool isNote() const;
       bool isNoteOff() const;
@@ -109,11 +126,13 @@ class Event {
       void setTick(unsigned val);
       unsigned tick() const;
       unsigned frame() const;
+      unsigned posValue() const;
       void setFrame(unsigned val);
       void setLenTick(unsigned val);
       void setLenFrame(unsigned val);
       unsigned lenTick() const;
       unsigned lenFrame() const;
+      unsigned lenValue() const;
       Pos end() const;
       unsigned endTick() const;
       unsigned endFrame() const;
@@ -124,7 +143,7 @@ typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;
 typedef EL::iterator iEvent;
 typedef EL::reverse_iterator riEvent;
 typedef EL::const_iterator ciEvent;
-typedef std::pair <iEvent, iEvent> EventRange;
+typedef std::pair <ciEvent, ciEvent> EventRange;
 
 //---------------------------------------------------------
 //   EventList
@@ -132,21 +151,23 @@ typedef std::pair <iEvent, iEvent> EventRange;
 //---------------------------------------------------------
 
 class EventList : public EL {
-      int ref;          // number of references to this EventList
-      int aref;         // number of active references (exclude undo list)
       void deselect();
 
    public:
-      EventList()           { ref = 0; aref = 0;  }
-      ~EventList()          {}
-
-      void incRef(int n)    { ref += n;    }
-      int refCount() const  { return ref;  }
-      void incARef(int n)   { aref += n;   }
-      int arefCount() const { return aref; }
-
+      ciEvent find(const Event&) const;
       iEvent find(const Event&);
-      iEvent add(Event& event);
+      ciEvent findSimilar(const Event&) const;
+      iEvent findSimilar(const Event&);
+      ciEvent findId(const Event&) const;             // Fast, index t is known.
+      iEvent findId(const Event&);                    // Fast, index t is known.
+      ciEvent findId(unsigned t, EventID_t id) const; // Fast, index t is known.
+      iEvent findId(unsigned t, EventID_t id);        // Fast, index t is known.
+      ciEvent findId(EventID_t id) const;             // Slow, index t is not known
+      iEvent findId(EventID_t id);                    // Slow, index t is not known
+      ciEvent findWithId(const Event&) const; // Finds event base or event id. Fast, index t is known.
+      iEvent findWithId(const Event&);        // Finds event base or event id. Fast, index t is known.
+      
+      iEvent add(Event event);
       void move(Event& event, unsigned tick);
       void dump() const;
       void read(Xml& xml, const char* name, bool midi);

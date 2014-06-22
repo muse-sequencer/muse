@@ -285,6 +285,21 @@ void removeMidiInstrument(const MidiInstrument* instr)
       }
 
 //---------------------------------------------------------
+//   findMidiInstrument
+//---------------------------------------------------------
+
+iMidiInstrument MidiInstrumentList::find(const MidiInstrument* instr)
+      {
+      for (iMidiInstrument i = begin();
+         i != end(); ++i) {
+            if (*i == instr) {
+                  return i;
+                  }
+            }
+      return end();
+      }
+
+//---------------------------------------------------------
 //   MidiInstrument
 //---------------------------------------------------------
 
@@ -459,6 +474,8 @@ MType MidiInstrument::midiType() const
 {
   if(_name == "GM")
     return MT_GM;
+  if(_name == "GM2")
+    return MT_GM2;
   if(_name == "GS")
     return MT_GS;
   if(_name == "XG")
@@ -474,13 +491,13 @@ MType MidiInstrument::midiType() const
 void MidiInstrument::reset(int portNo)
 {
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[portNo];
-      if(port->device() == 0)  // p4.0.15
+      if(port->device() == 0)
         return;
 
       MusECore::MidiPlayEvent ev;
       ev.setType(0x90);
       ev.setPort(portNo);
-      ev.setTime(0);          // p4.0.15
+      ev.setTime(0);
       
       for (int chan = 0; chan < MIDI_CHANNELS; ++chan) 
       {
@@ -694,7 +711,7 @@ void SysEx::write(int level, Xml& xml)
 
 void MidiInstrument::readMidiState(Xml& xml)
 {
-  // p4.0.27 A kludge to support old midistates by wrapping them in the proper header.
+  // A kludge to support old midistates by wrapping them in the proper header.
   _tmpMidiStateVersion = 1;    // Assume old (unmarked) first version 1.
   for (;;) 
   {
@@ -1040,6 +1057,25 @@ void MidiInstrument::write(int level, Xml& xml)
       xml.etag(level, "muse");
       }
 
+
+//---------------------------------------------------------
+//   populateInstrPopup  (static)
+//---------------------------------------------------------
+
+void MidiInstrument::populateInstrPopup(MusEGui::PopupMenu* menu, MidiInstrument* /*current*/, bool show_synths)
+      {
+      menu->clear();
+      for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i
+          != MusECore::midiInstruments.end(); ++i) 
+          {
+            // Do not list synths. Although it is possible to assign a synth
+            //  as an instrument to a non-synth device, we should not allow this.
+            // (One reason is that the 'show gui' column is then enabled, which
+            //  makes no sense for a non-synth device).
+            if(show_synths || !(*i)->isSynti())
+              menu->addAction((*i)->iname());
+          }
+    }
 
 //---------------------------------------------------------
 //   populatePatchPopup

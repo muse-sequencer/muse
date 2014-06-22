@@ -49,6 +49,7 @@
 
 #include <stdio.h>
 
+#include "globaldefs.h"
 #include "xml.h"
 #include "mtscale.h"
 #include "prcanvas.h"
@@ -69,8 +70,6 @@
 #include "helper.h"
 #include "popupmenu.h"
 #include "menutitleitem.h"
-#include "editinstrument.h"
-
 
 #include "cmd.h"
 #include "shortcuts.h"
@@ -516,7 +515,8 @@ void PianoRoll::songChanged1(MusECore::SongChangedFlags_t bits)
         songChanged(bits);
 
         // We'll receive SC_SELECTION if a different part is selected.
-        if (bits & SC_SELECTION)
+        // Addition - also need to respond here to moving part to another track. (Tim)
+        if (bits & (SC_SELECTION | SC_PART_INSERTED | SC_PART_REMOVED))
           updateTrackInfo();  
       }
 
@@ -868,7 +868,7 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
         }
   else if (rv == edit_ins) {             // edit instrument
         MusECore::MidiInstrument* instr = port->instrument();
-        MusEGlobal::muse->startEditInstrument(instr ? instr->iname() : QString(), EditInstrument::Controllers);
+        MusEGlobal::muse->startEditInstrument(instr ? instr->iname() : QString(), EditInstrumentControllers);
         }
   else {                           // Select a control
         if(cll->find(channel, rv) == cll->end())
@@ -1311,6 +1311,34 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             else
                   return;
             }
+      else if (key == shortcuts[SHRT_MOVE_PLAY_TO_NOTE].key){
+        movePlayPointerToSelectedEvent();
+        return;
+      }
+      else if (key == shortcuts[SHRT_STEP_RECORD].key) {
+          canvas->setSteprec(!srec->isChecked());
+          srec->setChecked(!srec->isChecked());
+          return;
+      }
+      else if (key == shortcuts[SHRT_MIDI_INPUT].key) {
+          canvas->setMidiin(!midiin->isChecked());
+          midiin->setChecked(!midiin->isChecked());
+          return;
+
+      }
+      else if (key == shortcuts[SHRT_PLAY_EVENTS].key) {
+          canvas->playEvents(!speaker->isChecked());
+          speaker->setChecked(!speaker->isChecked());
+          return;
+      }
+      else if (key == shortcuts[SHRT_INC_VELOCITY].key) {
+          modify_velocity(partlist_to_set(parts()), 1, 100, 1);
+          return;
+      }
+      else if (key == shortcuts[SHRT_DEC_VELOCITY].key) {
+          modify_velocity(partlist_to_set(parts()), 1, 100, -1);
+          return;
+      }
       else { //Default:
             event->ignore();
             return;

@@ -630,7 +630,7 @@ SndFile* SndFileList::search(const QString& name)
 //   getWave
 //---------------------------------------------------------
 
-SndFileR getWave(const QString& inName, bool readOnlyFlag)
+SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool showErrorBox)
       {
       QString name = inName;
 
@@ -647,6 +647,7 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag)
 
       // only open one instance of wave file
       SndFile* f = SndFile::sndFiles.search(name);
+      //SndFile* f = 0; // REMOVE Tim. Sharing. For testing only so far.
       if (f == 0) {
             if (!QFile::exists(name)) {
                   fprintf(stderr, "wave file <%s> not found\n",
@@ -654,53 +655,61 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag)
                   return NULL;
                   }
             f = new SndFile(name);
-            bool error;
-            if (readOnlyFlag)
-                  error = f->openRead();
-            else {
-                  error = f->openWrite();
-                  // if peak cache is older than wave file we reaquire the cache
-                  QFileInfo wavinfo(name);
-                  QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
-                  QFileInfo wcainfo(cacheName);
-                  if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-                        QFile(cacheName).remove();
-                        f->readCache(cacheName,true);
-                        }
-                  
-            }
-            if (error) {
-                  fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
-                     name.toLatin1().constData(),
-                     readOnlyFlag ? "writing" : "reading",
-                     f->strerror().toLatin1().constData());
-                     QMessageBox::critical(NULL, "MusE import error.", 
-                                      "MusE failed to import the file.\n"
-                                      "Possibly this wasn't a sound file?\n"
-                                      "If it was check the permissions, MusE\n"
-                                      "sometimes requires write access to the file.");
+            
+            if(openFlag)
+            {
+              bool error;
+              if (readOnlyFlag)
+                    error = f->openRead();
+              else {
+                    error = f->openWrite();
+                    // if peak cache is older than wave file we reaquire the cache
+                    QFileInfo wavinfo(name);
+                    QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
+                    QFileInfo wcainfo(cacheName);
+                    if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
+                          QFile(cacheName).remove();
+                          f->readCache(cacheName,true);
+                          }
+                    
+              }
+              if (error) {
+                    fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
+                      name.toLatin1().constData(),
+                      readOnlyFlag ? "writing" : "reading",
+                      f->strerror().toLatin1().constData());
+                      if(showErrorBox) 
+                        QMessageBox::critical(NULL, "MusE import error.", 
+                                        "MusE failed to import the file.\n"
+                                        "Possibly this wasn't a sound file?\n"
+                                        "If it was check the permissions, MusE\n"
+                                        "sometimes requires write access to the file.");
 
-                  delete f;
-                  f = 0;
-                  }
+                    delete f;
+                    f = 0;
+                    }
+              }
             }
       else {
-            if (!readOnlyFlag && ! f->isWritable()) {
-                  if (f->isOpen())
-                        f->close();
-                  f->openWrite();
-                  }
-            else {
-                  // if peak cache is older than wave file we reaquire the cache
-                  QFileInfo wavinfo(name);
-                  QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
-                  QFileInfo wcainfo(cacheName);
-                  if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
-                        QFile(cacheName).remove();
-                        f->readCache(cacheName,true);
-                        }
-                  
-                  }
+              if(openFlag)
+              {
+                if (!readOnlyFlag && ! f->isWritable()) {
+                      if (f->isOpen())
+                            f->close();
+                      f->openWrite();
+                      }
+                else {
+                      // if peak cache is older than wave file we reaquire the cache
+                      QFileInfo wavinfo(name);
+                      QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
+                      QFileInfo wcainfo(cacheName);
+                      if (!wcainfo.exists() || wcainfo.lastModified() < wavinfo.lastModified()) {
+                            QFile(cacheName).remove();
+                            f->readCache(cacheName,true);
+                            }
+                      
+                      }
+              }
             }
       return f;
       }
@@ -826,11 +835,11 @@ bool SndFile::checkCopyOnWrite()
     PartList* pl = (*it)->parts();
     for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
     {
-      EventList* el = ip->second->events();
+      const EventList& el = ip->second->events();
       // We are looking for active independent non-clone parts
-      if(el->arefCount() > 1)
+      if(ip->second->hasClones())
         continue;
-      for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+      for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
       {
         if(ie->second.type() != Wave)
           continue;
@@ -1114,7 +1123,10 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       event.setLenFrame(e.frame() - s.frame());
       part->addEvent(event);
 
-      MusEGlobal::song->cmdAddPart(part);
+      // TODO FIXME that's ugly (flo)
+      addPart(part);
+      addUndo(UndoOp(UndoOp::AddPart, part));
+      updateFlags = SC_PART_INSERTED;
 
       if (MusEGlobal::song->len() < etick)
             MusEGlobal::song->setLen(etick);

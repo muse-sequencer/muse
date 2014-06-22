@@ -28,14 +28,17 @@
 
 #include "event.h"
 #include "marker/marker.h"
+#include "route.h"
 
 class QString;
+
+namespace AL {
+class TimeSignature;  
+}
 
 namespace MusECore {
 
 class Track;
-class TEvent;
-class SigEvent;
 class Part;
 
 extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files, for cleanup on shutdown
@@ -45,14 +48,15 @@ extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files
 
 struct UndoOp {
       enum UndoType {
+            AddRoute, DeleteRoute,
             AddTrack, DeleteTrack,
-            AddPart,  DeletePart,  ModifyPart,
-            AddEvent, DeleteEvent, ModifyEvent,
-            AddTempo, DeleteTempo,
-            AddSig,   DeleteSig,
-            AddKey,   DeleteKey,
+            AddPart,  DeletePart,  MovePart, ModifyPartLength, ModifyPartName, SelectPart,
+            AddEvent, DeleteEvent, ModifyEvent, SelectEvent,
+            AddTempo, DeleteTempo, ModifyTempo, SetGlobalTempo, 
+            AddSig,   DeleteSig,   ModifySig,
+            AddKey,   DeleteKey,   ModifyKey,
             ModifyTrackName, ModifyTrackChannel,
-            SwapTrack,
+            MoveTrack,
             ModifyClip,
             ModifyMarker,
             ModifySongLen, // a = new len, b = old len
@@ -65,17 +69,13 @@ struct UndoOp {
                   int a;
                   int b;
                   int c;
+                  int d;
+                  int e;
                   };
             struct {
-                  Track* track;
-                  int trackno;
-                  };
-            struct {
-                  Part* oPart;
-                  Part* nPart;
-                  };
-            struct {
-                  Part* part; // this part is only relevant for EVENT operations, NOT for part ops!
+                  const Part* part;
+                  unsigned old_partlen_or_pos; // FIXME FINDMICHJETZT XTicks!!
+                  unsigned new_partlen_or_pos;
                   };
             struct {
                   int channel;
@@ -90,50 +90,80 @@ struct UndoOp {
                   const char* tmpwavfile; //!< The file with the changed data
                   };
             struct {
-                  Marker* realMarker;
+                  Marker* realMarker; 
                   Marker* copyMarker;
                 };
             struct {
-                  Track* _renamedTrack;
-                  char* _oldName;
-                  char* _newName;
-                };
-            struct {
-                  Track* _propertyTrack;
+                  const Track* _propertyTrack;
                   int _oldPropValue;
                   int _newPropValue;
                 };
             };
+
+      char* _oldName;
+      char* _newName;
       Event oEvent;
       Event nEvent;
+      bool selected;
+      bool selected_old;
       bool doCtrls;
       bool doClones;
+      const Track* track;
+      const Track* oldTrack;
+      int trackno;
+      Route routeFrom;
+      Route routeTo;
       
       const char* typeName();
       void dump();
       
       UndoOp();
       UndoOp(UndoType type, int a, int b, int c=0);
-      UndoOp(UndoType type, int n, Track* track);
-      UndoOp(UndoType type, Part* part);
-      UndoOp(UndoType type, Event& oev, Event& nev, Part* part, bool doCtrls, bool doClones);
-      UndoOp(UndoType type, Event& nev, Part* part, bool doCtrls, bool doClones);
-      UndoOp(UndoType type, Part* oPart, Part* nPart, bool doCtrls, bool doClones);
-      UndoOp(UndoType type, int c, int ctrl, int ov, int nv);
+      UndoOp(UndoType type, int n, const Track* track);
+      UndoOp(UndoType type_, const Part* part_);
+      UndoOp(UndoType type, const Part* part, const char* old_name, const char* new_name);
+      UndoOp(UndoType type, const Part* part, bool selected, bool selected_old);
+      UndoOp(UndoType type, const Part* part, int old_len_or_pos, int new_len_or_pos, Pos::TType new_time_type = Pos::TICKS, const Track* oTrack = 0, const Track* nTrack = 0);
+      UndoOp(UndoType type, const Event& nev, const Event& oev, const Part* part, bool doCtrls, bool doClones);
+      UndoOp(UndoType type, const Event& nev, const Part* part, bool, bool);
       UndoOp(UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker);
-      UndoOp(UndoType type, Track* track, const char* old_name, const char* new_name);
-      UndoOp(UndoType type, Track* track, int old_chan, int new_chan);
-      UndoOp(UndoType type);
+      UndoOp(UndoType type, const Track* track, const char* old_name, const char* new_name);
+      UndoOp(UndoType type, const Track* track, int old_chan, int new_chan);
+      UndoOp(UndoType type, int tick, const AL::TimeSignature old_sig, const AL::TimeSignature new_sig);
+      UndoOp(UndoType type, const Route& route_from, const Route& route_to);
 };
 
 class Undo : public std::list<UndoOp> {
    public:
+      Undo() : std::list<UndoOp>() { combobreaker=false; }
+      Undo(const Undo& other) : std::list<UndoOp>(other) { this->combobreaker=other.combobreaker; }
+      Undo& operator=(const Undo& other) { std::list<UndoOp>::operator=(other); this->combobreaker=other.combobreaker; return *this;}
+
       bool empty() const;
+      
+      
+      /** if set, forbid merging (below).
+       *  Defaults to false */
+      bool combobreaker; 
+      
+      /** is possible, merges itself and other by appending
+       *  all contents of other at this->end().
+       *  returns true if merged, false otherwise.
+       *  in case of success, the caller has to ensure that
+       *  other is deleted from the UndoList. */
+      bool merge_combo(const Undo& other);
+      
+      void push_back(const UndoOp& op);
+      void insert(iterator position, const_iterator first, const_iterator last);
+      void insert(iterator position, const UndoOp& op);
+      void insert (iterator position, size_type n, const UndoOp& op);
 };
 
 typedef Undo::iterator iUndoOp;
 typedef Undo::reverse_iterator riUndoOp;
+typedef Undo::const_iterator ciUndoOp;
+typedef Undo::const_reverse_iterator criUndoOp;
 
 class UndoList : public std::list<Undo> {
    protected:

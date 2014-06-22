@@ -206,6 +206,7 @@ void Master::pdraw(QPainter& p, const QRect& rect)
             p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
             }
+
       }
 
 //---------------------------------------------------------
@@ -216,7 +217,59 @@ void Master::draw(QPainter& p, const QRect& rect)
       {
       drawTickRaster(p, rect.x(), rect.y(),
          rect.width(), rect.height(), 0);
+
+      if ((tool == MusEGui::DrawTool) && drawLineMode) {
+            p.setPen(Qt::black);
+            p.drawLine(line1x, line1y, line2x, line2y);
+            p.drawLine(line1x, line1y+1, line2x, line2y+1);
+            }
       }
+
+//---------------------------------------------------------
+//   newValRamp
+//---------------------------------------------------------
+
+void Master::newValRamp(int x1, int y1, int x2, int y2)
+{
+  MusECore::Undo operations;
+
+// loop through all tick positions between x1 and x2
+// remove all tempo changes and add new ones for changed
+
+  int tickStart = editor->rasterVal1(x1);
+  int tickEnd = editor->rasterVal2(x2);
+
+  const MusECore::TempoList* tl = &MusEGlobal::tempomap;
+  for (MusECore::ciTEvent i = tl->begin(); i != tl->end(); ++i) {
+    MusECore::TEvent* e = i->second;
+    int startOldTick = i->second->tick;
+    //if (startOldTick > tickStart && startOldTick <= tickEnd ) {    // REMOVE Tim. Sharing. Wrong comparison?
+    if (startOldTick >= tickStart && startOldTick > 0 && startOldTick < tickEnd ) {  // Erasure at tick 0 forbidden.
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo, startOldTick, e->tempo));
+        //printf("tempo = %f %d %d\n", 60000000.0/e->tempo, endOldTick, startOldTick);
+    }
+  }
+
+  int priorTick = editor->rasterVal1(x1);
+  int tempoVal = int(60000000000.0/(280000 - y1));
+  operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTempo, tickStart, tempoVal));
+  int tick = editor->rasterVal1(x1);
+  for (int i = x1; tick < tickEnd; i++) {
+    tick = editor->rasterVal1(i);
+    if (tick > priorTick) {
+        double xproportion = double(tick-tickStart)/double(tickEnd-tickStart);
+        int yproportion = double(y2 - y1) * xproportion;
+        int yNew = y1 + yproportion;
+        int tempoVal = int(60000000000.0/(280000 - yNew));
+        //printf("tickStart %d tickEnd %d yNew %d xproportion %f yproportion %d\n", tickStart, tickEnd, yNew, xproportion, yproportion);
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTempo, tick, tempoVal));
+        priorTick = tick;
+    }
+  }
+
+  MusEGlobal::song->applyOperationGroup(operations);
+}
+
 
 //---------------------------------------------------------
 //   viewMousePressEvent
@@ -225,8 +278,10 @@ void Master::draw(QPainter& p, const QRect& rect)
 void Master::viewMousePressEvent(QMouseEvent* event)
       {
       start = event->pos();
+      int xpos = start.x();
+      int ypos = start.y();
+
       MusEGui::Tool activeTool = tool;
-//      bool shift = event->state() & ShiftButton;
 
       switch (activeTool) {
             case MusEGui::PointerTool:
@@ -245,6 +300,20 @@ void Master::viewMousePressEvent(QMouseEvent* event)
                   deleteVal(start.x(), start.x());
                   break;
 
+            case MusEGui::DrawTool:
+                  if (drawLineMode) {
+                        line2x = xpos;
+                        line2y = ypos;
+                        newValRamp(line1x, line1y, line2x, line2y);
+                        drawLineMode = false;
+                        }
+                  else {
+                        line2x = line1x = xpos;
+                        line2y = line1y = ypos;
+                        drawLineMode = true;
+                        }
+                  redraw();
+                  break;
             default:
                   break;
             }
@@ -257,9 +326,12 @@ void Master::viewMousePressEvent(QMouseEvent* event)
 void Master::viewMouseMoveEvent(QMouseEvent* event)
       {
       QPoint pos = event->pos();
-//      QPoint dist = pos - start;
-//      bool moving = dist.y() >= 3 || dist.y() <= 3 || dist.x() >= 3 || dist.x() <= 3; DELETETHIS
-
+      if (tool == MusEGui::DrawTool && drawLineMode) {
+            line2x = pos.x();
+            line2y = pos.y();
+            redraw();
+            return;
+            }
       switch (drag) {
             case DRAG_NEW:
                   newVal(start.x(), pos.x(), pos.y());
@@ -349,6 +421,9 @@ void Master::setTool(int t)
             case MusEGui::PencilTool:
                   setCursor(QCursor(*pencilIcon, 4, 15));
                   break;
+            case MusEGui::DrawTool:
+                  drawLineMode = false;
+                  break;
             default:
                   setCursor(QCursor(Qt::ArrowCursor));
                   break;
@@ -373,5 +448,4 @@ void Master::newVal(int x1, int x2, int y)
       MusEGlobal::audio->msgAddTempo(xx1, int(60000000000.0/(280000 - y)), false);
       redraw();
       }
-
 } // namespace MusEGui

@@ -44,12 +44,13 @@ class Xml;
 //---------------------------------------------------------
 
 struct Route {
-      enum { TRACK_ROUTE=0, JACK_ROUTE=1, MIDI_DEVICE_ROUTE=2, MIDI_PORT_ROUTE=3 }; 
+      enum RouteType { TRACK_ROUTE=0, JACK_ROUTE=1, MIDI_DEVICE_ROUTE=2, MIDI_PORT_ROUTE=3 }; 
       
       union {
             Track* track;
             MidiDevice* device;      
             void* jackPort;
+	    void* voidPointer;
             };
       
       int midiPort;              // Midi port number. Best not to put this in the union to avoid problems?
@@ -57,7 +58,7 @@ struct Route {
       //snd_seq_addr_t alsaAdr;
       
       // Starting source channel (of the owner of this route). Normally zero for mono or stereo tracks, higher for multi-channel tracks. 
-      // p3.3.50 NOTICE: channel is now a bit-wise channel mask, for MidiPort <-> MidiTrack routes. 
+      // NOTICE: channel is now a bit-wise channel mask, for MidiPort <-> MidiTrack routes. 
       // This saves many routes: Instead of one route per channel as before, there can now be only one single route with a channel mask, 
       //  for each MidiPort <-> MidiTrack combination.
       int channel;                             
@@ -69,7 +70,7 @@ struct Route {
       // If a synti is feeding to/from another synti, this is not used and individual channels are routed using channel instead.
       int remoteChannel;
       
-      unsigned char type;       // 0 - track, 1 - jackPort, 2 - midi device, 3 - midi port   
+      RouteType type;
 
       Route(void* t, int ch=-1);
       Route(Track* t, int ch = -1, int chans = -1);
@@ -77,6 +78,8 @@ struct Route {
       Route(int port, int ch);         
       Route(const QString&, bool dst, int ch, int rtype = -1);
       Route();
+      // Useful for generic complete construction.
+      Route(RouteType type_, int midi_port_num_, void* void_pointer_, int channel_, int channels_, int remote_channel_);
       
       QString name() const;
       bool operator==(const Route& a) const;
@@ -95,6 +98,7 @@ struct Route {
 
 struct RouteList : public std::vector<Route> {
       void removeRoute(const Route& r);
+      iterator find(const Route& r);
       };
 
 typedef RouteList::iterator iRoute;
@@ -102,10 +106,9 @@ typedef RouteList::const_iterator ciRoute;
 
 extern void addRoute(Route, Route);
 extern void removeRoute(Route, Route);
-extern void removeAllRoutes(Route, Route);  // p3.3.55
+extern void removeAllRoutes(Route, Route);
 extern Route name2route(const QString&, bool dst, int rtype = -1);
 extern bool checkRoute(const QString&, const QString&);
-//extern bool isCircularRoutePath(Track* src, Track* dst);  // Recursive. DELETETHIS
 
 } // namespace MusECore
 

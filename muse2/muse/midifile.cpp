@@ -419,6 +419,10 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                         lastMtype = MT_GM;
                         return -1;
                         }
+                  if (((unsigned)len == gm2OnMsgLen) && memcmp(buffer, gm2OnMsg, gm2OnMsgLen) == 0) {
+                        lastMtype = MT_GM2;
+                        return -1;
+                        }
                   if (((unsigned)len == gsOnMsgLen) && memcmp(buffer, gsOnMsg, gsOnMsgLen) == 0) {
                         lastMtype = MT_GS;
                         return -1;

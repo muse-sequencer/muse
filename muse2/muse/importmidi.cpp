@@ -249,8 +249,8 @@ bool MusE::importMidi(const QString name, bool merge)
       //    - calculate tick value for internal resolution
       //
       for (MusECore::iMidiFileTrack t = etl->begin(); t != etl->end(); ++t) {
-            MusECore::MPEventList* el  = &((*t)->events);
-            if (el->empty())
+            MusECore::MPEventList& el  = ((*t)->events);
+            if (el.empty())
                   continue;
             //
             // if we split the track, SYSEX and META events go into
@@ -264,7 +264,7 @@ bool MusE::importMidi(const QString name, bool merge)
             
             MusECore::iMPEvent ev;
             set< pair<int,int> > already_processed;
-            for (ev = el->begin(); ev != el->end(); ++ev)
+            for (ev = el.begin(); ev != el.end(); ++ev)
             {
               if (ev->type() != MusECore::ME_SYSEX && ev->type() != MusECore::ME_META)
               {
@@ -288,9 +288,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         track->setOutPort(port);
 
                         MusECore::MidiPort* mport = &MusEGlobal::midiPorts[port];
-                        //MusECore::MidiInstrument* instr = mport->instrument();
-                        MusECore::EventList* mel = track->events();
-                        buildMidiEventList(mel, el, track, division, first, false); // Don't do loops.
+                        buildMidiEventList(&track->events, el, track, division, first, false); // Don't do loops.
                         first = false;
 
                         // Comment Added by T356.
@@ -305,8 +303,7 @@ bool MusE::importMidi(const QString name, bool merge)
                            {
                               track->setType(MusECore::Track::DRUM);
                               // remap drum pitch with drumOutmap (was: Inmap. flo93 thought this was wrong)
-                              MusECore::EventList* tevents = track->events();
-                              for (MusECore::iEvent i = tevents->begin(); i != tevents->end(); ++i) {
+                              for (MusECore::iEvent i = track->events.begin(); i != track->events.end(); ++i) {
                                     MusECore::Event ev  = i->second;
                                     if (ev.isNote()) {
                                           int pitch = MusEGlobal::drumOutmap[ev.pitch()];
@@ -339,8 +336,7 @@ bool MusE::importMidi(const QString name, bool merge)
                   MusECore::MidiTrack* track = new MusECore::MidiTrack();
                   track->setOutChannel(0);
                   track->setOutPort(0);
-                  MusECore::EventList* mel = track->events();
-                  buildMidiEventList(mel, el, track, division, true, false); // Do SysexMeta. Don't do loops.
+                  buildMidiEventList(&track->events, el, track, division, true, false); // Do SysexMeta. Don't do loops.
                   processTrack(track);
                   MusEGlobal::song->insertTrack0(track, -1);
                   }
@@ -383,8 +379,8 @@ bool MusE::importMidi(const QString name, bool merge)
 
 void MusE::processTrack(MusECore::MidiTrack* track)
       {
-      MusECore::EventList* tevents = track->events();
-      if (tevents->empty())
+      MusECore::EventList& tevents = track->events;
+      if (tevents.empty())
             return;
 
       //---------------------------------------------------
@@ -398,8 +394,8 @@ void MusE::processTrack(MusECore::MidiTrack* track)
       MusECore::PartList* pl = track->parts();
 
       int lastTick = 0;
-      for (MusECore::iEvent i = tevents->begin(); i != tevents->end(); ++i) {
-            MusECore::Event event = i->second;
+      for (MusECore::ciEvent i = tevents.begin(); i != tevents.end(); ++i) {
+            const MusECore::Event& event = i->second;
             int epos = event.tick() + event.lenTick();
             if (epos > lastTick)
                   lastTick = epos;
@@ -426,8 +422,8 @@ void MusE::processTrack(MusECore::MidiTrack* track)
               if (lastOff > x2) {        
                     continue;
                     }
-              MusECore::iEvent i1 = tevents->lower_bound(x1);
-              MusECore::iEvent i2 = tevents->lower_bound(x2);
+              MusECore::iEvent i1 = tevents.lower_bound(x1);
+              MusECore::iEvent i2 = tevents.lower_bound(x2);
   
               if (i1 == i2) {   // empty?
                     if (st != -1) {
@@ -444,8 +440,8 @@ void MusE::processTrack(MusECore::MidiTrack* track)
                           st = x1;    // begin new  part
                     //HACK:
                     //lastOff:
-                    for (MusECore::iEvent i = i1; i != i2; ++i) {
-                          MusECore::Event event = i->second;
+                    for (MusECore::ciEvent i = i1; i != i2; ++i) {
+                          const MusECore::Event& event = i->second;
                           if (event.type() == MusECore::Note) {
                                 int off = event.tick() + event.lenTick();
                                 if (off > lastOff)
@@ -480,28 +476,27 @@ void MusE::processTrack(MusECore::MidiTrack* track)
             MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
             int stick = part->tick();
             int etick = part->tick() + part->lenTick();
-            MusECore::iEvent r1 = tevents->lower_bound(stick);
-            MusECore::iEvent r2 = tevents->lower_bound(etick);
+            MusECore::iEvent r1 = tevents.lower_bound(stick);
+            MusECore::iEvent r2 = tevents.lower_bound(etick);
             int startTick = part->tick();
 
-            MusECore::EventList* el = part->events();
             for (MusECore::iEvent i = r1; i != r2; ++i) {
-                  MusECore::Event ev = i->second;
+                  MusECore::Event& ev = i->second;
                   int ntick = ev.tick() - startTick;
                   ev.setTick(ntick);
-                  el->add(ev);
+                  part->addEvent(ev);
                   }
-            tevents->erase(r1, r2);
+            tevents.erase(r1, r2);
             }
 
-      if (tevents->size())
-            printf("-----------events left: %zd\n", tevents->size());
-      for (MusECore::iEvent i = tevents->begin(); i != tevents->end(); ++i) {
+      if (tevents.size())
+            printf("-----------events left: %zd\n", tevents.size());
+      for (MusECore::ciEvent i = tevents.begin(); i != tevents.end(); ++i) {
             printf("%d===\n", i->first);
             i->second.dump();
             }
       // all events should be processed:
-      if (!tevents->empty())
+      if (!tevents.empty())
         printf("THIS SHOULD NEVER HAPPEN: not all events processed at the end of MusE::processTrack()!\n");
       }
 
@@ -620,7 +615,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
                   if (tag == "part") {
                         // Read the part.
                         MusECore::Part* p = 0;
-                        p = readXmlPart(xml, track);
+                        p = MusECore::Part::readFromXml(xml, track);
                         // If it could not be created...
                         if(!p)
                         {

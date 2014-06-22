@@ -29,6 +29,8 @@
 
 namespace MusECore {
 class Xml;
+class PendingOperationList;
+class PendingOperationItem;
 }
 
 namespace AL {
@@ -36,8 +38,6 @@ namespace AL {
 #ifndef MAX_TICK
 #define MAX_TICK (0x7fffffff/100)
 #endif
-
-///class Xml;
 
 //---------------------------------------------------------
 //   TimeSignature
@@ -58,9 +58,6 @@ struct SigEvent {
       TimeSignature sig;
       unsigned tick;    // signature valid from this position
       int bar;          // precomputed
-
-      ///int read(QDomNode);
-      ///void write(MusECore::Xml&, int) const;
       int read(MusECore::Xml&);
       void write(int, MusECore::Xml&, int) const;
 
@@ -83,21 +80,22 @@ typedef SIGLIST::reverse_iterator riSigEvent;
 typedef SIGLIST::const_reverse_iterator criSigEvent;
 
 class SigList : public SIGLIST {
+   friend MusECore::PendingOperationItem;
+   
       int ticks_beat(int N) const;
-      void normalize();
       int ticksMeasure(const TimeSignature&) const;
       int ticksMeasure(int z, int n) const;
+      void add(unsigned tick, SigEvent* e, bool do_normalize = true);
+      void del(iSigEvent, bool do_normalize = true);
 
    public:
       SigList();
       ~SigList();
       void clear();
       void add(unsigned tick, const TimeSignature& s);
-      //void add(unsigned tick, int z, int n);
       void del(unsigned tick);
-
-      ///void read(QDomNode);
-      ///void write(MusECore::Xml&) const;
+      void normalize();
+      
       void read(MusECore::Xml&);
       void write(int, MusECore::Xml&) const;
       
@@ -114,6 +112,9 @@ class SigList : public SIGLIST {
       unsigned raster1(unsigned tick, int raster) const;    // round down
       unsigned raster2(unsigned tick, int raster) const;    // round up
       int rasterStep(unsigned tick, int raster) const;
+      
+      void addOperation(unsigned tick, const TimeSignature& s, MusECore::PendingOperationList& ops); 
+      void delOperation(unsigned tick, MusECore::PendingOperationList& ops);
       };
 
 extern SigList sigmap;

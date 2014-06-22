@@ -42,6 +42,9 @@
 #include "meter.h"
 #include "utils.h"
 #include "icons.h"
+#include "undo.h"
+
+using MusECore::UndoOp;
 
 namespace MusEGui {
 
@@ -341,8 +344,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
       QFrame::mousePressEvent(ev);
       return;
     }
-    MusEGlobal::song->removeTrack0(track);
-    MusEGlobal::audio->msgUpdateSoloStates();
+    MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
     ev->accept();
     return;
   }

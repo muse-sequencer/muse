@@ -41,6 +41,7 @@
 #include "limits.h"
 #include "dssihost.h"
 #include "gconfig.h"
+#include "operations.h"
 #include <QMessageBox>
 
 namespace MusECore {
@@ -68,9 +69,9 @@ void addPortCtrlEvents(MidiTrack* t)
   for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
   {
     Part* part = ip->second;
-    const EventList* el = part->cevents();
+    const EventList& el = part->events();
     unsigned len = part->lenTick();
-    for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+    for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
     {
       const Event& ev = ie->second;
       // Added by T356. Do not add events which are past the end of the part.
@@ -108,6 +109,18 @@ void addPortCtrlEvents(MidiTrack* t)
   }
 }
 
+void addPortCtrlEvents(Track* track, PendingOperationList& ops)
+{
+  if(!track || !track->isMidiTrack())
+    return;
+  const PartList* pl = track->cparts();
+  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+  {
+    Part* part = ip->second;
+    addPortCtrlEvents(part, part->tick(), part->lenTick(), track, ops);
+  }
+}
+
 //---------------------------------------------------------
 //   removePortCtrlEvents
 //---------------------------------------------------------
@@ -118,8 +131,8 @@ void removePortCtrlEvents(MidiTrack* t)
   for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
   {
     Part* part = ip->second;
-    const EventList* el = part->cevents();
-    for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
+    const EventList& el = part->events();
+    for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
     {
       const Event& ev = ie->second;
                     
@@ -150,6 +163,18 @@ void removePortCtrlEvents(MidiTrack* t)
         mp->deleteController(ch, tick, cntrl, part);
       }
     }
+  }
+}
+
+void removePortCtrlEvents(Track* track, PendingOperationList& ops)
+{
+  if(!track || !track->isMidiTrack())
+    return;
+  const PartList* pl = track->cparts();
+  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+  {
+    Part* part = ip->second;
+    removePortCtrlEvents(part, track, ops);
   }
 }
 
@@ -470,10 +495,6 @@ MidiTrack::MidiTrack()
    : Track(MIDI)
       {
       init();
-      _events = new EventList;
-      _mpevents = new MPEventList;
-      _stuckNotes = new MPEventList;
-      _stuckLiveNotes = new MPEventList;
       clefType=trebleClef;
       
       _drummap=new DrumMap[128];
@@ -485,11 +506,6 @@ MidiTrack::MidiTrack()
 MidiTrack::MidiTrack(const MidiTrack& mt, int flags)
   : Track(mt, flags)
 {
-      _events   = new EventList;
-      _mpevents = new MPEventList;
-      _stuckNotes = new MPEventList;
-      _stuckLiveNotes = new MPEventList;
-
       _drummap=new DrumMap[128];
       _drummap_hidden=new bool[128];
       
@@ -598,27 +614,11 @@ void MidiTrack::internal_assign(const Track& t, int flags)
         const PartList* pl = t.cparts();
         for (ciPart ip = pl->begin(); ip != pl->end(); ++ip) {
               Part* spart = ip->second;
-              bool clone = spart->events()->arefCount() > 1;
-              // This increments aref count if cloned, and chains clones.
-              // It also gives the new part a new serial number.
-              Part* dpart = newPart(spart, clone);
-              if(!clone) {
-                    // Copy Events
-                    MusECore::EventList* se = spart->events();
-                    MusECore::EventList* de = dpart->events();
-                    for (MusECore::iEvent i = se->begin(); i != se->end(); ++i) {
-                          MusECore::Event oldEvent = i->second;
-                          MusECore::Event ev = oldEvent.clone();
-                          de->add(ev);
-                          }
-                    }
-
-              // TODO: Should we include the parts in the undo?      
-              //      dpart->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
-              //                                    // so we must decrement it first :/
-              //      // These will not increment ref count, and will not chain clones...
-              //      // DELETETHIS: is the above comment still correct (by flo93)? i doubt it!
-              //      operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
+              Part* dpart;
+              if (spart->hasClones())
+                  dpart = spart->createNewClone();
+              else
+                  dpart = spart->duplicate();
 
               parts()->add(dpart);
               }
@@ -634,10 +634,6 @@ void MidiTrack::assign(const Track& t, int flags)
 
 MidiTrack::~MidiTrack()
       {
-      delete _events;
-      delete _mpevents;
-      delete _stuckNotes;
-      delete _stuckLiveNotes;
       delete [] _drummap;
       delete [] _drummap_hidden;
       
@@ -660,6 +656,19 @@ void MidiTrack::remove_ourselves_from_drum_ordering()
 void MidiTrack::init()
       {
       _outPort       = 0;
+
+      // let's set the port to the last instantiated device
+      // if midi-channel defaults are set in the configuration it
+      // will override this setting
+      for (int i = MIDI_PORTS; i > -1; i--)
+      {
+        if (MusEGlobal::midiPorts[i].device() != NULL)
+        {
+          _outPort = i;
+          break;
+        }
+      }
+
       _outChannel    = (type()==NEW_DRUM) ? 9 : 0;
 
       transposition  = 0;
@@ -811,90 +820,6 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
   }  
 }
 
-/* DELETETHIS 84
-//---------------------------------------------------------
-//   addPortCtrlEvents
-//---------------------------------------------------------
-
-void MidiTrack::addPortCtrlEvents()
-{
-  const PartList* pl = cparts();
-  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-  {
-    Part* part = ip->second;
-    const EventList* el = part->cevents();
-    for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
-    {
-      const Event& ev = ie->second;
-      if(ev.type() == Controller)
-      {
-        int tick  = ev.tick() + part->tick();
-        int cntrl = ev.dataA();
-        int val   = ev.dataB();
-        int ch = _outChannel;
-        
-        MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
-        // Is it a drum controller event, according to the track port's instrument?
-        if(type() == DRUM)
-        {
-          MidiController* mc = mp->drumController(cntrl);
-          if(mc)
-          {
-            int note = cntrl & 0x7f;
-            cntrl &= ~0xff;
-            ch = MusEGlobal::drumMap[note].channel;
-            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
-            cntrl |= MusEGlobal::drumMap[note].anote;
-          }
-        }
-        
-        mp->setControllerVal(ch, tick, cntrl, val, part);
-      }
-    }
-  }
-}
-
-//---------------------------------------------------------
-//   removePortCtrlEvents
-//---------------------------------------------------------
-
-void MidiTrack::removePortCtrlEvents()
-{
-  const PartList* pl = cparts();
-  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-  {
-    Part* part = ip->second;
-    const EventList* el = part->cevents();
-    for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
-    {
-      const Event& ev = ie->second;
-      if(ev.type() == Controller)
-      {
-        int tick  = ev.tick() + part->tick();
-        int cntrl = ev.dataA();
-        int ch = _outChannel;
-        
-        MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
-        // Is it a drum controller event, according to the track port's instrument?
-        if(type() == DRUM)
-        {
-          MidiController* mc = mp->drumController(cntrl);
-          if(mc)
-          {
-            int note = cntrl & 0x7f;
-            cntrl &= ~0xff;
-            ch = MusEGlobal::drumMap[note].channel;
-            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
-            cntrl |= MusEGlobal::drumMap[note].anote;
-          }
-        }
-        
-        mp->deleteController(ch, tick, cntrl, part);
-      }
-    }
-  }
-}
-*/
 
 //---------------------------------------------------------
 //   newPart
@@ -902,19 +827,17 @@ void MidiTrack::removePortCtrlEvents()
 
 Part* MidiTrack::newPart(Part*p, bool clone)
       {
-      MidiPart* part = clone ? new MidiPart(this, p->events()) : new MidiPart(this);
-      if (p) {
-            part->setName(p->name());
-            part->setColorIndex(p->colorIndex());
-
-            *(PosLen*)part = *(PosLen*)p;
-            part->setMute(p->mute());
-            }
-      
-      if(clone)
-        //p->chainClone(part);
-        chainClone(p, part);
-      
+      MidiPart* part;
+      if (clone)
+      {
+            part = (MidiPart*)p->createNewClone();
+            part->setTrack(this);
+      }
+      else
+      {
+            part = (MidiPart*)p->duplicate();
+            part->setTrack(this);
+      }
       return part;
       }
 
@@ -924,7 +847,7 @@ Part* MidiTrack::newPart(Part*p, bool clone)
 
 bool MidiTrack::addStuckNote(const MidiPlayEvent& ev)
 {
-  _stuckNotes->add(ev);
+  stuckNotes.add(ev);
   return true;
 }
       
@@ -954,7 +877,7 @@ bool MidiTrack::addStuckNote(const MidiPlayEvent& ev)
 
 bool MidiTrack::addStuckLiveNote(int port, int chan, int note, int vel)
 {
-  _stuckLiveNotes->add(MidiPlayEvent(0, port, chan, ME_NOTEOFF, note, vel)); // Mark for immediate playback
+  stuckLiveNotes.add(MidiPlayEvent(0, port, chan, ME_NOTEOFF, note, vel)); // Mark for immediate playback
   return true;
 }
 
@@ -984,14 +907,14 @@ bool MidiTrack::addStuckLiveNote(int port, int chan, int note, int vel)
 
 bool MidiTrack::removeStuckLiveNote(int port, int chan, int note)
 {
-  for(ciMPEvent k = _stuckLiveNotes->begin(); k != _stuckLiveNotes->end(); ++k)
+  for(ciMPEvent k = stuckLiveNotes.begin(); k != stuckLiveNotes.end(); ++k)
   {
     // We're looking for port, channel, and note. Time and velocity are not relevant.
     if((*k).port() == port &&
        (*k).channel() == chan &&
        (*k).dataA() == note)
     {
-      _stuckLiveNotes->erase(k);
+      stuckLiveNotes.erase(k);
       return true;
     }
   }
@@ -1092,7 +1015,7 @@ void MidiTrack::read(Xml& xml)
             switch (token) {
                   case Xml::Error:
                   case Xml::End:
-                        return;
+                        goto out_of_MidiTrackRead_forloop;
                   case Xml::TagStart:
                         if (tag == "transposition")
                               transposition = xml.parseInt();
@@ -1105,10 +1028,7 @@ void MidiTrack::read(Xml& xml)
                         else if (tag == "compression")
                               compression = xml.parseInt();
                         else if (tag == "part") {
-                              //Part* p = newPart();
-                              //p->read(xml);
-                              Part* p = 0;
-                              p = readXmlPart(xml, this);
+                              Part* p = Part::readFromXml(xml, this);
                               if(p)
                                 parts()->add(p);
                               }
@@ -1182,12 +1102,15 @@ void MidiTrack::read(Xml& xml)
                         if (tag == "miditrack" || tag == "drumtrack" || tag == "newdrumtrack") 
                         {
                           setInPortAndChannelMask(portmask, chanmask); // Support old files.
-                          return;
+                          goto out_of_MidiTrackRead_forloop;
                         }
                   default:
                         break;
                   }
             }
+      
+out_of_MidiTrackRead_forloop:
+      chainTrackParts(this);
       }
 
 void MidiTrack::readOurDrumSettings(Xml& xml)
@@ -1423,7 +1346,7 @@ int MidiTrack::getFirstControllerValue(int ctrl, int def)
   {
     Part* part=pit->second;
     if (part->tick() > tick) break; // ignore this and the rest. we won't find anything new.
-    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    for (ciEvent eit=part->events().begin(); eit!=part->events().end(); eit++)
     {
       if (eit->first+part->tick() >= tick) break;
       if (eit->first > part->lenTick()) break; // ignore events past the end of the part
@@ -1447,7 +1370,7 @@ int MidiTrack::getControllerChangeAtTick(unsigned tick, int ctrl, int def)
     Part* part=pit->second;
     if (part->tick() > tick) break; // ignore this and the rest. we'd find nothing any more
     if (part->endTick() < tick) continue; // ignore only this.
-    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    for (ciEvent eit=part->events().begin(); eit!=part->events().end(); eit++)
     {
       if (eit->first+part->tick() > tick) break; // we won't find anything in this part from now on.
       if (eit->first > part->lenTick()) break; // ignore events past the end of the part
@@ -1473,7 +1396,7 @@ unsigned MidiTrack::getControllerValueLifetime(unsigned tick, int ctrl)
     Part* part=pit->second;
     if (part->tick() > result) break; // ignore this and the rest. we won't find anything new.
     if (part->endTick() < tick) continue; // ignore only this part, we won't find anything there.
-    for (iEvent eit=part->events()->begin(); eit!=part->events()->end(); eit++)
+    for (ciEvent eit=part->events().begin(); eit!=part->events().end(); eit++)
     {
       if (eit->first+part->tick() >= result) break;
       if (eit->first > part->lenTick()) break; // ignore events past the end of the part

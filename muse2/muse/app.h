@@ -25,8 +25,8 @@
 #define __APP_H__
 
 #include "config.h"
+#include "globaldefs.h"
 #include "cobject.h"
-#include <editinstrument.h>
 
 #include <QFileInfo>
 #include <list>
@@ -59,7 +59,6 @@ class Undo;
 class WaveTrack;
 class Xml;
 }
-
 
 namespace MusEGui {
 class Appearance;
@@ -342,7 +341,7 @@ class MusE : public QMainWindow
       void showArranger(bool);
       void importMidi(const QString &file);
       void showDidYouKnowDialog();
-      void startEditInstrument(const QString& find_instrument = QString(), EditInstrument::TabType show_tab = EditInstrument::Patches);
+      void startEditInstrument(const QString& find_instrument = QString(), EditInstrumentTabType show_tab = EditInstrumentPatches);
       void configMidiPorts();
 
       void startEditor(MusECore::PartList*, int);

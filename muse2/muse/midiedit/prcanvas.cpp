@@ -59,7 +59,7 @@ namespace MusEGui {
 //   NEvent
 //---------------------------------------------------------
 
-NEvent::NEvent(MusECore::Event& e, MusECore::Part* p, int y) : MusEGui::CItem(e, p)
+NEvent::NEvent(const MusECore::Event& e, MusECore::Part* p, int y) : MusEGui::CItem(e, p)
       {
       y = y - KH/4;
       unsigned tick = e.tick() + p->tick();
@@ -72,7 +72,7 @@ NEvent::NEvent(MusECore::Event& e, MusECore::Part* p, int y) : MusEGui::CItem(e,
 //   addItem
 //---------------------------------------------------------
 
-CItem* PianoCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
+CItem* PianoCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
       {
       if (signed(event.tick())<0) {
             printf("ERROR: trying to add event before current part!\n");
@@ -635,11 +635,10 @@ void PianoCanvas::pianoCmd(int cmd)
                   if (part == 0)
                         break;
 
-                  MusECore::EventList* el = part->events();
                   MusECore::Undo operations;
 
                   std::list <MusECore::Event> elist;
-                  for (MusECore::iEvent e = el->lower_bound(pos[0] - part->tick()); e != el->end(); ++e)
+                  for (MusECore::ciEvent e = part->events().lower_bound(pos[0] - part->tick()); e != part->events().end(); ++e)
                         elist.push_back((MusECore::Event)e->second);
                   for (std::list<MusECore::Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
                         MusECore::Event event = *i;
@@ -663,10 +662,8 @@ void PianoCanvas::pianoCmd(int cmd)
                         break;
                   
                   MusECore::Undo operations;
-                  MusECore::EventList* el = part->events();
-
                   std::list<MusECore::Event> elist;
-                  for (MusECore::iEvent e = el->lower_bound(pos[0]); e != el->end(); ++e)
+                  for (MusECore::ciEvent e = part->events().lower_bound(pos[0]); e != part->events().end(); ++e)
                         elist.push_back((MusECore::Event)e->second);
                   for (std::list<MusECore::Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
                         MusECore::Event event = *i;
@@ -989,9 +986,9 @@ void PianoCanvas::curPartChanged()
 
 void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
       {
-      QList< QPair<MusECore::EventList*,MusECore::Event> > already_done;
-      MusEGlobal::audio->msgIdle(true);
-      MusEGlobal::song->startUndo();
+      QList< QPair<int,MusECore::Event> > already_done;
+      MusECore::Undo operations;
+      
       for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
                   continue;
@@ -1002,7 +999,7 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
 
             MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
             
-            if (already_done.contains(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event)))
+            if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
               continue;
             
             MusECore::Event newEvent = event.clone();
@@ -1067,15 +1064,10 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
                         }
                         break;
                   }
-            
-            MusEGlobal::song->changeEvent(event, newEvent, part);
-            // Indicate do not do port controller values and clone parts. 
-            MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
-
-            already_done.append(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event));
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
+            already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
             }
-      MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
-      MusEGlobal::audio->msgIdle(false);
+      MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------

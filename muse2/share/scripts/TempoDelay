@@ -1,0 +1,113 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# MusE external midi processing script
+# By: Robert Jonsson 2014
+# TEMPO delay
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2002-2011 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+
+import sys,time
+from PyQt4 import QtGui, QtCore
+
+class TempoDelay(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+
+        self.setWindowTitle('Tempo delay')
+
+        title = QtGui.QLabel('Delay time:')
+        self.timeEdit = QtGui.QComboBox()
+        self.timeEdit.addItem('1/1',1)
+        self.timeEdit.addItem('1/2',2)
+        self.timeEdit.addItem('1/4',4)
+        self.timeEdit.addItem('1/8',8)
+        self.timeEdit.addItem('1/16',16)
+        self.timeEdit.addItem('1/32',32)
+        self.timeEdit.setCurrentIndex(3)
+
+        numLabel = QtGui.QLabel('Number of delays:')
+        self.numEntry = QtGui.QSpinBox()
+        self.numEntry.setMinimum(1)
+        self.numEntry.setValue(1)
+
+        print "setting execute"
+        button = QtGui.QPushButton("Execute")
+        self.connect(button,  QtCore.SIGNAL('clicked()'), self.execute) 
+
+        grid = QtGui.QGridLayout()
+        grid.setSpacing(3)
+
+        grid.addWidget(title, 1, 0)
+        grid.addWidget(self.timeEdit, 1, 1)
+        grid.addWidget(numLabel, 2, 0)
+        grid.addWidget(self.numEntry, 2, 1)
+
+        grid.addWidget(button, 3, 1)
+
+        self.setLayout(grid)
+        self.resize(200, 100)
+        button.setFocus()
+
+    def execute(self):
+
+        testFile = file(sys.argv[1],"r")
+        inputEvents = testFile.readlines()
+        testFile.close()
+        
+      	numDelay = self.numEntry.value()
+        beatDiv = int(self.timeEdit.itemData(self.timeEdit.currentIndex()).toInt()[0])
+        delayLength=0 # fill in when we get the beat size value
+
+        outputEvents=[]
+
+        #get beat length to calculate minimum length of event
+        for line in inputEvents:
+            if line.startswith('BEATLEN'):
+              tag,tick = line.split(' ')
+              delayLength=int(tick)/beatDiv
+              break
+
+        #loop through events
+        for line in inputEvents:
+            if line.startswith('NOTE'):
+              tag,tick,note,length,velocity = line.split(' ')
+              outputEvents.append(line)
+              for v in range(numDelay):
+                outputEvents.append("%s %d %s %s %d\n"%(tag,int(tick)+delayLength*(v+1),note,length,int(velocity)/(v+2)))
+
+            else:
+              outputEvents.append(line)
+
+
+        testFile = file(sys.argv[1],"w")
+        testFile.writelines(outputEvents)
+        testFile.close()
+
+        
+        quit()
+
+app = QtGui.QApplication(sys.argv)
+qb = TempoDelay()
+qb.show()
+sys.exit(app.exec_())

@@ -203,8 +203,8 @@ class MidiInstrument {
       const QString& iname() const      { return _name; }
       void setIName(const QString& txt) { _name = txt; }
       MType midiType() const;
+      virtual bool isSynti() const     { return false; }
       
-      //MidiInstrument& uniqueCopy(const MidiInstrument&);
       // Assign will 'delete' all existing patches and groups from the instrument.
       MidiInstrument& assign(const MidiInstrument&);
       QString filePath() const               { return _filePath;   }
@@ -243,6 +243,7 @@ class MidiInstrument {
       virtual void reset(int); 
       virtual QString getPatchName(int,int,bool) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
+      static void populateInstrPopup(MusEGui::PopupMenu*, MidiInstrument* current = 0, bool show_synths = false);  // Static
       void read(Xml&);
       void write(int level, Xml&);
       
@@ -258,6 +259,7 @@ class MidiInstrumentList : public std::list<MidiInstrument*> {
 
    public:
       MidiInstrumentList() {}
+      iterator find(const MidiInstrument* instr);
       };
 
 typedef MidiInstrumentList::iterator iMidiInstrument;

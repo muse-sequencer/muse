@@ -37,6 +37,7 @@ QT4_WRAP_CPP (widget_mocs
       bigtime.h  
       canvas.h  
       checkbox.h
+      choose_sysex.h
       colorframe.h
       comboQuant.h  
       combobox.h  
@@ -48,6 +49,7 @@ QT4_WRAP_CPP (widget_mocs
       didyouknow.h
       doublelabel.h  
       doublespinbox.h  
+      editevent.h      
       filedialog.h  
       genset.h  
       mdisettings.h  
@@ -117,11 +119,13 @@ file (GLOB widgets_ui_files
       aboutbox.ui  
       arrangercolumnsbase.ui 
       appearancebase.ui 
+      choose_sysex_base.ui
       cliplisteditorbase.ui  
       commentbase.ui  
       configmidifilebase.ui
       copy_on_write_base.ui
       didyouknow.ui  
+      editctrlbase.ui  
       editnotedialogbase.ui  
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
@@ -158,6 +162,7 @@ file (GLOB widgets_source_files
       bigtime.cpp 
       canvas.cpp 
       checkbox.cpp 
+      choose_sysex.cpp
       citem.cpp
       colorframe.cpp
       comboQuant.cpp 
@@ -171,6 +176,7 @@ file (GLOB widgets_source_files
       doublelabel.cpp 
       doublespinbox.cpp
       drange.cpp
+      editevent.cpp
       filedialog.cpp 
       genset.cpp 
       mdisettings.cpp 
@@ -272,7 +278,6 @@ set_target_properties( widgets
 target_link_libraries ( widgets
       ${QT_LIBRARIES}
       icons
-      instruments
       )
 
 ##

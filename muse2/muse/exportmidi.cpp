@@ -133,11 +133,11 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
 //     track can be NULL meaning no concept of drum notes is allowed in init sequences.
 //---------------------------------------------------------
 
-static void addEventList(MusECore::EventList* evlist, MusECore::MPEventList* mpevlist, MusECore::MidiTrack* track, MusECore::Part* part, int port, int channel)
+static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventList* mpevlist, MusECore::MidiTrack* track, MusECore::Part* part, int port, int channel)
 {      
-  for (MusECore::iEvent i = evlist->begin(); i != evlist->end(); ++i) 
+  for (MusECore::ciEvent i = evlist.begin(); i != evlist.end(); ++i) 
   {
-    MusECore::Event ev = i->second;
+    const MusECore::Event& ev = i->second;
     int tick = ev.tick();
     if(part)
       tick += part->tick();
@@ -492,7 +492,7 @@ void MusE::exportMidi()
                     {
                       MusECore::EventList* el = instr->midiInit();
                       if(!el->empty())
-                        MusECore::addEventList(el, l, NULL, NULL, port, channel); // No track or part passed for init sequences
+                        MusECore::addEventList(*el, l, NULL, NULL, port, channel); // No track or part passed for init sequences
                     }
                     
                     //--------------------------
@@ -521,8 +521,7 @@ void MusE::exportMidi()
             MusECore::PartList* parts = track->parts();
             for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p) {
                   MusECore::MidiPart* part    = (MusECore::MidiPart*) (p->second);
-                  MusECore::EventList* evlist = part->events();
-                  MusECore::addEventList(evlist, l, track, part, port, channel); 
+                  MusECore::addEventList(part->events(), l, track, part, port, channel); 
                   }
                   
             ++i;  
@@ -531,12 +530,7 @@ void MusE::exportMidi()
       mf.setDivision(MusEGlobal::config.midiDivision);
       mf.setTrackList(mtl, i);
       mf.write();
-      
-      // DELETETHIS 4 ??? or is this still an issue?
-      // TESTING: Cleanup. I did not valgrind this feature in last memleak fixes, but I suspect it leaked. 
-      //for(MusECore::iMidiFileTrack imft = mtl->begin(); imft != mtl->end(); ++imft)
-      //  delete *imft;
-      //delete mtl;
+
       }
 
 } // namespace MusEGui

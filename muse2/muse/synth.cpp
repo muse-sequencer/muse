@@ -683,11 +683,7 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& label, Synth::T
       
       int idx = insertAt ? _tracks.index(insertAt) : -1;
       
-      insertTrack1(si, idx);
-      
-      msgInsertTrack(si, idx, true);       // add to instance list
-      
-      insertTrack3(si, idx);
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTrack, idx, si));
 
       OutputList* ol = MusEGlobal::song->outputs();
       // add default route to master (first audio output)

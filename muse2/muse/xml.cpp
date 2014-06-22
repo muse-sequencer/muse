@@ -165,7 +165,7 @@ void Xml::stoken()
                               else if (strcmp(entity, "gt") == 0)
                                     c = '>';
                               else if (strcmp(entity, "apos") == 0)
-                                    c = '\\';
+                                    c = '\'';
                               else
                                     entity[k] = c;
                               break;
@@ -400,7 +400,7 @@ Xml::Token Xml::parse()
                         else if (strcmp(name, "gt") == 0)
                               c = '>';
                         else if (strcmp(name, "apos") == 0)
-                              c = '\\';
+                              c = '\'';
                         else if (strcmp(name, "quot") == 0)
                               c = '"';
                         else if (strcmp(name, "amp") == 0)
@@ -660,7 +660,7 @@ void Xml::strTag(int level, const char* name, const char* val)
                         case '&': fprintf(f, "&amp;"); break;
                         case '<': fprintf(f, "&lt;"); break;
                         case '>': fprintf(f, "&gt;"); break;
-                        case '\\': fprintf(f, "&apos;"); break;
+                        case '\'': fprintf(f, "&apos;"); break;
                         case '"': fprintf(f, "&quot;"); break;
                         default: fputc(*val, f); break;
                         }

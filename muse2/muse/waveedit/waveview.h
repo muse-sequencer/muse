@@ -86,21 +86,6 @@ class WaveView : public View {
       MusECore::WaveSelectionList getSelection(unsigned startpos, unsigned stoppos);
 
       int lastGainvalue; //!< Stores the last used gainvalue when specifiying gain value in the editgain dialog
-      void modifySelection(int operation, unsigned startpos, unsigned stoppos, double paramA); //!< Modifies selection
-
-      void muteSelection(unsigned channels, float** data, unsigned length); //!< Mutes selection
-      void normalizeSelection(unsigned channels, float** data, unsigned length); //!< Normalizes selection
-      void fadeInSelection(unsigned channels, float** data, unsigned length); //!< Linear fade in of selection
-      void fadeOutSelection(unsigned channels, float** data, unsigned length); //!< Linear fade out of selection
-      void reverseSelection(unsigned channels, float** data, unsigned length); //!< Reverse selection
-      void applyGain(unsigned channels, float** data, unsigned length, double gain); //!< Apply gain to selection
-      void copySelection(unsigned file_channels, float** tmpdata, unsigned tmpdatalen, bool blankData, unsigned format, unsigned sampleRate);
-
-      void editExternal(unsigned file_format, unsigned file_samplerate, unsigned channels, float** data, unsigned length);
-
-      //void applyLadspa(unsigned channels, float** data, unsigned length); //!< Apply LADSPA plugin on selection
-
-
    private slots:
       void setPos(int idx, unsigned val, bool adjustScrollbar);
 
@@ -120,7 +105,6 @@ class WaveView : public View {
       WaveView(MidiEditor*, QWidget* parent, int xscale, int yscale);
       QString getCaption() const;
       void range(int*, int*);
-      void cmd(int n);
       MusECore::WavePart* part() { return curPart; }
       };
 

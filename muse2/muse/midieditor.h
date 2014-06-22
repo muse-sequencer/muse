@@ -59,6 +59,7 @@ class MidiEditor : public TopWin  {
       std::set<int> _parts;
       int _curDrumInstrument;  // currently selected instrument if drum
                                // editor
+
    protected:
       MusEGui::ScrollScale* hscroll;
       MusEGui::ScrollScale* vscroll;
@@ -74,9 +75,10 @@ class MidiEditor : public TopWin  {
       virtual void writeStatus(int, MusECore::Xml&) const;
       void writePartList(int, MusECore::Xml&) const;
       void genPartlist();
+      void movePlayPointerToSelectedEvent();
 
    private slots:
-      void addNewParts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
+      void addNewParts(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
 
    public slots:
       void songChanged(MusECore::SongChangedFlags_t type);
