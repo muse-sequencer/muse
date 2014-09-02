@@ -1224,7 +1224,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
 	                                                     // pointer changes (by resize) screw it up
 	MusEGlobal::song->applyOperationGroup(operations);
-	MusEGlobal::song->update(SC_SELECTION);
+	MusEGlobal::song->update(SC_SELECTION | SC_PART_SELECTION);
 }
 
 void select_all(const set<const Part*>& parts)
@@ -1298,6 +1298,29 @@ void select_not_in_loop(const set<const Part*>& parts)
 		}
 	MusEGlobal::song->applyOperationGroup(operations);
 }
+
+bool tracks_are_selected()
+{
+  const TrackList* tl = MusEGlobal::song->tracks();
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+    if((*it)->selected()) 
+      return true;
+  return false;
+}
+
+bool parts_are_selected()
+{
+  const TrackList* tl = MusEGlobal::song->tracks();
+  for(ciTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    const PartList* pl = (*it)->cparts();
+    for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+      if(ip->second->selected())
+        return true;
+  }
+  return false;
+}
+
 
 
 void shrink_parts(int raster)

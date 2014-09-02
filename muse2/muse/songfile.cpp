@@ -152,6 +152,8 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                           {
                             for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
                             {
+                              if(i->is_deleted) // Is the clone item marked as deleted? Ignore it.
+                                continue;
                               if(i->id == id) // Is a matching part found in the clone list?
                               {
                                 // Create a clone. It must still be added later in a operationgroup
@@ -193,6 +195,9 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                                     }  
                                   }
                                 }
+                                
+                                if(i->is_deleted) // Is the clone item marked as deleted? Don't create a clone, create a copy.
+                                  break;
                                 
                                 // If it's a regular paste (not paste clone), and the original part is
                                 //  not a clone, defer so that a new copy is created in TagStart above.
@@ -357,6 +362,9 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
       uuid_clear(uuid);
       bool dumpEvents     = true;
       bool wave = _track->type() == Track::WAVE;
+
+      // NOTE ::write() should never be called on a deleted part, so no checking here for cloneList items marked as deleted.
+      //      Checking is awkward anyway and doesn't fit well here.
       
       if(isCopy)
       {

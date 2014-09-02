@@ -631,6 +631,11 @@ PianoRoll::~PianoRoll()
 
 void PianoRoll::cmd(int cmd)
       {
+        // Don't process if user is dragging or has clicked on the events. 
+        // Causes crashes later in Canvas::viewMouseMoveEvent and viewMouseReleaseEvent.
+        if(canvas->getCurrentDrag())
+          return;
+        
 			switch (cmd)
 						{
             case PianoCanvas::CMD_CUT:

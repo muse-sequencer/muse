@@ -174,7 +174,7 @@ class Arranger : public QWidget {
       
    signals:
       void editPart(MusECore::Track*);
-      void selectionChanged();
+      void selectionChanged(); // NOTE: This is emitted upon EITHER a part or track selection change.
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
       void startEditor(MusECore::PartList*, int);
@@ -230,8 +230,9 @@ class Arranger : public QWidget {
 
       MusECore::Track* curTrack() const { return selected; }
       void cmd(int);
-      bool isSingleSelection() { return canvas->isSingleSelection(); }
-      int selectionSize() { return canvas->selectionSize(); }
+      bool isSingleSelection() const { return canvas->isSingleSelection(); }
+      int selectionSize() const { return canvas->selectionSize(); }
+      bool itemsAreSelected() const { return canvas->itemsAreSelected(); }
       void setGlobalTempo(int);
       void clear();
       void songIsClearing() { canvas->songIsClearing(); }

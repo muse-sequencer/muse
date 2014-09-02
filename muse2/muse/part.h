@@ -48,6 +48,7 @@ struct ClonePart {
       const Part* cp;
       int id;
       uuid_t uuid;
+      bool is_deleted;
       ClonePart(const Part*, int i = -1);
       };
 

@@ -1339,7 +1339,7 @@ void Song::revertOperationGroup1(Undo& operations)
             switch(i->type) {
                   case UndoOp::SelectPart:
                         editable_part->setSelected(i->selected_old);
-                        updateFlags |= SC_SELECTION;
+                        updateFlags |= SC_PART_SELECTION;
                         break;
                   case UndoOp::SelectEvent:
 			selectEvent(i->nEvent, editable_part, i->selected_old);
@@ -1664,7 +1664,7 @@ void Song::executeOperationGroup1(Undo& operations)
             switch(i->type) {
                   case UndoOp::SelectPart:
                         editable_part->setSelected(i->selected);
-                        updateFlags |= SC_SELECTION;
+                        updateFlags |= SC_PART_SELECTION;
                         break;
                   case UndoOp::SelectEvent:
 			selectEvent(i->nEvent, editable_part, i->selected);

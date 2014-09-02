@@ -82,7 +82,7 @@ class AudioDevice;
 #define SC_SIG                 0x200       // timing signature
 #define SC_TEMPO               0x400       // tempo map changed
 #define SC_MASTER              0x800       // master flag changed
-#define SC_SELECTION           0x1000
+#define SC_SELECTION           0x1000      // event selection. part and track selection have their own.
 #define SC_MIDI_CONTROLLER     0x2000      // must update midi mixer
 #define SC_MUTE                0x4000
 #define SC_SOLO                0x8000
@@ -99,7 +99,9 @@ class AudioDevice;
 #define SC_CLIP_MODIFIED       0x4000000
 #define SC_MIDI_CONTROLLER_ADD 0x8000000   // a hardware midi controller was added or deleted
 #define SC_MIDI_TRACK_PROP     0x10000000   // a midi track's properties changed (channel, compression etc)
+#define SC_PART_SELECTION      0x20000000   // part selection changed
 #define SC_KEY                 0x40000000   // key map changed
+#define SC_TRACK_SELECTION     0x80000000   // track selection changed
 #define SC_EVERYTHING          -1           // global update
 
 #define REC_NOTE_FIFO_SIZE    16

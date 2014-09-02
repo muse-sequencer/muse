@@ -59,7 +59,7 @@ class Canvas : public View {
       
    protected:
       enum DragMode {
-            DRAG_OFF, DRAG_NEW,
+            DRAG_OFF=0, DRAG_NEW,
             DRAG_MOVE_START, DRAG_MOVE,
             DRAG_COPY_START, DRAG_COPY,
             DRAG_CLONE_START, DRAG_CLONE,
@@ -138,7 +138,6 @@ class Canvas : public View {
       virtual void resizeItem(CItem*, bool noSnap=false, bool ctrl=false) = 0;
       virtual void newItem(CItem*, bool noSnap=false) = 0;
       virtual bool deleteItem(CItem*) = 0;
-      int getCurrentDrag();
 
       /*!
          \brief Virtual member
@@ -207,12 +206,14 @@ class Canvas : public View {
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
       virtual ~Canvas();
-      bool isSingleSelection();
-      int selectionSize();
+      bool isSingleSelection() const;
+      int selectionSize() const;
+      bool itemsAreSelected() const;
       Tool tool() const { return _tool; }
       MusECore::Part* part() const { return curPart; }
       void setCurrentPart(MusECore::Part*); 
       void setCanvasTools(int n) { canvasTools = n; }
+      int getCurrentDrag();
       };
 
 } // namespace MusEGui

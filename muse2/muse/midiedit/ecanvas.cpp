@@ -163,7 +163,7 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
       if(flags == SC_MIDI_CONTROLLER)
         return;
     
-      if (flags & ~SC_SELECTION) {
+      if (flags & ~(SC_SELECTION | SC_PART_SELECTION | SC_TRACK_SELECTION)) {
             // TODO FIXME: don't we actually only want SC_PART_*, and maybe SC_TRACK_DELETED?
             //             (same in waveview.cpp)
             bool curItemNeedsRestore=false;

@@ -409,6 +409,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       genTrackInfo(tracklist);
       
       connect(list, SIGNAL(selectionChanged(MusECore::Track*)), SLOT(trackSelectionChanged()));
+      connect(list, SIGNAL(selectionChanged(MusECore::Track*)), SIGNAL(selectionChanged()));
       connect(list, SIGNAL(selectionChanged(MusECore::Track*)), midiTrackInfo, SLOT(setTrack(MusECore::Track*)));
       connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
@@ -663,7 +664,7 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
           lenEntry->blockSignals(false);
         }
         
-        if(type & (SC_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
+        if(type & (SC_TRACK_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
           trackSelectionChanged();
         
         // Keep this light, partsChanged is a heavy move! Try these, may need more. Maybe sig. Requires tempo.

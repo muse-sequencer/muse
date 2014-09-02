@@ -320,10 +320,22 @@ void PendingOperationItem::executeRTStage()
             }      
       }
       chainTrackParts(_track);
+
+      // Be sure to mark the parts as not deleted if they exist in the global copy/paste clone list.
+      const PartList* pl = _track->cparts();
+      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip) 
+      {
+        for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
+        {
+          if(i->cp == ip->second) 
+            i->is_deleted = false;
+        }
+      }
     }
     break;
     
     case DeleteTrack:
+    {
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage DeleteTrack track_list:%p track:%p sec_track_list:%p\n", _track_list, _track, _void_track_list);
 #endif      
@@ -439,6 +451,18 @@ void PendingOperationItem::executeRTStage()
                     r->track->updateAuxRoute(-1, NULL);
             }      
       }
+
+      // Be sure to mark the parts as deleted if they exist in the global copy/paste clone list.
+      const PartList* pl = _track->cparts();
+      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip) 
+      {
+        for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
+        {
+          if(i->cp == ip->second) 
+            i->is_deleted = true;
+        }
+      }
+    }  
     break;
     
     case MoveTrack:
@@ -474,6 +498,12 @@ void PendingOperationItem::executeRTStage()
 #endif      
       _part_list->add(_part);
       _part->rechainClone();
+      // Be sure to mark the part as not deleted if it exists in the global copy/paste clone list.
+      for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
+      {
+        if(i->cp == _part) 
+          i->is_deleted = false;
+      }
     break;
     
     case DeletePart:
@@ -484,6 +514,12 @@ void PendingOperationItem::executeRTStage()
       Part* p = _iPart->second;
       _part_list->erase(_iPart);
       p->unchainClone();
+      // Be sure to mark the part as deleted if it exists in the global copy/paste clone list.
+      for(iClone i = MusEGlobal::cloneList.begin(); i != MusEGlobal::cloneList.end(); ++i) 
+      {
+        if(i->cp == p) 
+          i->is_deleted = true;
+      }
     }
     break;
 

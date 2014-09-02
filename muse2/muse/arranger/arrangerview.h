@@ -94,7 +94,7 @@ class ArrangerView : public TopWin
     QAction *strGlobalCutSelAction, *strGlobalInsertSelAction, *strGlobalSplitSelAction;
     QAction *trackMidiAction, *trackDrumAction, *trackNewStyleDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
 		QAction *trackAInputAction, *trackAAuxAction;
-		QAction *editCutAction, *editCopyAction, *editCopyRangeAction;
+		QAction *editDeleteAction,*editCutAction, *editCopyAction, *editCopyRangeAction;
 		QAction *editPasteAction, *editPasteCloneAction, *editPasteToTrackAction, *editPasteCloneToTrackAction, *editPasteDialogAction;
 		QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
     QAction *editDuplicateSelTrackAction;
@@ -139,7 +139,7 @@ class ArrangerView : public TopWin
 		void scoreNamingChanged();
 		void updateScoreMenus();
 		void clipboardChanged();
-		void selectionChanged();
+		void selectionChanged(); // NOTE: This is received upon EITHER a part or track selection change from the Arranger.
 		void updateShortcuts();
 		void updateVisibleTracksButtons();
 		virtual void focusCanvas() { arranger->focusCanvas(); } 

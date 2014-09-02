@@ -938,7 +938,7 @@ void Canvas::scrollTimerDone()
                 break;
                 
           case DRAG_RESIZE:
-                if (doHMove) {
+                if (curItem && doHMove) {
                       int w = ev_pos.x() - curItem->x();
                       if(w < 1)
                         w = 1;
@@ -1116,7 +1116,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                               drag = DRAG_CLONE;
                         }
                   setCursor();
-                  if (!curItem->isSelected()) {
+                  if (curItem && !curItem->isSelected()) {
                         if (drag == DRAG_MOVE)
                               deselectAll();
                         selectItem(curItem, true);
@@ -1194,7 +1194,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   break;
 
             case DRAG_RESIZE:
-                  if (last_dist.x()) {
+                  if (curItem && last_dist.x()) {
                         int w = ev_pos.x() - curItem->x();
                         if(w < 1)
                           w = 1;
@@ -1273,26 +1273,30 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_MOVE_START:
             case DRAG_COPY_START:
             case DRAG_CLONE_START:
-                  if (curItem->part() != curPart) {
+                  if (curItem && curItem->part() != curPart) {
                         curPart = curItem->part();
                         curPartId = curPart->sn();
                         curPartChanged();
                         }
                   if (!ctrl)
                         deselectAll();
-                  if (!shift) { //Select or deselect only the clicked item
-                      selectItem(curItem, !(ctrl && curItem->isSelected()));
-                      }
-                  else { //Select or deselect all on the same pitch (e.g. same y-value)
-                      bool selectionFlag = !(ctrl && curItem->isSelected());
-                      for (iCItem i = items.begin(); i != items.end(); ++i)
-                            if (i->second->y() == curItem->y() )
-                                  selectItem(i->second, selectionFlag);
-                      }
+                  if(curItem)
+                  {
+                    if (!shift) { //Select or deselect only the clicked item
+                        selectItem(curItem, !(ctrl && curItem->isSelected()));
+                        }
+                    else { //Select or deselect all on the same pitch (e.g. same y-value)
+                        bool selectionFlag = !(ctrl && curItem->isSelected());
+                        for (iCItem i = items.begin(); i != items.end(); ++i)
+                              if (i->second->y() == curItem->y() )
+                                    selectItem(i->second, selectionFlag);
+                        }
+                  }
 
                   updateSelection();
                   redrawFlag = true;
-                  itemReleased(curItem, curItem->pos());
+                  if(curItem)
+                    itemReleased(curItem, curItem->pos());
                   break;
             case DRAG_COPY:
                   endMoveItems(pos, MOVE_COPY, 0, !shift);
@@ -1324,7 +1328,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_OFF:
                   break;
             case DRAG_RESIZE:
-                  resizeItem(curItem, shift, ctrl);
+                  if(curItem)
+                    resizeItem(curItem, shift, ctrl);
                   break;
             case DRAG_NEW:
                   if(newCItem)
@@ -1605,19 +1610,32 @@ void Canvas::keyRelease(QKeyEvent* event)
 //   isSingleSelection
 //---------------------------------------------------------
 
-bool Canvas::isSingleSelection()
+bool Canvas::isSingleSelection() const
       {
       return selectionSize() == 1;
+      }
+
+//---------------------------------------------------------
+//   itemsAreSelected
+//---------------------------------------------------------
+
+bool Canvas::itemsAreSelected() const
+      {
+      for (ciCItem i = items.begin(); i != items.end(); ++i) {
+            if (i->second->isSelected())
+                  return true;
+            }
+      return false;
       }
 
 //---------------------------------------------------------
 //   selectionSize
 //---------------------------------------------------------
 
-int Canvas::selectionSize()
+int Canvas::selectionSize() const
       {
       int n = 0;
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
+      for (ciCItem i = items.begin(); i != items.end(); ++i) {
             if (i->second->isSelected())
                   ++n;
             }

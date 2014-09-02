@@ -1,3 +1,10 @@
+01.09.2014:
+         - Fix crash reported by LakeIshikawa: Pressing delete while clicking or dragging events or parts. (Tim)
+           Ignore commands (like del) in each editor's ::cmd() handler if current canvas drag mode is not DRAG_OFF.
+         - Added Arranger menu item Edit -> Delete, does same thing as pressing delete, either parts or tracks.
+         - Added new SongChanged flags: SC_PART_SELECTION SC_TRACK_SELECTION, to distinguish from events SC_SELECTION.
+         - Fixed copy/paste problem: Paste copies not clones, if the original parts/tracks have been deleted.
+           Added 'bool ClonePart::is_deleted', set/cleared when parts/tracks deleted/added. Checked in Part::readFromXml(). 
 16.06.2014:
          - Transformation to non-shared event lists (started by Florian) is virtually complete. (Tim) 
            Events have an ID now, shared among clone parts. 

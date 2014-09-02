@@ -1092,6 +1092,7 @@ ClonePart::ClonePart(const Part* p, int i)
 {
   cp = p;
   id = i;
+  is_deleted = false;
   uuid_generate(uuid);
 }
 

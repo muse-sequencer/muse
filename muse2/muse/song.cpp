@@ -204,7 +204,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       if (SynthI::visible()) {
         deselectTracks();
         si->setSelected(true);
-        update(SC_SELECTION);
+        update(SC_TRACK_SELECTION);
       }
       return si;
     }  
@@ -220,7 +220,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       if (t->isVisible()) {
         deselectTracks();
         t->setSelected(true);
-        update(SC_SELECTION);
+        update(SC_TRACK_SELECTION);
       }
       return t;
     }  

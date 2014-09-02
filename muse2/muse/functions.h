@@ -99,6 +99,8 @@ void select_none(const std::set<const Part*>& parts);
 void select_invert(const std::set<const Part*>& parts);
 void select_in_loop(const std::set<const Part*>& parts);
 void select_not_in_loop(const std::set<const Part*>& parts);
+bool tracks_are_selected();
+bool parts_are_selected();
 
 //functions for parts
 void shrink_parts(int raster=-1); //negative values mean "config.division"

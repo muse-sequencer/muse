@@ -1253,6 +1253,11 @@ void DrumEdit::reset()
 
 void DrumEdit::cmd(int cmd)
       {
+      // Don't process if user is dragging or has clicked on the events. 
+      // Causes crashes later in Canvas::viewMouseMoveEvent and viewMouseReleaseEvent.
+      if(canvas->getCurrentDrag())
+        return;
+      
       switch(cmd) {
             case DrumCanvas::CMD_CUT:
                   copy_notes(partlist_to_set(parts()), 1);

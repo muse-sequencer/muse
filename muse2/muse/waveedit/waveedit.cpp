@@ -468,6 +468,11 @@ WaveEdit::~WaveEdit()
 
 void WaveEdit::cmd(int n)
       {
+      // Don't process if user is dragging or has clicked on the events. 
+      // Causes crashes later in Canvas::viewMouseMoveEvent and viewMouseReleaseEvent.
+      if(canvas->getCurrentDrag())
+        return;
+      
       ((WaveCanvas*)canvas)->cmd(n);
       }
 

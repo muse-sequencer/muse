@@ -88,10 +88,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   scoreAllInOneMapper = new QSignalMapper(this);
 
   editSignalMapper = new QSignalMapper(this);
-  QShortcut* sc = new QShortcut(shortcuts[SHRT_DELETE].key, this);
-  sc->setContext(Qt::WindowShortcut);
-  connect(sc, SIGNAL(activated()), editSignalMapper, SLOT(map()));
-  editSignalMapper->setMapping(sc, CMD_DELETE);
 
   // Toolbars ---------------------------------------------------------
   editTools = new EditToolBar(this, arrangerTools);
@@ -121,6 +117,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 
   //-------- Edit Actions
+  editDeleteAction = new QAction(QIcon(*deleteIcon), tr("D&elete"), this);
   editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
   editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
   editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("Copy in range"), this);
@@ -194,6 +191,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addActions(MusEGlobal::undoRedo->actions());
   menuEdit->addSeparator();
 
+  menuEdit->addAction(editDeleteAction);
   menuEdit->addAction(editCutAction);
   menuEdit->addAction(editCopyAction);
   menuEdit->addAction(editCopyRangeAction);
@@ -279,6 +277,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 
   //-------- Edit connections
+  connect(editDeleteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editCutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editCopyAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editCopyRangeAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -302,6 +301,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(editOutsideLoopAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editAllPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
 
+  editSignalMapper->setMapping(editDeleteAction, CMD_DELETE);
   editSignalMapper->setMapping(editCutAction, CMD_CUT);
   editSignalMapper->setMapping(editCopyAction, CMD_COPY);
   editSignalMapper->setMapping(editCopyRangeAction, CMD_COPY_RANGE);
@@ -396,6 +396,11 @@ void ArrangerView::songChanged(MusECore::SongChangedFlags_t type)
              SC_CONFIG | 
              SC_DRUMMAP)) 
     visTracks->updateVisibleTracksButtons();
+  
+  if(type & (SC_TRACK_SELECTION | SC_PART_SELECTION | 
+             SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+             SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
+    selectionChanged();
 }
       
 
@@ -486,6 +491,11 @@ void ArrangerView::writeConfiguration(int level, MusECore::Xml& xml)
 
 void ArrangerView::cmd(int cmd)
       {
+      // Don't process if user is dragging or has clicked on the parts. 
+      // Causes problems/crashes later in Canvas::viewMouseMoveEvent and viewMouseReleaseEvent.
+      if(arranger && arranger->getCanvas() && arranger->getCanvas()->getCurrentDrag())
+        return;
+      
       MusECore::TrackList* tracks = MusEGlobal::song->tracks();
       int l = MusEGlobal::song->lpos();
       int r = MusEGlobal::song->rpos();
@@ -692,6 +702,7 @@ void ArrangerView::addNewTrack(QAction* action)
 
 void ArrangerView::updateShortcuts()
 {
+      editDeleteAction->setShortcut(shortcuts[SHRT_DELETE].key);
       editCutAction->setShortcut(shortcuts[SHRT_CUT].key);
       editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
       editCopyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
@@ -755,14 +766,24 @@ void ArrangerView::clipboardChanged()
 
 //---------------------------------------------------------
 //   selectionChanged
+//   NOTE: This is received upon EITHER a part or track selection change from the Arranger.
 //---------------------------------------------------------
 
 void ArrangerView::selectionChanged()
       {
-      //bool flag = arranger->isSingleSelection();  // -- Hmm, why only single? 
-      bool flag = arranger->selectionSize() > 0;    // -- Test OK cut and copy. For muse2. Tim.
-      editCutAction->setEnabled(flag);
-      editCopyAction->setEnabled(flag);
+      bool pflag = arranger->itemsAreSelected();
+      bool tflag = MusECore::tracks_are_selected();
+
+      editDeleteAction->setEnabled(tflag || pflag);
+
+      editDeleteSelectedAction->setEnabled(tflag);
+      editDuplicateSelTrackAction->setEnabled(tflag);
+   
+      editCutAction->setEnabled(pflag);
+      editCopyAction->setEnabled(pflag);
+      editShrinkPartsAction->setEnabled(pflag);
+      editExpandPartsAction->setEnabled(pflag);
+      editCleanPartsAction->setEnabled(pflag);
       }
 
 

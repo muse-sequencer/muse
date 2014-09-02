@@ -499,7 +499,7 @@ void MidiTrackInfo::songChanged(MusECore::SongChangedFlags_t type)
   // Is it simply a midi controller value adjustment? Forget it.
   if(type == SC_MIDI_CONTROLLER)
     return;
-  if(type == SC_SELECTION)
+  if(type == SC_SELECTION || type == SC_PART_SELECTION || type == SC_TRACK_SELECTION)
     return;
   if(!isVisible())  
     return;
@@ -1462,7 +1462,7 @@ void MidiTrackInfo::updateTrackInfo(MusECore::SongChangedFlags_t flags)
       // Is it simply a midi controller value adjustment? Forget it.
       if(flags == SC_MIDI_CONTROLLER)
         return;
-      if(flags == SC_SELECTION)
+      if(flags == SC_SELECTION || flags == SC_PART_SELECTION || flags == SC_TRACK_SELECTION)
         return;
         
       if(!selected)
