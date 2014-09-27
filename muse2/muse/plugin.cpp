@@ -2247,8 +2247,10 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               if (!readPreset && _plugin == 0) {
                                     _plugin = MusEGlobal::plugins.find(file, label);
                                     if (_plugin == 0)
-                                    {  
-                                      printf("Warning: Plugin not found (%s, %s)\n",
+                                    {
+                                      QMessageBox::warning(0,"Plugin not found!",
+                                                  "Plugin: " + label + " not found, if the project is saved it will be removed from the project");
+                                      printf("Warning: - Plugin not found (%s, %s)\n",
                                          file.toLatin1().constData(), label.toLatin1().constData());
                                       return true;
                                     }

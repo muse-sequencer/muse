@@ -1649,7 +1649,11 @@ void Song::endMsgCmd()
 //---------------------------------------------------------
 
 void Song::undo()
-      {
+{
+      if (MusEGlobal::audio->isRecording()) {
+        return;
+      }
+
       updateFlags = 0;
       
       Undo& opGroup = undoList->back();
@@ -1671,14 +1675,18 @@ void Song::undo()
 
       emit songChanged(updateFlags);
       emit sigDirty();
-      }
+}
 
 //---------------------------------------------------------
 //   redo
 //---------------------------------------------------------
 
 void Song::redo()
-      {
+{
+      if (MusEGlobal::audio->isRecording()) {
+        return;
+      }
+
       updateFlags = 0;
 
       Undo& opGroup = redoList->back();
@@ -1700,7 +1708,7 @@ void Song::redo()
 
       emit songChanged(updateFlags);
       emit sigDirty();
-      }
+}
 
 //---------------------------------------------------------
 //   processMsg

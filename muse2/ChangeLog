@@ -1,3 +1,6 @@
+27.09.2014:
+         - Added QMessageBox warning about missing plugins (rj)
+         - Ignore undo/redo while recording (rj)
 01.09.2014:
          - Fix crash reported by LakeIshikawa: Pressing delete while clicking or dragging events or parts. (Tim)
            Ignore commands (like del) in each editor's ::cmd() handler if current canvas drag mode is not DRAG_OFF.
