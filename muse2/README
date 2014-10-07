@@ -89,7 +89,7 @@ details.
 
       - DSSI     Disposable Soft Synth Interface (development files)   
           http://dssi.sourceforge.net/
-        (Both recommended - DSSI alone will have no native GUIs, OSC alone does nothing, for now.)
+        (Both recommended - DSSI needs OSC, OSC alone does nothing, for now.)
 
       - dssi-vst        Support for DSSI vst plugins            
           http://www.breakfastquay.com/dssi-vst/

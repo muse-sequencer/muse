@@ -1,3 +1,6 @@
+07.10.2014:
+         - Changed detection of liblo to make it a strict requirement as the code would not
+           build without it when DSSI was enabled (rj)
 27.09.2014:
          - Added QMessageBox warning about missing plugins (rj)
          - Ignore undo/redo while recording (rj)

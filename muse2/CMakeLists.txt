@@ -128,7 +128,7 @@ endif (GIT_FOUND)
 
 option ( ENABLE_LASH        "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
 option ( ENABLE_OSC         "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)
-option ( ENABLE_DSSI        "Enable Disposable Soft Synth Interface (dssi) (OSC also recommended)" ON)
+option ( ENABLE_DSSI        "Enable Disposable Soft Synth Interface (dssi) (OSC also needed)" ON)
 option ( ENABLE_VST         "Enable VST/win support (deprecated)"                                OFF)
 option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE "Set VST header type is Vestige"                                         ON)
@@ -256,20 +256,6 @@ else (ENABLE_LASH)
 endif (ENABLE_LASH)
 
 ##
-## check for liblo >= 0.23
-##
-
-if (ENABLE_OSC)
-      PKG_CHECK_MODULES(LIBLO liblo>=0.23)
-      if (LIBLO_FOUND)
-            include_directories(${LIBLO_INCLUDE_DIRS})
-            set(OSC_SUPPORT ON)
-      endif (LIBLO_FOUND)
-else (ENABLE_OSC)
-      message("OSC disabled")
-endif (ENABLE_OSC)
-
-##
 ## check for python >= 2.4
 ##
 
@@ -292,14 +278,23 @@ if (ENABLE_PYTHON)
 endif (ENABLE_PYTHON)
 
 ##
-## check for dssi >= 0.9.0
+## check for dssi >= 0.9.0 and liblo >= 0.23
 ##
 
 if (ENABLE_DSSI)
       PKG_CHECK_MODULES(DSSI dssi>=0.9.0)
-      if (DSSI_FOUND)
-            include_directories(${DSSI_INCLUDE_DIRS})
-            set(DSSI_SUPPORT ON)
+      if (DSSI_FOUND)        
+          if (ENABLE_OSC)
+              PKG_CHECK_MODULES(LIBLO liblo>=0.23)
+              if (LIBLO_FOUND)
+                    include_directories(${LIBLO_INCLUDE_DIRS})
+                    set(OSC_SUPPORT ON)
+                    include_directories(${DSSI_INCLUDE_DIRS})
+                    set(DSSI_SUPPORT ON)
+              endif (LIBLO_FOUND)
+          else (ENABLE_OSC)
+              message("DSSI disabled")
+          endif (ENABLE_OSC)
       endif (DSSI_FOUND)
 else (ENABLE_DSSI)
       message("DSSI disabled")
