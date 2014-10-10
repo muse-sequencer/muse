@@ -1858,20 +1858,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         classesPopupMenu(t, x, t->y() - ypos);
                   break;
             case COL_OPORT:
-                  // Changed by Tim. p3.3.9 DELETETHIS 15
-                  // Reverted.
-                  if (button == Qt::LeftButton)
+                  if (button == Qt::LeftButton && t->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                         portsPopupMenu(t, x, t->y() - ypos);
                   else if (button == Qt::RightButton)
                         oportPropertyPopupMenu(t, x, t->y() - ypos);
-                  //if(((button == QMouseEvent::LeftButton) && (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)) || (button == QMouseEvent::RightButton))
-                  //  oportPropertyPopupMenu(t, x, t->y() - ypos);      
-                  //else      
-                  //if(button == QMouseEvent::LeftButton)
-                  //  portsPopupMenu(t, x, t->y() - ypos);
-                    
-                  //MusEGlobal::audio->msgUpdateSoloStates(); // p4.0.14
-                  //MusEGlobal::song->update(SC_ROUTE);       //
                   break;
                   
             case COL_MUTE:

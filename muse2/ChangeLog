@@ -1,3 +1,5 @@
+10.10.2014:
+         - Don't allow changing the port of a soft synth, it makes no sense (rj)
 07.10.2014:
          - Changed detection of liblo to make it a strict requirement as the code would not
            build without it when DSSI was enabled (rj)
