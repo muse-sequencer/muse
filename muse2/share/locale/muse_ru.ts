@@ -8783,9 +8783,17 @@ Likely the selected track is the wrong type.</source>
         <translation>dssi эффект</translation>
     </message>
     <message>
+        <source>LV2 synth</source>
+        <translation>LV2 синт</translation>
+    </message>
+    <message>
+        <source>LV2 effect</source>
+        <translation>LV2 эффект</translation>
+    </message>
+    <message>
         <source>ladspa</source>
         <translation>ladspa</translation>
-    </message>
+    </message>    
     <message>
         <source>Show plugs:</source>
         <translation>Показать плагины:</translation>

@@ -113,6 +113,7 @@ bool loadPlugins = true;
 bool loadVST = true;
 bool loadNativeVST = true;
 bool loadDSSI = true;
+bool loadLV2 = true;
 bool usePythonBridge = false;
 bool useLASH = true;
 bool useAlsaWithJack = false;

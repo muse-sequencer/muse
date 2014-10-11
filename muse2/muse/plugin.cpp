@@ -76,6 +76,8 @@
 //#include "popupmenu.h"
 //#include "menutitleitem.h"
 
+#include "lv2host.h"
+
 
 #include "audio.h"
 #include "al/dsp.h"
@@ -636,6 +638,8 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
 {
   _isDssi = isDssi;
   _isDssiSynth = isDssiSynth;
+  _isLV2Plugin = false;
+  _isLV2Synth = false;
 
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
@@ -1144,8 +1148,8 @@ void initPlugins()
 Plugin* PluginList::find(const QString& file, const QString& name)
       {
       for (iPlugin i = begin(); i != end(); ++i) {
-            if ((file == i->lib()) && (name == i->label()))
-                  return &*i;
+            if ((file == (*i)->lib()) && (name == (*i)->label()))
+                  return *i;
             }
 
       return 0;
@@ -1474,7 +1478,14 @@ bool Pipeline::has_dssi_ui(int idx) const
 {
   PluginI* p = (*this)[idx];
   if(p)
+  {
+#ifdef LV2_SUPPORT
+    if(p->plugin() && p->plugin()->isLV2Plugin())
+      return ((LV2PluginWrapper *)p->plugin())->hasNativeGui();
+    else
+#endif
       return !p->dssi_ui_filename().isEmpty();
+  }
 
   return false;
 }
@@ -1495,8 +1506,17 @@ void Pipeline::showGui(int idx, bool flag)
 
 void Pipeline::showNativeGui(int idx, bool flag)
       {
-      #ifdef OSC_SUPPORT
       PluginI* p = (*this)[idx];
+#ifdef LV2_SUPPORT
+         if(p && p->plugin()->isLV2Plugin())
+         {
+            ((LV2PluginWrapper *)p->plugin())->showNativeGui(p, flag);
+            return;
+         }
+
+#endif
+      #ifdef OSC_SUPPORT
+
       if (p)
             p->oscIF().oscShowGui(flag);
       #endif
@@ -1545,7 +1565,14 @@ bool Pipeline::nativeGuiVisible(int idx)
       {
       PluginI* p = (*this)[idx];
       if (p)
+      {
+#ifdef LV2_SUPPORT
+         if(p->plugin()->isLV2Synth())
+            return ((LV2PluginWrapper *)p->plugin())->nativeGuiVisible(p);
+#else
             return p->nativeGuiVisible();
+#endif
+      }
       return false;
       }
 
@@ -1808,7 +1835,7 @@ void PluginI::setChannels(int c)
       instances = ni;
       handle    = new LADSPA_Handle[instances];
       for (int i = 0; i < instances; ++i) {
-            handle[i] = _plugin->instantiate();
+            handle[i] = _plugin->instantiate(this);
             if (handle[i] == NULL) {
                   printf("cannot instantiate instance %d\n", i);
                   return;
@@ -1865,7 +1892,7 @@ float PluginI::defaultValue(unsigned long param) const
   return _plugin->defaultValue(controls[param].idx);
 }
 
-LADSPA_Handle Plugin::instantiate() 
+LADSPA_Handle Plugin::instantiate(PluginI *)
 {
   LADSPA_Handle h = plugin->instantiate(plugin, MusEGlobal::sampleRate);
   if(h == NULL)
@@ -1927,7 +1954,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
         fprintf(stderr, "PluginI::initPluginInstance instance:%d\n", i);
         #endif
 
-        handle[i] = _plugin->instantiate();
+        handle[i] = _plugin->instantiate(this);
         if(handle[i] == NULL)
           return true;
       }
@@ -2314,6 +2341,17 @@ bool PluginI::guiVisible()
 
 void PluginI::showNativeGui()
 {
+
+#ifdef LV2_SUPPORT
+  if(plugin() && plugin()->isLV2Plugin())
+  {
+    if(((LV2PluginWrapper *)plugin())->nativeGuiVisible(this))
+       ((LV2PluginWrapper *)plugin())->showNativeGui(this, false);
+    else
+       ((LV2PluginWrapper *)plugin())->showNativeGui(this, true);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if (_plugin)
   {
@@ -2328,6 +2366,13 @@ void PluginI::showNativeGui()
 
 void PluginI::showNativeGui(bool flag)
 {
+#ifdef LV2_SUPPORT
+  if(plugin() && plugin()->isLV2Plugin())
+  {
+    ((LV2PluginWrapper *)plugin())->showNativeGui(this, flag);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
   if(_plugin)
   {
@@ -2343,6 +2388,10 @@ void PluginI::showNativeGui(bool flag)
 
 bool PluginI::nativeGuiVisible()
 {
+#ifdef LV2_SUPPORT
+    if(plugin() && plugin()->isLV2Plugin())
+      return ((LV2PluginWrapper *)plugin())->nativeGuiVisible(this);
+#endif
   #ifdef OSC_SUPPORT
   return _oscif.oscGuiVisible();
   #endif
@@ -2512,10 +2561,20 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
         else
           controls[k].val = ci.sVal;
 
+#ifdef LV2_SUPPORT
+        if(_plugin->isLV2Plugin())
+        {
+           for(int i = 0; i < instances; ++i)
+           {
+              (reinterpret_cast<LV2PluginWrapper *>(_plugin))->setLastStateControls(handle [i], k, true, false, true, 0.0f);
+           }
+        }
+#endif
+
         controls[k].tmpVal = controls[k].val;  // Special for plugins: Deal with tmpVal.
 
 #ifdef PLUGIN_DEBUGIN_PROCESS
-        printf("PluginI::apply k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, ci.eFrame, nsamp);
+        printf("PluginI::apply k:%lu sample:%lu nextFrame:%d nsamp:%lu val:%f\n", k, sample, ci.eFrame, nsamp, controls[k].val);
 #endif
       }
     }
@@ -2583,6 +2642,20 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(_track && _id != -1)
         _track->setPluginCtrlVal(genACnum(_id, v.idx), v.value);
+
+#ifdef LV2_SUPPORT
+      if(v.fromGui)
+      {
+         if(_plugin->isLV2Plugin())
+         {
+            for(int i = 0; i < instances; ++i)
+            {
+               (reinterpret_cast<LV2PluginWrapper *>(_plugin))->setLastStateControls(handle [i], v.idx, true, true, false, v.value);
+            }
+         }
+      }
+#endif
+
     }
 
     if(found && !usefixedrate) // If a control FIFO item was found, takes priority over automation controller stream.
@@ -2824,6 +2897,7 @@ int PluginI::oscControl(unsigned long port, float value)
 } // namespace MusECore
 
 namespace MusEGui {
+
 // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt
 // Resource System in Qt documentation - ORCAN
 //const char* presetOpenText = "<img source=\"fileopen\"> "

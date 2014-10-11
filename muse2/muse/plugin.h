@@ -100,6 +100,8 @@ class Plugin {
 
       bool _isDssiSynth;
       bool _isDssi;
+	  bool _isLV2Synth;
+      bool _isLV2Plugin;
       // Hack: Special flag required.
       bool _isDssiVst;
 
@@ -117,10 +119,10 @@ class Plugin {
       bool _inPlaceCapable;
 
    public:
+      Plugin() {} //empty constructor for LV2PluginWrapper
       Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false);
-      ~Plugin();
-
-      QString label() const                        { return _label; }
+      virtual ~Plugin();
+      virtual QString label() const                        { return _label; }
       QString name() const                         { return _name; }
       unsigned long id() const                     { return _uniqueID; }
       QString maker() const                        { return _maker; }
@@ -130,30 +132,32 @@ class Plugin {
       QString filePath() const                     { return fi.filePath(); }
       QString fileName() const                     { return fi.fileName(); }
       int references() const                       { return _references; }
-      int incReferences(int);
+      virtual int incReferences(int);
       int instNo()                                 { return _instNo++;        }
 
       bool isDssiPlugin() const { return _isDssi; }
       bool isDssiSynth() const  { return _isDssiSynth; }
+      inline bool isLV2Plugin() const { return _isLV2Plugin; } //inline it to use in RT audio thread
+      bool isLV2Synth() const { return _isLV2Synth; }
 
-      LADSPA_Handle instantiate(); 
-      void activate(LADSPA_Handle handle) {
+      virtual LADSPA_Handle instantiate(PluginI *);
+      virtual void activate(LADSPA_Handle handle) {
             if (plugin && plugin->activate)
                   plugin->activate(handle);
             }
-      void deactivate(LADSPA_Handle handle) {
+      virtual void deactivate(LADSPA_Handle handle) {
             if (plugin && plugin->deactivate)
                   plugin->deactivate(handle);
             }
-      void cleanup(LADSPA_Handle handle) {
+      virtual void cleanup(LADSPA_Handle handle) {
             if (plugin && plugin->cleanup)
                   plugin->cleanup(handle);
             }
-      void connectPort(LADSPA_Handle handle, unsigned long port, float* value) {     
+      virtual void connectPort(LADSPA_Handle handle, unsigned long port, float* value) {
             if(plugin)
               plugin->connect_port(handle, port, value);
             }
-      void apply(LADSPA_Handle handle, unsigned long n) {                            
+      virtual void apply(LADSPA_Handle handle, unsigned long n) {
             if(plugin)
               plugin->run(handle, n);
             }
@@ -164,22 +168,22 @@ class Plugin {
 
       unsigned long ports() { return _portCount; }
 
-      LADSPA_PortDescriptor portd(unsigned long k) const {
+      virtual LADSPA_PortDescriptor portd(unsigned long k) const {
             return plugin ? plugin->PortDescriptors[k] : 0;
             }
 
-      LADSPA_PortRangeHint range(unsigned long i) {
+      virtual LADSPA_PortRangeHint range(unsigned long i) {
             // FIXME:
             //return plugin ? plugin->PortRangeHints[i] : 0; DELETETHIS
             return plugin->PortRangeHints[i];
             }
 
-      float defaultValue(unsigned long port) const; 
-      void range(unsigned long i, float*, float*) const;
-      CtrlValueType ctrlValueType(unsigned long i) const;
-      CtrlList::Mode ctrlMode(unsigned long i) const;
+      virtual float defaultValue(unsigned long port) const;
+      virtual void range(unsigned long i, float*, float*) const;
+      virtual CtrlValueType ctrlValueType(unsigned long i) const;
+      virtual CtrlList::Mode ctrlMode(unsigned long i) const;
 
-      const char* portName(unsigned long i) {
+      virtual const char* portName(unsigned long i) {
             return plugin ? plugin->PortNames[i] : 0;
             }
 
@@ -192,14 +196,14 @@ class Plugin {
       const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
       };
 
-typedef std::list<Plugin>::iterator iPlugin;
+typedef std::list<Plugin *>::iterator iPlugin;
 
 
 class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
 {
   public:
     QSet<int>& get(QString a, QString b) { return (*this)[(QPair<QString,QString>(a,b))]; }
-    QSet<int>& get(const Plugin& p) { return (*this)[(QPair<QString,QString>(p.lib(),p.label()))]; }
+    QSet<int>& get(const Plugin *p) { return (*this)[(QPair<QString,QString>(p->lib(),p->label()))]; }
 
     void shift_left(int first, int last);
     void shift_right(int first, int last);
@@ -214,11 +218,11 @@ class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
 //   PluginList
 //---------------------------------------------------------
 
-class PluginList : public std::list<Plugin> {
+class PluginList : public std::list<Plugin *> {
    public:
       void add(QFileInfo* fi, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false)
       {
-        push_back(Plugin(fi, d, isDssi, isDssiSynth));
+        push_back(new Plugin(fi, d, isDssi, isDssiSynth));
       }
 
       Plugin* find(const QString&, const QString&);
@@ -305,6 +309,9 @@ class PluginIBase
 #define AUDIO_OUT (LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT)
 
 class PluginI : public PluginIBase {
+    friend class LV2PluginWrapper;
+    friend class LV2PluginWrapper_Timer;
+    friend class LV2Synth;
       Plugin* _plugin;
       int channel;
       int instances;
@@ -549,6 +556,7 @@ class PluginGui : public QMainWindow {
       void setOn(bool);
       void updateValues();
       };
+
 
 
 } // namespace MusEGui

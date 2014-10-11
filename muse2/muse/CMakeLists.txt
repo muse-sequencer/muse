@@ -27,9 +27,9 @@ include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}
       )
 
-set (SubDirs 
-      arranger 
-      cliplist 
+set (SubDirs
+      arranger
+      cliplist
       ctrl
       driver
       instruments
@@ -38,7 +38,7 @@ set (SubDirs
       master
       midiedit
       mixer
-      mplugins      
+      mplugins
       waveedit
       widgets
       )
@@ -55,25 +55,26 @@ subdirs (${SubDirs})
 ## Expand Qt macros in source files
 ##
 QT4_WRAP_CPP ( muse_moc_headers
-      app.h 
+      app.h
       appearance.h
-      cobject.h 
-      conf.h 
-      confmport.h 
-      midieditor.h 
-      miditransform.h 
-      plugin.h 
-      song.h 
-      transport.h 
+      cobject.h
+      conf.h
+      confmport.h
+      midieditor.h
+      miditransform.h
+      plugin.h
+      song.h
+      transport.h
       trackdrummapupdater.h
-      value.h 
-      steprec.h 
+      value.h
+      steprec.h
+      lv2host.h
       )
 
 ##
 ## Resource files
 ##
-QT4_ADD_RESOURCES (muse_qrc_files 
+QT4_ADD_RESOURCES (muse_qrc_files
 		  muse.qrc
 		  )
 
@@ -90,25 +91,26 @@ file (GLOB core_source_files
       controlfifo.cpp
       ctrl.cpp
       dialogs.cpp
-      dssihost.cpp 
+      dssihost.cpp
+      lv2host.cpp
       event.cpp
-      eventlist.cpp 
-      exportmidi.cpp 
+      eventlist.cpp
+      exportmidi.cpp
       functions.cpp
-      gconfig.cpp 
+      gconfig.cpp
       globals.cpp
-      help.cpp 
+      help.cpp
       helper.cpp
-      importmidi.cpp 
+      importmidi.cpp
       key.cpp
       keyevent.cpp
-      memory.cpp 
+      memory.cpp
       midi.cpp
       midictrl.cpp
-      mididev.cpp 
+      mididev.cpp
       midieditor.cpp
-      midievent.cpp 
-      midifile.cpp 
+      midievent.cpp
+      midifile.cpp
       midiport.cpp
       midiseq.cpp
       miditransform.cpp
@@ -121,18 +123,18 @@ file (GLOB core_source_files
       plugin.cpp
       pos.cpp
       route.cpp
-      seqmsg.cpp 
-      shortcuts.cpp 
+      seqmsg.cpp
+      shortcuts.cpp
       sig.cpp
       song.cpp
-      songfile.cpp 
+      songfile.cpp
       stringparam.cpp
       structure.cpp
       sync.cpp
-      synth.cpp  
+      synth.cpp
       tempo.cpp
       thread.cpp
-      ticksynth.cpp 
+      ticksynth.cpp
       track.cpp
       trackdrummapupdater.cpp
       transport.cpp
@@ -141,8 +143,8 @@ file (GLOB core_source_files
       vst.cpp
       vst_native.cpp
       wave.cpp
-      waveevent.cpp 
-      wavetrack.cpp 
+      waveevent.cpp
+      wavetrack.cpp
       xml.cpp
       steprec.cpp
       )
@@ -199,10 +201,10 @@ include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/liste
       ${CMAKE_CURRENT_BINARY_DIR}/midiedit
       ${CMAKE_CURRENT_BINARY_DIR}/mixer
-      ${CMAKE_CURRENT_BINARY_DIR}/mplugins 
+      ${CMAKE_CURRENT_BINARY_DIR}/mplugins
       ${CMAKE_CURRENT_BINARY_DIR}/remote
       ${CMAKE_CURRENT_BINARY_DIR}/waveedit
-      ${CMAKE_CURRENT_BINARY_DIR}/widgets 
+      ${CMAKE_CURRENT_BINARY_DIR}/widgets
       ${CMAKE_CURRENT_BINARY_DIR}/widgets/function_dialogs
       )
 
@@ -227,8 +229,8 @@ set_target_properties( icons
 ## Linkage
 ##
 target_link_libraries(core
-      al      
-      arranger 
+      al
+      arranger
       awl
       cliplist
       ctrl
@@ -241,11 +243,11 @@ target_link_libraries(core
       midiedit
       mixer
       mplugins
-      synti       
+      synti
       waveedit
-      widgets 
+      widgets
       widgets_functiondialogs
-      
+
       ${QT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
@@ -263,19 +265,23 @@ if(OSC_SUPPORT)
       target_link_libraries(core ${LIBLO_LIBRARIES})
 endif(OSC_SUPPORT)
 
+if(LV2_SUPPORT)
+      target_link_libraries(core ${LV2_LIBRARIES})
+endif(LV2_SUPPORT)
+
 target_link_libraries(muse
       midiedit
       core
-      )	
+      )
 
 target_link_libraries(icons
       ${QT_LIBRARIES}
-      )	
+      )
 
 ##
 ## Install location
 ##
-install( TARGETS muse 
+install( TARGETS muse
       RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/
       )
 if ( ${MODULES_BUILD} STREQUAL SHARED )
