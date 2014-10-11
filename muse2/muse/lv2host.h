@@ -382,7 +382,7 @@ public:
 
 struct LV2MidiPort {
     LV2MidiPort ( const LilvPort *_p, uint32_t _i, QString _n, bool _f, LV2EvBuf *_b ) :
-        port ( _p ), index ( _i ), name ( _n ), old_api ( _f ), buffer ( _b ) {};
+        port ( _p ), index ( _i ), name ( _n ), old_api ( _f ), buffer ( _b ) {}
     const LilvPort *port;
     uint32_t index; //plugin real port index
     QString name;
@@ -550,6 +550,7 @@ public:
     static void lv2ui_PortWrite ( SuilController controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer );
     static void lv2ui_Touch (SuilController controller, uint32_t port_index, bool grabbed);
     static void lv2ui_ExtUi_Closed ( LV2UI_Controller contr );
+    static void lv2ui_SendChangedControls(LV2PluginWrapper_State *state);
     static void lv2state_FillFeatures ( LV2PluginWrapper_State *state );
     static void lv2state_PostInstantiate ( LV2PluginWrapper_State *state );
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
@@ -654,7 +655,6 @@ public:
     }
 
     friend class LV2Synth;
-    friend class LV2SynthIF_Window;
     friend class LV2PluginWrapper_Timer;
 };
 
@@ -761,13 +761,21 @@ public:
 
 class LV2PluginWrapper_Window : public QMainWindow
 {
-    Q_OBJECT
+   Q_OBJECT
 protected:
-    void closeEvent ( QCloseEvent *event );
+   void closeEvent ( QCloseEvent *event );
 private:
-    LV2PluginWrapper_State *_state;
+   LV2PluginWrapper_State *_state;
 public:
-    explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state ) : QMainWindow(), _state ( state ) {}
+   explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state );
+
+   void doChangeControls();
+public slots:
+   void sendChangedControls();
+signals:
+   void controlsChangePending();
+
+
 };
 
 
