@@ -458,7 +458,7 @@ void LV2Synth::lv2ui_PortWrite(SuilController controller, uint32_t port_index, u
         at = state->plugInst->_track->automationType();
       }
 
-      state->plugInst->enableController(cport, false);
+      //state->plugInst->enableController(cport, false);
    }
    else if(state->sif != NULL)
    {
@@ -475,9 +475,11 @@ void LV2Synth::lv2ui_PortWrite(SuilController controller, uint32_t port_index, u
         state->sif->synti->recordAutomation(pid, value);
       }
 
-      state->sif->enableController(cport, false);
+      //state->sif->enableController(cport, false);
 
    }
+
+   state->controlTimers [cport] = 10; // 10*30 msec controllers will not be send to guis
 
    assert(_controlFifo != NULL);
    if(_controlFifo->put(ce))
@@ -1183,6 +1185,13 @@ LV2SynthIF::~LV2SynthIF()
          delete [] _uiState->controlsMask;
          _uiState->controlsMask = NULL;
       }
+
+      if(_uiState->controlTimers)
+      {
+         delete [] _uiState->controlTimers;
+         _uiState->controlTimers = NULL;
+
+      }
       delete _uiState;
       _uiState = NULL;
    }
@@ -1360,10 +1369,12 @@ bool LV2SynthIF::init(LV2Synth *s)
    {
       _uiState->lastControls = new float [_inportsControl];
       _uiState->controlsMask = new bool [_inportsControl];
+      _uiState->controlTimers = new int [_inportsControl];
       for(uint32_t i = 0; i < _inportsControl; i++)
       {
          _uiState->lastControls [i] = _controls [i].val;
          _uiState->controlsMask [i] = false;
+         _uiState->controlTimers [i] = 0;
       }
    }
 
@@ -2937,11 +2948,17 @@ void LV2PluginWrapper_Timer::run()
          if(_state->uiInst != NULL)
          {
 
-            for(uint32_t i = 0; i < _numControls; ++i)
+            for(uint32_t i = 0; i < _numControls; ++i)               
             {
+               if(_state->controlTimers [i] > 0)
+               {
+                  --_state->controlTimers [i];
+                  continue;
+               }
                if(_state->controlsMask [i])
                {
                   _state->controlsMask [i] = false;
+
                   if(_state->lastControls [i] != _controls [i].val)
                   {
                      _state->lastControls [i] = _controls [i].val;
@@ -3159,10 +3176,12 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
    {
       state->lastControls = new float [_controlInPorts];
       state->controlsMask = new bool [_controlInPorts];
+      state->controlTimers = new int [_controlInPorts];
       for(uint32_t i = 0; i < _controlInPorts; i++)
       {
          state->lastControls [i] = _PluginControlsDefault [i];
          state->controlsMask [i] = false;
+         state->controlTimers [i] = 0;
       }
    }
 
@@ -3213,15 +3232,27 @@ void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
 
       free(state->human_id);
       delete [] state->_ifeatures;
-      delete [] state->_ppifeatures;
-      delete state;
-      _states.erase(it);
+      delete [] state->_ppifeatures;      
       lilv_instance_free((LilvInstance *) handle);
       if(state->lastControls)
       {
          delete [] state->lastControls;
          state->lastControls = NULL;
       }
+      if(state->controlsMask)
+      {
+         delete [] state->controlsMask;
+         state->controlsMask = NULL;
+
+      }
+      if(state->controlTimers)
+      {
+         delete [] state->controlTimers;
+         state->controlTimers = NULL;
+
+      }
+      delete state;
+      _states.erase(it);
 
    }
 }
