@@ -685,7 +685,8 @@ struct LV2PluginWrapper_State {
       wrkDataSize(0),
       wrkDataBuffer(0),
       wrkThread(NULL),
-      wrkEndWork(false)
+      wrkEndWork(false),
+      controlTimers(NULL)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -717,6 +718,7 @@ struct LV2PluginWrapper_State {
     LV2PluginWrapper_Worker *wrkThread;
     LV2_Worker_Interface *wrkIface;
     bool wrkEndWork;
+    int *controlTimers;
 };
 
 class LV2PluginWrapper_Timer :public QThread
