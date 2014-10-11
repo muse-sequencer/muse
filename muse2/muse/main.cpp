@@ -59,6 +59,7 @@
 #include "minstrument.h"  
 #include "midiport.h"
 #include "mididev.h"
+#include "plugin.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -74,6 +75,8 @@ extern void initVST();
 extern void initVST_Native();
 extern void initPlugins();
 extern void initDSSI();
+extern void initLV2();
+extern void deinitLV2();
 extern void readConfiguration();
 
 extern void initMidiSequencer();   
@@ -248,6 +251,9 @@ static void usage(const char* prog, const char* txt)
 #ifdef DSSI_SUPPORT
       fprintf(stderr, "   -I       Don't load DSSI plugins\n");
 #endif
+#ifdef LV2_SUPPORT
+      fprintf(stderr, "   -2       Don't load LV2 plugins\n");
+#endif
 #ifdef HAVE_LASH
       fprintf(stderr, "   -L       Don't use LASH\n");
 #endif
@@ -384,6 +390,9 @@ int main(int argc, char* argv[])
 #ifdef HAVE_LASH
       optstr += QString("L");
 #endif
+#ifdef LV2_SUPPORT
+      optstr += QString("2");
+#endif
       
       bool noAudio = false;
       int i;
@@ -427,6 +436,7 @@ int main(int argc, char* argv[])
                   case 'N': MusEGlobal::loadNativeVST = false; break;
                   case 'I': MusEGlobal::loadDSSI = false; break;
                   case 'L': MusEGlobal::useLASH = false; break;  
+                  case '2': MusEGlobal::loadLV2 = false; break;
                   case 'y': MusEGlobal::usePythonBridge = true; break;
                   case 'l': locale_override = QString(optarg); break;
                   case 'h': usage(argv[0], argv[1]); 
@@ -684,6 +694,9 @@ int main(int argc, char* argv[])
 
       if(MusEGlobal::loadDSSI)
             MusECore::initDSSI();
+
+      if(MusEGlobal::loadLV2)
+            MusECore::initLV2();
       
       MusECore::initOSC();
       
@@ -737,6 +750,15 @@ int main(int argc, char* argv[])
       int rv = app.exec();
       if(MusEGlobal::debugMsg) 
         printf("app.exec() returned:%d\nDeleting main MusE object\n", rv);
+
+      if (MusEGlobal::loadPlugins)
+      {
+         for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
+            delete (*i);
+      }
+      if(MusEGlobal::loadLV2)
+            MusECore::deinitLV2();
+
       delete MusEGlobal::muse;
       
       if(MusEGlobal::debugMsg) 

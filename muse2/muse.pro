@@ -91,6 +91,8 @@ HEADERS = \
 	./muse/event.h \
 	./muse/audioprefetch.h \
 	./muse/dssihost.h \
+	./muse/lv2host.h \
+	./muse/lv2extui.h \
 	./muse/fastlog.h \
 	./muse/pos.h \
 	./muse/waveedit/waveview.h \

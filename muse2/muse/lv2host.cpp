@@ -1,0 +1,3420 @@
+//=============================================================================
+//  MusE
+//  Linux Music Editor
+//
+//  lv2host.cpp
+//  Copyright (C) 2014 by Deryabin Andrew <andrewderyabin@gmail.com>
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//=============================================================================
+
+#include "config.h"
+#ifdef LV2_SUPPORT
+
+#define LV2_HOST_CPP
+
+#include <string>
+#include <string.h>
+#include <signal.h>
+#include <dlfcn.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <iostream>
+#include <time.h>
+
+#include <QDir>
+#include <QFileInfo>
+#include <QUrl>
+
+#include "lv2host.h"
+#include "synth.h"
+#include "audio.h"
+#include "jackaudio.h"
+#include "midi.h"
+#include "midiport.h"
+#include "stringparam.h"
+#include "plugin.h"
+#include "controlfifo.h"
+#include "xml.h"
+#include "song.h"
+#include "ctrl.h"
+
+#include "app.h"
+#include "globals.h"
+#include "globaldefs.h"
+#include "gconfig.h"
+#include "popupmenu.h"
+#include <ladspa.h>
+
+#include <math.h>
+#include <assert.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+//uncomment to print debugging information for lv2 host
+#define DEBUG_LV2
+//uncomment to print audio process info
+//#define LV2_DEBUG_PROCESS
+
+namespace MusECore
+{
+
+#define NS_EXT "http://lv2plug.in/ns/ext/"
+#define NS_LV2CORE "http://lv2plug.in/ns/lv2core"
+
+#define LV2_INSTRUMENT_CLASS NS_LV2CORE "#InstrumentPlugin"
+#define LV2_F_BOUNDED_BLOCK_LENGTH LV2_BUF_SIZE__boundedBlockLength
+#define LV2_F_FIXED_BLOCK_LENGTH LV2_BUF_SIZE__fixedBlockLength
+#define LV2_P_SEQ_SIZE LV2_BUF_SIZE__sequenceSize
+#define LV2_P_MAX_BLKLEN LV2_BUF_SIZE__maxBlockLength
+#define LV2_P_MIN_BLKLEN LV2_BUF_SIZE__minBlockLength
+#define LV2_P_SAMPLE_RATE LV2_PARAMETERS__sampleRate
+#define LV2_F_OPTIONS LV2_OPTIONS__options
+#define LV2_F_URID_MAP LV2_URID__map
+#define LV2_F_URID_UNMAP LV2_URID__unmap
+#define LV2_F_URI_MAP LV2_URI_MAP_URI
+#define LV2_F_UI_PARENT LV2_UI__parent
+#define LV2_F_INSTANCE_ACCESS NS_EXT "instance-access"
+#define LV2_F_DATA_ACCESS LV2_DATA_ACCESS_URI
+#define LV2_F_UI_EXTERNAL_HOST LV2_EXTERNAL_UI__Host
+#define LV2_F_WORKER_SCHEDULE LV2_WORKER__schedule
+#define LV2_F_WORKER_INTERFACE LV2_WORKER__interface
+#define LV2_UI_HOST_URI LV2_UI__Qt4UI
+#define LV2_UI_EXTERNAL LV2_EXTERNAL_UI__Widget
+#define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
+
+
+LilvWorld *lilvWorld = 0;
+static int uniqueID = 1;
+
+//uri cache structure. Taken from jalv host source
+typedef struct
+{
+   LilvNode *atom_AtomPort;
+   LilvNode *atom_Chunk;
+   LilvNode *atom_Sequence;
+   LilvNode *ev_EventPort;
+   LilvNode *lv2_AudioPort;
+   LilvNode *lv2_ControlPort;
+   LilvNode *lv2_InputPort;
+   LilvNode *lv2_OutputPort;
+   LilvNode *lv2_connectionOptional;
+   LilvNode *lv2_control;
+   LilvNode *lv2_name;
+   LilvNode *midi_MidiEvent;
+   LilvNode *pg_group;
+   LilvNode *pset_Preset;
+   LilvNode *rdfs_label;
+   LilvNode *work_interface;
+   LilvNode *work_schedule;
+   LilvNode *host_uiType;
+   LilvNode *ext_uiType;
+   LilvNode *ext_d_uiType;
+   LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
+} CacheNodes;
+
+
+LV2_URID Synth_Urid_Map(LV2_URID_Unmap_Handle _host_data, const char *uri)
+{
+   LV2Synth *_synth = reinterpret_cast<LV2Synth *>(_host_data);
+
+   if(_synth == NULL)   //broken plugin
+   {
+      return 0;
+   }
+
+   return _synth->mapUrid(uri);
+}
+
+const char *Synth_Urid_Unmap(LV2_URID_Unmap_Handle _host_data, LV2_URID id)
+{
+   LV2Synth *_synth = reinterpret_cast<LV2Synth *>(_host_data);
+
+   if(_synth == NULL)   //broken plugin
+   {
+      return NULL;
+   }
+
+   return _synth->unmapUrid(id);
+}
+
+LV2_URID Synth_Uri_Map(LV2_URI_Map_Callback_Data _host_data, const char *, const char *uri)
+{
+   LV2Synth *_synth = reinterpret_cast<LV2Synth *>(_host_data);
+
+   if(_synth == NULL)   //broken plugin
+   {
+      return 0;
+   }
+
+   return _synth->mapUrid(uri);
+}
+
+
+static CacheNodes lv2CacheNodes;
+
+LV2_Feature lv2Features [] =
+{
+   {LV2_F_URID_MAP, NULL},
+   {LV2_F_URID_UNMAP, NULL},
+   {LV2_F_URI_MAP, NULL},
+   {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
+   {LV2_F_FIXED_BLOCK_LENGTH, NULL},
+   {LV2_F_UI_PARENT, NULL},
+   {LV2_F_INSTANCE_ACCESS, NULL},
+   {LV2_F_UI_EXTERNAL_HOST, NULL},
+   {LV2_F_WORKER_SCHEDULE, NULL},
+   {LV2_F_OPTIONS, NULL},
+   {LV2_F_DATA_ACCESS, NULL} //must be the last always!
+};
+
+std::vector<LV2Synth *> synthsToFree;
+
+
+
+#define SIZEOF_ARRAY(x) sizeof(x)/sizeof(x[0])
+
+void initLV2()
+{
+   std::set<std::string> supportedFeatures;
+   uint32_t i = 0;
+
+   for(i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
+   {
+      supportedFeatures.insert(lv2Features [i].URI);
+   }
+
+   lilvWorld = lilv_world_new();
+
+   // taken from jalv.c
+   /* Cache URIs for concepts we'll use */
+   lv2CacheNodes.atom_AtomPort          = lilv_new_uri(lilvWorld, LV2_ATOM__AtomPort);
+   lv2CacheNodes.atom_Chunk             = lilv_new_uri(lilvWorld, LV2_ATOM__Chunk);
+   lv2CacheNodes.atom_Sequence          = lilv_new_uri(lilvWorld, LV2_ATOM__Sequence);
+   lv2CacheNodes.ev_EventPort           = lilv_new_uri(lilvWorld, LV2_EVENT__EventPort);
+   lv2CacheNodes.lv2_AudioPort          = lilv_new_uri(lilvWorld, LV2_CORE__AudioPort);
+   lv2CacheNodes.lv2_ControlPort        = lilv_new_uri(lilvWorld, LV2_CORE__ControlPort);
+   lv2CacheNodes.lv2_InputPort          = lilv_new_uri(lilvWorld, LV2_CORE__InputPort);
+   lv2CacheNodes.lv2_OutputPort         = lilv_new_uri(lilvWorld, LV2_CORE__OutputPort);
+   lv2CacheNodes.lv2_connectionOptional = lilv_new_uri(lilvWorld, LV2_CORE__connectionOptional);
+   lv2CacheNodes.lv2_control            = lilv_new_uri(lilvWorld, LV2_CORE__control);
+   lv2CacheNodes.lv2_name               = lilv_new_uri(lilvWorld, LV2_CORE__name);
+   lv2CacheNodes.midi_MidiEvent         = lilv_new_uri(lilvWorld, LV2_MIDI__MidiEvent);
+   lv2CacheNodes.pg_group               = lilv_new_uri(lilvWorld, LV2_PORT_GROUPS__group);
+   lv2CacheNodes.pset_Preset            = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
+   lv2CacheNodes.rdfs_label             = lilv_new_uri(lilvWorld, LILV_NS_RDFS "label");
+   lv2CacheNodes.work_interface         = lilv_new_uri(lilvWorld, LV2_WORKER__interface);
+   lv2CacheNodes.work_schedule          = lilv_new_uri(lilvWorld, LV2_WORKER__schedule);
+   lv2CacheNodes.host_uiType            = lilv_new_uri(lilvWorld, LV2_UI_HOST_URI);
+   lv2CacheNodes.ext_uiType             = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL);
+   lv2CacheNodes.ext_d_uiType           = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL_DEPRECATED);
+   lv2CacheNodes.end                    = NULL;
+
+   lilv_world_load_all(lilvWorld);
+   const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
+   LilvIter *pit = lilv_plugins_begin(plugins);
+
+   while(true)
+   {
+      if(lilv_plugins_is_end(plugins, pit))
+      {
+         break;
+      }
+
+      const LilvPlugin *plugin = lilv_plugins_get(plugins, pit);
+
+      if(lilv_plugin_is_replaced(plugin))
+      {
+         continue;
+      }
+
+      LilvNode *nameNode = lilv_plugin_get_name(plugin);
+      //const LilvNode *uriNode = lilv_plugin_get_uri(plugin);
+
+      if(lilv_node_is_string(nameNode))
+      {
+         bool shouldLoad = true;
+         const char *pluginName = lilv_node_as_string(nameNode);
+         //const char *pluginUri = lilv_node_as_string(uriNode);
+#ifdef DEBUG_LV2
+         std::cerr << "Found LV2 plugin: " << pluginName << std::endl;
+#endif
+         const char *lfp = lilv_uri_to_path(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)));
+#ifdef DEBUG_LV2
+         std::cerr << "Library path: " << lfp << std::endl;
+#endif
+         const LilvPluginClass *cls = lilv_plugin_get_class(plugin);
+         const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
+         const char *clsname = lilv_node_as_uri(ncuri);
+         bool isSynth = false;
+#ifdef DEBUG_LV2
+         std::cerr << "Plugin class: " << clsname << std::endl;
+#endif
+
+         if(strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0)
+         {
+            isSynth = true;
+         }
+
+#ifdef DEBUG_LV2
+
+         if(isSynth)
+         {
+            std::cerr << "Plugin is synth" << std::endl;
+         }
+
+#endif
+
+#ifdef DEBUG_LV2
+         std::cerr <<  "\tRequired features (by uri):" << std::endl;
+#endif
+         LilvNodes *fts = lilv_plugin_get_required_features(plugin);
+         LilvIter *nit = lilv_nodes_begin(fts);
+
+         while(true)
+         {
+            if(lilv_nodes_is_end(fts, nit))
+            {
+               break;
+            }
+
+            const LilvNode *fnode = lilv_nodes_get(fts, nit);
+            const char *uri = lilv_node_as_uri(fnode);
+            bool isSupported = (supportedFeatures.find(uri) != supportedFeatures.end());
+#ifdef DEBUG_LV2
+            std::cerr << "\t - " << uri << " (" << (isSupported ? "supported" : "not supported") << ")" << std::endl;
+#endif
+
+            if(!isSupported)
+            {
+               shouldLoad = false;
+            }
+
+            nit = lilv_nodes_next(fts, nit);
+
+         }
+
+         lilv_nodes_free(fts);
+
+
+
+         //if (shouldLoad && isSynth)
+         if(shouldLoad)   //load all plugins for now, not only synths
+         {
+            QFileInfo fi(lfp);
+            QString name = QString(pluginName) + QString(" LV2");
+            //QString label = QString(pluginUri) + QString("_LV2");
+            // Make sure it doesn't already exist.
+            std::vector<Synth *>::iterator is;
+
+            for(is = MusEGlobal::synthis.begin(); is != MusEGlobal::synthis.end(); ++is)
+            {
+               Synth *s = *is;
+
+               if(s->name() == name && s->baseName() == fi.completeBaseName())
+               {
+                  break;
+               }
+            }
+
+            if(is == MusEGlobal::synthis.end())
+            {
+               LilvNode *nAuthor = lilv_plugin_get_author_name(plugin);
+               QString author;
+
+               if(nAuthor != NULL)
+               {
+                  author = lilv_node_as_string(nAuthor);
+                  lilv_node_free(nAuthor);
+               }
+
+               LV2Synth *s = new LV2Synth(fi, name, name, author, plugin);
+
+               if(s->isSynth() && s->outPorts() > 0)
+               {
+                  MusEGlobal::synthis.push_back(s);
+               }
+               else
+               {
+                  synthsToFree.push_back(s);
+               }
+
+               if(s->inPorts() > 0 && s->outPorts() > 0)   // insert to plugin list
+               {
+                  MusEGlobal::plugins.push_back(new LV2PluginWrapper(s));
+
+               }
+
+            }
+         }
+      }
+
+      if(nameNode != NULL)
+      {
+         lilv_node_free(nameNode);
+      }
+
+      pit = lilv_plugins_next(plugins, pit);
+   }
+
+}
+
+void deinitLV2()
+{
+
+   for(size_t i = 0; i < synthsToFree.size(); i++)
+   {
+      delete synthsToFree [i];
+   }
+
+   for(LilvNode **n = (LilvNode **)&lv2CacheNodes; *n; ++n)
+   {
+      lilv_node_free(*n);
+   }
+
+   free(lilvWorld);
+
+}
+
+
+
+void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)contr;
+   assert(state != NULL); //this should'nt happen
+   assert(state->uiTimer != NULL); // this too
+
+   state->uiTimer->stopNextTime(false);
+}
+
+void LV2Synth::lv2ui_PortWrite(SuilController controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
+
+   assert(state != NULL); //this should'nt happen
+   assert(state->inst != NULL || state->sif != NULL); // this too
+
+   if(protocol != 0 || buffer_size != sizeof(float)) //we accept only control writes which are of sizeof(float) size and protocol = 0
+   {
+#ifdef DEBUG_LV2
+      std::cerr << "LV2Synth::lv2ui_PortWrite: unsipported protocol (" << protocol << ") or buffer_size (" << buffer_size << ")" << std::endl;
+#endif
+      return;
+   }
+
+   std::map<uint32_t, uint32_t>::iterator it = state->synth->_idxToControlMap.find(port_index);
+
+   if(it == state->synth->_idxToControlMap.end())
+   {
+#ifdef DEBUG_LV2
+      std::cerr << "LV2Synth::lv2ui_PortWrite: wrong port index (" << port_index << ")" << std::endl;
+#endif
+      return;
+   }
+
+   uint32_t cport = it->second;
+   float value = *(float *)buffer;
+
+   // Schedules a timed control change:
+   ControlEvent ce;
+   ce.unique = false;
+   ce.fromGui = true;                 // It came from the plugin's own GUI.
+   ce.idx = cport;
+   ce.value = value;
+   // Don't use timestamp(), because it's circular, which is making it impossible to deal
+   // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
+   ce.frame = MusEGlobal::audio->curFrame();
+
+   ControlFifo *_controlFifo = NULL;
+   if(state->inst != NULL)
+   {
+      _controlFifo = &state->plugInst->_controlFifo;
+      // Record automation:
+      // Take care of this immediately, because we don't want the silly delay associated with
+      //  processing the fifo one-at-a-time in the apply().
+      // NOTE: With some vsts we don't receive control events until the user RELEASES a control.
+      // So the events all arrive at once when the user releases a control.
+      // That makes this pretty useless... But what the heck...
+      AutomationType at = AUTO_OFF;
+      if(state->plugInst->_track && state->plugInst->_id != -1)
+      {
+        unsigned long id = genACnum(state->plugInst->_id, cport);
+        state->plugInst->_track->recordAutomation(id, value);
+        at = state->plugInst->_track->automationType();
+      }
+
+      state->plugInst->enableController(cport, false);
+   }
+   else if(state->sif != NULL)
+   {
+      _controlFifo = &state->sif->_controlFifo;
+      // Record automation:
+      // Take care of this immediately, because we don't want the silly delay associated with
+      //  processing the fifo one-at-a-time in the apply().
+      // NOTE: With some vsts we don't receive control events until the user RELEASES a control.
+      // So the events all arrive at once when the user releases a control.
+      // That makes this pretty useless... But what the heck...
+      if(state->sif->id() != -1)
+      {
+        unsigned long pid = genACnum(state->sif->id(), cport);
+        state->sif->synti->recordAutomation(pid, value);
+      }
+
+      state->sif->enableController(cport, false);
+
+   }
+
+   assert(_controlFifo != NULL);
+   if(_controlFifo->put(ce))
+     std::cerr << "LV2Synth::lv2ui_PortWrite: fifo overflow: in control number:" << cport << std::endl;
+
+#ifdef DEBUG_LV2
+   std::cerr << "LV2Synth::lv2ui_PortWrite: port=" << cport << ", val=" << value << std::endl;
+#endif
+
+}
+
+void LV2Synth::lv2ui_Touch(SuilController controller, uint32_t port_index, bool grabbed)
+{
+#ifdef DEBUG_LV2
+   std::cerr << "LV2Synth::lv2ui_UiTouch: port: %u " << (grabbed ? "grabbed" : "released") << std::endl;
+#endif
+
+}
+
+
+
+void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
+{
+   uint32_t i;
+   LV2Synth *synth = state->synth;
+   LV2_Feature *_ifeatures = state->_ifeatures;
+   LV2_Feature **_ppifeatures = state->_ppifeatures;
+
+   state->uiTimer = new LV2PluginWrapper_Timer(state);
+
+   state->wrkSched.handle = (LV2_Worker_Schedule_Handle)state;
+   state->wrkSched.schedule_work = LV2Synth::lv2wrk_scheduleWork;
+   state->wrkIface = NULL;
+   state->wrkThread = new LV2PluginWrapper_Worker(state);
+
+   state->extHost.plugin_human_id = state->human_id = NULL;
+   state->extHost.ui_closed = LV2Synth::lv2ui_ExtUi_Closed;
+
+   state->extData.data_access = NULL;
+
+   for(i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
+   {
+      _ifeatures [i] = synth->_features [i];
+
+      if(_ifeatures [i].URI == NULL)
+      {
+         break;
+      }
+
+      if(i == synth->_fInstanceAccess)
+      {
+         _ifeatures [i].data = NULL;
+      }
+      else if(i == synth->_fUiHost)
+      {
+         _ifeatures [i].data = &state->extHost;         
+      }
+      else if(i == synth->_fDataAccess)
+      {
+         _ifeatures [i].data = &state->extData;
+      }
+      else if(i == synth->_fWrkSchedule)
+      {
+         _ifeatures [i].data = &state->wrkSched;
+      }
+
+      _ppifeatures [i] = &_ifeatures [i];
+   }
+
+   _ppifeatures [i] = NULL;
+
+}
+
+void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
+{
+   LV2Synth *synth = state->synth;
+   const LV2_Descriptor *descr = lilv_instance_get_descriptor(state->handle);
+
+   state->_ifeatures [synth->_fInstanceAccess].data = lilv_instance_get_handle(state->handle);
+
+   if(descr->extension_data != NULL)
+   {
+      state->extData.data_access = descr->extension_data;
+
+      //query for LV2Worker interface
+      state->wrkIface = (LV2_Worker_Interface *)descr->extension_data(LV2_F_WORKER_INTERFACE);
+   }
+   else
+   {
+      state->_ppifeatures [synth->_fDataAccess] = NULL;
+   }
+
+   state->iState = (LV2_State_Interface *)lilv_instance_get_extension_data(state->handle, LV2_STATE__interface);
+
+   state->wrkThread->start(QThread::LowPriority);
+
+}
+
+
+
+
+void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
+{
+   LV2Synth *synth = state->synth;
+   QMainWindow *win = NULL;
+
+   state->uiTimer->stopNextTime();
+
+   if(!bShow)
+   {
+      if(synth->_hasGui && state->widget)
+      {
+         ((QWidget *)state->widget)->hide();
+      }
+      else if(synth->_hasExternalGui && state->widget)
+      {
+         //LV2_EXTERNAL_UI_HIDE((LV2_External_UI_Widget *)state->widget);
+         state->widget = NULL;
+         suil_instance_free(state->uiInst);
+         state->uiInst = NULL;
+      }
+
+      return;
+   }
+   else
+   {
+      if(synth->_hasGui && state->widget && state->uiInst)
+      {
+         ((QWidget *)state->widget)->show();
+         ((QWidget *)state->widget)->setWindowTitle(state->extHost.plugin_human_id);
+         goto _gui_write;
+
+      }
+      else if(synth->_hasExternalGui && state->widget)
+      {
+         //LV2_EXTERNAL_UI_SHOW((LV2_External_UI_Widget *)state->widget);
+         //goto _gui_write;
+         state->widget = NULL;
+         suil_instance_free(state->uiInst);
+         state->uiInst = NULL;
+      }
+
+   }
+
+   if(synth->_hasGui)
+   {
+      win = new LV2PluginWrapper_Window(state);
+   }
+
+   if(win != NULL || synth->_hasExternalGui)
+   {
+      state->_ifeatures [synth->_fUiParent].data = win;
+      state->uiInst = suil_instance_new(state->uiHost,
+                                        state,
+                                        lilv_node_as_uri(lv2CacheNodes.host_uiType),
+                                        lilv_node_as_uri(lilv_plugin_get_uri(synth->_handle)),
+                                        lilv_node_as_uri(lilv_ui_get_uri(synth->_selectedUi)),
+                                        lilv_node_as_uri(synth->_pluginUIType),
+                                        lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_bundle_uri(synth->_selectedUi))),
+                                        lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(synth->_selectedUi))),
+                                        state->_ppifeatures);
+
+      if(state->uiInst != NULL)
+      {
+         if(synth->_hasGui)
+         {
+            state->widget = win;
+            win->setCentralWidget((QWidget *)suil_instance_get_widget(state->uiInst));
+            win->show();
+            win->setWindowTitle(state->extHost.plugin_human_id);
+         }
+         else if(synth->_hasExternalGui)
+         {
+            state->widget = (void *)suil_instance_get_widget(state->uiInst);
+            LV2_EXTERNAL_UI_SHOW((LV2_External_UI_Widget *)state->widget);
+         }
+
+      _gui_write:
+
+         if(state->uiInst != NULL)
+         {
+            uint32_t numControls = 0;
+            Port *controls = NULL;
+
+            if(state->plugInst != NULL)
+            {
+               numControls = state->plugInst->controlPorts;
+               controls = state->plugInst->controls;
+
+            }
+            else if(state->sif != NULL)
+            {
+               numControls = state->sif->_inportsControl;
+               controls = state->sif->_controls;
+            }
+
+            if(numControls > 0)
+            {
+               assert(controls != NULL);
+            }
+
+            for(uint32_t i = 0; i < numControls; ++i)
+            {
+               suil_instance_port_event(state->uiInst,
+                                        controls [i].idx,
+                                        sizeof(float), 0,
+                                        &controls [i].val);
+            }
+
+            state->uiTimer->start(1000 / 30);
+            return;
+         }
+
+      }
+   }
+
+}
+
+
+const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags)
+{
+   QMap<QString, QPair<QString, QVariant> >::const_iterator it;
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+   LV2Synth *synth = state->synth;
+   const char *cKey = synth->unmapUrid(key);
+
+   assert(cKey != NULL); //should'n happen
+
+   QString strKey = QString(cKey);
+   it = state->iStateValues.find(strKey);
+   if(it != state->iStateValues.end())
+   {
+      QString sType = it.value().first;
+      QByteArray arrType = sType.toUtf8();
+      *type = synth->mapUrid(arrType.constData());
+      *flags = LV2_STATE_IS_POD;
+      QByteArray valArr = it.value().second.toByteArray();
+      size_t i;
+      size_t numValues = state->numStateValues;
+      for(i = 0; i < numValues; ++i)
+      {
+         if(state->tmpValues [i] == NULL)
+            break;
+      }
+      assert(i < numValues); //sanity check
+      size_t sz = valArr.size();
+      state->iStateValues.remove(strKey);
+      if(sz > 0)
+      {
+         state->tmpValues [i] = new char [sz];
+         memset(state->tmpValues [i], 0, sz);
+         memcpy(state->tmpValues [i], valArr.constData(), sz);
+         *size = sz;
+         return state->tmpValues [i];
+      }
+   }
+
+   return NULL;
+}
+
+LV2_State_Status LV2Synth::lv2state_stateStore(LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags)
+{
+   if(flags & LV2_STATE_IS_POD)
+   {
+      LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+      LV2Synth *synth = state->synth;
+      const char *uriKey = synth->unmapUrid(key);
+      const char *uriType = synth->unmapUrid(type);
+      assert(uriType != NULL && uriKey != NULL); //FIXME: buggy plugin or uridBiMap realization?
+      QString strKey = QString(uriKey);
+      QMap<QString, QPair<QString, QVariant> >::const_iterator it = state->iStateValues.find(strKey);
+      if(it == state->iStateValues.end())
+      {
+         QString strUriType = uriType;
+         QVariant varVal = QByteArray((const char *)value, size);
+         state->iStateValues.insert(strKey, QPair<QString, QVariant>(strUriType, varVal));
+      }
+      return LV2_STATE_SUCCESS;
+   }
+   return LV2_STATE_ERR_BAD_FLAGS;
+}
+
+LV2_Worker_Status LV2Synth::lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data)
+{
+#ifdef DEBUG_LV2
+   std::cerr << "LV2Synth::lv2wrk_scheduleWork" << std::endl;
+#endif
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+
+   assert(state->wrkEndWork != true);
+
+   state->wrkDataSize = size;
+   state->wrkDataBuffer = data;
+   if(MusEGlobal::audio->freewheel()) //dont wait for a thread. Do it now
+      state->wrkThread->makeWork();
+   else
+      state->wrkThread->scheduleWork();
+
+   return LV2_WORKER_SUCCESS;
+}
+
+LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void *data)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+
+   state->wrkDataSize = size;
+   state->wrkDataBuffer = data;
+   state->wrkEndWork = true;
+
+   return LV2_WORKER_SUCCESS;
+}
+
+
+
+LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin)
+   : Synth(fi, label, name, author, QString("")),
+     _handle(_plugin), _isSynth(false)
+{
+
+   //fake id for LV2PluginWrapper functionality
+   _uniqueID = uniqueID++;
+
+   _midi_event_id = mapUrid(LV2_MIDI__MidiEvent);
+
+   _hasGui = false;
+   _hasExternalGuiDepreceated = _hasExternalGui = false;
+
+   //prepare features and options arrays
+   LV2_Options_Option _tmpl_options [] =
+   {
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::sampleRate},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
+
+   };
+
+   _options = new LV2_Options_Option[SIZEOF_ARRAY(_tmpl_options)]; // last option is NULLs
+
+   for(uint32_t i = 0; i < SIZEOF_ARRAY(_tmpl_options); i++)
+   {
+      _options [i] = _tmpl_options [i];
+   }
+
+   _features = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
+   _ppfeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
+   _lv2_urid_map.map = Synth_Urid_Map;
+   _lv2_urid_map.handle = this;
+   _lv2_urid_unmap.unmap = Synth_Urid_Unmap;
+   _lv2_urid_unmap.handle = this;
+   _lv2_uri_map.uri_to_id = Synth_Uri_Map;
+   _lv2_uri_map.callback_data = this;
+
+   uint32_t i;
+
+   for(i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
+   {
+      _features [i] = lv2Features [i];
+
+      if(_features [i].URI == NULL)
+      {
+         break;
+      }
+
+      if(std::string(LV2_F_URID_MAP) == _features [i].URI)
+      {
+         _features [i].data = &_lv2_urid_map;
+      }
+      else if(std::string(LV2_F_URID_UNMAP) == _features [i].URI)
+      {
+         _features [i].data = &_lv2_urid_unmap;
+      }
+      else if(std::string(LV2_F_URI_MAP) == _features [i].URI)
+      {
+         _features [i].data = &_lv2_uri_map;
+      }
+      else if(std::string(LV2_F_OPTIONS) == _features [i].URI)
+      {
+         _features [i].data = _options;
+      }
+      else if(std::string(LV2_F_INSTANCE_ACCESS) == _features [i].URI)
+      {
+         _fInstanceAccess = i;
+      }
+      else if(std::string(LV2_F_UI_PARENT) == _features [i].URI)
+      {
+         _fUiParent = i;
+      }
+      else if((std::string(LV2_F_UI_EXTERNAL_HOST) == _features [i].URI))
+      {
+         _fUiHost = i;
+      }
+      else if((std::string(LV2_F_WORKER_SCHEDULE) == _features [i].URI))
+      {
+         _fWrkSchedule = i;
+      }
+      else if(std::string(LV2_F_DATA_ACCESS) == _features [i].URI)
+      {
+         _fDataAccess = i; //must be the last!
+      }
+
+
+      _ppfeatures [i] = &_features [i];
+   }
+
+   _ppfeatures [i] = 0;
+
+   //enum plugin ports;
+   uint32_t numPorts = lilv_plugin_get_num_ports(_handle);
+
+   for(uint32_t i = 0; i < numPorts; i++)
+   {
+      const LilvPort *_port = lilv_plugin_get_port_by_index(_handle, i);
+      LilvNode *_nPname = lilv_port_get_name(_handle, _port);
+      QString _portName;
+
+      if(_nPname != 0)
+      {
+         _portName = lilv_node_as_string(_nPname);
+         lilv_node_free(_nPname);
+      }
+
+      const bool optional = lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_connectionOptional);
+
+      LV2_MIDI_PORTS *mPorts = &_midiOutPorts;
+      LV2_CONTROL_PORTS *cPorts = &_controlOutPorts;
+      LV2_AUDIO_PORTS *aPorts = &_audioOutPorts;
+
+      if(lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_InputPort))
+      {
+         mPorts = &_midiInPorts;
+         cPorts = &_controlInPorts;
+         aPorts = &_audioInPorts;
+      }
+      else if(!lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_OutputPort))
+      {
+#ifdef DEBUG_LV2
+         std::cerr << "plugin has port with unknown direction - ignoring" << std::endl;
+#endif
+         continue;
+      }
+
+      if(lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_ControlPort))
+      {
+         cPorts->push_back(LV2ControlPort(_port, i, 0.0f, _portName));
+         //lilv_instance_connect_port(_handle, i, &_PluginControls [i]);
+      }
+      else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_AudioPort))
+      {
+         aPorts->push_back(LV2AudioPort(_port, i, NULL, _portName));
+      }
+      else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.ev_EventPort))
+      {
+
+         mPorts->push_back(LV2MidiPort(_port, i, _portName, true /* old api is on */, NULL));
+         //lilv_instance_connect_port(_handle, i, NULL);
+      }
+      else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.atom_AtomPort))
+      {
+         mPorts->push_back(LV2MidiPort(_port, i, _portName, false /* old api is off */, NULL));
+         //lilv_instance_connect_port(_handle, i, NULL);
+      }
+      else if(!optional)
+      {
+#ifdef DEBUG_LV2
+         std::cerr << "plugin has port with unknown type - ignoring" << std::endl;
+#endif
+      }
+
+
+
+   }
+
+   for(uint32_t i = 0; i < _controlInPorts.size(); ++i)
+   {
+      _idxToControlMap.insert(std::pair<uint32_t, uint32_t>(_controlInPorts [i].index, i));
+   }
+
+   if(_midiInPorts.size() > 0)
+   {
+      _isSynth = true;
+   }
+
+   _pluginUIType = NULL;
+   _selectedUi = NULL;
+   _hasGui = false;
+   _hasExternalGui = false;
+
+   _uiHost = suil_host_new(LV2Synth::lv2ui_PortWrite, NULL, NULL, NULL);
+   _uis = NULL;
+
+   if(_uiHost)
+   {
+      suil_host_set_touch_func(_uiHost, LV2Synth::lv2ui_Touch);
+      _uis = lilv_plugin_get_uis(_handle);
+
+      if(_uis)
+      {
+         LilvIter *it = lilv_uis_begin(_uis);
+
+#ifdef DEBUG_LV2
+         std::cerr << "Plugin support uis of type:" << std::endl;
+#endif
+
+
+         while(!lilv_uis_is_end(_uis, it))
+         {
+            const LilvUI *ui = lilv_uis_get(_uis, it);
+            const LilvNodes *nUiClss = lilv_ui_get_classes(ui);
+            LilvIter *nit = lilv_nodes_begin(nUiClss);
+
+            while(!lilv_nodes_is_end(_uis, nit))
+            {
+               const LilvNode *nUiCls = lilv_nodes_get(nUiClss, nit);
+#ifdef  DEBUG_LV2
+               const char *ClsStr = lilv_node_as_string(nUiCls);
+               std::cerr << ClsStr << std::endl;
+#endif
+
+
+               bool extUi = lilv_node_equals(nUiCls, lv2CacheNodes.ext_uiType);
+               bool extdUi = lilv_node_equals(nUiCls, lv2CacheNodes.ext_d_uiType);
+               if(extUi || extdUi)
+               {
+                  _hasExternalGui = true;
+                  _hasExternalGuiDepreceated = extdUi;
+                  _pluginUIType = extUi ? lv2CacheNodes.ext_uiType : lv2CacheNodes.ext_d_uiType;
+#ifdef DEBUG_LV2
+                  std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << LV2_UI_EXTERNAL << std::endl;
+#endif
+                  _selectedUi = ui;
+                  break;
+               }
+
+               nit = lilv_nodes_next(nUiClss, nit);
+            }
+
+            if(!_hasExternalGui &&
+                  lilv_ui_is_supported(ui,
+                                       suil_ui_supported,
+                                       lv2CacheNodes.host_uiType,
+                                       &_pluginUIType))
+            {
+               const char *strUiType = lilv_node_as_string(_pluginUIType);
+
+#ifdef DEBUG_LV2
+               std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << strUiType << std::endl;
+#endif
+               _hasGui = true;
+               _selectedUi = ui;
+            }
+
+            it = lilv_uis_next(_uis, it);
+         };
+
+      }
+   }
+
+   if(_hasExternalGuiDepreceated)
+         _features [_fUiHost].URI = LV2_UI_EXTERNAL_DEPRECATED;
+}
+
+LV2Synth::~LV2Synth()
+{
+   if(_ppfeatures)
+   {
+      delete [] _ppfeatures;
+      _ppfeatures = NULL;
+   }
+
+   if(_features)
+   {
+      delete [] _features;
+      _features = NULL;
+   }
+
+   if(_options)
+   {
+      delete [] _options;
+      _options = NULL;
+   }
+
+   if(_uiHost)
+   {
+      suil_host_free(_uiHost);
+      _uiHost = NULL;
+   }
+
+   if(_uis != NULL)
+   {
+      lilv_uis_free(_uis);
+      _uis = NULL;
+   }
+
+}
+
+
+SynthIF *LV2Synth::createSIF(SynthI *synthi)
+{
+   ++_instances;
+   LV2SynthIF *sif = new LV2SynthIF(synthi);
+
+   if(!sif->init(this))
+   {
+      delete sif;
+      sif = NULL;
+   }
+
+   return sif;
+}
+
+LV2_URID LV2Synth::mapUrid(const char *uri)
+{
+   return uridBiMap.map(uri);
+}
+
+const char *LV2Synth::unmapUrid(LV2_URID id)
+{
+   return uridBiMap.unmap(id);
+}
+
+LV2SynthIF::~LV2SynthIF()
+{
+   if(_handle)
+   {
+      lilv_instance_free(_handle);
+      _handle = NULL;
+   }
+
+   LV2_AUDIO_PORTS::iterator _itA = _audioInPorts.begin();
+
+   for(; _itA != _audioInPorts.end(); ++_itA)
+   {
+      free((*_itA).buffer);
+   }
+
+   _itA = _audioOutPorts.begin();
+
+   for(; _itA != _audioOutPorts.end(); ++_itA)
+   {
+      free((*_itA).buffer);
+   }
+
+   if(_audioInBuffers)
+   {
+      delete [] _audioInBuffers;
+      _audioInBuffers = NULL;
+   }
+
+   if(_audioOutBuffers)
+   {
+      delete [] _audioOutBuffers;
+      _audioOutBuffers = NULL;
+   }
+
+   if(_controls)
+   {
+      delete [] _controls;
+   }
+
+   if(_controlsOut)
+   {
+      delete [] _controlsOut;
+   }
+
+   if(_midiEvent)
+   {
+      snd_midi_event_free(_midiEvent);
+   }
+
+   if(_ppifeatures)
+   {
+      delete [] _ppifeatures;
+      _ppifeatures = NULL;
+   }
+
+   if(_ifeatures)
+   {
+      delete [] _ifeatures;
+      _ifeatures = NULL;
+   }
+
+   if(_uiState != NULL)
+   {
+      _uiState->uiTimer->stopNextTime();
+
+      delete _uiState->uiTimer;
+
+      if(_uiState->uiInst != NULL)
+      {
+         suil_instance_free(_uiState->uiInst);
+      }
+
+      _uiState->wrkThread->terminate();
+      _uiState->wrkThread->wait();
+      delete _uiState->wrkThread;
+
+      free(_uiState->human_id);
+      if(_uiState->lastControls)
+      {
+         delete [] _uiState->lastControls;
+         _uiState->lastControls = NULL;
+      }
+      if(_uiState->controlsMask)
+      {
+         delete [] _uiState->controlsMask;
+         _uiState->controlsMask = NULL;
+      }
+      delete _uiState;
+      _uiState = NULL;
+   }
+}
+
+LV2SynthIF::LV2SynthIF(SynthI *s): SynthIF(s)
+{
+   _synth = NULL;
+   _handle = NULL;
+   _audioInBuffers = NULL;
+   _audioOutBuffers = NULL;
+   _inports = 0;
+   _outports = 0;
+   _controls = NULL;
+   _controlsOut = NULL;   
+   _midiEvent = NULL;
+   _inportsControl = 0;
+   _outportsControl = 0;
+   _inportsMidi = 0,
+   _outportsMidi = 0,
+   _audioInSilenceBuf = NULL;
+   _ifeatures = NULL;
+   _ppifeatures = NULL;
+   _uiState = NULL;
+}
+
+bool LV2SynthIF::init(LV2Synth *s)
+{
+   _synth = s;   
+
+   if(snd_midi_event_new(MusEGlobal::segmentSize * 10, &_midiEvent) != 0)
+   {
+      return false;
+   }
+
+   snd_midi_event_no_status(_midiEvent, 1);
+
+
+   //use LV2Synth features as template
+
+   _uiState = new LV2PluginWrapper_State;   
+   _uiState->uiHost = _synth->_uiHost;
+   _uiState->inst = NULL;
+   _uiState->widget = NULL;
+   _uiState->uiInst = NULL;
+   _uiState->plugInst = NULL;
+   _uiState->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
+   _uiState->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
+   _uiState->sif = this;
+   _uiState->synth = _synth;
+
+   LV2Synth::lv2state_FillFeatures(_uiState);
+
+   _uiState->handle = _handle = lilv_plugin_instantiate(_synth->_handle, (double)MusEGlobal::sampleRate, _uiState->_ppifeatures);
+
+   if(_handle == NULL)
+   {
+      delete [] _uiState->_ppifeatures;
+      _uiState->_ppifeatures = NULL;
+      delete [] _uiState->_ifeatures;
+      _uiState->_ifeatures = NULL;
+      return false;
+   }
+
+   LV2Synth::lv2state_PostInstantiate(_uiState);
+
+   uint32_t numPorts = lilv_plugin_get_num_ports(_synth->_handle);
+   float _PluginControlsMin [numPorts];
+   float _PluginControlsDef [numPorts];
+   float _PluginControlsMax [numPorts];
+   lilv_plugin_get_port_ranges_float(_synth->_handle, _PluginControlsMin, _PluginControlsMax, _PluginControlsDef);
+
+   _midiInPorts = s->_midiInPorts;
+   _midiOutPorts = s->_midiOutPorts;
+   _audioInPorts = s->_audioInPorts;
+   _audioOutPorts = s->_audioOutPorts;
+   _controlInPorts = s->_controlInPorts;
+   _controlOutPorts = s->_controlOutPorts;
+
+   _inportsMidi = _midiInPorts.size();
+   _outportsMidi = _midiOutPorts.size();
+
+   //connect midi and control ports
+   for(size_t i = 0; i < _inportsMidi; i++)
+   {
+      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
+                                      _midiInPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
+                                      _synth->mapUrid(LV2_ATOM__Chunk),
+                                      _synth->mapUrid(LV2_ATOM__Sequence)
+                                     );
+      _midiInPorts [i].buffer = buffer;
+      lilv_instance_connect_port(_handle, _midiInPorts [i].index, (void *)buffer->lv2_evbuf_get_buffer());
+   }
+
+   for(size_t i = 0; i < _outportsMidi; i++)
+   {
+      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
+                                      _midiOutPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
+                                      _synth->mapUrid(LV2_ATOM__Chunk),
+                                      _synth->mapUrid(LV2_ATOM__Sequence)
+                                     );
+      _midiOutPorts [i].buffer = buffer;
+      lilv_instance_connect_port(_handle, _midiOutPorts [i].index, (void *)buffer->lv2_evbuf_get_buffer());
+   }
+
+   _inportsControl = _controlInPorts.size();
+   _outportsControl = _controlOutPorts.size();
+
+   if(_inportsControl != 0)
+   {
+      _controls = new Port[_inportsControl];
+   }
+   else
+   {
+      _controls = NULL;
+   }
+
+   if(_outportsControl != 0)
+   {
+      _controlsOut = new Port[_outportsControl];
+   }
+   else
+   {
+      _controlsOut = NULL;
+   }
+
+   _controlsNameMap.clear();
+
+   _synth->midiCtl2PortMap.clear();
+   _synth->port2MidiCtlMap.clear();
+
+   for(size_t i = 0; i < _inportsControl; i++)
+   {
+      uint32_t idx = _controlInPorts [i].index;
+      _controls [i].idx = idx;
+      _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal = _PluginControlsDef [idx];
+      _controls [i].enCtrl = true;
+      _controlInPorts [i].minVal = _PluginControlsMin [idx];
+      _controlInPorts [i].maxVal = _PluginControlsMax [idx];
+
+      _controlsNameMap.insert(std::pair<QString, size_t>(_controlInPorts [i].name, i));
+
+      int ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + i;
+
+      // We have a controller number! Insert it and the DSSI port number into both maps.
+      _synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, i));
+      _synth->port2MidiCtlMap.insert(std::pair<int, int>(i, ctlnum));
+
+      int id = genACnum(MAX_PLUGINS + LV2_PLUGIN_SPACE, i);
+      CtrlList *cl;
+      CtrlListList *cll = track()->controller();
+      iCtrlList icl = cll->find(id);
+
+      if(icl == cll->end())
+      {
+         cl = new CtrlList(id);
+         cll->add(cl);
+         cl->setCurVal(_controls[i].val);
+      }
+      else
+      {
+         cl = icl->second;
+         _controls[i].val = cl->curVal();
+      }
+
+      cl->setRange(_PluginControlsMin [idx], _PluginControlsMax [idx]);
+      cl->setName(QString(_controlInPorts [i].name));
+      cl->setValueType(VAL_LINEAR);
+      cl->setMode(CtrlList::INTERPOLATE);
+
+      lilv_instance_connect_port(_handle, idx, &_controls [i].val);
+   }
+
+   if(_inportsControl > 0)
+   {
+      _uiState->lastControls = new float [_inportsControl];
+      _uiState->controlsMask = new bool [_inportsControl];
+      for(uint32_t i = 0; i < _inportsControl; i++)
+      {
+         _uiState->lastControls [i] = _controls [i].val;
+         _uiState->controlsMask [i] = false;
+      }
+   }
+
+   for(size_t i = 0; i < _outportsControl; i++)
+   {
+      uint32_t idx = _controlOutPorts [i].index;
+      _controlsOut[i].idx = idx;
+      _controlsOut[i].val    = 0.0;
+      _controlsOut[i].tmpVal = 0.0;
+      _controlsOut[i].enCtrl  = false;
+      _controlOutPorts [i].defVal = _controlOutPorts [i].minVal = _controlOutPorts [i].maxVal = 0.0;
+      lilv_instance_connect_port(_handle, idx, &_controlsOut[i].val);
+   }
+
+
+   int rv = posix_memalign((void **)&_audioInSilenceBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+
+   if(rv != 0)
+   {
+      fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+      abort();
+   }
+
+   if(MusEGlobal::config.useDenormalBias)
+   {
+      for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+      {
+         _audioInSilenceBuf[q] = MusEGlobal::denormalBias;
+      }
+   }
+   else
+   {
+      memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
+   }
+
+   //cache number of ports
+   _inports = _audioInPorts.size();
+   _outports = _audioOutPorts.size();
+
+
+   if(_inports > 0)
+   {
+      _audioInBuffers = new float*[_inports];
+
+      for(size_t i = 0; i < _inports; i++)
+      {
+         int rv = posix_memalign((void **)&_audioInBuffers [i], 16, sizeof(float) * MusEGlobal::segmentSize);
+
+         if(rv != 0)
+         {
+            fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+            abort();
+         }
+
+         if(MusEGlobal::config.useDenormalBias)
+         {
+            for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+            {
+               _audioInBuffers [i][q] = MusEGlobal::denormalBias;
+            }
+         }
+         else
+         {
+            memset(_audioInBuffers [i], 0, sizeof(float) * MusEGlobal::segmentSize);
+         }
+         _iUsedIdx.push_back(false);
+
+         _iUsedIdx.push_back(false);
+
+         _audioInPorts [i].buffer = _audioInBuffers [i];
+         lilv_instance_connect_port(_handle, _audioInPorts [i].index, _audioInBuffers [i]);
+      }
+   }
+
+   if(_outports > 0)
+   {
+      _audioOutBuffers = new float*[_outports];
+
+      for(size_t i = 0; i < _outports; i++)
+      {
+         int rv = posix_memalign((void **)&_audioOutBuffers [i], 16, sizeof(float) * MusEGlobal::segmentSize);
+
+         if(rv != 0)
+         {
+            fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+            abort();
+         }
+
+         if(MusEGlobal::config.useDenormalBias)
+         {
+            for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
+            {
+               _audioOutBuffers [i][q] = MusEGlobal::denormalBias;
+            }
+         }
+         else
+         {
+            memset(_audioOutBuffers [i], 0, sizeof(float) * MusEGlobal::segmentSize);
+         }
+
+         _audioOutPorts [i].buffer = _audioOutBuffers [i];
+         lilv_instance_connect_port(_handle, _audioOutPorts [i].index, _audioOutBuffers [i]);
+      }
+   }
+
+   activate();
+
+   return true;
+
+}
+
+int LV2SynthIF::channels() const
+{
+   return (_outports) > MAX_CHANNELS ? MAX_CHANNELS : (_outports) ;
+
+}
+
+int LV2SynthIF::totalInChannels() const
+{
+   return _inports;
+}
+
+int LV2SynthIF::totalOutChannels() const
+{
+   return _outports;
+}
+
+void LV2SynthIF::activate()
+{
+   if(_handle)
+   {
+      lilv_instance_activate(_handle);
+   }
+}
+
+
+void LV2SynthIF::deactivate()
+{
+   if(_handle)
+   {
+      lilv_instance_deactivate(_handle);
+   }
+
+}
+
+void LV2SynthIF::deactivate3()
+{
+   deactivate();
+}
+
+int LV2SynthIF::eventsPending() const
+{
+   //TODO: what's this?
+   return 0;
+}
+
+bool LV2SynthIF::lv2MidiControlValues(size_t port, int ctlnum, int *min, int *max, int *def)
+{
+
+   float fmin, fmax, fdef;
+   int   imin;
+   float frng;
+
+   fdef = _controlInPorts [port].defVal;
+   fmin = _controlInPorts [port].minVal;
+   fmax = _controlInPorts [port].maxVal;
+   bool hasdef = (fdef == fdef);
+
+   if(fmin != fmin)
+   {
+      fmin = 0.0;
+   }
+
+   if(fmax != fmax)
+   {
+      fmax = 0.0;
+   }
+
+   MidiController::ControllerType t = midiControllerType(ctlnum);
+
+#ifdef PLUGIN_DEBUGIN
+   printf("lv2MidiControlValues: ctlnum:%d ladspa port:%lu has default?:%d default:%f\n", ctlnum, port, hasdef, fdef);
+#endif
+
+
+   frng = fmax - fmin;
+   imin = lrintf(fmin);
+   //imax = lrintf(fmax);
+
+   int ctlmn = 0;
+   int ctlmx = 127;// Avoid divide-by-zero error below.
+
+
+#ifdef PLUGIN_DEBUGIN
+   printf("lv2MidiControlValues: port min:%f max:%f \n", fmin, fmax);
+#endif
+
+   bool isneg = (imin < 0);
+   int bias = 0;
+
+   switch(t)
+   {
+   case MidiController::RPN:
+   case MidiController::NRPN:
+   case MidiController::Controller7:
+      if(isneg)
+      {
+         ctlmn = -64;
+         ctlmx = 63;
+         bias = -64;
+      }
+      else
+      {
+         ctlmn = 0;
+         ctlmx = 127;
+      }
+
+      break;
+
+   case MidiController::Controller14:
+   case MidiController::RPN14:
+   case MidiController::NRPN14:
+      if(isneg)
+      {
+         ctlmn = -8192;
+         ctlmx = 8191;
+         bias = -8192;
+      }
+      else
+      {
+         ctlmn = 0;
+         ctlmx = 16383;
+      }
+
+      break;
+
+   case MidiController::Program:
+      ctlmn = 0;
+      ctlmx = 0x3fff;     // FIXME: Really should not happen or be allowed. What to do here...
+      break;
+
+   case MidiController::Pitch:
+      ctlmn = -8192;
+      ctlmx = 8191;
+      break;
+
+   case MidiController::Velo:        // cannot happen
+   default:
+      break;
+   }
+
+   float fctlrng = float(ctlmx - ctlmn);
+
+
+   // It's a floating point control, just use wide open maximum range.
+   *min = ctlmn;
+   *max = ctlmx;
+
+   assert(frng != 0.0);
+
+   float normdef = fdef / frng;
+   fdef = normdef * fctlrng;
+
+   // FIXME: TODO: Incorrect... Fix this somewhat more trivial stuff later....
+
+   *def = (int)lrintf(fdef) + bias;
+
+#ifdef PLUGIN_DEBUGIN
+   printf("lv2MidiControlValues: setting default:%d\n", *def);
+#endif
+
+   return hasdef;
+}
+
+//---------------------------------------------------------
+//   midi2LadspaValue
+//---------------------------------------------------------
+
+float LV2SynthIF::midi2Lv2Value(unsigned long port, int ctlnum, int val)
+{
+
+   float fmin, fmax;
+   int   imin;
+   float frng;
+
+   MidiController::ControllerType t = midiControllerType(ctlnum);
+
+#ifdef PLUGIN_DEBUGIN
+   printf("midi2Lv2Value: ctlnum:%d port:%lu val:%d\n", ctlnum, port, val);
+#endif
+
+   fmin = _controlInPorts [port].minVal;
+   fmax = _controlInPorts [port].maxVal;
+
+   if(fmin != fmin)
+   {
+      fmin = 0.0;
+   }
+
+   if(fmax != fmax)
+   {
+      fmax = 0.0;
+   }
+
+
+
+   frng = fmax - fmin;
+   imin = lrintf(fmin);
+
+
+   int ctlmn = 0;
+   int ctlmx = 127;
+
+#ifdef PLUGIN_DEBUGIN
+   printf("midi2Lv2Value: port min:%f max:%f \n", fmin, fmax);
+#endif
+
+   bool isneg = (imin < 0);
+   int bval = val;
+   //int cval = val;
+
+   switch(t)
+   {
+   case MidiController::RPN:
+   case MidiController::NRPN:
+   case MidiController::Controller7:
+      if(isneg)
+      {
+         ctlmn = -64;
+         ctlmx = 63;
+         bval -= 64;
+         //cval -= 64;
+      }
+      else
+      {
+         ctlmn = 0;
+         ctlmx = 127;
+        //cval -= 64;
+      }
+
+      break;
+
+   case MidiController::Controller14:
+   case MidiController::RPN14:
+   case MidiController::NRPN14:
+      if(isneg)
+      {
+         ctlmn = -8192;
+         ctlmx = 8191;
+         bval -= 8192;
+         //cval -= 8192;
+      }
+      else
+      {
+         ctlmn = 0;
+         ctlmx = 16383;
+         //cval -= 8192;
+      }
+
+      break;
+
+   case MidiController::Program:
+      ctlmn = 0;
+      ctlmx = 0xffffff;
+      break;
+
+   case MidiController::Pitch:
+      ctlmn = -8192;
+      ctlmx = 8191;
+      break;
+
+   case MidiController::Velo:        // cannot happen
+   default:
+      break;
+   }
+
+   int ctlrng = ctlmx - ctlmn;
+   float fctlrng = float(ctlmx - ctlmn);
+
+
+   // Avoid divide-by-zero error below.
+   if(ctlrng == 0)
+   {
+      return 0.0;
+   }
+
+   // It's a floating point control, just use wide open maximum range.
+   float normval = float(bval) / fctlrng;
+   float ret = normval * frng + fmin;
+
+#ifdef PLUGIN_DEBUGIN
+   printf("midi2Lv2Value: float returning:%f\n", ret);
+#endif
+
+   return ret;
+}
+
+int LV2SynthIF::getControllerInfo(int id, const char **name, int *ctrl, int *min, int *max, int *initval)
+{
+   size_t _id = (size_t)id;
+
+   if(_id == _inportsControl || _id == _inportsControl + 1)
+   {
+      //
+      // It is unknown at this point whether or not a synth recognizes aftertouch and poly aftertouch
+      //  (channel and key pressure) midi messages, so add support for them now (as controllers).
+      //
+      if(_id == _inportsControl)
+      {
+         *ctrl = CTRL_POLYAFTER;
+      }
+      else if(_id == _inportsControl + 1)
+      {
+         *ctrl = CTRL_AFTERTOUCH;
+      }
+
+      *min  = 0;
+      *max  = 127;
+      *initval = CTRL_VAL_UNKNOWN;
+      *name = midiCtrlName(*ctrl).toLatin1().constData();
+      return ++_id;
+   }
+   else if(_id >= _inportsControl + 2)
+   {
+      return 0;
+   }
+
+   int ctlnum = DSSI_NONE;
+
+   // No controller number? Give it one.
+   if(ctlnum == DSSI_NONE)
+   {
+      // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
+      ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + _id;
+   }
+
+
+   int def = CTRL_VAL_UNKNOWN;
+
+   if(lv2MidiControlValues(_id, ctlnum, min, max, &def))
+   {
+      *initval = def;
+   }
+   else
+   {
+      *initval = CTRL_VAL_UNKNOWN;
+   }
+
+#ifdef DEBUG_LV2
+   printf("LV2SynthIF::getControllerInfo passed ctlnum:%d min:%d max:%d initval:%d\n", ctlnum, *min, *max, *initval);
+#endif
+
+   *ctrl = ctlnum;
+   *name =  _controlInPorts [_id].cName;
+   return ++_id;
+
+}
+
+bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
+{
+
+   int chn = e.channel();
+   int a   = e.dataA();
+   int b   = e.dataB();
+
+   int len = e.len();
+   char ca[len + 2];
+
+   ca[0] = 0xF0;
+   memcpy(ca + 1, (const char *)e.data(), len);
+   ca[len + 1] = 0xF7;
+
+   len += 2;
+
+#ifdef LV2_DEBUG
+   fprintf(stderr, "LV2SynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", e.type(), chn, a, b);
+#endif
+
+   switch(e.type())
+   {
+   case ME_NOTEON:
+#ifdef DSSI_DEBUG
+      fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEON\n");
+#endif
+
+      snd_seq_ev_clear(event);
+      event->queue = SND_SEQ_QUEUE_DIRECT;
+
+      if(b)
+      {
+         snd_seq_ev_set_noteon(event, chn, a, b);
+      }
+      else
+      {
+         snd_seq_ev_set_noteoff(event, chn, a, 0);
+      }
+
+      break;
+
+   case ME_NOTEOFF:
+#ifdef LV2_DEBUG
+      fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEOFF\n");
+#endif
+
+      snd_seq_ev_clear(event);
+      event->queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_set_noteoff(event, chn, a, 0);
+      break;
+
+   case ME_PROGRAM:
+   {
+#ifdef LV2_DEBUG
+      fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_PROGRAM\n");
+#endif
+
+      int bank = (a >> 8) & 0xff;
+      int prog = a & 0xff;
+      synti->_curBankH = 0;
+      synti->_curBankL = bank;
+      synti->_curProgram = prog;
+      // Event pointer not filled. Return false.
+      return false;
+   }
+   break;
+
+   case ME_CONTROLLER:
+   {
+#ifdef LV2_DEBUG
+      fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER\n");
+#endif
+
+      if((a == 0) || (a == 32))
+      {
+         return false;
+      }
+
+      if(a == CTRL_PROGRAM)
+      {
+#ifdef LV2_DEBUG
+         fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PROGRAM\n");
+#endif
+
+         int bank = (b >> 8) & 0xff;
+         int prog = b & 0xff;
+
+         synti->_curBankH = 0;
+         synti->_curBankL = bank;
+         synti->_curProgram = prog;
+
+         // Event pointer not filled. Return false.
+         return false;
+      }
+
+      if(a == CTRL_PITCH)
+      {
+#ifdef LV2_DEBUG
+         fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PITCH\n");
+#endif
+
+         snd_seq_ev_clear(event);
+         event->queue = SND_SEQ_QUEUE_DIRECT;
+         snd_seq_ev_set_pitchbend(event, chn, b);
+         // Event pointer filled. Return true.
+         return true;
+      }
+
+      if(a == CTRL_AFTERTOUCH)
+      {
+#ifdef LV2_DEBUG
+         fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_AFTERTOUCH\n");
+#endif
+
+         snd_seq_ev_clear(event);
+         event->queue = SND_SEQ_QUEUE_DIRECT;
+         snd_seq_ev_set_chanpress(event, chn, b);
+         // Event pointer filled. Return true.
+         return true;
+      }
+
+      if((a | 0xff)  == CTRL_POLYAFTER)
+      {
+#ifdef LV2_DEBUG
+         fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_POLYAFTER\n");
+#endif
+
+         snd_seq_ev_clear(event);
+         event->queue = SND_SEQ_QUEUE_DIRECT;
+         snd_seq_ev_set_keypress(event, chn, a & 0x7f, b & 0x7f);
+         // Event pointer filled. Return true.
+         return true;
+      }
+
+      ciMidiCtl2LadspaPort ip = _synth->midiCtl2PortMap.find(a);
+
+      // Is it just a regular midi controller, not mapped to a LADSPA port (either by the plugin or by us)?
+      // NOTE: There's no way to tell which of these controllers is supported by the plugin.
+      // For example sustain footpedal or pitch bend may be supported, but not mapped to any LADSPA port.
+      if(ip == _synth->midiCtl2PortMap.end())
+      {
+         int ctlnum = a;
+
+         if(midiControllerType(a) != MidiController::Controller7)
+         {
+            return false;   // Event pointer not filled. Return false.
+         }
+         else
+         {
+#ifdef LV2_DEBUG
+            fprintf(stderr, "LV2SynthIF::processEvent non-ladspa midi event is Controller7. Current dataA:%d\n", a);
+#endif
+            a &= 0x7f;
+            ctlnum = DSSI_CC_NUMBER(ctlnum);
+         }
+
+         // Fill the event.
+#ifdef LV2_DEBUG
+         printf("LV2SynthIF::processEvent non-ladspa filling midi event chn:%d dataA:%d dataB:%d\n", chn, a, b);
+#endif
+         snd_seq_ev_clear(event);
+         event->queue = SND_SEQ_QUEUE_DIRECT;
+         snd_seq_ev_set_controller(event, chn, a, b);
+         return true;
+      }
+
+      unsigned long k = ip->second;
+      int ctlnum = DSSI_NONE;
+
+      // No midi controller for the ladspa port? Send to ladspa control.
+      if(ctlnum == DSSI_NONE)
+      {
+         // Sanity check.
+         if(k > _inportsControl)
+         {
+            return false;
+         }
+
+         // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
+         ctlnum = k + (CTRL_NRPN14_OFFSET + 0x2000);
+      }
+
+
+      float val = midi2Lv2Value(k, ctlnum, b);
+
+#ifdef LV2_DEBUG
+      fprintf(stderr, "LV2SynthIF::processEvent control port:%lu port:%lu dataA:%d Converting val from:%d to lv2:%f\n", i, k, a, b, val);
+#endif
+
+      // Set the lv2 port value.
+      _controls[k].val = val;
+
+      // Need to update the automation value, otherwise it overwrites later with the last automation value.
+      if(id() != -1)
+         // We're in the audio thread context: no need to send a message, just modify directly.
+      {
+         synti->setPluginCtrlVal(genACnum(id(), k), val);
+      }
+
+      // Since we absorbed the message as a lv2 control change, return false - the event is not filled.
+      return false;
+   }
+   break;
+
+   case ME_PITCHBEND:
+      snd_seq_ev_clear(event);
+      event->queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_set_pitchbend(event, chn, a);
+      break;
+
+   case ME_AFTERTOUCH:
+      snd_seq_ev_clear(event);
+      event->queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_set_chanpress(event, chn, a);
+      break;
+
+   case ME_POLYAFTER:
+      snd_seq_ev_clear(event);
+      event->queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_set_keypress(event, chn, a & 0x7f, b & 0x7f);
+      break;
+
+   default:
+      if(MusEGlobal::debugMsg)
+      {
+         fprintf(stderr, "LV2SynthIF::processEvent midi event unknown type:%d\n", e.type());
+      }
+
+      // Event not filled.
+      return false;
+      break;
+   }
+
+   return true;
+
+}
+
+
+iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event, unsigned int pos, int ports, unsigned int nframes, float **buffer)
+{
+   // We may not be using ev_buf_sz all at once - this will be just the maximum.
+   const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
+   snd_seq_event_t events[ev_buf_sz];
+
+   const int frameOffset = MusEGlobal::audio->getFrameOffset();
+   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
+   // All ports must be connected to something!
+   const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
+   const bool usefixedrate = false;
+   const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > nframes) ? nframes : MusEGlobal::config.minControlProcessPeriod;
+   const unsigned long min_per_mask = min_per - 1; // min_per must be power of 2
+
+   unsigned long sample = 0;
+   AudioTrack *atrack = track();
+   const AutomationType at = atrack->automationType();
+   const bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
+   CtrlListList *cll = atrack->controller();
+   ciCtrlList icl_first;
+   const int plug_id = id();
+
+   if(plug_id != -1 && ports != 0)  // Don't bother if not 'running'.
+   {
+      icl_first = cll->lower_bound(genACnum(plug_id, 0));
+   }
+
+   if(ports != 0)
+   {
+
+      if(!atrack->noInRoute())
+      {
+         RouteList *irl = atrack->inRoutes();
+
+         for(iRoute i = irl->begin(); i != irl->end(); ++i)
+         {
+            if(!i->track->isMidiTrack())
+            {
+               const int ch     = i->channel       == -1 ? 0 : i->channel;
+               const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
+               const int chs    = i->channels      == -1 ? 0 : i->channels;
+               assert((unsigned)remch <= _inports);
+
+               if((unsigned)ch < _inports && (unsigned)(ch + chs) <= _inports)
+               {
+                  const bool u1 = _iUsedIdx[remch];
+
+                  if(chs >= 2)
+                  {
+                     const bool u2 = _iUsedIdx[remch + 1];
+
+                     if(u1 && u2)
+                     {
+                        ((AudioTrack *)i->track)->addData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
+                     }
+                     else if(!u1 && !u2)
+                     {
+                        ((AudioTrack *)i->track)->copyData(pos, chs, ch, -1, nframes, &_audioInBuffers[remch]);
+                     }
+                     else
+                     {
+                        if(u1)
+                        {
+                           ((AudioTrack *)i->track)->addData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
+                        }
+                        else
+                        {
+                           ((AudioTrack *)i->track)->copyData(pos, 1, ch, 1, nframes, &_audioInBuffers[remch]);
+                        }
+
+                        if(u2)
+                        {
+                           ((AudioTrack *)i->track)->addData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
+                        }
+                        else
+                        {
+                           ((AudioTrack *)i->track)->copyData(pos, 1, ch + 1, 1, nframes, &_audioInBuffers[remch + 1]);
+                        }
+                     }
+                  }
+                  else
+                  {
+                     if(u1)
+                     {
+                        ((AudioTrack *)i->track)->addData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
+                     }
+                     else
+                     {
+                        ((AudioTrack *)i->track)->copyData(pos, 1, ch, -1, nframes, &_audioInBuffers[remch]);
+                     }
+                  }
+
+                  const int h = remch + chs;
+
+                  for(int j = remch; j < h; ++j)
+                  {
+                     _iUsedIdx[j] = true;
+                  }
+               }
+
+            }
+         }
+      }
+
+
+   }
+
+
+   for(size_t j = 0; j < _inportsMidi; j++)
+   {
+      _midiInPorts [j].buffer->lv2_evbuf_reset(true);
+   }
+
+   for(size_t j = 0; j < _outportsMidi; j++)
+   {
+      _midiOutPorts [j].buffer->lv2_evbuf_reset(false);
+   }
+
+   int cur_slice = 0;
+
+   while(sample < nframes)
+   {
+      unsigned long nsamp = nframes - sample;
+      const unsigned long slice_frame = pos + sample;
+
+      //
+      // Process automation control values, while also determining the maximum acceptable
+      //  size of this run. Further processing, from FIFOs for example, can lower the size
+      //  from there, but this section determines where the next highest maximum frame
+      //  absolutely needs to be for smooth playback of the controller value stream...
+      //
+      if(ports != 0)    // Don't bother if not 'running'.
+      {
+         ciCtrlList icl = icl_first;
+
+         for(unsigned long k = 0; k < _inportsControl; ++k)
+         {
+            CtrlList *cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : NULL;
+            CtrlInterpolate &ci = _controls[k].interp;
+
+            // Always refresh the interpolate struct at first, since things may have changed.
+            // Or if the frame is outside of the interpolate range - and eStop is not true.  // FIXME TODO: Be sure these comparisons are correct.
+            if(cur_slice == 0 || (!ci.eStop && MusEGlobal::audio->isPlaying() &&
+                                  (slice_frame < (unsigned long)ci.sFrame || (ci.eFrame != -1 && slice_frame >= (unsigned long)ci.eFrame))))
+            {
+               if(cl && plug_id != -1 && (unsigned long)cl->id() == genACnum(plug_id, k))
+               {
+                  cl->getInterpolation(slice_frame, no_auto || !_controls[k].enCtrl, &ci);
+
+                  if(icl != cll->end())
+                  {
+                     ++icl;
+                  }
+               }
+               else
+               {
+                  // No matching controller, or end. Just copy the current value into the interpolator.
+                  // Keep the current icl iterator, because since they are sorted by frames,
+                  //  if the IDs didn't match it means we can just let k catch up with icl.
+                  ci.sFrame   = 0;
+                  ci.eFrame   = -1;
+                  ci.sVal     = _controls[k].val;
+                  ci.eVal     = ci.sVal;
+                  ci.doInterp = false;
+                  ci.eStop    = false;
+               }
+            }
+            else
+            {
+               if(ci.eStop && ci.eFrame != -1 && slice_frame >= (unsigned long)ci.eFrame)  // FIXME TODO: Get that comparison right.
+               {
+                  // Clear the stop condition and set up the interp struct appropriately as an endless value.
+                  ci.sFrame   = 0; //ci->eFrame;
+                  ci.eFrame   = -1;
+                  ci.sVal     = ci.eVal;
+                  ci.doInterp = false;
+                  ci.eStop    = false;
+               }
+
+               if(cl && cll && icl != cll->end())
+               {
+                  ++icl;
+               }
+            }
+
+            if(MusEGlobal::audio->isPlaying())
+            {
+               unsigned long samps = nsamp;
+
+               if(ci.eFrame != -1)
+               {
+                  samps = (unsigned long)ci.eFrame - slice_frame;
+               }
+
+               if(!ci.doInterp && samps > min_per)
+               {
+                  samps &= ~min_per_mask;
+
+                  if((samps & min_per_mask) != 0)
+                  {
+                     samps += min_per;
+                  }
+               }
+               else
+               {
+                  samps = min_per;
+               }
+
+               if(samps < nsamp)
+               {
+                  nsamp = samps;
+               }
+
+            }
+
+            if(ci.doInterp && cl)
+            {
+               _controls[k].val = cl->interpolate(MusEGlobal::audio->isPlaying() ? slice_frame : pos, ci);
+            }
+            else
+            {
+               _controls[k].val = ci.sVal;
+            }
+            _uiState->controlsMask [k] = true;
+
+#ifdef LV2_DEBUG_PROCESS
+            fprintf(stderr, "LV2SynthIF::getData k:%lu val:%f sample:%lu ci.eFrame:%d nsamp:%lu \n", k, _controls[k].val, sample, ci.eFrame, nsamp);
+#endif
+
+         }
+      }
+
+
+      bool found = false;
+      unsigned long frame = 0;
+      unsigned long index = 0;      
+
+      // Get all control ring buffer items valid for this time period...
+      while(!_controlFifo.isEmpty())
+      {
+         unsigned long evframe;
+         ControlEvent v = _controlFifo.peek();
+         // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
+         // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
+         evframe = (syncFrame > v.frame + nframes) ? 0 : v.frame - syncFrame + nframes;
+
+#ifdef DEBUG_LV2
+         fprintf(stderr, "LV2SynthIF::getData found:%d evframe:%lu frame:%lu  event frame:%lu idx:%lu val:%f unique:%d\n",
+                 found, evframe, frame, v.frame, v.idx, v.value, v.unique);
+#endif
+
+         // Protection. Observed this condition. Why? Supposed to be linear timestamps.
+         if(found && evframe < frame)
+         {
+            fprintf(stderr, "LV2SynthIF::getData *** Error: evframe:%lu < frame:%lu event: frame:%lu idx:%lu val:%f unique:%d\n",
+                    evframe, frame, v.frame, v.idx, v.value, v.unique);
+
+            // No choice but to ignore it.
+            _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+            continue;
+         }
+
+         if(evframe >= nframes                                                         // Next events are for a later period.
+               || (!found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
+               || (found && !v.unique && (evframe - sample >= min_per)))                  // Eat up events within minimum slice - they're too close.
+
+         {
+            break;
+         }
+
+         _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+
+         found = true;
+         frame = evframe;
+         index = v.idx;
+
+         if(index >= _inportsControl) // Sanity check.
+         {
+            break;
+         }
+
+
+
+         if(ports == 0)                     // Don't bother if not 'running'.
+         {
+            _controls[index].val = v.value;   // Might as well at least update these.   
+         }
+         else
+         {
+            CtrlInterpolate *ci = &_controls[index].interp;
+            // Tell it to stop the current ramp at this frame, when it does stop, set this value:
+            ci->eFrame = frame;
+            ci->eVal   = v.value;
+            ci->eStop  = true;
+         }
+
+         // Need to update the automation value, otherwise it overwrites later with the last automation value.
+         if(plug_id != -1)
+         {
+            synti->setPluginCtrlVal(genACnum(plug_id, index), v.value);
+         }
+         if(v.fromGui) //don't send gui control changes back
+         {
+            _uiState->lastControls [index] = v.value;
+            _uiState->controlsMask [index] = false;
+         }
+      }
+
+      if(found)  // If a control FIFO item was found, takes priority over automation controller stream.
+      {
+         nsamp = frame - sample;
+      }
+
+
+      if(sample + nsamp > nframes)         // Safety check.
+      {
+         nsamp = nframes - sample;
+      }
+
+      // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
+      // Note this means it is still possible to get stuck in the top loop (at least for a while).
+      if(nsamp != 0)
+      {
+         unsigned long nevents = 0;
+
+         if(ports != 0)  // Don't bother if not 'running'.
+         {
+            // Process event list events...
+            for(; start_event != el->end(); ++start_event)
+            {
+#ifdef LV2_DEBUG
+               fprintf(stderr, "LV2SynthIF::getData eventlist event time:%d pos:%u sample:%lu nsamp:%lu frameOffset:%d\n", start_event->time(), pos, sample, nsamp, frameOffset);
+#endif
+
+               if(start_event->time() >= (pos + sample + nsamp + frameOffset))  // frameOffset? Test again...
+               {
+#ifdef LV2_DEBUG
+                  fprintf(stderr, " event is for future:%lu, breaking loop now\n", start_event->time() - frameOffset - pos - sample);
+#endif
+                  break;
+               }
+
+               // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+               // Same code as in MidiPort::sendEvent()
+               if(synti->midiPort() != -1)
+               {
+                  MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
+
+                  if(start_event->type() == ME_CONTROLLER)
+                  {
+                     int da = start_event->dataA();
+                     int db = start_event->dataB();
+                     db = mp->limitValToInstrCtlRange(da, db);
+
+                     if(!mp->setHwCtrlState(start_event->channel(), da, db))
+                     {
+                        continue;
+                     }
+                  }
+                  else if(start_event->type() == ME_PITCHBEND)
+                  {
+                     int da = mp->limitValToInstrCtlRange(CTRL_PITCH, start_event->dataA());
+
+                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_PITCH, da))
+                     {
+                        continue;
+                     }
+                  }
+                  else if(start_event->type() == ME_AFTERTOUCH)
+                  {
+                     int da = mp->limitValToInstrCtlRange(CTRL_AFTERTOUCH, start_event->dataA());
+
+                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_AFTERTOUCH, da))
+                     {
+                        continue;
+                     }
+                  }
+                  else if(start_event->type() == ME_POLYAFTER)
+                  {
+                     int ctl = (CTRL_POLYAFTER & ~0xff) | (start_event->dataA() & 0x7f);
+                     int db = mp->limitValToInstrCtlRange(ctl, start_event->dataB());
+
+                     if(!mp->setHwCtrlState(start_event->channel(), ctl , db))
+                     {
+                        continue;
+                     }
+                  }
+                  else if(start_event->type() == ME_PROGRAM)
+                  {
+                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, start_event->dataA()))
+                     {
+                        continue;
+                     }
+                  }
+               }
+
+               // Returns false if the event was not filled. It was handled, but some other way.
+               if(processEvent(*start_event, &events[nevents]))
+               {
+                  // Time-stamp the event.
+                  int ft = start_event->time() - frameOffset - pos - sample;
+
+                  if(ft < 0)
+                  {
+                     ft = 0;
+                  }
+
+                  if(ft >= int(nsamp))
+                  {
+                     fprintf(stderr, "LV2SynthIF::getData: eventlist event time:%u out of range. pos:%u offset:%d ft:%d sample:%lu nsamp:%lu\n", start_event->time(), pos, frameOffset, ft, sample, nsamp);
+                     ft = nsamp - 1;
+                  }
+
+#ifdef LV2_DEBUG
+                  fprintf(stderr, "LV2SynthIF::getData eventlist: ft:%d current nevents:%lu\n", ft, nevents);
+#endif
+
+                  // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
+                  //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
+                  events[nevents].time.tick = ft;
+
+                  ++nevents;
+               }
+            }
+         }
+
+         // Now process putEvent events...
+         while(!synti->eventFifo.isEmpty())
+         {
+            MidiPlayEvent e = synti->eventFifo.peek();
+
+#ifdef LV2_DEBUG
+            fprintf(stderr, "LV2SynthIF::getData eventFifo event time:%d\n", e.time());
+#endif
+
+            if(e.time() >= (pos + sample + nsamp + frameOffset))
+            {
+               break;
+            }
+
+            synti->eventFifo.remove();    // Done with ring buffer's event. Remove it.
+
+            if(ports != 0)  // Don't bother if not 'running'.
+            {
+               // Returns false if the event was not filled. It was handled, but some other way.
+               if(processEvent(e, &events[nevents]))
+               {
+                  // Time-stamp the event.
+                  int ft = e.time() - frameOffset - pos  - sample;
+
+                  if(ft < 0)
+                  {
+                     ft = 0;
+                  }
+
+                  if(ft >= int(nsamp))
+                  {
+                     fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+                     ft = nsamp - 1;
+                  }
+
+                  // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
+                  //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
+                  events[nevents].time.tick = ft;
+
+                  ++nevents;
+               }
+            }
+         }
+
+         if(ports != 0)  // Don't bother if not 'running'.
+         {
+            if(_inportsMidi > 0)
+            {
+               //convert snd_seq_event_t[] to raw midi data
+               snd_midi_event_reset_decode(_midiEvent);
+               uint8_t resMidi [1024];
+               LV2EvBuf *rawMidiBuffer = _midiInPorts [0].buffer;
+               LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
+
+               for(unsigned long i = 0; i < nevents; i++)
+               {
+                  uint32_t stamp = events[i].time.tick;
+                  uint32_t size = snd_midi_event_decode(_midiEvent, resMidi, sizeof(resMidi), &events [i]);
+                  rawMidiBuffer->lv2_evbuf_write(iter,
+                                                 stamp,
+                                                 0,
+                                                 _synth->_midi_event_id,
+                                                 size, resMidi);
+
+
+               }
+            }
+
+            //connect ports
+            for(size_t j = 0; j < _inports; ++j)
+            {
+               if(_iUsedIdx [j])
+               {
+                  lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInBuffers [j] + sample);
+               }
+               else
+               {
+                  lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInSilenceBuf + sample);
+               }
+
+               _iUsedIdx[j] = false;
+            }
+
+            for(size_t j = 0; j < nop; ++j)
+            {
+               lilv_instance_connect_port(_handle, _audioOutPorts [j].index, buffer [j] + sample);
+            }
+
+            for(size_t j = nop; j < _outports; j++)
+            {
+               lilv_instance_connect_port(_handle, _audioOutPorts [j].index, _audioOutBuffers [j] + sample);
+            }
+
+            lilv_instance_run(_handle, nsamp);
+            //notify worker that this run() finished
+            if(_uiState->wrkIface && _uiState->wrkIface->end_run)
+               _uiState->wrkIface->end_run(lilv_instance_get_handle(_handle));
+            //notify worker about processes data (if any)
+            if(_uiState->wrkIface && _uiState->wrkIface->work_response && _uiState->wrkEndWork)
+            {
+               _uiState->wrkEndWork = false;
+               _uiState->wrkIface->work_response(lilv_instance_get_handle(_handle), _uiState->wrkDataSize, _uiState->wrkDataBuffer);
+               _uiState->wrkDataSize = 0;
+               _uiState->wrkDataBuffer = NULL;
+            }
+
+
+         }
+
+         sample += nsamp;
+      }
+
+      ++cur_slice; // Slice is done. Moving on to any next slice now...
+   }
+
+
+
+
+   return start_event;
+}
+
+
+void LV2SynthIF::getGeometry(int *x, int *y, int *w, int *h) const
+{
+   *x = *y = *w = *h = 0;
+
+
+
+   return;
+}
+
+void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
+{
+   *x = *y = *w = *h = 0;
+   return;
+}
+
+float LV2SynthIF::getParameter(long unsigned int n) const
+{
+   if(n >= _inportsControl)
+   {
+      printf("LV2SynthIF::getParameter param number %lu out of range of ports:%lu\n", n, _inportsControl);
+      return 0.0;
+   }
+
+   if(!_controls)
+   {
+      return 0.0;
+   }
+
+   return _controls[n].val;
+}
+
+float LV2SynthIF::getParameterOut(long unsigned int n) const
+{
+   if(n >= _outportsControl)
+   {
+      printf("LV2SynthIF::getParameterOut param number %lu out of range of ports:%lu\n", n, _outportsControl);
+      return 0.0;
+   }
+
+   if(!_controlsOut)
+   {
+      return 0.0;
+   }
+
+   return _controlsOut[n].val;
+
+}
+
+
+QString LV2SynthIF::getPatchName(int, int , bool) const
+{
+   //TODO: implement this
+   return "?";
+}
+
+void LV2SynthIF::guiHeartBeat()
+{
+
+}
+
+
+bool LV2SynthIF::guiVisible() const
+{
+   //TODO: implement this
+   return false;
+}
+
+
+bool LV2SynthIF::hasGui() const
+{
+   return false;
+}
+
+bool LV2SynthIF::hasNativeGui() const
+{
+   return _synth->_hasGui || _synth->_hasExternalGui;
+}
+
+bool LV2SynthIF::initGui()
+{
+   //TODO: implement this
+   return true;
+}
+
+bool LV2SynthIF::nativeGuiVisible() const
+{
+   if(_uiState != NULL)
+   {
+      if(_synth->_hasExternalGui)
+      {
+         return (_uiState->widget != NULL);
+      }
+      else if(_synth->_hasGui && _uiState->widget != NULL)
+      {
+         return ((QWidget *)_uiState->widget)->isVisible();
+      }
+   }
+
+   return false;
+}
+
+void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
+{
+   //TODO: implement this
+   menu->clear();
+}
+
+void LV2SynthIF::preProcessAlways()
+{
+
+}
+
+bool LV2SynthIF::putEvent(const MidiPlayEvent &ev)
+{
+#ifdef DEBUG_LV2
+   fprintf(stderr, "LV2SynthIF::putEvent midi event time:%u chn:%d a:%d b:%d\n", ev.time(), ev.channel(), ev.dataA(), ev.dataB());
+#endif
+
+   if(MusEGlobal::midiOutputTrace)
+   {
+      ev.dump();
+   }
+
+   return synti->eventFifo.put(ev);
+}
+
+MidiPlayEvent LV2SynthIF::receiveEvent()
+{
+   return MidiPlayEvent();
+
+}
+
+void LV2SynthIF::setGeometry(int , int , int , int)
+{
+   //TODO: implement this
+
+}
+
+void LV2SynthIF::setNativeGeometry(int , int , int , int)
+{
+   //TODO: implement this
+
+}
+
+void LV2SynthIF::setParameter(long unsigned int idx, float value)
+{
+   addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
+}
+
+void LV2SynthIF::showGui(bool)
+{
+   //TODO: implement this
+}
+
+void LV2SynthIF::showNativeGui(bool bShow)
+{
+   if(track() != NULL)
+   {
+      if(_uiState->human_id != NULL)
+      {
+         free(_uiState->human_id);
+      }
+
+      _uiState->extHost.plugin_human_id = _uiState->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
+   }
+
+   LV2Synth::lv2ui_ShowNativeGui(_uiState, bShow);
+}
+
+void LV2SynthIF::write(int level, Xml &xml) const
+{
+   _uiState->iStateValues.clear();
+   _uiState->numStateValues = 0;
+
+   if(_uiState->iState != NULL)
+   {
+      _uiState->iState->save(lilv_instance_get_handle(_handle), LV2Synth::lv2state_stateStore, _uiState, LV2_STATE_IS_POD, _uiState->_ppifeatures);
+   }
+   for(size_t c = 0; c < _inportsControl; c++)
+   {
+      _uiState->iStateValues.insert(_controlInPorts [c].name, QPair<QString, QVariant>(QString(""), QVariant((double)_controls[c].val)));
+   }
+
+   QByteArray arrOut;
+   QDataStream streamOut(&arrOut, QIODevice::WriteOnly);
+   streamOut << _uiState->iStateValues;
+   QByteArray outEnc64 = arrOut.toBase64();
+   QString customData(outEnc64);
+   xml.strTag(level, "customData", customData);
+
+}
+
+void LV2SynthIF::setCustomData(const std::vector< QString > &customParams)
+{
+   if(customParams.size() == 0)
+      return;
+
+   _uiState->iStateValues.clear();
+   for(size_t i = 0; i < customParams.size(); i++)
+   {
+      QString param = customParams [i];
+      QByteArray paramIn;
+      paramIn.append(param);
+      QByteArray dec64 = QByteArray::fromBase64(paramIn);
+      QDataStream streamIn(&dec64, QIODevice::ReadOnly);
+      streamIn >> _uiState->iStateValues;
+      break; //one customData tag includes all data in base64
+   }
+
+   size_t numValues = _uiState->iStateValues.size();
+   _uiState->numStateValues = numValues;
+   if(_uiState->iState != NULL && numValues > 0)
+   {
+      _uiState->tmpValues = new char*[numValues];;
+      memset(_uiState->tmpValues, 0, numValues * sizeof(char *));
+      _uiState->iState->restore(lilv_instance_get_handle(_handle), LV2Synth::lv2state_stateRetreive, _uiState, 0, _uiState->_ppifeatures);
+      for(size_t i = 0; i < numValues; ++i)
+      {
+         if(_uiState->tmpValues [i] != NULL)
+            delete [] _uiState->tmpValues [i];
+      }
+      delete [] _uiState->tmpValues;
+      _uiState->tmpValues = NULL;
+   }
+
+   QMap<QString, QPair<QString, QVariant> >::const_iterator it;
+   for(it = _uiState->iStateValues.begin(); it != _uiState->iStateValues.end(); ++it)
+   {
+      QString name = it.key();
+      QVariant qVal = it.value().second;
+      if(!name.isEmpty() && qVal.isValid())
+      {
+         bool ok = false;
+         float val = (float)qVal.toDouble(&ok);
+         if(ok)
+         {
+            std::map<QString, size_t>::iterator it = _controlsNameMap.find(name);
+            if(it != _controlsNameMap.end())
+            {
+               size_t ctrlNum = it->second;
+               _controls [ctrlNum].val = _controls [ctrlNum].tmpVal = val;
+
+            }
+         }
+
+
+      }
+   }
+}
+
+
+float LV2SynthIF::param(long unsigned int i) const
+{
+   return getParameter(i);
+}
+
+long unsigned int LV2SynthIF::parameters() const
+{
+   return _inportsControl;
+}
+
+long unsigned int LV2SynthIF::parametersOut() const
+{
+   return _outportsControl;
+}
+
+const char *LV2SynthIF::paramName(long unsigned int i)
+{
+   return _controlInPorts [i].cName;
+}
+
+const char *LV2SynthIF::paramOutName(long unsigned int i)
+{
+   return _controlOutPorts [i].cName;
+}
+
+float LV2SynthIF::paramOut(long unsigned int i) const
+{
+   return getParameterOut(i);
+}
+
+void LV2SynthIF::setParam(long unsigned int i, float val)
+{
+   setParameter(i, val);
+}
+
+
+
+void LV2SynthIF::writeConfiguration(int level, Xml &xml)
+{
+   MusECore::SynthIF::writeConfiguration(level, xml);
+}
+
+bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
+{
+   return MusECore::SynthIF::readConfiguration(xml, readPreset);
+}
+
+void LV2PluginWrapper_Timer::run()
+{
+   if(_state != NULL)
+   {
+      LV2Synth *_s = _state->synth;
+
+      while(_bRunning)
+      {
+
+         if(_state->plugInst != NULL)
+         {
+            _numControls = _state->plugInst->controlPorts;
+            _controls = _state->plugInst->controls;
+
+         }
+         else if(_state->sif != NULL)
+         {
+            _numControls = _state->sif->_inportsControl;
+            _controls = _state->sif->_controls;
+         }
+
+         if(_numControls > 0)
+         {
+            assert(_controls != NULL);
+         }
+
+         usleep(_msec * 1000);
+
+         if(_state->uiInst != NULL)
+         {
+
+            for(uint32_t i = 0; i < _numControls; ++i)
+            {
+               if(_state->controlsMask [i])
+               {
+                  _state->controlsMask [i] = false;
+                  if(_state->lastControls [i] != _controls [i].val)
+                  {
+                     _state->lastControls [i] = _controls [i].val;
+                     suil_instance_port_event(_state->uiInst,
+                                              _controls [i].idx,
+                                              sizeof(float), 0,
+                                              &_controls [i].val);
+                  }
+               }
+            }
+         }
+
+         if(_s->_hasExternalGui && _state->widget != NULL && _state->uiInst != NULL)
+         {
+            LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
+         }
+      }
+
+      if(_s->_hasExternalGui && _state->widget)
+      {
+         //LV2_EXTERNAL_UI_HIDE((LV2_External_UI_Widget *)state->widget);
+         _state->widget = NULL;
+         suil_instance_free(_state->uiInst);
+         _state->uiInst = NULL;
+      }
+
+
+   }
+}
+
+void LV2PluginWrapper_Timer::stopNextTime(bool _wait)
+{
+   _bRunning = false;
+   if(isRunning() && _wait)
+   {
+      wait();
+   }
+}
+
+void LV2PluginWrapper_Timer::start(int msec)
+{
+   assert(_bRunning == false);
+
+   _msec = msec;
+   _bRunning = true;
+   QThread::start();
+}
+
+
+
+
+void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
+{
+   assert(_state != NULL);
+   _state->uiTimer->stopNextTime(false);
+   event->accept();
+}
+
+
+LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s)
+{
+   _synth = s;
+
+   _fakeLd.Label = _synth->name().toUtf8().constData();
+   _fakeLd.Name = _synth->name().toUtf8().constData();
+   _fakeLd.UniqueID = _synth->_uniqueID;
+   _fakeLd.Maker = _synth->maker().toUtf8().constData();
+   _fakeLd.Copyright = _synth->version().toUtf8().constData();
+   _isLV2Plugin = true;
+   _isLV2Synth = s->_isSynth;
+   int numPorts = _synth->_audioInPorts.size()
+                  + _synth->_audioOutPorts.size()
+                  + _synth->_controlInPorts.size()
+                  + _synth->_controlOutPorts.size()
+                  + _synth->_midiInPorts.size()
+                  + _synth->_midiOutPorts.size();
+   _fakeLd.PortCount = numPorts;
+   _fakePds = new LADSPA_PortDescriptor [numPorts];
+   memset(_fakePds, 0, sizeof(int) * numPorts);
+
+   for(size_t i = 0; i < _synth->_audioInPorts.size(); i++)
+   {
+      _fakePds [_synth->_audioInPorts [i].index] = LADSPA_PORT_INPUT | LADSPA_PORT_AUDIO;
+   }
+
+   for(size_t i = 0; i < _synth->_audioOutPorts.size(); i++)
+   {
+      _fakePds [_synth->_audioOutPorts [i].index] = LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO;
+   }
+
+   for(size_t i = 0; i < _synth->_controlInPorts.size(); i++)
+   {
+      _fakePds [_synth->_controlInPorts [i].index] = LADSPA_PORT_INPUT | LADSPA_PORT_CONTROL;
+   }
+
+   for(size_t i = 0; i < _synth->_controlOutPorts.size(); i++)
+   {
+      _fakePds [_synth->_controlOutPorts [i].index] = LADSPA_PORT_OUTPUT | LADSPA_PORT_CONTROL;
+   }
+
+   _PluginControlsDefault = new float [numPorts];
+   _PluginControlsMin = new float [numPorts];
+   _PluginControlsMax = new float [numPorts];
+   memset(_PluginControlsDefault, 0, sizeof(float));
+   memset(_PluginControlsMin, 0, sizeof(float));
+   memset(_PluginControlsMax, 0, sizeof(float));
+   lilv_plugin_get_port_ranges_float(_synth->_handle, _PluginControlsMin, _PluginControlsMax, _PluginControlsDefault);
+
+   _fakeLd.PortNames = NULL;
+   _fakeLd.PortRangeHints = NULL;
+   _fakeLd.PortDescriptors = _fakePds;
+   _fakeLd.Properties = 0;
+   plugin = &_fakeLd;
+   _isDssi = false;
+   _isDssiSynth = false;
+
+#ifdef DSSI_SUPPORT
+   dssi_descr = NULL;
+#endif
+
+   fi = _synth->info;
+   ladspa = NULL;
+   _handle = 0;
+   _references = 0;
+   _instNo     = 0;
+   _label = _synth->name();
+   _name = _synth->description();
+   _uniqueID = plugin->UniqueID;
+   _maker = _synth->maker();
+   _copyright = _synth->version();
+
+   _portCount = plugin->PortCount;
+
+   _inports = 0;
+   _outports = 0;
+   _controlInPorts = 0;
+   _controlOutPorts = 0;
+
+   for(unsigned long k = 0; k < _portCount; ++k)
+   {
+      LADSPA_PortDescriptor pd = plugin->PortDescriptors[k];
+
+      if(pd & LADSPA_PORT_AUDIO)
+      {
+         if(pd & LADSPA_PORT_INPUT)
+         {
+            ++_inports;
+         }
+         else if(pd & LADSPA_PORT_OUTPUT)
+         {
+            ++_outports;
+         }
+      }
+      else if(pd & LADSPA_PORT_CONTROL)
+      {
+         if(pd & LADSPA_PORT_INPUT)
+         {
+            ++_controlInPorts;
+         }
+         else if(pd & LADSPA_PORT_OUTPUT)
+         {
+            ++_controlOutPorts;
+         }
+      }
+   }
+
+   _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(plugin->Properties);
+
+   _uiHost = suil_host_new(LV2Synth::lv2ui_PortWrite, NULL, NULL, NULL);
+
+
+
+}
+
+LV2PluginWrapper::~LV2PluginWrapper()
+{
+   delete [] _fakePds;
+   delete [] _PluginControlsDefault;
+   delete [] _PluginControlsMin;
+   delete [] _PluginControlsMax;
+
+   if(_uiHost)
+   {
+      suil_host_free(_uiHost);
+   }
+
+}
+
+LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
+{
+   LV2PluginWrapper_State *state = new LV2PluginWrapper_State;
+   state->uiHost = _synth->_uiHost;
+   state->inst = this;
+   state->widget = NULL;
+   state->uiInst = NULL;
+   state->plugInst = plugi;
+   state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
+   state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
+   state->sif = NULL;
+   state->synth = _synth;
+   LV2Synth::lv2state_FillFeatures(state);
+
+   state->handle = lilv_plugin_instantiate(_synth->_handle, (double)MusEGlobal::sampleRate, state->_ppifeatures);
+
+   if(state->handle == NULL)
+   {
+      delete [] state->_ppifeatures;
+      delete [] state->_ifeatures;
+      return NULL;
+   }
+
+   LV2Synth::lv2state_PostInstantiate(state);
+
+   if(_controlInPorts > 0)
+   {
+      state->lastControls = new float [_controlInPorts];
+      state->controlsMask = new bool [_controlInPorts];
+      for(uint32_t i = 0; i < _controlInPorts; i++)
+      {
+         state->lastControls [i] = _PluginControlsDefault [i];
+         state->controlsMask [i] = false;
+      }
+   }
+
+   _states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));
+
+   return (LADSPA_Handle)state->handle;
+
+}
+
+void LV2PluginWrapper::connectPort(LADSPA_Handle handle, long unsigned int port, float *value)
+{
+   lilv_instance_connect_port((LilvInstance *)handle, port, (void *)value);
+}
+
+int LV2PluginWrapper::incReferences(int ref)
+{
+   _synth->incInstances(ref);
+   return _synth->instances();
+}
+void LV2PluginWrapper::activate(LADSPA_Handle handle)
+{
+   lilv_instance_activate((LilvInstance *) handle);
+}
+void LV2PluginWrapper::deactivate(LADSPA_Handle handle)
+{
+   lilv_instance_deactivate((LilvInstance *) handle);
+}
+void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
+{
+   if(handle != NULL)
+   {
+      std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
+      assert(it != _states.end()); //this shouldn't happen
+      LV2PluginWrapper_State *state = it->second;
+
+      state->uiTimer->stopNextTime();
+
+      delete state->uiTimer;
+
+      if(state->uiInst != NULL)
+      {
+         suil_instance_free(state->uiInst);
+      }
+
+      state->wrkThread->terminate();
+      state->wrkThread->wait();
+      delete state->wrkThread;
+
+      free(state->human_id);
+      delete [] state->_ifeatures;
+      delete [] state->_ppifeatures;
+      delete state;
+      _states.erase(it);
+      lilv_instance_free((LilvInstance *) handle);
+      if(state->lastControls)
+      {
+         delete [] state->lastControls;
+         state->lastControls = NULL;
+      }
+
+   }
+}
+
+void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
+{
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
+   assert(it != _states.end()); //this shouldn't happen
+   LV2PluginWrapper_State *state = it->second;
+
+   lilv_instance_run(state->handle, n);
+   //notify worker that this run() finished
+   if(state->wrkIface && state->wrkIface->end_run)
+      state->wrkIface->end_run(lilv_instance_get_handle(state->handle));
+   //notify worker about processes data (if any)
+   if(state->wrkIface && state->wrkIface->work_response && state->wrkEndWork)
+   {
+      state->wrkEndWork = false;
+      state->wrkIface->work_response(lilv_instance_get_handle(state->handle), state->wrkDataSize, state->wrkDataBuffer);
+      state->wrkDataSize = 0;
+      state->wrkDataBuffer = NULL;
+   }
+}
+LADSPA_PortDescriptor LV2PluginWrapper::portd(unsigned long k) const
+{
+   return _fakeLd.PortDescriptors[k];
+}
+
+LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i)
+{
+   // FIXME:
+   //return plugin ? plugin->PortRangeHints[i] : 0; DELETETHIS
+   LADSPA_PortRangeHint hint;
+   hint.HintDescriptor = 0;
+   hint.LowerBound = _PluginControlsMin [i];
+   hint.UpperBound = _PluginControlsMax [i];
+
+   if(hint.LowerBound == hint.LowerBound)
+   {
+      hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW;
+   }
+
+   if(hint.UpperBound == hint.UpperBound)
+   {
+      hint.HintDescriptor |= LADSPA_HINT_BOUNDED_ABOVE;
+   }
+
+   return hint;
+}
+void LV2PluginWrapper::range(unsigned long i, float *min, float *max) const
+{
+   *min = _PluginControlsMin [i];
+   *max = _PluginControlsMax [i];
+}
+
+float LV2PluginWrapper::defaultValue(unsigned long port) const
+{
+   return _PluginControlsDefault [port];
+}
+const char *LV2PluginWrapper::portName(unsigned long i)
+{
+   return lilv_node_as_string(lilv_port_get_name(_synth->_handle, lilv_plugin_get_port_by_index(_synth->_handle, i)));
+}
+
+CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long) const
+{
+   return VAL_LINEAR;
+}
+CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long) const
+{
+   return CtrlList::INTERPOLATE;
+}
+bool LV2PluginWrapper::hasNativeGui()
+{
+   return _synth->_hasGui || _synth->_hasExternalGui;
+}
+
+void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
+{
+   assert(p->instances > 0);
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
+
+   //assert(it != _states.end()); //this shouldn't happen
+   if(it == _states.end())
+   {
+      return;
+   }
+
+   LV2PluginWrapper_State *state = it->second;
+
+   if(p->track() != NULL)
+   {
+      if(state->human_id != NULL)
+      {
+         free(state->human_id);
+      }
+
+      state->extHost.plugin_human_id = state->human_id = strdup((p->track()->name() + QString(": ") + label()).toUtf8().constData());
+   }
+
+   LV2Synth::lv2ui_ShowNativeGui(state, bShow);
+
+
+}
+
+bool LV2PluginWrapper::nativeGuiVisible(PluginI *p)
+{
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle);
+
+   //assert(it != _states.end()); //this shouldn't happen
+   if(it == _states.end())
+   {
+      return false;
+   }
+
+   LV2PluginWrapper_State *state = it->second;
+   return (state->widget != NULL);
+}
+
+void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal)
+{
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
+   assert(it != _states.end()); //this shouldn't happen
+   LV2PluginWrapper_State *state = it->second;
+   assert(state != NULL);
+
+   if(_controlInPorts == 0)
+      return;
+
+   if(bSetMask)
+      state->controlsMask [index] = bMask;
+
+   if(bSetVal)
+      state->lastControls [index] = fVal;
+
+}
+
+
+
+
+void LV2PluginWrapper_Worker::run()
+{
+   while(true)
+   {
+      _mSem.acquire(1);
+      makeWork();
+
+   }
+
+}
+
+void LV2PluginWrapper_Worker::scheduleWork()
+{
+   assert(_mSem.available() == 0);
+   _mSem.release(1);
+
+}
+
+void LV2PluginWrapper_Worker::makeWork()
+{
+#ifdef DEBUG_LV2
+   std::cerr << "LV2PluginWrapper_Worker::makeWork" << std::endl;
+#endif
+   if(_state->wrkIface && _state->wrkIface->work)
+   {
+      const void *dataBuffer = _state->wrkDataBuffer;
+      uint32_t dataSize = _state->wrkDataSize;
+      _state->wrkDataBuffer = NULL;
+      _state->wrkDataSize = 0;
+      if(_state->wrkIface->work(lilv_instance_get_handle(_state->handle),
+                                LV2Synth::lv2wrk_respond,
+                                _state,
+                                dataSize,
+                                dataBuffer) != LV2_WORKER_SUCCESS)
+      {
+         _state->wrkEndWork = false;
+         _state->wrkDataBuffer = NULL;
+         _state->wrkDataSize = 0;
+      }
+   }
+
+}
+
+}
+
+#else //LV2_SUPPORT
+namespace MusECore
+{
+void initLV2() {}
+}
+#endif
+

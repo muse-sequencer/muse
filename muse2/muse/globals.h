@@ -90,6 +90,7 @@ extern bool loadNativeVST;
 extern bool loadDSSI;
 extern bool usePythonBridge;
 extern bool useLASH;
+extern bool loadLV2;
 extern bool useAlsaWithJack;
 extern bool noAutoStartJack;
 

@@ -68,10 +68,10 @@ class Synth {
       QString _version;
 
    public:
-      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, SYNTH_TYPE_END };
+      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, LV2_SYNTH, SYNTH_TYPE_END };
 
       Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver);
-      
+
       virtual ~Synth() {}
 
       virtual Type synthType() const = 0;
@@ -87,7 +87,7 @@ class Synth {
       QString description() const                      { return _description; }
       QString version() const                          { return _version; }
       QString maker() const                            { return _maker; }
-      
+
       virtual SynthIF* createSIF(SynthI*) = 0;
       };
 
@@ -99,14 +99,14 @@ class MessSynth : public Synth {
       const MESS* _descr;
 
    public:
-      MessSynth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver) : 
+      MessSynth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver) :
                Synth(fi, label, descr, maker, ver) { _descr = 0; }
-      
+
       virtual ~MessSynth() {}
       virtual Type synthType() const { return MESS_SYNTH; }
 
       virtual void* instantiate(const QString&);
-      
+
       virtual SynthIF* createSIF(SynthI*);
       };
 
@@ -114,23 +114,23 @@ class MessSynth : public Synth {
 //---------------------------------------------------------
 //   SynthIF
 //    synth instance interface
-//   NOTICE: If implementing sysex support, be sure to make a unique ID and use   
+//   NOTICE: If implementing sysex support, be sure to make a unique ID and use
 //    it to filter out unrecognized sysexes. Headers should be constructed as:
-//      MUSE_SYNTH_SYSEX_MFG_ID        The MusE SoftSynth Manufacturer ID byte (0x7C) found in midi.h 
+//      MUSE_SYNTH_SYSEX_MFG_ID        The MusE SoftSynth Manufacturer ID byte (0x7C) found in midi.h
 //      0xNN                           The synth's unique ID byte
 //---------------------------------------------------------
 
 class SynthIF : public PluginIBase {
-      
+
    protected:
       SynthI* synti;
-      
+
    public:
       SynthIF(SynthI* s) { synti = s; }
       virtual ~SynthIF() {}
 
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
-      virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; } 
+      virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; }
 
       virtual bool initGui() = 0;
       virtual void guiHeartBeat() = 0;
@@ -149,7 +149,7 @@ class SynthIF : public PluginIBase {
       virtual bool putEvent(const MidiPlayEvent& ev) = 0;
       virtual MidiPlayEvent receiveEvent() = 0;
       virtual int eventsPending() const = 0;
-      
+
       virtual int channels() const = 0;
       virtual int totalOutChannels() const = 0;
       virtual int totalInChannels() const = 0;
@@ -157,14 +157,15 @@ class SynthIF : public PluginIBase {
       virtual QString getPatchName(int, int, bool) const = 0;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
-      virtual float getParameter(unsigned long idx) const = 0;        
-      virtual void setParameter(unsigned long idx, float value) = 0;  
+      virtual float getParameter(unsigned long idx) const = 0;
+      virtual void setParameter(unsigned long idx, float value) = 0;
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) = 0;
+      virtual void setCustomData(const std::vector<QString> &) {/* Do nothing by default */};
 
       //-------------------------
       // Methods for PluginIBase:
       //-------------------------
-      
+
       virtual bool on() const;
       virtual void setOn(bool val);
       virtual unsigned long pluginID();
@@ -217,15 +218,18 @@ class SynthI : public AudioTrack, public MidiDevice,
    protected:
       Synth* synthesizer;
       // MidiFifo putFifo;  // Moved into MidiDevice p4.0.15
-      
-      // List of initial floating point parameters, for synths which use them. 
+
+      // List of initial floating point parameters, for synths which use them.
       // Used once upon song reload, then discarded.
       std::vector<float> initParams;
+      //custom params in xml song file , synth tag, that will be passed to new SynthIF:read(Xml &) method
+      //now pnly lv2host uses them, others simply ignore
+      std::vector<QString> accumulatedCustomParams;
 
       // Initial, and running, string parameters for synths which use them, like dssi.
-      StringParamMap _stringParamMap; 
+      StringParamMap _stringParamMap;
 
-      // Current bank and program for synths which use them, like dssi. 
+      // Current bank and program for synths which use them, like dssi.
       // In cases like dssi which have no 'hi' and 'lo' bank, just use _curBankL.
       unsigned long _curBankH;
       unsigned long _curBankL;
@@ -233,28 +237,29 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       void preProcessAlways();
       bool getData(unsigned a, int b, unsigned c, float** data);
-      
+
       virtual QString open();
       virtual void close();
-      
+
       virtual bool putMidiEvent(const MidiPlayEvent&) {return true;}
-      
+
       virtual Track* newTrack() const { return 0; }
 
    public:
       friend class SynthIF;
       friend class MessSynthIF;
       friend class DssiSynthIF;
+	  friend class LV2SynthIF;
       friend class VstSynthIF;
       friend class VstNativeSynthIF;
-      
+
       SynthI();
       SynthI(const SynthI& si, int flags);
       virtual ~SynthI();
       SynthI* clone(int flags) const { return new SynthI(*this, flags); }
 
-      virtual inline int deviceType() const { return SYNTH_MIDI; } 
-      
+      virtual inline int deviceType() const { return SYNTH_MIDI; }
+
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s, const QString& instanceName);
 
@@ -271,11 +276,11 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual QString getPatchName(int ch, int prog, bool dr) const {
             return _sif->getPatchName(ch, prog, dr);
             }
-            
+
       virtual void populatePatchPopup(MusEGui::PopupMenu* m, int i, bool d) {
             _sif->populatePatchPopup(m, i, d);
             }
-      
+
       void currentProg(unsigned long *prog, unsigned long *bankL, unsigned long *bankH);
 
       void guiHeartBeat()     { return _sif->guiHeartBeat(); }
@@ -301,7 +306,7 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       bool putEvent(const MidiPlayEvent& ev);
       virtual void processMidi();
-      
+
       MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
       int eventsPending() const    { return _sif->eventsPending(); }
       void deactivate2();
@@ -317,9 +322,9 @@ class SynthI : public AudioTrack, public MidiDevice,
 //---------------------------------------------------------
 //   MessSynthIF
 //    mess synthesizer instance
-//   NOTICE: If implementing sysex support, be sure to make a unique ID and use   
+//   NOTICE: If implementing sysex support, be sure to make a unique ID and use
 //    it to filter out unrecognized sysexes. Headers should be constructed as:
-//      MUSE_SYNTH_SYSEX_MFG_ID        The MusE SoftSynth Manufacturer ID byte (0x7C) found in midi.h 
+//      MUSE_SYNTH_SYSEX_MFG_ID        The MusE SoftSynth Manufacturer ID byte (0x7C) found in midi.h
 //      0xNN                           The synth's unique ID byte
 //---------------------------------------------------------
 
@@ -331,7 +336,7 @@ class MessSynthIF : public SynthIF {
       virtual ~MessSynthIF() { }
 
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
-      virtual int oldMidiStateHeader(const unsigned char** data) const;  
+      virtual int oldMidiStateHeader(const unsigned char** data) const;
 
       virtual bool initGui()          { return true; }
       virtual void guiHeartBeat()     { }
@@ -351,12 +356,12 @@ class MessSynthIF : public SynthIF {
       virtual MidiPlayEvent receiveEvent();
       virtual int eventsPending() const;
       bool init(Synth* s, SynthI* si);
-      
+
       virtual int channels() const;
       virtual int totalOutChannels() const;
       virtual int totalInChannels() const;
       virtual void deactivate3();
-      virtual QString getPatchName(int, int, bool) const;  
+      virtual QString getPatchName(int, int, bool) const;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       virtual void write(int level, Xml& xml) const;
       virtual float getParameter(unsigned long) const { return 0.0; }
@@ -365,8 +370,8 @@ class MessSynthIF : public SynthIF {
       };
 
 extern QString synthType2String(Synth::Type);
-extern Synth::Type string2SynthType(const QString&); 
-      
+extern Synth::Type string2SynthType(const QString&);
+
 } // namespace MusECore
 
 namespace MusEGlobal {

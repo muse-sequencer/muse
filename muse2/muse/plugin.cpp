@@ -75,6 +75,8 @@
 #include "popupmenu.h"
 #include "menutitleitem.h"
 
+#include "lv2host.h"
+
 
 #include "audio.h"
 #include "al/dsp.h"
@@ -82,10 +84,10 @@
 #include "config.h"
 
 // Turn on debugging messages.
-//#define PLUGIN_DEBUGIN 
+//#define PLUGIN_DEBUGIN
 
 // Turn on constant stream of debugging messages.
-//#define PLUGIN_DEBUGIN_PROCESS 
+//#define PLUGIN_DEBUGIN_PROCESS
 
 namespace MusEGlobal {
 MusECore::PluginList plugins;
@@ -112,76 +114,76 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
 {
   LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
   LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
-  
+
   float fmin, fmax, fdef;
   int   imin, imax;
   float frng;
-  
-  bool hasdef = ladspaDefaultValue(plugin, port, &fdef); 
+
+  bool hasdef = ladspaDefaultValue(plugin, port, &fdef);
   MidiController::ControllerType t = midiControllerType(ctlnum);
-  
-  #ifdef PLUGIN_DEBUGIN 
+
+  #ifdef PLUGIN_DEBUGIN
   printf("ladspa2MidiControlValues: ctlnum:%d ladspa port:%lu has default?:%d default:%f\n", ctlnum, port, hasdef, fdef);
   #endif
-  
-  if(desc & LADSPA_HINT_TOGGLED) 
+
+  if(desc & LADSPA_HINT_TOGGLED)
   {
-    #ifdef PLUGIN_DEBUGIN 
+    #ifdef PLUGIN_DEBUGIN
     printf("ladspa2MidiControlValues: has LADSPA_HINT_TOGGLED\n");
     #endif
-    
+
     *min = 0;
     *max = 1;
     *def = (int)lrintf(fdef);
     return hasdef;
   }
-  
+
   float m = 1.0;
   if(desc & LADSPA_HINT_SAMPLE_RATE)
   {
-    #ifdef PLUGIN_DEBUGIN 
+    #ifdef PLUGIN_DEBUGIN
     printf("ladspa2MidiControlValues: has LADSPA_HINT_SAMPLE_RATE\n");
     #endif
-    
+
     m = float(MusEGlobal::sampleRate);
-  }  
-  
+  }
+
   if(desc & LADSPA_HINT_BOUNDED_BELOW)
   {
-    #ifdef PLUGIN_DEBUGIN 
+    #ifdef PLUGIN_DEBUGIN
     printf("ladspa2MidiControlValues: has LADSPA_HINT_BOUNDED_BELOW\n");
     #endif
-    
+
     fmin =  range.LowerBound * m;
-  }  
+  }
   else
     fmin = 0.0;
-  
+
   if(desc & LADSPA_HINT_BOUNDED_ABOVE)
-  {  
-    #ifdef PLUGIN_DEBUGIN 
+  {
+    #ifdef PLUGIN_DEBUGIN
     printf("ladspa2MidiControlValues: has LADSPA_HINT_BOUNDED_ABOVE\n");
     #endif
-    
+
     fmax =  range.UpperBound * m;
-  }  
+  }
   else
     fmax = 1.0;
-    
+
   frng = fmax - fmin;
-  imin = lrintf(fmin);  
-  imax = lrintf(fmax);  
+  imin = lrintf(fmin);
+  imax = lrintf(fmax);
 
   int ctlmn = 0;
   int ctlmx = 127;
-  
-  #ifdef PLUGIN_DEBUGIN 
+
+  #ifdef PLUGIN_DEBUGIN
   printf("ladspa2MidiControlValues: port min:%f max:%f \n", fmin, fmax);
   #endif
-  
+
   bool isneg = (imin < 0);
   int bias = 0;
-  switch(t) 
+  switch(t)
   {
     case MidiController::RPN:
     case MidiController::NRPN:
@@ -226,45 +228,45 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
       break;
   }
   float fctlrng = float(ctlmx - ctlmn);
-  
+
   // Is it an integer control?
   if(desc & LADSPA_HINT_INTEGER)
   {
-    #ifdef PLUGIN_DEBUGIN 
+    #ifdef PLUGIN_DEBUGIN
     printf("ladspa2MidiControlValues: has LADSPA_HINT_INTEGER\n");
     #endif
-  
+
     // just clip the limits instead of scaling the whole range. ie fit the range into clipped space.
     if(imin < ctlmn)
       imin = ctlmn;
     if(imax > ctlmx)
       imax = ctlmx;
-      
+
     *min = imin;
     *max = imax;
-    
+
     *def = (int)lrintf(fdef);
-    
+
     return hasdef;
   }
-  
+
   // It's a floating point control, just use wide open maximum range.
   *min = ctlmn;
   *max = ctlmx;
-  
+
   float normdef = fdef / frng;
   fdef = normdef * fctlrng;
-  
+
   // FIXME: TODO: Incorrect... Fix this somewhat more trivial stuff later....
-  
+
   *def = (int)lrintf(fdef) + bias;
- 
-  #ifdef PLUGIN_DEBUGIN 
+
+  #ifdef PLUGIN_DEBUGIN
   printf("ladspa2MidiControlValues: setting default:%d\n", *def);
   #endif
-  
+
   return hasdef;
-}      
+}
 
 //---------------------------------------------------------
 //   midi2LadspaValue
@@ -274,75 +276,75 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int 
 {
   LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
   LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
-  
+
   float fmin, fmax;
   int   imin;
   float frng;
-  
+
   MidiController::ControllerType t = midiControllerType(ctlnum);
-  
-  #ifdef PLUGIN_DEBUGIN 
+
+  #ifdef PLUGIN_DEBUGIN
   printf("midi2LadspaValue: ctlnum:%d ladspa port:%lu val:%d\n", ctlnum, port, val);
   #endif
-  
+
   float m = 1.0;
   if(desc & LADSPA_HINT_SAMPLE_RATE)
   {
-    #ifdef PLUGIN_DEBUGIN 
+    #ifdef PLUGIN_DEBUGIN
     printf("midi2LadspaValue: has LADSPA_HINT_SAMPLE_RATE\n");
     #endif
-    
+
     m = float(MusEGlobal::sampleRate);
-  }  
-  
+  }
+
   if(desc & LADSPA_HINT_BOUNDED_BELOW)
   {
-    #ifdef PLUGIN_DEBUGIN 
+    #ifdef PLUGIN_DEBUGIN
     printf("midi2LadspaValue: has LADSPA_HINT_BOUNDED_BELOW\n");
     #endif
-    
+
     fmin =  range.LowerBound * m;
-  }  
+  }
   else
     fmin = 0.0;
-  
+
   if(desc & LADSPA_HINT_BOUNDED_ABOVE)
-  {  
-    #ifdef PLUGIN_DEBUGIN 
+  {
+    #ifdef PLUGIN_DEBUGIN
     printf("midi2LadspaValue: has LADSPA_HINT_BOUNDED_ABOVE\n");
     #endif
-    
+
     fmax =  range.UpperBound * m;
-  }  
+  }
   else
     fmax = 1.0;
-    
-  frng = fmax - fmin;
-  imin = lrintf(fmin);  
 
-  if(desc & LADSPA_HINT_TOGGLED) 
+  frng = fmax - fmin;
+  imin = lrintf(fmin);
+
+  if(desc & LADSPA_HINT_TOGGLED)
   {
-    #ifdef PLUGIN_DEBUGIN 
+    #ifdef PLUGIN_DEBUGIN
     printf("midi2LadspaValue: has LADSPA_HINT_TOGGLED\n");
     #endif
-    
+
     if(val > 0)
       return fmax;
     else
       return fmin;
   }
-  
+
   int ctlmn = 0;
   int ctlmx = 127;
-  
-  #ifdef PLUGIN_DEBUGIN 
+
+  #ifdef PLUGIN_DEBUGIN
   printf("midi2LadspaValue: port min:%f max:%f \n", fmin, fmax);
   #endif
-  
+
   bool isneg = (imin < 0);
   int bval = val;
   int cval = val;
-  switch(t) 
+  switch(t)
   {
     case MidiController::RPN:
     case MidiController::NRPN:
@@ -392,7 +394,7 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int 
   }
   int ctlrng = ctlmx - ctlmn;
   float fctlrng = float(ctlmx - ctlmn);
-  
+
   // Is it an integer control?
   if(desc & LADSPA_HINT_INTEGER)
   {
@@ -401,27 +403,27 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int 
       ret = fmin;
     if(ret > fmax)
       ret = fmax;
-    #ifdef PLUGIN_DEBUGIN 
+    #ifdef PLUGIN_DEBUGIN
     printf("midi2LadspaValue: has LADSPA_HINT_INTEGER returning:%f\n", ret);
     #endif
-    
-    return ret;  
+
+    return ret;
   }
-  
+
   // Avoid divide-by-zero error below.
   if(ctlrng == 0)
     return 0.0;
-    
+
   // It's a floating point control, just use wide open maximum range.
   float normval = float(bval) / fctlrng;
   float ret = normval * frng + fmin;
-  
-  #ifdef PLUGIN_DEBUGIN 
+
+  #ifdef PLUGIN_DEBUGIN
   printf("midi2LadspaValue: float returning:%f\n", ret);
   #endif
-  
+
   return ret;
-}      
+}
 
 //---------------------------------------------------------
 //   ladspaCtrlValueType
@@ -431,7 +433,7 @@ CtrlValueType ladspaCtrlValueType(const LADSPA_Descriptor* plugin, int port)
 {
   LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
   LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
-  
+
   if(desc & LADSPA_HINT_INTEGER)
     return VAL_INT;
   else if(desc & LADSPA_HINT_LOGARITHMIC)
@@ -440,8 +442,8 @@ CtrlValueType ladspaCtrlValueType(const LADSPA_Descriptor* plugin, int port)
     return VAL_BOOL;
   else
     return VAL_LINEAR;
-}  
-  
+}
+
 //---------------------------------------------------------
 //   ladspaCtrlMode
 //---------------------------------------------------------
@@ -450,7 +452,7 @@ CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port)
 {
   LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
   LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
-  
+
   if(desc & LADSPA_HINT_INTEGER)
     return CtrlList::DISCRETE;
   else if(desc & LADSPA_HINT_LOGARITHMIC)
@@ -459,8 +461,8 @@ CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port)
     return CtrlList::DISCRETE;
   else
     return CtrlList::INTERPOLATE;
-}  
-  
+}
+
 // DELETETHIS 20
 // Works but not needed.
 /*
@@ -471,12 +473,12 @@ CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port)
 MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum)
 {
   int min, max, def;
-  
+
   if(!ladspa2MidiControlValues(plugin, port, ctlnum, &min, &max, &def))
     return 0;
-  
+
   MidiController* mc = new MidiController(QString(plugin->PortNames[port]), ctlnum, min, max, def);
-  
+
   return mc;
 }
 */
@@ -488,85 +490,85 @@ MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, unsigned 
 
 bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, float* val)
 {
-      if(port < plugin->PortCount) 
+      if(port < plugin->PortCount)
       {
         LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
         LADSPA_PortRangeHintDescriptor rh = range.HintDescriptor;
         float m = (rh & LADSPA_HINT_SAMPLE_RATE) ? float(MusEGlobal::sampleRate) : 1.0f;
-        
-        if (LADSPA_IS_HINT_DEFAULT_MINIMUM(rh)) 
+
+        if (LADSPA_IS_HINT_DEFAULT_MINIMUM(rh))
         {
               *val = range.LowerBound * m;
               return true;
         }
-        else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh)) 
+        else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(rh))
         {
               *val = range.UpperBound*m;
               return true;
         }
-        else if (LADSPA_IS_HINT_DEFAULT_LOW(rh)) 
+        else if (LADSPA_IS_HINT_DEFAULT_LOW(rh))
         {
               if (LADSPA_IS_HINT_LOGARITHMIC(rh))
               {
-                *val = expf(logf(range.LowerBound * m) * .75 +  
+                *val = expf(logf(range.LowerBound * m) * .75 +
                       logf(range.UpperBound * m) * .25);
                 return true;
-              }         
+              }
               else
               {
                 *val = range.LowerBound*.75*m + range.UpperBound*.25*m;
                 return true;
-              }      
+              }
         }
-        else if (LADSPA_IS_HINT_DEFAULT_MIDDLE(rh)) 
+        else if (LADSPA_IS_HINT_DEFAULT_MIDDLE(rh))
         {
               if (LADSPA_IS_HINT_LOGARITHMIC(rh))
               {
                 *val = expf(logf(range.LowerBound * m) * .5 +
-                      logf(range.UpperBound * m) * .5);     
+                      logf(range.UpperBound * m) * .5);
                 return true;
-              }         
+              }
               else
               {
                 *val = range.LowerBound*.5*m + range.UpperBound*.5*m;
                 return true;
-              }      
+              }
         }
-        else if (LADSPA_IS_HINT_DEFAULT_HIGH(rh)) 
+        else if (LADSPA_IS_HINT_DEFAULT_HIGH(rh))
         {
               if (LADSPA_IS_HINT_LOGARITHMIC(rh))
               {
                 *val = expf(logf(range.LowerBound * m) * .25 +
                       logf(range.UpperBound * m) * .75);
                 return true;
-              }         
+              }
               else
               {
                 *val = range.LowerBound*.25*m + range.UpperBound*.75*m;
                 return true;
-              }      
+              }
         }
         else if (LADSPA_IS_HINT_DEFAULT_0(rh))
         {
               *val = 0.0;
               return true;
-        }      
+        }
         else if (LADSPA_IS_HINT_DEFAULT_1(rh))
         {
               *val = 1.0;
               return true;
-        }      
+        }
         else if (LADSPA_IS_HINT_DEFAULT_100(rh))
         {
               *val = 100.0;
               return true;
-        }      
+        }
         else if (LADSPA_IS_HINT_DEFAULT_440(rh))
         {
               *val = 440.0;
               return true;
-        } 
-        
+        }
+
         // No default found. Make one up...
         else if (LADSPA_IS_HINT_BOUNDED_BELOW(rh) && LADSPA_IS_HINT_BOUNDED_ABOVE(rh))
         {
@@ -575,12 +577,12 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
             *val = expf(logf(range.LowerBound * m) * .5 +
                   logf(range.UpperBound * m) * .5);
             return true;
-          }         
+          }
           else
           {
             *val = range.LowerBound*.5*m + range.UpperBound*.5*m;
             return true;
-          }      
+          }
         }
         else if (LADSPA_IS_HINT_BOUNDED_BELOW(rh))
         {
@@ -599,7 +601,7 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
             return true;
         }
       }
-      
+
       // No default found. Set return value to 0.0, but return false.
       *val = 0.0;
       return false;
@@ -609,7 +611,7 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
 //   ladspaControlRange
 //---------------------------------------------------------
 
-void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, float* min, float* max) 
+void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, float* min, float* max)
       {
       LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
       LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
@@ -643,30 +645,32 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
 {
   _isDssi = isDssi;
   _isDssiSynth = isDssiSynth;
-  
+  _isLV2Plugin = false;
+  _isLV2Synth = false;
+
   #ifdef DSSI_SUPPORT
   dssi_descr = NULL;
   #endif
-  
+
   fi = *f;
   plugin = NULL;
   ladspa = NULL;
   _handle = 0;
   _references = 0;
   _instNo     = 0;
-  _label = QString(d->Label); 
-  _name = QString(d->Name); 
-  _uniqueID = d->UniqueID; 
-  _maker = QString(d->Maker); 
-  _copyright = QString(d->Copyright); 
-  
+  _label = QString(d->Label);
+  _name = QString(d->Name);
+  _uniqueID = d->UniqueID;
+  _maker = QString(d->Maker);
+  _copyright = QString(d->Copyright);
+
   _portCount = d->PortCount;
-  
+
   _inports = 0;
   _outports = 0;
   _controlInPorts = 0;
   _controlOutPorts = 0;
-  for(unsigned long k = 0; k < _portCount; ++k) 
+  for(unsigned long k = 0; k < _portCount; ++k)
   {
     LADSPA_PortDescriptor pd = d->PortDescriptors[k];
     if(pd & LADSPA_PORT_AUDIO)
@@ -676,7 +680,7 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
       else
       if(pd & LADSPA_PORT_OUTPUT)
         ++_outports;
-    }    
+    }
     else
     if(pd & LADSPA_PORT_CONTROL)
     {
@@ -685,19 +689,19 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
       else
       if(pd & LADSPA_PORT_OUTPUT)
         ++_controlOutPorts;
-    }    
+    }
   }
-  
+
   _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(d->Properties);
-  
-  // By T356. Blacklist vst plugins in-place configurable for now. At one point they 
+
+  // By T356. Blacklist vst plugins in-place configurable for now. At one point they
   //   were working with in-place here, but not now, and RJ also reported they weren't working.
   // Fixes problem with vst plugins not working or feeding back loudly.
   // I can only think of two things that made them stop working:
   // 1): I switched back from Jack-2 to Jack-1
   // 2): I changed winecfg audio to use Jack instead of ALSA.
   // Will test later...
-  // Possibly the first one because under Mandriva2007.1 (Jack-1), no matter how hard I tried, 
+  // Possibly the first one because under Mandriva2007.1 (Jack-1), no matter how hard I tried,
   //  the same problem existed. It may have been when using Jack-2 with Mandriva2009 that they worked.
   // Apparently the plugins are lying about their in-place capability.
   // Quote:
@@ -706,13 +710,13 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi, bool isDss
     location for both input and output (see connect_port()). This
     should be avoided as enabling this flag makes it impossible for
     hosts to use the plugin to process audio `in-place.' */
-  // Examination of all my ladspa and vst synths and effects plugins showed only one - 
+  // Examination of all my ladspa and vst synths and effects plugins showed only one -
   //  EnsembleLite (EnsLite VST) has the flag set, but it is a vst synth and is not involved here!
-  // Yet many (all?) ladspa vst effect plugins exhibit this problem.  
+  // Yet many (all?) ladspa vst effect plugins exhibit this problem.
   // Changed by Tim. p3.3.14
   // Hack: Special Flag required for example for control processing.
   _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
-  // Hack: Blacklist vst plugins in-place, configurable for now. 
+  // Hack: Blacklist vst plugins in-place, configurable for now.
   if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
         _inPlaceCapable = false;
 }
@@ -723,120 +727,120 @@ Plugin::~Plugin()
   //  delete plugin;
     printf("Plugin::~Plugin Error: plugin is not NULL\n");
 }
-  
+
 //---------------------------------------------------------
 //   incReferences
 //---------------------------------------------------------
 
 int Plugin::incReferences(int val)
 {
-  #ifdef PLUGIN_DEBUGIN 
+  #ifdef PLUGIN_DEBUGIN
   fprintf(stderr, "Plugin::incReferences _references:%d val:%d\n", _references, val);
   #endif
-  
+
   int newref = _references + val;
-  
-  if(newref == 0) 
+
+  if(newref == 0)
   {
     _references = 0;
     if(_handle)
     {
-      #ifdef PLUGIN_DEBUGIN 
+      #ifdef PLUGIN_DEBUGIN
       fprintf(stderr, "Plugin::incReferences no more instances, closing library\n");
       #endif
-      
+
       dlclose(_handle);
     }
-    
+
     _handle = 0;
     ladspa = NULL;
     plugin = NULL;
     rpIdx.clear();
-    
+
     #ifdef DSSI_SUPPORT
     dssi_descr = NULL;
     #endif
-    
+
     return 0;
   }
-    
-  if(_handle == 0) 
+
+  if(_handle == 0)
   {
     _handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
-    
-    if(_handle == 0) 
+
+    if(_handle == 0)
     {
       fprintf(stderr, "Plugin::incReferences dlopen(%s) failed: %s\n",
               fi.filePath().toLatin1().constData(), dlerror());
       return 0;
     }
-    
+
     #ifdef DSSI_SUPPORT
     DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)dlsym(_handle, "dssi_descriptor");
     if(dssi)
     {
       const DSSI_Descriptor* descr;
-      for(unsigned long i = 0;; ++i)     
+      for(unsigned long i = 0;; ++i)
       {
         descr = dssi(i);
         if(descr == NULL)
           break;
-        
+
         QString label(descr->LADSPA_Plugin->Label);
-        if(label == _label) 
-        {  
+        if(label == _label)
+        {
           _isDssi = true;
           ladspa = NULL;
           dssi_descr = descr;
           plugin = descr->LADSPA_Plugin;
           break;
         }
-      }  
+      }
     }
     else
-    #endif // DSSI_SUPPORT   
+    #endif // DSSI_SUPPORT
     {
       LADSPA_Descriptor_Function ladspadf = (LADSPA_Descriptor_Function)dlsym(_handle, "ladspa_descriptor");
       if(ladspadf)
       {
         const LADSPA_Descriptor* descr;
-        for(unsigned long i = 0;; ++i)       
+        for(unsigned long i = 0;; ++i)
         {
           descr = ladspadf(i);
           if(descr == NULL)
             break;
-          
+
           QString label(descr->Label);
           if(label == _label)
-          {  
+          {
             _isDssi = false;
             ladspa = ladspadf;
             plugin = descr;
-            
+
             #ifdef DSSI_SUPPORT
             dssi_descr = NULL;
             #endif
-            
+
             break;
           }
-        }  
+        }
       }
-    }    
-    
+    }
+
     if(plugin != NULL)
     {
-      _name = QString(plugin->Name); 
-      _uniqueID = plugin->UniqueID; 
-      _maker = QString(plugin->Maker); 
-      _copyright = QString(plugin->Copyright); 
-      
+      _name = QString(plugin->Name);
+      _uniqueID = plugin->UniqueID;
+      _maker = QString(plugin->Maker);
+      _copyright = QString(plugin->Copyright);
+
       _portCount = plugin->PortCount;
-        
+
       _inports = 0;
       _outports = 0;
       _controlInPorts = 0;
       _controlOutPorts = 0;
-      for(unsigned long k = 0; k < _portCount; ++k) 
+      for(unsigned long k = 0; k < _portCount; ++k)
       {
         LADSPA_PortDescriptor pd = plugin->PortDescriptors[k];
         if(pd & LADSPA_PORT_AUDIO)
@@ -846,9 +850,9 @@ int Plugin::incReferences(int val)
           else
           if(pd & LADSPA_PORT_OUTPUT)
             ++_outports;
-          
+
           rpIdx.push_back((unsigned long)-1);
-        }    
+        }
         else
         if(pd & LADSPA_PORT_CONTROL)
         {
@@ -856,37 +860,37 @@ int Plugin::incReferences(int val)
           {
             rpIdx.push_back(_controlInPorts);
             ++_controlInPorts;
-          }  
+          }
           else
           if(pd & LADSPA_PORT_OUTPUT)
           {
             rpIdx.push_back((unsigned long)-1);
             ++_controlOutPorts;
-          }  
-        }    
+          }
+        }
       }
-      
+
       _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(plugin->Properties);
-      
+
       // Hack: Special flag required for example for control processing.
       _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
-      // Hack: Blacklist vst plugins in-place, configurable for now. 
+      // Hack: Blacklist vst plugins in-place, configurable for now.
       if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
             _inPlaceCapable = false;
     }
-  }      
-        
+  }
+
   if(plugin == NULL)
   {
     dlclose(_handle);
     _handle = 0;
     _references = 0;
-    fprintf(stderr, "Plugin::incReferences Error: %s no plugin!\n", fi.filePath().toLatin1().constData()); 
+    fprintf(stderr, "Plugin::incReferences Error: %s no plugin!\n", fi.filePath().toLatin1().constData());
     return 0;
   }
-        
+
   _references = newref;
-  
+
   return _references;
 }
 
@@ -896,7 +900,7 @@ int Plugin::incReferences(int val)
 
 void Plugin::range(unsigned long i, float* min, float* max) const
       {
-      ladspaControlRange(plugin, i, min, max);  
+      ladspaControlRange(plugin, i, min, max);
       }
 
 //---------------------------------------------------------
@@ -946,40 +950,40 @@ static void loadPluginLib(QFileInfo* fi)
   if(dssi)
   {
     const DSSI_Descriptor* descr;
-    for (unsigned long i = 0;; ++i)  
+    for (unsigned long i = 0;; ++i)
     {
       descr = dssi(i);
       if (descr == 0)
             break;
-      
+
       // Make sure it doesn't already exist.
       if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
         continue;
 
-      #ifdef PLUGIN_DEBUGIN 
+      #ifdef PLUGIN_DEBUGIN
       fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
       #endif
-    
-      bool is_synth = descr->run_synth || descr->run_synth_adding 
-                  || descr->run_multiple_synths || descr->run_multiple_synths_adding; 
+
+      bool is_synth = descr->run_synth || descr->run_synth_adding
+                  || descr->run_multiple_synths || descr->run_multiple_synths_adding;
       if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d\n", 
-                fi->filePath().toLatin1().constData(), 
+        fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s synth:%d\n",
+                fi->filePath().toLatin1().constData(),
                 descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label,
                 is_synth
                 );
-    
+
       MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true, is_synth);
-    }      
+    }
   }
   else
   #endif
   {
     LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
-    if(!ladspa) 
+    if(!ladspa)
     {
       const char *txt = dlerror();
-      if(txt) 
+      if(txt)
       {
         fprintf(stderr,
               "Unable to find ladspa_descriptor() function in plugin "
@@ -991,28 +995,28 @@ static void loadPluginLib(QFileInfo* fi)
       dlclose(handle);
       return;
     }
-    
+
     const LADSPA_Descriptor* descr;
-    for (unsigned long i = 0;; ++i)       
+    for (unsigned long i = 0;; ++i)
     {
       descr = ladspa(i);
       if (descr == NULL)
             break;
-      
+
       // Make sure it doesn't already exist.
       if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
         continue;
-        
-      #ifdef PLUGIN_DEBUGIN 
+
+      #ifdef PLUGIN_DEBUGIN
       fprintf(stderr, "loadPluginLib: ladspa effect name:%s inPlaceBroken:%d\n", descr->Name, LADSPA_IS_INPLACE_BROKEN(descr->Properties));
       #endif
-      
+
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->Name, descr->Label);
       MusEGlobal::plugins.add(fi, descr);
     }
-  }  
-  
+  }
+
   dlclose(handle);
 }
 
@@ -1079,7 +1083,7 @@ void initPlugins()
 
       std::string s;
       const char* p = 0;
-      
+
       // Take care of DSSI plugins first...
       #ifdef DSSI_SUPPORT
       const char* dssiPath = getenv("DSSI_PATH");
@@ -1108,7 +1112,7 @@ void initPlugins()
                   p++;
             }
       #endif
-      
+
       // Now do LADSPA plugins...
       const char* ladspaPath = getenv("LADSPA_PATH");
       if (ladspaPath == 0)
@@ -1118,10 +1122,10 @@ void initPlugins()
           ladspaPath = s.c_str();
       }
       p = ladspaPath;
-      
+
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "loadPluginDir: ladspa path:%s\n", ladspaPath);
-      
+
       while (*p != '\0') {
             const char* pe = p;
             while (*pe != ':' && *pe != '\0')
@@ -1134,7 +1138,7 @@ void initPlugins()
                   buffer[n] = '\0';
                   if(MusEGlobal::debugMsg)
                     fprintf(stderr, "loadPluginDir: loading ladspa dir:%s\n", buffer);
-                  
+
                   loadPluginDir(QString(buffer));
                   delete[] buffer;
                   }
@@ -1151,8 +1155,8 @@ void initPlugins()
 Plugin* PluginList::find(const QString& file, const QString& name)
       {
       for (iPlugin i = begin(); i != end(); ++i) {
-            if ((file == i->lib()) && (name == i->label()))
-                  return &*i;
+            if ((file == (*i)->lib()) && (name == (*i)->label()))
+                  return *i;
             }
 
       return 0;
@@ -1168,7 +1172,7 @@ Pipeline::Pipeline()
       for(int i = 0; i < MAX_CHANNELS; ++i)
         buffer[i] = NULL;
       initBuffers();
-      
+
       for (int i = 0; i < PipelineDepth; ++i)
             push_back(0);
       }
@@ -1183,7 +1187,7 @@ Pipeline::Pipeline(const Pipeline& p, AudioTrack* t)
       for(int i = 0; i < MAX_CHANNELS; ++i)
         buffer[i] = NULL;
       initBuffers();
-      
+
       for(int i = 0; i < PipelineDepth; ++i)
       {
         PluginI* pli = p[i];
@@ -1249,17 +1253,17 @@ void Pipeline::initBuffers()
       memset(buffer[i], 0, sizeof(float) * MusEGlobal::segmentSize);
   }
 }
-      
+
 //---------------------------------------------------------
 //   addScheduledControlEvent
 //   track_ctrl_id is the fully qualified track audio controller number
 //   Returns true if event cannot be delivered
 //---------------------------------------------------------
 
-bool Pipeline::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame) 
+bool Pipeline::addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame)
 {
   // If a track controller, or the special dssi synth controller block, just return.
-  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0)) 
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0))
     return true;
   int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
   for (int i = 0; i < PipelineDepth; ++i)
@@ -1270,17 +1274,17 @@ bool Pipeline::addScheduledControlEvent(int track_ctrl_id, float val, unsigned f
   }
   return true;
 }
-      
+
 //---------------------------------------------------------
 //   controllerEnabled
-//   Returns whether automation control stream is enabled or disabled. 
+//   Returns whether automation control stream is enabled or disabled.
 //   Used during automation recording to inhibit gui controls
 //---------------------------------------------------------
 
 bool Pipeline::controllerEnabled(int track_ctrl_id)
 {
   // If a track controller, or the special dssi synth controller block, just return.
-  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0)) 
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0))
     return false;
   int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
   for (int i = 0; i < PipelineDepth; ++i)
@@ -1294,14 +1298,14 @@ bool Pipeline::controllerEnabled(int track_ctrl_id)
 
 //---------------------------------------------------------
 //   enableController
-//   Enable or disable gui automation control stream. 
+//   Enable or disable gui automation control stream.
 //   Used during automation recording to inhibit gui controls
 //---------------------------------------------------------
 
-void Pipeline::enableController(int track_ctrl_id, bool en) 
+void Pipeline::enableController(int track_ctrl_id, bool en)
 {
   // If a track controller, or the special dssi synth controller block, just return.
-  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0)) 
+  if(track_ctrl_id < AC_PLUGIN_CTL_BASE || track_ctrl_id >= (int)genACnum(MAX_PLUGINS, 0))
     return;
   int rack_idx = (track_ctrl_id - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
   for (int i = 0; i < PipelineDepth; ++i)
@@ -1314,7 +1318,7 @@ void Pipeline::enableController(int track_ctrl_id, bool en)
     }
   }
 }
-      
+
 //---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------
@@ -1426,15 +1430,15 @@ bool Pipeline::empty(int idx) const
 void Pipeline::move(int idx, bool up)
 {
       PluginI* p1 = (*this)[idx];
-      if (up) 
+      if (up)
       {
             (*this)[idx]   = (*this)[idx-1];
-          
+
           if((*this)[idx])
             (*this)[idx]->setID(idx);
-            
+
             (*this)[idx-1] = p1;
-          
+
           if(p1)
           {
             p1->setID(idx - 1);
@@ -1442,15 +1446,15 @@ void Pipeline::move(int idx, bool up)
               MusEGlobal::audio->msgSwapControllerIDX(p1->track(), idx, idx - 1);
             }
       }
-      else 
+      else
       {
             (*this)[idx]   = (*this)[idx+1];
-          
+
           if((*this)[idx])
             (*this)[idx]->setID(idx);
-          
+
             (*this)[idx+1] = p1;
-          
+
           if(p1)
           {
             p1->setID(idx + 1);
@@ -1469,8 +1473,8 @@ bool Pipeline::isDssiPlugin(int idx) const
   PluginI* p = (*this)[idx];
   if(p)
     return p->isDssiPlugin();
-        
-  return false;               
+
+  return false;
 }
 
 //---------------------------------------------------------
@@ -1481,9 +1485,16 @@ bool Pipeline::has_dssi_ui(int idx) const
 {
   PluginI* p = (*this)[idx];
   if(p)
-    return !p->dssi_ui_filename().isEmpty();
-        
-  return false;               
+  {
+#ifdef LV2_SUPPORT
+    if(p->plugin() && p->plugin()->isLV2Plugin())
+      return ((LV2PluginWrapper *)p->plugin())->hasNativeGui();
+    else
+#endif
+      return !p->dssi_ui_filename().isEmpty();
+  }
+
+  return false;
 }
 //---------------------------------------------------------
 //   showGui
@@ -1502,11 +1513,20 @@ void Pipeline::showGui(int idx, bool flag)
 
 void Pipeline::showNativeGui(int idx, bool flag)
       {
-      #ifdef OSC_SUPPORT
       PluginI* p = (*this)[idx];
+#ifdef LV2_SUPPORT
+         if(p && p->plugin()->isLV2Plugin())
+         {
+            ((LV2PluginWrapper *)p->plugin())->showNativeGui(p, flag);
+            return;
+         }
+
+#endif
+      #ifdef OSC_SUPPORT
+
       if (p)
             p->oscIF().oscShowGui(flag);
-      #endif      
+      #endif
       }
 
 //---------------------------------------------------------
@@ -1552,7 +1572,14 @@ bool Pipeline::nativeGuiVisible(int idx)
       {
       PluginI* p = (*this)[idx];
       if (p)
+      {
+#ifdef LV2_SUPPORT
+         if(p->plugin()->isLV2Synth())
+            return ((LV2PluginWrapper *)p->plugin())->nativeGuiVisible(p);
+#else
             return p->nativeGuiVisible();
+#endif
+      }
       return false;
       }
 
@@ -1567,36 +1594,36 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, f
 
       for (iPluginI ip = begin(); ip != end(); ++ip) {
             PluginI* p = *ip;
-            
+
             if(p)
             {
-              if (p->on()) 
+              if (p->on())
               {
-                if (p->inPlaceCapable()) 
+                if (p->inPlaceCapable())
                 {
                       if (swap)
-                            p->apply(pos, nframes, ports, buffer, buffer);     
+                            p->apply(pos, nframes, ports, buffer, buffer);
                       else
-                            p->apply(pos, nframes, ports, buffer1, buffer1);   
+                            p->apply(pos, nframes, ports, buffer1, buffer1);
                 }
-                else 
+                else
                 {
                       if (swap)
-                            p->apply(pos, nframes, ports, buffer, buffer1);    
+                            p->apply(pos, nframes, ports, buffer, buffer1);
                       else
-                            p->apply(pos, nframes, ports, buffer1, buffer);    
+                            p->apply(pos, nframes, ports, buffer1, buffer);
                       swap = !swap;
                 }
               }
               else
               {
-                p->apply(pos, nframes, 0, 0, 0); // Do not process (run) audio, process controllers only.    
+                p->apply(pos, nframes, 0, 0, 0); // Do not process (run) audio, process controllers only.
               }
             }
       }
-      if (ports != 0 && swap) 
+      if (ports != 0 && swap)
       {
-            for (unsigned long i = 0; i < ports; ++i)    
+            for (unsigned long i = 0; i < ports; ++i)
                   AL::dsp->cpy(buffer1[i], buffer[i], nframes);
       }
 }
@@ -1609,21 +1636,21 @@ PluginIBase::PluginIBase()
 {
   _gui = 0;
 }
- 
+
 PluginIBase::~PluginIBase()
 {
   if(_gui)
     delete _gui;
-} 
- 
+}
+
 //---------------------------------------------------------
 //   addScheduledControlEvent
 //   i is the specific index of the control input port
 //   Returns true if event cannot be delivered
 //---------------------------------------------------------
 
-bool PluginIBase::addScheduledControlEvent(unsigned long i, float val, unsigned frame) 
-{ 
+bool PluginIBase::addScheduledControlEvent(unsigned long i, float val, unsigned frame)
+{
   if(i >= parameters())
   {
     printf("PluginIBase::addScheduledControlEvent param number %lu out of range of ports:%lu\n", i, parameters());
@@ -1631,56 +1658,56 @@ bool PluginIBase::addScheduledControlEvent(unsigned long i, float val, unsigned 
   }
   ControlEvent ce;
   ce.unique = false;
-  ce.fromGui = false;                 
+  ce.fromGui = false;
   ce.idx = i;
   ce.value = val;
   // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
-  //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
-  //  are treated when they arrive in our ALSA driver.) 
-  //ce.frame = MusEGlobal::audio->timestamp();  
-  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
+  //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events
+  //  are treated when they arrive in our ALSA driver.)
+  //ce.frame = MusEGlobal::audio->timestamp();
+  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which
   //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
-  ce.frame = frame;  
-  
+  ce.frame = frame;
+
   if(_controlFifo.put(ce))
   {
     fprintf(stderr, "PluginIBase::addScheduledControlEvent: fifo overflow: in control number:%lu\n", i);
     return true;
   }
   return false;
-}     
+}
 
-QString PluginIBase::dssi_ui_filename() const 
-{ 
+QString PluginIBase::dssi_ui_filename() const
+{
   QString libr(lib());
   if(dirPath().isEmpty() || libr.isEmpty())
     return QString();
-  
+
   QString guiPath(dirPath() + "/" + libr);
 
   QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
-  if(!guiDir.exists()) 
+  if(!guiDir.exists())
     return QString();
-    
+
   QStringList list = guiDir.entryList();
-  
+
   QString plug(pluginLabel());
   QString lib_qt_ui;
   QString lib_any_ui;
   QString plug_qt_ui;
   QString plug_any_ui;
-  
-  for(int i = 0; i < list.count(); ++i) 
+
+  for(int i = 0; i < list.count(); ++i)
   {
     QFileInfo fi(guiPath + QString("/") + list[i]);
     QString gui(fi.filePath());
     struct stat buf;
-    if(stat(gui.toLatin1().constData(), &buf)) 
+    if(stat(gui.toLatin1().constData(), &buf))
       continue;
     if(!((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
         (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))))
-      continue; 
-    
+      continue;
+
     // FIXME: Qt::CaseInsensitive - a quick and dirty way to accept any suffix. Should be case sensitive...
     if(!libr.isEmpty())
     {
@@ -1688,7 +1715,7 @@ QString PluginIBase::dssi_ui_filename() const
         lib_qt_ui = gui;
       if(lib_any_ui.isEmpty() && list[i].contains(libr + QString('_') /*, Qt::CaseInsensitive*/))
         lib_any_ui = gui;
-    }  
+    }
     if(!plug.isEmpty())
     {
       if(plug_qt_ui.isEmpty() && list[i].contains(plug + QString("_qt"), Qt::CaseInsensitive))
@@ -1696,8 +1723,8 @@ QString PluginIBase::dssi_ui_filename() const
       if(plug_any_ui.isEmpty() && list[i].contains(plug + QString('_') /*, Qt::CaseInsensitive*/))
         plug_any_ui = gui;
     }
-  }   
-  
+  }
+
   // Prefer qt plugin ui
   if(!plug_qt_ui.isEmpty())
     return plug_qt_ui;
@@ -1738,7 +1765,7 @@ PluginI::PluginI()
       {
       _id = -1;
       _track = 0;
-      
+
       init();
       }
 
@@ -1749,7 +1776,7 @@ PluginI::PluginI()
 PluginI::~PluginI()
       {
       #ifdef OSC_SUPPORT
-      _oscif.oscSetPluginI(NULL);      
+      _oscif.oscSetPluginI(NULL);
       #endif
 
       if (_plugin) {
@@ -1770,7 +1797,7 @@ PluginI::~PluginI()
 
 void PluginI::setID(int i)
 {
-  _id = i; 
+  _id = i;
 }
 
 //---------------------------------------------------------
@@ -1781,11 +1808,11 @@ void PluginI::updateControllers()
 {
   if(!_track)
     return;
-    
-  for(unsigned long i = 0; i < controlPorts; ++i) 
+
+  for(unsigned long i = 0; i < controlPorts; ++i)
     _track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);  // TODO A faster bulk message
 }
-  
+
 //---------------------------------------------------------
 //   setChannel
 //---------------------------------------------------------
@@ -1793,7 +1820,7 @@ void PluginI::updateControllers()
 void PluginI::setChannels(int c)
 {
       channel = c;
-      
+
       unsigned long ins = _plugin->inports();
       unsigned long outs = _plugin->outports();
       int ni = 1;
@@ -1802,43 +1829,43 @@ void PluginI::setChannels(int c)
       else
       if(ins)
         ni = c / ins;
-      
+
       if(ni < 1)
         ni = 1;
-      
+
       if (ni == instances)
             return;
-      
+
       // remove old instances:
       deactivate();
       delete[] handle;
       instances = ni;
       handle    = new LADSPA_Handle[instances];
       for (int i = 0; i < instances; ++i) {
-            handle[i] = _plugin->instantiate();
+            handle[i] = _plugin->instantiate(this);
             if (handle[i] == NULL) {
                   printf("cannot instantiate instance %d\n", i);
                   return;
                   }
             }
-      
-      unsigned long curPort = 0;      
+
+      unsigned long curPort = 0;
       unsigned long curOutPort = 0;
       unsigned long ports   = _plugin->ports();
-      for (unsigned long k = 0; k < ports; ++k) 
+      for (unsigned long k = 0; k < ports; ++k)
       {
             LADSPA_PortDescriptor pd = _plugin->portd(k);
-            if (pd & LADSPA_PORT_CONTROL) 
+            if (pd & LADSPA_PORT_CONTROL)
             {
-                  if(pd & LADSPA_PORT_INPUT) 
+                  if(pd & LADSPA_PORT_INPUT)
                   {
                     for (int i = 0; i < instances; ++i)
                           _plugin->connectPort(handle[i], k, &controls[curPort].val);
                     controls[curPort].idx = k;
                     ++curPort;
                   }
-                  else  
-                  if(pd & LADSPA_PORT_OUTPUT) 
+                  else
+                  if(pd & LADSPA_PORT_OUTPUT)
                   {
                     for (int i = 0; i < instances; ++i)
                           _plugin->connectPort(handle[i], k, &controlsOut[curOutPort].val);
@@ -1847,7 +1874,7 @@ void PluginI::setChannels(int c)
                   }
             }
       }
-      
+
       activate();
 }
 
@@ -1855,10 +1882,10 @@ void PluginI::setChannels(int c)
 //   setParam
 //---------------------------------------------------------
 
-void PluginI::setParam(unsigned long i, float val) 
-{ 
+void PluginI::setParam(unsigned long i, float val)
+{
   addScheduledControlEvent(i, val, MusEGlobal::audio->curFrame());
-}     
+}
 
 //---------------------------------------------------------
 //   defaultValue
@@ -1868,19 +1895,19 @@ float PluginI::defaultValue(unsigned long param) const
 {
   if(param >= controlPorts)
     return 0.0;
-  
+
   return _plugin->defaultValue(controls[param].idx);
 }
 
-LADSPA_Handle Plugin::instantiate() 
+LADSPA_Handle Plugin::instantiate(PluginI *)
 {
   LADSPA_Handle h = plugin->instantiate(plugin, MusEGlobal::sampleRate);
   if(h == NULL)
   {
-    fprintf(stderr, "Plugin::instantiate() Error: plugin:%s instantiate failed!\n", plugin->Label); 
+    fprintf(stderr, "Plugin::instantiate() Error: plugin:%s instantiate failed!\n", plugin->Label);
     return NULL;
   }
-  
+
   return h;
 }
 
@@ -1892,19 +1919,19 @@ LADSPA_Handle Plugin::instantiate()
 bool PluginI::initPluginInstance(Plugin* plug, int c)
       {
       channel = c;
-      if(plug == 0) 
+      if(plug == 0)
       {
         printf("initPluginInstance: zero plugin\n");
         return true;
       }
       _plugin = plug;
-      
+
       _plugin->incReferences(1);
 
       #ifdef OSC_SUPPORT
-      _oscif.oscSetPluginI(this);      
+      _oscif.oscSetPluginI(this);
       #endif
-      
+
       QString inst("-" + QString::number(_plugin->instNo()));
       _name  = _plugin->name() + inst;
       _label = _plugin->label() + inst;
@@ -1926,51 +1953,51 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       }
       else
         instances = 1;
-        
+
       handle = new LADSPA_Handle[instances];
-      for(int i = 0; i < instances; ++i) 
+      for(int i = 0; i < instances; ++i)
       {
-        #ifdef PLUGIN_DEBUGIN 
+        #ifdef PLUGIN_DEBUGIN
         fprintf(stderr, "PluginI::initPluginInstance instance:%d\n", i);
         #endif
-        
-        handle[i] = _plugin->instantiate();
+
+        handle[i] = _plugin->instantiate(this);
         if(handle[i] == NULL)
           return true;
       }
 
       unsigned long ports = _plugin->ports();
-      
+
       controlPorts = 0;
       controlOutPorts = 0;
-      
-      for(unsigned long k = 0; k < ports; ++k) 
+
+      for(unsigned long k = 0; k < ports; ++k)
       {
         LADSPA_PortDescriptor pd = _plugin->portd(k);
         if(pd & LADSPA_PORT_CONTROL)
         {
           if(pd & LADSPA_PORT_INPUT)
             ++controlPorts;
-          else    
+          else
           if(pd & LADSPA_PORT_OUTPUT)
             ++controlOutPorts;
-        }      
+        }
       }
-      
+
       controls    = new Port[controlPorts];
       controlsOut = new Port[controlOutPorts];
-      
+
       unsigned long curPort = 0;
       unsigned long curOutPort = 0;
-      for(unsigned long k = 0; k < ports; ++k) 
+      for(unsigned long k = 0; k < ports; ++k)
       {
         LADSPA_PortDescriptor pd = _plugin->portd(k);
-        if(pd & LADSPA_PORT_CONTROL) 
+        if(pd & LADSPA_PORT_CONTROL)
         {
           if(pd & LADSPA_PORT_INPUT)
           {
             controls[curPort].idx = k;
-            float val = _plugin->defaultValue(k);    
+            float val = _plugin->defaultValue(k);
             controls[curPort].val    = val;
             controls[curPort].tmpVal = val;
             controls[curPort].enCtrl  = true;
@@ -2001,11 +2028,11 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
 void PluginI::connect(unsigned long ports, unsigned long offset, float** src, float** dst)
       {
-      unsigned long port = 0;  
+      unsigned long port = 0;
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioIn(k)) {
-                        _plugin->connectPort(handle[i], k, src[port] + offset);     
+                        _plugin->connectPort(handle[i], k, src[port] + offset);
                         port = (port + 1) % ports;
                         }
                   }
@@ -2014,7 +2041,7 @@ void PluginI::connect(unsigned long ports, unsigned long offset, float** src, fl
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioOut(k)) {
-                        _plugin->connectPort(handle[i], k, dst[port] + offset);     
+                        _plugin->connectPort(handle[i], k, dst[port] + offset);
                         port = (port + 1) % ports;  // overwrite output?
                         }
                   }
@@ -2063,7 +2090,7 @@ bool PluginI::setControl(const QString& s, float val)
       {
       for (unsigned long i = 0; i < controlPorts; ++i) {
             if (_plugin->portName(controls[i].idx) == s) {
-                  setParam(i, val);     
+                  setParam(i, val);
                   return false;
                   }
             }
@@ -2080,8 +2107,8 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
          Xml::xmlString(_plugin->lib()).toLatin1().constData(), Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
-         
-      for (unsigned long i = 0; i < controlPorts; ++i) {          
+
+      for (unsigned long i = 0; i < controlPorts; ++i) {
             unsigned long idx = controls[i].idx;
             QString s("control name=\"%1\" val=\"%2\" /");
             xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).arg(controls[i].tmpVal).toLatin1().constData());
@@ -2124,16 +2151,16 @@ bool PluginI::loadControl(Xml& xml)
                         if (tag == "name")
                               name = xml.s2();
                         else if (tag == "val")
-                              val = xml.s2().toFloat();     
+                              val = xml.s2().toFloat();
                         break;
                   case Xml::TagEnd:
                         if (tag == "control") {
                               if(_plugin)
-                              {		
-                                bool found = false;      
-                                for(unsigned long i = 0; i < controlPorts; ++i) 
+                              {
+                                bool found = false;
+                                for(unsigned long i = 0; i < controlPorts; ++i)
                                 {
-                                  if(_plugin->portName(controls[i].idx) == name) 
+                                  if(_plugin->portName(controls[i].idx) == name)
                                   {
                                     controls[i].val = controls[i].tmpVal = val;
                                     found = true;
@@ -2144,7 +2171,7 @@ bool PluginI::loadControl(Xml& xml)
                                   printf("PluginI:loadControl(%s, %f) controller not found\n",
                                     name.toLatin1().constData(), val);
                                   return false;
-                                }      
+                                }
                                 initControlValues = true;
                               }
                           }
@@ -2178,7 +2205,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                   case Xml::TagStart:
                         if (!readPreset && _plugin == 0) {
                               _plugin = MusEGlobal::plugins.find(file, label);
-                              
+
                               if (_plugin)
                               {
                                  if(initPluginInstance(_plugin, channel)) {
@@ -2186,9 +2213,9 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                     xml.parse1();
                                     printf("Error initializing plugin instance (%s, %s)\n",
                                        file.toLatin1().constData(), label.toLatin1().constData());
-                                    //break;      // Don't break - let it read any control tags. 
+                                    //break;      // Don't break - let it read any control tags.
                                     }
-                                 }    
+                                 }
                               }
                         if (tag == "control")
                               loadControl(xml);
@@ -2203,7 +2230,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                   showGui(flag);
                               }
                         else if (tag == "nativegui") {
-                              // We can't tell OSC to show the native plugin gui 
+                              // We can't tell OSC to show the native plugin gui
                               //  until the parent track is added to the lists.
                               // OSC needs to find the plugin in the track lists.
                               // Use this 'pending' flag so it gets done later.
@@ -2254,13 +2281,13 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                          file.toLatin1().constData(), label.toLatin1().constData());
                                       return true;
                                     }
-				    
+
                                     if (initPluginInstance(_plugin, channel))
-                                    {  
+                                    {
                                       printf("Error initializing plugin instance (%s, %s)\n",
                                         file.toLatin1().constData(), label.toLatin1().constData());
                                       return true;
-                                    }  
+                                    }
                                     }
                               if (_gui)
                                     _gui->updateValues();
@@ -2321,8 +2348,19 @@ bool PluginI::guiVisible()
 
 void PluginI::showNativeGui()
 {
+
+#ifdef LV2_SUPPORT
+  if(plugin() && plugin()->isLV2Plugin())
+  {
+    if(((LV2PluginWrapper *)plugin())->nativeGuiVisible(this))
+       ((LV2PluginWrapper *)plugin())->showNativeGui(this, false);
+    else
+       ((LV2PluginWrapper *)plugin())->showNativeGui(this, true);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
-  if (_plugin) 
+  if (_plugin)
   {
         if (_oscif.oscGuiVisible())
                 _oscif.oscShowGui(false);
@@ -2330,18 +2368,25 @@ void PluginI::showNativeGui()
                 _oscif.oscShowGui(true);
   }
   #endif
-  _showNativeGuiPending = false;  
+  _showNativeGuiPending = false;
 }
 
 void PluginI::showNativeGui(bool flag)
 {
+#ifdef LV2_SUPPORT
+  if(plugin() && plugin()->isLV2Plugin())
+  {
+    ((LV2PluginWrapper *)plugin())->showNativeGui(this, flag);
+    return;
+  }
+#endif
   #ifdef OSC_SUPPORT
-  if(_plugin) 
+  if(_plugin)
   {
     _oscif.oscShowGui(flag);
-  }  
+  }
   #endif
-  _showNativeGuiPending = false;  
+  _showNativeGuiPending = false;
 }
 
 //---------------------------------------------------------
@@ -2350,10 +2395,14 @@ void PluginI::showNativeGui(bool flag)
 
 bool PluginI::nativeGuiVisible()
 {
+#ifdef LV2_SUPPORT
+    if(plugin() && plugin()->isLV2Plugin())
+      return ((LV2PluginWrapper *)plugin())->nativeGuiVisible(this);
+#endif
   #ifdef OSC_SUPPORT
   return _oscif.oscGuiVisible();
-  #endif    
-  
+  #endif
+
   return false;
 }
 
@@ -2375,7 +2424,7 @@ void PluginIBase::deleteGui()
   {
     delete _gui;
     _gui = 0;
-  }  
+  }
 }
 
 //---------------------------------------------------------
@@ -2384,7 +2433,7 @@ void PluginIBase::deleteGui()
 
 void PluginI::enableAllControllers(bool v)
 {
-  for(unsigned long i = 0; i < controlPorts; ++i) 
+  for(unsigned long i = 0; i < controlPorts; ++i)
     controls[i].enCtrl = v;
 }
 
@@ -2392,8 +2441,8 @@ void PluginI::enableAllControllers(bool v)
 //   titlePrefix
 //---------------------------------------------------------
 
-QString PluginI::titlePrefix() const    
-{ 
+QString PluginI::titlePrefix() const
+{
   if (_track)
     return _track->name() + QString(": ");
   else return ":";
@@ -2410,7 +2459,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
   unsigned long sample = 0;
 
   // Must make this detectable for dssi vst effects.
-  const bool usefixedrate = _plugin->_isDssiVst;  
+  const bool usefixedrate = _plugin->_isDssiVst;
 
   // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
@@ -2423,7 +2472,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
   AutomationType at = AUTO_OFF;
   CtrlListList* cll = NULL;
   ciCtrlList icl_first;
-  if(_track) 
+  if(_track)
   {
     at = _track->automationType();
     cll = _track->controller();
@@ -2436,7 +2485,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
   // Special for plugins: Deal with tmpVal. TODO: Get rid of tmpVal, maybe by using the FIFO...
   for(unsigned long k = 0; k < controlPorts; ++k)
     controls[k].val = controls[k].tmpVal;
-  
+
   int cur_slice = 0;
   while(sample < n)
   {
@@ -2519,10 +2568,20 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
         else
           controls[k].val = ci.sVal;
 
+#ifdef LV2_SUPPORT
+        if(_plugin->isLV2Plugin())
+        {
+           for(int i = 0; i < instances; ++i)
+           {
+              (reinterpret_cast<LV2PluginWrapper *>(_plugin))->setLastStateControls(handle [i], k, true, false, true, 0.0f);
+           }
+        }
+#endif
+
         controls[k].tmpVal = controls[k].val;  // Special for plugins: Deal with tmpVal.
 
 #ifdef PLUGIN_DEBUGIN_PROCESS
-        printf("PluginI::apply k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, ci.eFrame, nsamp);
+        printf("PluginI::apply k:%lu sample:%lu nextFrame:%d nsamp:%lu val:%f\n", k, sample, ci.eFrame, nsamp, controls[k].val);
 #endif
       }
     }
@@ -2590,6 +2649,20 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(_track && _id != -1)
         _track->setPluginCtrlVal(genACnum(_id, v.idx), v.value);
+
+#ifdef LV2_SUPPORT
+      if(v.fromGui)
+      {
+         if(_plugin->isLV2Plugin())
+         {
+            for(int i = 0; i < instances; ++i)
+            {
+               (reinterpret_cast<LV2PluginWrapper *>(_plugin))->setLastStateControls(handle [i], v.idx, true, true, false, v.value);
+            }
+         }
+      }
+#endif
+
     }
 
     if(found && !usefixedrate) // If a control FIFO item was found, takes priority over automation controller stream.
@@ -2624,10 +2697,10 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
 #ifdef OSC_SUPPORT
 int Plugin::oscConfigure(LADSPA_Handle handle, const char* key, const char* value)
       {
-      #ifdef PLUGIN_DEBUGIN 
+      #ifdef PLUGIN_DEBUGIN
       printf("Plugin::oscConfigure effect plugin label:%s key:%s value:%s\n", plugin->Label, key, value);
       #endif
-      
+
       #ifdef DSSI_SUPPORT
       if(!dssi_descr || !dssi_descr->configure)
             return 0;
@@ -2636,7 +2709,7 @@ int Plugin::oscConfigure(LADSPA_Handle handle, const char* key, const char* valu
          strlen(DSSI_RESERVED_CONFIGURE_PREFIX))) {
             fprintf(stderr, "Plugin::oscConfigure OSC: UI for plugin '%s' attempted to use reserved configure key \"%s\", ignoring\n",
                plugin->Label, key);
-               
+
             return 0;
             }
 
@@ -2644,7 +2717,7 @@ int Plugin::oscConfigure(LADSPA_Handle handle, const char* key, const char* valu
       if (message) {
             printf("Plugin::oscConfigure on configure '%s' '%s', plugin '%s' returned error '%s'\n",
                key, value, plugin->Label, message);
-            
+
             free(message);
             }
 
@@ -2656,10 +2729,10 @@ int Plugin::oscConfigure(LADSPA_Handle handle, const char* key, const char* valu
       //      }
 
       #endif // DSSI_SUPPORT
-      
+
       return 0;
 }
-      
+
 //---------------------------------------------------------
 //   oscConfigure
 //---------------------------------------------------------
@@ -2670,7 +2743,7 @@ int PluginI::oscConfigure(const char *key, const char *value)
         return 0;
 
       // This is pretty much the simplest legal implementation of
-      // configure in a DSSI host. 
+      // configure in a DSSI host.
 
       // The host has the option to remember the set of (key,value)
       // pairs associated with a particular instance, so that if it
@@ -2679,21 +2752,21 @@ int PluginI::oscConfigure(const char *key, const char *value)
       // restore state without any input from a GUI.  Any real-world GUI
       // host will probably want to do that.  This host doesn't have any
       // concept of restoring an instance from one run to the next, so
-      // we don't bother remembering these at all. 
+      // we don't bother remembering these at all.
 
-      #ifdef PLUGIN_DEBUGIN 
+      #ifdef PLUGIN_DEBUGIN
       printf("PluginI::oscConfigure effect plugin name:%s label:%s key:%s value:%s\n", _name.toLatin1().constData(), _label.toLatin1().constData(), key, value);
       #endif
-      
+
       #ifdef DSSI_SUPPORT
       // FIXME: Don't think this is right, should probably do as example shows below.
       for(int i = 0; i < instances; ++i)
         _plugin->oscConfigure(handle[i], key, value);
       #endif // DSSI_SUPPORT
-      
+
       return 0;
 }
-      
+
 //---------------------------------------------------------
 //   oscUpdate
 //---------------------------------------------------------
@@ -2703,40 +2776,40 @@ int PluginI::oscUpdate()
       #ifdef DSSI_SUPPORT
       // Send project directory.
       _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
-      
+
       /* DELETETHIS 20
       // Send current string configuration parameters.
       StringParamMap& map = synti->stringParameters();
       int i = 0;
-      for(ciStringParamMap r = map.begin(); r != map.end(); ++r) 
+      for(ciStringParamMap r = map.begin(); r != map.end(); ++r)
       {
         _oscIF.oscSendConfigure(r->first.c_str(), r->second.c_str());
-        // Avoid overloading the GUI if there are lots and lots of params. 
+        // Avoid overloading the GUI if there are lots and lots of params.
         if((i+1) % 50 == 0)
           usleep(300000);
-        ++i;      
-      }  
-      
+        ++i;
+      }
+
       // Send current bank and program.
       unsigned long bank, prog;
       synti->currentProg(&prog, &bank, 0);
       _oscIF.oscSendProgram(prog, bank, true); // "true" means "force"
       */
-      
+
       // FIXME: TESTING FLAM: I have to put a delay because flammer hasn't opened yet.
       // How to make sure gui is ready?
       usleep(300000);
 
       // Send current control values.
-      for(unsigned long i = 0; i < controlPorts; ++i) 
+      for(unsigned long i = 0; i < controlPorts; ++i)
       {
         _oscif.oscSendControl(controls[i].idx, controls[i].val, true /*force*/);
-        // Avoid overloading the GUI if there are lots and lots of ports. 
+        // Avoid overloading the GUI if there are lots and lots of ports.
         if((i+1) % 50 == 0)
           usleep(300000);
       }
       #endif // DSSI_SUPPORT
-      
+
       return 0;
 }
 
@@ -2746,37 +2819,37 @@ int PluginI::oscUpdate()
 
 int PluginI::oscControl(unsigned long port, float value)
 {
-  #ifdef PLUGIN_DEBUGIN  
-  printf("PluginI::oscControl received oscControl port:%lu val:%f\n", port, value);   
+  #ifdef PLUGIN_DEBUGIN
+  printf("PluginI::oscControl received oscControl port:%lu val:%f\n", port, value);
   #endif
-  
+
   if(port >= _plugin->rpIdx.size())
   {
     fprintf(stderr, "PluginI::oscControl: port number:%lu is out of range of index list size:%zd\n", port, _plugin->rpIdx.size());
     return 0;
   }
-  
+
   // Convert from DSSI port number to control input port index.
   unsigned long cport = _plugin->rpIdx[port];
-    
+
   if((int)cport == -1)
   {
     fprintf(stderr, "PluginI::oscControl: port number:%lu is not a control input\n", port);
     return 0;
   }
-  
+
   // Record automation:
-  // Take care of this immediately, because we don't want the silly delay associated with 
+  // Take care of this immediately, because we don't want the silly delay associated with
   //  processing the fifo one-at-a-time in the apply().
-  // NOTE: With some vsts we don't receive control events until the user RELEASES a control. 
+  // NOTE: With some vsts we don't receive control events until the user RELEASES a control.
   // So the events all arrive at once when the user releases a control.
   // That makes this pretty useless... But what the heck...
   if(_track && _id != -1)
   {
     unsigned long id = genACnum(_id, cport);
     _track->recordAutomation(id, value);
-  } 
-   
+  }
+
   // (From DSSI module).
   // p3.3.39 Set the DSSI control input port's value.
   // Observations: With a native DSSI synth like LessTrivialSynth, the native GUI's controls do not change the sound at all
@@ -2810,16 +2883,16 @@ int PluginI::oscControl(unsigned long port, float value)
   /* DELETETHIS 12
   const DSSI_Descriptor* dssi = synth->dssi;
   const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
-  
+
   ciMidiCtl2LadspaPort ip = synth->port2MidiCtlMap.find(cport);
   if(ip != synth->port2MidiCtlMap.end())
   {
     // TODO: TODO: Update midi MusE's midi controller knobs, sliders, boxes etc with a call to the midi port's setHwCtrlState() etc.
-    // But first we need a ladspa2MidiValue() function!  ... 
+    // But first we need a ladspa2MidiValue() function!  ...
     //
     //
-    //float val = ladspa2MidiValue(ld, i, ?, ?); 
-  
+    //float val = ladspa2MidiValue(ld, i, ?, ?);
+
   }
   */
 
@@ -2845,21 +2918,21 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       if(!geometrySave.isNull())
         setGeometry(geometrySave);
-      
+
       QVBoxLayout* layout = new QVBoxLayout(this);
-    
+
       tabBar = new QTabBar(this);
       tabBar->setToolTip(tr("Plugin categories.\nRight-click on tabs to manage.\nRight-click on plugins to add/remove from a category."));
       tabBar->addTab("All");
       for (QList<QString>::iterator it=MusEGlobal::plugin_group_names.begin(); it!=MusEGlobal::plugin_group_names.end(); it++)
         tabBar->addTab(*it);
-      
-      
+
+
       pList  = new QTreeWidget(this);
-      
+
       pList->setColumnCount(12);
-      // "Note: In order to avoid performance issues, it is recommended that sorting 
-      //   is enabled after inserting the items into the tree. Alternatively, you could 
+      // "Note: In order to avoid performance issues, it is recommended that sorting
+      //   is enabled after inserting the items into the tree. Alternatively, you could
       //   also insert the items into a list before inserting the items into the tree. "
       QStringList headerLabels;
       headerLabels << tr("Type");
@@ -2877,20 +2950,20 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       pList->setHeaderLabels(headerLabels);
 
-      pList->headerItem()->setToolTip(4,  tr("Audio inputs"));      
-      pList->headerItem()->setToolTip(5,  tr("Audio outputs"));      
-      pList->headerItem()->setToolTip(6,  tr("Control inputs"));      
-      pList->headerItem()->setToolTip(7,  tr("Control outputs"));      
-      pList->headerItem()->setToolTip(8,  tr("In-place capable"));      
-      pList->headerItem()->setToolTip(9,  tr("ID number"));      
-      
+      pList->headerItem()->setToolTip(4,  tr("Audio inputs"));
+      pList->headerItem()->setToolTip(5,  tr("Audio outputs"));
+      pList->headerItem()->setToolTip(6,  tr("Control inputs"));
+      pList->headerItem()->setToolTip(7,  tr("Control outputs"));
+      pList->headerItem()->setToolTip(8,  tr("In-place capable"));
+      pList->headerItem()->setToolTip(9,  tr("ID number"));
+
       pList->setRootIsDecorated(false);
       pList->setSelectionBehavior(QAbstractItemView::SelectRows);
       pList->setSelectionMode(QAbstractItemView::SingleSelection);
       pList->setAlternatingRowColors(true);
       pList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
       pList->setContextMenuPolicy(Qt::CustomContextMenu);
-      
+
       layout->addWidget(tabBar);
       layout->addWidget(pList);
 
@@ -2903,7 +2976,7 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       QBoxLayout* ok_lo = new QVBoxLayout;
       w5->addLayout(ok_lo);
-      
+
       okB     = new QPushButton(tr("Ok"), this);
       okB->setDefault(true);
       QPushButton* cancelB = new QPushButton(tr("Cancel"), this);
@@ -2949,7 +3022,7 @@ PluginDialog::PluginDialog(QWidget* parent)
             case SEL_M:   onlyM->setChecked(true);   break;
             case SEL_ALL: allPlug->setChecked(true); break;
             }
-      
+
       tabBar->setCurrentIndex(selectedGroup);
       tabBar->setContextMenuPolicy(Qt::ActionsContextMenu);
       newGroupAction= new QAction(tr("&create new group"),tabBar);
@@ -2958,14 +3031,14 @@ PluginDialog::PluginDialog(QWidget* parent)
       tabBar->addAction(newGroupAction);
       tabBar->addAction(delGroupAction);
       tabBar->addAction(renGroupAction);
-      
+
       if (selectedGroup==0)
       {
 				delGroupAction->setEnabled(false);
 				renGroupAction->setEnabled(false);
 			}
       //tabBar->setMovable(true); //not yet. need to find a way to forbid moving the zeroth tab
-      
+
 
       plugSelGroup->setToolTip(tr("Select which types of plugins should be visible in the list.<br>"
                              "Note that using mono plugins on stereo tracks is not a problem, two will be used in parallel.<br>"
@@ -2977,7 +3050,7 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       QBoxLayout* srch_lo = new QVBoxLayout;
       w5->addLayout(srch_lo);
-      
+
       QLabel *sortLabel = new QLabel(this);
       sortLabel->setText(tr("Search in 'Label' and 'Name':"));
       srch_lo->addSpacing(8);
@@ -2996,9 +3069,9 @@ PluginDialog::PluginDialog(QWidget* parent)
       //srch_lo->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Maximum));
 
       fillPlugs();
-      
+
       pList->setSortingEnabled(true);
-      
+
       if(listSave.isEmpty())
       {
         int sizes[] = { 80, 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
@@ -3036,7 +3109,7 @@ void PluginDialog::plistContextMenu(const QPoint& point)
     QMenu* menu = new MusEGui::PopupMenu(this, true);
     QSignalMapper* mapper = new QSignalMapper(this);
     menu->addAction(new MusEGui::MenuTitleItem(tr("Associated categories"), menu));
-    
+
     if (tabBar->count()==1)
     {
       QAction* tmp=menu->addAction(tr("You need to define some categories first."));
@@ -3054,15 +3127,15 @@ void PluginDialog::plistContextMenu(const QPoint& point)
       }
       connect(mapper, SIGNAL(mapped(int)), this, SLOT(groupMenuEntryToggled(int)));
     }
-    
+
     menu->exec(mapToGlobal(point));
-    
+
     delete mapper;
     delete menu;
-    
+
     if (selectedGroup!=0 && !group_info->contains(selectedGroup)) // we removed the entry from the currently visible group
       fillPlugs();
-    
+
     group_info=NULL;
   }
 }
@@ -3157,7 +3230,7 @@ void PluginDialog::saveSettings()
                 found = true;
                 break;
                 }
-        if(!found)        
+        if(!found)
           sortItems.push_front(sortBox->currentText());
         }
 
@@ -3165,7 +3238,7 @@ void PluginDialog::saveSettings()
   if(hdr)
     listSave = hdr->saveState();
 
-  geometrySave = geometry();      
+  geometrySave = geometry();
 }
 
 //---------------------------------------------------------
@@ -3209,7 +3282,7 @@ void PluginDialog::tabChanged(int index)
 {
   renGroupAction->setEnabled(index!=0);
   delGroupAction->setEnabled(index!=0);
-  
+
   selectedGroup=index;
   fillPlugs();
 }
@@ -3218,18 +3291,18 @@ void PluginDialog::tabMoved(int from, int to)
 {
 //all the below doesn't work :/
 /*  static bool recurse=false;
-  
+
   if (!recurse)
   {
     if (from==0 && to!=0) {recurse=true; tabBar->moveTab(to, from);}
     if (from!=0 && to==0) {recurse=true; tabBar->moveTab(from, to);}
   }
   recurse=false;*/
-  
-  
+
+
    //if ((from==0 && to!=0) || (from!=0 && to==0)) { tabBar->setMovable(false); tabBar->setMovable(true); }
    printf("**** %i -> %i\n", from, to);
-  
+
   //FINDMICH TODO
 }
 
@@ -3241,15 +3314,15 @@ void PluginDialog::fillPlugs()
     for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
        if (selectedGroup==0 || MusEGlobal::plugin_groups.get(*i).contains(selectedGroup))
        {
-          unsigned long ai = i->inports();       
-          unsigned long ao = i->outports();
-          unsigned long ci = i->controlInPorts();
-          unsigned long co = i->controlOutPorts();
+          unsigned long ai = (*i)->inports();
+          unsigned long ao = (*i)->outports();
+          unsigned long ci = (*i)->controlInPorts();
+          unsigned long co = (*i)->controlOutPorts();
           bool found = false;
           QString sb_txt = sortBox->currentText().toLower();
-          if(sb_txt.isEmpty() || i->label().toLower().contains(sb_txt) || i->name().toLower().contains(sb_txt))
+          if(sb_txt.isEmpty() || (*i)->label().toLower().contains(sb_txt) || (*i)->name().toLower().contains(sb_txt))
                 found = true;
-          
+
           bool addFlag = false;
           switch (selectedPlugType) {
                 case SEL_SM: // stereo & mono
@@ -3273,29 +3346,33 @@ void PluginDialog::fillPlugs()
                 }
           if (found && addFlag) {
                 QTreeWidgetItem* item = new QTreeWidgetItem;
-                if(i->isDssiSynth())
+                if((*i)->isDssiSynth())
                   type_name = tr("dssi synth");
-                else if(i->isDssiPlugin())
+                else if((*i)->isDssiPlugin())
                   type_name = tr("dssi effect");
+				else if((*i)->isLV2Synth())
+                  type_name = tr("LV2 synth");
+                else if((*i)->isLV2Plugin())
+                  type_name = tr("LV2 effect");
                 else
                   type_name = tr("ladspa");
                 item->setText(0,  type_name);
-                item->setText(1,  i->lib());
-                item->setText(2,  i->label());
-                item->setText(3,  i->name());
+                item->setText(1,  (*i)->lib());
+                item->setText(2,  (*i)->label());
+                item->setText(3,  (*i)->name());
                 item->setText(4,  QString().setNum(ai));
                 item->setText(5,  QString().setNum(ao));
                 item->setText(6,  QString().setNum(ci));
                 item->setText(7,  QString().setNum(co));
-                item->setText(8,  QString().setNum(i->inPlaceCapable()));
-                item->setText(9,  QString().setNum(i->id()));
-                item->setText(10,  i->maker());
-                item->setText(11, i->copyright());
+                item->setText(8,  QString().setNum((*i)->inPlaceCapable()));
+                item->setText(9,  QString().setNum((*i)->id()));
+                item->setText(10,  (*i)->maker());
+                item->setText(11, (*i)->copyright());
                 pList->addTopLevelItem(item);
                 }
           }
 }
-  
+
 //---------------------------------------------------------
 //   getPlugin
 //---------------------------------------------------------
@@ -3306,12 +3383,12 @@ MusECore::Plugin* PluginDialog::getPlugin(QWidget* parent)
       MusECore::Plugin* p = 0;
       int rv = dialog->exec();
       if(rv)
-        p = dialog->value(); 
+        p = dialog->value();
       delete dialog;
       return p;
       }
 
-// TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt 
+// TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt
 // Resource System in Qt documentation - ORCAN
 //const char* presetOpenText = "<img source=\"fileopen\"> "
 //      "Click this button to load a saved <em>preset</em>.";
@@ -3338,7 +3415,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       QAction* fileOpen = new QAction(QIcon(*openIconS), tr("Load Preset"), this);
       connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
       tools->addAction(fileOpen);
-      
+
       QAction* fileSave = new QAction(QIcon(*saveIconS), tr("Save Preset"), this);
       connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
       tools->addAction(fileSave);
@@ -3352,7 +3429,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       connect(onOff, SIGNAL(toggled(bool)), SLOT(bypassToggled(bool)));
       tools->addAction(onOff);
 
-      // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt 
+      // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt
       // Resource System in Qt documentation - ORCAN
       fileOpen->setWhatsThis(tr(presetOpenText));
       onOff->setWhatsThis(tr(presetBypassText));
@@ -3384,7 +3461,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                   const char* name = ba.constData();
                   if (*name !='P')
                         continue;
-                  unsigned long parameter;                        
+                  unsigned long parameter;
                   int rv = sscanf(name, "P%lu", &parameter);
                   if(rv != 1)
                     continue;
@@ -3394,26 +3471,26 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
             gw   = new GuiWidgets[nobj];
             nobj = 0;
             QSignalMapper* mapper = new QSignalMapper(this);
-            
-            // FIXME: There's no unsigned for gui params. We would need to limit nobj to MAXINT.    
-            // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.    
-            
+
+            // FIXME: There's no unsigned for gui params. We would need to limit nobj to MAXINT.
+            // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.
+
             connect(mapper, SIGNAL(mapped(int)), SLOT(guiParamChanged(int)));
-            
+
             QSignalMapper* mapperPressed        = new QSignalMapper(this);
             QSignalMapper* mapperReleased       = new QSignalMapper(this);
             QSignalMapper* mapperContextMenuReq = new QSignalMapper(this);
             connect(mapperPressed, SIGNAL(mapped(int)), SLOT(guiParamPressed(int)));
             connect(mapperReleased, SIGNAL(mapped(int)), SLOT(guiParamReleased(int)));
             connect(mapperContextMenuReq, SIGNAL(mapped(int)), SLOT(guiContextMenuReq(int)));
-            
+
             for (it = l.begin(); it != l.end(); ++it) {
                   obj = *it;
                   QByteArray ba = obj->objectName().toLatin1();
                   const char* name = ba.constData();
                   if (*name !='P')
                         continue;
-                  unsigned long parameter;                         
+                  unsigned long parameter;
                   int rv = sscanf(name, "P%lu", &parameter);
                 if(rv != 1)
                     continue;
@@ -3422,7 +3499,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                   mapperPressed->setMapping(obj, nobj);
                   mapperReleased->setMapping(obj, nobj);
                   mapperContextMenuReq->setMapping(obj, nobj);
-                  
+
                   gw[nobj].widget  = (QWidget*)obj;
                   gw[nobj].param   = parameter;
                   gw[nobj].type    = -1;
@@ -3432,7 +3509,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         gw[nobj].type = GuiWidgets::SLIDER;
                         ((Slider*)obj)->setId(nobj);
                         ((Slider*)obj)->setCursorHoming(true);
-                        for(unsigned long i = 0; i < nobj; i++)             
+                        for(unsigned long i = 0; i < nobj; i++)
                         {
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
                             ((DoubleLabel*)gw[i].widget)->setSlider((Slider*)obj);
@@ -3450,8 +3527,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                           if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
                           {
                             ((DoubleLabel*)obj)->setSlider((Slider*)gw[i].widget);
-                            break;  
-                          }  
+                            break;
+                          }
                         }
                         connect((DoubleLabel*)obj, SIGNAL(valueChanged(double,int)), mapper, SLOT(map()));
                         }
@@ -3461,14 +3538,14 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         connect((QCheckBox*)obj, SIGNAL(toggled(bool)), mapper, SLOT(map()));
                         connect((QCheckBox*)obj, SIGNAL(pressed()), mapperPressed, SLOT(map()));
                         connect((QCheckBox*)obj, SIGNAL(released()), mapperReleased, SLOT(map()));
-                        connect((QCheckBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)), 
+                        connect((QCheckBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)),
                                 mapperContextMenuReq, SLOT(map()));
                         }
                   else if (strcmp(obj->metaObject()->className(), "QComboBox") == 0) {
                         gw[nobj].type = GuiWidgets::QCOMBOBOX;
                         gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
                         connect((QComboBox*)obj, SIGNAL(activated(int)), mapper, SLOT(map()));
-                        connect((QComboBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)), 
+                        connect((QComboBox*)obj, SIGNAL(customContextMenuRequested(const QPoint &)),
                                 mapperContextMenuReq, SLOT(map()));
                         }
                   else {
@@ -3483,20 +3560,20 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
             view = new QScrollArea;
             view->setWidgetResizable(true);
             setCentralWidget(view);
-            
+
             mw = new QWidget;
             QGridLayout* grid = new QGridLayout;
             grid->setSpacing(2);
 
             mw->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
-            unsigned long n  = plugin->parameters();   
+            unsigned long n  = plugin->parameters();
             params = new GuiParam[n];
 
             QFontMetrics fm = fontMetrics();
             int h           = fm.height() + 4;
 
-            for (unsigned long i = 0; i < n; ++i) {       
+            for (unsigned long i = 0; i < n; ++i) {
                   QLabel* label = 0;
                   LADSPA_PortRangeHint range = plugin->range(i);
                   double lower = 0.0;     // default values
@@ -3537,7 +3614,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
                         Slider* s = new Slider(0, "param", Qt::Horizontal,
                            Slider::None, color);
-                           
+
                         s->setCursorHoming(true);
                         s->setId(i);
                         s->setSizeHint(200, 8);
@@ -3747,7 +3824,7 @@ void PluginGui::ctrlReleased(int param)
           (at == AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
                                 !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
-      
+
       params[param].pressed = false;
 }
 
@@ -3846,14 +3923,14 @@ void PluginGui::load()
                         if (mode == 0 && tag == "muse")
                               mode = 1;
                         else if (mode == 1 && tag == "plugin") {
-                              
+
                               if(plugin->readConfiguration(xml, true))
                               {
                                 QMessageBox::critical(this, QString("MusE"),
                                   tr("Error reading preset. Might not be right type for this plugin"));
                                 goto ende;
                               }
-                                
+
                               mode = 0;
                               }
                         else
@@ -3866,7 +3943,7 @@ void PluginGui::load()
                         {
                               plugin->updateControllers();
                               goto ende;
-                        }     
+                        }
                   default:
                         break;
                   }
@@ -3938,7 +4015,7 @@ void PluginGui::setOn(bool val)
 void PluginGui::updateValues()
       {
       if (params) {
-            for (unsigned long i = 0; i < plugin->parameters(); ++i) {       
+            for (unsigned long i = 0; i < plugin->parameters(); ++i) {
                   GuiParam* gp = &params[i];
                   if (gp->type == GuiParam::GUI_SLIDER) {
                         double lv = plugin->param(i);
@@ -3965,10 +4042,10 @@ void PluginGui::updateValues()
                   }
             }
       else if (gw) {
-            for (unsigned long i = 0; i < nobj; ++i) {      
+            for (unsigned long i = 0; i < nobj; ++i) {
                   QWidget* widget = gw[i].widget;
                   int type = gw[i].type;
-                  unsigned long param = gw[i].param;        
+                  unsigned long param = gw[i].param;
                   float val = plugin->param(param);
                   widget->blockSignals(true);
                   switch(type) {
@@ -4223,20 +4300,20 @@ void PluginGui::guiParamPressed(int idx)
 
 void PluginGui::guiParamReleased(int idx)
       {
-      unsigned long param  = gw[idx].param;    
+      unsigned long param  = gw[idx].param;
       int type   = gw[idx].type;
-      
+
       AutomationType at = AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
-      
+
       // Special for switch - don't enable controller until transport stopped.
       if ((at == AUTO_OFF) ||
           (at == AUTO_TOUCH && (type != GuiWidgets::QCHECKBOX ||
                                 !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
-      
+
       //int id = plugin->id();
       //if(!track || id == -1)
       //  return;
@@ -4245,7 +4322,7 @@ void PluginGui::guiParamReleased(int idx)
       //  would have to be used, and changed to use CheckBox and ComboBox
       //  instead of QCheckBox and QComboBox, since both of those would
       //  need customization (Ex. QCheckBox doesn't check on click).  // RECHECK Qt4 it does?
-      /* 
+      /*
       switch(type) {
             case GuiWidgets::QCHECKBOX:
                     double val = (double)((CheckBox*)w)->isChecked();
@@ -4257,7 +4334,7 @@ void PluginGui::guiParamReleased(int idx)
                   break;
             }
       */
-      
+
       gw[idx].pressed = false;
       }
 
@@ -4313,14 +4390,14 @@ void PluginGui::guiSliderReleased(int idx)
       {
       int param  = gw[idx].param;
       QWidget *w = gw[idx].widget;
-      
+
       AutomationType at = AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
-      
+
       int id = plugin->id();
-      
+
       if(track && id != -1)
       {
         id = MusECore::genACnum(id, param);
@@ -4328,14 +4405,14 @@ void PluginGui::guiSliderReleased(int idx)
         double val = ((Slider*)w)->value();
         track->stopAutoRecord(id, val);
       }
-      
+
       if (at == AUTO_OFF ||
           at == AUTO_TOUCH)
         plugin->enableController(param, true);
-      
+
       gw[idx].pressed = false;
       }
-    
+
 //---------------------------------------------------------
 //   guiSliderRightClicked
 //---------------------------------------------------------
@@ -4363,9 +4440,9 @@ void PluginGui::guiContextMenuReq(int idx)
 QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent, const QString & name)
 {
   if(className == QString("MusEGui::DoubleLabel"))
-    return new DoubleLabel(parent, name.toLatin1().constData()); 
+    return new DoubleLabel(parent, name.toLatin1().constData());
   if(className == QString("MusEGui::Slider"))
-    return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal); 
+    return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal);
 
   return QUiLoader::createWidget(className, parent, name);
 }
@@ -4378,33 +4455,33 @@ namespace MusEGlobal {
 static void writePluginGroupNames(int level, MusECore::Xml& xml)
 {
   xml.tag(level++, "group_names");
-  
+
   for (QList<QString>::iterator it=plugin_group_names.begin(); it!=plugin_group_names.end(); it++)
     xml.strTag(level, "name", *it);
-  
+
   xml.etag(--level, "group_names");
 }
 
 static void writePluginGroupMap(int level, MusECore::Xml& xml)
 {
   using MusECore::PluginGroups;
-  
+
   xml.tag(level++, "group_map");
-  
+
   for (PluginGroups::iterator it=plugin_groups.begin(); it!=plugin_groups.end(); it++)
 		if (!it.value().empty())
 		{
 			xml.tag(level++, "entry");
-			
+
 			xml.strTag(level, "lib", it.key().first);
 			xml.strTag(level, "label", it.key().second);
-			
+
 			for (QSet<int>::iterator it2=it.value().begin(); it2!=it.value().end(); it2++)
 				xml.intTag(level, "group", *it2);
 
 			xml.etag(--level, "entry");
 		}
-  
+
   xml.etag(--level, "group_map");
 }
 
@@ -4414,20 +4491,20 @@ void writePluginGroupConfiguration(int level, MusECore::Xml& xml)
 
   writePluginGroupNames(level, xml);
   writePluginGroupMap(level, xml);
-  
+
   xml.etag(--level, "plugin_groups");
 }
 
 static void readPluginGroupNames(MusECore::Xml& xml)
 {
 	plugin_group_names.clear();
-	
+
 	for (;;)
 	{
 		MusECore::Xml::Token token = xml.parse();
 		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
-			
+
 		const QString& tag = xml.s1();
 		switch (token)
 		{
@@ -4437,27 +4514,27 @@ static void readPluginGroupNames(MusECore::Xml& xml)
 				else
 					xml.unknown("readPluginGroupNames");
 				break;
-				
+
 			case MusECore::Xml::TagEnd:
 				if (tag == "group_names")
 					return;
-				
+
 			default:
 				break;
 		}
 	}
 }
-  
+
 static void readPluginGroupMap(MusECore::Xml& xml)
 {
 	plugin_groups.clear();
-	
+
 	for (;;)
 	{
 		MusECore::Xml::Token token = xml.parse();
 		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
-			
+
 		const QString& tag = xml.s1();
 		switch (token)
 		{
@@ -4468,13 +4545,13 @@ static void readPluginGroupMap(MusECore::Xml& xml)
 					QString label;
 					QSet<int> groups;
 					bool read_lib=false, read_label=false;
-					
+
 					for (;;)
 					{
 						MusECore::Xml::Token token = xml.parse();
 						if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 							break;
-							
+
 						const QString& tag = xml.s1();
 						switch (token)
 						{
@@ -4494,11 +4571,11 @@ static void readPluginGroupMap(MusECore::Xml& xml)
 								else
 									xml.unknown("readPluginGroupMap");
 								break;
-								
+
 							case MusECore::Xml::TagEnd:
 								if (tag == "entry")
 									goto done_reading_entry;
-								
+
 							default:
 								break;
 						}
@@ -4514,11 +4591,11 @@ done_reading_entry:
 				else
 					xml.unknown("readPluginGroupMap");
 				break;
-				
+
 			case MusECore::Xml::TagEnd:
 				if (tag == "group_map")
 					return;
-				
+
 			default:
 				break;
 		}
@@ -4532,7 +4609,7 @@ void readPluginGroupConfiguration(MusECore::Xml& xml)
 		MusECore::Xml::Token token = xml.parse();
 		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
-			
+
 		const QString& tag = xml.s1();
 		switch (token)
 		{
@@ -4544,15 +4621,15 @@ void readPluginGroupConfiguration(MusECore::Xml& xml)
 				else
 					xml.unknown("readPluginGroupConfiguration");
 				break;
-				
+
 			case MusECore::Xml::TagEnd:
 				if (tag == "plugin_groups")
 					return;
-				
+
 			default:
 				break;
 		}
 	}
 }
-  
+
 } // namespace MusEGlobal

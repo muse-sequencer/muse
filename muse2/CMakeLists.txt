@@ -18,7 +18,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the
 #  Free Software Foundation, Inc.,
-#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#  51 Franklin Street, Fifth Floor, Bosto
+#cmakedefine LV2GUI_SUPPORTn, MA 02110-1301 USA
 #=============================================================================
 
 include(FindPkgConfig)
@@ -51,7 +52,7 @@ if (NOT LIB_INSTALL_DIR)
 endif (NOT LIB_INSTALL_DIR)
 
 if (LIB_SUFFIX)
-        message(" Install libraries to: " ${LIB_INSTALL_DIR} )          
+        message(" Install libraries to: " ${LIB_INSTALL_DIR} )
 endif (LIB_SUFFIX)
 
 IF(NOT DEFINED SHARE_INSTALL_PREFIX)
@@ -62,7 +63,7 @@ ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 #set(CMAKE_BUILD_TYPE release)
 
 # If no CMAKE_BUILD_TYPE is given on the command line,
-#  cmake either uses the cached value, or 'empty' (plain un-opt build). 
+#  cmake either uses the cached value, or 'empty' (plain un-opt build).
 # And yet the only way a user can reset a cached CMAKE_BUILD_TYPE
 #  is with "-DCMAKE_BUILD_TYPE=". So we cannot interfere with this.
 # We should probably not attempt to do this at all.
@@ -132,6 +133,8 @@ option ( ENABLE_DSSI        "Enable Disposable Soft Synth Interface (dssi) (OSC 
 option ( ENABLE_VST         "Enable VST/win support (deprecated)"                                OFF)
 option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE "Set VST header type is Vestige"                                         ON)
+option ( ENABLE_LV2        "Enable LV2 plugins and synths support" ON)
+option ( ENABLE_LV2GUI        "Enable LV2 plugins and synths GUI support" ON)
 option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_EXPERIMENTAL "Enable building experimental features."                             OFF)
 option ( ENABLE_PYTHON      "Enable Python control support."                                      OFF)
@@ -220,7 +223,7 @@ PKG_CHECK_MODULES(SAMPLERATE REQUIRED samplerate>=0.1.0)
 include_directories(${SAMPLERATE_INCLUDE_DIRS})
 
 ##
-## find libuuid 
+## find libuuid
 ##
 
 PKG_CHECK_MODULES(UUID REQUIRED uuid>=0.0.1)
@@ -242,7 +245,7 @@ include_directories(${JACK_INCLUDE_DIRS})
 ##
 
 ##
-## find LASH 
+## find LASH
 ##
 
 if (ENABLE_LASH)
@@ -250,7 +253,7 @@ if (ENABLE_LASH)
       if (LASH_FOUND)
             include_directories(${LASH_INCLUDE_DIRS})
             set(HAVE_LASH ON)
-      endif (LASH_FOUND)           
+      endif (LASH_FOUND)
 else (ENABLE_LASH)
       message("LASH disabled")
 endif (ENABLE_LASH)
@@ -328,7 +331,7 @@ if (ENABLE_VST_NATIVE)
         message("Native VST support enabled")
         set (VST_NATIVE_SUPPORT TRUE)
       endif (VST_HEADER_CHECK STREQUAL "VST_HEADER_CHECK-NOTFOUND")
-    
+
 else (ENABLE_VST_NATIVE)
       message("Native VST support disabled")
 endif (ENABLE_VST_NATIVE)
@@ -338,9 +341,24 @@ UNSET (VST_HEADER_CHECK CACHE)
 
 if (ENABLE_VST_VESTIGE)
   SET (VST_VESTIGE_SUPPORT TRUE)
-else (ENABLE_VST_VESTIGE) 
+else (ENABLE_VST_VESTIGE)
   SET (VST_VESTIGE_SUPPORT FALSE)
 endif (ENABLE_VST_VESTIGE)
+
+## LV2 support
+## check for lilv >= 0.16.0 and suil >= 0.6.16
+##
+
+if (ENABLE_LV2)
+      PKG_CHECK_MODULES(LV2 suil-0>=0.6.16 lilv-0>=0.16.0)
+      if (LV2_FOUND)
+            include_directories(${LV2_INCLUDE_DIRS})
+            set(LV2_SUPPORT ON)
+      endif (LV2_FOUND)
+else (ENABLE_LV2)
+      message("LV2 disabled")
+endif (ENABLE_LV2)
+
 
 ##
 ## TODO
@@ -451,7 +469,7 @@ ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
 set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions -fPIC ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce -fPIC ${CMAKE_CXX_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG -fPIC ${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -DQT_DEBUG -fPIC ${CMAKE_CXX_FLAGS_DEBUG}")
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
@@ -486,26 +504,26 @@ add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
 
 ##
-## Report errors and warnings and hints  
+## Report errors and warnings and hints
 ##
 
 message("\n")
 
 if (NOT ALSA_FOUND)
       message("** ERROR: alsa >= 0.9.0 is required, but development files were not found.")
-endif (NOT ALSA_FOUND)           
+endif (NOT ALSA_FOUND)
 
 if (NOT SNDFILE_FOUND)
       message("** ERROR: sndfile >= 1.0.0 is required, but development files were not found.")
-endif (NOT SNDFILE_FOUND)           
+endif (NOT SNDFILE_FOUND)
 
 if (NOT SAMPLERATE_FOUND)
       message("** ERROR: samplerate >= 0.1.0 is required, but development files were not found.")
-endif (NOT SAMPLERATE_FOUND)           
+endif (NOT SAMPLERATE_FOUND)
 
 if (NOT UUID_FOUND)
       message("** ERROR: uuid >= 0.0.1 is required, but development files were not found.")
-endif (NOT UUID_FOUND)           
+endif (NOT UUID_FOUND)
 
 if (NOT JACK_FOUND)
       message("** ERROR: jack >= 0.103 is required, but development files were not found.")
@@ -537,6 +555,10 @@ if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
         message("** WARNING: fluidsynth (>= 0.9.0) was enabled, but development files were not found.")
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 
+if (ENABLE_LV2 AND (NOT LV2_FOUND))
+        message("** WARNING: LV2 was enabled, but development files were not found (lilv-0>=0.18.0 and suil-0>=0.8.0).")
+endif (ENABLE_LV2 AND (NOT LV2_FOUND))
+
 message("")
 
 ## Show a summary of what we got
@@ -544,6 +566,7 @@ summary_add("Lash support" HAVE_LASH)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
+summary_add("LV2 support" LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
@@ -560,7 +583,7 @@ endif ( MODULES_BUILD_STATIC )
 if (NOT CMAKE_BUILD_TYPE)
     message(" Build type: CMAKE_BUILD_TYPE is empty. Plain un-optimized build.")
 else (NOT CMAKE_BUILD_TYPE)
-    message(" Build type: " ${CMAKE_BUILD_TYPE} )          
+    message(" Build type: " ${CMAKE_BUILD_TYPE} )
 endif (NOT CMAKE_BUILD_TYPE)
 message("")
 
