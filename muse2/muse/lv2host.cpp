@@ -533,7 +533,7 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
       }
       else if(i == synth->_fUiHost)
       {
-         _ifeatures [i].data = &state->extHost;         
+         _ifeatures [i].data = &state->extHost;
       }
       else if(i == synth->_fDataAccess)
       {
@@ -880,7 +880,6 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
          _fDataAccess = i; //must be the last!
       }
 
-
       _ppfeatures [i] = &_features [i];
    }
 
@@ -947,9 +946,6 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
          std::cerr << "plugin has port with unknown type - ignoring" << std::endl;
 #endif
       }
-
-
-
    }
 
    for(uint32_t i = 0; i < _controlInPorts.size(); ++i)
@@ -1201,7 +1197,7 @@ LV2SynthIF::LV2SynthIF(SynthI *s): SynthIF(s)
    _inports = 0;
    _outports = 0;
    _controls = NULL;
-   _controlsOut = NULL;   
+   _controlsOut = NULL;
    _midiEvent = NULL;
    _inportsControl = 0;
    _outportsControl = 0;
@@ -1215,7 +1211,7 @@ LV2SynthIF::LV2SynthIF(SynthI *s): SynthIF(s)
 
 bool LV2SynthIF::init(LV2Synth *s)
 {
-   _synth = s;   
+   _synth = s;
 
    if(snd_midi_event_new(MusEGlobal::segmentSize * 10, &_midiEvent) != 0)
    {
@@ -1227,7 +1223,7 @@ bool LV2SynthIF::init(LV2Synth *s)
 
    //use LV2Synth features as template
 
-   _uiState = new LV2PluginWrapper_State;   
+   _uiState = new LV2PluginWrapper_State;
    _uiState->uiHost = _synth->_uiHost;
    _uiState->inst = NULL;
    _uiState->widget = NULL;
@@ -2299,7 +2295,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
       bool found = false;
       unsigned long frame = 0;
-      unsigned long index = 0;      
+      unsigned long index = 0;
 
       // Get all control ring buffer items valid for this time period...
       while(!_controlFifo.isEmpty())
@@ -2349,7 +2345,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
          if(ports == 0)                     // Don't bother if not 'running'.
          {
-            _controls[index].val = v.value;   // Might as well at least update these.   
+            _controls[index].val = v.value;   // Might as well at least update these.
          }
          else
          {
