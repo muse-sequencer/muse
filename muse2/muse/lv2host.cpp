@@ -402,6 +402,60 @@ void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
    state->uiTimer->stopNextTime(false);
 }
 
+void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
+{
+   if(state != NULL)
+   {
+      size_t numControls = 0;
+      MusECore::Port *controls = NULL;
+
+      if(state->plugInst != NULL)
+      {
+         numControls = state->plugInst->controlPorts;
+         controls = state->plugInst->controls;
+
+      }
+      else if(state->sif != NULL)
+      {
+         numControls = state->sif->_inportsControl;
+         controls = state->sif->_controls;
+      }
+
+      if(numControls > 0)
+      {
+         assert(controls != NULL);
+      }
+
+      if(state->uiInst != NULL)
+      {
+
+         for(uint32_t i = 0; i < numControls; ++i)
+         {
+            if(state->controlTimers [i] > 0)
+            {
+               --state->controlTimers [i];
+               continue;
+            }
+            if(state->controlsMask [i])
+            {
+               state->controlsMask [i] = false;
+
+               if(state->lastControls [i] != controls [i].val)
+               {
+                  state->lastControls [i] = controls [i].val;
+                  suil_instance_port_event(state->uiInst,
+                                           controls [i].idx,
+                                           sizeof(float), 0,
+                                           &controls [i].val);
+               }
+            }
+         }
+      }
+   }
+}
+
+
+
 void LV2Synth::lv2ui_PortWrite(SuilController controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer)
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
@@ -2925,55 +2979,19 @@ void LV2PluginWrapper_Timer::run()
 
       while(_bRunning)
       {
-
-         if(_state->plugInst != NULL)
-         {
-            _numControls = _state->plugInst->controlPorts;
-            _controls = _state->plugInst->controls;
-
-         }
-         else if(_state->sif != NULL)
-         {
-            _numControls = _state->sif->_inportsControl;
-            _controls = _state->sif->_controls;
-         }
-
-         if(_numControls > 0)
-         {
-            assert(_controls != NULL);
-         }
-
          usleep(_msec * 1000);
 
-         if(_state->uiInst != NULL)
+         if(_state->widget != NULL && _state->uiInst != NULL)
          {
-
-            for(uint32_t i = 0; i < _numControls; ++i)               
+            if(_s->_hasExternalGui)
             {
-               if(_state->controlTimers [i] > 0)
-               {
-                  --_state->controlTimers [i];
-                  continue;
-               }
-               if(_state->controlsMask [i])
-               {
-                  _state->controlsMask [i] = false;
-
-                  if(_state->lastControls [i] != _controls [i].val)
-                  {
-                     _state->lastControls [i] = _controls [i].val;
-                     suil_instance_port_event(_state->uiInst,
-                                              _controls [i].idx,
-                                              sizeof(float), 0,
-                                              &_controls [i].val);
-                  }
-               }
+               LV2Synth::lv2ui_SendChangedControls(_state);
+               LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
             }
-         }
-
-         if(_s->_hasExternalGui && _state->widget != NULL && _state->uiInst != NULL)
-         {
-            LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
+            else if(_s->_hasGui)
+            {
+               (reinterpret_cast<LV2PluginWrapper_Window *>(_state->widget))->doChangeControls();
+            }
          }
       }
 
@@ -3010,12 +3028,32 @@ void LV2PluginWrapper_Timer::start(int msec)
 
 
 
+
 void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 {
    assert(_state != NULL);
    _state->uiTimer->stopNextTime(false);
    event->accept();
 }
+
+LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
+ : QMainWindow(), _state ( state )
+{
+   connect(this, SIGNAL(controlsChangePending()), this, SLOT(sendChangedControls()));
+}
+
+void LV2PluginWrapper_Window::doChangeControls()
+{
+   emit controlsChangePending();
+}
+
+void LV2PluginWrapper_Window::sendChangedControls()
+{
+   LV2Synth::lv2ui_SendChangedControls(_state);
+}
+
+
+
 
 
 LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s)
