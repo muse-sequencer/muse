@@ -905,14 +905,16 @@ LV2_Worker_Status LV2Synth::lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handl
 #endif
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 
-   assert(state->wrkEndWork != true);
+   //assert(state->wrkEndWork != true);
+   if(state->wrkEndWork != false)
+      return LV2_WORKER_ERR_UNKNOWN;
 
    state->wrkDataSize = size;
    state->wrkDataBuffer = data;
    if(MusEGlobal::audio->freewheel()) //dont wait for a thread. Do it now
       state->wrkThread->makeWork();
    else
-      state->wrkThread->scheduleWork();
+      return state->wrkThread->scheduleWork();
 
    return LV2_WORKER_SUCCESS;
 }
@@ -2705,11 +2707,11 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                _uiState->wrkIface->end_run(lilv_instance_get_handle(_handle));
             //notify worker about processes data (if any)
             if(_uiState->wrkIface && _uiState->wrkIface->work_response && _uiState->wrkEndWork)
-            {
-               _uiState->wrkEndWork = false;
-               _uiState->wrkIface->work_response(lilv_instance_get_handle(_handle), _uiState->wrkDataSize, _uiState->wrkDataBuffer);
+            {               
+               _uiState->wrkIface->work_response(lilv_instance_get_handle(_handle), _uiState->wrkDataSize, _uiState->wrkDataBuffer);               
                _uiState->wrkDataSize = 0;
                _uiState->wrkDataBuffer = NULL;
+               _uiState->wrkEndWork = false;
             }
 
 
@@ -3518,10 +3520,12 @@ void LV2PluginWrapper_Worker::run()
 
 }
 
-void LV2PluginWrapper_Worker::scheduleWork()
+LV2_Worker_Status LV2PluginWrapper_Worker::scheduleWork()
 {
-   assert(_mSem.available() == 0);
+   if(_mSem.available() != 0)
+      return LV2_WORKER_ERR_NO_SPACE;
    _mSem.release(1);
+   return LV2_WORKER_SUCCESS;
 
 }
 
