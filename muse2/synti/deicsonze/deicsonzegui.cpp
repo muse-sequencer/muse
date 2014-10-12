@@ -44,7 +44,7 @@
 #include "deicsonzegui.h"
 
 #include "plugin.h"
-///#include "plugingui.h"
+#include "plugindialog.h"
 #include "plugins/pandelay/pandelaymodel.h"
 
 //#include "deicsonzegui.h"

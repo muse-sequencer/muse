@@ -44,6 +44,7 @@
 #include "gconfig.h"
 #include "globaldefs.h"
 #include "plugin.h"
+#include "plugindialog.h"
 #include "filedialog.h"
 
 namespace MusEGui {

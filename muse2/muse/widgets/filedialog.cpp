@@ -111,6 +111,20 @@ void MFileDialog::globalToggled(bool flag)
       }
 
 //---------------------------------------------------------
+//   homeToggled
+//---------------------------------------------------------
+
+void MFileDialog::homeToggled(bool flag)
+      {
+      if (flag) {
+            buttons.readMidiPortsButton->setChecked(true);
+            readMidiPortsSaved = true;
+            setDirectory(QDir::home());
+            lastViewUsed = HOME_VIEW;
+            }
+      }
+
+//---------------------------------------------------------
 //   userToggled
 //---------------------------------------------------------
 
@@ -217,20 +231,24 @@ MFileDialog::MFileDialog(const QString& dir,
 #if QT_VERSION >= 0x040600
             buttons.globalButton->setIcon(*globalIcon);
             buttons.userButton->setIcon(*userIcon);
+            buttons.homeButton->setIcon(*userIcon);
             buttons.projectButton->setIcon(*projectIcon);
 #else
             buttons.globalButton->setIcon(style()->standardIcon(QStyle::SP_DirIcon));
-            buttons.userButton->setIcon(style()->standardIcon(QStyle::SP_DirHomeIcon));
+            buttons.userButton->setIcon(style()->standardIcon(QStyle::SP_DesktopIcon));
+            buttons.homeButton->setIcon(style()->standardIcon(QStyle::SP_DirHomeIcon));
             buttons.projectButton->setIcon(style()->standardIcon(QStyle::SP_DirOpenIcon));
 #endif	    
 
             buttons.globalButton->setAutoExclusive(true);
             buttons.userButton->setAutoExclusive(true);
             buttons.projectButton->setAutoExclusive(true);
+            buttons.homeButton->setAutoExclusive(true);
 
             connect(buttons.globalButton, SIGNAL(toggled(bool)), this, SLOT(globalToggled(bool)));
             connect(buttons.userButton, SIGNAL(toggled(bool)), this, SLOT(userToggled(bool)));
             connect(buttons.projectButton, SIGNAL(toggled(bool)), this, SLOT(projectToggled(bool)));
+            connect(buttons.homeButton, SIGNAL(toggled(bool)), this, SLOT(homeToggled(bool)));
             connect(this, SIGNAL(directoryEntered(const QString&)), SLOT(directoryChanged(const QString&)));
             connect(this, SIGNAL(currentChanged(const QString&)), SLOT(fileChanged(const QString&)));
 
@@ -244,7 +262,11 @@ MFileDialog::MFileDialog(const QString& dir,
                                  break;
 
                            case USER_VIEW:
-                                 buttons.userButton->setChecked(true); 
+                                 buttons.userButton->setChecked(true);
+                                 break;
+
+                           case HOME_VIEW:
+                                 buttons.homeButton->setChecked(true);
                                  break;
                         }
                   }
@@ -260,6 +282,9 @@ MFileDialog::MFileDialog(const QString& dir,
 
                         case USER_VIEW:
                               buttons.userButton->setChecked(true); 
+                              break;
+                        case HOME_VIEW:
+                              buttons.homeButton->setChecked(true);
                               break;
                         }
 

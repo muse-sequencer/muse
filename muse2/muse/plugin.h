@@ -46,7 +46,7 @@
 #include "controlfifo.h"
 
 #include "config.h"
- 
+
 #ifdef OSC_SUPPORT
 #include "osc.h"
 #endif
@@ -82,10 +82,10 @@ class MidiController;
 //---------------------------------------------------------
 
 class Plugin {
-   
+
    protected:
    friend class PluginI;
-      
+
       void* _handle;
       int _references;
       int _instNo;
@@ -97,29 +97,29 @@ class Plugin {
       QString _name;
       QString _maker;
       QString _copyright;
-      
+
       bool _isDssiSynth;
       bool _isDssi;
       // Hack: Special flag required.
       bool _isDssiVst;
-      
+
       #ifdef DSSI_SUPPORT
       const DSSI_Descriptor* dssi_descr;
       #endif
-      
+
       unsigned long _portCount;
       unsigned long _inports;
       unsigned long _outports;
       unsigned long _controlInPorts;
       unsigned long _controlOutPorts;
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
-      
+
       bool _inPlaceCapable;
-   
+
    public:
       Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false);
       ~Plugin();
-      
+
       QString label() const                        { return _label; }
       QString name() const                         { return _name; }
       unsigned long id() const                     { return _uniqueID; }
@@ -133,9 +133,9 @@ class Plugin {
       int incReferences(int);
       int instNo()                                 { return _instNo++;        }
 
-      bool isDssiPlugin() const { return _isDssi; }  
-      bool isDssiSynth() const  { return _isDssiSynth; }  
-      
+      bool isDssiPlugin() const { return _isDssi; }
+      bool isDssiSynth() const  { return _isDssiSynth; }
+
       LADSPA_Handle instantiate(); 
       void activate(LADSPA_Handle handle) {
             if (plugin && plugin->activate)
@@ -157,17 +157,17 @@ class Plugin {
             if(plugin)
               plugin->run(handle, n);
             }
-      
+
       #ifdef OSC_SUPPORT
       int oscConfigure(LADSPA_Handle handle, const char* key, const char* value);
       #endif
-      
+
       unsigned long ports() { return _portCount; }
-      
+
       LADSPA_PortDescriptor portd(unsigned long k) const {
             return plugin ? plugin->PortDescriptors[k] : 0;
             }
-      
+
       LADSPA_PortRangeHint range(unsigned long i) {
             // FIXME:
             //return plugin ? plugin->PortRangeHints[i] : 0; DELETETHIS
@@ -178,17 +178,17 @@ class Plugin {
       void range(unsigned long i, float*, float*) const;
       CtrlValueType ctrlValueType(unsigned long i) const;
       CtrlList::Mode ctrlMode(unsigned long i) const;
-      
+
       const char* portName(unsigned long i) {
             return plugin ? plugin->PortNames[i] : 0;
             }
-            
+
       unsigned long inports() const         { return _inports; }
       unsigned long outports() const        { return _outports; }
       unsigned long controlInPorts() const  { return _controlInPorts; }
       unsigned long controlOutPorts() const { return _controlOutPorts; }
       bool inPlaceCapable() const           { return _inPlaceCapable; }
-      
+
       const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
       };
 
@@ -200,11 +200,11 @@ class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
   public:
     QSet<int>& get(QString a, QString b) { return (*this)[(QPair<QString,QString>(a,b))]; }
     QSet<int>& get(const Plugin& p) { return (*this)[(QPair<QString,QString>(p.lib(),p.label()))]; }
-    
+
     void shift_left(int first, int last);
     void shift_right(int first, int last);
     void erase(int index);
-  
+
   private:
     void replace_group(int old, int now);
 };
@@ -216,11 +216,11 @@ class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
 
 class PluginList : public std::list<Plugin> {
    public:
-      void add(QFileInfo* fi, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false) 
+      void add(QFileInfo* fi, const LADSPA_Descriptor* d, bool isDssi = false, bool isDssiSynth = false)
       {
         push_back(Plugin(fi, d, isDssi, isDssiSynth));
       }
-      
+
       Plugin* find(const QString&, const QString&);
       PluginList() {}
       };
@@ -238,10 +238,10 @@ struct Port {
       };
 
 //---------------------------------------------------------
-//   PluginIBase 
+//   PluginIBase
 //---------------------------------------------------------
 
-class PluginIBase 
+class PluginIBase
 {
    protected:
       ControlFifo _controlFifo;
@@ -250,48 +250,48 @@ class PluginIBase
       void makeGui();
 
    public:
-      PluginIBase(); 
-      virtual ~PluginIBase(); 
-      virtual bool on() const = 0;       
-      virtual void setOn(bool val) = 0;   
-      virtual unsigned long pluginID() = 0;        
+      PluginIBase();
+      virtual ~PluginIBase();
+      virtual bool on() const = 0;
+      virtual void setOn(bool val) = 0;
+      virtual unsigned long pluginID() = 0;
       virtual int id() = 0;
-      virtual QString pluginLabel() const = 0;  
+      virtual QString pluginLabel() const = 0;
       virtual QString name() const = 0;
       virtual QString lib() const = 0;
       virtual QString dirPath() const = 0;
       virtual QString fileName() const = 0;
       virtual QString titlePrefix() const = 0;
-      
-      virtual AudioTrack* track() = 0;          
-      
-      virtual void enableController(unsigned long i, bool v = true) = 0;   
-      virtual bool controllerEnabled(unsigned long i) const = 0;          
+
+      virtual AudioTrack* track() = 0;
+
+      virtual void enableController(unsigned long i, bool v = true) = 0;
+      virtual bool controllerEnabled(unsigned long i) const = 0;
       virtual void enableAllControllers(bool v = true) = 0;
       virtual void updateControllers() = 0;
-      
+
       virtual void activate() = 0;
       virtual void deactivate() = 0;
-      
+
       virtual void writeConfiguration(int level, Xml& xml) = 0;
       virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
-      
+
       virtual bool addScheduledControlEvent(unsigned long i, float val, unsigned frame);    // returns true if event cannot be delivered
-      virtual unsigned long parameters() const = 0;                  
+      virtual unsigned long parameters() const = 0;
       virtual unsigned long parametersOut() const = 0;
       virtual void setParam(unsigned long i, float val) = 0;
-      virtual float param(unsigned long i) const = 0;            
+      virtual float param(unsigned long i) const = 0;
       virtual float paramOut(unsigned long i) const = 0;
       virtual const char* paramName(unsigned long i) = 0;
       virtual const char* paramOutName(unsigned long i) = 0;
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
       virtual LADSPA_PortRangeHint range(unsigned long i) = 0;
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i) = 0;
-      
+
       virtual CtrlValueType ctrlValueType(unsigned long i) const = 0;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const = 0;
       QString dssi_ui_filename() const;
-      
+
       MusEGui::PluginGui* gui() const { return _gui; }
       void deleteGui();
 };
@@ -315,9 +315,9 @@ class PluginI : public PluginIBase {
       Port* controls;
       Port* controlsOut;
 
-      unsigned long controlPorts;      
-      unsigned long controlOutPorts;    
-      
+      unsigned long controlPorts;
+      unsigned long controlOutPorts;
+
       bool _on;
       bool initControlValues;
       QString _name;
@@ -329,7 +329,7 @@ class PluginI : public PluginIBase {
       bool _showNativeGuiPending;
 
       void init();
-      
+
    public:
       PluginI();
       virtual ~PluginI();
@@ -337,23 +337,23 @@ class PluginI : public PluginIBase {
       Plugin* plugin() const { return _plugin; }
       bool on() const        { return _on; }
       void setOn(bool val)   { _on = val; }
-      
+
       void setTrack(AudioTrack* t)  { _track = t; }
       AudioTrack* track()           { return _track; }
-      unsigned long pluginID()      { return _plugin->id(); }    
+      unsigned long pluginID()      { return _plugin->id(); }
       void setID(int i);
       int id()                      { return _id; }
       void updateControllers();
-      
+
       bool initPluginInstance(Plugin*, int channels);
       void setChannels(int);
-      void connect(unsigned long ports, unsigned long offset, float** src, float** dst); 
-      void apply(unsigned pos, unsigned long n, unsigned long ports, float** bufIn, float** bufOut);    
+      void connect(unsigned long ports, unsigned long offset, float** src, float** dst);
+      void apply(unsigned pos, unsigned long n, unsigned long ports, float** bufIn, float** bufOut);
 
-      void enableController(unsigned long i, bool v = true)   { controls[i].enCtrl = v; }      
-      bool controllerEnabled(unsigned long i) const           { return controls[i].enCtrl; }   
+      void enableController(unsigned long i, bool v = true)   { controls[i].enCtrl = v; }
+      bool controllerEnabled(unsigned long i) const           { return controls[i].enCtrl; }
       void enableAllControllers(bool v = true);
-      
+
       void activate();
       void deactivate();
       QString pluginLabel() const    { return _plugin->label(); }
@@ -366,30 +366,30 @@ class PluginI : public PluginIBase {
 
       #ifdef OSC_SUPPORT
       OscEffectIF& oscIF() { return _oscif; }
-      
+
       int oscControl(unsigned long dssiPort, float val);
       int oscConfigure(const char *key, const char *val);
       int oscUpdate();
       #endif
-      
+
       void writeConfiguration(int level, Xml& xml);
       bool readConfiguration(Xml& xml, bool readPreset=false);
       bool loadControl(Xml& xml);
-      bool setControl(const QString& s, float val);    
+      bool setControl(const QString& s, float val);
       void showGui();
       void showGui(bool);
-      bool isDssiPlugin() const { return _plugin->isDssiPlugin(); }  
+      bool isDssiPlugin() const { return _plugin->isDssiPlugin(); }
       void showNativeGui();
       void showNativeGui(bool);
       bool isShowNativeGuiPending() { return _showNativeGuiPending; }
       bool guiVisible();
       bool nativeGuiVisible();
 
-      unsigned long parameters() const           { return controlPorts; }    
+      unsigned long parameters() const           { return controlPorts; }
       unsigned long parametersOut() const           { return controlOutPorts; }
-      void setParam(unsigned long i, float val);  
+      void setParam(unsigned long i, float val);
       void putParam(unsigned long i, float val) { controls[i].val = controls[i].tmpVal = val; }
-      float param(unsigned long i) const        { return controls[i].val; }       
+      float param(unsigned long i) const        { return controls[i].val; }
       float paramOut(unsigned long i) const        { return controlsOut[i].val; }
       float defaultValue(unsigned long param) const;
       const char* paramName(unsigned long i)     { return _plugin->portName(controls[i].idx); }
@@ -426,19 +426,19 @@ class Pipeline : public std::vector<PluginI*> {
       QString label(int idx) const;
       QString name(int idx) const;
       void showGui(int, bool);
-      bool isDssiPlugin(int) const; 
+      bool isDssiPlugin(int) const;
       bool has_dssi_ui(int idx) const;
       void showNativeGui(int, bool);
       void deleteGui(int idx);
       void deleteAllGuis();
       bool guiVisible(int);
       bool nativeGuiVisible(int);
-      void apply(unsigned pos, unsigned long ports, unsigned long nframes, float** buffer);  
+      void apply(unsigned pos, unsigned long ports, unsigned long nframes, float** buffer);
       void move(int idx, bool up);
       bool empty(int idx) const;
       void setChannels(int);
       bool addScheduledControlEvent(int track_ctrl_id, float val, unsigned frame); // returns true if event cannot be delivered
-      void enableController(int track_ctrl_id, bool en); 
+      void enableController(int track_ctrl_id, bool en);
       bool controllerEnabled(int track_ctrl_id);
       };
 
@@ -459,7 +459,6 @@ extern CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port);
 
 namespace MusEGui {
 class DoubleLabel;
-class PluginGui;
 
 //---------------------------------------------------------
 //   PluginLoader
@@ -468,7 +467,7 @@ class PluginGui;
 class PluginLoader : public QUiLoader
 {
    public:
-      virtual QWidget* createWidget(const QString & className, QWidget * parent = 0, const QString & name = QString()); 
+      virtual QWidget* createWidget(const QString & className, QWidget * parent = 0, const QString & name = QString());
       PluginLoader(QObject * parent = 0) : QUiLoader(parent) {}
 };
 
@@ -483,7 +482,7 @@ struct GuiParam {
       int type;
       int hint;
       bool pressed;
-      
+
       MusEGui::DoubleLabel* label;
       QWidget* actuator;  // Slider or Toggle Button (SWITCH)
       };
@@ -498,7 +497,7 @@ struct GuiWidgets {
             };
       QWidget* widget;
       int type;
-      unsigned long param;   
+      unsigned long param;
       bool pressed;
       };
 
@@ -510,10 +509,10 @@ class PluginGui : public QMainWindow {
       Q_OBJECT
 
       MusECore::PluginIBase* plugin;        // plugin instance
-      
+
       GuiParam* params;
       GuiParam* paramsOut;
-      unsigned long nobj;             // number of widgets in gw      
+      unsigned long nobj;             // number of widgets in gw
       GuiWidgets* gw;
 
       QAction* onOff;
@@ -545,74 +544,14 @@ class PluginGui : public QMainWindow {
 
    public:
       PluginGui(MusECore::PluginIBase*);
-      
+
       ~PluginGui();
       void setOn(bool);
       void updateValues();
       };
 
 
-
-
-
-//---------------------------------------------------------
-//   PluginDialog
-//---------------------------------------------------------
-
-enum { SEL_SM, SEL_S, SEL_M, SEL_ALL };
-
-class PluginDialog : public QDialog {
-      Q_OBJECT
-
-   public:
-      PluginDialog(QWidget* parent=0);
-      static MusECore::Plugin* getPlugin(QWidget* parent);
-      MusECore::Plugin* value();
-
-   public slots:
-      void accept();
-      void reject();
-
-   private slots:
-      void enableOkB();
-      void pluginTypeSelectionChanged(QAbstractButton*);
-      void tabChanged(int);
-      void tabMoved(int,int);
-      void fillPlugs();
-      
-      void newGroup();
-      void delGroup();
-      void renameGroup();
-      void plistContextMenu(const QPoint&);
-      void groupMenuEntryToggled(int i);
-
-   private:
-      QComboBox* sortBox;
-      QTabBar* tabBar;
-      QTreeWidget* pList;
-      QRadioButton* allPlug;
-      QRadioButton* onlyM;
-      QRadioButton* onlyS;
-      QRadioButton* onlySM;
-      QPushButton *okB;
-      
-      QAction* newGroupAction;
-      QAction* delGroupAction;
-      QAction* renGroupAction;
-      
-      
-      void saveSettings();
-
-      static int selectedPlugType;
-      static int selectedGroup; // 0 means "show all"
-      static QStringList sortItems;
-      static QRect geometrySave;
-      static QByteArray listSave;
-      
-      QSet<int>* group_info; //holds the group-set of the plugin which shall be affected by the plistContextMenu.
-};
-
-}
+} // namespace MusEGui
 
 
 namespace MusEGlobal {

@@ -62,36 +62,15 @@ class MFileDialog : public QFileDialog {
       void globalToggled(bool);
       void userToggled(bool);
       void projectToggled(bool);
+      void homeToggled(bool);
 
    public:
-      enum ViewType { GLOBAL_VIEW, PROJECT_VIEW, USER_VIEW }; //!< The three different viewtypes
+      enum ViewType { GLOBAL_VIEW, PROJECT_VIEW, USER_VIEW, HOME_VIEW };
       static ViewType lastViewUsed;
       FileDialogButtonsWidget buttons;
       MFileDialog(const QString& dir, const QString& filter = QString::null,
          QWidget* parent = 0, bool writeFlag = false);
       };
-
-/* ORCAN - Disable previeww for now. It is not available in qt4. We will
-           need to implement it ourselves.
-//---------------------------------------------------------
-//   ContentsPreview
-//---------------------------------------------------------
-
-class ContentsPreview : public QWidget, public Q3FilePreview {
-      Q_OBJECT
-
-      virtual void previewUrl(const Q3Url &url);
-      QString path;
-      QPixmap* bg;
-
-   public:
-      ContentsPreview(QWidget* parent, const char* name=0)
-         : QWidget(parent, name) {
-            bg = 0;
-            }
-      ~ContentsPreview();
-      };
-*/
 
 QString getSaveFileName(const QString& startWidth, const char** filters,
          QWidget* parent, const QString& name, bool* writeWinState=NULL);

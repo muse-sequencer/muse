@@ -77,6 +77,7 @@ QT4_WRAP_CPP (widget_mocs
       pitchedit.h  
       pitchlabel.h  
       pixmap_button.h
+      plugindialog.h
       popupmenu.h  
       # posedit.h  
       poslabel.h  
@@ -141,6 +142,7 @@ file (GLOB widgets_ui_files
       mtrackinfobase.ui
       pastedialogbase.ui
       pasteeventsdialogbase.ui
+      plugindialogbase.ui
       projectcreate.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
@@ -205,6 +207,7 @@ file (GLOB widgets_source_files
       pitchedit.cpp 
       pitchlabel.cpp 
       pixmap_button.cpp
+      plugindialog.cpp
       popupmenu.cpp 
       # posedit.cpp 
       poslabel.cpp
