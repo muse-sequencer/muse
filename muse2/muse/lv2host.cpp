@@ -102,29 +102,25 @@ namespace MusECore
 LilvWorld *lilvWorld = 0;
 static int uniqueID = 1;
 
-//uri cache structure. Taken from jalv host source
+//uri cache structure.
 typedef struct
 {
    LilvNode *atom_AtomPort;
-   LilvNode *atom_Chunk;
-   LilvNode *atom_Sequence;
    LilvNode *ev_EventPort;
    LilvNode *lv2_AudioPort;
    LilvNode *lv2_ControlPort;
    LilvNode *lv2_InputPort;
    LilvNode *lv2_OutputPort;
    LilvNode *lv2_connectionOptional;
-   LilvNode *lv2_control;
-   LilvNode *lv2_name;
-   LilvNode *midi_MidiEvent;
-   LilvNode *pg_group;
-   LilvNode *pset_Preset;
-   LilvNode *rdfs_label;
-   LilvNode *work_interface;
-   LilvNode *work_schedule;
    LilvNode *host_uiType;
    LilvNode *ext_uiType;
    LilvNode *ext_d_uiType;
+   LilvNode *lv2_portDiscrete;
+   LilvNode *lv2_portContinuous;
+   LilvNode *lv2_portLogarithmic;
+   LilvNode *lv2_portInteger;
+   LilvNode *lv2_portTrigger;
+   LilvNode *lv2_portToggled;
    LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
 } CacheNodes;
 
@@ -201,28 +197,22 @@ void initLV2()
 
    lilvWorld = lilv_world_new();
 
-   // taken from jalv.c
-   /* Cache URIs for concepts we'll use */
    lv2CacheNodes.atom_AtomPort          = lilv_new_uri(lilvWorld, LV2_ATOM__AtomPort);
-   lv2CacheNodes.atom_Chunk             = lilv_new_uri(lilvWorld, LV2_ATOM__Chunk);
-   lv2CacheNodes.atom_Sequence          = lilv_new_uri(lilvWorld, LV2_ATOM__Sequence);
    lv2CacheNodes.ev_EventPort           = lilv_new_uri(lilvWorld, LV2_EVENT__EventPort);
    lv2CacheNodes.lv2_AudioPort          = lilv_new_uri(lilvWorld, LV2_CORE__AudioPort);
    lv2CacheNodes.lv2_ControlPort        = lilv_new_uri(lilvWorld, LV2_CORE__ControlPort);
    lv2CacheNodes.lv2_InputPort          = lilv_new_uri(lilvWorld, LV2_CORE__InputPort);
    lv2CacheNodes.lv2_OutputPort         = lilv_new_uri(lilvWorld, LV2_CORE__OutputPort);
    lv2CacheNodes.lv2_connectionOptional = lilv_new_uri(lilvWorld, LV2_CORE__connectionOptional);
-   lv2CacheNodes.lv2_control            = lilv_new_uri(lilvWorld, LV2_CORE__control);
-   lv2CacheNodes.lv2_name               = lilv_new_uri(lilvWorld, LV2_CORE__name);
-   lv2CacheNodes.midi_MidiEvent         = lilv_new_uri(lilvWorld, LV2_MIDI__MidiEvent);
-   lv2CacheNodes.pg_group               = lilv_new_uri(lilvWorld, LV2_PORT_GROUPS__group);
-   lv2CacheNodes.pset_Preset            = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
-   lv2CacheNodes.rdfs_label             = lilv_new_uri(lilvWorld, LILV_NS_RDFS "label");
-   lv2CacheNodes.work_interface         = lilv_new_uri(lilvWorld, LV2_WORKER__interface);
-   lv2CacheNodes.work_schedule          = lilv_new_uri(lilvWorld, LV2_WORKER__schedule);
    lv2CacheNodes.host_uiType            = lilv_new_uri(lilvWorld, LV2_UI_HOST_URI);
    lv2CacheNodes.ext_uiType             = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL);
    lv2CacheNodes.ext_d_uiType           = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL_DEPRECATED);
+   lv2CacheNodes.lv2_portContinuous     = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__continuousCV);
+   lv2CacheNodes.lv2_portDiscrete       = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__discreteCV);
+   lv2CacheNodes.lv2_portLogarithmic    = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__logarithmic);
+   lv2CacheNodes.lv2_portInteger        = lilv_new_uri(lilvWorld, LV2_CORE__integer);
+   lv2CacheNodes.lv2_portTrigger        = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__trigger);
+   lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -1032,7 +1022,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    {
       const LilvPort *_port = lilv_plugin_get_port_by_index(_handle, i);
       LilvNode *_nPname = lilv_port_get_name(_handle, _port);
-      QString _portName;
+      const char *_portName;
 
       if(_nPname != 0)
       {
@@ -1062,8 +1052,18 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 
       if(lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_ControlPort))
       {
-         cPorts->push_back(LV2ControlPort(_port, i, 0.0f, _portName));
-         //lilv_instance_connect_port(_handle, i, &_PluginControls [i]);
+         LV2ControlPortType _cType = LV2_PORT_CONTINUOUS;
+         if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portDiscrete))
+            _cType = LV2_PORT_DISCRETE;
+         else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portInteger))
+            _cType = LV2_PORT_INTEGER;
+         else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portTrigger)
+                 || lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portToggled))
+            _cType = LV2_PORT_TRIGER;
+         else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portLogarithmic))
+            _cType = LV2_PORT_LOGARITHMIC;
+
+         cPorts->push_back(LV2ControlPort(_port, i, 0.0f, _portName, _cType));
       }
       else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_AudioPort))
       {
@@ -1073,12 +1073,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       {
 
          mPorts->push_back(LV2MidiPort(_port, i, _portName, true /* old api is on */, NULL));
-         //lilv_instance_connect_port(_handle, i, NULL);
       }
       else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.atom_AtomPort))
       {
          mPorts->push_back(LV2MidiPort(_port, i, _portName, false /* old api is off */, NULL));
-         //lilv_instance_connect_port(_handle, i, NULL);
       }
       else if(!optional)
       {
@@ -1434,7 +1432,7 @@ bool LV2SynthIF::init(LV2Synth *s)
       _controlInPorts [i].minVal = _PluginControlsMin [idx];
       _controlInPorts [i].maxVal = _PluginControlsMax [idx];
 
-      _controlsNameMap.insert(std::pair<QString, size_t>(_controlInPorts [i].name, i));
+      _controlsNameMap.insert(std::pair<QString, size_t>(QString(_controlInPorts [i].cName), i));
 
       int ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + i;
 
@@ -1460,9 +1458,29 @@ bool LV2SynthIF::init(LV2Synth *s)
       }
 
       cl->setRange(_PluginControlsMin [idx], _PluginControlsMax [idx]);
-      cl->setName(QString(_controlInPorts [i].name));
-      cl->setValueType(VAL_LINEAR);
-      cl->setMode(CtrlList::INTERPOLATE);
+      cl->setName(QString(_controlInPorts [i].cName));
+      CtrlValueType vt = VAL_LINEAR;
+      switch(_controlInPorts [i].cType)
+      {
+      case LV2_PORT_CONTINUOUS:
+         vt = VAL_LINEAR;
+         break;
+      case LV2_PORT_DISCRETE:
+      case LV2_PORT_INTEGER:
+         vt = VAL_INT;
+         break;
+      case LV2_PORT_LOGARITHMIC:
+         vt = VAL_LOG;
+         break;
+      case LV2_PORT_TRIGER:
+         vt = VAL_BOOL;
+         break;
+      default:
+         break;
+      }
+
+      cl->setValueType(vt);
+      cl->setMode((_controlInPorts [i].cType == LV2_PORT_CONTINUOUS) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE);
 
       lilv_instance_connect_port(_handle, idx, &_controls [i].val);
    }
@@ -2910,7 +2928,7 @@ void LV2SynthIF::write(int level, Xml &xml) const
    }
    for(size_t c = 0; c < _inportsControl; c++)
    {
-      _uiState->iStateValues.insert(_controlInPorts [c].name, QPair<QString, QVariant>(QString(""), QVariant((double)_controls[c].val)));
+      _uiState->iStateValues.insert(QString(_controlInPorts [c].cName), QPair<QString, QVariant>(QString(""), QVariant((double)_controls[c].val)));
    }
 
    QByteArray arrOut;
@@ -3433,13 +3451,43 @@ const char *LV2PluginWrapper::portName(unsigned long i)
    return lilv_node_as_string(lilv_port_get_name(_synth->_handle, lilv_plugin_get_port_by_index(_synth->_handle, i)));
 }
 
-CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long) const
+CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 {
-   return VAL_LINEAR;
+   CtrlValueType vt = VAL_LINEAR;
+   std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
+   assert(it != _synth->_idxToControlMap.end());
+   i = it->second;
+   assert(i < _controlInPorts);
+
+   switch(_synth->_controlInPorts [i].cType)
+   {
+   case LV2_PORT_CONTINUOUS:
+      vt = VAL_LINEAR;
+      break;
+   case LV2_PORT_DISCRETE:
+   case LV2_PORT_INTEGER:
+      vt = VAL_INT;
+      break;
+   case LV2_PORT_LOGARITHMIC:
+      vt = VAL_LOG;
+      break;
+   case LV2_PORT_TRIGER:
+      vt = VAL_BOOL;
+      break;
+   default:
+      break;
+   }
+
+   return vt;
 }
-CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long) const
+CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
 {
-   return CtrlList::INTERPOLATE;
+   std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
+   assert(it != _synth->_idxToControlMap.end());
+   i = it->second;
+   assert(i < _controlInPorts);
+
+   return (_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
 bool LV2PluginWrapper::hasNativeGui()
 {
