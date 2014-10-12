@@ -761,7 +761,7 @@ public:
     {}
 
     void run();
-    void scheduleWork();
+    LV2_Worker_Status scheduleWork();
     void makeWork();
 };
 
