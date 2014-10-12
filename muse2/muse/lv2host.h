@@ -553,6 +553,7 @@ public:
     static void lv2ui_SendChangedControls(LV2PluginWrapper_State *state);
     static void lv2state_FillFeatures ( LV2PluginWrapper_State *state );
     static void lv2state_PostInstantiate ( LV2PluginWrapper_State *state );
+    static void lv2state_FreeState(LV2PluginWrapper_State *state);
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
@@ -674,6 +675,7 @@ struct LV2PluginWrapper_State {
       inst(NULL),
       lastControls(NULL),
       controlsMask(NULL),
+      lastControlsOut(NULL),
       plugInst(NULL),
       sif(NULL),
       synth(NULL),
@@ -686,7 +688,9 @@ struct LV2PluginWrapper_State {
       wrkDataBuffer(0),
       wrkThread(NULL),
       wrkEndWork(false),
-      controlTimers(NULL)
+      controlTimers(NULL),
+      guiLock(),
+      deleteLater(false)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -704,6 +708,7 @@ struct LV2PluginWrapper_State {
     LV2PluginWrapper *inst;
     float *lastControls;
     bool *controlsMask;
+    float *lastControlsOut;
     PluginI *plugInst;
     LV2SynthIF *sif;
     LV2Synth *synth;
@@ -719,10 +724,13 @@ struct LV2PluginWrapper_State {
     LV2_Worker_Interface *wrkIface;
     bool wrkEndWork;
     int *controlTimers;
+    QMutex guiLock;
+    bool deleteLater;
 };
 
 class LV2PluginWrapper_Timer :public QThread
 {
+   Q_OBJECT
 private:
     LV2PluginWrapper_State *_state;
     bool _bRunning;
@@ -730,15 +738,15 @@ private:
     uint32_t _numControls;
     int _msec;
 public:
-    explicit LV2PluginWrapper_Timer ( LV2PluginWrapper_State *s ) : QThread(),
-       _state ( s ),
-       _bRunning (false),
-       _controls(NULL),
-       _numControls(0),
-       _msec(30){}
+    explicit LV2PluginWrapper_Timer ( LV2PluginWrapper_State *s );
     void run();
-    void stopNextTime(bool _wait = true);
+    bool stopNextTime(bool _wait = true);
     void start ( int msec );
+ public slots:
+    void doDeleteTimer();
+ signals:
+    void deletePending();
+
 };
 
 class LV2PluginWrapper_Worker :public QThread
