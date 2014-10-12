@@ -404,26 +404,37 @@ void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
 
 void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
 {
-   if(state != NULL)
+   if(state != NULL && state->uiInst != NULL)
    {
       size_t numControls = 0;
       MusECore::Port *controls = NULL;
+      size_t numControlsOut = 0;
+      MusECore::Port *controlsOut = NULL;
 
       if(state->plugInst != NULL)
       {
          numControls = state->plugInst->controlPorts;
          controls = state->plugInst->controls;
+         numControlsOut = state->plugInst->controlOutPorts;
+         controlsOut = state->plugInst->controlsOut;
 
       }
       else if(state->sif != NULL)
       {
          numControls = state->sif->_inportsControl;
          controls = state->sif->_controls;
+         numControlsOut = state->sif->_outportsControl;
+         controlsOut = state->sif->_controlsOut;
       }
 
       if(numControls > 0)
       {
          assert(controls != NULL);
+      }
+
+      if(numControlsOut > 0)
+      {
+         assert(controlsOut != NULL);
       }
 
       if(state->uiInst != NULL)
@@ -449,6 +460,19 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
                                            &controls [i].val);
                }
             }
+         }
+
+         for(uint32_t i = 0; i < numControlsOut; ++i)
+         {
+            if(state->lastControlsOut [i] != controlsOut [i].val)
+            {
+               state->lastControlsOut [i] = controlsOut [i].val;
+               suil_instance_port_event(state->uiInst,
+                                        controlsOut [i].idx,
+                                        sizeof(float), 0,
+                                        &controlsOut [i].val);
+            }
+
          }
       }
    }
@@ -504,12 +528,12 @@ void LV2Synth::lv2ui_PortWrite(SuilController controller, uint32_t port_index, u
       // NOTE: With some vsts we don't receive control events until the user RELEASES a control.
       // So the events all arrive at once when the user releases a control.
       // That makes this pretty useless... But what the heck...
-      AutomationType at = AUTO_OFF;
+      //AutomationType at = AUTO_OFF;
       if(state->plugInst->_track && state->plugInst->_id != -1)
       {
         unsigned long id = genACnum(state->plugInst->_id, cport);
         state->plugInst->_track->recordAutomation(id, value);
-        at = state->plugInst->_track->automationType();
+        //at = state->plugInst->_track->automationType();
       }
 
       //state->plugInst->enableController(cport, false);
@@ -545,13 +569,15 @@ void LV2Synth::lv2ui_PortWrite(SuilController controller, uint32_t port_index, u
 
 }
 
-void LV2Synth::lv2ui_Touch(SuilController controller, uint32_t port_index, bool grabbed)
+void LV2Synth::lv2ui_Touch(SuilController /*controller*/, uint32_t /*port_index*/, bool grabbed)
 {
 #ifdef DEBUG_LV2
    std::cerr << "LV2Synth::lv2ui_UiTouch: port: %u " << (grabbed ? "grabbed" : "released") << std::endl;
 #endif
 
 }
+
+
 
 
 
@@ -631,6 +657,57 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
    state->wrkThread->start(QThread::LowPriority);
 
 }
+
+void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
+{
+   assert(state != NULL);
+
+   if(state->uiInst != NULL)
+   {
+      suil_instance_free(state->uiInst);
+      state->uiInst = NULL;
+   }
+
+   state->wrkThread->terminate();
+   state->wrkThread->wait();
+   delete state->wrkThread;
+
+   if(state->human_id != NULL)
+      free(state->human_id);
+   if(state->lastControls)
+   {
+      delete [] state->lastControls;
+      state->lastControls = NULL;
+   }
+   if(state->controlsMask)
+   {
+      delete [] state->controlsMask;
+      state->controlsMask = NULL;
+   }
+
+   if(state->controlTimers)
+   {
+      delete [] state->controlTimers;
+      state->controlTimers = NULL;
+
+   }
+
+   if(state->lastControlsOut)
+   {
+      delete [] state->lastControlsOut;
+      state->lastControlsOut = NULL;
+   }
+
+   if(state->handle)
+   {
+      lilv_instance_free(state->handle);
+      state->handle = NULL;
+   }
+
+   delete state;
+}
+
+
 
 
 
@@ -1154,10 +1231,11 @@ const char *LV2Synth::unmapUrid(LV2_URID id)
 
 LV2SynthIF::~LV2SynthIF()
 {
-   if(_handle)
+   if(_uiState)
    {
-      lilv_instance_free(_handle);
-      _handle = NULL;
+      _uiState->deleteLater = true;
+      _uiState->uiTimer->stopNextTime(false);
+      _uiState = NULL;
    }
 
    LV2_AUDIO_PORTS::iterator _itA = _audioInPorts.begin();
@@ -1211,43 +1289,6 @@ LV2SynthIF::~LV2SynthIF()
    {
       delete [] _ifeatures;
       _ifeatures = NULL;
-   }
-
-   if(_uiState != NULL)
-   {
-      _uiState->uiTimer->stopNextTime();
-
-      delete _uiState->uiTimer;
-
-      if(_uiState->uiInst != NULL)
-      {
-         suil_instance_free(_uiState->uiInst);
-      }
-
-      _uiState->wrkThread->terminate();
-      _uiState->wrkThread->wait();
-      delete _uiState->wrkThread;
-
-      free(_uiState->human_id);
-      if(_uiState->lastControls)
-      {
-         delete [] _uiState->lastControls;
-         _uiState->lastControls = NULL;
-      }
-      if(_uiState->controlsMask)
-      {
-         delete [] _uiState->controlsMask;
-         _uiState->controlsMask = NULL;
-      }
-
-      if(_uiState->controlTimers)
-      {
-         delete [] _uiState->controlTimers;
-         _uiState->controlTimers = NULL;
-
-      }
-      delete _uiState;
-      _uiState = NULL;
    }
 }
 
@@ -1429,6 +1470,15 @@ bool LV2SynthIF::init(LV2Synth *s)
          _uiState->lastControls [i] = _controls [i].val;
          _uiState->controlsMask [i] = false;
          _uiState->controlTimers [i] = 0;
+      }
+   }
+
+   if(_outportsControl > 0)
+   {
+      _uiState->lastControlsOut = new float [_outportsControl];
+      for(uint32_t i = 0; i < _outportsControl; i++)
+      {
+         _uiState->lastControlsOut [i] = _controlsOut [i].val;
       }
    }
 
@@ -2971,6 +3021,18 @@ bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
    return MusECore::SynthIF::readConfiguration(xml, readPreset);
 }
 
+
+
+LV2PluginWrapper_Timer::LV2PluginWrapper_Timer(LV2PluginWrapper_State *s) : QThread(),
+   _state ( s ),
+   _bRunning (false),
+   _controls(NULL),
+   _numControls(0),
+   _msec(30)
+{
+   connect(this, SIGNAL(deletePending()), this, SLOT(doDeleteTimer()));
+}
+
 void LV2PluginWrapper_Timer::run()
 {
    if(_state != NULL)
@@ -2987,6 +3049,7 @@ void LV2PluginWrapper_Timer::run()
             {
                LV2Synth::lv2ui_SendChangedControls(_state);
                LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
+
             }
             else if(_s->_hasGui)
             {
@@ -3001,28 +3064,51 @@ void LV2PluginWrapper_Timer::run()
          _state->widget = NULL;
          suil_instance_free(_state->uiInst);
          _state->uiInst = NULL;
+      }else if(_s->_hasGui)
+      {
+         _state->guiLock.lock();
       }
+   }
 
-
+   if(_state->deleteLater)
+   {
+      LV2Synth::lv2state_FreeState(_state);
+      emit deletePending();
    }
 }
 
-void LV2PluginWrapper_Timer::stopNextTime(bool _wait)
+bool LV2PluginWrapper_Timer::stopNextTime(bool _wait)
 {
+   bool _isRunning = isRunning();
    _bRunning = false;
-   if(isRunning() && _wait)
+   if(_isRunning && _wait)
    {
       wait();
    }
+   if(_state->deleteLater && !_isRunning)
+   {
+      LV2Synth::lv2state_FreeState(_state);
+      doDeleteTimer();
+   }
+   return _isRunning;
 }
 
 void LV2PluginWrapper_Timer::start(int msec)
 {
    assert(_bRunning == false);
 
+   _state->guiLock.tryLock();
+   _state->guiLock.unlock();
+
+
    _msec = msec;
    _bRunning = true;
    QThread::start();
+}
+
+void LV2PluginWrapper_Timer::doDeleteTimer()
+{
+   delete this;
 }
 
 
@@ -3049,11 +3135,11 @@ void LV2PluginWrapper_Window::doChangeControls()
 
 void LV2PluginWrapper_Window::sendChangedControls()
 {
+   if(!_state->guiLock.tryLock())
+      return;
    LV2Synth::lv2ui_SendChangedControls(_state);
+   _state->guiLock.unlock();
 }
-
-
-
 
 
 LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s)
@@ -3217,9 +3303,18 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
       state->controlTimers = new int [_controlInPorts];
       for(uint32_t i = 0; i < _controlInPorts; i++)
       {
-         state->lastControls [i] = _PluginControlsDefault [i];
+         state->lastControls [i] = _PluginControlsDefault [_synth->_controlInPorts [i].index];
          state->controlsMask [i] = false;
          state->controlTimers [i] = 0;
+      }
+   }
+
+   if(_controlOutPorts > 0)
+   {
+      state->lastControlsOut = new float [_controlOutPorts];
+      for(uint32_t i = 0; i < _controlOutPorts; i++)
+      {
+         state->lastControlsOut [i] = _PluginControlsDefault [_synth->_controlOutPorts [i].index];
       }
    }
 
@@ -3254,43 +3349,10 @@ void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
       std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
       assert(it != _states.end()); //this shouldn't happen
       LV2PluginWrapper_State *state = it->second;
-
-      state->uiTimer->stopNextTime();
-
-      delete state->uiTimer;
-
-      if(state->uiInst != NULL)
-      {
-         suil_instance_free(state->uiInst);
-      }
-
-      state->wrkThread->terminate();
-      state->wrkThread->wait();
-      delete state->wrkThread;
-
-      free(state->human_id);
-      delete [] state->_ifeatures;
-      delete [] state->_ppifeatures;      
-      lilv_instance_free((LilvInstance *) handle);
-      if(state->lastControls)
-      {
-         delete [] state->lastControls;
-         state->lastControls = NULL;
-      }
-      if(state->controlsMask)
-      {
-         delete [] state->controlsMask;
-         state->controlsMask = NULL;
-
-      }
-      if(state->controlTimers)
-      {
-         delete [] state->controlTimers;
-         state->controlTimers = NULL;
-
-      }
-      delete state;
       _states.erase(it);
+
+      state->deleteLater = true;
+      state->uiTimer->stopNextTime(false);
 
    }
 }
