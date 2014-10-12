@@ -44,6 +44,7 @@
 #include "lv2/lv2plug.in/ns/ext/uri-map/uri-map.h"
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
+#include "lv2/lv2plug.in/ns/ext/port-props/port-props.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 #include "lv2extui.h"
 
@@ -394,26 +395,35 @@ struct LV2MidiPort {
     }
 };
 
+enum LV2ControlPortType
+{
+   LV2_PORT_DISCRETE = 1,
+   LV2_PORT_INTEGER,
+   LV2_PORT_CONTINUOUS,
+   LV2_PORT_LOGARITHMIC,
+   LV2_PORT_TRIGER
+};
+
 struct LV2ControlPort {
-    LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, QString _n ) :
-        port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), name ( _n ) {
-        cName = strdup ( name.toUtf8().constData() );
-    };
+    LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, LV2ControlPortType _ctype ) :
+        port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype){
+        cName = strdup ( _n );
+    }
     LV2ControlPort ( const LV2ControlPort &other ) :
-        port ( other.port ), index ( other.index ), defVal ( other.defVal ), minVal(other.minVal), maxVal(other.maxVal), name ( other.name ) {
-        cName = strdup ( name.toUtf8().constData() );
-    };
+        port ( other.port ), index ( other.index ), defVal ( other.defVal ), minVal(other.minVal), maxVal(other.maxVal), cType(other.cType) {
+        cName = strdup ( other.cName );
+    }
     ~LV2ControlPort() {
         free ( cName );
         cName = NULL;
-    };
+    }
     const LilvPort *port;
     uint32_t index; //plugin real port index
     float defVal; //default control value
     float minVal; //minimum control value
     float maxVal; //maximum control value
-    QString name; //name of this port
     char *cName; //cached value to share beetween function calls
+    LV2ControlPortType cType;
 };
 
 struct LV2AudioPort {
