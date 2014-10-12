@@ -662,11 +662,6 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
 {
    assert(state != NULL);
 
-   if(state->uiInst != NULL)
-   {
-      suil_instance_free(state->uiInst);
-      state->uiInst = NULL;
-   }
 
    state->wrkThread->terminate();
    state->wrkThread->wait();
@@ -698,11 +693,21 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
       state->lastControlsOut = NULL;
    }
 
+   if(state->uiInst != NULL)
+   {
+      suil_instance_free(state->uiInst);
+      state->uiInst = NULL;
+   }
+
+
    if(state->handle)
    {
       lilv_instance_free(state->handle);
       state->handle = NULL;
    }
+
+   //state->guiLock.tryLock();
+  //state->guiLock.unlock();
 
    delete state;
 }
@@ -3066,13 +3071,20 @@ void LV2PluginWrapper_Timer::run()
          _state->uiInst = NULL;
       }else if(_s->_hasGui)
       {
-         _state->guiLock.lock();
+         //_state->guiLock.tryLock();
+         if(_state->widget != NULL)
+         {
+            LV2PluginWrapper_Window * win = (LV2PluginWrapper_Window *)_state->widget;
+            win->close();
+
+         }
       }
    }
 
    if(_state->deleteLater)
    {
-      LV2Synth::lv2state_FreeState(_state);
+      if(!_state->synth->_hasGui)
+         LV2Synth::lv2state_FreeState(_state);
       emit deletePending();
    }
 }
@@ -3097,8 +3109,8 @@ void LV2PluginWrapper_Timer::start(int msec)
 {
    assert(_bRunning == false);
 
-   _state->guiLock.tryLock();
-   _state->guiLock.unlock();
+  // _state->guiLock.tryLock();
+   //_state->guiLock.unlock();
 
 
    _msec = msec;
@@ -3112,18 +3124,20 @@ void LV2PluginWrapper_Timer::doDeleteTimer()
 }
 
 
-
-
-
 void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
-{
+{   
    assert(_state != NULL);
-   _state->uiTimer->stopNextTime(false);
    event->accept();
+
+   if(_state->deleteLater)
+      LV2Synth::lv2state_FreeState(_state);
+   else
+      _state->uiTimer->stopNextTime(false);
+
 }
 
 LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
- : QMainWindow(), _state ( state )
+ : QMainWindow(), _state ( state ), _closing(false)
 {
    connect(this, SIGNAL(controlsChangePending()), this, SLOT(sendChangedControls()));
 }
@@ -3135,10 +3149,10 @@ void LV2PluginWrapper_Window::doChangeControls()
 
 void LV2PluginWrapper_Window::sendChangedControls()
 {
-   if(!_state->guiLock.tryLock())
+   if(_state->deleteLater || _closing)
       return;
    LV2Synth::lv2ui_SendChangedControls(_state);
-   _state->guiLock.unlock();
+   //_state->guiLock.unlock();
 }
 
 
