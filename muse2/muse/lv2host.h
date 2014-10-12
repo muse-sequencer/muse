@@ -689,7 +689,7 @@ struct LV2PluginWrapper_State {
       wrkThread(NULL),
       wrkEndWork(false),
       controlTimers(NULL),
-      guiLock(),
+      //guiLock(),
       deleteLater(false)
    {
       extHost.plugin_human_id = NULL;
@@ -724,7 +724,7 @@ struct LV2PluginWrapper_State {
     LV2_Worker_Interface *wrkIface;
     bool wrkEndWork;
     int *controlTimers;
-    QMutex guiLock;
+    //QMutex guiLock;
     bool deleteLater;
 };
 
@@ -736,7 +736,7 @@ private:
     bool _bRunning;
     Port *_controls;
     uint32_t _numControls;
-    int _msec;
+    int _msec;    
 public:
     explicit LV2PluginWrapper_Timer ( LV2PluginWrapper_State *s );
     void run();
@@ -774,10 +774,12 @@ protected:
    void closeEvent ( QCloseEvent *event );
 private:
    LV2PluginWrapper_State *_state;
+   bool _closing;
 public:
    explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state );
 
    void doChangeControls();
+   void setClosing(bool closing) {_closing = closing; }
 public slots:
    void sendChangedControls();
 signals:
