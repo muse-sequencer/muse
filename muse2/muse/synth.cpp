@@ -20,6 +20,8 @@
 //
 //=========================================================
 
+#include <QMessageBox>
+
 #include "config.h"
 #include <sys/wait.h>
 #include <signal.h>
@@ -202,6 +204,8 @@ static Synth* findSynth(const QString& sclass, const QString& label, Synth::Type
               return *i;
          }
       fprintf(stderr, "synthi type:%d class:%s label:%s not found\n", type, sclass.toLatin1().constData(), label.toLatin1().constData());
+      QMessageBox::warning(0,"Synth not found!",
+                  "Synth: " + label + " not found, if the project is saved it will be removed from the project");
       return 0;
       }
 
@@ -224,8 +228,12 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
                   return 0;
                   }
             }
-      else
+      else {
             fprintf(stderr, "createSynthInstance: synthi class:%s label:%s not found\n", sclass.toLatin1().constData(), label.toLatin1().constData());
+            QMessageBox::warning(0,"Synth not found!",
+                        "Synth: " + label + " not found, if the project is saved it will be removed from the project");
+      }
+
       return si;
       }
 
