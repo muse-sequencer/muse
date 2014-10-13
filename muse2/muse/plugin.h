@@ -467,7 +467,6 @@ extern CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port);
 namespace MusEGui {
 class DoubleLabel;
 
-//---------------------------------------------------------
 //   PluginLoader
 //---------------------------------------------------------
 
@@ -558,9 +557,7 @@ class PluginGui : public QMainWindow {
       };
 
 
-
 } // namespace MusEGui
-
 
 namespace MusEGlobal {
 extern MusECore::PluginList plugins;
