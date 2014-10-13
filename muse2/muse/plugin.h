@@ -467,7 +467,7 @@ extern CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port);
 
 namespace MusEGui {
 class DoubleLabel;
-class PluginGui;
+
 
 //---------------------------------------------------------
 //   PluginLoader
@@ -560,67 +560,8 @@ class PluginGui : public QMainWindow {
       };
 
 
+} // namespace MusEGui
 
-
-
-//---------------------------------------------------------
-//   PluginDialog
-//---------------------------------------------------------
-
-enum { SEL_SM, SEL_S, SEL_M, SEL_ALL };
-
-class PluginDialog : public QDialog {
-      Q_OBJECT
-
-   public:
-      PluginDialog(QWidget* parent=0);
-      static MusECore::Plugin* getPlugin(QWidget* parent);
-      MusECore::Plugin* value();
-
-   public slots:
-      void accept();
-      void reject();
-
-   private slots:
-      void enableOkB();
-      void pluginTypeSelectionChanged(QAbstractButton*);
-      void tabChanged(int);
-      void tabMoved(int,int);
-      void fillPlugs();
-
-      void newGroup();
-      void delGroup();
-      void renameGroup();
-      void plistContextMenu(const QPoint&);
-      void groupMenuEntryToggled(int i);
-
-   private:
-      QComboBox* sortBox;
-      QTabBar* tabBar;
-      QTreeWidget* pList;
-      QRadioButton* allPlug;
-      QRadioButton* onlyM;
-      QRadioButton* onlyS;
-      QRadioButton* onlySM;
-      QPushButton *okB;
-
-      QAction* newGroupAction;
-      QAction* delGroupAction;
-      QAction* renGroupAction;
-
-
-      void saveSettings();
-
-      static int selectedPlugType;
-      static int selectedGroup; // 0 means "show all"
-      static QStringList sortItems;
-      static QRect geometrySave;
-      static QByteArray listSave;
-
-      QSet<int>* group_info; //holds the group-set of the plugin which shall be affected by the plistContextMenu.
-};
-
-}
 
 namespace MusEGlobal {
 extern MusECore::PluginList plugins;
