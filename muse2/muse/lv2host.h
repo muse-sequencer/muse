@@ -69,8 +69,6 @@
 
 #include "plugin.h"
 
-#define LV2_PLUGIN_SPACE 0x2000
-
 #endif
 
 namespace MusECore
@@ -672,7 +670,7 @@ public:
 
 
     int id() {
-        return MAX_PLUGINS + LV2_PLUGIN_SPACE;
+        return MAX_PLUGINS;
     }
 
     friend class LV2Synth;

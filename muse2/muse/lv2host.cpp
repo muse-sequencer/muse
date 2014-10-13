@@ -1485,7 +1485,8 @@ bool LV2SynthIF::init(LV2Synth *s)
       }
 
       cl->setValueType(vt);
-      cl->setMode((_controlInPorts [i].cType == LV2_PORT_CONTINUOUS) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE);
+      cl->setMode(((_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
+                   ||(_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC))? CtrlList::INTERPOLATE : CtrlList::DISCRETE);
 
       lilv_instance_connect_port(_handle, idx, &_controls [i].val);
    }
@@ -3067,7 +3068,8 @@ CtrlList::Mode LV2SynthIF::ctrlMode(unsigned long i) const
    i = it->second;
    assert(i < _inportsControl);
 
-   return (_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
+   return ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
+            ||(_synth->_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC)) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
 
 LADSPA_PortRangeHint LV2SynthIF::range(unsigned long i)
@@ -3587,7 +3589,8 @@ CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
    i = it->second;
    assert(i < _controlInPorts);
 
-   return (_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
+   return ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
+           ||(_synth->_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC)) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
 bool LV2PluginWrapper::hasNativeGui()
 {
