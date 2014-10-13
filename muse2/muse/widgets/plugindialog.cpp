@@ -366,90 +366,90 @@ void PluginDialog::tabMoved(int from, int to)
 
 void PluginDialog::fillPlugs()
 {
-    QString type_name;
-    ui.pList->clear();
-    ui.okB->setEnabled(false);
-    for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
-       if (selectedGroup==0 || MusEGlobal::plugin_groups.get(*i).contains(selectedGroup))
-       {
-          unsigned long ai = i->inports();
-          unsigned long ao = i->outports();
-          unsigned long ci = i->controlInPorts();
-          unsigned long co = i->controlOutPorts();
-          bool found = false;
-          QString sb_txt = ui.sortBox->currentText().toLower();
-          if(sb_txt.isEmpty() || i->label().toLower().contains(sb_txt) || i->name().toLower().contains(sb_txt))
-                found = true;
+   QString type_name;
+   ui.pList->clear();
+   ui.okB->setEnabled(false);
+   for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
+      if (selectedGroup==0 || MusEGlobal::plugin_groups.get(*i).contains(selectedGroup))
+      {
+         unsigned long ai = (*i)->inports();
+         unsigned long ao = (*i)->outports();
+         unsigned long ci = (*i)->controlInPorts();
+         unsigned long co = (*i)->controlOutPorts();
+         bool found = false;
+         QString sb_txt = ui.sortBox->currentText().toLower();
+         if(sb_txt.isEmpty() || (*i)->label().toLower().contains(sb_txt) || (*i)->name().toLower().contains(sb_txt))
+            found = true;
 
-          bool addFlag = false;
-          switch (selectedPlugPortType) {
-                case SEL_PORT_SM: // stereo & mono
-                      if ((ai == 1 || ai == 2) && (ao == 1 || ao ==2)) {
-                            addFlag = true;
-                            }
-                      break;
-                case SEL_PORT_S: // stereo
-                      if ((ai == 1 || ai == 2) &&  ao ==2) {
-                            addFlag = true;
-                            }
-                      break;
-                case SEL_PORT_M: // mono
-                      if (ai == 1  && ao == 1) {
-                            addFlag = true;
-                            }
-                      break;
-                case SEL_PORT_ALL: // all
-                      addFlag = true;
-                      break;
-                }
-          if (found && addFlag) {
-                int plugInstanceType;
-                if(i->isDssiSynth() || i->isDssiPlugin()) {
-                  if (i->lib() == "dssi-vst") {
-                    type_name = tr("Wine VST");
-                    plugInstanceType = SEL_TYPE_WINE_VST;
-                  } else {
-                    if (i->isDssiSynth())
-                      type_name = tr("dssi synth");
-                    else
-                      type_name = tr("dssi effect");
-                    plugInstanceType = SEL_TYPE_DSSI;
-                  }
-                }
-//                else if(i->isLV2Synth()) {
-//                  type_name = tr("LV2 synth");
-//                  plugInstanceType = SEL_TYPE_LV2;
-//                }
-//                else if(i->isLV2Plugin()) {
-//                  type_name = tr("LV2 effect");
-//                  plugInstanceType = SEL_TYPE_LV2;
-//                }
-                else {
-                  type_name = tr("ladspa");
-                  plugInstanceType = SEL_TYPE_LADSPA;
-                }
+         bool addFlag = false;
+         switch (selectedPlugPortType) {
+         case SEL_PORT_SM: // stereo & mono
+            if ((ai == 1 || ai == 2) && (ao == 1 || ao ==2)) {
+               addFlag = true;
+            }
+            break;
+         case SEL_PORT_S: // stereo
+            if ((ai == 1 || ai == 2) &&  ao ==2) {
+               addFlag = true;
+            }
+            break;
+         case SEL_PORT_M: // mono
+            if (ai == 1  && ao == 1) {
+               addFlag = true;
+            }
+            break;
+         case SEL_PORT_ALL: // all
+            addFlag = true;
+            break;
+         }
+         if (found && addFlag) {
+            int plugInstanceType;
+            if((*i)->isDssiSynth() || (*i)->isDssiPlugin()) {
+               if ((*i)->lib() == "dssi-vst") {
+                  type_name = tr("Wine VST");
+                  plugInstanceType = SEL_TYPE_WINE_VST;
+               } else {
+                  if ((*i)->isDssiSynth())
+                     type_name = tr("dssi synth");
+                  else
+                     type_name = tr("dssi effect");
+                  plugInstanceType = SEL_TYPE_DSSI;
+               }
+            }
+            else if((*i)->isLV2Synth()) {
+               type_name = tr("LV2 synth");
+               plugInstanceType = SEL_TYPE_LV2;
+            }
+            else if((*i)->isLV2Plugin()) {
+               type_name = tr("LV2 effect");
+               plugInstanceType = SEL_TYPE_LV2;
+            }
+            else {
+               type_name = tr("ladspa");
+               plugInstanceType = SEL_TYPE_LADSPA;
+            }
 
-                // last check
-                if ( selectedPlugType != SEL_TYPE_ALL && plugInstanceType != selectedPlugType ) {
-                    continue;
-                }
+            // last check
+            if ( selectedPlugType != SEL_TYPE_ALL && plugInstanceType != selectedPlugType ) {
+               continue;
+            }
 
-                QTreeWidgetItem* item = new QTreeWidgetItem;
-                item->setText(0,  type_name);
-                item->setText(1,  i->lib());
-                item->setText(2,  i->label());
-                item->setText(3,  i->name());
-                item->setText(4,  QString().setNum(ai));
-                item->setText(5,  QString().setNum(ao));
-                item->setText(6,  QString().setNum(ci));
-                item->setText(7,  QString().setNum(co));
-                item->setText(8,  QString().setNum(i->inPlaceCapable()));
-                item->setText(9,  QString().setNum(i->id()));
-                item->setText(10,  i->maker());
-                item->setText(11, i->copyright());
-                ui.pList->addTopLevelItem(item);
-                }
-          }
+            QTreeWidgetItem* item = new QTreeWidgetItem;
+            item->setText(0,  type_name);
+            item->setText(1,  (*i)->lib());
+            item->setText(2,  (*i)->label());
+            item->setText(3,  (*i)->name());
+            item->setText(4,  QString().setNum(ai));
+            item->setText(5,  QString().setNum(ao));
+            item->setText(6,  QString().setNum(ci));
+            item->setText(7,  QString().setNum(co));
+            item->setText(8,  QString().setNum((*i)->inPlaceCapable()));
+            item->setText(9,  QString().setNum((*i)->id()));
+            item->setText(10,  (*i)->maker());
+            item->setText(11, (*i)->copyright());
+            ui.pList->addTopLevelItem(item);
+         }
+      }
 }
 
 //---------------------------------------------------------
