@@ -2574,7 +2574,7 @@ void PluginI::apply(unsigned pos, unsigned long n, unsigned long ports, float** 
         controls[k].tmpVal = controls[k].val;  // Special for plugins: Deal with tmpVal.
 
 #ifdef PLUGIN_DEBUGIN_PROCESS
-        printf("PluginI::apply k:%lu sample:%lu nextFrame:%d nsamp:%lu val:%f\n", k, sample, ci.eFrame, nsamp, controls[k].val);
+        printf("PluginI::apply k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, ci.eFrame, nsamp);
 #endif
       }
     }
