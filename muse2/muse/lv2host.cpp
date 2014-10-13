@@ -621,6 +621,11 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
 
    _ppifeatures [i] = NULL;
 
+   lv2_atom_forge_init(&state->atomForge, &synth->_lv2_urid_map);
+
+   state->curBpm = double(60000000.0/MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
+   state->curIsPlaying = MusEGlobal::audio->isPlaying();
+
 }
 
 void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
@@ -1440,7 +1445,7 @@ bool LV2SynthIF::init(LV2Synth *s)
       _synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, i));
       _synth->port2MidiCtlMap.insert(std::pair<int, int>(i, ctlnum));
 
-      int id = genACnum(MAX_PLUGINS + LV2_PLUGIN_SPACE, i);
+      int id = genACnum(MAX_PLUGINS, i);
       CtrlList *cl;
       CtrlListList *cll = track()->controller();
       iCtrlList icl = cll->find(id);
@@ -3024,6 +3029,92 @@ const char *LV2SynthIF::paramOutName(long unsigned int i)
    return _controlOutPorts [i].cName;
 }
 
+CtrlValueType LV2SynthIF::ctrlValueType(unsigned long i) const
+{
+   CtrlValueType vt = VAL_LINEAR;
+   std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
+   assert(it != _synth->_idxToControlMap.end());
+   i = it->second;
+   assert(i < _inportsControl);
+
+   switch(_synth->_controlInPorts [i].cType)
+   {
+   case LV2_PORT_CONTINUOUS:
+      vt = VAL_LINEAR;
+      break;
+   case LV2_PORT_DISCRETE:
+   case LV2_PORT_INTEGER:
+      vt = VAL_INT;
+      break;
+   case LV2_PORT_LOGARITHMIC:
+      vt = VAL_LOG;
+      break;
+   case LV2_PORT_TRIGER:
+      vt = VAL_BOOL;
+      break;
+   default:
+      break;
+   }
+
+   return vt;
+
+}
+
+CtrlList::Mode LV2SynthIF::ctrlMode(unsigned long i) const
+{
+   std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
+   assert(it != _synth->_idxToControlMap.end());
+   i = it->second;
+   assert(i < _inportsControl);
+
+   return (_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
+}
+
+LADSPA_PortRangeHint LV2SynthIF::range(unsigned long i)
+{
+   assert(i < _inportsControl);
+   LADSPA_PortRangeHint hint;
+   hint.HintDescriptor = 0;
+   hint.LowerBound = _controlInPorts [i].minVal;
+   hint.UpperBound = _controlInPorts [i].maxVal;
+
+   if(hint.LowerBound == hint.LowerBound)
+   {
+      hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW;
+   }
+
+   if(hint.UpperBound == hint.UpperBound)
+   {
+      hint.HintDescriptor |= LADSPA_HINT_BOUNDED_ABOVE;
+   }
+
+   return hint;
+}
+
+LADSPA_PortRangeHint LV2SynthIF::rangeOut(unsigned long i)
+{
+   assert(i < _outportsControl);
+   LADSPA_PortRangeHint hint;
+   hint.HintDescriptor = 0;
+   hint.LowerBound = _controlOutPorts [i].minVal;
+   hint.UpperBound = _controlOutPorts [i].maxVal;
+
+   if(hint.LowerBound == hint.LowerBound)
+   {
+      hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW;
+   }
+
+   if(hint.UpperBound == hint.UpperBound)
+   {
+      hint.HintDescriptor |= LADSPA_HINT_BOUNDED_ABOVE;
+   }
+
+   return hint;
+
+}
+
+
+
 float LV2SynthIF::paramOut(long unsigned int i) const
 {
    return getParameterOut(i);
@@ -3033,6 +3124,17 @@ void LV2SynthIF::setParam(long unsigned int i, float val)
 {
    setParameter(i, val);
 }
+
+void LV2SynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }
+bool LV2SynthIF::controllerEnabled(unsigned long i) const   { return _controls[i].enCtrl; }
+void LV2SynthIF::enableAllControllers(bool v)
+{
+  if(!_synth)
+    return;
+  for(unsigned long i = 0; i < _inportsControl; ++i)
+    _controls[i].enCtrl = v;
+}
+void LV2SynthIF::updateControllers() { }
 
 
 

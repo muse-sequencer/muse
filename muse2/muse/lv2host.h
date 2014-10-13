@@ -45,6 +45,7 @@
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
 #include "lv2/lv2plug.in/ns/ext/port-props/port-props.h"
+#include "lv2/lv2plug.in/ns/ext/atom/forge.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 #include "lv2extui.h"
 
@@ -659,6 +660,15 @@ public:
     float paramOut ( unsigned long i ) const;
     const char *paramName ( unsigned long i );
     const char *paramOutName ( unsigned long i );
+    virtual CtrlValueType ctrlValueType ( unsigned long ) const;
+    virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
+    virtual LADSPA_PortRangeHint range(unsigned long i);
+    virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
+
+    virtual void enableController(unsigned long i, bool v = true);
+    virtual bool controllerEnabled(unsigned long i) const;
+    virtual void enableAllControllers(bool v = true);
+    virtual void updateControllers();
 
 
     int id() {
@@ -703,7 +713,7 @@ struct LV2PluginWrapper_State {
       deleteLater(false)
    {
       extHost.plugin_human_id = NULL;
-      extHost.ui_closed = NULL;
+      extHost.ui_closed = NULL;      
    }
 
     LV2_Feature *_ifeatures;
@@ -736,6 +746,9 @@ struct LV2PluginWrapper_State {
     int *controlTimers;
     //QMutex guiLock;
     bool deleteLater;
+    LV2_Atom_Forge atomForge;
+    float curBpm;
+    bool curIsPlaying;
 };
 
 class LV2PluginWrapper_Timer :public QThread
