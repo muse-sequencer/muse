@@ -3417,8 +3417,6 @@ LADSPA_PortDescriptor LV2PluginWrapper::portd(unsigned long k) const
 
 LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i)
 {
-   // FIXME:
-   //return plugin ? plugin->PortRangeHints[i] : 0; DELETETHIS
    LADSPA_PortRangeHint hint;
    hint.HintDescriptor = 0;
    hint.LowerBound = _PluginControlsMin [i];
