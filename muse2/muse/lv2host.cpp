@@ -1131,51 +1131,55 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 #endif
 
 
-         while(!lilv_uis_is_end(_uis, it))
+         bool uiFound = false;
+         while(!lilv_uis_is_end(_uis, it) && !uiFound)
          {
             const LilvUI *ui = lilv_uis_get(_uis, it);
-            const LilvNodes *nUiClss = lilv_ui_get_classes(ui);
-            LilvIter *nit = lilv_nodes_begin(nUiClss);
-
-            while(!lilv_nodes_is_end(_uis, nit))
-            {
-               const LilvNode *nUiCls = lilv_nodes_get(nUiClss, nit);
-#ifdef  DEBUG_LV2
-               const char *ClsStr = lilv_node_as_string(nUiCls);
-               std::cerr << ClsStr << std::endl;
-#endif
-
-
-               bool extUi = lilv_node_equals(nUiCls, lv2CacheNodes.ext_uiType);
-               bool extdUi = lilv_node_equals(nUiCls, lv2CacheNodes.ext_d_uiType);
-               if(extUi || extdUi)
-               {
-                  _hasExternalGui = true;
-                  _hasExternalGuiDepreceated = extdUi;
-                  _pluginUIType = extUi ? lv2CacheNodes.ext_uiType : lv2CacheNodes.ext_d_uiType;
-#ifdef DEBUG_LV2
-                  std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << LV2_UI_EXTERNAL << std::endl;
-#endif
-                  _selectedUi = ui;
-                  break;
-               }
-
-               nit = lilv_nodes_next(nUiClss, nit);
-            }
-
             if(!_hasExternalGui &&
                   lilv_ui_is_supported(ui,
                                        suil_ui_supported,
                                        lv2CacheNodes.host_uiType,
                                        &_pluginUIType))
             {
-               const char *strUiType = lilv_node_as_string(_pluginUIType);
-
 #ifdef DEBUG_LV2
+               const char *strUiType = lilv_node_as_string(_pluginUIType); //internal uis are preferred
                std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << strUiType << std::endl;
 #endif
                _hasGui = true;
+               _hasExternalGui = false;
                _selectedUi = ui;
+               uiFound = true;
+            }
+            else
+            {
+               const LilvNodes *nUiClss = lilv_ui_get_classes(ui);
+               LilvIter *nit = lilv_nodes_begin(nUiClss);
+
+               while(!lilv_nodes_is_end(_uis, nit) && !uiFound)
+               {
+                  const LilvNode *nUiCls = lilv_nodes_get(nUiClss, nit);
+   #ifdef  DEBUG_LV2
+                  const char *ClsStr = lilv_node_as_string(nUiCls);
+                  std::cerr << ClsStr << std::endl;
+   #endif
+                  bool extUi = lilv_node_equals(nUiCls, lv2CacheNodes.ext_uiType);
+                  bool extdUi = lilv_node_equals(nUiCls, lv2CacheNodes.ext_d_uiType);
+                  if(extUi || extdUi)
+                  {
+                     _hasExternalGui = true;
+                     _hasExternalGuiDepreceated = extdUi;
+                     _pluginUIType = extUi ? lv2CacheNodes.ext_uiType : lv2CacheNodes.ext_d_uiType;
+   #ifdef DEBUG_LV2
+                     std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << LV2_UI_EXTERNAL << std::endl;
+   #endif
+                     _selectedUi = ui;
+                     uiFound = true;
+                     break;
+                  }
+
+                  nit = lilv_nodes_next(nUiClss, nit);
+               }
+
             }
 
             it = lilv_uis_next(_uis, it);
