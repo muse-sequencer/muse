@@ -535,6 +535,10 @@ private:
     uint32_t _fWrkSchedule;
     SuilHost *_uiHost;
     const LilvNode *_pluginUIType = NULL;
+    LV2_URID _uTime_Position;
+    LV2_URID _uTime_frame;
+    LV2_URID _uTime_speed;
+    LV2_URID _uTime_beatsPerMinute;
 public:
     virtual Type synthType() const {
         return LV2_SYNTH;
@@ -747,6 +751,7 @@ struct LV2PluginWrapper_State {
     LV2_Atom_Forge atomForge;
     float curBpm;
     bool curIsPlaying;
+    unsigned int curFrame;
 };
 
 class LV2PluginWrapper_Timer :public QThread

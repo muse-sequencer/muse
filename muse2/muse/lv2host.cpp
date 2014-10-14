@@ -212,7 +212,7 @@ void initLV2()
    lv2CacheNodes.lv2_portLogarithmic    = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__logarithmic);
    lv2CacheNodes.lv2_portInteger        = lilv_new_uri(lilvWorld, LV2_CORE__integer);
    lv2CacheNodes.lv2_portTrigger        = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__trigger);
-   lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
+   lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);   
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -623,8 +623,10 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
 
    lv2_atom_forge_init(&state->atomForge, &synth->_lv2_urid_map);
 
-   state->curBpm = double(60000000.0/MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
+   state->curBpm = 0.0;//double(60000000.0/MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
    state->curIsPlaying = MusEGlobal::audio->isPlaying();
+   state->curFrame = MusEGlobal::audioDevice->getCurFrame();
+   lv2_atom_forge_init(&state->atomForge, &synth->_lv2_urid_map);
 
 }
 
@@ -936,6 +938,11 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uniqueID = uniqueID++;
 
    _midi_event_id = mapUrid(LV2_MIDI__MidiEvent);
+
+   _uTime_Position        = mapUrid(LV2_TIME__Position);
+   _uTime_frame           = mapUrid(LV2_TIME__frame);
+   _uTime_speed           = mapUrid(LV2_TIME__speed);
+   _uTime_beatsPerMinute  = mapUrid(LV2_TIME__beatsPerMinute);
 
    _hasGui = false;
    _hasExternalGuiDepreceated = _hasExternalGui = false;
@@ -2680,11 +2687,42 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          {
             if(_inportsMidi > 0)
             {
+               LV2EvBuf *rawMidiBuffer = _midiInPorts [0].buffer;
+               LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
+
+               //send transport events if any
+               double curBpm = double(60000000.0/MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
+               bool curIsPlaying = MusEGlobal::audio->isPlaying();
+               unsigned int curFrame = MusEGlobal::audioDevice->getCurFrame();
+               if(_uiState->curFrame != curFrame
+                  || _uiState->curIsPlaying != curIsPlaying
+                  || _uiState->curBpm != curBpm)
+               {
+                  _uiState->curFrame = curFrame;
+                  _uiState->curIsPlaying = curIsPlaying;
+                  _uiState->curBpm = curBpm;
+                  uint8_t   pos_buf[256];
+                  LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
+                  /* Build an LV2 position object to report change to plugin */
+                  LV2_Atom_Forge* atomForge = &_uiState->atomForge;
+                  lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
+                  LV2_Atom_Forge_Frame frame;
+                  lv2_atom_forge_blank(atomForge, &frame, 1, _synth->_uTime_Position);
+                  lv2_atom_forge_property_head(atomForge, _synth->_uTime_frame, 0);
+                  lv2_atom_forge_long(atomForge, curFrame);
+                  lv2_atom_forge_property_head(atomForge, _synth->_uTime_speed, 0);
+                  lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
+                  lv2_atom_forge_property_head(atomForge, _synth->_uTime_beatsPerMinute, 0);
+                  lv2_atom_forge_float(atomForge, (float)curBpm);
+                  rawMidiBuffer->lv2_evbuf_write(iter, 0, 0,
+                                                 lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
+
+
+               }
+
                //convert snd_seq_event_t[] to raw midi data
                snd_midi_event_reset_decode(_midiEvent);
                uint8_t resMidi [1024];
-               LV2EvBuf *rawMidiBuffer = _midiInPorts [0].buffer;
-               LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
 
                for(unsigned long i = 0; i < nevents; i++)
                {
