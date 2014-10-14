@@ -539,6 +539,7 @@ private:
     LV2_URID _uTime_frame;
     LV2_URID _uTime_speed;
     LV2_URID _uTime_beatsPerMinute;
+    LV2_URID _uTime_barBeat;
 public:
     virtual Type synthType() const {
         return LV2_SYNTH;

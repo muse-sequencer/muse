@@ -943,6 +943,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uTime_frame           = mapUrid(LV2_TIME__frame);
    _uTime_speed           = mapUrid(LV2_TIME__speed);
    _uTime_beatsPerMinute  = mapUrid(LV2_TIME__beatsPerMinute);
+   _uTime_barBeat         = mapUrid(LV2_TIME__barBeat);
 
    _hasGui = false;
    _hasExternalGuiDepreceated = _hasExternalGui = false;
@@ -3212,7 +3213,7 @@ void LV2PluginWrapper_Timer::run()
 
          if(_state->widget != NULL && _state->uiInst != NULL)
          {
-            if(_s->_hasExternalGui)
+            if(_s->_hasExternalGui && !_state->deleteLater)
             {
                LV2Synth::lv2ui_SendChangedControls(_state);
                LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
