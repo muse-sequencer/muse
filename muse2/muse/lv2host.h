@@ -390,7 +390,8 @@ struct LV2MidiPort {
     LV2EvBuf *buffer;
     ~LV2MidiPort() {
         std::cerr << "~LV2MidiPort()" << std::endl;
-        delete buffer;
+        if(buffer != NULL)
+            delete buffer;
     }
 };
 
@@ -494,7 +495,6 @@ public:
 };
 
 class LV2SynthIF;
-class LV2PluginWrapper_Timer;
 class LV2PluginWrapper_State;
 
 typedef std::map<const LilvUI *, std::pair<bool, const LilvNode *> > LV2_PLUGIN_UI_TYPES;
@@ -576,13 +576,13 @@ public:
     static void lv2state_FillFeatures ( LV2PluginWrapper_State *state );
     static void lv2state_PostInstantiate ( LV2PluginWrapper_State *state );
     static void lv2state_FreeState(LV2PluginWrapper_State *state);
+    static void lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, LV2EvBuf::LV2_Evbuf_Iterator &iter);
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
-    friend class LV2PluginWrapper_Timer;
     friend class LV2SynthIF_Timer;
 
 
@@ -687,13 +687,12 @@ public:
     }
 
     friend class LV2Synth;
-    friend class LV2PluginWrapper_Timer;
 };
 
 
 class LV2PluginWrapper;
-class LV2PluginWrapper_Timer;
 class LV2PluginWrapper_Worker;
+class LV2PluginWrapper_Window;
 
 struct LV2PluginWrapper_State {
    LV2PluginWrapper_State():
@@ -711,7 +710,6 @@ struct LV2PluginWrapper_State {
       sif(NULL),
       synth(NULL),
       human_id(NULL),
-      uiTimer(NULL),
       iState(NULL),
       tmpValues(NULL),
       numStateValues(0),
@@ -720,13 +718,13 @@ struct LV2PluginWrapper_State {
       wrkThread(NULL),
       wrkEndWork(false),
       controlTimers(NULL),
-      //guiLock(),
       deleteLater(false),
       hasGui(false),
       hasExternalGui(false),
       uiIdleIface(NULL),
       uiCurrent(NULL),
-      uiX11Size(0, 0)
+      uiX11Size(0, 0),
+      pluginWindow(NULL)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -751,7 +749,6 @@ struct LV2PluginWrapper_State {
     LV2SynthIF *sif;
     LV2Synth *synth;
     char *human_id;
-    LV2PluginWrapper_Timer *uiTimer;
     LV2_State_Interface *iState;
     QMap<QString, QPair<QString, QVariant> > iStateValues;
     char **tmpValues;
@@ -762,7 +759,6 @@ struct LV2PluginWrapper_State {
     LV2_Worker_Interface *wrkIface;
     bool wrkEndWork;
     int *controlTimers;
-    //QMutex guiLock;
     bool deleteLater;
     LV2_Atom_Forge atomForge;
     float curBpm;
@@ -774,28 +770,10 @@ struct LV2PluginWrapper_State {
     const LilvUI *uiCurrent;    
     LV2UI_Resize uiResize;
     QSize uiX11Size;
+    LV2PluginWrapper_Window *pluginWindow;
+    LV2_MIDI_PORTS _midiInPorts; //for rack plugins only
 };
 
-class LV2PluginWrapper_Timer :public QThread
-{
-   Q_OBJECT
-private:
-    LV2PluginWrapper_State *_state;
-    bool _bRunning;
-    Port *_controls;
-    uint32_t _numControls;
-    int _msec;    
-public:
-    explicit LV2PluginWrapper_Timer ( LV2PluginWrapper_State *s );
-    void run();
-    bool stopNextTime(bool _wait = true);
-    void start ( int msec );
- public slots:
-    void doDeleteTimer();
- signals:
-    void deletePending();
-
-};
 
 class LV2PluginWrapper_Worker :public QThread
 {
@@ -820,12 +798,15 @@ class LV2PluginWrapper_Window : public QMainWindow
    Q_OBJECT
 protected:
    void closeEvent ( QCloseEvent *event );
+   void timerEvent(QTimerEvent *);
 private:
    LV2PluginWrapper_State *_state;
    bool _closing;
+   int _timerId;
 public:
    explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state );
-
+   void startNextTime();
+   void stopNextTime();
    void doChangeControls();
    void setClosing(bool closing) {_closing = closing; }
 public slots:

@@ -219,7 +219,7 @@ void initLV2()
    lv2CacheNodes.lv2_portLogarithmic    = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__logarithmic);
    lv2CacheNodes.lv2_portInteger        = lilv_new_uri(lilvWorld, LV2_CORE__integer);
    lv2CacheNodes.lv2_portTrigger        = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__trigger);
-   lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);   
+   lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -395,9 +395,14 @@ void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)contr;
    assert(state != NULL); //this should'nt happen
-   assert(state->uiTimer != NULL); // this too
+   assert(state->widget != NULL); // this too
+   assert(state->pluginWindow != NULL);
 
-   state->uiTimer->stopNextTime(false);
+   state->widget = NULL;
+   state->pluginWindow->stopNextTime();
+
+
+   //state->uiTimer->stopNextTime(false);
 }
 
 void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
@@ -467,14 +472,6 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
                                      &controlsOut [i].val);
          }
 
-      }
-
-      //call ui idle callback if any
-      if(state->uiIdleIface != NULL)
-      {
-         int iRet = state->uiIdleIface->idle(suil_instance_get_handle(state->uiInst));
-         if(iRet != 0) // ui don't want us to call it's idle callback any more
-            state->uiIdleIface = NULL;
       }
 
    }
@@ -590,7 +587,7 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
    LV2_Feature *_ifeatures = state->_ifeatures;
    LV2_Feature **_ppifeatures = state->_ppifeatures;
 
-   state->uiTimer = new LV2PluginWrapper_Timer(state);
+   //state->uiTimer = new LV2PluginWrapper_Timer(state);
 
    state->wrkSched.handle = (LV2_Worker_Schedule_Handle)state;
    state->wrkSched.schedule_work = LV2Synth::lv2wrk_scheduleWork;
@@ -662,7 +659,7 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
       state->extData.data_access = descr->extension_data;
 
       //query for LV2Worker interface
-      state->wrkIface = (LV2_Worker_Interface *)descr->extension_data(LV2_F_WORKER_INTERFACE);      
+      state->wrkIface = (LV2_Worker_Interface *)descr->extension_data(LV2_F_WORKER_INTERFACE);
 
    }
    else
@@ -679,7 +676,6 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
 void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
 {
    assert(state != NULL);
-
 
    state->wrkThread->terminate();
    state->wrkThread->wait();
@@ -724,16 +720,48 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
       state->handle = NULL;
    }
 
-   //state->guiLock.tryLock();
-  //state->guiLock.unlock();
-
    delete state;
 }
 
+void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, LV2EvBuf::LV2_Evbuf_Iterator &iter)
+{
+   //send transport events if any
+   LV2Synth *synth = state->synth;
+   unsigned int cur_frame = MusEGlobal::audio->pos().frame();
+   Pos p(MusEGlobal::extSyncFlag.value() ? MusEGlobal::audio->tickPos() : cur_frame, MusEGlobal::extSyncFlag.value() ? true : false);
+   double curBpm = (60000000.0 / MusEGlobal::tempomap.tempo(p.tick())) * double(MusEGlobal::tempomap.globalTempo())/100.0;
+   bool curIsPlaying = MusEGlobal::audio->isPlaying();
+   unsigned int curFrame = MusEGlobal::audioDevice->getCurFrame();
+//   if(state->curFrame != curFrame
+//      || state->curIsPlaying != curIsPlaying
+//      || state->curBpm != curBpm)
+//   {
+      state->curFrame = curFrame;
+      state->curIsPlaying = curIsPlaying;
+      state->curBpm = curBpm;
+      uint8_t   pos_buf[256];
+      LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
+      /* Build an LV2 position object to report change to plugin */
+      LV2_Atom_Forge* atomForge = &state->atomForge;
+      lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
+      LV2_Atom_Forge_Frame frame;
+      lv2_atom_forge_blank(atomForge, &frame, 1, synth->_uTime_Position);
+      lv2_atom_forge_property_head(atomForge, synth->_uTime_frame, 0);
+      lv2_atom_forge_long(atomForge, curFrame);
+      lv2_atom_forge_property_head(atomForge, synth->_uTime_speed, 0);
+      lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
+      lv2_atom_forge_property_head(atomForge, synth->_uTime_beatsPerMinute, 0);
+      lv2_atom_forge_float(atomForge, (float)curBpm);
+      buffer->lv2_evbuf_write(iter, 0, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
 
+
+//   }
+}
 
 void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
 {
+   assert(state->pluginWindow != NULL);
+
    uint32_t numControls = 0;
    Port *controls = NULL;
 
@@ -762,7 +790,10 @@ void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
                                &controls [i].val);
    }
 
-   state->uiTimer->start(1000 / 30);
+   //state->uiTimer->start(1000 / 30);
+
+
+   state->pluginWindow->startNextTime();
 
 }
 
@@ -787,44 +818,13 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
    assert(synth->_pluginUiTypes.size() > 0);
 
-   state->uiTimer->stopNextTime();
+   //state->uiTimer->stopNextTime();
+   if(state->pluginWindow != NULL)
+      state->pluginWindow->stopNextTime();
 
    if(!bShow)
-   {
-      if(state->hasGui && state->widget)
-      {
-         ((QWidget *)state->widget)->close();
-      }
-      else if(state->hasExternalGui && state->widget)
-      {
-         //LV2_EXTERNAL_UI_HIDE((LV2_External_UI_Widget *)state->widget);
-         state->widget = NULL;
-         suil_instance_free(state->uiInst);
-         state->uiInst = NULL;
-      }
-
       return;
-   }
-   else
-   {
-      if(state->hasGui && state->widget && state->uiInst)
-      {
-         ((QWidget *)state->widget)->show();
-         ((QWidget *)state->widget)->setWindowTitle(state->extHost.plugin_human_id);
-         LV2Synth::lv2ui_PostShow(state);
-         return;
 
-      }
-      else if(state->hasExternalGui && state->widget)
-      {
-         //LV2_EXTERNAL_UI_SHOW((LV2_External_UI_Widget *)state->widget);
-         //goto _gui_write;
-         state->widget = NULL;
-         suil_instance_free(state->uiInst);
-         state->uiInst = NULL;         
-      }
-
-   }
    LV2_PLUGIN_UI_TYPES::iterator itUi;
 
    if(state->uiCurrent == NULL)
@@ -884,15 +884,12 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       state->hasExternalGui = false;
    }
 
+   win = new LV2PluginWrapper_Window(state);
 
-   if(state->hasGui)
-   {
-      win = new LV2PluginWrapper_Window(state);
-   }
-
-   if(win != NULL || state->hasExternalGui)
+   if(win != NULL)
    {
       state->widget = win;
+      state->pluginWindow = win;
       const char *cUiUri = lilv_node_as_uri(pluginUiType);
       char *cUiUriNew = strdup("");
       bool bX11Ui = false;
@@ -955,9 +952,9 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
    }
    if(win != NULL)
    {
-      delete win;
-      win = NULL;
+      win->stopNextTime();
    }
+   state->pluginWindow = NULL;
    state->widget = NULL;
    state->uiCurrent = NULL;
 
@@ -1378,11 +1375,16 @@ const char *LV2Synth::unmapUrid(LV2_URID id)
 
 LV2SynthIF::~LV2SynthIF()
 {
-   if(_uiState)
+   if(_uiState != NULL)
    {
       _uiState->deleteLater = true;
-      _uiState->uiTimer->stopNextTime(false);
+      //_uiState->uiTimer->stopNextTime(false);
+      if(_uiState->pluginWindow != NULL)
+         _uiState->pluginWindow->stopNextTime();
+      else
+         LV2Synth::lv2state_FreeState(_uiState);
       _uiState = NULL;
+
    }
 
    LV2_AUDIO_PORTS::iterator _itA = _audioInPorts.begin();
@@ -2821,34 +2823,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
 
                //send transport events if any
-               double curBpm = double(60000000.0/MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
-               bool curIsPlaying = MusEGlobal::audio->isPlaying();
-               unsigned int curFrame = MusEGlobal::audioDevice->getCurFrame();
-               if(_uiState->curFrame != curFrame
-                  || _uiState->curIsPlaying != curIsPlaying
-                  || _uiState->curBpm != curBpm)
-               {
-                  _uiState->curFrame = curFrame;
-                  _uiState->curIsPlaying = curIsPlaying;
-                  _uiState->curBpm = curBpm;
-                  uint8_t   pos_buf[256];
-                  LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
-                  /* Build an LV2 position object to report change to plugin */
-                  LV2_Atom_Forge* atomForge = &_uiState->atomForge;
-                  lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
-                  LV2_Atom_Forge_Frame frame;
-                  lv2_atom_forge_blank(atomForge, &frame, 1, _synth->_uTime_Position);
-                  lv2_atom_forge_property_head(atomForge, _synth->_uTime_frame, 0);
-                  lv2_atom_forge_long(atomForge, curFrame);
-                  lv2_atom_forge_property_head(atomForge, _synth->_uTime_speed, 0);
-                  lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
-                  lv2_atom_forge_property_head(atomForge, _synth->_uTime_beatsPerMinute, 0);
-                  lv2_atom_forge_float(atomForge, (float)curBpm);
-                  rawMidiBuffer->lv2_evbuf_write(iter, 0, 0,
-                                                 lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
-
-
-               }
+               LV2Synth::lv2audio_SendTransport(_uiState, rawMidiBuffer, iter);
 
                //convert snd_seq_event_t[] to raw midi data
                snd_midi_event_reset_decode(_midiEvent);
@@ -2899,8 +2874,8 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                _uiState->wrkIface->end_run(lilv_instance_get_handle(_handle));
             //notify worker about processes data (if any)
             if(_uiState->wrkIface && _uiState->wrkIface->work_response && _uiState->wrkEndWork)
-            {               
-               _uiState->wrkIface->work_response(lilv_instance_get_handle(_handle), _uiState->wrkDataSize, _uiState->wrkDataBuffer);               
+            {
+               _uiState->wrkIface->work_response(lilv_instance_get_handle(_handle), _uiState->wrkDataSize, _uiState->wrkDataBuffer);
                _uiState->wrkDataSize = 0;
                _uiState->wrkDataBuffer = NULL;
                _uiState->wrkEndWork = false;
@@ -3318,124 +3293,86 @@ bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
    return MusECore::SynthIF::readConfiguration(xml, readPreset);
 }
 
-
-
-LV2PluginWrapper_Timer::LV2PluginWrapper_Timer(LV2PluginWrapper_State *s) : QThread(),
-   _state ( s ),
-   _bRunning (false),
-   _controls(NULL),
-   _numControls(0),
-   _msec(30)
-{
-   connect(this, SIGNAL(deletePending()), this, SLOT(doDeleteTimer()));
-}
-
-void LV2PluginWrapper_Timer::run()
-{
-   if(_state != NULL)
-   {
-      while(_bRunning)
-      {
-         usleep(_msec * 1000);
-
-         if(_state->widget != NULL && _state->uiInst != NULL)
-         {
-            if(_state->hasExternalGui && !_state->deleteLater)
-            {
-               LV2Synth::lv2ui_SendChangedControls(_state);
-               LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
-
-            }
-            else if(_state->hasGui)
-            {
-               (reinterpret_cast<LV2PluginWrapper_Window *>(_state->widget))->doChangeControls();
-            }
-         }
-      }
-
-      if(_state->hasExternalGui && _state->widget)
-      {
-         //LV2_EXTERNAL_UI_HIDE((LV2_External_UI_Widget *)state->widget);
-         _state->widget = NULL;
-         suil_instance_free(_state->uiInst);
-         _state->uiInst = NULL;
-      }else if(_state->hasGui)
-      {
-         //_state->guiLock.tryLock();
-         if(_state->widget != NULL)
-         {
-            LV2PluginWrapper_Window * win = (LV2PluginWrapper_Window *)_state->widget;
-            win->close();
-
-         }
-      }
-   }
-
-   if(_state->deleteLater)
-   {
-      if(!_state->hasGui)
-         LV2Synth::lv2state_FreeState(_state);
-      emit deletePending();
-   }
-}
-
-bool LV2PluginWrapper_Timer::stopNextTime(bool _wait)
-{
-   bool _isRunning = isRunning();
-   _bRunning = false;
-   if(_isRunning && _wait)
-   {
-      wait();
-   }
-   if(_state->deleteLater && !_isRunning)
-   {
-      LV2Synth::lv2state_FreeState(_state);
-      doDeleteTimer();
-   }
-   return _isRunning;
-}
-
-void LV2PluginWrapper_Timer::start(int msec)
-{
-   assert(_bRunning == false);
-
-  // _state->guiLock.tryLock();
-   //_state->guiLock.unlock();
-
-
-   _msec = msec;
-   _bRunning = true;
-   QThread::start();
-}
-
-void LV2PluginWrapper_Timer::doDeleteTimer()
-{
-   delete this;
-}
-
-
 void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
-{   
+{
    assert(_state != NULL);
    event->accept();
 
+   if(_timerId == 0)
+   {
+      killTimer(_timerId);
+      _timerId = 0;
+   }
+
    if(_state->deleteLater)
+   {
       LV2Synth::lv2state_FreeState(_state);
+      delete this;
+   }
    else
    {
-      _state->uiTimer->stopNextTime(false);
+      //_state->uiTimer->stopNextTime(false);
       _state->widget = NULL;
-      suil_instance_free(_state->uiInst);
-      _state->uiInst = NULL;
+      _state->pluginWindow = NULL;
+      if(_state->uiInst != NULL)
+      {
+         suil_instance_free(_state->uiInst);
+         _state->uiInst = NULL;
+      }
       delete this;
    }
 
 }
 
+void LV2PluginWrapper_Window::timerEvent(QTimerEvent *)
+{
+   if(_state->deleteLater)
+      return;
+
+   sendChangedControls();
+
+   if(_state->hasExternalGui)
+   {
+      LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
+
+   }
+
+   //call ui idle callback if any
+   if(_state->uiIdleIface != NULL)
+   {
+      int iRet = _state->uiIdleIface->idle(suil_instance_get_handle(_state->uiInst));
+      if(iRet != 0) // ui don't want us to call it's idle callback any more
+         _state->uiIdleIface = NULL;
+   }
+
+}
+
+
+
 LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
- : QMainWindow(), _state ( state ), _closing(false)
+ : QMainWindow(), _state ( state ), _closing(false), _timerId(0)
 {
    connect(this, SIGNAL(controlsChangePending()), this, SLOT(sendChangedControls()));
+   //startTimer(30);
+}
+
+void LV2PluginWrapper_Window::startNextTime()
+{
+   if(_timerId != 0)
+   {
+      killTimer(_timerId);
+      _timerId = startTimer(30);
+   }
+}
+
+
+void LV2PluginWrapper_Window::stopNextTime()
+{
+   if(_timerId == 0)
+      killTimer(_timerId);
+   _timerId = 0;
+   close();
+
 }
 
 void LV2PluginWrapper_Window::doChangeControls()
@@ -3448,7 +3385,6 @@ void LV2PluginWrapper_Window::sendChangedControls()
    if(_state->deleteLater || _closing)
       return;
    LV2Synth::lv2ui_SendChangedControls(_state);
-   //_state->guiLock.unlock();
 }
 
 
@@ -3628,6 +3564,20 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
       }
    }
 
+   state->_midiInPorts = _synth->_midiInPorts;
+
+   //connect midi and control ports
+   for(size_t i = 0; i < state->_midiInPorts.size(); i++)
+   {
+      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
+                                      state->_midiInPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
+                                      _synth->mapUrid(LV2_ATOM__Chunk),
+                                      _synth->mapUrid(LV2_ATOM__Sequence)
+                                     );
+      state->_midiInPorts [i].buffer = buffer;
+      lilv_instance_connect_port(state->handle, state->_midiInPorts [i].index, (void *)buffer->lv2_evbuf_get_buffer());
+   }
+
    _states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));
 
    return (LADSPA_Handle)state->handle;
@@ -3662,7 +3612,10 @@ void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
       _states.erase(it);
 
       state->deleteLater = true;
-      state->uiTimer->stopNextTime(false);
+      if(state->pluginWindow != NULL)
+         state->pluginWindow->stopNextTime();
+      else
+         LV2Synth::lv2state_FreeState(state);
 
    }
 }
@@ -3672,6 +3625,16 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
    std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
    assert(it != _states.end()); //this shouldn't happen
    LV2PluginWrapper_State *state = it->second;
+
+   if(state->_midiInPorts.size() > 0)
+   {
+      LV2EvBuf *rawMidiBuffer = state->_midiInPorts [0].buffer;
+      rawMidiBuffer->lv2_evbuf_reset(true);
+      LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
+      //send transport events if any
+      LV2Synth::lv2audio_SendTransport(state, rawMidiBuffer, iter);
+   }
+
 
    lilv_instance_run(state->handle, n);
    //notify worker that this run() finished

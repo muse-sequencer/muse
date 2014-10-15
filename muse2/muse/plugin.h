@@ -310,7 +310,6 @@ class PluginIBase
 
 class PluginI : public PluginIBase {
     friend class LV2PluginWrapper;
-    friend class LV2PluginWrapper_Timer;
     friend class LV2Synth;
       Plugin* _plugin;
       int channel;
