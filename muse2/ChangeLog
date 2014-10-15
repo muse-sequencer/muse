@@ -1,3 +1,6 @@
+15.10.2014:
+         - Fixed crash bug iterating through events in script executor (rj)
+         - Added script RemoveAftertouch (rj)
 12.10.2014:
          - Reworked the PluginDialog to use a ui file and give more filter possibilities (rj)
          - Added [HOME] button to file open dialog (rj)
