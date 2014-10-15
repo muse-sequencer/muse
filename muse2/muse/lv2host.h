@@ -515,7 +515,7 @@ private:
     uint32_t _midi_event_id;
     //bool _hasGui;
     //bool _hasExternalGui;
-   // bool _hasExternalGuiDepreceated;
+   // bool _hasE_fWrkSchedulexternalGuiDepreceated;
     LilvUIs *_uis;
     //const LilvUI *_selectedUi;
     std::map<uint32_t, uint32_t> _idxToControlMap;
@@ -538,6 +538,7 @@ private:
     uint32_t _fExtUiHostD;
     uint32_t _fDataAccess;
     uint32_t _fWrkSchedule;
+    uint32_t _fUiResize;
     SuilHost *_uiHost;
     //const LilvNode *_pluginUIType = NULL;
     LV2_URID _uTime_Position;
@@ -566,6 +567,7 @@ public:
         return _audioOutPorts.size();
     }
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
+    static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static void lv2ui_ShowNativeGui ( LV2PluginWrapper_State *state, bool bShow );
     static void lv2ui_PortWrite ( SuilController controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer );
     static void lv2ui_Touch (SuilController controller, uint32_t port_index, bool grabbed);
@@ -723,10 +725,13 @@ struct LV2PluginWrapper_State {
       hasGui(false),
       hasExternalGui(false),
       uiIdleIface(NULL),
-      uiCurrent(NULL)
+      uiCurrent(NULL),
+      uiX11Size(0, 0)
    {
       extHost.plugin_human_id = NULL;
-      extHost.ui_closed = NULL;      
+      extHost.ui_closed = NULL;
+      uiResize.handle = this;
+      uiResize.ui_resize = LV2Synth::lv2ui_Resize;
    }
 
     LV2_Feature *_ifeatures;
@@ -766,7 +771,9 @@ struct LV2PluginWrapper_State {
     bool hasGui;
     bool hasExternalGui;
     LV2UI_Idle_Interface *uiIdleIface;
-    const LilvUI *uiCurrent;
+    const LilvUI *uiCurrent;    
+    LV2UI_Resize uiResize;
+    QSize uiX11Size;
 };
 
 class LV2PluginWrapper_Timer :public QThread

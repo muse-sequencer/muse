@@ -38,6 +38,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QUrl>
+#include <QX11EmbedContainer>
+#include <QX11EmbedWidget>
 
 #include "lv2host.h"
 #include "synth.h"
@@ -65,7 +67,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <QX11EmbedContainer>
+
 
 //uncomment to print debugging information for lv2 host
 #define DEBUG_LV2
@@ -180,6 +182,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_WORKER_SCHEDULE, NULL},
    {LV2_F_UI_IDLE, NULL},
    {LV2_F_OPTIONS, NULL},
+   {LV2_UI__resize, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!
 };
 
@@ -628,6 +631,10 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
       {
          _ifeatures [i].data = &state->wrkSched;
       }
+      else if(i == synth->_fUiResize)
+      {
+         _ifeatures [i].data = &state->uiResize;
+      }
 
       _ppifeatures [i] = &_ifeatures [i];
    }
@@ -759,6 +766,18 @@ void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
 
 }
 
+int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+   if(state->widget != NULL && state->hasGui)
+   {
+      ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
+      state->uiX11Size.setWidth(width);
+      state->uiX11Size.setHeight(height);
+      return 0;
+   }
+   return 1;
+}
 
 
 void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
@@ -873,30 +892,51 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
    if(win != NULL || state->hasExternalGui)
    {
-      state->_ifeatures [synth->_fUiParent].data = win;
+      state->widget = win;
+      const char *cUiUri = lilv_node_as_uri(pluginUiType);
+      char *cUiUriNew = strdup("");
+      bool bX11Ui = false;
+      QX11EmbedWidget *ewX11 = NULL;
+      if(strcmp(LV2_UI__X11UI, cUiUri) == 0) //X11Ui support is broken in suil, we'll wrap it independently
+      {
+         cUiUriNew = strdup("");
+         bX11Ui = true;
+         ewX11 = new QX11EmbedWidget();
+         state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)ewX11->winId();
+      }
+      else
+      {
+         cUiUriNew = strdup(cUiUri);
+         state->_ifeatures [synth->_fUiParent].data = win;
+      }
+
       state->uiInst = suil_instance_new(state->uiHost,
                                         state,
                                         lilv_node_as_uri(lv2CacheNodes.host_uiType),
                                         lilv_node_as_uri(lilv_plugin_get_uri(synth->_handle)),
                                         lilv_node_as_uri(lilv_ui_get_uri(selectedUi)),
-                                        lilv_node_as_uri(pluginUiType),
+                                        cUiUriNew,
                                         lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi))),
                                         lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi))),
                                         state->_ppifeatures);
+      free(cUiUriNew);
 
       if(state->uiInst != NULL)
       {
          if(state->hasGui)
          {
             state->uiIdleIface = (LV2UI_Idle_Interface *)suil_instance_extension_data(state->uiInst, LV2_F_UI_IDLE);
-            state->widget = win;
-            QWidget *w = (QWidget *)suil_instance_get_widget(state->uiInst);
-            //w->setAttribute( Qt::WA_DeleteOnClose );
-            //w->hide();
-
-            //((QX11EmbedContainer *)w)->em
-
-            win->setCentralWidget(w);
+            if(!bX11Ui)
+            {
+               QWidget *w = (QWidget *)suil_instance_get_widget(state->uiInst);
+               win->setCentralWidget(w);
+            }
+            else
+            {
+               ewX11->embedInto(win->winId());
+               if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
+                  win->resize(ewX11->size());
+            }
 
             win->show();
             win->setWindowTitle(state->extHost.plugin_human_id);
@@ -1113,6 +1153,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       else if((std::string(LV2_F_WORKER_SCHEDULE) == _features [i].URI))
       {
          _fWrkSchedule = i;
+      }
+      else if((std::string(LV2_UI__resize) == _features [i].URI))
+      {
+         _fUiResize = i;
       }
       else if(std::string(LV2_F_DATA_ACCESS) == _features [i].URI)
       {
