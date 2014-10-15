@@ -65,6 +65,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <QX11EmbedContainer>
 
 //uncomment to print debugging information for lv2 host
 #define DEBUG_LV2
@@ -94,6 +95,7 @@ namespace MusECore
 #define LV2_F_UI_EXTERNAL_HOST LV2_EXTERNAL_UI__Host
 #define LV2_F_WORKER_SCHEDULE LV2_WORKER__schedule
 #define LV2_F_WORKER_INTERFACE LV2_WORKER__interface
+#define LV2_F_UI_IDLE LV2_UI__idleInterface
 #define LV2_UI_HOST_URI LV2_UI__Qt4UI
 #define LV2_UI_EXTERNAL LV2_EXTERNAL_UI__Widget
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
@@ -174,7 +176,9 @@ LV2_Feature lv2Features [] =
    {LV2_F_UI_PARENT, NULL},
    {LV2_F_INSTANCE_ACCESS, NULL},
    {LV2_F_UI_EXTERNAL_HOST, NULL},
+   {LV2_UI_EXTERNAL_DEPRECATED, NULL},
    {LV2_F_WORKER_SCHEDULE, NULL},
+   {LV2_F_UI_IDLE, NULL},
    {LV2_F_OPTIONS, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!
 };
@@ -370,6 +374,7 @@ void deinitLV2()
    for(size_t i = 0; i < synthsToFree.size(); i++)
    {
       delete synthsToFree [i];
+
    }
 
    for(LilvNode **n = (LilvNode **)&lv2CacheNodes; *n; ++n)
@@ -426,45 +431,49 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
       {
          assert(controlsOut != NULL);
       }
-
-      if(state->uiInst != NULL)
+      for(uint32_t i = 0; i < numControls; ++i)
       {
-
-         for(uint32_t i = 0; i < numControls; ++i)
+         if(state->controlTimers [i] > 0)
          {
-            if(state->controlTimers [i] > 0)
-            {
-               --state->controlTimers [i];
-               continue;
-            }
-            if(state->controlsMask [i])
-            {
-               state->controlsMask [i] = false;
-
-               if(state->lastControls [i] != controls [i].val)
-               {
-                  state->lastControls [i] = controls [i].val;
-                  suil_instance_port_event(state->uiInst,
-                                           controls [i].idx,
-                                           sizeof(float), 0,
-                                           &controls [i].val);
-               }
-            }
+            --state->controlTimers [i];
+            continue;
          }
-
-         for(uint32_t i = 0; i < numControlsOut; ++i)
+         if(state->controlsMask [i])
          {
-            if(state->lastControlsOut [i] != controlsOut [i].val)
-            {
-               state->lastControlsOut [i] = controlsOut [i].val;
-               suil_instance_port_event(state->uiInst,
-                                        controlsOut [i].idx,
-                                        sizeof(float), 0,
-                                        &controlsOut [i].val);
-            }
+            state->controlsMask [i] = false;
 
+            if(state->lastControls [i] != controls [i].val)
+            {
+               state->lastControls [i] = controls [i].val;
+               suil_instance_port_event(state->uiInst,
+                                        controls [i].idx,
+                                        sizeof(float), 0,
+                                        &controls [i].val);
+            }
          }
       }
+
+      for(uint32_t i = 0; i < numControlsOut; ++i)
+      {
+         if(state->lastControlsOut [i] != controlsOut [i].val)
+         {
+            state->lastControlsOut [i] = controlsOut [i].val;
+            suil_instance_port_event(state->uiInst,
+                                     controlsOut [i].idx,
+                                     sizeof(float), 0,
+                                     &controlsOut [i].val);
+         }
+
+      }
+
+      //call ui idle callback if any
+      if(state->uiIdleIface != NULL)
+      {
+         int iRet = state->uiIdleIface->idle(suil_instance_get_handle(state->uiInst));
+         if(iRet != 0) // ui don't want us to call it's idle callback any more
+            state->uiIdleIface = NULL;
+      }
+
    }
 }
 
@@ -603,7 +612,11 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
       {
          _ifeatures [i].data = NULL;
       }
-      else if(i == synth->_fUiHost)
+      else if(i == synth->_fExtUiHost)
+      {
+         _ifeatures [i].data = &state->extHost;
+      }
+      else if(i == synth->_fExtUiHostD)
       {
          _ifeatures [i].data = &state->extHost;
       }
@@ -642,7 +655,8 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
       state->extData.data_access = descr->extension_data;
 
       //query for LV2Worker interface
-      state->wrkIface = (LV2_Worker_Interface *)descr->extension_data(LV2_F_WORKER_INTERFACE);
+      state->wrkIface = (LV2_Worker_Interface *)descr->extension_data(LV2_F_WORKER_INTERFACE);      
+
    }
    else
    {
@@ -711,23 +725,58 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
 
 
 
+void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
+{
+   uint32_t numControls = 0;
+   Port *controls = NULL;
+
+   if(state->plugInst != NULL)
+   {
+      numControls = state->plugInst->controlPorts;
+      controls = state->plugInst->controls;
+
+   }
+   else if(state->sif != NULL)
+   {
+      numControls = state->sif->_inportsControl;
+      controls = state->sif->_controls;
+   }
+
+   if(numControls > 0)
+   {
+      assert(controls != NULL);
+   }
+
+   for(uint32_t i = 0; i < numControls; ++i)
+   {
+      suil_instance_port_event(state->uiInst,
+                               controls [i].idx,
+                               sizeof(float), 0,
+                               &controls [i].val);
+   }
+
+   state->uiTimer->start(1000 / 30);
+
+}
 
 
 
 void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 {
    LV2Synth *synth = state->synth;
-   QMainWindow *win = NULL;
+   LV2PluginWrapper_Window *win = NULL;
+
+   assert(synth->_pluginUiTypes.size() > 0);
 
    state->uiTimer->stopNextTime();
 
    if(!bShow)
    {
-      if(synth->_hasGui && state->widget)
+      if(state->hasGui && state->widget)
       {
-         ((QWidget *)state->widget)->hide();
+         ((QWidget *)state->widget)->close();
       }
-      else if(synth->_hasExternalGui && state->widget)
+      else if(state->hasExternalGui && state->widget)
       {
          //LV2_EXTERNAL_UI_HIDE((LV2_External_UI_Widget *)state->widget);
          state->widget = NULL;
@@ -739,95 +788,141 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
    }
    else
    {
-      if(synth->_hasGui && state->widget && state->uiInst)
+      if(state->hasGui && state->widget && state->uiInst)
       {
          ((QWidget *)state->widget)->show();
          ((QWidget *)state->widget)->setWindowTitle(state->extHost.plugin_human_id);
-         goto _gui_write;
+         LV2Synth::lv2ui_PostShow(state);
+         return;
 
       }
-      else if(synth->_hasExternalGui && state->widget)
+      else if(state->hasExternalGui && state->widget)
       {
          //LV2_EXTERNAL_UI_SHOW((LV2_External_UI_Widget *)state->widget);
          //goto _gui_write;
          state->widget = NULL;
          suil_instance_free(state->uiInst);
-         state->uiInst = NULL;
+         state->uiInst = NULL;         
+      }
+
+   }
+   LV2_PLUGIN_UI_TYPES::iterator itUi;
+
+   if(state->uiCurrent == NULL)
+   {
+      QAction *aUiTypeSelected = NULL;
+      if(synth->_pluginUiTypes.size() == 1)
+      {
+         state->uiCurrent = synth->_pluginUiTypes.begin()->first;
+      }
+      else
+      {
+         QMenu mGuisPopup;
+         QAction *aUiTypeHeader = new QAction(QMenu::tr("Select gui type"), NULL);
+         aUiTypeHeader->setEnabled(false);
+         QFont fHeader;
+         fHeader.setBold(true);
+         fHeader.setUnderline(true);
+         aUiTypeHeader->setFont(fHeader);
+         mGuisPopup.addAction(aUiTypeHeader);
+
+         for(itUi = synth->_pluginUiTypes.begin(); itUi != synth->_pluginUiTypes.end(); itUi++)
+         {
+            const LilvUI *selectedUi = itUi->first;
+            const LilvNode *pluginUiType = itUi->second.second;
+            QAction *aUiType = new QAction(QString(lilv_node_as_string(pluginUiType)), NULL);
+            aUiType->setData(QVariant(reinterpret_cast<qlonglong>(selectedUi)));
+            mGuisPopup.addAction(aUiType);
+         }
+
+         aUiTypeSelected = mGuisPopup.exec(QCursor::pos());
+         if(aUiTypeSelected == NULL)
+         {
+            return;
+         }
+         state->uiCurrent = reinterpret_cast<const LilvUI *>(aUiTypeSelected->data().toLongLong());
       }
 
    }
 
-   if(synth->_hasGui)
+   itUi = synth->_pluginUiTypes.find(state->uiCurrent);
+
+   assert(itUi != synth->_pluginUiTypes.end());
+
+
+   const LilvUI *selectedUi = itUi->first;
+   bool bExtUi = itUi->second.first;
+   const LilvNode *pluginUiType = itUi->second.second;
+   state->uiIdleIface = NULL;
+   if(bExtUi)
+   {
+      state->hasGui = false;
+      state->hasExternalGui = true;
+   }
+   else
+   {
+      state->hasGui = true;
+      state->hasExternalGui = false;
+   }
+
+
+   if(state->hasGui)
    {
       win = new LV2PluginWrapper_Window(state);
    }
 
-   if(win != NULL || synth->_hasExternalGui)
+   if(win != NULL || state->hasExternalGui)
    {
       state->_ifeatures [synth->_fUiParent].data = win;
       state->uiInst = suil_instance_new(state->uiHost,
                                         state,
                                         lilv_node_as_uri(lv2CacheNodes.host_uiType),
                                         lilv_node_as_uri(lilv_plugin_get_uri(synth->_handle)),
-                                        lilv_node_as_uri(lilv_ui_get_uri(synth->_selectedUi)),
-                                        lilv_node_as_uri(synth->_pluginUIType),
-                                        lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_bundle_uri(synth->_selectedUi))),
-                                        lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(synth->_selectedUi))),
+                                        lilv_node_as_uri(lilv_ui_get_uri(selectedUi)),
+                                        lilv_node_as_uri(pluginUiType),
+                                        lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi))),
+                                        lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi))),
                                         state->_ppifeatures);
 
       if(state->uiInst != NULL)
       {
-         if(synth->_hasGui)
+         if(state->hasGui)
          {
+            state->uiIdleIface = (LV2UI_Idle_Interface *)suil_instance_extension_data(state->uiInst, LV2_F_UI_IDLE);
             state->widget = win;
-            win->setCentralWidget((QWidget *)suil_instance_get_widget(state->uiInst));
+            QWidget *w = (QWidget *)suil_instance_get_widget(state->uiInst);
+            //w->setAttribute( Qt::WA_DeleteOnClose );
+            //w->hide();
+
+            //((QX11EmbedContainer *)w)->em
+
+            win->setCentralWidget(w);
+
             win->show();
             win->setWindowTitle(state->extHost.plugin_human_id);
          }
-         else if(synth->_hasExternalGui)
+         else if(state->hasExternalGui)
          {
             state->widget = (void *)suil_instance_get_widget(state->uiInst);
             LV2_EXTERNAL_UI_SHOW((LV2_External_UI_Widget *)state->widget);
          }
 
-      _gui_write:
-
-         if(state->uiInst != NULL)
-         {
-            uint32_t numControls = 0;
-            Port *controls = NULL;
-
-            if(state->plugInst != NULL)
-            {
-               numControls = state->plugInst->controlPorts;
-               controls = state->plugInst->controls;
-
-            }
-            else if(state->sif != NULL)
-            {
-               numControls = state->sif->_inportsControl;
-               controls = state->sif->_controls;
-            }
-
-            if(numControls > 0)
-            {
-               assert(controls != NULL);
-            }
-
-            for(uint32_t i = 0; i < numControls; ++i)
-            {
-               suil_instance_port_event(state->uiInst,
-                                        controls [i].idx,
-                                        sizeof(float), 0,
-                                        &controls [i].val);
-            }
-
-            state->uiTimer->start(1000 / 30);
-            return;
-         }
+         LV2Synth::lv2ui_PostShow(state);
+         return;
 
       }
+
    }
+   if(win != NULL)
+   {
+      delete win;
+      win = NULL;
+   }
+   state->widget = NULL;
+   state->uiCurrent = NULL;
+
+   //no ui is shown
+   state->hasExternalGui = state->hasGui = false;
 
 }
 
@@ -945,9 +1040,6 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uTime_beatsPerMinute  = mapUrid(LV2_TIME__beatsPerMinute);
    _uTime_barBeat         = mapUrid(LV2_TIME__barBeat);
 
-   _hasGui = false;
-   _hasExternalGuiDepreceated = _hasExternalGui = false;
-
    //prepare features and options arrays
    LV2_Options_Option _tmpl_options [] =
    {
@@ -1012,7 +1104,11 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       }
       else if((std::string(LV2_F_UI_EXTERNAL_HOST) == _features [i].URI))
       {
-         _fUiHost = i;
+         _fExtUiHost = i;
+      }
+      else if((std::string(LV2_UI_EXTERNAL_DEPRECATED) == _features [i].URI))
+      {
+         _fExtUiHostD = i;
       }
       else if((std::string(LV2_F_WORKER_SCHEDULE) == _features [i].URI))
       {
@@ -1109,10 +1205,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       _isSynth = true;
    }
 
-   _pluginUIType = NULL;
-   _selectedUi = NULL;
-   _hasGui = false;
-   _hasExternalGui = false;
+   const LilvNode *pluginUIType = NULL;
 
    _uiHost = suil_host_new(LV2Synth::lv2ui_PortWrite, NULL, NULL, NULL);
    _uis = NULL;
@@ -1131,31 +1224,26 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 #endif
 
 
-         bool uiFound = false;
-         while(!lilv_uis_is_end(_uis, it) && !uiFound)
+         while(!lilv_uis_is_end(_uis, it))
          {
             const LilvUI *ui = lilv_uis_get(_uis, it);
-            if(!_hasExternalGui &&
-                  lilv_ui_is_supported(ui,
+            if(lilv_ui_is_supported(ui,
                                        suil_ui_supported,
                                        lv2CacheNodes.host_uiType,
-                                       &_pluginUIType))
+                                       &pluginUIType))
             {
 #ifdef DEBUG_LV2
-               const char *strUiType = lilv_node_as_string(_pluginUIType); //internal uis are preferred
+               const char *strUiType = lilv_node_as_string(pluginUIType); //internal uis are preferred
                std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << strUiType << std::endl;
 #endif
-               _hasGui = true;
-               _hasExternalGui = false;
-               _selectedUi = ui;
-               uiFound = true;
+               _pluginUiTypes.insert(std::make_pair<const LilvUI *, std::pair<bool, const LilvNode *> >(ui, std::make_pair<bool, const LilvNode *>(false, pluginUIType)));
             }
             else
             {
                const LilvNodes *nUiClss = lilv_ui_get_classes(ui);
                LilvIter *nit = lilv_nodes_begin(nUiClss);
 
-               while(!lilv_nodes_is_end(_uis, nit) && !uiFound)
+               while(!lilv_nodes_is_end(_uis, nit))
                {
                   const LilvNode *nUiCls = lilv_nodes_get(nUiClss, nit);
    #ifdef  DEBUG_LV2
@@ -1166,15 +1254,11 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
                   bool extdUi = lilv_node_equals(nUiCls, lv2CacheNodes.ext_d_uiType);
                   if(extUi || extdUi)
                   {
-                     _hasExternalGui = true;
-                     _hasExternalGuiDepreceated = extdUi;
-                     _pluginUIType = extUi ? lv2CacheNodes.ext_uiType : lv2CacheNodes.ext_d_uiType;
+                     pluginUIType = extUi ? lv2CacheNodes.ext_uiType : lv2CacheNodes.ext_d_uiType;
    #ifdef DEBUG_LV2
                      std::cerr << "Plugin " << label.toStdString() << " supports ui of type " << LV2_UI_EXTERNAL << std::endl;
    #endif
-                     _selectedUi = ui;
-                     uiFound = true;
-                     break;
+                     _pluginUiTypes.insert(std::make_pair<const LilvUI *, std::pair<bool, const LilvNode *> >(ui, std::make_pair<bool, const LilvNode *>(true, pluginUIType)));
                   }
 
                   nit = lilv_nodes_next(nUiClss, nit);
@@ -1187,9 +1271,6 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 
       }
    }
-
-   if(_hasExternalGuiDepreceated)
-         _features [_fUiHost].URI = LV2_UI_EXTERNAL_DEPRECATED;
 }
 
 LV2Synth::~LV2Synth()
@@ -2872,7 +2953,7 @@ bool LV2SynthIF::hasGui() const
 
 bool LV2SynthIF::hasNativeGui() const
 {
-   return _synth->_hasGui || _synth->_hasExternalGui;
+   return (_synth->_pluginUiTypes.size() > 0);
 }
 
 bool LV2SynthIF::initGui()
@@ -2885,11 +2966,11 @@ bool LV2SynthIF::nativeGuiVisible() const
 {
    if(_uiState != NULL)
    {
-      if(_synth->_hasExternalGui)
+      if(_uiState->hasExternalGui)
       {
          return (_uiState->widget != NULL);
       }
-      else if(_synth->_hasGui && _uiState->widget != NULL)
+      else if(_uiState->hasGui && _uiState->widget != NULL)
       {
          return ((QWidget *)_uiState->widget)->isVisible();
       }
@@ -3209,34 +3290,32 @@ void LV2PluginWrapper_Timer::run()
 {
    if(_state != NULL)
    {
-      LV2Synth *_s = _state->synth;
-
       while(_bRunning)
       {
          usleep(_msec * 1000);
 
          if(_state->widget != NULL && _state->uiInst != NULL)
          {
-            if(_s->_hasExternalGui && !_state->deleteLater)
+            if(_state->hasExternalGui && !_state->deleteLater)
             {
                LV2Synth::lv2ui_SendChangedControls(_state);
                LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
 
             }
-            else if(_s->_hasGui)
+            else if(_state->hasGui)
             {
                (reinterpret_cast<LV2PluginWrapper_Window *>(_state->widget))->doChangeControls();
             }
          }
       }
 
-      if(_s->_hasExternalGui && _state->widget)
+      if(_state->hasExternalGui && _state->widget)
       {
          //LV2_EXTERNAL_UI_HIDE((LV2_External_UI_Widget *)state->widget);
          _state->widget = NULL;
          suil_instance_free(_state->uiInst);
          _state->uiInst = NULL;
-      }else if(_s->_hasGui)
+      }else if(_state->hasGui)
       {
          //_state->guiLock.tryLock();
          if(_state->widget != NULL)
@@ -3250,7 +3329,7 @@ void LV2PluginWrapper_Timer::run()
 
    if(_state->deleteLater)
    {
-      if(!_state->synth->_hasGui)
+      if(!_state->hasGui)
          LV2Synth::lv2state_FreeState(_state);
       emit deletePending();
    }
@@ -3299,7 +3378,13 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
    if(_state->deleteLater)
       LV2Synth::lv2state_FreeState(_state);
    else
+   {
       _state->uiTimer->stopNextTime(false);
+      _state->widget = NULL;
+      suil_instance_free(_state->uiInst);
+      _state->uiInst = NULL;
+      delete this;
+   }
 
 }
 
@@ -3637,7 +3722,7 @@ CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
 }
 bool LV2PluginWrapper::hasNativeGui()
 {
-   return _synth->_hasGui || _synth->_hasExternalGui;
+   return (_synth->_pluginUiTypes.size() > 0);
 }
 
 void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)

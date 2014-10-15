@@ -497,6 +497,8 @@ class LV2SynthIF;
 class LV2PluginWrapper_Timer;
 class LV2PluginWrapper_State;
 
+typedef std::map<const LilvUI *, std::pair<bool, const LilvNode *> > LV2_PLUGIN_UI_TYPES;
+
 class LV2Synth : public Synth
 {
 private:
@@ -511,12 +513,14 @@ private:
     bool _isSynth;
     int _uniqueID;
     uint32_t _midi_event_id;
-    bool _hasGui;
-    bool _hasExternalGui;
-    bool _hasExternalGuiDepreceated;
+    //bool _hasGui;
+    //bool _hasExternalGui;
+   // bool _hasExternalGuiDepreceated;
     LilvUIs *_uis;
-    const LilvUI *_selectedUi;
+    //const LilvUI *_selectedUi;
     std::map<uint32_t, uint32_t> _idxToControlMap;
+
+    LV2_PLUGIN_UI_TYPES _pluginUiTypes;
 
     //templates for LV2SynthIF and LV2PluginWrapper instantiation
     LV2_MIDI_PORTS _midiInPorts;
@@ -530,11 +534,12 @@ private:
     MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps LV2 port numbers to midi controller numbers.
     uint32_t _fInstanceAccess;
     uint32_t _fUiParent;
-    uint32_t _fUiHost;
+    uint32_t _fExtUiHost;
+    uint32_t _fExtUiHostD;
     uint32_t _fDataAccess;
     uint32_t _fWrkSchedule;
     SuilHost *_uiHost;
-    const LilvNode *_pluginUIType = NULL;
+    //const LilvNode *_pluginUIType = NULL;
     LV2_URID _uTime_Position;
     LV2_URID _uTime_frame;
     LV2_URID _uTime_speed;
@@ -560,6 +565,7 @@ public:
     size_t outPorts() {
         return _audioOutPorts.size();
     }
+    static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static void lv2ui_ShowNativeGui ( LV2PluginWrapper_State *state, bool bShow );
     static void lv2ui_PortWrite ( SuilController controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer );
     static void lv2ui_Touch (SuilController controller, uint32_t port_index, bool grabbed);
@@ -713,7 +719,11 @@ struct LV2PluginWrapper_State {
       wrkEndWork(false),
       controlTimers(NULL),
       //guiLock(),
-      deleteLater(false)
+      deleteLater(false),
+      hasGui(false),
+      hasExternalGui(false),
+      uiIdleIface(NULL),
+      uiCurrent(NULL)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;      
@@ -753,6 +763,10 @@ struct LV2PluginWrapper_State {
     float curBpm;
     bool curIsPlaying;
     unsigned int curFrame;
+    bool hasGui;
+    bool hasExternalGui;
+    LV2UI_Idle_Interface *uiIdleIface;
+    const LilvUI *uiCurrent;
 };
 
 class LV2PluginWrapper_Timer :public QThread
