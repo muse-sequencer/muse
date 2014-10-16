@@ -128,7 +128,6 @@ typedef struct
    LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
 } CacheNodes;
 
-
 LV2_URID Synth_Urid_Map(LV2_URID_Unmap_Handle _host_data, const char *uri)
 {
    LV2Synth *_synth = reinterpret_cast<LV2Synth *>(_host_data);
@@ -183,6 +182,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_UI_IDLE, NULL},
    {LV2_F_OPTIONS, NULL},
    {LV2_UI__resize, NULL},
+   {LV2_PROGRAMS__Host, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!
 };
 
@@ -632,6 +632,10 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
       {
          _ifeatures [i].data = &state->uiResize;
       }
+      else if(i == synth->_fPrgHost)
+      {
+         _ifeatures [i].data = &state->prgHost;
+      }
 
       _ppifeatures [i] = &_ifeatures [i];
    }
@@ -657,17 +661,38 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
    if(descr->extension_data != NULL)
    {
       state->extData.data_access = descr->extension_data;
-
-      //query for LV2Worker interface
-      state->wrkIface = (LV2_Worker_Interface *)descr->extension_data(LV2_F_WORKER_INTERFACE);
-
    }
    else
    {
       state->_ppifeatures [synth->_fDataAccess] = NULL;
    }
 
+   //query for state interface
    state->iState = (LV2_State_Interface *)lilv_instance_get_extension_data(state->handle, LV2_STATE__interface);
+   //query for LV2Worker interface
+   state->wrkIface = (LV2_Worker_Interface *)lilv_instance_get_extension_data(state->handle, LV2_F_WORKER_INTERFACE);
+   //query for programs interface
+   state->prgIface = (LV2_Programs_Interface *)lilv_instance_get_extension_data(state->handle, LV2_PROGRAMS__Interface);
+   if(state->prgIface != NULL)
+   {
+      state->programs.clear();
+      uint32_t iPrg = 0;
+      const LV2_Program_Descriptor *pDescr = NULL;
+      while((pDescr = state->prgIface->get_program(
+                lilv_instance_get_handle(state->handle), iPrg)) != NULL)
+      {
+         lv2ExtProgram extPrg;
+         extPrg.index = iPrg;
+         extPrg.bank = pDescr->bank;
+         extPrg.prog = pDescr->program;
+         extPrg.useIndex = true;
+         extPrg.name = QString(pDescr->name);
+
+         state->programs.insert(extPrg);
+         ++iPrg;
+      }
+   }
+
 
    state->wrkThread->start(QThread::LowPriority);
 
@@ -920,9 +945,10 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
       if(state->uiInst != NULL)
       {
+         state->uiIdleIface = (LV2UI_Idle_Interface *)suil_instance_extension_data(state->uiInst, LV2_F_UI_IDLE);
+         state->prgUiIface = (LV2_Programs_UI_Interface *)suil_instance_extension_data(state->uiInst, LV2_PROGRAMS__UIInterface);
          if(state->hasGui)
-         {
-            state->uiIdleIface = (LV2UI_Idle_Interface *)suil_instance_extension_data(state->uiInst, LV2_F_UI_IDLE);
+         {            
             if(!bX11Ui)
             {
                QWidget *w = (QWidget *)suil_instance_get_widget(state->uiInst);
@@ -1059,6 +1085,15 @@ LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uin
    return LV2_WORKER_SUCCESS;
 }
 
+void LV2Synth::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+#ifdef DEBUG_LV2
+   std::cerr << "LV2Synth::lv2prg_Changed: index: " << index << std::endl;
+#endif
+
+}
+
 
 
 LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin)
@@ -1154,6 +1189,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       else if((std::string(LV2_UI__resize) == _features [i].URI))
       {
          _fUiResize = i;
+      }
+      else if((std::string(LV2_PROGRAMS__Host) == _features [i].URI))
+      {
+         _fPrgHost = i;
       }
       else if(std::string(LV2_F_DATA_ACCESS) == _features [i].URI)
       {
@@ -2946,10 +2985,19 @@ float LV2SynthIF::getParameterOut(long unsigned int n) const
 }
 
 
-QString LV2SynthIF::getPatchName(int, int , bool) const
+QString LV2SynthIF::getPatchName(int bank, int prog, bool) const
 {
-   //TODO: implement this
-   return "?";
+   lv2ExtProgram extPrg;
+   extPrg.index = 0;
+   extPrg.useIndex = false;
+   extPrg.bank = bank;
+   extPrg.prog = prog;
+   size_t sz = _uiState->programs.size();
+   std::set<lv2ExtProgram, cmp_lvExtPrg>::iterator it = _uiState->programs.find(extPrg);
+   if(it == _uiState->programs.end())
+      return QString("?");
+   return QString(it->name);
+
 }
 
 void LV2SynthIF::guiHeartBeat()
@@ -3002,6 +3050,18 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
 {
    //TODO: implement this
    menu->clear();
+   std::set<lv2ExtProgram>::iterator it;
+   for(it = _uiState->programs.begin(); it != _uiState->programs.end(); ++it)
+   {
+      //truncating bank and brogran numbers to 16 bit - muse MidiPlayEvent can handle only 32 bit numbers
+      int bank = it->bank;
+      int prog = it->prog;
+      int id = (bank << 16) + prog;
+
+      QAction *act = menu->addAction(QString(it->name));
+      act->setData(id);
+
+   }
 }
 
 void LV2SynthIF::preProcessAlways()
@@ -3564,18 +3624,18 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
       }
    }
 
-   state->_midiInPorts = _synth->_midiInPorts;
+   state->midiInPorts = _synth->_midiInPorts;
 
    //connect midi and control ports
-   for(size_t i = 0; i < state->_midiInPorts.size(); i++)
+   for(size_t i = 0; i < state->midiInPorts.size(); i++)
    {
       LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
-                                      state->_midiInPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
+                                      state->midiInPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
                                       _synth->mapUrid(LV2_ATOM__Chunk),
                                       _synth->mapUrid(LV2_ATOM__Sequence)
                                      );
-      state->_midiInPorts [i].buffer = buffer;
-      lilv_instance_connect_port(state->handle, state->_midiInPorts [i].index, (void *)buffer->lv2_evbuf_get_buffer());
+      state->midiInPorts [i].buffer = buffer;
+      lilv_instance_connect_port(state->handle, state->midiInPorts [i].index, (void *)buffer->lv2_evbuf_get_buffer());
    }
 
    _states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));
@@ -3626,9 +3686,9 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
    assert(it != _states.end()); //this shouldn't happen
    LV2PluginWrapper_State *state = it->second;
 
-   if(state->_midiInPorts.size() > 0)
+   if(state->midiInPorts.size() > 0)
    {
-      LV2EvBuf *rawMidiBuffer = state->_midiInPorts [0].buffer;
+      LV2EvBuf *rawMidiBuffer = state->midiInPorts [0].buffer;
       rawMidiBuffer->lv2_evbuf_reset(true);
       LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
       //send transport events if any

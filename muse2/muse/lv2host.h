@@ -56,6 +56,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <QMutex>
@@ -540,6 +541,7 @@ private:
     uint32_t _fDataAccess;
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
+    uint32_t _fPrgHost;
     SuilHost *_uiHost;
     //const LilvNode *_pluginUIType = NULL;
     LV2_URID _uTime_Position;
@@ -582,6 +584,7 @@ public:
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);
+    static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -695,6 +698,33 @@ class LV2PluginWrapper;
 class LV2PluginWrapper_Worker;
 class LV2PluginWrapper_Window;
 
+typedef struct
+{
+   uint32_t index;
+   uint32_t bank;
+   uint32_t prog;
+   QString name;
+   bool useIndex;
+
+} lv2ExtProgram;
+
+struct cmp_lvExtPrg {
+    bool operator() ( const lv2ExtProgram &a, const lv2ExtProgram &b ) const {
+       if((a.index == b.index) && (a.useIndex == b.useIndex))
+          return false;
+       else if((a.index < b.index) && (a.useIndex == b.useIndex))
+          return true;
+       if((a.bank == b.bank) && (a.prog == b.prog))
+          return false;
+       else if((a.bank < b.bank) && (a.prog == b.prog))
+          return true;
+       else if((a.bank == b.bank) && (a.prog < b.prog))
+          return true;
+
+       return false;
+    }
+};
+
 struct LV2PluginWrapper_State {
    LV2PluginWrapper_State():
       _ifeatures(NULL),
@@ -725,12 +755,18 @@ struct LV2PluginWrapper_State {
       uiIdleIface(NULL),
       uiCurrent(NULL),
       uiX11Size(0, 0),
-      pluginWindow(NULL)
+      pluginWindow(NULL),
+      prgIface(NULL),
+      prgUiIface(NULL),
+      uiDoSelectPrg(false)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
-      uiResize.handle = this;
+      uiResize.handle = (LV2UI_Feature_Handle)this;
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
+      prgHost.handle = (LV2_Programs_Handle)this;
+      prgHost.program_changed = LV2Synth::lv2prg_Changed;
+
    }
 
     LV2_Feature *_ifeatures;
@@ -772,7 +808,13 @@ struct LV2PluginWrapper_State {
     LV2UI_Resize uiResize;
     QSize uiX11Size;
     LV2PluginWrapper_Window *pluginWindow;
-    LV2_MIDI_PORTS _midiInPorts; //for rack plugins only
+    LV2_MIDI_PORTS midiInPorts; //for rack plugins only
+    LV2_Programs_Interface *prgIface;
+    LV2_Programs_UI_Interface *prgUiIface;
+    bool uiDoSelectPrg;
+    std::set<lv2ExtProgram, cmp_lvExtPrg> programs;
+    LV2_Programs_Host prgHost;
+
 };
 
 
