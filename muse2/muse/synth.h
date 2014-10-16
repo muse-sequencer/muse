@@ -222,8 +222,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       // List of initial floating point parameters, for synths which use them.
       // Used once upon song reload, then discarded.
       std::vector<float> initParams;
-      //custom params in xml song file , synth tag, that will be passed to new SynthIF:read(Xml &) method
-      //now pnly lv2host uses them, others simply ignore
+      //custom params in xml song file , synth tag, that will be passed to new SynthIF:setCustomData(Xml &) method
+      //now only lv2host uses them, others simply ignore
       std::vector<QString> accumulatedCustomParams;
 
       // Initial, and running, string parameters for synths which use them, like dssi.
