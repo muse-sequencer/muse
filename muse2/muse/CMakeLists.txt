@@ -93,6 +93,8 @@ file (GLOB core_source_files
       dialogs.cpp
       dssihost.cpp
       lv2host.cpp
+      lv2extui.h
+      lv2extprg.h
       event.cpp
       eventlist.cpp
       exportmidi.cpp

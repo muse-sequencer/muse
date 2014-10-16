@@ -48,6 +48,7 @@
 #include "lv2/lv2plug.in/ns/ext/atom/forge.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 #include "lv2extui.h"
+#include "lv2extprg.h"
 
 #include "suil/suil.h"
 
