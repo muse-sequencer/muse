@@ -408,7 +408,7 @@ void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
 void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
 {
    if(state != NULL && state->uiInst != NULL)
-   {
+   {      
       size_t numControls = 0;
       MusECore::Port *controls = NULL;
       size_t numControlsOut = 0;
@@ -946,7 +946,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       if(state->uiInst != NULL)
       {
          state->uiIdleIface = (LV2UI_Idle_Interface *)suil_instance_extension_data(state->uiInst, LV2_F_UI_IDLE);
-         state->prgUiIface = (LV2_Programs_UI_Interface *)suil_instance_extension_data(state->uiInst, LV2_PROGRAMS__UIInterface);
+         state->uiPrgIface = (LV2_Programs_UI_Interface *)suil_instance_extension_data(state->uiInst, LV2_PROGRAMS__UIInterface);
          if(state->hasGui)
          {            
             if(!bX11Ui)
@@ -1085,12 +1085,46 @@ LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uin
    return LV2_WORKER_SUCCESS;
 }
 
-void LV2Synth::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
+void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 #ifdef DEBUG_LV2
    std::cerr << "LV2Synth::lv2prg_Changed: index: " << index << std::endl;
 #endif
+   if(state->sif && state->sif->synti)
+   {
+      lv2ExtProgram extPrg;
+      extPrg.index = index;
+      extPrg.useIndex = true;
+      extPrg.bank = 0;
+      extPrg.prog = 0;
+      std::set<lv2ExtProgram, cmp_lvExtPrg>::iterator it = state->programs.find(extPrg);
+      if(it == state->programs.end())
+         return;
+      int ch      = 0;
+      int port    = state->sif->synti->midiPort();
+
+      state->sif->synti->_curBankH = 0;
+      state->sif->synti->_curBankL = it->bank;
+      state->sif->synti->_curProgram = it->prog;
+
+      int rv = ((((int)it->bank)<<16) + (int)it->prog);
+
+      if(port != -1)
+      {
+        MidiPlayEvent event(0, port, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
+        //MusEGlobal::midiPorts[port].sendEvent(event);
+        MusEGlobal::midiPorts[port].sendHwCtrlState(event, false);
+        if(state->sif->id() != -1 && state->sif->_controls != NULL)
+        {
+           for(unsigned long k = 0; k < state->sif->_inportsControl; ++k)
+           {
+              state->sif->synti->setPluginCtrlVal(genACnum(state->sif->id(), k), state->sif->_controls[k].val);
+           }
+        }
+      }
+
+   }
 
 }
 
@@ -1799,6 +1833,35 @@ bool LV2SynthIF::init(LV2Synth *s)
 
 }
 
+void LV2SynthIF::doSelectProgram(int bank, int prog)
+{
+   if(_uiState && _uiState->prgIface && _uiState->prgIface->select_program)
+   {
+      _uiState->prgIface->select_program(lilv_instance_get_handle(_uiState->handle), (uint32_t)bank, (uint32_t)prog);
+
+      /*
+      * A plugin is permitted to re-write the values of its input
+      * control ports when select_program is called. The host should
+      * re-read the input control port values and update its own
+      * records appropriately. (This is the only circumstance in which
+      * a LV2 plugin is allowed to modify its own control-input ports.)
+      */
+      if(id() != -1)
+      {
+         for(unsigned long k = 0; k < _inportsControl; ++k)
+         {
+            // We're in the audio thread context: no need to send a message, just modify directly.
+            synti->setPluginCtrlVal(genACnum(id(), k), _controls[k].val);
+         }
+      }
+
+      //set update ui program flag
+      _uiState->uiBank = bank;
+      _uiState->uiProg = prog;
+      _uiState->uiDoSelectPrg = true;
+   }
+}
+
 int LV2SynthIF::channels() const
 {
    return (_outports) > MAX_CHANNELS ? MAX_CHANNELS : (_outports) ;
@@ -2146,6 +2209,8 @@ int LV2SynthIF::getControllerInfo(int id, const char **name, int *ctrl, int *min
 
 }
 
+
+
 bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
 {
 
@@ -2208,6 +2273,9 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
       synti->_curBankH = 0;
       synti->_curBankL = bank;
       synti->_curProgram = prog;
+
+      doSelectProgram(bank, prog);
+
       // Event pointer not filled. Return false.
       return false;
    }
@@ -2236,6 +2304,8 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
          synti->_curBankH = 0;
          synti->_curBankL = bank;
          synti->_curProgram = prog;
+
+         doSelectProgram(bank, prog);
 
          // Event pointer not filled. Return false.
          return false;
@@ -2992,7 +3062,6 @@ QString LV2SynthIF::getPatchName(int bank, int prog, bool) const
    extPrg.useIndex = false;
    extPrg.bank = bank;
    extPrg.prog = prog;
-   size_t sz = _uiState->programs.size();
    std::set<lv2ExtProgram, cmp_lvExtPrg>::iterator it = _uiState->programs.find(extPrg);
    if(it == _uiState->programs.end())
       return QString("?");
@@ -3374,6 +3443,8 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
       //_state->uiTimer->stopNextTime(false);
       _state->widget = NULL;
       _state->pluginWindow = NULL;
+      _state->uiDoSelectPrg = false;
+      _state->uiPrgIface = NULL;
       if(_state->uiInst != NULL)
       {
          suil_instance_free(_state->uiInst);
@@ -3391,10 +3462,19 @@ void LV2PluginWrapper_Window::timerEvent(QTimerEvent *)
 
    sendChangedControls();
 
+   //send program change if any
+   if(_state->uiDoSelectPrg)
+   {
+      _state->uiDoSelectPrg = false;
+      if(_state->uiPrgIface != NULL && _state->uiPrgIface->select_program != NULL)
+      {
+         _state->uiPrgIface->select_program(lilv_instance_get_handle(_state->handle), (uint32_t)_state->uiBank, (uint32_t)_state->uiProg);
+      }
+   }
+
    if(_state->hasExternalGui)
    {
       LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
-
    }
 
    //call ui idle callback if any
@@ -3420,9 +3500,9 @@ void LV2PluginWrapper_Window::startNextTime()
 {
    if(_timerId != 0)
    {
-      killTimer(_timerId);
-      _timerId = startTimer(30);
+      killTimer(_timerId);      
    }
+   _timerId = startTimer(30);
 }
 
 

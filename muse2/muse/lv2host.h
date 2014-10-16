@@ -583,8 +583,7 @@ public:
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
-    static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);
-    static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
+    static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);    
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -621,6 +620,7 @@ private:
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
     std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.
     snd_midi_event_t *_midiEvent;
+    void doSelectProgram(int bank, int prog);
     bool processEvent ( const MidiPlayEvent &, snd_seq_event_t * );
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
     float midi2Lv2Value ( unsigned long port, int ctlnum, int val );
@@ -690,6 +690,8 @@ public:
         return MAX_PLUGINS;
     }
 
+    static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
+
     friend class LV2Synth;
 };
 
@@ -757,15 +759,17 @@ struct LV2PluginWrapper_State {
       uiX11Size(0, 0),
       pluginWindow(NULL),
       prgIface(NULL),
-      prgUiIface(NULL),
-      uiDoSelectPrg(false)
+      uiPrgIface(NULL),
+      uiDoSelectPrg(false),
+      uiBank(0),
+      uiProg(0)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
       uiResize.handle = (LV2UI_Feature_Handle)this;
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
       prgHost.handle = (LV2_Programs_Handle)this;
-      prgHost.program_changed = LV2Synth::lv2prg_Changed;
+      prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
 
    }
 
@@ -810,11 +814,12 @@ struct LV2PluginWrapper_State {
     LV2PluginWrapper_Window *pluginWindow;
     LV2_MIDI_PORTS midiInPorts; //for rack plugins only
     LV2_Programs_Interface *prgIface;
-    LV2_Programs_UI_Interface *prgUiIface;
+    LV2_Programs_UI_Interface *uiPrgIface;
     bool uiDoSelectPrg;
     std::set<lv2ExtProgram, cmp_lvExtPrg> programs;
     LV2_Programs_Host prgHost;
-
+    int uiBank;
+    int uiProg;
 };
 
 
