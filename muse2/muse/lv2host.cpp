@@ -1003,28 +1003,31 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
    it = state->iStateValues.find(strKey);
    if(it != state->iStateValues.end())
    {
-      QString sType = it.value().first;
-      QByteArray arrType = sType.toUtf8();
-      *type = synth->mapUrid(arrType.constData());
-      *flags = LV2_STATE_IS_POD;
-      QByteArray valArr = it.value().second.toByteArray();
-      size_t i;
-      size_t numValues = state->numStateValues;
-      for(i = 0; i < numValues; ++i)
+      if(it.value().second.type() == QVariant::ByteArray)
       {
-         if(state->tmpValues [i] == NULL)
-            break;
-      }
-      assert(i < numValues); //sanity check
-      size_t sz = valArr.size();
-      state->iStateValues.remove(strKey);
-      if(sz > 0)
-      {
-         state->tmpValues [i] = new char [sz];
-         memset(state->tmpValues [i], 0, sz);
-         memcpy(state->tmpValues [i], valArr.constData(), sz);
-         *size = sz;
-         return state->tmpValues [i];
+         QString sType = it.value().first;
+         QByteArray arrType = sType.toUtf8();
+         *type = synth->mapUrid(arrType.constData());
+         *flags = LV2_STATE_IS_POD;
+         QByteArray valArr = it.value().second.toByteArray();
+         size_t i;
+         size_t numValues = state->numStateValues;
+         for(i = 0; i < numValues; ++i)
+         {
+            if(state->tmpValues [i] == NULL)
+               break;
+         }
+         assert(i < numValues); //sanity check
+         size_t sz = valArr.size();
+         state->iStateValues.remove(strKey);
+         if(sz > 0)
+         {
+            state->tmpValues [i] = new char [sz];
+            memset(state->tmpValues [i], 0, sz);
+            memcpy(state->tmpValues [i], valArr.constData(), sz);
+            *size = sz;
+            return state->tmpValues [i];
+         }
       }
    }
 
@@ -2927,8 +2930,9 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          if(ports != 0)  // Don't bother if not 'running'.
          {
             if(_inportsMidi > 0)
-            {
+            {               
                LV2EvBuf *rawMidiBuffer = _midiInPorts [0].buffer;
+               rawMidiBuffer->lv2_evbuf_reset(true);
                LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
 
                //send transport events if any
@@ -3209,6 +3213,12 @@ void LV2SynthIF::write(int level, Xml &xml) const
       _uiState->iStateValues.insert(QString(_controlInPorts [c].cName), QPair<QString, QVariant>(QString(""), QVariant((double)_controls[c].val)));
    }
 
+   if(_uiState->uiCurrent != NULL)
+   {
+      const char *cUiUri = lilv_node_as_uri(lilv_ui_get_uri(_uiState->uiCurrent));
+      _uiState->iStateValues.insert(QString(cUiUri), QPair<QString, QVariant>(QString(""), QVariant(QString(cUiUri))));
+   }
+
    QByteArray arrOut;
    QDataStream streamOut(&arrOut, QIODevice::WriteOnly);
    streamOut << _uiState->iStateValues;
@@ -3258,16 +3268,32 @@ void LV2SynthIF::setCustomData(const std::vector< QString > &customParams)
       QVariant qVal = it.value().second;
       if(!name.isEmpty() && qVal.isValid())
       {
-         bool ok = false;
-         float val = (float)qVal.toDouble(&ok);
-         if(ok)
+         if(qVal.type() == QVariant::String) // plugin ui uri
          {
-            std::map<QString, size_t>::iterator it = _controlsNameMap.find(name);
-            if(it != _controlsNameMap.end())
+            QString sUiUri = qVal.toString();
+            LV2_PLUGIN_UI_TYPES::iterator it;
+            for(it = _synth->_pluginUiTypes.begin(); it != _synth->_pluginUiTypes.end(); ++it)
             {
-               size_t ctrlNum = it->second;
-               _controls [ctrlNum].val = _controls [ctrlNum].tmpVal = val;
+               if(sUiUri == QString(lilv_node_as_uri(lilv_ui_get_uri(it->first))))
+               {
+                  _uiState->uiCurrent = it->first;
+                  break;
+               }
+            }
+         }
+         else
+         {
+            bool ok = false;
+            float val = (float)qVal.toDouble(&ok);
+            if(ok)
+            {
+               std::map<QString, size_t>::iterator it = _controlsNameMap.find(name);
+               if(it != _controlsNameMap.end())
+               {
+                  size_t ctrlNum = it->second;
+                  _controls [ctrlNum].val = _controls [ctrlNum].tmpVal = val;
 
+               }
             }
          }
 
