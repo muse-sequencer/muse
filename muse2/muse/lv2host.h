@@ -512,6 +512,7 @@ private:
     LV2_URID_Map _lv2_urid_map;
     LV2_URID_Unmap _lv2_urid_unmap;
     LV2_URI_Map_Feature _lv2_uri_map;
+    double _sampleRate;
     bool _isSynth;
     int _uniqueID;
     uint32_t _midi_event_id;

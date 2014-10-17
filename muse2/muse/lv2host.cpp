@@ -1149,10 +1149,12 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uTime_beatsPerMinute  = mapUrid(LV2_TIME__beatsPerMinute);
    _uTime_barBeat         = mapUrid(LV2_TIME__barBeat);
 
+   _sampleRate = (double)MusEGlobal::sampleRate;
+
    //prepare features and options arrays
    LV2_Options_Option _tmpl_options [] =
    {
-      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::sampleRate},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(double), uridBiMap.map(LV2_ATOM__Int), &_sampleRate},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
