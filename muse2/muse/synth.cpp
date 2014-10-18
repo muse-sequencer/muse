@@ -899,7 +899,7 @@ void SynthI::read(Xml& xml)
                               r = readGeometry(xml, tag);
                         else if (tag == "nativeGeometry")
                               nr = readGeometry(xml, tag);
-                        else if (tag == "customData") { //just plase tag contents in accumulatedCustomParams
+                        else if (tag == "customData") { //just place tag contents in accumulatedCustomParams
                               QString customData = xml.parse1();
                               if(!customData.isEmpty()){
                                  accumulatedCustomParams.push_back(customData);

@@ -757,30 +757,33 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    double curBpm = (60000000.0 / MusEGlobal::tempomap.tempo(p.tick())) * double(MusEGlobal::tempomap.globalTempo())/100.0;
    bool curIsPlaying = MusEGlobal::audio->isPlaying();
    unsigned int curFrame = MusEGlobal::audioDevice->getCurFrame();
-//   if(state->curFrame != curFrame
-//      || state->curIsPlaying != curIsPlaying
-//      || state->curBpm != curBpm)
-//   {
-      state->curFrame = curFrame;
-      state->curIsPlaying = curIsPlaying;
-      state->curBpm = curBpm;
-      uint8_t   pos_buf[256];
-      LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
-      /* Build an LV2 position object to report change to plugin */
-      LV2_Atom_Forge* atomForge = &state->atomForge;
-      lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
-      LV2_Atom_Forge_Frame frame;
-      lv2_atom_forge_blank(atomForge, &frame, 1, synth->_uTime_Position);
-      lv2_atom_forge_property_head(atomForge, synth->_uTime_frame, 0);
-      lv2_atom_forge_long(atomForge, curFrame);
-      lv2_atom_forge_property_head(atomForge, synth->_uTime_speed, 0);
-      lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
-      lv2_atom_forge_property_head(atomForge, synth->_uTime_beatsPerMinute, 0);
-      lv2_atom_forge_float(atomForge, (float)curBpm);
-      buffer->lv2_evbuf_write(iter, 0, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
+   //   if(state->curFrame != curFrame
+   //      || state->curIsPlaying != curIsPlaying
+   //      || state->curBpm != curBpm)
+   //   {
+
+   //send transport/tempo changes always
+   //as some plugins revert to default settings when not playing
+   state->curFrame = curFrame;
+   state->curIsPlaying = curIsPlaying;
+   state->curBpm = curBpm;
+   uint8_t   pos_buf[256];
+   LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
+   /* Build an LV2 position object to report change to plugin */
+   LV2_Atom_Forge* atomForge = &state->atomForge;
+   lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
+   LV2_Atom_Forge_Frame frame;
+   lv2_atom_forge_blank(atomForge, &frame, 1, synth->_uTime_Position);
+   lv2_atom_forge_property_head(atomForge, synth->_uTime_frame, 0);
+   lv2_atom_forge_long(atomForge, curFrame);
+   lv2_atom_forge_property_head(atomForge, synth->_uTime_speed, 0);
+   lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
+   lv2_atom_forge_property_head(atomForge, synth->_uTime_beatsPerMinute, 0);
+   lv2_atom_forge_float(atomForge, (float)curBpm);
+   buffer->lv2_evbuf_write(iter, 0, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
 
 
-//   }
+   //   }
 }
 
 void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
@@ -1087,6 +1090,120 @@ LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uin
 
    return LV2_WORKER_SUCCESS;
 }
+
+void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
+{
+   state->iStateValues.clear();
+   state->numStateValues = 0;
+
+   if(state->iState != NULL)
+   {
+      state->iState->save(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateStore, state, LV2_STATE_IS_POD, state->_ppifeatures);
+   }
+
+   if(state->sif != NULL) // write control ports values only for synths
+   {
+      for(size_t c = 0; c < state->sif->_inportsControl; c++)
+      {
+         state->iStateValues.insert(QString(state->sif->_controlInPorts [c].cName), QPair<QString, QVariant>(QString(""), QVariant((double)state->sif->_controls[c].val)));
+      }
+   }
+
+   if(state->uiCurrent != NULL)
+   {
+      const char *cUiUri = lilv_node_as_uri(lilv_ui_get_uri(state->uiCurrent));
+      state->iStateValues.insert(QString(cUiUri), QPair<QString, QVariant>(QString(""), QVariant(QString(cUiUri))));
+   }
+
+   QByteArray arrOut;
+   QDataStream streamOut(&arrOut, QIODevice::WriteOnly);
+   streamOut << state->iStateValues;
+   QByteArray outEnc64 = arrOut.toBase64();
+   QString customData(outEnc64);
+   xml.strTag(level, "customData", customData);
+}
+
+void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> &customParams)
+{
+   if(customParams.size() == 0)
+      return;
+
+   state->iStateValues.clear();
+   for(size_t i = 0; i < customParams.size(); i++)
+   {
+      QString param = customParams [i];
+      QByteArray paramIn;
+      paramIn.append(param);
+      QByteArray dec64 = QByteArray::fromBase64(paramIn);
+      QDataStream streamIn(&dec64, QIODevice::ReadOnly);
+      streamIn >> state->iStateValues;
+      break; //one customData tag includes all data in base64
+   }
+
+   size_t numValues = state->iStateValues.size();
+   state->numStateValues = numValues;
+   if(state->iState != NULL && numValues > 0)
+   {
+      state->tmpValues = new char*[numValues];;
+      memset(state->tmpValues, 0, numValues * sizeof(char *));
+      state->iState->restore(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateRetreive, state, 0, state->_ppifeatures);
+      for(size_t i = 0; i < numValues; ++i)
+      {
+         if(state->tmpValues [i] != NULL)
+            delete [] state->tmpValues [i];
+      }
+      delete [] state->tmpValues;
+      state->tmpValues = NULL;
+   }
+
+   QMap<QString, QPair<QString, QVariant> >::const_iterator it;
+   for(it = state->iStateValues.begin(); it != state->iStateValues.end(); ++it)
+   {
+      QString name = it.key();
+      QVariant qVal = it.value().second;
+      if(!name.isEmpty() && qVal.isValid())
+      {
+         if(qVal.type() == QVariant::String) // plugin ui uri
+         {
+            QString sUiUri = qVal.toString();
+            LV2_PLUGIN_UI_TYPES::iterator it;
+            for(it = state->synth->_pluginUiTypes.begin(); it != state->synth->_pluginUiTypes.end(); ++it)
+            {
+               if(sUiUri == QString(lilv_node_as_uri(lilv_ui_get_uri(it->first))))
+               {
+                  state->uiCurrent = it->first;
+                  break;
+               }
+            }
+         }
+         else
+         {
+            if(state->sif != NULL) //setting control valuew only for synths
+            {
+
+               bool ok = false;
+               float val = (float)qVal.toDouble(&ok);
+               if(ok)
+               {
+                  std::map<QString, size_t>::iterator it = state->sif->_controlsNameMap.find(name);
+                  if(it != state->sif->_controlsNameMap.end())
+                  {
+                     size_t ctrlNum = it->second;
+                     state->sif->_controls [ctrlNum].val = state->sif->_controls [ctrlNum].tmpVal = val;
+
+                  }
+               }
+            }
+         }
+
+
+      }
+   }
+
+}
+
+
+
 
 void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 {
@@ -3203,105 +3320,12 @@ void LV2SynthIF::showNativeGui(bool bShow)
 
 void LV2SynthIF::write(int level, Xml &xml) const
 {
-   _uiState->iStateValues.clear();
-   _uiState->numStateValues = 0;
-
-   if(_uiState->iState != NULL)
-   {
-      _uiState->iState->save(lilv_instance_get_handle(_handle), LV2Synth::lv2state_stateStore, _uiState, LV2_STATE_IS_POD, _uiState->_ppifeatures);
-   }
-   for(size_t c = 0; c < _inportsControl; c++)
-   {
-      _uiState->iStateValues.insert(QString(_controlInPorts [c].cName), QPair<QString, QVariant>(QString(""), QVariant((double)_controls[c].val)));
-   }
-
-   if(_uiState->uiCurrent != NULL)
-   {
-      const char *cUiUri = lilv_node_as_uri(lilv_ui_get_uri(_uiState->uiCurrent));
-      _uiState->iStateValues.insert(QString(cUiUri), QPair<QString, QVariant>(QString(""), QVariant(QString(cUiUri))));
-   }
-
-   QByteArray arrOut;
-   QDataStream streamOut(&arrOut, QIODevice::WriteOnly);
-   streamOut << _uiState->iStateValues;
-   QByteArray outEnc64 = arrOut.toBase64();
-   QString customData(outEnc64);
-   xml.strTag(level, "customData", customData);
-
+   LV2Synth::lv2conf_write(_uiState, level, xml);
 }
 
 void LV2SynthIF::setCustomData(const std::vector< QString > &customParams)
 {
-   if(customParams.size() == 0)
-      return;
-
-   _uiState->iStateValues.clear();
-   for(size_t i = 0; i < customParams.size(); i++)
-   {
-      QString param = customParams [i];
-      QByteArray paramIn;
-      paramIn.append(param);
-      QByteArray dec64 = QByteArray::fromBase64(paramIn);
-      QDataStream streamIn(&dec64, QIODevice::ReadOnly);
-      streamIn >> _uiState->iStateValues;
-      break; //one customData tag includes all data in base64
-   }
-
-   size_t numValues = _uiState->iStateValues.size();
-   _uiState->numStateValues = numValues;
-   if(_uiState->iState != NULL && numValues > 0)
-   {
-      _uiState->tmpValues = new char*[numValues];;
-      memset(_uiState->tmpValues, 0, numValues * sizeof(char *));
-      _uiState->iState->restore(lilv_instance_get_handle(_handle), LV2Synth::lv2state_stateRetreive, _uiState, 0, _uiState->_ppifeatures);
-      for(size_t i = 0; i < numValues; ++i)
-      {
-         if(_uiState->tmpValues [i] != NULL)
-            delete [] _uiState->tmpValues [i];
-      }
-      delete [] _uiState->tmpValues;
-      _uiState->tmpValues = NULL;
-   }
-
-   QMap<QString, QPair<QString, QVariant> >::const_iterator it;
-   for(it = _uiState->iStateValues.begin(); it != _uiState->iStateValues.end(); ++it)
-   {
-      QString name = it.key();
-      QVariant qVal = it.value().second;
-      if(!name.isEmpty() && qVal.isValid())
-      {
-         if(qVal.type() == QVariant::String) // plugin ui uri
-         {
-            QString sUiUri = qVal.toString();
-            LV2_PLUGIN_UI_TYPES::iterator it;
-            for(it = _synth->_pluginUiTypes.begin(); it != _synth->_pluginUiTypes.end(); ++it)
-            {
-               if(sUiUri == QString(lilv_node_as_uri(lilv_ui_get_uri(it->first))))
-               {
-                  _uiState->uiCurrent = it->first;
-                  break;
-               }
-            }
-         }
-         else
-         {
-            bool ok = false;
-            float val = (float)qVal.toDouble(&ok);
-            if(ok)
-            {
-               std::map<QString, size_t>::iterator it = _controlsNameMap.find(name);
-               if(it != _controlsNameMap.end())
-               {
-                  size_t ctrlNum = it->second;
-                  _controls [ctrlNum].val = _controls [ctrlNum].tmpVal = val;
-
-               }
-            }
-         }
-
-
-      }
-   }
+   LV2Synth::lv2conf_set(_uiState, customParams);
 }
 
 
@@ -3958,6 +3982,26 @@ void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, 
    if(bSetVal)
       state->lastControls [index] = fVal;
 
+}
+
+void LV2PluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
+{
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
+   assert(it != _states.end()); //this shouldn't happen
+   LV2PluginWrapper_State *state = it->second;
+   assert(state != NULL);
+
+   LV2Synth::lv2conf_write(state, level, xml);
+}
+
+void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
+{
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(handle);
+   assert(it != _states.end()); //this shouldn't happen
+   LV2PluginWrapper_State *state = it->second;
+   assert(state != NULL);
+
+   LV2Synth::lv2conf_set(state, customParams);
 }
 
 

@@ -159,8 +159,7 @@ class SynthIF : public PluginIBase {
       virtual void write(int level, Xml& xml) const = 0;
       virtual float getParameter(unsigned long idx) const = 0;
       virtual void setParameter(unsigned long idx, float value) = 0;
-      virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) = 0;
-      virtual void setCustomData(const std::vector<QString> &) {/* Do nothing by default */};
+      virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) = 0;      
 
       //-------------------------
       // Methods for PluginIBase:

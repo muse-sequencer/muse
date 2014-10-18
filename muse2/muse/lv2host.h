@@ -516,11 +516,7 @@ private:
     bool _isSynth;
     int _uniqueID;
     uint32_t _midi_event_id;
-    //bool _hasGui;
-    //bool _hasExternalGui;
-   // bool _hasE_fWrkSchedulexternalGuiDepreceated;
     LilvUIs *_uis;
-    //const LilvUI *_selectedUi;
     std::map<uint32_t, uint32_t> _idxToControlMap;
 
     LV2_PLUGIN_UI_TYPES _pluginUiTypes;
@@ -585,6 +581,8 @@ public:
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);    
+    static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
+    static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -615,7 +613,7 @@ private:
     size_t _outportsControl;
     size_t _inportsMidi;
     size_t _outportsMidi;
-    std::map<QString, size_t> _controlsNameMap;    
+    std::map<QString, size_t> _controlsNameMap;
     float **_audioInBuffers;
     float **_audioOutBuffers;
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
@@ -904,6 +902,8 @@ public:
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible ( PluginI *p );
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
+    virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
+    virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
 };
 
 #endif // LV2_SUPPORT

@@ -292,6 +292,8 @@ class PluginIBase
       virtual LADSPA_PortRangeHint range(unsigned long i) = 0;
       virtual LADSPA_PortRangeHint rangeOut(unsigned long i) = 0;
 
+      virtual void setCustomData(const std::vector<QString> &) {/* Do nothing by default */}
+
       virtual CtrlValueType ctrlValueType(unsigned long i) const = 0;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const = 0;
       QString dssi_ui_filename() const;
@@ -408,7 +410,8 @@ class PluginI : public PluginIBase {
       LADSPA_PortRangeHint rangeOut(unsigned long i) { return _plugin->range(controlsOut[i].idx); }
       bool inPlaceCapable() const { return _plugin->inPlaceCapable(); }
       CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
-      CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); };
+      CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); }
+      virtual void setCustomData(const std::vector<QString> &customParams);
       };
 
 //---------------------------------------------------------

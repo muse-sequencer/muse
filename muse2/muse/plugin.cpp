@@ -1892,6 +1892,21 @@ float PluginI::defaultValue(unsigned long param) const
   return _plugin->defaultValue(controls[param].idx);
 }
 
+void PluginI::setCustomData(const std::vector<QString> &customParams)
+{
+   if(_plugin == NULL)
+      return;
+   if(!_plugin->isLV2Plugin()) //now only do it for lv2 plugs
+      return;
+
+   LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
+   for(int i = 0; i < instances; ++i)
+   {
+      lv2Plug->setCustomData(handle [i], customParams);
+   }
+
+}
+
 LADSPA_Handle Plugin::instantiate(PluginI *)
 {
   LADSPA_Handle h = plugin->instantiate(plugin, MusEGlobal::sampleRate);
@@ -1903,6 +1918,8 @@ LADSPA_Handle Plugin::instantiate(PluginI *)
 
   return h;
 }
+
+
 
 //---------------------------------------------------------
 //   initPluginInstance
@@ -2101,6 +2118,16 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
          Xml::xmlString(_plugin->lib()).toLatin1().constData(), Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
 
+      if(_plugin != NULL && _plugin->isLV2Plugin())//save lv2 plugin state custom data before controls
+      {
+         LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
+         //for multi-instance plugins write only first instance's state
+         if(instances > 0)
+         {
+            lv2Plug->writeConfiguration(handle [0], level, xml);
+         }
+      }
+
       for (unsigned long i = 0; i < controlPorts; ++i) {
             unsigned long idx = controls[i].idx;
             QString s("control name=\"%1\" val=\"%2\" /");
@@ -2185,6 +2212,11 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
       {
       QString file;
       QString label;
+
+      //custom params in xml song file , synth tag, that will be passed to new PluginI:setCustomData(Xml &) method
+      //now only lv2host uses them, others simply ignore
+      std::vector<QString> accumulatedCustomParams;
+
       if (!readPreset)
             channel = 1;
 
@@ -2236,6 +2268,17 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                     _gui->move(r.topLeft());
                                     }
                               }
+                        else if (tag == "customData") { //just place tag contents in accumulatedCustomParams
+                              QString customData = xml.parse1();
+                              if(!customData.isEmpty()){
+                                 accumulatedCustomParams.push_back(customData);
+                                 //now process custom data immidiatly
+                                 //because it MUST be processed before plugin controls
+                                 //writeConfiguration places custom data before plugin controls values
+                                 setCustomData(accumulatedCustomParams);
+                                 accumulatedCustomParams.clear();
+                              }
+                        }
                         else
                               xml.unknown("PluginI");
                         break;
@@ -2281,10 +2324,10 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                         file.toLatin1().constData(), label.toLatin1().constData());
                                       return true;
                                     }
-                                    }
+                              }
                               if (_gui)
                                     _gui->updateValues();
-                              return false;
+                              return false;                              
                               }
                         return true;
                   default:
