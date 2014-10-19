@@ -351,7 +351,7 @@ SimpleSynthGui::SimpleSynthGui()
             pitchKnobs[i]->setToolTip("Pitch, channel " + QString::number(i + 1));
             pitchKnobs[i]->setFixedSize(30,30);
             inchnlLayout->addWidget(pitchKnobs[i]);
-            connect(pitchKnobs[i], SIGNAL(sliderMoved(int,int)), SLOT(pitchChanged(int,int)));
+            connect(pitchKnobs[i], SIGNAL(valueChanged(int,int,int)), SLOT(pitchChanged(int,int, int)));
 
 
             nOffLabel[i] = new QLabel(channelButtonGroups[i]);
@@ -787,7 +787,7 @@ void SimpleSynthGui::volumeChanged(int channel, int val)
 /*!
     \fn SimpleSynthGui::pitchChanged(int val)
  */
-void SimpleSynthGui::pitchChanged(int channel, int val)
+void SimpleSynthGui::pitchChanged(int channel, int, int val)
       {
     printf("Gui::pitchChanged %d %d\n", channel, val);
       setChannelPitch(channel, -val+63);
