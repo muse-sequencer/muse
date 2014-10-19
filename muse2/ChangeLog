@@ -1,3 +1,5 @@
+19.10.2014:
+         - Moved Wine VST synths to separate sub menu (rj)
 15.10.2014:
          - Fixed crash bug iterating through events in script executor (rj)
          - Added script RemoveAftertouch (rj)

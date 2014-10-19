@@ -43,6 +43,7 @@
 #include "midictrl.h"
 #include "popupmenu.h"
 #include "menutitleitem.h"
+#include "dssihost.h"
 
 #include <QMenu>
 #include <QApplication>
@@ -410,6 +411,9 @@ QMenu* populateAddSynth(QWidget* parent)
   {
     synth = *i;
     type = synth->synthType();
+    if (type == MusECore::Synth::DSSI_SYNTH && ((MusECore::DssiSynth*)synth)->isDssiVst() ) // Place Wine VSTs in a separate sub menu
+      type = MusECore::Synth::VST_SYNTH;
+
     if(type >= ntypes)
       continue; 
     smaps[type].insert( std::pair<std::string, int> (std::string(synth->description().toLower().toLatin1().constData()), ii) );
