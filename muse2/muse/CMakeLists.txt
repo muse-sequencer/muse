@@ -271,6 +271,10 @@ if(LV2_SUPPORT)
       target_link_libraries(core ${LV2_LIBRARIES})
 endif(LV2_SUPPORT)
 
+if(LV2GTK2_SUPPORT)
+      target_link_libraries(core ${LV2GTK2_LIBRARIES})
+endif(LV2GTK2_SUPPORT)
+
 target_link_libraries(muse
       midiedit
       core

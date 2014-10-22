@@ -133,7 +133,7 @@ option ( ENABLE_VST         "Enable VST/win support (deprecated)"               
 option ( ENABLE_VST_NATIVE  "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2        "Enable LV2 plugins and synths support" ON)
-option ( ENABLE_LV2GUI        "Enable LV2 plugins and synths GUI support" ON)
+option ( ENABLE_LV2GTK2        "Enable GTK2/GTKMM2 gui support for LV2 plugins" ON)
 option ( ENABLE_FLUID       "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_EXPERIMENTAL "Enable building experimental features."                             OFF)
 option ( ENABLE_PYTHON      "Enable Python control support."                                      OFF)
@@ -345,11 +345,11 @@ else (ENABLE_VST_VESTIGE)
 endif (ENABLE_VST_VESTIGE)
 
 ## LV2 support
-## check for lilv >= 0.16.0 and suil >= 0.6.16
+## check for lilv >= 0.16.0
 ##
 
 if (ENABLE_LV2)
-      PKG_CHECK_MODULES(LV2 suil-0>=0.6.16 lilv-0>=0.16.0)
+      PKG_CHECK_MODULES(LV2 lilv-0>=0.16.0)
       if (LV2_FOUND)
             include_directories(${LV2_INCLUDE_DIRS})
             set(LV2_SUPPORT ON)
@@ -357,6 +357,20 @@ if (ENABLE_LV2)
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)
+
+#check for gtkmm2 lib for lv2 gtk2/gtkmm2 gui support
+
+if (ENABLE_LV2GTK2)
+      PKG_CHECK_MODULES(LV2GTK2 gtkmm-2.4>=2.24.4 gtk+-2.0>=2.24.4)
+      if (LV2GTK2_FOUND)
+            include_directories(${LV2GTK2_INCLUDE_DIRS})            
+            find_library(LIBGTK2_LIB gtk-x11-2.0)
+            find_library(LIBGTKMM2_LIB gtkmm-2.4)
+            if (LIBGTK2_LIB AND LIBGTKMM2_LIB)
+                set(LV2GTK2_SUPPORT ON)
+            endif (LIBGTK2_LIB AND LIBGTKMM2_LIB)
+      endif (LV2GTK2_FOUND)
+endif (ENABLE_LV2GTK2)
 
 
 ##
@@ -555,8 +569,15 @@ if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 
 if (ENABLE_LV2 AND (NOT LV2_FOUND))
-        message("** WARNING: LV2 was enabled, but development files were not found (lilv-0>=0.18.0 and suil-0>=0.8.0).")
+        message("** WARNING: LV2 was enabled, but development files were not found (lilv-0>=0.18.0).")
 endif (ENABLE_LV2 AND (NOT LV2_FOUND))
+
+if (ENABLE_LV2GTK2 AND (NOT LV2GTK2_SUPPORT))
+        message("** WARNING: LV2 GTK2 support was enabled, but development files for gtkmm2 or gtk2 where not found. GTK2 guis will not be supported.")
+else (ENABLE_LV2GTK2 AND (NOT LV2GTK2_SUPPORT))
+        message("GTK2 library name: " ${LIBGTK2_LIB})
+        message("GTKMM2 library name: " ${LIBGTKMM2_LIB})
+endif (ENABLE_LV2GTK2 AND (NOT LV2GTK2_SUPPORT))
 
 message("")
 
@@ -566,6 +587,7 @@ summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
 summary_add("LV2 support" LV2_SUPPORT)
+summary_add("LV2GTK2 support" LV2GTK2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)

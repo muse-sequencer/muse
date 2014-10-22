@@ -50,8 +50,6 @@
 #include "lv2extui.h"
 #include "lv2extprg.h"
 
-#include "suil/suil.h"
-
 #include <cstring>
 #include <iostream>
 #include <vector>
@@ -539,7 +537,6 @@ private:
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
     uint32_t _fPrgHost;
-    SuilHost *_uiHost;
     //const LilvNode *_pluginUIType = NULL;
     LV2_URID _uTime_Position;
     LV2_URID _uTime_frame;
@@ -569,12 +566,13 @@ public:
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static void lv2ui_ShowNativeGui ( LV2PluginWrapper_State *state, bool bShow );
-    static void lv2ui_PortWrite ( SuilController controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer );
-    static void lv2ui_Touch (SuilController controller, uint32_t port_index, bool grabbed);
+    static void lv2ui_PortWrite ( LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer );
+    static void lv2ui_Touch (LV2UI_Controller controller, uint32_t port_index, bool grabbed);
     static void lv2ui_ExtUi_Closed ( LV2UI_Controller contr );
     static void lv2ui_SendChangedControls(LV2PluginWrapper_State *state);
     static void lv2state_FillFeatures ( LV2PluginWrapper_State *state );
     static void lv2state_PostInstantiate ( LV2PluginWrapper_State *state );
+    static void lv2ui_FreeDescriptors(LV2PluginWrapper_State *state);
     static void lv2state_FreeState(LV2PluginWrapper_State *state);
     static void lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, LV2EvBuf::LV2_Evbuf_Iterator &iter);
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
@@ -583,6 +581,7 @@ public:
     static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);    
     static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
     static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
+    static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -730,9 +729,10 @@ struct LV2PluginWrapper_State {
    LV2PluginWrapper_State():
       _ifeatures(NULL),
       _ppifeatures(NULL),
-      uiHost(NULL),
       widget(NULL),      
       handle(NULL),
+      uiDlHandle(NULL),
+      uiDesc(NULL),
       uiInst(NULL),
       inst(NULL),
       lastControls(NULL),
@@ -762,6 +762,13 @@ struct LV2PluginWrapper_State {
       uiDoSelectPrg(false),
       uiBank(0),
       uiProg(0)
+#ifdef LV2GTK2_SUPPORT
+      ,
+      gtk2LibHandle(NULL),
+      gtkmm2LibHandle(NULL),
+      gtkmm2Main(NULL)
+ #endif
+
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -774,13 +781,14 @@ struct LV2PluginWrapper_State {
 
     LV2_Feature *_ifeatures;
     LV2_Feature **_ppifeatures;
-    SuilHost *uiHost;
     void *widget;
     LV2_External_UI_Host extHost;
     LV2_Extension_Data_Feature extData;
     LV2_Worker_Schedule wrkSched;
     LilvInstance *handle;
-    SuilInstance *uiInst;
+    void *uiDlHandle;
+    const LV2UI_Descriptor *uiDesc;
+    LV2UI_Handle uiInst;
     LV2PluginWrapper *inst;
     float *lastControls;
     bool *controlsMask;
@@ -819,6 +827,11 @@ struct LV2PluginWrapper_State {
     LV2_Programs_Host prgHost;
     int uiBank;
     int uiProg;
+#ifdef LV2GTK2_SUPPORT
+    void *gtk2LibHandle;
+    void *gtkmm2LibHandle;
+    void *gtkmm2Main;
+#endif
 };
 
 
@@ -870,7 +883,6 @@ class LV2PluginWrapper: public Plugin
 private:
     LV2Synth *_synth;
     std::map<void *, LV2PluginWrapper_State *> _states;
-    SuilHost *_uiHost;
     LADSPA_Descriptor _fakeLd;
     LADSPA_PortDescriptor *_fakePds;
     float *_PluginControlsDefault;
