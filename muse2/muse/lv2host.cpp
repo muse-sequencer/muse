@@ -45,6 +45,7 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <QX11EmbedWidget>
+#include <QCoreApplication>
 
 #include "lv2host.h"
 #include "synth.h"
@@ -403,7 +404,6 @@ void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
    assert(state->widget != NULL); // this too
    assert(state->pluginWindow != NULL);
 
-   state->widget = NULL;
    state->pluginWindow->stopNextTime();
 
 
@@ -727,6 +727,11 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
       {
          dlclose(state->gtkmm2LibHandle);
          state->gtkmm2LibHandle = NULL;
+      }      
+      if(state->gtk2Plug != NULL)
+      {
+         gtk_widget_destroy(static_cast<GtkWidget *>(state->gtk2Plug));
+         state->gtk2Plug = NULL;
       }
       if(state->gtkmm2Main != NULL)
       {
@@ -826,42 +831,42 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
 void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
 {
    assert(state->pluginWindow != NULL);
-   assert(state->uiDesc != NULL);
-   assert(state->uiDesc->port_event != NULL);
+   assert(state->uiDesc != NULL);   
    assert(state->uiInst != NULL);
 
-   uint32_t numControls = 0;
-   Port *controls = NULL;
-
-   if(state->plugInst != NULL)
+   if(state->uiDesc->port_event != NULL)
    {
-      numControls = state->plugInst->controlPorts;
-      controls = state->plugInst->controls;
+      uint32_t numControls = 0;
+      Port *controls = NULL;
+
+      if(state->plugInst != NULL)
+      {
+         numControls = state->plugInst->controlPorts;
+         controls = state->plugInst->controls;
+
+      }
+      else if(state->sif != NULL)
+      {
+         numControls = state->sif->_inportsControl;
+         controls = state->sif->_controls;
+      }
+
+      if(numControls > 0)
+      {
+         assert(controls != NULL);
+      }
+
+
+
+      for(uint32_t i = 0; i < numControls; ++i)
+      {
+         state->uiDesc->port_event(state->uiInst,
+                                   controls [i].idx,
+                                   sizeof(float), 0,
+                                   &controls [i].val);
+      }
 
    }
-   else if(state->sif != NULL)
-   {
-      numControls = state->sif->_inportsControl;
-      controls = state->sif->_controls;
-   }
-
-   if(numControls > 0)
-   {
-      assert(controls != NULL);
-   }
-
-
-
-   for(uint32_t i = 0; i < numControls; ++i)
-   {
-      state->uiDesc->port_event(state->uiInst,
-                               controls [i].idx,
-                               sizeof(float), 0,
-                               &controls [i].val);
-   }
-
-   //state->uiTimer->start(1000 / 30);
-
 
    state->pluginWindow->startNextTime();
 
@@ -955,24 +960,31 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
    }
 
    win = new LV2PluginWrapper_Window(state);
+   state->uiX11Size.setWidth(0);
+   state->uiX11Size.setHeight(0);
 
    if(win != NULL)
    {
       state->widget = win;
       state->pluginWindow = win;
       const char *cUiUri = lilv_node_as_uri(pluginUiType);
+      const char *cUiTypeUri = lilv_node_as_uri(lilv_ui_get_uri(selectedUi));
       bool bEmbed = false;
-      QX11EmbedWidget *ewX11 = NULL;
+      bool bGtk = false;
+      QWidget *ewWin = NULL;
+      state->gtk2Plug = NULL;
+      state->_ifeatures [synth->_fUiParent].data = NULL;
       if(strcmp(LV2_UI__X11UI, cUiUri) == 0)
       {
-         bEmbed = true;
-         ewX11 = new QX11EmbedWidget();
-         state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)ewX11->winId();
+         bEmbed = true;         
+         ewWin = new QX11EmbedWidget();
+         state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)ewWin->winId();
       }
 #ifdef LV2GTK2_SUPPORT
       else if(strcmp(LV2_UI__GtkUI, cUiUri) == 0) //for GTK2 ui dlopen gtkmm-2.4,gtk-2.0 and call init functions
       {
          bEmbed = true;
+         bGtk = true;
          state->gtk2LibHandle = dlopen(LIBGTK2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
          state->gtkmm2LibHandle = dlopen(LIBGTKMM2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
          if(state->gtk2LibHandle == NULL
@@ -981,24 +993,28 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
             win->stopNextTime();
             return;
          }
+         ewWin = new QX11EmbedContainer(win);
          gtk_init(NULL, NULL);
          //create gtkmm2 main class
          state->gtkmm2Main = static_cast<void *>(new Gtk::Main(NULL, NULL));
+         state->gtk2Plug = gtk_plug_new(ewWin->winId());
+         state->_ifeatures [synth->_fUiParent].data = (void *)ewWin;
 
       }
 #endif
       else if(strcmp(LV2_UI__Qt4UI, cUiUri) == 0) //Qt4 uis are handled natively
       {
          state->_ifeatures [synth->_fUiParent].data = win;
-      }
-      else //this shouldn't happen - unsupported ui type
+      }      
+      else //external uis
       {
-         assert(false == true);
+         state->_ifeatures [synth->_fUiParent].data = NULL;
       }
 
       //now open ui library file
 
-      state->uiDlHandle = dlopen(lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi))), RTLD_NOW);
+      const  char *uiPath = lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)));
+      state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
       if(state->uiDlHandle == NULL)
       {
          win->stopNextTime();
@@ -1022,7 +1038,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          if(state->uiDesc == NULL)
             break;
 
-         if(strcmp(state->uiDesc->URI, cUiUri) == 0) //found selected ui
+         if(strcmp(state->uiDesc->URI, cUiTypeUri) == 0) //found selected ui
             break;
       }
 
@@ -1043,13 +1059,13 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                                         lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi))),
                                         state->_ppifeatures);
                                         */
-      QWidget *uiW = NULL;
+      void *uiW = NULL;
       state->uiInst = state->uiDesc->instantiate(state->uiDesc,
                                                  lilv_node_as_uri(lilv_plugin_get_uri(synth->_handle)),
                                                  lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi))),
                                                  LV2Synth::lv2ui_PortWrite,
                                                  state,
-                                                 (void **)&uiW,
+                                                 &uiW,
                                                  state->_ppifeatures);
 
 
@@ -1066,13 +1082,30 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          {            
             if(!bEmbed)
             {
-               win->setCentralWidget(uiW);
+               win->setCentralWidget(static_cast<QWidget *>(uiW));
             }
             else
             {
-               ewX11->embedInto(win->winId());
-               if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
-                  win->resize(ewX11->size());
+               if(bGtk)
+               {
+
+                  gtk_container_add(GTK_CONTAINER(state->gtk2Plug), static_cast<GtkWidget *>(uiW));
+                  gtk_widget_show_all(static_cast<GtkWidget *>(state->gtk2Plug));
+
+                  if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
+                  {
+                     GtkAllocation allocSize;
+                     gtk_widget_get_allocation(static_cast<GtkWidget *>(uiW), &allocSize);
+                     win->resize(allocSize.width, allocSize.height);
+                  }
+                  win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
+               }
+               else
+               {
+                  (static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
+                  if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
+                     win->resize(ewWin->size());
+               }
             }
 
             win->show();
@@ -3592,11 +3625,7 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
    assert(_state != NULL);
    event->accept();
 
-   if(_timerId != 0)
-   {
-      killTimer(_timerId);
-      _timerId = 0;
-   }
+   stopUpdateTimer();
 
    if(_state->deleteLater)
    {
@@ -3618,12 +3647,43 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 
 }
 
-void LV2PluginWrapper_Window::timerEvent(QTimerEvent *)
+void LV2PluginWrapper_Window::stopUpdateTimer()
 {
-   if(_state->deleteLater)
-      return;
+   if(updateTimer.isActive())
+      updateTimer.stop();
+   while(updateTimer.isActive())
+   {
+      QCoreApplication::processEvents();
+   }
+}
 
-   sendChangedControls();
+
+LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
+ : QMainWindow(), _state ( state ), _closing(false)
+{
+   connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateGui()));
+}
+
+void LV2PluginWrapper_Window::startNextTime()
+{
+   stopUpdateTimer();
+   updateTimer.start(30);
+}
+
+
+
+
+void LV2PluginWrapper_Window::stopNextTime()
+{
+   stopUpdateTimer();
+   close();
+}
+
+void LV2PluginWrapper_Window::updateGui()
+{
+   if(_state->deleteLater || _closing)
+      return;
+   LV2Synth::lv2ui_SendChangedControls(_state);
 
    //send program change if any
    if(_state->uiDoSelectPrg)
@@ -3647,47 +3707,6 @@ void LV2PluginWrapper_Window::timerEvent(QTimerEvent *)
       if(iRet != 0) // ui don't want us to call it's idle callback any more
          _state->uiIdleIface = NULL;
    }
-
-}
-
-
-
-LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
- : QMainWindow(), _state ( state ), _closing(false), _timerId(0)
-{
-   connect(this, SIGNAL(controlsChangePending()), this, SLOT(sendChangedControls()));
-   //startTimer(30);
-}
-
-void LV2PluginWrapper_Window::startNextTime()
-{
-   if(_timerId != 0)
-   {
-      killTimer(_timerId);      
-   }
-   _timerId = startTimer(30);
-}
-
-
-void LV2PluginWrapper_Window::stopNextTime()
-{
-   if(_timerId == 0)
-      killTimer(_timerId);
-   _timerId = 0;
-   close();
-
-}
-
-void LV2PluginWrapper_Window::doChangeControls()
-{
-   emit controlsChangePending();
-}
-
-void LV2PluginWrapper_Window::sendChangedControls()
-{
-   if(_state->deleteLater || _closing)
-      return;
-   LV2Synth::lv2ui_SendChangedControls(_state);
 }
 
 

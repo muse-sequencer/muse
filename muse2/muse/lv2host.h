@@ -60,6 +60,7 @@
 #include <QMutex>
 #include <QSemaphore>
 #include <QThread>
+#include <QTimer>
 #include <assert.h>
 
 #include <alsa/asoundlib.h>
@@ -766,7 +767,8 @@ struct LV2PluginWrapper_State {
       ,
       gtk2LibHandle(NULL),
       gtkmm2LibHandle(NULL),
-      gtkmm2Main(NULL)
+      gtkmm2Main(NULL),
+      gtk2Plug(NULL)
  #endif
 
    {
@@ -831,6 +833,7 @@ struct LV2PluginWrapper_State {
     void *gtk2LibHandle;
     void *gtkmm2LibHandle;
     void *gtkmm2Main;
+    void *gtk2Plug;
 #endif
 };
 
@@ -858,11 +861,11 @@ class LV2PluginWrapper_Window : public QMainWindow
    Q_OBJECT
 protected:
    void closeEvent ( QCloseEvent *event );
-   void timerEvent(QTimerEvent *);
 private:
    LV2PluginWrapper_State *_state;
    bool _closing;
-   int _timerId;
+   QTimer updateTimer;
+   void stopUpdateTimer();
 public:
    explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state );
    void startNextTime();
@@ -870,11 +873,7 @@ public:
    void doChangeControls();
    void setClosing(bool closing) {_closing = closing; }
 public slots:
-   void sendChangedControls();
-signals:
-   void controlsChangePending();
-
-
+   void updateGui();
 };
 
 
