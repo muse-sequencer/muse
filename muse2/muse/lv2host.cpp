@@ -25,8 +25,6 @@
 
 #define LV2_HOST_CPP
 
-#define LV2GTK2_SUPPORT
-
 #include <string>
 #include <string.h>
 #include <signal.h>
@@ -1358,9 +1356,7 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
 unsigned LV2Synth::lv2ui_IsSupported(const char *, const char *ui_type_uri)
 {
    if(strcmp(LV2_UI__Qt4UI, ui_type_uri) == 0
-#ifdef LV2GTK2_SUPPORT
-      || strcmp(LV2_UI__GtkUI, ui_type_uri) == 0
-#endif
+      || (bLV2Gtk2Enabled && strcmp(LV2_UI__GtkUI, ui_type_uri) == 0)
       || strcmp(LV2_UI__X11UI, ui_type_uri) == 0)
    {
       return TRUE;
