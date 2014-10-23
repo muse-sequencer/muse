@@ -390,7 +390,9 @@ struct LV2MidiPort {
     bool old_api; //true for LV2_Event port
     LV2EvBuf *buffer;
     ~LV2MidiPort() {
+#if 0
         std::cerr << "~LV2MidiPort()" << std::endl;
+#endif
         if(buffer != NULL)
             delete buffer;
     }
@@ -762,14 +764,9 @@ struct LV2PluginWrapper_State {
       uiPrgIface(NULL),
       uiDoSelectPrg(false),
       uiBank(0),
-      uiProg(0)
-#ifdef LV2GTK2_SUPPORT
-      ,
-      gtk2LibHandle(NULL),
-      gtkmm2LibHandle(NULL),
-      gtkmm2Main(NULL),
+      uiProg(0),
       gtk2Plug(NULL)
- #endif
+
 
    {
       extHost.plugin_human_id = NULL;
@@ -829,12 +826,7 @@ struct LV2PluginWrapper_State {
     LV2_Programs_Host prgHost;
     int uiBank;
     int uiProg;
-#ifdef LV2GTK2_SUPPORT
-    void *gtk2LibHandle;
-    void *gtkmm2LibHandle;
-    void *gtkmm2Main;
     void *gtk2Plug;
-#endif
 };
 
 

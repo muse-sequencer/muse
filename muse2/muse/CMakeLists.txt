@@ -41,6 +41,7 @@ set (SubDirs
       mplugins
       waveedit
       widgets
+      lv2Gtk2Helper
       )
 
 if (PYTHON_SUPPORT)
@@ -271,10 +272,6 @@ if(LV2_SUPPORT)
       target_link_libraries(core ${LV2_LIBRARIES})
 endif(LV2_SUPPORT)
 
-if(LV2GTK2_SUPPORT)
-      target_link_libraries(core ${LV2GTK2_LIBRARIES})
-endif(LV2GTK2_SUPPORT)
-
 target_link_libraries(muse
       midiedit
       core
@@ -295,4 +292,3 @@ if ( ${MODULES_BUILD} STREQUAL SHARED )
             DESTINATION ${MusE_MODULES_DIR}
             )
 endif ( ${MODULES_BUILD} STREQUAL SHARED )
-

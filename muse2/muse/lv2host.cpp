@@ -25,6 +25,8 @@
 
 #define LV2_HOST_CPP
 
+#define LV2GTK2_SUPPORT
+
 #include <string>
 #include <string.h>
 #include <signal.h>
@@ -34,12 +36,6 @@
 #include <sys/stat.h>
 #include <iostream>
 #include <time.h>
-
-#ifdef LV2GTK2_SUPPORT
-#include <gtk/gtk.h>
-#include <gtkmm/main.h>
-#include <gtkmm/window.h>
-#endif
 
 #include <QDir>
 #include <QFileInfo>
@@ -80,6 +76,12 @@
 //uncomment to print audio process info
 //#define LV2_DEBUG_PROCESS
 
+#ifdef __x86_64__
+#define LV2_GTK_HELPER LIBDIR "/modules/lv2Gtk2Helper64.so"
+#else
+#define LV2_GTK_HELPER LIBDIR "/modules/lv2Gtk2Helper32.so"
+#endif
+
 namespace MusECore
 {
 
@@ -109,8 +111,10 @@ namespace MusECore
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
 
 
-LilvWorld *lilvWorld = 0;
+static LilvWorld *lilvWorld = 0;
 static int uniqueID = 1;
+static bool bLV2Gtk2Enabled = false;
+static void *lv2Gtk2HelperHandle = NULL;
 
 //uri cache structure.
 typedef struct
@@ -200,6 +204,19 @@ std::vector<LV2Synth *> synthsToFree;
 
 void initLV2()
 {
+
+   //first of all try to init gtk 2 helper (for opening lv2 gtk2/gtkmm2 guis)
+
+   lv2Gtk2HelperHandle = dlopen(LV2_GTK_HELPER, RTLD_NOW);
+   if(lv2Gtk2HelperHandle != NULL)
+   {
+      bool( * lv2GtkHelper_initFn)();
+      *(void **)(&lv2GtkHelper_initFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_init");
+      bool bHelperInit = lv2GtkHelper_initFn();
+      if(bHelperInit)
+         bLV2Gtk2Enabled = true;
+   }
+
    std::set<std::string> supportedFeatures;
    uint32_t i = 0;
 
@@ -717,15 +734,13 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
       state->uiDlHandle = NULL;
    }
 
-#ifdef LV2GTK2_SUPPORT      
-      if(state->gtk2Plug != NULL)
-      {
-         gtk_widget_destroy(static_cast<GtkWidget *>(state->gtk2Plug));
-         state->gtk2Plug = NULL;
-      }
-
-#endif
-
+   if(bLV2Gtk2Enabled && state->gtk2Plug != NULL)
+   {
+      void (*lv2GtkHelper_gtk_widget_destroyFn)(void *);
+      *(void **)(&lv2GtkHelper_gtk_widget_destroyFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_widget_destroy");
+      lv2GtkHelper_gtk_widget_destroyFn(state->gtk2Plug);
+      state->gtk2Plug = NULL;
+   }
 
 }
 
@@ -773,20 +788,14 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
       state->handle = NULL;
    }
 
-   if(state->gtk2LibHandle != NULL)
+   if(bLV2Gtk2Enabled && lv2Gtk2HelperHandle != NULL)
    {
-      dlclose(state->gtk2LibHandle);
-      state->gtk2LibHandle = NULL;
-   }
-   if(state->gtkmm2LibHandle != NULL)
-   {
-      dlclose(state->gtkmm2LibHandle);
-      state->gtkmm2LibHandle = NULL;
-   }
-   if(state->gtkmm2Main != NULL)
-   {
-      delete static_cast<Gtk::Main *>(state->gtkmm2Main);
-      state->gtkmm2Main = NULL;
+      bLV2Gtk2Enabled = false;
+      void (*lb2GtkHelper_deinitFn)();
+      *(void **)(&lb2GtkHelper_deinitFn) = dlsym(lv2Gtk2HelperHandle, "lb2GtkHelper_deinit");
+      lb2GtkHelper_deinitFn();
+      dlclose(lv2Gtk2HelperHandle);
+      lv2Gtk2HelperHandle = NULL;
    }
 
    delete state;
@@ -982,32 +991,17 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          ewWin = new QX11EmbedWidget();
          state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)ewWin->winId();
       }
-#ifdef LV2GTK2_SUPPORT
-      else if(strcmp(LV2_UI__GtkUI, cUiUri) == 0) //for GTK2 ui dlopen gtkmm-2.4,gtk-2.0 and call init functions
+      else if(bLV2Gtk2Enabled && strcmp(LV2_UI__GtkUI, cUiUri) == 0)
       {
          bEmbed = true;
-         bGtk = true;
-         if(state->gtk2LibHandle == NULL)
-         {
-            state->gtk2LibHandle = dlopen(LIBGTK2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
-            state->gtkmm2LibHandle = dlopen(LIBGTKMM2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
-            if(state->gtk2LibHandle == NULL
-                  || state->gtkmm2LibHandle == NULL)
-            {
-               win->stopNextTime();
-               return;
-            }
-
-            gtk_init(NULL, NULL);
-            //create gtkmm2 main class
-            state->gtkmm2Main = static_cast<void *>(new Gtk::Main(NULL, NULL));
-         }
+         bGtk = true;         
          ewWin = new QX11EmbedContainer(win);
-         state->gtk2Plug = gtk_plug_new(ewWin->winId());
+         void *( *lv2GtkHelper_gtk_plug_newFn)(unsigned long);
+         *(void **)(&lv2GtkHelper_gtk_plug_newFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_plug_new");
+         state->gtk2Plug = lv2GtkHelper_gtk_plug_newFn(ewWin->winId());
          state->_ifeatures [synth->_fUiParent].data = (void *)ewWin;
 
       }
-#endif
       else if(strcmp(LV2_UI__Qt4UI, cUiUri) == 0) //Qt4 uis are handled natively
       {
          state->_ifeatures [synth->_fUiParent].data = win;
@@ -1091,18 +1085,27 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                win->setCentralWidget(static_cast<QWidget *>(uiW));
             }
             else
-            {
+            {               
                if(bGtk)
                {
+                  void ( *lv2GtkHelper_gtk_container_addFn)(void *, void *);
+                  *(void **)(&lv2GtkHelper_gtk_container_addFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_container_add");
 
-                  gtk_container_add(GTK_CONTAINER(state->gtk2Plug), static_cast<GtkWidget *>(uiW));
-                  gtk_widget_show_all(static_cast<GtkWidget *>(state->gtk2Plug));
+                  void ( *lv2GtkHelper_gtk_widget_show_allFn)(void *);
+                  *(void **)(&lv2GtkHelper_gtk_widget_show_allFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_widget_show_all");
+
+                  void ( *lv2GtkHelper_gtk_widget_get_allocationFn)(void *, int *, int *);
+                  *(void **)(&lv2GtkHelper_gtk_widget_get_allocationFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_widget_get_allocation");
+
+                  lv2GtkHelper_gtk_container_addFn(state->gtk2Plug, uiW);
+                  lv2GtkHelper_gtk_widget_show_allFn(state->gtk2Plug);
 
                   if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                   {
-                     GtkAllocation allocSize;
-                     gtk_widget_get_allocation(static_cast<GtkWidget *>(uiW), &allocSize);
-                     win->resize(allocSize.width, allocSize.height);
+                     int w = 0;
+                     int h = 0;
+                     lv2GtkHelper_gtk_widget_get_allocationFn(uiW, &w, &h);
+                     win->resize(w, h);
                   }
                   win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
                }
