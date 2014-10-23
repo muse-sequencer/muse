@@ -223,7 +223,7 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
       {
       int idx = 0;
       QString device;
-      
+              
       // Let's be bold. New users have been confused by generic midi not enabling any patches and controllers.
       // I had said this may cause HW problems by sending out GM sysEx when really the HW might not be GM.
       // But this really needs to be done, one way or another. 
@@ -321,7 +321,9 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                                 fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLatin1().constData());
                               
                               MidiPort* mp = &MusEGlobal::midiPorts[idx];
-                              
+
+                              mp->setDefaultOutChannels(0); // reset output channel to take care of the case where no default is specified
+
                               mp->setInstrument(registerMidiInstrument(instrument));  
                               if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
                                 mp->setDefaultInChannels(dic);

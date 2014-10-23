@@ -172,6 +172,10 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       if(ntype >= Synth::SYNTH_TYPE_END)
         return 0;
 
+      // if we ever support Wine VSTs through some other means than through dssi-vst this must be adapted
+      if (ntype == MusECore::Synth::VST_SYNTH)
+        ntype=MusECore::Synth::DSSI_SYNTH;
+
       n %= MENU_ADD_SYNTH_ID_BASE;
       if(n >= (int)MusEGlobal::synthis.size())
         return 0;
@@ -3254,6 +3258,17 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
       // NOTE <tick> <nr> <len in ticks> <velocity>
       // CONTROLLER <tick> <a> <b> <c>
       //
+
+      if (onlyIfSelected) // if this is set means we are probably inside a midi editor and we ask again to be sure
+      {
+        if(QMessageBox::question(MusEGlobal::muse, QString("Process events"),
+            tr("Do you want to process ALL or only selected events?"), tr("&Selected"), tr("&All"),
+            QString::null, 0, 1 ) == 1)
+        {
+            onlyIfSelected = false;
+        }
+      }
+
       MusEGlobal::song->startUndo(); // undo this entire block
       for (iPart i = parts->begin(); i != parts->end(); i++) {
             //const char* tmp = tmpnam(NULL);
@@ -3279,7 +3294,11 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             sprintf(tempStr, "QUANTLEN %d\n", quant);
             writeStringToFile(fp,tempStr);
 
-            for (ciEvent e = part->events().begin(); e != part->events().end(); e++)
+            if (MusEGlobal::debugMsg)
+              printf("Events in part %d\n", part->events().size());
+
+            EventList elist = part->events();
+            for (ciEvent e = elist.begin(); e != elist.end(); e++)
             {
               Event ev = e->second;
 
@@ -3320,6 +3339,9 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
               printf("script execution produced the following error:\n%s\n", QString(errStr).toLatin1().data());
             }
             QFile file(tmp);
+            if (MusEGlobal::debugMsg)
+              file.copy(file.fileName() + "_input");
+
             if ( file.open( QIODevice::ReadOnly ) )
             {
               QTextStream stream( &file );

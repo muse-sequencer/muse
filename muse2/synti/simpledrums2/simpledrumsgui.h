@@ -224,7 +224,7 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
 
    private slots:
       void volumeChanged(int channel, int val);
-      void pitchChanged(int channel, int val);
+      void pitchChanged(int channel, int, int val);
       void panChanged(int channel, int value);
       void channelOnOff(int channel, bool state);
       void channelNoteOffIgnore(int channel, bool state);
