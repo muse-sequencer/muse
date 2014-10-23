@@ -717,27 +717,13 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
       state->uiDlHandle = NULL;
    }
 
-#ifdef LV2GTK2_SUPPORT
-      if(state->gtk2LibHandle != NULL)
-      {
-         dlclose(state->gtk2LibHandle);
-         state->gtk2LibHandle = NULL;
-      }
-      if(state->gtkmm2LibHandle != NULL)
-      {
-         dlclose(state->gtkmm2LibHandle);
-         state->gtkmm2LibHandle = NULL;
-      }      
+#ifdef LV2GTK2_SUPPORT      
       if(state->gtk2Plug != NULL)
       {
          gtk_widget_destroy(static_cast<GtkWidget *>(state->gtk2Plug));
          state->gtk2Plug = NULL;
       }
-      if(state->gtkmm2Main != NULL)
-      {
-         delete static_cast<Gtk::Main *>(state->gtkmm2Main);
-         state->gtkmm2Main = NULL;
-      }
+
 #endif
 
 
@@ -785,6 +771,22 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
    {
       lilv_instance_free(state->handle);
       state->handle = NULL;
+   }
+
+   if(state->gtk2LibHandle != NULL)
+   {
+      dlclose(state->gtk2LibHandle);
+      state->gtk2LibHandle = NULL;
+   }
+   if(state->gtkmm2LibHandle != NULL)
+   {
+      dlclose(state->gtkmm2LibHandle);
+      state->gtkmm2LibHandle = NULL;
+   }
+   if(state->gtkmm2Main != NULL)
+   {
+      delete static_cast<Gtk::Main *>(state->gtkmm2Main);
+      state->gtkmm2Main = NULL;
    }
 
    delete state;
@@ -985,18 +987,22 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       {
          bEmbed = true;
          bGtk = true;
-         state->gtk2LibHandle = dlopen(LIBGTK2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
-         state->gtkmm2LibHandle = dlopen(LIBGTKMM2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
-         if(state->gtk2LibHandle == NULL
-            || state->gtkmm2LibHandle == NULL)
+         if(state->gtk2LibHandle == NULL)
          {
-            win->stopNextTime();
-            return;
+            state->gtk2LibHandle = dlopen(LIBGTK2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
+            state->gtkmm2LibHandle = dlopen(LIBGTKMM2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
+            if(state->gtk2LibHandle == NULL
+                  || state->gtkmm2LibHandle == NULL)
+            {
+               win->stopNextTime();
+               return;
+            }
+
+            gtk_init(NULL, NULL);
+            //create gtkmm2 main class
+            state->gtkmm2Main = static_cast<void *>(new Gtk::Main(NULL, NULL));
          }
          ewWin = new QX11EmbedContainer(win);
-         gtk_init(NULL, NULL);
-         //create gtkmm2 main class
-         state->gtkmm2Main = static_cast<void *>(new Gtk::Main(NULL, NULL));
          state->gtk2Plug = gtk_plug_new(ewWin->winId());
          state->_ifeatures [synth->_fUiParent].data = (void *)ewWin;
 
