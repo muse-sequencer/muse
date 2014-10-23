@@ -578,7 +578,7 @@ void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index,
 
    }
 
-   state->controlTimers [cport] = 10; // 10*30 msec controllers will not be send to guis
+   state->controlTimers [cport] = 1000 / 30; //  1 sec controllers will not be send to guis
 
    assert(_controlFifo != NULL);
    if(_controlFifo->put(ce))
