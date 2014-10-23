@@ -17,6 +17,22 @@ extern "C" bool lv2GtkHelper_init()
       gtk2LibHandle = dlopen(LIBGTK2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
       gtkmm2LibHandle = dlopen(LIBGTKMM2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
 
+      if(gtk2LibHandle == NULL || gtkmm2LibHandle == NULL)
+      {
+         if(gtk2LibHandle != NULL)
+         {
+            dlclose(gtk2LibHandle);
+            gtk2LibHandle = NULL;
+         }
+
+         if(gtkmm2LibHandle != NULL)
+         {
+            dlclose(gtkmm2LibHandle);
+            gtkmm2LibHandle = NULL;
+         }
+         return false;
+      }
+
       gtk_init(NULL, NULL);
       //create gtkmm2 main class
       gtkmm2Main = new Gtk::Main(NULL, NULL);

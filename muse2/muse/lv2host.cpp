@@ -34,6 +34,8 @@
 #include <sys/stat.h>
 #include <iostream>
 #include <time.h>
+#include <dlfcn.h>
+#include <QMessageBox>
 
 #include <QDir>
 #include <QFileInfo>
@@ -213,6 +215,19 @@ void initLV2()
       bool bHelperInit = lv2GtkHelper_initFn();
       if(bHelperInit)
          bLV2Gtk2Enabled = true;
+   }
+
+   if(!bLV2Gtk2Enabled)
+   {
+      QMessageBox::critical(NULL, "MusE LV2 host error", "<b>LV2 GTK2 ui support is not available</b><br />"
+                                                         "This may happen because of the following reasons:<br />"
+                                                         "<b>1.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so is missing needed dependences.<br />"
+                                                         "This may be checked by executing<br />"
+                                                         "<b>ldd " LV2_GTK_HELPER "</b><br />"
+                                                         "in terminal window.<br />"
+                                                         "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MuSE modules dir.<br />"
+                                                         "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
+                                                         " from MusE source package");
    }
 
    std::set<std::string> supportedFeatures;
