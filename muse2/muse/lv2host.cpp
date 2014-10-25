@@ -220,7 +220,7 @@ void initLV2()
 
    if(!bLV2Gtk2Enabled)
    {
-      QMessageBox::critical(NULL, "MusE LV2 host error", "<b>LV2 GTK2 ui support is not available</b><br />"
+      QMessageBox::critical(NULL, "MusE LV2 host error", QString("<b>LV2 GTK2 ui support is not available</b><br />"
                                                          "This may happen because of the following reasons:<br />"
                                                          "<b>1.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so is missing needed dependences.<br />"
                                                          "This may be checked by executing<br />"
@@ -228,7 +228,8 @@ void initLV2()
                                                          "in terminal window.<br />"
                                                          "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MuSE modules dir.<br />"
                                                          "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
-                                                         " from MusE source package");
+                                                         " from MusE source package. dl error was:"
+                                                          ) + QString(dlerror()));
    }
 
    std::set<std::string> supportedFeatures;
