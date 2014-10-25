@@ -229,7 +229,7 @@ void initLV2()
                                                          "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MuSE modules dir.<br />"
                                                          "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
                                                          " from MusE source package. dl error was:"
-                                                          ) + QString(dlerror()));
+                                                          ) + QString::fromUtf8(dlerror()));
    }
 
    std::set<std::string> supportedFeatures;
