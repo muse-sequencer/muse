@@ -382,13 +382,14 @@ public:
 
 
 struct LV2MidiPort {
-    LV2MidiPort ( const LilvPort *_p, uint32_t _i, QString _n, bool _f, LV2EvBuf *_b ) :
-        port ( _p ), index ( _i ), name ( _n ), old_api ( _f ), buffer ( _b ) {}
+    LV2MidiPort ( const LilvPort *_p, uint32_t _i, QString _n, bool _f, LV2EvBuf *_b, bool _supportsTimePos ) :
+        port ( _p ), index ( _i ), name ( _n ), old_api ( _f ), buffer ( _b ), supportsTimePos(_supportsTimePos) {}
     const LilvPort *port;
     uint32_t index; //plugin real port index
     QString name;
     bool old_api; //true for LV2_Event port
     LV2EvBuf *buffer;
+    bool supportsTimePos;
     ~LV2MidiPort() {
 #if 0
         std::cerr << "~LV2MidiPort()" << std::endl;
@@ -568,6 +569,8 @@ public:
     }
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
+    static void lv2ui_Gtk2AllocateCb(int width, int height, void *arg);
+    static void lv2ui_Gtk2ResizeCb(int width, int height, void *arg);
     static void lv2ui_ShowNativeGui ( LV2PluginWrapper_State *state, bool bShow );
     static void lv2ui_PortWrite ( LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer );
     static void lv2ui_Touch (LV2UI_Controller controller, uint32_t port_index, bool grabbed);

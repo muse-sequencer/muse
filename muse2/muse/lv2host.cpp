@@ -135,6 +135,7 @@ typedef struct
    LilvNode *lv2_portInteger;
    LilvNode *lv2_portTrigger;
    LilvNode *lv2_portToggled;
+   LilvNode *lv2_TimePosition;
    LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
 } CacheNodes;
 
@@ -210,9 +211,9 @@ void initLV2()
    lv2Gtk2HelperHandle = dlopen(LV2_GTK_HELPER, RTLD_NOW);
    if(lv2Gtk2HelperHandle != NULL)
    {
-      bool( * lv2GtkHelper_initFn)();
-      *(void **)(&lv2GtkHelper_initFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_init");
-      bool bHelperInit = lv2GtkHelper_initFn();
+      bool( * lv2Gtk2Helper_initFn)();
+      *(void **)(&lv2Gtk2Helper_initFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_init");
+      bool bHelperInit = lv2Gtk2Helper_initFn();
       if(bHelperInit)
          bLV2Gtk2Enabled = true;
    }
@@ -256,6 +257,7 @@ void initLV2()
    lv2CacheNodes.lv2_portInteger        = lilv_new_uri(lilvWorld, LV2_CORE__integer);
    lv2CacheNodes.lv2_portTrigger        = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__trigger);
    lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
+   lv2CacheNodes.lv2_TimePosition        = lilv_new_uri(lilvWorld, LV2_TIME__Position);
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -749,9 +751,9 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
 
    if(bLV2Gtk2Enabled && state->gtk2Plug != NULL)
    {
-      void (*lv2GtkHelper_gtk_widget_destroyFn)(void *);
-      *(void **)(&lv2GtkHelper_gtk_widget_destroyFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_widget_destroy");
-      lv2GtkHelper_gtk_widget_destroyFn(state->gtk2Plug);
+      void (*lv2Gtk2Helper_gtk_widget_destroyFn)(void *);
+      *(void **)(&lv2Gtk2Helper_gtk_widget_destroyFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_widget_destroy");
+      lv2Gtk2Helper_gtk_widget_destroyFn(state->gtk2Plug);
       state->gtk2Plug = NULL;
    }
 
@@ -804,9 +806,9 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
    if(bLV2Gtk2Enabled && lv2Gtk2HelperHandle != NULL)
    {
       bLV2Gtk2Enabled = false;
-      void (*lb2GtkHelper_deinitFn)();
-      *(void **)(&lb2GtkHelper_deinitFn) = dlsym(lv2Gtk2HelperHandle, "lb2GtkHelper_deinit");
-      lb2GtkHelper_deinitFn();
+      void (*lv2Gtk2Helper_deinitFn)();
+      *(void **)(&lv2Gtk2Helper_deinitFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_deinit");
+      lv2Gtk2Helper_deinitFn();
       dlclose(lv2Gtk2HelperHandle);
       lv2Gtk2HelperHandle = NULL;
    }
@@ -909,6 +911,33 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
    return 1;
 }
 
+void LV2Synth::lv2ui_Gtk2AllocateCb(int width, int height, void *arg)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)arg;
+   if(state == NULL)
+      return;
+   if(state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
+   {
+      ((LV2PluginWrapper_Window *)state->widget)->setMinimumSize(width, height);
+      ((LV2PluginWrapper_Window *)state->widget)->setMaximumSize(width, height);
+   }
+
+
+}
+
+void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)arg;
+   if(state == NULL)
+      return;
+   if(state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
+   {
+      ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
+   }
+
+}
+
+
 
 void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 {
@@ -1009,10 +1038,18 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          bEmbed = true;
          bGtk = true;         
          ewWin = new QX11EmbedContainer(win);
-         void *( *lv2GtkHelper_gtk_plug_newFn)(unsigned long);
-         *(void **)(&lv2GtkHelper_gtk_plug_newFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_plug_new");
-         state->gtk2Plug = lv2GtkHelper_gtk_plug_newFn(ewWin->winId());
+         void *( *lv2Gtk2Helper_gtk_plug_newFn)(unsigned long, void*);
+         *(void **)(&lv2Gtk2Helper_gtk_plug_newFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_plug_new");
+         state->gtk2Plug = lv2Gtk2Helper_gtk_plug_newFn(ewWin->winId(), state);
          state->_ifeatures [synth->_fUiParent].data = (void *)ewWin;
+
+         void ( *lv2Gtk2Helper_register_allocate_cbFn)(void *, void(*sz_cb_fn)(int, int, void *));
+         *(void **)(&lv2Gtk2Helper_register_allocate_cbFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_register_allocate_cb");
+         lv2Gtk2Helper_register_allocate_cbFn(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2AllocateCb);
+
+         void ( *lv2Gtk2Helper_register_resize_cbFn)(void *, void(*sz_cb_fn)(int, int, void *));
+         *(void **)(&lv2Gtk2Helper_register_resize_cbFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_register_resize_cb");
+         lv2Gtk2Helper_register_resize_cbFn(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2ResizeCb);
 
       }
       else if(strcmp(LV2_UI__Qt4UI, cUiUri) == 0) //Qt4 uis are handled natively
@@ -1101,23 +1138,23 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
             {               
                if(bGtk)
                {
-                  void ( *lv2GtkHelper_gtk_container_addFn)(void *, void *);
-                  *(void **)(&lv2GtkHelper_gtk_container_addFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_container_add");
+                  void ( *lv2Gtk2Helper_gtk_container_addFn)(void *, void *);
+                  *(void **)(&lv2Gtk2Helper_gtk_container_addFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_container_add");
 
-                  void ( *lv2GtkHelper_gtk_widget_show_allFn)(void *);
-                  *(void **)(&lv2GtkHelper_gtk_widget_show_allFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_widget_show_all");
+                  void ( *lv2Gtk2Helper_gtk_widget_show_allFn)(void *);
+                  *(void **)(&lv2Gtk2Helper_gtk_widget_show_allFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_widget_show_all");
 
-                  void ( *lv2GtkHelper_gtk_widget_get_allocationFn)(void *, int *, int *);
-                  *(void **)(&lv2GtkHelper_gtk_widget_get_allocationFn) = dlsym(lv2Gtk2HelperHandle, "lv2GtkHelper_gtk_widget_get_allocation");
+                  void ( *lv2Gtk2Helper_gtk_widget_get_allocationFn)(void *, int *, int *);
+                  *(void **)(&lv2Gtk2Helper_gtk_widget_get_allocationFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_widget_get_allocation");
 
-                  lv2GtkHelper_gtk_container_addFn(state->gtk2Plug, uiW);
-                  lv2GtkHelper_gtk_widget_show_allFn(state->gtk2Plug);
+                  lv2Gtk2Helper_gtk_container_addFn(state->gtk2Plug, uiW);
+                  lv2Gtk2Helper_gtk_widget_show_allFn(state->gtk2Plug);
 
                   if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                   {
                      int w = 0;
                      int h = 0;
-                     lv2GtkHelper_gtk_widget_get_allocationFn(uiW, &w, &h);
+                     lv2Gtk2Helper_gtk_widget_get_allocationFn(uiW, &w, &h);
                      win->resize(w, h);
                   }
                   win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
@@ -1593,12 +1630,13 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       }
       else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.ev_EventPort))
       {
-
-         mPorts->push_back(LV2MidiPort(_port, i, _portName, true /* old api is on */, NULL));
+         bool portSupportsTimePos = lilv_port_supports_event(_handle, _port, lv2CacheNodes.lv2_TimePosition);
+         mPorts->push_back(LV2MidiPort(_port, i, _portName, true /* old api is on */, NULL, portSupportsTimePos));
       }
       else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.atom_AtomPort))
       {
-         mPorts->push_back(LV2MidiPort(_port, i, _portName, false /* old api is off */, NULL));
+         bool portSupportsTimePos = lilv_port_supports_event(_handle, _port, lv2CacheNodes.lv2_TimePosition);
+         mPorts->push_back(LV2MidiPort(_port, i, _portName, false /* old api is off */, NULL, portSupportsTimePos));
       }
       else if(!optional)
       {
@@ -3220,8 +3258,11 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                rawMidiBuffer->lv2_evbuf_reset(true);
                LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
 
-               //send transport events if any
-               LV2Synth::lv2audio_SendTransport(_uiState, rawMidiBuffer, iter);
+               if(_midiInPorts [0].supportsTimePos)
+               {
+                  //send transport events if any
+                  LV2Synth::lv2audio_SendTransport(_uiState, rawMidiBuffer, iter);
+               }
 
                //convert snd_seq_event_t[] to raw midi data
                snd_midi_event_reset_decode(_midiEvent);
@@ -3958,11 +3999,14 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
 
    if(state->midiInPorts.size() > 0)
    {
-      LV2EvBuf *rawMidiBuffer = state->midiInPorts [0].buffer;
-      rawMidiBuffer->lv2_evbuf_reset(true);
-      LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
-      //send transport events if any
-      LV2Synth::lv2audio_SendTransport(state, rawMidiBuffer, iter);
+      if(state->midiInPorts [0].supportsTimePos)
+      {
+         LV2EvBuf *rawMidiBuffer = state->midiInPorts [0].buffer;
+         rawMidiBuffer->lv2_evbuf_reset(true);
+         LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
+         //send transport events if any
+         LV2Synth::lv2audio_SendTransport(state, rawMidiBuffer, iter);
+      }
    }
 
 

@@ -10,7 +10,30 @@ static void *gtkmm2LibHandle = NULL;
 #define LIBGTKMM2_LIBRARY_NAME "libgtkmm-2.4.so"
 Gtk::Main *gtkmm2Main = NULL;
 
-extern "C" bool lv2GtkHelper_init()
+typedef void(*sz_cb_fn)(int, int, void *);
+
+static void
+plug_on_size_request(GtkWidget* widget, GtkRequisition* requisition, gpointer user_data)
+{
+   sz_cb_fn fn = reinterpret_cast<sz_cb_fn>(user_data);
+   int width = requisition->width;
+   int height = requisition->height;
+   void *arg = static_cast<void *>(g_object_get_data(G_OBJECT(widget), "lv2Gtk2Helper_arg"));
+   fn(width, height, arg);
+
+}
+
+static void
+plug_on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user_data)
+{
+   sz_cb_fn fn = reinterpret_cast<sz_cb_fn>(user_data);
+   int width = allocation->width;
+   int height = allocation->height;
+   void *arg = static_cast<void *>(g_object_get_data(G_OBJECT(widget), "lv2Gtk2Helper_arg"));
+   fn(width, height, arg);
+}
+
+extern "C" bool lv2Gtk2Helper_init()
 {
    if(gtk2LibHandle == NULL)
    {
@@ -40,35 +63,48 @@ extern "C" bool lv2GtkHelper_init()
    return true;
 }
 
-extern "C" void *lv2GtkHelper_gtk_plug_new(unsigned long winId)
+extern "C" void *lv2Gtk2Helper_gtk_plug_new(unsigned long winId, void *arg)
 {
-   return static_cast<void *>(gtk_plug_new(winId));
+   GtkWidget *gtkPlug = gtk_plug_new(winId);
+   g_object_set_data(G_OBJECT(gtkPlug), "lv2Gtk2Helper_arg", arg);
+   return static_cast<void *>(gtkPlug);
 }
 
-extern "C" void lv2GtkHelper_gtk_widget_destroy(void *w)
+extern "C" void lv2Gtk2Helper_gtk_widget_destroy(void *plug)
 {
-   gtk_widget_destroy(static_cast<GtkWidget *>(w));
+   gtk_widget_destroy(static_cast<GtkWidget *>(plug));
 }
 
-extern "C" void lv2GtkHelper_gtk_container_add(void *plug, void *w)
+extern "C" void lv2Gtk2Helper_gtk_container_add(void *plug, void *w)
 {
    gtk_container_add(GTK_CONTAINER(plug), static_cast<GtkWidget *>(w));
 }
 
-extern "C" void lv2GtkHelper_gtk_widget_show_all(void *w)
+extern "C" void lv2Gtk2Helper_gtk_widget_show_all(void *plug)
 {
-   gtk_widget_show_all(static_cast<GtkWidget *>(w));
+   gtk_widget_show_all(static_cast<GtkWidget *>(plug));
 }
 
-extern "C" void lv2GtkHelper_gtk_widget_get_allocation(void *w, int *width, int *height)
+extern "C" void lv2Gtk2Helper_gtk_widget_get_allocation(void *plug, int *width, int *height)
 {
    GtkAllocation allocSize;
-   gtk_widget_get_allocation(static_cast<GtkWidget *>(w), &allocSize);
+   gtk_widget_get_allocation(static_cast<GtkWidget *>(plug), &allocSize);
    *width = allocSize.width;
    *height = allocSize.height;
 }
 
-extern "C" void lb2GtkHelper_deinit()
+
+extern "C" void lv2Gtk2Helper_register_allocate_cb(void *plug, sz_cb_fn fn)
+{
+   g_signal_connect(G_OBJECT(plug), "size-allocate", G_CALLBACK(plug_on_size_allocate), reinterpret_cast<gpointer>(fn));
+}
+
+extern "C" void lv2Gtk2Helper_register_resize_cb(void *plug, sz_cb_fn fn)
+{
+   g_signal_connect(G_OBJECT(plug), "size-request", G_CALLBACK(plug_on_size_request), reinterpret_cast<gpointer>(fn));
+}
+
+extern "C" void lv2Gtk2Helper_deinit()
 {
    if(gtkmm2Main != NULL)
    {
