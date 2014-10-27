@@ -2,6 +2,7 @@
 #include <gtk/gtk.h>
 #include <gtkmm/main.h>
 #include <gtkmm/window.h>
+#include <stdio.h>
 
 static void *gtk2LibHandle = NULL;
 static void *gtkmm2LibHandle = NULL;
@@ -38,7 +39,11 @@ extern "C" bool lv2Gtk2Helper_init()
    if(gtk2LibHandle == NULL)
    {
       gtk2LibHandle = dlopen(LIBGTK2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
+      char *err = dlerror();
+      fprintf(stderr, "Lv2Gtk2Helper: dlerror = %s\n", err);
       gtkmm2LibHandle = dlopen(LIBGTKMM2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
+      err = dlerror();
+      fprintf(stderr, "Lv2Gtk2Helper: dlerror = %s\n", err);
 
       if(gtk2LibHandle == NULL || gtkmm2LibHandle == NULL)
       {
