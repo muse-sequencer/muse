@@ -711,26 +711,6 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
    state->wrkIface = (LV2_Worker_Interface *)lilv_instance_get_extension_data(state->handle, LV2_F_WORKER_INTERFACE);
    //query for programs interface
    state->prgIface = (LV2_Programs_Interface *)lilv_instance_get_extension_data(state->handle, LV2_PROGRAMS__Interface);
-   if(state->prgIface != NULL)
-   {
-      state->programs.clear();
-      uint32_t iPrg = 0;
-      const LV2_Program_Descriptor *pDescr = NULL;
-      while((pDescr = state->prgIface->get_program(
-                lilv_instance_get_handle(state->handle), iPrg)) != NULL)
-      {
-         lv2ExtProgram extPrg;
-         extPrg.index = iPrg;
-         extPrg.bank = pDescr->bank;
-         extPrg.prog = pDescr->program;
-         extPrg.useIndex = true;
-         extPrg.name = QString(pDescr->name);
-
-         state->programs.insert(extPrg);
-         ++iPrg;
-      }
-   }
-
 
    state->wrkThread->start(QThread::LowPriority);
 
@@ -1486,7 +1466,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    //prepare features and options arrays
    LV2_Options_Option _tmpl_options [] =
    {
-      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(double), uridBiMap.map(LV2_ATOM__Int), &_sampleRate},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_sampleRate},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
@@ -3448,7 +3428,26 @@ bool LV2SynthIF::nativeGuiVisible() const
 
 void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
 {
-   //TODO: implement this
+   _uiState->programs.clear();
+   if(_uiState->prgIface != NULL)
+   {
+      uint32_t iPrg = 0;
+      const LV2_Program_Descriptor *pDescr = NULL;
+      while((pDescr = _uiState->prgIface->get_program(
+                lilv_instance_get_handle(_uiState->handle), iPrg)) != NULL)
+      {
+         lv2ExtProgram extPrg;
+         extPrg.index = iPrg;
+         extPrg.bank = pDescr->bank;
+         extPrg.prog = pDescr->program;
+         extPrg.useIndex = true;
+         extPrg.name = QString(pDescr->name);
+
+         _uiState->programs.insert(extPrg);
+         ++iPrg;
+      }
+   }
+
    menu->clear();
    std::set<lv2ExtProgram>::iterator it;
    for(it = _uiState->programs.begin(); it != _uiState->programs.end(); ++it)
