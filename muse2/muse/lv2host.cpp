@@ -228,7 +228,7 @@ void initLV2()
                                                          "This may be checked by executing<br />"
                                                          "<b>ldd " LV2_GTK_HELPER "</b><br />"
                                                          "in terminal window.<br />"
-                                                         "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MuSE modules dir.<br />"
+                                                         "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MusE modules dir.<br />"
                                                          "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
                                                          " from MusE source package. dl error was:"
                                                           ) + QString::fromUtf8(dlerror()));
