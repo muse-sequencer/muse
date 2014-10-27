@@ -209,7 +209,8 @@ void initLV2()
    //first of all try to init gtk 2 helper (for opening lv2 gtk2/gtkmm2 guis)
 
    lv2Gtk2HelperHandle = dlopen(LV2_GTK_HELPER, RTLD_NOW);
-   fprintf(stderr, "Lv2Gtk2Helper: dlerror = %s\n", err);
+   char *dlerr = dlerror();
+   fprintf(stderr, "Lv2Gtk2Helper: dlerror = %s\n", dlerr);
    if(lv2Gtk2HelperHandle != NULL)
    {
       bool( * lv2Gtk2Helper_initFn)();
