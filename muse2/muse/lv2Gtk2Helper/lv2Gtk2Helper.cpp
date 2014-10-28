@@ -36,14 +36,37 @@ plug_on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user
 
 extern "C" bool lv2Gtk2Helper_init()
 {
+   const char *gtk2LibraryNames []= {"libgtk-x11-2.0.so", "libgtk-x11-2.0.so.0", NULL};
+   const char *gtk2mmLibraryNames [] = {"libgtkmm-2.4.so", "libgtkmm-2.4.so.1", NULL};
    if(gtk2LibHandle == NULL)
    {
-      gtk2LibHandle = dlopen(LIBGTK2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
-      char *err = dlerror();
-      fprintf(stderr, "Lv2Gtk2Helper: dlerror = %s\n", err);
-      gtkmm2LibHandle = dlopen(LIBGTKMM2_LIBRARY_NAME, RTLD_GLOBAL | RTLD_LAZY);
-      err = dlerror();
-      fprintf(stderr, "Lv2Gtk2Helper: dlerror = %s\n", err);
+      int i = 0;
+      while(gtk2LibraryNames [i] != NULL)
+      {
+         const char *libName = gtk2LibraryNames [i];
+         gtk2LibHandle = dlopen(libName, RTLD_GLOBAL | RTLD_LAZY);
+         char *err = dlerror();
+         fprintf(stderr, "Lv2Gtk2Helper: dlerror (%s) = %s\n", libName, err);
+         if(gtk2LibHandle != NULL)
+         {
+            break;
+         }
+         ++i;
+      }
+
+      i = 0;
+      while(gtk2mmLibraryNames [i] != NULL)
+      {
+         const char *libName = gtk2mmLibraryNames [i];
+         gtkmm2LibHandle = dlopen(libName, RTLD_GLOBAL | RTLD_LAZY);
+         char *err = dlerror();
+         fprintf(stderr, "Lv2Gtk2Helper: dlerror (%s) = %s\n", libName, err);
+         if(gtkmm2LibHandle != NULL)
+         {
+            break;
+         }
+         ++i;
+      }
 
       if(gtk2LibHandle == NULL || gtkmm2LibHandle == NULL)
       {
