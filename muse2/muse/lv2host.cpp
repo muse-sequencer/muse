@@ -439,7 +439,7 @@ void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
    assert(state->widget != NULL); // this too
    assert(state->pluginWindow != NULL);
 
-   state->pluginWindow->stopNextTime();
+   state->pluginWindow->setClosing(true);
 
 
    //state->uiTimer->stopNextTime(false);
@@ -3738,6 +3738,7 @@ void LV2PluginWrapper_Window::startNextTime()
 
 void LV2PluginWrapper_Window::stopNextTime()
 {
+   setClosing(true);
    stopUpdateTimer();
    close();
 }
@@ -3758,11 +3759,6 @@ void LV2PluginWrapper_Window::updateGui()
       }
    }
 
-   if(_state->hasExternalGui)
-   {
-      LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
-   }
-
    //call ui idle callback if any
    if(_state->uiIdleIface != NULL)
    {
@@ -3770,6 +3766,14 @@ void LV2PluginWrapper_Window::updateGui()
       if(iRet != 0) // ui don't want us to call it's idle callback any more
          _state->uiIdleIface = NULL;
    }
+
+   if(_state->hasExternalGui)
+   {
+      LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
+   }
+
+   if(_closing)
+      stopNextTime();
 }
 
 
