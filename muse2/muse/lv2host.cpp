@@ -136,6 +136,7 @@ typedef struct
    LilvNode *lv2_portTrigger;
    LilvNode *lv2_portToggled;
    LilvNode *lv2_TimePosition;
+   LilvNode *lv2_FreeWheelPort;
    LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
 } CacheNodes;
 
@@ -260,7 +261,8 @@ void initLV2()
    lv2CacheNodes.lv2_portInteger        = lilv_new_uri(lilvWorld, LV2_CORE__integer);
    lv2CacheNodes.lv2_portTrigger        = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__trigger);
    lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
-   lv2CacheNodes.lv2_TimePosition        = lilv_new_uri(lilvWorld, LV2_TIME__Position);
+   lv2CacheNodes.lv2_TimePosition       = lilv_new_uri(lilvWorld, LV2_TIME__Position);
+   lv2CacheNodes.lv2_FreeWheelPort      = lilv_new_uri(lilvWorld, LV2_CORE__freeWheeling);
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -1449,7 +1451,7 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 
 LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin)
    : Synth(fi, label, name, author, QString("")),
-     _handle(_plugin), _isSynth(false)
+     _handle(_plugin), _isSynth(false), _hasFreeWheelPort(false)
 {
 
    //fake id for LV2PluginWrapper functionality
@@ -1560,6 +1562,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    //enum plugin ports;
    uint32_t numPorts = lilv_plugin_get_num_ports(_handle);
 
+   const LilvPort *lilvFreeWheelPort = lilv_plugin_get_port_by_designation(_handle, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_FreeWheelPort);
+
    for(uint32_t i = 0; i < numPorts; i++)
    {
       const LilvPort *_port = lilv_plugin_get_port_by_index(_handle, i);
@@ -1632,6 +1636,14 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    for(uint32_t i = 0; i < _controlInPorts.size(); ++i)
    {
       _idxToControlMap.insert(std::pair<uint32_t, uint32_t>(_controlInPorts [i].index, i));
+      if(lilvFreeWheelPort != NULL)
+      {
+         if(lilv_port_get_index(_handle, _controlInPorts [i].port) == lilv_port_get_index(_handle, lilvFreeWheelPort))
+         {
+            _hasFreeWheelPort = true;
+            _freeWheelPortIndex = i;
+         }
+      }
    }
 
    if(_midiInPorts.size() > 0)
@@ -1856,7 +1868,6 @@ bool LV2SynthIF::init(LV2Synth *s)
 
    snd_midi_event_no_status(_midiEvent, 1);
 
-
    //use LV2Synth features as template
 
    _uiState = new LV2PluginWrapper_State;
@@ -1950,7 +1961,7 @@ bool LV2SynthIF::init(LV2Synth *s)
    _synth->port2MidiCtlMap.clear();
 
    for(size_t i = 0; i < _inportsControl; i++)
-   {
+   {      
       uint32_t idx = _controlInPorts [i].index;
       _controls [i].idx = idx;
       _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal = _PluginControlsDef [idx];
@@ -2784,6 +2795,12 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    CtrlListList *cll = atrack->controller();
    ciCtrlList icl_first;
    const int plug_id = id();
+
+   //set freewheeling property if plugin supports it
+   if(_synth->_hasFreeWheelPort)
+   {
+      _controls [_synth->_freeWheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
+   }
 
    if(plug_id != -1 && ports != 0)  // Don't bother if not 'running'.
    {
@@ -4013,6 +4030,12 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
          //send transport events if any
          LV2Synth::lv2audio_SendTransport(state, rawMidiBuffer, iter);
       }
+   }
+
+   //set freewheeling property if plugin supports it
+   if(state->synth->_hasFreeWheelPort)
+   {
+      state->plugInst->controls[_synth->_freeWheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
    }
 
 

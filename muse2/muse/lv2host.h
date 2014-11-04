@@ -547,6 +547,8 @@ private:
     LV2_URID _uTime_speed;
     LV2_URID _uTime_beatsPerMinute;
     LV2_URID _uTime_barBeat;
+    bool _hasFreeWheelPort;
+    uint32_t _freeWheelPortIndex;
 public:
     virtual Type synthType() const {
         return LV2_SYNTH;
@@ -769,8 +771,6 @@ struct LV2PluginWrapper_State {
       uiBank(0),
       uiProg(0),
       gtk2Plug(NULL)
-
-
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -829,7 +829,7 @@ struct LV2PluginWrapper_State {
     LV2_Programs_Host prgHost;
     int uiBank;
     int uiProg;
-    void *gtk2Plug;
+    void *gtk2Plug;    
 };
 
 
