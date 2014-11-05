@@ -929,7 +929,8 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
    LV2Synth *synth = state->synth;
    LV2PluginWrapper_Window *win = NULL;
 
-   assert(synth->_pluginUiTypes.size() > 0);
+   if(synth->_pluginUiTypes.size() == 0)
+      return;
 
    //state->uiTimer->stopNextTime();
    if(state->pluginWindow != NULL)
