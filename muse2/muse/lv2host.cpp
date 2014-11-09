@@ -760,7 +760,7 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
 {
    assert(state != NULL);
 
-   state->wrkThread->terminate();
+   state->wrkThread->setClosing();
    state->wrkThread->wait();
    delete state->wrkThread;
 
@@ -4229,6 +4229,8 @@ void LV2PluginWrapper_Worker::run()
    while(true)
    {
       _mSem.acquire(1);
+      if(_closing)
+         break;
       makeWork();
 
    }

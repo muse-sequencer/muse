@@ -838,15 +838,19 @@ class LV2PluginWrapper_Worker :public QThread
 private:
     LV2PluginWrapper_State *_state;
     QSemaphore _mSem;
+    bool _closing;
 public:
     explicit LV2PluginWrapper_Worker ( LV2PluginWrapper_State *s ) : QThread(),
        _state ( s ),
-       _mSem(0)
+       _mSem(0),
+       _closing(false)
     {}
 
     void run();
     LV2_Worker_Status scheduleWork();
     void makeWork();
+    void setClosing() {_closing = true; _mSem.release();}
+
 };
 
 
