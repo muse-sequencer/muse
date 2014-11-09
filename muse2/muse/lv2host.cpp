@@ -428,6 +428,16 @@ void deinitLV2()
       lilv_node_free(*n);
    }
 
+   if(bLV2Gtk2Enabled && lv2Gtk2HelperHandle != NULL)
+   {
+      bLV2Gtk2Enabled = false;
+      void (*lv2Gtk2Helper_deinitFn)();
+      *(void **)(&lv2Gtk2Helper_deinitFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_deinit");
+      lv2Gtk2Helper_deinitFn();
+      dlclose(lv2Gtk2HelperHandle);
+      lv2Gtk2HelperHandle = NULL;
+   }
+
    free(lilvWorld);
 
 }
@@ -786,16 +796,6 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
    {
       lilv_instance_free(state->handle);
       state->handle = NULL;
-   }
-
-   if(bLV2Gtk2Enabled && lv2Gtk2HelperHandle != NULL)
-   {
-      bLV2Gtk2Enabled = false;
-      void (*lv2Gtk2Helper_deinitFn)();
-      *(void **)(&lv2Gtk2Helper_deinitFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_deinit");
-      lv2Gtk2Helper_deinitFn();
-      dlclose(lv2Gtk2HelperHandle);
-      lv2Gtk2HelperHandle = NULL;
    }
 
    delete state;
