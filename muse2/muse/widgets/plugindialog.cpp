@@ -121,6 +121,16 @@ PluginDialog::PluginDialog(QWidget* parent)
       ui.pluginType->addItem("VST", SEL_TYPE_VST);
       ui.pluginType->addItem("Wine VST", SEL_TYPE_WINE_VST);
       connect (ui.pluginType,SIGNAL(currentIndexChanged(int)), SLOT(filterType(int)));
+
+      for (int i=0; i < ui.pluginType->count(); i++) {
+        if (selectedPlugType == ui.pluginType->itemData(i).toInt()) {
+          ui.pluginType->setCurrentIndex(i);
+          printf("set current index to %d\n",i);
+          break;
+        }
+      }
+      ui.sortBox->addItems(sortItems);
+
       fillPlugs();
 
       ui.pList->setSortingEnabled(true);

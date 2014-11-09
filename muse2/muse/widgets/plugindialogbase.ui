@@ -31,6 +31,9 @@
    </property>
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <item row="0" column="0" colspan="4">
       <widget class="QTabBar" name="tabBar" native="true"/>
      </item>
@@ -58,7 +61,7 @@
         </size>
        </property>
        <property name="title">
-        <string>Show plugs:</string>
+        <string>Ports:</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <property name="spacing">
