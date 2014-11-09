@@ -1533,6 +1533,13 @@ void Pipeline::deleteGui(int idx)
   PluginI* p = (*this)[idx];
   if(p)
     p->deleteGui();
+#ifdef LV2_SUPPORT
+         if(p && p->plugin()->isLV2Plugin())
+         {
+            ((LV2PluginWrapper *)p->plugin())->showNativeGui(p, false);
+         }
+
+#endif
 }
 
 //---------------------------------------------------------
@@ -1567,7 +1574,7 @@ bool Pipeline::nativeGuiVisible(int idx)
       if (p)
       {
 #ifdef LV2_SUPPORT
-         if(p->plugin()->isLV2Synth())
+         if(p->plugin()->isLV2Plugin())
             return ((LV2PluginWrapper *)p->plugin())->nativeGuiVisible(p);
 #else
             return p->nativeGuiVisible();

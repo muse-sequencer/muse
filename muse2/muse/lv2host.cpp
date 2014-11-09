@@ -3764,7 +3764,10 @@ void LV2PluginWrapper_Window::stopNextTime()
 void LV2PluginWrapper_Window::updateGui()
 {
    if(_state->deleteLater || _closing)
+   {
+      stopNextTime();
       return;
+   }
    LV2Synth::lv2ui_SendChangedControls(_state);
 
    //send program change if any
@@ -3790,8 +3793,8 @@ void LV2PluginWrapper_Window::updateGui()
       LV2_EXTERNAL_UI_RUN((LV2_External_UI_Widget *)_state->widget);
    }
 
-   if(_closing)
-      stopNextTime();
+   //if(_closing)
+      //stopNextTime();
 }
 
 
@@ -4166,7 +4169,8 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
 
 bool LV2PluginWrapper::nativeGuiVisible(PluginI *p)
 {
-   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle);
+   assert(p->instances > 0);
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
 
    //assert(it != _states.end()); //this shouldn't happen
    if(it == _states.end())
@@ -4175,6 +4179,7 @@ bool LV2PluginWrapper::nativeGuiVisible(PluginI *p)
    }
 
    LV2PluginWrapper_State *state = it->second;
+   assert(state != NULL);
    return (state->widget != NULL);
 }
 
