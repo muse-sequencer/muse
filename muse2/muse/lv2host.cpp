@@ -3408,14 +3408,13 @@ void LV2SynthIF::guiHeartBeat()
 
 bool LV2SynthIF::guiVisible() const
 {
-   //TODO: implement this
-   return false;
+   return _gui && _gui->isVisible();
 }
 
 
 bool LV2SynthIF::hasGui() const
 {
-   return false;
+   return true;
 }
 
 bool LV2SynthIF::hasNativeGui() const
@@ -3525,9 +3524,19 @@ void LV2SynthIF::setParameter(long unsigned int idx, float value)
    addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
 }
 
-void LV2SynthIF::showGui(bool)
+void LV2SynthIF::showGui(bool v)
 {
-   //TODO: implement this
+   if (v)
+   {
+      if (_gui == 0)
+         makeGui();
+      _gui->show();
+   }
+   else
+   {
+      if (_gui)
+         _gui->hide();
+   }
 }
 
 void LV2SynthIF::showNativeGui(bool bShow)
