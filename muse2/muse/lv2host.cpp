@@ -1606,7 +1606,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
             _cType = LV2_PORT_INTEGER;
          else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portTrigger)
                  || lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portToggled))
-            _cType = LV2_PORT_TRIGER;
+            _cType = LV2_PORT_TRIGGER;
          else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portLogarithmic))
             _cType = LV2_PORT_LOGARITHMIC;
 
@@ -2010,7 +2010,7 @@ bool LV2SynthIF::init(LV2Synth *s)
       case LV2_PORT_LOGARITHMIC:
          vt = VAL_LOG;
          break;
-      case LV2_PORT_TRIGER:
+      case LV2_PORT_TRIGGER:
          vt = VAL_BOOL;
          break;
       default:
@@ -2797,12 +2797,6 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    ciCtrlList icl_first;
    const int plug_id = id();
 
-   //set freewheeling property if plugin supports it
-   if(_synth->_hasFreeWheelPort)
-   {
-      _controls [_synth->_freeWheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
-   }
-
    if(plug_id != -1 && ports != 0)  // Don't bother if not 'running'.
    {
       icl_first = cll->lower_bound(genACnum(plug_id, 0));
@@ -3308,6 +3302,12 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                lilv_instance_connect_port(_handle, _audioOutPorts [j].index, _audioOutBuffers [j] + sample);
             }
 
+            //set freewheeling property if plugin supports it
+            if(_synth->_hasFreeWheelPort)
+            {
+               _controls [_synth->_freeWheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
+            }
+
             lilv_instance_run(_handle, nsamp);
             //notify worker that this run() finished
             if(_uiState->wrkIface && _uiState->wrkIface->end_run)
@@ -3610,7 +3610,7 @@ CtrlValueType LV2SynthIF::ctrlValueType(unsigned long i) const
    case LV2_PORT_LOGARITHMIC:
       vt = VAL_LOG;
       break;
-   case LV2_PORT_TRIGER:
+   case LV2_PORT_TRIGGER:
       vt = VAL_BOOL;
       break;
    default:
@@ -4124,7 +4124,7 @@ CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
    case LV2_PORT_LOGARITHMIC:
       vt = VAL_LOG;
       break;
-   case LV2_PORT_TRIGER:
+   case LV2_PORT_TRIGGER:
       vt = VAL_BOOL;
       break;
    default:
