@@ -75,8 +75,10 @@ extern void initVST();
 extern void initVST_Native();
 extern void initPlugins();
 extern void initDSSI();
+#ifdef LV2_SUPPORT
 extern void initLV2();
 extern void deinitLV2();
+#endif
 extern void readConfiguration();
 
 extern void initMidiSequencer();   
@@ -694,9 +696,10 @@ int main(int argc, char* argv[])
 
       if(MusEGlobal::loadDSSI)
             MusECore::initDSSI();
-
+#ifdef LV2_SUPPORT
       if(MusEGlobal::loadLV2)
             MusECore::initLV2();
+#endif
       
       MusECore::initOSC();
       
@@ -756,8 +759,10 @@ int main(int argc, char* argv[])
          for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
             delete (*i);
       }
+#ifdef LV2_SUPPORT
       if(MusEGlobal::loadLV2)
             MusECore::deinitLV2();
+#endif
 
       delete MusEGlobal::muse;
       

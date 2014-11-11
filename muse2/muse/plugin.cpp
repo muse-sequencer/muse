@@ -75,9 +75,9 @@
 #include "verticalmeter.h"
 //#include "popupmenu.h"
 //#include "menutitleitem.h"
-
+#ifdef LV2_SUPPORT
 #include "lv2host.h"
-
+#endif
 
 #include "audio.h"
 #include "al/dsp.h"
@@ -1905,13 +1905,13 @@ void PluginI::setCustomData(const std::vector<QString> &customParams)
       return;
    if(!_plugin->isLV2Plugin()) //now only do it for lv2 plugs
       return;
-
+#ifdef LV2_SUPPORT
    LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
    for(int i = 0; i < instances; ++i)
    {
       lv2Plug->setCustomData(handle [i], customParams);
    }
-
+#endif
 }
 
 LADSPA_Handle Plugin::instantiate(PluginI *)
@@ -2124,7 +2124,7 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\" channel=\"%d\"",
          Xml::xmlString(_plugin->lib()).toLatin1().constData(), Xml::xmlString(_plugin->label()).toLatin1().constData(), channel);
-
+#ifdef LV2_SUPPORT
       if(_plugin != NULL && _plugin->isLV2Plugin())//save lv2 plugin state custom data before controls
       {
          LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
@@ -2134,7 +2134,7 @@ void PluginI::writeConfiguration(int level, Xml& xml)
             lv2Plug->writeConfiguration(handle [0], level, xml);
          }
       }
-
+#endif
       for (unsigned long i = 0; i < controlPorts; ++i) {
             unsigned long idx = controls[i].idx;
             QString s("control name=\"%1\" val=\"%2\" /");

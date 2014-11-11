@@ -72,7 +72,7 @@
 
 
 //uncomment to print debugging information for lv2 host
-#define DEBUG_LV2
+//#define DEBUG_LV2
 //uncomment to print audio process info
 //#define LV2_DEBUG_PROCESS
 

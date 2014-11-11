@@ -100,7 +100,7 @@ class Plugin {
 
       bool _isDssiSynth;
       bool _isDssi;
-	  bool _isLV2Synth;
+      bool _isLV2Synth;
       bool _isLV2Plugin;
       // Hack: Special flag required.
       bool _isDssiVst;
@@ -311,8 +311,10 @@ class PluginIBase
 #define AUDIO_OUT (LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT)
 
 class PluginI : public PluginIBase {
+#ifdef LV2_SUPPORT
     friend class LV2PluginWrapper;
     friend class LV2Synth;
+#endif
       Plugin* _plugin;
       int channel;
       int instances;
