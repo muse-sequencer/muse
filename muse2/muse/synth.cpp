@@ -223,10 +223,14 @@ static SynthI* createSynthInstance(const QString& sclass, const QString& label, 
             QString n;
             n.setNum(s->instances());
             QString instance_name = s->name() + "-" + n;
-            if (si->initInstance(s, instance_name)) {
+            //Andrew Deryabin: check si->_sif for NULL as synth instance may not be created.
+               if (si->initInstance(s, instance_name)) {
                   delete si;
+                  fprintf(stderr, "createSynthInstance: synthi class:%s label:%s can not be created\n", sclass.toLatin1().constData(), label.toLatin1().constData());
+                  QMessageBox::warning(0,"Synth instantiation error!",
+                              "Synth: " + label + " can not be created!");
                   return 0;
-                  }
+               }
             }
       else {
             fprintf(stderr, "createSynthInstance: synthi class:%s label:%s not found\n", sclass.toLatin1().constData(), label.toLatin1().constData());
@@ -486,6 +490,12 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
       setIName(instanceName);   // set instrument name
       _sif        = s->createSIF(this);
 
+      //Andrew Deryabin: add check for NULL here to get rid of segfaults
+      if(_sif == NULL)
+      {
+         return true; //true if error (?)
+      }
+
       AudioTrack::setTotalOutChannels(_sif->totalOutChannels());
       AudioTrack::setTotalInChannels(_sif->totalInChannels());
 
@@ -605,20 +615,30 @@ void SynthI::deactivate2()
 
 void SynthI::deactivate3()
       {
-      _sif->deactivate3();
+
+      //Andrew Deryabin: add checks for NULLness of _sif and syntheeizer instances
+      if(_sif)
+      {
+         _sif->deactivate3();
+      }
 
       //synthesizer->incInstances(-1); // Moved below by Tim. p3.3.14
 
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "SynthI::deactivate3 deleting _sif...\n");
 
-      delete _sif;
-      _sif = 0;
+      if(_sif)
+      {
+         delete _sif;
+         _sif = 0;
+      }
 
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "SynthI::deactivate3 decrementing synth instances...\n");
 
-      synthesizer->incInstances(-1);
+      if(synthesizer)
+         synthesizer->incInstances(-1);
+
       }
 
 void MessSynthIF::deactivate3()
