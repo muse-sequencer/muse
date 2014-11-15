@@ -80,7 +80,7 @@ typedef SIGLIST::reverse_iterator riSigEvent;
 typedef SIGLIST::const_reverse_iterator criSigEvent;
 
 class SigList : public SIGLIST {
-   friend MusECore::PendingOperationItem;
+   friend class MusECore::PendingOperationItem;
    
       int ticks_beat(int N) const;
       int ticksMeasure(const TimeSignature&) const;
