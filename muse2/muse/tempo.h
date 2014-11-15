@@ -73,7 +73,7 @@ typedef TEMPOLIST::const_reverse_iterator criTEvent;
 
 class TempoList : public TEMPOLIST {
     
-   friend PendingOperationItem;
+   friend class PendingOperationItem;
     
       int _tempoSN;           // serial no to track tempo changes
       bool useList;
