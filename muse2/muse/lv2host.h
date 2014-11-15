@@ -619,8 +619,7 @@ private:
     size_t _inportsControl;
     size_t _outportsControl;
     size_t _inportsMidi;
-    size_t _outportsMidi;
-    std::map<QString, size_t> _controlsNameMap;
+    size_t _outportsMidi;    
     float **_audioInBuffers;
     float **_audioOutBuffers;
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
@@ -829,7 +828,8 @@ struct LV2PluginWrapper_State {
     LV2_Programs_Host prgHost;
     int uiBank;
     int uiProg;
-    void *gtk2Plug;    
+    void *gtk2Plug;
+    std::map<QString, size_t> controlsNameMap;
 };
 
 

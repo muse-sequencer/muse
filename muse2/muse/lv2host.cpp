@@ -109,6 +109,7 @@ namespace MusECore
 #define LV2_UI_HOST_URI LV2_UI__Qt4UI
 #define LV2_UI_EXTERNAL LV2_EXTERNAL_UI__Widget
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
+#define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
 
 
 static LilvWorld *lilvWorld = 0;
@@ -137,6 +138,7 @@ typedef struct
    LilvNode *lv2_portToggled;
    LilvNode *lv2_TimePosition;
    LilvNode *lv2_FreeWheelPort;
+   LilvNode *lv2_SampleRate;
    LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
 } CacheNodes;
 
@@ -263,6 +265,7 @@ void initLV2()
    lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
    lv2CacheNodes.lv2_TimePosition       = lilv_new_uri(lilvWorld, LV2_TIME__Position);
    lv2CacheNodes.lv2_FreeWheelPort      = lilv_new_uri(lilvWorld, LV2_CORE__freeWheeling);
+   lv2CacheNodes.lv2_SampleRate         = lilv_new_uri(lilvWorld, LV2_CORE__sampleRate);
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -298,21 +301,19 @@ void initLV2()
 #ifdef DEBUG_LV2
          std::cerr << "Library path: " << lfp << std::endl;
 #endif
+
+
+
+#ifdef DEBUG_LV2
          const LilvPluginClass *cls = lilv_plugin_get_class(plugin);
          const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
          const char *clsname = lilv_node_as_uri(ncuri);
-         bool isSynth = false;
-#ifdef DEBUG_LV2
          std::cerr << "Plugin class: " << clsname << std::endl;
-#endif
-
+         bool isSynth = false;
          if(strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0)
          {
             isSynth = true;
          }
-
-#ifdef DEBUG_LV2
-
          if(isSynth)
          {
             std::cerr << "Plugin is synth" << std::endl;
@@ -615,12 +616,12 @@ void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index,
      std::cerr << "LV2Synth::lv2ui_PortWrite: fifo overflow: in control number:" << cport << std::endl;
 
 #ifdef DEBUG_LV2
-   std::cerr << "LV2Synth::lv2ui_PortWrite: port=" << cport << ", val=" << value << std::endl;
+   std::cerr << "LV2Synth::lv2ui_PortWrite: port=" << cport << "(" << port_index << ")" << ", val=" << value << std::endl;
 #endif
 
 }
 
-void LV2Synth::lv2ui_Touch(LV2UI_Controller /*controller*/, uint32_t /*port_index*/, bool grabbed)
+void LV2Synth::lv2ui_Touch(LV2UI_Controller /*controller*/, uint32_t /*port_index*/, bool grabbed __attribute__ ((unused)))
 {
 #ifdef DEBUG_LV2
    std::cerr << "LV2Synth::lv2ui_UiTouch: port: %u " << (grabbed ? "grabbed" : "released") << std::endl;
@@ -693,8 +694,6 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
    }
 
    _ppifeatures [i] = NULL;
-
-   lv2_atom_forge_init(&state->atomForge, &synth->_lv2_urid_map);
 
    state->curBpm = 0.0;//double(60000000.0/MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
    state->curIsPlaying = MusEGlobal::audio->isPlaying();
@@ -824,6 +823,17 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
    /* Build an LV2 position object to report change to plugin */
    LV2_Atom_Forge* atomForge = &state->atomForge;
+#ifdef LV2_NEW_LIB
+   lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
+   LV2_Atom_Forge_Frame frame;
+   lv2_atom_forge_object(atomForge, &frame, 1, synth->_uTime_Position);
+   lv2_atom_forge_key(atomForge, synth->_uTime_frame);
+   lv2_atom_forge_long(atomForge, curFrame);
+   lv2_atom_forge_key(atomForge, synth->_uTime_speed);
+   lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
+   lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerMinute);
+   lv2_atom_forge_float(atomForge, (float)curBpm);
+#else
    lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
    LV2_Atom_Forge_Frame frame;
    lv2_atom_forge_blank(atomForge, &frame, 1, synth->_uTime_Position);
@@ -833,9 +843,8 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
    lv2_atom_forge_property_head(atomForge, synth->_uTime_beatsPerMinute, 0);
    lv2_atom_forge_float(atomForge, (float)curBpm);
-   buffer->lv2_evbuf_write(iter, 0, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
-
-
+#endif
+buffer->lv2_evbuf_write(iter, 0, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
    //   }
 }
 
@@ -1367,15 +1376,15 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
          }
          else
          {
-            if(state->sif != NULL) //setting control valuew only for synths
+            if(state->sif != NULL) //setting control value only for synths
             {
 
                bool ok = false;
                float val = (float)qVal.toDouble(&ok);
                if(ok)
                {
-                  std::map<QString, size_t>::iterator it = state->sif->_controlsNameMap.find(name);
-                  if(it != state->sif->_controlsNameMap.end())
+                  std::map<QString, size_t>::iterator it = state->controlsNameMap.find(name.toLower());
+                  if(it != state->controlsNameMap.end())
                   {
                      size_t ctrlNum = it->second;
                      state->sif->_controls [ctrlNum].val = state->sif->_controls [ctrlNum].tmpVal = val;
@@ -1894,8 +1903,6 @@ bool LV2SynthIF::init(LV2Synth *s)
       return false;
    }
 
-   LV2Synth::lv2state_PostInstantiate(_uiState);
-
    uint32_t numPorts = lilv_plugin_get_num_ports(_synth->_handle);
    float _PluginControlsMin [numPorts];
    float _PluginControlsDef [numPorts];
@@ -1956,25 +1963,31 @@ bool LV2SynthIF::init(LV2Synth *s)
       _controlsOut = NULL;
    }
 
-   _controlsNameMap.clear();
+   _uiState->controlsNameMap.clear();
 
    _synth->midiCtl2PortMap.clear();
    _synth->port2MidiCtlMap.clear();
 
    for(size_t i = 0; i < _inportsControl; i++)
-   {      
+   {
       uint32_t idx = _controlInPorts [i].index;
+      if (lilv_port_has_property (_synth->_handle, _controlInPorts [i].port, lv2CacheNodes.lv2_SampleRate))
+      {
+         _PluginControlsDef [idx] *= MusEGlobal::sampleRate;
+         _PluginControlsMin [idx] *= MusEGlobal::sampleRate;
+         _PluginControlsMax [idx] *= MusEGlobal::sampleRate;
+      }
       _controls [i].idx = idx;
       _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal = _PluginControlsDef [idx];
       _controls [i].enCtrl = true;
       _controlInPorts [i].minVal = _PluginControlsMin [idx];
       _controlInPorts [i].maxVal = _PluginControlsMax [idx];
 
-      _controlsNameMap.insert(std::pair<QString, size_t>(QString(_controlInPorts [i].cName), i));
+      _uiState->controlsNameMap.insert(std::pair<QString, size_t>(QString(_controlInPorts [i].cName).toLower(), i));
 
       int ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + i;
 
-      // We have a controller number! Insert it and the DSSI port number into both maps.
+      // We have a controller number! Insert it and the lv2 port number into both maps.
       _synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, i));
       _synth->port2MidiCtlMap.insert(std::pair<int, int>(i, ctlnum));
 
@@ -2148,7 +2161,10 @@ bool LV2SynthIF::init(LV2Synth *s)
       }
    }
 
+   LV2Synth::lv2state_PostInstantiate(_uiState);
    activate();
+
+
 
    return true;
 
@@ -3248,7 +3264,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          if(ports != 0)  // Don't bother if not 'running'.
          {
             if(_inportsMidi > 0)
-            {               
+            {
                LV2EvBuf *rawMidiBuffer = _midiInPorts [0].buffer;
                rawMidiBuffer->lv2_evbuf_reset(true);
                LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
@@ -3945,9 +3961,9 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
       delete [] state->_ppifeatures;
       delete [] state->_ifeatures;
       return NULL;
-   }
+   }   
 
-   LV2Synth::lv2state_PostInstantiate(state);
+   state->controlsNameMap.clear();
 
    if(_controlInPorts > 0)
    {
@@ -3959,6 +3975,7 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
          state->lastControls [i] = _PluginControlsDefault [_synth->_controlInPorts [i].index];
          state->controlsMask [i] = false;
          state->controlTimers [i] = 0;
+         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(_synth->_controlInPorts [i].cName).toLower(), i));
       }
    }
 
@@ -3986,6 +4003,8 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
    }
 
    _states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));
+
+   LV2Synth::lv2state_PostInstantiate(state);
 
    return (LADSPA_Handle)state->handle;
 
