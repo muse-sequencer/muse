@@ -97,7 +97,7 @@ typedef KEYLIST::const_reverse_iterator criKeyEvent;
 
 
 class KeyList : public KEYLIST {
-   friend PendingOperationItem;
+   friend class PendingOperationItem;
    
       void add(unsigned tick, key_enum tempo);
       void add(KeyEvent e);
