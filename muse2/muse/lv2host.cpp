@@ -3773,7 +3773,7 @@ LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
 void LV2PluginWrapper_Window::startNextTime()
 {
    stopUpdateTimer();
-   updateTimer.start(30);
+   updateTimer.start(1000/30);
 }
 
 
