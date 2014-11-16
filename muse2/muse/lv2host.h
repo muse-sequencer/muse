@@ -625,7 +625,7 @@ private:
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
     std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.
     snd_midi_event_t *_midiEvent;
-    void doSelectProgram(int bank, int prog);
+    void doSelectProgram(unsigned char channel, int bank, int prog);
     bool processEvent ( const MidiPlayEvent &, snd_seq_event_t * );
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
     float midi2Lv2Value ( unsigned long port, int ctlnum, int val );
@@ -767,6 +767,8 @@ struct LV2PluginWrapper_State {
       prgIface(NULL),
       uiPrgIface(NULL),
       uiDoSelectPrg(false),
+      newPrgIface(false),
+      uiChannel(0),
       uiBank(0),
       uiProg(0),
       gtk2Plug(NULL)
@@ -822,10 +824,12 @@ struct LV2PluginWrapper_State {
     LV2PluginWrapper_Window *pluginWindow;
     LV2_MIDI_PORTS midiInPorts; //for rack plugins only
     LV2_Programs_Interface *prgIface;
-    LV2_Programs_UI_Interface *uiPrgIface;
+    LV2_Programs_UI_Interface *uiPrgIface;    
     bool uiDoSelectPrg;
+    bool newPrgIface;
     std::set<lv2ExtProgram, cmp_lvExtPrg> programs;
     LV2_Programs_Host prgHost;
+    unsigned char uiChannel;
     int uiBank;
     int uiProg;
     void *gtk2Plug;

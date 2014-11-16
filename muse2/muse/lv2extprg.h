@@ -1,6 +1,7 @@
 /*
   LV2 Programs Extension
   Copyright 2012 Filipe Coelho <falktx@falktx.com>
+            2014 Deryabin Andrew <andrewderyabin@gmail.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -29,6 +30,12 @@
 #define LV2_PROGRAMS__Host        LV2_PROGRAMS_PREFIX "Host"
 #define LV2_PROGRAMS__Interface   LV2_PROGRAMS_PREFIX "Interface"
 #define LV2_PROGRAMS__UIInterface LV2_PROGRAMS_PREFIX "UIInterface"
+
+#define LV2_PROGRAMSNEW_URI    "http://yoshimi.sf.net/ns/lv2ext/programs"
+#define LV2_PROGRAMSNEW_PREFIX LV2_PROGRAMSNEW_URI "#"
+
+#define LV2_PROGRAMSNEW__Interface   LV2_PROGRAMSNEW_PREFIX "Interface"
+#define LV2_PROGRAMSNEW__UIInterface LV2_PROGRAMSNEW_PREFIX "UIInterface"
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,7 +120,13 @@ typedef struct _LV2_Programs_Interface {
                            uint32_t bank,
                            uint32_t program);
 
+    void (*select_program_for_channel)(LV2_Handle handle,
+                           unsigned char channel,
+                           uint32_t bank,
+                           uint32_t program);
+
 } LV2_Programs_Interface;
+
 
 /**
    Programs extension, UI data.
@@ -132,6 +145,11 @@ typedef struct _LV2_Programs_UI_Interface {
      * When called, UIs should update their state to match the selected program.
      */
     void (*select_program)(LV2UI_Handle handle,
+                           uint32_t bank,
+                           uint32_t program);
+
+    void (*select_program_for_channel)(LV2_Handle handle,
+                           unsigned char channel,
                            uint32_t bank,
                            uint32_t program);
 

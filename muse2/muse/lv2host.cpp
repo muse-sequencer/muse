@@ -722,8 +722,17 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
    state->iState = (LV2_State_Interface *)lilv_instance_get_extension_data(state->handle, LV2_STATE__interface);
    //query for LV2Worker interface
    state->wrkIface = (LV2_Worker_Interface *)lilv_instance_get_extension_data(state->handle, LV2_F_WORKER_INTERFACE);
-   //query for programs interface
-   state->prgIface = (LV2_Programs_Interface *)lilv_instance_get_extension_data(state->handle, LV2_PROGRAMS__Interface);
+   //query for programs interface   
+   state->prgIface = (LV2_Programs_Interface *)lilv_instance_get_extension_data(state->handle, LV2_PROGRAMSNEW__Interface);
+   if(state->prgIface != NULL)
+   {
+      state->newPrgIface = true;
+   }
+   else
+   {
+      state->newPrgIface = false;
+      state->prgIface = (LV2_Programs_Interface *)lilv_instance_get_extension_data(state->handle, LV2_PROGRAMS__Interface);
+   }
 
    state->wrkThread->start(QThread::LowPriority);
 
@@ -1121,7 +1130,16 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          if(state->uiDesc->extension_data != NULL)
          {
             state->uiIdleIface = (LV2UI_Idle_Interface *)state->uiDesc->extension_data(LV2_F_UI_IDLE);
-            state->uiPrgIface = (LV2_Programs_UI_Interface *)state->uiDesc->extension_data(LV2_PROGRAMS__UIInterface);
+            state->uiPrgIface = (LV2_Programs_UI_Interface *)state->uiDesc->extension_data(LV2_PROGRAMSNEW__UIInterface);
+            if(state->uiPrgIface != NULL)
+            {
+               state->newPrgIface = true;
+            }
+            else
+            {
+               state->newPrgIface = false;
+               state->uiPrgIface = (LV2_Programs_UI_Interface *)state->uiDesc->extension_data(LV2_PROGRAMS__UIInterface);
+            }
          }
          if(state->hasGui)
          {            
@@ -2170,11 +2188,16 @@ bool LV2SynthIF::init(LV2Synth *s)
 
 }
 
-void LV2SynthIF::doSelectProgram(int bank, int prog)
+void LV2SynthIF::doSelectProgram(unsigned char channel, int bank, int prog)
 {
-   if(_uiState && _uiState->prgIface && _uiState->prgIface->select_program)
+   if(_uiState && _uiState->prgIface && (_uiState->prgIface->select_program || _uiState->prgIface->select_program_for_channel))
    {
-      _uiState->prgIface->select_program(lilv_instance_get_handle(_uiState->handle), (uint32_t)bank, (uint32_t)prog);
+      if(_uiState->newPrgIface)
+         _uiState->prgIface->select_program_for_channel(lilv_instance_get_handle(_uiState->handle), channel, (uint32_t)bank, (uint32_t)prog);
+      else
+         _uiState->prgIface->select_program(lilv_instance_get_handle(_uiState->handle), (uint32_t)bank, (uint32_t)prog);
+
+
 
       /*
       * A plugin is permitted to re-write the values of its input
@@ -2193,6 +2216,7 @@ void LV2SynthIF::doSelectProgram(int bank, int prog)
       }
 
       //set update ui program flag
+      _uiState->uiChannel = channel;
       _uiState->uiBank = bank;
       _uiState->uiProg = prog;
       _uiState->uiDoSelectPrg = true;
@@ -2611,7 +2635,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
       synti->_curBankL = bank;
       synti->_curProgram = prog;
 
-      doSelectProgram(bank, prog);
+      doSelectProgram(chn, bank, prog);
 
       // Event pointer not filled. Return false.
       return false;
@@ -2642,7 +2666,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
          synti->_curBankL = bank;
          synti->_curProgram = prog;
 
-         doSelectProgram(bank, prog);
+         doSelectProgram(chn, bank, prog);
 
          // Event pointer not filled. Return false.
          return false;
@@ -3799,9 +3823,12 @@ void LV2PluginWrapper_Window::updateGui()
    if(_state->uiDoSelectPrg)
    {
       _state->uiDoSelectPrg = false;
-      if(_state->uiPrgIface != NULL && _state->uiPrgIface->select_program != NULL)
+      if(_state->uiPrgIface != NULL && (_state->uiPrgIface->select_program != NULL || _state->uiPrgIface->select_program_for_channel != NULL))
       {
-         _state->uiPrgIface->select_program(lilv_instance_get_handle(_state->handle), (uint32_t)_state->uiBank, (uint32_t)_state->uiProg);
+         if(_state->newPrgIface)
+            _state->uiPrgIface->select_program_for_channel(lilv_instance_get_handle(_state->handle), _state->uiChannel, (uint32_t)_state->uiBank, (uint32_t)_state->uiProg);
+         else
+            _state->uiPrgIface->select_program(lilv_instance_get_handle(_state->handle), (uint32_t)_state->uiBank, (uint32_t)_state->uiProg);
       }
    }
 
