@@ -734,6 +734,8 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
       state->prgIface = (LV2_Programs_Interface *)lilv_instance_get_extension_data(state->handle, LV2_PROGRAMS__Interface);
    }
 
+   LV2Synth::lv2prg_updatePrograms(state);
+
    state->wrkThread->start(QThread::LowPriority);
 
 }
@@ -1429,6 +1431,34 @@ unsigned LV2Synth::lv2ui_IsSupported(const char *, const char *ui_type_uri)
    return FALSE;
 }
 
+void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
+{
+   assert(state != NULL);
+   state->index2prg.clear();
+   state->prg2index.clear();
+   if(state->prgIface != NULL)
+   {
+      uint32_t iPrg = 0;
+      const LV2_Program_Descriptor *pDescr = NULL;
+      while((pDescr = state->prgIface->get_program(
+                lilv_instance_get_handle(state->handle), iPrg)) != NULL)
+      {
+         lv2ExtProgram extPrg;
+         extPrg.index = iPrg;
+         extPrg.bank = pDescr->bank;
+         extPrg.prog = pDescr->program;
+         extPrg.useIndex = true;
+         extPrg.name = QString(pDescr->name);
+
+         state->index2prg.insert(std::make_pair<uint32_t, lv2ExtProgram>(iPrg, extPrg));
+         uint32_t midiprg = ((extPrg.bank & 0xff) << 8) + extPrg.prog;
+         state->prg2index.insert(std::make_pair<uint32_t, uint32_t>(midiprg, iPrg));
+         ++iPrg;
+      }
+   }
+
+}
+
 
 
 
@@ -1440,22 +1470,19 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
 #endif
    if(state->sif && state->sif->synti)
    {
-      lv2ExtProgram extPrg;
-      extPrg.index = index;
-      extPrg.useIndex = true;
-      extPrg.bank = 0;
-      extPrg.prog = 0;
-      std::set<lv2ExtProgram, cmp_lvExtPrg>::iterator it = state->programs.find(extPrg);
-      if(it == state->programs.end())
+      std::map<uint32_t, lv2ExtProgram>::iterator itIndex = state->index2prg.find(index);
+      if(itIndex == state->index2prg.end())
          return;
       int ch      = 0;
       int port    = state->sif->synti->midiPort();
 
-      state->sif->synti->_curBankH = 0;
-      state->sif->synti->_curBankL = it->bank;
-      state->sif->synti->_curProgram = it->prog;
+      const lv2ExtProgram &extPrg = itIndex->second;
 
-      int rv = ((((int)it->bank)<<16) + (int)it->prog);
+      state->sif->synti->_curBankH = 0;
+      state->sif->synti->_curBankL = extPrg.bank;
+      state->sif->synti->_curProgram = extPrg.prog;
+
+      int rv = ((((int)itIndex->second.bank)<<8) + (int)extPrg.prog);
 
       if(port != -1)
       {
@@ -1474,7 +1501,6 @@ void LV2SynthIF::lv2prg_Changed(LV2_Programs_Handle handle, int32_t index)
    }
 
 }
-
 
 
 LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString author, const LilvPlugin *_plugin)
@@ -2631,11 +2657,32 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
 
       int bank = (a >> 8) & 0xff;
       int prog = a & 0xff;
-      synti->_curBankH = 0;
-      synti->_curBankL = bank;
+
+      if(bank & 0x80) //try msb value then
+      {
+         bank = (b >> 16) & 0xff;
+      }
+
+      if(!(bank & 0x80))
+      {
+         synti->_curBankH = 0;
+         synti->_curBankL = bank;
+      }
+      else
+         bank = synti->_curBankL;
       synti->_curProgram = prog;
 
       doSelectProgram(chn, bank, prog);
+
+      //update hardware program state
+
+      if(synti->midiPort() != -1)
+      {
+         MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
+         int db = (bank << 8) + prog;
+         mp->setHwCtrlState(chn, CTRL_PROGRAM, db);
+
+      }
 
       // Event pointer not filled. Return false.
       return false;
@@ -2662,11 +2709,33 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
          int bank = (b >> 8) & 0xff;
          int prog = b & 0xff;
 
-         synti->_curBankH = 0;
-         synti->_curBankL = bank;
+         if(bank & 0x80) //try msb value then
+         {
+            bank = (b >> 16) & 0xff;
+         }
+
+         if(!(bank & 0x80))
+         {
+            synti->_curBankH = 0;
+            synti->_curBankL = bank;
+         }
+         else
+            bank = synti->_curBankL;
          synti->_curProgram = prog;
 
+
+
          doSelectProgram(chn, bank, prog);
+
+         //update hardware program state
+
+         if(synti->midiPort() != -1)
+         {
+            MidiPort *mp = &MusEGlobal::midiPorts[synti->midiPort()];
+            int db = (bank << 8) + prog;
+            mp->setHwCtrlState(chn, a, db);
+
+         }
 
          // Event pointer not filled. Return false.
          return false;
@@ -3167,11 +3236,14 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                   {
                      int da = start_event->dataA();
                      int db = start_event->dataB();
-                     db = mp->limitValToInstrCtlRange(da, db);
-
-                     if(!mp->setHwCtrlState(start_event->channel(), da, db))
+                     if(da != CTRL_PROGRAM) //for programs setHwCtrlState is called from processEvent
                      {
-                        continue;
+                        db = mp->limitValToInstrCtlRange(da, db);
+
+                        if(!mp->setHwCtrlState(start_event->channel(), da, db))
+                        {
+                           continue;
+                        }
                      }
                   }
                   else if(start_event->type() == ME_PITCHBEND)
@@ -3202,13 +3274,13 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                         continue;
                      }
                   }
-                  else if(start_event->type() == ME_PROGRAM)
-                  {
-                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, start_event->dataA()))
-                     {
-                        continue;
-                     }
-                  }
+//                  else if(start_event->type() == ME_PROGRAM)
+//                  {
+//                     if(!mp->setHwCtrlState(start_event->channel(), CTRL_PROGRAM, start_event->dataA()))
+//                     {
+//                        continue;
+//                     }
+//                  }
                }
 
                // Returns false if the event was not filled. It was handled, but some other way.
@@ -3426,17 +3498,21 @@ float LV2SynthIF::getParameterOut(long unsigned int n) const
 }
 
 
-QString LV2SynthIF::getPatchName(int bank, int prog, bool) const
+QString LV2SynthIF::getPatchName(int /* ch */, int prog, bool) const
 {
-   lv2ExtProgram extPrg;
-   extPrg.index = 0;
-   extPrg.useIndex = false;
-   extPrg.bank = bank;
-   extPrg.prog = prog;
-   std::set<lv2ExtProgram, cmp_lvExtPrg>::iterator it = _uiState->programs.find(extPrg);
-   if(it == _uiState->programs.end())
+//   lv2ExtProgram extPrg;
+//   extPrg.index = 0;
+//   extPrg.useIndex = false;
+//   extPrg.bank = (prog >> 8) & 0xff;
+//   extPrg.prog = prog & 0xff;
+   std::map<uint32_t, uint32_t>::iterator itPrg = _uiState->prg2index.find(prog);
+   if(itPrg == _uiState->prg2index.end())
       return QString("?");
-   return QString(it->name);
+   uint32_t index = itPrg->second;
+   std::map<uint32_t, lv2ExtProgram>::iterator itIndex = _uiState->index2prg.find(index);
+   if(itIndex == _uiState->index2prg.end())
+      return QString("?");
+   return QString(itIndex->second.name);
 
 }
 
@@ -3487,36 +3563,18 @@ bool LV2SynthIF::nativeGuiVisible() const
 
 void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
 {
-   _uiState->programs.clear();
-   if(_uiState->prgIface != NULL)
-   {
-      uint32_t iPrg = 0;
-      const LV2_Program_Descriptor *pDescr = NULL;
-      while((pDescr = _uiState->prgIface->get_program(
-                lilv_instance_get_handle(_uiState->handle), iPrg)) != NULL)
-      {
-         lv2ExtProgram extPrg;
-         extPrg.index = iPrg;
-         extPrg.bank = pDescr->bank;
-         extPrg.prog = pDescr->program;
-         extPrg.useIndex = true;
-         extPrg.name = QString(pDescr->name);
-
-         _uiState->programs.insert(extPrg);
-         ++iPrg;
-      }
-   }
-
+   LV2Synth::lv2prg_updatePrograms(_uiState);
    menu->clear();
-   std::set<lv2ExtProgram>::iterator it;
-   for(it = _uiState->programs.begin(); it != _uiState->programs.end(); ++it)
+   std::map<uint32_t, lv2ExtProgram>::iterator itIndex;
+   for(itIndex = _uiState->index2prg.begin(); itIndex != _uiState->index2prg.end(); ++itIndex)
    {
+      const lv2ExtProgram &extPrg = itIndex->second;
       //truncating bank and brogran numbers to 16 bit - muse MidiPlayEvent can handle only 32 bit numbers
-      int bank = it->bank;
-      int prog = it->prog;
-      int id = (bank << 16) + prog;
+      int bank = extPrg.bank;
+      int prog = extPrg.prog;
+      int id = ((bank & 0xff) << 8) + prog;
 
-      QAction *act = menu->addAction(QString(it->name));
+      QAction *act = menu->addAction(extPrg.name);
       act->setData(id);
 
    }

@@ -590,6 +590,7 @@ public:
     static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
     static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
     static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
+    static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -659,7 +660,7 @@ public:
     void activate();
     virtual void deactivate();
     virtual void deactivate3();
-    virtual QString getPatchName ( int, int, bool ) const;
+    virtual QString getPatchName (int, int, bool ) const;
     virtual void populatePatchPopup ( MusEGui::PopupMenu *, int, bool );
     virtual void write ( int level, Xml &xml ) const;
     virtual float getParameter ( unsigned long idx ) const;
@@ -705,32 +706,35 @@ class LV2PluginWrapper;
 class LV2PluginWrapper_Worker;
 class LV2PluginWrapper_Window;
 
-typedef struct
+typedef struct _lv2ExtProgram
 {
    uint32_t index;
    uint32_t bank;
    uint32_t prog;
    QString name;
    bool useIndex;
+   bool operator<(const _lv2ExtProgram& other) const
+   {
+      if(useIndex == other.useIndex && useIndex == true)
+         return index < other.index;
+
+      if(bank < other.bank)
+         return true;
+      else if(bank == other.bank && prog < other.prog)
+         return true;
+      return false;
+   }
+
+   bool operator==(const _lv2ExtProgram& other) const
+   {
+      if(useIndex == other.useIndex && useIndex == true)
+         return index == other.index;
+
+      return (bank == other.bank && prog == other.prog);
+   }
+
 
 } lv2ExtProgram;
-
-struct cmp_lvExtPrg {
-    bool operator() ( const lv2ExtProgram &a, const lv2ExtProgram &b ) const {
-       if((a.index == b.index) && (a.useIndex == b.useIndex))
-          return false;
-       else if((a.index < b.index) && (a.useIndex == b.useIndex))
-          return true;
-       if((a.bank == b.bank) && (a.prog == b.prog))
-          return false;
-       else if((a.bank < b.bank) && (a.prog == b.prog))
-          return true;
-       else if((a.bank == b.bank) && (a.prog < b.prog))
-          return true;
-
-       return false;
-    }
-};
 
 struct LV2PluginWrapper_State {
    LV2PluginWrapper_State():
@@ -824,10 +828,11 @@ struct LV2PluginWrapper_State {
     LV2PluginWrapper_Window *pluginWindow;
     LV2_MIDI_PORTS midiInPorts; //for rack plugins only
     LV2_Programs_Interface *prgIface;
-    LV2_Programs_UI_Interface *uiPrgIface;    
+    LV2_Programs_UI_Interface *uiPrgIface;
     bool uiDoSelectPrg;
     bool newPrgIface;
-    std::set<lv2ExtProgram, cmp_lvExtPrg> programs;
+    std::map<uint32_t, lv2ExtProgram> index2prg;
+    std::map<uint32_t, uint32_t> prg2index;
     LV2_Programs_Host prgHost;
     unsigned char uiChannel;
     int uiBank;
