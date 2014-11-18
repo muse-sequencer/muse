@@ -748,18 +748,18 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
 
    state->uiInst = *(void **)(&state->uiDesc) = NULL;
 
-   if(state->uiDlHandle != NULL)
-   {
-      dlclose(state->uiDlHandle);
-      state->uiDlHandle = NULL;
-   }
-
    if(bLV2Gtk2Enabled && state->gtk2Plug != NULL)
    {
       void (*lv2Gtk2Helper_gtk_widget_destroyFn)(void *);
       *(void **)(&lv2Gtk2Helper_gtk_widget_destroyFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_widget_destroy");
       lv2Gtk2Helper_gtk_widget_destroyFn(state->gtk2Plug);
       state->gtk2Plug = NULL;
+   }
+
+   if(state->uiDlHandle != NULL)
+   {
+      dlclose(state->uiDlHandle);
+      state->uiDlHandle = NULL;
    }
 
 }
