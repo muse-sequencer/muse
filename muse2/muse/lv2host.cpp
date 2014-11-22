@@ -2023,7 +2023,10 @@ bool LV2SynthIF::init(LV2Synth *s)
       }
       _controls [i].idx = idx;
       _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal = _PluginControlsDef [idx];
-      _controls [i].enCtrl = true;
+      if(_synth->_hasFreeWheelPort && _synth->_freeWheelPortIndex == i)
+         _controls [i].enCtrl = false;
+      else
+         _controls [i].enCtrl = true;
       _controlInPorts [i].minVal = _PluginControlsMin [idx];
       _controlInPorts [i].maxVal = _PluginControlsMax [idx];
 
@@ -2906,6 +2909,12 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    ciCtrlList icl_first;
    const int plug_id = id();
 
+   //set freewheeling property if plugin supports it
+   if(_synth->_hasFreeWheelPort)
+   {
+      _controls [_synth->_freeWheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
+   }
+
    if(plug_id != -1 && ports != 0)  // Don't bother if not 'running'.
    {
       icl_first = cll->lower_bound(genACnum(plug_id, 0));
@@ -3020,7 +3029,11 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          ciCtrlList icl = icl_first;
 
          for(unsigned long k = 0; k < _inportsControl; ++k)
-         {
+         {            
+            //don't process freewheel port
+            if(_synth->_hasFreeWheelPort && _synth->_freeWheelPortIndex == k)
+               continue;
+
             CtrlList *cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : NULL;
             CtrlInterpolate &ci = _controls[k].interp;
 
@@ -3165,7 +3178,9 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             break;
          }
 
-
+         //don't process freewheel port
+         if(_synth->_hasFreeWheelPort && _synth->_freeWheelPortIndex == index)
+            continue;
 
          if(ports == 0)                     // Don't bother if not 'running'.
          {
@@ -3412,12 +3427,6 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             for(size_t j = nop; j < _outports; j++)
             {
                lilv_instance_connect_port(_handle, _audioOutPorts [j].index, _audioOutBuffers [j] + sample);
-            }
-
-            //set freewheeling property if plugin supports it
-            if(_synth->_hasFreeWheelPort)
-            {
-               _controls [_synth->_freeWheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
             }
 
             lilv_instance_run(_handle, nsamp);
