@@ -1622,7 +1622,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    {
       const LilvPort *_port = lilv_plugin_get_port_by_index(_handle, i);
       LilvNode *_nPname = lilv_port_get_name(_handle, _port);
-      const char *_portName;
+      char cAutoGenPortName [1024];
+      memset(cAutoGenPortName, 0, sizeof(cAutoGenPortName));
+      snprintf(cAutoGenPortName, sizeof(cAutoGenPortName) - 1, "autoport #%u", i);
+      const char *_portName = cAutoGenPortName;
 
       if(_nPname != 0)
       {
@@ -3477,7 +3480,7 @@ float LV2SynthIF::getParameter(long unsigned int n) const
 {
    if(n >= _inportsControl)
    {
-      printf("LV2SynthIF::getParameter param number %lu out of range of ports:%lu\n", n, _inportsControl);
+      printf("LV2SynthIF::getParameter param number %zu out of range of ports:%zu\n", n, _inportsControl);
       return 0.0;
    }
 
@@ -3493,7 +3496,7 @@ float LV2SynthIF::getParameterOut(long unsigned int n) const
 {
    if(n >= _outportsControl)
    {
-      printf("LV2SynthIF::getParameterOut param number %lu out of range of ports:%lu\n", n, _outportsControl);
+      printf("LV2SynthIF::getParameterOut param number %zu out of range of ports:%zu\n", n, _outportsControl);
       return 0.0;
    }
 
