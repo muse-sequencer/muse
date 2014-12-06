@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
-    <height>160</height>
+    <width>404</width>
+    <height>181</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,7 +48,7 @@
    <item>
     <widget class="QLabel" name="versionLabel">
      <property name="text">
-      <string>Version 2.1.2</string>
+      <string>Version 2.2beta1</string>
      </property>
      <property name="wordWrap">
       <bool>false</bool>
@@ -58,7 +58,7 @@
    <item>
     <widget class="QLabel" name="textLabel1">
      <property name="text">
-      <string>(C) Copyright 1999-2013 Werner Schweer and others.
+      <string>(C) Copyright 1999-2014 Werner Schweer and others.
 See http://www.muse-sequencer.org for new versions and
 more information.
 

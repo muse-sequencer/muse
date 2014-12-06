@@ -431,6 +431,13 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* md = port->device();
+            if(md && md->isSynti()) //make deleted audio softsynths not show in select dialog
+            {
+               MusECore::AudioTrack *_track = static_cast<MusECore::AudioTrack *>(static_cast<MusECore::SynthI *>(md));
+               MusECore::TrackList* tl = MusEGlobal::song->tracks();
+               if(tl->find(_track) == tl->end())
+                  continue;
+            }
             if(md && !(md->rwFlags() & 1) && (i != checkPort))                     // Only writeable ports, or current one.
               continue;
             name.sprintf("%d:%s", port->portno()+1, port->portname().toLatin1().constData());

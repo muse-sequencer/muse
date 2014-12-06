@@ -1168,7 +1168,18 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             itemdefout->setFlags(Qt::ItemIsEnabled);
             itemdefout->setIcon(QIcon(*buttondownIcon));
 	    #endif
-            
+            if(dev && dev->isSynti()) //make deleted audio softsynths not show in ports dialog
+            {
+               MusECore::AudioTrack *_track = static_cast<MusECore::AudioTrack *>(static_cast<MusECore::SynthI *>(dev));
+               MusECore::TrackList* tl = MusEGlobal::song->tracks();
+               if(tl->find(_track) == tl->end())
+               {
+                  for(int __col = 0; __col  < mdevView->columnCount(); ++__col)
+                  {
+                     mdevView->item(i, __col)->setFlags(Qt::NoItemFlags);
+                  }
+               }
+            }
             mdevView->blockSignals(false);
 
             if (dev) {

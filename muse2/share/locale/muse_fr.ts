@@ -145,8 +145,8 @@ Veuillez aussi vérifier les sorties dans la console pour plus de messages d&apo
     </message>
     <message>
         <location line="+37"/>
-        <source>Version 2.1.2</source>
-        <translation>Version 2.1.2</translation>
+        <source>Version 2.2beta1</source>
+        <translation>Version 2.2beta1</translation>
     </message>
     <message>
         <location line="+10"/>
