@@ -658,7 +658,7 @@ void MidiTrack::init()
       // let's set the port to the last instantiated device
       // if midi-channel defaults are set in the configuration it
       // will override this setting
-      for (int i = MIDI_PORTS; i > -1; i--)
+      for (int i = MIDI_PORTS - 1; i > -1; i--)
       {
         if (MusEGlobal::midiPorts[i].device() != NULL)
         {
