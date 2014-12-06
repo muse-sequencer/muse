@@ -112,6 +112,11 @@ SET(MusE_LIB_DIR ${LIB_INSTALL_DIR}/${MusE_INSTALL_NAME})
 include(FindGit)
 if (GIT_FOUND)
       EXEC_PROGRAM( ${GIT_EXECUTABLE}
+            ARGS "status"
+            OUTPUT_VARIABLE GIT_RET_NOTUSED
+            RETURN_VALUE IS_GIT_REPO )
+    if(IS_GIT_REPO EQUAL 0)
+      EXEC_PROGRAM( ${GIT_EXECUTABLE}
             ARGS "log -1 --format='%ci'"
             OUTPUT_VARIABLE MusE_GITDATE )
       EXEC_PROGRAM( ${GIT_EXECUTABLE}
@@ -121,6 +126,9 @@ if (GIT_FOUND)
             ARGS "rev-parse --abbrev-ref HEAD"
             OUTPUT_VARIABLE MusE_GITBRANCH )
       SET(MusE_GITSTRING "git: ${MusE_GITBRANCH} - ${MusE_GITHASH} - ${MusE_GITDATE}")
+    else (IS_GIT_REPO EQUAL 0)
+        SET(MusE_GITSTRING "")
+    endif (IS_GIT_REPO EQUAL 0)
 else (GIT_FOUND)
       SET(MusE_GITSTRING "")
 endif (GIT_FOUND)
