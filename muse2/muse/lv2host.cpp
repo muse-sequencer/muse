@@ -911,6 +911,19 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
    if(state->widget != NULL && state->hasGui)
    {
       ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
+      QX11EmbedWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QX11EmbedWidget *>();
+      if(ewWin != NULL)
+      {
+         ewWin->resize(width, height);
+      }
+      else
+      {
+         QWidget *ewCent= ((LV2PluginWrapper_Window *)state->widget)->centralWidget();
+         if(ewCent != NULL)
+         {
+            ewCent->resize(width, height);
+         }
+      }
       state->uiX11Size.setWidth(width);
       state->uiX11Size.setHeight(height);
       return 0;
@@ -1039,13 +1052,17 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       {
          bEmbed = true;         
          ewWin = new QX11EmbedWidget();
+         (static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
+         (static_cast<QX11EmbedWidget *>(ewWin))->setParent(win);
          state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)ewWin->winId();
+
       }
       else if(bLV2Gtk2Enabled && strcmp(LV2_UI__GtkUI, cUiUri) == 0)
       {
          bEmbed = true;
          bGtk = true;         
          ewWin = new QX11EmbedContainer(win);
+         win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
          void *( *lv2Gtk2Helper_gtk_plug_newFn)(unsigned long, void*);
          *(void **)(&lv2Gtk2Helper_gtk_plug_newFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_plug_new");
          state->gtk2Plug = lv2Gtk2Helper_gtk_plug_newFn(ewWin->winId(), state);
@@ -1174,11 +1191,11 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                      lv2Gtk2Helper_gtk_widget_get_allocationFn(uiW, &w, &h);
                      win->resize(w, h);
                   }
-                  win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
+                  //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
                }
                else
                {
-                  (static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
+                  //(static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
                   if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                      win->resize(ewWin->size());
                }
