@@ -534,6 +534,7 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
 
 void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer)
 {
+   return;
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
 
    assert(state != NULL); //this should'nt happen
@@ -830,7 +831,8 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    state->curFrame = curFrame;
    state->curIsPlaying = curIsPlaying;
    state->curBpm = curBpm;
-   uint8_t   pos_buf[256];
+   uint8_t   pos_buf[1024];
+   memset(pos_buf, 0, sizeof(pos_buf));
    LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
    /* Build an LV2 position object to report change to plugin */
    LV2_Atom_Forge* atomForge = &state->atomForge;
