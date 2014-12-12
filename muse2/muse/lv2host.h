@@ -63,6 +63,8 @@
 #include <QTimer>
 #include <assert.h>
 
+#include <jack/ringbuffer.h>
+
 #include <alsa/asoundlib.h>
 #include "midictrl.h"
 #include "synth.h"
@@ -409,25 +411,32 @@ enum LV2ControlPortType
 };
 
 struct LV2ControlPort {
-    LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, LV2ControlPortType _ctype ) :
-        port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype){
-        cName = strdup ( _n );
-    }
-    LV2ControlPort ( const LV2ControlPort &other ) :
-        port ( other.port ), index ( other.index ), defVal ( other.defVal ), minVal(other.minVal), maxVal(other.maxVal), cType(other.cType) {
-        cName = strdup ( other.cName );
-    }
-    ~LV2ControlPort() {
-        free ( cName );
-        cName = NULL;
-    }
-    const LilvPort *port;
-    uint32_t index; //plugin real port index
-    float defVal; //default control value
-    float minVal; //minimum control value
-    float maxVal; //maximum control value
-    char *cName; //cached value to share beetween function calls
-    LV2ControlPortType cType;
+   LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, LV2ControlPortType _ctype, bool _isCVPort = false) :
+      port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype),
+      isCVPort(_isCVPort)
+   {
+      cName = strdup ( _n );
+   }
+   LV2ControlPort ( const LV2ControlPort &other ) :
+      port ( other.port ), index ( other.index ), defVal ( other.defVal ),
+      minVal(other.minVal), maxVal(other.maxVal), cType(other.cType),
+      isCVPort(other.isCVPort)
+   {
+      cName = strdup ( other.cName );
+   }
+   ~LV2ControlPort()
+   {
+      free ( cName );
+      cName = NULL;
+   }
+   const LilvPort *port;
+   uint32_t index; //plugin real port index
+   float defVal; //default control value
+   float minVal; //minimum control value
+   float maxVal; //maximum control value
+   char *cName; //cached value to share beetween function calls
+   LV2ControlPortType cType;
+   bool isCVPort;
 };
 
 struct LV2AudioPort {
@@ -547,8 +556,13 @@ private:
     LV2_URID _uTime_speed;
     LV2_URID _uTime_beatsPerMinute;
     LV2_URID _uTime_barBeat;
+    LV2_URID _uAtom_EventTransfer;
     bool _hasFreeWheelPort;
     uint32_t _freeWheelPortIndex;
+    bool _isConstructed;
+    float *_pluginControlsDefault;
+    float *_pluginControlsMin;
+    float *_pluginControlsMax;
 public:
     virtual Type synthType() const {
         return LV2_SYNTH;
@@ -569,6 +583,7 @@ public:
     size_t outPorts() {
         return _audioOutPorts.size();
     }
+    bool isConstructed() {return _isConstructed; }
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static void lv2ui_Gtk2AllocateCb(int width, int height, void *arg);
@@ -736,6 +751,13 @@ typedef struct _lv2ExtProgram
 
 } lv2ExtProgram;
 
+typedef struct _lv2_uiControlEvent
+{
+   uint32_t port_index;
+   uint32_t buffer_size;
+   char data [];
+} lv2_uiControlEvent;
+
 struct LV2PluginWrapper_State {
    LV2PluginWrapper_State():
       _ifeatures(NULL),
@@ -775,7 +797,9 @@ struct LV2PluginWrapper_State {
       uiChannel(0),
       uiBank(0),
       uiProg(0),
-      gtk2Plug(NULL)
+      gtk2Plug(NULL),
+      uiEvTBuffer(NULL),
+      pluginCVPorts(NULL)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -839,6 +863,8 @@ struct LV2PluginWrapper_State {
     int uiProg;
     void *gtk2Plug;
     std::map<QString, size_t> controlsNameMap;
+    jack_ringbuffer_t *uiEvTBuffer;
+    float **pluginCVPorts;
 };
 
 
@@ -891,10 +917,7 @@ private:
     LV2Synth *_synth;
     std::map<void *, LV2PluginWrapper_State *> _states;
     LADSPA_Descriptor _fakeLd;
-    LADSPA_PortDescriptor *_fakePds;
-    float *_PluginControlsDefault;
-    float *_PluginControlsMin;
-    float *_PluginControlsMax;
+    LADSPA_PortDescriptor *_fakePds;       
 public:
     LV2PluginWrapper ( LV2Synth *s );
     LV2Synth *synth() {
