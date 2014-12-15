@@ -567,7 +567,7 @@ if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 
 if (ENABLE_LV2 AND (NOT LV2_FOUND))
-        message("** WARNING: LV2 was enabled, but development files were not found (lilv-0>=0.18.0).")
+        message("** WARNING: LV2 was enabled, but development files were not found (lilv-0>=0.16.0).")
 endif (ENABLE_LV2 AND (NOT LV2_FOUND))
 
 message("")
