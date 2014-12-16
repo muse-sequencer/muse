@@ -71,8 +71,6 @@
 #include <fcntl.h>
 
 
-//uncomment to print debugging information for lv2 host
-#define DEBUG_LV2
 //uncomment to print audio process info
 //#define LV2_DEBUG_PROCESS
 
@@ -562,13 +560,12 @@ void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index,
 #ifdef DEBUG_LV2
       std::cerr << "LV2Synth::lv2ui_PortWrite: atom_EventTransfer, port = " << port_index << ", size =" << buffer_size << std::endl;
 #endif
-      char evtBuf [sizeof(lv2_uiControlEvent) + buffer_size];
+      /*char evtBuf [sizeof(lv2_uiControlEvent) + buffer_size];
       lv2_uiControlEvent *evt = reinterpret_cast<lv2_uiControlEvent *>(&evtBuf);
       evt->port_index = port_index;
       evt->buffer_size = buffer_size;
-      memcpy(evt->data, buffer, buffer_size);
-
-      jack_ringbuffer_write(state->uiEvTBuffer, evtBuf, sizeof(evtBuf));
+      memcpy(evt->data, buffer, buffer_size);*/
+      state->uiControlEvt.put(port_index, buffer_size, buffer);
       return;
    }
 
@@ -724,8 +721,14 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
    state->curIsPlaying = MusEGlobal::audio->isPlaying();
    state->curFrame = MusEGlobal::audioDevice->getCurFrame();
    lv2_atom_forge_init(&state->atomForge, &synth->_lv2_urid_map);
-   state->uiEvTBuffer = jack_ringbuffer_create(8192);
 
+   if(snd_midi_event_new(MusEGlobal::segmentSize * 10, &state->midiEvent) != 0)
+   {
+      abort();
+   }
+   snd_midi_event_no_status(state->midiEvent, 1);
+
+   LV2Synth::lv2state_InitMidiPorts(state);
 }
 
 void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
@@ -796,6 +799,16 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
          }
          lilv_instance_connect_port(state->handle, idx, state->pluginCVPorts [idx]);
       }
+   }
+
+   for(size_t i = 0; i < state->midiInPorts.size(); i++)
+   {
+      lilv_instance_connect_port(state->handle, state->midiInPorts [i].index, (void *)state->midiInPorts [i].buffer->lv2_evbuf_get_buffer());
+   }
+
+   for(size_t i = 0; i < state->midiOutPorts.size(); i++)
+   {
+     lilv_instance_connect_port(state->handle, state->midiOutPorts [i].index, (void *)state->midiInPorts [i].buffer->lv2_evbuf_get_buffer());
    }
 
    //query for state interface
@@ -882,16 +895,16 @@ void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
 
    LV2Synth::lv2ui_FreeDescriptors(state);
 
-   if(state->uiEvTBuffer != NULL)
-   {
-      jack_ringbuffer_free(state->uiEvTBuffer);
-      state->uiEvTBuffer = NULL;
-   }
-
-   if(state->handle)
+   if(state->handle != NULL)
    {
       lilv_instance_free(state->handle);
       state->handle = NULL;
+   }
+
+   if(state->midiEvent != NULL)
+   {
+      snd_midi_event_free(state->midiEvent);
+      state->midiEvent = NULL;
    }
 
    delete state;
@@ -943,7 +956,108 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    lv2_atom_forge_float(atomForge, (float)curBpm);
 #endif
 buffer->lv2_evbuf_write(iter, 0, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
-   //   }
+//   }
+}
+
+void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
+{
+   LV2Synth *synth = state->synth;
+   state->midiInPorts = synth->_midiInPorts;
+   state->midiOutPorts = synth->_midiOutPorts;
+   //connect midi and control ports
+   for(size_t i = 0; i < state->midiInPorts.size(); i++)
+   {
+      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
+                                      state->midiInPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
+                                      synth->mapUrid(LV2_ATOM__Chunk),
+                                      synth->mapUrid(LV2_ATOM__Sequence)
+                                     );
+      state->midiInPorts [i].buffer = buffer;
+      state->idx2EvtPorts.insert(std::make_pair<uint32_t, LV2EvBuf *>(state->midiInPorts [i].index, buffer));
+   }
+
+   for(size_t i = 0; i < state->midiOutPorts.size(); i++)
+   {
+      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
+                                      state->midiOutPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
+                                      synth->mapUrid(LV2_ATOM__Chunk),
+                                      synth->mapUrid(LV2_ATOM__Sequence)
+                                     );
+      state->midiOutPorts [i].buffer = buffer;
+      state->idx2EvtPorts.insert(std::make_pair<uint32_t, LV2EvBuf *>(state->midiOutPorts [i].index, buffer));
+   }
+
+}
+
+void LV2Synth::lv2audio_processMidiPorts(LV2PluginWrapper_State *state, unsigned long nsamp, const snd_seq_event_t *events, unsigned long nevents )
+{
+   LV2Synth *synth = state->synth;
+   size_t inp = state->midiInPorts.size();
+   size_t outp = state->midiOutPorts.size();
+   for(size_t j = 0; j < inp; j++)
+   {
+      state->midiInPorts [j].buffer->lv2_evbuf_reset(true);
+   }
+
+   for(size_t j = 0; j < outp; j++)
+   {
+      state->midiOutPorts [j].buffer->lv2_evbuf_reset(false);
+   }
+
+   if(inp > 0)
+   {
+      LV2EvBuf *rawMidiBuffer = state->midiInPorts [0].buffer;
+      LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
+
+      if(state->midiInPorts [0].supportsTimePos)
+      {
+         //send transport events if any
+         LV2Synth::lv2audio_SendTransport(state, rawMidiBuffer, iter);
+      }
+
+      if(events != NULL)
+      {
+
+         //convert snd_seq_event_t[] to raw midi data
+         snd_midi_event_reset_decode(state->midiEvent);
+         uint8_t resMidi [1024];
+
+         for(unsigned long i = 0; i < nevents; i++)
+         {
+            uint32_t stamp = events[i].time.tick;
+            uint32_t size = snd_midi_event_decode(state->midiEvent, resMidi, sizeof(resMidi), &events [i]);
+            rawMidiBuffer->lv2_evbuf_write(iter,
+                                           stamp,
+                                           0,
+                                           synth->_midi_event_id,
+                                           size, resMidi);
+
+
+         }
+      }
+   }
+
+   //process gui atom events (control events are already set by getData or apply.
+   const LV2SimpleRTFifo::lv2_uiControlEvent *evt;
+   while((evt = state->uiControlEvt.get()))
+   {
+      if(evt->buffer_size > 0)
+      {
+         std::map<uint32_t, LV2EvBuf *>::iterator it = state->idx2EvtPorts.find(evt->port_index);
+         if(it != state->idx2EvtPorts.end())
+         {
+            LV2EvBuf *buffer = it->second;
+            LV2EvBuf::LV2_Evbuf_Iterator iter = buffer->lv2_evbuf_end();
+            const LV2_Atom* const atom = (const LV2_Atom*)evt->data;
+            buffer->lv2_evbuf_write(iter, nsamp, 0, atom->type, atom->size,
+                            static_cast<const uint8_t *>(LV2_ATOM_BODY_CONST(atom)));
+
+
+         }
+      }
+   }
+
+
 }
 
 void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
@@ -2026,11 +2140,6 @@ LV2SynthIF::~LV2SynthIF()
       delete [] _controlsOut;
    }
 
-   if(_midiEvent)
-   {
-      snd_midi_event_free(_midiEvent);
-   }
-
    if(_ppifeatures)
    {
       delete [] _ppifeatures;
@@ -2054,7 +2163,6 @@ LV2SynthIF::LV2SynthIF(SynthI *s): SynthIF(s)
    _outports = 0;
    _controls = NULL;
    _controlsOut = NULL;
-   _midiEvent = NULL;
    _inportsControl = 0;
    _outportsControl = 0;
    _inportsMidi = 0,
@@ -2068,13 +2176,6 @@ LV2SynthIF::LV2SynthIF(SynthI *s): SynthIF(s)
 bool LV2SynthIF::init(LV2Synth *s)
 {
    _synth = s;
-
-   if(snd_midi_event_new(MusEGlobal::segmentSize * 10, &_midiEvent) != 0)
-   {
-      return false;
-   }
-
-   snd_midi_event_no_status(_midiEvent, 1);
 
    //use LV2Synth features as template
 
@@ -2101,38 +2202,14 @@ bool LV2SynthIF::init(LV2Synth *s)
       return false;
    }
 
-   _midiInPorts = s->_midiInPorts;
-   _midiOutPorts = s->_midiOutPorts;
    _audioInPorts = s->_audioInPorts;
    _audioOutPorts = s->_audioOutPorts;
    _controlInPorts = s->_controlInPorts;
    _controlOutPorts = s->_controlOutPorts;
+   _inportsMidi = _uiState->midiInPorts.size();
+   _outportsMidi = _uiState->midiOutPorts.size();
 
-   _inportsMidi = _midiInPorts.size();
-   _outportsMidi = _midiOutPorts.size();
 
-   //connect midi and control ports
-   for(size_t i = 0; i < _inportsMidi; i++)
-   {
-      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
-                                      _midiInPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
-                                      _synth->mapUrid(LV2_ATOM__Chunk),
-                                      _synth->mapUrid(LV2_ATOM__Sequence)
-                                     );
-      _midiInPorts [i].buffer = buffer;
-      lilv_instance_connect_port(_handle, _midiInPorts [i].index, (void *)buffer->lv2_evbuf_get_buffer());
-   }
-
-   for(size_t i = 0; i < _outportsMidi; i++)
-   {
-      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
-                                      _midiOutPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
-                                      _synth->mapUrid(LV2_ATOM__Chunk),
-                                      _synth->mapUrid(LV2_ATOM__Sequence)
-                                     );
-      _midiOutPorts [i].buffer = buffer;
-      lilv_instance_connect_port(_handle, _midiOutPorts [i].index, (void *)buffer->lv2_evbuf_get_buffer());
-   }
 
    _inportsControl = _controlInPorts.size();
    _outportsControl = _controlOutPorts.size();
@@ -3145,16 +3222,6 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
    }
 
 
-   for(size_t j = 0; j < _inportsMidi; j++)
-   {
-      _midiInPorts [j].buffer->lv2_evbuf_reset(true);
-   }
-
-   for(size_t j = 0; j < _outportsMidi; j++)
-   {
-      _midiOutPorts [j].buffer->lv2_evbuf_reset(false);
-   }
-
    int cur_slice = 0;
 
    while(sample < nframes)
@@ -3518,35 +3585,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
          if(ports != 0)  // Don't bother if not 'running'.
          {
-            if(_inportsMidi > 0)
-            {
-               LV2EvBuf *rawMidiBuffer = _midiInPorts [0].buffer;
-               rawMidiBuffer->lv2_evbuf_reset(true);
-               LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
-
-               if(_midiInPorts [0].supportsTimePos)
-               {
-                  //send transport events if any
-                  LV2Synth::lv2audio_SendTransport(_uiState, rawMidiBuffer, iter);
-               }
-
-               //convert snd_seq_event_t[] to raw midi data
-               snd_midi_event_reset_decode(_midiEvent);
-               uint8_t resMidi [1024];
-
-               for(unsigned long i = 0; i < nevents; i++)
-               {
-                  uint32_t stamp = events[i].time.tick;
-                  uint32_t size = snd_midi_event_decode(_midiEvent, resMidi, sizeof(resMidi), &events [i]);
-                  rawMidiBuffer->lv2_evbuf_write(iter,
-                                                 stamp,
-                                                 0,
-                                                 _synth->_midi_event_id,
-                                                 size, resMidi);
-
-
-               }
-            }
+            LV2Synth::lv2audio_processMidiPorts(_uiState, nsamp, events, nevents);
 
             //connect ports
             for(size_t j = 0; j < _inports; ++j)
@@ -4229,20 +4268,6 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
       }
    }
 
-   state->midiInPorts = _synth->_midiInPorts;
-
-   //connect midi and control ports
-   for(size_t i = 0; i < state->midiInPorts.size(); i++)
-   {
-      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
-                                      state->midiInPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
-                                      _synth->mapUrid(LV2_ATOM__Chunk),
-                                      _synth->mapUrid(LV2_ATOM__Sequence)
-                                     );
-      state->midiInPorts [i].buffer = buffer;
-      lilv_instance_connect_port(state->handle, state->midiInPorts [i].index, (void *)buffer->lv2_evbuf_get_buffer());
-   }
-
    _states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));
 
    LV2Synth::lv2state_PostInstantiate(state);
@@ -4293,17 +4318,7 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
    assert(it != _states.end()); //this shouldn't happen
    LV2PluginWrapper_State *state = it->second;
 
-   if(state->midiInPorts.size() > 0)
-   {
-      if(state->midiInPorts [0].supportsTimePos)
-      {
-         LV2EvBuf *rawMidiBuffer = state->midiInPorts [0].buffer;
-         rawMidiBuffer->lv2_evbuf_reset(true);
-         LV2EvBuf::LV2_Evbuf_Iterator iter = rawMidiBuffer->lv2_evbuf_begin();
-         //send transport events if any
-         LV2Synth::lv2audio_SendTransport(state, rawMidiBuffer, iter);
-      }
-   }
+   LV2Synth::lv2audio_processMidiPorts(state, n);
 
    //set freewheeling property if plugin supports it
    if(state->synth->_hasFreeWheelPort)
