@@ -27,6 +27,9 @@
 
 #ifdef LV2_SUPPORT
 
+//uncomment to print debugging information for lv2 host
+#define DEBUG_LV2
+
 #include "lilv/lilv.h"
 #include "lv2/lv2plug.in/ns/ext/data-access/data-access.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
@@ -62,8 +65,6 @@
 #include <QThread>
 #include <QTimer>
 #include <assert.h>
-
-#include <jack/ringbuffer.h>
 
 #include <alsa/asoundlib.h>
 #include "midictrl.h"
@@ -105,7 +106,8 @@ public:
     /**
        Format of actual buffer.
     */
-    typedef enum {
+    typedef enum
+   {
         /**
            An (old) ev:EventBuffer (LV2_Event_Buffer).
         */
@@ -117,7 +119,8 @@ public:
         LV2_EVBUF_ATOM
     } LV2_Evbuf_Type;
 
-    typedef struct {
+    typedef struct
+   {
         LV2_Evbuf_Type type;
         uint32_t       capacity;
         uint32_t       atom_Chunk;
@@ -138,83 +141,93 @@ public:
 
     public:
         uint32_t   offset;
-        LV2_Evbuf_Iterator ( LV2EvBuf *a, uint32_t b ) : lv2evbuf ( a ), offset ( b ) {
+        LV2_Evbuf_Iterator ( LV2EvBuf *a, uint32_t b ) : lv2evbuf ( a ), offset ( b )
+        {
 
         }
         bool
-        lv2_evbuf_is_valid () {
+        lv2_evbuf_is_valid ()
+        {
             return offset < lv2evbuf->lv2_evbuf_get_size ();
         }
-        LV2EvBuf *operator *() {
+        LV2EvBuf *operator *()
+        {
             return lv2evbuf;
         }
-        LV2_Evbuf_Iterator &operator++ () {
-            if ( !lv2_evbuf_is_valid () ) {
+        LV2_Evbuf_Iterator &operator++ ()
+        {
+            if ( !lv2_evbuf_is_valid () )
+            {
                 return *this;
             }
 
             LV2_Evbuf *_evbuf  = lv2evbuf->evbuf;
             uint32_t   _offset = offset;
             uint32_t   _size;
-            switch ( _evbuf->type ) {
+            switch ( _evbuf->type )
+            {
             case LV2_EVBUF_EVENT:
                 _size    = ( ( LV2_Event * ) ( _evbuf->buf.event.data + _offset ) )->size;
                 _offset += LV2EvBuf::lv2_evbuf_pad_size ( sizeof ( LV2_Event ) + _size );
                 break;
             case LV2_EVBUF_ATOM:
                 _size = ( ( LV2_Atom_Event * )
-                          ( ( char * ) LV2_ATOM_CONTENTS ( LV2_Atom_Sequence, &_evbuf->buf.atom )
-                            + _offset ) )->body.size;
+                          ( ( char * ) LV2_ATOM_CONTENTS ( LV2_Atom_Sequence, &_evbuf->buf.atom ) + _offset ) )->body.size;
                 _offset += LV2EvBuf::lv2_evbuf_pad_size ( sizeof ( LV2_Atom_Event ) + _size );
                 break;
             }
             offset = _offset;
             return *this;
         }
-        LV2_Event *event() {
+        LV2_Event *event()
+        {
             LV2_Event_Buffer *ebuf = &lv2evbuf->evbuf->buf.event;
             return ( LV2_Event * ) ( ( char * ) ebuf->data + offset );
         }
 
-        LV2_Atom_Event *aevent() {
+        LV2_Atom_Event *aevent()
+        {
             LV2_Atom_Sequence *aseq = ( LV2_Atom_Sequence * ) &lv2evbuf->evbuf->buf.atom;
-            return ( LV2_Atom_Event * ) (
-                       ( char * ) LV2_ATOM_CONTENTS ( LV2_Atom_Sequence, aseq )
-                       + offset );
+            return ( LV2_Atom_Event * ) (( char * ) LV2_ATOM_CONTENTS ( LV2_Atom_Sequence, aseq ) + offset );
         }
     };
 
     LV2_Evbuf *evbuf;
 
     static inline uint32_t
-    lv2_evbuf_pad_size ( uint32_t size ) {
+    lv2_evbuf_pad_size ( uint32_t size )
+    {
         return ( size + 7 ) & ( ~7 );
     }
 
     LV2EvBuf ( uint32_t       capacity,
                LV2_Evbuf_Type type,
                uint32_t       atom_Chunk,
-               uint32_t       atom_Sequence ) {
-
-        int rv = posix_memalign ( ( void ** ) &evbuf, 8, sizeof ( LV2_Evbuf ) + sizeof ( LV2_Atom_Sequence ) + capacity );
-
-        if ( rv != 0 ) {
-            fprintf ( stderr, "ERROR: LV2EvBuf::LV2EvBuf: posix_memalign returned error:%d. Aborting!\n", rv );
-            abort();
-        }
-        evbuf->capacity      = capacity;
-        evbuf->atom_Chunk    = atom_Chunk;
-        evbuf->atom_Sequence = atom_Sequence;
-        lv2_evbuf_set_type ( type );
-        lv2_evbuf_reset ( true );
+               uint32_t       atom_Sequence )
+    {
+       size_t sz = sizeof ( LV2_Evbuf ) + sizeof ( LV2_Atom_Sequence ) + capacity;
+       int rv = posix_memalign ( ( void ** ) &evbuf, 8, sz );
+       if ( rv != 0 )
+       {
+          fprintf ( stderr, "ERROR: LV2EvBuf::LV2EvBuf: posix_memalign returned error:%d. Aborting!\n", rv );
+          abort();
+       }
+       memset(evbuf, 0, sz);
+       evbuf->capacity      = capacity;
+       evbuf->atom_Chunk    = atom_Chunk;
+       evbuf->atom_Sequence = atom_Sequence;
+       lv2_evbuf_set_type ( type );
+       lv2_evbuf_reset ( true );
     }
 
-    ~LV2EvBuf() {
+    ~LV2EvBuf()
+    {
         free ( evbuf );
     }
 
     void
-    lv2_evbuf_set_type ( LV2_Evbuf_Type type ) {
+    lv2_evbuf_set_type ( LV2_Evbuf_Type type )
+    {
         evbuf->type = type;
         switch ( type ) {
         case LV2_EVBUF_EVENT:
@@ -224,11 +237,12 @@ public:
         case LV2_EVBUF_ATOM:
             break;
         }
-        lv2_evbuf_reset ( true );
+        lv2_evbuf_reset (true);
     }
 
     void
-    lv2_evbuf_reset ( bool input ) {
+    lv2_evbuf_reset (bool input)
+    {
         switch ( evbuf->type ) {
         case LV2_EVBUF_EVENT:
             evbuf->buf.event.header_size = sizeof ( LV2_Event_Buffer );
@@ -237,10 +251,13 @@ public:
             evbuf->buf.event.size        = 0;
             break;
         case LV2_EVBUF_ATOM:
-            if ( input ) {
+            if(input)
+            {
                 evbuf->buf.atom.atom.size = sizeof ( LV2_Atom_Sequence_Body );
                 evbuf->buf.atom.atom.type = evbuf->atom_Sequence;
-            } else {
+            }
+            else
+            {
                 evbuf->buf.atom.atom.size = evbuf->capacity;
                 evbuf->buf.atom.atom.type = evbuf->atom_Chunk;
             }
@@ -248,8 +265,10 @@ public:
     }
 
     uint32_t
-    lv2_evbuf_get_size () {
-        switch ( evbuf->type ) {
+    lv2_evbuf_get_size ()
+    {
+        switch ( evbuf->type )
+        {
         case LV2_EVBUF_EVENT:
             return evbuf->buf.event.size;
         case LV2_EVBUF_ATOM:
@@ -263,8 +282,10 @@ public:
     }
 
     void *
-    lv2_evbuf_get_buffer () {
-        switch ( evbuf->type ) {
+    lv2_evbuf_get_buffer ()
+    {
+        switch ( evbuf->type )
+        {
         case LV2_EVBUF_EVENT:
             return &evbuf->buf.event;
         case LV2_EVBUF_ATOM:
@@ -274,13 +295,15 @@ public:
     }
 
     LV2_Evbuf_Iterator
-    lv2_evbuf_begin () {
+    lv2_evbuf_begin ()
+    {
         LV2_Evbuf_Iterator iter ( this, 0 );
         return iter;
     }
 
     LV2_Evbuf_Iterator
-    lv2_evbuf_end () {
+    lv2_evbuf_end ()
+    {
         const uint32_t           size = lv2_evbuf_get_size ();
         const LV2_Evbuf_Iterator iter ( this, lv2_evbuf_pad_size ( size ) );
         return iter;
@@ -292,17 +315,20 @@ public:
                     uint32_t          *subframes,
                     uint32_t          *type,
                     uint32_t          *size,
-                    uint8_t          **data ) const {
+                    uint8_t          **data ) const
+    {
         *frames = *subframes = *type = *size = 0;
         *data = NULL;
 
-        if ( !iter.lv2_evbuf_is_valid() ) {
+        if ( !iter.lv2_evbuf_is_valid() )
+        {
             return false;
         }
 
         LV2_Event         *ev;
         LV2_Atom_Event    *aev;
-        switch ( ( *iter )->evbuf->type ) {
+        switch ( ( *iter )->evbuf->type )
+        {
         case LV2_EVBUF_EVENT:
             ev = iter.event();
             *frames    = ev->frames;
@@ -330,15 +356,18 @@ public:
                       uint32_t            subframes,
                       uint32_t            type,
                       uint32_t            size,
-                      const uint8_t      *data ) const {
+                      const uint8_t      *data ) const
+    {
         LV2_Event_Buffer  *ebuf;
         LV2_Event         *ev;
         LV2_Atom_Sequence *aseq;
         LV2_Atom_Event    *aev;
-        switch ( ( *iter )->evbuf->type ) {
+        switch ( ( *iter )->evbuf->type )
+        {
         case LV2_EVBUF_EVENT:
             ebuf = & ( *iter )->evbuf->buf.event;
-            if ( ebuf->capacity - ebuf->size < sizeof ( LV2_Event ) + size ) {
+            if ( ebuf->capacity - ebuf->size < sizeof ( LV2_Event ) + size )
+            {
                 return false;
             }
 
@@ -356,19 +385,16 @@ public:
             break;
         case LV2_EVBUF_ATOM:
             aseq = ( LV2_Atom_Sequence * ) & ( *iter )->evbuf->buf.atom;
-            if ( ( *iter )->evbuf->capacity - sizeof ( LV2_Atom ) - aseq->atom.size
-                    < sizeof ( LV2_Atom_Event ) + size ) {
+            if ( ( *iter )->evbuf->capacity - sizeof ( LV2_Atom ) - aseq->atom.size < sizeof ( LV2_Atom_Event ) + size )
+            {
                 return false;
             }
 
-            aev = ( LV2_Atom_Event * ) (
-                      ( char * ) LV2_ATOM_CONTENTS ( LV2_Atom_Sequence, aseq )
-                      + iter.offset );
+            aev = ( LV2_Atom_Event * ) (( char * ) LV2_ATOM_CONTENTS ( LV2_Atom_Sequence, aseq ) + iter.offset );
             aev->time.frames = frames;
             aev->body.type   = type;
             aev->body.size   = size;
             memcpy ( LV2_ATOM_BODY ( &aev->body ), data, size );
-
             size             = lv2_evbuf_pad_size ( sizeof ( LV2_Atom_Event ) + size );
             aseq->atom.size += size;
             iter.offset    += size;
@@ -378,12 +404,123 @@ public:
         return true;
     }
 
+};
+
+class LV2SimpleRTFifo
+{
+public:
+   typedef struct _lv2_uiControlEvent
+   {
+      uint32_t port_index;
+      long buffer_size;
+      char data [0];
+   } lv2_uiControlEvent;
+private:
+   size_t numItems;
+   size_t readIndex;
+   size_t writeIndex;
+   size_t bufferSize;
+   unsigned char *buffer;
+   unsigned char *readBuffer;
+public:
+   LV2SimpleRTFifo(size_t size)
+      :bufferSize(size)
+   {
+      buffer = new unsigned char [bufferSize];
+      readBuffer = new unsigned char [bufferSize];
+      assert(buffer != NULL);
+      assert(readBuffer != NULL);
+      readIndex = writeIndex = 0;
+      memset(buffer, 0, bufferSize);
+      memset(readBuffer, 0, bufferSize);
+
+   }
+   ~LV2SimpleRTFifo()
+   {
+      delete [] buffer;
+      buffer = NULL;
+   }
+   bool put(uint32_t port_index, uint32_t size, const void *data)
+   {      
+      size_t ptr = 0;
+      lv2_uiControlEvent *evt = NULL;
+
+      for(int jj = 0; jj < 2; ++jj)
+      {
+         ptr = writeIndex;
+         long sz = 0;
+         while(ptr < bufferSize && (sz = reinterpret_cast<lv2_uiControlEvent *>(&buffer [ptr])->buffer_size) > 0)
+         {
+            ptr+= sz + sizeof(lv2_uiControlEvent);
+         }
+
+
+         evt = reinterpret_cast<lv2_uiControlEvent *>(&buffer [ptr]);
+
+         if((ptr + size + sizeof(lv2_uiControlEvent)) >= bufferSize)
+         {
+            __sync_fetch_and_and(&writeIndex, 0);
+
+            if(ptr < bufferSize)
+            {
+               __sync_fetch_and_sub(&evt->buffer_size, 1);
+            }
+            if(jj > 1)
+            {
+#ifdef DEBUG_LV2
+               std::cerr << "LV2SimpleRTFifo::put(): FIFO is full!" << std::endl;
+#endif
+
+               return false;
+            }
+         }
+      }
+
+      evt->port_index = port_index;
+      memcpy(evt->data, static_cast<const unsigned char *>(data), size);
+      __sync_fetch_and_and(&evt->buffer_size, 0);
+      __sync_fetch_and_add(&evt->buffer_size, size);
+      __sync_fetch_and_add(&writeIndex, size + sizeof(lv2_uiControlEvent));
+#ifdef DEBUG_LV2
+      std::cerr << "LV2SimpleRTFifo::put(): size = " << size << ", writeIndex = " << writeIndex << ", bufferSize = " << bufferSize << std::endl;
+#endif
+      return true;
+   }
+
+   const lv2_uiControlEvent *get()
+   {
+      lv2_uiControlEvent *evt = reinterpret_cast<lv2_uiControlEvent *>(&buffer [readIndex]);
+      long size = __sync_fetch_and_add(&evt->buffer_size, 0);
+      if(size == (long)-1) //revert to zero
+      {
+         __sync_fetch_and_and(&evt->buffer_size, 0);
+         __sync_fetch_and_and(&readIndex, 0);
+         size = __sync_fetch_and_add(&evt->buffer_size, 0);
+      }
+      if(size > 0)
+      {
+         size_t ptr = 0;         
+         __sync_fetch_and_add(&ptr, readIndex);         
+         memcpy(readBuffer, &buffer [ptr], size + sizeof(lv2_uiControlEvent));
+         memset(&buffer [ptr], 0, size + sizeof(lv2_uiControlEvent));
+         __sync_fetch_and_add(&readIndex, size + sizeof(lv2_uiControlEvent));
+         __sync_fetch_and_and(&evt->buffer_size, 0);
+#ifdef DEBUG_LV2
+         std::cerr << "LV2SimpleRTFifo::get(): size = " << size << ", readIndex = " << readIndex << ", bufferSize = " << bufferSize << std::endl;
+#endif
+         evt = reinterpret_cast<lv2_uiControlEvent *>(readBuffer);
+         return evt;
+      }
+      return NULL;
+   }
+
 
 };
 
 
 
-struct LV2MidiPort {
+struct LV2MidiPort
+{
     LV2MidiPort ( const LilvPort *_p, uint32_t _i, QString _n, bool _f, LV2EvBuf *_b, bool _supportsTimePos ) :
         port ( _p ), index ( _i ), name ( _n ), old_api ( _f ), buffer ( _b ), supportsTimePos(_supportsTimePos) {}
     const LilvPort *port;
@@ -392,12 +529,14 @@ struct LV2MidiPort {
     bool old_api; //true for LV2_Event port
     LV2EvBuf *buffer;
     bool supportsTimePos;
-    ~LV2MidiPort() {
+    ~LV2MidiPort()
+    {
 #if 0
         std::cerr << "~LV2MidiPort()" << std::endl;
 #endif
         if(buffer != NULL)
             delete buffer;
+        buffer = NULL;
     }
 };
 
@@ -410,7 +549,8 @@ enum LV2ControlPortType
    LV2_PORT_TRIGGER
 };
 
-struct LV2ControlPort {
+struct LV2ControlPort
+{
    LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, LV2ControlPortType _ctype, bool _isCVPort = false) :
       port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype),
       isCVPort(_isCVPort)
@@ -439,7 +579,8 @@ struct LV2ControlPort {
    bool isCVPort;
 };
 
-struct LV2AudioPort {
+struct LV2AudioPort
+{
     LV2AudioPort ( const LilvPort *_p, uint32_t _i, float *_b, QString _n ) :
         port ( _p ), index ( _i ), buffer ( _b ), name ( _n ) {}
     const LilvPort *port;
@@ -448,8 +589,10 @@ struct LV2AudioPort {
     QString name;
 };
 
-struct cmp_str {
-    bool operator() ( char const *a, char const *b ) const {
+struct cmp_str
+{
+    bool operator() ( char const *a, char const *b ) const
+    {
         return std::strcmp ( a, b ) < 0;
     }
 };
@@ -598,6 +741,8 @@ public:
     static void lv2ui_FreeDescriptors(LV2PluginWrapper_State *state);
     static void lv2state_FreeState(LV2PluginWrapper_State *state);
     static void lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, LV2EvBuf::LV2_Evbuf_Iterator &iter);
+    static void lv2state_InitMidiPorts ( LV2PluginWrapper_State *state );
+    static void inline lv2audio_processMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp, const snd_seq_event_t *events = NULL, unsigned long nevents = 0);
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
@@ -605,7 +750,7 @@ public:
     static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
     static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
     static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
-    static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
+    static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);    
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -619,8 +764,6 @@ class LV2SynthIF : public SynthIF
 private:
     LV2Synth *_synth;
     LilvInstance *_handle;
-    LV2_MIDI_PORTS _midiInPorts;
-    LV2_MIDI_PORTS _midiOutPorts;
     LV2_CONTROL_PORTS _controlInPorts;
     LV2_CONTROL_PORTS _controlOutPorts;
     LV2_AUDIO_PORTS _audioInPorts;
@@ -639,13 +782,12 @@ private:
     float **_audioInBuffers;
     float **_audioOutBuffers;
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
-    std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.
-    snd_midi_event_t *_midiEvent;
+    std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.    
     void doSelectProgram(unsigned char channel, int bank, int prog);
     bool processEvent ( const MidiPlayEvent &, snd_seq_event_t * );
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
     float midi2Lv2Value ( unsigned long port, int ctlnum, int val );
-    LV2PluginWrapper_State *_uiState;
+    LV2PluginWrapper_State *_uiState;    
 public:
     LV2SynthIF ( SynthI *s );
     virtual ~LV2SynthIF();
@@ -751,13 +893,6 @@ typedef struct _lv2ExtProgram
 
 } lv2ExtProgram;
 
-typedef struct _lv2_uiControlEvent
-{
-   uint32_t port_index;
-   uint32_t buffer_size;
-   char data [];
-} lv2_uiControlEvent;
-
 struct LV2PluginWrapper_State {
    LV2PluginWrapper_State():
       _ifeatures(NULL),
@@ -798,8 +933,9 @@ struct LV2PluginWrapper_State {
       uiBank(0),
       uiProg(0),
       gtk2Plug(NULL),
-      uiEvTBuffer(NULL),
-      pluginCVPorts(NULL)
+      pluginCVPorts(NULL),
+      uiControlEvt(256),
+      midiEvent(NULL)
    {
       extHost.plugin_human_id = NULL;
       extHost.ui_closed = NULL;
@@ -807,7 +943,9 @@ struct LV2PluginWrapper_State {
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
       prgHost.handle = (LV2_Programs_Handle)this;
       prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
-
+      midiInPorts.clear();
+      midiOutPorts.clear();
+      idx2EvtPorts.clear();
    }
 
     LV2_Feature *_ifeatures;
@@ -850,7 +988,8 @@ struct LV2PluginWrapper_State {
     LV2UI_Resize uiResize;
     QSize uiX11Size;
     LV2PluginWrapper_Window *pluginWindow;
-    LV2_MIDI_PORTS midiInPorts; //for rack plugins only
+    LV2_MIDI_PORTS midiInPorts;
+    LV2_MIDI_PORTS midiOutPorts;
     LV2_Programs_Interface *prgIface;
     LV2_Programs_UI_Interface *uiPrgIface;
     bool uiDoSelectPrg;
@@ -863,8 +1002,10 @@ struct LV2PluginWrapper_State {
     int uiProg;
     void *gtk2Plug;
     std::map<QString, size_t> controlsNameMap;
-    jack_ringbuffer_t *uiEvTBuffer;
     float **pluginCVPorts;
+    LV2SimpleRTFifo uiControlEvt;
+    std::map<uint32_t, LV2EvBuf *> idx2EvtPorts;
+    snd_midi_event_t *midiEvent;
 };
 
 

@@ -30,7 +30,7 @@
 //#define DSSI_DEBUG_PROCESS 
 
 // Support vst state saving/loading with vst chunks. 
-#define DSSI_VST_CHUNK_SUPPORT
+//#define DSSI_VST_CHUNK_SUPPORT
 
 #include <string>
 #include <string.h>
