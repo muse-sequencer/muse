@@ -49,6 +49,7 @@
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
 #include "lv2/lv2plug.in/ns/ext/port-props/port-props.h"
 #include "lv2/lv2plug.in/ns/ext/atom/forge.h"
+#include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
@@ -406,6 +407,7 @@ public:
 
 };
 
+#define LV2_RT_FIFO_ITEM_SIZE 512
 class LV2SimpleRTFifo
 {
 public:
@@ -413,105 +415,106 @@ public:
    {
       uint32_t port_index;
       long buffer_size;
-      char data [0];
+      char data [LV2_RT_FIFO_ITEM_SIZE];
    } lv2_uiControlEvent;
 private:
    size_t numItems;
+   std::vector<lv2_uiControlEvent> eventsBuffer;
    size_t readIndex;
    size_t writeIndex;
-   size_t bufferSize;
-   unsigned char *buffer;
-   unsigned char *readBuffer;
+   size_t fifoSize;
+   lv2_uiControlEvent currentItem;
 public:
-   LV2SimpleRTFifo(size_t size)
-      :bufferSize(size)
+   LV2SimpleRTFifo(size_t size):
+      fifoSize(size)
    {
-      buffer = new unsigned char [bufferSize];
-      readBuffer = new unsigned char [bufferSize];
-      assert(buffer != NULL);
-      assert(readBuffer != NULL);
+      eventsBuffer.resize(fifoSize);
+      assert(eventsBuffer.size() == fifoSize);
       readIndex = writeIndex = 0;
-      memset(buffer, 0, bufferSize);
-      memset(readBuffer, 0, bufferSize);
+      for(size_t i = 0; i < fifoSize; ++i)
+      {
+         eventsBuffer [i].port_index = 0;
+         eventsBuffer [i].buffer_size = 0;
+      }
 
    }
    ~LV2SimpleRTFifo()
    {
-      delete [] buffer;
-      buffer = NULL;
+
    }
    bool put(uint32_t port_index, uint32_t size, const void *data)
    {      
-      size_t ptr = 0;
-      lv2_uiControlEvent *evt = NULL;
-
-      for(int jj = 0; jj < 2; ++jj)
+      if(size > LV2_RT_FIFO_ITEM_SIZE)
       {
-         ptr = writeIndex;
-         long sz = 0;
-         while(ptr < bufferSize && (sz = reinterpret_cast<lv2_uiControlEvent *>(&buffer [ptr])->buffer_size) > 0)
-         {
-            ptr+= sz + sizeof(lv2_uiControlEvent);
-         }
-
-
-         evt = reinterpret_cast<lv2_uiControlEvent *>(&buffer [ptr]);
-
-         if((ptr + size + sizeof(lv2_uiControlEvent)) >= bufferSize)
-         {
-            __sync_fetch_and_and(&writeIndex, 0);
-
-            if(ptr < bufferSize)
-            {
-               __sync_fetch_and_sub(&evt->buffer_size, 1);
-            }
-            if(jj > 1)
-            {
 #ifdef DEBUG_LV2
-               std::cerr << "LV2SimpleRTFifo::put(): FIFO is full!" << std::endl;
+         std::cerr << "LV2SimpleRTFifo:put(): size("<<size<<") is too big" << std::endl;
 #endif
+         return false;
 
-               return false;
-            }
-         }
       }
+      size_t i = writeIndex;
+      bool found = false;
+      do
+      {
+         if(eventsBuffer.at(i).buffer_size == 0)
+         {
+            found = true;
+            break;
+         }
+         i++;
+         i %= fifoSize;
+      }
+      while(i != writeIndex);
 
-      evt->port_index = port_index;
-      memcpy(evt->data, static_cast<const unsigned char *>(data), size);
-      __sync_fetch_and_and(&evt->buffer_size, 0);
-      __sync_fetch_and_add(&evt->buffer_size, size);
-      __sync_fetch_and_add(&writeIndex, size + sizeof(lv2_uiControlEvent));
+      if(!found)
+      {
 #ifdef DEBUG_LV2
-      std::cerr << "LV2SimpleRTFifo::put(): size = " << size << ", writeIndex = " << writeIndex << ", bufferSize = " << bufferSize << std::endl;
+         std::cerr << "LV2SimpleRTFifo:put(): fifo is full" << std::endl;
 #endif
+         return false;
+      }
+#ifdef DEBUG_LV2
+      std::cerr << "LV2SimpleRTFifo:put(): used index = " << i << std::endl;
+#endif
+      memcpy(eventsBuffer.at(i).data, data, size);
+      eventsBuffer.at(i).port_index = port_index;
+      __sync_fetch_and_add(&eventsBuffer.at(i).buffer_size, size);
+      writeIndex = i;
+
       return true;
+
    }
 
    const lv2_uiControlEvent *get()
    {
-      lv2_uiControlEvent *evt = reinterpret_cast<lv2_uiControlEvent *>(&buffer [readIndex]);
-      long size = __sync_fetch_and_add(&evt->buffer_size, 0);
-      if(size == (long)-1) //revert to zero
+      size_t i = readIndex;
+      bool found = false;
+      do
       {
-         __sync_fetch_and_and(&evt->buffer_size, 0);
-         __sync_fetch_and_and(&readIndex, 0);
-         size = __sync_fetch_and_add(&evt->buffer_size, 0);
+         if(eventsBuffer.at(i).buffer_size != 0)
+         {
+            found = true;
+            break;
+         }
+         i++;
+         i %= fifoSize;
       }
-      if(size > 0)
+      while(i != readIndex);
+
+      if(!found)
       {
-         size_t ptr = 0;         
-         __sync_fetch_and_add(&ptr, readIndex);         
-         memcpy(readBuffer, &buffer [ptr], size + sizeof(lv2_uiControlEvent));
-         memset(&buffer [ptr], 0, size + sizeof(lv2_uiControlEvent));
-         __sync_fetch_and_add(&readIndex, size + sizeof(lv2_uiControlEvent));
-         __sync_fetch_and_and(&evt->buffer_size, 0);
 #ifdef DEBUG_LV2
-         std::cerr << "LV2SimpleRTFifo::get(): size = " << size << ", readIndex = " << readIndex << ", bufferSize = " << bufferSize << std::endl;
+         //std::cerr << "LV2SimpleRTFifo:get(): fifo is empty" << std::endl;
 #endif
-         evt = reinterpret_cast<lv2_uiControlEvent *>(readBuffer);
-         return evt;
+         return NULL;
       }
-      return NULL;
+#ifdef DEBUG_LV2
+      std::cerr << "LV2SimpleRTFifo:get(): used index = " << i << std::endl;
+#endif
+      currentItem = eventsBuffer.at(i);
+      __sync_fetch_and_and(&eventsBuffer.at(i).buffer_size, 0);
+      readIndex = (i + 1) % fifoSize;
+      return &currentItem;
    }
 
 
@@ -666,6 +669,7 @@ private:
     LV2_URID_Map _lv2_urid_map;
     LV2_URID_Unmap _lv2_urid_unmap;
     LV2_URI_Map_Feature _lv2_uri_map;
+    LV2_Log_Log _lv2_log_log;
     double _sampleRate;
     bool _isSynth;
     int _uniqueID;
@@ -693,6 +697,7 @@ private:
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
     uint32_t _fPrgHost;
+    uint32_t _fLog;
     //const LilvNode *_pluginUIType = NULL;
     LV2_URID _uTime_Position;
     LV2_URID _uTime_frame;
@@ -742,7 +747,8 @@ public:
     static void lv2state_FreeState(LV2PluginWrapper_State *state);
     static void lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, LV2EvBuf::LV2_Evbuf_Iterator &iter);
     static void lv2state_InitMidiPorts ( LV2PluginWrapper_State *state );
-    static void inline lv2audio_processMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp, const snd_seq_event_t *events = NULL, unsigned long nevents = 0);
+    static void inline lv2audio_preProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp, const snd_seq_event_t *events = NULL, unsigned long nevents = 0);
+    static void inline lv2audio_postProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp);
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
@@ -750,7 +756,9 @@ public:
     static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
     static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
     static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
-    static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);    
+    static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
+    static int lv2_printf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, ...);
+    static int lv2_vprintf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, va_list ap);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -934,7 +942,8 @@ struct LV2PluginWrapper_State {
       uiProg(0),
       gtk2Plug(NULL),
       pluginCVPorts(NULL),
-      uiControlEvt(256),
+      uiControlEvt(128),
+      plugControlEvt(128),
       midiEvent(NULL)
    {
       extHost.plugin_human_id = NULL;
@@ -1004,6 +1013,7 @@ struct LV2PluginWrapper_State {
     std::map<QString, size_t> controlsNameMap;
     float **pluginCVPorts;
     LV2SimpleRTFifo uiControlEvt;
+    LV2SimpleRTFifo plugControlEvt;
     std::map<uint32_t, LV2EvBuf *> idx2EvtPorts;
     snd_midi_event_t *midiEvent;
 };

@@ -65,6 +65,8 @@
 
 #include <math.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -196,6 +198,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_OPTIONS, NULL},
    {LV2_UI__resize, NULL},
    {LV2_PROGRAMS__Host, NULL},
+   {LV2_LOG__log, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!
 };
 
@@ -474,6 +477,7 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
       MusECore::Port *controls = NULL;
       size_t numControlsOut = 0;
       MusECore::Port *controlsOut = NULL;
+      LV2Synth *synth = state->synth;
 
       if(state->plugInst != NULL)
       {
@@ -535,6 +539,15 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
 
       }
 
+      //process gui atom events (control events are already set by getData or apply.
+      const LV2SimpleRTFifo::lv2_uiControlEvent *evt;
+      while((evt = state->plugControlEvt.get()))
+      {
+         if(evt->buffer_size > 0)
+         {
+            state->uiDesc->port_event(state->uiInst, evt->port_index, evt->buffer_size, synth->_uAtom_EventTransfer, evt->data);
+         }
+      }
    }
 }
 
@@ -547,7 +560,7 @@ void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index,
    assert(state != NULL); //this should'nt happen
    assert(state->inst != NULL || state->sif != NULL); // this too
 
-   if(protocol != 0 && protocol != state->synth->_uAtom_EventTransfer) //we accept only control writes which are of sizeof(float) size and protocol = 0
+   if(protocol != 0 && protocol != state->synth->_uAtom_EventTransfer)
    {
 #ifdef DEBUG_LV2
       std::cerr << "LV2Synth::lv2ui_PortWrite: unsupported protocol (" << protocol << ")" << std::endl;
@@ -559,12 +572,7 @@ void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index,
    {
 #ifdef DEBUG_LV2
       std::cerr << "LV2Synth::lv2ui_PortWrite: atom_EventTransfer, port = " << port_index << ", size =" << buffer_size << std::endl;
-#endif
-      /*char evtBuf [sizeof(lv2_uiControlEvent) + buffer_size];
-      lv2_uiControlEvent *evt = reinterpret_cast<lv2_uiControlEvent *>(&evtBuf);
-      evt->port_index = port_index;
-      evt->buffer_size = buffer_size;
-      memcpy(evt->data, buffer, buffer_size);*/
+#endif      
       state->uiControlEvt.put(port_index, buffer_size, buffer);
       return;
    }
@@ -808,7 +816,7 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
 
    for(size_t i = 0; i < state->midiOutPorts.size(); i++)
    {
-     lilv_instance_connect_port(state->handle, state->midiOutPorts [i].index, (void *)state->midiInPorts [i].buffer->lv2_evbuf_get_buffer());
+     lilv_instance_connect_port(state->handle, state->midiOutPorts [i].index, (void *)state->midiOutPorts [i].buffer->lv2_evbuf_get_buffer());
    }
 
    //query for state interface
@@ -989,7 +997,7 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 
 }
 
-void LV2Synth::lv2audio_processMidiPorts(LV2PluginWrapper_State *state, unsigned long nsamp, const snd_seq_event_t *events, unsigned long nevents )
+void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsigned long nsamp, const snd_seq_event_t *events, unsigned long nevents )
 {
    LV2Synth *synth = state->synth;
    size_t inp = state->midiInPorts.size();
@@ -1057,6 +1065,48 @@ void LV2Synth::lv2audio_processMidiPorts(LV2PluginWrapper_State *state, unsigned
       }
    }
 
+
+}
+
+void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsigned long)
+{
+   //send Atom events to gui.
+   //Synchronize send rate with gui update rate
+   if(state->uiInst == NULL)
+      return;
+
+   size_t outp = state->midiOutPorts.size();
+
+   for(size_t j = 0; j < outp; j++)
+   {
+      if(!state->midiOutPorts [j].old_api)
+      {
+         LV2EvBuf::LV2_Evbuf_Iterator it = state->midiOutPorts [j].buffer->lv2_evbuf_begin();
+
+         for(; it.lv2_evbuf_is_valid(); ++it)
+         {
+            uint32_t frames, subframes, type, size;
+            uint8_t *data = NULL;
+            state->midiOutPorts [j].buffer->lv2_evbuf_get(it, &frames, &subframes, &type, &size, &data);
+            unsigned char atom_data [LV2_RT_FIFO_ITEM_SIZE];
+            LV2_Atom *atom_evt = reinterpret_cast<LV2_Atom *>(atom_data);
+            atom_evt->type = type;
+            atom_evt->size = size;
+            if(LV2_RT_FIFO_ITEM_SIZE - sizeof(LV2_Atom) < size)
+            {
+#ifdef DEBUG_LV2
+               std::cerr << "LV2Synth::lv2audio_postProcessMidiPorts(): Plugin event data is bigger than rt fifo item size. Skipping." << std::endl;
+#endif
+               continue;
+            }
+            unsigned char *evt = static_cast<unsigned char *>(LV2_ATOM_BODY(atom_evt));
+            memcpy(evt, data, size);
+
+            state->plugControlEvt.put(state->midiOutPorts [j].index, sizeof(LV2_Atom) + size, atom_evt);
+         }
+
+      }
+   }
 
 }
 
@@ -1677,6 +1727,21 @@ void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
 
 }
 
+int LV2Synth::lv2_printf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, ...)
+{
+   va_list argptr;
+   va_start(argptr, fmt);
+   int ret = LV2Synth::lv2_vprintf(handle, type, fmt, argptr);
+   va_end(argptr);
+   return ret;
+}
+
+int LV2Synth::lv2_vprintf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, va_list ap)
+{
+   return vprintf(fmt, ap);
+
+}
+
 
 
 
@@ -1776,6 +1841,9 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _lv2_urid_unmap.handle = this;
    _lv2_uri_map.uri_to_id = Synth_Uri_Map;
    _lv2_uri_map.callback_data = this;
+   _lv2_log_log.handle = this;
+   _lv2_log_log.printf = LV2Synth::lv2_printf;
+   _lv2_log_log.vprintf = LV2Synth::lv2_vprintf;
 
    uint32_t i;
 
@@ -1831,6 +1899,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       else if((std::string(LV2_PROGRAMS__Host) == _features [i].URI))
       {
          _fPrgHost = i;
+      }
+      else if((std::string(LV2_LOG__log) == _features [i].URI))
+      {
+         _fLog = i;
       }
       else if(std::string(LV2_F_DATA_ACCESS) == _features [i].URI)
       {
@@ -3585,7 +3657,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
          if(ports != 0)  // Don't bother if not 'running'.
          {
-            LV2Synth::lv2audio_processMidiPorts(_uiState, nsamp, events, nevents);
+            LV2Synth::lv2audio_preProcessMidiPorts(_uiState, nsamp, events, nevents);
 
             //connect ports
             for(size_t j = 0; j < _inports; ++j)
@@ -3638,6 +3710,8 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                _uiState->wrkDataBuffer = NULL;
                _uiState->wrkEndWork = false;
             }
+
+            LV2Synth::lv2audio_postProcessMidiPorts(_uiState, nsamp);
 
 
          }
@@ -4318,7 +4392,7 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
    assert(it != _states.end()); //this shouldn't happen
    LV2PluginWrapper_State *state = it->second;
 
-   LV2Synth::lv2audio_processMidiPorts(state, n);
+   LV2Synth::lv2audio_preProcessMidiPorts(state, n);
 
    //set freewheeling property if plugin supports it
    if(state->synth->_hasFreeWheelPort)
@@ -4367,6 +4441,8 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n)
       state->wrkDataSize = 0;
       state->wrkDataBuffer = NULL;
    }
+
+   LV2Synth::lv2audio_postProcessMidiPorts(state, n);
 }
 LADSPA_PortDescriptor LV2PluginWrapper::portd(unsigned long k) const
 {
