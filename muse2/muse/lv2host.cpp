@@ -540,13 +540,13 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
       }
 
       //process gui atom events (control events are already set by getData or apply.
-      const LV2SimpleRTFifo::lv2_uiControlEvent *evt;
-      while((evt = state->plugControlEvt.get()))
+      size_t fifoItemSize = state->plugControlEvt.getItemSize();
+      size_t dataSize = 0;
+      uint32_t port_index = 0;
+      char evtBuffer [fifoItemSize];
+      while(state->plugControlEvt.get(&port_index, &dataSize, evtBuffer))
       {
-         if(evt->buffer_size > 0)
-         {
-            state->uiDesc->port_event(state->uiInst, evt->port_index, evt->buffer_size, synth->_uAtom_EventTransfer, evt->data);
-         }
+         state->uiDesc->port_event(state->uiInst, port_index, dataSize, synth->_uAtom_EventTransfer, evtBuffer);
       }
    }
 }
@@ -975,7 +975,7 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
    //connect midi and control ports
    for(size_t i = 0; i < state->midiInPorts.size(); i++)
    {
-      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
+      LV2EvBuf *buffer = new LV2EvBuf(LV2_RT_FIFO_ITEM_SIZE,
                                       state->midiInPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
                                       synth->mapUrid(LV2_ATOM__Chunk),
                                       synth->mapUrid(LV2_ATOM__Sequence)
@@ -986,7 +986,7 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 
    for(size_t i = 0; i < state->midiOutPorts.size(); i++)
    {
-      LV2EvBuf *buffer = new LV2EvBuf(MusEGlobal::segmentSize * 12,
+      LV2EvBuf *buffer = new LV2EvBuf(LV2_RT_FIFO_ITEM_SIZE,
                                       state->midiOutPorts [i].old_api ? LV2EvBuf::LV2_EVBUF_EVENT : LV2EvBuf::LV2_EVBUF_ATOM,
                                       synth->mapUrid(LV2_ATOM__Chunk),
                                       synth->mapUrid(LV2_ATOM__Sequence)
@@ -1045,24 +1045,25 @@ void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsig
       }
    }
 
-   //process gui atom events (control events are already set by getData or apply.
-   const LV2SimpleRTFifo::lv2_uiControlEvent *evt;
-   while((evt = state->uiControlEvt.get()))
+   //process gui atom events (control events are already set by getData or apply call).
+   size_t fifoItemSize = state->uiControlEvt.getItemSize();
+   size_t dataSize = 0;
+   uint32_t port_index = 0;
+   char evtBuffer [fifoItemSize];
+   while(state->uiControlEvt.get(&port_index, &dataSize, evtBuffer))
    {
-      if(evt->buffer_size > 0)
+      std::map<uint32_t, LV2EvBuf *>::iterator it = state->idx2EvtPorts.find(port_index);
+      if(it != state->idx2EvtPorts.end())
       {
-         std::map<uint32_t, LV2EvBuf *>::iterator it = state->idx2EvtPorts.find(evt->port_index);
-         if(it != state->idx2EvtPorts.end())
-         {
-            LV2EvBuf *buffer = it->second;
-            LV2EvBuf::LV2_Evbuf_Iterator iter = buffer->lv2_evbuf_end();
-            const LV2_Atom* const atom = (const LV2_Atom*)evt->data;
-            buffer->lv2_evbuf_write(iter, nsamp, 0, atom->type, atom->size,
-                            static_cast<const uint8_t *>(LV2_ATOM_BODY_CONST(atom)));
+         LV2EvBuf *buffer = it->second;
+         LV2EvBuf::LV2_Evbuf_Iterator iter = buffer->lv2_evbuf_end();
+         const LV2_Atom* const atom = (const LV2_Atom*)evtBuffer;
+         buffer->lv2_evbuf_write(iter, nsamp, 0, atom->type, atom->size,
+                                 static_cast<const uint8_t *>(LV2_ATOM_BODY_CONST(atom)));
 
 
-         }
       }
+
    }
 
 
@@ -1074,6 +1075,8 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
    //Synchronize send rate with gui update rate
    if(state->uiInst == NULL)
       return;
+
+   size_t fifoItemSize = state->plugControlEvt.getItemSize();
 
    size_t outp = state->midiOutPorts.size();
 
@@ -1088,11 +1091,11 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
             uint32_t frames, subframes, type, size;
             uint8_t *data = NULL;
             state->midiOutPorts [j].buffer->lv2_evbuf_get(it, &frames, &subframes, &type, &size, &data);
-            unsigned char atom_data [LV2_RT_FIFO_ITEM_SIZE];
+            unsigned char atom_data [fifoItemSize];
             LV2_Atom *atom_evt = reinterpret_cast<LV2_Atom *>(atom_data);
             atom_evt->type = type;
             atom_evt->size = size;
-            if(LV2_RT_FIFO_ITEM_SIZE - sizeof(LV2_Atom) < size)
+            if(fifoItemSize - sizeof(LV2_Atom) < size)
             {
 #ifdef DEBUG_LV2
                std::cerr << "LV2Synth::lv2audio_postProcessMidiPorts(): Plugin event data is bigger than rt fifo item size. Skipping." << std::endl;
@@ -1736,7 +1739,7 @@ int LV2Synth::lv2_printf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, 
    return ret;
 }
 
-int LV2Synth::lv2_vprintf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, va_list ap)
+int LV2Synth::lv2_vprintf(LV2_Log_Handle, LV2_URID, const char *fmt, va_list ap)
 {
    return vprintf(fmt, ap);
 

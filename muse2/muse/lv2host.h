@@ -66,7 +66,7 @@
 #include <QThread>
 #include <QTimer>
 #include <assert.h>
-
+#include <algorithm>
 #include <alsa/asoundlib.h>
 #include "midictrl.h"
 #include "synth.h"
@@ -407,7 +407,8 @@ public:
 
 };
 
-#define LV2_RT_FIFO_ITEM_SIZE 512
+#define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16)))
+
 class LV2SimpleRTFifo
 {
 public:
@@ -415,7 +416,7 @@ public:
    {
       uint32_t port_index;
       long buffer_size;
-      char data [LV2_RT_FIFO_ITEM_SIZE];
+      char *data;
    } lv2_uiControlEvent;
 private:
    size_t numItems;
@@ -423,10 +424,11 @@ private:
    size_t readIndex;
    size_t writeIndex;
    size_t fifoSize;
-   lv2_uiControlEvent currentItem;
+   size_t itemSize;
 public:
    LV2SimpleRTFifo(size_t size):
-      fifoSize(size)
+      fifoSize(size),
+      itemSize(LV2_RT_FIFO_ITEM_SIZE)
    {
       eventsBuffer.resize(fifoSize);
       assert(eventsBuffer.size() == fifoSize);
@@ -435,16 +437,21 @@ public:
       {
          eventsBuffer [i].port_index = 0;
          eventsBuffer [i].buffer_size = 0;
+         eventsBuffer [i].data = new char [itemSize];
       }
 
    }
    ~LV2SimpleRTFifo()
    {
-
+      for(size_t i = 0; i < fifoSize; ++i)
+      {
+         delete [] eventsBuffer [i].data;
+      }
    }
+   inline size_t getItemSize(){return itemSize; }
    bool put(uint32_t port_index, uint32_t size, const void *data)
    {      
-      if(size > LV2_RT_FIFO_ITEM_SIZE)
+      if(size > itemSize)
       {
 #ifdef DEBUG_LV2
          std::cerr << "LV2SimpleRTFifo:put(): size("<<size<<") is too big" << std::endl;
@@ -474,18 +481,18 @@ public:
          return false;
       }
 #ifdef DEBUG_LV2
-      std::cerr << "LV2SimpleRTFifo:put(): used index = " << i << std::endl;
+     // std::cerr << "LV2SimpleRTFifo:put(): used index = " << i << std::endl;
 #endif
       memcpy(eventsBuffer.at(i).data, data, size);
       eventsBuffer.at(i).port_index = port_index;
       __sync_fetch_and_add(&eventsBuffer.at(i).buffer_size, size);
-      writeIndex = i;
+      writeIndex = (i + 1) % fifoSize;
 
       return true;
 
    }
 
-   const lv2_uiControlEvent *get()
+   bool get(uint32_t *port_index, size_t *szOut, char *data_out)
    {
       size_t i = readIndex;
       bool found = false;
@@ -509,12 +516,14 @@ public:
          return NULL;
       }
 #ifdef DEBUG_LV2
-      std::cerr << "LV2SimpleRTFifo:get(): used index = " << i << std::endl;
+      //std::cerr << "LV2SimpleRTFifo:get(): used index = " << i << std::endl;
 #endif
-      currentItem = eventsBuffer.at(i);
+      *szOut = eventsBuffer.at(i).buffer_size;
+      *port_index = eventsBuffer [i].port_index;
+      memcpy(data_out, eventsBuffer [i].data, *szOut);
       __sync_fetch_and_and(&eventsBuffer.at(i).buffer_size, 0);
       readIndex = (i + 1) % fifoSize;
-      return &currentItem;
+      return true;
    }
 
 
