@@ -1,6 +1,8 @@
 21.12.2014:
          - Added support for LV2 path MAP and MAKE extensions (danvd)
          - Added support for LV2 LOG extension (danvd)
+         - Revorked synths menu popup (added scroll ability) (danvd)
+         - Improved lv2 synth programs popup (added bank submenus) (danvd)
 19.12.2014:
          - Added support for CV type lv2 ports (danvd)
          - Implemented Atom_Event_Transfer support for plugin<->UI communication (danvd)
