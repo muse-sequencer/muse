@@ -1,9 +1,12 @@
+21.12.2014:
+         - Added support for LV2 path MAP and MAKE extensions (danvd)
+         - Added support for LV2 LOG extension (danvd)
 19.12.2014:
-         - Added support for CV type lv2 ports
-         - Implemented Atom_Event_Transfer support for plugin<->UI communication
-         - Plugins with unknown port types are skipped properly now
-         - Absent default plugin values are initizlized to zero now
-         - Improved UI resize callback (some X11 uis were cropped)
+         - Added support for CV type lv2 ports (danvd)
+         - Implemented Atom_Event_Transfer support for plugin<->UI communication (danvd)
+         - Plugins with unknown port types are skipped properly now (danvd)
+         - Absent default plugin values are initizlized to zero now (danvd)
+         - Improved UI resize callback (some X11 uis were cropped) (danvd)
 05.12.2014:
          - added LV2 host support (danvd)
          - MusE 2.2beta1 testing release. Mainly for lv2 host testing and feedback (danvd)
