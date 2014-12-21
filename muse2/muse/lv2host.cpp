@@ -394,7 +394,9 @@ void initLV2()
                if(s->isConstructed())
                {
 
-                  if(s->isSynth() && s->outPorts() > 0)
+                  if((s->isSynth() && s->outPorts() > 0)
+                          || (s->inPorts() > 0 && s->outPorts() > 0))
+                      //insert plugins with audio ins and outs to synths list too
                   {
                      MusEGlobal::synthis.push_back(s);
                   }
@@ -3934,6 +3936,7 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
 {
    LV2Synth::lv2prg_updatePrograms(_uiState);
    menu->clear();
+   std::map<int, MusEGui::PopupMenu *> submenus;
    std::map<uint32_t, lv2ExtProgram>::iterator itIndex;
    for(itIndex = _uiState->index2prg.begin(); itIndex != _uiState->index2prg.end(); ++itIndex)
    {
@@ -3942,8 +3945,22 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
       int bank = extPrg.bank;
       int prog = extPrg.prog;
       int id = ((bank & 0xff) << 8) + prog;
+      std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(bank);
+      MusEGui::PopupMenu *submenu= NULL;
+      if(itS != submenus.end())
+      {
+          submenu = itS->second;
+      }
+      else
+      {
+          submenu = new MusEGui::PopupMenu(menu->parent());
+          submenu->setTitle(QString("Bank #") + QString::number(bank + 1));
+          menu->addMenu(submenu);
+          submenus.insert(std::make_pair<int, MusEGui::PopupMenu *>(bank, submenu));
 
-      QAction *act = menu->addAction(extPrg.name);
+      }
+
+      QAction *act = submenu->addAction(extPrg.name);
       act->setData(id);
 
    }
