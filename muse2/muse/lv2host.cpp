@@ -199,6 +199,8 @@ LV2_Feature lv2Features [] =
    {LV2_UI__resize, NULL},
    {LV2_PROGRAMS__Host, NULL},
    {LV2_LOG__log, NULL},
+   {LV2_STATE__makePath, NULL},
+   {LV2_STATE__mapPath, NULL},
    {LV2_F_DATA_ACCESS, NULL} //must be the last always!
 };
 
@@ -718,6 +720,14 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
       else if(i == synth->_fPrgHost)
       {
          _ifeatures [i].data = &state->prgHost;
+      }
+      else if(i == synth->_fMakePath)
+      {
+         _ifeatures [i].data = &state->makePath;
+      }
+      else if(i == synth->_fMapPath)
+      {
+         _ifeatures [i].data = &state->mapPath;
       }
 
       _ppifeatures [i] = &_ifeatures [i];
@@ -1497,11 +1507,25 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
    {
       if(it.value().second.type() == QVariant::ByteArray)
       {
-         QString sType = it.value().first;
+         QString sType = it.value().first;         
          QByteArray arrType = sType.toUtf8();
          *type = synth->mapUrid(arrType.constData());
          *flags = LV2_STATE_IS_POD;
          QByteArray valArr = it.value().second.toByteArray();
+         if(sType.compare(QString(LV2_ATOM__Path)) == 0) //prepend project folder to abstract path
+         {
+            QString strPath = QString::fromUtf8(valArr.data());
+            QFile ff(strPath);
+            QFileInfo fiPath(ff);
+            if(fiPath.isRelative())
+            {
+               strPath = MusEGlobal::museProject + QString("/") + strPath;
+               valArr = strPath.toUtf8();
+               int len = strPath.length();
+               valArr.setRawData(strPath.toUtf8().constData(), len + 1);
+               valArr [len] = 0;
+            }
+         }
          size_t i;
          size_t numValues = state->numStateValues;
          for(i = 0; i < numValues; ++i)
@@ -1745,6 +1769,60 @@ int LV2Synth::lv2_vprintf(LV2_Log_Handle, LV2_URID, const char *fmt, va_list ap)
 
 }
 
+char *LV2Synth::lv2state_makePath(LV2_State_Make_Path_Handle handle, const char *path)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+   assert(state != NULL);
+
+   QFile ff(path);
+   QFileInfo fiPath(ff);
+
+   if(fiPath.isAbsolute())
+   {
+      return strdup(path);
+   }
+
+   QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+   QString dirName = MusEGlobal::museProject + QString("/") + plugName;
+   QDir dir;
+   dir.mkpath(dirName);
+
+   QString resPath = dirName + QString("/") + QString(path);
+   return strdup(resPath.toUtf8().constData());
+
+}
+
+char *LV2Synth::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const char *absolute_path)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+   assert(state != NULL);
+
+   //some plugins do not support abstract paths properly,
+   //so return duplicate without modification for now
+      return strdup(absolute_path);
+
+   QString resPath = QString(absolute_path);
+   int rIdx = resPath.lastIndexOf('/');
+   if(rIdx > -1)
+   {
+      resPath = resPath.mid(rIdx + 1);
+   }
+   QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+   QDir dir;
+   QString prjPath = MusEGlobal::museProject + QString("/") + plugName;
+   dir.mkpath(prjPath);
+   QFile::link(QString(absolute_path), prjPath + QString("/") + resPath);
+
+   resPath = plugName + QString("/") + resPath;
+   return strdup(resPath.toUtf8().constData());
+
+}
+
+char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const char *abstract_path)
+{
+   return LV2Synth::lv2state_makePath((LV2_State_Make_Path_Handle)handle, abstract_path);
+}
+
 
 
 
@@ -1905,7 +1983,15 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       }
       else if((std::string(LV2_LOG__log) == _features [i].URI))
       {
-         _fLog = i;
+         _features [i].data = &_lv2_log_log;
+      }
+      else if((std::string(LV2_STATE__makePath) == _features [i].URI))
+      {
+         _fMakePath = i;
+      }
+      else if((std::string(LV2_STATE__mapPath) == _features [i].URI))
+      {
+         _fMapPath = i;
       }
       else if(std::string(LV2_F_DATA_ACCESS) == _features [i].URI)
       {

@@ -678,7 +678,7 @@ private:
     LV2_URID_Map _lv2_urid_map;
     LV2_URID_Unmap _lv2_urid_unmap;
     LV2_URI_Map_Feature _lv2_uri_map;
-    LV2_Log_Log _lv2_log_log;
+    LV2_Log_Log _lv2_log_log;    
     double _sampleRate;
     bool _isSynth;
     int _uniqueID;
@@ -706,7 +706,8 @@ private:
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
     uint32_t _fPrgHost;
-    uint32_t _fLog;
+    uint32_t _fMakePath;
+    uint32_t _fMapPath;
     //const LilvNode *_pluginUIType = NULL;
     LV2_URID _uTime_Position;
     LV2_URID _uTime_frame;
@@ -768,6 +769,9 @@ public:
     static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
     static int lv2_printf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, ...);
     static int lv2_vprintf(LV2_Log_Handle handle, LV2_URID type, const char *fmt, va_list ap);
+    static char *lv2state_makePath(LV2_State_Make_Path_Handle handle, const char *path);
+    static char *lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const char *absolute_path);
+    static char *lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const char *abstract_path);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -961,6 +965,12 @@ struct LV2PluginWrapper_State {
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
       prgHost.handle = (LV2_Programs_Handle)this;
       prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
+      makePath.handle = (LV2_State_Make_Path_Handle)this;
+      makePath.path = LV2Synth::lv2state_makePath;
+      mapPath.handle = (LV2_State_Map_Path_Handle)this;
+      mapPath.absolute_path = LV2Synth::lv2state_absolutePath;
+      mapPath.abstract_path = LV2Synth::lv2state_abstractPath;
+
       midiInPorts.clear();
       midiOutPorts.clear();
       idx2EvtPorts.clear();
@@ -972,6 +982,8 @@ struct LV2PluginWrapper_State {
     LV2_External_UI_Host extHost;
     LV2_Extension_Data_Feature extData;
     LV2_Worker_Schedule wrkSched;
+    LV2_State_Make_Path makePath;
+    LV2_State_Map_Path mapPath;
     LilvInstance *handle;
     void *uiDlHandle;
     const LV2UI_Descriptor *uiDesc;
