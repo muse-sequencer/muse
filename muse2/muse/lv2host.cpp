@@ -1516,11 +1516,16 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
          QByteArray valArr = it.value().second.toByteArray();
          if(sType.compare(QString(LV2_ATOM__Path)) == 0) //prepend project folder to abstract path
          {
+            QString plugFolder = ((state->sif != NULL) ? state->sif->name() : state->plugInst->name()) + QString("/");
             QString strPath = QString::fromUtf8(valArr.data());
             QFile ff(strPath);
             QFileInfo fiPath(ff);
             if(fiPath.isRelative())
             {
+               if(strPath.indexOf(plugFolder) < 0)
+               {
+                  strPath = plugFolder + strPath;
+               }
                strPath = MusEGlobal::museProject + QString("/") + strPath;
                valArr = strPath.toUtf8();
                int len = strPath.length();
@@ -1554,7 +1559,7 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
 
 LV2_State_Status LV2Synth::lv2state_stateStore(LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags)
 {
-   if(flags & LV2_STATE_IS_POD)
+   if(flags & (LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE))
    {
       LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
       LV2Synth *synth = state->synth;
@@ -1801,7 +1806,7 @@ char *LV2Synth::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const ch
 
    //some plugins do not support abstract paths properly,
    //so return duplicate without modification for now
-      return strdup(absolute_path);
+      //return strdup(absolute_path);
 
    QString resPath = QString(absolute_path);
    int rIdx = resPath.lastIndexOf('/');
@@ -1813,9 +1818,19 @@ char *LV2Synth::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const ch
    QDir dir;
    QString prjPath = MusEGlobal::museProject + QString("/") + plugName;
    dir.mkpath(prjPath);
-   QFile::link(QString(absolute_path), prjPath + QString("/") + resPath);
+   QFile ff(absolute_path);
+   QFileInfo fiPath(ff);
+   if(resPath.length() && fiPath.isAbsolute() && resPath != QString(absolute_path))
+   {
+      QFile::link(QString(absolute_path), prjPath + QString("/") + resPath);
+   }
 
-   resPath = plugName + QString("/") + resPath;
+   if(strlen(absolute_path) == 0)
+   {
+      resPath = prjPath + QString("/") + resPath;
+   }
+
+
    return strdup(resPath.toUtf8().constData());
 
 }
