@@ -439,7 +439,7 @@ QMenu* populateAddSynth(QWidget* parent)
           mmaps[itype]->setIcon(*synthIcon);
           mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
           synp->addMenu(mmaps[itype]);
-          mmaps[itype]->setMaximumSize(800, 600);
+          //mmaps[itype]->setMaximumSize(800, 600);
           mmaps[itype]->setStyleSheet("QMenu { menu-scrollable: 1; }");
         }  
         QAction* act = mmaps[itype]->addAction(synth->description() + " <" + synth->name() + ">");
