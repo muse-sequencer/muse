@@ -1,5 +1,6 @@
 27.12.2014:
          - Pretty print customData in song file for lv2 plugins (rj)
+         - Added progress dialog to midi filter execution (rj)
 22.12.2014:
          - MusE 2.2beta2 release (danvd)
 21.12.2014:

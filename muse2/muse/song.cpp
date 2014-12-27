@@ -35,6 +35,7 @@
 #include <QTextStream>
 #include <QProcess>
 #include <QByteArray>
+#include <QProgressDialog>
 
 #include "app.h"
 #include "driver/jackmidi.h"
@@ -3268,7 +3269,11 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             onlyIfSelected = false;
         }
       }
-
+      QProgressDialog progress(MusEGlobal::muse);
+      progress.setLabelText("Process parts");
+      progress.setRange(0,parts->size());
+      progress.setValue(0);
+      progress.setCancelButton(0);
       MusEGlobal::song->startUndo(); // undo this entire block
       for (iPart i = parts->begin(); i != parts->end(); i++) {
             //const char* tmp = tmpnam(NULL);
@@ -3392,7 +3397,8 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
 
             if (!MusEGlobal::debugMsg) // if we are writing debug info we also keep the script data
               remove(tmp);
-      }
+            progress.setValue(progress.value()+1);
+      } // for
 
       endUndo(SC_EVENT_REMOVED);
 }
