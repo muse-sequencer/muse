@@ -21,11 +21,17 @@
 //
 //=========================================================
 
+#include <QMenu>
+#include <QDir>
+#include <QFileInfoList>
+
 #include <stdio.h>
 #include "metronome.h"
+#include "midi.h"
+#include "ticksynth.h"
 
-#include <QMenu>
 #include "globals.h"
+#include "gconfig.h"
 #include "song.h"
 #include "track.h"
 #include "audio.h"
@@ -38,7 +44,7 @@ namespace MusEGui {
 
 MetronomeConfig::MetronomeConfig(QDialog* parent)
    : QDialog(parent)
-      {
+{
       setupUi(this);
 
       volumeSlider->setValue(MusEGlobal::audioClickVolume*100);
@@ -52,11 +58,13 @@ MetronomeConfig::MetronomeConfig(QDialog* parent)
           radioSamples4->setChecked(true);
       switchSamples(); // to disable gui elements
 
-      volumeLabel->setText(QString::number(int(MusEGlobal::audioClickVolume*100)));
-      measVolumeLabel->setText(QString::number(int(MusEGlobal::measClickVolume*100)));
-      beatVolumeLabel->setText(QString::number(int(MusEGlobal::beatClickVolume*100)));
-      accent1VolumeLabel->setText(QString::number(int(MusEGlobal::accent1ClickVolume*100)));
-      accent2VolumeLabel->setText(QString::number(int(MusEGlobal::accent2ClickVolume*100)));
+      fillSoundFiles();
+
+      volumeLabel->setText(QString::number(int(MusEGlobal::audioClickVolume*99)));
+      measVolumeLabel->setText(QString::number(int(MusEGlobal::measClickVolume*99)));
+      beatVolumeLabel->setText(QString::number(int(MusEGlobal::beatClickVolume*99)));
+      accent1VolumeLabel->setText(QString::number(int(MusEGlobal::accent1ClickVolume*99)));
+      accent2VolumeLabel->setText(QString::number(int(MusEGlobal::accent2ClickVolume*99)));
 
       connect(buttonApply, SIGNAL(clicked()), SLOT(apply()));
       connect(midiClick, SIGNAL(toggled(bool)), SLOT(midiClickChanged(bool)));
@@ -90,7 +98,29 @@ MetronomeConfig::MetronomeConfig(QDialog* parent)
 
       midiClick->setChecked(MusEGlobal::midiClickFlag);
       audioBeep->setChecked(MusEGlobal::audioClickFlag);
-      }
+}
+
+//---------------------------------------------------------
+//    fillSoundFiles
+//---------------------------------------------------------
+
+void MetronomeConfig::fillSoundFiles()
+{
+    QDir metroPath(MusEGlobal::museGlobalShare+"/metronome");
+    QStringList filters;
+    filters.append("*.wav");
+    QStringList klickfiles = metroPath.entryList(filters);
+
+    measSampleCombo->addItems(klickfiles);
+    beatSampleCombo->addItems(klickfiles);
+    accent1SampleCombo->addItems(klickfiles);
+    accent2SampleCombo->addItems(klickfiles);
+
+    measSampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.measSample));
+    beatSampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.beatSample));
+    accent1SampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.accent1Sample));
+    accent2SampleCombo->setCurrentIndex(klickfiles.indexOf(MusEGlobal::config.accent2Sample));
+}
 
 //---------------------------------------------------------
 //   audioBeepRoutesClicked
@@ -119,16 +149,12 @@ void MetronomeConfig::audioBeepRoutesClicked()
       QAction* clickaction = pup->exec(QCursor::pos());
       if (clickaction)
       {
-        //QString s(pup->text(n));
         nn = 0;
         for(MusECore::iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
         {
-          //if(((*iao)->name() == s) && (n == nn))
           if (nn == clickaction->data())
           {
-            //(*iao)->setSendMetronome();
-	    MusEGlobal::audio->msgSetSendMetronome(*iao, clickaction->isChecked());
-            //MusEGlobal::song->update(SC_ROUTE);
+            MusEGlobal::audio->msgSetSendMetronome(*iao, clickaction->isChecked());
             break;
           }
           ++nn;
@@ -154,7 +180,7 @@ void MetronomeConfig::accept()
 //---------------------------------------------------------
 
 void MetronomeConfig::apply()
-      {
+{
       MusEGlobal::measureClickNote   = measureNote->value();
       MusEGlobal::measureClickVelo   = measureVelocity->value();
       MusEGlobal::beatClickNote      = beatNote->value();
@@ -172,8 +198,17 @@ void MetronomeConfig::apply()
 
       MusEGlobal::midiClickFlag      = midiClick->isChecked();
       MusEGlobal::audioClickFlag     = audioBeep->isChecked();
-      //audioVolumeChanged = volumeSlider->value();
-      }
+
+      MusEGlobal::config.measSample = measSampleCombo->currentText();
+      MusEGlobal::config.beatSample = beatSampleCombo->currentText();
+      MusEGlobal::config.accent1Sample = accent1SampleCombo->currentText();
+      MusEGlobal::config.accent2Sample = accent2SampleCombo->currentText();
+
+      MusECore::MidiPlayEvent ev(0, MusEGlobal::clickPort, MusEGlobal::clickChan, MusECore::ME_NOTEON, MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
+      ev.setA(MusECore::reloadClickSounds);
+      MusECore::metronome->addScheduledEvent(ev);
+
+}
 
 //---------------------------------------------------------
 //   reject
@@ -218,23 +253,23 @@ void MetronomeConfig::precountFromMastertrackChanged(bool flag)
 // these values are directly applied, not using th Apply button, it just seems more usable this way.
 void MetronomeConfig::volumeChanged(int volume) {
       MusEGlobal::audioClickVolume=volume/100.0;
-      volumeLabel->setText(QString::number(int(MusEGlobal::audioClickVolume*100)));
+      volumeLabel->setText(QString::number(int(MusEGlobal::audioClickVolume*99)));
 }
 void MetronomeConfig::measVolumeChanged(int volume) {
       MusEGlobal::measClickVolume=volume/100.0;
-      measVolumeLabel->setText(QString::number(int(MusEGlobal::measClickVolume*100)));
+      measVolumeLabel->setText(QString::number(int(MusEGlobal::measClickVolume*99)));
 }
 void MetronomeConfig::beatVolumeChanged(int volume) {
       MusEGlobal::beatClickVolume=volume/100.0;
-      beatVolumeLabel->setText(QString::number(int(MusEGlobal::beatClickVolume*100)));
+      beatVolumeLabel->setText(QString::number(int(MusEGlobal::beatClickVolume*99)));
 }
 void MetronomeConfig::accent1VolumeChanged(int volume) {
       MusEGlobal::accent1ClickVolume=volume/100.0;
-      accent1VolumeLabel->setText(QString::number(int(MusEGlobal::accent1ClickVolume*100)));
+      accent1VolumeLabel->setText(QString::number(int(MusEGlobal::accent1ClickVolume*99)));
 }
 void MetronomeConfig::accent2VolumeChanged(int volume) {
       MusEGlobal::accent2ClickVolume=volume/100.0;
-      accent2VolumeLabel->setText(QString::number(int(MusEGlobal::accent2ClickVolume*100)));
+      accent2VolumeLabel->setText(QString::number(int(MusEGlobal::accent2ClickVolume*99)));
 }
 
 void MetronomeConfig::switchSamples() {

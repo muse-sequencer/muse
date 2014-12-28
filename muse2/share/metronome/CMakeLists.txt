@@ -3,7 +3,7 @@
 #  Linux Music Editor
 #  $Id:$
 #
-#  Copyright (C) 1999-2011 by Werner Schweer and others
+#  Copyright (C) 1999-2014 by MusE dev team
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License
@@ -21,20 +21,9 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-# NOTE: locale/ directory needs to be at the end so that the translations
-#       are scanned before coming to share/locale
-subdirs(
-      drummaps
-      instruments
-      plugins
-      pybridge
-      scripts
-      templates
-      wallpapers
-      scoreglyphs
-      locale
-      themes
-      metronome
+file (GLOB metronome_files *.wav)
+
+install( FILES ${metronome_files}
+      DESTINATION ${MusE_SHARE_DIR}/metronome
       )
 
-install (FILES didyouknow.txt splash.png DESTINATION ${MusE_SHARE_DIR} )

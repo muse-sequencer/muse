@@ -37,6 +37,8 @@ namespace MusEGui {
 class MetronomeConfig : public QDialog, public Ui::MetronomeConfigBase {
       Q_OBJECT
 
+   private:
+      void fillSoundFiles();
    private slots:
       virtual void accept();
       void apply();

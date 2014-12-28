@@ -94,7 +94,7 @@ SndFile::~SndFile()
 //   openRead
 //---------------------------------------------------------
 
-bool SndFile::openRead()
+bool SndFile::openRead(bool createCache)
       {
       if (openFlag) {
             printf("SndFile:: already open\n");
@@ -110,8 +110,10 @@ bool SndFile::openRead()
             
       writeFlag = false;
       openFlag  = true;
-      QString cacheName = finfo->absolutePath() + QString("/") + finfo->completeBaseName() + QString(".wca");
-      readCache(cacheName, true);
+      if (createCache) {
+        QString cacheName = finfo->absolutePath() + QString("/") + finfo->completeBaseName() + QString(".wca");
+        readCache(cacheName, true);
+      }
       return false;
       }
 

@@ -406,6 +406,14 @@ static void loadConfigMetronom(Xml& xml)
                               MusEGlobal::accent2ClickVolume = xml.parseFloat();
                         else if (tag == "clickSamples")
                               MusEGlobal::clickSamples = (MusEGlobal::ClickSamples)xml.parseInt();
+                        else if (tag == "beatSample")
+                              MusEGlobal::config.beatSample = xml.parse1();
+                        else if (tag == "measSample")
+                              MusEGlobal::config.measSample = xml.parse1();
+                        else if (tag == "accent1Sample")
+                              MusEGlobal::config.accent1Sample = xml.parse1();
+                        else if (tag == "accent2Sample")
+                              MusEGlobal::config.accent2Sample = xml.parse1();
                         else
                               xml.unknown("Metronome");
                         break;
@@ -1158,6 +1166,10 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.floatTag(level, "accent1ClickVolume", MusEGlobal::accent1ClickVolume);
       xml.floatTag(level, "accent2ClickVolume", MusEGlobal::accent2ClickVolume);
       xml.intTag(level, "clickSamples", MusEGlobal::clickSamples);
+      xml.strTag(level, "beatSample", MusEGlobal::config.beatSample);
+      xml.strTag(level, "measSample", MusEGlobal::config.measSample);
+      xml.strTag(level, "accent1Sample", MusEGlobal::config.accent1Sample);
+      xml.strTag(level, "accent2Sample", MusEGlobal::config.accent2Sample);
       xml.tag(level--, "/metronom");
 
       xml.intTag(level, "rcEnable",   MusEGlobal::rcEnable);
@@ -1167,6 +1179,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "rcPlay",     MusEGlobal::rcPlayNote);
       xml.intTag(level, "rcSteprec",     MusEGlobal::rcSteprecNote);
 
+printf("writeSeqConfiguration audioClickEnable=%d\n", MusEGlobal::audioClickFlag);
       if (writePortInfo) {
             //
             // write information about all midi ports, their assigned
