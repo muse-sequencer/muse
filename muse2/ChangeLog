@@ -1,3 +1,6 @@
+01.01.2015:
+         - Calculate filenames when duplicate tracks improved (rj)
+         - fixed crash bug when instantiating plugins did not succeed (rj)
 22.12.2014:
          - MusE 2.2beta2 release (danvd)
 21.12.2014:
