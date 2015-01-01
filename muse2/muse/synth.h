@@ -68,7 +68,7 @@ class Synth {
       QString _version;
 
    public:
-      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, LV2_SYNTH, SYNTH_TYPE_END };
+      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, LV2_SYNTH, LV2_EFFECT, SYNTH_TYPE_END };
 
       Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver);
 

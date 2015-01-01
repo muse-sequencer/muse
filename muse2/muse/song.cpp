@@ -176,6 +176,8 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       // if we ever support Wine VSTs through some other means than through dssi-vst this must be adapted
       if (ntype == MusECore::Synth::VST_SYNTH)
         ntype=MusECore::Synth::DSSI_SYNTH;
+      if (ntype == MusECore::Synth::LV2_EFFECT)
+        ntype=MusECore::Synth::LV2_SYNTH; // the LV2_EFFECT is a specialization used in the menu only, we reassign it to regular LV2_SYNTH
 
       n %= MENU_ADD_SYNTH_ID_BASE;
       if(n >= (int)MusEGlobal::synthis.size())

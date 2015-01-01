@@ -1,3 +1,6 @@
+02.01.2015:
+         - Moved LV2 effects to own submenu when adding in arranger,
+           same solution as for Windows VST synths, a bit hacky (rj)
 01.01.2015:
          - Calculate filenames when duplicate tracks improved (rj)
          - fixed two crash bugs when instantiating plugins did not succeed (rj)
