@@ -4492,7 +4492,10 @@ void LV2PluginWrapper::activate(LADSPA_Handle handle)
 }
 void LV2PluginWrapper::deactivate(LADSPA_Handle handle)
 {
-   lilv_instance_deactivate((LilvInstance *) handle);
+  if (handle)
+  {
+    lilv_instance_deactivate((LilvInstance *) handle);
+  }
 }
 void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
 {

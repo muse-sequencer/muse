@@ -1974,6 +1974,9 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
       handle = new LADSPA_Handle[instances];
       for(int i = 0; i < instances; ++i)
+        handle[i]=NULL;
+
+      for(int i = 0; i < instances; ++i)
       {
         #ifdef PLUGIN_DEBUGIN
         fprintf(stderr, "PluginI::initPluginInstance instance:%d\n", i);
