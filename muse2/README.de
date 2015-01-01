@@ -65,7 +65,7 @@ Für Einzelheiten siehe muse2/COPYING.
       Kompilierung
   =============================
 
-      - download source von http://lmuse.sourceforge.net/
+      - download source von http://muse-sequencer.org/
       - untar source:
             tar xvofj muse-current-tar.bz2
       - konfigurieren:
@@ -78,6 +78,6 @@ Für Einzelheiten siehe muse2/COPYING.
 
 ====================================================================
 Aktuelle(re) Infos gibt es auf der MusE Homepage
-http://lmuse.sourceforge.net/
+http://muse-sequencer.org/
 und in der englischen README
 
