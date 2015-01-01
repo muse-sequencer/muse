@@ -450,12 +450,30 @@ void Song::duplicateTracks()
     if(track->selected()) 
     {
       track_name = track->name();
-      
+      int counter=0;
+      int numberIndex=0;
       for(int cp = 0; cp < copies; ++cp)
       {
-          Track* new_track = track->clone(flags);  
-          
-          //new_track->setDefaultName(track_name);  // Handled in class now.
+          Track* new_track = track->clone(flags);
+
+          // assign new names to copied tracks. there is still a gaping hole in the logic
+          // making multiple duplicates of multiple tracks still does not produce valid results.
+          if (cp == 0 && copies > 1) { // retrieve the first index for renaming the following tracks
+            numberIndex = new_track->name().lastIndexOf("#");
+            counter = new_track->name().right(new_track->name().size()-numberIndex-1).toInt();
+          }
+          if (cp > 0) {
+            QString tempName;
+            while(true) {
+              tempName = track_name.left(numberIndex+1) + QString::number(++counter);
+              Track* track = MusEGlobal::song->findTrack(tempName);
+              if(track == 0)
+              {
+                new_track->setName(tempName);
+                break;
+              }
+            }
+          }
 
           idx = trackno + cp;
           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));

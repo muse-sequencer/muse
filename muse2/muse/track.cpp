@@ -260,8 +260,22 @@ Track::Track(Track::TrackType t)
 Track::Track(const Track& t, int flags)
 {
   _type         = t.type();
-  _name =  t.name() + " #";
-  for(int i = 2; true; ++i)
+
+  // add an index number to the last of name, names must be unique.
+  // for duplicating tracks this functionality is mostly duplicated
+  // in Song::duplicateTracks. Not entirely sure how important
+  // this code is outside duplicateTracks scenario, could be
+  // that this code is redundant.
+  int lastIndex = t.name().lastIndexOf("#");
+  bool ok=true;
+  int startVal = t.name().right(t.name().size()-lastIndex-1).toInt(&ok);
+  if (ok) {
+    _name = t.name().left(lastIndex+1);
+  } else {
+    startVal=1;
+    _name = t.name() + " #";
+  }
+  for(int i = startVal+1; true; ++i)
   {
     QString n;
     n.setNum(i);
@@ -873,8 +887,10 @@ void MidiTrack::write(int level, Xml& xml) const
             tag = "miditrack";
       else if (type() == NEW_DRUM)
             tag = "newdrumtrack";
-      else
+      else {
             printf("THIS SHOULD NEVER HAPPEN: non-midi-type in MidiTrack::write()\n");
+            tag="";
+      }
       
       xml.tag(level++, tag);
       Track::writeProperties(level, xml);

@@ -1943,7 +1943,8 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       }
       _plugin = plug;
 
-      _plugin->incReferences(1);
+      if (_plugin->incReferences(1)==0)
+        return true;
 
       #ifdef OSC_SUPPORT
       _oscif.oscSetPluginI(this);
