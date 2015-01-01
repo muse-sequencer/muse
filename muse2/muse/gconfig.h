@@ -232,6 +232,11 @@ struct GlobalConfigValues {
       int trackHeight;
       bool borderlessMouse;
       bool autoSave;
+
+      QString measSample;
+      QString beatSample;
+      QString accent1Sample;
+      QString accent2Sample;
       };
 
 

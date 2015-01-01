@@ -1640,6 +1640,10 @@ void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
    streamOut << state->iStateValues;
    QByteArray outEnc64 = arrOut.toBase64();
    QString customData(outEnc64);
+   for (int pos=0; pos < customData.size(); pos+=150)
+   {
+        customData.insert(pos++,'\n'); // add newlines for readability
+   }
    xml.strTag(level, "customData", customData);
 }
 
@@ -1652,6 +1656,7 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
    for(size_t i = 0; i < customParams.size(); i++)
    {
       QString param = customParams [i];
+      param.remove('\n'); // remove all linebreaks that may have been added to prettyprint the songs file
       QByteArray paramIn;
       paramIn.append(param);
       QByteArray dec64 = QByteArray::fromBase64(paramIn);

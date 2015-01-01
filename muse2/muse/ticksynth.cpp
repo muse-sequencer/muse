@@ -23,12 +23,10 @@
 #include "audio.h"
 #include "ticksynth.h"
 #include "default_click.h"
-#include "klick1.h"
-#include "klick2.h"
-#include "klick3.h"
-#include "klick4.h"
 #include "midi.h"
 #include "popupmenu.h"
+#include "gconfig.h"
+#include "wave.h"
 
 // If sysex support is ever added, make sure this number is unique among all the MESS synths.
 //#define METRONOME_UNIQUE_ID      7
@@ -77,10 +75,25 @@ class MetronomeSynthIF : public SynthIF
       int len;
       float volume;
       void process(float** buffer, int offset, int n);
+      void initSamples();
+
+      float *measSamples;
+      int    measLen;
+      float *beatSamples;
+      int    beatLen;
+      float *accent1Samples;
+      int    accent1Len;
+      float *accent2Samples;
+      int    accent2Len;
 
    public:
       MetronomeSynthIF(SynthI* s) : SynthIF(s) {
             data = 0;
+            beatLen = 0;
+            measLen = 0;
+            accent1Len = 0;
+            accent2Len = 0;
+            initSamples();
             }
       virtual bool initGui()     { return true; };
       virtual void guiHeartBeat()  {  }
@@ -130,6 +143,11 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsig
       printf("MusE: MetronomeSynthIF::getData\n");
       #endif
 
+      if (((MidiPlayEvent&)*i).dataA() == MusECore::reloadClickSounds) {
+          printf("received reloadClickSounds\n");
+          initMetronome();
+      }
+
       //set type to unsigned , due to compiler warning: comparison signed/unsigned
       unsigned int curPos      = pos;             //prevent compiler warning: comparison signed/unsigned
       unsigned int endPos      = pos + n;         //prevent compiler warning: comparison signed/unsigned
@@ -155,6 +173,66 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsig
       }
 
 //---------------------------------------------------------
+//   initSamples
+//---------------------------------------------------------
+
+void MetronomeSynthIF::initSamples()
+{
+printf("initSamples\n");
+    if (beatLen)
+      delete beatSamples;
+    if (measLen)
+      delete measSamples;
+    if (accent1Len)
+      delete accent1Samples;
+    if (accent2Len)
+      delete accent2Samples;
+    beatLen = 0;
+    measLen = 0;
+    accent1Len = 0;
+    accent2Len = 0;
+
+printf("%s\n", QString(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.beatSample).toLatin1().data());
+    SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.beatSample);
+    if (!beat.openRead(false)) {
+      beatLen = beat.samples();
+printf("beatSamples %d\n", beatLen);
+      beatSamples = new float[beatLen];
+      beat.read(1, &beatSamples, beatLen);
+    }
+
+    printf("%s\n", QString(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.measSample).toLatin1().data());
+    SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + MusEGlobal::config.measSample);
+    if (!meas.openRead(false)) {
+      measLen = meas.samples();
+printf("measSamples %d\n", measLen);
+      measSamples = new float[measLen];
+      meas.read(1, &measSamples, measLen);
+    }
+
+    printf("%s\n", QString(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.accent1Sample).toLatin1().data());
+    SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + MusEGlobal::config.accent1Sample);
+    if (!accent1.openRead(false)) {
+      accent1Len = accent1.samples();
+printf("accent1Samples %d\n", accent1Len);
+      accent1Samples = new float[accent1Len];
+      accent1.read(1, &accent1Samples, accent1Len);
+    }
+
+    printf("%s\n", QString(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.accent2Sample).toLatin1().data());
+    SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + MusEGlobal::config.accent2Sample);
+    if (!accent2.openRead(false)) {
+      accent2Len = accent2.samples();
+printf("accent2Samples %d\n", accent2Len);
+      accent2Samples = new float[accent2Len];
+      accent2.read(1, &accent2Samples, accent2Len);
+    }
+
+}
+
+
+
+//---------------------------------------------------------
 //   putEvent
 //---------------------------------------------------------
 
@@ -166,8 +244,8 @@ bool MetronomeSynthIF::putEvent(const MidiPlayEvent& ev)
             len  = defaultClickEmphasisLength;
         }
         else {
-              data = defaultKlick3;
-              len  = defaultKlick3Length;
+              data = measSamples;
+              len  = measLen;
         }
         volume = MusEGlobal::measClickVolume;
     }
@@ -176,22 +254,22 @@ bool MetronomeSynthIF::putEvent(const MidiPlayEvent& ev)
             data = defaultClick;
             len  = defaultClickLength;
         } else {
-            data = defaultKlick1;
-            len  = defaultKlick1Length;
+            data = beatSamples;
+            len  = beatLen;
         }
         volume = MusEGlobal::beatClickVolume;
     }
     else if (ev.dataA() == MusECore::accent1Sound) {
-             data = defaultKlick4;
-             len  = defaultKlick4Length;
+             data = accent1Samples;
+             len  = accent1Len;
              volume = MusEGlobal::accent1ClickVolume;
              if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
                  volume=0.0;
              }
     }
     else if (ev.dataA() == MusECore::accent2Sound) {
-             data = defaultKlick2;
-             len  = defaultKlick2Length;
+             data = accent2Samples;
+             len  = accent2Len;
              volume = MusEGlobal::accent2ClickVolume;
              if (MusEGlobal::clickSamples == MusEGlobal::origSamples) {
                  volume=0.0;
@@ -225,7 +303,7 @@ void MetronomeSynthIF::process(float** buffer, int offset, int n)
       #endif
 
       if (data == 0)
-            return;
+        return;
 
       const float* s = data + pos;
       float* d       = *buffer + offset;

@@ -78,7 +78,7 @@ class SndFile {
 
       void readCache(const QString& path, bool progress);
 
-      bool openRead();        //!< returns true on error
+      bool openRead(bool createCache=true);        //!< returns true on error
       bool openWrite();       //!< returns true on error
       void close();
       void remove();

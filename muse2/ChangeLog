@@ -1,6 +1,12 @@
 01.01.2015:
          - Calculate filenames when duplicate tracks improved (rj)
          - fixed crash bug when instantiating plugins did not succeed (rj)
+28.12.2014:
+         - Some more features to metronome, click selection etc,
+           needs some more testing (rj)
+27.12.2014:
+         - Pretty print customData in song file for lv2 plugins (rj)
+         - Added progress dialog to midi filter execution (rj)
 22.12.2014:
          - MusE 2.2beta2 release (danvd)
 21.12.2014:

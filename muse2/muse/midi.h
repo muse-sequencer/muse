@@ -93,7 +93,8 @@ enum AudioTickSound {
     beatSound,
     measureSound,
     accent1Sound,
-    accent2Sound
+    accent2Sound,
+    reloadClickSounds
 };
 
 extern const unsigned char gmOnMsg[];

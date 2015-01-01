@@ -1376,6 +1376,7 @@ void Audio::processMidi()
                             printf("beat: midiClick %d nextPos %d bar %d beat %d tick %d z %d n %d div %d\n", midiClick, nextTickPos, bar, beat, tick, z, n, MusEGlobal::config.division);
                     }
                   }
+
                   else if (state == PRECOUNT) {
                     if ((clickno % clicksMeasure) == 0) {
                         audioTickSound = MusECore::measureSound;
@@ -1397,10 +1398,11 @@ void Audio::processMidi()
                     ev.setB(MusEGlobal::accentClick2Velo);
                   }
                   if (md) {
-                    md->addScheduledEvent(ev);
-                    ev.setB(0);
-                    ev.setTime(midiClick+10);
-                    md->addStuckNote(ev);
+                    MusECore::MidiPlayEvent evmidi = ev;
+                    md->addScheduledEvent(evmidi);
+                    evmidi.setB(0);
+                    evmidi.setTime(midiClick+10);
+                    md->addStuckNote(evmidi);
                   }
                   if (MusEGlobal::audioClickFlag) {
                     ev.setA(audioTickSound);
