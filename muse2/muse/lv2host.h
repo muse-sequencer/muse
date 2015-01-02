@@ -563,11 +563,12 @@ enum LV2ControlPortType
 
 struct LV2ControlPort
 {
-   LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, LV2ControlPortType _ctype, bool _isCVPort = false) :
+   LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, const char *_s, LV2ControlPortType _ctype, bool _isCVPort = false) :
       port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype),
       isCVPort(_isCVPort)
    {
       cName = strdup ( _n );
+      cSym = strdup(_s);
    }
    LV2ControlPort ( const LV2ControlPort &other ) :
       port ( other.port ), index ( other.index ), defVal ( other.defVal ),
@@ -575,11 +576,14 @@ struct LV2ControlPort
       isCVPort(other.isCVPort)
    {
       cName = strdup ( other.cName );
+      cSym = strdup(other.cSym);
    }
    ~LV2ControlPort()
    {
-      free ( cName );
+      free ( cName );      
       cName = NULL;
+      free(cSym);
+      cSym = NULL;
    }
    const LilvPort *port;
    uint32_t index; //plugin real port index
@@ -587,6 +591,7 @@ struct LV2ControlPort
    float minVal; //minimum control value
    float maxVal; //maximum control value
    char *cName; //cached value to share beetween function calls
+   char *cSym; //cached port symbol
    LV2ControlPortType cType;
    bool isCVPort;
 };
@@ -721,7 +726,7 @@ private:
     float *_pluginControlsDefault;
     float *_pluginControlsMin;
     float *_pluginControlsMax;
-    std::map<QString, const LilvNode *> _presets;
+    std::map<QString, LilvNode *> _presets;
 public:
     virtual Type synthType() const {
         return LV2_SYNTH;
@@ -774,7 +779,9 @@ public:
     static char *lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const char *absolute_path);
     static char *lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const char *abstract_path);
     static void lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu);
-    static void lv2state_applyPreset(LV2PluginWrapper_State *state, const LilvNode *preset);
+    static void lv2state_PortWrite ( LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer, bool fromUi);
+    static void lv2state_setPortValue(const char *port_symbol, void *user_data, const void *value, uint32_t size, uint32_t type);
+    static void lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -873,7 +880,7 @@ public:
     virtual void updateControllers();
 
     void populatePresetsMenu(QMenu *menu);
-    void applyPreset(const void *preset);
+    void applyPreset(void *preset);
 
 
     int id() {
@@ -1038,6 +1045,7 @@ struct LV2PluginWrapper_State {
     int uiProg;
     void *gtk2Plug;
     std::map<QString, size_t> controlsNameMap;
+    std::map<QString, size_t> controlsSymMap;
     float **pluginCVPorts;
     LV2SimpleRTFifo uiControlEvt;
     LV2SimpleRTFifo plugControlEvt;
@@ -1126,7 +1134,7 @@ public:
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
 
     void populatePresetsMenu(PluginI *p, QMenu *menu);
-    void applyPreset(PluginI *p, const void *preset);
+    void applyPreset(PluginI *p, void *preset);
 };
 
 #endif // LV2_SUPPORT
