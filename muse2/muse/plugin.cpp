@@ -1952,7 +1952,8 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       }
       _plugin = plug;
 
-      _plugin->incReferences(1);
+      if (_plugin->incReferences(1)==0)
+        return true;
 
       #ifdef OSC_SUPPORT
       _oscif.oscSetPluginI(this);
@@ -1981,6 +1982,9 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
         instances = 1;
 
       handle = new LADSPA_Handle[instances];
+      for(int i = 0; i < instances; ++i)
+        handle[i]=NULL;
+
       for(int i = 0; i < instances; ++i)
       {
         #ifdef PLUGIN_DEBUGIN

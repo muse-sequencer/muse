@@ -144,7 +144,6 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsig
       #endif
 
       if (((MidiPlayEvent&)*i).dataA() == MusECore::reloadClickSounds) {
-          printf("received reloadClickSounds\n");
           initMetronome();
       }
 
@@ -178,7 +177,6 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsig
 
 void MetronomeSynthIF::initSamples()
 {
-printf("initSamples\n");
     if (beatLen)
       delete beatSamples;
     if (measLen)
@@ -192,38 +190,30 @@ printf("initSamples\n");
     accent1Len = 0;
     accent2Len = 0;
 
-printf("%s\n", QString(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.beatSample).toLatin1().data());
     SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.beatSample);
     if (!beat.openRead(false)) {
       beatLen = beat.samples();
-printf("beatSamples %d\n", beatLen);
       beatSamples = new float[beatLen];
       beat.read(1, &beatSamples, beatLen);
     }
 
-    printf("%s\n", QString(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.measSample).toLatin1().data());
     SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + MusEGlobal::config.measSample);
     if (!meas.openRead(false)) {
       measLen = meas.samples();
-printf("measSamples %d\n", measLen);
       measSamples = new float[measLen];
       meas.read(1, &measSamples, measLen);
     }
 
-    printf("%s\n", QString(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.accent1Sample).toLatin1().data());
     SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + MusEGlobal::config.accent1Sample);
     if (!accent1.openRead(false)) {
       accent1Len = accent1.samples();
-printf("accent1Samples %d\n", accent1Len);
       accent1Samples = new float[accent1Len];
       accent1.read(1, &accent1Samples, accent1Len);
     }
 
-    printf("%s\n", QString(MusEGlobal::museGlobalShare + "/metronome/" + MusEGlobal::config.accent2Sample).toLatin1().data());
     SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + MusEGlobal::config.accent2Sample);
     if (!accent2.openRead(false)) {
       accent2Len = accent2.samples();
-printf("accent2Samples %d\n", accent2Len);
       accent2Samples = new float[accent2Len];
       accent2.read(1, &accent2Samples, accent2Len);
     }

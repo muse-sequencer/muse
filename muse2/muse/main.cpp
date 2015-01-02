@@ -296,11 +296,15 @@ static void usage(const char* prog, const char* txt)
                       "     ~/ladspa:/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa\n\n");
 #ifdef DSSI_SUPPORT
       fprintf(stderr, "   DSSI_PATH: Override where to look for dssi plugins (dssi-vst plugins: VST_PATH), or else\n"
-                      "     ~/dssi:/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi\n\n" );
+                      "     ~/dssi:/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi\n\n" );      
 #endif
 #ifdef VST_NATIVE_SUPPORT
       fprintf(stderr, "   VST_NATIVE_PATH: Override where to look for native vst plugins, or else VST_PATH, or else\n"
                       "     ~/vst:/usr/local/lib64/vst:/usr/local/lib/vst:/usr/lib64/vst:/usr/lib/vst\n\n");
+#endif
+#ifdef LV2_SUPPORT
+      fprintf(stderr, "   LV2_PATH: Override where to look for LV2 plugins or else\n"
+                      "     ~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2\n\n");
 #endif
 
       fprintf(stderr, "   LANG: Help browser language suffix (en etc.)\n");
