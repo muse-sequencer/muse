@@ -389,6 +389,7 @@ class PluginI : public PluginIBase {
       void showGui();
       void showGui(bool);
       bool isDssiPlugin() const { return _plugin->isDssiPlugin(); }
+      bool isLV2Plugin() const { return _plugin->isLV2Plugin(); }
       void showNativeGui();
       void showNativeGui(bool);
       bool isShowNativeGuiPending() { return _showNativeGuiPending; }
@@ -438,6 +439,7 @@ class Pipeline : public std::vector<PluginI*> {
       QString name(int idx) const;
       void showGui(int, bool);
       bool isDssiPlugin(int) const;
+      bool isLV2Plugin(int idx) const;
       bool has_dssi_ui(int idx) const;
       void showNativeGui(int, bool);
       void deleteGui(int idx);

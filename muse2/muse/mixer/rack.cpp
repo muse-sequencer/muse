@@ -46,6 +46,9 @@
 #include "plugin.h"
 #include "plugindialog.h"
 #include "filedialog.h"
+#ifdef LV2_SUPPORT
+#include "lv2host.h"
+#endif
 
 namespace MusEGui {
 
@@ -305,6 +308,10 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       showGuiAction->setChecked(pipe->guiVisible(idx));
       showNativeGuiAction->setChecked(pipe->nativeGuiVisible(idx));
 
+#ifdef LV2_SUPPORT
+      QMenu *mSubPresets = NULL;
+#endif
+
       if (pipe->empty(idx)) {
             menu->removeAction(changeAction);
             menu->removeAction(saveAction);
@@ -324,7 +331,23 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             //if(!pipe->isDssiPlugin(idx))
             if(!pipe->has_dssi_ui(idx))     // p4.0.19 Tim.
                   showNativeGuiAction->setEnabled(false);
+#ifdef LV2_SUPPORT
+            //show presets submenu for lv2 plugins
+            mSubPresets = new QMenu(tr("Presets"));
+            if(pipe->isLV2Plugin(idx))
+            {
+               menu->addMenu(mSubPresets);
+               MusECore::PluginI *plugI = pipe->at(idx);
+               static_cast<MusECore::LV2PluginWrapper *>(plugI->plugin())->populatePresetsMenu(plugI, mSubPresets);
             }
+            else
+            {
+               delete mSubPresets;
+               mSubPresets = NULL;
+            }
+#endif
+            }
+
 
       #ifndef OSC_SUPPORT
       showNativeGuiAction->setEnabled(false);
@@ -339,6 +362,19 @@ void EffectRack::menuRequested(QListWidgetItem* it)
         delete menu;
         return;
       }      
+#ifdef LV2_SUPPORT
+      if (mSubPresets != NULL) {
+         QWidget *mwidget = act->parentWidget();
+         if (mwidget != NULL) {
+            if(mSubPresets == dynamic_cast<QMenu*>(mwidget)) {
+               MusECore::PluginI *plugI = pipe->at(idx);
+               static_cast<MusECore::LV2PluginWrapper *>(plugI->plugin())->applyPreset(plugI, act->data().value<void *>());
+               delete menu;
+               return;
+            }
+         }
+      }
+#endif
       
       int sel = act->data().toInt();
       delete menu;

@@ -46,7 +46,7 @@ class CtrlVal;
 class Xml;
 }
 
-#define beats     4
+//#define beats     4
 
 namespace MusEGui {
 

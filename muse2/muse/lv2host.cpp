@@ -140,6 +140,8 @@ typedef struct
    LilvNode *lv2_FreeWheelPort;
    LilvNode *lv2_SampleRate;
    LilvNode *lv2_CVPort;
+   LilvNode *lv2_psetPreset;
+   LilvNode *lv2_rdfsLabel;
    LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
 } CacheNodes;
 
@@ -271,6 +273,8 @@ void initLV2()
    lv2CacheNodes.lv2_FreeWheelPort      = lilv_new_uri(lilvWorld, LV2_CORE__freeWheeling);
    lv2CacheNodes.lv2_SampleRate         = lilv_new_uri(lilvWorld, LV2_CORE__sampleRate);
    lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
+   lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
+   lv2CacheNodes.lv2_rdfsLabel        = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -1845,6 +1849,32 @@ char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const ch
    return LV2Synth::lv2state_makePath((LV2_State_Make_Path_Handle)handle, abstract_path);
 }
 
+void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu)
+{
+   std::map<QString, const LilvNode *>::iterator it;
+   LV2Synth *synth = state->synth;
+   menu->clear();
+   for(it = synth->_presets.begin(); it != synth->_presets.end(); ++it)
+   {
+      QAction *act = menu->addAction(it->first);
+      act->setData(QVariant::fromValue<void *>(const_cast<void *>(static_cast<const void *>(it->second))));
+   }
+   if(menu->actions().size() == 0)
+   {
+      QAction *act = menu->addAction(QObject::tr("No presets found"));
+      act->setData(QVariant::fromValue<void *>(NULL));
+   }
+
+
+
+}
+
+void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, const LilvNode *preset)
+{
+
+
+}
+
 
 
 
@@ -2215,6 +2245,31 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 
 
    }
+
+   //scan for preserts
+   LilvNodes* presets = lilv_plugin_get_related(_handle, lv2CacheNodes.lv2_psetPreset);
+   LILV_FOREACH(nodes, i, presets)
+   {
+      const LilvNode* preset = lilv_nodes_get(presets, i);
+#ifdef DEBUG_LV2
+      std::cerr << "\tPreset: " << lilv_node_as_uri(preset) << std::endl;
+#endif
+      lilv_world_load_resource(lilvWorld, preset);
+      LilvNodes* pLabels = lilv_world_find_nodes(lilvWorld, preset, lv2CacheNodes.lv2_rdfsLabel, NULL);
+      if (pLabels != NULL)
+      {
+         const LilvNode* pLabel = lilv_nodes_get_first(pLabels);
+         _presets.insert(std::make_pair<QString, const LilvNode *>(lilv_node_as_string(pLabel), preset));
+         lilv_nodes_free(pLabels);
+      }
+      else
+      {
+#ifdef DEBUG_LV2
+         std::cerr << "\t\tPreset <%s> has no rdfs:label" << lilv_node_as_string(lilv_nodes_get(presets, i)) << std::endl;
+#endif
+      }
+   }
+   lilv_nodes_free(presets);
 
 
    _isConstructed = true;
@@ -4202,6 +4257,16 @@ void LV2SynthIF::enableAllControllers(bool v)
 }
 void LV2SynthIF::updateControllers() { }
 
+void LV2SynthIF::populatePresetsMenu(QMenu *menu)
+{
+   LV2Synth::lv2state_populatePresetsMenu(_uiState, menu);
+}
+
+void LV2SynthIF::applyPreset(const void *preset)
+{
+   LV2Synth::lv2state_applyPreset(_uiState, static_cast<const LilvNode *>(preset));
+}
+
 
 
 void LV2SynthIF::writeConfiguration(int level, Xml &xml)
@@ -4733,6 +4798,38 @@ void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QSt
    assert(state != NULL);
 
    LV2Synth::lv2conf_set(state, customParams);
+}
+
+void LV2PluginWrapper::populatePresetsMenu(PluginI *p, QMenu *menu)
+{
+   assert(p->instances > 0);
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
+
+   if(it == _states.end())
+   {
+      return;
+   }
+   LV2PluginWrapper_State *state = it->second;
+   assert(state != NULL);
+
+   LV2Synth::lv2state_populatePresetsMenu(state, menu);
+
+}
+
+void LV2PluginWrapper::applyPreset(PluginI *p, const void *preset)
+{
+   assert(p->instances > 0);
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
+
+   if(it == _states.end())
+   {
+      return;
+   }
+   LV2PluginWrapper_State *state = it->second;
+   assert(state != NULL);
+
+   LV2Synth::lv2state_applyPreset(state, static_cast<const LilvNode *>(preset));
+
 }
 
 

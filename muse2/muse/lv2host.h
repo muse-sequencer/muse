@@ -721,6 +721,7 @@ private:
     float *_pluginControlsDefault;
     float *_pluginControlsMin;
     float *_pluginControlsMax;
+    std::map<QString, const LilvNode *> _presets;
 public:
     virtual Type synthType() const {
         return LV2_SYNTH;
@@ -772,6 +773,8 @@ public:
     static char *lv2state_makePath(LV2_State_Make_Path_Handle handle, const char *path);
     static char *lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const char *absolute_path);
     static char *lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const char *abstract_path);
+    static void lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu);
+    static void lv2state_applyPreset(LV2PluginWrapper_State *state, const LilvNode *preset);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -868,6 +871,9 @@ public:
     virtual bool controllerEnabled(unsigned long i) const;
     virtual void enableAllControllers(bool v = true);
     virtual void updateControllers();
+
+    void populatePresetsMenu(QMenu *menu);
+    void applyPreset(const void *preset);
 
 
     int id() {
@@ -1118,6 +1124,9 @@ public:
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
+
+    void populatePresetsMenu(PluginI *p, QMenu *menu);
+    void applyPreset(PluginI *p, const void *preset);
 };
 
 #endif // LV2_SUPPORT

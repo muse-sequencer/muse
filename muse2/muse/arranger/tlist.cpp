@@ -71,8 +71,13 @@
 #include "ctrl.h"
 #include "plugin.h"
 
+
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
+#endif
+
+#ifdef LV2_SUPPORT
+#include "lv2host.h"
 #endif
 
 using MusECore::UndoOp;
@@ -1145,6 +1150,21 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         nact->setCheckable(true);
         nact->setEnabled(synth->hasNativeGui());
         nact->setChecked(synth->nativeGuiVisible());
+
+#ifdef LV2_SUPPORT
+        //show presets submenu for lv2 synths
+        QMenu *mSubPresets = new QMenu(tr("Presets"));
+        if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
+        {
+           p->addMenu(mSubPresets);
+           static_cast<MusECore::LV2SynthIF *>(synth->sif())->populatePresetsMenu(mSubPresets);
+        }
+        else
+        {
+           delete mSubPresets;
+           mSubPresets = NULL;
+        }
+#endif
   
         // If it has a gui but we don't have OSC, disable the action.
         #ifndef OSC_SUPPORT
@@ -1166,6 +1186,17 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
               bool show = !synth->nativeGuiVisible();
               synth->showNativeGui(show);
               }
+#ifdef LV2_SUPPORT
+        else if (mSubPresets != NULL && ract != NULL) {
+           QWidget *mwidget = ract->parentWidget();
+           if (mwidget != NULL) {
+               if(mSubPresets == dynamic_cast<QMenu*>(mwidget)) {
+                  static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
+               }
+           }
+
+        }
+#endif
         delete p;
         return;
       }
