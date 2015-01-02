@@ -4,108 +4,118 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../../muse/helper.cpp" line="451"/>
+        <location filename="../../muse/helper.cpp" line="471"/>
         <source>Add Midi Track</source>
         <translation>Vytvořit stopu MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="459"/>
-        <location filename="../../muse/helper.cpp" line="467"/>
+        <location filename="../../muse/helper.cpp" line="479"/>
+        <location filename="../../muse/helper.cpp" line="487"/>
         <source>Add Drum Track</source>
         <translation>Vytvořit stopu bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="475"/>
+        <location filename="../../muse/helper.cpp" line="495"/>
         <source>Add Old Style Drum Track</source>
         <translation>Vytvořit stopu bicích ve starém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="482"/>
+        <location filename="../../muse/helper.cpp" line="502"/>
         <source>Add New Style Drum Track</source>
         <translation>Vytvořit stopu bicích v novém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="489"/>
+        <location filename="../../muse/helper.cpp" line="509"/>
         <source>Add Wave Track</source>
         <translation>Vytvořit stopu Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="496"/>
+        <location filename="../../muse/helper.cpp" line="516"/>
         <source>Add Audio Output</source>
         <translation>Vytvořit výstup zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="503"/>
+        <location filename="../../muse/helper.cpp" line="523"/>
         <source>Add Audio Group</source>
         <translation>Vytvořit skupinu zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="510"/>
+        <location filename="../../muse/helper.cpp" line="530"/>
         <source>Add Audio Input</source>
         <translation>Vytvořit vstup zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="517"/>
+        <location filename="../../muse/helper.cpp" line="537"/>
         <source>Add Aux Send</source>
         <translation>Vytvořit Aux Send</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="526"/>
+        <location filename="../../muse/helper.cpp" line="546"/>
         <source>Add Synth</source>
         <translation>Přidat syntetizátor</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="578"/>
+        <location filename="../../muse/helper.cpp" line="598"/>
         <source>Select project directory</source>
         <translation>Vybrat projektový adresář</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="280"/>
+        <location filename="../../muse/midiport.cpp" line="412"/>
         <source>Warning: No output devices!</source>
         <translation>Varování: Žádná výstupní zařízení!</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="285"/>
+        <location filename="../../muse/midiport.cpp" line="417"/>
         <source>Open midi config...</source>
         <translation>Otevřít nastavení MIDI...</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="311"/>
+        <location filename="../../muse/midiport.cpp" line="422"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="637"/>
+        <source>Output port/device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiport.cpp" line="426"/>
+        <source>default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiport.cpp" line="457"/>
         <source>Empty ports</source>
         <translation>Prázdné přípojky</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="330"/>
+        <location filename="../../muse/midiport.cpp" line="476"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;Žádný&gt;</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="978"/>
+        <location filename="../../muse/midiport.cpp" line="1162"/>
         <source>Route</source>
         <translation>Tok signálu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="980"/>
+        <location filename="../../muse/midiport.cpp" line="1164"/>
         <source> channelMask=&quot;%1&quot;</source>
         <translation>KanalMaske=&quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="985"/>
+        <location filename="../../muse/midiport.cpp" line="1169"/>
         <source>dest</source>
         <translation>Cíl</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="986"/>
+        <location filename="../../muse/midiport.cpp" line="1170"/>
         <source> name=&quot;%1&quot;/</source>
         <translation>Název=&quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../muse/midiseq.cpp" line="516"/>
         <source>Bad timing</source>
-        <translation>Špatné načasování</translation>
+        <translation type="obsolete">Špatné načasování</translation>
     </message>
     <message>
-        <location filename="../../muse/midiseq.cpp" line="517"/>
+        <location filename="../../muse/midiseq.cpp" line="360"/>
         <source>Timing source frequency is %1hz, which is below the recommended minimum: 500hz!
 This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
@@ -152,22 +162,38 @@ kvůli více informacím.
 Zveřejněno pod GNU Public License</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/aboutbox.ui" line="51"/>
         <source>Version 2</source>
-        <translation>Verze 2</translation>
+        <translation type="obsolete">Verze 2</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/aboutbox.ui" line="61"/>
         <source>(C) Copyright 1999-2012 Werner Schweer and others.
 See http://www.muse-sequencer.org for new versions and
 more information.
 
 Published under the GNU Public License</source>
-        <translation>(C) Autorské právo 1999-2012 Werner Schweer a další.
+        <translation type="obsolete">(C) Autorské právo 1999-2012 Werner Schweer a další.
 Podívejte se na stránky http://www.muse-sequencer.org na nové verze a
 zde hledejte další informace.
 
 Zveřejněno pod GNU Public License</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/aboutbox.ui" line="51"/>
+        <source>Version 2.2beta2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/aboutbox.ui" line="61"/>
+        <source>(C) Copyright 1999-2014 Werner Schweer and others.
+See http://www.muse-sequencer.org for new versions and
+more information.
+
+Published under the GNU Public License</source>
+        <translation type="unfinished">(C) Autorské právo 1999-2012 Werner Schweer a další.
+Podívejte se na stránky http://www.muse-sequencer.org na nové verze a
+zde hledejte další informace.
+
+Zveřejněno pod GNU Public License {1999-2014 ?}</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/aboutbox.ui" line="75"/>
@@ -263,242 +289,261 @@ Zveřejněno pod GNU Public License</translation>
         <translation>Obrázek pozadí</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="207"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="204"/>
         <source>add</source>
         <translation>Přidat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="214"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="211"/>
         <source>remove</source>
         <translation>Odstranit</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="221"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="218"/>
         <source>clear</source>
         <translation>Smazat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="233"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="230"/>
         <source>show snap grid</source>
         <translation>Ukázat magnetickou mřížku</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="241"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="238"/>
         <source>Colors</source>
         <translation>Barvy</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="254"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="251"/>
         <source>Items</source>
         <translation>Položky</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="271"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="268"/>
         <source>Palette</source>
         <translation>Paleta</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="800"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="791"/>
         <source>add to palette</source>
         <translation>Přidat do palety</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="828"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="819"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="841"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="832"/>
         <source>S</source>
         <translation>S</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="854"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="845"/>
         <source>H</source>
         <translation>H</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="884"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="875"/>
         <source>V</source>
         <translation>V</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="897"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="888"/>
         <source>G</source>
         <translation>G</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="993"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="984"/>
         <source>R</source>
         <translation>R</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1010"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1001"/>
         <source>Color name:</source>
         <translation>Název barvy:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1030"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1021"/>
         <source>Global opacity</source>
         <translation>Celková neprůhlednost</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1078"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1069"/>
         <source>Style/Fonts</source>
         <translation>Styl a písmo</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1090"/>
         <source>QT Theme</source>
-        <translation>Podoba Qt</translation>
+        <translation type="obsolete">Podoba Qt</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1111"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1096"/>
         <source>Windows</source>
         <translation>Windows</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1116"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1101"/>
         <source>MusE</source>
         <translation>MusE</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1121"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1106"/>
         <source>Metal</source>
         <translation>Kov</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1126"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1111"/>
         <source>Norwegian Wood</source>
         <translation>Norské dřevo</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1131"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1116"/>
         <source>Platinum</source>
         <translation>Platina</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1136"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1121"/>
         <source>CDE</source>
         <translation>CDE</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1141"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1126"/>
         <source>Motif</source>
         <translation>Motif</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1146"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1131"/>
         <source>Motif Plus</source>
         <translation>Motif Plus</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1154"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1139"/>
         <source>May require restarting MusE for best results</source>
         <translation>Může kvůli nejlepšímu výsledku vyžadovat opětovné spuštění MusE</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1181"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1166"/>
         <source>Style Sheet:</source>
         <translation>Styl:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1191"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1198"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1440"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1453"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1466"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1479"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1576"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1637"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1650"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1176"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1183"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1290"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1357"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1407"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1430"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1567"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1580"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1614"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1226"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1192"/>
+        <source>MusE color scheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1205"/>
+        <source>current settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1213"/>
+        <source>Change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1241"/>
         <source>Fonts</source>
         <translation>Písma</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1238"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1307"/>
         <source>Family</source>
         <translation>Rodina písma</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1248"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1662"/>
         <source>Size</source>
         <translation>Velikost</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1258"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1504"/>
         <source>Font 1</source>
         <translation>Písmo 1</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1268"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1297"/>
         <source>Font 2</source>
         <translation>Písmo 2</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1278"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1364"/>
         <source>Font 3</source>
         <translation>Písmo 3</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1328"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1437"/>
         <source>Font 0</source>
         <translation>Písmo 0</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1378"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1385"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1392"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1399"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1556"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1603"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1610"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1337"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1394"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1487"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1554"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1587"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1601"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1628"/>
         <source>Bold</source>
         <translation>Tučné</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1406"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1413"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1420"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1427"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1563"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1617"/>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1624"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1253"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1260"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1267"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1344"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1594"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1621"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1645"/>
         <source>Italic</source>
         <translation>Kurzíva</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1486"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1635"/>
         <source>Font 4</source>
         <translation>Písmo 4</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1506"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1317"/>
         <source>Font 5</source>
         <translation>Písmo 5</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1526"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1081"/>
+        <source>Themes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1544"/>
         <source>Font 6</source>
         <translation>Písmo 6</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1688"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1703"/>
         <source>Apply</source>
         <translation>Použít</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1695"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1710"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/appearancebase.ui" line="1705"/>
+        <location filename="../../muse/widgets/appearancebase.ui" line="1720"/>
         <source>Cancel</source>
         <translation>Zrušit</translation>
     </message>
@@ -532,100 +577,92 @@ Zveřejněno pod GNU Public License</translation>
         <translation>Typ ovladače MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="74"/>
         <source>Control7</source>
-        <translation>Ovladač 7</translation>
+        <translation type="obsolete">Ovladač 7</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="79"/>
         <source>Control14</source>
-        <translation>Ovladač 14</translation>
+        <translation type="obsolete">Ovladač 14</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="84"/>
         <source>RPN</source>
-        <translation>RPN</translation>
+        <translation type="obsolete">RPN</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="89"/>
         <source>NRPN</source>
-        <translation>NRPN</translation>
+        <translation type="obsolete">NRPN</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="94"/>
         <source>RPN14</source>
-        <translation>RPN14</translation>
+        <translation type="obsolete">RPN14</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="99"/>
         <source>NRPN14</source>
-        <translation>NRPN14</translation>
+        <translation type="obsolete">NRPN14</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="104"/>
         <source>Pitch</source>
-        <translation>Výška tónu</translation>
+        <translation type="obsolete">Výška tónu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="109"/>
         <source>Program</source>
-        <translation>Program</translation>
+        <translation type="obsolete">Program</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="121"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="81"/>
         <source>H-Ctrl</source>
         <translation>H-Ctrl</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="140"/>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="143"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="100"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="103"/>
         <source>Midi controller number high byte</source>
         <translation>Vysoké bajtové číslo ovladače MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="159"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="119"/>
         <source>L-Ctrl</source>
         <translation>L-Ctrl</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="178"/>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="181"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="138"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="141"/>
         <source>Midi controller number low byte</source>
         <translation>Nízké bajtové číslo ovladače MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="184"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="144"/>
         <source>*</source>
         <comment>wild card</comment>
         <translation>*</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="218"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="178"/>
         <source>affect CCs at</source>
         <translation>Ovlivnit CCs při</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="233"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="193"/>
         <source>begin of song</source>
         <translation>Začátek písně</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="243"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="203"/>
         <source>current position</source>
         <translation>Nynější poloha</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="260"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="220"/>
         <source>&amp;Add</source>
         <translation>&amp;Přidat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="267"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="227"/>
         <source>&amp;Delete</source>
         <translation>S&amp;mazat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="274"/>
+        <location filename="../../muse/widgets/arrangercolumnsbase.ui" line="234"/>
         <source>Done</source>
         <translation>Hotovo</translation>
     </message>
@@ -649,6 +686,40 @@ Zveřejněno pod GNU Public License</translation>
         <location filename="../../awl/volentry.cpp" line="34"/>
         <source>off</source>
         <translation>Vypnuto</translation>
+    </message>
+</context>
+<context>
+    <name>ChooseSysexBase</name>
+    <message>
+        <location filename="../../muse/widgets/choose_sysex_base.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished">Dialog</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/choose_sysex_base.ui" line="23"/>
+        <source>Hex:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/choose_sysex_base.ui" line="36"/>
+        <location filename="../../muse/widgets/choose_sysex_base.ui" line="56"/>
+        <source>TextLabel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/choose_sysex_base.ui" line="43"/>
+        <source>Comment:</source>
+        <translation type="unfinished">Poznámka:</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/choose_sysex_base.ui" line="78"/>
+        <source>&amp;OK</source>
+        <translation type="unfinished">&amp;OK</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/choose_sysex_base.ui" line="91"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished">Z&amp;rušit</translation>
     </message>
 </context>
 <context>
@@ -731,113 +802,186 @@ Zveřejněno pod GNU Public License</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/configmidifilebase.ui" line="35"/>
+        <source>Default instrument:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="68"/>
+        <source>Device Name metas trump Port metas if both exist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="75"/>
+        <source>Instrument Name metas trump Mode sysexes if both exist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="82"/>
         <source>Split tracks into parts, or one single part</source>
         <translation>Rozdělit stopy na části, nebo jednu jedinou část</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="38"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="85"/>
         <source>Split tracks into &amp;parts</source>
         <translation>Rozdělit stopy na čá&amp;sti</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="41"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="88"/>
         <source>Alt+P</source>
         <translation>Alt+P</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="50"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="97"/>
         <source>Use new-style drum tracks</source>
         <translation>Použít stopy bicích v novém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="60"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="113"/>
         <source>Use old-style drum tracks</source>
         <translation>Použít stopy bicích ve starém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="78"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="186"/>
         <source>Export:</source>
         <translation>Vyvést:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="88"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="245"/>
         <source>96</source>
         <translation>96</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="93"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="250"/>
         <source>192</source>
         <translation>192</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="98"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="255"/>
         <source>384</source>
         <translation>384</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="109"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="319"/>
         <source>Enable extended smf format (currently not implemented)</source>
         <translation>Povolit rozšířený formát smf (v současnosti neprovedeno)</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="116"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="326"/>
         <source>Use &amp;2-byte time signatures instead of standard 4</source>
         <translation>Použít &amp;2-bajtová taktová označení namísto obvyklých 4</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="119"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="329"/>
         <source>Alt+2</source>
         <translation>Alt+2</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="126"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="370"/>
+        <source>Mode sysexes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="383"/>
+        <source>Instrument name metas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="390"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="441"/>
+        <source>Both</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="421"/>
+        <source>Port metas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="434"/>
+        <source>Device name metas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="451"/>
+        <source>Export a Port/Device meta for format 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="303"/>
         <source>Copyright:</source>
         <translation>Autorské právo:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="136"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="198"/>
         <source>Format:</source>
         <translation>Formát:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="152"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="287"/>
         <source>Note: Format 0 uses the FIRST midi track&apos;s name/comment in the arranger</source>
         <translation>Poznámka: Formát 0 používá název/poznámku PRVNÍ stopy MIDI v aranžéru</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="162"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="228"/>
         <source>Division:</source>
         <translation>Rozdělení:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="172"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="336"/>
         <source>Save space by replacing note-offs with &amp;zero velocity note-ons</source>
         <translation>Ušetřit místo nahrazením vypnutí not zapnutím not o &amp;nulové síle nárazu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="175"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="339"/>
         <source>Alt+Z</source>
         <translation>Alt+Z</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="183"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="215"/>
         <source>0 (single track)</source>
         <translation>0 (jedna stopa)</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="188"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="220"/>
         <source>1 (multiple tracks)</source>
         <translation>1 (více stop)</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="223"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="149"/>
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="239"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="165"/>
         <source>&amp;Cancel</source>
         <translation>Z&amp;rušit</translation>
+    </message>
+</context>
+<context>
+    <name>CopyOnWriteDialogBase</name>
+    <message>
+        <location filename="../../muse/widgets/copy_on_write_base.ui" line="14"/>
+        <source>Copy Wave Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/copy_on_write_base.ui" line="29"/>
+        <source>Some sound files will be copied to the Project Directory, 
+either because they are not writable or because more 
+than one independent Wave Event shares them.
+(If you prefer instead that the Wave Events are
+ inter-dependent, try using Clone Parts.)
+
+Multiple copies will be made in some cases. 
+
+If no Project has been created yet, you will be asked to,
+giving another chance to cancel.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/copy_on_write_base.ui" line="51"/>
+        <source>These files will be copied to the Project Directory:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -914,314 +1058,314 @@ Zveřejněno pod GNU Public License</translation>
     <message>
         <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="581"/>
         <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="588"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1773"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1780"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1998"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2005"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2165"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2172"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2337"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2344"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1777"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1784"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2002"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2009"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2169"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2176"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2341"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2348"/>
         <source>Critical Error</source>
         <translation>Vážná chyba</translation>
     </message>
     <message>
         <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="582"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1774"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1999"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2166"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2338"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1778"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2003"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2170"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2342"/>
         <source>Cannot open file %1</source>
         <translation>Nelze otevřít soubor %1</translation>
     </message>
     <message>
         <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="589"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1781"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2006"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2173"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2345"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1785"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2010"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2177"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2349"/>
         <source>Parsing error for file %1</source>
         <translation>Chyba při zpracování u souboru %1</translation>
     </message>
     <message>
         <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="623"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1987"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1991"/>
         <source>Load category dialog</source>
         <translation>Nahrát dialog skupiny</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1761"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1765"/>
         <source>Load set dialog</source>
         <translation>Nahrát dialog nastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1828"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1832"/>
         <source>Save set dialog</source>
         <translation>Uložit dialog nastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1852"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1856"/>
         <source>New category</source>
         <translation>Nová skupina</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1854"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1955"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1858"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1959"/>
         <source>Delete category</source>
         <translation>Smazat skupinu</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1856"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1860"/>
         <source>Load category</source>
         <translation>Nahrát skupinu</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1858"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1862"/>
         <source>Save category</source>
         <translation>Uložit skupinu</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1865"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1869"/>
         <source>Load set</source>
         <translation>Nahrát nastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1867"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1871"/>
         <source>Save set</source>
         <translation>Uložit nastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1869"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1873"/>
         <source>Delete set</source>
         <translation>Smazat nastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1878"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1882"/>
         <source>New subcategory</source>
         <translation>Nová podskupina</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1881"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2124"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1885"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2128"/>
         <source>Delete subcategory</source>
         <translation>Smazat podskupinu</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1884"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1888"/>
         <source>Load subcategory</source>
         <translation>Nahrát podskupinu</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1887"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1891"/>
         <source>Save subcategory</source>
         <translation>Uložit podskupinu</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1904"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1908"/>
         <source>New preset</source>
         <translation>Nové přednastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1906"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2295"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1910"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2299"/>
         <source>Delete preset</source>
         <translation>Smazat přednastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1908"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1912"/>
         <source>Load preset</source>
         <translation>Nahrát přednastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1910"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1914"/>
         <source>Save preset</source>
         <translation>Uložit přednastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1932"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1936"/>
         <source>No more category supported</source>
         <translation>Žádná další skupina není podporována</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1933"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1937"/>
         <source>You can not add more categories</source>
         <translation>Nelze přidat více skupin</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1956"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2125"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2296"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1960"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2129"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2300"/>
         <source>Do you really want to delete %1 ?</source>
         <translation>Opravdu chcete smazat %1?</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1958"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2128"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2298"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1962"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2132"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2302"/>
         <source>&amp;Yes</source>
         <translation>&amp;Ano</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1958"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2128"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2298"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1962"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2132"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2302"/>
         <source>&amp;No</source>
         <translation>&amp;Ne</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1975"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2085"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1979"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2089"/>
         <source>No category selected</source>
         <translation>Nevybrána žádná skupina</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1976"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2086"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="1980"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2090"/>
         <source>You must first select a category.</source>
         <translation>Nejprve musíte vybrat skupinu.</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2025"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2192"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2364"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2029"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2196"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2368"/>
         <source>Replace or add</source>
         <translation>Nahradit nebo přidat</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2026"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2030"/>
         <source>%1 is supposed to be affected to the hbank number %2, but there is already one on this slot.
  Do you want to replace it or to add it in the next free slot ?</source>
         <translation>Předpokládá se, že %1 bude ovlivněn k vysoké bance číslo %2, ale na tomto místě už jedna je.
 Opravdu to chcete nahradit nebo to přidat do dalšího volného místa?</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2029"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2197"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2368"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2033"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2201"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2372"/>
         <source>&amp;Replace</source>
         <translation>&amp;Nahradit</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2029"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2197"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2368"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2033"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2201"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2372"/>
         <source>&amp;Add</source>
         <translation>&amp;Přidat</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2039"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2206"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2377"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2043"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2210"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2381"/>
         <source>Download error</source>
         <translation>Chyba při stahování</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2040"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2044"/>
         <source>There is no more free category slot.</source>
         <translation>Není žádné další volné místo pro skupinu.</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2068"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2072"/>
         <source>Save category dialog</source>
         <translation>Uložit dialog skupiny</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2098"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2102"/>
         <source>No more subcategory supported</source>
         <translation>Žádná další podskupina není podporována</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2099"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2103"/>
         <source>You can not add more subcategories</source>
         <translation>Nelze přidat více podskupin</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2141"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2254"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2145"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2258"/>
         <source>No subcategory selected</source>
         <translation>Nevybrána žádná podskupina</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2142"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2255"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2146"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2259"/>
         <source>You must first select a subcategory.</source>
         <translation>Nejprve musíte vybrat podskupinu.</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2154"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2158"/>
         <source>Load subcategory dialog</source>
         <translation>Nahrát dialog podskupiny</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2193"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2197"/>
         <source>%1 is supposed to be affected to the lbank number %2, but there is already one on this slot.
  Do you want to replace it or to add it in the next free slot ?</source>
         <translation>Předpokládá se, že %1 bude ovlivněn k nízké bance číslo %2, ale na tomto místě už jedna je.
 Opravdu to chcete nahradit nebo to přidat do dalšího volného místa?</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2207"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2211"/>
         <source>There is no more free subcategory slot.</source>
         <translation>Není žádné další volné místo pro podskupinu.</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2236"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2240"/>
         <source>Save subcategory dialog</source>
         <translation>Uložit dialog podskupiny</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2269"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2273"/>
         <source>No more preset supported</source>
         <translation>Žádné další přednastavení není podporováno</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2270"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2274"/>
         <source>You can not add more presets</source>
         <translation>Nelze přidat více přednastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2309"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2312"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2423"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2313"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2316"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2427"/>
         <source>No preset selected</source>
         <translation>Nevybráno žádné přednastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2310"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2313"/>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2424"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2314"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2317"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2428"/>
         <source>You must first select a preset.</source>
         <translation>Nejprve musíte vybrat přednastavení.</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2326"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2330"/>
         <source>Load preset dialog</source>
         <translation>Nahrát dialog přednastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2365"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2369"/>
         <source>%1 is supposed to be affected to the prog number %2, but there is already one on this slot.
  Do you want to replace it or to add it in the next free slot ?</source>
         <translation>Předpokládá se, že %1 bude ovlivněn k programu číslo %2, ale na tomto místě už jedna je.
 Opravdu to chcete nahradit nebo to přidat do dalšího volného místa?</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2378"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2382"/>
         <source>There is no more free preset slot.</source>
         <translation>Není žádné další volné místo pro přednastavení.</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2407"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2411"/>
         <source>Save preset dialog</source>
         <translation>Uložit dialog přednastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2531"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2535"/>
         <source>Browse set dialog</source>
         <translation>Procházet dialog nastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2570"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="2574"/>
         <source>Browse image dialog</source>
         <translation>Procházet dialog obrázku</translation>
     </message>
@@ -2719,26 +2863,30 @@ Tvar vlny 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi pak sin(2*&lt;b&gt;t&
     </message>
     <message>
         <location filename="../../muse/widgets/tracks_duplicate_base.ui" line="113"/>
-        <source>Copy standard controllers (vol, pan)</source>
-        <translation>Kopírovat standardní ovladače (hlasitost, vyvážení)</translation>
+        <source>Copy standard (vol, pan) and synth controllers</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tracks_duplicate_base.ui" line="126"/>
+        <source>Copy standard controllers (vol, pan)</source>
+        <translation type="obsolete">Kopírovat standardní ovladače (hlasitost, vyvážení)</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/tracks_duplicate_base.ui" line="123"/>
         <source>Copy effects rack plugins</source>
         <translation>Kopírovat přídavné moduly přihrádky efektů</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tracks_duplicate_base.ui" line="136"/>
+        <location filename="../../muse/widgets/tracks_duplicate_base.ui" line="133"/>
         <source>Copy plugin controllers</source>
         <translation>Kopírovat ovladače přídavných modulů</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tracks_duplicate_base.ui" line="174"/>
+        <location filename="../../muse/widgets/tracks_duplicate_base.ui" line="171"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tracks_duplicate_base.ui" line="184"/>
+        <location filename="../../muse/widgets/tracks_duplicate_base.ui" line="181"/>
         <source>Cancel</source>
         <translation>Zrušit</translation>
     </message>
@@ -2746,73 +2894,78 @@ Tvar vlny 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi pak sin(2*&lt;b&gt;t&
 <context>
     <name>EditCtrlBase</name>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="14"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="14"/>
         <source>MusE: Edit Controller Event</source>
         <translation>MusE: Upravit událost ovladače</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="23"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="23"/>
         <source>Time Position</source>
         <translation>Časová poloha</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="33"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="33"/>
         <source>Available Controller:</source>
         <translation>Dostupný ovladač:</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="43"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="43"/>
         <source>Create New Controller</source>
         <translation>Vytvořit nový ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="529"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="540"/>
         <source>textLabel3</source>
         <translation>Popis 3</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="539"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="567"/>
         <source>Value</source>
         <translation>Hodnota</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="549"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="527"/>
         <source>Controller</source>
         <translation>Ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="594"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="550"/>
+        <source>Note</source>
+        <translation type="unfinished">Poznámka</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="598"/>
         <source>H-Bank</source>
         <translation>Vysoká banka</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="604"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="608"/>
         <source>L-Bank</source>
         <translation>Nízká banka</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="614"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="618"/>
         <source>Program</source>
         <translation>Program</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="624"/>
-        <location filename="../../muse/liste/editctrlbase.ui" line="640"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="628"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="644"/>
         <source>off</source>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="682"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="686"/>
         <source>pushButton4</source>
         <translation>Tlačítko 4</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="717"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="721"/>
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editctrlbase.ui" line="733"/>
+        <location filename="../../muse/widgets/editctrlbase.ui" line="737"/>
         <source>&amp;Cancel</source>
         <translation>Z&amp;rušit</translation>
     </message>
@@ -2914,14 +3067,14 @@ Tvar vlny 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi pak sin(2*&lt;b&gt;t&
     </message>
     <message>
         <location filename="../../muse/instruments/editinstrumentbase.ui" line="113"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="554"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1115"/>
         <source>Properties</source>
         <translation>Vlastnosti</translation>
     </message>
     <message>
         <location filename="../../muse/instruments/editinstrumentbase.ui" line="119"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="562"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1304"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1129"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1745"/>
         <source>Name:</source>
         <translation>Název:</translation>
     </message>
@@ -2984,248 +3137,251 @@ Tvar vlny 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi pak sin(2*&lt;b&gt;t&
         <translation>Záplatovat číslo programu</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="294"/>
         <source>Drum patch</source>
-        <translation>Záplata bicích</translation>
+        <translation type="obsolete">Záplata bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="297"/>
         <source>If set, the patch is available only for drum channels.</source>
-        <translation>Je-li nastaveno, je záplata dostupná pouze pro kanály bicích.</translation>
+        <translation type="obsolete">Je-li nastaveno, je záplata dostupná pouze pro kanály bicích.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="300"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="367"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1098"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1490"/>
         <source>Drum</source>
         <translation>Bicí</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="310"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="294"/>
         <source>GM patch</source>
         <translation>Záplata GM</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="313"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="297"/>
         <source>If set, the patch is available in a &apos;GM&apos; or &apos;NO&apos; midi song type.</source>
         <translation>Je-li nastaveno, je záplata dostupná v typu písně MIDI &apos;GM&apos; nebo &apos;NO&apos;.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="316"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="300"/>
         <source>GM</source>
         <translation>GM</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="326"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="310"/>
         <source>GS patch</source>
         <translation>Záplata GS</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="329"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="313"/>
         <source>If set, the patch is available in a &apos;GS&apos; or &apos;NO&apos; midi song type.</source>
         <translation>Je-li nastaveno, je záplata dostupná v typu písně MIDI &apos;GS&apos; nebo &apos;NO&apos;.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="332"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="316"/>
         <source>GS</source>
         <translation>GS</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="339"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="323"/>
         <source>XG patch</source>
         <translation>Záplata XG</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="342"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="326"/>
         <source>If set, the patch is available in an &apos;XG&apos; or &apos;NO&apos; midi song type.</source>
         <translation>Je-li nastaveno, je záplata dostupná v typu písně MIDI &apos;XG&apos; nebo &apos;NO&apos;.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="345"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="329"/>
         <source>XG</source>
         <translation>XG</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="381"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="353"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1473"/>
+        <source>Show in tracks:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="360"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1090"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1480"/>
+        <source>Midi</source>
+        <translation type="unfinished">MIDI</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="416"/>
         <source>Delete group or patch</source>
         <translation>Smazat skupinu nebo záplatu</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="384"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1131"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1332"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="419"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1196"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1783"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1877"/>
         <source>&amp;Delete</source>
         <translation>S&amp;mazat</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="387"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1134"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1335"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="422"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1199"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1786"/>
         <source>Alt+D</source>
         <translation>Alt+D</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="400"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="435"/>
         <source>New patch</source>
         <translation>Nová záplata</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="403"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="438"/>
         <source>New &amp;Patch</source>
         <translation>Nová &amp;záplata</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="406"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="441"/>
         <source>Alt+P</source>
         <translation>Alt+P</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="413"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="448"/>
         <source>New group</source>
         <translation>Nová skupina</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="416"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="451"/>
         <source>New &amp;Group</source>
         <translation>Nová &amp;skupina</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="419"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="454"/>
         <source>Alt+G</source>
         <translation>Alt+G</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="449"/>
         <source>Contro&amp;ller</source>
-        <translation>&amp;Ovladač</translation>
+        <translation type="obsolete">&amp;Ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="468"/>
         <source>Common:</source>
-        <translation>Obecné:</translation>
+        <translation type="obsolete">Obecné:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="481"/>
         <source>This is a list of commonly used midi controllers.
 Note that in MusE pitch and program changes are
 handled like normal controllers.</source>
-        <translation>Toto je seznam často používaných ovladačů MIDI.
+        <translation type="obsolete">Toto je seznam často používaných ovladačů MIDI.
 MusE ovšem zachází se všemi ovladači jako jsou &quot;výška tónu&quot; a &quot;změny programů&quot; jako s normálními ovladači.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="494"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1009"/>
         <source>List of defined controllers</source>
         <translation>Seznam vymezených ovladačů</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="497"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1012"/>
         <source>List of defined controllers.</source>
         <translation>Seznam vymezených ovladačů.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="510"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1034"/>
         <source>Name                  </source>
         <translation>Název</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="515"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1042"/>
         <source>Type       </source>
         <translation>Typ        </translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="520"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="662"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1050"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1236"/>
         <source>H-Ctrl</source>
         <translation>H-Ctrl</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="525"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="716"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1058"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1274"/>
         <source>L-Ctrl</source>
         <translation>L-Ctrl</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="530"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1066"/>
         <source>Min  </source>
         <translation>Nejméně</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="535"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1074"/>
         <source>Max  </source>
         <translation>Nejvíce</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="540"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1082"/>
         <source>Def  </source>
         <translation>Vymezení</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="575"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1142"/>
         <source>Midi controller name</source>
         <translation>Název ovladače MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="586"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1210"/>
         <source>Type:</source>
         <translation>Typ:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="596"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="599"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1226"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1229"/>
         <source>Midi controller type</source>
         <translation>Typ ovladače MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="603"/>
         <source>Control7</source>
-        <translation>Ovladač 7</translation>
+        <translation type="obsolete">Ovladač 7</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="608"/>
         <source>Control14</source>
-        <translation>Ovladač 14</translation>
+        <translation type="obsolete">Ovladač 14</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="613"/>
         <source>RPN</source>
-        <translation>RPN</translation>
+        <translation type="obsolete">RPN</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="618"/>
         <source>NRPN</source>
-        <translation>NRPN</translation>
+        <translation type="obsolete">NRPN</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="623"/>
         <source>RPN14</source>
-        <translation>RPN14</translation>
+        <translation type="obsolete">RPN14</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="628"/>
         <source>NRPN14</source>
-        <translation>NRPN14</translation>
+        <translation type="obsolete">NRPN14</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="633"/>
         <source>Pitch</source>
-        <translation>Výška tónu</translation>
+        <translation type="obsolete">Výška tónu</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="638"/>
         <source>Program</source>
-        <translation>Program</translation>
+        <translation type="obsolete">Program</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="681"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="684"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1255"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1258"/>
         <source>Midi controller number high byte</source>
         <translation>Vysoké bajtové číslo ovladače MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="735"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1293"/>
         <source>Midi controller number low byte (* means drum controller)</source>
         <translation>Nízké bajtové číslo ovladače MIDI (* znamená ovladač bicích)</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="738"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1296"/>
         <source>Midi controller number low byte. 
 If low byte is * then the controller is a 
  &apos;drum controller&apos;. For drum tracks and 
@@ -3244,28 +3400,28 @@ nahrazen &apos;Notou A&apos;. Příklady: Nástroje GS a XG
 Ovladače bících.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="749"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1307"/>
         <source>*</source>
         <comment>wild card</comment>
         <translation>*</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="769"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1350"/>
         <source>Range:</source>
         <translation>Rozsah:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="795"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1360"/>
         <source>Min</source>
         <translation>Nejméně</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="817"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1382"/>
         <source>Minimum value. If negative, auto-translate.</source>
         <translation>Nejmenší hodnota. Pokud je záporná, automatická proměna.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="820"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1385"/>
         <source>Minimum value. If the minimum value 
  is negative, the range will automatically
  be translated to a positive range. 
@@ -3305,57 +3461,62 @@ nulu, i se záporným minimem:
 Opravdový rozsah: Min: -8192 Max: 8191 (zkreslení 0)</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="867"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1416"/>
         <source>Max</source>
         <translation>Nejvíce</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="889"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="892"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1438"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1441"/>
         <source>Maximum value</source>
         <translation>Největší hodnota</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="928"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1520"/>
         <source>Default:</source>
         <translation>Výchozí:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="941"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1613"/>
         <source>L-Bank</source>
         <translation>Nízká banka</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="951"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="967"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="993"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1191"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1244"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="935"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="978"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1597"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1629"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1661"/>
         <source>off</source>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="983"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1645"/>
         <source>Progr.</source>
         <translation>Progr.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1018"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1692"/>
         <source>???</source>
         <translation>???</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1028"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1581"/>
         <source>H-Bank</source>
         <translation>Vysoká banka</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1072"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="484"/>
+        <source>Drum&amp;maps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1545"/>
         <source>Default value. Off: No default.</source>
         <translation>Výchozí hodnota. Vypnuto: Žádná výchozí.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1075"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1548"/>
         <source>Default (initial) value. Off means no default.
 
 If a default value is chosen, the value will be sent
@@ -3374,60 +3535,58 @@ Caution! Watch out for controllers such as
         <translation></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1092"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1565"/>
         <source>off</source>
         <comment>dont care</comment>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1115"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1174"/>
         <source>Add common controller</source>
         <translation>Přidat obecný ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1118"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1421"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="530"/>
         <source>&amp;Add</source>
         <translation>&amp;Přidat</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1121"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1180"/>
         <source>Alt+A</source>
         <translation>Alt+A</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1128"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1193"/>
         <source>Delete controller</source>
         <translation>Smazat ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1141"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1155"/>
         <source>Create a new controller</source>
         <translation>Vytvořit nový ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1144"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1158"/>
         <source>New &amp;Controller</source>
         <translation>Nový &amp;ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1147"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1161"/>
         <source>Alt+C</source>
         <translation>Alt+C</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1170"/>
         <source>Null Param Hi:</source>
-        <translation>Nulový parametr vysoký:</translation>
+        <translation type="obsolete">Nulový parametr vysoký:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1180"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="924"/>
         <source>Null parameter number High byte</source>
         <translation>Nulový parametr vysoký bajt</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1183"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1236"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="927"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="970"/>
         <source>If set, these &apos;null&apos; parameter numbers will 
  be sent after each RPN/NRPN event. 
 This prevents subsequent &apos;data&apos; events
@@ -3442,188 +3601,240 @@ Typicky nastavit na 127/127, nebo nepoužívané
  číslo ovladače RPN/NRPN.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1223"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="951"/>
         <source> Lo:</source>
         <translation>Nízký:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1233"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="967"/>
         <source>Null parameter number Low byte</source>
         <translation>Číslo nulového parametru nízký bajt</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1267"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1708"/>
         <source>S&amp;ysEx</source>
         <translation>S&amp;ysEx</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1280"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1721"/>
         <source>SysEx List:</source>
         <translation>Seznam SysEx:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1317"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1768"/>
         <source>Hex Entry:</source>
         <translation>Záznam Hex:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1342"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1793"/>
         <source>New SysE&amp;x</source>
         <translation>Nový SysE&amp;x</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1345"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1796"/>
         <source>Alt+X</source>
         <translation>Alt+X</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1375"/>
         <source>Drummaps</source>
-        <translation>Rozložení bicích</translation>
+        <translation type="obsolete">Rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1391"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="500"/>
         <source>Patch Collections:</source>
         <translation>Sbírky záplat:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1437"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="546"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopírovat</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1453"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="562"/>
         <source>&amp;Remove</source>
         <translation>&amp;Odstranit</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1473"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="582"/>
         <source>&amp;Up</source>
         <translation>&amp;Nahoru</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1489"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="598"/>
         <source>&amp;Down</source>
         <translation>&amp;Dolů</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1517"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="626"/>
         <source>Patch:</source>
         <translation>Záplata:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1533"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1622"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1711"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="642"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="731"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="820"/>
         <source>from</source>
         <translation>od</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1571"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1660"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1749"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="680"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="769"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="858"/>
         <source>to</source>
         <translation>do</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1606"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="715"/>
         <source>Bank Hi:</source>
         <translation>Vysoká banka:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1695"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="804"/>
         <source>Bank Lo:</source>
         <translation>Nízká banka:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1796"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="900"/>
+        <source>Contro&amp;llers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="908"/>
+        <source>Null Parameters: Hi:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1177"/>
+        <source>&amp;Add Common...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1323"/>
+        <source>W</source>
+        <translation type="unfinished">W</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1758"/>
+        <source>Comment:</source>
+        <translation type="unfinished">Poznámka:</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1826"/>
+        <source>&amp;Initialization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1832"/>
+        <source>Instrument initialization sequence:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1863"/>
+        <source>&amp;Add...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1870"/>
+        <source>&amp;Change...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1892"/>
         <source>Tools</source>
         <translation>Nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1823"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1919"/>
         <source>&amp;File</source>
         <translation>&amp;Soubor</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1834"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1930"/>
         <source>&amp;Help</source>
         <translation>&amp;Nápověda</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1842"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1938"/>
         <source>&amp;New</source>
         <translation>&amp;Nový</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1845"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1941"/>
         <source>New</source>
         <translation>Nový</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1848"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1944"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1859"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1955"/>
         <source>&amp;Open...</source>
         <translation>&amp;Otevřít...</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1862"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1958"/>
         <source>Open</source>
         <translation>Otevřít</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1865"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1961"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1876"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1972"/>
         <source>&amp;Save</source>
         <translation>&amp;Uložit</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1879"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1975"/>
         <source>Save</source>
         <translation>Uložit</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1882"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1978"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1890"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1986"/>
         <source>Save &amp;As...</source>
         <translation>Uložit &amp;jako...</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1893"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1989"/>
         <source>Save As</source>
         <translation>Uložit jako</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1904"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="2000"/>
+        <source>&amp;Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="2003"/>
+        <source>Close</source>
+        <translation type="unfinished">Zavřít</translation>
+    </message>
+    <message>
         <source>E&amp;xit</source>
-        <translation>&amp;Ukončit</translation>
+        <translation type="obsolete">&amp;Ukončit</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1907"/>
         <source>Exit</source>
-        <translation>Ukončit</translation>
+        <translation type="obsolete">Ukončit</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1918"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1921"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="2014"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="2017"/>
         <source>new item</source>
         <translation>Nová položka</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1929"/>
-        <location filename="../../muse/instruments/editinstrumentbase.ui" line="1932"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="2025"/>
+        <location filename="../../muse/instruments/editinstrumentbase.ui" line="2028"/>
         <source>What&apos;s this?</source>
         <translation>Co je to?</translation>
     </message>
@@ -3685,18 +3896,36 @@ Typicky nastavit na 127/127, nebo nepoužívané
     </message>
     <message>
         <location filename="../../muse/widgets/editsysexdialogbase.ui" line="85"/>
+        <source>Name:</source>
+        <translation type="unfinished">Název:</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/editsysexdialogbase.ui" line="105"/>
         <source>Comment:</source>
         <translation>Poznámka:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/editsysexdialogbase.ui" line="122"/>
-        <source>OK</source>
-        <translation>OK</translation>
+        <location filename="../../muse/widgets/editsysexdialogbase.ui" line="149"/>
+        <source>&amp;Select...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/editsysexdialogbase.ui" line="138"/>
+        <location filename="../../muse/widgets/editsysexdialogbase.ui" line="156"/>
+        <source>&amp;OK</source>
+        <translation type="unfinished">&amp;OK</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/editsysexdialogbase.ui" line="172"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished">Z&amp;rušit</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="obsolete">OK</translation>
+    </message>
+    <message>
         <source>Cancel</source>
-        <translation>Zrušit</translation>
+        <translation type="obsolete">Zrušit</translation>
     </message>
 </context>
 <context>
@@ -3724,133 +3953,163 @@ Typicky nastavit na 127/127, nebo nepoužívané
 <context>
     <name>FLUIDSynthGuiBase</name>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="14"/>
         <source>FLUID Synth</source>
-        <translation type="obsolete">FLUID Synth</translation>
+        <translation type="unfinished">FLUID Synth</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="34"/>
         <source>Load</source>
-        <translation type="obsolete">Nahrát</translation>
+        <translation type="unfinished">Nahrát</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="44"/>
         <source>Delete</source>
-        <translation type="obsolete">Smazat</translation>
+        <translation type="unfinished">Smazat</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="51"/>
         <source>Dump Info</source>
-        <translation type="obsolete">Vyklopit informace</translation>
+        <translation type="unfinished">Vyklopit informace</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="68"/>
         <source>ID</source>
-        <translation type="obsolete">ID</translation>
+        <translation type="unfinished">ID</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="73"/>
         <source>Fontname</source>
-        <translation type="obsolete">Název písma</translation>
+        <translation type="unfinished">Název písma</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="91"/>
         <source>Chnl</source>
-        <translation type="obsolete">Kanál</translation>
+        <translation type="unfinished">Kanál</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="96"/>
         <source>Soundfont</source>
-        <translation type="obsolete">Zvukové písmo</translation>
+        <translation type="unfinished">Zvukové písmo</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="101"/>
         <source>Drum Chnl</source>
-        <translation type="obsolete">Kanál bicích</translation>
+        <translation type="unfinished">Kanál bicích</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="209"/>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="444"/>
         <source>Level</source>
-        <translation type="obsolete">Úroveň</translation>
+        <translation type="unfinished">Úroveň</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="222"/>
         <source>Width</source>
-        <translation type="obsolete">Šířka</translation>
+        <translation type="unfinished">Šířka</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="235"/>
         <source>Damping</source>
-        <translation type="obsolete">Vyklopení</translation>
+        <translation type="unfinished">Vyklopení</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="248"/>
         <source>Room Size</source>
-        <translation type="obsolete">Velikost prostoru</translation>
+        <translation type="unfinished">Velikost prostoru</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="261"/>
         <source>Reverb</source>
-        <translation type="obsolete">Ozvěna</translation>
+        <translation type="unfinished">Ozvěna</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="277"/>
         <source>CHANNEL SETUP</source>
-        <translation type="obsolete">NASTAVENÍ KANÁLU</translation>
+        <translation type="unfinished">NASTAVENÍ KANÁLU</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="306"/>
         <source>Sine</source>
-        <translation type="obsolete">Sinus</translation>
+        <translation type="unfinished">Sinus</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="311"/>
         <source>Triangle</source>
-        <translation type="obsolete">Trojúhelník</translation>
+        <translation type="unfinished">Trojúhelník</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="319"/>
         <source>Type</source>
-        <translation type="obsolete">Typ</translation>
+        <translation type="unfinished">Typ</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="339"/>
         <source>Number</source>
-        <translation type="obsolete">Počet</translation>
+        <translation type="unfinished">Počet</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="374"/>
         <source>Speed</source>
-        <translation type="obsolete">Rychlost</translation>
+        <translation type="unfinished">Rychlost</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="409"/>
         <source>Depth</source>
-        <translation type="obsolete">Hloubka</translation>
+        <translation type="unfinished">Hloubka</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="457"/>
         <source>Chorus</source>
-        <translation type="obsolete">Sbor</translation>
+        <translation type="unfinished">Sbor</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="473"/>
         <source>Gain</source>
-        <translation type="obsolete">Zesílení</translation>
+        <translation type="unfinished">Zesílení</translation>
     </message>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthguibase.ui" line="523"/>
         <source>LOADED SOUNDFONTS</source>
-        <translation type="obsolete">NAHRANÁ ZVUKOVÁ PÍSMA</translation>
+        <translation type="unfinished">NAHRANÁ ZVUKOVÁ PÍSMA</translation>
     </message>
 </context>
 <context>
     <name>FileDialogButtons</name>
     <message>
-        <location filename="../../muse/widgets/fdialogbuttons.ui" line="14"/>
+        <location filename="../../muse/widgets/fdialogbuttons.ui" line="20"/>
         <source>fdialogbuttons</source>
         <translation>TlačítkaProSouborovýDialog</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/fdialogbuttons.ui" line="38"/>
+        <location filename="../../muse/widgets/fdialogbuttons.ui" line="79"/>
+        <source>Home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/fdialogbuttons.ui" line="110"/>
         <source>Global</source>
         <translation>Celkové</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/fdialogbuttons.ui" line="63"/>
+        <location filename="../../muse/widgets/fdialogbuttons.ui" line="135"/>
         <source>User</source>
         <translation>Uživatel</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/fdialogbuttons.ui" line="88"/>
+        <location filename="../../muse/widgets/fdialogbuttons.ui" line="160"/>
         <source>Project</source>
         <translation>Projekt</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/fdialogbuttons.ui" line="135"/>
+        <location filename="../../muse/widgets/fdialogbuttons.ui" line="232"/>
         <source>read Midi Port
 Configuration</source>
         <translation>Přečíst nastavení
 přípojky MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/fdialogbuttons.ui" line="161"/>
+        <location filename="../../muse/widgets/fdialogbuttons.ui" line="278"/>
         <source>write window
 states</source>
         <translation>Zapisovat stavy
@@ -3860,8 +4119,9 @@ oken</translation>
 <context>
     <name>FluidSynthGui</name>
     <message>
+        <location filename="../../synti/fluidsynth/fluidsynthgui.cpp" line="190"/>
         <source>Choose soundfont</source>
-        <translation type="obsolete">Vybrat zvukové písmo</translation>
+        <translation type="unfinished">Vybrat zvukové písmo</translation>
     </message>
 </context>
 <context>
@@ -3945,244 +4205,249 @@ oken</translation>
         <translation>Program</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="36"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="545"/>
         <source>Project directory</source>
         <translation>Projektový adresář</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="45"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="554"/>
         <source>Projects:</source>
         <translation>Projekty:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="58"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="467"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="477"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="52"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="62"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="567"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="74"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="168"/>
         <source>Views</source>
         <translation>Pohledy</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="80"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="127"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="164"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="308"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="364"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="174"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="221"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="258"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="402"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="458"/>
         <source>y-pos</source>
         <translation>Poloha y</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="90"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="147"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="194"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="201"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="184"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="241"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="288"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="295"/>
         <source>show</source>
         <translation>Ukázat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="97"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="137"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="154"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="318"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="374"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="191"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="231"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="248"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="412"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="468"/>
         <source>x-pos</source>
         <translation>Poloha x</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="107"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="184"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="288"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="344"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="201"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="278"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="382"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="438"/>
         <source>height</source>
         <translation>Výška</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="117"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="174"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="298"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="354"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="211"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="268"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="392"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="448"/>
         <source>width</source>
         <translation>Šířka</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="214"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="308"/>
         <source>Mixer A</source>
         <translation>Směšovač A</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="230"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="324"/>
         <source>Mixer B</source>
         <translation>Směšovač B</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="246"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="340"/>
         <source>Big Time</source>
         <translation>Velký ukazatel času</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="262"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="356"/>
         <source>Main Window</source>
         <translation>Hlavní okno</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="278"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="372"/>
         <source>Transport</source>
         <translation>Přesun</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="334"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="390"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="406"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="422"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="438"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="428"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="484"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="500"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="516"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="532"/>
         <source>set current values</source>
         <translation>Nastavit nynější hodnoty</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="337"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="393"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="409"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="425"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="441"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="431"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="487"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="503"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="519"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="535"/>
         <source>Cur</source>
         <translation>Nyní</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="451"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="36"/>
         <source>Start Muse</source>
         <translation>Spustit MusE</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="464"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="49"/>
         <source>Choose start song or template</source>
         <translation>Vybrat začáteční píseň nebo předlohu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="474"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="59"/>
         <source>Reset to default</source>
         <translation>Nastavit znovu na výchozí</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="486"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="71"/>
         <source>Start song</source>
         <translation>Začáteční píseň</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="492"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="77"/>
         <source>start with last song</source>
         <translation>Začít s poslední písní</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="508"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="93"/>
         <source>start with template</source>
         <translation>Začít s předlohou</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="518"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="103"/>
         <source>start with song</source>
         <translation>Začít s určitou písní</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="528"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="113"/>
         <source>On Launch</source>
         <translation>Při spuštění</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="534"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="119"/>
         <source>show splash screen</source>
         <translation>Ukázat úvodní obrazovku</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="541"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="126"/>
         <source>show &quot;Did you know?&quot; dialog</source>
         <translation>Ukázat dialog Víte, že?</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="551"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="136"/>
         <source>Start template or song:</source>
         <translation>Spustit předlohu nebo píseň:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="561"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="146"/>
         <source>Read MIDI Ports configuration from file, 
  or else automatically configure</source>
         <translation>Číst nastavení přípojek MIDI ze souboru,
 nebo nastavit automaticky</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="565"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="150"/>
         <source>Read MIDI Ports configuration</source>
         <translation>Přečíst nastavení přípojek MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="578"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="577"/>
+        <source>Auto save (every 5 minutes if not playing/recording)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="585"/>
         <source>Audio</source>
         <translation>Zvuk</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="584"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="591"/>
         <source>Mixer</source>
         <translation>Směšovač</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="605"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="644"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="612"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="651"/>
         <source>dB</source>
         <translation>dB</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="624"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="631"/>
         <source>min. Meter Value</source>
         <translation>Nejmenší hodnota regulátoru hladin</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="634"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="641"/>
         <source>min. Slider Val</source>
         <translation>Nejmenší hodnota posuvníku</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="663"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="670"/>
         <source>Try to use Jack Freewheel</source>
         <translation>Zkuste použít volnoběh Jack</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="680"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="687"/>
         <source>Speeds bounce operations</source>
         <translation>Urychlí operace odmíchání</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="683"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="690"/>
         <source>Use Jack Freewheel mode if possible.
 This dramatically speeds bounce operations.</source>
         <translation>Použít volnoběh Jack, je-li to možné.
 Tím se dramaticky zrychlí operace odmíchání.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="694"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="701"/>
         <source>Enable denormal protection</source>
         <translation>Povolit ochranu denormál</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="704"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="711"/>
         <source>Enable output limiter</source>
         <translation>Povolit omezovač výstupu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="721"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="728"/>
         <source>VST in-place</source>
         <translation>VST v místě</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="731"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="738"/>
         <source>Enable VST in-place processing (restart required)</source>
         <translation>Povolit zpracování VST v místě (je vyžadováno nové spuštění)</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="734"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="741"/>
         <source>Enable VST in-place processing. Turn this off if 
  VST Ladspa effect rack plugins do not work or 
  feedback loudly, even if they are supposed to 
@@ -4193,18 +4458,18 @@ nebo vrací zpět nahlas, i když se předpokládá, že mají být
 schopné v místě. Nastavení vyžaduje opětovné spuštění.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="747"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="754"/>
         <source>Minimum control period</source>
         <translation>Nejmenší kontrolní perioda</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="754"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="761"/>
         <source>Minimum audio controller process period (samples).
 </source>
         <translation>Nejmenší perioda procesu ovladače zvuku (vzorky).</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="758"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="765"/>
         <source>Minimum audio controller process period (samples).
 Adjusts responsiveness of audio controls and 
  controller graphs. Set a low value for fast, smooth 
@@ -4217,294 +4482,324 @@ rychlé, jemné ovládání. Pokud to způsobí potíže
 s rychlostí, nastavte vyšší hodnotu.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="769"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="776"/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="774"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="781"/>
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="779"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="786"/>
         <source>4</source>
         <translation>4</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="784"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="791"/>
         <source>8</source>
         <translation>8</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="789"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="983"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="796"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="990"/>
         <source>16</source>
         <translation>16</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="794"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="988"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="801"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="995"/>
         <source>32</source>
         <translation>32</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="799"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="993"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="806"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1000"/>
         <source>64</source>
         <translation>64</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="804"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="998"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="811"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1005"/>
         <source>128</source>
         <translation>128</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="809"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1003"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="816"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1010"/>
         <source>256</source>
         <translation>256</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="814"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1008"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="821"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1015"/>
         <source>512</source>
         <translation>512</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="819"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1013"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1054"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="826"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1020"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1147"/>
         <source>1024</source>
         <translation>1024</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="824"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1018"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1059"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="831"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1025"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1152"/>
         <source>2048</source>
         <translation>2048</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="835"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="842"/>
         <source>External Waveditor</source>
         <translation>Vnější editor Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="860"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="867"/>
         <source>External Waveditor command</source>
         <translation>Příkaz pro vnější editor Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="904"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="911"/>
         <source>Note: External editor opened from the internal editor.</source>
         <translation>Poznámka: Vnější editor otevřený z vnitřního editoru.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="919"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="926"/>
         <source>Dummy Audio Driver (settings require restart)</source>
         <translation>Falešný ovladač zvuku (nastavení vyžaduje nové spuštění)</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="940"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="947"/>
         <source>Sample rate</source>
         <translation>Vzorkovací kmitočet</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="950"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="957"/>
         <source>Hz</source>
         <translation>Hz</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="969"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="976"/>
         <source>Period size (Frames per period):</source>
         <translation>Velikost periody (snímků za periodu):</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="979"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="986"/>
         <source>Shorter periods give better midi playback resolution.</source>
         <translation>Kratší periody dávají lepší rozlišení přehrávání MIDI.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1030"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1037"/>
         <source>Midi</source>
         <translation>MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1036"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1080"/>
+        <source>Instrument initialization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1086"/>
+        <source>Send instrument initialization sequences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1093"/>
+        <source>Warn if instrument initialization sequences pending</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1100"/>
+        <source>Send instrument controller default values if none in song, at init or rewind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1123"/>
         <source>Ticks</source>
         <translation>Tiky</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1042"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1129"/>
         <source>RTC Resolution
 (Ticks/Sec)</source>
         <translation>Rozlišení RTC (RealTimeClock)
 (Tiky/Sekundy)</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1064"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1157"/>
         <source>4096</source>
         <translation>4096</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1069"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1162"/>
         <source>8192</source>
         <translation>8192</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1074"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1167"/>
         <source>16384</source>
         <translation>16384</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1079"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1172"/>
         <source>32768</source>
         <translation>32768</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1087"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1238"/>
         <source>Midi Resolution
 (Ticks/Quarternote)</source>
         <translation>Rozlišení MIDI
 (Tiky/Čtvrťová nota)</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1102"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1165"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1190"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1270"/>
         <source>48</source>
         <translation>48</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1107"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1170"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1195"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1275"/>
         <source>96</source>
         <translation>96</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1112"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1175"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1200"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1280"/>
         <source>192</source>
         <translation>192</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1117"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1180"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1205"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1285"/>
         <source>384</source>
         <translation>384</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1122"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1185"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1210"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1290"/>
         <source>768</source>
         <translation>768</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1127"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1190"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1215"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1295"/>
         <source>1536</source>
         <translation>1536</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1132"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1195"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1220"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1300"/>
         <source>3072</source>
         <translation>3072</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1137"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1200"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1225"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1305"/>
         <source>6144</source>
         <translation>6114</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1142"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1205"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1230"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1310"/>
         <source>12288</source>
         <translation>12288</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1150"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1249"/>
         <source>Displayed Resolution
 (Ticks/Quarternote)</source>
         <translation>Zobrazované rozlišení
 (Tiky/Čtvrťová nota)</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1216"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1043"/>
         <source>Record new style drum tracks</source>
         <translation>Nahrávat stopy bicích v novém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1222"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1049"/>
         <source>Record all instruments</source>
         <translation>Nahrávat všechny nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1229"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1056"/>
         <source>Don&apos;t record hidden instruments</source>
         <translation>Nenahrávat skryté nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1236"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1063"/>
         <source>Don&apos;t record muted instruments</source>
         <translation>Nenahrávat ztlumené nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1243"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1070"/>
         <source>Don&apos;t record hidden or muted instruments</source>
         <translation>Nenahrávat skryté nebo ztlumené nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1267"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1318"/>
+        <source>Warn if timer frequency is inadequate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1329"/>
         <source>GUI Behaviour</source>
         <translation>Chování rozhraní</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1279"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1341"/>
         <source>Behavior</source>
         <translation>Chování</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1285"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1347"/>
+        <source>Track height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1354"/>
         <source>GUI Refresh Rate</source>
         <translation>Rychlost obnovování rozhraní</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1295"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1364"/>
         <source>/sec</source>
         <translation>/s</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1311"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1380"/>
         <source>Use old-style stop shortcut:</source>
         <translation>Použít klávesovou zkratku pro zastavení ve starém stylu:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1334"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1403"/>
         <source>Move single armed track with selection</source>
         <translation>Přesunout jednu odjištěnou stopu s výběrem</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1357"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1426"/>
         <source>Use project save dialog</source>
         <translation>Použít dialog pro uložení projektu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1383"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1452"/>
         <source>Some popup menus stay open (else hold Ctrl)</source>
         <translation>Některé vyskakovací nabídky zůstanou otevřeny (držet Ctrl)</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1396"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1465"/>
         <source>Allows some popup menus to stay open.
 Otherwise, hold Ctrl to keep them open.</source>
         <translation>Umožní, aby některé vyskakovací nabídky zůstanou otevřeny.
 Je pro to, aby zůstaly otevřeny, potřeba podržet klávesu Ctrl.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1407"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1476"/>
         <source>In some areas, the middle mouse button decreases
 values, while the right button increases. Users without a
 middle mouse button can select this option to make the
@@ -4516,105 +4811,137 @@ se v takových oblastech chovalo stejně jako prostřední
 tlačítko myši tlačítko levé.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1413"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1482"/>
         <source>Use left mouse button for decreasing values</source>
         <translation>Použít levé tlačítko myši na zmenšení hodnot</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1446"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1502"/>
         <source>Shift + Right click sets left range marker</source>
         <translation>Shift + klepnutí pravým tlačítkem myši nastaví značku pro levý rozsah</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1460"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1522"/>
         <source>Allow adding hidden tracks in track list menu</source>
         <translation>Povolit přidání skrytých stop v nabídce seznamu stop</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1467"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1536"/>
         <source>Unhide tracks when adding hidden tracks</source>
         <translation>Zrušit skrytí stop při přidávání skrytých stop</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1481"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1497"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1550"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1566"/>
         <source>Smart focus</source>
         <translation>Chytré zaměření</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1500"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1569"/>
         <source>After editing, controls will return
  focus to their respective canvas</source>
         <translation>Po dokončení úprav vrátí ovladače
 zaměření na jim příslušné plátno</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1527"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1580"/>
+        <source>Show newly created midi velocity graphs per-note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1607"/>
+        <source> px</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1623"/>
+        <source>Enable borderless mouse.
+For certain functions like zoom/pan.
+Disable to use an alternate standard 
+ method.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1630"/>
+        <source>Enable borderless mouse.
+For certain functions like zoom.
+Disable to use an alternate standard
+ method.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1649"/>
+        <source>Borderless zoom/pan mouse (else use alternate method)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1659"/>
         <source>Drum tracks</source>
         <translation>Stopy bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1533"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1665"/>
         <source>Only offer old-style drumtracks</source>
         <translation>Pouze po stopách bicích ve starém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1540"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1672"/>
         <source>Only offer new-style drumtracks</source>
         <translation>Pouze po stopách bicích v novém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1547"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1679"/>
         <source>Prefer old-style drumtracks</source>
         <translation>Upřednostňovat stopy bicích ve starém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1554"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1686"/>
         <source>Prefer new-style drumtracks</source>
         <translation>Upřednostňovat stopy bicích v novém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1578"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1710"/>
         <source>GUI Style</source>
         <translation>Styl rozhraní</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1584"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1716"/>
         <source>MDI-subwindowness and sharing menus</source>
         <translation>Podokna a sdílení nabídek</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1595"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1727"/>
         <source>Presets:</source>
         <translation>Přednastavení:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1602"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1734"/>
         <source>traditional MusE SDI</source>
         <translation>Tradiční MusE SDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1609"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1741"/>
         <source>Cakewalk-like MDI</source>
         <translation>MDI na způsob Cakewalku</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1616"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1748"/>
         <source>Borland-/Mac-like MDI</source>
         <translation>MDI na způsob Borland/Mac</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1688"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1820"/>
         <source>&amp;Apply</source>
         <translation>&amp;Použít</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1695"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1827"/>
         <source>&amp;Ok</source>
         <translation>&amp;OK</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1705"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1837"/>
         <source>&amp;Cancel</source>
         <translation>Z&amp;rušit</translation>
     </message>
@@ -4794,137 +5121,190 @@ zaměření na jim příslušné plátno</translation>
         <translation>MusE: Nastavení metronomu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="31"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="38"/>
         <source>Metronome</source>
         <translation>Metronom</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="47"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="63"/>
         <source>Audio Beep</source>
         <translation>Vnitřní reproduktor počítače</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="54"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="70"/>
         <source>Choose outputs...</source>
         <translation>Vybrat výstupy...</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="90"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="144"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="212"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="244"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="286"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="328"/>
         <source>50</source>
         <translation>50</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="100"/>
         <source>% Audio volume</source>
-        <translation>Hlasitost zvuku %</translation>
+        <translation type="obsolete">Hlasitost zvuku %</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="112"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="372"/>
         <source>MIDI Click</source>
         <translation>Klapnutí MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="138"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="416"/>
         <source>Midi Channel</source>
         <translation>Kanál MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="148"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="426"/>
         <source>Measure Note</source>
         <translation>Nota MIDI na začátku taktu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="168"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="446"/>
         <source>Measure Velocity</source>
         <translation>Síla nárazu noty MIDI na začátku taktu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="178"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="456"/>
         <source>Beat Velocity</source>
         <translation>Síla nárazu na začátku taktu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="198"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="476"/>
         <source>Beat Note</source>
         <translation>Nota na začátku doby</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="221"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="499"/>
         <source>Midi Port</source>
         <translation>Přípojka MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="263"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="616"/>
+        <source>Disabled since jack does not support it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="619"/>
         <source>Precount</source>
         <translation>Předpočítat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="278"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="643"/>
         <source>enable</source>
         <translation>Povolit</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="312"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="689"/>
         <source>Bars</source>
         <translation>Takty</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="327"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="704"/>
         <source>From Mastertrack</source>
         <translation>Z hlavní stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="361"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="750"/>
         <source>/</source>
         <translation>/</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="387"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="779"/>
         <source>Signature</source>
         <translation>Taktové označení</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="402"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="794"/>
         <source>Prerecord</source>
         <translation>Přednahrát</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="412"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="804"/>
         <source>Preroll</source>
         <translation>Přetáčení vpřed</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="424"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="543"/>
         <source>Hint: Enable metronome in Transportpanel</source>
         <translation>Rada: Povolte metronom v ovládacím panelu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="450"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="84"/>
+        <source>Two samples (old samples)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="94"/>
+        <source>Four samples (new samples, with accents)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="105"/>
+        <source>Volume</source>
+        <translation type="unfinished">Hlasitost</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="112"/>
+        <source>Audio master</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="170"/>
+        <source>Meas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="180"/>
+        <source>Beat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="254"/>
+        <source>Accent1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="296"/>
+        <source>Accent2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="338"/>
+        <source>Sample</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/metronomebase.ui" line="569"/>
         <source>&amp;Apply</source>
         <translation>&amp;Použít</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="453"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="572"/>
         <source>Alt+A</source>
         <translation>Alt+A</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="463"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="582"/>
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="466"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="585"/>
         <source>Alt+O</source>
         <translation>Alt+O</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="479"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="598"/>
         <source>&amp;Cancel</source>
         <translation>Z&amp;rušit</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/metronomebase.ui" line="482"/>
+        <location filename="../../muse/widgets/metronomebase.ui" line="601"/>
         <source>Alt+C</source>
         <translation>Alt+C</translation>
     </message>
@@ -4952,59 +5332,55 @@ zaměření na jim příslušné plátno</translation>
         <translation>Typ ovládání:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="85"/>
+        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="188"/>
+        <source>&amp;Learn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Control7</source>
-        <translation>Ovladač 7</translation>
+        <translation type="obsolete">Ovladač 7</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="90"/>
         <source>Control14</source>
-        <translation>Ovladač 14</translation>
+        <translation type="obsolete">Ovladač 14</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="95"/>
         <source>RPN</source>
-        <translation>RPN</translation>
+        <translation type="obsolete">RPN</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="100"/>
         <source>NRPN</source>
-        <translation>NRPN</translation>
+        <translation type="obsolete">NRPN</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="105"/>
         <source>RPN14</source>
-        <translation>RPN 14</translation>
+        <translation type="obsolete">RPN 14</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="110"/>
         <source>NRPN14</source>
-        <translation>NRPN 14</translation>
+        <translation type="obsolete">NRPN 14</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="115"/>
         <source>Pitch</source>
-        <translation>Výška tónu</translation>
+        <translation type="obsolete">Výška tónu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="120"/>
         <source>Program</source>
-        <translation>Program</translation>
+        <translation type="obsolete">Program</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="147"/>
+        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="107"/>
         <source>Hi:</source>
         <translation>Vysoký:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="179"/>
+        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="139"/>
         <source>Lo:</source>
         <translation>Nízký:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/midi_audio_control_base.ui" line="228"/>
         <source>Learn</source>
-        <translation>Naučit se</translation>
+        <translation type="obsolete">Naučit se</translation>
     </message>
 </context>
 <context>
@@ -5176,19 +5552,19 @@ zaměření na jim příslušné plátno</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="47"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="138"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="198"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="237"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="276"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="143"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="203"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="242"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="281"/>
         <source>Equal</source>
         <translation>Stejný</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="52"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="143"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="203"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="242"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="281"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="148"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="208"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="247"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="286"/>
         <source>Unequal</source>
         <translation>Nestejný</translation>
     </message>
@@ -5199,295 +5575,306 @@ zaměření na jim příslušné plátno</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="69"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="407"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="412"/>
         <source>Poly Pressure</source>
         <translation>Vícenásobné stisknutí tlačítka</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="74"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="412"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="417"/>
         <source>Control Change</source>
         <translation>Změna ovládání</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="79"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="417"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="422"/>
         <source>Aftertouch</source>
         <translation>Dodělávka po</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="84"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="422"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="427"/>
         <source>Pitch Bend</source>
         <translation>Ohyb výšky tónu</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="89"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="427"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="432"/>
         <source>NRPN</source>
         <translation>NRPN</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="94"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="432"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="437"/>
         <source>RPN</source>
         <translation>RPN</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="102"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="471"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="514"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="99"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="442"/>
+        <source>Program</source>
+        <translation type="unfinished">Program</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/itransformbase.ui" line="107"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="481"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="524"/>
         <source>Value 2</source>
         <translation>Hodnota 2</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="112"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="504"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="600"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="654"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="708"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="117"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="514"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="610"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="669"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="723"/>
         <source>Value 1</source>
         <translation>Hodnota 1</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="122"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="379"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="127"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="384"/>
         <source>Event Type</source>
         <translation>Typ události</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="133"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="193"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="232"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="271"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="138"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="198"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="237"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="276"/>
         <source>Ignore</source>
         <translation>Přehlížet</translation>
-    </message>
-    <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="148"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="208"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="247"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="286"/>
-        <source>Higher</source>
-        <translation>Vyšší</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="153"/>
         <location filename="../../muse/widgets/itransformbase.ui" line="213"/>
         <location filename="../../muse/widgets/itransformbase.ui" line="252"/>
         <location filename="../../muse/widgets/itransformbase.ui" line="291"/>
-        <source>Lower</source>
-        <translation>Nižší</translation>
+        <source>Higher</source>
+        <translation>Vyšší</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="158"/>
         <location filename="../../muse/widgets/itransformbase.ui" line="218"/>
         <location filename="../../muse/widgets/itransformbase.ui" line="257"/>
         <location filename="../../muse/widgets/itransformbase.ui" line="296"/>
-        <source>Inside</source>
-        <translation>Uvnitř</translation>
+        <source>Lower</source>
+        <translation>Nižší</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/itransformbase.ui" line="163"/>
         <location filename="../../muse/widgets/itransformbase.ui" line="223"/>
         <location filename="../../muse/widgets/itransformbase.ui" line="262"/>
         <location filename="../../muse/widgets/itransformbase.ui" line="301"/>
+        <source>Inside</source>
+        <translation>Uvnitř</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/itransformbase.ui" line="168"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="228"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="267"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="306"/>
         <source>Outside</source>
         <translation>Vně</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="309"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="731"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="314"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="746"/>
         <source>Channel</source>
         <translation>Kanál</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="319"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="559"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="324"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="569"/>
         <source>Port</source>
         <translation>Přípojka</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="367"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="372"/>
         <source>Processing</source>
         <translation>Zpracování</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="390"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="441"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="570"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="624"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="678"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="395"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="451"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="580"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="639"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="693"/>
         <source>Keep</source>
         <translation>Zachovat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="395"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="466"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="595"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="649"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="703"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="400"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="476"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="605"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="664"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="718"/>
         <source>Fix</source>
         <translation>Pevný</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="446"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="575"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="629"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="683"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="456"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="585"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="644"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="698"/>
         <source>Plus</source>
         <translation>Plus</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="451"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="580"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="634"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="688"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="461"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="590"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="649"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="703"/>
         <source>Minus</source>
         <translation>Minus</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="456"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="585"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="639"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="693"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="466"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="595"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="654"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="708"/>
         <source>Multiply</source>
         <translation>Násobit</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="461"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="590"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="644"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="698"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="471"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="600"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="659"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="713"/>
         <source>Divide</source>
         <translation>Dělit</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="476"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="605"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="659"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="713"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="486"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="615"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="674"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="728"/>
         <source>Invert</source>
         <translation>Obrátit</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="481"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="491"/>
         <source>ScaleMap</source>
         <translation>Rozložení not</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="486"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="496"/>
         <source>Flip</source>
         <translation>Obrátit</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="491"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="610"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="664"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="718"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="501"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="620"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="679"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="733"/>
         <source>Dyn</source>
         <translation>Dyn</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="496"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="615"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="669"/>
-        <location filename="../../muse/widgets/itransformbase.ui" line="723"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="506"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="625"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="684"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="738"/>
         <source>Random</source>
         <translation>Náhodný</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="771"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="630"/>
+        <source>Toggle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/itransformbase.ui" line="786"/>
         <source>Modules</source>
         <translation>Moduly</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="804"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="819"/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="817"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="832"/>
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="827"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="842"/>
         <source>3</source>
         <translation>3</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="837"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="852"/>
         <source>4</source>
         <translation>4</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="856"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="871"/>
         <source>enable modul 1</source>
         <translation>Povolit modul 1</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="872"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="887"/>
         <source>enable modul 2</source>
         <translation>Povolit modul 2</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="888"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="903"/>
         <source>enable modul 3</source>
         <translation>Povolit modul 3</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="904"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="919"/>
         <source>enable modul 4</source>
         <translation>Povolit modul 4</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="923"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="938"/>
         <source>Preset</source>
         <translation>Přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="943"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="958"/>
         <source>Name:</source>
         <translation>Název:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="965"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="980"/>
         <source>Comment:</source>
         <translation>Poznámka:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="994"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="1009"/>
         <source>Function</source>
         <translation>Funkce</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="1020"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="1035"/>
         <source>create new preset</source>
         <translation>Vytvořit nové přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="1023"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="1038"/>
         <source>&amp;New</source>
         <translation>&amp;Nový</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="1033"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="1048"/>
         <source>delete preset</source>
         <translation>Smazat přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="1036"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="1051"/>
         <source>&amp;Delete</source>
         <translation>S&amp;mazat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="1062"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="1077"/>
         <source>&amp;Dismiss</source>
         <translation>&amp;Zahodit</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/itransformbase.ui" line="1085"/>
+        <location filename="../../muse/widgets/itransformbase.ui" line="1100"/>
         <source>PresetList</source>
         <translation>Seznam přednastavení</translation>
     </message>
@@ -5775,37 +6162,37 @@ mezi posláním &quot;začátku&quot; až po poslání prvních hodin.</translat
         <translation>MusE: Informace o stopě</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="84"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="171"/>
         <source>output port</source>
         <translation>Výstupní přípojka</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="97"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="513"/>
         <source>output channel</source>
         <translation>Výstupní kanál</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="100"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="516"/>
         <source>all midi events are sent to this output channel</source>
         <translation>Všechny události MIDI jsou poslány do tohoto výstupního kanálu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="122"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="121"/>
         <source>Out ch</source>
         <translation>Výstupní kanál</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="149"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="224"/>
         <source>input routing</source>
         <translation>Vstupní signálový tok</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="171"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="246"/>
         <source>input detect</source>
         <translation>Zjištění vstupu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="174"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="249"/>
         <source>Input detect indicator. Detects all note on-off, controller, aftertouch, 
                   program change, and pitchbend (but not sysex or realtime) events 
                   on the selected channels, on the selected midi ports.</source>
@@ -5814,162 +6201,193 @@ mezi posláním &quot;začátku&quot; až po poslání prvních hodin.</translat
                   na vybraných kanálech na vybraných přípojkách MIDI.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="182"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="257"/>
         <source>W</source>
         <translation>W</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="207"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="282"/>
         <source>Midi thru</source>
         <translation>MIDI thru</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="210"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="285"/>
         <source>Pass input events through (&apos;thru&apos;) to output.</source>
         <translation>Vést vstupní události skrz (&apos;thru&apos;) do výstupu.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="229"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="304"/>
         <source>output routing</source>
         <translation>Výstupní signálový tok</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="266"/>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="310"/>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="597"/>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="650"/>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="703"/>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="770"/>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="840"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="74"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="187"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="438"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="491"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="718"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="785"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="855"/>
         <source>off</source>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="288"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="385"/>
         <source>Transp.</source>
         <translation>Přesun</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="329"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="363"/>
         <source>Delay</source>
         <translation>Zpoždění</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="351"/>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="442"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="99"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="407"/>
         <source>%</source>
         <translation>%</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="373"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="341"/>
         <source>Length</source>
         <translation>Délka</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="420"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="541"/>
         <source>Velocity</source>
         <translation>Síla nárazu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="467"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="668"/>
         <source>Compr.</source>
         <translation>Kompr.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="498"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="630"/>
         <source>Channel Info</source>
         <translation>Informace o kanálu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="517"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="649"/>
         <source>Select instrument patch</source>
         <translation>Vybrat záplatu nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="520"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="652"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="935"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;neznámý&gt;</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="533"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="560"/>
         <source>Rec:</source>
         <translation>Nahr.:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="557"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="584"/>
         <source>Add all settings to song</source>
         <translation>Přidat všechna nastavení do písně</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="560"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="587"/>
         <source>All</source>
         <translation>Vše</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="591"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="432"/>
         <source>Bank Select MSB. Ctrl-double-click on/off.</source>
         <translation>Výběr banky MSB. Ctrl-dvojité klepnutí zapnuto/vypnuto.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="622"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="338"/>
+        <source>Change note length in percent of actual length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="360"/>
+        <source>Offset playback of notes before or after actual note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="382"/>
+        <source>Transpose notes up or down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="463"/>
         <source>H-Bank</source>
         <translation>Vysoká banka</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="644"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="485"/>
         <source>Bank Select LSB. Ctrl-double-click on/off.</source>
         <translation>Výběr banky LSB. Ctrl-dvojité klepnutí zapnuto/vypnuto.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="675"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="538"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add or substract velocity to notes on track.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Since the midi note range is 0-127 this &lt;br/&gt;might mean that the notes do not reach &lt;br/&gt;the combined velocity, note + Velocity.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="665"/>
+        <source>Compress the notes velocity range, in percent of actual velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="690"/>
         <source>L-Bank</source>
         <translation>Nízká banka</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="697"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="712"/>
         <source>Program. Ctrl-double-click on/off.</source>
         <translation>Program. Dvojité klepnutí pro zapnuto/vypnuto.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="730"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="745"/>
         <source>Add bank + prog settings to song</source>
         <translation>Přidat banku + nastavení programu do písně</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="733"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="748"/>
         <source>Prog</source>
         <translation>Program</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="764"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="779"/>
         <source>Volume. Ctrl-double-click on/off.</source>
         <translation>Hlasitost. Dvojité klepnutí pro zapnuto/vypnuto.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="797"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="812"/>
         <source>Add vol setting to song</source>
         <translation>Přidat nastavení hlasitosti do písně</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="800"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="815"/>
         <source>Vol</source>
         <translation>Hlasitost</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="831"/>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="834"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="846"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="849"/>
         <source>Change stereo position. Ctrl-double-click on/off.</source>
         <translation>Změnit polohu sterea. Ctrl-dvojité klepnutí zapnuto/vypnuto.</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="867"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="882"/>
         <source>Add pan setting to song</source>
         <translation>Přidat nastavení vyvážení do písně</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/mtrackinfobase.ui" line="870"/>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="885"/>
         <source>Pan</source>
         <translation>Vyvážení</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/mtrackinfobase.ui" line="932"/>
+        <source>Select instrument</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6442,12 +6860,12 @@ mezi posláním &quot;začátku&quot; až po poslání prvních hodin.</translat
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="2303"/>
+        <location filename="../../muse/song.cpp" line="2052"/>
         <source>Jack shutdown!</source>
         <translation>Vypnutí JACK!</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2304"/>
+        <location filename="../../muse/song.cpp" line="2053"/>
         <source>Jack has detected a performance problem which has lead to
 MusE being disconnected.
 This could happen due to a number of reasons:
@@ -6481,102 +6899,127 @@ Pro pokračování, prosím, přezkoušejte stav Jacka,
 zkuste Jack znovu spustit a klepněte na tlačítko &quot;Spustit znovu&quot;.</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2483"/>
-        <location filename="../../muse/song.cpp" line="2721"/>
+        <location filename="../../muse/song.cpp" line="2241"/>
+        <location filename="../../muse/song.cpp" line="2482"/>
         <source>Automation:</source>
         <translation>Automatizace:</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2485"/>
+        <location filename="../../muse/song.cpp" line="2243"/>
         <source>previous event</source>
         <translation>Předchozí událost</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2489"/>
+        <location filename="../../muse/song.cpp" line="2247"/>
         <source>next event</source>
         <translation>Další událost</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2498"/>
-        <location filename="../../muse/song.cpp" line="2726"/>
+        <location filename="../../muse/song.cpp" line="2256"/>
+        <location filename="../../muse/song.cpp" line="2487"/>
         <source>set event</source>
         <translation>Nastavit událost</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2500"/>
-        <location filename="../../muse/song.cpp" line="2728"/>
+        <location filename="../../muse/song.cpp" line="2258"/>
+        <location filename="../../muse/song.cpp" line="2489"/>
         <source>add event</source>
         <translation>Přidat událost</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2504"/>
-        <location filename="../../muse/song.cpp" line="2732"/>
+        <location filename="../../muse/song.cpp" line="2262"/>
+        <location filename="../../muse/song.cpp" line="2493"/>
         <source>erase event</source>
         <translation>Vymazat událost</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2508"/>
+        <location filename="../../muse/song.cpp" line="2266"/>
         <source>erase range</source>
         <translation>Vymazat rozsah</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2512"/>
+        <location filename="../../muse/song.cpp" line="2270"/>
         <source>clear automation</source>
         <translation>Smazat automatizaci</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2518"/>
+        <location filename="../../muse/song.cpp" line="2276"/>
         <source>Midi control</source>
         <translation>Ovládání MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2520"/>
+        <location filename="../../muse/song.cpp" line="2278"/>
         <source>Assign</source>
         <translation>Přiřadit</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2530"/>
+        <location filename="../../muse/song.cpp" line="2288"/>
         <source>Clear</source>
         <translation>Smazat</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2575"/>
+        <location filename="../../muse/song.cpp" line="2333"/>
         <source>Clear all controller events?</source>
         <translation>Smazat všechny události ovladače?</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2575"/>
+        <location filename="../../muse/song.cpp" line="2333"/>
         <source>&amp;Ok</source>
         <translation>&amp;OK</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2575"/>
+        <location filename="../../muse/song.cpp" line="2333"/>
         <source>&amp;Cancel</source>
         <translation>Z&amp;rušit</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2879"/>
+        <location filename="../../muse/song.cpp" line="2659"/>
         <source>MusE: Tempo list</source>
         <translation>MusE: Seznam tempa</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2880"/>
+        <location filename="../../muse/song.cpp" line="2660"/>
         <source>External tempo changes were recorded.
 Transfer them to master tempo list?</source>
         <translation>Byly nahrány vnější změny tempa.
 Mají se převzít do hlavního seznamu tempa?</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="3448"/>
+        <location filename="../../muse/song.cpp" line="3286"/>
+        <source>Do you want to process ALL or only selected events?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/song.cpp" line="3286"/>
+        <source>&amp;Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/song.cpp" line="3286"/>
+        <source>&amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/song.cpp" line="3358"/>
         <source>MusE - external script failed</source>
         <translation>MusE: Vnější skript selhal</translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="3449"/>
+        <location filename="../../muse/song.cpp" line="3359"/>
         <source>MusE was unable to launch the script, error message:
 %1</source>
         <translation>MusE se skript nepodařilo spustit. Chybová zpráva:
 %1</translation>
+    </message>
+    <message>
+        <location filename="../../muse/undo.cpp" line="249"/>
+        <source>Und&amp;o</source>
+        <translation type="unfinished">&amp;Zpět</translation>
+    </message>
+    <message>
+        <location filename="../../muse/undo.cpp" line="267"/>
+        <source>Re&amp;do</source>
+        <translation type="unfinished">Z&amp;novu</translation>
     </message>
 </context>
 <context>
@@ -6698,43 +7141,43 @@ Klepněte na část pro zapnutí/vypnutí ztlumení</translation>
 <context>
     <name>MusEGui::Appearance</name>
     <message>
-        <location filename="../../muse/appearance.cpp" line="131"/>
+        <location filename="../../muse/appearance.cpp" line="132"/>
         <source>Main application font, and default font for any
  controls not defined here.</source>
         <translation>Hlavní písmo programu a výchozí písmo pro
 všechny ovládací prvky, které tu nejsou stanoveny.</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="132"/>
+        <location filename="../../muse/appearance.cpp" line="133"/>
         <source>Mixer strips and effects racks. Midi track info panel.
 Midi control panel entry box.</source>
         <translation>Proužky směšovače a přihrádky s efekty. Informační panel
 ke stopám MIDI. Zadávací pole pro panel ovládání MIDI.</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="133"/>
+        <location filename="../../muse/appearance.cpp" line="134"/>
         <source>Transport controls.</source>
         <translation>Ovládání přesunu.</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="134"/>
+        <location filename="../../muse/appearance.cpp" line="135"/>
         <source>Time scale upper, and time signature.
 Controller graph and S/X buttons.</source>
         <translation>Časové měřítko nahoru a taktové označení.
 Graf ovladače a tlačítka S/X.</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="135"/>
+        <location filename="../../muse/appearance.cpp" line="136"/>
         <source>Time scale lower, and arranger part name overlay.</source>
         <translation>Časové měřítko dolů a aranžér: překrytí názvu části.</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="136"/>
+        <location filename="../../muse/appearance.cpp" line="137"/>
         <source>Tempo scale, and markers.</source>
         <translation>Měřítko tempa a značky.</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="137"/>
+        <location filename="../../muse/appearance.cpp" line="138"/>
         <source>Mixer labels. Auto-font-sizing up to chosen font size.
 Word-breaking but only with spaces.</source>
         <translation>Popisky u směšovače. Velikost písma bude automaticky
@@ -6742,42 +7185,57 @@ přizpůsobena nahoru zvolené velikosti. Zalomení řádků ale jen
 u mezer.</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="138"/>
+        <location filename="../../muse/appearance.cpp" line="139"/>
         <source>Maximum mixer label auto-font-sizing font size.</source>
         <translation>Největší velikost písma u automatické velikosti písma popisků směšovače.</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="140"/>
+        <location filename="../../muse/appearance.cpp" line="141"/>
         <source>Global opacity (opposite of transparency).</source>
         <translation>Celková neprůhlednost (protějšek průhlednosti).</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="144"/>
+        <location filename="../../muse/appearance.cpp" line="145"/>
         <source>Standard</source>
         <translation>Obvyklý</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="146"/>
+        <location filename="../../muse/appearance.cpp" line="147"/>
         <source>Custom</source>
         <translation>Vlastní</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="362"/>
+        <location filename="../../muse/appearance.cpp" line="396"/>
         <source>Keep Qt system style</source>
         <translation>Zachovat styl systému Qt</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="622"/>
+        <location filename="../../muse/appearance.cpp" line="505"/>
+        <source>Do you really want to reset colors to theme default?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/appearance.cpp" line="505"/>
+        <source>&amp;Ok</source>
+        <translation type="unfinished">&amp;OK</translation>
+    </message>
+    <message>
+        <location filename="../../muse/appearance.cpp" line="505"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished">Z&amp;rušit</translation>
+    </message>
+    <message>
+        <location filename="../../muse/appearance.cpp" line="700"/>
         <source>MusE: load image</source>
         <translation>MusE: Nahrát obrázek</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="946"/>
+        <location filename="../../muse/appearance.cpp" line="1042"/>
         <source>Select style sheet</source>
         <translation>Vybrat styl</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="946"/>
+        <location filename="../../muse/appearance.cpp" line="1042"/>
         <source>Qt style sheets (*.qss)</source>
         <translation>Styly Qt (*.qss)</translation>
     </message>
@@ -6785,62 +7243,62 @@ u mezer.</translation>
 <context>
     <name>MusEGui::Arranger</name>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="170"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="178"/>
         <source>Enable Recording</source>
         <translation>Povolit nahrávání</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="171"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="179"/>
         <source>Mute/Off Indicator</source>
         <translation>Ztlumit/Ukazatel vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="172"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="180"/>
         <source>Solo Indicator</source>
         <translation>Ukazatel &quot;Solo&quot;</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="173"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="181"/>
         <source>Track Type</source>
         <translation>Typ stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="174"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="182"/>
         <source>Track Name</source>
         <translation>Název stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="175"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="183"/>
         <source>Midi output channel number or audio channels</source>
         <translation>Číslo kanálu výstupu MIDI nebo zvukové kanály</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="176"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="184"/>
         <source>Midi output port or synth midi port</source>
         <translation>Přípojka výstupu MIDI nebo přípojka MIDI syntetizátoru</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="177"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="185"/>
         <source>Time Lock</source>
         <translation>Zámek času</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="178"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="186"/>
         <source>Automation parameter selection</source>
         <translation>Výběr parametru automatizace</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="179"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="187"/>
         <source>Notation clef</source>
         <translation>Notový klíč</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="190"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="198"/>
         <source>Enable recording. Click to toggle.</source>
         <translation>Zapnout nahrávání. Klepněte pro přepnutí.</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="191"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="199"/>
         <source>Mute indicator. Click to toggle.
 Right-click to toggle track on/off.
 Mute is designed for rapid, repeated action.
@@ -6851,7 +7309,7 @@ Ztlumení je navrženo pro rychlou, opakovanou činnost.
 Zapnuto/Vypnuto není!</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="192"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="200"/>
         <source>Solo indicator. Click to toggle.
 Connected tracks are also &apos;phantom&apos; soloed,
  indicated by a dark square.</source>
@@ -6860,21 +7318,21 @@ Připojené stopy jsou také domněle (phantom) zesólovány,
 ukázáno tmavým čtverečkem.</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="193"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="201"/>
         <source>Track type. Right-click to change
  midi and drum track types.</source>
         <translation>Typ stopy. Klepnutí pravým tlačítkem myši pro
 změnu typů stopy MIDI a bicí.</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="194"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="202"/>
         <source>Track name. Double-click to edit.
 Right-click for more options.</source>
         <translation>Typ stopy. Dvojité klepnutí tlačítkem myši pro úpravy.
 Klepnutí pravým tlačítkem myši pro více voleb.</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="195"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="203"/>
         <source>Midi/drum track: Output channel number.
 Audio track: Channels.
 Mid/right-click to change.</source>
@@ -6884,7 +7342,7 @@ Klepnutí středovým kolečkem/pravým tlačítkem
 myši pro změnu.</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="196"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="204"/>
         <source>Midi/drum track: Output port.
 Synth track: Assigned midi port.
 Left-click to change.
@@ -6895,233 +7353,277 @@ Klepnutí levým tlačítkem myši pro změnu.
 Klepnutí pravým tlačítkem myši pro ukázání rozhraní.</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="197"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="205"/>
         <source>Time lock</source>
         <translation>Zámek času</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="198"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="206"/>
         <source>Notation clef. Select this tracks notation clef.</source>
         <translation>Notový klíč. Vybere notový klíč této stopy.</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="226"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="234"/>
         <source>Arranger</source>
         <translation>Aranžér</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="229"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="237"/>
         <source>Cursor</source>
         <translation>Poloha ukazovátka</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="239"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="82"/>
         <source>Off</source>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="239"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="82"/>
         <source>Bar</source>
         <translation>Takt</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="241"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="246"/>
         <source>Snap</source>
         <translation>Magnet</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="256"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="261"/>
         <source>Len</source>
         <translation>Délka</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="266"/>
-        <location filename="../../muse/arranger/arranger.cpp" line="267"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="271"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="272"/>
         <source>song length - bars</source>
         <translation>délka písně - takty</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="271"/>
         <source>Type</source>
-        <translation>Typ</translation>
+        <translation type="obsolete">Typ</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="272"/>
         <source>NO</source>
-        <translation>Žádný</translation>
+        <translation type="obsolete">Žádný</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="273"/>
         <source>GM</source>
-        <translation>GM</translation>
+        <translation type="obsolete">GM</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="274"/>
         <source>GS</source>
-        <translation>GS</translation>
+        <translation type="obsolete">GS</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="275"/>
         <source>XG</source>
-        <translation>XG</translation>
+        <translation type="obsolete">XG</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="277"/>
-        <location filename="../../muse/arranger/arranger.cpp" line="278"/>
         <source>midi song type</source>
-        <translation>Typ písně MIDI</translation>
+        <translation type="obsolete">Typ písně MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="283"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="276"/>
         <source>Pitch</source>
         <translation>Výška tónu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="291"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="284"/>
         <source>midi pitch</source>
         <translation>Změna výšky tónu MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="292"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="285"/>
         <source>global midi pitch shift</source>
         <translation>Celková změna výšky tónu MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="296"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="289"/>
         <source>Tempo</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="305"/>
-        <location filename="../../muse/arranger/arranger.cpp" line="306"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="298"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="299"/>
         <source>midi tempo</source>
         <translation>Tempo MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="317"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="310"/>
         <source>N</source>
         <translation>N</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="369"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="362"/>
         <source>TrackInfo</source>
         <translation>Informace o stopě</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="382"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="375"/>
         <source>R</source>
         <translation>L</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="383"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="376"/>
         <source>M</source>
         <translation>M</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="384"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="377"/>
         <source>S</source>
         <translation>S</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="385"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="378"/>
         <source>C</source>
         <translation>C</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="386"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="379"/>
         <source>Track</source>
         <translation>Stopa</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="387"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="380"/>
         <source>Port</source>
         <translation>Přípojka</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="388"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="381"/>
         <source>Ch</source>
         <translation>K</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="389"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="382"/>
         <source>T</source>
         <translation>T</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="390"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="383"/>
         <source>Automation</source>
         <translation>Automatizace</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="391"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="384"/>
         <source>Clef</source>
         <translation>Klíč</translation>
     </message>
 </context>
 <context>
+    <name>MusEGui::ArrangerColumns</name>
+    <message>
+        <location filename="../../muse/widgets/arrangercolumns.cpp" line="36"/>
+        <source>Control7</source>
+        <translation type="unfinished">Ovladač 7</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/arrangercolumns.cpp" line="37"/>
+        <source>Control14</source>
+        <translation type="unfinished">Ovladač 14</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/arrangercolumns.cpp" line="38"/>
+        <source>RPN</source>
+        <translation type="unfinished">RPN</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/arrangercolumns.cpp" line="39"/>
+        <source>NPRN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/arrangercolumns.cpp" line="40"/>
+        <source>RPN14</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/arrangercolumns.cpp" line="41"/>
+        <source>NRPN14</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/arrangercolumns.cpp" line="42"/>
+        <source>Pitch</source>
+        <translation type="unfinished">Výška tónu</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/arrangercolumns.cpp" line="43"/>
+        <source>Program</source>
+        <translation type="unfinished">Program</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/arrangercolumns.cpp" line="45"/>
+        <source>Aftertouch</source>
+        <translation type="unfinished">Dodělávka po</translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::ArrangerView</name>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="79"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="80"/>
         <source>MusE: Arranger</source>
         <translation>MusE: Aranžér</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="123"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="120"/>
+        <source>D&amp;elete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="121"/>
         <source>C&amp;ut</source>
         <translation>Vyj&amp;mout</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="124"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="122"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopírovat</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="125"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="123"/>
         <source>Copy in range</source>
         <translation>Kopírovat v oblasti</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="126"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="124"/>
         <source>&amp;Paste</source>
         <translation>&amp;Vložit</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="127"/>
         <source>Paste (show dialog)</source>
-        <translation>Vložit (ukázat dialog)</translation>
+        <translation type="obsolete">Vložit (ukázat dialog)</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="128"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="125"/>
         <source>Paste c&amp;lone</source>
         <translation>Vložit k&amp;lon</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="129"/>
         <source>Paste clone (show dialog)</source>
-        <translation>Vložit klon (ukázat dialog)</translation>
+        <translation type="obsolete">Vložit klon (ukázat dialog)</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="130"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="129"/>
         <source>&amp;Insert Empty Measure</source>
         <translation>Vložit prázdný &amp;takt</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="131"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="130"/>
         <source>Delete Selected Tracks</source>
         <translation>Smazat vybrané stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="132"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="131"/>
         <source>Duplicate Selected Tracks</source>
         <translation>Zdvojit vybrané stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="134"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="133"/>
         <source>Shrink selected parts</source>
         <translation>Srazit vybrané části</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="135"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="134"/>
         <source>Expand selected parts</source>
         <translation>Roztáhnout vybrané části</translation>
     </message>
@@ -7130,234 +7632,249 @@ Klepnutí pravým tlačítkem myši pro ukázání rozhraní.</translation>
         <translation type="obsolete">Uklidit vybrané části</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="136"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="126"/>
+        <source>Paste to selected &amp;track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="127"/>
+        <source>Paste clone to selected trac&amp;k</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="128"/>
+        <source>Paste (show dialo&amp;g)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="135"/>
         <source>Purge hidden events from selected parts</source>
         <translation>Zbavit skryté události vybraných částí</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="139"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="138"/>
         <source>Add Track</source>
         <translation>Přidat stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="141"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="140"/>
         <source>Select</source>
         <translation>Vybrat</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="144"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="143"/>
         <source>Select &amp;All</source>
         <translation>Vybrat &amp;vše</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="145"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="144"/>
         <source>&amp;Deselect All</source>
         <translation>&amp;Zrušit výběr všeho</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="146"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="145"/>
         <source>Invert &amp;Selection</source>
         <translation>Obrátit &amp;výběr</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="147"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="146"/>
         <source>&amp;Inside Loop</source>
         <translation>&amp;Uvnitř smyčky</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="148"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="147"/>
         <source>&amp;Outside Loop</source>
         <translation>&amp;Vně smyčky</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="149"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="148"/>
         <source>All &amp;Parts on Track</source>
         <translation>Všechny čá&amp;sti na stopě</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="152"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="151"/>
         <source>Score</source>
         <translation>Notový zápis</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="155"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="154"/>
         <source>all tracks in one staff</source>
         <translation>Všechny stopy v jedné osnově</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="156"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="155"/>
         <source>one staff per track</source>
         <translation>Jedna osnova na stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="162"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="161"/>
         <source>New score window</source>
         <translation>Nové okno s notovým zápisem</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="163"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="162"/>
         <source>Pianoroll</source>
         <translation>Editor válečku</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="164"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="163"/>
         <source>Drums</source>
         <translation>Editor bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="165"/>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="171"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="164"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="170"/>
         <source>List</source>
         <translation>Editor seznamu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="166"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="165"/>
         <source>Wave</source>
         <translation>Editor Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="168"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="167"/>
         <source>Mastertrack</source>
         <translation>Hlavní stopa</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="170"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="169"/>
         <source>Graphic</source>
         <translation>Grafický editor</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="173"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="172"/>
         <source>Midi &amp;Transform</source>
         <translation>&amp;Proměnit MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="177"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="176"/>
         <source>Global Cut</source>
         <translation>Celkové vyjmutí</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="178"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="177"/>
         <source>Global Insert</source>
         <translation>Celkové vložení</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="179"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="178"/>
         <source>Global Split</source>
         <translation>Celkové rozdělení</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="181"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="180"/>
         <source>Global Cut - selected tracks</source>
         <translation>Celkové vyjmutí - vybrané stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="182"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="181"/>
         <source>Global Insert - selected tracks</source>
         <translation>Celkové vložení - vybrané stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="183"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="182"/>
         <source>Global Split - selected tracks</source>
         <translation>Celkové rozdělení - vybrané stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="191"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="190"/>
         <source>&amp;Edit</source>
         <translation>Úp&amp;ravy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="235"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="236"/>
         <source>&amp;Structure</source>
         <translation>&amp;Stavba</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="246"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="247"/>
         <source>Functions</source>
         <translation>Funkce</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="247"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="248"/>
         <source>&amp;Quantize Notes</source>
         <translation>&amp;Kvantizovat noty</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="248"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="249"/>
         <source>Change note &amp;length</source>
         <translation>Změnit &amp;délku noty</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="249"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="250"/>
         <source>Change note &amp;velocity</source>
         <translation>Změnit &amp;sílu nárazu noty</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="250"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="251"/>
         <source>Crescendo/Decrescendo</source>
         <translation>Crescendo/Decrescendo</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="251"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="252"/>
         <source>Transpose</source>
         <translation>Převedení</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="252"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="253"/>
         <source>Erase Events (Not Parts)</source>
         <translation>Smazat události (nikoli části)</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="253"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="254"/>
         <source>Move Events (Not Parts)</source>
         <translation>Přesunout události (nikoli části)</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="254"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="255"/>
         <source>Set Fixed Note Length</source>
         <translation>Nastavit pevnou délku noty</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="255"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="256"/>
         <source>Delete Overlapping Notes</source>
         <translation>Smazat překrývající se noty</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="256"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="257"/>
         <source>Legato</source>
         <translation>Legato</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="270"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="271"/>
         <source>Window &amp;Config</source>
         <translation>&amp;Aranžér</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="271"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="272"/>
         <source>Configure &amp;custom columns</source>
         <translation>Nastavit v&amp;lastní sloupce</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="497"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="535"/>
         <source>Remove track(s)</source>
         <translation>Odstranit stopu(y)</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="497"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="535"/>
         <source>Are you sure you want to remove this track(s)?</source>
         <translation>Opravdu chcete odstranit stopu(y)?</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="605"/>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="611"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="640"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="646"/>
         <source>New</source>
         <translation>Nový</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="762"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="810"/>
         <source>Changed Settings</source>
         <translation>Nastavení změněna</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="762"/>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="810"/>
         <source>Unfortunately, the changed arranger column settings
 cannot be applied while MusE is running.
 To apply the changes, please restart MusE. Sorry.
@@ -7433,98 +7950,102 @@ prosím, MusE znovu. Promiňte (pokoušíme se to opravit)</translation>
 <context>
     <name>MusEGui::AudioStrip</name>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="678"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="690"/>
         <source>panorama</source>
         <translation>Vyvážení</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="680"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="697"/>
         <source>aux send level</source>
         <translation>Úroveň poslání Aux</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="703"/>
         <source>Pan</source>
-        <translation>Vyvážení</translation>
+        <translation type="obsolete">Vyvážení</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="794"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="706"/>
+        <source>calibration gain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/mixer/astrip.cpp" line="813"/>
         <source>1/2 channel</source>
         <translation>1/2 kanály</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="809"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="828"/>
         <source>Pre</source>
         <translation>Před</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="810"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="829"/>
         <source>pre fader - post fader</source>
         <translation>Předprolínač - poprolínač</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="880"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="913"/>
         <source>dB</source>
         <translation>dB</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="911"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="944"/>
         <source>record</source>
         <translation>Nahrávat</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="923"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="956"/>
         <source>mute</source>
         <translation>Ztlumit</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="942"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="975"/>
         <source>record downmix</source>
         <translation>Nahrávat smíchání</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="944"/>
-        <location filename="../../muse/mixer/astrip.cpp" line="948"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="977"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="981"/>
         <source>solo mode</source>
         <translation>Režim sóla</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="956"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="989"/>
         <source>off</source>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="982"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="1015"/>
         <source>input routing</source>
         <translation>Vstupní signálový tok</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="995"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="1028"/>
         <source>output routing</source>
         <translation>Výstupní signálový tok</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="1009"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="1042"/>
         <source>Off</source>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="1010"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="1043"/>
         <source>Read</source>
         <translation>Číst</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="1011"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="1044"/>
         <source>Touch</source>
         <translation>Dotknout se</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="1012"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="1045"/>
         <source>Write</source>
         <translation>Zapsat</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="1055"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="1088"/>
         <source>automation type</source>
         <translation>Typ automatizace</translation>
     </message>
@@ -7532,51 +8053,59 @@ prosím, MusE znovu. Promiňte (pokoušíme se to opravit)</translation>
 <context>
     <name>MusEGui::BigTime</name>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="63"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="67"/>
         <source>format display</source>
         <translation>Zobrazení formátu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="80"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="84"/>
         <source>bar</source>
         <translation>Takt</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="81"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="85"/>
         <source>beat</source>
         <translation>Doba</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="82"/>
-        <location filename="../../muse/widgets/bigtime.cpp" line="88"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="86"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="92"/>
         <source>tick</source>
         <translation>Tik</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="84"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="88"/>
         <source>minute</source>
         <translation>Minuta</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="85"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="89"/>
         <source>second</source>
         <translation>Sekunda</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="86"/>
-        <location filename="../../muse/widgets/bigtime.cpp" line="89"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="90"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="93"/>
         <source>frame</source>
         <translation>Snímek</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="87"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="91"/>
         <source>subframe</source>
         <translation>Podsnímek</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="105"/>
+        <location filename="../../muse/widgets/bigtime.cpp" line="104"/>
         <source>MusE: Bigtime</source>
         <translation>MusE: Velký ukazatel času</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::Canvas</name>
+    <message>
+        <location filename="../../muse/widgets/canvas.cpp" line="1660"/>
+        <source>Tools:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7605,18 +8134,18 @@ prosím, MusE znovu. Promiňte (pokoušíme se to opravit)</translation>
 <context>
     <name>MusEGui::CtrlCanvas</name>
     <message>
-        <location filename="../../muse/ctrl/ctrlcanvas.cpp" line="1837"/>
-        <location filename="../../muse/ctrl/ctrlcanvas.cpp" line="1858"/>
+        <location filename="../../muse/ctrl/ctrlcanvas.cpp" line="2016"/>
+        <location filename="../../muse/ctrl/ctrlcanvas.cpp" line="2037"/>
         <source>Make the current part&apos;s track match the selected drumlist entry</source>
         <translation>Udělat to tak, aby stopa nynější části odpovídala vybranému záznamu v seznamu bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlcanvas.cpp" line="1840"/>
+        <location filename="../../muse/ctrl/ctrlcanvas.cpp" line="2019"/>
         <source>Drawing hint: Hold Ctrl to affect only existing events</source>
         <translation>Rada ke kreslení: Podržte klávesu Ctrl pro ovlivnění pouze stávající události</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlcanvas.cpp" line="1865"/>
+        <location filename="../../muse/ctrl/ctrlcanvas.cpp" line="2044"/>
         <source>Use pencil or line tool to draw new events</source>
         <translation>Použijte tužku nebo nástroj na čáry pro nakreslení nových událostí</translation>
     </message>
@@ -7628,93 +8157,88 @@ prosím, MusE znovu. Promiňte (pokoušíme se to opravit)</translation>
 <context>
     <name>MusEGui::CtrlPanel</name>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="89"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="93"/>
         <source>S</source>
         <translation>S</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="95"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="99"/>
         <source>select controller</source>
         <translation>Vybrat ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="98"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="102"/>
         <source>X</source>
         <translation>X</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="104"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="108"/>
         <source>remove panel</source>
         <translation>Zavřít pohled s ovladačem</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="117"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="121"/>
         <source>manual adjust</source>
         <translation>Ruční upravení</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="126"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="130"/>
         <source>ctrl-double-click on/off</source>
         <translation>Ctrl-dvojité klepnutí pro zapnuto/vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="127"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="131"/>
         <source>off</source>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="574"/>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="831"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="148"/>
+        <source>all/per-note velocity mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Velocity</source>
-        <translation>Síla nárazu</translation>
+        <translation type="obsolete">Síla nárazu</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="632"/>
         <source>add new ...</source>
-        <translation>Přidat nový ovladač...</translation>
+        <translation type="obsolete">Přidat nový ovladač...</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="808"/>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="866"/>
         <source>Instrument-defined</source>
-        <translation>Vymezeno nástrojově</translation>
+        <translation type="obsolete">Vymezeno nástrojově</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="823"/>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="844"/>
         <source>Add ...</source>
-        <translation>Přidat...</translation>
+        <translation type="obsolete">Přidat...</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="827"/>
         <source>Others</source>
-        <translation>Jiné</translation>
+        <translation type="obsolete">Jiné</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="894"/>
         <source>Edit instrument ...</source>
-        <translation>Upravit nástroj...</translation>
+        <translation type="obsolete">Upravit nástroj...</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="942"/>
         <source>Common Controls</source>
-        <translation>Obecné ovládání</translation>
+        <translation type="obsolete">Obecné ovládání</translation>
     </message>
 </context>
 <context>
     <name>MusEGui::DList</name>
     <message>
-        <location filename="../../muse/midiedit/dlist.cpp" line="542"/>
+        <location filename="../../muse/midiedit/dlist.cpp" line="758"/>
         <source>hide this instrument</source>
         <translation>Skrýt tento nástroj</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/dlist.cpp" line="543"/>
+        <location filename="../../muse/midiedit/dlist.cpp" line="759"/>
         <source>show this instrument</source>
         <translation>Ukázat tento nástroj</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/dlist.cpp" line="544"/>
+        <location filename="../../muse/midiedit/dlist.cpp" line="760"/>
         <source>this turns a grayed out eye into a blue eye</source>
         <translation>Změní šedé oko na modré oko</translation>
     </message>
@@ -7722,50 +8246,50 @@ prosím, MusE znovu. Promiňte (pokoušíme se to opravit)</translation>
 <context>
     <name>MusEGui::DrumCanvas</name>
     <message>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="266"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="318"/>
         <source>Moving items failed</source>
         <translation>Přesun položek se nezdařil</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="266"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="318"/>
         <source>The selection couldn&apos;t be moved, because at least one note would be moved into a track which is different from both the original track and the current part&apos;s track.
 Changing the current part with ALT+LEFT/RIGHT may help.</source>
         <translation>Výběr se nepodařilo přesunout, protože by alespoň jedna nota byla přesunuta do stopy, která je jiná než jak původní stopa, tak stopa nynější části.
 Může pomoci nynější část změnit pomocí Alt+šipka vlevo/vpravo.</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="398"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="458"/>
         <source>Creating event failed</source>
         <translation>Vytvoření události se nezdařilo</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="398"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="458"/>
         <source>Couldn&apos;t create the event, because the currently selected part isn&apos;t the same track, and the selected instrument could be either on no or on multiple parts, which is ambiguous.
 Select the destination part, then try again.</source>
         <translation>Událost se nepodařilo vytvořit, protože nyní vybraná část není stejnou stopou, a vybraný nástroj by mohl být buď na žádné nebo na více částech, což je nejednoznačné.
 Vyberte cílovou část, pak to zkuste znovu.</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="887"/>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="1459"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="998"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="1591"/>
         <source>Recording event failed</source>
         <translation>Nahrání události se nezdařilo</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="887"/>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="1459"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="998"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="1591"/>
         <source>Couldn&apos;t record the event, because the currently selected part isn&apos;t the same track, and the instrument to be recorded could be either on no or on multiple parts, which is ambiguous.
 Select the destination part, then try again.</source>
         <translation>Událost se nepodařilo nahrát, protože nyní vybraná část není stejnou stopou, a nástroj, který se má nahrát, by mohl být buď na žádné nebo na více částech, což je nejednoznačné.
 Vyberte cílovou část, pak to zkuste znovu.</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="1475"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="1607"/>
         <source>Internal error</source>
         <translation>Vnitřní chyba</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/dcanvas.cpp" line="1475"/>
+        <location filename="../../muse/midiedit/dcanvas.cpp" line="1607"/>
         <source>Wtf, some nasty internal error which is actually impossible occurred. Check console output. Nothing recorded.</source>
         <translation>Vyskytla se, i když by jeden řekl, že je to nemožné, jedna opravdu ošklivá vnitřní chyba. Prověřte výstup konzole. Nic nebylo nahráno.</translation>
     </message>
@@ -7773,187 +8297,175 @@ Vyberte cílovou část, pak to zkuste znovu.</translation>
 <context>
     <name>MusEGui::DrumEdit</name>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="85"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="107"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="93"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="115"/>
         <source>mute instrument</source>
         <translation>Ztlumit nástroj</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="86"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="108"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="94"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="116"/>
         <source>sound name</source>
         <translation>Název zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="87"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="109"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="95"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="117"/>
         <source>volume percent</source>
         <translation>Procento hlasitosti</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="88"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="110"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="96"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="118"/>
         <source>quantisation</source>
         <translation>Kvantizace</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="89"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="111"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="97"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="119"/>
         <source>this input note triggers the sound</source>
         <translation>Tato vstupní nota spustí zvuk</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="90"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="112"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="98"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="120"/>
         <source>note length</source>
         <translation>Délka noty</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="91"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="113"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="99"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="121"/>
         <source>this is the note which is played</source>
         <translation>Toto je nota, která se přehrává</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="92"/>
         <source>output channel (hold ctl to affect all rows)</source>
-        <translation>Výstupní kanál (držet klávesu Ctrl pro ovlivnění všech řádků)</translation>
+        <translation type="obsolete">Výstupní kanál (držet klávesu Ctrl pro ovlivnění všech řádků)</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="93"/>
         <source>output port (hold ctl to affect all rows)</source>
-        <translation>Výstupní přípojka (držet klávesu Ctrl pro ovlivnění všech řádků)</translation>
+        <translation type="obsolete">Výstupní přípojka (držet klávesu Ctrl pro ovlivnění všech řádků)</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="94"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="116"/>
         <source>shift + control key: draw velocity level 1</source>
-        <translation>Klávesy Shift + Ctrl: Kreslit úroveň síly nárazu (dynamiky) 1</translation>
+        <translation type="obsolete">Klávesy Shift + Ctrl: Kreslit úroveň síly nárazu (dynamiky) 1</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="95"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="117"/>
         <source>control key: draw velocity level 2</source>
-        <translation>Klávesa Ctrl: Kreslit úroveň síly nárazu (dynamiky) 2</translation>
+        <translation type="obsolete">Klávesa Ctrl: Kreslit úroveň síly nárazu (dynamiky) 2</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="96"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="118"/>
         <source>shift key: draw velocity level 3</source>
-        <translation>Klávesa Shift: Kreslit úroveň síly nárazu (dynamiky) 3</translation>
+        <translation type="obsolete">Klávesa Shift: Kreslit úroveň síly nárazu (dynamiky) 3</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="97"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="119"/>
         <source>draw velocity level 4</source>
-        <translation>Kreslit úroveň síly nárazu (dynamiky) 4</translation>
+        <translation type="obsolete">Kreslit úroveň síly nárazu (dynamiky) 4</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="114"/>
         <source>output channel (ctl: affect all rows)</source>
-        <translation>Výstupní kanál (držet klávesu Ctrl pro ovlivnění všech řádků)</translation>
+        <translation type="obsolete">Výstupní kanál (držet klávesu Ctrl pro ovlivnění všech řádků)</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="115"/>
         <source>output port (ctl: affect all rows)</source>
-        <translation>Výstupní přípojka (držet klávesu Ctrl pro ovlivnění všech řádků)</translation>
+        <translation type="obsolete">Výstupní přípojka (držet klávesu Ctrl pro ovlivnění všech řádků)</translation>
     </message>
     <message>
         <source>&amp;File</source>
         <translation type="obsolete">&amp;Soubor</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="278"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="287"/>
         <source>Load Map</source>
         <translation>Nahrát rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="279"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="288"/>
         <source>Save Map</source>
         <translation>Uložit rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="280"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="289"/>
         <source>Reset GM Map</source>
         <translation>Nastavit rozložení GM znovu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="173"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="182"/>
         <source>&amp;Edit</source>
         <translation>Úp&amp;ravy</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="177"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="186"/>
         <source>Cut</source>
         <translation>Vyjmout</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="178"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="187"/>
         <source>Copy</source>
         <translation>Kopírovat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="179"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="188"/>
         <source>Copy events in range</source>
         <translation>Kopírovat události v rozsahu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="180"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="189"/>
         <source>Paste</source>
         <translation>Vložit</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="181"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="190"/>
         <source>Paste (with Dialog)</source>
         <translation>Vložit (s dialogem)</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="183"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="192"/>
         <source>Delete Events</source>
         <translation>Smazat události</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="199"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="208"/>
         <source>&amp;Select</source>
         <translation>&amp;Vybrat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="201"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="210"/>
         <source>Select All</source>
         <translation>Vybrat vše</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="202"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="211"/>
         <source>Select None</source>
         <translation>Nevybrat nic</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="203"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="212"/>
         <source>Invert</source>
         <translation>Obrátit</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="205"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="214"/>
         <source>Inside Loop</source>
         <translation>Uvnitř smyčky</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="206"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="215"/>
         <source>Outside Loop</source>
         <translation>Vně smyčky</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="210"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="219"/>
         <source>Previous Part</source>
         <translation>Předchozí část</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="211"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="220"/>
         <source>Next Part</source>
         <translation>Další část</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="230"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="239"/>
         <source>Fu&amp;nctions</source>
         <translation>&amp;Funkce</translation>
     </message>
@@ -7962,263 +8474,312 @@ Vyberte cílovou část, pak to zkuste znovu.</translation>
         <translation type="obsolete">Přeuspořádat seznam</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="298"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="307"/>
         <source>Set Fixed Length</source>
         <translation>Nastavit pevnou délku</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="299"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="308"/>
         <source>Modify Velocity</source>
         <translation>Změnit sílu nárazu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="300"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="309"/>
         <source>Crescendo/Decrescendo</source>
         <translation>Crescendo/Decrescendo</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="301"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="310"/>
         <source>Quantize</source>
         <translation>Kvantizovat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="302"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="311"/>
         <source>Erase Event</source>
         <translation>Smazat událost</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="303"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="312"/>
         <source>Move Notes</source>
         <translation>Přesunout noty</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="304"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="313"/>
         <source>Delete Overlaps</source>
         <translation>Smazat překrytí</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="324"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="333"/>
         <source>&amp;Plugins</source>
         <translation>&amp;Moduly</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="327"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="336"/>
         <source>Window &amp;Config</source>
         <translation>O&amp;kno</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="403"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="412"/>
         <source>Drum tools</source>
         <translation>Nástroje pro bicí</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="386"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="395"/>
         <source>Load Drummap</source>
         <translation>Nahrát rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="84"/>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="106"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="92"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="114"/>
         <source>hide instrument</source>
         <translation>Skrýt nástroj</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="290"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="100"/>
+        <source>override track output channel (hold ctl to affect all rows)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="101"/>
+        <source>override track output port (hold ctl to affect all rows)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="102"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="124"/>
+        <source>control + meta keys: draw velocity level 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="103"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="125"/>
+        <source>meta key: draw velocity level 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="104"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="126"/>
+        <source>draw default velocity level 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="105"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="127"/>
+        <source>meta + alt keys: draw velocity level 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="122"/>
+        <source>override track output channel (ctl: affect all rows)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="123"/>
+        <source>override track output port (ctl: affect all rows)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="299"/>
         <source>Re-order map</source>
         <translation>Přeuspořádat rozložení</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="330"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="339"/>
         <source>Group</source>
         <translation>Seskupit</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="331"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="340"/>
         <source>Don&apos;t group</source>
         <translation>Neseskupovat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="332"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="341"/>
         <source>Group by channel</source>
         <translation>Seskupit podle kanálu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="333"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="342"/>
         <source>Group maximally</source>
         <translation>Seskupit maximálně</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="334"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="343"/>
         <source>Show/Hide</source>
         <translation>Ukázat/Skrýt</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="335"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="344"/>
         <source>Also show hidden instruments</source>
         <translation>Ukázat i skryté nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="337"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="346"/>
         <source>Show all instruments</source>
         <translation>Ukázat všechny nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="338"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="347"/>
         <source>Hide all instruments</source>
         <translation>Skrýt všechny nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="339"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="348"/>
         <source>Only show used instruments</source>
         <translation>Ukázat pouze použité nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="340"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="349"/>
         <source>Only show instruments with non-empty name or used instruments</source>
         <translation>Ukázat pouze nástroje s vyplněným názvem nebo použité nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="382"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="391"/>
         <source>Drum map tools</source>
         <translation>Nástroje rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="393"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="402"/>
         <source>Store Drummap</source>
         <translation>Uložit rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="407"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="416"/>
         <source>Step Record</source>
         <translation>Nahrávat po taktu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="414"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="423"/>
         <source>Midi Input</source>
         <translation>Vstup MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="424"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="430"/>
+        <source>Play Events</source>
+        <translation type="unfinished">Přehrát události</translation>
+    </message>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="442"/>
         <source>cursor tools</source>
         <translation>Nástroje ukazovátka</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="426"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="444"/>
         <source>Cursor step:</source>
         <translation>Krok ukazovátka:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="429"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="447"/>
         <source>Set step size for cursor edit</source>
         <translation>Nastavit délku kroku pro režim ukazovátka</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="458"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="476"/>
         <source>ctrl</source>
         <translation>Ctrl</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="465"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="483"/>
         <source>Add Controller View</source>
         <translation>Přidat pohled ovladače</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="520"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="538"/>
         <source>H</source>
         <translation>H</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="521"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="539"/>
         <source>M</source>
         <translation>M</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="522"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="540"/>
         <source>Sound</source>
         <translation>Zvuk</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="523"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="541"/>
         <source>Vol</source>
         <translation>Hlasitost</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="524"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="542"/>
         <source>QNT</source>
         <translation>QNT</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="525"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="543"/>
         <source>E-Note</source>
         <translation>Nota E</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="526"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="544"/>
         <source>Len</source>
         <translation>Délka</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="527"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="545"/>
         <source>A-Note</source>
         <translation>Nota A</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="528"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="546"/>
         <source>Ch</source>
         <translation>K</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="529"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="547"/>
         <source>Port</source>
         <translation>Přípojka</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="530"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="548"/>
         <source>LV1</source>
         <translation>LV1</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="531"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="549"/>
         <source>LV2</source>
         <translation>LV2</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="532"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="550"/>
         <source>LV3</source>
         <translation>LV3</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="533"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="551"/>
         <source>LV4</source>
         <translation>LV4</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="1060"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="1162"/>
         <source>Muse: Load Drum Map</source>
         <translation>MusE: Nahrát rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="1112"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="1214"/>
         <source>MusE: Store Drum Map</source>
         <translation>MusE: Uložit rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="1137"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="1239"/>
         <source>Drum map</source>
         <translation>Rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="1138"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="1240"/>
         <source>Reset the drum map with GM defaults?</source>
         <translation>Nastavit rozložení bicích znovu s výchozím GM?</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="1702"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="1934"/>
         <source>Not all parts are displayed</source>
         <translation>Ne všechny části jsou zobrazeny</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="1702"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="1934"/>
         <source>You selected both old-style-drumtracks and others (that is: new-style or midi tracks), but they cannot displayed in the same drum edit.
 I&apos;ll only display the old-style drumtracks in this editor, dropping the others.</source>
         <translation>Vybral jste jak stopy bicích ve starém stylu a jiné (to je nový styl nebo stopy MIDI), ale tyto nelze zobrazit ve stejné úpravě bicích.
@@ -8228,30 +8789,27 @@ V tomto editoru budou zobrazeny stopy bicích ve starém stylu, ostatní budou z
 <context>
     <name>MusEGui::EditCAfterDialog</name>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="443"/>
         <source>MusE: Enter Channel Aftertouch</source>
-        <translation>MusE: Zadat dodělávku kanálu</translation>
+        <translation type="obsolete">MusE: Zadat dodělávku kanálu</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="445"/>
         <source>Time Position</source>
-        <translation>Časová poloha</translation>
+        <translation type="obsolete">Časová poloha</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="448"/>
         <source>Pressure</source>
-        <translation>Tlak úhozu</translation>
+        <translation type="obsolete">Tlak úhozu</translation>
     </message>
 </context>
 <context>
     <name>MusEGui::EditEventDialog</name>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="188"/>
+        <location filename="../../muse/widgets/editevent.cpp" line="170"/>
         <source>Ok</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="190"/>
+        <location filename="../../muse/widgets/editevent.cpp" line="172"/>
         <source>Cancel</source>
         <translation>Zrušit</translation>
     </message>
@@ -8259,182 +8817,251 @@ V tomto editoru budou zobrazeny stopy bicích ve starém stylu, ostatní budou z
 <context>
     <name>MusEGui::EditInstrument</name>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="115"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="197"/>
+        <source>Control7</source>
+        <translation type="unfinished">Ovladač 7</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="198"/>
+        <source>Control14</source>
+        <translation type="unfinished">Ovladač 14</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="199"/>
+        <source>RPN</source>
+        <translation type="unfinished">RPN</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="200"/>
+        <source>NPRN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="201"/>
+        <source>RPN14</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="202"/>
+        <source>NRPN14</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="203"/>
+        <source>Pitch</source>
+        <translation type="unfinished">Výška tónu</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="204"/>
+        <source>Program</source>
+        <translation type="unfinished">Program</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="205"/>
+        <source>PolyAftertouch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="206"/>
+        <source>Aftertouch</source>
+        <translation type="unfinished">Dodělávka po</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="249"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="274"/>
         <source>Name</source>
         <translation>Název</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="116"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="250"/>
         <source>Vol</source>
         <translation>Hlasitost</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="117"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="251"/>
         <source>Quant</source>
         <translation>Kvantizace</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="118"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="252"/>
         <source>E-Note</source>
         <translation>Nota E</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="119"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="253"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="272"/>
         <source>Len</source>
         <translation>Délka</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="120"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="254"/>
         <source>A-Note</source>
         <translation>Nota A</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="121"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="255"/>
         <source>LV1</source>
         <translation>LV1</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="122"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="256"/>
         <source>LV2</source>
         <translation>LV2</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="123"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="257"/>
         <source>LV3</source>
         <translation>LV3</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="124"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="258"/>
         <source>LV4</source>
         <translation>LV4</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="632"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="662"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="271"/>
+        <source>Tick</source>
+        <translation type="unfinished">Tiky</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="273"/>
+        <source>Data</source>
+        <translation type="unfinished">Data</translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="808"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="828"/>
         <source>MusE: Create file failed</source>
         <translation>MusE: Vytvoření souboru se nezdařilo</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="689"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="855"/>
         <source>MusE: Write File failed</source>
         <translation>MusE: Zápis souboru se nezdařil</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="758"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="978"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="907"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1120"/>
         <source>MusE: Save Instrument Definition</source>
         <translation>MusE: Uložit vymezení nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="759"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="979"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="908"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1121"/>
         <source>Instrument Definition (*.idf)</source>
         <translation>Vymezení nástroje (*.idf)</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="860"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="889"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1002"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1031"/>
         <source>MusE: Save instrument as</source>
         <translation>MusE: Uložit nástroj jako</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="860"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1002"/>
         <source>Enter a new unique instrument name:</source>
         <translation>Zadat nový jedinečný název nástroje:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="890"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1032"/>
         <source>The user instrument &apos;%1&apos; already exists. This will overwrite its .idf instrument file.
 Are you sure?</source>
         <translation>Uživatelský nástroj &apos;%1&apos; již existuje. Toto přepíše jeho .idf soubor s nástrojem.
 Jste si jistý?</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1326"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1409"/>
         <source>MusE: Bad instrument name</source>
         <translation>MusE: Špatný název nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1327"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1410"/>
         <source>Please choose a unique instrument name.
 (The name might be used by a hidden instrument.)</source>
         <translation>Vyberte, prosím, jedinečný název nástroje.
 (Název může být použit skrytým nástrojem.)</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1450"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1533"/>
         <source>MusE: Bad patch name</source>
         <translation>MusE: Špatný název záplaty</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1451"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1534"/>
         <source>Please choose a unique patch name</source>
         <translation>Vyberte, prosím, jedinečný název pro záplatu</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1472"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1555"/>
         <source>MusE: Bad patchgroup name</source>
         <translation>MusE: Špatný název skupiny záplat</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1473"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1556"/>
         <source>Please choose a unique patchgroup name</source>
         <translation>Vyberte, prosím, jedinečný název pro skupinu záplat</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1931"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="2024"/>
         <source>MusE: Bad controller name</source>
         <translation>MusE: Špatný název ovladače</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1932"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="2025"/>
         <source>Please choose a unique controller name</source>
         <translation>Vyberte, prosím, jedinečný název pro ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="2963"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="2975"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3221"/>
+        <source>New controller: Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3221"/>
+        <source>Error! All control numbers are taken up!
+Clean up the instrument!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>MusE: Cannot add common controller</source>
-        <translation>MusE: Nelze přidat obecný ovladač</translation>
+        <translation type="obsolete">MusE: Nelze přidat obecný ovladač</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="2964"/>
         <source>A controller named &apos;%1&apos; already exists.</source>
-        <translation>Ovladač s názvem &apos;%1&apos; již existuje.</translation>
+        <translation type="obsolete">Ovladač s názvem &apos;%1&apos; již existuje.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="2976"/>
         <source>A controller number %1 already exists.</source>
-        <translation>Číslo ovladače &apos;%1&apos; již existuje.</translation>
+        <translation type="obsolete">Číslo ovladače &apos;%1&apos; již existuje.</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3222"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3227"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3407"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3412"/>
         <source>MusE</source>
         <translation>MusE</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3223"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3228"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3408"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3413"/>
         <source>The current Instrument contains unsaved data
 Save Current Instrument?</source>
         <translation>Nynější nástroj obsahuje neuložená data.
 Uložit nynější nástroj?</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3225"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3230"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3410"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3415"/>
         <source>&amp;Save</source>
         <translation>&amp;Uložit</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3225"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3230"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3410"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3415"/>
         <source>&amp;Nosave</source>
         <translation>&amp;Neukládat</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3225"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3410"/>
         <source>&amp;Abort</source>
         <translation>&amp;Zrušit</translation>
     </message>
@@ -8442,22 +9069,22 @@ Uložit nynější nástroj?</translation>
 <context>
     <name>MusEGui::EditMetaDialog</name>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="308"/>
+        <location filename="../../muse/widgets/editevent.cpp" line="345"/>
         <source>MusE: Enter Meta Event</source>
         <translation>MusE: Zadání metaudálosti</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="310"/>
+        <location filename="../../muse/widgets/editevent.cpp" line="347"/>
         <source>Time Position</source>
         <translation>Časová poloha</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="314"/>
+        <location filename="../../muse/widgets/editevent.cpp" line="351"/>
         <source>Meta Type</source>
         <translation>Meta typ</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="326"/>
+        <location filename="../../muse/widgets/editevent.cpp" line="363"/>
         <source>Enter Hex</source>
         <translation>Zadat Hex</translation>
     </message>
@@ -8465,30 +9092,26 @@ Uložit nynější nástroj?</translation>
 <context>
     <name>MusEGui::EditPAfterDialog</name>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="501"/>
         <source>MusE: Enter Poly Aftertouch</source>
-        <translation>MusE: Zadat vícedodělávku</translation>
+        <translation type="obsolete">MusE: Zadat vícedodělávku</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="503"/>
         <source>Time Position</source>
-        <translation>Časová poloha</translation>
+        <translation type="obsolete">Časová poloha</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="506"/>
         <source>Pitch</source>
-        <translation>Výška tónu</translation>
+        <translation type="obsolete">Výška tónu</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="508"/>
         <source>Pressure</source>
-        <translation>Tlak úhozu</translation>
+        <translation type="obsolete">Tlak úhozu</translation>
     </message>
 </context>
 <context>
     <name>MusEGui::EditToolBar</name>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="33"/>
+        <location filename="../../muse/widgets/tools.cpp" line="34"/>
         <source>select Pointer Tool:
 with the pointer tool you can:
   select parts
@@ -8501,7 +9124,7 @@ Tento nástroj umožňuje:
   Kopírovat části</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="38"/>
+        <location filename="../../muse/widgets/tools.cpp" line="39"/>
         <source>select Pencil Tool:
 with the pencil tool you can:
   create new parts
@@ -8512,118 +9135,156 @@ Tento nástroj umožňuje:
   Změnit délku jednotlivých částí</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="42"/>
+        <location filename="../../muse/widgets/tools.cpp" line="43"/>
         <source>select Delete Tool:
 with the delete tool you can delete parts</source>
         <translation>Nástroj gumy&quot;:
   Smazat části</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="44"/>
+        <location filename="../../muse/widgets/tools.cpp" line="45"/>
         <source>select Cut Tool:
 with the cut tool you can split a part</source>
         <translation>Nástroj pro stříhání:
 S tímto nástrojem se části rozdělují</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="46"/>
+        <location filename="../../muse/widgets/tools.cpp" line="47"/>
         <source>select Glue Tool:
 with the glue tool you can glue two parts</source>
         <translation>Nástroj pro přilepení:
 S tímto nástrojem se dvě jednotlivé části spojují v jednu</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="48"/>
+        <location filename="../../muse/widgets/tools.cpp" line="49"/>
         <source>select Score Tool:
 </source>
         <translation>Nástroj pro notový zápis:</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="49"/>
+        <location filename="../../muse/widgets/tools.cpp" line="50"/>
         <source>select Quantize Tool:
 insert display quantize event</source>
         <translation>Nástroj pro kvantizaci:
 S tímto nástrojem se vkládají události kvantizace</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="51"/>
+        <location filename="../../muse/widgets/tools.cpp" line="52"/>
         <source>select Drawing Tool</source>
         <translation>Nástroj tužky na kreslení</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="52"/>
+        <location filename="../../muse/widgets/tools.cpp" line="53"/>
         <source>select Muting Tool:
 click on part to mute/unmute</source>
         <translation>Nástroj pro ztlumení:
 Klepněte na část pro zapnutí/vypnutí ztlumení</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="54"/>
+        <location filename="../../muse/widgets/tools.cpp" line="55"/>
         <source>Manipulate automation</source>
         <translation>Pracovat na automatizaci</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="55"/>
         <source>Cursor tool</source>
-        <translation>Nástroj ukazovátka</translation>
+        <translation type="obsolete">Nástroj ukazovátka</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="58"/>
+        <location filename="../../muse/widgets/tools.cpp" line="66"/>
         <source>pointer</source>
         <translation>Ukazovátko</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="59"/>
+        <location filename="../../muse/widgets/tools.cpp" line="67"/>
         <source>pencil</source>
         <translation>Tužka</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="60"/>
+        <location filename="../../muse/widgets/tools.cpp" line="68"/>
         <source>eraser</source>
         <translation>Guma</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="61"/>
+        <location filename="../../muse/widgets/tools.cpp" line="69"/>
         <source>cutter</source>
         <translation>Střihadlo</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="62"/>
+        <location filename="../../muse/widgets/tools.cpp" line="74"/>
         <source>score</source>
         <translation>Notový zápis</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="63"/>
+        <location filename="../../muse/widgets/tools.cpp" line="70"/>
         <source>glue</source>
         <translation>Lepidlo</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="64"/>
+        <location filename="../../muse/widgets/tools.cpp" line="56"/>
+        <source>select Cursor (tracker mode) tool:
+with the cursor tool you can:
+  navigate with arrow keys
+  use VBNM to place notes
+  change step with 0 and 9</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/tools.cpp" line="61"/>
+        <source>select Range Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/tools.cpp" line="62"/>
+        <source>select Panning Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/tools.cpp" line="63"/>
+        <source>select Zoom Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/tools.cpp" line="71"/>
+        <source>range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/tools.cpp" line="72"/>
+        <source>pan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/tools.cpp" line="73"/>
+        <source>zoom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/tools.cpp" line="75"/>
         <source>quantize</source>
         <translation>Kvantizovat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="65"/>
+        <location filename="../../muse/widgets/tools.cpp" line="76"/>
         <source>draw</source>
         <translation>Kreslit</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="66"/>
+        <location filename="../../muse/widgets/tools.cpp" line="77"/>
         <source>mute parts</source>
         <translation>Ztlumit části</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="67"/>
+        <location filename="../../muse/widgets/tools.cpp" line="78"/>
         <source>edit automation</source>
         <translation>Upravit automatizaci</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="68"/>
+        <location filename="../../muse/widgets/tools.cpp" line="79"/>
         <source>cursor</source>
         <translation>Ukazovátko</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="77"/>
+        <location filename="../../muse/widgets/tools.cpp" line="92"/>
         <source>Edit Tools</source>
         <translation>Upravit nástroje</translation>
     </message>
@@ -8631,67 +9292,72 @@ Klepněte na část pro zapnutí/vypnutí ztlumení</translation>
 <context>
     <name>MusEGui::EffectRack</name>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="194"/>
+        <location filename="../../muse/mixer/rack.cpp" line="200"/>
         <source>effect rack</source>
         <translation>Přihrádka s efekty</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="277"/>
+        <location filename="../../muse/mixer/rack.cpp" line="283"/>
         <source>new</source>
         <translation>Nový</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="278"/>
+        <location filename="../../muse/mixer/rack.cpp" line="284"/>
         <source>change</source>
         <translation>Změnit</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="279"/>
+        <location filename="../../muse/mixer/rack.cpp" line="285"/>
         <source>move up</source>
         <translation>Posunout nahoru</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="280"/>
+        <location filename="../../muse/mixer/rack.cpp" line="286"/>
         <source>move down</source>
         <translation>Posunout dolů</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="281"/>
+        <location filename="../../muse/mixer/rack.cpp" line="287"/>
         <source>remove</source>
         <translation>Odstranit</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="282"/>
+        <location filename="../../muse/mixer/rack.cpp" line="288"/>
         <source>bypass</source>
         <translation>Obejít</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="283"/>
+        <location filename="../../muse/mixer/rack.cpp" line="289"/>
         <source>show gui</source>
         <translation>Ukázat uživatelské rozhraní</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="284"/>
+        <location filename="../../muse/mixer/rack.cpp" line="290"/>
         <source>show native gui</source>
         <translation>Ukázat původní rozhraní</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="285"/>
+        <location filename="../../muse/mixer/rack.cpp" line="291"/>
         <source>save preset</source>
         <translation>Uložit přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="432"/>
+        <location filename="../../muse/mixer/rack.cpp" line="336"/>
+        <source>Presets</source>
+        <translation type="unfinished">Přednastavení</translation>
+    </message>
+    <message>
+        <location filename="../../muse/mixer/rack.cpp" line="471"/>
         <source>MusE: Save Preset</source>
         <translation>MusE: Uložit přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="577"/>
+        <location filename="../../muse/mixer/rack.cpp" line="614"/>
         <source>Replace effect</source>
         <translation>Nahradit efekt</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="577"/>
+        <location filename="../../muse/mixer/rack.cpp" line="614"/>
         <source>Do you really want to replace the effect %1?</source>
         <translation>Opravdu chcete nahradit efekt %1?</translation>
     </message>
@@ -8699,7 +9365,7 @@ Klepněte na část pro zapnutí/vypnutí ztlumení</translation>
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/widgets/genset.cpp" line="526"/>
+        <location filename="../../muse/widgets/genset.cpp" line="543"/>
         <source>MusE: Choose start template or song</source>
         <translation>MusE: Vybrat začáteční píseň nebo předlohu</translation>
     </message>
@@ -8838,127 +9504,125 @@ Klepněte na část pro zapnutí/vypnutí ztlumení</translation>
 <context>
     <name>MusEGui::ListEdit</name>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="478"/>
+        <location filename="../../muse/liste/listedit.cpp" line="470"/>
         <source>insert Note</source>
         <translation>Vložit notu</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="479"/>
+        <location filename="../../muse/liste/listedit.cpp" line="471"/>
         <source>insert SysEx</source>
         <translation>Vložit SysEx</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="480"/>
+        <location filename="../../muse/liste/listedit.cpp" line="472"/>
         <source>insert Ctrl</source>
         <translation>Vložit Ctrl</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="481"/>
+        <location filename="../../muse/liste/listedit.cpp" line="473"/>
         <source>insert Meta</source>
         <translation>Vložit Meta</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="482"/>
         <source>insert Channel Aftertouch</source>
-        <translation>Vložit dodělávku kanálu</translation>
+        <translation type="obsolete">Vložit dodělávku kanálu</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="483"/>
         <source>insert Poly Aftertouch</source>
-        <translation>Vložit více dodělávku kanálu</translation>
+        <translation type="obsolete">Vložit více dodělávku kanálu</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="496"/>
+        <location filename="../../muse/liste/listedit.cpp" line="484"/>
         <source>&amp;Edit</source>
         <translation>Úp&amp;ravy</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="501"/>
+        <location filename="../../muse/liste/listedit.cpp" line="489"/>
         <source>Cut</source>
         <translation>Vyjmout</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="505"/>
+        <location filename="../../muse/liste/listedit.cpp" line="493"/>
         <source>Copy</source>
         <translation>Kopírovat</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="509"/>
+        <location filename="../../muse/liste/listedit.cpp" line="497"/>
         <source>Paste</source>
         <translation>Vložit</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="515"/>
+        <location filename="../../muse/liste/listedit.cpp" line="503"/>
         <source>Delete Events</source>
         <translation>Smazat události</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="520"/>
+        <location filename="../../muse/liste/listedit.cpp" line="508"/>
         <source>Increase Tick</source>
         <translation>Zvětšit tiky</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="523"/>
+        <location filename="../../muse/liste/listedit.cpp" line="511"/>
         <source>Decrease Tick</source>
         <translation>Zmenšit tiky</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="531"/>
+        <location filename="../../muse/liste/listedit.cpp" line="519"/>
         <source>Window &amp;Config</source>
         <translation>O&amp;kno</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="538"/>
+        <location filename="../../muse/liste/listedit.cpp" line="526"/>
         <source>Insert tools</source>
         <translation>Vložit nástroje</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="560"/>
+        <location filename="../../muse/liste/listedit.cpp" line="548"/>
         <source>Tick</source>
         <translation>Tiky</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="561"/>
+        <location filename="../../muse/liste/listedit.cpp" line="549"/>
         <source>Bar</source>
         <translation>Takt</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="562"/>
+        <location filename="../../muse/liste/listedit.cpp" line="550"/>
         <source>Type</source>
         <translation>Typ</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="563"/>
+        <location filename="../../muse/liste/listedit.cpp" line="551"/>
         <source>Ch</source>
         <translation>K</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="564"/>
+        <location filename="../../muse/liste/listedit.cpp" line="552"/>
         <source>Val A</source>
         <translation>Hodnota A</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="565"/>
+        <location filename="../../muse/liste/listedit.cpp" line="553"/>
         <source>Val B</source>
         <translation>Hodnota B</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="566"/>
+        <location filename="../../muse/liste/listedit.cpp" line="554"/>
         <source>Val C</source>
         <translation>Hodnota C</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="567"/>
+        <location filename="../../muse/liste/listedit.cpp" line="555"/>
         <source>Len</source>
         <translation>Délka</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="568"/>
+        <location filename="../../muse/liste/listedit.cpp" line="556"/>
         <source>Comment</source>
         <translation>Poznámka</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="614"/>
+        <location filename="../../muse/liste/listedit.cpp" line="602"/>
         <source>MusE: List Editor</source>
         <translation>MusE: Editor seznamu</translation>
     </message>
@@ -8966,259 +9630,255 @@ Klepněte na část pro zapnutí/vypnutí ztlumení</translation>
 <context>
     <name>MusEGui::MPConfig</name>
     <message>
-        <location filename="../../muse/confmport.cpp" line="101"/>
-        <location filename="../../muse/confmport.cpp" line="294"/>
+        <location filename="../../muse/confmport.cpp" line="122"/>
         <source>Default input connections</source>
         <translation>Výchozí vstupní spojení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="102"/>
-        <location filename="../../muse/confmport.cpp" line="173"/>
+        <location filename="../../muse/confmport.cpp" line="123"/>
+        <location filename="../../muse/confmport.cpp" line="194"/>
         <source>Are you sure you want to apply to all existing midi tracks now?</source>
         <translation>Jste si jistý, že chcete použít na všechny existující stopy MIDI nyní?</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="172"/>
-        <location filename="../../muse/confmport.cpp" line="332"/>
+        <location filename="../../muse/confmport.cpp" line="193"/>
         <source>Default output connections</source>
         <translation>Výchozí výstupní spojení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="295"/>
-        <location filename="../../muse/confmport.cpp" line="333"/>
         <source>Setting will apply to new midi tracks.
 Do you want to apply to all existing midi tracks now?</source>
-        <translation>Nastavení se použije na nové stopy MIDI.
+        <translation type="obsolete">Nastavení se použije na nové stopy MIDI.
 Chcete použít na všechny existující stopy MIDI nyní?</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="372"/>
+        <location filename="../../muse/confmport.cpp" line="318"/>
         <source>MusE: bad device name</source>
         <translation>MusE: Špatný název zařízení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="373"/>
+        <location filename="../../muse/confmport.cpp" line="319"/>
         <source>please choose a unique device name</source>
         <translation>Vyberte, prosím, jedinečný název pro zařízení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="438"/>
-        <location filename="../../muse/confmport.cpp" line="1291"/>
+        <location filename="../../muse/confmport.cpp" line="384"/>
+        <location filename="../../muse/confmport.cpp" line="1233"/>
         <source>in</source>
         <translation>Vstup</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="461"/>
-        <location filename="../../muse/confmport.cpp" line="1283"/>
+        <location filename="../../muse/confmport.cpp" line="407"/>
+        <location filename="../../muse/confmport.cpp" line="1225"/>
         <source>out</source>
         <translation>Výstup</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="505"/>
+        <location filename="../../muse/confmport.cpp" line="451"/>
         <source>Show first aliases</source>
         <translation>Ukázat první přezdívku</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="511"/>
+        <location filename="../../muse/confmport.cpp" line="457"/>
         <source>Show second aliases</source>
         <translation>Ukázat druhou přezdívku</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="623"/>
-        <location filename="../../muse/confmport.cpp" line="659"/>
+        <location filename="../../muse/confmport.cpp" line="569"/>
+        <location filename="../../muse/confmport.cpp" line="602"/>
         <source>Toggle all</source>
         <translation>Přepnout vše</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="627"/>
-        <location filename="../../muse/confmport.cpp" line="664"/>
+        <location filename="../../muse/confmport.cpp" line="573"/>
+        <location filename="../../muse/confmport.cpp" line="607"/>
         <source>Change all tracks now</source>
         <translation>Změnit všechny stopy nyní</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="701"/>
+        <location filename="../../muse/confmport.cpp" line="644"/>
         <source>Create Jack device</source>
         <translation>Vytvořit zařízení Jack</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="992"/>
-        <location filename="../../muse/confmport.cpp" line="1020"/>
+        <location filename="../../muse/confmport.cpp" line="919"/>
+        <location filename="../../muse/confmport.cpp" line="947"/>
         <source>Port Number</source>
         <translation>Číslo přípojky</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="993"/>
+        <location filename="../../muse/confmport.cpp" line="920"/>
         <source>Enable gui</source>
         <translation>Povolit rozhraní</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="994"/>
+        <location filename="../../muse/confmport.cpp" line="921"/>
         <source>Enable reading</source>
         <translation>Povolit čtení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="995"/>
+        <location filename="../../muse/confmport.cpp" line="922"/>
         <source>Enable writing</source>
         <translation>Povolit zápis</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="996"/>
+        <location filename="../../muse/confmport.cpp" line="923"/>
         <source>Port instrument</source>
         <translation>Nástroj přípojky</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="997"/>
+        <location filename="../../muse/confmport.cpp" line="924"/>
         <source>Midi device name. Click to edit (Jack)</source>
         <translation>Název zařízení MIDI. Klepnout pro úpravu (Jack)</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="998"/>
+        <location filename="../../muse/confmport.cpp" line="925"/>
         <source>Connections from Jack Midi outputs</source>
         <translation>Spojení z výstupů MIDI Jack</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="999"/>
+        <location filename="../../muse/confmport.cpp" line="926"/>
         <source>Connections to Jack Midi inputs</source>
         <translation>Spojení do výstupů MIDI Jack</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1000"/>
+        <location filename="../../muse/confmport.cpp" line="927"/>
         <source>Auto-connect these channels to new midi tracks</source>
         <translation>Automaticky tyto kanály připojit do nových stop MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1003"/>
+        <location filename="../../muse/confmport.cpp" line="930"/>
         <source>Auto-connect new midi tracks to these channels</source>
         <translation>Automaticky připojit nové stopy MIDI do těchto kanálů</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1005"/>
+        <location filename="../../muse/confmport.cpp" line="932"/>
         <source>Auto-connect new midi tracks to this channel</source>
         <translation>Automaticky připojit nové stopy MIDI do tohoto kanálu</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1007"/>
+        <location filename="../../muse/confmport.cpp" line="934"/>
         <source>Device state</source>
         <translation>Stav zařízení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1022"/>
+        <location filename="../../muse/confmport.cpp" line="949"/>
         <source>Enable gui for device</source>
         <translation>Povolit rozhraní pro zařízení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1024"/>
+        <location filename="../../muse/confmport.cpp" line="951"/>
         <source>Enable reading from device</source>
         <translation>Povolit čtení ze zařízení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1026"/>
+        <location filename="../../muse/confmport.cpp" line="953"/>
         <source>Enable writing to device</source>
         <translation>Povolit zápis na zařízení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1028"/>
+        <location filename="../../muse/confmport.cpp" line="955"/>
         <source>Name of the midi device associated with this port number. Click to edit Jack midi name.</source>
         <translation>Název zařízení MIDI spojeného s tímto číslem přípojky. Klepněte pro změnu názvu MIDI Jack.</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1031"/>
+        <location filename="../../muse/confmport.cpp" line="958"/>
         <source>Instrument connected to port</source>
         <translation>Nástroj spojen s přípojkou</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1033"/>
+        <location filename="../../muse/confmport.cpp" line="960"/>
         <source>Connections from Jack Midi output ports</source>
         <translation>Spojení z výstupních přípojek MIDI Jack</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1035"/>
+        <location filename="../../muse/confmport.cpp" line="962"/>
         <source>Connections to Jack Midi input ports</source>
         <translation>Spojení k vstupním přípojkám MIDI Jack</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1037"/>
+        <location filename="../../muse/confmport.cpp" line="964"/>
         <source>Auto-connect these channels, on this port, to new midi tracks.</source>
         <translation>Automaticky připojit tyto kanály, na této přípojce, do nových stop MIDI.</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1041"/>
+        <location filename="../../muse/confmport.cpp" line="968"/>
         <source>Connect new midi tracks to these channels, on this port.</source>
         <translation>Připojit nové stopy MIDI do těchto kanálů, na této přípojce.</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1043"/>
+        <location filename="../../muse/confmport.cpp" line="970"/>
         <source>Connect new midi tracks to this channel, on this port.</source>
         <translation>Připojit nové stopy MIDI do tohoto kanálu, na této přípojce.</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1046"/>
+        <location filename="../../muse/confmport.cpp" line="973"/>
         <source>State: result of opening the device</source>
         <translation>Stav: Událost otevření zařízení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1086"/>
+        <location filename="../../muse/confmport.cpp" line="1013"/>
         <source>Port</source>
         <translation>Přípojka</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1087"/>
+        <location filename="../../muse/confmport.cpp" line="1014"/>
         <source>GUI</source>
         <translation>Rozhraní</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1088"/>
+        <location filename="../../muse/confmport.cpp" line="1015"/>
         <source>I</source>
         <translation>Vstup</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1089"/>
+        <location filename="../../muse/confmport.cpp" line="1016"/>
         <source>O</source>
         <translation>Výstup</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1090"/>
+        <location filename="../../muse/confmport.cpp" line="1017"/>
         <source>Instrument</source>
         <translation>Nástroj</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1091"/>
+        <location filename="../../muse/confmport.cpp" line="1018"/>
         <source>Device Name</source>
         <translation>Název zařízení</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1092"/>
+        <location filename="../../muse/confmport.cpp" line="1019"/>
         <source>In routes</source>
         <translation>Tok vstupního signálu</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1093"/>
+        <location filename="../../muse/confmport.cpp" line="1020"/>
         <source>Out routes</source>
         <translation>Tok výstupního signálu</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1094"/>
+        <location filename="../../muse/confmport.cpp" line="1021"/>
         <source>Def in ch</source>
         <translation>Výchozí vstupní kanál</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1095"/>
+        <location filename="../../muse/confmport.cpp" line="1022"/>
         <source>Def out ch</source>
         <translation>Výchozí výstupní kanál</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1096"/>
+        <location filename="../../muse/confmport.cpp" line="1023"/>
         <source>State</source>
         <translation>Stav</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1176"/>
+        <location filename="../../muse/confmport.cpp" line="1107"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;neznámý&gt;</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1260"/>
-        <location filename="../../muse/confmport.cpp" line="1322"/>
+        <location filename="../../muse/confmport.cpp" line="1202"/>
+        <location filename="../../muse/confmport.cpp" line="1264"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;Žádný&gt;</translation>
     </message>
@@ -9226,7 +9886,7 @@ Chcete použít na všechny existující stopy MIDI nyní?</translation>
 <context>
     <name>MusEGui::MTScale</name>
     <message>
-        <location filename="../../muse/widgets/mtscale.cpp" line="44"/>
+        <location filename="../../muse/widgets/mtscale.cpp" line="45"/>
         <source>bar scale</source>
         <translation>Měřítko taktu</translation>
     </message>
@@ -9234,7 +9894,7 @@ Chcete použít na všechny existující stopy MIDI nyní?</translation>
 <context>
     <name>MusEGui::MTScaleFlo</name>
     <message>
-        <location filename="../../muse/widgets/mtscale_flo.cpp" line="44"/>
+        <location filename="../../muse/widgets/mtscale_flo.cpp" line="45"/>
         <source>bar scale</source>
         <translation>Měřítko taktu</translation>
     </message>
@@ -9376,10 +10036,58 @@ Chcete použít na všechny existující stopy MIDI nyní?</translation>
     </message>
 </context>
 <context>
+    <name>MusEGui::MidiAudioControl</name>
+    <message>
+        <location filename="../../muse/widgets/midi_audio_control.cpp" line="48"/>
+        <source>Control7</source>
+        <translation type="unfinished">Ovladač 7</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_audio_control.cpp" line="49"/>
+        <source>Control14</source>
+        <translation type="unfinished">Ovladač 14</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_audio_control.cpp" line="50"/>
+        <source>RPN</source>
+        <translation type="unfinished">RPN</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_audio_control.cpp" line="51"/>
+        <source>NPRN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_audio_control.cpp" line="52"/>
+        <source>RPN14</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_audio_control.cpp" line="53"/>
+        <source>NRPN14</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_audio_control.cpp" line="54"/>
+        <source>Pitch</source>
+        <translation type="unfinished">Výška tónu</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_audio_control.cpp" line="55"/>
+        <source>Program</source>
+        <translation type="unfinished">Program</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_audio_control.cpp" line="57"/>
+        <source>Aftertouch</source>
+        <translation type="unfinished">Dodělávka po</translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::MidiInputTransformDialog</name>
     <message>
-        <location filename="../../muse/mplugins/midiitransform.cpp" line="953"/>
-        <location filename="../../muse/mplugins/midiitransform.cpp" line="955"/>
+        <location filename="../../muse/mplugins/midiitransform.cpp" line="988"/>
+        <location filename="../../muse/mplugins/midiitransform.cpp" line="990"/>
         <source>New</source>
         <translation>Nový</translation>
     </message>
@@ -9852,8 +10560,10 @@ Použít nastavení pro seřízení?</translation>
 <context>
     <name>MusEGui::MidiTrackInfo</name>
     <message>
-        <location filename="../../muse/widgets/mtrackinfo.cpp" line="403"/>
-        <location filename="../../muse/widgets/mtrackinfo.cpp" line="1478"/>
+        <location filename="../../muse/widgets/mtrackinfo.cpp" line="183"/>
+        <location filename="../../muse/widgets/mtrackinfo.cpp" line="348"/>
+        <location filename="../../muse/widgets/mtrackinfo.cpp" line="1527"/>
+        <location filename="../../muse/widgets/mtrackinfo.cpp" line="1562"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;neznámý&gt;</translation>
     </message>
@@ -9861,8 +10571,8 @@ Použít nastavení pro seřízení?</translation>
 <context>
     <name>MusEGui::MidiTransformerDialog</name>
     <message>
-        <location filename="../../muse/miditransform.cpp" line="463"/>
-        <location filename="../../muse/miditransform.cpp" line="465"/>
+        <location filename="../../muse/miditransform.cpp" line="467"/>
+        <location filename="../../muse/miditransform.cpp" line="469"/>
         <source>New</source>
         <translation>Nový</translation>
     </message>
@@ -9878,120 +10588,120 @@ Použít nastavení pro seřízení?</translation>
 <context>
     <name>MusEGui::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="144"/>
-        <location filename="../../muse/app.cpp" line="160"/>
+        <location filename="../../muse/app.cpp" line="155"/>
+        <location filename="../../muse/app.cpp" line="171"/>
         <source>Failed to start audio!</source>
         <translation>Nepodařilo se spustit zvuk!</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="145"/>
+        <location filename="../../muse/app.cpp" line="156"/>
         <source>Was not able to start audio, check if jack is running.
 </source>
         <translation>Nepodařilo se spustit zvuk. Ověřte, že JACK běží.</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="161"/>
+        <location filename="../../muse/app.cpp" line="172"/>
         <source>Timeout waiting for audio to run. Check if jack is running.
 </source>
         <translation>Překročení času při čekání na zvuk.  Ověřte, že JACK běží.</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="361"/>
+        <location filename="../../muse/app.cpp" line="363"/>
         <source>Und&amp;o</source>
         <translation>&amp;Zpět</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="363"/>
+        <location filename="../../muse/app.cpp" line="365"/>
         <source>Re&amp;do</source>
         <translation>Z&amp;novu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="366"/>
+        <location filename="../../muse/app.cpp" line="368"/>
         <source>undo last change to song</source>
         <translation>Vrátit poslední změnu na písni</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="367"/>
+        <location filename="../../muse/app.cpp" line="369"/>
         <source>redo last undo</source>
         <translation>Udělat poslední vrácení o krok zpět</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="381"/>
+        <location filename="../../muse/app.cpp" line="383"/>
         <source>Loop</source>
         <translation>Smyčka</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="384"/>
+        <location filename="../../muse/app.cpp" line="386"/>
         <source>loop between left mark and right mark</source>
         <translation>Smyčka mezi levou značkou a pravou značkou</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="388"/>
+        <location filename="../../muse/app.cpp" line="390"/>
         <source>Punchin</source>
         <translation>Začít nahrávání na levé značce</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="391"/>
+        <location filename="../../muse/app.cpp" line="393"/>
         <source>record starts at left mark</source>
         <translation>Nahrávání začne na levé značce</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="395"/>
+        <location filename="../../muse/app.cpp" line="397"/>
         <source>Punchout</source>
         <translation>Ukončit nahrávání na pravé značce</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="398"/>
+        <location filename="../../muse/app.cpp" line="400"/>
         <source>record stops at right mark</source>
         <translation>Nahrávání skončí na pravé značce</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="406"/>
+        <location filename="../../muse/app.cpp" line="408"/>
         <source>Start</source>
         <translation>Spustit</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="408"/>
+        <location filename="../../muse/app.cpp" line="410"/>
         <source>rewind to start position</source>
         <translation>Skočit na začátek</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="412"/>
+        <location filename="../../muse/app.cpp" line="414"/>
         <source>Rewind</source>
         <translation>O jeden takt zpět</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="414"/>
+        <location filename="../../muse/app.cpp" line="416"/>
         <source>rewind current position</source>
         <translation>Skočit o jeden takt zpět</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="418"/>
+        <location filename="../../muse/app.cpp" line="420"/>
         <source>Forward</source>
         <translation>O jeden takt vpřed</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="420"/>
+        <location filename="../../muse/app.cpp" line="422"/>
         <source>move current position</source>
         <translation>Skočit o jeden takt vpřed</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="424"/>
+        <location filename="../../muse/app.cpp" line="426"/>
         <source>Stop</source>
         <translation>Zastavit</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="427"/>
+        <location filename="../../muse/app.cpp" line="429"/>
         <source>stop sequencer</source>
         <translation>Zastavit přehrávání</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="432"/>
+        <location filename="../../muse/app.cpp" line="433"/>
         <source>Play</source>
         <translation>Přehrát</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="435"/>
+        <location filename="../../muse/app.cpp" line="436"/>
         <source>start sequencer play</source>
         <translation>Spustit přehrávání</translation>
     </message>
@@ -10006,527 +10716,537 @@ Použít nastavení pro seřízení?</translation>
         <translation>Pro nahrávání klepněte nejprve na tlačítko &quot;Nahrávat&quot; a potom na &quot;Přehrávat&quot;</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="446"/>
-        <location filename="../../muse/app.cpp" line="697"/>
+        <location filename="../../muse/app.cpp" line="445"/>
+        <location filename="../../muse/app.cpp" line="703"/>
         <source>Panic</source>
         <translation>Nouzové zastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="448"/>
+        <location filename="../../muse/app.cpp" line="447"/>
         <source>send note off to all midi channels</source>
         <translation>Poslat příkaz &quot;Nota vypnuta&quot; všem kanálům MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="454"/>
+        <location filename="../../muse/app.cpp" line="452"/>
+        <source>turn on/off metronome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/app.cpp" line="460"/>
         <source>&amp;New</source>
         <translation>&amp;Nový</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="455"/>
-        <location filename="../../muse/app.cpp" line="456"/>
+        <location filename="../../muse/app.cpp" line="461"/>
+        <location filename="../../muse/app.cpp" line="462"/>
         <source>Create New Song</source>
         <translation>Vytvořit novou píseň</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="458"/>
+        <location filename="../../muse/app.cpp" line="464"/>
         <source>&amp;Open</source>
         <translation>&amp;Otevřít píseň</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="460"/>
-        <location filename="../../muse/app.cpp" line="462"/>
+        <location filename="../../muse/app.cpp" line="466"/>
+        <location filename="../../muse/app.cpp" line="468"/>
         <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
         <translation>Klepněte na toto tlačítko pro otevření &lt;em&gt;Nové písně&lt;/em&gt;.&lt;br&gt; Také můžete v nabídce Soubor vybrat příkaz &lt;b&gt;Nová píseň&lt;/b&gt;.</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="465"/>
+        <location filename="../../muse/app.cpp" line="471"/>
         <source>Open &amp;Recent</source>
         <translation>Otevřít &amp;poslední píseň</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="467"/>
-        <location filename="../../muse/app.cpp" line="1437"/>
-        <location filename="../../muse/app.cpp" line="2667"/>
+        <location filename="../../muse/app.cpp" line="473"/>
+        <location filename="../../muse/app.cpp" line="1466"/>
+        <location filename="../../muse/app.cpp" line="2810"/>
         <source>&amp;Save</source>
         <translation>&amp;Uložit</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="469"/>
-        <location filename="../../muse/app.cpp" line="472"/>
+        <location filename="../../muse/app.cpp" line="475"/>
+        <location filename="../../muse/app.cpp" line="478"/>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
         <translation>Klepněte na toto tlačítko pro uložení vámi právě upravované písně s automaticky položeným dotazem na název souboru.
 Také můžete v nabídce Soubor vybrat příkaz Uložit.</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="476"/>
+        <location filename="../../muse/app.cpp" line="482"/>
         <source>Save &amp;As</source>
         <translation>Uložit &amp;jako</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="478"/>
+        <location filename="../../muse/app.cpp" line="484"/>
         <source>Import Midifile</source>
         <translation>Zavést soubor MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="479"/>
+        <location filename="../../muse/app.cpp" line="485"/>
         <source>Export Midifile</source>
         <translation>Vyvést soubor MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="480"/>
+        <location filename="../../muse/app.cpp" line="486"/>
         <source>Import Part</source>
         <translation>Zavést část</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="482"/>
-        <location filename="../../muse/wave.cpp" line="1141"/>
+        <location filename="../../muse/app.cpp" line="488"/>
+        <location filename="../../muse/wave.cpp" line="1219"/>
         <source>Import Wave File</source>
         <translation>Zavést soubor Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="483"/>
+        <location filename="../../muse/app.cpp" line="489"/>
         <source>Find unused wave files</source>
         <translation>Najít nepoužívané soubory Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="485"/>
+        <location filename="../../muse/app.cpp" line="491"/>
         <source>&amp;Quit</source>
         <translation>&amp;Ukončit</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="487"/>
+        <location filename="../../muse/app.cpp" line="493"/>
         <source>Song Info</source>
         <translation>Informace o písni</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="490"/>
+        <location filename="../../muse/app.cpp" line="496"/>
         <source>Transport Panel</source>
         <translation>Ovládací panel přesunu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="492"/>
+        <location filename="../../muse/app.cpp" line="498"/>
         <source>Bigtime Window</source>
         <translation>Velký ukazatel času</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="494"/>
+        <location filename="../../muse/app.cpp" line="500"/>
         <source>Mixer A</source>
         <translation>Směšovač A</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="496"/>
+        <location filename="../../muse/app.cpp" line="502"/>
         <source>Mixer B</source>
         <translation>Směšovač B</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="498"/>
+        <location filename="../../muse/app.cpp" line="504"/>
         <source>Cliplist</source>
         <translation>Seznam ukázek</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="500"/>
+        <location filename="../../muse/app.cpp" line="506"/>
         <source>Marker View</source>
         <translation>Pohled se značkami</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="502"/>
+        <location filename="../../muse/app.cpp" line="508"/>
         <source>Arranger View</source>
         <translation>Pohled s aranžérem</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="504"/>
+        <location filename="../../muse/app.cpp" line="510"/>
         <source>Fullscreen</source>
         <translation>Celá obrazovka</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="509"/>
+        <location filename="../../muse/app.cpp" line="515"/>
         <source>&amp;Plugins</source>
         <translation>&amp;Přídavné moduly</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="510"/>
+        <location filename="../../muse/app.cpp" line="516"/>
         <source>Edit Instrument</source>
         <translation>Upravit nástroj</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="511"/>
+        <location filename="../../muse/app.cpp" line="517"/>
         <source>Input Plugins</source>
         <translation>Vstupní přídavné moduly</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="513"/>
+        <location filename="../../muse/app.cpp" line="519"/>
         <source>Transpose</source>
         <translation>Převedení</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="514"/>
+        <location filename="../../muse/app.cpp" line="520"/>
         <source>Midi Input Transform</source>
         <translation>Proměnit vstup MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="515"/>
+        <location filename="../../muse/app.cpp" line="521"/>
         <source>Midi Input Filter</source>
         <translation>Vstupní filtr MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="516"/>
+        <location filename="../../muse/app.cpp" line="522"/>
         <source>Midi Remote Control</source>
         <translation>Vzdálené ovladání MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="518"/>
+        <location filename="../../muse/app.cpp" line="524"/>
         <source>Rhythm Generator</source>
         <translation>Generátor rytmu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="520"/>
+        <location filename="../../muse/app.cpp" line="526"/>
         <source>Reset Instr.</source>
         <translation>Nastavit nástroj znovu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="521"/>
+        <location filename="../../muse/app.cpp" line="527"/>
         <source>Init Instr.</source>
         <translation>Zapnout nástroj</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="522"/>
+        <location filename="../../muse/app.cpp" line="528"/>
         <source>Local Off</source>
         <translation>Místní vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="525"/>
+        <location filename="../../muse/app.cpp" line="531"/>
         <source>Bounce to Track</source>
         <translation>Odmíchat na stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="526"/>
+        <location filename="../../muse/app.cpp" line="532"/>
         <source>Bounce to File</source>
         <translation>Odmíchat do souboru</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="527"/>
+        <location filename="../../muse/app.cpp" line="533"/>
         <source>Restart Audio</source>
         <translation>Spustit zvuk znovu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="530"/>
+        <location filename="../../muse/app.cpp" line="536"/>
         <source>Mixer Automation</source>
         <translation>Automatizace míchacího pultu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="532"/>
+        <location filename="../../muse/app.cpp" line="538"/>
         <source>Take Snapshot</source>
         <translation>Udělat snímek</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="533"/>
+        <location filename="../../muse/app.cpp" line="539"/>
         <source>Clear Automation Data</source>
         <translation>Smazat data automatizace</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="536"/>
+        <location filename="../../muse/app.cpp" line="542"/>
         <source>Cascade</source>
         <translation>Překrývat</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="537"/>
+        <location filename="../../muse/app.cpp" line="543"/>
         <source>Tile</source>
         <translation>Klást vedle sebe</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="538"/>
+        <location filename="../../muse/app.cpp" line="544"/>
         <source>In rows</source>
         <translation>V řádcích</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="539"/>
+        <location filename="../../muse/app.cpp" line="545"/>
         <source>In columns</source>
         <translation>Ve sloupcích</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="543"/>
+        <location filename="../../muse/app.cpp" line="549"/>
         <source>Global Settings</source>
         <translation>Celková nastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="544"/>
+        <location filename="../../muse/app.cpp" line="550"/>
         <source>Configure Shortcuts</source>
         <translation>Nastavit klávesové zkratky</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="545"/>
+        <location filename="../../muse/app.cpp" line="551"/>
         <source>Follow Song</source>
         <translation>Sledovat píseň</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="546"/>
+        <location filename="../../muse/app.cpp" line="552"/>
         <source>Don&apos;t Follow Song</source>
         <translation>Nesledovat píseň</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="548"/>
+        <location filename="../../muse/app.cpp" line="554"/>
         <source>Follow Page</source>
         <translation>Sledovat píseň na stranách</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="551"/>
+        <location filename="../../muse/app.cpp" line="557"/>
         <source>Follow Continuous</source>
         <translation>Sledovat píseň stále</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="554"/>
+        <location filename="../../muse/app.cpp" line="3708"/>
+        <source>MusE: Song: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/app.cpp" line="450"/>
+        <location filename="../../muse/app.cpp" line="560"/>
+        <location filename="../../muse/app.cpp" line="707"/>
         <source>Metronome</source>
         <translation>Metronom</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="555"/>
+        <location filename="../../muse/app.cpp" line="561"/>
         <source>Midi Sync</source>
         <translation>Seřízení MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="556"/>
+        <location filename="../../muse/app.cpp" line="562"/>
         <source>Midi File Import/Export</source>
         <translation>Zavedení/Vyvedení souboru MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="557"/>
+        <location filename="../../muse/app.cpp" line="563"/>
         <source>Appearance Settings</source>
         <translation>Nastavení vzhledu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="558"/>
+        <location filename="../../muse/app.cpp" line="564"/>
         <source>Midi Ports / Soft Synth</source>
         <translation>Přípojky MIDI/Softwarové syntetizátory</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="561"/>
+        <location filename="../../muse/app.cpp" line="567"/>
         <source>&amp;Manual</source>
         <translation>&amp;Příručka</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="562"/>
+        <location filename="../../muse/app.cpp" line="568"/>
         <source>&amp;MusE Homepage</source>
         <translation>Stránky &amp;MusE</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="563"/>
+        <location filename="../../muse/app.cpp" line="569"/>
         <source>&amp;Report Bug...</source>
         <translation>&amp;Nahlásit chybu...</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="564"/>
+        <location filename="../../muse/app.cpp" line="570"/>
         <source>&amp;About MusE</source>
         <translation>&amp;O programu MusE</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="664"/>
+        <location filename="../../muse/app.cpp" line="670"/>
         <source>Song Position</source>
         <translation>Poloha písně</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="671"/>
+        <location filename="../../muse/app.cpp" line="677"/>
         <source>Tempo</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="677"/>
+        <location filename="../../muse/app.cpp" line="683"/>
         <source>Signature</source>
         <translation>Taktové označení</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="682"/>
+        <location filename="../../muse/app.cpp" line="688"/>
         <source>File Buttons</source>
         <translation>Tlačítka pro soubor</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="689"/>
+        <location filename="../../muse/app.cpp" line="695"/>
         <source>Undo/Redo</source>
         <translation>Zpět/Znovu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="693"/>
+        <location filename="../../muse/app.cpp" line="699"/>
         <source>Transport</source>
         <translation>Přesun</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="727"/>
+        <location filename="../../muse/app.cpp" line="738"/>
         <source>&amp;File</source>
         <translation>&amp;Soubor</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="756"/>
+        <location filename="../../muse/app.cpp" line="767"/>
         <source>&amp;View</source>
         <translation>&amp;Pohled</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="775"/>
+        <location filename="../../muse/app.cpp" line="786"/>
         <source>&amp;Midi</source>
         <translation>&amp;MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="800"/>
+        <location filename="../../muse/app.cpp" line="811"/>
         <source>&amp;Audio</source>
         <translation>&amp;Zvuk</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="814"/>
+        <location filename="../../muse/app.cpp" line="825"/>
         <source>A&amp;utomation</source>
         <translation>A&amp;utomatizace</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="827"/>
+        <location filename="../../muse/app.cpp" line="838"/>
         <source>&amp;Windows</source>
         <translation>&amp;Okna</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="840"/>
+        <location filename="../../muse/app.cpp" line="851"/>
         <source>MusE Se&amp;ttings</source>
         <translation>Nas&amp;tavení</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="863"/>
+        <location filename="../../muse/app.cpp" line="874"/>
         <source>&amp;Help</source>
         <translation>&amp;Nápověda</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="874"/>
+        <location filename="../../muse/app.cpp" line="885"/>
         <source>About &amp;Qt</source>
         <translation>O &amp;Qt</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1139"/>
+        <location filename="../../muse/app.cpp" line="1161"/>
         <source>Cannot read template</source>
         <translation>Nelze přečíst předlohu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1165"/>
+        <location filename="../../muse/app.cpp" line="1189"/>
         <source>File open error</source>
         <translation>Chyba při otevírání souboru</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1178"/>
+        <location filename="../../muse/app.cpp" line="1202"/>
         <source>File read error</source>
         <translation>Chyba při čtení souboru</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1190"/>
+        <location filename="../../muse/app.cpp" line="1214"/>
         <source>Unknown File Format: %1</source>
         <translation>Neznámý formát souboru: %1</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1301"/>
-        <location filename="../../muse/app.cpp" line="1698"/>
-        <location filename="../../muse/app.cpp" line="2613"/>
+        <location filename="../../muse/app.cpp" line="2755"/>
         <source>MusE: Song: %1</source>
         <translation>MusE: Píseň: %1</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1336"/>
+        <location filename="../../muse/app.cpp" line="1362"/>
         <source>MusE: load project</source>
         <translation>MusE: Nahrát projekt</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1351"/>
+        <location filename="../../muse/app.cpp" line="1378"/>
         <source>MusE: load template</source>
         <translation>MusE: Nahrát předlohu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1397"/>
+        <location filename="../../muse/app.cpp" line="1424"/>
         <source>MusE: Write File failed</source>
         <translation>MusE: Zápis souboru se nezdařil</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1435"/>
+        <location filename="../../muse/app.cpp" line="1464"/>
         <source>The current Project contains unsaved data
 Save Current Project?</source>
         <translation>Nynější projekt obsahuje neuložená data.
 Uložit nynější projekt?</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1437"/>
-        <location filename="../../muse/app.cpp" line="2667"/>
+        <location filename="../../muse/app.cpp" line="1466"/>
+        <location filename="../../muse/app.cpp" line="2810"/>
         <source>S&amp;kip</source>
         <translation>&amp;Přeskočit</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1437"/>
+        <location filename="../../muse/app.cpp" line="1466"/>
         <source>&amp;Cancel</source>
         <translation>Z&amp;rušit</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1679"/>
+        <location filename="../../muse/app.cpp" line="1721"/>
         <source>MusE: Save As</source>
         <translation>MusE: Uložit jako</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1746"/>
-        <location filename="../../muse/app.cpp" line="1906"/>
+        <location filename="../../muse/app.cpp" line="1790"/>
+        <location filename="../../muse/app.cpp" line="1950"/>
         <source>Nothing to edit</source>
         <translation>Není co upravovat</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2402"/>
-        <location filename="../../muse/app.cpp" line="2412"/>
-        <location filename="../../muse/app.cpp" line="2443"/>
-        <location filename="../../muse/app.cpp" line="2477"/>
-        <location filename="../../muse/app.cpp" line="2485"/>
+        <location filename="../../muse/app.cpp" line="2544"/>
+        <location filename="../../muse/app.cpp" line="2554"/>
+        <location filename="../../muse/app.cpp" line="2585"/>
+        <location filename="../../muse/app.cpp" line="2619"/>
+        <location filename="../../muse/app.cpp" line="2627"/>
         <source>MusE: Bounce to Track</source>
         <translation>MusE: Odmíchat na stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2403"/>
+        <location filename="../../muse/app.cpp" line="2545"/>
         <source>No wave tracks found</source>
         <translation>Nebyly nalezeny žádné stopy Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2413"/>
-        <location filename="../../muse/app.cpp" line="2518"/>
+        <location filename="../../muse/app.cpp" line="2555"/>
+        <location filename="../../muse/app.cpp" line="2660"/>
         <source>No audio output tracks found</source>
         <translation>Nebyly nalezeny žádné zvukové výstupní stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2444"/>
+        <location filename="../../muse/app.cpp" line="2586"/>
         <source>Select one audio output track,
 and one target wave track</source>
         <translation>Vyberte jednu zvukovou výstupní stopu
 a jednu cílovou stopu Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2478"/>
+        <location filename="../../muse/app.cpp" line="2620"/>
         <source>Select one target wave track</source>
         <translation>Vyberte jednu cílovou stopu Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2486"/>
+        <location filename="../../muse/app.cpp" line="2628"/>
         <source>Select one target wave track,
 and one audio output track</source>
         <translation>Vyberte jednu cílovou stopu Wave
 a jednu zvukovou výstupní stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2517"/>
-        <location filename="../../muse/app.cpp" line="2542"/>
+        <location filename="../../muse/app.cpp" line="2659"/>
+        <location filename="../../muse/app.cpp" line="2684"/>
         <source>MusE: Bounce to File</source>
         <translation>MusE: Odmíchat do souboru</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2543"/>
+        <location filename="../../muse/app.cpp" line="2685"/>
         <source>Select one audio output track</source>
         <translation>Vyberte jednu zvukovou výstupní stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2581"/>
+        <location filename="../../muse/app.cpp" line="2723"/>
         <source>MusE: Bounce</source>
         <translation>MusE: Odmíchat</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2582"/>
+        <location filename="../../muse/app.cpp" line="2724"/>
         <source>set left/right marker for bounce range</source>
         <translation>Nastavit levou/pravou značku pro oblast odmíchání</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2664"/>
+        <location filename="../../muse/app.cpp" line="2807"/>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
@@ -10535,13 +11255,13 @@ Nahrání přepíše nynější projekt:
 Uložit nynější projekt?</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2667"/>
-        <location filename="../../muse/importmidi.cpp" line="83"/>
+        <location filename="../../muse/app.cpp" line="2810"/>
+        <location filename="../../muse/importmidi.cpp" line="85"/>
         <source>&amp;Abort</source>
         <translation>&amp;Zrušit</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2781"/>
+        <location filename="../../muse/app.cpp" line="2929"/>
         <source>This will clear all automation data on
  all audio tracks!
 Proceed?</source>
@@ -10550,7 +11270,7 @@ u všech zvukových stop!
 Pokračovat?</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2807"/>
+        <location filename="../../muse/app.cpp" line="2955"/>
         <source>This takes an automation snapshot of
  all controllers on all audio tracks,
  at the current position.
@@ -10561,83 +11281,97 @@ zvukových stopách.
 Pokračovat?</translation>
     </message>
     <message>
-        <location filename="../../muse/exportmidi.cpp" line="139"/>
+        <location filename="../../muse/exportmidi.cpp" line="247"/>
+        <source>MusE: Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/exportmidi.cpp" line="248"/>
+        <source>The song uses multiple ports but export format 0 (single track) is set.
+The first track&apos;s port will be used. Playback will likely be wrong
+ unless the channels used in one port are different from all other ports.
+Canceling and setting a different export format would be better.
+Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/exportmidi.cpp" line="263"/>
         <source>MusE: Export Midi</source>
         <translation>MusE: Vyvést MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/help.cpp" line="50"/>
+        <location filename="../../muse/help.cpp" line="80"/>
         <source>no help found at: </source>
         <translation>Nebyla nalezena žádná nápověda:</translation>
     </message>
     <message>
-        <location filename="../../muse/help.cpp" line="52"/>
+        <location filename="../../muse/help.cpp" line="82"/>
         <source>MusE: Open Help</source>
         <translation>MusE: Otevřít nápovědu</translation>
     </message>
     <message>
-        <location filename="../../muse/help.cpp" line="104"/>
+        <location filename="../../muse/help.cpp" line="136"/>
         <source>Unable to launch help</source>
         <translation>Nelze spustit nápovědu</translation>
     </message>
     <message>
-        <location filename="../../muse/help.cpp" line="105"/>
+        <location filename="../../muse/help.cpp" line="137"/>
         <source>For some reason MusE has to launch the default
 browser on your machine.</source>
         <translation>Z určitého důvodu musí MusE na vašem stroji
 spustit výchozí prohlížeč.</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="71"/>
+        <location filename="../../muse/importmidi.cpp" line="73"/>
         <source>MusE: Import Midi</source>
         <translation>MusE: Zavést MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="80"/>
+        <location filename="../../muse/importmidi.cpp" line="82"/>
         <source>Add midi file to current project?
 </source>
         <translation>Přidat soubor MIDI do nynějšího projektu?</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="81"/>
+        <location filename="../../muse/importmidi.cpp" line="83"/>
         <source>&amp;Add to Project</source>
         <translation>&amp;Přidat do projektu</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="82"/>
+        <location filename="../../muse/importmidi.cpp" line="84"/>
         <source>&amp;Replace</source>
         <translation>&amp;Nahradit</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="113"/>
+        <location filename="../../muse/importmidi.cpp" line="115"/>
         <source>reading midifile
   </source>
         <translation>Čte se soubor MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="115"/>
+        <location filename="../../muse/importmidi.cpp" line="117"/>
         <source>
 failed: </source>
         <translation>
 Nepodařilo se:</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="463"/>
+        <location filename="../../muse/importmidi.cpp" line="556"/>
         <source>Import part is only valid for midi and wave tracks!</source>
         <translation>Zavedení části je platné pouze pro stopy MIDI a Wave!</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="471"/>
+        <location filename="../../muse/importmidi.cpp" line="564"/>
         <source>MusE: load part</source>
         <translation>MusE: Nahrát část</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="489"/>
+        <location filename="../../muse/importmidi.cpp" line="582"/>
         <source>No track selected for import</source>
         <translation>Pro zavedení nebyla vybrána žádná stopa</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../muse/importmidi.cpp" line="606"/>
+        <location filename="../../muse/importmidi.cpp" line="657"/>
         <source>%n part(s) out of %1 could not be imported.
 Likely the selected track is the wrong type.</source>
         <translation>
@@ -10650,7 +11384,7 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../muse/importmidi.cpp" line="607"/>
+        <location filename="../../muse/importmidi.cpp" line="658"/>
         <source>%n part(s) could not be imported.
 Likely the selected track is the wrong type.</source>
         <translation>
@@ -10663,17 +11397,17 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../muse/wave.cpp" line="1136"/>
+        <location filename="../../muse/wave.cpp" line="1214"/>
         <source>to import an audio file you have first to selecta wave track</source>
         <translation>pro zavedení zvukového souboru nejprve musíte vybrat stopu Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/wave.cpp" line="1165"/>
+        <location filename="../../muse/wave.cpp" line="1243"/>
         <source>Import Wavefile</source>
         <translation>Zavést soubor Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/wave.cpp" line="1166"/>
+        <location filename="../../muse/wave.cpp" line="1244"/>
         <source>This wave file has a samplerate of %1,
 as opposed to current setting %2.
 Do you still want to import it?</source>
@@ -10682,12 +11416,12 @@ jako protiklad k nynějšímu nastavení %2.
 Stále ještě jej chcete zavést?</translation>
     </message>
     <message>
-        <location filename="../../muse/wave.cpp" line="1169"/>
+        <location filename="../../muse/wave.cpp" line="1247"/>
         <source>&amp;Yes</source>
         <translation>&amp;Ano</translation>
     </message>
     <message>
-        <location filename="../../muse/wave.cpp" line="1169"/>
+        <location filename="../../muse/wave.cpp" line="1247"/>
         <source>&amp;No</source>
         <translation>&amp;Ne</translation>
     </message>
@@ -10733,101 +11467,111 @@ Stále ještě jej chcete zavést?</translation>
 <context>
     <name>MusEGui::PartCanvas</name>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="351"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="369"/>
         <source>Cannot copy/move/clone to different Track-Type</source>
         <translation>Nelze kopírovat/přesunovat/klonovat na jiný typ stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="636"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="689"/>
+        <source>Part:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="691"/>
         <source>C&amp;ut</source>
         <translation>Vyj&amp;mout</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="640"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="695"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopírovat</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="646"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="701"/>
         <source>s&amp;elect </source>
         <translation>&amp;Vybrat</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="649"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="704"/>
         <source>clones</source>
         <translation>Klony</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="654"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="709"/>
         <source>rename</source>
         <translation>Přejmenovat</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="657"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="712"/>
         <source>color</source>
         <translation>Barva</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="665"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="720"/>
         <source>delete</source>
         <translation>Smazat</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="667"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="722"/>
         <source>split</source>
         <translation>Rozdělit</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="669"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="724"/>
         <source>glue</source>
         <translation>Lepidlo</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="671"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="726"/>
         <source>super glue (merge selection)</source>
         <translation>Vynikající lepidlo (sloučit výběr)</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="673"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="728"/>
         <source>de-clone</source>
         <translation>Zrušit klonování</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="683"/>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="691"/>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="698"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="738"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="746"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="753"/>
         <source>save part to disk</source>
         <translation>Uložit část na disk</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="696"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="751"/>
         <source>wave edit</source>
         <translation>Editor Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="700"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="755"/>
         <source>file info</source>
         <translation>Informace o souboru</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="791"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="846"/>
         <source>MusE: save part</source>
         <translation>MusE: Uložit část</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="809"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="863"/>
         <source>Part name: %1
 Files:</source>
         <translation>Název části: %1
 Soubory:</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="918"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="973"/>
+        <source>Automation:</source>
+        <translation type="unfinished">Automatizace:</translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="974"/>
         <source>Remove selected</source>
         <translation>Odstranit vybrané</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2943"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2468"/>
         <source>%n part(s) out of %1 could not be pasted.
 Likely the selected track is the wrong type.</source>
         <translation>
@@ -10840,7 +11584,7 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2944"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2469"/>
         <source>%n part(s) could not be pasted.
 Likely the selected track is the wrong type.</source>
         <translation>
@@ -10853,32 +11597,32 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2969"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2494"/>
         <source>Cannot paste: multiple tracks selected</source>
         <translation>Nelze vložit: vybráno více stop</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2978"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2503"/>
         <source>Cannot paste: no track selected</source>
         <translation>Nelze vložit: nevybrána žádná stopa</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2998"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2523"/>
         <source>Can only paste to midi/drum track</source>
         <translation>Vložení možné jen do stopy MIDI/Bicí</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="3009"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2534"/>
         <source>Can only paste to wave track</source>
         <translation>Vložení možné jen do stopy Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="3020"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2545"/>
         <source>Can only paste to midi or wave track</source>
         <translation>Vložení možné jen do stopy MIDI nebo Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="3028"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2553"/>
         <source>Cannot paste: wrong data type</source>
         <translation>Nelze vložit: Nesprávný datový typ</translation>
     </message>
@@ -10934,192 +11678,192 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
 <context>
     <name>MusEGui::PianoRoll</name>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="111"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="118"/>
         <source>&amp;Edit</source>
         <translation>Úp&amp;ravy</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="117"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="124"/>
         <source>C&amp;ut</source>
         <translation>Vyj&amp;mout</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="121"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="128"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopírovat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="125"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="132"/>
         <source>Copy events in range</source>
         <translation>Kopírovat události v rozsahu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="129"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="136"/>
         <source>&amp;Paste</source>
         <translation>&amp;Vložit</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="133"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="140"/>
         <source>Paste (with dialog)</source>
         <translation>Vložit (s dialogem)</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="139"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="146"/>
         <source>Delete &amp;Events</source>
         <translation>Smazat &amp;události</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="145"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="152"/>
         <source>&amp;Select</source>
         <translation>&amp;Vybrat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="147"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="154"/>
         <source>Select &amp;All</source>
         <translation>Vybrat &amp;vše</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="151"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="158"/>
         <source>&amp;Deselect All</source>
         <translation>&amp;Zrušit výběr všeho</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="155"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="162"/>
         <source>Invert &amp;Selection</source>
         <translation>Obrátit &amp;výběr</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="161"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="168"/>
         <source>&amp;Inside Loop</source>
         <translation>&amp;Uvnitř smyčky</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="165"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="172"/>
         <source>&amp;Outside Loop</source>
         <translation>&amp;Vně smyčky</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="171"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="178"/>
         <source>&amp;Previous Part</source>
         <translation>&amp;Předchozí část</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="175"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="182"/>
         <source>&amp;Next Part</source>
         <translation>&amp;Další část</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="183"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="190"/>
         <source>Fu&amp;nctions</source>
         <translation>&amp;Funkce</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="187"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="194"/>
         <source>Quantize</source>
         <translation>Kvantizovat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="191"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="198"/>
         <source>Modify Note Length</source>
         <translation>Změnit délku noty</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="195"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="202"/>
         <source>Modify Velocity</source>
         <translation>Změnit sílu nárazu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="199"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="206"/>
         <source>Crescendo/Decrescendo</source>
         <translation>Crescendo/Decrescendo</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="203"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="210"/>
         <source>Transpose</source>
         <translation>Převedení</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="207"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="214"/>
         <source>Erase Events</source>
         <translation>Smazat události</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="211"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="218"/>
         <source>Move Notes</source>
         <translation>Přesunout noty</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="215"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="222"/>
         <source>Set Fixed Length</source>
         <translation>Nastavit pevnou délku</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="219"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="226"/>
         <source>Delete Overlaps</source>
         <translation>Smazat překrytí</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="223"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="230"/>
         <source>Legato</source>
         <translation>Legato</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="228"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="235"/>
         <source>&amp;Plugins</source>
         <translation>&amp;Moduly</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="237"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="244"/>
         <source>Window &amp;Config</source>
         <translation>O&amp;kno</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="239"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="246"/>
         <source>&amp;Event Color</source>
         <translation>Barva &amp;události</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="244"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="251"/>
         <source>&amp;Blue</source>
         <translation>&amp;Modrá</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="248"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="255"/>
         <source>&amp;Pitch colors</source>
         <translation>Barvy pro &amp;výšku tónu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="252"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="259"/>
         <source>&amp;Velocity colors</source>
         <translation>Barvy pro &amp;sílu nárazu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="271"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="278"/>
         <source>Pianoroll tools</source>
         <translation>Nástroje pro váleček</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="275"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="282"/>
         <source>Step Record</source>
         <translation>Nahrávat po taktu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="282"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="289"/>
         <source>Midi Input</source>
         <translation>Vstup MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="289"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="296"/>
         <source>Play Events</source>
         <translation>Přehrát události</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="317"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="327"/>
         <source>ctrl</source>
         <translation>Ctrl</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="320"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="330"/>
         <source>Add Controller View</source>
         <translation>Přidat pohled ovladače</translation>
     </message>
@@ -11127,157 +11871,208 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
 <context>
     <name>MusEGui::PluginDialog</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2825"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="33"/>
         <source>MusE: select plugin</source>
         <translation>MusE: Vybrat přídavný modul</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2838"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="41"/>
+        <source>Plugin categories.
+Right-click on tabs to manage.
+Right-click on plugins to add/remove from a category.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="54"/>
         <source>Type</source>
         <translation>Typ</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2839"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="55"/>
         <source>Lib</source>
         <translation>Lib</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2840"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="56"/>
         <source>Label</source>
         <translation>Štítek</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2841"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="57"/>
         <source>Name</source>
         <translation>Název</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2842"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="58"/>
         <source>AI</source>
         <translation>Al</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2843"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="59"/>
         <source>AO</source>
         <translation>AO</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2844"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="60"/>
         <source>CI</source>
         <translation>Cl</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2845"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="61"/>
         <source>CO</source>
         <translation>CO</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2846"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="62"/>
         <source>IP</source>
         <translation>IP</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2847"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="63"/>
         <source>id</source>
         <translation>ID</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2848"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="64"/>
         <source>Maker</source>
         <translation>Výrobce</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2849"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="65"/>
         <source>Copyright</source>
         <translation>Autorské právo</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2853"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="69"/>
         <source>Audio inputs</source>
         <translation>Vstupy zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2854"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="70"/>
         <source>Audio outputs</source>
         <translation>Výstupy zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2855"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="71"/>
         <source>Control inputs</source>
         <translation>Vstupy ovládání</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2856"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="72"/>
         <source>Control outputs</source>
         <translation>Výstupy ovládání</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2857"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="73"/>
         <source>In-place capable</source>
         <translation>Schopen v místě</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2858"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="74"/>
         <source>ID number</source>
         <translation>Číslo ID</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2878"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="98"/>
+        <source>&amp;create new group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="99"/>
+        <source>&amp;delete currently selected group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="100"/>
+        <source>re&amp;name currently selected group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="182"/>
+        <source>Associated categories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="186"/>
+        <source>You need to define some categories first.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="244"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="245"/>
+        <source>new group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="264"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="265"/>
+        <source>Enter the new group name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="419"/>
+        <source>Wine VST</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Ok</source>
-        <translation>OK</translation>
+        <translation type="obsolete">OK</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2880"/>
         <source>Cancel</source>
-        <translation>Zrušit</translation>
+        <translation type="obsolete">Zrušit</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2889"/>
         <source>Show plugs:</source>
-        <translation>Ukázat přídavné moduly:</translation>
+        <translation type="obsolete">Ukázat přídavné moduly:</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2896"/>
         <source>Mono and Stereo</source>
-        <translation>Mono a stereo</translation>
+        <translation type="obsolete">Mono a stereo</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2901"/>
         <source>Stereo</source>
-        <translation>Stereo</translation>
+        <translation type="obsolete">Stereo</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2906"/>
         <source>Mono</source>
-        <translation>Mono</translation>
+        <translation type="obsolete">Mono</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2911"/>
         <source>Show All</source>
-        <translation>Ukázat vše</translation>
+        <translation type="obsolete">Ukázat vše</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2924"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="113"/>
         <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallel.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that may not be useful in an effect rack.</source>
         <translation>Vyberte, které typy přídavných modulů mají být v seznamu viditelné.&lt;br&gt;Uvědomte si, že použití přídavných modulů monona stopy stereo není problém, dva budou použity souběžně.&lt;br&gt;Dejte si pozor na to, že alternativa &apos;vše&apos; zahrnuje přídavné moduly, které v přihrádce s efekty nemusí být užitečné.</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="2936"/>
         <source>Search in &apos;Label&apos; and &apos;Name&apos;:</source>
-        <translation>Hledat ve &apos;Štítek&apos; a &apos;Název&apos;:</translation>
+        <translation type="obsolete">Hledat ve &apos;Štítek&apos; a &apos;Název&apos;:</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3099"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="423"/>
         <source>dssi synth</source>
         <translation>syntetizátor dssi</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3101"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="425"/>
         <source>dssi effect</source>
         <translation>efekt dssi</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3103"/>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="430"/>
+        <source>LV2 synth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="434"/>
+        <source>LV2 effect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialog.cpp" line="438"/>
         <source>ladspa</source>
         <translation>ladspa</translation>
     </message>
@@ -11285,40 +12080,48 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3158"/>
+        <location filename="../../muse/plugin.cpp" line="2986"/>
         <source>File Buttons</source>
         <translation>Tlačítka pro soubor</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3160"/>
+        <location filename="../../muse/plugin.cpp" line="2988"/>
         <source>Load Preset</source>
         <translation>Nahrát přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3164"/>
+        <location filename="../../muse/plugin.cpp" line="2992"/>
         <source>Save Preset</source>
         <translation>Uložit přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3170"/>
-        <location filename="../../muse/plugin.cpp" line="3173"/>
+        <location filename="../../muse/plugin.cpp" line="2998"/>
+        <location filename="../../muse/plugin.cpp" line="3001"/>
         <source>bypass plugin</source>
         <translation>Přeskočit přídavný modul pro tok signálu</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3678"/>
+        <location filename="../../muse/plugin.cpp" line="3478"/>
         <source>MusE: load preset</source>
         <translation>MusE: Nahrát přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3703"/>
+        <location filename="../../muse/plugin.cpp" line="3503"/>
         <source>Error reading preset. Might not be right type for this plugin</source>
         <translation>Chyba při čtení přednastavení. Nemusí to být správný typ pro tento přídavný modul</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3742"/>
+        <location filename="../../muse/plugin.cpp" line="3542"/>
         <source>MusE: save preset</source>
         <translation>MusE: Uložit přednastavení</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::PopupMenu</name>
+    <message>
+        <location filename="../../muse/widgets/popupmenu.cpp" line="359"/>
+        <source>&lt;More...&gt; %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11398,42 +12201,42 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
 <context>
     <name>MusEGui::ScoreCanvas</name>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="1329"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="1331"/>
         <source>Treble</source>
         <translation>Houslový klíč</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="1332"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="1334"/>
         <source>Bass</source>
         <translation>Basový klíč</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="1335"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="1337"/>
         <source>Grand Staff</source>
         <translation>Oba klíče</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="1338"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="1340"/>
         <source>Remove staff</source>
         <translation>Odstranit osnovu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="3827"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="3834"/>
         <source>Ambiguous part</source>
         <translation>Nejasná část</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="3827"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="3834"/>
         <source>There are two or more possible parts you could add the note to, but none matches the selected part. Please select the destination part by clicking on any note belonging to it and try again, or add a new stave containing only the destination part.</source>
         <translation>Jsou dvě nebo tři možné části, ke kterým se dá nota přidat, ale žádná není vybrána. Vyberte, prosím, cílovou část klepnutím na jakoukoli notu k ní patřící, a zkuste to znovu, nebo přidejte novou notovou osnovu, která bude obsahovat jen cílovou část.</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="3831"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="3838"/>
         <source>No part</source>
         <translation>Žádná část</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="3831"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="3838"/>
         <source>There are no parts you could add the note to.</source>
         <translation>Nejsou tu žádné části, do kterých byste mohl přidat notu.</translation>
     </message>
@@ -11441,246 +12244,246 @@ Pravděpodobně má vybraná stopa nesprávný typ.</numerusform>
 <context>
     <name>MusEGui::ScoreEdit</name>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="237"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="239"/>
         <source>Step recording tools</source>
         <translation>Nástroje pro nahrávání po taktu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="240"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="242"/>
         <source>Step Record</source>
         <translation>Nahrávat po taktu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="256"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="258"/>
         <source>Note settings</source>
         <translation>Nastavení noty</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="259"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="261"/>
         <source>Note length:</source>
         <translation>Délka noty:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="267"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="269"/>
         <source>last</source>
         <translation>poslední</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="309"/>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="310"/>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="659"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="311"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="312"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="661"/>
         <source>Apply to new notes:</source>
         <translation>Použít na nové noty:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="311"/>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="663"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="313"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="665"/>
         <source>Apply to selected notes:</source>
         <translation>Použít na vybrané noty:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="318"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="320"/>
         <source>Velocity:</source>
         <translation>Síla nárazu:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="331"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="333"/>
         <source>Off-Velocity:</source>
         <translation>Síla nárazu vypnuto:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="346"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="348"/>
         <source>Quantisation settings</source>
         <translation>Nastavení kvantizace</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="348"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="350"/>
         <source>Quantisation:</source>
         <translation>Kvantizace:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="366"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="368"/>
         <source>Pixels per whole:</source>
         <translation>Pixelů na celou notu:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="378"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="380"/>
         <source>&amp;Edit</source>
         <translation>Úp&amp;ravy</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="383"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="385"/>
         <source>C&amp;ut</source>
         <translation>Vyj&amp;mout</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="387"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="389"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopírovat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="391"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="393"/>
         <source>Copy events in range</source>
         <translation>Kopírovat události v rozsahu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="395"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="397"/>
         <source>&amp;Paste</source>
         <translation>&amp;Vložit</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="399"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="401"/>
         <source>Paste (with dialog)</source>
         <translation>Vložit (s dialogem)</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="405"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="407"/>
         <source>Delete &amp;Events</source>
         <translation>Smazat &amp;události</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="411"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="413"/>
         <source>&amp;Select</source>
         <translation>&amp;Vybrat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="413"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="415"/>
         <source>Select &amp;All</source>
         <translation>Vybrat &amp;vše</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="417"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="419"/>
         <source>&amp;Deselect All</source>
         <translation>&amp;Zrušit výběr všeho</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="421"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="423"/>
         <source>Invert &amp;Selection</source>
         <translation>Obrátit &amp;výběr</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="427"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="429"/>
         <source>&amp;Inside Loop</source>
         <translation>&amp;Uvnitř smyčky</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="431"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="433"/>
         <source>&amp;Outside Loop</source>
         <translation>&amp;Vně smyčky</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="436"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="438"/>
         <source>Fu&amp;nctions</source>
         <translation>&amp;Funkce</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="438"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="440"/>
         <source>&amp;Quantize</source>
         <translation>&amp;Kvantizovat</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="439"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="441"/>
         <source>Change note &amp;length</source>
         <translation>Změnit &amp;délku noty</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="440"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="442"/>
         <source>Change note &amp;velocity</source>
         <translation>Změnit &amp;sílu nárazu noty</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="441"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="443"/>
         <source>Crescendo/Decrescendo</source>
         <translation>Crescendo/Decrescendo</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="442"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="444"/>
         <source>Transpose</source>
         <translation>Převedení</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="443"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="445"/>
         <source>Erase Events</source>
         <translation>Smazat události</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="444"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="446"/>
         <source>Move Notes</source>
         <translation>Přesunout noty</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="445"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="447"/>
         <source>Set Fixed Length</source>
         <translation>Nastavit pevnou délku</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="446"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="448"/>
         <source>Delete Overlaps</source>
         <translation>Smazat překrytí</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="447"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="449"/>
         <source>Legato</source>
         <translation>Legato</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="460"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="462"/>
         <source>Window &amp;Config</source>
         <translation>O&amp;kno</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="462"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="464"/>
         <source>Note head &amp;colors</source>
         <translation>&amp;Barvy pro hlavičky not</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="464"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="466"/>
         <source>&amp;Black</source>
         <translation>Če&amp;rná</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="465"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="467"/>
         <source>&amp;Velocity</source>
         <translation>&amp;Síla nárazu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="466"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="468"/>
         <source>&amp;Part</source>
         <translation>Čá&amp;st</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="490"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="492"/>
         <source>Set up &amp;preamble</source>
         <translation>Nastavit úv&amp;od</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="491"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="493"/>
         <source>Display &amp;key signature</source>
         <translation>Zobrazit &amp;předznamenání</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="492"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="494"/>
         <source>Display &amp;time signature</source>
         <translation>Zobrazit &amp;taktové označení</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="502"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="504"/>
         <source>Set Score &amp;name</source>
         <translation>Nastavit &amp;název notového zápisu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="741"/>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="742"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="743"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="744"/>
         <source>Enter the new score title</source>
         <translation>Zadat nový název notového zápisu</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="747"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="749"/>
         <source>Error</source>
         <translation>Chyba</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="747"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="749"/>
         <source>Changing score title failed:
 the selected title is not unique</source>
         <translation>Změna názvu notového zápisu se nezdařila:
@@ -11690,17 +12493,17 @@ zvolený název není jedinečný</translation>
 <context>
     <name>MusEGui::ScrollScale</name>
     <message>
-        <location filename="../../muse/widgets/scrollscale.cpp" line="318"/>
+        <location filename="../../muse/widgets/scrollscale.cpp" line="339"/>
         <source>next page</source>
         <translation>Další strana</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/scrollscale.cpp" line="319"/>
+        <location filename="../../muse/widgets/scrollscale.cpp" line="340"/>
         <source>previous page</source>
         <translation>Předchozí strana</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/scrollscale.cpp" line="320"/>
+        <location filename="../../muse/widgets/scrollscale.cpp" line="341"/>
         <source>current page number</source>
         <translation>Číslo nynější strany</translation>
     </message>
@@ -11729,6 +12532,46 @@ zvolený název není jedinečný</translation>
     </message>
 </context>
 <context>
+    <name>MusEGui::ShortcutConfig</name>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfig.cpp" line="199"/>
+        <source>Save printable text file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfig.cpp" line="201"/>
+        <source>Text files (*.txt);;All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfig.cpp" line="211"/>
+        <location filename="../../muse/widgets/shortcutconfig.cpp" line="275"/>
+        <source>Error</source>
+        <translation type="unfinished">Chyba</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfig.cpp" line="211"/>
+        <source>Error opening file for saving</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfig.cpp" line="222"/>
+        <source>Shortcuts for selected category: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfig.cpp" line="232"/>
+        <source>Legend:
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfig.cpp" line="275"/>
+        <source>An error occurred while saving</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::SigScale</name>
     <message>
         <location filename="../../muse/widgets/sigscale.cpp" line="44"/>
@@ -11752,7 +12595,7 @@ zvolený název není jedinečný</translation>
 <context>
     <name>MusEGui::Strip</name>
     <message>
-        <location filename="../../muse/mixer/strip.cpp" line="330"/>
+        <location filename="../../muse/mixer/strip.cpp" line="337"/>
         <source>Remove track?</source>
         <translation>Odstranit stopu?</translation>
     </message>
@@ -11760,236 +12603,275 @@ zvolený název není jedinečný</translation>
 <context>
     <name>MusEGui::TList</name>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="418"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="429"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;Žádný&gt;</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="439"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="450"/>
         <source>visible</source>
         <translation>Viditelný</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="448"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="459"/>
         <source>no clef</source>
         <translation>Žádný klíč</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="450"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="461"/>
         <source>Treble</source>
         <translation>Houslový klíč</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="452"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="463"/>
         <source>Bass</source>
         <translation>Basový klíč</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="454"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="465"/>
         <source>Grand</source>
         <translation>Oba klíče</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="483"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="897"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="494"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="891"/>
         <source>off</source>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="492"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="503"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;neznámý&gt;</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="584"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="595"/>
         <source>MusE: bad trackname</source>
         <translation>MusE: Špatný název stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="585"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="596"/>
         <source>please choose a unique track name</source>
         <translation>Vyberte, prosím, jedinečný název pro stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1016"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1010"/>
         <source>Unused Devices</source>
         <translation>Nepoužívaná zařízení</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1106"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="2708"/>
         <source>Update drummap?</source>
-        <translation>Obnovit rozložení bicích?</translation>
+        <translation type="obsolete">Obnovit rozložení bicích?</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1107"/>
         <source>Do you want to use same port for all instruments in the drummap?</source>
-        <translation>Chcete pro všechny nástroje v rozložení bicích použít stejnou přípojku?</translation>
+        <translation type="obsolete">Chcete pro všechny nástroje v rozložení bicích použít stejnou přípojku?</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1108"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="2710"/>
         <source>&amp;Yes</source>
-        <translation>&amp;Ano</translation>
+        <translation type="obsolete">&amp;Ano</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1108"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="2710"/>
         <source>&amp;No</source>
-        <translation>&amp;Ne</translation>
+        <translation type="obsolete">&amp;Ne</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1174"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="1215"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1144"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1211"/>
         <source>show gui</source>
         <translation>Ukázat uživatelské rozhraní</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1179"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="1220"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1149"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1216"/>
         <source>show native gui</source>
         <translation>Ukázat původní rozhraní</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1560"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1156"/>
+        <source>Presets</source>
+        <translation type="unfinished">Přednastavení</translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="1479"/>
+        <source>Clear all controller events?</source>
+        <translation type="unfinished">Smazat všechny události ovladače?</translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="1479"/>
+        <source>&amp;Ok</source>
+        <translation type="unfinished">&amp;OK</translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="1479"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished">Z&amp;rušit</translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="1581"/>
+        <source>Change color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="1599"/>
         <source>Midi control</source>
         <translation>Ovládání MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1564"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1603"/>
         <source>Assign</source>
         <translation>Přiřadit</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1577"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1616"/>
         <source>Clear</source>
         <translation>Smazat</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1696"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1635"/>
+        <source>Other</source>
+        <translation type="unfinished">Jiné</translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="1636"/>
+        <source>clear automation</source>
+        <translation type="unfinished">Smazat automatizaci</translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="1739"/>
         <source>Treble clef</source>
         <translation>Houslový klíč</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1697"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1740"/>
         <source>Bass clef</source>
         <translation>Basový klíč</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1698"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1741"/>
         <source>Grand Staff</source>
         <translation>Oba klíče</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1728"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1771"/>
         <source>Viewable automation</source>
         <translation>Viditelná automatizace</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1744"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1787"/>
         <source>Internal</source>
         <translation>Vnitřní</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1767"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1810"/>
         <source>Synth</source>
         <translation>Syntetizátor</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1900"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1942"/>
         <source>Delete Track</source>
         <translation>Smazat stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1901"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1943"/>
         <source>Track Comment</source>
         <translation>Poznámka ke stopě</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1907"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1949"/>
         <source>Save track&apos;s drumlist</source>
         <translation>Uložit seznam bicích stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1908"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1950"/>
         <source>Save track&apos;s drumlist differences to initial state</source>
         <translation>Uložit rozdíly seznamu bicích stopy do počátečního stavu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1909"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1951"/>
         <source>Load track&apos;s drumlist</source>
         <translation>Nahrát seznam bicích stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1910"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1952"/>
         <source>Reset track&apos;s drumlist</source>
         <translation>Nastavit seznam bicích stopy znovu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1913"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1955"/>
         <source>Reset track&apos;s drumlist-ordering</source>
         <translation>Nastavit znovu pořadí seznamu bicích stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1916"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1958"/>
         <source>Copy track&apos;s drumlist to all selected tracks</source>
         <translation>Kopírovat seznam bicích stopy do všech vybraných stop</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1917"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1959"/>
         <source>Copy track&apos;s drumlist&apos;s differences to all selected tracks</source>
         <translation>Kopírovat rozdíly seznamu bicích stopy do všech vybraných stop</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1923"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1965"/>
         <source>Insert Track</source>
         <translation>Vložit stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1958"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="1968"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1999"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="2009"/>
         <source>Drum map</source>
         <translation>Rozložení bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1959"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="2000"/>
         <source>Reset the track&apos;s drum map with instrument defaults?</source>
         <translation>Nastavit rozložení bicích stopy znovu s výchozími nástroji?</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1969"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="2010"/>
         <source>Reset the track&apos;s drum map ordering?</source>
         <translation>Nastavit znovu pořadí rozložení bicích stopy?</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="2200"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="2224"/>
         <source>Muse: Load Track&apos;s Drum Map</source>
         <translation>MusE: Nahrát rozložení bicích stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="2260"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="2259"/>
+        <source>Drummap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="2259"/>
+        <source>This drummap was created with a previous version of MusE,
+it is being read but the format has changed slightly so some
+adjustments may be necessary.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="2289"/>
         <source>MusE: Store Track&apos;s Drum Map</source>
         <translation>MusE: Uložit rozložení bicích stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="2657"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="2547"/>
         <source>Midi</source>
         <translation>MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="2658"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="2548"/>
         <source>Drum</source>
         <translation>Bicí</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="2659"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="2549"/>
         <source>New style drum</source>
         <translation>Bicí v novém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="2709"/>
         <source>Do you want to use same port and channel for all instruments in the drummap?</source>
-        <translation>Chcete pro všechny nástroje v rozložení bicích použít stejnou přípojku a týž kanál?</translation>
+        <translation type="obsolete">Chcete pro všechny nástroje v rozložení bicích použít stejnou přípojku a týž kanál?</translation>
     </message>
 </context>
 <context>
@@ -12023,17 +12905,17 @@ zvolený název není jedinečný</translation>
         <translation>Vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tb1.cpp" line="70"/>
+        <location filename="../../muse/widgets/tb1.cpp" line="66"/>
         <source>Solo</source>
         <translation>Sólo</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tb1.cpp" line="79"/>
+        <location filename="../../muse/widgets/tb1.cpp" line="76"/>
         <source>Cursor</source>
         <translation>Poloha ukazovátka</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tb1.cpp" line="97"/>
+        <location filename="../../muse/widgets/tb1.cpp" line="93"/>
         <source>Snap</source>
         <translation>Magnet</translation>
     </message>
@@ -12067,76 +12949,81 @@ zvolený název není jedinečný</translation>
     </message>
     <message>
         <location filename="../../muse/cobject.cpp" line="119"/>
+        <source>Metronome</source>
+        <translation type="unfinished">Metronom</translation>
+    </message>
+    <message>
+        <location filename="../../muse/cobject.cpp" line="123"/>
         <source>Transport</source>
         <translation>Přesun</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="124"/>
+        <location filename="../../muse/cobject.cpp" line="128"/>
         <source>Song Position</source>
         <translation>Poloha písně</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="131"/>
+        <location filename="../../muse/cobject.cpp" line="135"/>
         <source>Tempo</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="137"/>
+        <location filename="../../muse/cobject.cpp" line="141"/>
         <source>Signature</source>
         <translation>Taktové označení</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="603"/>
+        <location filename="../../muse/cobject.cpp" line="607"/>
         <source>Piano roll</source>
         <translation>Váleček</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="604"/>
+        <location filename="../../muse/cobject.cpp" line="608"/>
         <source>List editor</source>
         <translation>Editor seznamu</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="605"/>
+        <location filename="../../muse/cobject.cpp" line="609"/>
         <source>Drum editor</source>
         <translation>Editor bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="606"/>
+        <location filename="../../muse/cobject.cpp" line="610"/>
         <source>Master track editor</source>
         <translation>Editor hlavní stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="607"/>
+        <location filename="../../muse/cobject.cpp" line="611"/>
         <source>Master track list editor</source>
         <translation>Editor seznamu hlavní stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="608"/>
+        <location filename="../../muse/cobject.cpp" line="612"/>
         <source>Wave editor</source>
         <translation>Editor Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="609"/>
+        <location filename="../../muse/cobject.cpp" line="613"/>
         <source>Clip list</source>
         <translation>Seznam ukázek</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="610"/>
+        <location filename="../../muse/cobject.cpp" line="614"/>
         <source>Marker view</source>
         <translation>Pohled se značkami</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="611"/>
+        <location filename="../../muse/cobject.cpp" line="615"/>
         <source>Score editor</source>
         <translation>Editor notového zápisu</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="612"/>
+        <location filename="../../muse/cobject.cpp" line="616"/>
         <source>Arranger</source>
         <translation>Aranžér</translation>
     </message>
     <message>
-        <location filename="../../muse/cobject.cpp" line="613"/>
+        <location filename="../../muse/cobject.cpp" line="617"/>
         <source>&lt;unknown toplevel type&gt;</source>
         <translation>&lt;Neznámý typ nejvyšší úrovně&gt;</translation>
     </message>
@@ -12392,104 +13279,199 @@ zvolený název není jedinečný</translation>
     </message>
 </context>
 <context>
+    <name>MusEGui::WaveCanvas</name>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="1579"/>
+        <source>Adjust Wave Offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="1580"/>
+        <source>Wave offset (frames)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="1913"/>
+        <source>Part creation failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="1914"/>
+        <source>Left and right position markers must be placed inside the current part.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="1939"/>
+        <source>Part created</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="1940"/>
+        <source>The selected region has been copied to the clipboard and can be pasted in the arranger.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2459"/>
+        <source>MusE - external editor failed</source>
+        <translation type="unfinished">MusE: Vnější editor selhal</translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2460"/>
+        <source>MusE was unable to launch the external editor
+check if the editor setting in:
+Global Settings-&gt;Audio:External Waveditor
+is set to a valid editor.</source>
+        <translation type="unfinished">MusE se nepodařilo spustit vnější editor.
+Prověřte, zda je nastavení editoru v Celková
+nastavení-&gt;Zvuk: Vnější editor Wave nastaven
+na platný editor.</translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2473"/>
+        <source>MusE - file size changed</source>
+        <translation type="unfinished">MusE: Velikost souboru změněna</translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="2474"/>
+        <source>When editing in external editor - you should not change the filesize
+since it must fit the selected region.
+
+Missing data is muted</source>
+        <translation type="unfinished">Když provádíte úpravy ve vnějším editoru, neměli byste měnit
+velikost souboru, protože tato se musí vejít do vybrané oblasti.
+
+Chybějící data jsou ztlumena</translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::WaveEdit</name>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="91"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="107"/>
         <source>&amp;Edit</source>
         <translation>Úp&amp;ravy</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="93"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="109"/>
         <source>Func&amp;tions</source>
         <translation>&amp;Funkce</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="95"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="111"/>
         <source>&amp;Gain</source>
         <translation>&amp;Zesílení</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="117"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="133"/>
         <source>Other</source>
         <translation>Jiné</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="125"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="141"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopírovat</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="129"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="145"/>
+        <source>&amp;Create Part from Region</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="149"/>
         <source>C&amp;ut</source>
         <translation>Vyj&amp;mout</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="133"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="153"/>
         <source>&amp;Paste</source>
         <translation>&amp;Vložit</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="138"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="158"/>
         <source>Edit in E&amp;xternal Editor</source>
         <translation>Upravit ve &amp;vnějším editoru</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="142"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="169"/>
         <source>Mute Selection</source>
         <translation>Ztlumit výběr</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="146"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="173"/>
         <source>Normalize Selection</source>
         <translation>Normalizovat výběr</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="150"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="177"/>
         <source>Fade In Selection</source>
         <translation>Postupné zesílení signálu ve výběru</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="154"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="181"/>
         <source>Fade Out Selection</source>
         <translation>Postupné zeslabení signálu ve výběru</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="158"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="185"/>
         <source>Reverse Selection</source>
         <translation>Obrátit výběr</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="162"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="189"/>
         <source>Select</source>
         <translation>Vybrat</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="164"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="191"/>
         <source>Select &amp;All</source>
         <translation>Vybrat &amp;vše</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="168"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="195"/>
         <source>&amp;Deselect All</source>
         <translation>&amp;Zrušit výběr všeho</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="173"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="201"/>
+        <source>&amp;Previous Part</source>
+        <translation type="unfinished">&amp;Předchozí část</translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="205"/>
+        <source>&amp;Next Part</source>
+        <translation type="unfinished">&amp;Další část</translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="210"/>
         <source>Window &amp;Config</source>
         <translation>O&amp;kno</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="186"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="212"/>
+        <source>&amp;Event Color</source>
+        <translation type="unfinished">Barva &amp;události</translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="217"/>
+        <source>&amp;Part colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="221"/>
+        <source>&amp;Gray</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="247"/>
         <source>WaveEdit tools</source>
         <translation>Nástroje pro úpravy Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="191"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="252"/>
         <source>Solo</source>
         <translation>Sólo</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="197"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="258"/>
         <source>Cursor</source>
         <translation>Poloha ukazovátka</translation>
     </message>
@@ -12497,33 +13479,29 @@ zvolený název není jedinečný</translation>
 <context>
     <name>MusEGui::WaveView</name>
     <message>
-        <location filename="../../muse/waveedit/waveview.cpp" line="993"/>
         <source>MusE - external editor failed</source>
-        <translation>MusE: Vnější editor selhal</translation>
+        <translation type="obsolete">MusE: Vnější editor selhal</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveview.cpp" line="994"/>
         <source>MusE was unable to launch the external editor
 check if the editor setting in:
 Global Settings-&gt;Audio:External Waveditor
 is set to a valid editor.</source>
-        <translation>MusE se nepodařilo spustit vnější editor.
+        <translation type="obsolete">MusE se nepodařilo spustit vnější editor.
 Prověřte, zda je nastavení editoru v Celková
 nastavení-&gt;Zvuk: Vnější editor Wave nastaven
 na platný editor.</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveview.cpp" line="1007"/>
         <source>MusE - file size changed</source>
-        <translation>MusE: Velikost souboru změněna</translation>
+        <translation type="obsolete">MusE: Velikost souboru změněna</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveview.cpp" line="1008"/>
         <source>When editing in external editor - you should not change the filesize
 since it must fit the selected region.
 
 Missing data is muted</source>
-        <translation>Když provádíte úpravy ve vnějším editoru, neměli byste měnit
+        <translation type="obsolete">Když provádíte úpravy ve vnějším editoru, neměli byste měnit
 velikost souboru, protože tato se musí vejít do vybrané oblasti.
 
 Chybějící data jsou ztlumena</translation>
@@ -12797,6 +13775,59 @@ být rozšířena o víc jak </translation>
     </message>
 </context>
 <context>
+    <name>PluginDialogBase</name>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished">Dialog</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="64"/>
+        <source>Ports:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="100"/>
+        <source>Mono</source>
+        <translation type="unfinished">Mono</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="115"/>
+        <source>Mono + Stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="137"/>
+        <source>Stereo</source>
+        <translation type="unfinished">Stereo</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="152"/>
+        <source>All</source>
+        <translation type="unfinished">Vše</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="177"/>
+        <source>Plugin type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="213"/>
+        <source>Filter:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="250"/>
+        <source>&amp;OK</source>
+        <translation type="unfinished">&amp;OK</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/plugindialogbase.ui" line="257"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished">Z&amp;rušit</translation>
+    </message>
+</context>
+<context>
     <name>ProjectCreate</name>
     <message>
         <location filename="../../muse/widgets/projectcreate.ui" line="14"/>
@@ -12810,8 +13841,8 @@ být rozšířena o víc jak </translation>
     </message>
     <message>
         <location filename="../../muse/widgets/projectcreate.ui" line="36"/>
-        <location filename="../../muse/widgets/projectcreate.ui" line="172"/>
-        <location filename="../../muse/widgets/projectcreate.ui" line="179"/>
+        <location filename="../../muse/widgets/projectcreate.ui" line="590"/>
+        <location filename="../../muse/widgets/projectcreate.ui" line="597"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -12842,13 +13873,25 @@ být rozšířena o víc jak </translation>
     </message>
     <message>
         <location filename="../../muse/widgets/projectcreate.ui" line="154"/>
-        <source>Create project folder (recommended for audio projects)</source>
-        <translation>Vytvořit složku s projektem (doporučeno pro projekty se zvukem)</translation>
+        <source>&amp;Create project folder (recommended for audio projects)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/projectcreate.ui" line="188"/>
+        <source>Create project folder (recommended for audio projects)</source>
+        <translation type="obsolete">Vytvořit složku s projektem (doporučeno pro projekty se zvukem)</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/projectcreate.ui" line="606"/>
         <source>Song information:</source>
         <translation>Informace o písni:</translation>
+    </message>
+</context>
+<context>
+    <name>QMenu</name>
+    <message>
+        <location filename="../../muse/lv2host.cpp" line="1257"/>
+        <source>Select gui type</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12865,44 +13908,88 @@ být rozšířena o víc jak </translation>
         <source>Please first select the range for crescendo with the loop markers.</source>
         <translation>Nejprve, prosím, zvolte rozsah crescenda se značkami pro smyčku.</translation>
     </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="174"/>
+        <source>Controller !</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="177"/>
+        <source>Other !</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/lv2host.cpp" line="1864"/>
+        <source>No presets found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midi.cpp" line="234"/>
+        <source>Switch on General Midi Level 1 mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midi.cpp" line="236"/>
+        <source>Switch on General Midi Level 2 mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midi.cpp" line="238"/>
+        <source>Switch off General Midi Level 1 or 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midi.cpp" line="240"/>
+        <source>Switch on Roland GS mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/midi.cpp" line="242"/>
+        <source>Switch on Yamaha XG mode</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../../muse/instruments/minstrument.cpp" line="74"/>
-        <location filename="../../muse/liste/editevent.cpp" line="92"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="2674"/>
+        <location filename="../../muse/widgets/editevent.cpp" line="95"/>
         <source>Cannot convert sysex string</source>
         <translation>Nelze převést řetězec sysex</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/minstrument.cpp" line="82"/>
-        <location filename="../../muse/liste/editevent.cpp" line="100"/>
+        <location filename="../../muse/widgets/editevent.cpp" line="104"/>
         <source>Hex String too long (2048 bytes limit)</source>
         <translation>Šestnáctkový řetězec je příliš dlouhý (hranice je 2048 bytů)</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/minstrument.cpp" line="271"/>
+        <location filename="../../muse/instruments/minstrument.cpp" line="217"/>
         <source>generic midi</source>
         <translation>Obecné MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/miditransform.cpp" line="234"/>
+        <location filename="../../muse/miditransform.cpp" line="238"/>
         <source>new</source>
         <translation>Nový</translation>
     </message>
     <message>
-        <location filename="../../muse/route.cpp" line="754"/>
-        <location filename="../../muse/route.cpp" line="780"/>
+        <location filename="../../muse/route.cpp" line="767"/>
+        <location filename="../../muse/route.cpp" line="793"/>
         <source>None</source>
         <translation>Žádný</translation>
     </message>
     <message>
-        <location filename="../../muse/wave.cpp" line="166"/>
+        <location filename="../../muse/wave.cpp" line="170"/>
         <source>create peakfile for </source>
         <translation>Vytvořit soubor s vrcholem hladiny pro</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveview.cpp" line="634"/>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="1573"/>
+        <source>No wave events selected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/waveedit/wavecanvas.cpp" line="1958"/>
         <source>No selection. Ignoring</source>
         <translation>Žádný výběr. Přehlíží se</translation>
     </message>
@@ -12933,7 +14020,7 @@ Vytvořit jej?</translation>
         <translation>Vytvoření adresáře se nezdařilo</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="493"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="518"/>
         <source>File
 %1
 exists. Overwrite?</source>
@@ -12942,12 +14029,12 @@ exists. Overwrite?</source>
 existuje. Přepsat?</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="507"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="532"/>
         <source>MusE: write</source>
         <translation>MusE: Zapsat</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="528"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="553"/>
         <source>Open File
 %1
 failed: %2</source>
@@ -12956,9 +14043,40 @@ failed: %2</source>
 se nepodařilo otevřít: %2</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="529"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="554"/>
         <source>MusE: Open File</source>
         <translation>MusE: Otevřít soubor</translation>
+    </message>
+    <message>
+        <location filename="../../muse/helper.cpp" line="998"/>
+        <source>Instrument-defined</source>
+        <translation type="unfinished">Vymezeno nástrojově</translation>
+    </message>
+    <message>
+        <location filename="../../muse/helper.cpp" line="1007"/>
+        <location filename="../../muse/helper.cpp" line="1011"/>
+        <source>Edit instrument ...</source>
+        <translation type="unfinished">Upravit nástroj...</translation>
+    </message>
+    <message>
+        <location filename="../../muse/helper.cpp" line="1020"/>
+        <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/helper.cpp" line="1075"/>
+        <source>Others</source>
+        <translation type="unfinished">Jiné</translation>
+    </message>
+    <message>
+        <location filename="../../muse/helper.cpp" line="1082"/>
+        <source>Common Controls</source>
+        <translation type="unfinished">Obecné ovládání</translation>
+    </message>
+    <message>
+        <location filename="../../muse/helper.cpp" line="1097"/>
+        <source>Velocity</source>
+        <translation type="unfinished">Síla nárazu</translation>
     </message>
 </context>
 <context>
@@ -13296,22 +14414,22 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>SS_PluginFront</name>
     <message>
-        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="238"/>
+        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="242"/>
         <source>Clear and unload effect</source>
         <translation>Smazat a vyložit efekt</translation>
     </message>
     <message>
-        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="239"/>
+        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="243"/>
         <source>Load effect</source>
         <translation>Nahrát efekt</translation>
     </message>
     <message>
-        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="240"/>
+        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="244"/>
         <source>Toggle display of effect parameters</source>
         <translation>Přepnout zobrazení parametrů efektů</translation>
     </message>
     <message>
-        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="241"/>
+        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="245"/>
         <source>Turn effect on/off</source>
         <translation>Zapnout/Vypnout efekt</translation>
     </message>
@@ -13465,6 +14583,26 @@ p, li { white-space: pre-wrap; }
         <source>Alt+A</source>
         <translation>Alt+A</translation>
     </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="152"/>
+        <source>&amp;Printable file...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="155"/>
+        <source>Alt+P</source>
+        <translation type="unfinished">Alt+P</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="178"/>
+        <source>&amp;Ok</source>
+        <translation type="unfinished">&amp;OK</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="181"/>
+        <source>Alt+O</source>
+        <translation type="unfinished">Alt+O</translation>
+    </message>
 </context>
 <context>
     <name>SimpleDrumsGuiBase</name>
@@ -13477,17 +14615,17 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>SimpleSynthGui</name>
     <message>
-        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="442"/>
+        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="497"/>
         <source>&amp;Load setup</source>
         <translation>&amp;Nahrát nastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="444"/>
+        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="499"/>
         <source>&amp;Save setup</source>
         <translation>&amp;Uložit nastavení</translation>
     </message>
     <message>
-        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="788"/>
+        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="861"/>
         <source>Load sample dialog</source>
         <translation>Dialog pro nahrání ukázky</translation>
     </message>
@@ -13533,71 +14671,81 @@ p, li { white-space: pre-wrap; }
         <translation>Nastavení přípojky MIDI a softwarového syntetizátoru</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="20"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="118"/>
         <source>Instances</source>
         <translation>Instance</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="30"/>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="155"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="97"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="128"/>
         <source>Name</source>
         <translation>Název</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="35"/>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="145"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="87"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="133"/>
         <source>Type</source>
         <translation>Typ</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="40"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="138"/>
         <source>Midi Port</source>
         <translation>Přípojka MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="50"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="148"/>
         <source>Remove Instance</source>
         <translation>Odstranit instanci</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="78"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="20"/>
         <source>Midi connections</source>
         <translation>Spojení MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="94"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="36"/>
         <source>Soft Synthesizer</source>
         <translation>Softwarový syntetizátor</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="108"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="50"/>
         <source>Add Instance</source>
         <translation>Přidat instanci</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="133"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="75"/>
         <source>list of available software synthesizers</source>
         <translation>Seznam dostupných softwarových syntetizátorů</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="140"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="82"/>
         <source>File</source>
         <translation>Soubor</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="150"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="92"/>
         <source>Inst</source>
         <translation>Inst</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="160"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="102"/>
         <source>Version</source>
         <translation>Verze</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/synthconfigbase.ui" line="165"/>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="107"/>
         <source>Description</source>
         <translation>Popis</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="191"/>
+        <source>&amp;Apply</source>
+        <translation type="unfinished">&amp;Použít</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/synthconfigbase.ui" line="198"/>
+        <source>&amp;OK</source>
+        <translation type="unfinished">&amp;OK</translation>
     </message>
 </context>
 <context>
@@ -13693,13 +14841,13 @@ projektem</translation>
 <context>
     <name>VAMGui</name>
     <message>
-        <location filename="../../synti/vam/vamgui.cpp" line="610"/>
+        <location filename="../../synti/vam/vamgui.cpp" line="612"/>
         <source>MusE: Load VAM Presets</source>
         <translation>MusE: Nahrát přednastavení VAM</translation>
     </message>
     <message>
-        <location filename="../../synti/vam/vamgui.cpp" line="720"/>
-        <location filename="../../synti/vam/vamgui.cpp" line="738"/>
+        <location filename="../../synti/vam/vamgui.cpp" line="722"/>
+        <location filename="../../synti/vam/vamgui.cpp" line="740"/>
         <source>MusE: Save VAM Presets</source>
         <translation>MusE: Uložit přednastavení VAM</translation>
     </message>
@@ -13982,174 +15130,182 @@ Robert Jonsson
 <context>
     <name>file_patterns</name>
     <message>
-        <location filename="../../muse/globals.cpp" line="120"/>
+        <location filename="../../muse/globals.cpp" line="123"/>
         <source>Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)</source>
         <translation>Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="121"/>
+        <location filename="../../muse/globals.cpp" line="124"/>
         <source>Midi (*.mid *.MID *.mid.gz *.mid.bz2)</source>
         <translation>Midi (*.mid *.MID *.mid.gz *.mid.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="122"/>
+        <location filename="../../muse/globals.cpp" line="125"/>
         <source>Karaoke (*.kar *.KAR *.kar.gz *.kar.bz2)</source>
         <translation>Karaoke (*.kar *.KAR *.kar.gz *.kar.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="123"/>
-        <location filename="../../muse/globals.cpp" line="136"/>
-        <location filename="../../muse/globals.cpp" line="147"/>
-        <location filename="../../muse/globals.cpp" line="154"/>
-        <location filename="../../muse/globals.cpp" line="169"/>
-        <location filename="../../muse/globals.cpp" line="175"/>
-        <location filename="../../muse/globals.cpp" line="182"/>
-        <location filename="../../muse/globals.cpp" line="188"/>
-        <location filename="../../muse/globals.cpp" line="196"/>
-        <location filename="../../muse/globals.cpp" line="202"/>
-        <location filename="../../muse/globals.cpp" line="210"/>
-        <location filename="../../muse/globals.cpp" line="218"/>
+        <location filename="../../muse/globals.cpp" line="126"/>
+        <location filename="../../muse/globals.cpp" line="139"/>
+        <location filename="../../muse/globals.cpp" line="150"/>
+        <location filename="../../muse/globals.cpp" line="157"/>
+        <location filename="../../muse/globals.cpp" line="172"/>
+        <location filename="../../muse/globals.cpp" line="178"/>
+        <location filename="../../muse/globals.cpp" line="185"/>
+        <location filename="../../muse/globals.cpp" line="191"/>
+        <location filename="../../muse/globals.cpp" line="199"/>
+        <location filename="../../muse/globals.cpp" line="205"/>
+        <location filename="../../muse/globals.cpp" line="213"/>
+        <location filename="../../muse/globals.cpp" line="221"/>
         <source>All Files (*)</source>
         <translation>Všechny soubory (*)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="134"/>
+        <location filename="../../muse/globals.cpp" line="137"/>
         <source>Midi (*.mid)</source>
         <translation>Midi (*.mid)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="135"/>
+        <location filename="../../muse/globals.cpp" line="138"/>
         <source>Karaoke (*.kar)</source>
         <translation>Karaoke (*.kar)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="141"/>
+        <location filename="../../muse/globals.cpp" line="144"/>
         <source>all known files (*.med *.med.gz *.med.bz2 *.mid *.midi *.kar)</source>
         <translation>Všechny známé soubory (*.med *.med.gz *.med.bz2 *.mid *.midi *.kar)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="142"/>
+        <location filename="../../muse/globals.cpp" line="145"/>
         <source>med Files (*.med *.med.gz *.med.bz2)</source>
         <translation>Soubory med (*.med *.med.gz *.med.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="143"/>
-        <location filename="../../muse/globals.cpp" line="151"/>
-        <location filename="../../muse/globals.cpp" line="158"/>
+        <location filename="../../muse/globals.cpp" line="146"/>
+        <location filename="../../muse/globals.cpp" line="154"/>
+        <location filename="../../muse/globals.cpp" line="161"/>
         <source>Uncompressed med Files (*.med)</source>
         <translation>Nestlačené soubory med (*.med)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="144"/>
-        <location filename="../../muse/globals.cpp" line="152"/>
-        <location filename="../../muse/globals.cpp" line="159"/>
+        <location filename="../../muse/globals.cpp" line="147"/>
+        <location filename="../../muse/globals.cpp" line="155"/>
+        <location filename="../../muse/globals.cpp" line="162"/>
         <source>gzip compressed med Files (*.med.gz)</source>
         <translation>Soubory med stlačené gzip (*.med.gz)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="145"/>
-        <location filename="../../muse/globals.cpp" line="153"/>
-        <location filename="../../muse/globals.cpp" line="160"/>
+        <location filename="../../muse/globals.cpp" line="148"/>
+        <location filename="../../muse/globals.cpp" line="156"/>
+        <location filename="../../muse/globals.cpp" line="163"/>
         <source>bzip2 compressed med Files (*.med.bz2)</source>
         <translation>Soubory med stlačené bzip2 (*.med.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="146"/>
+        <location filename="../../muse/globals.cpp" line="149"/>
         <source>mid Files (*.mid *.midi *.kar *.MID *.MIDI *.KAR)</source>
         <translation>Soubory mid (*.mid *.midi *.kar *.MID *.MIDI *.KAR)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="165"/>
+        <location filename="../../muse/globals.cpp" line="168"/>
         <source>(*.jpg *.gif *.png)</source>
         <translation>(*.jpg *.gif *.png)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="166"/>
+        <location filename="../../muse/globals.cpp" line="169"/>
         <source>(*.jpg)</source>
         <translation>(*.jpg)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="167"/>
+        <location filename="../../muse/globals.cpp" line="170"/>
         <source>(*.gif)</source>
         <translation>(*.gif)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="168"/>
+        <location filename="../../muse/globals.cpp" line="171"/>
         <source>(*.png)</source>
         <translation>(*.png)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="174"/>
+        <location filename="../../muse/globals.cpp" line="177"/>
         <source>part Files (*.mpt *.mpt.gz *.mpt.bz2)</source>
         <translation>Soubory part (*.mpt *.mpt.gz *.mpt.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="179"/>
+        <location filename="../../muse/globals.cpp" line="182"/>
         <source>part Files (*.mpt)</source>
         <translation>Soubory part (*.mpt)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="180"/>
+        <location filename="../../muse/globals.cpp" line="183"/>
         <source>gzip compressed part Files (*.mpt.gz)</source>
         <translation>Soubory part stlačené gzip (*.mpt.gz)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="181"/>
+        <location filename="../../muse/globals.cpp" line="184"/>
         <source>bzip2 compressed part Files (*.mpt.bz2)</source>
         <translation>Soubory part stlačené bzip2 (*.mpt.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="187"/>
+        <location filename="../../muse/globals.cpp" line="190"/>
         <source>Presets (*.pre *.pre.gz *.pre.bz2)</source>
         <translation>Přednastavení (*.pre *.pre.gz *.pre.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="193"/>
+        <location filename="../../muse/globals.cpp" line="196"/>
         <source>Presets (*.pre)</source>
         <translation>Přednastavení (*.pre)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="194"/>
+        <location filename="../../muse/globals.cpp" line="197"/>
         <source>gzip compressed presets (*.pre.gz)</source>
         <translation>Přednastavení stlačená gzip (*.pre.gz)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="195"/>
+        <location filename="../../muse/globals.cpp" line="198"/>
         <source>bzip2 compressed presets (*.pre.bz2)</source>
         <translation>Přednastavení stlačená bzip2 (*.pre.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="201"/>
+        <location filename="../../muse/globals.cpp" line="204"/>
         <source>Presets (*.map *.map.gz *.map.bz2)</source>
         <translation>Přednastavení (*.map *.map.gz *.map.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="207"/>
+        <location filename="../../muse/globals.cpp" line="210"/>
         <source>Presets (*.map)</source>
         <translation>Přednastavení (*.map)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="208"/>
+        <location filename="../../muse/globals.cpp" line="211"/>
         <source>gzip compressed presets (*.map.gz)</source>
         <translation>Přednastavení stlačená gzip (*.map.gz)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="209"/>
+        <location filename="../../muse/globals.cpp" line="212"/>
         <source>bzip2 compressed presets (*.map.bz2)</source>
         <translation>Přednastavení stlačená bzip2 (*.map.bz2)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="215"/>
+        <location filename="../../muse/globals.cpp" line="218"/>
+        <source>Wave/Binary (*.wav *.ogg *.flac *.bin)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/globals.cpp" line="219"/>
+        <source>Wave (*.wav *.ogg *.flac)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Wave/Binary (*.wav *.ogg *.bin)</source>
-        <translation>Wave/Binární (*.wav *.ogg *.bin)</translation>
+        <translation type="obsolete">Wave/Binární (*.wav *.ogg *.bin)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="216"/>
         <source>Wave (*.wav *.ogg)</source>
-        <translation>Wave (*.wav *.ogg)</translation>
+        <translation type="obsolete">Wave (*.wav *.ogg)</translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="217"/>
+        <location filename="../../muse/globals.cpp" line="220"/>
         <source>Binary (*.bin)</source>
         <translation>Binární (*.bin)</translation>
     </message>
@@ -14444,59 +15600,85 @@ Robert Jonsson
     </message>
 </context>
 <context>
+    <name>midiWarnInitPendingBase</name>
+    <message>
+        <location filename="../../muse/widgets/midi_warn_init_pending.ui" line="20"/>
+        <source>Instrument initialization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_warn_init_pending.ui" line="32"/>
+        <source>MusE should now send some Instrument Initialization Sequences.
+The sequences (usually System Exclusive messages) are defined
+ by the selected instruments in the Settings -&gt; Midi Ports dialog, 
+ such as the GM (default), GS, or XG instruments.
+
+Typically you should answer yes here.
+You can always do it manually from the Midi menu.
+
+Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/midi_warn_init_pending.ui" line="59"/>
+        <source>Don&apos;t ask me again</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>shortcuts</name>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="54"/>
+        <location filename="../../muse/shortcuts.cpp" line="53"/>
         <source>Transport: Start playback from current location</source>
         <translation>Přesun: Začít přehrávání od nynější polohy</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="55"/>
+        <location filename="../../muse/shortcuts.cpp" line="54"/>
         <source>Transport: Toggle metronome</source>
         <translation>Přesun: Zapnout/Vypnout metronom</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="56"/>
+        <location filename="../../muse/shortcuts.cpp" line="55"/>
         <source>Transport: Stop Playback</source>
         <translation>Přesun: Zastavit přehrávání</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="57"/>
+        <location filename="../../muse/shortcuts.cpp" line="56"/>
         <source>Transport: Goto Start</source>
         <translation>Přesun: Jít na začátek</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="58"/>
+        <location filename="../../muse/shortcuts.cpp" line="57"/>
         <source>Transport: Play, Stop, Rewind</source>
         <translation>Přesun: Přehrát, Zastavit, Přetočit</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="59"/>
+        <location filename="../../muse/shortcuts.cpp" line="58"/>
         <source>Transport: Goto left marker</source>
         <translation>Přesun: Jít na levou značku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="60"/>
+        <location filename="../../muse/shortcuts.cpp" line="59"/>
         <source>Transport: Goto right marker</source>
         <translation>Přesun: Jít na pravou značku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="61"/>
+        <location filename="../../muse/shortcuts.cpp" line="60"/>
         <source>Transport: Toggle Loop section</source>
         <translation>Přesun: Přepnout smyčku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="62"/>
+        <location filename="../../muse/shortcuts.cpp" line="61"/>
         <source>Transport: Toggle Record</source>
         <translation>Přesun: Zapnout/Vypnout nahrávání</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="63"/>
+        <location filename="../../muse/shortcuts.cpp" line="62"/>
         <source>Transport: Clear all rec enabled tracks</source>
         <translation>Přesun: Vrátit zpět všechny stopy označené pro nahrávání</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="64"/>
+        <location filename="../../muse/shortcuts.cpp" line="63"/>
         <source>Toggle fullscreen</source>
         <translation>Přepnout režim na celou obrazovku</translation>
     </message>
@@ -14532,373 +15714,386 @@ Robert Jonsson
     </message>
     <message>
         <location filename="../../muse/shortcuts.cpp" line="72"/>
+        <source>Edit: Paste to selected track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="73"/>
+        <source>Edit: Paste clone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="74"/>
+        <source>Edit: Paste clone to selected track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="75"/>
         <source>Edit: Paste (with dialog)</source>
         <translation>Úpravy: Vložit (s dialogem)</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="73"/>
+        <location filename="../../muse/shortcuts.cpp" line="76"/>
         <source>Edit: Delete</source>
         <translation>Úpravy: Smazat</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="77"/>
+        <location filename="../../muse/shortcuts.cpp" line="80"/>
         <source>File: New project</source>
         <translation>Soubor: Nový projekt</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="78"/>
+        <location filename="../../muse/shortcuts.cpp" line="81"/>
         <source>File: Open from disk</source>
         <translation>Soubor: Otevřít</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="79"/>
+        <location filename="../../muse/shortcuts.cpp" line="82"/>
         <source>File: Save project</source>
         <translation>Soubor: Uložit projekt</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="82"/>
+        <location filename="../../muse/shortcuts.cpp" line="85"/>
         <source>File: Open recent file</source>
         <translation>Soubor: Otevřít poslední soubor</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="83"/>
+        <location filename="../../muse/shortcuts.cpp" line="86"/>
         <source>File: Save as</source>
         <translation>Soubor: Uložit jako</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="84"/>
+        <location filename="../../muse/shortcuts.cpp" line="87"/>
         <source>File: Load template</source>
         <translation>Soubor: Nahrát předlohu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="86"/>
+        <location filename="../../muse/shortcuts.cpp" line="89"/>
         <source>File: Import midi file</source>
         <translation>Soubor: Zavést soubor MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="87"/>
+        <location filename="../../muse/shortcuts.cpp" line="90"/>
         <source>File: Export midi file</source>
         <translation>Soubor: Vyvést soubor MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="88"/>
+        <location filename="../../muse/shortcuts.cpp" line="91"/>
         <source>File: Import midi part</source>
         <translation>Soubor: Zavést MIDI part</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="89"/>
+        <location filename="../../muse/shortcuts.cpp" line="92"/>
         <source>File: Import audio file</source>
         <translation>Soubor: Zavést zvukový soubor</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="90"/>
+        <location filename="../../muse/shortcuts.cpp" line="93"/>
         <source>File: Quit MusE</source>
         <translation>Soubor: Ukončit MusE</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="92"/>
+        <location filename="../../muse/shortcuts.cpp" line="95"/>
         <source>Edit: Select parts on track</source>
         <translation>Úpravy: Vybrat části na stopě</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="93"/>
+        <location filename="../../muse/shortcuts.cpp" line="96"/>
         <source>Open pianoroll</source>
         <translation>Otevřít váleček</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="94"/>
+        <location filename="../../muse/shortcuts.cpp" line="97"/>
         <source>Open drumeditor</source>
         <translation>Otevřít editor bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="95"/>
+        <location filename="../../muse/shortcuts.cpp" line="98"/>
         <source>Open listeditor</source>
         <translation>Otevřít editor seznamu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="96"/>
+        <location filename="../../muse/shortcuts.cpp" line="99"/>
         <source>Open waveeditor</source>
         <translation>Otevřít editor Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="97"/>
+        <location filename="../../muse/shortcuts.cpp" line="100"/>
         <source>Open graphical mastertrack editor</source>
         <translation>Otevřít obrazový editor hlavní stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="98"/>
+        <location filename="../../muse/shortcuts.cpp" line="101"/>
         <source>Open list mastertrack editor</source>
         <translation>Otevřít editor seznamu hlavní stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="99"/>
+        <location filename="../../muse/shortcuts.cpp" line="102"/>
         <source>Open midi transformer</source>
         <translation>Otevřít měnič MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="100"/>
+        <location filename="../../muse/shortcuts.cpp" line="103"/>
         <source>Add midi track</source>
         <translation>Přidat stopu MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="101"/>
+        <location filename="../../muse/shortcuts.cpp" line="104"/>
         <source>Add drum track</source>
         <translation>Přidat stopu bicích</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="102"/>
+        <location filename="../../muse/shortcuts.cpp" line="105"/>
         <source>Add new style drum track</source>
         <translation>Přidat stopu bicích v novém stylu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="103"/>
+        <location filename="../../muse/shortcuts.cpp" line="106"/>
         <source>Add wave track</source>
         <translation>Přidat stopu Wave</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="104"/>
+        <location filename="../../muse/shortcuts.cpp" line="107"/>
         <source>Add audio output</source>
         <translation>Přidat výstup zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="105"/>
+        <location filename="../../muse/shortcuts.cpp" line="108"/>
         <source>Add audio group</source>
         <translation>Přidat skupinu zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="106"/>
+        <location filename="../../muse/shortcuts.cpp" line="109"/>
         <source>Add audio input</source>
         <translation>Přidat vstup zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="107"/>
+        <location filename="../../muse/shortcuts.cpp" line="110"/>
         <source>Add audio aux</source>
         <translation>Přidat aux zvuku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="108"/>
+        <location filename="../../muse/shortcuts.cpp" line="111"/>
         <source>Structure: Global cut</source>
         <translation>Stavba: Celkové vyjmutí</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="109"/>
+        <location filename="../../muse/shortcuts.cpp" line="112"/>
         <source>Structure: Global insert</source>
         <translation>Stavba: Celkové vložení</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="110"/>
+        <location filename="../../muse/shortcuts.cpp" line="113"/>
         <source>Structure: Global split</source>
         <translation>Stavba: Celkové rozdělení</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="111"/>
+        <location filename="../../muse/shortcuts.cpp" line="114"/>
         <source>Structure: Cut events</source>
         <translation>Stavba: Vyjmout události</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="113"/>
+        <location filename="../../muse/shortcuts.cpp" line="116"/>
         <source>View: Open mixer #1 window</source>
         <translation>Pohled: Otevřít okno se směšovačem 1</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="114"/>
+        <location filename="../../muse/shortcuts.cpp" line="117"/>
         <source>View: Open mixer #2 window</source>
         <translation>Pohled: Otevřít okno se směšovačem 2</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="115"/>
+        <location filename="../../muse/shortcuts.cpp" line="118"/>
         <source>View: Toggle transport window</source>
         <translation>Pohled: Přepnout okno pro přesun</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="116"/>
+        <location filename="../../muse/shortcuts.cpp" line="119"/>
         <source>View: Toggle bigtime window</source>
         <translation>Pohled: Přepnout velký ukazatel času</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="117"/>
+        <location filename="../../muse/shortcuts.cpp" line="120"/>
         <source>View: Open marker window</source>
         <translation>Pohled: Otevřít okno se značkou</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="119"/>
+        <location filename="../../muse/shortcuts.cpp" line="122"/>
         <source>Settings: Follow song by page</source>
         <translation>Nastavení: Sledovat píseň na několika stranách</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="120"/>
+        <location filename="../../muse/shortcuts.cpp" line="123"/>
         <source>Settings: Follow song off</source>
         <translation>Nastavení: Nesledovat píseň</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="121"/>
+        <location filename="../../muse/shortcuts.cpp" line="124"/>
         <source>Settings: Follow song continuous</source>
         <translation>Nastavení: Sledovat píseň stále</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="123"/>
+        <location filename="../../muse/shortcuts.cpp" line="126"/>
         <source>Settings: Global configuration</source>
         <translation>Nastavení: Celková nastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="124"/>
+        <location filename="../../muse/shortcuts.cpp" line="64"/>
         <source>Settings: Configure shortcuts</source>
         <translation>Nastavení: Nastavit klávesové zkratky</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="125"/>
+        <location filename="../../muse/shortcuts.cpp" line="128"/>
         <source>Settings: Configure metronome</source>
         <translation>Nastavení: Nastavit metronom</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="126"/>
+        <location filename="../../muse/shortcuts.cpp" line="129"/>
         <source>Settings: Midi sync configuration</source>
         <translation>Nastavení: Nastavení seřízení MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="127"/>
+        <location filename="../../muse/shortcuts.cpp" line="130"/>
         <source>Settings: Midi file import/export configuration</source>
         <translation>Nastavení: Nastavení zavedení/vyvedení souboru MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="128"/>
+        <location filename="../../muse/shortcuts.cpp" line="131"/>
         <source>Settings: Appearance settings</source>
         <translation>Nastavení: Nastavení vzhledu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="129"/>
+        <location filename="../../muse/shortcuts.cpp" line="132"/>
         <source>Settings: Midi ports / Soft Synth</source>
         <translation>Nastavení: Přípojky MIDI/Softwarové syntetizátory</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="130"/>
+        <location filename="../../muse/shortcuts.cpp" line="133"/>
         <source>Settings: Audio subsystem configuration</source>
         <translation>Nastavení: Nastavení zvukového podsystému</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="133"/>
+        <location filename="../../muse/shortcuts.cpp" line="136"/>
         <source>Midi: Edit midi instruments</source>
         <translation>Midi: Upravit nástroje MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="134"/>
+        <location filename="../../muse/shortcuts.cpp" line="137"/>
         <source>Midi: Open midi input transform</source>
         <translation>Midi: Otevřít proměnu vstupu MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="135"/>
+        <location filename="../../muse/shortcuts.cpp" line="138"/>
         <source>Midi: Open midi input filter</source>
         <translation>Midi: Otevřít filtr vstupu MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="136"/>
+        <location filename="../../muse/shortcuts.cpp" line="139"/>
         <source>Midi: Midi input transpose</source>
         <translation>Midi: Převedení vstupu MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="137"/>
+        <location filename="../../muse/shortcuts.cpp" line="140"/>
         <source>Midi: Midi remote control</source>
         <translation>Midi: Vzdálené ovladání MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="139"/>
+        <location filename="../../muse/shortcuts.cpp" line="142"/>
         <source>Midi: Random rhythm generator</source>
         <translation>Midi: Generátor náhodného rytmu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="141"/>
+        <location filename="../../muse/shortcuts.cpp" line="144"/>
         <source>Midi: Reset midi</source>
         <translation>Midi: Nastavit MIDI znovu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="142"/>
+        <location filename="../../muse/shortcuts.cpp" line="145"/>
         <source>Midi: Init midi</source>
         <translation>Midi: Inicializovat MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="143"/>
+        <location filename="../../muse/shortcuts.cpp" line="146"/>
         <source>Midi: Midi local off</source>
         <translation>Midi: Místní vypnuto</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="145"/>
+        <location filename="../../muse/shortcuts.cpp" line="148"/>
         <source>Audio: Bounce audio to track</source>
         <translation>Zvuk: Odmíchat zvuk na stopu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="146"/>
+        <location filename="../../muse/shortcuts.cpp" line="149"/>
         <source>Audio: Bounce audio to file</source>
         <translation>Zvuk: Odmíchat zvuk do souboru</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="147"/>
+        <location filename="../../muse/shortcuts.cpp" line="150"/>
         <source>Audio: Restart audio</source>
         <translation>Zvuk: Spustit zvuk znovu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="149"/>
+        <location filename="../../muse/shortcuts.cpp" line="152"/>
         <source>Automation: Mixer automation</source>
         <translation>Automatizace: Automatizace míchacího pultu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="150"/>
+        <location filename="../../muse/shortcuts.cpp" line="153"/>
         <source>Automation: Take mixer snapshot</source>
         <translation>Automatizace: Udělat snímek směšovače</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="151"/>
+        <location filename="../../muse/shortcuts.cpp" line="154"/>
         <source>Automation: Clear mixer automation</source>
         <translation>Automatizace: Smazat automatizaci směšovače</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="154"/>
+        <location filename="../../muse/shortcuts.cpp" line="157"/>
         <source>Help: Open Manual</source>
         <translation>Nápověda: Otevřít příručku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="155"/>
+        <location filename="../../muse/shortcuts.cpp" line="158"/>
         <source>Help: Toggle whatsthis mode</source>
         <translation>Nápověda: Přepnout režim &quot;Co je to?&quot;</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="157"/>
+        <location filename="../../muse/shortcuts.cpp" line="160"/>
         <source>Edit: Edit selected part</source>
         <translation>Úpravy: Upravit vybranou část</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="158"/>
+        <location filename="../../muse/shortcuts.cpp" line="161"/>
         <source>Edit: Select nearest part on track above</source>
         <translation>Úpravy: Vybrat nejbližší část na předchozí stopě</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="159"/>
+        <location filename="../../muse/shortcuts.cpp" line="162"/>
         <source>Edit: Add nearest part on track above</source>
         <translation>Úpravy: Přidat nejbližší část do předchozí stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="160"/>
+        <location filename="../../muse/shortcuts.cpp" line="163"/>
         <source>Edit: Select nearest part on track below</source>
         <translation>Úpravy: Vybrat nejbližší část na další stopě</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="161"/>
+        <location filename="../../muse/shortcuts.cpp" line="164"/>
         <source>Edit: Add nearest part on track below</source>
         <translation>Úpravy: Přidat nejbližší část do další stopy</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="163"/>
+        <location filename="../../muse/shortcuts.cpp" line="166"/>
         <source>Edit: Insert empty measure</source>
         <translation>Úpravy: Vložit prázdný takt</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="165"/>
         <source>Edit: Paste as clones</source>
-        <translation>Úpravy: Vložit jako klony</translation>
+        <translation type="obsolete">Úpravy: Vložit jako klony</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="166"/>
         <source>Edit: Paste as clones (with dialog)</source>
-        <translation>Úpravy: Vložit jako klony (s dialogem)</translation>
+        <translation type="obsolete">Úpravy: Vložit jako klony (s dialogem)</translation>
     </message>
     <message>
         <location filename="../../muse/shortcuts.cpp" line="168"/>
@@ -15017,309 +16212,372 @@ Robert Jonsson
         <translation>Pohled: Projíždět doleva</translation>
     </message>
     <message>
+        <location filename="../../muse/shortcuts.cpp" line="199"/>
+        <source>Transport: Step record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="200"/>
+        <source>Transport: Midi input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="201"/>
+        <source>Transport: Play events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="202"/>
+        <source>Edit: Increase velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../muse/shortcuts.cpp" line="203"/>
+        <source>Edit: Decrease velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="209"/>
         <source>Edit: Set Fixed Length on Midi Events</source>
         <translation>Úpravy: Nastavit pevnou délku pro události MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="209"/>
+        <location filename="../../muse/shortcuts.cpp" line="215"/>
         <source>Quantize</source>
         <translation>Kvantizovat</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="210"/>
+        <location filename="../../muse/shortcuts.cpp" line="216"/>
         <source>Modify Note Length</source>
         <translation>Změnit délku noty</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="211"/>
+        <location filename="../../muse/shortcuts.cpp" line="217"/>
         <source>Modify Velocity</source>
         <translation>Změnit sílu nárazu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="212"/>
+        <location filename="../../muse/shortcuts.cpp" line="218"/>
         <source>Edit: Crescendo</source>
         <translation>Úpravy: Crescendo</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="213"/>
+        <location filename="../../muse/shortcuts.cpp" line="219"/>
         <source>Edit: Thin Out</source>
         <translation>Úpravy: Prostřihávat</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="214"/>
+        <location filename="../../muse/shortcuts.cpp" line="220"/>
         <source>Edit: Erase Event</source>
         <translation>Úpravy: Smazat událost</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="215"/>
+        <location filename="../../muse/shortcuts.cpp" line="221"/>
         <source>Edit: Delete Overlaps</source>
         <translation>Úpravy: Smazat překrývající se noty</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="216"/>
+        <location filename="../../muse/shortcuts.cpp" line="222"/>
         <source>Edit: Note Shift</source>
         <translation>Úpravy: Posunout noty</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="217"/>
+        <location filename="../../muse/shortcuts.cpp" line="223"/>
         <source>Edit: Move Clock</source>
         <translation>Úpravy: Posunout hodiny</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="218"/>
+        <location filename="../../muse/shortcuts.cpp" line="224"/>
         <source>Edit: Copy Measure</source>
         <translation>Úpravy: Kopírovat takt</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="219"/>
+        <location filename="../../muse/shortcuts.cpp" line="225"/>
         <source>Edit: Erase Measure</source>
         <translation>Úpravy: Vymazat takt</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="220"/>
+        <location filename="../../muse/shortcuts.cpp" line="226"/>
         <source>Edit: Delete Measure</source>
         <translation>Úpravy: Smazat takt</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="221"/>
+        <location filename="../../muse/shortcuts.cpp" line="227"/>
         <source>Edit: Create Measure</source>
         <translation>Úpravy: Vytvořit takt</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="222"/>
+        <location filename="../../muse/shortcuts.cpp" line="228"/>
         <source>Edit: Change Event Color</source>
         <translation>Úpravy: Změnit barvu události</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="227"/>
+        <location filename="../../muse/shortcuts.cpp" line="229"/>
+        <source>Move: Move to selected note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="234"/>
         <source>Tool: Pointer</source>
         <translation>Nástroj: Ukazatel</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="228"/>
+        <location filename="../../muse/shortcuts.cpp" line="235"/>
         <source>Tool: Pencil</source>
         <translation>Nástroj: Tužka</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="229"/>
+        <location filename="../../muse/shortcuts.cpp" line="236"/>
         <source>Tool: Eraser</source>
         <translation>Nástroj: Guma</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="231"/>
+        <location filename="../../muse/shortcuts.cpp" line="237"/>
+        <source>Tool: Pan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="238"/>
+        <source>Tool: Zoom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="240"/>
         <source>Tool: Line Draw</source>
         <translation>Nástroj: Čára</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="234"/>
+        <location filename="../../muse/shortcuts.cpp" line="243"/>
         <source>Tool: Cursor</source>
         <translation>Nástroj: Ukazovátko</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="235"/>
+        <location filename="../../muse/shortcuts.cpp" line="244"/>
         <source>Add note velocity 1</source>
         <translation>Přidat notu se silou nárazu (dynamika) 1</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="236"/>
+        <location filename="../../muse/shortcuts.cpp" line="245"/>
         <source>Add note velocity 2</source>
         <translation>Přidat notu se silou nárazu (dynamika) 2</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="237"/>
+        <location filename="../../muse/shortcuts.cpp" line="246"/>
         <source>Add note velocity 3</source>
         <translation>Přidat notu se silou nárazu (dynamika) 3</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="238"/>
+        <location filename="../../muse/shortcuts.cpp" line="247"/>
         <source>Add note velocity 4</source>
         <translation>Přidat notu se silou nárazu (dynamika) 4</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="240"/>
+        <location filename="../../muse/shortcuts.cpp" line="249"/>
         <source>Cursor step size: larger</source>
         <translation>Velikost kroku ukazovátka: větší</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="241"/>
+        <location filename="../../muse/shortcuts.cpp" line="250"/>
         <source>Cursor step size: smaller</source>
         <translation>Velikost kroku ukazovátka: menší</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="242"/>
+        <location filename="../../muse/shortcuts.cpp" line="251"/>
         <source>Instrument/Cursor up</source>
         <translation>Nástroj/Ukazovátko nahoru</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="243"/>
+        <location filename="../../muse/shortcuts.cpp" line="252"/>
         <source>Instrument/Cursor down</source>
         <translation>Nástroj/Ukazovátko dolů</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="246"/>
+        <location filename="../../muse/shortcuts.cpp" line="255"/>
+        <source>Tool: Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="258"/>
         <source>Tool: Scissor</source>
         <translation>Nástroj: Nůžky</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="247"/>
+        <location filename="../../muse/shortcuts.cpp" line="259"/>
         <source>Tool: Glue</source>
         <translation>Nástroj: Lepidlo</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="248"/>
+        <location filename="../../muse/shortcuts.cpp" line="260"/>
         <source>Tool: Mute</source>
         <translation>Nástroj: Ztlumit</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="252"/>
+        <location filename="../../muse/shortcuts.cpp" line="264"/>
         <source>Transport: Increase current position</source>
         <translation>Přesun: Zvýšit nynější polohu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="253"/>
+        <location filename="../../muse/shortcuts.cpp" line="265"/>
         <source>Transport: Decrease current position</source>
         <translation>Přesun: Snížit nynější polohu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="255"/>
+        <location filename="../../muse/shortcuts.cpp" line="267"/>
         <source>Transport: Increase current position, no snap</source>
         <translation>Přesun: Zvýšit nynější polohu, žádné zapadnutí</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="256"/>
+        <location filename="../../muse/shortcuts.cpp" line="268"/>
         <source>Transport: Decrease current position, no snap</source>
         <translation>Přesun: Snížit nynější polohu, žádné zapadnutí</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="289"/>
+        <location filename="../../muse/shortcuts.cpp" line="301"/>
         <source>Quantize: Set quantize to 1/1 note</source>
         <translation>Kvantizovat: Nastavit kvantizaci na celou notu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="290"/>
+        <location filename="../../muse/shortcuts.cpp" line="302"/>
         <source>Quantize: Set quantize to 1/2 note</source>
         <translation>Kvantizovat: Nastavit kvantizaci na půlovou notu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="291"/>
+        <location filename="../../muse/shortcuts.cpp" line="303"/>
         <source>Quantize: Set quantize to 1/4 note</source>
         <translation>Kvantizovat: Nastavit kvantizaci na čtvrťovou notu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="292"/>
+        <location filename="../../muse/shortcuts.cpp" line="304"/>
         <source>Quantize: Set quantize to 1/8 note</source>
         <translation>Kvantizovat: Nastavit kvantizaci na osminovou notu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="293"/>
+        <location filename="../../muse/shortcuts.cpp" line="305"/>
         <source>Quantize: Set quantize to 1/16 note</source>
         <translation>Kvantizovat: Nastavit kvantizaci na šestnáctinovou notu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="294"/>
+        <location filename="../../muse/shortcuts.cpp" line="306"/>
         <source>Quantize: Set quantize to 1/32 note</source>
         <translation>Kvantizovat: Nastavit kvantizaci na dvaatřicetinovou notu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="295"/>
+        <location filename="../../muse/shortcuts.cpp" line="307"/>
         <source>Quantize: Set quantize to 1/64 note</source>
         <translation>Kvantizovat: Nastavit kvantizaci na čtyřiašedesátinovou notu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="297"/>
+        <location filename="../../muse/shortcuts.cpp" line="309"/>
         <source>Quantize: Toggle triol quantization</source>
         <translation>Kvantizovat: Přepnout triolovou kvantizaci</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="298"/>
+        <location filename="../../muse/shortcuts.cpp" line="310"/>
         <source>Quantize: Toggle punctuation quantization</source>
         <translation>Kvantizovat: Přepnout tečkovanou kvantizaci</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="299"/>
+        <location filename="../../muse/shortcuts.cpp" line="311"/>
         <source>Quantize: Toggle punctuation quantization (2)</source>
         <translation>Kvantizovat: Přepnout tečkovanou kvantizaci (2)</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="300"/>
+        <location filename="../../muse/shortcuts.cpp" line="312"/>
         <source>Edit: Insert at location</source>
         <translation>Úpravy: Vložit v poloze</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="302"/>
+        <location filename="../../muse/shortcuts.cpp" line="314"/>
         <source>Edit: Increase length</source>
         <translation>Úpravy: Zvětšit délku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="303"/>
+        <location filename="../../muse/shortcuts.cpp" line="315"/>
         <source>Edit: Decrease length</source>
         <translation>Úpravy: Zmenšit délku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="309"/>
+        <location filename="../../muse/shortcuts.cpp" line="321"/>
         <source>Insert Note</source>
         <translation>Vložit notu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="310"/>
+        <location filename="../../muse/shortcuts.cpp" line="322"/>
         <source>Insert SysEx</source>
         <translation>Vložit SysEx</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="311"/>
+        <location filename="../../muse/shortcuts.cpp" line="323"/>
         <source>Insert Ctrl</source>
         <translation>Vložit Ctrl</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="312"/>
+        <location filename="../../muse/shortcuts.cpp" line="324"/>
         <source>Insert Meta</source>
         <translation>Vložit Meta</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="313"/>
+        <location filename="../../muse/shortcuts.cpp" line="325"/>
         <source>Insert Channel Aftertouch</source>
         <translation>Vložit dodělávku kanálu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="314"/>
+        <location filename="../../muse/shortcuts.cpp" line="326"/>
         <source>Insert Key Aftertouch</source>
         <translation>Vložit dodělávku tóniny</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="319"/>
+        <location filename="../../muse/shortcuts.cpp" line="331"/>
         <source>Insert Tempo</source>
         <translation>Vložit tempo</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="320"/>
+        <location filename="../../muse/shortcuts.cpp" line="332"/>
         <source>Insert Signature</source>
         <translation>Vložit taktové označení</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="321"/>
+        <location filename="../../muse/shortcuts.cpp" line="333"/>
         <source>Change Event Position</source>
         <translation>Změnit polohu události</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="322"/>
+        <location filename="../../muse/shortcuts.cpp" line="334"/>
         <source>Edit Event Value</source>
         <translation>Upravit hodnotu události</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="323"/>
+        <location filename="../../muse/shortcuts.cpp" line="335"/>
         <source>Insert Key</source>
         <translation>Vložit tóninu</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="325"/>
+        <location filename="../../muse/shortcuts.cpp" line="339"/>
         <source>Goto Next Marker</source>
         <translation>Jít na další značku</translation>
     </message>
     <message>
-        <location filename="../../muse/shortcuts.cpp" line="326"/>
+        <location filename="../../muse/shortcuts.cpp" line="340"/>
         <source>Goto Prev Marker</source>
         <translation>Jít na předchozí značku</translation>
+    </message>
+</context>
+<context>
+    <name>warnBadTimingBase</name>
+    <message>
+        <location filename="../../muse/widgets/warn_bad_timing.ui" line="20"/>
+        <source>Bad timing</source>
+        <translation type="unfinished">Špatné načasování</translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/warn_bad_timing.ui" line="32"/>
+        <source>Message here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/warn_bad_timing.ui" line="51"/>
+        <source>Don&apos;t warn me again</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

@@ -1862,6 +1862,7 @@ void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu
    if(menu->actions().size() == 0)
    {
       QAction *act = menu->addAction(QObject::tr("No presets found"));
+      act->setDisabled(true);
       act->setData(QVariant::fromValue<void *>(NULL));
    }
 
