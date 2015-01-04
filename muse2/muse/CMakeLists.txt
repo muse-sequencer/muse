@@ -96,6 +96,7 @@ file (GLOB core_source_files
       lv2host.cpp
       lv2extui.h
       lv2extprg.h
+      lv2extprgnew.h
       event.cpp
       eventlist.cpp
       exportmidi.cpp

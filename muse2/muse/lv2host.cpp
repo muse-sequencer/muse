@@ -140,6 +140,8 @@ typedef struct
    LilvNode *lv2_FreeWheelPort;
    LilvNode *lv2_SampleRate;
    LilvNode *lv2_CVPort;
+   LilvNode *lv2_psetPreset;
+   LilvNode *lv2_rdfsLabel;
    LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
 } CacheNodes;
 
@@ -271,6 +273,8 @@ void initLV2()
    lv2CacheNodes.lv2_FreeWheelPort      = lilv_new_uri(lilvWorld, LV2_CORE__freeWheeling);
    lv2CacheNodes.lv2_SampleRate         = lilv_new_uri(lilvWorld, LV2_CORE__sampleRate);
    lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
+   lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
+   lv2CacheNodes.lv2_rdfsLabel        = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -558,101 +562,8 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
 
 
 void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer)
-{   
-   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
-
-   assert(state != NULL); //this should'nt happen
-   assert(state->inst != NULL || state->sif != NULL); // this too
-
-   if(protocol != 0 && protocol != state->synth->_uAtom_EventTransfer)
-   {
-#ifdef DEBUG_LV2
-      std::cerr << "LV2Synth::lv2ui_PortWrite: unsupported protocol (" << protocol << ")" << std::endl;
-#endif
-      return;
-   }
-
-   if(protocol == state->synth->_uAtom_EventTransfer) //put atom transfers to dedicated ring buffer
-   {
-#ifdef DEBUG_LV2
-      std::cerr << "LV2Synth::lv2ui_PortWrite: atom_EventTransfer, port = " << port_index << ", size =" << buffer_size << std::endl;
-#endif      
-      state->uiControlEvt.put(port_index, buffer_size, buffer);
-      return;
-   }
-
-   std::map<uint32_t, uint32_t>::iterator it = state->synth->_idxToControlMap.find(port_index);
-
-   if(it == state->synth->_idxToControlMap.end())
-   {
-#ifdef DEBUG_LV2
-      std::cerr << "LV2Synth::lv2ui_PortWrite: wrong port index (" << port_index << ")" << std::endl;
-#endif
-      return;
-   }
-
-   uint32_t cport = it->second;
-   float value = *(float *)buffer;
-
-   // Schedules a timed control change:
-   ControlEvent ce;
-   ce.unique = false;
-   ce.fromGui = true;                 // It came from the plugin's own GUI.
-   ce.idx = cport;
-   ce.value = value;
-   // Don't use timestamp(), because it's circular, which is making it impossible to deal
-   // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
-   ce.frame = MusEGlobal::audio->curFrame();
-
-   ControlFifo *_controlFifo = NULL;
-   if(state->inst != NULL)
-   {
-      _controlFifo = &state->plugInst->_controlFifo;
-      // Record automation:
-      // Take care of this immediately, because we don't want the silly delay associated with
-      //  processing the fifo one-at-a-time in the apply().
-      // NOTE: With some vsts we don't receive control events until the user RELEASES a control.
-      // So the events all arrive at once when the user releases a control.
-      // That makes this pretty useless... But what the heck...
-      //AutomationType at = AUTO_OFF;
-      if(state->plugInst->_track && state->plugInst->_id != -1)
-      {
-        unsigned long id = genACnum(state->plugInst->_id, cport);
-        state->plugInst->_track->recordAutomation(id, value);
-        //at = state->plugInst->_track->automationType();
-      }
-
-      //state->plugInst->enableController(cport, false);
-   }
-   else if(state->sif != NULL)
-   {
-      _controlFifo = &state->sif->_controlFifo;
-      // Record automation:
-      // Take care of this immediately, because we don't want the silly delay associated with
-      //  processing the fifo one-at-a-time in the apply().
-      // NOTE: With some vsts we don't receive control events until the user RELEASES a control.
-      // So the events all arrive at once when the user releases a control.
-      // That makes this pretty useless... But what the heck...
-      if(state->sif->id() != -1)
-      {
-        unsigned long pid = genACnum(state->sif->id(), cport);
-        state->sif->synti->recordAutomation(pid, value);
-      }
-
-      //state->sif->enableController(cport, false);
-
-   }
-
-   state->controlTimers [cport] = 1000 / 30; //  1 sec controllers will not be send to guis
-
-   assert(_controlFifo != NULL);
-   if(_controlFifo->put(ce))
-     std::cerr << "LV2Synth::lv2ui_PortWrite: fifo overflow: in control number:" << cport << std::endl;
-
-#ifdef DEBUG_LV2
-   std::cerr << "LV2Synth::lv2ui_PortWrite: port=" << cport << "(" << port_index << ")" << ", val=" << value << std::endl;
-#endif
-
+{
+   LV2Synth::lv2state_PortWrite(controller, port_index, buffer_size, protocol, buffer, true);
 }
 
 void LV2Synth::lv2ui_Touch(LV2UI_Controller /*controller*/, uint32_t /*port_index*/, bool grabbed __attribute__ ((unused)))
@@ -1845,6 +1756,182 @@ char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const ch
    return LV2Synth::lv2state_makePath((LV2_State_Make_Path_Handle)handle, abstract_path);
 }
 
+void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu)
+{
+   std::map<QString, LilvNode *>::iterator it;
+   LV2Synth *synth = state->synth;
+   menu->clear();
+   for(it = synth->_presets.begin(); it != synth->_presets.end(); ++it)
+   {
+      QAction *act = menu->addAction(it->first);
+      act->setData(QVariant::fromValue<void *>(static_cast<void *>((it->second))));
+   }
+   if(menu->actions().size() == 0)
+   {
+      QAction *act = menu->addAction(QObject::tr("No presets found"));
+      act->setDisabled(true);
+      act->setData(QVariant::fromValue<void *>(NULL));
+   }
+
+
+
+}
+
+void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, const void *buffer, bool fromUi)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
+
+   assert(state != NULL); //this should'nt happen
+   assert(state->inst != NULL || state->sif != NULL); // this too
+
+   if(protocol != 0 && protocol != state->synth->_uAtom_EventTransfer)
+   {
+#ifdef DEBUG_LV2
+      std::cerr << "LV2Synth::lv2state_PortWrite: unsupported protocol (" << protocol << ")" << std::endl;
+#endif
+      return;
+   }
+
+   if(protocol == state->synth->_uAtom_EventTransfer) //put atom transfers to dedicated ring buffer
+   {
+#ifdef DEBUG_LV2
+      std::cerr << "LV2Synth::lv2state_PortWrite: atom_EventTransfer, port = " << port_index << ", size =" << buffer_size << std::endl;
+#endif
+      state->uiControlEvt.put(port_index, buffer_size, buffer);
+      return;
+   }
+
+   std::map<uint32_t, uint32_t>::iterator it = state->synth->_idxToControlMap.find(port_index);
+
+   if(it == state->synth->_idxToControlMap.end())
+   {
+#ifdef DEBUG_LV2
+      std::cerr << "LV2Synth::lv2state_PortWrite: wrong port index (" << port_index << ")" << std::endl;
+#endif
+      return;
+   }
+
+   uint32_t cport = it->second;
+   float value = *(float *)buffer;
+
+   // Schedules a timed control change:
+   ControlEvent ce;
+   ce.unique = false;
+   ce.fromGui = fromUi;                 // It came from the plugin's own GUI (or not).
+   ce.idx = cport;
+   ce.value = value;
+   // Don't use timestamp(), because it's circular, which is making it impossible to deal
+   // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
+   ce.frame = MusEGlobal::audio->curFrame();
+
+   ControlFifo *_controlFifo = NULL;
+   if(state->inst != NULL)
+   {
+      _controlFifo = &state->plugInst->_controlFifo;
+      if(fromUi)
+      {
+         // Record automation:
+         // Take care of this immediately, because we don't want the silly delay associated with
+         //  processing the fifo one-at-a-time in the apply().
+         // NOTE: With some vsts we don't receive control events until the user RELEASES a control.
+         // So the events all arrive at once when the user releases a control.
+         // That makes this pretty useless... But what the heck...
+         //AutomationType at = AUTO_OFF;
+         if(state->plugInst->_track && state->plugInst->_id != -1)
+         {
+            unsigned long id = genACnum(state->plugInst->_id, cport);
+            state->plugInst->_track->recordAutomation(id, value);
+            //at = state->plugInst->_track->automationType();
+         }
+
+         //state->plugInst->enableController(cport, false);
+      }
+   }
+   else if(state->sif != NULL)
+   {
+      _controlFifo = &state->sif->_controlFifo;
+      if(fromUi)
+      {
+         // Record automation:
+         // Take care of this immediately, because we don't want the silly delay associated with
+         //  processing the fifo one-at-a-time in the apply().
+         // NOTE: With some vsts we don't receive control events until the user RELEASES a control.
+         // So the events all arrive at once when the user releases a control.
+         // That makes this pretty useless... But what the heck...
+         if(state->sif->id() != -1)
+         {
+            unsigned long pid = genACnum(state->sif->id(), cport);
+            state->sif->synti->recordAutomation(pid, value);
+         }
+
+         //state->sif->enableController(cport, false);
+      }
+   }
+
+   if(fromUi)
+   {
+      state->controlTimers [cport] = 1000 / 30; //  1 sec controllers will not be send to guis
+   }
+
+   assert(_controlFifo != NULL);
+   if(_controlFifo->put(ce))
+     std::cerr << "LV2Synth::lv2state_PortWrite: fifo overflow: in control number:" << cport << std::endl;
+
+#ifdef DEBUG_LV2
+   std::cerr << "LV2Synth::lv2state_PortWrite: port=" << cport << "(" << port_index << ")" << ", val=" << value << std::endl;
+#endif
+
+
+}
+
+void LV2Synth::lv2state_setPortValue(const char *port_symbol, void *user_data, const void *value, uint32_t size, uint32_t type)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)user_data;
+   assert(state != NULL);
+   std::map<QString, size_t>::iterator it = state->controlsSymMap.find(QString::fromUtf8(port_symbol).toLower());
+   if(it != state->controlsSymMap.end())
+   {
+      size_t ctrlNum = it->second;
+      uint32_t ctrlIdx = state->synth->_controlInPorts [ctrlNum].index;
+      float fvalue;
+      if (type == state->atomForge.Float)
+      {
+         fvalue = *(const float*)value;
+      }
+      else if (type == state->atomForge.Double)
+      {
+         fvalue = *(const double*)value;
+      }
+      else if (type == state->atomForge.Int)
+      {
+         fvalue = *(const int32_t*)value;
+      }
+      else if (type == state->atomForge.Long)
+      {
+         fvalue = *(const int64_t*)value;
+      }
+      else
+      {
+         fprintf(stderr, "error: Preset `%s' value has bad type <%s>\n",
+                 port_symbol, state->synth->uridBiMap.unmap(type));
+         return;
+      }
+      LV2Synth::lv2state_PortWrite((LV2UI_Controller)user_data, ctrlIdx, size, 0, &fvalue, false);
+   }
+
+}
+
+void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset)
+{
+   LilvState* lilvState = lilv_state_new_from_world(lilvWorld, &state->synth->_lv2_urid_map, preset);
+   if(lilvState)
+   {
+      lilv_state_restore(lilvState, state->handle, LV2Synth::lv2state_setPortValue, state, 0, NULL);
+      lilv_state_free(lilvState);
+   }
+
+}
+
 
 
 
@@ -2043,15 +2130,25 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    {
       const LilvPort *_port = lilv_plugin_get_port_by_index(_handle, i);
       LilvNode *_nPname = lilv_port_get_name(_handle, _port);
+      const LilvNode *_nPsym = lilv_port_get_symbol(_handle, _port);
       char cAutoGenPortName [1024];
+      char cAutoGenPortSym [1024];
       memset(cAutoGenPortName, 0, sizeof(cAutoGenPortName));
+      memset(cAutoGenPortSym, 0, sizeof(cAutoGenPortSym));
       snprintf(cAutoGenPortName, sizeof(cAutoGenPortName) - 1, "autoport #%u", i);
+      snprintf(cAutoGenPortSym, sizeof(cAutoGenPortSym) - 1, "autoport#%u", i);
       const char *_portName = cAutoGenPortName;
+      const char *_portSym = cAutoGenPortSym;
 
       if(_nPname != 0)
       {
          _portName = lilv_node_as_string(_nPname);
          lilv_node_free(_nPname);
+      }
+
+      if(_nPsym != 0)
+      {
+         _portSym = lilv_node_as_string(_nPsym);
       }
 
       const bool optional = lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_connectionOptional);
@@ -2089,7 +2186,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
          else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portLogarithmic))
             _cType = LV2_PORT_LOGARITHMIC;
 
-         cPorts->push_back(LV2ControlPort(_port, i, 0.0f, _portName, _cType, isCVPort));
+         cPorts->push_back(LV2ControlPort(_port, i, 0.0f, _portName, _portSym, _cType, isCVPort));
 
          if(isnan(_pluginControlsDefault [i]))
             _pluginControlsDefault [i] = 0;
@@ -2216,6 +2313,31 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 
    }
 
+   //scan for preserts
+   LilvNodes* presets = lilv_plugin_get_related(_handle, lv2CacheNodes.lv2_psetPreset);
+   LILV_FOREACH(nodes, i, presets)
+   {
+      const LilvNode* preset = lilv_nodes_get(presets, i);
+#ifdef DEBUG_LV2
+      std::cerr << "\tPreset: " << lilv_node_as_uri(preset) << std::endl;
+#endif
+      lilv_world_load_resource(lilvWorld, preset);
+      LilvNodes* pLabels = lilv_world_find_nodes(lilvWorld, preset, lv2CacheNodes.lv2_rdfsLabel, NULL);
+      if (pLabels != NULL)
+      {
+         const LilvNode* pLabel = lilv_nodes_get_first(pLabels);
+         _presets.insert(std::make_pair<QString, LilvNode *>(lilv_node_as_string(pLabel), lilv_node_duplicate(preset)));
+         lilv_nodes_free(pLabels);
+      }
+      else
+      {
+#ifdef DEBUG_LV2
+         std::cerr << "\t\tPreset <%s> has no rdfs:label" << lilv_node_as_string(lilv_nodes_get(presets, i)) << std::endl;
+#endif
+      }
+   }
+   lilv_nodes_free(presets);
+
 
    _isConstructed = true;
 }
@@ -2245,6 +2367,18 @@ LV2Synth::~LV2Synth()
       lilv_uis_free(_uis);
       _uis = NULL;
    }
+   std::map<QString, LilvNode *>::iterator it;
+   for(it = _presets.begin(); it != _presets.end(); ++it)
+   {
+      lilv_node_free(it->second);
+   }
+   LilvNodes* presets = lilv_plugin_get_related(_handle, lv2CacheNodes.lv2_psetPreset);
+   LILV_FOREACH(nodes, i, presets)
+   {
+      const LilvNode* preset = lilv_nodes_get(presets, i);
+      lilv_world_unload_resource(lilvWorld, preset);
+   }
+   lilv_nodes_free(presets);
 
 }
 
@@ -2433,6 +2567,7 @@ bool LV2SynthIF::init(LV2Synth *s)
       _controlInPorts [i].maxVal = _synth->_pluginControlsMax [idx];
 
       _uiState->controlsNameMap.insert(std::pair<QString, size_t>(QString(_controlInPorts [i].cName).toLower(), i));
+      _uiState->controlsSymMap.insert(std::pair<QString, size_t>(QString(_controlInPorts [i].cSym).toLower(), i));
 
       int ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + i;
 
@@ -4202,6 +4337,16 @@ void LV2SynthIF::enableAllControllers(bool v)
 }
 void LV2SynthIF::updateControllers() { }
 
+void LV2SynthIF::populatePresetsMenu(QMenu *menu)
+{
+   LV2Synth::lv2state_populatePresetsMenu(_uiState, menu);
+}
+
+void LV2SynthIF::applyPreset(void *preset)
+{
+   LV2Synth::lv2state_applyPreset(_uiState, static_cast<LilvNode *>(preset));
+}
+
 
 
 void LV2SynthIF::writeConfiguration(int level, Xml &xml)
@@ -4456,6 +4601,7 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
          state->controlsMask [i] = false;
          state->controlTimers [i] = 0;
          state->controlsNameMap.insert(std::pair<QString, size_t>(QString(_synth->_controlInPorts [i].cName).toLower(), i));
+         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(_synth->_controlInPorts [i].cSym).toLower(), i));
       }
    }
 
@@ -4736,6 +4882,38 @@ void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QSt
    assert(state != NULL);
 
    LV2Synth::lv2conf_set(state, customParams);
+}
+
+void LV2PluginWrapper::populatePresetsMenu(PluginI *p, QMenu *menu)
+{
+   assert(p->instances > 0);
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
+
+   if(it == _states.end())
+   {
+      return;
+   }
+   LV2PluginWrapper_State *state = it->second;
+   assert(state != NULL);
+
+   LV2Synth::lv2state_populatePresetsMenu(state, menu);
+
+}
+
+void LV2PluginWrapper::applyPreset(PluginI *p, void *preset)
+{
+   assert(p->instances > 0);
+   std::map<void *, LV2PluginWrapper_State *>::iterator it = _states.find(p->handle [0]);
+
+   if(it == _states.end())
+   {
+      return;
+   }
+   LV2PluginWrapper_State *state = it->second;
+   assert(state != NULL);
+
+   LV2Synth::lv2state_applyPreset(state, static_cast<LilvNode *>(preset));
+
 }
 
 

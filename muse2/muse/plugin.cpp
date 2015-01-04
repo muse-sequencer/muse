@@ -1470,6 +1470,15 @@ bool Pipeline::isDssiPlugin(int idx) const
   return false;
 }
 
+bool Pipeline::isLV2Plugin(int idx) const
+{
+   PluginI* p = (*this)[idx];
+   if(p)
+     return p->isLV2Plugin();
+
+   return false;
+}
+
 //---------------------------------------------------------
 //   has_dssi_ui
 //---------------------------------------------------------
