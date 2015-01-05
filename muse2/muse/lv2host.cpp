@@ -2372,6 +2372,9 @@ LV2Synth::~LV2Synth()
    {
       lilv_node_free(it->second);
    }
+#if 0
+   //TODO: Make real check for lilv version
+   //for existance of 'lilv_world_unload_resource' function
    LilvNodes* presets = lilv_plugin_get_related(_handle, lv2CacheNodes.lv2_psetPreset);
    LILV_FOREACH(nodes, i, presets)
    {
@@ -2379,7 +2382,7 @@ LV2Synth::~LV2Synth()
       lilv_world_unload_resource(lilvWorld, preset);
    }
    lilv_nodes_free(presets);
-
+#endif
 }
 
 
