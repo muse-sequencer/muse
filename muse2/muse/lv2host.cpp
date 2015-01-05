@@ -3997,7 +3997,7 @@ float LV2SynthIF::getParameter(long unsigned int n) const
 {
    if(n >= _inportsControl)
    {
-      printf("LV2SynthIF::getParameter param number %zu out of range of ports:%zu\n", n, _inportsControl);
+      std::cout << "LV2SynthIF::getParameter param number " << n << " out of range of ports: " << _inportsControl << std::endl;
       return 0.0;
    }
 
@@ -4013,7 +4013,7 @@ float LV2SynthIF::getParameterOut(long unsigned int n) const
 {
    if(n >= _outportsControl)
    {
-      printf("LV2SynthIF::getParameterOut param number %zu out of range of ports:%zu\n", n, _outportsControl);
+      std::cout << "LV2SynthIF::getParameterOut param number " << n << " out of range of ports: " << _outportsControl << std::endl;
       return 0.0;
    }
 
