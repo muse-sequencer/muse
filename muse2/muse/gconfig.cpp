@@ -226,7 +226,7 @@ GlobalConfigValues config = {
       true,                         // smartFocus
       20,                           // trackHeight
       true,                         // borderlessMouse
-      true,                          // autoSave
+      false,                          // autoSave
       QString("klick1.wav"),        // measSample
       QString("klick2.wav"),        // beatSample
       QString("klick3.wav"),        // accent1Sample
