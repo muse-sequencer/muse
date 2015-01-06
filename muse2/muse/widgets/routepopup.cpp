@@ -229,12 +229,15 @@ int RoutePopupMenu::addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id
               chpup->setTitle(track->name());
               for(int ch = 0; ch < chans; ++ch)
               {
-                char buffer[128];
+                //char buffer[128];
+                QString chBuffer;
                 if(tchans == 2)
-                  snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
-                else  
-                  snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
-                act = chpup->addAction(QString(buffer));
+                  chBuffer = tr("Channel") + QString(" ") + QString::number(ch + 1) + QString(",") + QString::number(ch + 2);
+                  //snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
+                else
+                  chBuffer = tr("Channel") + QString(" ") + QString::number(ch + 1);
+                  //snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
+                act = chpup->addAction(chBuffer);
                 act->setCheckable(true);
                 
                 int ach = (channel == -1) ? ch : channel;
@@ -364,9 +367,10 @@ int RoutePopupMenu::addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup
     // If more than one channel, add the created sub-menu.
     if(chans > 1)
     {
-      char buffer[128];
-      snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
-      chpup->setTitle(QString(buffer));
+      //char buffer[128];
+      //snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
+      QString chBuffer = tr("Channel") + QString(" ") + QString::number(ch + 1);
+      chpup->setTitle(chBuffer);
       pup->addMenu(chpup);
     }  
   } 
@@ -442,9 +446,10 @@ int RoutePopupMenu::addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup
       // If more than two channels, add the created sub-menu.
       if(chans > 2)
       {
-        char buffer[128];
-        snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
-        chpup->setTitle(QString(buffer));
+        //char buffer[128];
+        //snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
+        QString chBuffer = tr("Channel") + QString(" ") + QString::number(ch + 1) + QString(",") + QString::number(ch + 2);
+        chpup->setTitle(chBuffer);
         pup->addMenu(chpup);
       }  
     } 
@@ -499,9 +504,10 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
               
               for(int ch = 0; ch < chans; ++ch)
               {
-                char buffer[128];
-                snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
-                act = chpup->addAction(QString(buffer));
+                //char buffer[128];
+                //snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
+                QString chBuffer = tr("Channel") + QString(" ") + QString::number(ch + 1);
+                act = chpup->addAction(chBuffer);
                 act->setCheckable(true);
                 
                 int ach = ch;
@@ -559,9 +565,10 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
               
                 for(int ch = 0; ch < chans; ++ch)
                 {
-                  char buffer[128];
-                  snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
-                  act = chpup->addAction(QString(buffer));
+                  //char buffer[128];
+                  //snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
+                  QString chBuffer = tr("Channel") + QString(" ") + QString::number(ch + 1) + QString(",") + QString::number(ch + 2);
+                  act = chpup->addAction(chBuffer);
                   act->setCheckable(true);
                   
                   int ach = ch;
@@ -1442,9 +1449,10 @@ void RoutePopupMenu::prepare()
         {
           for(int i = 0; i < channel; ++i) 
           {
-            char buffer[128];
-            snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
-            MenuTitleItem* titel = new MenuTitleItem(QString(buffer), this);
+            //char buffer[128];
+            //snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
+            QString chBuffer = tr("Channel") + QString(" ") + QString::number(i + 1);
+            MenuTitleItem* titel = new MenuTitleItem(chBuffer, this);
             addAction(titel); 
   
             if(!MusEGlobal::checkAudioDevice())
@@ -1527,9 +1535,10 @@ void RoutePopupMenu::prepare()
         {
           for(int i = 0; i < channel; ++i) 
           {
-            char buffer[128];
-            snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
-            MenuTitleItem* titel = new MenuTitleItem(QString(buffer), this);
+            //char buffer[128];
+            //snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
+            QString chBuffer = tr("Channel") + QString(" ") + QString::number(i + 1);
+            MenuTitleItem* titel = new MenuTitleItem(chBuffer, this);
             addAction(titel); 
   
             if(!MusEGlobal::checkAudioDevice())
