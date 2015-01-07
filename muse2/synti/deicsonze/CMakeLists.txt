@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP ( deicsonze_mocs
+QT5_WRAP_CPP ( deicsonze_mocs
       deicsonzegui.h
       )
 
@@ -34,12 +34,12 @@ QT4_WRAP_CPP ( deicsonze_mocs
 file (GLOB deicsonze_ui_files
       deicsonzegui.ui
       )
-QT4_WRAP_UI ( deicsonze_uis ${deicsonze_ui_files} )
+QT5_WRAP_UI ( deicsonze_uis ${deicsonze_ui_files} )
 
 ##
 ## Resource files
 ##
-QT4_ADD_RESOURCES (deicsonze_qrc_files
+QT5_ADD_RESOURCES (deicsonze_qrc_files
       deicsonze.qrc
       )
 

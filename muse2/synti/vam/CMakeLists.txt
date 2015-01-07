@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP ( vam_mocs
+QT5_WRAP_CPP ( vam_mocs
       vamgui.h
       )
 
@@ -34,7 +34,7 @@ QT4_WRAP_CPP ( vam_mocs
 file (GLOB vam_ui_files
       vamguibase.ui
       ) 
-QT4_WRAP_UI ( vam_uis ${vam_ui_files} )
+QT5_WRAP_UI ( vam_uis ${vam_ui_files} )
 
 ##
 ## List of source files to compile

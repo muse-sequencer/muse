@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP (awl_mocs
+QT5_WRAP_CPP (awl_mocs
       aslider.h
       # awlplugin.h
       checkbox.h

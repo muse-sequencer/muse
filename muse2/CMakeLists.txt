@@ -168,27 +168,29 @@ else (APPLE)
 endif (APPLE)
 
 ##
-##  look for Qt4
+##  look for Qt5
 ##
 
-set(QT_MIN_VERSION "4.3.0")
+set(QT_MIN_VERSION "5.1.0")
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
 set(QT_USE_QTSVG TRUE)
 
-find_package(Qt4)
+find_package(Qt5Widgets)
 
-if (NOT QT4_FOUND)
-      message(FATAL_ERROR "Fatal error: QT (version >= 4.3.0) required.\n"
-      "Cmake tries to detect QT4 by searching for 'qmake' in your PATH\n"
-      "If you have QT4 installed, make sure qmake is found in your PATH."
+if (NOT Qt5Widgets_FOUND)
+      message(FATAL_ERROR "Fatal error: QT (version >= 5.1.0) required.\n"
+      "Cmake tries to detect QT5 by searching for 'Qt5Widgets' package\n"
+      "If you have QT5 installed, make sure 'Qt5Widgets' package is in PKG_CONFIG_PATH."
       )
-endif (NOT QT4_FOUND)
+endif (NOT Qt5Widgets_FOUND)
+
+find_package(Qt5LinguistTools REQUIRED)
 
 # Needed for plugins factory:
 SET(QT_USE_QTUITOOLS TRUE)
 
-include(${QT_USE_FILE})
+##include(${QT_USE_FILE})
 
 ##
 ##   Begin MANDATORY packages...

@@ -55,7 +55,7 @@ subdirs (${SubDirs})
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP ( muse_moc_headers
+QT5_WRAP_CPP ( muse_moc_headers
       app.h
       appearance.h
       cobject.h
@@ -75,7 +75,7 @@ QT4_WRAP_CPP ( muse_moc_headers
 ##
 ## Resource files
 ##
-QT4_ADD_RESOURCES (muse_qrc_files
+QT5_ADD_RESOURCES (muse_qrc_files
 		  muse.qrc
 		  )
 

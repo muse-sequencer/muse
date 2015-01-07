@@ -24,7 +24,7 @@
 #
 # Expand Qt macros
 #
-QT4_WRAP_CPP (arranger_mocs
+QT5_WRAP_CPP (arranger_mocs
       alayout.h
       arranger.h 
       arrangerview.h 

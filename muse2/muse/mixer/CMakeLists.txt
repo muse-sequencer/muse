@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP ( mixer_mocs
+QT5_WRAP_CPP ( mixer_mocs
       amixer.h
       astrip.h
       auxknob.h
@@ -40,7 +40,7 @@ QT4_WRAP_CPP ( mixer_mocs
 file (GLOB mixer_ui_files
       routedialogbase.ui
       )
-QT4_WRAP_UI ( mixer_uis ${mixer_ui_files} )
+QT5_WRAP_UI ( mixer_uis ${mixer_ui_files} )
 
 ##
 ## List of source files to compile
