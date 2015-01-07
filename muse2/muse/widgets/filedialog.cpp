@@ -207,6 +207,7 @@ MFileDialog::MFileDialog(const QString& dir,
    const QString& filter, QWidget* parent, bool writeFlag)
   : QFileDialog(parent, QString(), QString("."), filter)
       {
+      setOption(QFileDialog::DontUseNativeDialog);
       readMidiPortsSaved = true;
       showButtons = false;
       lastUserDir = "";

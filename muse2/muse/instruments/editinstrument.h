@@ -144,7 +144,7 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void fetchPatchCollection();
 
    public:
-      EditInstrument(QWidget* parent = 0, Qt::WFlags fl = Qt::Window);
+      EditInstrument(QWidget* parent = 0, Qt::WindowFlags fl = Qt::Window);
       virtual ~EditInstrument();
       void findInstrument(const QString& find_instrument);
       void showTab(EditInstrumentTabType);

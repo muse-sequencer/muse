@@ -385,7 +385,7 @@ void readShortCuts(MusECore::Xml& xml)
             switch (token) {
                   case MusECore::Xml::TagStart: {
                         if (tag.length()) {
-                              int index = getShrtByTag(tag.toAscii().constData());
+                              int index = getShrtByTag(tag.toLatin1().constData());
                               if (index == -1) //No such tag found
                                     printf("Config file might be corrupted. Unknown shortcut: %s\n",tag.toLatin1().constData());
                               else {

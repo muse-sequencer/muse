@@ -372,7 +372,7 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
 void FluidSynth::parseInitData(int n, const byte* d)
 {
       printf("projPathPtr ");
-      std::cout << *projPathPtr->toAscii().data() << std::endl;
+      std::cout << *projPathPtr->toLatin1().data() << std::endl;
 
       bool load_drumchannels = true; // Introduced in initdata ver 0.3
       bool handle_bankvalue  = true; // Introduced in initdata ver 0.4
@@ -425,7 +425,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
       for (int i=0; i<nr_of_fonts; i++) {
             fonts[i].filename = (char*)(chptr);
             chptr+=(strlen(fonts[i].filename.c_str())+1);
-            QByteArray ba = projPathPtr->toAscii();
+            QByteArray ba = projPathPtr->toLatin1();
 
             if (QFileInfo(fonts[i].filename.c_str()).isRelative()) {
                 printf("path is relative, we append full path!\n");

@@ -164,7 +164,7 @@ void Preset::readConfiguration(MusECore::Xml& xml)
 void Preset::writeConfiguration(MusECore::Xml& xml, int level)
 {
 	//xml.tag(level++, "preset name=\"%s\"", name.ascii());
-        xml.tag(level++, "preset name=\"%s\"", MusECore::Xml::xmlString(name).toAscii().constData());
+        xml.tag(level++, "preset name=\"%s\"", MusECore::Xml::xmlString(name).toLatin1().constData());
 	for (int i = 0; i < NUM_CONTROLLER; ++i) {
 		xml.tag(level, "control idx=\"%d\" val=\"%d\" /", i, ctrl[i]);
 	}
@@ -615,7 +615,7 @@ void VAMGui::loadPresetsPressed()
 	if (fn.isEmpty())
 		return;
 	bool popenFlag=false;
-	FILE* f = fopen(fn.toAscii().constData(),"r");//fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
+	FILE* f = fopen(fn.toLatin1().constData(),"r");//fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
 	if (f == 0)
 		return;
 	presets.clear();
@@ -690,8 +690,8 @@ void VAMGui::doSavePresets(const QString& fn, bool showWarning)
     printf("empty name\n");
     return;
     } 
-  printf("fn=%s\n",fn.toAscii().constData());
-  FILE* f = fopen(fn.toAscii().constData(),"w");//fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, showWarning);
+  printf("fn=%s\n",fn.toLatin1().constData());
+  FILE* f = fopen(fn.toLatin1().constData(),"w");//fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, showWarning);
 	if (f == 0)
 		return;
 	MusECore::Xml xml(f);

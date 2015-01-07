@@ -931,10 +931,10 @@ CtrlList::Mode Plugin::ctrlMode(unsigned long i) const
 
 static void loadPluginLib(QFileInfo* fi)
 {
-  void* handle = dlopen(fi->filePath().toAscii().constData(), RTLD_NOW);
+  void* handle = dlopen(fi->filePath().toLatin1().constData(), RTLD_NOW);
   if (handle == 0) {
         fprintf(stderr, "dlopen(%s) failed: %s\n",
-           fi->filePath().toAscii().constData(), dlerror());
+           fi->filePath().toLatin1().constData(), dlerror());
         return;
         }
 
@@ -982,7 +982,7 @@ static void loadPluginLib(QFileInfo* fi)
               "Unable to find ladspa_descriptor() function in plugin "
               "library file \"%s\": %s.\n"
               "Are you sure this is a LADSPA plugin file?\n",
-              fi->filePath().toAscii().constData(),
+              fi->filePath().toLatin1().constData(),
               txt);
       }
       dlclose(handle);

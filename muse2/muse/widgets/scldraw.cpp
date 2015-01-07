@@ -145,7 +145,7 @@ ScaleDraw::ScaleDraw()
 void ScaleDraw::setScale(double x1, double x2, int maxMajIntv,
 			    int maxMinIntv, double step, int logscale)
 {
-    d_scldiv.rebuild( x1, x2, maxMajIntv, maxMinIntv, logscale, step, FALSE );
+    d_scldiv.rebuild( x1, x2, maxMajIntv, maxMinIntv, logscale, step, false );
     setDblRange( d_scldiv.lBound(), d_scldiv.hBound(), d_scldiv.logScale());
 }
 
@@ -644,7 +644,7 @@ QRect ScaleDraw::maxBoundingRect(QPainter *p) const
 
     QFontMetrics fm = p->fontMetrics();
 
-    wl = maxLabelWidth(p, TRUE);
+    wl = maxLabelWidth(p, true);
 
     switch(d_orient)
     {
@@ -822,7 +822,7 @@ void ScaleDraw::setLabelFormat(char f, int prec)
 //			the actual width of the largest label.
 //
 //------------------------------------------------------------
-int ScaleDraw::maxLabelWidth(QPainter *p, int worst) const
+int ScaleDraw::maxLabelWidth(QPainter *p, bool worst) const
 {
 
     int i,rv = 0;

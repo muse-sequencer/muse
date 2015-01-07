@@ -154,7 +154,7 @@ static void readEventList(Xml& xml, EventList* el, const char* name)
 
 static void loadIDF(QFileInfo* fi)
       {
-      FILE* f = fopen(fi->filePath().toAscii().constData(), "r");
+      FILE* f = fopen(fi->filePath().toLatin1().constData(), "r");
       if (f == 0)
             return;
       if (MusEGlobal::debugMsg)
@@ -889,7 +889,7 @@ void MidiInstrument::writeDrummaps(int level, Xml& xml) const
     
     tmp+="/>\n";
     
-    xml.nput(level, tmp.toAscii().data());
+    xml.nput(level, tmp.toLatin1().data());
     
     write_new_style_drummap(level, xml, "drummap", it->drummap);
     

@@ -447,7 +447,7 @@ void TList::paint(const QRect& r)
                                         if (cl->isVisible())
                                             countVisible++;
                                     }
-                                    s.sprintf(" %d(%d) %s",countVisible, countAll, tr("visible").toAscii().data());
+                                    s.sprintf(" %d(%d) %s",countVisible, countAll, tr("visible").toLatin1().data());
                                     }
 
 
@@ -2265,7 +2265,7 @@ void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
   FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
   if (f == 0)
   {
-        printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toAscii().data());
+        printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toLatin1().data());
         return;
   }
 

@@ -37,6 +37,8 @@
 #include <QUrl>
 #include <QPoint>
 #include <QIcon>
+#include <QMimeData>
+#include <QDrag>
 
 #include "fastlog.h"
 #include "widgets/tools.h"

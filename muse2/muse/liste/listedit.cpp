@@ -472,10 +472,10 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       insertCtrl = new QAction(QIcon(*ctrlIcon), tr("insert Ctrl"), insertItems);
       insertMeta = new QAction(QIcon(*metaIcon), tr("insert Meta"), insertItems);
 
-      connect(insertNote,    SIGNAL(activated()), SLOT(editInsertNote()));
-      connect(insertSysEx,   SIGNAL(activated()), SLOT(editInsertSysEx()));
-      connect(insertCtrl,    SIGNAL(activated()), SLOT(editInsertCtrl()));
-      connect(insertMeta,    SIGNAL(activated()), SLOT(editInsertMeta()));
+      connect(insertNote,    SIGNAL(triggered()), SLOT(editInsertNote()));
+      connect(insertSysEx,   SIGNAL(triggered()), SLOT(editInsertSysEx()));
+      connect(insertCtrl,    SIGNAL(triggered()), SLOT(editInsertCtrl()));
+      connect(insertMeta,    SIGNAL(triggered()), SLOT(editInsertMeta()));
 
       //---------Pulldown Menu----------------------------
       

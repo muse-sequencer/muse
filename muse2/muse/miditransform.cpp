@@ -371,7 +371,7 @@ namespace MusEGui {
 //    buttonNew buttonDelete buttonApply buttonOk
 //---------------------------------------------------------
 
-MidiTransformerDialog::MidiTransformerDialog(QDialog* parent, Qt::WFlags fl)
+MidiTransformerDialog::MidiTransformerDialog(QDialog* parent, Qt::WindowFlags fl)
    : QDialog(parent, fl)
       {
       setupUi(this);

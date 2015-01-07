@@ -188,7 +188,7 @@ bool Audio::start()
           if(initJackAudio() == false) {
                 InputList* itl = MusEGlobal::song->inputs();
                 for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
-                      if (MusEGlobal::debugMsg) printf("reconnecting input %s\n", (*i)->name().toAscii().data());
+                      if (MusEGlobal::debugMsg) printf("reconnecting input %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
                       (*i)->setName((*i)->name()); // restore jack connection
@@ -196,10 +196,10 @@ bool Audio::start()
 
                 OutputList* otl = MusEGlobal::song->outputs();
                 for (iAudioOutput i = otl->begin(); i != otl->end(); ++i) {
-                      if (MusEGlobal::debugMsg) printf("reconnecting output %s\n", (*i)->name().toAscii().data());
+                      if (MusEGlobal::debugMsg) printf("reconnecting output %s\n", (*i)->name().toLatin1().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
-                      if (MusEGlobal::debugMsg) printf("name=%s\n",(*i)->name().toAscii().data());
+                      if (MusEGlobal::debugMsg) printf("name=%s\n",(*i)->name().toLatin1().data());
                       (*i)->setName((*i)->name()); // restore jack connection
                       }
                }

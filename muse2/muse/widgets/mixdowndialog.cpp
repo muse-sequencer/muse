@@ -51,7 +51,7 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 MixdownFileDialog::MixdownFileDialog(const MusECore::SndFile* _sf,
-   QWidget* parent, Qt::WFlags fl)
+   QWidget* parent, Qt::WindowFlags fl)
    : QDialog(parent, fl)
       {
       setupUi(this);

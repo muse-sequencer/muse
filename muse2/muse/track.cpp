@@ -1207,14 +1207,14 @@ void Track::writeRouting(int level, Xml& xml) const
             if(r->channel != -1)
               s += QString(" channel=\"%1\"").arg(r->channel);
             
-            xml.tag(level++, s.toAscii().constData());
+            xml.tag(level++, s.toLatin1().constData());
             
             // New routing scheme.
             s = "source";
             if(r->type != Route::TRACK_ROUTE)
               s += QString(" type=\"%1\"").arg(r->type);
             s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
-            xml.tag(level, s.toAscii().constData());
+            xml.tag(level, s.toLatin1().constData());
             
             xml.tag(level, "dest name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
             
@@ -1249,7 +1249,7 @@ void Track::writeRouting(int level, Xml& xml) const
           if(r->remoteChannel != -1)
             s += QString(" remch=\"%1\"").arg(r->remoteChannel);
           
-          xml.tag(level++, s.toAscii().constData());
+          xml.tag(level++, s.toLatin1().constData());
           
           // Allow for a regular mono or stereo track to feed a multi-channel synti. 
           xml.tag(level, "source name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
@@ -1264,7 +1264,7 @@ void Track::writeRouting(int level, Xml& xml) const
           else  
             s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
             
-          xml.tag(level, s.toAscii().constData());
+          xml.tag(level, s.toLatin1().constData());
           
           xml.etag(level--, "Route");
         }

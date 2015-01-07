@@ -23,7 +23,7 @@
 #include "xml.h"
 #include "al.h"
 
-#include <QDomElement>
+#include <QtXml/QDomElement>
 #include <QMetaProperty>
 #include <QWidget>
 

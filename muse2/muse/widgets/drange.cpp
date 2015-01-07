@@ -62,7 +62,7 @@ DoubleRange::DoubleRange()
       d_exactValue = 0.0;
       d_value = 0.0;
       d_step  = 0.1;
-      d_periodic = FALSE;
+      d_periodic = false;
       }
 
 //---------------------------------------------------------

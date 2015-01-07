@@ -594,7 +594,7 @@ void EffectRack::dropEvent(QDropEvent *event)
       if (pipe) 
       {
             if ((*pipe)[idx] != NULL) {
-                QWidget *sw = event->source();
+                QWidget *sw = static_cast<QWidget *>(event->source());
                 if(sw)
                 {
                   if(strcmp(sw->metaObject()->className(), "EffectRack") == 0) 

@@ -43,7 +43,7 @@ class DiMap
       static const double LogMax;
 
       DiMap();
-      DiMap(int, int, double, double, bool lg = FALSE);
+      DiMap(int, int, double, double, bool lg = false);
       ~DiMap();
 	
 
@@ -51,7 +51,7 @@ class DiMap
       bool contains(int x) const;
 
       void setIntRange(int i1, int i2);
-      void setDblRange(double d1, double d2, bool lg = FALSE);
+      void setDblRange(double d1, double d2, bool lg = false);
 
       int transform(double x) const;
       double invTransform(int i) const;

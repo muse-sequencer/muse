@@ -52,7 +52,7 @@ class MRConfig : public QWidget, public Ui::MRConfigBase {
       void setRcSteprecNote(int);
 
    public:
-      MRConfig(QWidget* parent=0, Qt::WFlags fl = 0);
+      MRConfig(QWidget* parent=0, Qt::WindowFlags fl = 0);
       };
 
 } // namespace MusEGui

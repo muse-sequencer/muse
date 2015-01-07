@@ -1268,10 +1268,10 @@ void MPConfig::songChanged(MusECore::SongChangedFlags_t flags)
             }
       synthList->resizeColumnToContents(1);
       mdevView->resizeColumnsToContents();
-      mdevView->horizontalHeader()->setResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
-      mdevView->horizontalHeader()->setResizeMode(DEVCOL_REC ,QHeaderView::Fixed);
-      mdevView->horizontalHeader()->setResizeMode(DEVCOL_PLAY ,QHeaderView::Fixed);
-      mdevView->horizontalHeader()->setResizeMode(DEVCOL_GUI ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_REC ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_PLAY ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_GUI ,QHeaderView::Fixed);
       mdevView->horizontalHeader()->setStretchLastSection( true );
       selectionChanged();
       }

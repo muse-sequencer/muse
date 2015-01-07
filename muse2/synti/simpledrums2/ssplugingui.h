@@ -31,7 +31,7 @@
 #include <QDialog>
 #include <QSlider>
 #include <QButtonGroup>
-#include <QtGui>
+#include <QtWidgets>
 //#include <QHBoxLayout>
 //#include <QVBoxLayout>
 

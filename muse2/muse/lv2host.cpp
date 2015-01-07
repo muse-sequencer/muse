@@ -40,8 +40,9 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QUrl>
-#include <QX11EmbedWidget>
+//#include <QX11EmbedWidget>
 #include <QCoreApplication>
+#include <QtGui/QWindow>
 
 #include "lv2host.h"
 #include "synth.h"
@@ -106,7 +107,8 @@ namespace MusECore
 #define LV2_F_WORKER_SCHEDULE LV2_WORKER__schedule
 #define LV2_F_WORKER_INTERFACE LV2_WORKER__interface
 #define LV2_F_UI_IDLE LV2_UI__idleInterface
-#define LV2_UI_HOST_URI LV2_UI__Qt4UI
+#define LV2_F_UI_Qt5_UI LV2_UI_PREFIX "Qt5UI"
+#define LV2_UI_HOST_URI LV2_F_UI_Qt5_UI
 #define LV2_UI_EXTERNAL LV2_EXTERNAL_UI__Widget
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
 #define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
@@ -1086,7 +1088,7 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
    if(state->widget != NULL && state->hasGui)
    {
       ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
-      QX11EmbedWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QX11EmbedWidget *>();
+      QWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QWidget *>();
       if(ewWin != NULL)
       {
          ewWin->resize(width, height);
@@ -1221,27 +1223,34 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       bool bEmbed = false;
       bool bGtk = false;
       QWidget *ewWin = NULL;
+      QWindow *x11QtWindow = NULL;
       state->gtk2Plug = NULL;
       state->_ifeatures [synth->_fUiParent].data = NULL;
       if(strcmp(LV2_UI__X11UI, cUiUri) == 0)
       {
          bEmbed = true;         
-         ewWin = new QX11EmbedWidget();
-         (static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
-         (static_cast<QX11EmbedWidget *>(ewWin))->setParent(win);
-         state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)ewWin->winId();
+         ewWin = new QWidget();
+         x11QtWindow = QWindow::fromWinId(ewWin->winId());
+         ewWin = win->createWindowContainer(x11QtWindow, win);
+         win->setCentralWidget(ewWin);
+         //(static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
+         //(static_cast<QX11EmbedWidget *>(ewWin))->setParent(win);
+         state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)x11QtWindow->winId();
 
       }
       else if(bLV2Gtk2Enabled && strcmp(LV2_UI__GtkUI, cUiUri) == 0)
       {
          bEmbed = true;
-         bGtk = true;         
-         ewWin = new QX11EmbedContainer(win);
-         win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
+         bGtk = true;
+         //ewWin = new QWidget();
+
+         //ewWin = new QX11EmbedContainer(win);
+         //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
          void *( *lv2Gtk2Helper_gtk_plug_newFn)(unsigned long, void*);
          *(void **)(&lv2Gtk2Helper_gtk_plug_newFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_plug_new");
-         state->gtk2Plug = lv2Gtk2Helper_gtk_plug_newFn(ewWin->winId(), state);
-         state->_ifeatures [synth->_fUiParent].data = (void *)ewWin;
+         state->gtk2Plug = lv2Gtk2Helper_gtk_plug_newFn(0, state);
+         //state->_ifeatures [synth->_fUiParent].data = NULL;//(void *)ewWin;
+
 
          void ( *lv2Gtk2Helper_register_allocate_cbFn)(void *, void(*sz_cb_fn)(int, int, void *));
          *(void **)(&lv2Gtk2Helper_register_allocate_cbFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_register_allocate_cb");
@@ -1252,7 +1261,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          lv2Gtk2Helper_register_resize_cbFn(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2ResizeCb);
 
       }
-      else if(strcmp(LV2_UI__Qt4UI, cUiUri) == 0) //Qt4 uis are handled natively
+      else if(strcmp(LV2_F_UI_Qt5_UI, cUiUri) == 0) //Qt5 uis are handled natively
       {
          state->_ifeatures [synth->_fUiParent].data = win;
       }      
@@ -1358,6 +1367,13 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
                   lv2Gtk2Helper_gtk_container_addFn(state->gtk2Plug, uiW);
                   lv2Gtk2Helper_gtk_widget_show_allFn(state->gtk2Plug);
+
+                  unsigned long ( *lv2Gtk2Helper_gdk_x11_drawable_get_xidFn)(void*);
+                  *(void **)(&lv2Gtk2Helper_gdk_x11_drawable_get_xidFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gdk_x11_drawable_get_xid");
+                  unsigned long plugX11Id = lv2Gtk2Helper_gdk_x11_drawable_get_xidFn(state->gtk2Plug);
+                  x11QtWindow = QWindow::fromWinId(plugX11Id);
+                  ewWin = QWidget::createWindowContainer(x11QtWindow);
+                  win->setCentralWidget(ewWin);
 
                   if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                   {
@@ -1640,13 +1656,13 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
 
 unsigned LV2Synth::lv2ui_IsSupported(const char *, const char *ui_type_uri)
 {
-   if(strcmp(LV2_UI__Qt4UI, ui_type_uri) == 0
+   if(strcmp(LV2_F_UI_Qt5_UI, ui_type_uri) == 0
       || (bLV2Gtk2Enabled && strcmp(LV2_UI__GtkUI, ui_type_uri) == 0)
       || strcmp(LV2_UI__X11UI, ui_type_uri) == 0)
    {
-      return TRUE;
+      return 1;
    }
-   return FALSE;
+   return 0;
 }
 
 void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)

@@ -60,7 +60,7 @@ class Slider : public SliderBase, public ScaleIf
 
   QColor d_fillColor;
   
-  int d_resized;
+  bool d_resized;
   bool d_autoResize;
   double d_scaleStep;
 

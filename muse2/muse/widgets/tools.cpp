@@ -109,7 +109,7 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
                   continue;
             ToolB* t = &toolList[i];
 
-            Action* a = new Action(action, 1<<i, tr(t->tip).toAscii().data(), true);
+            Action* a = new Action(action, 1<<i, tr(t->tip).toLatin1().data(), true);
             actions[n] = a;
             //a->setIconSet(QIcon(**(t->icon)));
             a->setIcon(QIcon(**(t->icon)));

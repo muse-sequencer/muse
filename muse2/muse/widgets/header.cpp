@@ -44,7 +44,7 @@ void Header::readStatus(MusECore::Xml& xml)
                 case MusECore::Xml::End:
                       return;
                 case MusECore::Xml::Text:
-                      restoreState(QByteArray::fromHex(tag.toAscii()));
+                      restoreState(QByteArray::fromHex(tag.toLatin1()));
                       break;
                 case MusECore::Xml::TagStart:
                       xml.unknown("Header");

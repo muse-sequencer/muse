@@ -384,22 +384,22 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
       for (unsigned i=0;i<custom_columns.size();i++)
         header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET+i, MAX(fm1.width(custom_columns[i].name)+fw, 30));
-      header->setResizeMode(COL_RECORD, QHeaderView::Fixed);
-      header->setResizeMode(COL_MUTE, QHeaderView::Fixed);
-      header->setResizeMode(COL_SOLO, QHeaderView::Fixed);
-      header->setResizeMode(COL_CLASS, QHeaderView::Fixed);
-      header->setResizeMode(COL_NAME, QHeaderView::Interactive);
-      header->setResizeMode(COL_OPORT, QHeaderView::Interactive);
-      header->setResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
-      header->setResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
-      header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
-      header->setResizeMode(COL_CLEF, QHeaderView::Interactive);
+      header->setSectionResizeMode(COL_RECORD, QHeaderView::Fixed);
+      header->setSectionResizeMode(COL_MUTE, QHeaderView::Fixed);
+      header->setSectionResizeMode(COL_SOLO, QHeaderView::Fixed);
+      header->setSectionResizeMode(COL_CLASS, QHeaderView::Fixed);
+      header->setSectionResizeMode(COL_NAME, QHeaderView::Interactive);
+      header->setSectionResizeMode(COL_OPORT, QHeaderView::Interactive);
+      header->setSectionResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
+      header->setSectionResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
+      header->setSectionResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
+      header->setSectionResizeMode(COL_CLEF, QHeaderView::Interactive);
       for (unsigned i=0;i<custom_columns.size();i++)
-        header->setResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
+        header->setSectionResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
 
       setHeaderToolTips();
       setHeaderWhatsThis();
-      header->setMovable (true);
+      header->setSectionsMovable (true);
       header->restoreState(header_state);
 
 
@@ -770,7 +770,7 @@ void Arranger::readConfiguration(MusECore::Xml& xml)
                         return;
                   case MusECore::Xml::TagStart:
                         if (tag == "tlist_header")
-                              header_state = QByteArray::fromHex(xml.parse1().toAscii());
+                              header_state = QByteArray::fromHex(xml.parse1().toLatin1());
                         else if (tag == "custom_columns")
                               readCustomColumns(xml);
                         else

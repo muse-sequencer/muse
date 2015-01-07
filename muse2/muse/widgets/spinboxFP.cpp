@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <cmath>
 
-//#include <QtGui>
+//#include <QtWidgets>
 //#include <QDoubleValidator>
 //#include <QLineEdit>
 
@@ -156,7 +156,7 @@ int SpinBoxFP::valueFromText(const QString& text) const
       //QString qs = cleanText();
       if (_decimals) {
             //const char* s = qs.toLatin1();
-            //const char* s = cleanText().toAscii().data();
+            //const char* s = cleanText().toLatin1().data();
             
             //int a, b;
             bool ok;

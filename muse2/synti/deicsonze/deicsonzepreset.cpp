@@ -551,7 +551,7 @@ void Set::readSet(QDomNode setNode) {
 	if (setEl.isNull())
 	    continue;
 	if (setEl.tagName() == "setName")
-	    _setName=setEl.text().toAscii().data();
+	    _setName=setEl.text().toLatin1().data();
 	if (setEl.tagName() == "deicsOnzeCategory") {
 	    //load category
 	    QString version = setEl.attribute(QString("version"));
@@ -586,7 +586,7 @@ void Category::readCategory(QDomNode catNode) {
 	if (catEl.isNull())
 	    continue;
 	if (catEl.tagName() == "categoryName")
-	    _categoryName=catEl.text().toAscii().data();
+	    _categoryName=catEl.text().toLatin1().data();
 	if (catEl.tagName() == "hbank")
 	    _hbank=catEl.text().toInt();
 	if (catEl.tagName() == "deicsOnzeSubcategory") {
@@ -625,7 +625,7 @@ void Subcategory::readSubcategory(QDomNode subNode) {
 	if (subEl.isNull())
 	    continue;
 	if (subEl.tagName() == "subcategoryName")
-	    _subcategoryName=subEl.text().toAscii().data();
+	    _subcategoryName=subEl.text().toLatin1().data();
 	if (subEl.tagName() == "lbank")
 	    _lbank=subEl.text().toInt();
 	if (subEl.tagName() == "deicsOnzePreset") {
@@ -911,7 +911,7 @@ void Preset::readPreset(QDomNode presetNode) {
     //  globalDetune=presetEl.text().toInt();
     //Names
     else if(presetEl.tagName()=="name")
-      name=presetEl.text().toAscii().data();
+      name=presetEl.text().toLatin1().data();
     //prog
     else if(presetEl.tagName()=="prog")
       prog=presetEl.text().toInt();

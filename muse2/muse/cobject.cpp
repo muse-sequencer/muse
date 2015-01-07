@@ -180,7 +180,7 @@ void TopWin::readStatus(MusECore::Xml& xml)
 				{
 					if (!sharesToolsAndMenu())
 					{
-						if (!restoreState(QByteArray::fromHex(xml.parse1().toAscii())))
+						if (!restoreState(QByteArray::fromHex(xml.parse1().toLatin1())))
 						{
 							fprintf(stderr,"ERROR: couldn't restore toolbars. trying default configuration...\n");
 							if (!restoreState(_toolbarNonsharedInit[_type]))
@@ -189,7 +189,7 @@ void TopWin::readStatus(MusECore::Xml& xml)
 					}
 					else
 					{
-						_savedToolbarState=QByteArray::fromHex(xml.parse1().toAscii());
+						_savedToolbarState=QByteArray::fromHex(xml.parse1().toLatin1());
 						if (_savedToolbarState.isEmpty())
 							_savedToolbarState=_toolbarNonsharedInit[_type];
 					}
@@ -530,9 +530,9 @@ void TopWin::readConfiguration(ToplevelType t, MusECore::Xml& xml)
 				else if (tag == "height")
 					_heightInit[t] = xml.parseInt();
 				else if (tag == "nonshared_toolbars")
-					_toolbarNonsharedInit[t] = QByteArray::fromHex(xml.parse1().toAscii());
+					_toolbarNonsharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
 				else if (tag == "shared_toolbars")
-					_toolbarSharedInit[t] = QByteArray::fromHex(xml.parse1().toAscii());
+					_toolbarSharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
 				else if (tag == "shares_when_free")
 					_sharesWhenFree[t] = xml.parseInt();
 				else if (tag == "shares_when_subwin")
