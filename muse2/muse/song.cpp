@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <iostream>
 
 #include <QAction>
 #include <QDir>
@@ -3204,7 +3205,7 @@ void Song::removeTrack3(Track* /*track*/)//prevent of compiler warning: unused p
 void writeStringToFile(FILE *filePointer, char *writeString)
 {
   if (MusEGlobal::debugMsg)
-    printf(writeString);
+    std::cout << writeString;
   fputs(writeString, filePointer);
 }
 
@@ -3320,7 +3321,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             writeStringToFile(fp,tempStr);
 
             if (MusEGlobal::debugMsg)
-              printf("Events in part %d\n", part->events().size());
+              std::cout << "Events in part " << part->events().size() << std::endl;
 
             EventList elist = part->events();
             for (ciEvent e = elist.begin(); e != elist.end(); e++)
@@ -3377,8 +3378,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
               {
                 line = stream.readLine(); // line of text excluding '\n'
                 if (MusEGlobal::debugMsg) {
-                  printf(line.toLatin1().data());
-                  printf("\n");
+                  std::cout << line.toStdString() << std::endl;
                 }
 
                 if (line.startsWith("NOTE"))
