@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
+<TS version="2.1">
 <context>
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation>Aggiungi traccia Midi</translation>
+        <translation type="vanished">Aggiungi traccia Midi</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation>Aggiungi traccia batteria</translation>
+        <translation type="vanished">Aggiungi traccia batteria</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation>Aggiungi traccia audio</translation>
+        <translation type="vanished">Aggiungi traccia audio</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation>Aggiungi uscita audio</translation>
+        <translation type="vanished">Aggiungi uscita audio</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation>Aggiungi gruppo audio</translation>
+        <translation type="vanished">Aggiungi gruppo audio</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation>Aggiungi ingresso audio</translation>
+        <translation type="vanished">Aggiungi ingresso audio</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation>Aggiungi mandata aux</translation>
+        <translation type="vanished">Aggiungi mandata aux</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation>Aggiungi Synth</translation>
+        <translation type="vanished">Aggiungi Synth</translation>
     </message>
     <message>
         <source>Select project directory</source>
-        <translation>Scegli directory per il progetto</translation>
+        <translation type="vanished">Scegli directory per il progetto</translation>
     </message>
     <message>
         <source>Route</source>
@@ -53,15 +53,15 @@
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation>Avviso: Non ci sono dispositivi d&apos;uscita!</translation>
+        <translation type="vanished">Avviso: Non ci sono dispositivi d&apos;uscita!</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation>Apri configurazione Midi...</translation>
+        <translation type="vanished">Apri configurazione Midi...</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation>Porte vuote</translation>
+        <translation type="vanished">Porte vuote</translation>
     </message>
     <message>
         <source>&lt;none&gt;</source>
@@ -74,30 +74,6 @@
     <message>
         <source>Bad timing</source>
         <translation type="obsolete">Timing difettoso</translation>
-    </message>
-    <message>
-        <source>Timing source frequency is %1hz, which is below the recommended minimum: 500hz!
-This could lead to audible timing problems for MIDI.
-Please see the FAQ on http://muse-sequencer.org for remedies.
-Also please check console output for any further error messages.
- </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add Old Style Drum Track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add New Style Drum Track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Output port/device</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1283,15 +1259,15 @@ giving another chance to cancel.</source>
         <source>Release Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>2° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Level</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3131,7 +3107,7 @@ states</source>
     </message>
     <message>
         <source>start with last song</source>
-        <translation>ultima canzone</translation>
+        <translation type="vanished">ultima canzone</translation>
     </message>
     <message>
         <source>Choose start song or template</source>
@@ -3143,11 +3119,11 @@ states</source>
     </message>
     <message>
         <source>start with template</source>
-        <translation>modello</translation>
+        <translation type="vanished">modello</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation>canzone specifica</translation>
+        <translation type="vanished">canzone specifica</translation>
     </message>
     <message>
         <source>On Launch</source>
@@ -3519,22 +3495,6 @@ lo stato attivo al loro canvas</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Record all instruments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Don&apos;t record hidden instruments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Don&apos;t record muted instruments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Don&apos;t record hidden or muted instruments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Instrument initialization</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3590,19 +3550,51 @@ Disable to use an alternate standard
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Only offer old-style drumtracks</source>
+        <source>start &amp;with last song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Only offer new-style drumtracks</source>
+        <source>start with &amp;template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Prefer old-style drumtracks</source>
+        <source>sta&amp;rt with song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Prefer new-style drumtracks</source>
+        <source>&amp;Record all instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Don&apos;t record hidden instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;&amp;t record muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;t record &amp;hidden or muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scrollable submenus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Only offer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only offer new-style &amp;drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Prefer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prefer &amp;new-style drumtracks</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11118,7 +11110,7 @@ in current
         <source>On</source>
         <translation type="unfinished">acceso</translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>VAM 1.0beta3
 Virtual Analog for MusE
 Released under GPL.

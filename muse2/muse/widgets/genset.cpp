@@ -154,6 +154,7 @@ void GlobalSettingsConfig::updateSettings()
             }
 
       autoSaveCheckBox->setChecked(MusEGlobal::config.autoSave);
+      scrollableSubmenusCheckbox->setChecked(MusEGlobal::config.scrollableSubMenus);
       warnIfBadTimingCheckBox->setChecked(MusEGlobal::config.warnIfBadTiming);      
       midiSendInit->setChecked(MusEGlobal::config.midiSendInit);      
       midiWarnInitPending->setChecked(MusEGlobal::config.warnInitPending);      
@@ -333,6 +334,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.mixer2.geometry.setHeight(mixer2H->value());
 
       MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
+      MusEGlobal::config.scrollableSubMenus = scrollableSubmenusCheckbox->isChecked();
       MusEGlobal::config.showSplashScreen = showSplash->isChecked();
       MusEGlobal::config.showDidYouKnow   = showDidYouKnow->isChecked();
       MusEGlobal::config.externalWavEditor = externalWavEditorSelect->text();

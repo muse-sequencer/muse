@@ -680,6 +680,35 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
       state->_ppifeatures [synth->_fDataAccess] = NULL;
    }
 
+   state->controlsNameMap.clear();
+
+   size_t nCpIn = synth->_controlInPorts.size();
+   size_t nCpOut = synth->_controlOutPorts.size();
+
+   if(nCpIn > 0)
+   {
+      state->lastControls = new float [nCpIn];
+      state->controlsMask = new bool [nCpIn];
+      state->controlTimers = new int [nCpIn];
+      for(uint32_t i = 0; i < nCpIn; i++)
+      {
+         state->lastControls [i] = synth->_pluginControlsDefault [synth->_controlInPorts [i].index];
+         state->controlsMask [i] = false;
+         state->controlTimers [i] = 0;
+         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(synth->_controlInPorts [i].cName).toLower(), i));
+         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(synth->_controlInPorts [i].cSym).toLower(), i));
+      }
+   }
+
+   if(nCpOut > 0)
+   {
+      state->lastControlsOut = new float [nCpOut];
+      for(uint32_t i = 0; i < nCpOut; i++)
+      {
+         state->lastControlsOut [i] = synth->_pluginControlsDefault [synth->_controlOutPorts [i].index];
+      }
+   }
+
    //fill pointers for CV port types;
 
    uint32_t numAllPorts = lilv_plugin_get_num_ports(synth->_handle);
@@ -768,6 +797,10 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
 
 void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
 {
+   if(state->uiDesc != NULL && state->uiInst != NULL)
+      state->uiDesc->cleanup(state->uiInst);
+
+   state->uiInst = *(void **)(&state->uiDesc) = NULL;
 
    if(bLV2Gtk2Enabled && state->gtk2Plug != NULL)
    {
@@ -776,11 +809,6 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
       lv2Gtk2Helper_gtk_widget_destroyFn(state->gtk2Plug);
       state->gtk2Plug = NULL;
    }
-
-   if(state->uiDesc != NULL && state->uiInst != NULL)
-      state->uiDesc->cleanup(state->uiInst);
-
-   state->uiInst = *(void **)(&state->uiDesc) = NULL;
 
    if(state->uiDlHandle != NULL)
    {
@@ -1821,7 +1849,6 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
 
    uint32_t cport = it->second;
    float value = *(float *)buffer;
-
    // Schedules a timed control change:
    ControlEvent ce;
    ce.unique = false;
@@ -2560,8 +2587,6 @@ bool LV2SynthIF::init(LV2Synth *s)
       _controlsOut = NULL;
    }
 
-   _uiState->controlsNameMap.clear();
-
    _synth->midiCtl2PortMap.clear();
    _synth->port2MidiCtlMap.clear();
 
@@ -2576,9 +2601,6 @@ bool LV2SynthIF::init(LV2Synth *s)
          _controls [i].enCtrl = true;
       _controlInPorts [i].minVal = _synth->_pluginControlsMin [idx];
       _controlInPorts [i].maxVal = _synth->_pluginControlsMax [idx];
-
-      _uiState->controlsNameMap.insert(std::pair<QString, size_t>(QString(_controlInPorts [i].cName).toLower(), i));
-      _uiState->controlsSymMap.insert(std::pair<QString, size_t>(QString(_controlInPorts [i].cSym).toLower(), i));
 
       int ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + i;
 
@@ -2631,28 +2653,6 @@ bool LV2SynthIF::init(LV2Synth *s)
 
       if(!_controlInPorts [i].isCVPort)
          lilv_instance_connect_port(_handle, idx, &_controls [i].val);
-   }
-
-   if(_inportsControl > 0)
-   {
-      _uiState->lastControls = new float [_inportsControl];
-      _uiState->controlsMask = new bool [_inportsControl];
-      _uiState->controlTimers = new int [_inportsControl];
-      for(uint32_t i = 0; i < _inportsControl; i++)
-      {
-         _uiState->lastControls [i] = _controls [i].val;
-         _uiState->controlsMask [i] = false;
-         _uiState->controlTimers [i] = 0;
-      }
-   }
-
-   if(_outportsControl > 0)
-   {
-      _uiState->lastControlsOut = new float [_outportsControl];
-      for(uint32_t i = 0; i < _outportsControl; i++)
-      {
-         _uiState->lastControlsOut [i] = _controlsOut [i].val;
-      }
    }
 
    for(size_t i = 0; i < _outportsControl; i++)
@@ -4611,32 +4611,6 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
       delete [] state->_ppifeatures;
       delete [] state->_ifeatures;
       return NULL;
-   }   
-
-   state->controlsNameMap.clear();
-
-   if(_controlInPorts > 0)
-   {
-      state->lastControls = new float [_controlInPorts];
-      state->controlsMask = new bool [_controlInPorts];
-      state->controlTimers = new int [_controlInPorts];
-      for(uint32_t i = 0; i < _controlInPorts; i++)
-      {
-         state->lastControls [i] = _synth->_pluginControlsDefault [_synth->_controlInPorts [i].index];
-         state->controlsMask [i] = false;
-         state->controlTimers [i] = 0;
-         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(_synth->_controlInPorts [i].cName).toLower(), i));
-         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(_synth->_controlInPorts [i].cSym).toLower(), i));
-      }
-   }
-
-   if(_controlOutPorts > 0)
-   {
-      state->lastControlsOut = new float [_controlOutPorts];
-      for(uint32_t i = 0; i < _controlOutPorts; i++)
-      {
-         state->lastControlsOut [i] = _synth->_pluginControlsDefault [_synth->_controlOutPorts [i].index];
-      }
    }
 
    _states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));

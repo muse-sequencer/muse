@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="sv_SE" sourcelanguage="en">
+<TS version="2.1" language="sv_SE" sourcelanguage="en">
 <context>
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation>Lägg till Midispår</translation>
+        <translation type="vanished">Lägg till Midispår</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation>Lägg till Trumspår</translation>
+        <translation type="vanished">Lägg till Trumspår</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation>Lägg till Wavespår</translation>
+        <translation type="vanished">Lägg till Wavespår</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation>Lägg till Ljudutgång</translation>
+        <translation type="vanished">Lägg till Ljudutgång</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation>Lägg till Ljudgrupp</translation>
+        <translation type="vanished">Lägg till Ljudgrupp</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation>Lägg till Ljudingång</translation>
+        <translation type="vanished">Lägg till Ljudingång</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation>Lägg till Aux-Send</translation>
+        <translation type="vanished">Lägg till Aux-Send</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation>Lägg till Synth</translation>
+        <translation type="vanished">Lägg till Synth</translation>
     </message>
     <message>
         <source>Route</source>
@@ -49,15 +49,15 @@
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation>Varning: Inga utgångsenheter!</translation>
+        <translation type="vanished">Varning: Inga utgångsenheter!</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation>Öppna midikonfiguration...</translation>
+        <translation type="vanished">Öppna midikonfiguration...</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation>Tomma portar</translation>
+        <translation type="vanished">Tomma portar</translation>
     </message>
     <message>
         <source>&lt;none&gt;</source>
@@ -69,7 +69,7 @@
     </message>
     <message>
         <source>Select project directory</source>
-        <translation>Välj projektkatalog</translation>
+        <translation type="vanished">Välj projektkatalog</translation>
     </message>
     <message>
         <source>Bad timing</source>
@@ -81,26 +81,18 @@ This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
 Also please check console output for any further error messages.
  </source>
-        <translation>Frekvensen på tidkällan är %1hz vilket är under det rekommenderade minsta värdet: 500hz!
+        <translation type="vanished">Frekvensen på tidkällan är %1hz vilket är under det rekommenderade minsta värdet: 500hz!
 Det kan leda till hörbara timingproblem för MIDI.
 See FAQ på http://muse-sequencer.org för lösningsförslag.
 See också terminalutskrifter för eventuella fler felmeddelanden.</translation>
     </message>
     <message>
         <source>Add Old Style Drum Track</source>
-        <translation>Lägg till trumspår av gamla typen</translation>
+        <translation type="vanished">Lägg till trumspår av gamla typen</translation>
     </message>
     <message>
         <source>Add New Style Drum Track</source>
-        <translation>Lägg till trumspår av nya typen</translation>
-    </message>
-    <message>
-        <source>Output port/device</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Lägg till trumspår av nya typen</translation>
     </message>
 </context>
 <context>
@@ -1276,15 +1268,15 @@ Vill du ersätta den eller lägga till i nästa lediga position?</translation>
         <source>Release Rate</source>
         <translation>Utgivningsdatum</translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>2° Decay Rate</source>
         <translation>2° Decay-hastighet</translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Level</source>
         <translation>1° Decay-nivå</translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Rate</source>
         <translation>1° Decay-hastighet</translation>
     </message>
@@ -3319,11 +3311,11 @@ för att använda vänster musknapp i stället för mittersta.</translation>
     </message>
     <message>
         <source>start with last song</source>
-        <translation>starta med senaste sång</translation>
+        <translation type="vanished">starta med senaste sång</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation>starta med sång</translation>
+        <translation type="vanished">starta med sång</translation>
     </message>
     <message>
         <source>start song:</source>
@@ -3606,7 +3598,7 @@ fokus till respektive editor</translation>
     </message>
     <message>
         <source>start with template</source>
-        <translation>Starta med mall</translation>
+        <translation type="vanished">Starta med mall</translation>
     </message>
     <message>
         <source>Start template or song:</source>
@@ -3628,19 +3620,19 @@ eller i annatfall, konfigurera automatiskt</translation>
     </message>
     <message>
         <source>Record all instruments</source>
-        <translation>Spela in alla instrument</translation>
+        <translation type="vanished">Spela in alla instrument</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden instruments</source>
-        <translation>Spela inte in gömda instrument</translation>
+        <translation type="vanished">Spela inte in gömda instrument</translation>
     </message>
     <message>
         <source>Don&apos;t record muted instruments</source>
-        <translation>Spela inte in tystade instrument</translation>
+        <translation type="vanished">Spela inte in tystade instrument</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden or muted instruments</source>
-        <translation>Spela inte in gömda eller tystade instrument</translation>
+        <translation type="vanished">Spela inte in gömda eller tystade instrument</translation>
     </message>
     <message>
         <source>Drum tracks</source>
@@ -3648,19 +3640,19 @@ eller i annatfall, konfigurera automatiskt</translation>
     </message>
     <message>
         <source>Only offer old-style drumtracks</source>
-        <translation>Föreslå bara gamla typen trumspår</translation>
+        <translation type="vanished">Föreslå bara gamla typen trumspår</translation>
     </message>
     <message>
         <source>Only offer new-style drumtracks</source>
-        <translation>Föreslå bara nya typen trumspår</translation>
+        <translation type="vanished">Föreslå bara nya typen trumspår</translation>
     </message>
     <message>
         <source>Prefer old-style drumtracks</source>
-        <translation>Föredra gamla typen trumspår</translation>
+        <translation type="vanished">Föredra gamla typen trumspår</translation>
     </message>
     <message>
         <source>Prefer new-style drumtracks</source>
-        <translation>Föredra nya typen trumspår</translation>
+        <translation type="vanished">Föredra nya typen trumspår</translation>
     </message>
     <message>
         <source>Auto save (every 5 minutes if not playing/recording)</source>
@@ -3715,6 +3707,54 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>Borderless zoom/pan mouse (else use alternate method)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start &amp;with last song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start with &amp;template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sta&amp;rt with song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Record all instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Don&apos;t record hidden instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;&amp;t record muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;t record &amp;hidden or muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scrollable submenus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Only offer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only offer new-style &amp;drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Prefer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prefer &amp;new-style drumtracks</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12313,7 +12353,7 @@ katalog</translation>
         <source>DCO 2</source>
         <translation></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>VAM 1.0beta3
 Virtual Analog for MusE
 Released under GPL.

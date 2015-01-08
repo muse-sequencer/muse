@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="ru_RU">
+<TS version="2.1" language="ru_RU">
 <context>
     <name>@default</name>
     <message>
@@ -93,14 +93,6 @@ Also please check console output for any further error messages.
     <message>
         <source>Add New Style Drum Track</source>
         <translation>Добавить трек ударных в новом стиле</translation>
-    </message>
-    <message>
-        <source>Output port/device</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1330,15 +1322,15 @@ giving another chance to cancel.</source>
         <source>Release Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>2° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Level</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3780,6 +3772,54 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>Borderless zoom/pan mouse (else use alternate method)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start &amp;with last song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start with &amp;template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sta&amp;rt with song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Record all instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Don&apos;t record hidden instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;&amp;t record muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;t record &amp;hidden or muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scrollable submenus</source>
+        <translation>Прокручиваемые подменю</translation>
+    </message>
+    <message>
+        <source>&amp;Only offer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only offer new-style &amp;drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Prefer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prefer &amp;new-style drumtracks</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11845,7 +11885,7 @@ in current
         <source>On</source>
         <translation>Вкл</translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>VAM 1.0beta3
 Virtual Analog for MusE
 Released under GPL.
