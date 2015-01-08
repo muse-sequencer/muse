@@ -111,7 +111,7 @@ extern "C" void lv2Gtk2Helper_gtk_container_add(void *plug, void *w)
 
 extern "C" void lv2Gtk2Helper_gtk_widget_show_all(void *plug)
 {
-   gtk_widget_realize(static_cast<GtkWidget *>(plug));
+   //gtk_widget_realize(static_cast<GtkWidget *>(plug));
    gtk_widget_show_all(static_cast<GtkWidget *>(plug));
 }
 
@@ -134,10 +134,11 @@ extern "C" void lv2Gtk2Helper_register_resize_cb(void *plug, sz_cb_fn fn)
    g_signal_connect(G_OBJECT(plug), "size-request", G_CALLBACK(plug_on_size_request), reinterpret_cast<gpointer>(fn));
 }
 
-extern "C" unsigned long lv2Gtk2Helper_gdk_x11_drawable_get_xid(void *widget)
+extern "C" unsigned long lv2Gtk2Helper_gdk_x11_drawable_get_xid(void *plug)
 {
-   GdkWindow *w =gtk_widget_get_window(static_cast<GtkWidget *>(widget));
-   return gdk_x11_drawable_get_xid(w);
+   //GdkWindow *w =gtk_widget_get_window(static_cast<GtkWidget *>(widget));
+   //return gdk_x11_drawable_get_xid(w);
+   return gtk_plug_get_id(static_cast<GtkPlug *>(plug));
 }
 
 extern "C" void lv2Gtk2Helper_deinit()

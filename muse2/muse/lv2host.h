@@ -1088,6 +1088,7 @@ private:
    void stopUpdateTimer();
 public:
    explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state );
+   ~LV2PluginWrapper_Window();
    void startNextTime();
    void stopNextTime();
    void doChangeControls();
