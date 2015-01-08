@@ -126,7 +126,7 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
       // Note: Does not take ownership.
       addActions(action->actions());
       
-      connect(action, SIGNAL(selected(QAction*)), SLOT(toolChanged(QAction*)));
+      connect(action, SIGNAL(triggered(QAction*)), SLOT(toolChanged(QAction*)));
 
       toolShortcuts[PointerTool] = SHRT_TOOL_CURSOR;
       toolShortcuts[PencilTool]  = SHRT_TOOL_PENCIL;
