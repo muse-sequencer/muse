@@ -1093,8 +1093,13 @@ public:
    void stopNextTime();
    void doChangeControls();
    void setClosing(bool closing) {_closing = closing; }
+signals:
+   void makeStopFromGuiThread();
+   void makeStartFromGuiThread();
 public slots:
    void updateGui();
+   void stopFromGuiThread();
+   void startFromGuiThread();
 };
 
 

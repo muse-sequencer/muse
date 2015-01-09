@@ -4419,6 +4419,8 @@ LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
  : QMainWindow(), _state ( state ), _closing(false)
 {
    connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateGui()));
+   connect(this, SIGNAL(makeStopFromGuiThread()), this, SLOT(stopFromGuiThread()));
+   connect(this, SIGNAL(makeStartFromGuiThread()), this, SLOT(startFromGuiThread()));
 }
 
 LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
@@ -4430,8 +4432,7 @@ LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
 
 void LV2PluginWrapper_Window::startNextTime()
 {
-   stopUpdateTimer();
-   updateTimer.start(1000/30);
+   emit startFromGuiThread();
 }
 
 
@@ -4440,8 +4441,7 @@ void LV2PluginWrapper_Window::startNextTime()
 void LV2PluginWrapper_Window::stopNextTime()
 {
    setClosing(true);
-   stopUpdateTimer();
-   close();
+   emit makeStopFromGuiThread();
 }
 
 void LV2PluginWrapper_Window::updateGui()
@@ -4480,7 +4480,19 @@ void LV2PluginWrapper_Window::updateGui()
    }
 
    //if(_closing)
-      //stopNextTime();
+   //stopNextTime();
+}
+
+void LV2PluginWrapper_Window::stopFromGuiThread()
+{
+   stopUpdateTimer();
+   emit close();
+}
+
+void LV2PluginWrapper_Window::startFromGuiThread()
+{
+   stopUpdateTimer();
+   updateTimer.start(1000/30);
 }
 
 
