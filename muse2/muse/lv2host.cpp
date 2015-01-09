@@ -2039,14 +2039,16 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uAtom_EventTransfer   = mapUrid(LV2_ATOM__eventTransfer);
 
    _sampleRate = (double)MusEGlobal::sampleRate;
+   _fSampleRate = (float)MusEGlobal::sampleRate;
 
    //prepare features and options arrays
    LV2_Options_Option _tmpl_options [] =
    {
-      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_sampleRate},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_fSampleRate},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
       {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
 
    };
@@ -4377,6 +4379,17 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 
    stopUpdateTimer();
 
+   if(_state->gtk2Plug != NULL)
+   {
+      QWidget *cW = centralWidget();
+      setCentralWidget(NULL);
+      if(cW != NULL)
+      {
+         cW->setParent(NULL);
+         delete cW;
+      }
+   }
+
    if(_state->deleteLater)
    {
       LV2Synth::lv2state_FreeState(_state);
@@ -4393,13 +4406,7 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
       LV2Synth::lv2ui_FreeDescriptors(_state);
    }
 
-   QWidget *cW = centralWidget();
-   setCentralWidget(NULL);
-   if(cW != NULL)
-   {
-      cW->setParent(NULL);
-      delete cW;
-   }
+
    delete this;
 
 }

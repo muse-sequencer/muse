@@ -685,6 +685,7 @@ private:
     LV2_URI_Map_Feature _lv2_uri_map;
     LV2_Log_Log _lv2_log_log;    
     double _sampleRate;
+    float _fSampleRate;
     bool _isSynth;
     int _uniqueID;
     uint32_t _midi_event_id;
