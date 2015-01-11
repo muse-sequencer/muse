@@ -708,6 +708,15 @@ MusE::MusE() : QMainWindow()
       metronomeToolbar->setObjectName("Metronome");
       metronomeToolbar->addAction(MusEGlobal::metronomeAction);
 
+      QToolBar *jackCpuToolbar = addToolBar(tr("Jack cpu load"));
+      jackCpuToolbar->setObjectName("JackCpuLoadToolbar");
+      QWidgetAction *actJackCpuLoad = new QWidgetAction(this);
+      actJackCpuLoad->setWhatsThis(tr("CPU load reported by JACK audio server"));
+      QLabel *lbCpuLoad = new QLabel(tr("Not connected to JACK"));
+      lbCpuLoad->setObjectName("JackCpuLoadToolbarLabel");
+      actJackCpuLoad->setDefaultWidget(lbCpuLoad);
+      jackCpuToolbar->addAction(actJackCpuLoad);
+
       requiredToolbars.push_back(tools);
       optionalToolbars.push_back(songpos_tb);
       optionalToolbars.push_back(sig_tb);
@@ -716,6 +725,7 @@ MusE::MusE() : QMainWindow()
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);
       optionalToolbars.push_back(metronomeToolbar);
+      optionalToolbars.push_back(jackCpuToolbar);
 
        QSocketNotifier* ss = new QSocketNotifier(MusEGlobal::audio->getFromThreadFdr(), QSocketNotifier::Read, this); 
        connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));  

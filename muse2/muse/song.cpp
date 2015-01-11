@@ -1494,6 +1494,15 @@ void Song::beat()
       _heartbeatRateTimer = t;
       #endif
       
+      //First: update cpu load toolbar
+
+      QList<QLabel *> jackCpuLoadLabelList = MusEGlobal::muse->findChildren<QLabel *>("JackCpuLoadToolbarLabel");
+      QList<QLabel *>::const_iterator it;
+      for(it = jackCpuLoadLabelList.begin(); it != jackCpuLoadLabelList.end(); ++it)
+      {
+         (*it)->setText(QString("CPU (%): ") + QString::number(MusEGlobal::audioDevice->getCPULoad(), 'f', 2));
+      }
+
       // Keep the sync detectors running... 
       for(int port = 0; port < MIDI_PORTS; ++port)
           MusEGlobal::midiPorts[port].syncInfo().setTime();

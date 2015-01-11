@@ -34,6 +34,8 @@
 #include <QToolBar>
 #include <QMenuBar>
 #include <QAction>
+#include <QWidgetAction>
+#include <QLabel>
 
 using std::list;
 using MusEGlobal::muse;
@@ -142,6 +144,16 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	sig_tb->setObjectName("Signature");
 	MusEGui::SigToolbarWidget* sw = new MusEGui::SigToolbarWidget(tempo_tb);
 	sig_tb->addWidget(sw);
+
+ QToolBar *jackCpuToolbar = addToolBar(tr("Jack cpu load"));
+ jackCpuToolbar->setObjectName("JackCpuLoadToolbar");
+ QWidgetAction *actJackCpuLoad = new QWidgetAction(this);
+ actJackCpuLoad->setWhatsThis(tr("CPU load reported by JACK audio server"));
+ QLabel *lbCpuLoad = new QLabel(tr("Not connected to JACK"));
+ lbCpuLoad->setObjectName("JackCpuLoadToolbarLabel");
+ actJackCpuLoad->setDefaultWidget(lbCpuLoad);
+ jackCpuToolbar->addAction(actJackCpuLoad);
+
 	
 	connect(tw, SIGNAL(returnPressed()), SLOT(focusCanvas()));
 	connect(tw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
