@@ -496,17 +496,10 @@ public:
    {
       size_t i = readIndex;
       bool found = false;
-      do
+      if(eventsBuffer.at(i).buffer_size != 0)
       {
-         if(eventsBuffer.at(i).buffer_size != 0)
-         {
-            found = true;
-            break;
-         }
-         i++;
-         i %= fifoSize;
+         found = true;
       }
-      while(i != readIndex);
 
       if(!found)
       {
