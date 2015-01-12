@@ -24,7 +24,6 @@
 #cmakedefine OSC_SUPPORT
 #cmakedefine DSSI_SUPPORT
 #cmakedefine LV2_SUPPORT
-#cmakedefine LV2_NEW_LIB
 #cmakedefine VST_SUPPORT
 #cmakedefine VST_NATIVE_SUPPORT
 #cmakedefine VST_VESTIGE_SUPPORT

@@ -43,6 +43,9 @@ set (SubDirs
       widgets
       lv2Gtk2Helper
       )
+if(LV2_SUPPORT)
+      set ( SubDirs ${SubDirs} lv2Support )
+endif(LV2_SUPPORT)
 
 if (PYTHON_SUPPORT)
       set ( REM_CPP_FLAGS "-DENABLE_PYTHON" )
@@ -195,6 +198,7 @@ include_directories (
       remote
       waveedit
       widgets
+      lv2Support
       )
 
 # Make sure to include the uic generated headers paths.
@@ -270,7 +274,10 @@ if(OSC_SUPPORT)
 endif(OSC_SUPPORT)
 
 if(LV2_SUPPORT)
-      target_link_libraries(core ${LV2_LIBRARIES})
+      target_link_libraries(core lv2_support)
+      if (PCRE_FOUND)
+            target_link_libraries(core ${PCRE_LIBRARIES})
+      endif (PCRE_FOUND)
 endif(LV2_SUPPORT)
 
 target_link_libraries(muse

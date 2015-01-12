@@ -23,6 +23,8 @@
 
 include(FindPkgConfig)
 include(CheckIncludeFile)
+include(CheckIncludeFiles)
+include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 
 project(muse)
@@ -370,22 +372,11 @@ else (ENABLE_VST_VESTIGE)
   SET (VST_VESTIGE_SUPPORT FALSE)
 endif (ENABLE_VST_VESTIGE)
 
-## LV2 support
-## check for lilv >= 0.16.0
-##
 
 if (ENABLE_LV2)
-      PKG_CHECK_MODULES(LV2 lilv-0>=0.16.0)
-      if (LV2_FOUND)
-            include_directories(${LV2_INCLUDE_DIRS})
-            LINK_DIRECTORIES(${LV2_LIBRARY_DIRS})
-
-            set(LV2_SUPPORT ON)
-            PKG_CHECK_MODULES(LV2NEWLIB lv2>=1.10.0)
-            if (LV2NEWLIB_FOUND)
-                set(LV2_NEW_LIB ON)
-            endif (LV2NEWLIB_FOUND)
-      endif (LV2_FOUND)
+      set (LV2_FOUND ON)
+      set(LV2_SUPPORT ON)
+      PKG_CHECK_MODULES(PCRE libpcre)
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)

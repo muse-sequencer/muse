@@ -72,6 +72,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sord/sord.h>
 
 
 //uncomment to print audio process info
@@ -895,7 +896,7 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
    /* Build an LV2 position object to report change to plugin */
    LV2_Atom_Forge* atomForge = &state->atomForge;
-#ifdef LV2_NEW_LIB
+//#ifdef LV2_NEW_LIB
    lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
    LV2_Atom_Forge_Frame frame;
    lv2_atom_forge_object(atomForge, &frame, 1, synth->_uTime_Position);
@@ -905,17 +906,17 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
    lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerMinute);
    lv2_atom_forge_float(atomForge, (float)curBpm);
-#else
-   lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
-   LV2_Atom_Forge_Frame frame;
-   lv2_atom_forge_blank(atomForge, &frame, 1, synth->_uTime_Position);
-   lv2_atom_forge_property_head(atomForge, synth->_uTime_frame, 0);
-   lv2_atom_forge_long(atomForge, curFrame);
-   lv2_atom_forge_property_head(atomForge, synth->_uTime_speed, 0);
-   lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
-   lv2_atom_forge_property_head(atomForge, synth->_uTime_beatsPerMinute, 0);
-   lv2_atom_forge_float(atomForge, (float)curBpm);
-#endif
+//#else
+//   lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
+//   LV2_Atom_Forge_Frame frame;
+//   lv2_atom_forge_blank(atomForge, &frame, 1, synth->_uTime_Position);
+//   lv2_atom_forge_property_head(atomForge, synth->_uTime_frame, 0);
+//   lv2_atom_forge_long(atomForge, curFrame);
+//   lv2_atom_forge_property_head(atomForge, synth->_uTime_speed, 0);
+//   lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
+//   lv2_atom_forge_property_head(atomForge, synth->_uTime_beatsPerMinute, 0);
+//   lv2_atom_forge_float(atomForge, (float)curBpm);
+//#endif
 buffer->lv2_evbuf_write(iter, 0, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
 //   }
 }
@@ -1797,6 +1798,14 @@ void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu
    std::map<QString, LilvNode *>::iterator it;
    LV2Synth *synth = state->synth;
    menu->clear();
+   QAction *actPredefinedPresetsHeader = new QAction(QMenu::tr("Predefined presets"), NULL);
+   actPredefinedPresetsHeader->setEnabled(false);
+   QFont fHeader;
+   fHeader.setBold(true);
+   fHeader.setUnderline(true);
+   actPredefinedPresetsHeader->setFont(fHeader);
+   menu->addAction(actPredefinedPresetsHeader);
+
    for(it = synth->_presets.begin(); it != synth->_presets.end(); ++it)
    {
       QAction *act = menu->addAction(it->first);
@@ -1808,6 +1817,11 @@ void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu
       act->setDisabled(true);
       act->setData(QVariant::fromValue<void *>(NULL));
    }
+   menu->addSeparator();
+   QAction *actSave = menu->addAction(QObject::tr("Save preset..."));
+   actSave->setObjectName("lv2state_presets_save_action");
+   QAction *actLoad = menu->addAction(QObject::tr("Load preset..."));
+   actLoad->setObjectName("lv2state_presets_load_action");
 
 
 
