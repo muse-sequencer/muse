@@ -61,7 +61,8 @@
 #include "globals.h"
 #include "globaldefs.h"
 #include "gconfig.h"
-#include "popupmenu.h"
+#include "widgets/popupmenu.h"
+#include "widgets/menutitleitem.h"
 #include <ladspa.h>
 
 #include <math.h>
@@ -1192,7 +1193,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       else
       {
          QMenu mGuisPopup;
-         QAction *aUiTypeHeader = new QAction(QMenu::tr("Select gui type"), NULL);
+         MusEGui::MenuTitleItem *aUiTypeHeader = new MusEGui::MenuTitleItem(QObject::tr("Select gui type"), NULL);
          aUiTypeHeader->setEnabled(false);
          QFont fHeader;
          fHeader.setBold(true);
@@ -1795,16 +1796,22 @@ char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const ch
 
 void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu)
 {
-   std::map<QString, LilvNode *>::iterator it;
-   LV2Synth *synth = state->synth;
    menu->clear();
-   QAction *actPredefinedPresetsHeader = new QAction(QMenu::tr("Predefined presets"), NULL);
-   actPredefinedPresetsHeader->setEnabled(false);
-   QFont fHeader;
-   fHeader.setBold(true);
-   fHeader.setUnderline(true);
-   actPredefinedPresetsHeader->setFont(fHeader);
-   menu->addAction(actPredefinedPresetsHeader);
+   LV2Synth *synth = state->synth;
+   //this is good by slow down menu population.
+   //So it's called only on changes (preset save/manual update)
+   //LV2Synth::lv2state_UnloadLoadPresets(synth, true);
+   MusEGui::MenuTitleItem *actPresetActionsHeader = new MusEGui::MenuTitleItem(QObject::tr("Preset actions"), menu);
+   menu->addAction(actPresetActionsHeader);
+   QAction *actSave = menu->addAction(QObject::tr("Save preset..."));
+   actSave->setObjectName("lv2state_presets_save_action");
+   actSave->setData(QVariant::fromValue<void *>(NULL));
+   QAction *actUpdate = menu->addAction(QObject::tr("Update list"));
+   actUpdate->setObjectName("lv2state_presets_update_action");
+   actUpdate->setData(QVariant::fromValue<void *>(NULL));
+   std::map<QString, LilvNode *>::iterator it;
+   MusEGui::MenuTitleItem *actSavedPresetsHeader = new MusEGui::MenuTitleItem(QObject::tr("Saved presets"), menu);
+   menu->addAction(actSavedPresetsHeader);
 
    for(it = synth->_presets.begin(); it != synth->_presets.end(); ++it)
    {
@@ -1816,12 +1823,7 @@ void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu
       QAction *act = menu->addAction(QObject::tr("No presets found"));
       act->setDisabled(true);
       act->setData(QVariant::fromValue<void *>(NULL));
-   }
-   menu->addSeparator();
-   QAction *actSave = menu->addAction(QObject::tr("Save preset..."));
-   actSave->setObjectName("lv2state_presets_save_action");
-   QAction *actLoad = menu->addAction(QObject::tr("Load preset..."));
-   actLoad->setObjectName("lv2state_presets_load_action");
+   }   
 
 
 
@@ -1977,6 +1979,51 @@ void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *pre
    {
       lilv_state_restore(lilvState, state->handle, LV2Synth::lv2state_setPortValue, state, 0, NULL);
       lilv_state_free(lilvState);
+   }
+
+}
+
+void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load)
+{
+   assert(synth != NULL);
+
+   //std::cerr << "LV2Synth::lv2state_UnloadLoadPresets:  handling <" << synth->_name.toStdString() << ">" << std::endl;
+
+   std::map<QString, LilvNode *>::iterator it;
+   for(it = synth->_presets.begin(); it != synth->_presets.end(); ++it)
+   {
+      lilv_world_unload_resource(lilvWorld, const_cast<const LilvNode *>(it->second));
+      lilv_node_free(it->second);
+   }
+   synth->_presets.clear();
+
+   if(load)
+   {
+      //scan for preserts
+      LilvNodes* presets = lilv_plugin_get_related(synth->_handle, lv2CacheNodes.lv2_psetPreset);
+      LILV_FOREACH(nodes, i, presets)
+      {
+         const LilvNode* preset = lilv_nodes_get(presets, i);
+#ifdef DEBUG_LV2
+         std::cerr << "\tPreset: " << lilv_node_as_uri(preset) << std::endl;
+#endif
+         lilv_world_load_resource(lilvWorld, preset);
+         LilvNodes* pLabels = lilv_world_find_nodes(lilvWorld, preset, lv2CacheNodes.lv2_rdfsLabel, NULL);
+         if (pLabels != NULL)
+         {
+            const LilvNode* pLabel = lilv_nodes_get_first(pLabels);
+            synth->_presets.insert(std::make_pair<QString, LilvNode *>(lilv_node_as_string(pLabel), lilv_node_duplicate(preset)));
+            lilv_nodes_free(pLabels);
+         }
+         else
+         {
+#ifdef DEBUG_LV2
+            std::cerr << "\t\tPreset <%s> has no rdfs:label" << lilv_node_as_string(lilv_nodes_get(presets, i)) << std::endl;
+#endif
+         }
+      }
+      lilv_nodes_free(presets);
+
    }
 
 }
@@ -2364,37 +2411,17 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 
    }
 
-   //scan for preserts
-   LilvNodes* presets = lilv_plugin_get_related(_handle, lv2CacheNodes.lv2_psetPreset);
-   LILV_FOREACH(nodes, i, presets)
-   {
-      const LilvNode* preset = lilv_nodes_get(presets, i);
-#ifdef DEBUG_LV2
-      std::cerr << "\tPreset: " << lilv_node_as_uri(preset) << std::endl;
-#endif
-      lilv_world_load_resource(lilvWorld, preset);
-      LilvNodes* pLabels = lilv_world_find_nodes(lilvWorld, preset, lv2CacheNodes.lv2_rdfsLabel, NULL);
-      if (pLabels != NULL)
-      {
-         const LilvNode* pLabel = lilv_nodes_get_first(pLabels);
-         _presets.insert(std::make_pair<QString, LilvNode *>(lilv_node_as_string(pLabel), lilv_node_duplicate(preset)));
-         lilv_nodes_free(pLabels);
-      }
-      else
-      {
-#ifdef DEBUG_LV2
-         std::cerr << "\t\tPreset <%s> has no rdfs:label" << lilv_node_as_string(lilv_nodes_get(presets, i)) << std::endl;
-#endif
-      }
-   }
-   lilv_nodes_free(presets);
+   _presets.clear();
 
+   LV2Synth::lv2state_UnloadLoadPresets(this, true);
 
    _isConstructed = true;
 }
 
 LV2Synth::~LV2Synth()
 {
+   LV2Synth::lv2state_UnloadLoadPresets(this);
+
    if(_ppfeatures)
    {
       delete [] _ppfeatures;
@@ -2418,22 +2445,6 @@ LV2Synth::~LV2Synth()
       lilv_uis_free(_uis);
       _uis = NULL;
    }
-   std::map<QString, LilvNode *>::iterator it;
-   for(it = _presets.begin(); it != _presets.end(); ++it)
-   {
-      lilv_node_free(it->second);
-   }
-#if 0
-   //TODO: Make real check for lilv version
-   //for existance of 'lilv_world_unload_resource' function
-   LilvNodes* presets = lilv_plugin_get_related(_handle, lv2CacheNodes.lv2_psetPreset);
-   LILV_FOREACH(nodes, i, presets)
-   {
-      const LilvNode* preset = lilv_nodes_get(presets, i);
-      lilv_world_unload_resource(lilvWorld, preset);
-   }
-   lilv_nodes_free(presets);
-#endif
 }
 
 

@@ -1140,7 +1140,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
-        QMenu *mSubPresets = new QMenu(tr("Presets"));
+        PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
         QMenu* p = new QMenu;
         QAction* gact = p->addAction(tr("show gui"));
         gact->setCheckable(true);
@@ -1208,7 +1208,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
 
       QMenu* p = new QMenu;
-      QMenu *mSubPresets = new QMenu(tr("Presets"));
+      PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
       QAction* gact = p->addAction(tr("show gui"));
       gact->setCheckable(true);
       gact->setEnabled(port->hasGui());

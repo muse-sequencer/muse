@@ -1249,7 +1249,9 @@ sord_remove(SordModel* sord, const SordQuad tup)
 				}
 				zix_tree_remove(sord->indices[i], cur);
 			} else {
-				assert(i == 0);  // Assuming index coherency
+    //this can happen (but not an error)
+    //so disable it for now
+    //assert(i == 0);  // Assuming index coherency
 				return;  // Quad not found, do nothing
 			}
 		}
