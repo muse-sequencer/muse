@@ -4129,6 +4129,14 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
 {
    LV2Synth::lv2prg_updatePrograms(_uiState);
    menu->clear();
+   MusEGui::PopupMenu *subMenuPrograms = new MusEGui::PopupMenu(menu->parent());
+   subMenuPrograms->setTitle(QObject::tr("Midi programs"));
+   menu->addMenu(subMenuPrograms);
+   MusEGui::PopupMenu *subMenuPresets = new MusEGui::PopupMenu(menu->parent());
+   subMenuPresets->setTitle(QObject::tr("Presets"));
+   menu->addMenu(subMenuPresets);
+
+   //First: fill programs submenu
    std::map<int, MusEGui::PopupMenu *> submenus;
    std::map<uint32_t, lv2ExtProgram>::iterator itIndex;
    for(itIndex = _uiState->index2prg.begin(); itIndex != _uiState->index2prg.end(); ++itIndex)
@@ -4136,6 +4144,11 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
       const lv2ExtProgram &extPrg = itIndex->second;
       //truncating bank and brogran numbers to 16 bit - muse MidiPlayEvent can handle only 32 bit numbers
       int bank = extPrg.bank;
+      //limit bank numbers to 0-255 to keep midi compatibility
+      if(bank > 255)
+      {
+         continue;
+      }
       int prog = extPrg.prog;
       int id = ((bank & 0xff) << 8) + prog;
       std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(bank);
@@ -4148,7 +4161,7 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
       {
           submenu = new MusEGui::PopupMenu(menu->parent());
           submenu->setTitle(QString("Bank #") + QString::number(bank + 1));
-          menu->addMenu(submenu);
+          subMenuPrograms->addMenu(submenu);
           submenus.insert(std::make_pair<int, MusEGui::PopupMenu *>(bank, submenu));
 
       }
@@ -4157,6 +4170,9 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
       act->setData(id);
 
    }
+
+   //Second:: Fill presets submenu
+   LV2Synth::lv2state_populatePresetsMenu(_uiState, subMenuPresets);
 }
 
 void LV2SynthIF::preProcessAlways()

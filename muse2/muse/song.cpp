@@ -1500,7 +1500,8 @@ void Song::beat()
       QList<QLabel *>::const_iterator it;
       for(it = jackCpuLoadLabelList.begin(); it != jackCpuLoadLabelList.end(); ++it)
       {
-         (*it)->setText(QString("<b>CPU (%): </b>") + QString::number(MusEGlobal::audioDevice->getCPULoad(), 'f', 2));
+         //(*it)->setText(QString("<b>CPU (%): </b>") + QString::number(MusEGlobal::audioDevice->getCPULoad(), 'f', 2));
+         (*it)->setText(QString("<b>CPU (%)</b>: ") + QString("%1").arg((double)MusEGlobal::audioDevice->getCPULoad(), 5, 'f', 1, QChar(' ')));
       }
 
       // Keep the sync detectors running... 
