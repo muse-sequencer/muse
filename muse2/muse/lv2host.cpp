@@ -63,6 +63,7 @@
 #include "gconfig.h"
 #include "widgets/popupmenu.h"
 #include "widgets/menutitleitem.h"
+#include "icons.h"
 #include <ladspa.h>
 
 #include <math.h>
@@ -4131,9 +4132,11 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
    menu->clear();
    MusEGui::PopupMenu *subMenuPrograms = new MusEGui::PopupMenu(menu->parent());
    subMenuPrograms->setTitle(QObject::tr("Midi programs"));
+   subMenuPrograms->setIcon(QIcon(*MusEGui::pianoNewIcon));
    menu->addMenu(subMenuPrograms);
    MusEGui::PopupMenu *subMenuPresets = new MusEGui::PopupMenu(menu->parent());
    subMenuPresets->setTitle(QObject::tr("Presets"));
+   subMenuPresets->setIcon(QIcon(*MusEGui::presetsNewIcon));
    menu->addMenu(subMenuPresets);
 
    //First: fill programs submenu

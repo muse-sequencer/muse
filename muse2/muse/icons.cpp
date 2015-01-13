@@ -266,6 +266,10 @@
 
 #include "xpm/sine.xpm"
 #include "xpm/saw.xpm"
+
+#include "xpm/pianoNew.xpm"
+#include "xpm/presetsNew.xpm"
+
 #include "icons.h"
 
 //#if QT_VERSION >= 0x040600
@@ -533,6 +537,9 @@ QIcon* userIcon;
 QPixmap* sineIcon;
 QPixmap* sawIcon;
 
+QIcon* pianoNewIcon;
+QIcon* presetsNewIcon;
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
@@ -793,6 +800,10 @@ void initIcons()
 
       sineIcon                                      = new MPIXMAP(sine_xpm, NULL);
       sawIcon                                       = new MPIXMAP(saw_xpm, NULL);
+
+      pianoNewIcon                                       = new MICON(pianoNew_xpm, NULL);
+      presetsNewIcon                                       = new MICON(presetsNew_xpm, NULL);
+
       }
 
 //---------------------------------------------------------
