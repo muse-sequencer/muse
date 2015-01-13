@@ -69,6 +69,8 @@ zix/digest.h
 zix/tree.h
 zix/hash.c
 zix/tree.c
+lv2extui.h
+lv2extprg.h
       )
 set(CMAKE_C_FLAGS "-std=c99")
 
