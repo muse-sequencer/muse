@@ -1179,7 +1179,6 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "rcPlay",     MusEGlobal::rcPlayNote);
       xml.intTag(level, "rcSteprec",     MusEGlobal::rcSteprecNote);
 
-printf("writeSeqConfiguration audioClickEnable=%d\n", MusEGlobal::audioClickFlag);
       if (writePortInfo) {
             //
             // write information about all midi ports, their assigned

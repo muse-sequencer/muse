@@ -197,6 +197,7 @@ enum {
       SHRT_SEL_BELOW_ADD, //move down and add to selection
 
       SHRT_INSERTMEAS, //Ctrl+Shift+M - insert measures
+      SHRT_DUPLICATE_TRACK, // Ctrl+Shift+D
       
       //Arranger tracks
       SHRT_SEL_TRACK_BELOW,

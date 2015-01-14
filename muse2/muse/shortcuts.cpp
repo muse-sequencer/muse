@@ -163,7 +163,8 @@ void initShortCuts()
       defShrt(SHRT_SEL_BELOW,             Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part on track below"), ARRANG_SHRT, "sel_part_below");
       defShrt(SHRT_SEL_BELOW_ADD,         Qt::SHIFT + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part on track below"), ARRANG_SHRT, "sel_part_below_add");
 
-      defShrt(SHRT_INSERTMEAS,            Qt::CTRL+Qt::SHIFT+ Qt::Key_O, QT_TRANSLATE_NOOP("shortcuts", "Edit: Insert empty measure"), ARRANG_SHRT, "insert_measure");
+      defShrt(SHRT_INSERTMEAS,            Qt::CTRL + Qt::SHIFT + Qt::Key_O, QT_TRANSLATE_NOOP("shortcuts", "Edit: Insert empty measure"), ARRANG_SHRT, "insert_measure");
+      defShrt(SHRT_DUPLICATE_TRACK,       Qt::CTRL + Qt::SHIFT + Qt::Key_D, QT_TRANSLATE_NOOP("shortcuts", "Edit: Duplicate track"), ARRANG_SHRT, "duplicate track");
 
       defShrt(SHRT_SEL_TRACK_ABOVE,       Qt::CTRL + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Select track above"), ARRANG_SHRT, "sel_track_above");
       defShrt(SHRT_SEL_TRACK_BELOW,       Qt::CTRL + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Select track below"), ARRANG_SHRT, "sel_track_below");
@@ -257,7 +258,7 @@ void initShortCuts()
       // arranger
       defShrt(SHRT_TOOL_SCISSORS,    Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Tool: Scissor"), ARRANG_SHRT, "scissor_tool");
       defShrt(SHRT_TOOL_GLUE,        Qt::Key_G, QT_TRANSLATE_NOOP("shortcuts", "Tool: Glue"), ARRANG_SHRT, "glue_tool");
-      defShrt(SHRT_TOOL_MUTE,        0, QT_TRANSLATE_NOOP("shortcuts", "Tool: Mute"), ARRANG_SHRT, "mute_tool");
+      defShrt(SHRT_TOOL_MUTE,        Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Tool: Mute"), ARRANG_SHRT, "mute_tool");
 
       //Increase/decrease current position, is going to be in arranger & drumeditor as well
       // p4.0.10 Editors and arranger handle these by themselves, otherwise global handler will now use them, too.
