@@ -147,6 +147,8 @@ typedef struct
    LilvNode *lv2_CVPort;
    LilvNode *lv2_psetPreset;
    LilvNode *lv2_rdfsLabel;
+   LilvNode *lv2_actionSavePreset;
+   LilvNode *lv2_actionUpdatePresets;
    LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
 } CacheNodes;
 
@@ -279,7 +281,9 @@ void initLV2()
    lv2CacheNodes.lv2_SampleRate         = lilv_new_uri(lilvWorld, LV2_CORE__sampleRate);
    lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
    lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
-   lv2CacheNodes.lv2_rdfsLabel        = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
+   lv2CacheNodes.lv2_rdfsLabel          = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
+   lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionSavePreset");
+   lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionUpdatePresets");
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -699,7 +703,7 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
          state->controlsMask [i] = false;
          state->controlTimers [i] = 0;
          state->controlsNameMap.insert(std::pair<QString, size_t>(QString(synth->_controlInPorts [i].cName).toLower(), i));
-         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(synth->_controlInPorts [i].cSym).toLower(), i));
+         state->controlsSymMap.insert(std::pair<QString, size_t>(QString(synth->_controlInPorts [i].cSym).toLower(), i));
       }
    }
 
@@ -1798,6 +1802,7 @@ char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const ch
 void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu)
 {
    menu->clear();
+   menu->setIcon(QIcon(*MusEGui::presetsNewIcon));
    LV2Synth *synth = state->synth;
    //this is good by slow down menu population.
    //So it's called only on changes (preset save/manual update)
@@ -1806,10 +1811,10 @@ void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu
    menu->addAction(actPresetActionsHeader);
    QAction *actSave = menu->addAction(QObject::tr("Save preset..."));
    actSave->setObjectName("lv2state_presets_save_action");
-   actSave->setData(QVariant::fromValue<void *>(NULL));
+   actSave->setData(QVariant::fromValue<void *>(static_cast<void *>(lv2CacheNodes.lv2_actionSavePreset)));
    QAction *actUpdate = menu->addAction(QObject::tr("Update list"));
    actUpdate->setObjectName("lv2state_presets_update_action");
-   actUpdate->setData(QVariant::fromValue<void *>(NULL));
+   actUpdate->setData(QVariant::fromValue<void *>(static_cast<void *>(lv2CacheNodes.lv2_actionUpdatePresets)));
    std::map<QString, LilvNode *>::iterator it;
    MusEGui::MenuTitleItem *actSavedPresetsHeader = new MusEGui::MenuTitleItem(QObject::tr("Saved presets"), menu);
    menu->addAction(actSavedPresetsHeader);
@@ -1975,6 +1980,16 @@ void LV2Synth::lv2state_setPortValue(const char *port_symbol, void *user_data, c
 
 void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset)
 {
+   //handle specia; actions first
+   if(preset == lv2CacheNodes.lv2_actionSavePreset)
+   {
+      return;
+   }
+   else if(preset == lv2CacheNodes.lv2_actionUpdatePresets)
+   {
+      LV2Synth::lv2state_UnloadLoadPresets(state->synth, true);
+      return;
+   }
    LilvState* lilvState = lilv_state_new_from_world(lilvWorld, &state->synth->_lv2_urid_map, preset);
    if(lilvState)
    {
@@ -1993,15 +2008,22 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load)
    std::map<QString, LilvNode *>::iterator it;
    for(it = synth->_presets.begin(); it != synth->_presets.end(); ++it)
    {
-      lilv_world_unload_resource(lilvWorld, const_cast<const LilvNode *>(it->second));
       lilv_node_free(it->second);
    }
    synth->_presets.clear();
 
+   LilvNodes* presets = lilv_plugin_get_related(synth->_handle, lv2CacheNodes.lv2_psetPreset);
+   LILV_FOREACH(nodes, i, presets)
+   {
+      const LilvNode* preset = lilv_nodes_get(presets, i);
+      lilv_world_unload_resource(lilvWorld, preset);
+   }
+   lilv_nodes_free(presets);
+
    if(load)
    {
       //scan for preserts
-      LilvNodes* presets = lilv_plugin_get_related(synth->_handle, lv2CacheNodes.lv2_psetPreset);
+      presets = lilv_plugin_get_related(synth->_handle, lv2CacheNodes.lv2_psetPreset);
       LILV_FOREACH(nodes, i, presets)
       {
          const LilvNode* preset = lilv_nodes_get(presets, i);
@@ -4136,7 +4158,6 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
    menu->addMenu(subMenuPrograms);
    MusEGui::PopupMenu *subMenuPresets = new MusEGui::PopupMenu(menu->parent());
    subMenuPresets->setTitle(QObject::tr("Presets"));
-   subMenuPresets->setIcon(QIcon(*MusEGui::presetsNewIcon));
    menu->addMenu(subMenuPresets);
 
    //First: fill programs submenu
