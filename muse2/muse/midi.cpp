@@ -1413,6 +1413,9 @@ void Audio::processMidi()
                       // State machine to select next midiClick position.
                       if (MusEGlobal::clickSamples == MusEGlobal::newSamples) {
                           if (tick == 0) {//  ON key
+                            if (beat % 2)
+                              midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
+                            else
                               midiClick = AL::sigmap.bar2tick(bar, beat, MusEGlobal::config.division - ((MusEGlobal::config.division/n)));
                           }
                           else if (tick >= unsigned(MusEGlobal::config.division - (MusEGlobal::config.division/(n*2)))) { // second accent tick
