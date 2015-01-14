@@ -261,35 +261,9 @@ Track::Track(const Track& t, int flags)
 {
   _type         = t.type();
 
-  // add an index number to the last of name, names must be unique.
-  // for duplicating tracks this functionality is mostly duplicated
-  // in Song::duplicateTracks. Not entirely sure how important
-  // this code is outside duplicateTracks scenario, could be
-  // that this code is redundant.
-  int lastIndex = t.name().lastIndexOf("#");
-  bool ok=true;
-  int startVal = t.name().right(t.name().size()-lastIndex-1).toInt(&ok);
-  if (ok) {
-    _name = t.name().left(lastIndex+1);
-  } else {
-    startVal=1;
-    _name = t.name() + " #";
-  }
-  for(int i = startVal+1; true; ++i)
-  {
-    QString n;
-    n.setNum(i);
-    QString s = _name + n;
-    Track* track = MusEGlobal::song->findTrack(s);
-    if(track == 0)
-    {
-      // Do not call setName here. Audio Input and Output override it and try to set
-      //  Jack ports, which have not been initialized yet here. Must wait until
-      //  Audio Input and Output copy constructors or assign are called.
-      _name = s;
-      break;
-    }
-  }
+  // moved setting the unique name to Song::duplicateTracks()
+  // we'll see if there is any draw back to that.
+  _name = t.name();
   internal_assign(t, flags | ASSIGN_PROPERTIES);
   for (int i = 0; i < MAX_CHANNELS; ++i) {
         _meter[i] = 0.0;
