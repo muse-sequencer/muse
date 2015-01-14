@@ -37,6 +37,7 @@
 #include <dlfcn.h>
 #include <QMessageBox>
 #include <QDirIterator>
+#include <QInputDialog>
 
 #include <QDir>
 #include <QFileInfo>
@@ -1980,11 +1981,84 @@ void LV2Synth::lv2state_setPortValue(const char *port_symbol, void *user_data, c
 
 }
 
+const void *LV2Synth::lv2state_getPortValue(const char *port_symbol, void *user_data, uint32_t *size, uint32_t *type)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)user_data;
+   assert(state != NULL);
+   std::map<QString, size_t>::iterator it = state->controlsSymMap.find(QString::fromUtf8(port_symbol).toLower());
+   *size = *type = 0;
+   if(it != state->controlsSymMap.end())
+   {
+      size_t ctrlNum = it->second;
+      MusECore::Port *controls = NULL;
+
+      if(state->plugInst != NULL)
+      {
+         controls = state->plugInst->controls;
+
+      }
+      else if(state->sif != NULL)
+      {
+         controls = state->sif->_controls;
+      }
+
+      if(controls != NULL)
+      {
+         *size = sizeof(float);
+         *type = state->atomForge.Float;
+         return &controls [ctrlNum].val;
+      }
+   }
+
+   return NULL;
+
+}
+
 void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset)
 {
    //handle specia; actions first
    if(preset == lv2CacheNodes.lv2_actionSavePreset)
    {
+      bool isOk = false;
+      QString presetName = QInputDialog::getText(MusEGlobal::muse, QObject::tr("Enter new preset name"),
+                                                 QObject::tr(("Preset name:")), QLineEdit::Normal,
+                                                 QString(""), &isOk);
+      if(isOk && !presetName.isEmpty())
+      {
+         presetName = presetName.trimmed();
+         QString synthName = state->synth->name().replace(' ', '_');
+         QString presetDir = MusEGlobal::museUser + QString("/.lv2/")
+                             + synthName + QString("_")
+                             + presetName + QString(".lv2/");
+         QString presetFile = synthName + QString("_") + presetName
+                              + QString(".ttl");
+         QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+         QString plugFileDirName = MusEGlobal::museProject + QString("/") + plugName;
+         char *cPresetName = strdup(presetName.toUtf8().constData());
+         char *cPresetDir = strdup(presetDir.toUtf8().constData());
+         char *cPresetFile = strdup(presetFile.toUtf8().constData());
+         char *cPlugFileDirName = strdup(plugFileDirName.toUtf8().constData());
+         LilvState* const lilvState = lilv_state_new_from_instance(state->synth->_handle, state->handle, &state->synth->_lv2_urid_map,
+                                                                   cPlugFileDirName, cPresetDir, cPresetDir, cPresetDir,
+                                                                   LV2Synth::lv2state_getPortValue, state,
+                                                                   LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE, NULL);
+
+         lilv_state_set_label(lilvState, cPresetName);
+
+         lilv_state_save(lilvWorld, &state->synth->_lv2_urid_map,
+                         &state->synth->_lv2_urid_unmap,
+                         lilvState, NULL, cPresetDir,
+                         cPresetFile);
+
+         lilv_state_free(lilvState);
+         free(cPresetName);
+         free(cPresetDir);
+         free(cPresetFile);
+         free(cPlugFileDirName);
+         LV2Synth::lv2state_UnloadLoadPresets(state->synth, true);
+
+      }
+
       return;
    }
    else if(preset == lv2CacheNodes.lv2_actionUpdatePresets)

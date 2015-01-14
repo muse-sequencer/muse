@@ -1220,7 +1220,7 @@ sord_add(SordModel* sord, const SordQuad tup)
 	for (unsigned i = 0; i < NUM_ORDERS; ++i) {
 		if (sord->indices[i]) {
 			if (!sord_add_to_index(sord, quad, (SordOrder)i)) {
-				assert(i == 0);  // Assuming index coherency
+    //assert(i == 0);  // Assuming index coherency
 				free(quad);
 				return false;  // Quad already stored, do nothing
 			}
