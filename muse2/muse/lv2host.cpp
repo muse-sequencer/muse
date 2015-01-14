@@ -36,6 +36,7 @@
 #include <time.h>
 #include <dlfcn.h>
 #include <QMessageBox>
+#include <QDirIterator>
 
 #include <QDir>
 #include <QFileInfo>
@@ -467,7 +468,8 @@ void deinitLV2()
       lv2Gtk2HelperHandle = NULL;
    }
 
-   free(lilvWorld);
+   lilv_world_free(lilvWorld);
+   lilvWorld = NULL;
 
 }
 
@@ -2008,22 +2010,31 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load)
    std::map<QString, LilvNode *>::iterator it;
    for(it = synth->_presets.begin(); it != synth->_presets.end(); ++it)
    {
-      lilv_node_free(it->second);
+      lilv_world_unload_resource(lilvWorld, it->second);
+      lilv_node_free(it->second);      
    }
    synth->_presets.clear();
 
-   LilvNodes* presets = lilv_plugin_get_related(synth->_handle, lv2CacheNodes.lv2_psetPreset);
-   LILV_FOREACH(nodes, i, presets)
-   {
-      const LilvNode* preset = lilv_nodes_get(presets, i);
-      lilv_world_unload_resource(lilvWorld, preset);
-   }
-   lilv_nodes_free(presets);
+
 
    if(load)
    {
+      //rescan and refresh user-defined presets first
+      QDirIterator dir_it(MusEGlobal::museUser + QString("/.lv2"), QStringList() << "*.lv2", QDir::Dirs, QDirIterator::NoIteratorFlags);
+      while (dir_it.hasNext())
+      {
+         QString nextDir = dir_it.next() + QString("/");
+         std::cerr << nextDir.toStdString() << std::endl;
+         SerdNode  sdir = serd_node_new_file_uri((const uint8_t*)nextDir.toUtf8().constData(), 0, 0, 0);
+         LilvNode* ldir = lilv_new_uri(lilvWorld, (const char*)sdir.buf);
+         lilv_world_unload_bundle(lilvWorld, ldir);
+         lilv_world_load_bundle(lilvWorld, ldir);
+         serd_node_free(&sdir);
+         lilv_node_free(ldir);
+      }
+
       //scan for preserts
-      presets = lilv_plugin_get_related(synth->_handle, lv2CacheNodes.lv2_psetPreset);
+      LilvNodes* presets = lilv_plugin_get_related(synth->_handle, lv2CacheNodes.lv2_psetPreset);
       LILV_FOREACH(nodes, i, presets)
       {
          const LilvNode* preset = lilv_nodes_get(presets, i);
@@ -2231,7 +2242,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       _ppfeatures [i] = &_features [i];
    }
 
-   _ppfeatures [i] = 0;
+   _ppfeatures [i] = 0;   
 
    //enum plugin ports;
    uint32_t numPorts = lilv_plugin_get_num_ports(_handle);
@@ -4009,7 +4020,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             //notify worker that this run() finished
             if(_uiState->wrkIface && _uiState->wrkIface->end_run)
                _uiState->wrkIface->end_run(lilv_instance_get_handle(_handle));
-            //notify worker about processes data (if any)
+            //notify worker about processed data (if any)
             if(_uiState->wrkIface && _uiState->wrkIface->work_response && _uiState->wrkEndWork)
             {
                _uiState->wrkIface->work_response(lilv_instance_get_handle(_handle), _uiState->wrkDataSize, _uiState->wrkDataBuffer);
