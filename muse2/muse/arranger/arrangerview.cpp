@@ -712,6 +712,7 @@ void ArrangerView::updateShortcuts()
       editPasteCloneToTrackAction->setShortcut(shortcuts[SHRT_PASTE_CLONE_TO_TRACK].key);
       editPasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       editInsertEMAction->setShortcut(shortcuts[SHRT_INSERTMEAS].key);
+      editDuplicateSelTrackAction->setShortcut(shortcuts[SHRT_DUPLICATE_TRACK].key);
 
       //editDeleteSelectedAction has no acceleration
       

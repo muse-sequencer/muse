@@ -462,20 +462,25 @@ void Song::duplicateTracks()
 
           // assign new names to copied tracks. there is still a gaping hole in the logic
           // making multiple duplicates of multiple tracks still does not produce valid results.
-          if (cp == 0 && copies > 1) { // retrieve the first index for renaming the following tracks
+          if (cp == 0) { // retrieve the first index for renaming the following tracks
             numberIndex = new_track->name().lastIndexOf("#");
-            counter = new_track->name().right(new_track->name().size()-numberIndex-1).toInt();
+            if (numberIndex == -1 || numberIndex > track_name.size()) { // according to Qt doc for lastIndexOf it should return -1 when not found
+              track_name += " #";                                       // apparently it returns str_size+1 ?! Let's catch both
+              numberIndex = track_name.size();
+              counter=1;
+            }
+            else {
+              counter = new_track->name().right(new_track->name().size()-numberIndex-1).toInt();
+            }
           }
-          if (cp > 0) {
-            QString tempName;
-            while(true) {
-              tempName = track_name.left(numberIndex+1) + QString::number(++counter);
-              Track* track = MusEGlobal::song->findTrack(tempName);
-              if(track == 0)
-              {
-                new_track->setName(tempName);
-                break;
-              }
+          QString tempName;
+          while(true) {
+            tempName = track_name.left(numberIndex+1) + QString::number(++counter);
+            Track* track = MusEGlobal::song->findTrack(tempName);
+            if(track == 0)
+            {
+              new_track->setName(tempName);
+              break;
             }
           }
 
