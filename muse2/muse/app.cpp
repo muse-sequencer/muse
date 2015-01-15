@@ -2435,8 +2435,8 @@ void MusE::loadTheme(const QString& s)
       if (s.isEmpty() || sl.indexOf(s) == -1) {
         if(MusEGlobal::debugMsg)
           printf("Set style does not exist, setting default.\n");
-        qApp->setStyle(Appearance::defaultStyle);
-        qApp->style()->setObjectName(Appearance::defaultStyle);
+        qApp->setStyle(Appearance::getSetDefaultStyle());
+        qApp->style()->setObjectName(Appearance::getSetDefaultStyle());
       }
       else if (qApp->style()->objectName() != s)
       {

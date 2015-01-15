@@ -381,7 +381,8 @@ int main(int argc, char* argv[])
       
       // Now create the application, and let Qt remove recognized arguments.
       MuseApplication app(argc, argv);
-      MusEGui::Appearance::defaultStyle = app.style()->objectName();   // NOTE: May need alternate method, above.
+      QString appStyleObjName = app.style()->objectName();
+      MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);   // NOTE: May need alternate method, above.
       
       QString optstr("aJAhvdDumMsP:Y:l:py");
 #ifdef VST_SUPPORT

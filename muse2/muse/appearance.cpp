@@ -49,7 +49,6 @@
 
 namespace MusEGui {
 
-QString Appearance::defaultStyle="";
 int BG_ITEM_HEIGHT = 30;
 
 class BgPreviewWidget : public QWidget {
@@ -414,7 +413,17 @@ void Appearance::resetValues()
       
       updateColor();
       
-      }
+}
+
+QString &Appearance::getSetDefaultStyle(const QString *newStyle)
+{
+   static QString defaultStyle = "";
+   if(newStyle != NULL)
+   {
+      defaultStyle = *newStyle;
+   }
+   return defaultStyle;
+}
 
 
 //---------------------------------------------------------
