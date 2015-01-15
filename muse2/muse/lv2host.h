@@ -777,7 +777,7 @@ public:
     static void lv2state_setPortValue(const char *port_symbol, void *user_data, const void *value, uint32_t size, uint32_t type);
     static const void* lv2state_getPortValue(const char *port_symbol, void *user_data, uint32_t *size, uint32_t *type);
     static void lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset);
-    static void lv2state_UnloadLoadPresets(LV2Synth *synth, bool load = false);
+    static void lv2state_UnloadLoadPresets(LV2Synth *synth, bool load = false, bool update = false);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;

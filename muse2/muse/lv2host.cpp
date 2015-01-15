@@ -2016,7 +2016,7 @@ const void *LV2Synth::lv2state_getPortValue(const char *port_symbol, void *user_
 
 void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset)
 {
-   //handle specia; actions first
+   //handle special actions first
    if(preset == lv2CacheNodes.lv2_actionSavePreset)
    {
       bool isOk = false;
@@ -2055,7 +2055,7 @@ void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *pre
          free(cPresetDir);
          free(cPresetFile);
          free(cPlugFileDirName);
-         LV2Synth::lv2state_UnloadLoadPresets(state->synth, true);
+         LV2Synth::lv2state_UnloadLoadPresets(state->synth, true, true);
 
       }
 
@@ -2063,7 +2063,7 @@ void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *pre
    }
    else if(preset == lv2CacheNodes.lv2_actionUpdatePresets)
    {
-      LV2Synth::lv2state_UnloadLoadPresets(state->synth, true);
+      LV2Synth::lv2state_UnloadLoadPresets(state->synth, true, true);
       return;
    }
    LilvState* lilvState = lilv_state_new_from_world(lilvWorld, &state->synth->_lv2_urid_map, preset);
@@ -2075,7 +2075,7 @@ void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *pre
 
 }
 
-void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load)
+void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool update)
 {
    assert(synth != NULL);
 
@@ -2093,18 +2093,21 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load)
 
    if(load)
    {
-      //rescan and refresh user-defined presets first
-      QDirIterator dir_it(MusEGlobal::museUser + QString("/.lv2"), QStringList() << "*.lv2", QDir::Dirs, QDirIterator::NoIteratorFlags);
-      while (dir_it.hasNext())
+      if(update)
       {
-         QString nextDir = dir_it.next() + QString("/");
-         std::cerr << nextDir.toStdString() << std::endl;
-         SerdNode  sdir = serd_node_new_file_uri((const uint8_t*)nextDir.toUtf8().constData(), 0, 0, 0);
-         LilvNode* ldir = lilv_new_uri(lilvWorld, (const char*)sdir.buf);
-         lilv_world_unload_bundle(lilvWorld, ldir);
-         lilv_world_load_bundle(lilvWorld, ldir);
-         serd_node_free(&sdir);
-         lilv_node_free(ldir);
+         //rescan and refresh user-defined presets first
+         QDirIterator dir_it(MusEGlobal::museUser + QString("/.lv2"), QStringList() << "*.lv2", QDir::Dirs, QDirIterator::NoIteratorFlags);
+         while (dir_it.hasNext())
+         {
+            QString nextDir = dir_it.next() + QString("/");
+            std::cerr << nextDir.toStdString() << std::endl;
+            SerdNode  sdir = serd_node_new_file_uri((const uint8_t*)nextDir.toUtf8().constData(), 0, 0, 0);
+            LilvNode* ldir = lilv_new_uri(lilvWorld, (const char*)sdir.buf);
+            lilv_world_unload_bundle(lilvWorld, ldir);
+            lilv_world_load_bundle(lilvWorld, ldir);
+            serd_node_free(&sdir);
+            lilv_node_free(ldir);
+         }
       }
 
       //scan for preserts

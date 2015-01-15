@@ -4097,7 +4097,7 @@ Fenster</translation>
 <context>
     <name>FluidSynthGui</name>
     <message>
-        <location filename="../../synti/fluidsynth/fluidsynthgui.cpp" line="+190"/>
+        <location filename="../../synti/fluidsynth/fluidsynthgui.cpp" line="+192"/>
         <source>Choose soundfont</source>
         <translation type="unfinished">Soundfont auswählen</translation>
     </message>
@@ -6834,7 +6834,7 @@ bis zum Senden des ersten Clocks.</translation>
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+2053"/>
+        <location filename="../../muse/song.cpp" line="+2068"/>
         <source>Jack shutdown!</source>
         <translation>Jack heruntergefahren!</translation>
     </message>
@@ -7843,7 +7843,7 @@ Rechtsklick, um die GUI zu zeigen.</translation>
         <translation>Neu</translation>
     </message>
     <message>
-        <location line="+164"/>
+        <location line="+165"/>
         <source>Changed Settings</source>
         <translation>Einstellungen verändert</translation>
     </message>
@@ -9263,7 +9263,7 @@ with the cursor tool you can:
 <context>
     <name>MusEGui::EffectRack</name>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="+200"/>
+        <location filename="../../muse/mixer/rack.cpp" line="+201"/>
         <source>effect rack</source>
         <translation>Effekteinschub</translation>
     </message>
@@ -10531,9 +10531,9 @@ Sync-Einstellungen anwenden?</translation>
 <context>
     <name>MusEGui::MidiTrackInfo</name>
     <message>
-        <location filename="../../muse/widgets/mtrackinfo.cpp" line="+183"/>
+        <location filename="../../muse/widgets/mtrackinfo.cpp" line="+184"/>
         <location line="+165"/>
-        <location line="+1179"/>
+        <location line="+1207"/>
         <location line="+35"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;unbekannt&gt;</translation>
@@ -10731,13 +10731,13 @@ Sync-Einstellungen anwenden?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+993"/>
+        <location line="+1003"/>
         <location line="+1344"/>
         <source>&amp;Save</source>
         <translation>&amp;Speichern</translation>
     </message>
     <message>
-        <location line="-2335"/>
+        <location line="-2345"/>
         <location line="+3"/>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
@@ -10961,12 +10961,27 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation>Folge dem Lied ständig</translation>
     </message>
     <message>
-        <location line="+3151"/>
+        <location line="+154"/>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3003"/>
         <source>MusE: Song: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-3258"/>
+        <location line="-3268"/>
         <location line="+110"/>
         <location line="+147"/>
         <source>Metronome</source>
@@ -11043,7 +11058,7 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation>Transport</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+49"/>
         <source>&amp;File</source>
         <translation>&amp;Datei</translation>
     </message>
@@ -12886,7 +12901,7 @@ adjustments may be necessary.</source>
 <context>
     <name>MusEGui::TopWin</name>
     <message>
-        <location filename="../../muse/cobject.cpp" line="+67"/>
+        <location filename="../../muse/cobject.cpp" line="+69"/>
         <source>As subwindow</source>
         <translation>Als Unterfenster</translation>
     </message>
@@ -12936,7 +12951,22 @@ adjustments may be necessary.</source>
         <translation>Taktmaß</translation>
     </message>
     <message>
-        <location line="+466"/>
+        <location line="+5"/>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+467"/>
         <source>Piano roll</source>
         <translation>Pianoroll</translation>
     </message>
@@ -13851,14 +13881,6 @@ erweitert werden muss um nicht mehr als</translation>
     </message>
 </context>
 <context>
-    <name>QMenu</name>
-    <message>
-        <location filename="../../muse/lv2host.cpp" line="+1194"/>
-        <source>Select gui type</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>QObject</name>
     <message>
         <location filename="../../muse/functions.cpp" line="+243"/>
@@ -13883,9 +13905,49 @@ erweitert werden muss um nicht mehr als</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/lv2host.cpp" line="+613"/>
+        <location filename="../../muse/lv2host.cpp" line="+1204"/>
+        <source>Select gui type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+609"/>
+        <source>Preset actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Save preset...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Update list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Saved presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>No presets found</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+191"/>
+        <source>Enter new preset name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2221"/>
+        <source>Midi programs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Presets</source>
+        <translation type="unfinished">Voreinstellungen</translation>
     </message>
     <message>
         <location filename="../../muse/midi.cpp" line="+234"/>
@@ -16066,6 +16128,11 @@ Continue?</source>
     <message>
         <source>Edit: Paste as clones (with dialog)</source>
         <translation type="obsolete">Bearbeiten: Als Klone einfügen (Dialog zeigen)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Duplicate track</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>

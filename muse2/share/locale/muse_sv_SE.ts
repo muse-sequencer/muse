@@ -9079,6 +9079,18 @@ Canceling and setting a different export format would be better.
 Continue?</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::NoteInfo</name>
@@ -10476,6 +10488,18 @@ adjustments may be necessary.</source>
         <source>Metronome</source>
         <translation type="unfinished">Metronom</translation>
     </message>
+    <message>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::TrackComment</name>
@@ -11188,13 +11212,6 @@ behöver expandera mer än</translation>
     </message>
 </context>
 <context>
-    <name>QMenu</name>
-    <message>
-        <source>Select gui type</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>QObject</name>
     <message>
         <source>Error</source>
@@ -11235,6 +11252,38 @@ behöver expandera mer än</translation>
     <message>
         <source>Switch on Yamaha XG mode</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select gui type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preset actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save preset...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter new preset name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi programs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Presets</source>
+        <translation type="unfinished">Preset</translation>
     </message>
 </context>
 <context>
@@ -13550,6 +13599,10 @@ Continue?</source>
     </message>
     <message>
         <source>Tool: Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Duplicate track</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

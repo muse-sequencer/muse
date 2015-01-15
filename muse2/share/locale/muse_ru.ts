@@ -5,39 +5,39 @@
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation>Добавить Midi Трек</translation>
+        <translation type="vanished">Добавить Midi Трек</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation>Добавить трек ударных</translation>
+        <translation type="vanished">Добавить трек ударных</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation>Добавить Аудио-трек</translation>
+        <translation type="vanished">Добавить Аудио-трек</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation>Добавить аудиовыход</translation>
+        <translation type="vanished">Добавить аудиовыход</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation>Добавить аудиогруппу</translation>
+        <translation type="vanished">Добавить аудиогруппу</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation>Добавить аудиовход</translation>
+        <translation type="vanished">Добавить аудиовход</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation>Добавить Aux посыл</translation>
+        <translation type="vanished">Добавить Aux посыл</translation>
     </message>
     <message>
         <source>Select project directory</source>
-        <translation>Выбрать папку проекта</translation>
+        <translation type="vanished">Выбрать папку проекта</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation>Добавить синтезатор</translation>
+        <translation type="vanished">Добавить синтезатор</translation>
     </message>
     <message>
         <source>Route</source>
@@ -53,15 +53,15 @@
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation>Предупреждение: Нет устройства выхода!</translation>
+        <translation type="vanished">Предупреждение: Нет устройства выхода!</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation>Открыть midi конфиг...</translation>
+        <translation type="vanished">Открыть midi конфиг...</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation>Свободные порты</translation>
+        <translation type="vanished">Свободные порты</translation>
     </message>
     <message>
         <source>&lt;none&gt;</source>
@@ -81,18 +81,18 @@ This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
 Also please check console output for any further error messages.
  </source>
-        <translation>Частота равна %1гц, что ниже рекомендованного минимума:500гц!
+        <translation type="vanished">Частота равна %1гц, что ниже рекомендованного минимума:500гц!
 это может привести к слышимым проблемам при воспроизведении MIDI.
 Смотрите FAQ на http://muse-sequencer.org для исправления.
 Также проверьте вывод консоли для выявления сообщений об ошибках.</translation>
     </message>
     <message>
         <source>Add Old Style Drum Track</source>
-        <translation>Добавить трек ударных в старом стиле</translation>
+        <translation type="vanished">Добавить трек ударных в старом стиле</translation>
     </message>
     <message>
         <source>Add New Style Drum Track</source>
-        <translation>Добавить трек ударных в новом стиле</translation>
+        <translation type="vanished">Добавить трек ударных в новом стиле</translation>
     </message>
 </context>
 <context>
@@ -3385,11 +3385,11 @@ left button behave like the middle button in such areas.</source>
     </message>
     <message>
         <source>start with last song</source>
-        <translation>с последним проектом</translation>
+        <translation type="vanished">с последним проектом</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation>с проектом</translation>
+        <translation type="vanished">с проектом</translation>
     </message>
     <message>
         <source>Views</source>
@@ -3653,7 +3653,7 @@ Adjusts responsiveness of audio controls and
     </message>
     <message>
         <source>start with template</source>
-        <translation>с шаблоном</translation>
+        <translation type="vanished">с шаблоном</translation>
     </message>
     <message>
         <source>Start template or song:</source>
@@ -3685,19 +3685,19 @@ Adjusts responsiveness of audio controls and
     </message>
     <message>
         <source>Record all instruments</source>
-        <translation>Записывать все инструменты</translation>
+        <translation type="vanished">Записывать все инструменты</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden instruments</source>
-        <translation>Не записывать скрытые инструменты</translation>
+        <translation type="vanished">Не записывать скрытые инструменты</translation>
     </message>
     <message>
         <source>Don&apos;t record muted instruments</source>
-        <translation>Не записывать инструменты &quot;без звука&quot;</translation>
+        <translation type="vanished">Не записывать инструменты &quot;без звука&quot;</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden or muted instruments</source>
-        <translation>Не записывать инструменты &quot;без звука&quot; и скрытые</translation>
+        <translation type="vanished">Не записывать инструменты &quot;без звука&quot; и скрытые</translation>
     </message>
     <message>
         <source>Drum tracks</source>
@@ -3705,19 +3705,19 @@ Adjusts responsiveness of audio controls and
     </message>
     <message>
         <source>Only offer old-style drumtracks</source>
-        <translation>Предлагать только треки ударных в старом стиле</translation>
+        <translation type="vanished">Предлагать только треки ударных в старом стиле</translation>
     </message>
     <message>
         <source>Only offer new-style drumtracks</source>
-        <translation>Предлагать только треки ударных в новом стиле</translation>
+        <translation type="vanished">Предлагать только треки ударных в новом стиле</translation>
     </message>
     <message>
         <source>Prefer old-style drumtracks</source>
-        <translation>Предпочитать старые</translation>
+        <translation type="vanished">Предпочитать старые</translation>
     </message>
     <message>
         <source>Prefer new-style drumtracks</source>
-        <translation>Предпочитать новые</translation>
+        <translation type="vanished">Предпочитать новые</translation>
     </message>
     <message>
         <source>Auto save (every 5 minutes if not playing/recording)</source>
@@ -8989,6 +8989,18 @@ Canceling and setting a different export format would be better.
 Continue?</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::NoteInfo</name>
@@ -10280,6 +10292,18 @@ adjustments may be necessary.</source>
         <source>Metronome</source>
         <translation type="unfinished">Метроном</translation>
     </message>
+    <message>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::TrackComment</name>
@@ -10965,13 +10989,6 @@ to be expanded by more than </source>
     </message>
 </context>
 <context>
-    <name>QMenu</name>
-    <message>
-        <source>Select gui type</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>QObject</name>
     <message>
         <source>Error</source>
@@ -11012,6 +11029,38 @@ to be expanded by more than </source>
     <message>
         <source>Switch on Yamaha XG mode</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select gui type</source>
+        <translation>Выберите интерфейс</translation>
+    </message>
+    <message>
+        <source>Preset actions</source>
+        <translation>Действия над пресетами</translation>
+    </message>
+    <message>
+        <source>Save preset...</source>
+        <translation>Сохранить пресет...</translation>
+    </message>
+    <message>
+        <source>Update list</source>
+        <translation>Обновить список</translation>
+    </message>
+    <message>
+        <source>Saved presets</source>
+        <translation>Сохраненные пресеты</translation>
+    </message>
+    <message>
+        <source>Enter new preset name</source>
+        <translation>Введите имя нового пресета</translation>
+    </message>
+    <message>
+        <source>Midi programs</source>
+        <translation>Midi программы</translation>
+    </message>
+    <message>
+        <source>Presets</source>
+        <translation>Пресеты</translation>
     </message>
 </context>
 <context>
@@ -11092,31 +11141,31 @@ failed: %2</source>
     </message>
     <message>
         <source>Instrument-defined</source>
-        <translation type="unfinished">Определенный инструментом</translation>
+        <translation>Определенный инструментом</translation>
     </message>
     <message>
         <source>Edit instrument ...</source>
-        <translation type="unfinished">Редактировать инструмент...</translation>
+        <translation>Редактировать инструмент...</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить</translation>
     </message>
     <message>
         <source>Others</source>
-        <translation type="unfinished">Другие</translation>
+        <translation>Другие</translation>
     </message>
     <message>
         <source>Common Controls</source>
-        <translation type="unfinished">Обычные кнопки</translation>
+        <translation>Обычные кнопки</translation>
     </message>
     <message>
         <source>Velocity</source>
-        <translation type="unfinished">Скорость нажатия</translation>
+        <translation>Скорость нажатия</translation>
     </message>
     <message>
         <source>No wave events selected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не выбрано wave-событий</translation>
     </message>
 </context>
 <context>
@@ -11539,19 +11588,19 @@ p, li { white-space: pre-wrap; }(new line)
     </message>
     <message>
         <source>&amp;Printable file...</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>Alt+P</source>
-        <translation type="unfinished">Alt+P</translation>
+        <translation>Alt+P</translation>
     </message>
     <message>
         <source>&amp;Ok</source>
-        <translation type="unfinished">&amp;ОК</translation>
+        <translation>&amp;ОК</translation>
     </message>
     <message>
         <source>Alt+O</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -11663,11 +11712,11 @@ p, li { white-space: pre-wrap; }(new line)
     </message>
     <message>
         <source>&amp;Apply</source>
-        <translation type="unfinished">&amp;Применить</translation>
+        <translation>&amp;Применить</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -13098,6 +13147,10 @@ Continue?</source>
     </message>
     <message>
         <source>Tool: Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Duplicate track</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
