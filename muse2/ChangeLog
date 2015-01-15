@@ -1,5 +1,17 @@
 15.01.2015:
-         - Fixed bug with setting name for dupliated tracks and reworked a bit (rj
+         - Ported code to Qt5. Port works rather stable - no crashes and artefacts
+           during 4 days testing (danvd)
+         - Added CPU load toolbar (danvd)
+         - Optimized RT Fifo class used for lv2 plugin <-> UI communication.
+           This reduced CPU load by 1-2% :) (danvd)
+         - Integrated Presets submenu into midi track's programs menu for LV2 synths (danvd)
+         - Implemented presets saving and updating for LV2 synths/rack plugins (danvd)
+         - LV2 presets are stored in common format and can be
+           shared beetween lv2 hosts (danvd)
+         - Integrated lv2,lilv,sord,serd,sratom,zix libraries into MusE's source tree.
+           Now MusE can be compiled without external LV2 dependences at all (danvd)
+15.01.2015:
+         - Fixed bug with setting name for dupliated tracks and reworked a bit (rj)
          - Some shortcut changes (rj)
          - Changed metronome accent to only affect offbeat (rj)
 12.01.2015:
