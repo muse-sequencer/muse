@@ -52,9 +52,11 @@ details.
       - CMake >= 2.4 
           http:/www.cmake.org/HTML/Download.html
 
-      - QT: Qt >= 4.2.0 (development files)
-          http://qt.nokia.com/products/
+      - QT: Qt >= 5.1.0 (development files)
+          http://qt-project.org/
           MusE does _not_ compile with older versions
+          For ubuntu packages can be installed via:
+          sudo apt-get install qt5-default qttools5-dev
 
       - gcc >= 4.x.x or clang >= 2.9
           http://gcc.gnu.org/
