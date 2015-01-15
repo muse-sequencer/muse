@@ -10,6 +10,7 @@
            shared beetween lv2 hosts (danvd)
          - Integrated lv2,lilv,sord,serd,sratom,zix libraries into MusE's source tree.
            Now MusE can be compiled without external LV2 dependences at all (danvd)
+         - Reworked Appearance::defaultStyle static QString variable (static var init fiasco fix) (danvd)
 15.01.2015:
          - Fixed bug with setting name for dupliated tracks and reworked a bit (rj)
          - Some shortcut changes (rj)
