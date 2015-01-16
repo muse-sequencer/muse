@@ -1,6 +1,7 @@
 15.01.2015:
          - Ported code to Qt5. Port works rather stable - no crashes and artefacts
            during 4 days testing (danvd)
+         - Added scrollable submenus option to global settings (danvd)
          - Added CPU load toolbar (danvd)
          - Optimized RT Fifo class used for lv2 plugin <-> UI communication.
            This reduced CPU load by 1-2% :) (danvd)
