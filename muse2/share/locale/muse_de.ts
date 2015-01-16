@@ -5,39 +5,39 @@
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation type="vanished">Midispur hinzufügen</translation>
+        <translation>Midispur hinzufügen</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation type="vanished">Schlagzeugspur hinzufügen</translation>
+        <translation>Schlagzeugspur hinzufügen</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation type="vanished">Wavespur hinzufügen</translation>
+        <translation>Wavespur hinzufügen</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation type="vanished">Audioausgang hinzufügen</translation>
+        <translation>Audioausgang hinzufügen</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation type="vanished">Audiogruppe hinzufügen</translation>
+        <translation>Audiogruppe hinzufügen</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation type="vanished">Audioeingang hinzufügen</translation>
+        <translation>Audioeingang hinzufügen</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation type="vanished">Aux Send hinzufügen</translation>
+        <translation>Aux Send hinzufügen</translation>
     </message>
     <message>
         <source>Select project directory</source>
-        <translation type="vanished">Projektverzeichnis auswählen</translation>
+        <translation>Projektverzeichnis auswählen</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation type="vanished">Synthesizer hinzufügen</translation>
+        <translation>Synthesizer hinzufügen</translation>
     </message>
     <message>
         <location filename="../../muse/midiport.cpp" line="+1162"/>
@@ -56,15 +56,15 @@
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation type="vanished">Warnung: Keine Ausgangsgeräte!</translation>
+        <translation>Warnung: Keine Ausgangsgeräte!</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation type="vanished">Öffne MIDI-Konfig...</translation>
+        <translation>Öffne MIDI-Konfig...</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation type="vanished">Leere Ports</translation>
+        <translation>Leere Ports</translation>
     </message>
     <message>
         <location line="-694"/>
@@ -86,7 +86,7 @@ This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
 Also please check console output for any further error messages.
  </source>
-        <translation type="vanished">Die Frequenz des Taktgebers ist %1Hz; das ist unter dem empfohlenen Minimum von 500Hz!
+        <translation>Die Frequenz des Taktgebers ist %1Hz; das ist unter dem empfohlenen Minimum von 500Hz!
 Dies könnte zu hörbaren Timingproblemen für MIDI führen.
 Bitte sehen sie in den FAQ unter http://muse-sequencer.org nach Lösungen.
 Bitte überprüfen sie außerdem die Konsolenmeldungen auf weitere Fehlermeldungen.
@@ -4476,11 +4476,11 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>start with last song</source>
-        <translation type="vanished">Mit letztem Lied starten</translation>
+        <translation>Mit letztem Lied starten</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation type="vanished">Mit bestimmtem Lied starten</translation>
+        <translation>Mit bestimmtem Lied starten</translation>
     </message>
     <message>
         <location line="+132"/>
@@ -4682,7 +4682,7 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>start with template</source>
-        <translation type="vanished">mit Vorlage starten</translation>
+        <translation>mit Vorlage starten</translation>
     </message>
     <message>
         <location line="+77"/>

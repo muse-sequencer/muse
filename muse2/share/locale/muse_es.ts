@@ -5,35 +5,35 @@
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation type="vanished">Agregar pista MIDI</translation>
+        <translation>Agregar pista MIDI</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation type="vanished">Agregar pista de percusión</translation>
+        <translation>Agregar pista de percusión</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation type="vanished">Agregar pista de audio</translation>
+        <translation>Agregar pista de audio</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation type="vanished">Agregar salida de audio</translation>
+        <translation>Agregar salida de audio</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation type="vanished">Agregar grupo de audio</translation>
+        <translation>Agregar grupo de audio</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation type="vanished">Agregar entrada de audio</translation>
+        <translation>Agregar entrada de audio</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation type="vanished">Agregar envio auxiliar</translation>
+        <translation>Agregar envio auxiliar</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation type="vanished">Agregar sintetizador</translation>
+        <translation>Agregar sintetizador</translation>
     </message>
     <message>
         <location filename="../../muse/midiport.cpp" line="+1162"/>
@@ -52,15 +52,15 @@
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation type="vanished">Atencion: No hay salidas disponibles</translation>
+        <translation>Atencion: No hay salidas disponibles</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation type="vanished">Configurar MIDI...</translation>
+        <translation>Configurar MIDI...</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation type="vanished">Puertos no asignados</translation>
+        <translation>Puertos no asignados</translation>
     </message>
     <message>
         <location line="-694"/>
@@ -4413,11 +4413,11 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>start with last song</source>
-        <translation type="vanished">Abrir la última sesión</translation>
+        <translation>Abrir la última sesión</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation type="vanished">Abrir la sesión</translation>
+        <translation>Abrir la sesión</translation>
     </message>
     <message>
         <location line="+132"/>

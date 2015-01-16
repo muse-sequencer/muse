@@ -5,47 +5,47 @@
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation type="vanished">Ajouter une Piste Midi</translation>
+        <translation>Ajouter une Piste Midi</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation type="vanished">Ajouter une Piste de Batterie</translation>
+        <translation>Ajouter une Piste de Batterie</translation>
     </message>
     <message>
         <source>Add Old Style Drum Track</source>
-        <translation type="vanished">Ajouter une Piste de Batterie (Ancien Style)</translation>
+        <translation>Ajouter une Piste de Batterie (Ancien Style)</translation>
     </message>
     <message>
         <source>Add New Style Drum Track</source>
-        <translation type="vanished">Ajouter une Piste de Batterie (Nouveau Style)</translation>
+        <translation>Ajouter une Piste de Batterie (Nouveau Style)</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation type="vanished">Ajouter une Piste Audio</translation>
+        <translation>Ajouter une Piste Audio</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation type="vanished">Ajouter une Sortie Audio</translation>
+        <translation>Ajouter une Sortie Audio</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation type="vanished">Ajouter un Groupe Audio</translation>
+        <translation>Ajouter un Groupe Audio</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation type="vanished">Ajouter une Entrée Audio</translation>
+        <translation>Ajouter une Entrée Audio</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation type="vanished">Ajouter un Envoie Aux</translation>
+        <translation>Ajouter un Envoie Aux</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation type="vanished">Ajouter un Synthétiseur</translation>
+        <translation>Ajouter un Synthétiseur</translation>
     </message>
     <message>
         <source>Select project directory</source>
-        <translation type="vanished">Sélectionner le répertoire du projet</translation>
+        <translation>Sélectionner le répertoire du projet</translation>
     </message>
     <message>
         <location filename="../../muse/midiport.cpp" line="+1162"/>
@@ -64,23 +64,23 @@
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation type="vanished">Attention: Pas de périphériques de sortie!</translation>
+        <translation>Attention: Pas de périphériques de sortie!</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation type="vanished">Ouvrir la config midi...</translation>
+        <translation>Ouvrir la config midi...</translation>
     </message>
     <message>
         <source>Output port/device</source>
-        <translation type="vanished">Port/périphérique de sortie</translation>
+        <translation>Port/périphérique de sortie</translation>
     </message>
     <message>
         <source>default</source>
-        <translation type="vanished">défaut</translation>
+        <translation>défaut</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation type="vanished">Ports vides</translation>
+        <translation>Ports vides</translation>
     </message>
     <message>
         <location line="-694"/>
@@ -102,7 +102,7 @@ This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
 Also please check console output for any further error messages.
  </source>
-        <translation type="vanished">Le timing de la fréquence source est de %1hz, ce qui est inférieur au minimum recommandé: 500hz!
+        <translation>Le timing de la fréquence source est de %1hz, ce qui est inférieur au minimum recommandé: 500hz!
 Ceci peut amener des problèmes de timing audibles pour le MIDI.
 Veuillez lire la FAQ à l&apos;adresse http://muse-sequencer.org pour obtenir des solutions.
 Veuillez aussi vérifier les sorties dans la console pour plus de messages d&apos;erreurs.
@@ -4454,22 +4454,22 @@ standard.</translation>
     </message>
     <message>
         <source>Only offer old-style drumtracks</source>
-        <translation type="vanished">Propose seulement les pistes de
+        <translation>Propose seulement les pistes de
  batterie ancien style</translation>
     </message>
     <message>
         <source>Only offer new-style drumtracks</source>
-        <translation type="vanished">Propose seulement les pistes de
+        <translation>Propose seulement les pistes de
  batterie nouveau style</translation>
     </message>
     <message>
         <source>Prefer old-style drumtracks</source>
-        <translation type="vanished">Préfère les pistes de batterie
+        <translation>Préfère les pistes de batterie
  ancien style</translation>
     </message>
     <message>
         <source>Prefer new-style drumtracks</source>
-        <translation type="vanished">Préfère les pistes de batterie
+        <translation>Préfère les pistes de batterie
  nouveau style</translation>
     </message>
     <message>
@@ -4647,12 +4647,12 @@ Borland/Mac MDI</translation>
     </message>
     <message>
         <source>start with last song</source>
-        <translation type="vanished">Démarrer avec la dernière
+        <translation>Démarrer avec la dernière
  chanson</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation type="vanished">Démarrer avec la
+        <translation>Démarrer avec la
  chanson</translation>
     </message>
     <message>
@@ -4740,7 +4740,7 @@ Borland/Mac MDI</translation>
     </message>
     <message>
         <source>start with template</source>
-        <translation type="vanished">Démarrer avec un modèle</translation>
+        <translation>Démarrer avec un modèle</translation>
     </message>
     <message>
         <location line="+77"/>
@@ -4979,19 +4979,19 @@ une valeur élevée. </translation>
     </message>
     <message>
         <source>Record all instruments</source>
-        <translation type="vanished">Enregistre tous les instruments</translation>
+        <translation>Enregistre tous les instruments</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden instruments</source>
-        <translation type="vanished">N&apos;enregistre pas les instruments cachés</translation>
+        <translation>N&apos;enregistre pas les instruments cachés</translation>
     </message>
     <message>
         <source>Don&apos;t record muted instruments</source>
-        <translation type="vanished">N&apos;enregistre pas les instruments rendus muets</translation>
+        <translation>N&apos;enregistre pas les instruments rendus muets</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden or muted instruments</source>
-        <translation type="vanished">N&apos;enregistre pas les instruments cachés ou rendus muets</translation>
+        <translation>N&apos;enregistre pas les instruments cachés ou rendus muets</translation>
     </message>
     <message>
         <location line="+286"/>

@@ -5,39 +5,39 @@
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation type="vanished">Aggiungi traccia Midi</translation>
+        <translation>Aggiungi traccia Midi</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation type="vanished">Aggiungi traccia batteria</translation>
+        <translation>Aggiungi traccia batteria</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation type="vanished">Aggiungi traccia audio</translation>
+        <translation>Aggiungi traccia audio</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation type="vanished">Aggiungi uscita audio</translation>
+        <translation>Aggiungi uscita audio</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation type="vanished">Aggiungi gruppo audio</translation>
+        <translation>Aggiungi gruppo audio</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation type="vanished">Aggiungi ingresso audio</translation>
+        <translation>Aggiungi ingresso audio</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation type="vanished">Aggiungi mandata aux</translation>
+        <translation>Aggiungi mandata aux</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation type="vanished">Aggiungi Synth</translation>
+        <translation>Aggiungi Synth</translation>
     </message>
     <message>
         <source>Select project directory</source>
-        <translation type="vanished">Scegli directory per il progetto</translation>
+        <translation>Scegli directory per il progetto</translation>
     </message>
     <message>
         <source>Route</source>
@@ -53,15 +53,15 @@
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation type="vanished">Avviso: Non ci sono dispositivi d&apos;uscita!</translation>
+        <translation>Avviso: Non ci sono dispositivi d&apos;uscita!</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation type="vanished">Apri configurazione Midi...</translation>
+        <translation>Apri configurazione Midi...</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation type="vanished">Porte vuote</translation>
+        <translation>Porte vuote</translation>
     </message>
     <message>
         <source>&lt;none&gt;</source>
@@ -3107,7 +3107,7 @@ states</source>
     </message>
     <message>
         <source>start with last song</source>
-        <translation type="vanished">ultima canzone</translation>
+        <translation>ultima canzone</translation>
     </message>
     <message>
         <source>Choose start song or template</source>
@@ -3119,11 +3119,11 @@ states</source>
     </message>
     <message>
         <source>start with template</source>
-        <translation type="vanished">modello</translation>
+        <translation>modello</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation type="vanished">canzone specifica</translation>
+        <translation>canzone specifica</translation>
     </message>
     <message>
         <source>On Launch</source>

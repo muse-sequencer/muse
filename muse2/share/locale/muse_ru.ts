@@ -5,39 +5,39 @@
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation type="vanished">Добавить Midi Трек</translation>
+        <translation>Добавить Midi Трек</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation type="vanished">Добавить трек ударных</translation>
+        <translation>Добавить трек ударных</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation type="vanished">Добавить Аудио-трек</translation>
+        <translation>Добавить Аудио-трек</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation type="vanished">Добавить аудиовыход</translation>
+        <translation>Добавить аудиовыход</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation type="vanished">Добавить аудиогруппу</translation>
+        <translation>Добавить аудиогруппу</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation type="vanished">Добавить аудиовход</translation>
+        <translation>Добавить аудиовход</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation type="vanished">Добавить Aux посыл</translation>
+        <translation>Добавить Aux посыл</translation>
     </message>
     <message>
         <source>Select project directory</source>
-        <translation type="vanished">Выбрать папку проекта</translation>
+        <translation>Выбрать папку проекта</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation type="vanished">Добавить синтезатор</translation>
+        <translation>Добавить синтезатор</translation>
     </message>
     <message>
         <source>Route</source>
@@ -53,15 +53,15 @@
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation type="vanished">Предупреждение: Нет устройства выхода!</translation>
+        <translation>Предупреждение: Нет устройства выхода!</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation type="vanished">Открыть midi конфиг...</translation>
+        <translation>Открыть midi конфиг...</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation type="vanished">Свободные порты</translation>
+        <translation>Свободные порты</translation>
     </message>
     <message>
         <source>&lt;none&gt;</source>
@@ -81,18 +81,18 @@ This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
 Also please check console output for any further error messages.
  </source>
-        <translation type="vanished">Частота равна %1гц, что ниже рекомендованного минимума:500гц!
+        <translation>Частота равна %1гц, что ниже рекомендованного минимума:500гц!
 это может привести к слышимым проблемам при воспроизведении MIDI.
 Смотрите FAQ на http://muse-sequencer.org для исправления.
 Также проверьте вывод консоли для выявления сообщений об ошибках.</translation>
     </message>
     <message>
         <source>Add Old Style Drum Track</source>
-        <translation type="vanished">Добавить трек ударных в старом стиле</translation>
+        <translation>Добавить трек ударных в старом стиле</translation>
     </message>
     <message>
         <source>Add New Style Drum Track</source>
-        <translation type="vanished">Добавить трек ударных в новом стиле</translation>
+        <translation>Добавить трек ударных в новом стиле</translation>
     </message>
 </context>
 <context>
@@ -3385,11 +3385,11 @@ left button behave like the middle button in such areas.</source>
     </message>
     <message>
         <source>start with last song</source>
-        <translation type="vanished">с последним проектом</translation>
+        <translation>с последним проектом</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation type="vanished">с проектом</translation>
+        <translation>с проектом</translation>
     </message>
     <message>
         <source>Views</source>
@@ -3653,7 +3653,7 @@ Adjusts responsiveness of audio controls and
     </message>
     <message>
         <source>start with template</source>
-        <translation type="vanished">с шаблоном</translation>
+        <translation>с шаблоном</translation>
     </message>
     <message>
         <source>Start template or song:</source>
@@ -3685,19 +3685,19 @@ Adjusts responsiveness of audio controls and
     </message>
     <message>
         <source>Record all instruments</source>
-        <translation type="vanished">Записывать все инструменты</translation>
+        <translation>Записывать все инструменты</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden instruments</source>
-        <translation type="vanished">Не записывать скрытые инструменты</translation>
+        <translation>Не записывать скрытые инструменты</translation>
     </message>
     <message>
         <source>Don&apos;t record muted instruments</source>
-        <translation type="vanished">Не записывать инструменты &quot;без звука&quot;</translation>
+        <translation>Не записывать инструменты &quot;без звука&quot;</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden or muted instruments</source>
-        <translation type="vanished">Не записывать инструменты &quot;без звука&quot; и скрытые</translation>
+        <translation>Не записывать инструменты &quot;без звука&quot; и скрытые</translation>
     </message>
     <message>
         <source>Drum tracks</source>
@@ -3705,19 +3705,19 @@ Adjusts responsiveness of audio controls and
     </message>
     <message>
         <source>Only offer old-style drumtracks</source>
-        <translation type="vanished">Предлагать только треки ударных в старом стиле</translation>
+        <translation>Предлагать только треки ударных в старом стиле</translation>
     </message>
     <message>
         <source>Only offer new-style drumtracks</source>
-        <translation type="vanished">Предлагать только треки ударных в новом стиле</translation>
+        <translation>Предлагать только треки ударных в новом стиле</translation>
     </message>
     <message>
         <source>Prefer old-style drumtracks</source>
-        <translation type="vanished">Предпочитать старые</translation>
+        <translation>Предпочитать старые</translation>
     </message>
     <message>
         <source>Prefer new-style drumtracks</source>
-        <translation type="vanished">Предпочитать новые</translation>
+        <translation>Предпочитать новые</translation>
     </message>
     <message>
         <source>Auto save (every 5 minutes if not playing/recording)</source>

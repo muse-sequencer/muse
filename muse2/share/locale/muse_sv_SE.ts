@@ -5,35 +5,35 @@
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation type="vanished">Lägg till Midispår</translation>
+        <translation>Lägg till Midispår</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation type="vanished">Lägg till Trumspår</translation>
+        <translation>Lägg till Trumspår</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation type="vanished">Lägg till Wavespår</translation>
+        <translation>Lägg till Wavespår</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation type="vanished">Lägg till Ljudutgång</translation>
+        <translation>Lägg till Ljudutgång</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation type="vanished">Lägg till Ljudgrupp</translation>
+        <translation>Lägg till Ljudgrupp</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation type="vanished">Lägg till Ljudingång</translation>
+        <translation>Lägg till Ljudingång</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation type="vanished">Lägg till Aux-Send</translation>
+        <translation>Lägg till Aux-Send</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation type="vanished">Lägg till Synth</translation>
+        <translation>Lägg till Synth</translation>
     </message>
     <message>
         <source>Route</source>
@@ -49,15 +49,15 @@
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation type="vanished">Varning: Inga utgångsenheter!</translation>
+        <translation>Varning: Inga utgångsenheter!</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation type="vanished">Öppna midikonfiguration...</translation>
+        <translation>Öppna midikonfiguration...</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation type="vanished">Tomma portar</translation>
+        <translation>Tomma portar</translation>
     </message>
     <message>
         <source>&lt;none&gt;</source>
@@ -69,7 +69,7 @@
     </message>
     <message>
         <source>Select project directory</source>
-        <translation type="vanished">Välj projektkatalog</translation>
+        <translation>Välj projektkatalog</translation>
     </message>
     <message>
         <source>Bad timing</source>
@@ -81,18 +81,18 @@ This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
 Also please check console output for any further error messages.
  </source>
-        <translation type="vanished">Frekvensen på tidkällan är %1hz vilket är under det rekommenderade minsta värdet: 500hz!
+        <translation>Frekvensen på tidkällan är %1hz vilket är under det rekommenderade minsta värdet: 500hz!
 Det kan leda till hörbara timingproblem för MIDI.
 See FAQ på http://muse-sequencer.org för lösningsförslag.
 See också terminalutskrifter för eventuella fler felmeddelanden.</translation>
     </message>
     <message>
         <source>Add Old Style Drum Track</source>
-        <translation type="vanished">Lägg till trumspår av gamla typen</translation>
+        <translation>Lägg till trumspår av gamla typen</translation>
     </message>
     <message>
         <source>Add New Style Drum Track</source>
-        <translation type="vanished">Lägg till trumspår av nya typen</translation>
+        <translation>Lägg till trumspår av nya typen</translation>
     </message>
 </context>
 <context>
@@ -3311,11 +3311,11 @@ för att använda vänster musknapp i stället för mittersta.</translation>
     </message>
     <message>
         <source>start with last song</source>
-        <translation type="vanished">starta med senaste sång</translation>
+        <translation>starta med senaste sång</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation type="vanished">starta med sång</translation>
+        <translation>starta med sång</translation>
     </message>
     <message>
         <source>start song:</source>
@@ -3598,7 +3598,7 @@ fokus till respektive editor</translation>
     </message>
     <message>
         <source>start with template</source>
-        <translation type="vanished">Starta med mall</translation>
+        <translation>Starta med mall</translation>
     </message>
     <message>
         <source>Start template or song:</source>
@@ -3620,19 +3620,19 @@ eller i annatfall, konfigurera automatiskt</translation>
     </message>
     <message>
         <source>Record all instruments</source>
-        <translation type="vanished">Spela in alla instrument</translation>
+        <translation>Spela in alla instrument</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden instruments</source>
-        <translation type="vanished">Spela inte in gömda instrument</translation>
+        <translation>Spela inte in gömda instrument</translation>
     </message>
     <message>
         <source>Don&apos;t record muted instruments</source>
-        <translation type="vanished">Spela inte in tystade instrument</translation>
+        <translation>Spela inte in tystade instrument</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden or muted instruments</source>
-        <translation type="vanished">Spela inte in gömda eller tystade instrument</translation>
+        <translation>Spela inte in gömda eller tystade instrument</translation>
     </message>
     <message>
         <source>Drum tracks</source>
@@ -3640,19 +3640,19 @@ eller i annatfall, konfigurera automatiskt</translation>
     </message>
     <message>
         <source>Only offer old-style drumtracks</source>
-        <translation type="vanished">Föreslå bara gamla typen trumspår</translation>
+        <translation>Föreslå bara gamla typen trumspår</translation>
     </message>
     <message>
         <source>Only offer new-style drumtracks</source>
-        <translation type="vanished">Föreslå bara nya typen trumspår</translation>
+        <translation>Föreslå bara nya typen trumspår</translation>
     </message>
     <message>
         <source>Prefer old-style drumtracks</source>
-        <translation type="vanished">Föredra gamla typen trumspår</translation>
+        <translation>Föredra gamla typen trumspår</translation>
     </message>
     <message>
         <source>Prefer new-style drumtracks</source>
-        <translation type="vanished">Föredra nya typen trumspår</translation>
+        <translation>Föredra nya typen trumspår</translation>
     </message>
     <message>
         <source>Auto save (every 5 minutes if not playing/recording)</source>

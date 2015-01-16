@@ -5,67 +5,67 @@
     <name>@default</name>
     <message>
         <source>Add Midi Track</source>
-        <translation type="vanished">Vytvořit stopu MIDI</translation>
+        <translation>Vytvořit stopu MIDI</translation>
     </message>
     <message>
         <source>Add Drum Track</source>
-        <translation type="vanished">Vytvořit stopu bicích</translation>
+        <translation>Vytvořit stopu bicích</translation>
     </message>
     <message>
         <source>Add Old Style Drum Track</source>
-        <translation type="vanished">Vytvořit stopu bicích ve starém stylu</translation>
+        <translation>Vytvořit stopu bicích ve starém stylu</translation>
     </message>
     <message>
         <source>Add New Style Drum Track</source>
-        <translation type="vanished">Vytvořit stopu bicích v novém stylu</translation>
+        <translation>Vytvořit stopu bicích v novém stylu</translation>
     </message>
     <message>
         <source>Add Wave Track</source>
-        <translation type="vanished">Vytvořit stopu Wave</translation>
+        <translation>Vytvořit stopu Wave</translation>
     </message>
     <message>
         <source>Add Audio Output</source>
-        <translation type="vanished">Vytvořit výstup zvuku</translation>
+        <translation>Vytvořit výstup zvuku</translation>
     </message>
     <message>
         <source>Add Audio Group</source>
-        <translation type="vanished">Vytvořit skupinu zvuku</translation>
+        <translation>Vytvořit skupinu zvuku</translation>
     </message>
     <message>
         <source>Add Audio Input</source>
-        <translation type="vanished">Vytvořit vstup zvuku</translation>
+        <translation>Vytvořit vstup zvuku</translation>
     </message>
     <message>
         <source>Add Aux Send</source>
-        <translation type="vanished">Vytvořit Aux Send</translation>
+        <translation>Vytvořit Aux Send</translation>
     </message>
     <message>
         <source>Add Synth</source>
-        <translation type="vanished">Přidat syntetizátor</translation>
+        <translation>Přidat syntetizátor</translation>
     </message>
     <message>
         <source>Select project directory</source>
-        <translation type="vanished">Vybrat projektový adresář</translation>
+        <translation>Vybrat projektový adresář</translation>
     </message>
     <message>
         <source>Warning: No output devices!</source>
-        <translation type="vanished">Varování: Žádná výstupní zařízení!</translation>
+        <translation>Varování: Žádná výstupní zařízení!</translation>
     </message>
     <message>
         <source>Open midi config...</source>
-        <translation type="vanished">Otevřít nastavení MIDI...</translation>
+        <translation>Otevřít nastavení MIDI...</translation>
     </message>
     <message>
         <source>Output port/device</source>
-        <translation type="vanished">Výstupní přípojka/zařízení</translation>
+        <translation>Výstupní přípojka/zařízení</translation>
     </message>
     <message>
         <source>default</source>
-        <translation type="vanished">Výchozí</translation>
+        <translation>Výchozí</translation>
     </message>
     <message>
         <source>Empty ports</source>
-        <translation type="vanished">Prázdné přípojky</translation>
+        <translation>Prázdné přípojky</translation>
     </message>
     <message>
         <location filename="../../muse/midiport.cpp" line="476"/>
@@ -102,7 +102,7 @@ This could lead to audible timing problems for MIDI.
 Please see the FAQ on http://muse-sequencer.org for remedies.
 Also please check console output for any further error messages.
  </source>
-        <translation type="vanished">Kmitočet zdroje časování je %1hz, což je pod doporučeným minimem: 500hz!
+        <translation>Kmitočet zdroje časování je %1hz, což je pod doporučeným minimem: 500hz!
 To by u MIDI mohlo vést až ke slyšitelným problémům s časováním.
 Podívejte se, prosím, na často kladené otázky na stránkách http://muse-sequencer.org na řešení.
 Také se, prosím, podívejte na výstup konzole kvůli jakýmkoli dalším chybovým hláškám.</translation>
@@ -4329,15 +4329,15 @@ oken</translation>
     </message>
     <message>
         <source>start with last song</source>
-        <translation type="vanished">Začít s poslední písní</translation>
+        <translation>Začít s poslední písní</translation>
     </message>
     <message>
         <source>start with template</source>
-        <translation type="vanished">Začít s předlohou</translation>
+        <translation>Začít s předlohou</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation type="vanished">Začít s určitou písní</translation>
+        <translation>Začít s určitou písní</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/gensetbase.ui" line="113"/>
@@ -4756,19 +4756,19 @@ s rychlostí, nastavte vyšší hodnotu.</translation>
     </message>
     <message>
         <source>Record all instruments</source>
-        <translation type="vanished">Nahrávat všechny nástroje</translation>
+        <translation>Nahrávat všechny nástroje</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden instruments</source>
-        <translation type="vanished">Nenahrávat skryté nástroje</translation>
+        <translation>Nenahrávat skryté nástroje</translation>
     </message>
     <message>
         <source>Don&apos;t record muted instruments</source>
-        <translation type="vanished">Nenahrávat ztlumené nástroje</translation>
+        <translation>Nenahrávat ztlumené nástroje</translation>
     </message>
     <message>
         <source>Don&apos;t record hidden or muted instruments</source>
-        <translation type="vanished">Nenahrávat skryté nebo ztlumené nástroje</translation>
+        <translation>Nenahrávat skryté nebo ztlumené nástroje</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/gensetbase.ui" line="1318"/>
@@ -4920,19 +4920,19 @@ Zakázat užití náhradního běžného postupu.</translation>
     </message>
     <message>
         <source>Only offer old-style drumtracks</source>
-        <translation type="vanished">Pouze po stopách bicích ve starém stylu</translation>
+        <translation>Pouze po stopách bicích ve starém stylu</translation>
     </message>
     <message>
         <source>Only offer new-style drumtracks</source>
-        <translation type="vanished">Pouze po stopách bicích v novém stylu</translation>
+        <translation>Pouze po stopách bicích v novém stylu</translation>
     </message>
     <message>
         <source>Prefer old-style drumtracks</source>
-        <translation type="vanished">Upřednostňovat stopy bicích ve starém stylu</translation>
+        <translation>Upřednostňovat stopy bicích ve starém stylu</translation>
     </message>
     <message>
         <source>Prefer new-style drumtracks</source>
-        <translation type="vanished">Upřednostňovat stopy bicích v novém stylu</translation>
+        <translation>Upřednostňovat stopy bicích v novém stylu</translation>
     </message>
     <message>
         <location filename="../../muse/widgets/gensetbase.ui" line="1733"/>
@@ -13958,7 +13958,7 @@ být rozšířena o víc jak </translation>
     <name>QMenu</name>
     <message>
         <source>Select gui type</source>
-        <translation type="vanished">Vybrat typ rozhraní</translation>
+        <translation>Vybrat typ rozhraní</translation>
     </message>
 </context>
 <context>

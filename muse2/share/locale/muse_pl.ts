@@ -4270,11 +4270,11 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>start with last song</source>
-        <translation type="vanished">Otwórz ostatnio otwierany utwór</translation>
+        <translation>Otwórz ostatnio otwierany utwór</translation>
     </message>
     <message>
         <source>start with song</source>
-        <translation type="vanished">Ładuj przy uruchamianiu utwór</translation>
+        <translation>Ładuj przy uruchamianiu utwór</translation>
     </message>
     <message>
         <location line="+132"/>
