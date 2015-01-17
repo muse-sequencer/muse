@@ -164,7 +164,7 @@ void initShortCuts()
       defShrt(SHRT_SEL_BELOW_ADD,         Qt::SHIFT + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part on track below"), ARRANG_SHRT, "sel_part_below_add");
 
       defShrt(SHRT_INSERTMEAS,            Qt::CTRL + Qt::SHIFT + Qt::Key_O, QT_TRANSLATE_NOOP("shortcuts", "Edit: Insert empty measure"), ARRANG_SHRT, "insert_measure");
-      defShrt(SHRT_DUPLICATE_TRACK,       Qt::CTRL + Qt::SHIFT + Qt::Key_D, QT_TRANSLATE_NOOP("shortcuts", "Edit: Duplicate track"), ARRANG_SHRT, "duplicate track");
+      defShrt(SHRT_DUPLICATE_TRACK,       Qt::CTRL + Qt::SHIFT + Qt::Key_D, QT_TRANSLATE_NOOP("shortcuts", "Edit: Duplicate track"), ARRANG_SHRT, "duplicate_track");
 
       defShrt(SHRT_SEL_TRACK_ABOVE,       Qt::CTRL + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Select track above"), ARRANG_SHRT, "sel_track_above");
       defShrt(SHRT_SEL_TRACK_BELOW,       Qt::CTRL + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Select track below"), ARRANG_SHRT, "sel_track_below");

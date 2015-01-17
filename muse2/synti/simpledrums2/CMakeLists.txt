@@ -92,6 +92,7 @@ set_target_properties ( simpledrums
 target_link_libraries(simpledrums
       synti
       ${QT_LIBRARIES}
+      ${SNDFILE_LIBRARIES}
       )
 
 ##

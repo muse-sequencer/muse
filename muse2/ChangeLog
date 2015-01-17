@@ -1,3 +1,6 @@
+17.01.2015:
+         - Added link library sndfile for SimpleDrums (rj)
+         - typo with duplicate tracks shortcut fixed (rj)
 15.01.2015:
          - Fixed bug with setting name for dupliated tracks and reworked a bit (rj
          - Some shortcut changes (rj)
