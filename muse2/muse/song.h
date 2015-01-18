@@ -315,6 +315,7 @@ class Song : public QObject {
 
       void addPart(Part* part);
       void removePart(Part* part);
+      void changePart(Part*, Part*);
 
       
       PartList* getSelectedMidiParts() const; // FIXME TODO move functionality into function.cpp

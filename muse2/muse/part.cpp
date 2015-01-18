@@ -1007,6 +1007,26 @@ void Part::splitPart(int tickpos, Part*& p1, Part*& p2) const
             }
       }
 
+//---------------------------------------------------------
+//   changePart
+//---------------------------------------------------------
+
+void Song::changePart(Part* oPart, Part* nPart)
+      {
+      nPart->setSn(oPart->sn());
+
+      Track* oTrack = oPart->track();
+      Track* nTrack = nPart->track();
+
+      oTrack->parts()->remove(oPart);
+      nTrack->parts()->add(nPart);
+
+      // Added by T356.
+      // adjust song len:
+      unsigned epos = nPart->tick() + nPart->lenTick();
+      if (epos > len())
+            _len = epos;
+      }
 
 //---------------------------------------------------------
 //   dump

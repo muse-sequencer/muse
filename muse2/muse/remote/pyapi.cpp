@@ -405,7 +405,7 @@ PyObject* modifyPart(PyObject*, PyObject* part)
       npart->setSn(opart->sn());
        
       for (ciEvent e = opart->events().begin(); e != opart->events().end(); e++) {
-            Event& event = e->second;
+            Event& event = (Event &)(e->second);
             if (event.type() == Note || event.type() == Controller) 
                   continue;
 
