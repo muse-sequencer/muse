@@ -1,3 +1,8 @@
+18.01.2015:
+         - Added shortcut to edit track name, F2 (rj)
+         - Added multi toggle of mute, solo and midi track type.
+           If multiple tracks are selected and one of them is clicked they will all be affected by the operation
+           Additionally for solo and mute, if the Control key is used, ALL tracks will be toggled. (rj)
 17.01.2015:
          - Added link library sndfile for SimpleDrums (rj)
          - typo with duplicate tracks shortcut fixed (rj)

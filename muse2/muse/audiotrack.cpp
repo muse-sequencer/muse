@@ -2002,7 +2002,6 @@ void AudioAux::write(int level, Xml& xml) const
 //---------------------------------------------------------
 int getNextAuxIndex()
 {
-    printf("getNextAuxIndex!\n");
     int curAux=0;
     AuxList * al = MusEGlobal::song->auxs();
     for (MusECore::iAudioAux i = al->begin(); i != al->end(); ++i)
