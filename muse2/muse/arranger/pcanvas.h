@@ -170,6 +170,7 @@ class PartCanvas : public Canvas {
       void trackChanged(MusECore::Track*);
       void selectTrackAbove();
       void selectTrackBelow();
+      void editTrackNameSig();
 
       void startEditor(MusECore::PartList*, int);
 

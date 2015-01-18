@@ -781,6 +781,38 @@ MusECore::Track* TList::y2Track(int y) const
       return 0;
       }
 
+void TList::editTrackNameSlot()
+{
+  if (countSelected() == 1) {
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
+      if ((*t)->selected()){
+        editTrackName(*t);
+        break;
+      }
+  }
+}
+
+void TList::editTrackName(MusECore::Track *t)
+{
+  int colx = header->sectionPosition(COL_NAME);
+  int colw = header->sectionSize(COL_NAME);
+  int coly = t->y() - ypos;
+  int colh = t->height();
+  editTrack = t;
+  if (editor == 0) {
+        editor = new QLineEdit(this);
+        editor->setFrame(false);
+        connect(editor, SIGNAL(editingFinished()), SLOT(returnPressed()));
+        }
+  editor->setText(editTrack->name());
+  editor->selectAll();
+  editor->setGeometry(colx, coly, colw, colh);
+  editMode = true;
+  editor->show();
+  editor->setFocus();
+}
+
 //---------------------------------------------------------
 //   viewMouseDoubleClickEvent
 //---------------------------------------------------------
@@ -804,27 +836,17 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       
       MusECore::Track* t = y2Track(ev->y() + ypos);
 
-      if (t) {
-            int colx = header->sectionPosition(section);
-            int colw = header->sectionSize(section);
-            int coly = t->y() - ypos;
-            int colh = t->height();
+      int colx = header->sectionPosition(section);
+      int colw = header->sectionSize(section);
+      int coly = t->y() - ypos;
+      int colh = t->height();
 
+      if (t) {
             if (section == COL_NAME) {
-                  editTrack = t;
-                  if (editor == 0) {
-                        editor = new QLineEdit(this);
-                        editor->setFrame(false);
-                        connect(editor, SIGNAL(editingFinished()), SLOT(returnPressed()));   
-                        }
-                  editor->setText(editTrack->name());
-                  editor->selectAll();
-                  editor->setGeometry(colx, coly, colw, colh);
-                  editMode = true;
-                  editor->show();
-                  }
+              editTrackName(t);
+            }
             else if (section == COL_OCHANNEL) {
-                  // Enabled for audio tracks. And synth channels cannot be changed ATM.   
+                  // Enabled for audio tracks. And synth channels cannot be changed ATM.
                   // Default to track port if -1 and track channel if -1.
                   if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                   {
@@ -1293,69 +1315,62 @@ void TList::tracklistChanged()
 //---------------------------------------------------------
 
 void TList::keyPressEvent(QKeyEvent* e)
-      {
-      if ( e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)     
-            {
-            e->accept();
-            return;
-            }
-            
-      if (editMode)
-            {
-            if ( e->key() == Qt::Key_Escape )
-                  {
-                  if(editor && editor->isVisible())         
-                  {  
-                    editor->blockSignals(true);  
-                    editor->hide();
-                    editor->blockSignals(false); 
-                  }  
-                  if(chan_edit && chan_edit->isVisible())  
-                  {  
-                    chan_edit->blockSignals(true);
-                    chan_edit->hide();    
-                    chan_edit->blockSignals(false);
-                  }  
-                  if(ctrl_edit && ctrl_edit->isVisible())  
-                  {  
-                    ctrl_edit->blockSignals(true);
-                    ctrl_edit->hide();    
-                    ctrl_edit->blockSignals(false);
-                  }  
-                  editTrack = 0;
-                  editMode = false;
-                  setFocus();
-                  return;           
-                  }
-            return;      
-            }
-      else if (!editJustFinished)
-      {
-          emit keyPressExt(e); //redirect keypress events to main app. don't call this when confirming an editor
-      }
-      else
-        editJustFinished=false;
+{
+  if ( e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)
+  {
+    e->accept();
+    return;
+  }
 
-            
-      // Works OK (if focusing allowed). But instead we won't allow focus. Part canvas has Ctrl+up/down which moves selected track only.
-      /*
-      int key = e->key();
-      switch (key) {
-            case Qt::Key_Up:
-                  moveSelection(-1);
-                  return;           
-            case Qt::Key_Down:
-                  moveSelection(1);
-                  return;           
-            default:
-                  break;
-            }  */
-                        
-      // keyPressExt are sent to part canvas, where they are ignored *only* if necessary.
-      //e->ignore();  
-      
-      emit keyPressExt(e); //redirect keypress events to main app
+  if (editMode)
+  {
+    if ( e->key() == Qt::Key_Escape )
+    {
+      if(editor && editor->isVisible())
+      {
+        editor->blockSignals(true);
+        editor->hide();
+        editor->blockSignals(false);
       }
+      if(chan_edit && chan_edit->isVisible())
+      {
+        chan_edit->blockSignals(true);
+        chan_edit->hide();
+        chan_edit->blockSignals(false);
+      }
+      if(ctrl_edit && ctrl_edit->isVisible())
+      {
+        ctrl_edit->blockSignals(true);
+        ctrl_edit->hide();
+        ctrl_edit->blockSignals(false);
+      }
+      editTrack = 0;
+      editMode = false;
+      setFocus();
+      return;
+    }
+    return;
+  }
+  else if (!editJustFinished)
+  {
+    emit keyPressExt(e); //redirect keypress events to main app. don't call this when confirming an editor
+  }
+  else
+    editJustFinished=false;
+
+  emit keyPressExt(e); //redirect keypress events to main app
+}
+
+int TList::countSelected()
+{
+  // check for single selection
+  MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+  int nselect = 0;
+  for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
+        if ((*t)->selected())
+              ++nselect;
+  return nselect;
+}
 
 //---------------------------------------------------------
 //   moveSelection
@@ -1365,11 +1380,7 @@ void TList::moveSelection(int n)
       {
       MusECore::TrackList* tracks = MusEGlobal::song->tracks();
 
-      // check for single selection
-      int nselect = 0;
-      for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t)
-            if ((*t)->selected())
-                  ++nselect;
+      int nselect = countSelected();
       if (nselect != 1)
             return;
       MusECore::Track* selTrack = 0;
@@ -1917,9 +1928,15 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   mode = START_DRAG;
                   break;
             case COL_CLASS:
+                {
+                  bool allSelected=false;
+                  if (t->selected() && countSelected() > 1) // toggle all selected tracks
+                    allSelected=true;
+
                   if (t->isMidiTrack())
-                        classesPopupMenu(t, x, t->y() - ypos);
+                        classesPopupMenu(t, x, t->y() - ypos, allSelected);
                   break;
+                }
             case COL_OPORT:
                   if (button == Qt::LeftButton && t->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                         portsPopupMenu(t, x, t->y() - ypos);
@@ -1928,22 +1945,47 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
                   
             case COL_MUTE:
+                {
                   mode = START_DRAG;
-                  // p3.3.29
-                  if ((button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier))
-                    t->setOff(!t->off());
-                  else
+                  bool turnOff = (button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier);
+
+                  if (t->selected() && countSelected() > 1) // toggle all selected tracks
                   {
-                    if (t->off())
-                          t->setOff(false);
-                    else
-                          t->setMute(!t->mute());
-                  }        
+                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+                      if ((*myt)->selected())
+                        toggleMute(*myt,turnOff);
+                    }
+                  }
+                  else if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier) // toggle ALL tracks
+                  {
+                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+                        toggleMute(*myt,turnOff);
+                    }
+                  }
+                  else { // toggle the clicked track
+                    toggleMute(t,turnOff);
+                  }
                   MusEGlobal::song->update(SC_MUTE);
                   break;
+               }
             case COL_SOLO:
                   mode = START_DRAG;
-                  MusEGlobal::audio->msgSetSolo(t, !t->solo());
+                  if (t->selected() && countSelected() > 1) // toggle all selected tracks
+                  {
+                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+                      if ((*myt)->selected())
+                        MusEGlobal::audio->msgSetSolo(*myt, !(*myt)->solo());
+                    }
+                  }
+                  else if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier) // toggle ALL tracks
+                  {
+                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+                        MusEGlobal::audio->msgSetSolo(*myt, !(*myt)->solo());
+                    }
+                  }
+                  else { // toggle the clicked track
+                    MusEGlobal::audio->msgSetSolo(t, !t->solo());
+                  }
                   MusEGlobal::song->update(SC_SOLO);
                   break;
 
@@ -2245,6 +2287,21 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   }
       } //end of "switch"
       redraw();
+}
+
+void TList::toggleMute(MusECore::Track *t, bool turnOff)
+{
+  if (turnOff) {
+    t->setOff(!t->off());
+  }
+  else
+  {
+    if (t->off())
+          t->setOff(false);
+    else
+          t->setMute(!t->mute());
+
+  }
 }
 
 void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
@@ -2572,105 +2629,124 @@ void TList::setYPos(int y)
 //   classesPopupMenu
 //---------------------------------------------------------
 
-void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
-      {
-      QMenu p;
-      p.clear();
-      p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
-      p.addAction(QIcon(*addtrack_drumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
-      p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("New style drum"))->setData(MusECore::Track::NEW_DRUM);
-      QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
+void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelected)
+{
+  QMenu p;
+  p.clear();
+  p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
+  p.addAction(QIcon(*addtrack_drumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
+  p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("New style drum"))->setData(MusECore::Track::NEW_DRUM);
+  QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
+  int n = act->data().toInt();
 
-      if (!act)
-            return;
+  if (!act)
+    return;
 
-      int n = act->data().toInt();
-      if ((MusECore::Track::TrackType(n) == MusECore::Track::MIDI  ||  MusECore::Track::TrackType(n) == MusECore::Track::NEW_DRUM) && t->type() == MusECore::Track::DRUM) {
-            //
-            //    Drum -> Midi
-            //
-            MusEGlobal::audio->msgIdle(true);
-            MusECore::PartList* pl = t->parts();
-            MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
-            for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-                  for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
-                        MusECore::Event ev = ie->second;
-                        if(ev.type() == MusECore::Note)
-                        {
-                          int pitch = ev.pitch();
-                          pitch = MusEGlobal::drumMap[pitch].enote;
-                          ev.setPitch(pitch);
-                        }
-                        else
-                        if(ev.type() == MusECore::Controller)
-                        {
-                          int ctl = ev.dataA();
-                          // Is it a drum controller event, according to the track port's instrument?
-                          MusECore::MidiController *mc = MusEGlobal::midiPorts[m->outPort()].drumController(ctl);
-                          if(mc)
-                            // Change the controller event's index into the drum map to an instrument note.
-                            ev.setA((ctl & ~0xff) | MusEGlobal::drumMap[ctl & 0x7f].enote);
-                        }
-                      }
-                  }
-            t->setType(MusECore::Track::TrackType(n));
-            MusEGlobal::audio->msgIdle(false);
-            MusEGlobal::song->update(SC_EVENT_MODIFIED);
-            }
-      else if (MusECore::Track::TrackType(n) == MusECore::Track::DRUM && (t->type() == MusECore::Track::MIDI  ||  t->type() == MusECore::Track::NEW_DRUM)) {
-            //
-            //    Midi -> Drum
-            //
+  if (!allSelected) {
+    changeTrackToType(tIn,MusECore::Track::TrackType(n));
+  }
+  else
+  {
+    MusECore::TrackList *tracks = MusEGlobal::song->tracks();
+    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt)
+    {
+      if ((*myt)->selected() && (*myt)->isMidiTrack())
+        changeTrackToType(*myt,MusECore::Track::TrackType(n));
 
-            // Default to track port if -1 and track channel if -1. No need anymore to ask to change all items.
+    } // track for-loop
+  }
+}
 
-            MusEGlobal::audio->msgIdle(true);
-
-            // Delete all port controller events.
-            MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
-            
-            MusECore::PartList* pl = t->parts();
-            MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
-            for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
-                  for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
-                        MusECore::Event ev = ie->second;
-                        if (ev.type() == MusECore::Note)
-                        {
-                          int pitch = ev.pitch();
-                          pitch = MusEGlobal::drumInmap[pitch];
-                          ev.setPitch(pitch);
-                        }
-                        else
-                        {
-                          if(ev.type() == MusECore::Controller)
-                          {
-                            int ctl = ev.dataA();
-                            // Is it a drum controller event, according to the track port's instrument?
-                            MusECore::MidiController *mc = MusEGlobal::midiPorts[m->outPort()].drumController(ctl);
-                            if(mc)
-                              // Change the controller event's instrument note to an index into the drum map.
-                              ev.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
-                          }
-                        }
-                      }
-                  }
-
-            t->setType(MusECore::Track::DRUM);
-            
-             // Add all port controller events.
-             MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
-            
-            MusEGlobal::audio->msgIdle(false);
-            MusEGlobal::song->update(SC_EVENT_MODIFIED);   
-            }
-      else // MIDI -> NEW_DRUM or vice versa. added by flo.
-      {
-            MusEGlobal::audio->msgIdle(true);
-            t->setType(MusECore::Track::TrackType(n));
-            MusEGlobal::audio->msgIdle(false);
-            MusEGlobal::song->update(SC_TRACK_MODIFIED);
-            }
+void TList::changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType)
+{
+  if ((trackType == MusECore::Track::MIDI  ||  trackType == MusECore::Track::NEW_DRUM) && t->type() == MusECore::Track::DRUM)
+  {
+    //
+    //    Drum -> Midi
+    //
+    MusEGlobal::audio->msgIdle(true);
+    MusECore::PartList* pl = t->parts();
+    MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
+    for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+      for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
+        MusECore::Event ev = ie->second;
+        if(ev.type() == MusECore::Note)
+        {
+          int pitch = ev.pitch();
+          pitch = MusEGlobal::drumMap[pitch].enote;
+          ev.setPitch(pitch);
+        }
+        else
+          if(ev.type() == MusECore::Controller)
+          {
+            int ctl = ev.dataA();
+            // Is it a drum controller event, according to the track port's instrument?
+            MusECore::MidiController *mc = MusEGlobal::midiPorts[m->outPort()].drumController(ctl);
+            if(mc)
+              // Change the controller event's index into the drum map to an instrument note.
+              ev.setA((ctl & ~0xff) | MusEGlobal::drumMap[ctl & 0x7f].enote);
+          }
       }
+    }
+    t->setType(trackType);
+    MusEGlobal::audio->msgIdle(false);
+    MusEGlobal::song->update(SC_EVENT_MODIFIED);
+  }
+  else if (trackType == MusECore::Track::DRUM && (t->type() == MusECore::Track::MIDI  ||  t->type() == MusECore::Track::NEW_DRUM))
+  {
+    //
+    //    Midi -> Drum
+    //
+
+    // Default to track port if -1 and track channel if -1. No need anymore to ask to change all items.
+
+    MusEGlobal::audio->msgIdle(true);
+
+    // Delete all port controller events.
+    MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
+
+    MusECore::PartList* pl = t->parts();
+    MusECore::MidiTrack* m = (MusECore::MidiTrack*) t;
+    for (MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip) {
+      for (MusECore::ciEvent ie = ip->second->events().begin(); ie != ip->second->events().end(); ++ie) {
+        MusECore::Event ev = ie->second;
+        if (ev.type() == MusECore::Note)
+        {
+          int pitch = ev.pitch();
+          pitch = MusEGlobal::drumInmap[pitch];
+          ev.setPitch(pitch);
+        }
+        else
+        {
+          if(ev.type() == MusECore::Controller)
+          {
+            int ctl = ev.dataA();
+            // Is it a drum controller event, according to the track port's instrument?
+            MusECore::MidiController *mc = MusEGlobal::midiPorts[m->outPort()].drumController(ctl);
+            if(mc)
+              // Change the controller event's instrument note to an index into the drum map.
+              ev.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
+          }
+        }
+      }
+    }
+
+    t->setType(MusECore::Track::DRUM);
+
+    // Add all port controller events.
+    MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
+
+    MusEGlobal::audio->msgIdle(false);
+    MusEGlobal::song->update(SC_EVENT_MODIFIED);
+  }
+  else // MIDI -> NEW_DRUM or vice versa. added by flo.
+  {
+    MusEGlobal::audio->msgIdle(true);
+    t->setType(trackType);
+    MusEGlobal::audio->msgIdle(false);
+    MusEGlobal::song->update(SC_TRACK_MODIFIED);
+  }
+}
 
 void TList::instrPopupActivated(QAction* act)
 {

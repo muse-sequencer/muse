@@ -480,6 +480,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
       connect(canvas, SIGNAL(selectTrackAbove()), list, SLOT(selectTrackAbove()));
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
+      connect(canvas, SIGNAL(editTrackNameSig()), list, SLOT(editTrackNameSlot()));
+
       connect(canvas, SIGNAL(horizontalZoom(bool, const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(lenEntry,           SIGNAL(returnPressed()), SLOT(focusCanvas()));

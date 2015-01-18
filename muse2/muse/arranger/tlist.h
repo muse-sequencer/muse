@@ -111,10 +111,15 @@ class TList : public QWidget {
       void paint(const QRect& r);
       void redraw(const QRect& r);
       MusECore::Track* y2Track(int) const;
-      void classesPopupMenu(MusECore::Track*, int x, int y);
+      void classesPopupMenu(MusECore::Track*, int x, int y, bool allSelected);
       MusECore::TrackList getRecEnabledTracks();
       void setHeaderToolTips();
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);
+      int countSelected();
+      void toggleMute(MusECore::Track *t, bool turnOff);
+      void changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType);
+      void editTrackName(MusECore::Track *t);
+
 
    protected:
       bool event(QEvent *);
@@ -144,6 +149,7 @@ class TList : public QWidget {
       void selectTrack(MusECore::Track*);
       void selectTrackAbove();
       void selectTrackBelow();
+      void editTrackNameSlot();
       void setHeader(Header*);
 
    public:

@@ -1184,7 +1184,10 @@ void PartCanvas::keyPress(QKeyEvent* event)
             emit selectTrackBelow();
             return;
             }
-
+      else if (key == shortcuts[SHRT_EDIT_TRACK_NAME].key) {
+            emit editTrackNameSig();
+            return;
+            }
       // Shortcuts that require selected parts from here
       if (!curItem) {
           if (items.size()==0) {
