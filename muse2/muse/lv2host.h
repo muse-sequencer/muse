@@ -829,9 +829,9 @@ public:
     virtual void showNativeGui ( bool v );
     virtual bool hasNativeGui() const;
     virtual void getGeometry ( int *, int *, int *, int * ) const;
-    virtual void setGeometry ( int, int, int, int );
+    virtual void setGeometry (int x, int y, int w, int h);
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
-    virtual void setNativeGeometry ( int, int, int, int );
+    virtual void setNativeGeometry (int x, int y, int w, int h);
     virtual void preProcessAlways();
     virtual iMPEvent getData ( MidiPort *, MPEventList *, iMPEvent, unsigned pos, int ports, unsigned n, float **buffer );
     virtual bool putEvent ( const MidiPlayEvent &ev );

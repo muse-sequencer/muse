@@ -4126,9 +4126,16 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
 void LV2SynthIF::getGeometry(int *x, int *y, int *w, int *h) const
 {
-   *x = *y = *w = *h = 0;
+   if(!_gui)
+   {
+     *x=0;*y=0;*w=0;*h=0;
+     return;
+   }
 
-
+   *x = _gui->x();
+   *y = _gui->y();
+   *w = _gui->width();
+   *h = _gui->height();
 
    return;
 }
@@ -4136,6 +4143,16 @@ void LV2SynthIF::getGeometry(int *x, int *y, int *w, int *h) const
 void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
 {
    *x = *y = *w = *h = 0;
+   if(_uiState->pluginWindow != NULL && !_uiState->hasExternalGui)
+   {
+      QSize sz = _uiState->pluginWindow->size();
+      *w = sz.width();
+      *h = sz.height();
+      QPoint pos = _uiState->pluginWindow->pos();
+      *x = pos.x();
+      *y = pos.y();
+   }
+
    return;
 }
 
@@ -4312,15 +4329,23 @@ MidiPlayEvent LV2SynthIF::receiveEvent()
 
 }
 
-void LV2SynthIF::setGeometry(int , int , int , int)
+void LV2SynthIF::setGeometry(int x, int y, int w, int h)
 {
-   //TODO: implement this
+   if(!_gui)
+     return;
+
+   _gui->setGeometry(x, y, w, h);
 
 }
 
-void LV2SynthIF::setNativeGeometry(int , int , int , int)
+void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
 {
-   //TODO: implement this
+   if(_uiState->pluginWindow && !_uiState->hasExternalGui)
+   {
+      _uiState->pluginWindow->move(x, y);
+      //don't resize lv2 uis - this is handles at plugin level
+      //_uiState->pluginWindow->resize(w, h);
+   }
 
 }
 
