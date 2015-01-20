@@ -936,7 +936,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
 //---------------------------------------------------------
 //   portsPopupMenu
 //---------------------------------------------------------
-void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
+void TList::portsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts)
       {
       switch(t->type()) {
             case MusECore::Track::MIDI:
@@ -946,16 +946,16 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
             {
                   MusECore::MidiTrack* track = (MusECore::MidiTrack*)t;
                   
-                  MusECore::MidiDevice* md = 0;
+//                  MusECore::MidiDevice* md = 0;
                   int potential_new_port_no=-1;
                   int port = -1; 
-                  if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH) 
-                  {
-                    md = dynamic_cast<MusECore::MidiDevice*>(t);
-                    if(md)
-                      port = md->midiPort(); 
-                  }
-                  else   
+//                  if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+//                  {
+//                    md = dynamic_cast<MusECore::MidiDevice*>(t);
+//                    if(md)
+//                      port = md->midiPort();
+//                  }
+//                  else
                     port = track->outPort();
                     
                   QMenu* p = MusECore::midiPortsPopup(this, port);
@@ -1115,28 +1115,44 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                   }
 
                   // Default to track port if -1 and track channel if -1. No need anymore to ask to change all items
-                  if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
-                  {
-                    if(md != 0)
-                    {
-                      // Idling is already handled in msgSetMidiDevice.
-                      //MusEGlobal::audio->msgIdle(true);
+//                  if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+//                  {
+//                    if(md != 0)
+//                    {
+//                      // Idling is already handled in msgSetMidiDevice.
+//                      //MusEGlobal::audio->msgIdle(true);
                       
-                      // Compiler complains if simple cast from Track to MusECore::SynthI...
-                      MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[n], (MusEGlobal::midiPorts[n].device() == md) ? 0 : md);
-                      MusEGlobal::muse->changeConfig(true);     // save configuration file
+//                      // Compiler complains if simple cast from Track to MusECore::SynthI...
+//                      MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[n], (MusEGlobal::midiPorts[n].device() == md) ? 0 : md);
+//                      MusEGlobal::muse->changeConfig(true);     // save configuration file
                     
-                      MusEGlobal::song->update();
-                    }
-                  }
-                  else
-                  {
+//                      MusEGlobal::song->update();
+//                    }
+//                  }
+//                  else
+//                  {
                     MusEGlobal::audio->msgIdle(true);
-                    track->setOutPortAndUpdate(n);
+                    if (!allClassPorts)
+                      track->setOutPortAndUpdate(n);
+                    else {
+                      // change all ports of this type
+                      MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+                      for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+                        if ((*myt)->isDrumTrack() && t->isDrumTrack())
+                        {
+                            ((MusECore::MidiTrack*)(*myt))->setOutPortAndUpdate(n);
+                        }
+                        else if ((*myt)->isMidiTrack() && !(*myt)->isDrumTrack()
+                                 && (t->isMidiTrack() && !t->isDrumTrack())) {
+                            ((MusECore::MidiTrack*)(*myt))->setOutPortAndUpdate(n);
+                        }
+
+                      }
+                    }
                     MusEGlobal::audio->msgIdle(false);
                     MusEGlobal::audio->msgUpdateSoloStates();
                     MusEGlobal::song->update(SC_MIDI_TRACK_PROP);
-                  }
+//                  }
                   
                   // Prompt and send init sequences.
                   MusEGlobal::audio->msgInitMidiDevices(false);
@@ -1936,12 +1952,16 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
                 }
             case COL_OPORT:
+              {
+                  bool allClassPorts=false;
+                  if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier)
+                      allClassPorts=true;
                   if (button == Qt::LeftButton && t->type() != MusECore::Track::AUDIO_SOFTSYNTH)
-                        portsPopupMenu(t, x, t->y() - ypos);
+                        portsPopupMenu(t, x, t->y() - ypos, allClassPorts);
                   else if (button == Qt::RightButton)
                         oportPropertyPopupMenu(t, x, t->y() - ypos);
                   break;
-                  
+              }
             case COL_MUTE:
                 {
                   mode = START_DRAG;
@@ -1950,13 +1970,14 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   if (t->selected() && countSelected() > 1) // toggle all selected tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                      if ((*myt)->selected())
+                      if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
                         toggleMute(*myt,turnOff);
                     }
                   }
                   else if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier) // toggle ALL tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+                      if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
                         toggleMute(*myt,turnOff);
                     }
                   }
@@ -1971,13 +1992,14 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   if (t->selected() && countSelected() > 1) // toggle all selected tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                      if ((*myt)->selected())
+                      if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
                         MusEGlobal::audio->msgSetSolo(*myt, !(*myt)->solo());
                     }
                   }
                   else if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier) // toggle ALL tracks
                   {
                     for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
+                      if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
                         MusEGlobal::audio->msgSetSolo(*myt, !(*myt)->solo());
                     }
                   }
