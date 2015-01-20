@@ -104,7 +104,7 @@ class TList : public QWidget {
       virtual void keyPressEvent(QKeyEvent* e);
       virtual void wheelEvent(QWheelEvent* e);
 
-      void portsPopupMenu(MusECore::Track*, int, int);
+      void portsPopupMenu(MusECore::Track*, int, int, bool allClassPorts);
       void oportPropertyPopupMenu(MusECore::Track*, int x, int y);
       void moveSelection(int n);
       void adjustScrollbar();

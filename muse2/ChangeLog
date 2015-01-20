@@ -1,3 +1,7 @@
+20.01.2015:
+         - Change toggle functions in track list to not include output tracks (rj)
+         - Added ability to change all midi tracks or all drum tracks to the same port with
+           control clicking on the output port name (rj)
 18.01.2015:
          - Added shortcut to edit track name, F2 (rj)
          - Added multi toggle of mute, solo and midi track type.
