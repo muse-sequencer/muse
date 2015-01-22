@@ -1,3 +1,5 @@
 muse2/build
 *~
 muse2/*.kdev4
+muse2/CMakeLists.txt.user
+
