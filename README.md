@@ -1,4 +1,4 @@
-![Alt tag](muse2/packaging/muse_icon.png)
+![Alt tag](muse_arranger_mixer.png)
 
 MusE
 ====
