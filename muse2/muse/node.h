@@ -24,82 +24,10 @@
 #ifndef __AUDIONODE_H__
 #define __AUDIONODE_H__
 
-#include <list>
-
-#ifndef i386
-#include <pthread.h>
-typedef struct { pthread_mutex_t lock; int counter; } muse_atomic_t;
-#else
-typedef struct { int counter; } muse_atomic_t;
-#endif
+#include "muse_atomic.h"
 
 namespace MusECore {
-
-static inline int muse_atomic_read(muse_atomic_t *v) {
-#ifndef i386
-      int ret;
-      pthread_mutex_lock(&v->lock);
-      ret = v->counter;
-      pthread_mutex_unlock(&v->lock);
-      return ret;
-#else
-      return v->counter;
-#endif
-}
-
-static inline void muse_atomic_set(muse_atomic_t *v, int i) {
-#ifndef i386
-      pthread_mutex_lock(&v->lock);
-      v->counter = i;
-      pthread_mutex_unlock(&v->lock);
-#else
-      v->counter = i;
-#endif
-}
-static inline void muse_atomic_inc(muse_atomic_t *v) {
-#ifndef i386
-      pthread_mutex_lock(&v->lock);
-      v->counter++;
-      pthread_mutex_unlock(&v->lock);
-#else
-	__asm__ __volatile__(
-		"lock ; " "incl %0"
-		:"=m" (v->counter)
-		:"m" (v->counter));
-#endif
-}
-static inline void muse_atomic_dec(muse_atomic_t *v) {
-#ifndef i386
-      pthread_mutex_lock(&v->lock);
-      v->counter--;
-      pthread_mutex_unlock(&v->lock);
-#else
-	__asm__ __volatile__(
-		"lock ; " "decl %0"
-		:"=m" (v->counter)
-		:"m" (v->counter));
-#endif
-}
-#ifndef i386
-static inline void muse_atomic_init(muse_atomic_t *v) {
-      pthread_mutex_init(&v->lock, NULL);
-      }
-#else
-static inline void muse_atomic_init(muse_atomic_t*) {}
-#endif
-
-#ifndef i386
-static inline void muse_atomic_destroy(muse_atomic_t *v) {
-      pthread_mutex_destroy(&v->lock);
-      }
-#else
-static inline void muse_atomic_destroy(muse_atomic_t*) {}
-#endif
-
-class Xml;
-class Pipeline;
-
-
+  
 //---------------------------------------------------------
 //   Fifo
 //---------------------------------------------------------

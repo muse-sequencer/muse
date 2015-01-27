@@ -247,6 +247,7 @@ target_link_libraries(core
       midiedit
       mixer
       mplugins
+      muse_string
       synti
       waveedit
       widgets

@@ -68,9 +68,11 @@ int PendingOperationItem::getIndex() const
 {
   switch(_type)
   {
+    case PendingOperationItem::Uninitialized:
     case PendingOperationItem::AddAuxSendValue:
     case PendingOperationItem::AddMidiInstrument:
-    case PendingOperationItem::SetMidiPortDevice:
+    case PendingOperationItem::DeleteMidiInstrument:
+    // case PendingOperationItem::SetMidiPortDevice: // REMOVE Tim. Persistent routes. Removed.
     case PendingOperationItem::AddMidiDevice:
     case PendingOperationItem::DeleteMidiDevice:
     case PendingOperationItem::AddTrack:
@@ -81,6 +83,11 @@ int PendingOperationItem::getIndex() const
     case PendingOperationItem::ModifySongLength:
     case PendingOperationItem::AddMidiCtrlValList:
     case PendingOperationItem::SetGlobalTempo:
+    case PendingOperationItem::AddRoute:
+    case PendingOperationItem::DeleteRoute:
+    case PendingOperationItem::AddRouteNode:
+    case PendingOperationItem::DeleteRouteNode:
+    case PendingOperationItem::ModifyRouteNode:
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -160,12 +167,58 @@ void PendingOperationItem::executeRTStage()
   switch(_type)
   {
     // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
-    case SetMidiPortDevice:
+    case AddRoute:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage SetMidiPortDevice port:%p device:%p\n", _midi_port, _midi_device);
+      fprintf(stderr, "PendingOperationItem::executeRTStage AddRoute: src/dst routes:\n");
+      _src_route.dump();
+      _dst_route.dump();
 #endif      
-      _midi_port->setMidiDevice(_midi_device);
+      addRoute(_src_route, _dst_route);
     break;
+    
+    // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
+    case DeleteRoute:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteRoute: src/dst routes:\n");
+      _src_route.dump();
+      _dst_route.dump();
+#endif      
+      removeRoute(_src_route, _dst_route);
+    break;
+    
+    case AddRouteNode:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage AddRouteNode: route_list:%p route:\n", _route_list);
+      _src_route.dump();
+#endif      
+      _route_list->push_back(_src_route);
+    break;
+    
+    case DeleteRouteNode:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage DeleteRouteNode: route_list:%p route:\n", _route_list);
+      _iRoute->dump();
+#endif      
+      _route_list->erase(_iRoute);
+    break;
+    
+    case ModifyRouteNode:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyRouteNode: src/dst routes:\n");
+      _src_route.dump();
+      _dst_route_pointer->dump();
+#endif      
+      *_dst_route_pointer = _src_route;
+    break;
+
+// REMOVE Tim. Persistent routes. Removed.
+//     // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
+//     case SetMidiPortDevice:
+// #ifdef _PENDING_OPS_DEBUG_
+//       fprintf(stderr, "PendingOperationItem::executeRTStage SetMidiPortDevice port:%p device:%p\n", _midi_port, _midi_device);
+// #endif      
+//       _midi_port->setMidiDevice(_midi_device);
+//     break;
     
     case AddAuxSendValue:
 #ifdef _PENDING_OPS_DEBUG_
@@ -373,12 +426,26 @@ void PendingOperationItem::executeRTStage()
         }
       }
       _track_list->erase(_track);
-      
+
       // Remove routes:
       if(_track->type() == Track::AUDIO_OUTPUT) 
       {
-            const RouteList* rl = _track->inRoutes();
-            for(ciRoute r = rl->begin(); r != rl->end(); ++r)
+            // Clear the track's jack ports
+            for(int ch = 0; ch < _track->channels(); ++ch)
+              ((AudioOutput*)_track)->setJackPort(ch, 0);
+            
+            // Clear the track's output routes' jack ports
+            RouteList* orl = _track->outRoutes();
+            for(iRoute r = orl->begin(); r != orl->end(); ++r)
+            {
+              if(r->type != Route::JACK_ROUTE)
+                continue;
+              r->jackPort = 0;
+            }
+            
+            // Remove other tracks' output routes to this track
+            const RouteList* irl = _track->inRoutes();
+            for(ciRoute r = irl->begin(); r != irl->end(); ++r)
             {
                   Route src(_track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
@@ -393,8 +460,22 @@ void PendingOperationItem::executeRTStage()
       }
       else if(_track->type() == Track::AUDIO_INPUT) 
       {
-            const RouteList* rl = _track->outRoutes();
-            for(ciRoute r = rl->begin(); r != rl->end(); ++r)
+            // Clear the track's jack ports
+            for(int ch = 0; ch < _track->channels(); ++ch)
+              ((AudioInput*)_track)->setJackPort(ch, 0);
+            
+            // Clear the track's input routes' jack ports
+            RouteList* irl = _track->inRoutes();
+            for(iRoute r = irl->begin(); r != irl->end(); ++r)
+            {
+              if(r->type != Route::JACK_ROUTE)
+                continue;
+              r->jackPort = 0;
+            }
+            
+            // Remove other tracks' input routes from this track
+            const RouteList* orl = _track->outRoutes();
+            for(ciRoute r = orl->begin(); r != orl->end(); ++r)
             {
                   Route src(_track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
@@ -701,6 +782,8 @@ void PendingOperationItem::executeRTStage()
       MusEGlobal::song->setLen(_intA, false); // false = Do not emit update signals here !
     break;
     
+    case Uninitialized:
+    break;
     
     default:
       fprintf(stderr, "PendingOperationItem::executeRTStage unknown type %d\n", _type);
@@ -802,13 +885,55 @@ bool PendingOperationList::add(PendingOperationItem op)
     
     switch(op._type)
     {
-      case PendingOperationItem::SetMidiPortDevice:
-        if(poi._type == PendingOperationItem::SetMidiPortDevice && poi._midi_port == op._midi_port && poi._midi_device == op._midi_device)
+      case PendingOperationItem::AddRoute:
+        if(poi._type == PendingOperationItem::AddRoute && poi._src_route == op._src_route && poi._dst_route == op._dst_route)
         {
-          fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetMidiPortDevice. Ignoring.\n");
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddRoute. Ignoring.\n");
           return false;  
         }
       break;
+      
+      case PendingOperationItem::DeleteRoute:
+        if(poi._type == PendingOperationItem::DeleteRoute && poi._src_route == op._src_route && poi._dst_route == op._dst_route)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteRoute. Ignoring.\n");
+          return false;  
+        }
+      break;
+      
+      case PendingOperationItem::AddRouteNode:
+        if(poi._type == PendingOperationItem::AddRouteNode && poi._route_list == op._route_list && poi._src_route == op._src_route)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double AddRouteNode. Ignoring.\n");
+          return false;  
+        }
+      break;
+
+      case PendingOperationItem::DeleteRouteNode:
+        if(poi._type == PendingOperationItem::DeleteRouteNode && poi._route_list == op._route_list && poi._iRoute == op._iRoute)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double DeleteRouteNode. Ignoring.\n");
+          return false;  
+        }
+      break;
+
+      case PendingOperationItem::ModifyRouteNode:
+        if(poi._type == PendingOperationItem::ModifyRouteNode && poi._src_route == op._src_route && poi._dst_route_pointer == op._dst_route_pointer)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyRouteNode. Ignoring.\n");
+          return false;  
+        }
+      break;
+
+
+      // REMOVE Tim. Persistent routes. Removed.
+//       case PendingOperationItem::SetMidiPortDevice:
+//         if(poi._type == PendingOperationItem::SetMidiPortDevice && poi._midi_port == op._midi_port && poi._midi_device == op._midi_device)
+//         {
+//           fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetMidiPortDevice. Ignoring.\n");
+//           return false;  
+//         }
+//       break;
 
       
       case PendingOperationItem::AddAuxSendValue:
@@ -1322,6 +1447,11 @@ bool PendingOperationList::add(PendingOperationItem op)
           poi._intA = op._intA;
           return true;
         }
+      break;  
+
+      case PendingOperationItem::Uninitialized:
+        fprintf(stderr, "MusE error: PendingOperationList::add(): Uninitialized item. Ignoring.\n");
+        return false;  
       break;  
         
       default:

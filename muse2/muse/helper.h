@@ -41,6 +41,9 @@ class Part;
 class Track;
 class PartList;
 
+void enumerateJackMidiDevices();
+void populateMidiPorts();
+
 QString pitch2string(int v);
 Part* partFromSerialNumber(int serial);
 bool any_event_selected(const std::set<const Part*>&, bool in_range=false);
@@ -75,7 +78,6 @@ QString projectTitleFromFilename(QString filename);
 QString projectPathFromFilename(QString filename);
 QString projectExtensionFromFilename(QString filename);
 QString getUniqueUntitledName();
-void populateMidiPorts();
 int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECore::Part* cur_part, int curDrumPitch);
 QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect);
 } 

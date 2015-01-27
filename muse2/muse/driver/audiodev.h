@@ -70,11 +70,22 @@ class AudioDevice {
       
       virtual void unregisterPort(void*) = 0;
       virtual void connect(void*, void*) = 0;
+      // REMOVE Tim. Persistent routes. Added.
+      virtual void connect(const char*, const char*) = 0;
       virtual void disconnect(void*, void*) = 0;
+      // REMOVE Tim. Persistent routes. Added.
+      virtual void disconnect(const char*, const char*) = 0;
       virtual int connections(void* /*clientPort*/) = 0; 
+      // REMOVE Tim. Persistent routes. Added.
+      virtual bool portConnectedTo(void* our_port, const char* port) = 0;
       virtual void setPortName(void* p, const char* n) = 0;
       virtual void* findPort(const char* name) = 0;
-      virtual QString portName(void* port) = 0;
+      // REMOVE Tim. Persistent routes. Removed.
+      //virtual QString portName(void* port, bool* success = 0) = 0;
+      // REMOVE Tim. Persistent routes. Added.
+      virtual char* portName(void* port, char* str, int str_size) = 0;
+      // REMOVE Tim. Persistent routes. Added.
+      virtual const char* canonicalPortName(void*) = 0;
       virtual unsigned int portLatency(void* port, bool capture) const = 0;
       virtual int getState() = 0;
       virtual unsigned getCurFrame() const = 0;
@@ -87,6 +98,7 @@ class AudioDevice {
       virtual void setFreewheel(bool f) = 0;
       virtual void graphChanged() {}
       virtual void registrationChanged() {}
+      virtual void connectionsChanged() {}
       virtual int setMaster(bool f) = 0;
       };
 

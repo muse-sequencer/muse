@@ -44,38 +44,42 @@ namespace MusECore {
 // New items created in GUI thread awaiting addition in audio thread.
 struct PendingOperationItem
 {
-  enum PendingOperationType { ModifySongLength,
+  enum PendingOperationType { Uninitialized = 0,
+                              ModifySongLength,
                               AddMidiInstrument, DeleteMidiInstrument,
                               AddMidiDevice,     DeleteMidiDevice,
                               AddTrack ,         DeleteTrack, MoveTrack,                    ModifyTrackName,
                               AddPart,           DeletePart,  MovePart,  ModifyPartLength,  ModifyPartName,
                               AddEvent,          DeleteEvent,
-                              AddMidiCtrlVal,    DeleteMidiCtrlVal,      ModifyMidiCtrlVal, AddMidiCtrlValList, 
+                              AddMidiCtrlVal,    DeleteMidiCtrlVal,      ModifyMidiCtrlVal, AddMidiCtrlValList,
                               AddTempo,          DeleteTempo,            ModifyTempo,       SetGlobalTempo, 
                               AddSig,            DeleteSig,              ModifySig,
                               AddKey,            DeleteKey,              ModifyKey,
                               AddAuxSendValue,   
-                              SetMidiPortDevice
+                              // SetMidiPortDevice,  // REMOVE Tim. Persistent routes. Removed.
+                              AddRoute,          DeleteRoute, 
+                              AddRouteNode,      DeleteRouteNode,        ModifyRouteNode
                               }; 
                               
   PendingOperationType _type;
 
   union {
-          Part* _part;
-          MidiPort* _midi_port;
-          void* _void_track_list;
+    Part* _part;
+    MidiPort* _midi_port;
+    void* _void_track_list;
   };
   
   union {
-          MidiCtrlValListList* _mcvll;
-          TempoList* _tempo_list;  
-          AL::SigList* _sig_list; 
-          KeyList* _key_list;
-          PartList* _part_list; 
-          TrackList* _track_list;
-          MidiDeviceList* _midi_device_list;
-          MidiInstrumentList* _midi_instrument_list;
-          AuxSendValueList* _aux_send_value_list;
+    MidiCtrlValListList* _mcvll;
+    TempoList* _tempo_list;  
+    AL::SigList* _sig_list; 
+    KeyList* _key_list;
+    PartList* _part_list; 
+    TrackList* _track_list;
+    MidiDeviceList* _midi_device_list;
+    MidiInstrumentList* _midi_instrument_list;
+    AuxSendValueList* _aux_send_value_list;
+    RouteList* _route_list;       
   };
             
   union {
@@ -85,6 +89,7 @@ struct PendingOperationItem
     MidiCtrlValList* _mcvl;
     TEvent* _tempo_event; 
     AL::SigEvent* _sig_event; 
+    Route* _dst_route_pointer;
   };
 
   iPart _iPart; 
@@ -96,6 +101,9 @@ struct PendingOperationItem
   iKeyEvent _iKeyEvent;
   iMidiInstrument _iMidiInstrument;
   iMidiDevice _iMidiDevice;
+  iRoute _iRoute;
+  Route _src_route;
+  Route _dst_route;
   
   union {
     int _intA;
@@ -109,18 +117,25 @@ struct PendingOperationItem
     int _intB;
     int _to_idx;
   };
-  
-  union {
-    int _intC;
-  };
-  
-  union {
-    int _intD;
-  };
-  
-  
-  PendingOperationItem(MidiPort* midi_port, MidiDevice* midi_device, PendingOperationType type = SetMidiPortDevice)
-    { _type = type; _midi_port = midi_port; _midi_device = midi_device; }
+
+  // TODO: Try to break this operation down so that only the actual operation is executed stage-2.
+  PendingOperationItem(const Route& src_route, const Route& dst_route, PendingOperationType type) // Type is AddRoute or DeleteRoute.
+    { _type = type; _src_route = src_route; _dst_route = dst_route; }
+    
+  PendingOperationItem(RouteList* route_list, const Route& route, PendingOperationType type = AddRouteNode)
+    { _type = type; _route_list = route_list; _src_route = route; }
+    
+  PendingOperationItem(RouteList* route_list, const iRoute& ir, PendingOperationType type = DeleteRouteNode)
+    { _type = type; _route_list = route_list; _iRoute = ir; }
+    
+  PendingOperationItem(const Route& src_route, Route* dst_route, PendingOperationType type = ModifyRouteNode) 
+    { _type = type; _src_route = src_route; _dst_route_pointer = dst_route; }
+
+
+  // REMOVE Tim. Persistent routes. Removed.    
+//   // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
+//   PendingOperationItem(MidiPort* midi_port, MidiDevice* midi_device, PendingOperationType type = SetMidiPortDevice)
+//     { _type = type; _midi_port = midi_port; _midi_device = midi_device; }
     
   PendingOperationItem(AuxSendValueList* asvl, double val, PendingOperationType type = AddAuxSendValue)
     { _type = type; _aux_send_value_list = asvl; _aux_send_value = val; }
@@ -233,6 +248,9 @@ struct PendingOperationItem
     
   PendingOperationItem(int len, PendingOperationType type = ModifySongLength)
     { _type = type; _intA = len; }
+
+  PendingOperationItem()
+    { _type = Uninitialized; }
     
   // Execute the operation. Called only from RT stage 2.
   void executeRTStage(); 

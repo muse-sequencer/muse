@@ -826,6 +826,20 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
                   #endif
                       
+                      // REMOVE Tim. Midi devices. Test only.
+//                       for(MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
+//                       {
+//                         MusECore::MidiDevice* md = *imd;
+//                         fprintf(stderr, "MidiDevice name:%s\nIn ", md->name().toLatin1().constData());
+//                         for(MusECore::iRoute ir = md->inRoutes()->begin(); ir != md->inRoutes()->end(); ++ir)
+//                           (*ir).dump();
+//                         fprintf(stderr, "\n");
+//                         fprintf(stderr, "Out ");
+//                         for(MusECore::iRoute ir = md->outRoutes()->begin(); ir != md->outRoutes()->end(); ++ir)
+//                           (*ir).dump();
+//                         fprintf(stderr, "\n");
+//                       }
+                      
                       MusEGlobal::midiSeq->msgSetMidiDevice(port, sdev);
                       MusEGlobal::muse->changeConfig(true);     // save configuration file
                       
@@ -880,6 +894,21 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       MusEGlobal::audio->msgUpdateSoloStates();
                       MusEGlobal::song->update();
                     }  
+                    
+                    // REMOVE Tim. Midi devices. Test only.
+//                     for(MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
+//                     {
+//                       MusECore::MidiDevice* md = *imd;
+//                       fprintf(stderr, "MidiDevice name:%s\nIn ", md->name().toLatin1().constData());
+//                       for(MusECore::iRoute ir = md->inRoutes()->begin(); ir != md->inRoutes()->end(); ++ir)
+//                         (*ir).dump();
+//                       fprintf(stderr, "\n");
+//                       fprintf(stderr, "Out ");
+//                       for(MusECore::iRoute ir = md->outRoutes()->begin(); ir != md->outRoutes()->end(); ++ir)
+//                         (*ir).dump();
+//                       fprintf(stderr, "\n");
+//                     }
+                    
                   }
                   return;
 

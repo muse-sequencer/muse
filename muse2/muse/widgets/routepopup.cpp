@@ -1466,7 +1466,19 @@ void RoutePopupMenu::prepare()
               act = addAction(*ip);
               act->setCheckable(true);
               
-              MusECore::Route dst(*ip, true, i, MusECore::Route::JACK_ROUTE);
+              // REMOVE Tim. Persistent routes. Changed.
+              //MusECore::Route dst(*ip, true, i, MusECore::Route::JACK_ROUTE);
+              const char* port_name = (*ip).toLatin1().constData();
+              char good_name[ROUTE_PERSISTENT_NAME_SIZE];
+              void* port = MusEGlobal::audioDevice->findPort(port_name);
+              if(port)
+              {
+                MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
+                port_name = good_name;
+              }
+              //MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, i, -1, -1, (*ip).toLatin1().constData());
+              MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, i, -1, -1, port_name);
+              
               act->setData(qVariantFromValue(dst));   
               ++gid;
               for(MusECore::ciRoute ir = orl->begin(); ir != orl->end(); ++ir) 
@@ -1552,7 +1564,19 @@ void RoutePopupMenu::prepare()
               act = addAction(*ip);
               act->setCheckable(true);
               
-              MusECore::Route dst(*ip, true, i, MusECore::Route::JACK_ROUTE);
+              // REMOVE Tim. Persistent routes. Changed.
+              //MusECore::Route dst(*ip, true, i, MusECore::Route::JACK_ROUTE);
+              const char* port_name = (*ip).toLatin1().constData();
+              char good_name[ROUTE_PERSISTENT_NAME_SIZE];
+              void* port = MusEGlobal::audioDevice->findPort(port_name);
+              if(port)
+              {
+                MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
+                port_name = good_name;
+              }
+              //MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, i, -1, -1, (*ip).toLatin1().constData());
+              MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, i, -1, -1, port_name);
+              
               act->setData(qVariantFromValue(dst));   
               ++gid;
               for(MusECore::ciRoute ir = irl->begin(); ir != irl->end(); ++ir) 

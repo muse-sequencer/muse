@@ -118,6 +118,7 @@ bool usePythonBridge = false;
 bool useLASH = true;
 bool useAlsaWithJack = false;
 bool noAutoStartJack = false;
+bool populateMidiPortsOnStart = true;
 
 const char* midi_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)"),

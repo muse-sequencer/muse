@@ -33,9 +33,13 @@
 #include "operations.h"
 #include "tempo.h"
 #include "part.h"
+#include "audiodev.h" // REMOVE Tim. Persistent routes. Added.
+#include "track.h" // REMOVE Tim. Persistent routes. Added.
+#include "track.h" // REMOVE Tim. Persistent routes. Added.
 
 #include <string.h>
 #include <QAction>
+#include <QString> // REMOVE Tim. Persistent routes. Added.
 #include <set>
 
 // Enable for debugging:
@@ -1347,31 +1351,157 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
-                        removeTrack1(editable_track);
+                        //removeTrack1(editable_track);  // REMOVE Tim. Persistent routes. Removed.
+                        
+                        // REMOVE Tim. Persistent routes. Added.
+                        switch(editable_track->type())
+                        {
+                          case Track::AUDIO_SOFTSYNTH:
+                          {
+                            SynthI* si = (SynthI*)editable_track;
+                            if(si->hasGui())
+                              si->showGui(false);
+                            if(si->hasNativeGui())       
+                              si->showNativeGui(false);
+                          }// Fall through.
+                          case Track::WAVE:
+                          case Track::AUDIO_OUTPUT:
+                          case Track::AUDIO_INPUT:
+                          case Track::AUDIO_GROUP:
+                          case Track::AUDIO_AUX:
+                            ((AudioTrack*)editable_track)->deleteAllEfxGuis();
+                          break;
+                          
+                          default:
+                          break;
+                        }
+                        
+                        switch(editable_track->type())
+                        {
+                          case Track::AUDIO_OUTPUT:
+                          {
+                            AudioOutput* ao = (AudioOutput*)editable_track;
+                            for(int ch = 0; ch < ao->channels(); ++ch)
+                            {
+                              MusEGlobal::audioDevice->unregisterPort(ao->jackPort(ch));
+                              //ao->setJackPort(ch, 0);  // Done in RT stage.
+                            }
+                          }
+                          break;
+                          
+                          case Track::AUDIO_INPUT:
+                          {
+                            AudioOutput* ai = (AudioOutput*)editable_track;
+                            for(int ch = 0; ch < ai->channels(); ++ch)
+                            {
+                              MusEGlobal::audioDevice->unregisterPort(ai->jackPort(ch));
+                              //ai->setJackPort(ch, 0); // Done in RT stage.
+                            }
+                          }     
+                          break;
+                          
+                          default:
+                          break;
+                        }
+                        
                         removeTrackOperation(editable_track, pendingOperations);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
                   case UndoOp::DeleteTrack:
-                        insertTrack1(editable_track, i->trackno);
+                        //insertTrack1(editable_track, i->trackno);  // REMOVE Tim. Persistent routes. Removed.
 
-                        // FIXME: Would like to put this part in Undo2, but indications
-                        //  elsewhere are that (dis)connecting jack routes must not be
-                        //  done in the realtime thread. The result is that we get a few
-                        //  "PANIC Process init: No buffer from audio device" messages
-                        //  before the routes are (dis)connected. So far seems to do no harm though...
+                        // REMOVE Tim. Persistent routes. Removed.
+//                         // FIXME: Would like to put this part in Undo2, but indications
+//                         //  elsewhere are that (dis)connecting jack routes must not be
+//                         //  done in the realtime thread. The result is that we get a few
+//                         //  "PANIC Process init: No buffer from audio device" messages
+//                         //  before the routes are (dis)connected. So far seems to do no harm though...
+//                         switch(editable_track->type())
+//                         {
+//                               case Track::AUDIO_OUTPUT:
+//                               case Track::AUDIO_INPUT:
+//                                       connectJackRoutes((AudioTrack*)editable_track, false);
+//                                     break;
+//                               //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
+//                                       //SynthI* si = (SynthI*)editable_track;
+//                                       //si->synth()->init(
+//                               //      break;
+//                               default:
+//                                     break;
+//                         }
+                    
+                        // REMOVE Tim. Persistent routes. Added.
                         switch(editable_track->type())
                         {
-                              case Track::AUDIO_OUTPUT:
-                              case Track::AUDIO_INPUT:
-                                      connectJackRoutes((AudioTrack*)editable_track, false);
-                                    break;
-                              //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
-                                      //SynthI* si = (SynthI*)editable_track;
-                                      //si->synth()->init(
-                              //      break;
-                              default:
-                                    break;
+                          case Track::AUDIO_SOFTSYNTH:
+                          {
+                            SynthI* s = (SynthI*)editable_track;
+                            Synth* sy = s->synth();
+                            if(!s->isActivated()) 
+                              s->initInstance(sy, s->name());
+                          }
+                          break;
+                                
+                          case Track::AUDIO_OUTPUT:
+                          {
+                            AudioOutput* ao = (AudioOutput*)editable_track;
+                            if(MusEGlobal::checkAudioDevice())
+                            {
+                              for(int ch = 0; ch < ao->channels(); ++ch) 
+                              {
+                                // Register the track's jack port, or just set the name.
+                                char buffer[128];
+                                snprintf(buffer, 128, "%s-%d", ao->name().toLatin1().constData(), ch);
+                                // REMOVE Tim. Persistent routes. Added. Don't think we need this here.
+                                if(ao->jackPort(ch))
+                                  MusEGlobal::audioDevice->setPortName(ao->jackPort(ch), buffer);
+                                else
+                                  
+                                  // This should be OK since the track has not yet been added in the realtime stage.
+                                  ao->setJackPort(ch, MusEGlobal::audioDevice->registerOutPort(buffer, false));
+                                
+                                // Set the route Jack ports now to relieve our graph callback handler from having to do it.
+                                RouteList* rl = ao->outRoutes();
+                                for(iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+                                  if(ir->type == Route::JACK_ROUTE && ir->channel == ch)
+                                    ir->jackPort = MusEGlobal::audioDevice->findPort(ir->persistentJackPortName);
+                              }
+                            }
+                          }
+                          break;
+                              
+                          case Track::AUDIO_INPUT:
+                          {
+                            AudioInput* ai = (AudioInput*)editable_track;
+                            if(MusEGlobal::checkAudioDevice())
+                            {
+                              for(int ch = 0; ch < ai->channels(); ++ch) 
+                              {
+                                // Register the track's jack port, or just set the name.
+                                char buffer[128];
+                                snprintf(buffer, 128, "%s-%d", ai->name().toLatin1().constData(), ch);
+                                // REMOVE Tim. Persistent routes. Added. Don't think we need this here.
+                                if(ai->jackPort(ch))
+                                  MusEGlobal::audioDevice->setPortName(ai->jackPort(ch), buffer);
+                                else
+                                  
+                                  // This should be OK since the track has not yet been added in the realtime stage.
+                                  ai->setJackPort(ch, MusEGlobal::audioDevice->registerInPort(buffer, false));
+                                
+                                // Set the route Jack ports now to relieve our graph callback handler from having to do it.
+                                RouteList* rl = ai->inRoutes();
+                                for(iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+                                  if(ir->type == Route::JACK_ROUTE && ir->channel == ch)
+                                    ir->jackPort = MusEGlobal::audioDevice->findPort(ir->persistentJackPortName);
+                              }
+                            }
+                          }
+                          break;
+                          
+                          default:
+                          break;
                         }
+                    
                         insertTrackOperation(editable_track, i->trackno, pendingOperations);
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
@@ -1415,12 +1545,11 @@ void Song::revertOperationGroup1(Undo& operations)
                         }      
                         break;
 
-                case UndoOp::AddRoute:
+                  case UndoOp::AddRoute:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddRoute\n");
 #endif                        
-                        // TODO 
-                        //pendingOperations.add(PendingOperationItem(editable_track, i->_newName, PendingOperationItem::AddRoute));
+                        pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::DeleteRoute)); 
                         updateFlags |= SC_ROUTE;
                         break;
                         
@@ -1428,8 +1557,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteRoute\n");
 #endif                        
-                        // TODO 
-                        //deleteEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
+                        pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::AddRoute)); 
                         updateFlags |= SC_ROUTE;
                         break;
                         
@@ -1614,16 +1742,95 @@ void Song::revertOperationGroup3(Undo& operations)
       fprintf(stderr, "Song::revertOperationGroup3 *** Calling pendingOperations.clear()\n");
 #endif      
       pendingOperations.clear();
+//       bool do_graph_update = false; // REMOVE Tim. Persistent routes. Added.
       for (riUndoOp i = operations.rbegin(); i != operations.rend(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
 // uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        removeTrack3(editable_track);
+                        //removeTrack3(editable_track); // REMOVE Tim. Persistent routes. Removed. Empty.
+
+                        // REMOVE Tim. Persistent routes. Added.
+                        switch(editable_track->type())
+                        {
+                          case Track::AUDIO_OUTPUT:
+                          case Track::AUDIO_INPUT:
+//                             do_graph_update = true; // REMOVE Tim. Persistent routes. Added.
+                            break;
+                          default:
+                            break;
+                        }
+                        
                         break;
                   case UndoOp::DeleteTrack:
-                        insertTrack3(editable_track, i->trackno);
+                        //insertTrack3(editable_track, i->trackno); // REMOVE Tim. Persistent routes. Removed. Empty.
+                    
+                        // REMOVE Tim. Persistent routes. Added.
+                        switch(editable_track->type())
+                        {
+                          case Track::AUDIO_OUTPUT:
+                            // Connect audio output ports to Jack ports...
+                            if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isRunning())
+                            {
+                              AudioOutput* ao = (AudioOutput*)editable_track;
+                              for(int ch = 0; ch < ao->channels(); ++ch) 
+                              {
+                                void* our_port = ao->jackPort(ch);
+                                if(!our_port)
+                                  continue;
+                                const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
+                                if(!our_port_name)
+                                  continue;
+                                RouteList* rl = ao->outRoutes();
+                                for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+                                {
+                                  if(ir->type != Route::JACK_ROUTE || ir->channel != ch)  
+                                    continue;
+                                  const char* route_name = ir->persistentJackPortName;
+                                  //if(ir->jackPort)
+                                  if(!MusEGlobal::audioDevice->findPort(route_name))
+                                    continue;
+                                  //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+                                    MusEGlobal::audioDevice->connect(our_port_name, route_name);
+                                }
+                              }
+                            }
+                          break;
+                          
+                          case Track::AUDIO_INPUT:
+                            // Connect Jack ports to audio input ports...
+                            if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isRunning())
+                            {
+                              AudioInput* ai = (AudioInput*)editable_track;
+                              for(int ch = 0; ch < ai->channels(); ++ch) 
+                              {
+                                void* our_port = ai->jackPort(ch);
+                                if(!our_port)
+                                  continue;
+                                const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
+                                if(!our_port_name)
+                                  continue;
+                                RouteList* rl = ai->inRoutes();
+                                for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+                                {
+                                  if(ir->type != Route::JACK_ROUTE || ir->channel != ch)  
+                                    continue;
+                                  const char* route_name = ir->persistentJackPortName;
+                                  //if(ir->jackPort)
+                                  if(!MusEGlobal::audioDevice->findPort(route_name))
+                                    continue;
+                                  //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+                                    MusEGlobal::audioDevice->connect(route_name, our_port_name);
+                                }
+                              }
+                            }
+                          break;
+                            
+                          default:
+                            break;
+                        }
+                        
                         break;
                   case UndoOp::ModifyMarker:
                         {
@@ -1643,6 +1850,10 @@ void Song::revertOperationGroup3(Undo& operations)
                         break;
                   }
             }
+            // REMOVE Tim. Persistent routes. Added.
+//             if(MusEGlobal::checkAudioDevice() && do_graph_update)
+//               MusEGlobal::audioDevice->graphChanged();
+            
             if(!operations.empty())
               emit sigDirty();
       }
@@ -1672,27 +1883,160 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
-                        insertTrack1(editable_track, i->trackno);
+                        //insertTrack1(editable_track, i->trackno); // REMOVE Tim. Persistent routes. Removed.
 
-                        // FIXME: See comments in Undo1.
+                        // REMOVE Tim. Persistent routes. Removed.
+//                         // FIXME: See comments in Undo1.
+//                         switch(editable_track->type())
+//                         {
+//                               case Track::AUDIO_OUTPUT:
+//                               case Track::AUDIO_INPUT:
+//                                       connectJackRoutes((AudioTrack*)editable_track, false);
+//                                     break;
+//                               //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
+//                                       //SynthI* si = (SynthI*)editable_track;
+//                                       //si->synth()->init(
+//                               //      break;
+//                               default:
+//                                     break;
+//                         }
+
+
+                        // REMOVE Tim. Persistent routes. Added.
                         switch(editable_track->type())
                         {
-                              case Track::AUDIO_OUTPUT:
-                              case Track::AUDIO_INPUT:
-                                      connectJackRoutes((AudioTrack*)editable_track, false);
-                                    break;
-                              //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
-                                      //SynthI* si = (SynthI*)editable_track;
-                                      //si->synth()->init(
-                              //      break;
-                              default:
-                                    break;
+                          case Track::AUDIO_SOFTSYNTH:
+                          {
+                            SynthI* s = (SynthI*)editable_track;
+                            Synth* sy = s->synth();
+                            if(!s->isActivated()) 
+                              s->initInstance(sy, s->name());
+                          }
+                          break;
+                                
+                          case Track::AUDIO_OUTPUT:
+                          {
+                            AudioOutput* ao = (AudioOutput*)editable_track;
+                            if(MusEGlobal::checkAudioDevice())
+                            {
+                              for(int ch = 0; ch < ao->channels(); ++ch) 
+                              {
+                                // Register the track's jack port, or just set the name.
+                                char buffer[128];
+                                snprintf(buffer, 128, "%s-%d", ao->name().toLatin1().constData(), ch);
+                                // REMOVE Tim. Persistent routes. Added. Don't think we need this here.
+                                if(ao->jackPort(ch))
+                                  MusEGlobal::audioDevice->setPortName(ao->jackPort(ch), buffer);
+                                else
+                                  
+                                  // This should be OK since the track has not yet been added in the realtime stage.
+                                  ao->setJackPort(ch, MusEGlobal::audioDevice->registerOutPort(buffer, false));
+                                
+                                // Set the route Jack ports now to relieve our graph callback handler from having to do it.
+                                RouteList* rl = ao->outRoutes();
+                                for(iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+                                  if(ir->type == Route::JACK_ROUTE && ir->channel == ch)
+                                    ir->jackPort = MusEGlobal::audioDevice->findPort(ir->persistentJackPortName);
+                              }
+                            }
+                            
+                            
+                          }
+                          break;
+                              
+                          case Track::AUDIO_INPUT:
+                          {
+                            AudioInput* ai = (AudioInput*)editable_track;
+                            if(MusEGlobal::checkAudioDevice())
+                            {
+                              for(int ch = 0; ch < ai->channels(); ++ch) 
+                              {
+                                // Register the track's jack port, or just set the name.
+                                char buffer[128];
+                                snprintf(buffer, 128, "%s-%d", ai->name().toLatin1().constData(), ch);
+                                // REMOVE Tim. Persistent routes. Added. Don't think we need this here.
+                                if(ai->jackPort(ch))
+                                  MusEGlobal::audioDevice->setPortName(ai->jackPort(ch), buffer);
+                                else
+                                  
+                                  // This should be OK since the track has not yet been added in the realtime stage.
+                                  ai->setJackPort(ch, MusEGlobal::audioDevice->registerInPort(buffer, false));
+                                
+                                // Set the route Jack ports now to relieve our graph callback handler from having to do it.
+                                RouteList* rl = ai->inRoutes();
+                                for(iRoute ir = rl->begin(); ir != rl->end(); ++ir)
+                                  if(ir->type == Route::JACK_ROUTE && ir->channel == ch)
+                                    ir->jackPort = MusEGlobal::audioDevice->findPort(ir->persistentJackPortName);
+                              }
+                            }
+                          }
+                          break;
+                          
+                          default:
+                          break;
                         }
+                        
+
                         insertTrackOperation(editable_track, i->trackno, pendingOperations);
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
                   case UndoOp::DeleteTrack:
-                        removeTrack1(editable_track);
+                        //removeTrack1(editable_track);  // REMOVE Tim. Persistent routes. Removed.
+                        
+                        
+                        // REMOVE Tim. Persistent routes. Added.
+                        switch(editable_track->type())
+                        {
+                          case Track::AUDIO_SOFTSYNTH:
+                          {
+                            SynthI* si = (SynthI*)editable_track;
+                            if(si->hasGui())
+                              si->showGui(false);
+                            if(si->hasNativeGui())       
+                              si->showNativeGui(false);
+                          }// Fall through.
+                          case Track::WAVE:
+                          case Track::AUDIO_OUTPUT:
+                          case Track::AUDIO_INPUT:
+                          case Track::AUDIO_GROUP:
+                          case Track::AUDIO_AUX:
+                            ((AudioTrack*)editable_track)->deleteAllEfxGuis();
+                          break;
+                          
+                          default:
+                          break;
+                        }
+                        
+                        switch(editable_track->type())
+                        {
+                          case Track::AUDIO_OUTPUT:
+                          {
+                            AudioOutput* ao = (AudioOutput*)editable_track;
+                            for(int ch = 0; ch < ao->channels(); ++ch)
+                            {
+                              MusEGlobal::audioDevice->unregisterPort(ao->jackPort(ch));
+                              //ao->setJackPort(ch, 0);  // Done in RT stage.
+                            }
+                          }
+                          break;
+                          
+                          case Track::AUDIO_INPUT:
+                          {
+                            AudioOutput* ai = (AudioOutput*)editable_track;
+                            for(int ch = 0; ch < ai->channels(); ++ch)
+                            {
+                              MusEGlobal::audioDevice->unregisterPort(ai->jackPort(ch));
+                              //ai->setJackPort(ch, 0); // Done in RT stage.
+                            }
+                          }     
+                          break;
+                          
+                          default:
+                          break;
+                        }
+                        
+                        
+                        
                         removeTrackOperation(editable_track, pendingOperations);
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
@@ -1740,8 +2084,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddRoute\n");
 #endif                        
-                        // TODO 
-                        //pendingOperations.add(PendingOperationItem(editable_track, i->_newName, PendingOperationItem::AddRoute));
+                        pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::AddRoute)); 
                         updateFlags |= SC_ROUTE;
                         break;
                         
@@ -1749,8 +2092,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteEvent\n");
 #endif                        
-                        // TODO 
-                        //deleteEventOperation(i->nEvent, editable_part, i->doCtrls, i->doClones);
+                        pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::DeleteRoute)); 
                         updateFlags |= SC_ROUTE;
                         break;
                         
@@ -1982,16 +2324,95 @@ void Song::executeOperationGroup3(Undo& operations)
       fprintf(stderr, "Song::executeOperationGroup3 *** Calling pendingOperations.clear()\n");
 #endif                        
       pendingOperations.clear();
+//       bool do_graph_update = false; // REMOVE Tim. Persistent routes. Added.
       for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
 // uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        insertTrack3(editable_track, i->trackno);
+                        //insertTrack3(editable_track, i->trackno); // REMOVE Tim. Persistent routes. Removed. Empty.
+
+                        // REMOVE Tim. Persistent routes. Added.
+                        switch(editable_track->type())
+                        {
+                          case Track::AUDIO_OUTPUT:
+                            // Connect audio output ports to Jack ports...
+                            if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isRunning())
+                            {
+                              AudioOutput* ao = (AudioOutput*)editable_track;
+                              for(int ch = 0; ch < ao->channels(); ++ch) 
+                              {
+                                void* our_port = ao->jackPort(ch);
+                                if(!our_port)
+                                  continue;
+                                const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
+                                if(!our_port_name)
+                                  continue;
+                                RouteList* rl = ao->outRoutes();
+                                for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+                                {
+                                  if(ir->type != Route::JACK_ROUTE || ir->channel != ch)  
+                                    continue;
+                                  const char* route_name = ir->persistentJackPortName;
+                                  //if(ir->jackPort)
+                                  if(!MusEGlobal::audioDevice->findPort(route_name))
+                                    continue;
+                                  //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+                                    MusEGlobal::audioDevice->connect(our_port_name, route_name);
+                                }
+                              }
+                            }
+                          break;
+                          
+                          case Track::AUDIO_INPUT:
+                            // Connect Jack ports to audio input ports...
+                            if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isRunning())
+                            {
+                              AudioInput* ai = (AudioInput*)editable_track;
+                              for(int ch = 0; ch < ai->channels(); ++ch) 
+                              {
+                                void* our_port = ai->jackPort(ch);
+                                if(!our_port)
+                                  continue;
+                                const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
+                                if(!our_port_name)
+                                  continue;
+                                RouteList* rl = ai->inRoutes();
+                                for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+                                {
+                                  if(ir->type != Route::JACK_ROUTE || ir->channel != ch)  
+                                    continue;
+                                  const char* route_name = ir->persistentJackPortName;
+                                  //if(ir->jackPort)
+                                  if(!MusEGlobal::audioDevice->findPort(route_name))
+                                    continue;
+                                  //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+                                    MusEGlobal::audioDevice->connect(route_name, our_port_name);
+                                }
+                              }
+                            }
+                          break;
+                            
+                          default:
+                            break;
+                        }
+                        
                         break;
                   case UndoOp::DeleteTrack:
-                        removeTrack3(editable_track);
+                        //removeTrack3(editable_track); // REMOVE Tim. Persistent routes. Removed. Empty.
+
+                        // REMOVE Tim. Persistent routes. Added.
+                        switch(editable_track->type())
+                        {
+                          case Track::AUDIO_OUTPUT:
+                          case Track::AUDIO_INPUT:
+//                             do_graph_update = true; // REMOVE Tim. Persistent routes. Added.
+                            break;
+                          default:
+                            break;
+                        }
+                        
                         break;
                   case UndoOp::ModifyMarker:
                         {
@@ -2010,6 +2431,10 @@ void Song::executeOperationGroup3(Undo& operations)
                         break;
                   }
             }
+            // REMOVE Tim. Persistent routes. Added.
+//             if(MusEGlobal::checkAudioDevice() && do_graph_update)
+//               MusEGlobal::audioDevice->graphChanged();
+            
             if(!operations.empty())
               emit sigDirty();
       }

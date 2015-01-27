@@ -238,6 +238,7 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -v       Print version\n");
       fprintf(stderr, "   -a       No audio, use dummy audio driver, plus ALSA midi\n");
       fprintf(stderr, "   -J       Do not try to auto-start the Jack audio server\n");
+      fprintf(stderr, "   -F       Do not auto-populate midi ports with midi devices found, at startup\n");
       fprintf(stderr, "   -A       Force inclusion of ALSA midi even if using Jack\n");
       fprintf(stderr, "   -P  n    Set audio driver real time priority to n\n");
       fprintf(stderr, "                        (Dummy only, default 40. Else fixed by Jack.)\n");
@@ -383,7 +384,7 @@ int main(int argc, char* argv[])
       MuseApplication app(argc, argv);
       MusEGui::Appearance::defaultStyle = app.style()->objectName();   // NOTE: May need alternate method, above.
       
-      QString optstr("aJAhvdDumMsP:Y:l:py");
+      QString optstr("aJFAhvdDumMsP:Y:l:py");
 #ifdef VST_SUPPORT
       optstr += QString("V");
 #endif
@@ -417,6 +418,9 @@ int main(int argc, char* argv[])
                         break;
                   case 'J':
                         MusEGlobal::noAutoStartJack = true;
+                        break;
+                  case 'F':
+                        MusEGlobal::populateMidiPortsOnStart = false;
                         break;
                   case 'A':
                         MusEGlobal::useAlsaWithJack = true;
@@ -708,6 +712,8 @@ int main(int argc, char* argv[])
       MusECore::initOSC();
       
       MusECore::initMetronome();
+
+      MusECore::enumerateJackMidiDevices();
       
 #ifdef HAVE_LASH
       {
@@ -740,9 +746,12 @@ int main(int argc, char* argv[])
       //--------------------------------------------------
       // Auto-fill the midi ports, if appropriate.         
       //--------------------------------------------------
-      if(argc < 2 && (MusEGlobal::config.startMode == 1 || MusEGlobal::config.startMode == 2) && !MusEGlobal::config.startSongLoadConfig)
+      if(MusEGlobal::populateMidiPortsOnStart && 
+        argc < 2 && 
+        (MusEGlobal::config.startMode == 1 || MusEGlobal::config.startMode == 2) && 
+        !MusEGlobal::config.startSongLoadConfig)
       {  
-        MusEGui::populateMidiPorts();
+        MusECore::populateMidiPorts();
         //MusEGlobal::muse->changeConfig(true);     // save configuration file
         //MusEGlobal::song->update();
       }

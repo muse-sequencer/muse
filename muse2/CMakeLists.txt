@@ -484,7 +484,7 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -DQT_DEBUG -fPIC ${CMAKE_CXX_FLAGS_DEBUG}")
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(doc al awl grepmidi man plugins muse synti packaging utils demos share)
+subdirs(doc libs al awl grepmidi man plugins muse synti packaging utils demos share)
 
 ## Install doc files
 file (GLOB doc_files

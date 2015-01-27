@@ -53,6 +53,7 @@ class PluginI;
 class SynthI;
 class Track;
 class Undo;
+class PendingOperationList;
 
 //---------------------------------------------------------
 //   AudioMsgId
@@ -61,7 +62,8 @@ class Undo;
 //---------------------------------------------------------
 
 enum {
-      SEQM_REVERT_OPERATION_GROUP, SEQM_EXECUTE_OPERATION_GROUP,
+      SEQM_REVERT_OPERATION_GROUP, SEQM_EXECUTE_OPERATION_GROUP, 
+      SEQM_EXECUTE_PENDING_OPERATIONS,
       SEQM_RESET_DEVICES, SEQM_INIT_DEVICES, SEQM_PANIC,
       SEQM_MIDI_LOCAL_OFF,
       SEQM_PLAY_MIDI_EVENT,
@@ -86,6 +88,7 @@ enum {
       AUDIO_START_MIDI_LEARN,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
       SEQM_IDLE, SEQM_SEEK,
+      AUDIO_WAIT  // Do nothing. Just wait for an audio cycle to pass.
       };
 
 extern const char* seqMsgList[];  // for debug
@@ -116,6 +119,7 @@ struct AudioMsg : public ThreadMsg {   // this should be an union
       int a, b, c;
       Pos pos;
       Undo* operations;
+      PendingOperationList* pendingOps;
       };
 
 //---------------------------------------------------------
@@ -215,6 +219,7 @@ class Audio {
 
       void msgExecuteOperationGroup(Undo&); // calls exe1, then calls exe2 in audio context, then calls exe3
       void msgRevertOperationGroup(Undo&); // similar.
+      void msgExecutePendingOperations(PendingOperationList&); // Bypass the Undo system and directly execute the pending operations.
 
       void msgRemoveTracks();
       void msgRemoveTrack(Track*, bool u = true); // only does applyOperation
@@ -238,9 +243,9 @@ class Audio {
       void sendMsg(AudioMsg*);
       bool sendMessage(AudioMsg* m, bool doUndo);
       void msgRemoveRoute(Route, Route);
-      void msgRemoveRoute1(Route, Route);
-      void msgRemoveRoutes(Route, Route);  
-      void msgRemoveRoutes1(Route, Route);  
+      void msgRemoveRoute1(Route, Route); 
+      //void msgRemoveRoutes(Route, Route); // REMOVE Tim. Persistent routes. 
+      //void msgRemoveRoutes1(Route, Route);  // REMOVE Tim. Persistent routes.
       void msgAddRoute(Route, Route);
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
@@ -251,6 +256,7 @@ class Audio {
       void msgInitMidiDevices(bool force = true);
       void msgResetMidiDevices();
       void msgIdle(bool);
+      void msgAudioWait();  // REMOVE Tim. Persistent routes. Added.
       void msgBounce();
       void msgSwapControllerIDX(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);
