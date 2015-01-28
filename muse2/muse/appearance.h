@@ -52,7 +52,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       QTreeWidgetItem* user_bg;
       QTreeWidgetItem* global_bg;
       QTreeWidgetItem* lastSelectedBgItem;
-      QTreeWidgetItem* lastSelectedColorItem;
+      QTreeWidgetItem* lastSelectedColorItem;      
 
       
       void updateFonts();
@@ -94,7 +94,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       Appearance(Arranger*, QWidget* parent=0);
       ~Appearance();
       void resetValues();
-      static QString defaultStyle;
+      static QString& getSetDefaultStyle(const QString *newStyle = NULL);
       };
 
 } // namespace MusEGui
