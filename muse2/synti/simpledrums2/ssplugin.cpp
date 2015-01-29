@@ -26,7 +26,7 @@
 //
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 #include <stdlib.h>
 #include <unistd.h>
 #include <dlfcn.h>
@@ -52,10 +52,10 @@ static void loadPluginLib(QFileInfo* fi)
       if (SS_DEBUG_LADSPA) {
             printf("loadPluginLib: %s\n", fi->fileName().toLatin1().constData());
             }
-      void* handle = dlopen(fi->filePath().toAscii().data(), RTLD_NOW);
+      void* handle = dlopen(fi->filePath().toLatin1().data(), RTLD_NOW);
       if (handle == 0) {
             fprintf(stderr, "dlopen(%s) failed: %s\n",
-              fi->filePath().toAscii().data(), dlerror());
+              fi->filePath().toLatin1().data(), dlerror());
             return;
             }
       LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
@@ -67,7 +67,7 @@ static void loadPluginLib(QFileInfo* fi)
                         "Unable to find ladspa_descriptor() function in plugin "
                         "library file \"%s\": %s.\n"
                         "Are you sure this is a LADSPA plugin file?\n",
-                        fi->filePath().toAscii().data(),
+                        fi->filePath().toLatin1().data(),
                         txt);
                   return;//exit(1);
                   }

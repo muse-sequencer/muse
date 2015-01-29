@@ -232,6 +232,7 @@ struct GlobalConfigValues {
       int trackHeight;
       bool borderlessMouse;
       bool autoSave;
+      bool scrollableSubMenus;
 
       QString measSample;
       QString beatSample;

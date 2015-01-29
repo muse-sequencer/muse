@@ -227,7 +227,7 @@ void MidiAudioCtrlMap::write(int level, Xml& xml) const
                           .arg(chan)
                           .arg(mctrl)
                           .arg(actrl);
-      xml.tag(level++, s.toAscii().constData());
+      xml.tag(level++, s.toLatin1().constData());
       
       // TODO
       //const MidiAudioCtrlStruct& macs = imacs->second;
@@ -946,13 +946,13 @@ void CtrlListList::write(int level, Xml& xml) const
   for (ciCtrlList icl = begin(); icl != end(); ++icl) {
         const CtrlList* cl = icl->second;
 
-        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(cl->id()).arg(cl->curVal()).toAscii().constData();
+        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(cl->id()).arg(cl->curVal()).toLatin1().constData();
         s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
-        xml.tag(level++, s.toAscii().constData());
+        xml.tag(level++, s.toLatin1().constData());
         int i = 0;
         for (ciCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
               QString s("%1 %2, ");
-              xml.nput(level, s.arg(ic->second.frame).arg(ic->second.val).toAscii().constData());
+              xml.nput(level, s.arg(ic->second.frame).arg(ic->second.val).toLatin1().constData());
               ++i;
               if (i >= 4) {
                     xml.put(level, "");

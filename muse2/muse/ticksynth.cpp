@@ -95,20 +95,20 @@ class MetronomeSynthIF : public SynthIF
             accent2Len = 0;
             initSamples();
             }
-      virtual bool initGui()     { return true; };
+      virtual bool initGui()     { return true; }
       virtual void guiHeartBeat()  {  }
       virtual bool guiVisible() const { return false; }
       virtual void showGui(bool) {}
       virtual bool hasGui() const { return false; }
       virtual bool nativeGuiVisible() const { return false; }
-      virtual void showNativeGui(bool) { };
+      virtual void showNativeGui(bool) { }
       virtual bool hasNativeGui() const { return false; }
       
       virtual void getGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setGeometry(int, int, int, int) {}
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
-      virtual void preProcessAlways() { };
+      virtual void preProcessAlways() { }
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
       virtual bool putEvent(const MidiPlayEvent& ev);
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
@@ -119,7 +119,7 @@ class MetronomeSynthIF : public SynthIF
       virtual int totalInChannels() const { return 0; }
       virtual void deactivate3() {}
       virtual QString getPatchName(int, int, bool) const { return ""; }
-      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) {};
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) {}
       virtual void write(int, Xml&) const {}
       virtual float getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, float) {}

@@ -34,6 +34,8 @@
 #include <QToolBar>
 #include <QMenuBar>
 #include <QAction>
+#include <QWidgetAction>
+#include <QLabel>
 
 using std::list;
 using MusEGlobal::muse;
@@ -142,6 +144,16 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	sig_tb->setObjectName("Signature");
 	MusEGui::SigToolbarWidget* sw = new MusEGui::SigToolbarWidget(tempo_tb);
 	sig_tb->addWidget(sw);
+
+ QToolBar *jackCpuToolbar = addToolBar(tr("Jack cpu load"));
+ jackCpuToolbar->setObjectName("JackCpuLoadToolbar");
+ QWidgetAction *actJackCpuLoad = new QWidgetAction(this);
+ actJackCpuLoad->setWhatsThis(tr("CPU load reported by JACK audio server"));
+ QLabel *lbCpuLoad = new QLabel(tr("Not connected to JACK"));
+ lbCpuLoad->setObjectName("JackCpuLoadToolbarLabel");
+ actJackCpuLoad->setDefaultWidget(lbCpuLoad);
+ jackCpuToolbar->addAction(actJackCpuLoad);
+
 	
 	connect(tw, SIGNAL(returnPressed()), SLOT(focusCanvas()));
 	connect(tw, SIGNAL(escapePressed()), SLOT(focusCanvas()));
@@ -180,7 +192,7 @@ void TopWin::readStatus(MusECore::Xml& xml)
 				{
 					if (!sharesToolsAndMenu())
 					{
-						if (!restoreState(QByteArray::fromHex(xml.parse1().toAscii())))
+						if (!restoreState(QByteArray::fromHex(xml.parse1().toLatin1())))
 						{
 							fprintf(stderr,"ERROR: couldn't restore toolbars. trying default configuration...\n");
 							if (!restoreState(_toolbarNonsharedInit[_type]))
@@ -189,7 +201,7 @@ void TopWin::readStatus(MusECore::Xml& xml)
 					}
 					else
 					{
-						_savedToolbarState=QByteArray::fromHex(xml.parse1().toAscii());
+						_savedToolbarState=QByteArray::fromHex(xml.parse1().toLatin1());
 						if (_savedToolbarState.isEmpty())
 							_savedToolbarState=_toolbarNonsharedInit[_type];
 					}
@@ -530,9 +542,9 @@ void TopWin::readConfiguration(ToplevelType t, MusECore::Xml& xml)
 				else if (tag == "height")
 					_heightInit[t] = xml.parseInt();
 				else if (tag == "nonshared_toolbars")
-					_toolbarNonsharedInit[t] = QByteArray::fromHex(xml.parse1().toAscii());
+					_toolbarNonsharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
 				else if (tag == "shared_toolbars")
-					_toolbarSharedInit[t] = QByteArray::fromHex(xml.parse1().toAscii());
+					_toolbarSharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
 				else if (tag == "shares_when_free")
 					_sharesWhenFree[t] = xml.parseInt();
 				else if (tag == "shares_when_subwin")

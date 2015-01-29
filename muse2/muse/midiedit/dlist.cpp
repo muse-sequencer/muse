@@ -984,7 +984,7 @@ void DList::returnPressed()
       int val = -1;
       if (selectedColumn != COL_NAME) 
       {
-            val = atoi(editor->text().toAscii().constData());
+            val = atoi(editor->text().toLatin1().constData());
             
             switch (selectedColumn)
             {
@@ -1026,7 +1026,7 @@ void DList::returnPressed()
                   break;
 
             case COL_NOTELENGTH:
-                  editEntry->len = atoi(editor->text().toAscii().constData());
+                  editEntry->len = atoi(editor->text().toLatin1().constData());
                   break;
 
             case COL_VOLUME:

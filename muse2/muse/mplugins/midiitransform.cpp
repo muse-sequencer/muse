@@ -881,7 +881,7 @@ namespace MusEGui {
 //    procChannelOp procChannelVala procChannelValb
 //---------------------------------------------------------
 
-MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WFlags fl)
+MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WindowFlags fl)
    : QDialog(parent, fl)
       {
       setupUi(this);

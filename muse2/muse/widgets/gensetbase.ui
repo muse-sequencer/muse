@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>544</width>
-    <height>622</height>
+    <width>570</width>
+    <height>620</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -74,7 +74,7 @@
                <item>
                 <widget class="QRadioButton" name="startLastButton">
                  <property name="text">
-                  <string>start with last song</string>
+                  <string>start &amp;with last song</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -90,7 +90,7 @@
                   </sizepolicy>
                  </property>
                  <property name="text">
-                  <string>start with template</string>
+                  <string>start with &amp;template</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>
@@ -100,7 +100,7 @@
                <item>
                 <widget class="QRadioButton" name="startSongButton">
                  <property name="text">
-                  <string>start with song</string>
+                  <string>sta&amp;rt with song</string>
                  </property>
                 </widget>
                </item>
@@ -1046,28 +1046,28 @@ Adjusts responsiveness of audio controls and
           <item>
            <widget class="QRadioButton" name="recordAllButton">
             <property name="text">
-             <string>Record all instruments</string>
+             <string>&amp;Record all instruments</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="dontRecHiddenButton">
             <property name="text">
-             <string>Don't record hidden instruments</string>
+             <string>&amp;Don't record hidden instruments</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="dontRecMutedButton">
             <property name="text">
-             <string>Don't record muted instruments</string>
+             <string>Don'&amp;t record muted instruments</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="dontRecBothButton">
             <property name="text">
-             <string>Don't record hidden or muted instruments</string>
+             <string>Don't record &amp;hidden or muted instruments</string>
             </property>
            </widget>
           </item>
@@ -1332,7 +1332,16 @@ Adjusts responsiveness of audio controls and
        <property name="spacing">
         <number>6</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>11</number>
+       </property>
+       <property name="topMargin">
+        <number>11</number>
+       </property>
+       <property name="rightMargin">
+        <number>11</number>
+       </property>
+       <property name="bottomMargin">
         <number>11</number>
        </property>
        <item>
@@ -1348,32 +1357,6 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="TextLabel1">
-            <property name="text">
-             <string>GUI Refresh Rate</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QSpinBox" name="guiRefreshSelect">
-            <property name="suffix">
-             <string>/sec</string>
-            </property>
-            <property name="minimum">
-             <number>2</number>
-            </property>
-            <property name="maximum">
-             <number>100</number>
-            </property>
-            <property name="value">
-             <number>20</number>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="textLabel1_4">
             <property name="text">
@@ -1381,19 +1364,6 @@ Adjusts responsiveness of audio controls and
             </property>
             <property name="wordWrap">
              <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QCheckBox" name="oldStyleStopCheckBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
             </property>
            </widget>
           </item>
@@ -1420,18 +1390,35 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="textLabel1_4_3">
+          <item row="6" column="0" colspan="2">
+           <widget class="QLabel" name="label_3">
             <property name="text">
-             <string>Use project save dialog</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
+             <string>Shift + Right click sets left range marker</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="2">
-           <widget class="QCheckBox" name="projectSaveCheckBox">
+          <item row="5" column="2">
+           <widget class="QCheckBox" name="lmbDecreasesCheckBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string notr="true"/>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0" colspan="2">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Allow adding hidden tracks in track list menu</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QCheckBox" name="rangeMarkerWithoutMMBCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1440,6 +1427,95 @@ Adjusts responsiveness of audio controls and
             </property>
             <property name="text">
              <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="0" colspan="2">
+           <widget class="QLabel" name="label_8">
+            <property name="toolTip">
+             <string/>
+            </property>
+            <property name="whatsThis">
+             <string/>
+            </property>
+            <property name="text">
+             <string>Borderless zoom/pan mouse (else use alternate method)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="2">
+           <widget class="QSpinBox" name="trackHeight">
+            <property name="suffix">
+             <string> px</string>
+            </property>
+            <property name="minimum">
+             <number>20</number>
+            </property>
+            <property name="maximum">
+             <number>2000</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="2">
+           <widget class="QCheckBox" name="velocityPerNoteCheckBox">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="2">
+           <widget class="QCheckBox" name="smartFocusCheckBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Smart focus</string>
+            </property>
+            <property name="whatsThis">
+             <string>After editing, controls will return
+ focus to their respective canvas</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0" colspan="2">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Show newly created midi velocity graphs per-note</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="TextLabel1">
+            <property name="text">
+             <string>GUI Refresh Rate</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QSpinBox" name="guiRefreshSelect">
+            <property name="suffix">
+             <string>/sec</string>
+            </property>
+            <property name="minimum">
+             <number>2</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>20</number>
             </property>
            </widget>
           </item>
@@ -1483,46 +1559,6 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="2">
-           <widget class="QCheckBox" name="lmbDecreasesCheckBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string notr="true"/>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0" colspan="2">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Shift + Right click sets left range marker</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="2">
-           <widget class="QCheckBox" name="rangeMarkerWithoutMMBCheckBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0" colspan="2">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Allow adding hidden tracks in track list menu</string>
-            </property>
-           </widget>
-          </item>
           <item row="7" column="2">
            <widget class="QCheckBox" name="addHiddenCheckBox">
             <property name="text">
@@ -1534,6 +1570,32 @@ left button behave like the middle button in such areas.</string>
            <widget class="QLabel" name="label_5">
             <property name="text">
              <string>Unhide tracks when adding hidden tracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="14" column="1">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="2">
+           <widget class="QCheckBox" name="oldStyleStopCheckBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string/>
             </property>
            </widget>
           </item>
@@ -1554,66 +1616,26 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="2">
-           <widget class="QCheckBox" name="smartFocusCheckBox">
+          <item row="3" column="0">
+           <widget class="QLabel" name="textLabel1_4_3">
+            <property name="text">
+             <string>Use project save dialog</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QCheckBox" name="projectSaveCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="toolTip">
-             <string>Smart focus</string>
-            </property>
-            <property name="whatsThis">
-             <string>After editing, controls will return
- focus to their respective canvas</string>
-            </property>
             <property name="text">
              <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="0" colspan="2">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Show newly created midi velocity graphs per-note</string>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="2">
-           <widget class="QCheckBox" name="velocityPerNoteCheckBox">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="13" column="1">
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="12" column="2">
-           <widget class="QSpinBox" name="trackHeight">
-            <property name="suffix">
-             <string> px</string>
-            </property>
-            <property name="minimum">
-             <number>20</number>
-            </property>
-            <property name="maximum">
-             <number>2000</number>
-            </property>
-            <property name="value">
-             <number>20</number>
             </property>
            </widget>
           </item>
@@ -1637,16 +1659,17 @@ Disable to use an alternate standard
             </property>
            </widget>
           </item>
-          <item row="11" column="0" colspan="2">
-           <widget class="QLabel" name="label_8">
-            <property name="toolTip">
-             <string/>
-            </property>
-            <property name="whatsThis">
-             <string/>
-            </property>
+          <item row="13" column="0">
+           <widget class="QLabel" name="label_9">
             <property name="text">
-             <string>Borderless zoom/pan mouse (else use alternate method)</string>
+             <string>Scrollable submenus</string>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="2">
+           <widget class="QCheckBox" name="scrollableSubmenusCheckbox">
+            <property name="text">
+             <string/>
             </property>
            </widget>
           </item>
@@ -1662,28 +1685,28 @@ Disable to use an alternate standard
           <item row="0" column="0">
            <widget class="QRadioButton" name="onlyOldDrumBtn">
             <property name="text">
-             <string>Only offer old-style drumtracks</string>
+             <string>&amp;Only offer old-style drumtracks</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QRadioButton" name="onlyNewDrumBtn">
             <property name="text">
-             <string>Only offer new-style drumtracks</string>
+             <string>Only offer new-style &amp;drumtracks</string>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
            <widget class="QRadioButton" name="preferOldDrumBtn">
             <property name="text">
-             <string>Prefer old-style drumtracks</string>
+             <string>&amp;Prefer old-style drumtracks</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QRadioButton" name="preferNewDrumBtn">
             <property name="text">
-             <string>Prefer new-style drumtracks</string>
+             <string>Prefer &amp;new-style drumtracks</string>
             </property>
            </widget>
           </item>
@@ -1761,8 +1784,8 @@ Disable to use an alternate standard
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>500</width>
-               <height>460</height>
+               <width>520</width>
+               <height>457</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

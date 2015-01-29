@@ -33,6 +33,7 @@
 #include <QPalette>
 #include <QStyledItemDelegate>
 #include <QUrl>
+#include "widgets/popupmenu.h"
 
 #include <errno.h>
 
@@ -309,7 +310,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       showNativeGuiAction->setChecked(pipe->nativeGuiVisible(idx));
 
 #ifdef LV2_SUPPORT
-      QMenu *mSubPresets = NULL;
+      PopupMenu *mSubPresets = NULL;
 #endif
 
       if (pipe->empty(idx)) {
@@ -333,7 +334,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   showNativeGuiAction->setEnabled(false);
 #ifdef LV2_SUPPORT
             //show presets submenu for lv2 plugins
-            mSubPresets = new QMenu(tr("Presets"));
+            mSubPresets = new PopupMenu(tr("Presets"));
             if(pipe->isLV2Plugin(idx))
             {
                menu->addMenu(mSubPresets);
@@ -594,7 +595,7 @@ void EffectRack::dropEvent(QDropEvent *event)
       if (pipe) 
       {
             if ((*pipe)[idx] != NULL) {
-                QWidget *sw = event->source();
+                QWidget *sw = static_cast<QWidget *>(event->source());
                 if(sw)
                 {
                   if(strcmp(sw->metaObject()->className(), "EffectRack") == 0) 

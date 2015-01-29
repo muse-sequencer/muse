@@ -299,10 +299,10 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
 
 static void scanVstNativeLib(QFileInfo& fi)
 {
-  void* handle = dlopen(fi.filePath().toAscii().constData(), RTLD_NOW);
+  void* handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
   if (handle == NULL)
   {
-    fprintf(stderr, "scanVstNativeLib: dlopen(%s) failed: %s\n", fi.filePath().toAscii().constData(), dlerror());
+    fprintf(stderr, "scanVstNativeLib: dlopen(%s) failed: %s\n", fi.filePath().toLatin1().constData(), dlerror());
     return;
   }
 
@@ -322,7 +322,7 @@ static void scanVstNativeLib(QFileInfo& fi)
     if(MusEGlobal::debugMsg)
     {
       fprintf(stderr, "VST 2.4 entrypoint \"" NEW_PLUGIN_ENTRY_POINT "\" not found in library %s, looking for \""
-                      OLD_PLUGIN_ENTRY_POINT "\"\n", fi.filePath().toAscii().constData());
+                      OLD_PLUGIN_ENTRY_POINT "\"\n", fi.filePath().toLatin1().constData());
     }
 
     getInstance = (AEffect*(*)(audioMasterCallback))dlsym(handle, OLD_PLUGIN_ENTRY_POINT);
@@ -346,7 +346,7 @@ static void scanVstNativeLib(QFileInfo& fi)
   AEffect *plugin = getInstance(vstNativeHostCallback);
   if(!plugin)
   {
-    fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", fi.filePath().toAscii().constData());
+    fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", fi.filePath().toLatin1().constData());
     dlclose(handle);
     return;
   }
@@ -355,7 +355,7 @@ static void scanVstNativeLib(QFileInfo& fi)
 
   if(plugin->magic != kEffectMagic)
   {
-    fprintf(stderr, "Not a VST plugin in library \"%s\"\n", fi.filePath().toAscii().constData());
+    fprintf(stderr, "Not a VST plugin in library \"%s\"\n", fi.filePath().toLatin1().constData());
     dlclose(handle);
     return;
   }

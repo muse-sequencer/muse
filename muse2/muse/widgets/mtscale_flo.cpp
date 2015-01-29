@@ -220,7 +220,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
             
             QRect tr(xp, 0, xe-xp, 13);
                     
-            QRect wr = r.intersect(tr);
+            QRect wr = r.intersected(tr);
             if(!wr.isEmpty()) 
             {        
               if (m->second.current()) 

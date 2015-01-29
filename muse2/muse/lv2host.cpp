@@ -36,12 +36,15 @@
 #include <time.h>
 #include <dlfcn.h>
 #include <QMessageBox>
+#include <QDirIterator>
+#include <QInputDialog>
 
 #include <QDir>
 #include <QFileInfo>
 #include <QUrl>
-#include <QX11EmbedWidget>
+//#include <QX11EmbedWidget>
 #include <QCoreApplication>
+#include <QtGui/QWindow>
 
 #include "lv2host.h"
 #include "synth.h"
@@ -60,7 +63,9 @@
 #include "globals.h"
 #include "globaldefs.h"
 #include "gconfig.h"
-#include "popupmenu.h"
+#include "widgets/popupmenu.h"
+#include "widgets/menutitleitem.h"
+#include "icons.h"
 #include <ladspa.h>
 
 #include <math.h>
@@ -71,6 +76,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sord/sord.h>
 
 
 //uncomment to print audio process info
@@ -106,7 +112,8 @@ namespace MusECore
 #define LV2_F_WORKER_SCHEDULE LV2_WORKER__schedule
 #define LV2_F_WORKER_INTERFACE LV2_WORKER__interface
 #define LV2_F_UI_IDLE LV2_UI__idleInterface
-#define LV2_UI_HOST_URI LV2_UI__Qt4UI
+#define LV2_F_UI_Qt5_UI LV2_UI_PREFIX "Qt5UI"
+#define LV2_UI_HOST_URI LV2_F_UI_Qt5_UI
 #define LV2_UI_EXTERNAL LV2_EXTERNAL_UI__Widget
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
 #define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
@@ -142,6 +149,8 @@ typedef struct
    LilvNode *lv2_CVPort;
    LilvNode *lv2_psetPreset;
    LilvNode *lv2_rdfsLabel;
+   LilvNode *lv2_actionSavePreset;
+   LilvNode *lv2_actionUpdatePresets;
    LilvNode *end;  ///< NULL terminator for easy freeing of entire structure
 } CacheNodes;
 
@@ -274,7 +283,9 @@ void initLV2()
    lv2CacheNodes.lv2_SampleRate         = lilv_new_uri(lilvWorld, LV2_CORE__sampleRate);
    lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
    lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
-   lv2CacheNodes.lv2_rdfsLabel        = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
+   lv2CacheNodes.lv2_rdfsLabel          = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
+   lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionSavePreset");
+   lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionUpdatePresets");
    lv2CacheNodes.end                    = NULL;
 
    lilv_world_load_all(lilvWorld);
@@ -458,7 +469,8 @@ void deinitLV2()
       lv2Gtk2HelperHandle = NULL;
    }
 
-   free(lilvWorld);
+   lilv_world_free(lilvWorld);
+   lilvWorld = NULL;
 
 }
 
@@ -678,6 +690,35 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
       state->_ppifeatures [synth->_fDataAccess] = NULL;
    }
 
+   state->controlsNameMap.clear();
+
+   size_t nCpIn = synth->_controlInPorts.size();
+   size_t nCpOut = synth->_controlOutPorts.size();
+
+   if(nCpIn > 0)
+   {
+      state->lastControls = new float [nCpIn];
+      state->controlsMask = new bool [nCpIn];
+      state->controlTimers = new int [nCpIn];
+      for(uint32_t i = 0; i < nCpIn; i++)
+      {
+         state->lastControls [i] = synth->_pluginControlsDefault [synth->_controlInPorts [i].index];
+         state->controlsMask [i] = false;
+         state->controlTimers [i] = 0;
+         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(synth->_controlInPorts [i].cName).toLower(), i));
+         state->controlsSymMap.insert(std::pair<QString, size_t>(QString(synth->_controlInPorts [i].cSym).toLower(), i));
+      }
+   }
+
+   if(nCpOut > 0)
+   {
+      state->lastControlsOut = new float [nCpOut];
+      for(uint32_t i = 0; i < nCpOut; i++)
+      {
+         state->lastControlsOut [i] = synth->_pluginControlsDefault [synth->_controlOutPorts [i].index];
+      }
+   }
+
    //fill pointers for CV port types;
 
    uint32_t numAllPorts = lilv_plugin_get_num_ports(synth->_handle);
@@ -766,7 +807,6 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
 
 void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
 {
-
    if(state->uiDesc != NULL && state->uiInst != NULL)
       state->uiDesc->cleanup(state->uiInst);
 
@@ -865,7 +905,7 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    LV2_Atom* lv2_pos = (LV2_Atom*)pos_buf;
    /* Build an LV2 position object to report change to plugin */
    LV2_Atom_Forge* atomForge = &state->atomForge;
-#ifdef LV2_NEW_LIB
+//#ifdef LV2_NEW_LIB
    lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
    LV2_Atom_Forge_Frame frame;
    lv2_atom_forge_object(atomForge, &frame, 1, synth->_uTime_Position);
@@ -875,17 +915,17 @@ void LV2Synth::lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *b
    lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
    lv2_atom_forge_key(atomForge, synth->_uTime_beatsPerMinute);
    lv2_atom_forge_float(atomForge, (float)curBpm);
-#else
-   lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
-   LV2_Atom_Forge_Frame frame;
-   lv2_atom_forge_blank(atomForge, &frame, 1, synth->_uTime_Position);
-   lv2_atom_forge_property_head(atomForge, synth->_uTime_frame, 0);
-   lv2_atom_forge_long(atomForge, curFrame);
-   lv2_atom_forge_property_head(atomForge, synth->_uTime_speed, 0);
-   lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
-   lv2_atom_forge_property_head(atomForge, synth->_uTime_beatsPerMinute, 0);
-   lv2_atom_forge_float(atomForge, (float)curBpm);
-#endif
+//#else
+//   lv2_atom_forge_set_buffer(atomForge, pos_buf, sizeof(pos_buf));
+//   LV2_Atom_Forge_Frame frame;
+//   lv2_atom_forge_blank(atomForge, &frame, 1, synth->_uTime_Position);
+//   lv2_atom_forge_property_head(atomForge, synth->_uTime_frame, 0);
+//   lv2_atom_forge_long(atomForge, curFrame);
+//   lv2_atom_forge_property_head(atomForge, synth->_uTime_speed, 0);
+//   lv2_atom_forge_float(atomForge, curIsPlaying ? 1.0 : 0.0);
+//   lv2_atom_forge_property_head(atomForge, synth->_uTime_beatsPerMinute, 0);
+//   lv2_atom_forge_float(atomForge, (float)curBpm);
+//#endif
 buffer->lv2_evbuf_write(iter, 0, 0, lv2_pos->type, lv2_pos->size, (const uint8_t *)LV2_ATOM_BODY(lv2_pos));
 //   }
 }
@@ -1086,7 +1126,7 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
    if(state->widget != NULL && state->hasGui)
    {
       ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
-      QX11EmbedWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QX11EmbedWidget *>();
+      QWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QWidget *>();
       if(ewWin != NULL)
       {
          ewWin->resize(width, height);
@@ -1161,7 +1201,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       else
       {
          QMenu mGuisPopup;
-         QAction *aUiTypeHeader = new QAction(QMenu::tr("Select gui type"), NULL);
+         MusEGui::MenuTitleItem *aUiTypeHeader = new MusEGui::MenuTitleItem(QObject::tr("Select gui type"), NULL);
          aUiTypeHeader->setEnabled(false);
          QFont fHeader;
          fHeader.setBold(true);
@@ -1221,27 +1261,36 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
       bool bEmbed = false;
       bool bGtk = false;
       QWidget *ewWin = NULL;
+      QWindow *x11QtWindow = NULL;
       state->gtk2Plug = NULL;
       state->_ifeatures [synth->_fUiParent].data = NULL;
       if(strcmp(LV2_UI__X11UI, cUiUri) == 0)
       {
          bEmbed = true;         
-         ewWin = new QX11EmbedWidget();
-         (static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
-         (static_cast<QX11EmbedWidget *>(ewWin))->setParent(win);
-         state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)ewWin->winId();
+         //ewWin = new QWidget();
+         //x11QtWindow = QWindow::fromWinId(ewWin->winId());
+         //ewWin = win->createWindowContainer(x11QtWindow, win);
+         x11QtWindow = new QWindow();
+         ewWin = QWidget::createWindowContainer(x11QtWindow, win);
+         win->setCentralWidget(ewWin);
+         //(static_cast<QX11EmbedWidget *>(ewWin))->embedInto(win->winId());
+         //(static_cast<QX11EmbedWidget *>(ewWin))->setParent(win);
+         state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)x11QtWindow->winId();
 
       }
       else if(bLV2Gtk2Enabled && strcmp(LV2_UI__GtkUI, cUiUri) == 0)
       {
          bEmbed = true;
-         bGtk = true;         
-         ewWin = new QX11EmbedContainer(win);
-         win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
+         bGtk = true;
+         //ewWin = new QWidget();
+
+         //ewWin = new QX11EmbedContainer(win);
+         //win->setCentralWidget(static_cast<QX11EmbedContainer *>(ewWin));
          void *( *lv2Gtk2Helper_gtk_plug_newFn)(unsigned long, void*);
          *(void **)(&lv2Gtk2Helper_gtk_plug_newFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gtk_plug_new");
-         state->gtk2Plug = lv2Gtk2Helper_gtk_plug_newFn(ewWin->winId(), state);
-         state->_ifeatures [synth->_fUiParent].data = (void *)ewWin;
+         state->gtk2Plug = lv2Gtk2Helper_gtk_plug_newFn(0, state);
+         //state->_ifeatures [synth->_fUiParent].data = NULL;//(void *)ewWin;
+
 
          void ( *lv2Gtk2Helper_register_allocate_cbFn)(void *, void(*sz_cb_fn)(int, int, void *));
          *(void **)(&lv2Gtk2Helper_register_allocate_cbFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_register_allocate_cb");
@@ -1252,7 +1301,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          lv2Gtk2Helper_register_resize_cbFn(static_cast<void *>(state->gtk2Plug), lv2ui_Gtk2ResizeCb);
 
       }
-      else if(strcmp(LV2_UI__Qt4UI, cUiUri) == 0) //Qt4 uis are handled natively
+      else if(strcmp(LV2_F_UI_Qt5_UI, cUiUri) == 0) //Qt5 uis are handled natively
       {
          state->_ifeatures [synth->_fUiParent].data = win;
       }      
@@ -1298,17 +1347,6 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          return;
       }
 
-      /*
-      state->uiInst = suil_instance_new(state->uiHost,
-                                        state,
-                                        lilv_node_as_uri(lv2CacheNodes.host_uiType),
-                                        lilv_node_as_uri(lilv_plugin_get_uri(synth->_handle)),
-                                        lilv_node_as_uri(lilv_ui_get_uri(selectedUi)),
-                                        cUiUriNew,
-                                        lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi))),
-                                        lilv_uri_to_path(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi))),
-                                        state->_ppifeatures);
-                                        */
       void *uiW = NULL;
       state->uiInst = state->uiDesc->instantiate(state->uiDesc,
                                                  lilv_node_as_uri(lilv_plugin_get_uri(synth->_handle)),
@@ -1358,6 +1396,14 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
                   lv2Gtk2Helper_gtk_container_addFn(state->gtk2Plug, uiW);
                   lv2Gtk2Helper_gtk_widget_show_allFn(state->gtk2Plug);
+
+                  unsigned long ( *lv2Gtk2Helper_gdk_x11_drawable_get_xidFn)(void*);
+                  *(void **)(&lv2Gtk2Helper_gdk_x11_drawable_get_xidFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_gdk_x11_drawable_get_xid");
+                  unsigned long plugX11Id = lv2Gtk2Helper_gdk_x11_drawable_get_xidFn(state->gtk2Plug);
+                  x11QtWindow = QWindow::fromWinId(plugX11Id);
+                  ewWin = QWidget::createWindowContainer(x11QtWindow);
+                  //ewWin->setParent(win);
+                  win->setCentralWidget(ewWin);
 
                   if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                   {
@@ -1640,13 +1686,13 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
 
 unsigned LV2Synth::lv2ui_IsSupported(const char *, const char *ui_type_uri)
 {
-   if(strcmp(LV2_UI__Qt4UI, ui_type_uri) == 0
+   if(strcmp(LV2_F_UI_Qt5_UI, ui_type_uri) == 0
       || (bLV2Gtk2Enabled && strcmp(LV2_UI__GtkUI, ui_type_uri) == 0)
       || strcmp(LV2_UI__X11UI, ui_type_uri) == 0)
    {
-      return TRUE;
+      return 1;
    }
-   return FALSE;
+   return 0;
 }
 
 void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
@@ -1758,9 +1804,24 @@ char *LV2Synth::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const ch
 
 void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu)
 {
-   std::map<QString, LilvNode *>::iterator it;
-   LV2Synth *synth = state->synth;
    menu->clear();
+   menu->setIcon(QIcon(*MusEGui::presetsNewIcon));
+   LV2Synth *synth = state->synth;
+   //this is good by slow down menu population.
+   //So it's called only on changes (preset save/manual update)
+   //LV2Synth::lv2state_UnloadLoadPresets(synth, true);
+   MusEGui::MenuTitleItem *actPresetActionsHeader = new MusEGui::MenuTitleItem(QObject::tr("Preset actions"), menu);
+   menu->addAction(actPresetActionsHeader);
+   QAction *actSave = menu->addAction(QObject::tr("Save preset..."));
+   actSave->setObjectName("lv2state_presets_save_action");
+   actSave->setData(QVariant::fromValue<void *>(static_cast<void *>(lv2CacheNodes.lv2_actionSavePreset)));
+   QAction *actUpdate = menu->addAction(QObject::tr("Update list"));
+   actUpdate->setObjectName("lv2state_presets_update_action");
+   actUpdate->setData(QVariant::fromValue<void *>(static_cast<void *>(lv2CacheNodes.lv2_actionUpdatePresets)));
+   std::map<QString, LilvNode *>::iterator it;
+   MusEGui::MenuTitleItem *actSavedPresetsHeader = new MusEGui::MenuTitleItem(QObject::tr("Saved presets"), menu);
+   menu->addAction(actSavedPresetsHeader);
+
    for(it = synth->_presets.begin(); it != synth->_presets.end(); ++it)
    {
       QAction *act = menu->addAction(it->first);
@@ -1771,7 +1832,7 @@ void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu
       QAction *act = menu->addAction(QObject::tr("No presets found"));
       act->setDisabled(true);
       act->setData(QVariant::fromValue<void *>(NULL));
-   }
+   }   
 
 
 
@@ -1813,7 +1874,6 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
 
    uint32_t cport = it->second;
    float value = *(float *)buffer;
-
    // Schedules a timed control change:
    ControlEvent ce;
    ce.unique = false;
@@ -1921,13 +1981,160 @@ void LV2Synth::lv2state_setPortValue(const char *port_symbol, void *user_data, c
 
 }
 
+const void *LV2Synth::lv2state_getPortValue(const char *port_symbol, void *user_data, uint32_t *size, uint32_t *type)
+{
+   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)user_data;
+   assert(state != NULL);
+   std::map<QString, size_t>::iterator it = state->controlsSymMap.find(QString::fromUtf8(port_symbol).toLower());
+   *size = *type = 0;
+   if(it != state->controlsSymMap.end())
+   {
+      size_t ctrlNum = it->second;
+      MusECore::Port *controls = NULL;
+
+      if(state->plugInst != NULL)
+      {
+         controls = state->plugInst->controls;
+
+      }
+      else if(state->sif != NULL)
+      {
+         controls = state->sif->_controls;
+      }
+
+      if(controls != NULL)
+      {
+         *size = sizeof(float);
+         *type = state->atomForge.Float;
+         return &controls [ctrlNum].val;
+      }
+   }
+
+   return NULL;
+
+}
+
 void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset)
 {
+   //handle special actions first
+   if(preset == lv2CacheNodes.lv2_actionSavePreset)
+   {
+      bool isOk = false;
+      QString presetName = QInputDialog::getText(MusEGlobal::muse, QObject::tr("Enter new preset name"),
+                                                 QObject::tr(("Preset name:")), QLineEdit::Normal,
+                                                 QString(""), &isOk);
+      if(isOk && !presetName.isEmpty())
+      {
+         presetName = presetName.trimmed();
+         QString synthName = state->synth->name().replace(' ', '_');
+         QString presetDir = MusEGlobal::museUser + QString("/.lv2/")
+                             + synthName + QString("_")
+                             + presetName + QString(".lv2/");
+         QString presetFile = synthName + QString("_") + presetName
+                              + QString(".ttl");
+         QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+         QString plugFileDirName = MusEGlobal::museProject + QString("/") + plugName;
+         char *cPresetName = strdup(presetName.toUtf8().constData());
+         char *cPresetDir = strdup(presetDir.toUtf8().constData());
+         char *cPresetFile = strdup(presetFile.toUtf8().constData());
+         char *cPlugFileDirName = strdup(plugFileDirName.toUtf8().constData());
+         LilvState* const lilvState = lilv_state_new_from_instance(state->synth->_handle, state->handle, &state->synth->_lv2_urid_map,
+                                                                   cPlugFileDirName, cPresetDir, cPresetDir, cPresetDir,
+                                                                   LV2Synth::lv2state_getPortValue, state,
+                                                                   LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE, NULL);
+
+         lilv_state_set_label(lilvState, cPresetName);
+
+         lilv_state_save(lilvWorld, &state->synth->_lv2_urid_map,
+                         &state->synth->_lv2_urid_unmap,
+                         lilvState, NULL, cPresetDir,
+                         cPresetFile);
+
+         lilv_state_free(lilvState);
+         free(cPresetName);
+         free(cPresetDir);
+         free(cPresetFile);
+         free(cPlugFileDirName);
+         LV2Synth::lv2state_UnloadLoadPresets(state->synth, true, true);
+
+      }
+
+      return;
+   }
+   else if(preset == lv2CacheNodes.lv2_actionUpdatePresets)
+   {
+      LV2Synth::lv2state_UnloadLoadPresets(state->synth, true, true);
+      return;
+   }
    LilvState* lilvState = lilv_state_new_from_world(lilvWorld, &state->synth->_lv2_urid_map, preset);
    if(lilvState)
    {
       lilv_state_restore(lilvState, state->handle, LV2Synth::lv2state_setPortValue, state, 0, NULL);
       lilv_state_free(lilvState);
+   }
+
+}
+
+void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool update)
+{
+   assert(synth != NULL);
+
+   //std::cerr << "LV2Synth::lv2state_UnloadLoadPresets:  handling <" << synth->_name.toStdString() << ">" << std::endl;
+
+   std::map<QString, LilvNode *>::iterator it;
+   for(it = synth->_presets.begin(); it != synth->_presets.end(); ++it)
+   {
+      lilv_world_unload_resource(lilvWorld, it->second);
+      lilv_node_free(it->second);      
+   }
+   synth->_presets.clear();
+
+
+
+   if(load)
+   {
+      if(update)
+      {
+         //rescan and refresh user-defined presets first
+         QDirIterator dir_it(MusEGlobal::museUser + QString("/.lv2"), QStringList() << "*.lv2", QDir::Dirs, QDirIterator::NoIteratorFlags);
+         while (dir_it.hasNext())
+         {
+            QString nextDir = dir_it.next() + QString("/");
+            std::cerr << nextDir.toStdString() << std::endl;
+            SerdNode  sdir = serd_node_new_file_uri((const uint8_t*)nextDir.toUtf8().constData(), 0, 0, 0);
+            LilvNode* ldir = lilv_new_uri(lilvWorld, (const char*)sdir.buf);
+            lilv_world_unload_bundle(lilvWorld, ldir);
+            lilv_world_load_bundle(lilvWorld, ldir);
+            serd_node_free(&sdir);
+            lilv_node_free(ldir);
+         }
+      }
+
+      //scan for preserts
+      LilvNodes* presets = lilv_plugin_get_related(synth->_handle, lv2CacheNodes.lv2_psetPreset);
+      LILV_FOREACH(nodes, i, presets)
+      {
+         const LilvNode* preset = lilv_nodes_get(presets, i);
+#ifdef DEBUG_LV2
+         std::cerr << "\tPreset: " << lilv_node_as_uri(preset) << std::endl;
+#endif
+         lilv_world_load_resource(lilvWorld, preset);
+         LilvNodes* pLabels = lilv_world_find_nodes(lilvWorld, preset, lv2CacheNodes.lv2_rdfsLabel, NULL);
+         if (pLabels != NULL)
+         {
+            const LilvNode* pLabel = lilv_nodes_get_first(pLabels);
+            synth->_presets.insert(std::make_pair<QString, LilvNode *>(lilv_node_as_string(pLabel), lilv_node_duplicate(preset)));
+            lilv_nodes_free(pLabels);
+         }
+         else
+         {
+#ifdef DEBUG_LV2
+            std::cerr << "\t\tPreset <%s> has no rdfs:label" << lilv_node_as_string(lilv_nodes_get(presets, i)) << std::endl;
+#endif
+         }
+      }
+      lilv_nodes_free(presets);
+
    }
 
 }
@@ -2004,14 +2211,16 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
    _uAtom_EventTransfer   = mapUrid(LV2_ATOM__eventTransfer);
 
    _sampleRate = (double)MusEGlobal::sampleRate;
+   _fSampleRate = (float)MusEGlobal::sampleRate;
 
    //prepare features and options arrays
    LV2_Options_Option _tmpl_options [] =
    {
-      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_sampleRate},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_fSampleRate},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MAX_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
+      {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
       {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
 
    };
@@ -2110,7 +2319,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
       _ppfeatures [i] = &_features [i];
    }
 
-   _ppfeatures [i] = 0;
+   _ppfeatures [i] = 0;   
 
    //enum plugin ports;
    uint32_t numPorts = lilv_plugin_get_num_ports(_handle);
@@ -2313,37 +2522,17 @@ LV2Synth::LV2Synth(const QFileInfo &fi, QString label, QString name, QString aut
 
    }
 
-   //scan for preserts
-   LilvNodes* presets = lilv_plugin_get_related(_handle, lv2CacheNodes.lv2_psetPreset);
-   LILV_FOREACH(nodes, i, presets)
-   {
-      const LilvNode* preset = lilv_nodes_get(presets, i);
-#ifdef DEBUG_LV2
-      std::cerr << "\tPreset: " << lilv_node_as_uri(preset) << std::endl;
-#endif
-      lilv_world_load_resource(lilvWorld, preset);
-      LilvNodes* pLabels = lilv_world_find_nodes(lilvWorld, preset, lv2CacheNodes.lv2_rdfsLabel, NULL);
-      if (pLabels != NULL)
-      {
-         const LilvNode* pLabel = lilv_nodes_get_first(pLabels);
-         _presets.insert(std::make_pair<QString, LilvNode *>(lilv_node_as_string(pLabel), lilv_node_duplicate(preset)));
-         lilv_nodes_free(pLabels);
-      }
-      else
-      {
-#ifdef DEBUG_LV2
-         std::cerr << "\t\tPreset <%s> has no rdfs:label" << lilv_node_as_string(lilv_nodes_get(presets, i)) << std::endl;
-#endif
-      }
-   }
-   lilv_nodes_free(presets);
+   _presets.clear();
 
+   LV2Synth::lv2state_UnloadLoadPresets(this, true);
 
    _isConstructed = true;
 }
 
 LV2Synth::~LV2Synth()
 {
+   LV2Synth::lv2state_UnloadLoadPresets(this);
+
    if(_ppfeatures)
    {
       delete [] _ppfeatures;
@@ -2367,22 +2556,6 @@ LV2Synth::~LV2Synth()
       lilv_uis_free(_uis);
       _uis = NULL;
    }
-   std::map<QString, LilvNode *>::iterator it;
-   for(it = _presets.begin(); it != _presets.end(); ++it)
-   {
-      lilv_node_free(it->second);
-   }
-#if 0
-   //TODO: Make real check for lilv version
-   //for existance of 'lilv_world_unload_resource' function
-   LilvNodes* presets = lilv_plugin_get_related(_handle, lv2CacheNodes.lv2_psetPreset);
-   LILV_FOREACH(nodes, i, presets)
-   {
-      const LilvNode* preset = lilv_nodes_get(presets, i);
-      lilv_world_unload_resource(lilvWorld, preset);
-   }
-   lilv_nodes_free(presets);
-#endif
 }
 
 
@@ -2552,8 +2725,6 @@ bool LV2SynthIF::init(LV2Synth *s)
       _controlsOut = NULL;
    }
 
-   _uiState->controlsNameMap.clear();
-
    _synth->midiCtl2PortMap.clear();
    _synth->port2MidiCtlMap.clear();
 
@@ -2568,9 +2739,6 @@ bool LV2SynthIF::init(LV2Synth *s)
          _controls [i].enCtrl = true;
       _controlInPorts [i].minVal = _synth->_pluginControlsMin [idx];
       _controlInPorts [i].maxVal = _synth->_pluginControlsMax [idx];
-
-      _uiState->controlsNameMap.insert(std::pair<QString, size_t>(QString(_controlInPorts [i].cName).toLower(), i));
-      _uiState->controlsSymMap.insert(std::pair<QString, size_t>(QString(_controlInPorts [i].cSym).toLower(), i));
 
       int ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + i;
 
@@ -2623,28 +2791,6 @@ bool LV2SynthIF::init(LV2Synth *s)
 
       if(!_controlInPorts [i].isCVPort)
          lilv_instance_connect_port(_handle, idx, &_controls [i].val);
-   }
-
-   if(_inportsControl > 0)
-   {
-      _uiState->lastControls = new float [_inportsControl];
-      _uiState->controlsMask = new bool [_inportsControl];
-      _uiState->controlTimers = new int [_inportsControl];
-      for(uint32_t i = 0; i < _inportsControl; i++)
-      {
-         _uiState->lastControls [i] = _controls [i].val;
-         _uiState->controlsMask [i] = false;
-         _uiState->controlTimers [i] = 0;
-      }
-   }
-
-   if(_outportsControl > 0)
-   {
-      _uiState->lastControlsOut = new float [_outportsControl];
-      for(uint32_t i = 0; i < _outportsControl; i++)
-      {
-         _uiState->lastControlsOut [i] = _controlsOut [i].val;
-      }
    }
 
    for(size_t i = 0; i < _outportsControl; i++)
@@ -3951,7 +4097,7 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
             //notify worker that this run() finished
             if(_uiState->wrkIface && _uiState->wrkIface->end_run)
                _uiState->wrkIface->end_run(lilv_instance_get_handle(_handle));
-            //notify worker about processes data (if any)
+            //notify worker about processed data (if any)
             if(_uiState->wrkIface && _uiState->wrkIface->work_response && _uiState->wrkEndWork)
             {
                _uiState->wrkIface->work_response(lilv_instance_get_handle(_handle), _uiState->wrkDataSize, _uiState->wrkDataBuffer);
@@ -3980,9 +4126,16 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
 void LV2SynthIF::getGeometry(int *x, int *y, int *w, int *h) const
 {
-   *x = *y = *w = *h = 0;
+   if(!_gui)
+   {
+     *x=0;*y=0;*w=0;*h=0;
+     return;
+   }
 
-
+   *x = _gui->x();
+   *y = _gui->y();
+   *w = _gui->width();
+   *h = _gui->height();
 
    return;
 }
@@ -3990,6 +4143,16 @@ void LV2SynthIF::getGeometry(int *x, int *y, int *w, int *h) const
 void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
 {
    *x = *y = *w = *h = 0;
+   if(_uiState->pluginWindow != NULL && !_uiState->hasExternalGui)
+   {
+      QSize sz = _uiState->pluginWindow->size();
+      *w = sz.width();
+      *h = sz.height();
+      QPoint pos = _uiState->pluginWindow->pos();
+      *x = pos.x();
+      *y = pos.y();
+   }
+
    return;
 }
 
@@ -4094,6 +4257,15 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
 {
    LV2Synth::lv2prg_updatePrograms(_uiState);
    menu->clear();
+   MusEGui::PopupMenu *subMenuPrograms = new MusEGui::PopupMenu(menu->parent());
+   subMenuPrograms->setTitle(QObject::tr("Midi programs"));
+   subMenuPrograms->setIcon(QIcon(*MusEGui::pianoNewIcon));
+   menu->addMenu(subMenuPrograms);
+   MusEGui::PopupMenu *subMenuPresets = new MusEGui::PopupMenu(menu->parent());
+   subMenuPresets->setTitle(QObject::tr("Presets"));
+   menu->addMenu(subMenuPresets);
+
+   //First: fill programs submenu
    std::map<int, MusEGui::PopupMenu *> submenus;
    std::map<uint32_t, lv2ExtProgram>::iterator itIndex;
    for(itIndex = _uiState->index2prg.begin(); itIndex != _uiState->index2prg.end(); ++itIndex)
@@ -4101,6 +4273,11 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
       const lv2ExtProgram &extPrg = itIndex->second;
       //truncating bank and brogran numbers to 16 bit - muse MidiPlayEvent can handle only 32 bit numbers
       int bank = extPrg.bank;
+      //limit bank numbers to 0-255 to keep midi compatibility
+      if(bank > 255)
+      {
+         continue;
+      }
       int prog = extPrg.prog;
       int id = ((bank & 0xff) << 8) + prog;
       std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(bank);
@@ -4113,7 +4290,7 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
       {
           submenu = new MusEGui::PopupMenu(menu->parent());
           submenu->setTitle(QString("Bank #") + QString::number(bank + 1));
-          menu->addMenu(submenu);
+          subMenuPrograms->addMenu(submenu);
           submenus.insert(std::make_pair<int, MusEGui::PopupMenu *>(bank, submenu));
 
       }
@@ -4122,6 +4299,9 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int, bool)
       act->setData(id);
 
    }
+
+   //Second:: Fill presets submenu
+   LV2Synth::lv2state_populatePresetsMenu(_uiState, subMenuPresets);
 }
 
 void LV2SynthIF::preProcessAlways()
@@ -4149,15 +4329,23 @@ MidiPlayEvent LV2SynthIF::receiveEvent()
 
 }
 
-void LV2SynthIF::setGeometry(int , int , int , int)
+void LV2SynthIF::setGeometry(int x, int y, int w, int h)
 {
-   //TODO: implement this
+   if(!_gui)
+     return;
+
+   _gui->setGeometry(x, y, w, h);
 
 }
 
-void LV2SynthIF::setNativeGeometry(int , int , int , int)
+void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
 {
-   //TODO: implement this
+   if(_uiState->pluginWindow && !_uiState->hasExternalGui)
+   {
+      _uiState->pluginWindow->move(x, y);
+      //don't resize lv2 uis - this is handles at plugin level
+      //_uiState->pluginWindow->resize(w, h);
+   }
 
 }
 
@@ -4369,6 +4557,17 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 
    stopUpdateTimer();
 
+   if(_state->gtk2Plug != NULL)
+   {
+      QWidget *cW = centralWidget();
+      setCentralWidget(NULL);
+      if(cW != NULL)
+      {
+         cW->setParent(NULL);
+         delete cW;
+      }
+   }
+
    if(_state->deleteLater)
    {
       LV2Synth::lv2state_FreeState(_state);
@@ -4384,6 +4583,7 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 
       LV2Synth::lv2ui_FreeDescriptors(_state);
    }
+
 
    delete this;
 
@@ -4404,12 +4604,20 @@ LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state)
  : QMainWindow(), _state ( state ), _closing(false)
 {
    connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateGui()));
+   connect(this, SIGNAL(makeStopFromGuiThread()), this, SLOT(stopFromGuiThread()));
+   connect(this, SIGNAL(makeStartFromGuiThread()), this, SLOT(startFromGuiThread()));
+}
+
+LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
+{
+//#ifdef DEBUG_LV2
+   std::cout << "LV2PluginWrapper_Window::~LV2PluginWrapper_Window()" << std::endl;
+//#endif
 }
 
 void LV2PluginWrapper_Window::startNextTime()
 {
-   stopUpdateTimer();
-   updateTimer.start(1000/30);
+   emit startFromGuiThread();
 }
 
 
@@ -4418,8 +4626,7 @@ void LV2PluginWrapper_Window::startNextTime()
 void LV2PluginWrapper_Window::stopNextTime()
 {
    setClosing(true);
-   stopUpdateTimer();
-   close();
+   emit makeStopFromGuiThread();
 }
 
 void LV2PluginWrapper_Window::updateGui()
@@ -4458,7 +4665,19 @@ void LV2PluginWrapper_Window::updateGui()
    }
 
    //if(_closing)
-      //stopNextTime();
+   //stopNextTime();
+}
+
+void LV2PluginWrapper_Window::stopFromGuiThread()
+{
+   stopUpdateTimer();
+   emit close();
+}
+
+void LV2PluginWrapper_Window::startFromGuiThread()
+{
+   stopUpdateTimer();
+   updateTimer.start(1000/30);
 }
 
 
@@ -4589,32 +4808,6 @@ LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
       delete [] state->_ppifeatures;
       delete [] state->_ifeatures;
       return NULL;
-   }   
-
-   state->controlsNameMap.clear();
-
-   if(_controlInPorts > 0)
-   {
-      state->lastControls = new float [_controlInPorts];
-      state->controlsMask = new bool [_controlInPorts];
-      state->controlTimers = new int [_controlInPorts];
-      for(uint32_t i = 0; i < _controlInPorts; i++)
-      {
-         state->lastControls [i] = _synth->_pluginControlsDefault [_synth->_controlInPorts [i].index];
-         state->controlsMask [i] = false;
-         state->controlTimers [i] = 0;
-         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(_synth->_controlInPorts [i].cName).toLower(), i));
-         state->controlsNameMap.insert(std::pair<QString, size_t>(QString(_synth->_controlInPorts [i].cSym).toLower(), i));
-      }
-   }
-
-   if(_controlOutPorts > 0)
-   {
-      state->lastControlsOut = new float [_controlOutPorts];
-      for(uint32_t i = 0; i < _controlOutPorts; i++)
-      {
-         state->lastControlsOut [i] = _synth->_pluginControlsDefault [_synth->_controlOutPorts [i].index];
-      }
    }
 
    _states.insert(std::pair<void *, LV2PluginWrapper_State *>(state->handle, state));

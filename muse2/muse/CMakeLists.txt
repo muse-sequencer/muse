@@ -43,6 +43,9 @@ set (SubDirs
       widgets
       lv2Gtk2Helper
       )
+if(LV2_SUPPORT)
+      set ( SubDirs ${SubDirs} lv2Support )
+endif(LV2_SUPPORT)
 
 if (PYTHON_SUPPORT)
       set ( REM_CPP_FLAGS "-DENABLE_PYTHON" )
@@ -55,7 +58,7 @@ subdirs (${SubDirs})
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP ( muse_moc_headers
+QT5_WRAP_CPP ( muse_moc_headers
       app.h
       appearance.h
       cobject.h
@@ -75,7 +78,7 @@ QT4_WRAP_CPP ( muse_moc_headers
 ##
 ## Resource files
 ##
-QT4_ADD_RESOURCES (muse_qrc_files
+QT5_ADD_RESOURCES (muse_qrc_files
 		  muse.qrc
 		  )
 
@@ -94,9 +97,6 @@ file (GLOB core_source_files
       dialogs.cpp
       dssihost.cpp
       lv2host.cpp
-      lv2extui.h
-      lv2extprg.h
-      lv2extprgnew.h
       event.cpp
       eventlist.cpp
       exportmidi.cpp
@@ -195,6 +195,7 @@ include_directories (
       remote
       waveedit
       widgets
+      lv2Support
       )
 
 # Make sure to include the uic generated headers paths.
@@ -270,7 +271,10 @@ if(OSC_SUPPORT)
 endif(OSC_SUPPORT)
 
 if(LV2_SUPPORT)
-      target_link_libraries(core ${LV2_LIBRARIES})
+      target_link_libraries(core lv2_support)
+      if (PCRE_FOUND)
+            target_link_libraries(core ${PCRE_LIBRARIES})
+      endif (PCRE_FOUND)
 endif(LV2_SUPPORT)
 
 target_link_libraries(muse

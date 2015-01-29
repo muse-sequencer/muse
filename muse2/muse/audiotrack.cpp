@@ -1391,7 +1391,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
             int naux = MusEGlobal::song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
                   QString s("<auxSend idx=\"%1\">%2</auxSend>\n");  // Aux fix from Remon, thanks.
-                  xml.nput(level, s.arg(idx).arg(_auxSend[idx]).toAscii().constData());
+                  xml.nput(level, s.arg(idx).arg(_auxSend[idx]).toLatin1().constData());
                   }
             }
       for (ciPluginI ip = _efxPipe->begin(); ip != _efxPipe->end(); ++ip) {

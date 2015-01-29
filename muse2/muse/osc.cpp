@@ -520,7 +520,7 @@ int OscIF::oscUpdate(lo_arg **argv)
       /*
       #ifdef DSSI_SUPPORT
       //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-         //DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::song->projectPath().toAscii().data());
+         //DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::song->projectPath().toLatin1().data());
       lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
          DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());
       

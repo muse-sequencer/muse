@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="ru_RU">
+<TS version="2.1" language="ru_RU">
 <context>
     <name>@default</name>
     <message>
@@ -93,14 +93,6 @@ Also please check console output for any further error messages.
     <message>
         <source>Add New Style Drum Track</source>
         <translation>Добавить трек ударных в новом стиле</translation>
-    </message>
-    <message>
-        <source>Output port/device</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1330,15 +1322,15 @@ giving another chance to cancel.</source>
         <source>Release Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>2° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Level</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3780,6 +3772,54 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>Borderless zoom/pan mouse (else use alternate method)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start &amp;with last song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start with &amp;template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sta&amp;rt with song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Record all instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Don&apos;t record hidden instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;&amp;t record muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;t record &amp;hidden or muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scrollable submenus</source>
+        <translation>Прокручиваемые подменю</translation>
+    </message>
+    <message>
+        <source>&amp;Only offer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only offer new-style &amp;drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Prefer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prefer &amp;new-style drumtracks</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8949,6 +8989,18 @@ Canceling and setting a different export format would be better.
 Continue?</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::NoteInfo</name>
@@ -10240,6 +10292,18 @@ adjustments may be necessary.</source>
         <source>Metronome</source>
         <translation type="unfinished">Метроном</translation>
     </message>
+    <message>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::TrackComment</name>
@@ -10925,13 +10989,6 @@ to be expanded by more than </source>
     </message>
 </context>
 <context>
-    <name>QMenu</name>
-    <message>
-        <source>Select gui type</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>QObject</name>
     <message>
         <source>Error</source>
@@ -10972,6 +11029,38 @@ to be expanded by more than </source>
     <message>
         <source>Switch on Yamaha XG mode</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select gui type</source>
+        <translation>Выберите интерфейс</translation>
+    </message>
+    <message>
+        <source>Preset actions</source>
+        <translation>Действия над пресетами</translation>
+    </message>
+    <message>
+        <source>Save preset...</source>
+        <translation>Сохранить пресет...</translation>
+    </message>
+    <message>
+        <source>Update list</source>
+        <translation>Обновить список</translation>
+    </message>
+    <message>
+        <source>Saved presets</source>
+        <translation>Сохраненные пресеты</translation>
+    </message>
+    <message>
+        <source>Enter new preset name</source>
+        <translation>Введите имя нового пресета</translation>
+    </message>
+    <message>
+        <source>Midi programs</source>
+        <translation>Midi программы</translation>
+    </message>
+    <message>
+        <source>Presets</source>
+        <translation>Пресеты</translation>
     </message>
 </context>
 <context>
@@ -11052,31 +11141,31 @@ failed: %2</source>
     </message>
     <message>
         <source>Instrument-defined</source>
-        <translation type="unfinished">Определенный инструментом</translation>
+        <translation>Определенный инструментом</translation>
     </message>
     <message>
         <source>Edit instrument ...</source>
-        <translation type="unfinished">Редактировать инструмент...</translation>
+        <translation>Редактировать инструмент...</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить</translation>
     </message>
     <message>
         <source>Others</source>
-        <translation type="unfinished">Другие</translation>
+        <translation>Другие</translation>
     </message>
     <message>
         <source>Common Controls</source>
-        <translation type="unfinished">Обычные кнопки</translation>
+        <translation>Обычные кнопки</translation>
     </message>
     <message>
         <source>Velocity</source>
-        <translation type="unfinished">Скорость нажатия</translation>
+        <translation>Скорость нажатия</translation>
     </message>
     <message>
         <source>No wave events selected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не выбрано wave-событий</translation>
     </message>
 </context>
 <context>
@@ -11499,19 +11588,19 @@ p, li { white-space: pre-wrap; }(new line)
     </message>
     <message>
         <source>&amp;Printable file...</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>Alt+P</source>
-        <translation type="unfinished">Alt+P</translation>
+        <translation>Alt+P</translation>
     </message>
     <message>
         <source>&amp;Ok</source>
-        <translation type="unfinished">&amp;ОК</translation>
+        <translation>&amp;ОК</translation>
     </message>
     <message>
         <source>Alt+O</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -11623,11 +11712,11 @@ p, li { white-space: pre-wrap; }(new line)
     </message>
     <message>
         <source>&amp;Apply</source>
-        <translation type="unfinished">&amp;Применить</translation>
+        <translation>&amp;Применить</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -11845,7 +11934,7 @@ in current
         <source>On</source>
         <translation>Вкл</translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>VAM 1.0beta3
 Virtual Analog for MusE
 Released under GPL.
@@ -13058,6 +13147,10 @@ Continue?</source>
     </message>
     <message>
         <source>Tool: Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Duplicate track</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

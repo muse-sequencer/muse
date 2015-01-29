@@ -392,7 +392,7 @@ namespace MusEGui {
 
 QMenu* populateAddSynth(QWidget* parent)
 {
-  QMenu* synp = new QMenu(parent);
+  QMenu* synp = new PopupMenu(parent);
   
   typedef std::multimap<std::string, int > asmap;
   typedef std::multimap<std::string, int >::iterator imap;
@@ -400,7 +400,7 @@ QMenu* populateAddSynth(QWidget* parent)
   
   const int ntypes = MusECore::Synth::SYNTH_TYPE_END;
   asmap smaps[ntypes];
-  QMenu* mmaps[ntypes];
+  PopupMenu* mmaps[ntypes];
   for(int itype = 0; itype < ntypes; ++itype)
     mmaps[itype] = 0;
   
@@ -441,12 +441,12 @@ QMenu* populateAddSynth(QWidget* parent)
         // No sub-menu yet? Create it now.
         if(!mmaps[itype])
         {  
-          mmaps[itype] = new QMenu(parent);
+          mmaps[itype] = new PopupMenu(parent);
           mmaps[itype]->setIcon(*synthIcon);
           mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
           synp->addMenu(mmaps[itype]);
           //mmaps[itype]->setMaximumSize(800, 600);
-          mmaps[itype]->setStyleSheet("QMenu { menu-scrollable: 1; }");
+          //mmaps[itype]->setStyleSheet("QMenu { menu-scrollable: 1; }");
         }  
         QAction* act = mmaps[itype]->addAction(synth->description() + " <" + synth->name() + ">");
         act->setData( MENU_ADD_SYNTH_ID_BASE * (itype + 1) + idx );

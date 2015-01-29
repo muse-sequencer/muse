@@ -68,7 +68,7 @@ VisibleTracks::VisibleTracks(QWidget* parent, const char*)
       for (unsigned i = 0; i < sizeof(visTrackList)/sizeof(*visTrackList); ++i) {
             VisibleToolB* t = &visTrackList[i];
 
-            Action* a = new Action(action, i, tr(t->tip).toAscii().data(), true);
+            Action* a = new Action(action, i, tr(t->tip).toLatin1().data(), true);
             actions[n] = a;
             //a->setIconSet(QIcon(**(t->icon)));
             a->setIcon(QIcon(**(t->icon)));

@@ -631,6 +631,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.style = xml.parse1();
                         else if (tag == "autoSave")
                               MusEGlobal::config.autoSave = xml.parseInt();
+                        else if (tag == "scrollableSubMenus")
+                              MusEGlobal::config.scrollableSubMenus = xml.parseInt();
                         else if (tag == "styleSheetFile")
                               MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
@@ -1378,6 +1380,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "outputTracksVisible",  MusECore::AudioOutput::visible());
       xml.intTag(level, "synthTracksVisible",  MusECore::SynthI::visible());
       xml.intTag(level, "trackHeight",  MusEGlobal::config.trackHeight);
+      xml.intTag(level, "scrollableSubMenus", MusEGlobal::config.scrollableSubMenus);
 
       for (int i = 0; i < NUM_FONTS; ++i) {
             char buffer[32];

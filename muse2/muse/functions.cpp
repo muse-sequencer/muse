@@ -1078,7 +1078,7 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id) // true on s
 				if (tag == "part_id")
 					*part_id = xml.s2().toInt();
 				else
-					printf("unknown attribute '%s' in read_eventlist_and_part(), ignoring it...\n", tag.toAscii().data());
+					printf("unknown attribute '%s' in read_eventlist_and_part(), ignoring it...\n", tag.toLatin1().data());
 				break;
 				
 			case Xml::TagStart:

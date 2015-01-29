@@ -275,7 +275,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
             //if (m->second.current()) 
             //      p.fillRect(tr, white);
                     
-            QRect wr = r.intersect(tr);
+            QRect wr = r.intersected(tr);
             //if (r.intersects(tr)) 
             if(!wr.isEmpty()) 
             {        

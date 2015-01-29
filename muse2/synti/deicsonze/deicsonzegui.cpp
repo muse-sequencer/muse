@@ -2435,23 +2435,23 @@ void DeicsOnzeGui::setPresetName(const QString& n) {
   QTreeWidgetItem* pre = presetListView->currentItem();
   if(pre) {
     //TODO : must be changed with SysEx
-    _deicsOnze->_preset[_currentChannel]->name = n.toAscii().data();
-    pre->setText(1,n.toAscii().data());
+    _deicsOnze->_preset[_currentChannel]->name = n.toLatin1().data();
+    pre->setText(1,n.toLatin1().data());
   }
 }
 void DeicsOnzeGui::setSubcategoryName(const QString& s) {
   QTreeSubcategory* sub =
     (QTreeSubcategory*) subcategoryListView->currentItem();
   if(sub) {//must be changed with SysEx
-    sub->_subcategory->_subcategoryName=s.toAscii().data();
-    sub->setText(1, s.toAscii().data());
+    sub->_subcategory->_subcategoryName=s.toLatin1().data();
+    sub->setText(1, s.toLatin1().data());
   }
 }
 void DeicsOnzeGui::setCategoryName(const QString& c) {
   QTreeCategory* cat = (QTreeCategory*) categoryListView->currentItem();
   if(cat) {//must be changed with SysEx
-    cat->_category->_categoryName=c.toAscii().data();
-    cat->setText(1, c.toAscii().data());
+    cat->_category->_categoryName=c.toLatin1().data();
+    cat->setText(1, c.toLatin1().data());
   }
 }
 void DeicsOnzeGui::setHBank(int hb) {
@@ -2525,7 +2525,7 @@ void DeicsOnzeGui::setInitSetPath(const QString& s) {
   message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
   message[1]=DEICSONZE_UNIQUE_ID;
   message[2]=SYSEX_INITSETPATH;
-  strncpy((char*)&message[3], s.toAscii().data(), MAXSTRLENGTHINITSETPATH);
+  strncpy((char*)&message[3], s.toLatin1().data(), MAXSTRLENGTHINITSETPATH);
   sendSysex(message, 3+MAXSTRLENGTHINITSETPATH);
 }
 void DeicsOnzeGui::setBrowseInitSetPath() {
@@ -2563,7 +2563,7 @@ void DeicsOnzeGui::setBackgroundPixPath(const QString& s) {
   message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
   message[1]=DEICSONZE_UNIQUE_ID;
   message[2]=SYSEX_BACKGROUNDPIXPATH;
-  strncpy((char*)&message[3], s.toAscii().data(),
+  strncpy((char*)&message[3], s.toLatin1().data(),
 	  MAXSTRLENGTHBACKGROUNDPIXPATH);
   sendSysex(message, 3+MAXSTRLENGTHBACKGROUNDPIXPATH);
 }

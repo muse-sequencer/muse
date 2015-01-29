@@ -42,6 +42,7 @@
 #include <QCursor>
 #include <QPoint>
 #include <QRect>
+#include <QMimeData>
 
 #include "globaldefs.h"
 #include "drumedit.h"

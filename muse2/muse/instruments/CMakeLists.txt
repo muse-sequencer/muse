@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP ( instruments_mocs
+QT5_WRAP_CPP ( instruments_mocs
    editinstrument.h
    # minstrument.h
    )
@@ -33,10 +33,10 @@ QT4_WRAP_CPP ( instruments_mocs
 ## UI files
 ##
 file (GLOB instruments_ui_files
-      # ccontrollerbase.ui # not built. It needs to be converted to Qt4 for revival.
+      # ccontrollerbase.ui # not built. It needs to be converted to Qt5 for revival.
       editinstrumentbase.ui
       )
-QT4_WRAP_UI ( instruments_uis ${instruments_ui_files} )
+QT5_WRAP_UI ( instruments_uis ${instruments_ui_files} )
 
 ##
 ## List of source files to compile

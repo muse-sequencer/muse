@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
+<TS version="2.1">
 <context>
     <name>@default</name>
     <message>
@@ -74,30 +74,6 @@
     <message>
         <source>Bad timing</source>
         <translation type="obsolete">Timing difettoso</translation>
-    </message>
-    <message>
-        <source>Timing source frequency is %1hz, which is below the recommended minimum: 500hz!
-This could lead to audible timing problems for MIDI.
-Please see the FAQ on http://muse-sequencer.org for remedies.
-Also please check console output for any further error messages.
- </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add Old Style Drum Track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add New Style Drum Track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Output port/device</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1283,15 +1259,15 @@ giving another chance to cancel.</source>
         <source>Release Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>2° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Level</source>
         <translation type="unfinished"></translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>1° Decay Rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3519,22 +3495,6 @@ lo stato attivo al loro canvas</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Record all instruments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Don&apos;t record hidden instruments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Don&apos;t record muted instruments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Don&apos;t record hidden or muted instruments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Instrument initialization</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3590,19 +3550,51 @@ Disable to use an alternate standard
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Only offer old-style drumtracks</source>
+        <source>start &amp;with last song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Only offer new-style drumtracks</source>
+        <source>start with &amp;template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Prefer old-style drumtracks</source>
+        <source>sta&amp;rt with song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Prefer new-style drumtracks</source>
+        <source>&amp;Record all instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Don&apos;t record hidden instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;&amp;t record muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;t record &amp;hidden or muted instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scrollable submenus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Only offer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only offer new-style &amp;drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Prefer old-style drumtracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prefer &amp;new-style drumtracks</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8337,6 +8329,18 @@ Canceling and setting a different export format would be better.
 Continue?</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::NoteInfo</name>
@@ -9565,6 +9569,18 @@ adjustments may be necessary.</source>
         <source>Metronome</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Jack cpu load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CPU load reported by JACK audio server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected to JACK</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::TrackComment</name>
@@ -10224,13 +10240,6 @@ to be expanded by more than </source>
     </message>
 </context>
 <context>
-    <name>QMenu</name>
-    <message>
-        <source>Select gui type</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>QObject</name>
     <message>
         <source>Error</source>
@@ -10270,6 +10279,38 @@ to be expanded by more than </source>
     </message>
     <message>
         <source>Switch on Yamaha XG mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select gui type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preset actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save preset...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter new preset name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi programs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Presets</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11118,7 +11159,7 @@ in current
         <source>On</source>
         <translation type="unfinished">acceso</translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>VAM 1.0beta3
 Virtual Analog for MusE
 Released under GPL.
@@ -12307,6 +12348,10 @@ Continue?</source>
     </message>
     <message>
         <source>Tool: Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit: Duplicate track</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

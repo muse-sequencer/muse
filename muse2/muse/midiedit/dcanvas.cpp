@@ -642,7 +642,7 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
       pa.setPoint(2, x + CARET2, y);
       pa.setPoint(3, x,          y + CARET2);
       QRect r(pa.boundingRect());
-      r = r.intersect(rect);
+      r = r.intersected(rect);
       if(!r.isValid())
         return;
       
@@ -699,7 +699,7 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
       pa.setPoint(2, x+CARET2,  y + TH/2);
       pa.setPoint(3, x,         y + (TH-CARET)/2);
       QRect mr(pa.boundingRect());
-      mr = mr.intersect(rect);
+      mr = mr.intersected(rect);
       if(!mr.isValid())
         return;
       p.setPen(Qt::black);

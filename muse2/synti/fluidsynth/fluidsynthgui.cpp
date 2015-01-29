@@ -41,6 +41,8 @@
 #include <QTreeWidgetItem>
 #include <QHeaderView>
 
+#include <math.h>
+
 #include "muse/midi.h"
 #include "icons.h"
 
@@ -522,6 +524,7 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
             ppt = listView->mapToGlobal(ppt);
 
             int i = 0;
+            int lastindex = 0;
             for (std::list<FluidGuiSoundFont>::reverse_iterator it = stack.rbegin(); it != stack.rend(); it++) {
                   i++;
                   /*byte* d = (byte*) it->name.toLatin1();
@@ -545,23 +548,23 @@ void FluidSynthGui::channelItemClicked(QTableWidgetItem* item)
                         }
                   printf("\n\n");*/
                   QAction* act1 = popup->addAction(it->name);
-		  act1->setData(i);
+    act1->setData((int)it->id);
+    lastindex = std::max(lastindex, (int)it->id  + 1);
                   }
-            int lastindex = i+1;
+
             QAction *lastaction = popup->addAction("unspecified");
 	    lastaction->setData(lastindex);
             QAction * act = popup->exec(ppt, 0);
             if (act) {
-	          int index = act->data().toInt();
-                  byte sfid;
+           int sfid = act->data().toInt();
                   QString fontname;
-                  if (index == lastindex) {
+                  if (sfid == lastindex) {
                         sfid = FS_UNSPECIFIED_ID;
                         fontname = "unspecified";	//Actually, it's not possible to reset fluid-channels as for now,
                         } //so this is just a dummy that makes the synth block any events for the channel
                   else {
-                        sfid = getSoundFontId(act->text());
-                        fontname = getSoundFontName(sfid);
+                        //sfid = getSoundFontId(act->text());
+                        fontname = getSoundFontName((byte)sfid);
                         }
                   //byte channel = atoi(item->text().toLatin1()) - 1;
                   byte channel = row;

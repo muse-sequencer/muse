@@ -109,7 +109,7 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
                   continue;
             ToolB* t = &toolList[i];
 
-            Action* a = new Action(action, 1<<i, tr(t->tip).toAscii().data(), true);
+            Action* a = new Action(action, 1<<i, tr(t->tip).toLatin1().data(), true);
             actions[n] = a;
             //a->setIconSet(QIcon(**(t->icon)));
             a->setIcon(QIcon(**(t->icon)));
@@ -126,7 +126,7 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
       // Note: Does not take ownership.
       addActions(action->actions());
       
-      connect(action, SIGNAL(selected(QAction*)), SLOT(toolChanged(QAction*)));
+      connect(action, SIGNAL(triggered(QAction*)), SLOT(toolChanged(QAction*)));
 
       toolShortcuts[PointerTool] = SHRT_TOOL_CURSOR;
       toolShortcuts[PencilTool]  = SHRT_TOOL_PENCIL;

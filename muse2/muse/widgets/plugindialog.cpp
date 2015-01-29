@@ -140,7 +140,7 @@ PluginDialog::PluginDialog(QWidget* parent)
         int sizes[] = { 80, 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
         for (int i = 0; i < 12; ++i) {
               if (sizes[i] <= 50)     // hack alert!
-                    ui.pList->header()->setResizeMode(i, QHeaderView::Fixed);
+                    ui.pList->header()->setSectionResizeMode(i, QHeaderView::Fixed);
               ui.pList->header()->resizeSection(i, sizes[i]);
         }
         ui.pList->sortByColumn(3, Qt::AscendingOrder);
@@ -157,9 +157,9 @@ PluginDialog::PluginDialog(QWidget* parent)
       connect(ui.tabBar,  SIGNAL(currentChanged(int)), SLOT(tabChanged(int)));
       //connect(tabBar,  SIGNAL(tabMoved(int,int)), SLOT(tabMoved(int,int))); //not yet. need to find a way to forbid moving the zeroth tab
       connect(ui.sortBox, SIGNAL(editTextChanged(const QString&)),SLOT(fillPlugs()));
-      connect(newGroupAction, SIGNAL(activated()), SLOT(newGroup()));
-      connect(delGroupAction, SIGNAL(activated()), SLOT(delGroup()));
-      connect(renGroupAction, SIGNAL(activated()), SLOT(renameGroup()));
+      connect(newGroupAction, SIGNAL(triggered()), SLOT(newGroup()));
+      connect(delGroupAction, SIGNAL(triggered()), SLOT(delGroup()));
+      connect(renGroupAction, SIGNAL(triggered()), SLOT(renameGroup()));
       ui.sortBox->setFocus();
 }
 

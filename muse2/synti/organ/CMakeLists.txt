@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP ( organ_mocs
+QT5_WRAP_CPP ( organ_mocs
       organgui.h
       )
 
@@ -34,7 +34,7 @@ QT4_WRAP_CPP ( organ_mocs
 file (GLOB organ_ui_files
       organguibase.ui
       )
-QT4_WRAP_UI ( organ_uis ${organ_ui_files} )
+QT5_WRAP_UI ( organ_uis ${organ_ui_files} )
 
 ##
 ## List of source files to compile

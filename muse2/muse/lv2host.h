@@ -28,7 +28,7 @@
 #ifdef LV2_SUPPORT
 
 //uncomment to print debugging information for lv2 host
-//#define DEBUG_LV2
+#define DEBUG_LV2
 
 #include "lilv/lilv.h"
 #include "lv2/lv2plug.in/ns/ext/data-access/data-access.h"
@@ -678,6 +678,7 @@ private:
     LV2_URI_Map_Feature _lv2_uri_map;
     LV2_Log_Log _lv2_log_log;    
     double _sampleRate;
+    float _fSampleRate;
     bool _isSynth;
     int _uniqueID;
     uint32_t _midi_event_id;
@@ -774,7 +775,9 @@ public:
     static void lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, QMenu *menu);
     static void lv2state_PortWrite ( LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer, bool fromUi);
     static void lv2state_setPortValue(const char *port_symbol, void *user_data, const void *value, uint32_t size, uint32_t type);
+    static const void* lv2state_getPortValue(const char *port_symbol, void *user_data, uint32_t *size, uint32_t *type);
     static void lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset);
+    static void lv2state_UnloadLoadPresets(LV2Synth *synth, bool load = false, bool update = false);
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -826,9 +829,9 @@ public:
     virtual void showNativeGui ( bool v );
     virtual bool hasNativeGui() const;
     virtual void getGeometry ( int *, int *, int *, int * ) const;
-    virtual void setGeometry ( int, int, int, int );
+    virtual void setGeometry (int x, int y, int w, int h);
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
-    virtual void setNativeGeometry ( int, int, int, int );
+    virtual void setNativeGeometry (int x, int y, int w, int h);
     virtual void preProcessAlways();
     virtual iMPEvent getData ( MidiPort *, MPEventList *, iMPEvent, unsigned pos, int ports, unsigned n, float **buffer );
     virtual bool putEvent ( const MidiPlayEvent &ev );
@@ -1081,12 +1084,18 @@ private:
    void stopUpdateTimer();
 public:
    explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state );
+   ~LV2PluginWrapper_Window();
    void startNextTime();
    void stopNextTime();
    void doChangeControls();
    void setClosing(bool closing) {_closing = closing; }
+signals:
+   void makeStopFromGuiThread();
+   void makeStartFromGuiThread();
 public slots:
    void updateGui();
+   void stopFromGuiThread();
+   void startFromGuiThread();
 };
 
 

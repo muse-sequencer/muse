@@ -88,6 +88,7 @@ class AudioDevice {
       virtual void graphChanged() {}
       virtual void registrationChanged() {}
       virtual int setMaster(bool f) = 0;
+      virtual float getCPULoad() { return 0.0f; }
       };
 
 } // namespace MusECore

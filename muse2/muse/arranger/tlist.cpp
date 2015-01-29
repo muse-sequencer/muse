@@ -447,7 +447,9 @@ void TList::paint(const QRect& r)
                                         if (cl->isVisible())
                                             countVisible++;
                                     }
-                                    s.sprintf(" %d(%d) %s",countVisible, countAll, tr("visible").toAscii().data());
+                                    //s.sprintf(" %d(%d) %s",countVisible, countAll, tr("visible").toLatin1().data());
+                                    //make this more Unicode-aware as toLatin1 discards all internatianal data
+                                    s = QString(" %1(%2) %3").arg(countVisible).arg(countAll).arg(tr("visible"));
                                     }
 
 
@@ -1146,7 +1148,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
-        QMenu *mSubPresets = new QMenu(tr("Presets"));
+        PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
         QMenu* p = new QMenu;
         QAction* gact = p->addAction(tr("show gui"));
         gact->setCheckable(true);
@@ -1214,7 +1216,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
 
       QMenu* p = new QMenu;
-      QMenu *mSubPresets = new QMenu(tr("Presets"));
+      PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
       QAction* gact = p->addAction(tr("show gui"));
       gact->setCheckable(true);
       gact->setEnabled(port->hasGui());
@@ -2312,7 +2314,7 @@ void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
   FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
   if (f == 0)
   {
-        printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toAscii().data());
+        printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toLatin1().data());
         return;
   }
 

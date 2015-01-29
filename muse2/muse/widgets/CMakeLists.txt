@@ -30,7 +30,7 @@ subdirs (${SubDirs})
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP (widget_mocs
+QT5_WRAP_CPP (widget_mocs
       aboutbox_impl.h 
       arrangercolumns.h 
       action.h
@@ -153,7 +153,7 @@ file (GLOB widgets_ui_files
       unusedwavefiles.ui
       warn_bad_timing.ui
       )
-QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
+QT5_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
 ##
 ## List of source files to compile

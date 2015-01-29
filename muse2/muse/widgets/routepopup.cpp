@@ -899,7 +899,7 @@ void RoutePopupMenu::popupActivated(QAction* action)
         MusECore::RouteList* rl = _isOutMenu ? _track->outRoutes() : _track->inRoutes();
         
         // Take care of Route data items first... 
-        if(qVariantCanConvert<MusECore::Route>(action->data()))    
+        if(action->data().canConvert<MusECore::Route>())
         {
           MusECore::Route aRoute = action->data().value<MusECore::Route>();
           
@@ -1063,7 +1063,7 @@ void RoutePopupMenu::popupActivated(QAction* action)
           }  
         }  
         // ... now take care of integer data items.
-        else if(qVariantCanConvert<int>(action->data()))    
+        else if(action->data().canConvert<int>())
         {
           int n = action->data().value<int>();
           if(!_isOutMenu && n == 0)
@@ -1076,7 +1076,7 @@ void RoutePopupMenu::popupActivated(QAction* action)
         MusECore::AudioTrack* t = (MusECore::AudioTrack*)_track;
         MusECore::RouteList* rl = _isOutMenu ? t->outRoutes() : t->inRoutes();
         
-        if(!qVariantCanConvert<MusECore::Route>(action->data()))    
+        if(!action->data().canConvert<MusECore::Route>())
           return;  
           
         if(_isOutMenu)

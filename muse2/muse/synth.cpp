@@ -281,7 +281,7 @@ void* MessSynth::instantiate(const QString& instanceName)
                      "Unable to find msynth_descriptor() function in plugin "
                      "library file \"%s\": %s.\n"
                      "Are you sure this is a MESS plugin file?\n",
-                     info.filePath().toAscii().constData(), txt);
+                     info.filePath().toLatin1().constData(), txt);
                   MusEGlobal::undoSetuid();
                   return 0;
                   }
@@ -847,7 +847,7 @@ void SynthI::readProgram(Xml& xml, const QString& name)
           case Xml::End:
                 return;
           case Xml::TagStart:
-                xml.unknown(name.toAscii().constData());
+                xml.unknown(name.toLatin1().constData());
                 break;
           case Xml::Attribut:
                 if(tag == "bankH")
@@ -859,7 +859,7 @@ void SynthI::readProgram(Xml& xml, const QString& name)
                 if(tag == "prog")
                   _curProgram = xml.s2().toUInt();
                 else
-                  xml.unknown(name.toAscii().constData());
+                  xml.unknown(name.toLatin1().constData());
                 break;
           case Xml::TagEnd:
                 if(tag == name)

@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP (ctrl_mocs
+QT5_WRAP_CPP (ctrl_mocs
       # configmidictrl.h
       # ctrldialog.h
       # definemidictrl.h

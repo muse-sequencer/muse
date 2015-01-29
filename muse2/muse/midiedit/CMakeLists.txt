@@ -24,7 +24,7 @@
 ##
 ## Expand Qt macros in source files
 ##
-QT4_WRAP_CPP ( midiedit_mocs
+QT5_WRAP_CPP ( midiedit_mocs
       # gatetime.h
       # midicmd.h
       # midieditor.h

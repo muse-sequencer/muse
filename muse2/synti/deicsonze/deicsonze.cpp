@@ -172,7 +172,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   QString defaultConf = 
     (MusEGlobal::configPath + QString("/" DEICSONZESTR ".dco"));
   FILE* f;
-  f = fopen(defaultConf.toAscii().data(), "r");
+  f = fopen(defaultConf.toLatin1().data(), "r");
   if(f) {
     fclose(f);
     loadConfiguration(defaultConf);
@@ -337,56 +337,56 @@ void DeicsOnze::setNativeGeometry(int x, int y, int w, int h) {
 void DeicsOnze::initCtrls() {
     int i=0;
     for(int k=0; k<NBROP; k++) {
-	_ctrl[i].name=(QString(ARSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(ARSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_AR+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXAR;
-	_ctrl[i].name=(QString(D1RSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(D1RSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_D1R+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXD1R;
-	_ctrl[i].name=(QString(D2RSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(D2RSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_D2R+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXD2R;
-	_ctrl[i].name=(QString(RRSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(RRSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_RR+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXRR;
-	_ctrl[i].name=(QString(D1LSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(D1LSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_D1L+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXD1L;
-	_ctrl[i].name=(QString(LSSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(LSSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_LS+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXLS;
-	_ctrl[i].name=(QString(RSSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(RSSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_RS+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXRS;
-	_ctrl[i].name=(QString(EBSSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(EBSSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_EBS+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXEBS;
-	_ctrl[i].name=(QString(AMESTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(AMESTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_AME+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=1;
-	_ctrl[i].name=(QString(KVSSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(KVSSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_KVS+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXKVS;
-	_ctrl[i].name=(QString(OUTSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(OUTSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_OUT+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXOUT;
 	_ctrl[i].name=(QString("Centi")+QString(RATIOLONGSTR)+QString::number(k+1))
-	    .toAscii().data();
+	    .toLatin1().data();
 	_ctrl[i].num=CTRL_RATIO+k*DECAPAR1;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXRATIO*100;
-	_ctrl[i].name=(QString(DETSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(DETSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_DET+k*DECAPAR1;
 	_ctrl[i].min=-MAXDET;
 	_ctrl[i++].max=MAXDET;	
@@ -524,20 +524,20 @@ void DeicsOnze::initCtrls() {
     _ctrl[i].min=0;
     _ctrl[i++].max=MAXPL;
     for(int k=0; k<NBROP; k++) {
-	_ctrl[i].name=(QString(FIXSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(FIXSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_FIX+k*DECAPAR2;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=1;
 	_ctrl[i].name=(QString("Centi")+QString(FIXRANGESTR)
-		       +QString::number(k+1)).toAscii().data();
+		       +QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_FIXRANGE+k*DECAPAR2;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXFIXRANGE*100;
-	_ctrl[i].name=(QString(OSWSTR)+QString::number(k+1)).toAscii().data();
+	_ctrl[i].name=(QString(OSWSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_OSW+k*DECAPAR2;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXOSW;
-    	_ctrl[i].name=(QString(SHFTSTR)+QString::number(k+1)).toAscii().data();
+    	_ctrl[i].name=(QString(SHFTSTR)+QString::number(k+1)).toLatin1().data();
 	_ctrl[i].num=CTRL_SHFT+k*DECAPAR2;
 	_ctrl[i].min=0;
 	_ctrl[i++].max=MAXSHFT;
@@ -1251,13 +1251,13 @@ void DeicsOnze::loadSet(QString fileName) {
     QFile deicsonzeFile(fileName);
     if(!deicsonzeFile.open(QIODevice::ReadOnly)) {
       printf("Critical Error Cannot open file %s\n", 
-	     fileName.toAscii().data());
+	     fileName.toLatin1().data());
       return;
     }
     QDomDocument domTree;
     if (!domTree.setContent(&deicsonzeFile )) {
       printf("Critical Error Parsing error for file %s\n",
-	     fileName.toAscii().data());
+	     fileName.toLatin1().data());
       deicsonzeFile.close();
       return;
     }
@@ -2224,13 +2224,13 @@ void DeicsOnze::loadConfiguration(QString fileName) {
     QFile confFile(fileName);
     if(!confFile.open(QIODevice::ReadOnly)) {
       printf("Critical Error. Cannot open file %s\n",
-	     fileName.toAscii().data());
+	     fileName.toLatin1().data());
       return;
     }
     QDomDocument domTree;
     if (!domTree.setContent(&confFile )) {
 	printf("Critical Error. Parsing error for file %s\n",
-	       fileName.toAscii().data());
+	       fileName.toLatin1().data());
       confFile.close();
       return;
     }

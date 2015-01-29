@@ -869,21 +869,21 @@ void MidiSyncConfig::updateSyncInfoLV()
 	    devicesListView->resizeColumnToContents(DEVCOL_TMMC);
 	    devicesListView->resizeColumnToContents(DEVCOL_TMTC);
 
-	    devicesListView->header()->setResizeMode(DEVCOL_NO, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_IN, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_TICKIN, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_MRTIN, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_MMCIN, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_MTCIN, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_RCLK, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_RMRT, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_RMMC, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_RMTC, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_RMTC, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_RREWSTART, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_TCLK, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_TMRT, QHeaderView::Fixed);
-	    devicesListView->header()->setResizeMode(DEVCOL_TMMC, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_NO, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_IN, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_TICKIN, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_MRTIN, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_MMCIN, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_MTCIN, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_RCLK, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_RMRT, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_RMMC, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_RMTC, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_RMTC, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_RREWSTART, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_TCLK, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_TMRT, QHeaderView::Fixed);
+     devicesListView->header()->setSectionResizeMode(DEVCOL_TMMC, QHeaderView::Fixed);
 
       }
 
@@ -1027,7 +1027,7 @@ void MidiSyncConfig::dlvDoubleClicked(QTreeWidgetItem* item, int col)
       if(col == DEVCOL_RID)
       {
         int val = lvi->_idIn;
-        int newval = QInputDialog::getInteger(this, "Muse: Sync info" , "Enter new id number (127 = all):", val, 0, 127, 1, &ok);
+        int newval = QInputDialog::getInt(this, "Muse: Sync info" , "Enter new id number (127 = all):", val, 0, 127, 1, &ok);
         if(ok)
         {
           lvi->_idIn = newval;
@@ -1038,7 +1038,7 @@ void MidiSyncConfig::dlvDoubleClicked(QTreeWidgetItem* item, int col)
       if(col == DEVCOL_TID)
       {
         int val = lvi->_idOut;
-        int newval = QInputDialog::getInteger(this, "Muse: Sync info" , "Enter new id number (127 = global):", val, 0, 127, 1, &ok);
+        int newval = QInputDialog::getInt(this, "Muse: Sync info" , "Enter new id number (127 = global):", val, 0, 127, 1, &ok);
         if(ok)
         {
           lvi->_idOut = newval;

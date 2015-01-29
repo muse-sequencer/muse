@@ -1467,7 +1467,7 @@ void PianoRoll::initShortcuts()
 void PianoRoll::execDeliveredScript(int id)
 {
       QString scriptfile = MusEGlobal::song->getScriptPath(id, true);
-      MusEGlobal::song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
+      MusEGlobal::song->executeScript(scriptfile.toLatin1().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -1476,7 +1476,7 @@ void PianoRoll::execDeliveredScript(int id)
 void PianoRoll::execUserScript(int id)
 {
       QString scriptfile = MusEGlobal::song->getScriptPath(id, false);
-      MusEGlobal::song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
+      MusEGlobal::song->executeScript(scriptfile.toLatin1().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------

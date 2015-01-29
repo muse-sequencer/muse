@@ -227,6 +227,7 @@ GlobalConfigValues config = {
       20,                           // trackHeight
       true,                         // borderlessMouse
       false,                          // autoSave
+      false,                        // scrollableSubMenus
       QString("klick1.wav"),        // measSample
       QString("klick2.wav"),        // beatSample
       QString("klick3.wav"),        // accent1Sample

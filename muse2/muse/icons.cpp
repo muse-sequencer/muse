@@ -266,15 +266,19 @@
 
 #include "xpm/sine.xpm"
 #include "xpm/saw.xpm"
+
+#include "xpm/pianoNew.xpm"
+#include "xpm/presetsNew.xpm"
+
 #include "icons.h"
 
-#if QT_VERSION >= 0x040600
-#define MPIXMAP(a,b) QPixmap(QIcon::fromTheme(b, QIcon(QPixmap(a))).pixmap(QPixmap(a).width(),QPixmap(a).height()))
-#define MICON(a,b) QIcon(QIcon::fromTheme(b, QIcon(QPixmap(a))))
-#else
+//#if QT_VERSION >= 0x040600
+//#define MPIXMAP(a,b) QPixmap(QIcon::fromTheme(b, QIcon(QPixmap(a))).pixmap(QPixmap(a).width(),QPixmap(a).height()))
+//#define MICON(a,b) QIcon(QIcon::fromTheme(b, QIcon(QPixmap(a))))
+//#else
 #define MPIXMAP(a,b) QPixmap(a)
 #define MICON(a,b) QIcon(QPixmap(a))
-#endif
+//#endif
 
 namespace MusEGui {
 
@@ -532,6 +536,9 @@ QIcon* userIcon;
 
 QPixmap* sineIcon;
 QPixmap* sawIcon;
+
+QIcon* pianoNewIcon;
+QIcon* presetsNewIcon;
 
 //---------------------------------------------------------
 //   initIcons
@@ -793,6 +800,10 @@ void initIcons()
 
       sineIcon                                      = new MPIXMAP(sine_xpm, NULL);
       sawIcon                                       = new MPIXMAP(saw_xpm, NULL);
+
+      pianoNewIcon                                       = new MICON(pianoNew_xpm, NULL);
+      presetsNewIcon                                       = new MICON(presetsNew_xpm, NULL);
+
       }
 
 //---------------------------------------------------------

@@ -46,6 +46,7 @@
 #include "route.h"
 #include "popupmenu.h"
 #include "routepopup.h"
+#include "lv2host.h"
 
 namespace MusEGui {
 
@@ -1093,20 +1094,48 @@ void MidiTrackInfo::patchPopup()
         return;
       }  
       
-      connect(pup, SIGNAL(triggered(QAction*)), SLOT(patchPopupActivated(QAction*)));
+      //FIXME: (danvd) why execute the same code twice?
+      //Leave only synchronous execution
+      //connect(pup, SIGNAL(triggered(QAction*)), SLOT(patchPopupActivated(QAction*)));
       
       QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
-      if(act) 
+      if(act)
       {
-        int rv = act->data().toInt();
-        if(rv != -1)
-        {
-          ++_blockHeartbeatCount;
-          MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
-          MusEGlobal::audio->msgPlayMidiEvent(&ev);
-          updateTrackInfo(-1);
-          --_blockHeartbeatCount;
-        }  
+         if(act->data().type() == QVariant::Int)
+         {
+            int rv = act->data().toInt();
+            if(rv != -1)
+            {
+               ++_blockHeartbeatCount;
+               MusECore::MidiPlayEvent ev(0, port, channel, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
+               MusEGlobal::audio->msgPlayMidiEvent(&ev);
+               updateTrackInfo(-1);
+               --_blockHeartbeatCount;
+            }
+         }
+         else if(instr->isSynti() && act->data().canConvert<void *>())
+         {
+            MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
+            MusECore::Synth *s = si->synth();
+
+            //only for lv2 synths call applyPreset function.
+            if(s && s->synthType() == MusECore::Synth::LV2_SYNTH)
+            {
+               MusECore::LV2SynthIF *sif = static_cast<MusECore::LV2SynthIF *>(si->sif());
+               //be pedantic about checks
+               if(sif)
+               {
+                  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+                  if(mp)
+                  {
+                     if(mp->hwCtrlState(channel, MusECore::CTRL_PROGRAM) != MusECore::CTRL_VAL_UNKNOWN)
+                        MusEGlobal::audio->msgSetHwCtrlState(mp, channel, MusECore::CTRL_PROGRAM, MusECore::CTRL_VAL_UNKNOWN);
+                     sif->applyPreset(act->data().value<void *>());
+                  }
+               }
+            }
+
+         }
       }
             
       delete pup;      

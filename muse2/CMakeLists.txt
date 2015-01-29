@@ -23,6 +23,8 @@
 
 include(FindPkgConfig)
 include(CheckIncludeFile)
+include(CheckIncludeFiles)
+include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 
 project(muse)
@@ -168,27 +170,46 @@ else (APPLE)
 endif (APPLE)
 
 ##
-##  look for Qt4
+##  look for Qt5
 ##
 
-set(QT_MIN_VERSION "4.3.0")
+
+set(QT_MIN_VERSION "5.1.0")
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
 set(QT_USE_QTSVG TRUE)
 
-find_package(Qt4)
+find_package(Qt5Widgets)
 
-if (NOT QT4_FOUND)
-      message(FATAL_ERROR "Fatal error: QT (version >= 4.3.0) required.\n"
-      "Cmake tries to detect QT4 by searching for 'qmake' in your PATH\n"
-      "If you have QT4 installed, make sure qmake is found in your PATH."
+if (NOT Qt5Widgets_FOUND)
+      message(FATAL_ERROR "Fatal error: QT (version >= 5.1.0) required.\n"
+      "Cmake tries to detect QT5 by searching for 'Qt5Widgets' package\n"
+      "If you have QT5 installed, make sure 'Qt5Widgets' package is in PKG_CONFIG_PATH."
       )
-endif (NOT QT4_FOUND)
+endif (NOT Qt5Widgets_FOUND)
+
+find_package(Qt5Core REQUIRED)
+find_package(Qt5UiTools REQUIRED)
+find_package(Qt5LinguistTools REQUIRED)
+find_package(Qt5Xml REQUIRED)
 
 # Needed for plugins factory:
 SET(QT_USE_QTUITOOLS TRUE)
 
-include(${QT_USE_FILE})
+include_directories (${Qt5Widgets_INCLUDE_DIRS})
+include_directories (${Qt5Core_INCLUDE_DIRS})
+include_directories (${Qt5UiTools_INCLUDE_DIRS})
+include_directories (${Qt5Xml_INCLUDE_DIRS})
+
+LINK_DIRECTORIES(${Qt5Widgets_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt5Core_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt5UiTools_LIBRARY_DIRS})
+LINK_DIRECTORIES(${Qt5Xml_LIBRARY_DIRS})
+
+SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5Core_LIBRARIES})
+
+
+##include(${QT_USE_FILE})
 
 ##
 ##   Begin MANDATORY packages...
@@ -351,22 +372,11 @@ else (ENABLE_VST_VESTIGE)
   SET (VST_VESTIGE_SUPPORT FALSE)
 endif (ENABLE_VST_VESTIGE)
 
-## LV2 support
-## check for lilv >= 0.16.0
-##
 
 if (ENABLE_LV2)
-      PKG_CHECK_MODULES(LV2 lilv-0>=0.16.0)
-      if (LV2_FOUND)
-            include_directories(${LV2_INCLUDE_DIRS})
-            LINK_DIRECTORIES(${LV2_LIBRARY_DIRS})
-
-            set(LV2_SUPPORT ON)
-            PKG_CHECK_MODULES(LV2NEWLIB lv2>=1.10.0)
-            if (LV2NEWLIB_FOUND)
-                set(LV2_NEW_LIB ON)
-            endif (LV2NEWLIB_FOUND)
-      endif (LV2_FOUND)
+      set (LV2_FOUND ON)
+      set(LV2_SUPPORT ON)
+      PKG_CHECK_MODULES(PCRE libpcre)
 else (ENABLE_LV2)
       message("LV2 disabled")
 endif (ENABLE_LV2)

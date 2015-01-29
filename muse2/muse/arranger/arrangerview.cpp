@@ -325,28 +325,28 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
 
-  connect(startPianoEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startPianoroll()));
-  connect(startScoreEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startScoreQuickly()));
-  connect(startDrumEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startDrumEditor()));
-  connect(startListEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startListEditor()));
-  connect(startWaveEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startWaveEditor()));
+  connect(startPianoEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startPianoroll()));
+  connect(startScoreEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startScoreQuickly()));
+  connect(startDrumEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startDrumEditor()));
+  connect(startListEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor()));
+  connect(startWaveEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startWaveEditor()));
   connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), MusEGlobal::muse, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
   connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), MusEGlobal::muse, SLOT(openInScoreEdit_allInOne(QWidget*)));
 
 
-  connect(masterGraphicAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startMasterEditor()));
-  connect(masterListAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startLMasterEditor()));
+  connect(masterGraphicAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startMasterEditor()));
+  connect(masterListAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startLMasterEditor()));
 
-  connect(midiTransformerAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startMidiTransformer()));
+  connect(midiTransformerAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startMidiTransformer()));
 
 
   //-------- Structure connections
-  connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
-  connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
-  connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
-  connect(strGlobalCutSelAction, SIGNAL(activated()), SLOT(globalCutSel()));
-  connect(strGlobalInsertSelAction, SIGNAL(activated()), SLOT(globalInsertSel()));
-  connect(strGlobalSplitSelAction, SIGNAL(activated()), SLOT(globalSplitSel()));
+  connect(strGlobalCutAction, SIGNAL(triggered()), SLOT(globalCut()));
+  connect(strGlobalInsertAction, SIGNAL(triggered()), SLOT(globalInsert()));
+  connect(strGlobalSplitAction, SIGNAL(triggered()), SLOT(globalSplit()));
+  connect(strGlobalCutSelAction, SIGNAL(triggered()), SLOT(globalCutSel()));
+  connect(strGlobalInsertSelAction, SIGNAL(triggered()), SLOT(globalInsertSel()));
+  connect(strGlobalSplitSelAction, SIGNAL(triggered()), SLOT(globalSplitSel()));
 
 
 
@@ -638,13 +638,13 @@ void ArrangerView::updateScoreMenus()
 
   
   action=new QAction(tr("New"), this);
-  connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
+  connect(action, SIGNAL(triggered()), scoreOneStaffPerTrackMapper, SLOT(map()));
   scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)NULL);
   scoreOneStaffPerTrackSubsubmenu->addAction(action);
   
   
   action=new QAction(tr("New"), this); //the above action may NOT be reused!
-  connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
+  connect(action, SIGNAL(triggered()), scoreAllInOneMapper, SLOT(map()));
   scoreAllInOneMapper->setMapping(action, (QWidget*)NULL);
   scoreAllInOneSubsubmenu->addAction(action);
 
@@ -656,13 +656,13 @@ void ArrangerView::updateScoreMenus()
       ScoreEdit* score = dynamic_cast<ScoreEdit*>(*it);
       
       action=new QAction(score->get_name(), this);
-      connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
+      connect(action, SIGNAL(triggered()), scoreOneStaffPerTrackMapper, SLOT(map()));
       scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)score);
       scoreOneStaffPerTrackSubsubmenu->addAction(action);
 
 
       action=new QAction(score->get_name(), this); //the above action may NOT be reused!
-      connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
+      connect(action, SIGNAL(triggered()), scoreAllInOneMapper, SLOT(map()));
       scoreAllInOneMapper->setMapping(action, (QWidget*)score);
       scoreAllInOneSubsubmenu->addAction(action);
     }

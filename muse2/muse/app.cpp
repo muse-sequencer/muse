@@ -369,8 +369,8 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::redoAction->setWhatsThis(tr("redo last undo"));
       MusEGlobal::undoAction->setEnabled(false);
       MusEGlobal::redoAction->setEnabled(false);
-      connect(MusEGlobal::redoAction, SIGNAL(activated()), MusEGlobal::song, SLOT(redo()));
-      connect(MusEGlobal::undoAction, SIGNAL(activated()), MusEGlobal::song, SLOT(undo()));
+      connect(MusEGlobal::redoAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(redo()));
+      connect(MusEGlobal::undoAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(undo()));
 
       //---------------------------------------------------
       //    Transport
@@ -408,19 +408,19 @@ MusE::MusE() : QMainWindow()
          tr("Start"), MusEGlobal::transportAction);
 
       MusEGlobal::startAction->setWhatsThis(tr("rewind to start position"));
-      connect(MusEGlobal::startAction, SIGNAL(activated()), MusEGlobal::song, SLOT(rewindStart()));
+      connect(MusEGlobal::startAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewindStart()));
 
       MusEGlobal::rewindAction = new QAction(QIcon(*MusEGui::frewindIcon),
          tr("Rewind"), MusEGlobal::transportAction);
 
       MusEGlobal::rewindAction->setWhatsThis(tr("rewind current position"));
-      connect(MusEGlobal::rewindAction, SIGNAL(activated()), MusEGlobal::song, SLOT(rewind()));
+      connect(MusEGlobal::rewindAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewind()));
 
       MusEGlobal::forwardAction = new QAction(QIcon(*MusEGui::fforwardIcon),
          tr("Forward"), MusEGlobal::transportAction);
 
       MusEGlobal::forwardAction->setWhatsThis(tr("move current position"));
-      connect(MusEGlobal::forwardAction, SIGNAL(activated()), MusEGlobal::song, SLOT(forward()));
+      connect(MusEGlobal::forwardAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(forward()));
 
       MusEGlobal::stopAction = new QAction(QIcon(*MusEGui::stopIcon),
          tr("Stop"), MusEGlobal::transportAction);
@@ -445,7 +445,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::panicAction = new QAction(QIcon(*MusEGui::panicIcon), tr("Panic"), this);
 
       MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
-      connect(MusEGlobal::panicAction, SIGNAL(activated()), MusEGlobal::song, SLOT(panic()));
+      connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
       MusEGlobal::metronomeAction = new QAction(QIcon(*MusEGui::metronomeIcon), tr("Metronome"), this);
       MusEGlobal::metronomeAction->setCheckable(true);
@@ -573,23 +573,23 @@ MusE::MusE() : QMainWindow()
       //---- Connections
       //-------- File connections
 
-      connect(fileNewAction,  SIGNAL(activated()), SLOT(loadTemplate()));
-      connect(fileOpenAction, SIGNAL(activated()), SLOT(loadProject()));
+      connect(fileNewAction,  SIGNAL(triggered()), SLOT(loadTemplate()));
+      connect(fileOpenAction, SIGNAL(triggered()), SLOT(loadProject()));
       connect(openRecent, SIGNAL(aboutToShow()), SLOT(openRecentMenu()));
       connect(openRecent, SIGNAL(triggered(QAction*)), SLOT(selectProject(QAction*)));
       
-      connect(fileSaveAction, SIGNAL(activated()), SLOT(save()));
-      connect(fileSaveAsAction, SIGNAL(activated()), SLOT(saveAs()));
+      connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
+      connect(fileSaveAsAction, SIGNAL(triggered()), SLOT(saveAs()));
 
-      connect(fileImportMidiAction, SIGNAL(activated()), SLOT(importMidi()));
-      connect(fileExportMidiAction, SIGNAL(activated()), SLOT(exportMidi()));
-      connect(fileImportPartAction, SIGNAL(activated()), SLOT(importPart()));
+      connect(fileImportMidiAction, SIGNAL(triggered()), SLOT(importMidi()));
+      connect(fileExportMidiAction, SIGNAL(triggered()), SLOT(exportMidi()));
+      connect(fileImportPartAction, SIGNAL(triggered()), SLOT(importPart()));
 
-      connect(fileImportWaveAction, SIGNAL(activated()), SLOT(importWave()));
-      connect(fileMoveWaveFiles, SIGNAL(activated()), SLOT(findUnusedWaveFiles()));
-      connect(quitAction, SIGNAL(activated()), SLOT(quitDoc()));
+      connect(fileImportWaveAction, SIGNAL(triggered()), SLOT(importWave()));
+      connect(fileMoveWaveFiles, SIGNAL(triggered()), SLOT(findUnusedWaveFiles()));
+      connect(quitAction, SIGNAL(triggered()), SLOT(quitDoc()));
 
-      connect(editSongInfoAction, SIGNAL(activated()), SLOT(startSongInfo()));
+      connect(editSongInfoAction, SIGNAL(triggered()), SLOT(startSongInfo()));
 
       //-------- View connections
       connect(viewTransportAction, SIGNAL(toggled(bool)), SLOT(toggleTransport(bool)));
@@ -602,10 +602,10 @@ MusE::MusE() : QMainWindow()
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
       //-------- Midi connections
-      connect(midiEditInstAction, SIGNAL(activated()), SLOT(startEditInstrument()));
-      connect(midiResetInstAction, SIGNAL(activated()), SLOT(resetMidiDevices()));
-      connect(midiInitInstActions, SIGNAL(activated()), SLOT(initMidiDevices()));
-      connect(midiLocalOffAction, SIGNAL(activated()), SLOT(localOff()));
+      connect(midiEditInstAction, SIGNAL(triggered()), SLOT(startEditInstrument()));
+      connect(midiResetInstAction, SIGNAL(triggered()), SLOT(resetMidiDevices()));
+      connect(midiInitInstActions, SIGNAL(triggered()), SLOT(initMidiDevices()));
+      connect(midiLocalOffAction, SIGNAL(triggered()), SLOT(localOff()));
 
       connect(midiTrpAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
       connect(midiInputTrfAction, SIGNAL(triggered()), midiPluginSignalMapper, SLOT(map()));
@@ -625,23 +625,23 @@ MusE::MusE() : QMainWindow()
       connect(midiPluginSignalMapper, SIGNAL(mapped(int)), this, SLOT(startMidiInputPlugin(int)));
       
       //-------- Audio connections
-      connect(audioBounce2TrackAction, SIGNAL(activated()), SLOT(bounceToTrack()));
-      connect(audioBounce2FileAction, SIGNAL(activated()), SLOT(bounceToFile()));
-      connect(audioRestartAction, SIGNAL(activated()), SLOT(seqRestart()));
+      connect(audioBounce2TrackAction, SIGNAL(triggered()), SLOT(bounceToTrack()));
+      connect(audioBounce2FileAction, SIGNAL(triggered()), SLOT(bounceToFile()));
+      connect(audioRestartAction, SIGNAL(triggered()), SLOT(seqRestart()));
 
       //-------- Automation connections
-      connect(autoMixerAction, SIGNAL(activated()), SLOT(switchMixerAutomation()));
-      connect(autoSnapshotAction, SIGNAL(activated()), SLOT(takeAutomationSnapshot()));
-      connect(autoClearAction, SIGNAL(activated()), SLOT(clearAutomation()));
+      connect(autoMixerAction, SIGNAL(triggered()), SLOT(switchMixerAutomation()));
+      connect(autoSnapshotAction, SIGNAL(triggered()), SLOT(takeAutomationSnapshot()));
+      connect(autoClearAction, SIGNAL(triggered()), SLOT(clearAutomation()));
 
       //-------- Settings connections
-      connect(settingsGlobalAction, SIGNAL(activated()), SLOT(configGlobalSettings()));
-      connect(settingsShortcutsAction, SIGNAL(activated()), SLOT(configShortCuts()));
-      connect(settingsMetronomeAction, SIGNAL(activated()), SLOT(configMetronome()));
-      connect(settingsMidiSyncAction, SIGNAL(activated()), SLOT(configMidiSync()));
-      connect(settingsMidiIOAction, SIGNAL(activated()), SLOT(configMidiFile()));
-      connect(settingsAppearanceAction, SIGNAL(activated()), SLOT(configAppearance()));
-      connect(settingsMidiPortAction, SIGNAL(activated()), SLOT(configMidiPorts()));
+      connect(settingsGlobalAction, SIGNAL(triggered()), SLOT(configGlobalSettings()));
+      connect(settingsShortcutsAction, SIGNAL(triggered()), SLOT(configShortCuts()));
+      connect(settingsMetronomeAction, SIGNAL(triggered()), SLOT(configMetronome()));
+      connect(settingsMidiSyncAction, SIGNAL(triggered()), SLOT(configMidiSync()));
+      connect(settingsMidiIOAction, SIGNAL(triggered()), SLOT(configMidiFile()));
+      connect(settingsAppearanceAction, SIGNAL(triggered()), SLOT(configAppearance()));
+      connect(settingsMidiPortAction, SIGNAL(triggered()), SLOT(configMidiPorts()));
 
       connect(dontFollowAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
       connect(followPageAction, SIGNAL(triggered()), followSignalMapper, SLOT(map()));
@@ -654,10 +654,10 @@ MusE::MusE() : QMainWindow()
       connect(followSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
 
       //-------- Help connections
-      connect(helpManualAction, SIGNAL(activated()), SLOT(startHelpBrowser()));
-      connect(helpHomepageAction, SIGNAL(activated()), SLOT(startHomepageBrowser()));
-      connect(helpReportAction, SIGNAL(activated()), SLOT(startBugBrowser()));
-      connect(helpAboutAction, SIGNAL(activated()), SLOT(about()));
+      connect(helpManualAction, SIGNAL(triggered()), SLOT(startHelpBrowser()));
+      connect(helpHomepageAction, SIGNAL(triggered()), SLOT(startHomepageBrowser()));
+      connect(helpReportAction, SIGNAL(triggered()), SLOT(startBugBrowser()));
+      connect(helpAboutAction, SIGNAL(triggered()), SLOT(about()));
 
       //--------------------------------------------------
       //    Toolbar
@@ -708,6 +708,15 @@ MusE::MusE() : QMainWindow()
       metronomeToolbar->setObjectName("Metronome");
       metronomeToolbar->addAction(MusEGlobal::metronomeAction);
 
+      QToolBar *jackCpuToolbar = addToolBar(tr("Jack cpu load"));
+      jackCpuToolbar->setObjectName("JackCpuLoadToolbar");
+      QWidgetAction *actJackCpuLoad = new QWidgetAction(this);
+      actJackCpuLoad->setWhatsThis(tr("CPU load reported by JACK audio server"));
+      QLabel *lbCpuLoad = new QLabel(tr("Not connected to JACK"));
+      lbCpuLoad->setObjectName("JackCpuLoadToolbarLabel");
+      actJackCpuLoad->setDefaultWidget(lbCpuLoad);
+      jackCpuToolbar->addAction(actJackCpuLoad);
+
       requiredToolbars.push_back(tools);
       optionalToolbars.push_back(songpos_tb);
       optionalToolbars.push_back(sig_tb);
@@ -716,6 +725,7 @@ MusE::MusE() : QMainWindow()
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(panicToolbar);
       optionalToolbars.push_back(metronomeToolbar);
+      optionalToolbars.push_back(jackCpuToolbar);
 
        QSocketNotifier* ss = new QSocketNotifier(MusEGlobal::audio->getFromThreadFdr(), QSocketNotifier::Read, this); 
        connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));  
@@ -894,10 +904,10 @@ MusE::MusE() : QMainWindow()
       mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(mdiArea);
-      connect(windowsTileAction, SIGNAL(activated()), this, SLOT(tileSubWindows()));
-      connect(windowsRowsAction, SIGNAL(activated()), this, SLOT(arrangeSubWindowsRows()));
-      connect(windowsColumnsAction, SIGNAL(activated()), this, SLOT(arrangeSubWindowsColumns()));
-      connect(windowsCascadeAction, SIGNAL(activated()), mdiArea, SLOT(cascadeSubWindows()));
+      connect(windowsTileAction, SIGNAL(triggered()), this, SLOT(tileSubWindows()));
+      connect(windowsRowsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsRows()));
+      connect(windowsColumnsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsColumns()));
+      connect(windowsCascadeAction, SIGNAL(triggered()), mdiArea, SLOT(cascadeSubWindows()));
 
 
       arrangerView = new MusEGui::ArrangerView(this);
@@ -1620,7 +1630,7 @@ void MusE::markerClosed()
         if ((*lit)->isVisible() && (*lit)->widget() != markerView)
         {
           if (MusEGlobal::debugMsg)
-            printf("bringing '%s' to front instead of closed marker window\n",(*lit)->widget()->windowTitle().toAscii().data());
+            printf("bringing '%s' to front instead of closed marker window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
           bringToFront((*lit)->widget());
 
@@ -1670,7 +1680,7 @@ void MusE::arrangerClosed()
         if ((*lit)->isVisible() && (*lit)->widget() != arrangerView)
         {
           if (MusEGlobal::debugMsg)
-            printf("bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toAscii().data());
+            printf("bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
           bringToFront((*lit)->widget());
 
@@ -2101,7 +2111,7 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                       if ((*lit)->isVisible() && (*lit)->widget() != tl)
                       {
                         if (MusEGlobal::debugMsg)
-                          printf("bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toAscii().data());
+                          printf("bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
                         bringToFront((*lit)->widget());
 
@@ -2749,12 +2759,12 @@ MusE::lash_idle_cb ()
         {
           /* save file */
           QString ss = QString(lash_event_get_string(event)) + QString("/lash-project-muse.med");
-          int ok = save (ss.toAscii(), false, true);
+          int ok = save (ss.toLatin1(), false, true);
           if (ok) {
-            project.setFile(ss.toAscii());
+            project.setFile(ss.toLatin1());
             setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(project.absoluteFilePath())));
-            addProject(ss.toAscii());
-            MusEGlobal::museProject = QFileInfo(ss.toAscii()).absolutePath();
+            addProject(ss.toLatin1());
+            MusEGlobal::museProject = QFileInfo(ss.toLatin1()).absolutePath();
             QDir::setCurrent(MusEGlobal::museProject);
           }
           lash_send_event (lash_client, event);
@@ -2765,7 +2775,7 @@ MusE::lash_idle_cb ()
         {
           /* load file */
           QString sr = QString(lash_event_get_string(event)) + QString("/lash-project-muse.med");
-          loadProjectFile(sr.toAscii(), false, true);
+          loadProjectFile(sr.toLatin1(), false, true);
           lash_send_event (lash_client, event);
         }
         break;
@@ -3323,7 +3333,7 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
 
 void MusE::activeTopWinChangedSlot(MusEGui::TopWin* win)
 {
-  if (MusEGlobal::debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
+  if (MusEGlobal::debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
   
   if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
        ( (mdiArea->currentSubWindow() != NULL) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
@@ -3348,7 +3358,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
 {
   if (win && (win->sharesToolsAndMenu()==false))
   {
-    printf("WARNING: THIS SHOULD NEVER HAPPEN: MusE::setCurrentMenuSharingTopwin() called with a win which does not share (%s)! ignoring...\n", win->windowTitle().toAscii().data());
+    printf("WARNING: THIS SHOULD NEVER HAPPEN: MusE::setCurrentMenuSharingTopwin() called with a win which does not share (%s)! ignoring...\n", win->windowTitle().toLatin1().data());
     return;
   }
   
@@ -3357,7 +3367,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
     MusEGui::TopWin* previousMenuSharingTopwin = currentMenuSharingTopwin;
     currentMenuSharingTopwin = NULL;
     
-    if (MusEGlobal::debugMsg) printf("MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
+    if (MusEGlobal::debugMsg) printf("MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
     
     // empty our toolbars
     if (previousMenuSharingTopwin)
@@ -3365,7 +3375,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       for (list<QToolBar*>::iterator it = foreignToolbars.begin(); it!=foreignToolbars.end(); it++)
         if (*it) 
         {
-          if (MusEGlobal::heavyDebugMsg) printf("  removing sharer's toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          if (MusEGlobal::heavyDebugMsg) printf("  removing sharer's toolbar '%s'\n", (*it)->windowTitle().toLatin1().data());
           removeToolBar(*it); // this does not delete *it, which is good
           (*it)->setParent(NULL);
         }
@@ -3377,7 +3387,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       for (list<QToolBar*>::iterator it = optionalToolbars.begin(); it!=optionalToolbars.end(); it++)
         if (*it) 
         {
-          if (MusEGlobal::heavyDebugMsg) printf("  removing optional toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          if (MusEGlobal::heavyDebugMsg) printf("  removing optional toolbar '%s'\n", (*it)->windowTitle().toLatin1().data());
           removeToolBar(*it); // this does not delete *it, which is good
           (*it)->setParent(NULL);
         }
@@ -3397,7 +3407,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       const QList<QAction*>& actions=win->menuBar()->actions();
       for (QList<QAction*>::const_iterator it=actions.begin(); it!=actions.end(); it++)
       {
-        if (MusEGlobal::heavyDebugMsg) printf("  adding menu entry '%s'\n", (*it)->text().toAscii().data());
+        if (MusEGlobal::heavyDebugMsg) printf("  adding menu entry '%s'\n", (*it)->text().toLatin1().data());
         
         menuBar()->addAction(*it);
       }
@@ -3408,7 +3418,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       for (list<QToolBar*>::const_iterator it=toolbars.begin(); it!=toolbars.end(); it++)
         if (*it)
         {
-          if (MusEGlobal::heavyDebugMsg) printf("  adding toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          if (MusEGlobal::heavyDebugMsg) printf("  adding toolbar '%s'\n", (*it)->windowTitle().toLatin1().data());
           
           addToolBar(*it);
           foreignToolbars.push_back(*it);
@@ -3509,7 +3519,7 @@ void MusE::updateWindowMenu()
         sep=true;
       }
       QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      connect(temp, SIGNAL(activated()), windowsMapper, SLOT(map()));
+      connect(temp, SIGNAL(triggered()), windowsMapper, SLOT(map()));
       windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
       
       there_are_subwins=true;
@@ -3525,7 +3535,7 @@ void MusE::updateWindowMenu()
         sep=true;
       }
       QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      connect(temp, SIGNAL(activated()), windowsMapper, SLOT(map()));
+      connect(temp, SIGNAL(triggered()), windowsMapper, SLOT(map()));
       windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
     }
   
