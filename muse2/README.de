@@ -24,8 +24,8 @@ Für Einzelheiten siehe muse2/COPYING.
       - CMake >= 2.4
         http:/www.cmake.org/HTML/Download.html
 
-      - qt 4.2.0 oder neuer
-        ftp://ftp.trolltech.com/qt/source
+      - qt 5.1.0 oder neuer
+        http://qt-project.org/
         MsE kompiliert nicht mit älteren Versionen!
 
       - gcc >= 4.x.x oder clang >= 2.9
