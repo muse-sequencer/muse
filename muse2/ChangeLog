@@ -1,3 +1,7 @@
+28.01.2015:
+         - MusE 2.2.1 release (rj)
+         - Optimizations to lv2 rtfifo class (danvd)
+         - Fix for potential crash on startup due to defaultStyle (danvd)
 20.01.2015:
          - Change toggle functions in track list to not include output tracks (rj)
          - Added ability to change all midi tracks or all drum tracks to the same port with
