@@ -1197,7 +1197,8 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
                                                             " from MusE source package. dl error was:"
                                                              ) + QString::fromUtf8(dlerror())+ "<br />"
                                                             "<b>NOTE:</b>External UI types that depend on GTK2 may lead MusE to crash!<br /><br />"
-                                                            "Press <b>Yes</b> to cancel opening GUI and save your work first.")
+                                                            "Press <b>Yes</b> to cancel opening GUI and save your work first.",
+                                                            QMessageBox::Yes | QMessageBox::No)
                != QMessageBox::No)
          {
             return;
