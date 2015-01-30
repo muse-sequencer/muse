@@ -121,7 +121,7 @@ namespace MusECore
 
 static LilvWorld *lilvWorld = 0;
 static int uniqueID = 1;
-static bool bLV2Gtk2Enabled = false;
+static bool bLV2Gtk2Enabled = true;
 static void *lv2Gtk2HelperHandle = NULL;
 
 //uri cache structure.
@@ -223,35 +223,6 @@ std::vector<LV2Synth *> synthsToFree;
 
 void initLV2()
 {
-
-   //first of all try to init gtk 2 helper (for opening lv2 gtk2/gtkmm2 guis)
-
-   lv2Gtk2HelperHandle = dlopen(LV2_GTK_HELPER, RTLD_NOW);
-   char *dlerr = dlerror();
-   fprintf(stderr, "Lv2Gtk2Helper: dlerror = %s\n", dlerr);
-   if(lv2Gtk2HelperHandle != NULL)
-   {
-      bool( * lv2Gtk2Helper_initFn)();
-      *(void **)(&lv2Gtk2Helper_initFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_init");
-      bool bHelperInit = lv2Gtk2Helper_initFn();
-      if(bHelperInit)
-         bLV2Gtk2Enabled = true;
-   }
-
-   if(!bLV2Gtk2Enabled)
-   {
-      QMessageBox::critical(NULL, "MusE LV2 host error", QString("<b>LV2 GTK2 ui support is not available</b><br />"
-                                                         "This may happen because of the following reasons:<br />"
-                                                         "<b>1.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so is missing needed dependences.<br />"
-                                                         "This may be checked by executing<br />"
-                                                         "<b>ldd " LV2_GTK_HELPER "</b><br />"
-                                                         "in terminal window.<br />"
-                                                         "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MusE modules dir.<br />"
-                                                         "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
-                                                         " from MusE source package. dl error was:"
-                                                          ) + QString::fromUtf8(dlerror()));
-   }
-
    std::set<std::string> supportedFeatures;
    uint32_t i = 0;
 
@@ -1178,6 +1149,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 {
    LV2Synth *synth = state->synth;
    LV2PluginWrapper_Window *win = NULL;
+   static bool gtkInitCompleted = false;
 
    if(synth->_pluginUiTypes.size() == 0)
       return;
@@ -1188,6 +1160,50 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 
    if(!bShow)
       return;
+   if(!gtkInitCompleted)
+   {
+      //first of all try to init gtk 2 helper (for opening lv2 gtk2/gtkmm2 guis)
+      bLV2Gtk2Enabled = false;
+      lv2Gtk2HelperHandle = dlopen(LV2_GTK_HELPER, RTLD_NOW);
+      char *dlerr = dlerror();
+      fprintf(stderr, "Lv2Gtk2Helper: dlerror = %s\n", dlerr);
+      if(lv2Gtk2HelperHandle != NULL)
+      {
+         bool( * lv2Gtk2Helper_initFn)();
+         *(void **)(&lv2Gtk2Helper_initFn) = dlsym(lv2Gtk2HelperHandle, "lv2Gtk2Helper_init");
+         bool bHelperInit = lv2Gtk2Helper_initFn();
+         if(bHelperInit)
+         {
+            bLV2Gtk2Enabled = true;
+            gtkInitCompleted = true;
+         }
+         else
+         {
+            dlclose(lv2Gtk2HelperHandle);
+            lv2Gtk2HelperHandle = NULL;
+         }
+      }
+
+      if(!bLV2Gtk2Enabled)
+      {
+         if(QMessageBox::question(MusEGlobal::muse, "MusE LV2 host error", QString("<b>LV2 GTK2 ui support is not available</b><br />"
+                                                            "This may happen because of the following reasons:<br />"
+                                                            "<b>1.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so is missing needed dependences.<br />"
+                                                            "This may be checked by executing<br />"
+                                                            "<b>ldd " LV2_GTK_HELPER "</b><br />"
+                                                            "in terminal window.<br />"
+                                                            "<b>2.</b> lv2Gtk2Helper32.so/lv2Gtk2Helper64.so was not found in MusE modules dir.<br />"
+                                                            "It can be recompiled and reinstalled from muse2/muse/lv2Gtk2Helper folder "
+                                                            " from MusE source package. dl error was:"
+                                                             ) + QString::fromUtf8(dlerror())+ "<br />"
+                                                            "<b>NOTE:</b>External UI types that depend on GTK2 may lead MusE to crash!<br /><br />"
+                                                            "Press <b>Yes</b> to cancel opening GUI and save your work first.")
+               != QMessageBox::No)
+         {
+            return;
+         }
+      }
+   }
 
    LV2_PLUGIN_UI_TYPES::iterator itUi;
 
@@ -1278,8 +1294,13 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
          state->_ifeatures [synth->_fUiParent].data = (void*)(intptr_t)x11QtWindow->winId();
 
       }
-      else if(bLV2Gtk2Enabled && strcmp(LV2_UI__GtkUI, cUiUri) == 0)
+      else if(strcmp(LV2_UI__GtkUI, cUiUri) == 0)
       {
+         if(!bLV2Gtk2Enabled)
+         {
+            win->stopNextTime();
+            return;
+         }
          bEmbed = true;
          bGtk = true;
          //ewWin = new QWidget();
@@ -1687,7 +1708,7 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
 unsigned LV2Synth::lv2ui_IsSupported(const char *, const char *ui_type_uri)
 {
    if(strcmp(LV2_F_UI_Qt5_UI, ui_type_uri) == 0
-      || (bLV2Gtk2Enabled && strcmp(LV2_UI__GtkUI, ui_type_uri) == 0)
+      || (strcmp(LV2_UI__GtkUI, ui_type_uri) == 0)
       || strcmp(LV2_UI__X11UI, ui_type_uri) == 0)
    {
       return 1;
@@ -4617,7 +4638,7 @@ LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
 
 void LV2PluginWrapper_Window::startNextTime()
 {
-   emit startFromGuiThread();
+   emit makeStartFromGuiThread();
 }
 
 
