@@ -30,7 +30,7 @@
 namespace MusECore {
 class Xml;
 class PendingOperationList;
-class PendingOperationItem;
+struct PendingOperationItem;
 }
 
 namespace AL {
@@ -80,7 +80,7 @@ typedef SIGLIST::reverse_iterator riSigEvent;
 typedef SIGLIST::const_reverse_iterator criSigEvent;
 
 class SigList : public SIGLIST {
-   friend class MusECore::PendingOperationItem;
+   friend struct MusECore::PendingOperationItem;
    
       int ticks_beat(int N) const;
       int ticksMeasure(const TimeSignature&) const;

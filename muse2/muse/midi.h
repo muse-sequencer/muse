@@ -131,7 +131,7 @@ QString midiMetaName(int);
 // A special MusE soft synth sysex manufacturer ID.
 #define MUSE_SYNTH_SYSEX_MFG_ID 0x7c
 
-class MPEventList;
+struct MPEventList;
 class MidiTrack;
 extern void buildMidiEventList(EventList* mel, const MPEventList& el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);
 

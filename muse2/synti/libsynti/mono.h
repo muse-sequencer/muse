@@ -23,7 +23,7 @@
 //=========================================================
 
 #ifndef __SYNTH_MONO_H__
-#define __SYNTH_MONO_H
+#define __SYNTH_MONO_H__
 
 #include <list>
 #include "mess.h"

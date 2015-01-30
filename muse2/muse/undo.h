@@ -33,7 +33,7 @@
 class QString;
 
 namespace AL {
-class TimeSignature;  
+struct TimeSignature;
 }
 
 namespace MusECore {

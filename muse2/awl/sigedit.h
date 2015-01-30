@@ -32,8 +32,8 @@
 #include <QLabel>
 
 namespace AL {
-      class TimeSignature;
-      };
+      struct TimeSignature;
+      }
 
 namespace Awl {
 

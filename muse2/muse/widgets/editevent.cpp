@@ -123,7 +123,7 @@ MusECore::Event EditNoteDialog::getEvent(int tick, const MusECore::Event& event,
       EditNoteDialog* dlg = new EditNoteDialog(tick, event, parent);
       MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
-            nevent = dlg->event();
+            nevent = dlg->getEvent();
             }
       delete dlg;
       return nevent;
@@ -134,7 +134,7 @@ MusECore::Event EditSysexDialog::getEvent(int tick, const MusECore::Event& event
       EditSysexDialog* dlg = new EditSysexDialog(tick, event, parent, instr);
       MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
-            nevent = dlg->event();
+            nevent = dlg->getEvent();
             }
       delete dlg;
       return nevent;
@@ -145,7 +145,7 @@ MusECore::Event EditMetaDialog::getEvent(int tick, const MusECore::Event& event,
       EditEventDialog* dlg = new EditMetaDialog(tick, event, parent);
       MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
-            nevent = dlg->event();
+            nevent = dlg->getEvent();
             }
       delete dlg;
       return nevent;
@@ -211,7 +211,7 @@ EditNoteDialog::EditNoteDialog(int tick, const MusECore::Event& event,
 //   EditNoteDialog::event
 //---------------------------------------------------------
 
-MusECore::Event EditNoteDialog::event()
+MusECore::Event EditNoteDialog::getEvent()
       {
       MusECore::Event event(MusECore::Note);
       event.setTick(epos->pos().tick());
@@ -263,7 +263,7 @@ EditSysexDialog::~EditSysexDialog()
 //   EditSysExDialog::event
 //---------------------------------------------------------
 
-MusECore::Event EditSysexDialog::event()
+MusECore::Event EditSysexDialog::getEvent()
       {
       MusECore::Event event(MusECore::Sysex);
       event.setTick(epos->pos().tick());
@@ -439,7 +439,7 @@ EditMetaDialog::~EditMetaDialog()
 //   EditMetaDialog::event
 //---------------------------------------------------------
 
-MusECore::Event EditMetaDialog::event()
+MusECore::Event EditMetaDialog::getEvent()
       {
       MusECore::Event event(MusECore::Meta);
       event.setTick(epos->pos().tick());
@@ -479,7 +479,7 @@ MusECore::Event EditCtrlDialog::getEvent(int tick, const MusECore::Event& event,
       EditCtrlDialog* dlg = new EditCtrlDialog(tick, event, part, parent);
       MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
-            nevent = dlg->event();
+            nevent = dlg->getEvent();
             }
       delete dlg;
       return nevent;
@@ -489,7 +489,7 @@ MusECore::Event EditCtrlDialog::getEvent(int tick, const MusECore::Event& event,
 //   EditCtrlDialog::event
 //---------------------------------------------------------
 
-MusECore::Event EditCtrlDialog::event()
+MusECore::Event EditCtrlDialog::getEvent()
       {
       MusECore::Event event(MusECore::Controller);
       event.setTick(timePos->pos().tick());

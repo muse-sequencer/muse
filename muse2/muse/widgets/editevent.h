@@ -62,7 +62,7 @@ class EditEventDialog : public QDialog {
 
    public:
       EditEventDialog(QWidget* parent=0);
-      virtual MusECore::Event event() = 0;
+      virtual MusECore::Event getEvent() = 0;
       };
 
 //---------------------------------------------------------
@@ -77,7 +77,7 @@ class EditNoteDialog : public QDialog, public Ui::EditNoteDialogBase {
          QWidget* parent=0);
       static MusECore::Event getEvent(int tick, const MusECore::Event&,
          QWidget* parent = 0);
-      virtual MusECore::Event event();
+      virtual MusECore::Event getEvent();
       };
 
 //---------------------------------------------------------
@@ -105,7 +105,7 @@ class EditSysexDialog : public QDialog, public Ui::EditSysexDialogBase {
       ~EditSysexDialog();
       static MusECore::Event getEvent(int tick, const MusECore::Event&,
          QWidget* parent = 0, MusECore::MidiInstrument* instr = 0);
-      virtual MusECore::Event event();
+      virtual MusECore::Event getEvent();
       };
 
 //---------------------------------------------------------
@@ -132,7 +132,7 @@ class EditCtrlDialog : public QDialog, public Ui::EditCtrlBase  {
          const MusECore::MidiPart*, QWidget* parent=0);
       static MusECore::Event getEvent(int tick, const MusECore::Event&, const MusECore::MidiPart*,
          QWidget* parent = 0);
-      virtual MusECore::Event event();
+      virtual MusECore::Event getEvent();
       };
 
 //---------------------------------------------------------
@@ -164,7 +164,7 @@ class EditMetaDialog : public EditEventDialog {
       ~EditMetaDialog();
       static MusECore::Event getEvent(int tick, const MusECore::Event&,
          QWidget* parent = 0);
-      virtual MusECore::Event event();
+      virtual MusECore::Event getEvent();
       };
 
 } // namespace MusEGui

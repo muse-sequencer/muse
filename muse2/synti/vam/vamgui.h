@@ -29,7 +29,7 @@
 #include "libsynti/gui.h"
 
 class QListWidgetItem;
-class Preset;
+struct Preset;
 class QString;
 class QSignalMapper;
 

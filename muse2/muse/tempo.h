@@ -39,7 +39,7 @@ namespace MusECore {
 
 class Xml;
 class PendingOperationList;
-class PendingOperationItem;
+struct PendingOperationItem;
 
 //---------------------------------------------------------
 //   Tempo Event
@@ -73,7 +73,7 @@ typedef TEMPOLIST::const_reverse_iterator criTEvent;
 
 class TempoList : public TEMPOLIST {
     
-   friend class PendingOperationItem;
+   friend struct PendingOperationItem;
     
       int _tempoSN;           // serial no to track tempo changes
       bool useList;

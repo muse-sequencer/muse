@@ -30,7 +30,7 @@
 #include "mpevent.h"
 
 class QWidget;
-class MessP;
+struct MessP;
 
 //---------------------------------------------------------
 //   MidiPatch

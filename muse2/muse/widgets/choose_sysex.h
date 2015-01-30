@@ -31,7 +31,7 @@ class QListWidgetItem;
 
 namespace MusECore {
   class MidiInstrument;
-  class SysEx;
+  struct SysEx;
 }
 
 namespace MusEGui {

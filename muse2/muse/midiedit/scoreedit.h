@@ -742,7 +742,7 @@ class ScoreCanvas : public MusEGui::View
 		bool inserting;
 		bool dragging;
 		bool drag_cursor_changed;
-		const MusECore::Part* dragged_event_part;
+  const MusECore::Part* dragged_event_part;
 		int dragged_event_part_index;
 		MusECore::Event dragged_event;
 		MusECore::Event original_dragged_event;
@@ -858,7 +858,7 @@ class ScoreCanvas : public MusEGui::View
 		const MusECore::Part* get_selected_part() const {return selected_part;}
 		void set_selected_part(const MusECore::Part* p) {selected_part=p; if (selected_part) selected_part_index=selected_part->sn();}
 		const MusECore::Part* get_dragged_event_part() const {return dragged_event_part;}
-		void set_dragged_event_part(const MusECore::Part* p) {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->sn();}
+  void set_dragged_event_part(const MusECore::Part* p) {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->sn();}
 		
 		set<const MusECore::Part*> get_all_parts();
 		

@@ -23,7 +23,7 @@
 //=========================================================
 
 #ifndef __SYNTH_POLY_H__
-#define __SYNTH_POLY_H
+#define __SYNTH_POLY_H__
 
 #include <list>
 #include "mess.h"
@@ -35,11 +35,11 @@
 //---------------------------------------------------------
 
 class MessPoly : public Mess {
-      float volume;
-      float expression;
+      //float volume;
+      //float expression;
 
       // cached values:
-      float mainLevel;
+      //float mainLevel;
 
    protected:
       virtual bool playNote(int channel, int pitch, int velo);

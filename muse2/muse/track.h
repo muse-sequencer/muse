@@ -46,8 +46,8 @@ class Pipeline;
 class PluginI;
 class SynthI;
 class Xml;
-class DrumMap;
-class ControlEvent;
+struct DrumMap;
+struct ControlEvent;
 struct Port;
 class PendingOperationList;
 

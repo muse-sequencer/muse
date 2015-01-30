@@ -39,7 +39,7 @@ class MidiControllerList;
 class MidiPort;
 class MidiPlayEvent;
 class Xml;
-class DrumMap;
+struct DrumMap;
 
 
 //---------------------------------------------------------

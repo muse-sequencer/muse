@@ -42,7 +42,7 @@ class QLineEdit;
 class QMenu;
 
 namespace MusECore {
-class CtrlVal;
+struct CtrlVal;
 class Xml;
 }
 

@@ -41,9 +41,9 @@ namespace MusECore {
 
 class MidiInstrument;
 class MidiController;
-class Patch;
-class PatchGroup;
-class SysEx;
+struct Patch;
+struct PatchGroup;
+struct SysEx;
 }
 
 namespace MusEGui {

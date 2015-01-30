@@ -33,7 +33,7 @@ namespace MusECore {
 
 class Xml;
 class PendingOperationList;
-class PendingOperationItem;
+struct PendingOperationItem;
 
 //don't change this enum! changing the numeric values will affect
 //all files using key_enum, and even worse:
@@ -97,7 +97,7 @@ typedef KEYLIST::const_reverse_iterator criKeyEvent;
 
 
 class KeyList : public KEYLIST {
-   friend class PendingOperationItem;
+   friend struct PendingOperationItem;
    
       void add(unsigned tick, key_enum tempo);
       void add(KeyEvent e);

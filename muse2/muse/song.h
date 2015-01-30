@@ -55,7 +55,7 @@ class Sequencer;
 class Track;
 class Part;
 class PartList;
-class MPEventList;
+struct MPEventList;
 class EventList;
 class MarkerList;
 class Marker;

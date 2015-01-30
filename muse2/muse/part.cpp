@@ -1065,7 +1065,7 @@ void MidiPart::dump(int n) const
 //   Returns combination of HiddenEventsType enum.
 //---------------------------------------------------------
 
-int MidiPart::hasHiddenEvents() 
+int MidiPart::hasHiddenEvents()
 {
   unsigned len = lenTick();
 
@@ -1087,7 +1087,7 @@ int MidiPart::hasHiddenEvents()
 //   Returns combination of HiddenEventsType enum.
 //---------------------------------------------------------
 
-int WavePart::hasHiddenEvents() 
+int WavePart::hasHiddenEvents()
 {
   unsigned len = lenFrame();
   
