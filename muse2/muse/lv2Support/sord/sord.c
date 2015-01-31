@@ -83,11 +83,17 @@ typedef enum {
 } SordOrder;
 
 /** String name of each ordering (array indexed by SordOrder) */
+#ifdef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-const-variable"
+#endif
 static const char* const order_names[NUM_ORDERS] = {
 	"spo",  "sop",  "ops",  "osp",  "pso",  "pos",
 	"gspo", "gsop", "gops", "gosp", "gpso", "gpos"
 };
-
+#ifdef __clang_
+#pragma GCC diagnostic pop
+#endif
 /**
    Quads of indices for each order, from most to least significant
    (array indexed by SordOrder)

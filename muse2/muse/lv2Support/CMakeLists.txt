@@ -102,7 +102,9 @@ check_c_source_compiles (
     endif (HasFileNo)
 endif(HAVE_FILE_H)
 
-set(CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
+set(CMAKE_C_FLAGS "-Wall -fPIC ${CMAKE_C_FLAGS}")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g -Werror -Wall -fPIC ${CMAKE_C_FLAGS_DEBUG}")
+set(CMAKE_C_FLAGS_RELEASE "-O2 -g0 -Werror -Wall -fPIC ${CMAKE_C_FLAGS_RELEASE}")
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 add_definitions(-DHAVE_LV2=1)
