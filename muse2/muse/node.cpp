@@ -535,6 +535,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
         const float up_fact = 1.003471749;      // 3.01.. dB / 200
         const float down_fact = 0.996540262;
         float *sp1, *sp2, *dp1, *dp2;
+        sp1 = sp2 = dp1 = dp2 = NULL;
         float _volume, v, _pan, v1, v2;
 
         if(trackChans == 1)

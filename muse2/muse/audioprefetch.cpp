@@ -83,7 +83,7 @@ static void readMsgP(void* p, void*)
 //   start
 //---------------------------------------------------------
 
-void AudioPrefetch::start(int priority)
+void AudioPrefetch::start(int priority, void *)
       {
       clearPollFd();
       addPollFd(toThreadFdr, POLLIN, MusECore::readMsgP, this, 0);

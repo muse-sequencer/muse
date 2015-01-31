@@ -530,9 +530,9 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
     }
     
     MusECore::MidiTrack* mt = part->track();
-    MusECore::MidiPort* mp;
-    int di;
-    int n;
+    MusECore::MidiPort* mp = NULL;
+    int di = 0;
+    int n = 0;
 
     if((curDrumPitch >= 0) && ((num & 0xff) == 0xff))
     {
@@ -556,8 +556,7 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
         n = di; // Simple one-to-one correspondence. There is no 'mapping' for piano roll midi - yet.
         mp = &MusEGlobal::midiPorts[mt->outPort()];
       }
-    }
-    
+    }    
     else
     {
        di = num;

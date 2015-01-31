@@ -263,30 +263,30 @@ void EventCanvas::songChanged(MusECore::SongChangedFlags_t flags)
 //   selectAtTick
 //---------------------------------------------------------
 void EventCanvas::selectAtTick(unsigned int tick)
-      {
-      //Select note nearest tick, if none selected and there are any
-      if (!items.empty() && selectionSize() == 0) {
-            iCItem i = items.begin();
-	    CItem* nearest = i->second;
+{
+   //Select note nearest tick, if none selected and there are any
+   if (!items.empty() && selectionSize() == 0) {
+      iCItem i = items.begin();
+      CItem* nearest = i->second;
 
-            while (i != items.end()) {
-                CItem* cur=i->second;                
-                unsigned int curtk=abs(cur->x() + cur->part()->tick() - tick);
-                unsigned int neartk=abs(nearest->x() + nearest->part()->tick() - tick);
+      while (i != items.end()) {
+         CItem* cur=i->second;
+         unsigned int curtk=abs(cur->x() + (int)cur->part()->tick() - (int)tick);
+         unsigned int neartk=abs(nearest->x() + (int)nearest->part()->tick() - (int)tick);
 
-                if (curtk < neartk) {
-                    nearest=cur;
-                    }
+         if (curtk < neartk) {
+            nearest=cur;
+         }
 
-                i++;
-                }
-
-            if (!nearest->isSelected()) {
-                  selectItem(nearest, true);
-                  songChanged(SC_SELECTION);
-                  }
-            }
+         i++;
       }
+
+      if (!nearest->isSelected()) {
+         selectItem(nearest, true);
+         songChanged(SC_SELECTION);
+      }
+   }
+}
 
 //---------------------------------------------------------
 //   track

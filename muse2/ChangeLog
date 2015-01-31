@@ -1,3 +1,7 @@
+31.01.2015
+         - Load lv2 gtk2 ui helper on the first native gui call (danvd)
+         - Removed lots of warnings, tested both on clang and gcc (danvd)
+         - Added -Werror to DEBUG build type (danvd)
 28.01.2015:
          - MusE 2.2.1 release (rj)
          - Optimizations to lv2 rtfifo class (danvd)

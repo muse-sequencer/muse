@@ -925,23 +925,24 @@ void DrumCanvas::cmd(int cmd)
 //   startDrag
 //---------------------------------------------------------
 
-void DrumCanvas::startDrag(CItem* /* item*/, bool copymode)
-      {
-      QMimeData* md = selected_events_to_mime(partlist_to_set(editor->parts()), 1);
-      
-      if (md) {
-            // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 
-            //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can 
-            //  clean up after the drag and drop operation has been completed. "
-            QDrag* drag = new QDrag(this);
-            drag->setMimeData(md);
-            
-            if (copymode)
-                  drag->exec(Qt::CopyAction);
-            else
-                  drag->exec(Qt::MoveAction);
-            }
-      }
+void DrumCanvas::startDrag(CItem* /* item*/, DragType t)
+{
+   QMimeData* md = selected_events_to_mime(partlist_to_set(editor->parts()), 1);
+
+   if (md)
+   {
+      // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object.
+      //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can
+      //  clean up after the drag and drop operation has been completed. "
+      QDrag* drag = new QDrag(this);
+      drag->setMimeData(md);
+
+      if (t == MOVE_COPY || t == MOVE_CLONE)
+         drag->exec(Qt::CopyAction);
+      else
+         drag->exec(Qt::MoveAction);
+   }
+}
 
 //---------------------------------------------------------
 //   dragEnterEvent

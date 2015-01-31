@@ -76,11 +76,11 @@ QString PitchEdit::textFromValue(int v) const
 //   mapTextToValue
 //---------------------------------------------------------
 
-int PitchEdit::valueFromText(bool* ok) const
+int PitchEdit::valueFromText(const QString & /*text*/) const
       {
 printf("AwlPitchEdit: mapTextToValue: not impl.\n");
-      if (ok)
-            *ok = false;
+      //if (text)
+            //*text = false;
       return 0;
       }
 

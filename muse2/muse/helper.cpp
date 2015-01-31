@@ -422,7 +422,7 @@ QMenu* populateAddSynth(QWidget* parent)
 
     if(type >= ntypes)
       continue; 
-    smaps[type].insert( std::pair<std::string, int> (std::string(synth->description().toLower().toLatin1().constData()), ii) );
+    smaps[type].insert( std::pair<std::string, int> (std::string(synth->description().toLower().toUtf8().constData()), ii) );
   
     ++ii;
   }
@@ -445,8 +445,6 @@ QMenu* populateAddSynth(QWidget* parent)
           mmaps[itype]->setIcon(*synthIcon);
           mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
           synp->addMenu(mmaps[itype]);
-          //mmaps[itype]->setMaximumSize(800, 600);
-          //mmaps[itype]->setStyleSheet("QMenu { menu-scrollable: 1; }");
         }  
         QAction* act = mmaps[itype]->addAction(synth->description() + " <" + synth->name() + ">");
         act->setData( MENU_ADD_SYNTH_ID_BASE * (itype + 1) + idx );

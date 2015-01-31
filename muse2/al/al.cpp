@@ -27,5 +27,5 @@ namespace AL {
       //int mtcType = 0;
       //int division = 384;
       bool debugMsg = false;
-      };
+      }
 

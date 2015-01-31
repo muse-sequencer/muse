@@ -126,7 +126,7 @@ class DrumCanvas : public EventCanvas {
       int pitch2y(int pitch) const;
       inline int y2height(int) const { return TH; }
       inline int yItemOffset() const { return -TH/2; }
-      void startDrag(CItem*, bool copymode);
+      void startDrag(CItem*, DragType);
       void dragEnterEvent(QDragEnterEvent* event);
       void dragMoveEvent(QDragMoveEvent*);
       void dragLeaveEvent(QDragLeaveEvent*);

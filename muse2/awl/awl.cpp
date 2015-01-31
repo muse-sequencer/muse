@@ -25,5 +25,5 @@
 namespace Awl {
 //      int sampleRate = 44100;
 //      int mtcType = 0;
-      };
+      }
 

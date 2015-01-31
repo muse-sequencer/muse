@@ -40,7 +40,7 @@ class Device;
 class QLineEdit;
 
 namespace MusECore {
-class DrumMap;
+struct DrumMap;
 }
 
 namespace MusEGui {

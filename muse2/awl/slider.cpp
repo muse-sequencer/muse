@@ -200,7 +200,7 @@ void Slider::mouseMoveEvent(QMouseEvent* ev)
 //    r - phys coord system
 //---------------------------------------------------------
 
-void Slider::paintEvent(QPaintEvent* ev)
+void Slider::paintEvent(QPaintEvent* /*ev*/)
       {
       int h   = height();
       int w   = width();
@@ -212,7 +212,7 @@ void Slider::paintEvent(QPaintEvent* ev)
       if ((orient == Qt::Vertical && _invert) || (orient == Qt::Horizontal && !_invert))
             ppos = pixel - ppos;
 
-      QRect rr(ev->rect());
+      //QRect rr(ev->rect());
       QPainter p(this);
 
       QColor sc(isEnabled() ? _scaleColor : Qt::gray);

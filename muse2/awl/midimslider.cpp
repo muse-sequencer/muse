@@ -74,7 +74,7 @@ void MidiMeterSlider::mouseDoubleClickEvent(QMouseEvent*)
 //   drawScale
 //---------------------------------------------------------
 
-void MidiMeterSlider::paintEvent(QPaintEvent* ev)
+void MidiMeterSlider::paintEvent(QPaintEvent* /*ev*/)
       {
       int pixel = height() - sliderSize().height();
       double range = maxValue() - minValue();
@@ -82,7 +82,7 @@ void MidiMeterSlider::paintEvent(QPaintEvent* ev)
       if (_invert)
             ppos = pixel - ppos;
 
-      QRect rr(ev->rect());
+      //QRect rr(ev->rect());
       QPainter p(this);
 
       QColor sc(isEnabled() ? _scaleColor : Qt::gray);

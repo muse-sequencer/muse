@@ -133,6 +133,7 @@ class TList : public QWidget {
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);
       void loadTrackDrummap(MusECore::MidiTrack*, const char* filename=NULL);
+      void loadTrackDrummapFromXML(MusECore::MidiTrack*t, MusECore::Xml &xml);
       void saveTrackDrummap(MusECore::MidiTrack*, bool full, const char* filename=NULL);
       void copyTrackDrummap(MusECore::MidiTrack*, bool full);
 

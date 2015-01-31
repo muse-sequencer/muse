@@ -167,7 +167,7 @@ class Canvas : public View {
       virtual void itemPopup(CItem* /*item */, int /*n*/, const QPoint& /*pt*/) {}
       void canvasPopup(int);
 
-      virtual void startDrag(CItem*, DragType) {}
+      virtual void startDrag(CItem*, DragType) = 0;// {}
 
       // selection
       virtual void deselectAll();

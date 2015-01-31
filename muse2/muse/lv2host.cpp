@@ -4360,7 +4360,7 @@ void LV2SynthIF::setGeometry(int x, int y, int w, int h)
 
 }
 
-void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
+void LV2SynthIF::setNativeGeometry(int x, int y, int, int)
 {
    if(_uiState->pluginWindow && !_uiState->hasExternalGui)
    {

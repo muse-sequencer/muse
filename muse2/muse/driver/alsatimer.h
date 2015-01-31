@@ -45,7 +45,7 @@ class AlsaTimer : public Timer{
     struct pollfd *fds;
     char timername[64];
     signed int count;
-    unsigned int ticks;
+    //unsigned int ticks;
     bool findBest;
 
     public:

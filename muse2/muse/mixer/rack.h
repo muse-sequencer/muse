@@ -54,7 +54,7 @@ class EffectRack : public QListWidget {
       virtual QSize minimumSizeHint() const;
       virtual QSize sizeHint() const;
       
-      void startDrag(int idx);
+      void startDragItem(int idx);
       void initPlugin(MusECore::Xml xml, int idx);
       QPoint dragPos;
       void savePreset(int idx);

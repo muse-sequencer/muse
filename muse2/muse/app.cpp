@@ -134,7 +134,7 @@ pthread_t splashThread;
 //---------------------------------------------------------
 void microSleep(long msleep)
 {
-    bool sleepOk=-1;
+    int sleepOk=-1;
 
     while(sleepOk==-1)
         sleepOk=usleep(msleep);

@@ -665,7 +665,7 @@ void MidiSeq::mtcInputQuarter(int port, unsigned char c)
                     if(port == MusEGlobal::curMidiSyncInPort && MusEGlobal::extSyncFlag.value() && msync.MTCIn()) 
                     {
                       if(MusEGlobal::debugSync)
-                        printf("MidiSeq::mtcInputQuarter hour byte:%hx\n", tmphour);
+                        printf("MidiSeq::mtcInputQuarter hour byte:%x\n", (unsigned int)tmphour);
                       mtcSyncMsg(MusEGlobal::mtcCurTime, type, !MusEGlobal::mtcSync);
                     }  
                   }
@@ -713,7 +713,7 @@ void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
       
       // Added by Tim.
       if(MusEGlobal::debugSync)
-        printf("mtcInputFull: time:%lf stime:%lf hour byte (all bits):%hx\n", MusEGlobal::mtcCurTime.time(), MusEGlobal::mtcCurTime.time(type), p[4]);
+        printf("mtcInputFull: time:%lf stime:%lf hour byte (all bits):%hhx\n", MusEGlobal::mtcCurTime.time(), MusEGlobal::mtcCurTime.time(type), p[4]);
       if(port != -1)
       {
         MidiPort* mp = &MusEGlobal::midiPorts[port];
@@ -961,7 +961,7 @@ void MidiSeq::realtimeSystemInput(int port, int c, double time)
                               if(_preDetect && pole == 0)
                               {
                                 double real_tempo = 60.0/(avg_diff * 24.0);
-                                double real_tempo_diff = abs(real_tempo - _lastRealTempo);
+                                double real_tempo_diff = fabs(real_tempo - _lastRealTempo);
                                 
                                 // If the tempo changed a large amount, reset.
                                 if(real_tempo_diff >= 10.0)  // TODO: User-adjustable?
@@ -1009,7 +1009,7 @@ void MidiSeq::realtimeSystemInput(int port, int c, double time)
                               if(pole == fin_idx)
                               {
                                 double real_tempo = 60.0/(avg_diff * 24.0);
-                                double real_tempo_diff = abs(real_tempo - _lastRealTempo);
+                                double real_tempo_diff = fabs(real_tempo - _lastRealTempo);
                                 
                                 if(real_tempo_diff >= _tempoQuantizeAmount/2.0) // Anti-hysteresis
                                 {

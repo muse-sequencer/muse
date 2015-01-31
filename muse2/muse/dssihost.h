@@ -69,7 +69,7 @@ namespace MusECore {
 struct _DSSI;
 class DssiPluginIF;
 
-class Port;
+struct Port;
 
 //---------------------------------------------------------
 //   DssiSynth

@@ -417,7 +417,7 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                   memcpy(pp, p, n);
                   pp += n;
                   *pp = 0xf7;
-                  return putEvent(&event);
+                  return putAlsaEvent(&event);
                   }
             case ME_SONGPOS:
                   event.data.control.value = a;
@@ -440,7 +440,7 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                     printf("MidiAlsaDevice::putEvent(): event type %d not implemented\n", e.type());
                   return true;
             }
-      return putEvent(&event);
+      return putAlsaEvent(&event);
       }
 
 //---------------------------------------------------------
@@ -448,7 +448,7 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
 //    return false if event is delivered
 //---------------------------------------------------------
 
-bool MidiAlsaDevice::putEvent(snd_seq_event_t* event)
+bool MidiAlsaDevice::putAlsaEvent(snd_seq_event_t* event)
       {
       int error;
 

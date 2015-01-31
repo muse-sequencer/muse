@@ -34,7 +34,7 @@ namespace MusECore {
 
 class MidiDevice;
 class MidiPort;
-class MPEventList;
+struct MPEventList;
 class MTC;
 class SynthI;
 
@@ -88,7 +88,7 @@ class MidiSeq : public Thread {
       
       ~MidiSeq();
       
-      virtual void start(int);
+      virtual void start(int, void* ptr=0);
       
       virtual void threadStop();
       virtual void threadStart(void*);

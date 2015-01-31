@@ -44,7 +44,7 @@
 enum SS_ChannelState
    {
       SS_CHANNEL_INACTIVE=0,
-      SS_SAMPLE_PLAYING,
+      SS_SAMPLE_PLAYING
    };
 
 enum SS_State
@@ -52,7 +52,7 @@ enum SS_State
       SS_INITIALIZING=0,
       SS_LOADING_SAMPLE,
       SS_CLEARING_SAMPLE,
-      SS_RUNNING,
+      SS_RUNNING
    };
 
 enum SS_SendFXState

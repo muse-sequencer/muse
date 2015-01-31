@@ -1744,7 +1744,7 @@ void Song::redo()
       MusEGlobal::redoAction->setEnabled(!redoList->empty());
       setUndoRedoText();
 
-      if(updateFlags && (SC_TRACK_REMOVED | SC_TRACK_INSERTED))
+      if(updateFlags & (SC_TRACK_REMOVED | SC_TRACK_INSERTED))
         MusEGlobal::audio->msgUpdateSoloStates();
 
       emit songChanged(updateFlags);

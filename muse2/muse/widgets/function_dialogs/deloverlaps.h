@@ -21,7 +21,7 @@
 //=========================================================
 
 #ifndef __DELOVERLAPS_H__
-#define __DELOVERLAPS__H__
+#define __DELOVERLAPS_H__
 
 #include "ui_deloverlapsbase.h"
 

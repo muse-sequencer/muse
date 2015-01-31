@@ -479,7 +479,7 @@ bool MidiDevice::putEventWithRetry(const MidiPlayEvent& ev, int tries, long dela
     if(!putEvent(ev))  // Returns true if event cannot be delivered.
       return false;
       
-    bool sleepOk = -1;
+    int sleepOk = -1;
     while(sleepOk == -1)
       sleepOk = usleep(delayUs);   // FIXME: usleep is supposed to be depricated!
   }  

@@ -187,7 +187,7 @@ void addPortCtrlEvents(Event& event, Part* part)
   }
 }
 
-void addPortCtrlEvents(const Event& event, Part* part, int tick, int len, Track* track, PendingOperationList& ops)
+void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops)
 {
   if(!track || !track->isMidiTrack())
     return;
@@ -222,7 +222,7 @@ void addPortCtrlEvents(const Event& event, Part* part, int tick, int len, Track*
     }
     
     MidiCtrlValListList* mcvll = mp->controller();
-    MidiCtrlValList* mcvl;
+    MidiCtrlValList* mcvl = NULL;
     iMidiCtrlValList imcvll = mcvll->find(ch, cntrl);
     if(imcvll == mcvll->end()) 
     {
@@ -244,6 +244,7 @@ void addPortCtrlEvents(const Event& event, Part* part, int tick, int len, Track*
         return;
       }
     }
+    assert(mcvl != NULL); //FIXME: Can this happen? (danvd)
     ops.add(PendingOperationItem(mcvl, part, tck, val, PendingOperationItem::AddMidiCtrlVal));
   }
 }
@@ -314,14 +315,14 @@ void addPortCtrlEvents(Part* part, bool doClones)
 //   addPortCtrlEvents
 //---------------------------------------------------------
 
-void addPortCtrlEvents(Part* part, int tick, int len, Track* track, PendingOperationList& ops)
+void addPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops)
 {
   if(!track || !track->isMidiTrack())
     return;
   for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
   {
     // Do not add events which are past the end of the part.
-    if(ie->second.tick() >= len)
+    if(ie->second.tick() >= (unsigned int)len)
       return; // Done
     addPortCtrlEvents(ie->second, part, tick, len, track, ops);
   }
@@ -1065,7 +1066,7 @@ void MidiPart::dump(int n) const
 //   Returns combination of HiddenEventsType enum.
 //---------------------------------------------------------
 
-int MidiPart::hasHiddenEvents()
+int MidiPart::hasHiddenEvents() const
 {
   unsigned len = lenTick();
 
@@ -1087,7 +1088,7 @@ int MidiPart::hasHiddenEvents()
 //   Returns combination of HiddenEventsType enum.
 //---------------------------------------------------------
 
-int WavePart::hasHiddenEvents()
+int WavePart::hasHiddenEvents() const
 {
   unsigned len = lenFrame();
   

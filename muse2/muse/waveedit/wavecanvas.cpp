@@ -158,7 +158,7 @@ void WaveCanvas::songChanged(MusECore::SongChangedFlags_t flags)
             //             (same in waveview.cpp)
             bool curItemNeedsRestore=false;
             MusECore::Event storedEvent;
-            int partSn;
+            int partSn = 0;
             if (curItem)
             {
               curItemNeedsRestore=true;
@@ -275,8 +275,8 @@ void WaveCanvas::selectAtFrame(unsigned int frame)
 
             while (i != items.end()) {
                 CItem* cur=i->second;                
-                unsigned int curf=abs(cur->x() + cur->part()->frame() - frame);
-                unsigned int nearf=abs(nearest->x() + nearest->part()->frame() - frame);
+                unsigned int curf=abs(cur->x() + (int)cur->part()->frame() - (int)frame);
+                unsigned int nearf=abs(nearest->x() + (int)nearest->part()->frame() - (int)frame);
 
                 if (curf < nearf) {
                     nearest=cur;
@@ -2491,23 +2491,23 @@ void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, un
 //   startDrag
 //---------------------------------------------------------
 
-void WaveCanvas::startDrag(MusEGui::CItem* /* item*/, bool copymode)
-      {
-      QMimeData* md = MusECore::selected_events_to_mime(MusECore::partlist_to_set(editor->parts()), 1);
-      
-      if (md) {
-            // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 
-            //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can 
-            //  clean up after the drag and drop operation has been completed. "
-            QDrag* drag = new QDrag(this);
-            drag->setMimeData(md);
-            
-            if (copymode)
-                  drag->exec(Qt::CopyAction);
-            else
-                  drag->exec(Qt::MoveAction);
-            }
-      }
+void WaveCanvas::startDrag(MusEGui::CItem* /* item*/, DragType t)
+{
+   QMimeData* md = MusECore::selected_events_to_mime(MusECore::partlist_to_set(editor->parts()), 1);
+
+   if (md) {
+      // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object.
+      //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can
+      //  clean up after the drag and drop operation has been completed. "
+      QDrag* drag = new QDrag(this);
+      drag->setMimeData(md);
+
+      if (t == MOVE_COPY || t == MOVE_CLONE)
+         drag->exec(Qt::CopyAction);
+      else
+         drag->exec(Qt::MoveAction);
+   }
+}
 
 //---------------------------------------------------------
 //   dragEnterEvent

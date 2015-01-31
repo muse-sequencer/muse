@@ -171,7 +171,7 @@ void KnobWithMeter::drawKnob(QPainter* p, const QRect& r)
       QPen pn;
       pn.setCapStyle(Qt::FlatCap);
 
-      pn.setColor(d_shinyColor.lighter(l_const + abs(value() * l_slope)));
+      pn.setColor(d_shinyColor.lighter(l_const + fabs(value() * l_slope)));
       pn.setWidth(d_shineWidth * 2);
       p->setPen(pn);
       p->drawArc(aRect, 0, 360 * 16);

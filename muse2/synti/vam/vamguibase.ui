@@ -75,7 +75,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -190,7 +190,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -206,7 +206,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -222,7 +222,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -238,7 +238,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -254,7 +254,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -270,7 +270,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -332,7 +332,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -673,7 +673,7 @@
           <height>0</height>
          </size>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -699,7 +699,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -747,7 +747,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -763,7 +763,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -779,7 +779,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -815,7 +815,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -831,7 +831,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -887,7 +887,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -913,7 +913,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -1108,7 +1108,7 @@
           <height>0</height>
          </size>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -1153,7 +1153,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -1179,7 +1179,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -1278,7 +1278,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -1304,7 +1304,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -1320,7 +1320,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -1346,7 +1346,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -1362,7 +1362,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">
@@ -1388,7 +1388,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="numDigits">
+        <property name="digitCount">
          <number>3</number>
         </property>
         <property name="segmentStyle">

@@ -81,7 +81,7 @@ class Part : public PosLen {
       Part* _prevClone;
       Part* _nextClone;
       Part* _backupClone; // when a part gets removed, it's still there; and for undo-ing the remove, it must know about where it was clone-chained to.
-      int _hiddenEvents;   // Combination of HiddenEventsType.
+      mutable int _hiddenEvents;   // Combination of HiddenEventsType.
 
    public:
       Part(Track*);
@@ -147,7 +147,7 @@ class MidiPart : public Part {
       
       MidiTrack* track() const   { return (MidiTrack*)Part::track(); }
       // Returns combination of HiddenEventsType enum.
-      int hasHiddenEvents();
+      int hasHiddenEvents() const;
       
       virtual void dump(int n = 0) const;
       };
@@ -171,7 +171,7 @@ class WavePart : public Part {
 
       WaveTrack* track() const   { return (WaveTrack*)Part::track(); }
       // Returns combination of HiddenEventsType enum.
-      int hasHiddenEvents();
+      int hasHiddenEvents() const;
 
       virtual void dump(int n = 0) const;
       };
@@ -207,9 +207,9 @@ extern void chainCheckErr(Part* p);
 extern void unchainTrackParts(Track* t);
 extern void chainTrackParts(Track* t);
 extern void addPortCtrlEvents(Part* part, bool doClones);
-extern void addPortCtrlEvents(const Event& event, Part* part, int tick, int len, Track* track, PendingOperationList& ops);
+extern void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
 extern void addPortCtrlEvents(Event& event, Part* part);
-extern void addPortCtrlEvents(Part* part, int tick, int len, Track* track, PendingOperationList& ops);
+extern void addPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Part* part, bool doClones);
 extern void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Event& event, Part* part);

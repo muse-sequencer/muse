@@ -137,7 +137,7 @@ class RackSlot : public QListWidgetItem {
    public:
       RackSlot(QListWidget* lb, MusECore::AudioTrack* t, int i, int h);
       ~RackSlot();
-      void setBackgroundColor(const QBrush& brush) {setBackground(brush);};
+      //void setBackgroundColor(const QBrush& brush) {setBackground(brush);}
       };
 
 RackSlot::~RackSlot()
@@ -517,7 +517,7 @@ void EffectRack::savePreset(int idx)
             fclose(presetFp);
       }
 
-void EffectRack::startDrag(int idx)
+void EffectRack::startDragItem(int idx)
       {
         if (idx < 0) {
             printf("illegal to drag index %d\n",idx);
@@ -701,7 +701,7 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
                   QListWidgetItem *i = itemAt( event->pos() );
                   if (i) {
                     int idx = row(i);
-                    startDrag(idx);
+                    startDragItem(idx);
                 }
             }
       }

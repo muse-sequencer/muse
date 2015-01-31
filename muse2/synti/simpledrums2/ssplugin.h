@@ -81,7 +81,15 @@ class Plugin
 
 class LadspaPlugin : public Plugin
    {
+private:
+#ifdef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-private-field"
+#endif
       LADSPA_Descriptor_Function ladspa;
+#ifdef __clang__
+#pragma GCC diagnostic pop
+#endif
       const LADSPA_Descriptor* plugin;
       LADSPA_Handle handle;
       bool active;

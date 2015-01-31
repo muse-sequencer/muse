@@ -54,7 +54,7 @@ class MidiAlsaDevice : public MidiDevice {
       virtual int selectRfd()      { return -1; }
       virtual int selectWfd();
 
-      bool putEvent(snd_seq_event_t*);
+      bool putAlsaEvent(snd_seq_event_t*);
       virtual bool putMidiEvent(const MidiPlayEvent&);
 
    public:

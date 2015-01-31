@@ -1302,7 +1302,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	new_len=-1; // will be initalized with new_len_init by ScoreEdit::ScoreEdit();
 	
 	_quant_power2=_quant_power2_init; // ScoreEdit relies on this to be done!
-	_pixels_per_whole_init = _pixels_per_whole_init;
+ _pixels_per_whole = _pixels_per_whole_init;
 
 	note_velo=note_velo_init;
 	note_velo_off=note_velo_off_init;
@@ -2575,7 +2575,7 @@ void staff_t::process_itemlist()
 		invalid=curr_items.end();
 		lastit=invalid;
 		groupbegin=invalid;
-		int count;
+  int count = 0;
 		
 		//TODO: is "grouping" notes and rests together okay?
 		//      or is it better to ignore rests when grouping?
@@ -3563,7 +3563,7 @@ list<int> calc_accidentials(MusECore::key_enum key, clef_t clef, MusECore::key_e
 	int bass_sharp_pos[]={8,5,9,6,3,7,4};
 	int bass_b_pos[]={4,7,3,6,2,5,1};
 	
-	int* accidential_pos;
+ int* accidential_pos = NULL;
 	
 	switch (clef)
 	{
@@ -4432,7 +4432,7 @@ void ScoreCanvas::set_pixels_per_whole(int val)
 {
 	if (debugMsg) cout << "setting px per whole to " << val << endl;
 	
-	int tick;
+ int tick = 0;
 	int old_xpos=x_pos;
 	if (x_pos!=0) tick=x_to_tick(x_pos);
 	// the above saves us from a division by zero when initalizing

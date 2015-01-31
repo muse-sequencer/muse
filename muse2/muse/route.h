@@ -113,7 +113,7 @@ extern bool checkRoute(const QString&, const QString&);
 } // namespace MusECore
 
 // Allow Routes to be a QVariant
-Q_DECLARE_METATYPE(MusECore::Route) ;
+Q_DECLARE_METATYPE(MusECore::Route)
 
 #endif
 

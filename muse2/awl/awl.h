@@ -26,7 +26,7 @@
 namespace Awl {
 //      extern int sampleRate;
 //      extern int mtcType;
-      };
+      }
 
 #endif
 

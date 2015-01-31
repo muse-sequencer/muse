@@ -187,7 +187,7 @@ QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* in
         // Check for user-defined sysex in instrument...
         foreach(const MusECore::SysEx* sx, instr->sysex()) 
         {
-          if(len == sx->dataLen && memcmp(buf, sx->data, len) == 0)
+          if((int)len == sx->dataLen && memcmp(buf, sx->data, len) == 0)
             return s + QString(": ") + sx->name;
         }
       }
@@ -224,7 +224,7 @@ QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument*
         // Check for user-defined sysex in instrument...
         foreach(const MusECore::SysEx* sx, instr->sysex()) 
         {
-          if(len == sx->dataLen && memcmp(buf, sx->data, len) == 0)
+          if((int)len == sx->dataLen && memcmp(buf, sx->data, len) == 0)
             return sx->comment;
         }
       }
@@ -958,7 +958,7 @@ void Audio::processMidi()
                 ctl = MusECore::CTRL_PITCH;
                 val = event.dataA();
               }
-              else if(etype == MusECore::ME_PROGRAM)
+              else //if(etype == MusECore::ME_PROGRAM)
               {
                 ctl = MusECore::CTRL_PROGRAM;
                 val = event.dataA();

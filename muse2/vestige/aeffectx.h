@@ -114,7 +114,7 @@ const int effGetVstVersion = 58; // currently unused
 
 const int kEffectMagic = CCONST( 'V', 's', 't', 'P' );
 const int kVstLangEnglish = 1;
-const int kVstMidiType = 1;;
+const int kVstMidiType = 1;
 const int kVstTransportPlaying = 1 << 1;
 
 /* validity flags for a VstTimeInfo structure, this info comes from the web */
@@ -163,14 +163,17 @@ public:
 } ;
 
 
-
-
+#ifdef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-private-field"
+#endif
 class VstEvent
 {
 	char dump[sizeof( VstMidiEvent )];
-
 } ;
-
+#ifdef __clang__
+#pragma GCC diagnostic pop
+#endif
 
 
 

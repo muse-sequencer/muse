@@ -1117,7 +1117,7 @@ void Preset::printPreset()
     for(int i=0; i<NBROP; i++)
     {
 	printf("amp%d ",i+1);
-	if(sensitivity.ampOn) printf("ON "); else printf("OFF ");
+ if(sensitivity.ampOn [i]) printf("ON "); else printf("OFF ");
     }
     printf("\n");
     for(int i=0; i<NBROP; i++)

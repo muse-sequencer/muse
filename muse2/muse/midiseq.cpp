@@ -336,7 +336,7 @@ int MidiSeq::setRtcTicks()
 //    return true on error
 //---------------------------------------------------------
 
-void MidiSeq::start(int priority)
+void MidiSeq::start(int priority, void *)
       {
       prio = priority;
       

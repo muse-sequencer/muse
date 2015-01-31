@@ -158,9 +158,9 @@ void Knob::mouseMoveEvent(QMouseEvent* ev)
 //   paintEvent
 //---------------------------------------------------------
 
-void Knob::paintEvent(QPaintEvent* ev)
+void Knob::paintEvent(QPaintEvent* /*ev*/)
       {
-      QRect rr(ev->rect());
+      //QRect rr(ev->rect());
       QPainter p(this);
       p.setRenderHint(QPainter::Antialiasing, true);
 

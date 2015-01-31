@@ -85,7 +85,7 @@ using MusECore::UndoOp;
 namespace MusEGui {
 
 static const int MIN_TRACKHEIGHT = 20;
-static const int WHEEL_DELTA = 120;
+//static const int WHEEL_DELTA = 120;
 QColor collist[] = { Qt::red, Qt::yellow, Qt::blue , Qt::black, Qt::white, Qt::green };
 QString colnames[] = { "Red", "Yellow", "Blue", "Black", "White", "Green"};
 //---------------------------------------------------------
@@ -2319,45 +2319,52 @@ void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
   }
 
   MusECore::Xml xml(f);
-  int mode = 0;
-  for (;;) {
-        MusECore::Xml::Token token = xml.parse();
-        const QString& tag = xml.s1();
-        switch (token) {
-              case MusECore::Xml::Error:
-              case MusECore::Xml::End:
-                    return;
-              case MusECore::Xml::TagStart:
-                    if (mode == 0 && tag == "muse")
-                          mode = 1;
-                    else if (mode == 1 && tag == "our_drummap") {
-                          t->readOurDrumMap(xml, tag, true);
-                          mode = 0;
-                          }
-                    else if (mode == 1 && tag == "drummap") { // compatibility mode, read old drummaps
-                          QMessageBox::information(this, tr("Drummap"), tr("This drummap was created with a previous version of MusE,\nit is being read but the format has changed slightly so some\nadjustments may be necessary."));
-                          t->readOurDrumMap(xml, tag, true, true);
-                          mode = 0;
-                          }
-                        else
-                          xml.unknown("TList::loadTrackDrummap");
-                    break;
-              case MusECore::Xml::Attribut:
-                    break;
-              case MusECore::Xml::TagEnd:
-                    if (!mode && tag == "muse")
-                          goto ende;
-              default:
-                    break;
-              }
-        }
-  ende:
+  loadTrackDrummapFromXML(t, xml);
+
   if (popenFlag)
         pclose(f);
   else
         fclose(f);
   
   MusEGlobal::song->update(SC_DRUMMAP);
+}
+
+void TList::loadTrackDrummapFromXML(MusECore::MidiTrack *t, MusECore::Xml &xml)
+{
+   int mode = 0;
+   for (;;) {
+         MusECore::Xml::Token token = xml.parse();
+         const QString& tag = xml.s1();
+         switch (token) {
+               case MusECore::Xml::Error:
+               case MusECore::Xml::End:
+                     return;
+               case MusECore::Xml::TagStart:
+                     if (mode == 0 && tag == "muse")
+                           mode = 1;
+                     else if (mode == 1 && tag == "our_drummap") {
+                           t->readOurDrumMap(xml, tag, true);
+                           mode = 0;
+                           }
+                     else if (mode == 1 && tag == "drummap") { // compatibility mode, read old drummaps
+                           QMessageBox::information(this, tr("Drummap"), tr("This drummap was created with a previous version of MusE,\nit is being read but the format has changed slightly so some\nadjustments may be necessary."));
+                           t->readOurDrumMap(xml, tag, true, true);
+                           mode = 0;
+                           }
+                         else
+                           xml.unknown("TList::loadTrackDrummap");
+                     break;
+               case MusECore::Xml::Attribut:
+                     break;
+               case MusECore::Xml::TagEnd:
+                     if (!mode && tag == "muse")
+                           goto ende;
+               default:
+                     break;
+               }
+         }
+   ende:
+   return;
 }
 
 void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool full, const char* fn_)
@@ -2368,15 +2375,15 @@ void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool full, const char* fn_)
                                          this, tr("MusE: Store Track's Drum Map"));
   else
     fn = QString(fn_);
-  
+
   if (fn.isEmpty())
     return;
-    
+
   bool popenFlag;
   FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
   if (f == 0)
     return;
-    
+
   MusECore::Xml xml(f);
   xml.header();
   xml.tag(0, "muse version=\"1.0\"");
@@ -2386,30 +2393,33 @@ void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool full, const char* fn_)
   if (popenFlag)
     pclose(f);
   else
-    fclose(f);  
+    fclose(f);
 }
 
 void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool full)
 {
-  char* tmp1 = tmpnam(NULL);
-  char tmp2[1000];
-  strcpy(tmp2, tmp1);
-  strcat(tmp2, ".map");
-  if (MusEGlobal::debugMsg)
-    printf("in TList::copyTrackDrummap(); filename is %s\n",tmp2);
-  
-  saveTrackDrummap(t, full, tmp2);
-  
-  for (MusECore::iTrack it = MusEGlobal::song->tracks()->begin(); it!=MusEGlobal::song->tracks()->end(); it++)
-    if ((*it)->selected() && (*it)->type()==MusECore::Track::NEW_DRUM)
-    {
-      if (MusEGlobal::debugMsg)
-        printf("  processing track...\n");
+   //Andrew: new implementation without tmpnam()
+   FILE *f = tmpfile();
+   MusECore::Xml xml(f);
+   xml.header();
+   xml.tag(0, "muse version=\"1.0\"");
+   t->writeOurDrumMap(1, xml, full);
+   xml.tag(0, "/muse");
 
-      loadTrackDrummap((MusECore::MidiTrack*)(*it), tmp2);
-    }
-  
-  remove(tmp2);
+   for (MusECore::iTrack it = MusEGlobal::song->tracks()->begin(); it!=MusEGlobal::song->tracks()->end(); it++)
+   {
+      if ((*it)->selected() && (*it)->type()==MusECore::Track::NEW_DRUM)
+      {
+         if (MusEGlobal::debugMsg)
+            printf("  processing track...\n");
+
+         rewind(f);
+         MusECore::Xml newXml(f);
+
+         loadTrackDrummapFromXML((MusECore::MidiTrack*)(*it), newXml);
+      }
+   }
+   fclose(f);
 }
 
 //---------------------------------------------------------

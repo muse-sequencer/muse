@@ -29,7 +29,7 @@ class QColor;
 class QDialog;
 
 namespace MusEGlobal {
-  class GlobalConfigValues;
+  struct GlobalConfigValues;
 }
 
 namespace MusEGui {

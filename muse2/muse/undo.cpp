@@ -1049,7 +1049,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
           if(t > MAX_TICK)
             t = MAX_TICK;
           iTEvent ite = MusEGlobal::tempomap.upper_bound(t);
-          if(ite->second->tick == t)
+          if((int)ite->second->tick == t)
           {
             // Transform the AddTempo operation into a ModifyTempo.
             // a is already the tick, b is the existing value, c is the new value.
@@ -1070,7 +1070,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
           a = AL::sigmap.raster1(a, 0);
           
           AL::iSigEvent ise = AL::sigmap.upper_bound(a);
-          if(ise->second->tick == a)
+          if((int)ise->second->tick == a)
           {
             // Transform the AddSig operation into a ModifySig.
             // a is already the tick, b + c is the existing value, d + e is the new value.
@@ -1089,7 +1089,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
           if(t > MAX_TICK)
             t = MAX_TICK;
           iKeyEvent ike = MusEGlobal::keymap.upper_bound(t);
-          if(ike->second.tick == t)
+          if((int)ike->second.tick == t)
           {
             // Transform the AddKey operation into a ModifyKey.
             // a is already the tick, b is the existing value, c is the new value.
@@ -1297,12 +1297,15 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int old_chan, int ne
   _newPropValue = new_chan;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 UndoOp::UndoOp(UndoOp::UndoType type_, const Route& route_from_, const Route& route_to_)
       {
       assert(type_ == AddRoute || type_ == DeleteRoute);
       routeFrom = route_from_;
       routeTo = route_to_;
       }
+#pragma GCC diagnostic pop
 
 void Song::undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe)
       {

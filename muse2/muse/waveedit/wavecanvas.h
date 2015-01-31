@@ -120,7 +120,7 @@ class WaveCanvas : public EventCanvas {
       virtual void resizeItem(CItem*, bool noSnap, bool);
       virtual void newItem(CItem*, bool noSnap);
       virtual bool deleteItem(CItem*);
-      virtual void startDrag(CItem* item, bool copymode);
+      virtual void startDrag(CItem* item, DragType);
       virtual void dragEnterEvent(QDragEnterEvent* event);
       virtual void dragMoveEvent(QDragMoveEvent*);
       virtual void dragLeaveEvent(QDragLeaveEvent*);

@@ -73,6 +73,8 @@ using MusECore::UndoOp;
 
 #define ABS(x) (abs(x))
 
+#define FABS(x) (fabs(x))
+
 #define EDITING_FINISHED_TIMEOUT 50 /* in milliseconds */
 
 using std::set;
@@ -2925,7 +2927,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
     int mw = mr.width();
     int mh = mr.height();
     
-    QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
+    //QColor baseColor(MusEGlobal::config.partCanvasBg.light(104));
 
     p.save();
     p.setWorldMatrixEnabled(false);
@@ -3202,7 +3204,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
 bool checkIfOnLine(double mouseX, double mouseY, double firstX, double lastX, double firstY, double lastY, int circumference)
 {
   if (lastX==firstX)  
-    return (ABS(mouseX-lastX) < circumference);
+    return (FABS(mouseX-lastX) < circumference);
   else if (mouseX < firstX || mouseX > lastX+circumference) // (*)
     return false;
   else
@@ -3211,7 +3213,7 @@ bool checkIfOnLine(double mouseX, double mouseY, double firstX, double lastX, do
     double calcY = (lastY-firstY)*proportion+firstY;    // where the drawn line's y-coord is at mouseX
     double slope = (lastY-firstY)/(lastX-firstX);
     
-    return (ABS(calcY-mouseY) < (circumference * sqrt(1+slope*slope)));
+    return (FABS(calcY-mouseY) < (circumference * sqrt(1+slope*slope)));
     // this is equivalent to circumference / cos( atan(slope) ). to
     // verify, draw a sloped line (the graph), a 90°-line to it with
     // length "circumference". from the (unconnected) endpoint of that

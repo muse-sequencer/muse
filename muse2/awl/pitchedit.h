@@ -40,7 +40,7 @@ class PitchEdit : public QSpinBox {
 
    protected:
       virtual QString textFromValue(int v) const;
-      virtual int valueFromText(bool* ok) const;
+      virtual int valueFromText(const QString&) const;
       virtual void keyPressEvent(QKeyEvent*);
 
    signals:

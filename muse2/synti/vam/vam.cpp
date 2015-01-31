@@ -40,7 +40,13 @@
 #include "libsynti/mono.h"
 
 // Denormalise floats, only actually needed for PIII and very recent PowerPC
-#define DENORMALISE(fv) (((*(unsigned int*)&(fv))&0x7f800000)==0)?0.0f:(fv)
+//#define DENORMALISE(fv) (((*(unsigned int*)&(fv))&0x7f800000)==0)?0.0f:(fv)
+inline float DENORMALISE(float fv)
+{
+   char *c = reinterpret_cast<char *>(&fv);
+   unsigned int *ui = reinterpret_cast<unsigned int *>(c);
+   return ((((*ui)&0x7f800000)) == 0)?0.0f:(fv);
+}
 
 // A fast, truncating towards 0 modulo function. ANSI C doesn't define
 // which % will do, most truncate towards -inf

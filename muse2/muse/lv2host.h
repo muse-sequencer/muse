@@ -419,7 +419,7 @@ public:
       char *data;
    } lv2_uiControlEvent;
 private:
-   size_t numItems;
+   //size_t numItems;
    std::vector<lv2_uiControlEvent> eventsBuffer;
    size_t readIndex;
    size_t writeIndex;
@@ -506,7 +506,7 @@ public:
 #ifdef DEBUG_LV2
          //std::cerr << "LV2SimpleRTFifo:get(): fifo is empty" << std::endl;
 #endif
-         return NULL;
+         return false;
       }
 #ifdef DEBUG_LV2
       //std::cerr << "LV2SimpleRTFifo:get(): used index = " << i << std::endl;
@@ -661,7 +661,7 @@ public:
 };
 
 class LV2SynthIF;
-class LV2PluginWrapper_State;
+struct LV2PluginWrapper_State;
 
 typedef std::map<const LilvUI *, std::pair<bool, const LilvNode *> > LV2_PLUGIN_UI_TYPES;
 
@@ -831,7 +831,7 @@ public:
     virtual void getGeometry ( int *, int *, int *, int * ) const;
     virtual void setGeometry (int x, int y, int w, int h);
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
-    virtual void setNativeGeometry (int x, int y, int w, int h);
+    virtual void setNativeGeometry (int x, int y, int, int);
     virtual void preProcessAlways();
     virtual iMPEvent getData ( MidiPort *, MPEventList *, iMPEvent, unsigned pos, int ports, unsigned n, float **buffer );
     virtual bool putEvent ( const MidiPlayEvent &ev );
