@@ -72,7 +72,6 @@ int PendingOperationItem::getIndex() const
     case PendingOperationItem::AddAuxSendValue:
     case PendingOperationItem::AddMidiInstrument:
     case PendingOperationItem::DeleteMidiInstrument:
-    // case PendingOperationItem::SetMidiPortDevice: // REMOVE Tim. Persistent routes. Removed.
     case PendingOperationItem::AddMidiDevice:
     case PendingOperationItem::DeleteMidiDevice:
     case PendingOperationItem::AddTrack:
@@ -211,15 +210,6 @@ void PendingOperationItem::executeRTStage()
       *_dst_route_pointer = _src_route;
     break;
 
-// REMOVE Tim. Persistent routes. Removed.
-//     // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
-//     case SetMidiPortDevice:
-// #ifdef _PENDING_OPS_DEBUG_
-//       fprintf(stderr, "PendingOperationItem::executeRTStage SetMidiPortDevice port:%p device:%p\n", _midi_port, _midi_device);
-// #endif      
-//       _midi_port->setMidiDevice(_midi_device);
-//     break;
-    
     case AddAuxSendValue:
 #ifdef _PENDING_OPS_DEBUG_
       fprintf(stderr, "PendingOperationItem::executeRTStage AddAuxSendValue aux_send_value_list:%p val:%f\n", _aux_send_value_list, _aux_send_value);
@@ -926,16 +916,6 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
 
 
-      // REMOVE Tim. Persistent routes. Removed.
-//       case PendingOperationItem::SetMidiPortDevice:
-//         if(poi._type == PendingOperationItem::SetMidiPortDevice && poi._midi_port == op._midi_port && poi._midi_device == op._midi_device)
-//         {
-//           fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetMidiPortDevice. Ignoring.\n");
-//           return false;  
-//         }
-//       break;
-
-      
       case PendingOperationItem::AddAuxSendValue:
         if(poi._type == PendingOperationItem::AddAuxSendValue && poi._aux_send_value_list == op._aux_send_value_list)  
         {

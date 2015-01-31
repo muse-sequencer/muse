@@ -99,10 +99,8 @@ void Audio::msgRemoveRoute(Route src, Route dst)
 {
       // REMOVE Tim. Persistent routes. Added.
       fprintf(stderr, "Audio::msgRemoveRoute:\n");
+      
       msgRemoveRoute1(src, dst);
-      // REMOVE Tim. Persistent routes. Changed.
-      //if (src.type == Route::JACK_ROUTE && src.jackPort)
-      // REMOVE Tim. Persistent routes. Added.
       if(!MusEGlobal::checkAudioDevice()) 
         return;
       if(src.type == Route::JACK_ROUTE)
@@ -112,54 +110,26 @@ void Audio::msgRemoveRoute(Route src, Route dst)
             if(dst.device)
             {
               if(dst.device->deviceType() == MidiDevice::JACK_MIDI)
-                // REMOVE Tim. Persistent routes. Changed.
-                //MusEGlobal::audioDevice->disconnect(src.jackPort, dst.device->inClientPort());
                 MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, 
                                     MusEGlobal::audioDevice->canonicalPortName(dst.device->inClientPort()));
-              //else DELETETHIS
-              //{
-                // TODO...
-                //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(dst.device);
-                //if(amd)
-              //}  
             }
           }
           else  
-            // REMOVE Tim. Persistent routes. Changed.
-            //MusEGlobal::audioDevice->disconnect(src.jackPort, ((AudioInput*)dst.track)->jackPort(dst.channel));
             MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, 
                                 MusEGlobal::audioDevice->canonicalPortName(((AudioInput*)dst.track)->jackPort(dst.channel)));
       }
-      // REMOVE Tim. Persistent routes. Changed.
-      //else if (dst.type == Route::JACK_ROUTE && dst.jackPort)
       else if (dst.type == Route::JACK_ROUTE)
       {
-          // REMOVE Tim. Persistent routes. Removed.
-          //if (!MusEGlobal::checkAudioDevice()) return;
-          
-          //if(src.type == Route::JACK_MIDI_ROUTE)   DELETETHIS
           if(src.type == Route::MIDI_DEVICE_ROUTE)  
           {
-            //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(src.device); DELETETHIS
-            //if(jmd)
             if(src.device)
             {
               if(src.device->deviceType() == MidiDevice::JACK_MIDI)
-                // REMOVE Tim. Persistent routes. Changed.
-                //MusEGlobal::audioDevice->disconnect(src.device->outClientPort(), dst.jackPort);
                 MusEGlobal::audioDevice->disconnect(MusEGlobal::audioDevice->canonicalPortName(src.device->outClientPort()), 
                                                                     dst.persistentJackPortName);
-              //else DELETETHIS
-              //{
-                // TODO...
-                //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(src.device);
-                //if(amd)
-              //}
             }  
           }
           else  
-            // REMOVE Tim. Persistent routes. Changed.
-            //MusEGlobal::audioDevice->disconnect(((AudioOutput*)src.track)->jackPort(src.channel), dst.jackPort);
             MusEGlobal::audioDevice->disconnect(MusEGlobal::audioDevice->canonicalPortName(((AudioOutput*)src.track)->jackPort(src.channel)), 
                                                                 dst.persistentJackPortName);
       }
@@ -178,87 +148,6 @@ void Audio::msgRemoveRoute1(Route src, Route dst)
       sendMsg(&msg);
       }
 
-// REMOVE Tim. Persistent routes.      
-// //---------------------------------------------------------
-// //   msgRemoveRoutes
-// //---------------------------------------------------------
-// 
-// // p3.3.55
-// void Audio::msgRemoveRoutes(Route src, Route dst)
-// {
-//       msgRemoveRoutes1(src, dst);
-//       
-//       // TODO or DELETETHIS? looks old.
-//       /*
-//       //if (!MusEGlobal::checkAudioDevice()) return;
-//       if (src.type == Route::JACK_ROUTE)
-//       {
-//           if (!MusEGlobal::checkAudioDevice()) return;
-//           
-//           //if(dst.type == Route::JACK_MIDI_ROUTE)  
-//           if(dst.type == Route::MIDI_DEVICE_ROUTE)  
-//           {
-//             //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(dst.device);
-//             //if(jmd)
-//             if(dst.device)
-//             {
-//               if(dst.device->deviceType() == MidiDevice::JACK_MIDI)
-//                 //MusEGlobal::audioDevice->disconnect(src.jackPort, dst.device->clientPort());
-//                 MusEGlobal::audioDevice->disconnect(src.jackPort, dst.device->inClientPort());     
-//               //else
-//               //{
-//                 // TODO...
-//                 //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(dst.device);
-//                 //if(amd)
-//               //}  
-//             }
-//           }
-//           else  
-//             MusEGlobal::audioDevice->disconnect(src.jackPort, ((AudioInput*)dst.track)->jackPort(dst.channel));
-//       }
-//       else if (dst.type == Route::JACK_ROUTE)
-//       {
-//           if (!MusEGlobal::checkAudioDevice()) return;
-//           
-//           //if(src.type == Route::JACK_MIDI_ROUTE)  
-//           if(src.type == Route::MIDI_DEVICE_ROUTE)  
-//           {
-//             //MidiJackDevice* jmd = dynamic_cast<MidiJackDevice*>(src.device);
-//             //if(jmd)
-//             if(src.device)
-//             {
-//               if(src.device->deviceType() == MidiDevice::JACK_MIDI)
-//                 //MusEGlobal::audioDevice->disconnect(src.device->clientPort(), dst.jackPort);
-//                 MusEGlobal::audioDevice->disconnect(src.device->outClientPort(), dst.jackPort);    
-//               //else
-//               //{
-//                 // TODO...
-//                 //MidiAlsaDevice* amd = dynamic_cast<MidiAlsaDevice*>(src.device);
-//                 //if(amd)
-//               //}
-//             }  
-//           }
-//           else  
-//             MusEGlobal::audioDevice->disconnect(((AudioOutput*)src.track)->jackPort(src.channel), dst.jackPort);
-//       }
-//       
-//       */  
-// }
-
-// REMOVE Tim. Persistent routes.
-// //---------------------------------------------------------
-// //   msgRemoveRoutes1
-// //---------------------------------------------------------
-// 
-// void Audio::msgRemoveRoutes1(Route src, Route dst)
-//       {
-//       AudioMsg msg;
-//       msg.id     = AUDIO_REMOVEROUTES;
-//       msg.sroute = src;
-//       msg.droute = dst;
-//       sendMsg(&msg);
-//       }
-
 //---------------------------------------------------------
 //   msgAddRoute
 //---------------------------------------------------------
@@ -267,43 +156,9 @@ void Audio::msgAddRoute(Route src, Route dst)
 {
       // REMOVE Tim. Persistent routes. Added.
       fprintf(stderr, "Audio::msgAddRoute:\n");
-      // REMOVE Tim. Persistent routes. Removed.
-//       if (src.type == Route::JACK_ROUTE && src.jackPort) 
-//       {
-//             if (!MusEGlobal::checkAudioDevice()) return;
-//             if (isRunning())
-//             {
-//                 if(dst.type == Route::MIDI_DEVICE_ROUTE)  
-//                 {
-//                   if(dst.device && dst.device->deviceType() == MidiDevice::JACK_MIDI)  
-//                     MusEGlobal::audioDevice->connect(src.jackPort, dst.device->inClientPort());    
-//                 }
-//                 else  
-//                   MusEGlobal::audioDevice->connect(src.jackPort, ((AudioInput*)dst.track)->jackPort(dst.channel));
-//             }      
-//       }
-//       else if (dst.type == Route::JACK_ROUTE && dst.jackPort) 
-//       {
-//             if (!MusEGlobal::checkAudioDevice()) return;
-//             if (isRunning())
-//             {
-//                 if(src.type == Route::MIDI_DEVICE_ROUTE)  
-//                 {
-//                   if(src.device && src.device->deviceType() == MidiDevice::JACK_MIDI)  
-//                     MusEGlobal::audioDevice->connect(src.device->outClientPort(), dst.jackPort);      
-//                 }
-//                 else  
-//                   MusEGlobal::audioDevice->connect(((AudioOutput*)src.track)->jackPort(dst.channel), dst.jackPort);
-//             }      
-//       }
-//      
-// // Even if the audio is not running and/or connect failed above, let msgAddRoute1 list the route
-// //  so that it can be restored later. Our Jack graph callback handles the reconnections.
-   
       
   msgAddRoute1(src, dst);
   
-  // REMOVE Tim. Persistent routes. Added.
   if(!MusEGlobal::checkAudioDevice() || !isRunning()) 
     return;
   if(src.type == Route::JACK_ROUTE) 
@@ -1175,7 +1030,6 @@ void Audio::msgIdle(bool on)
       sendMessage(&msg, false);
       }
 
-// REMOVE Tim. Persistent routes. Added.
 //---------------------------------------------------------
 //   msgAudioWait
 //---------------------------------------------------------

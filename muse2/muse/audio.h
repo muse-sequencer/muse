@@ -244,8 +244,6 @@ class Audio {
       bool sendMessage(AudioMsg* m, bool doUndo);
       void msgRemoveRoute(Route, Route);
       void msgRemoveRoute1(Route, Route); 
-      //void msgRemoveRoutes(Route, Route); // REMOVE Tim. Persistent routes. 
-      //void msgRemoveRoutes1(Route, Route);  // REMOVE Tim. Persistent routes.
       void msgAddRoute(Route, Route);
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
@@ -256,7 +254,7 @@ class Audio {
       void msgInitMidiDevices(bool force = true);
       void msgResetMidiDevices();
       void msgIdle(bool);
-      void msgAudioWait();  // REMOVE Tim. Persistent routes. Added.
+      void msgAudioWait();
       void msgBounce();
       void msgSwapControllerIDX(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);

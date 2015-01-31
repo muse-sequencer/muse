@@ -56,7 +56,6 @@ struct PendingOperationItem
                               AddSig,            DeleteSig,              ModifySig,
                               AddKey,            DeleteKey,              ModifyKey,
                               AddAuxSendValue,   
-                              // SetMidiPortDevice,  // REMOVE Tim. Persistent routes. Removed.
                               AddRoute,          DeleteRoute, 
                               AddRouteNode,      DeleteRouteNode,        ModifyRouteNode
                               }; 
@@ -131,12 +130,6 @@ struct PendingOperationItem
   PendingOperationItem(const Route& src_route, Route* dst_route, PendingOperationType type = ModifyRouteNode) 
     { _type = type; _src_route = src_route; _dst_route_pointer = dst_route; }
 
-
-  // REMOVE Tim. Persistent routes. Removed.    
-//   // TODO: Try to break this operation down so that only the actual operation is executed stage-2. 
-//   PendingOperationItem(MidiPort* midi_port, MidiDevice* midi_device, PendingOperationType type = SetMidiPortDevice)
-//     { _type = type; _midi_port = midi_port; _midi_device = midi_device; }
-    
   PendingOperationItem(AuxSendValueList* asvl, double val, PendingOperationType type = AddAuxSendValue)
     { _type = type; _aux_send_value_list = asvl; _aux_send_value = val; }
     

@@ -767,7 +767,6 @@ void SynthI::write(int level, Xml& xml) const
       // Added by Tim. p3.3.16
       xml.strTag(level, "label", synth()->name());
 
-      // REMOVE Tim. Persistent routes. Added.
       if(openFlags() != 1)
         xml.intTag(level, "openFlags", openFlags());
             
@@ -888,7 +887,6 @@ void SynthI::read(Xml& xml)
       bool startgui = false;
       bool startngui = false;
       QRect r, nr;
-      // REMOVE Tim. Persistent routes. Added.
       int oflags = 1;
 
       for (;;) {
@@ -905,7 +903,6 @@ void SynthI::read(Xml& xml)
                               sclass = xml.parse1();
                         else if (tag == "label")
                               label  = xml.parse1();
-                        // REMOVE Tim. Persistent routes. Added.
                         else if (tag == "openFlags")
                               oflags = xml.parseInt();
                         
@@ -953,9 +950,7 @@ void SynthI::read(Xml& xml)
                                     return;
                               if (initInstance(s, name()))
                                     return;
-                              // REMOVE Tim. Persistent routes. Added.
-                              //if(oflags != -1)
-                                setOpenFlags(oflags);
+                              setOpenFlags(oflags);
                               
                               MusEGlobal::song->insertTrack0(this, -1);
 

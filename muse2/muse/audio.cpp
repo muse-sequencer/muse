@@ -232,10 +232,9 @@ bool Audio::start()
 
 void Audio::stop(bool)
       {
-      //_running = false; // Set before we stop to avoid error messages in process. // REMOVE Tim. Persistent routes. Added.
       if (MusEGlobal::audioDevice)
             MusEGlobal::audioDevice->stop();
-      _running = false;  // REMOVE Tim. Persistent routes. Removed.
+      _running = false;
       }
 
 //---------------------------------------------------------
@@ -734,7 +733,6 @@ void Audio::processMsg(AudioMsg* msg)
                   MusEGlobal::midiSeq->sendMsg(msg);
                   break;
 
-            // REMOVE Tim. Persistent routes. Added.
             case AUDIO_WAIT:
                   // Do nothing.
                   break;

@@ -33,13 +33,12 @@
 #include "operations.h"
 #include "tempo.h"
 #include "part.h"
-#include "audiodev.h" // REMOVE Tim. Persistent routes. Added.
-#include "track.h" // REMOVE Tim. Persistent routes. Added.
-#include "track.h" // REMOVE Tim. Persistent routes. Added.
+#include "audiodev.h"
+#include "track.h"
 
 #include <string.h>
 #include <QAction>
-#include <QString> // REMOVE Tim. Persistent routes. Added.
+#include <QString>
 #include <set>
 
 // Enable for debugging:
@@ -1354,9 +1353,6 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
-                        //removeTrack1(editable_track);  // REMOVE Tim. Persistent routes. Removed.
-                        
-                        // REMOVE Tim. Persistent routes. Added.
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -1411,29 +1407,6 @@ void Song::revertOperationGroup1(Undo& operations)
                         updateFlags |= SC_TRACK_REMOVED;
                         break;
                   case UndoOp::DeleteTrack:
-                        //insertTrack1(editable_track, i->trackno);  // REMOVE Tim. Persistent routes. Removed.
-
-                        // REMOVE Tim. Persistent routes. Removed.
-//                         // FIXME: Would like to put this part in Undo2, but indications
-//                         //  elsewhere are that (dis)connecting jack routes must not be
-//                         //  done in the realtime thread. The result is that we get a few
-//                         //  "PANIC Process init: No buffer from audio device" messages
-//                         //  before the routes are (dis)connected. So far seems to do no harm though...
-//                         switch(editable_track->type())
-//                         {
-//                               case Track::AUDIO_OUTPUT:
-//                               case Track::AUDIO_INPUT:
-//                                       connectJackRoutes((AudioTrack*)editable_track, false);
-//                                     break;
-//                               //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
-//                                       //SynthI* si = (SynthI*)editable_track;
-//                                       //si->synth()->init(
-//                               //      break;
-//                               default:
-//                                     break;
-//                         }
-                    
-                        // REMOVE Tim. Persistent routes. Added.
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -1745,31 +1718,12 @@ void Song::revertOperationGroup3(Undo& operations)
       fprintf(stderr, "Song::revertOperationGroup3 *** Calling pendingOperations.clear()\n");
 #endif      
       pendingOperations.clear();
-//       bool do_graph_update = false; // REMOVE Tim. Persistent routes. Added.
       for (riUndoOp i = operations.rbegin(); i != operations.rend(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
 // uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
-                  case UndoOp::AddTrack:
-                        //removeTrack3(editable_track); // REMOVE Tim. Persistent routes. Removed. Empty.
-
-                        // REMOVE Tim. Persistent routes. Added.
-                        switch(editable_track->type())
-                        {
-                          case Track::AUDIO_OUTPUT:
-                          case Track::AUDIO_INPUT:
-//                             do_graph_update = true; // REMOVE Tim. Persistent routes. Added.
-                            break;
-                          default:
-                            break;
-                        }
-                        
-                        break;
                   case UndoOp::DeleteTrack:
-                        //insertTrack3(editable_track, i->trackno); // REMOVE Tim. Persistent routes. Removed. Empty.
-                    
-                        // REMOVE Tim. Persistent routes. Added.
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_OUTPUT:
@@ -1853,9 +1807,6 @@ void Song::revertOperationGroup3(Undo& operations)
                         break;
                   }
             }
-            // REMOVE Tim. Persistent routes. Added.
-//             if(MusEGlobal::checkAudioDevice() && do_graph_update)
-//               MusEGlobal::audioDevice->graphChanged();
             
             if(!operations.empty())
               emit sigDirty();
@@ -1886,26 +1837,6 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
-                        //insertTrack1(editable_track, i->trackno); // REMOVE Tim. Persistent routes. Removed.
-
-                        // REMOVE Tim. Persistent routes. Removed.
-//                         // FIXME: See comments in Undo1.
-//                         switch(editable_track->type())
-//                         {
-//                               case Track::AUDIO_OUTPUT:
-//                               case Track::AUDIO_INPUT:
-//                                       connectJackRoutes((AudioTrack*)editable_track, false);
-//                                     break;
-//                               //case Track::AUDIO_SOFTSYNTH: DELETETHIS 4
-//                                       //SynthI* si = (SynthI*)editable_track;
-//                                       //si->synth()->init(
-//                               //      break;
-//                               default:
-//                                     break;
-//                         }
-
-
-                        // REMOVE Tim. Persistent routes. Added.
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -1984,10 +1915,6 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_TRACK_INSERTED;
                         break;
                   case UndoOp::DeleteTrack:
-                        //removeTrack1(editable_track);  // REMOVE Tim. Persistent routes. Removed.
-                        
-                        
-                        // REMOVE Tim. Persistent routes. Added.
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -2327,16 +2254,12 @@ void Song::executeOperationGroup3(Undo& operations)
       fprintf(stderr, "Song::executeOperationGroup3 *** Calling pendingOperations.clear()\n");
 #endif                        
       pendingOperations.clear();
-//       bool do_graph_update = false; // REMOVE Tim. Persistent routes. Added.
       for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
 // uncomment if needed            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
 // uncomment if needed            Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::AddTrack:
-                        //insertTrack3(editable_track, i->trackno); // REMOVE Tim. Persistent routes. Removed. Empty.
-
-                        // REMOVE Tim. Persistent routes. Added.
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_OUTPUT:
@@ -2402,21 +2325,6 @@ void Song::executeOperationGroup3(Undo& operations)
                         }
                         
                         break;
-                  case UndoOp::DeleteTrack:
-                        //removeTrack3(editable_track); // REMOVE Tim. Persistent routes. Removed. Empty.
-
-                        // REMOVE Tim. Persistent routes. Added.
-                        switch(editable_track->type())
-                        {
-                          case Track::AUDIO_OUTPUT:
-                          case Track::AUDIO_INPUT:
-//                             do_graph_update = true; // REMOVE Tim. Persistent routes. Added.
-                            break;
-                          default:
-                            break;
-                        }
-                        
-                        break;
                   case UndoOp::ModifyMarker:
                         {
                           if (i->copyMarker) {
@@ -2434,9 +2342,6 @@ void Song::executeOperationGroup3(Undo& operations)
                         break;
                   }
             }
-            // REMOVE Tim. Persistent routes. Added.
-//             if(MusEGlobal::checkAudioDevice() && do_graph_update)
-//               MusEGlobal::audioDevice->graphChanged();
             
             if(!operations.empty())
               emit sigDirty();

@@ -75,8 +75,6 @@ struct Route {
       
       RouteType type;
 
-      // REMOVE Tim. Persistent routes. 
-      //QString persistentJackPortName; // Always same as the port name. When connection disappears, this holds on to the name.
       // Always same as the port name. When connection disappears, this holds on to the name.
       char persistentJackPortName[ROUTE_PERSISTENT_NAME_SIZE]; 
       
@@ -88,7 +86,6 @@ struct Route {
       Route();
       Route(const Route&); // Copy constructor
       // Useful for generic complete construction.
-      //Route(RouteType type_, int midi_port_num_, void* void_pointer_, int channel_, int channels_, int remote_channel_, const QString& name_);
       Route(RouteType type_, int midi_port_num_, void* void_pointer_, int channel_, int channels_, int remote_channel_, const char* name_);
       
       QString name() const;
@@ -96,7 +93,6 @@ struct Route {
       Route& operator=(const Route&);
       bool isValid() const {
             return ((type == TRACK_ROUTE) && (track != 0)) || 
-                   //((type == JACK_ROUTE) && (jackPort != 0)) || 
                    (type == JACK_ROUTE) ||  // Persistent Jack ports: NULL jackPort is actually valid.
                    ((type == MIDI_DEVICE_ROUTE) && (device != 0)) ||
                    ((type == MIDI_PORT_ROUTE) && (midiPort >= 0) && (midiPort < MIDI_PORTS));   
@@ -118,11 +114,7 @@ typedef RouteList::iterator iRoute;
 typedef RouteList::const_iterator ciRoute;
 
 extern void addRoute(Route, Route);
-// REMOVE Tim. Persistent routes. Added.
-//extern void addRouteOperation(Route src, Route dst, PendingOperationList& ops);
 extern void removeRoute(Route, Route);
-// REMOVE Tim. Persistent routes. Added.
-//extern void removeRouteOperation(Route src, Route dst, PendingOperationList& ops);
 extern void removeAllRoutes(Route, Route);
 extern Route name2route(const QString&, bool dst, int rtype = -1);
 extern bool checkRoute(const QString&, const QString&);

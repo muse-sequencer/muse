@@ -128,25 +128,14 @@ class DummyAudioDevice : public AudioDevice {
             }
       virtual void unregisterPort(void*) {}
       virtual void connect(void*, void*) {}
-      // REMOVE Tim. Persistent routes. Added.
       virtual void connect(const char*, const char*) {}
       virtual void disconnect(void*, void*) {}
-      // REMOVE Tim. Persistent routes. Added.
       virtual void disconnect(const char*, const char*) {}
       virtual int connections(void* /*clientPort*/) { return 0; }
-      // REMOVE Tim. Persistent routes. Added.
       virtual bool portConnectedTo(void*, const char*) { return false; }
       virtual void setPortName(void*, const char*) {}
       virtual void* findPort(const char*) { return 0;}
-      // REMOVE Tim. Persistent routes. Removed.
-//       virtual QString portName(void* /*port*/, bool* success = 0) {
-//             if(success)
-//               *success = false;
-//             return QString();
-//             }
-      // REMOVE Tim. Persistent routes. Added.
       virtual char*  portName(void*, char* str, int str_size) { if(str_size == 0) return 0; str[0] = '\0'; return str; }
-      // REMOVE Tim. Persistent routes. Added.
       virtual const char* canonicalPortName(void*) { return 0; }
       virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
       virtual int getState() { 
