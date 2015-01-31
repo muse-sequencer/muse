@@ -80,8 +80,11 @@ MidiDevice* MidiAlsaDevice::createAlsaMidiDevice(QString name, int rwflags) // 1
   }
   
   snd_seq_addr_t a;
-  a.client = 0;
-  a.port = 0;
+  
+  // From seq.h: "Special client (port) ids SND_SEQ_ADDRESS_UNKNOWN 253 = unknown source"
+  // Hopefully we can use that as a 'valid' marker here. We can't use zero.
+  a.client = SND_SEQ_ADDRESS_UNKNOWN;
+  a.port = SND_SEQ_ADDRESS_UNKNOWN;
   
   MidiAlsaDevice* dev = new MidiAlsaDevice(a, name);
 
@@ -121,8 +124,10 @@ QString MidiAlsaDevice::open()
 
       snd_seq_port_info_t *pinfo;
       snd_seq_port_subscribe_t* subs;
-      
-      if(adr.client != 0 && adr.port != 0)
+
+      // REMOVE Tim. Persistent routes. Added.      
+      printf("MidiAlsaDevice::open Getting port info: adr: %d:%d\n", adr.client, adr.port);
+      if(adr.client != SND_SEQ_ADDRESS_UNKNOWN && adr.port != SND_SEQ_ADDRESS_UNKNOWN)
       {
         snd_seq_port_info_alloca(&pinfo);
         int rv = snd_seq_get_any_port_info(alsaSeq, adr.client, adr.port, pinfo);
@@ -131,6 +136,8 @@ QString MidiAlsaDevice::open()
           printf("MidiAlsaDevice::open Error getting port info: adr: %d:%d: %s\n", adr.client, adr.port, snd_strerror(rv));
           return QString(snd_strerror(rv));
         }
+        // REMOVE Tim. Persistent routes. Added.      
+        printf("MidiAlsaDevice::open: adr: %d:%d\n", adr.client, adr.port);
         // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
         snd_seq_port_subscribe_alloca(&subs);
       }
@@ -140,7 +147,7 @@ QString MidiAlsaDevice::open()
       int rer = 0;
 
       // REMOVE Tim. Persistent routes. Added.
-      if(adr.client != 0 && adr.port != 0)
+      if(adr.client != SND_SEQ_ADDRESS_UNKNOWN && adr.port != SND_SEQ_ADDRESS_UNKNOWN)
       {
         
         int cap = snd_seq_port_info_get_capability(pinfo);
@@ -156,6 +163,8 @@ QString MidiAlsaDevice::open()
               {  
                 snd_seq_port_subscribe_set_sender(subs, &musePort);
                 snd_seq_port_subscribe_set_dest(subs, &adr);
+                // REMOVE Tim. Persistent routes. Added.      
+                printf("MidiAlsaDevice::open Checking write subscription: adr: %d:%d\n", adr.client, adr.port);
                 // Not already subscribed (or error)? Then try subscribing.
                 if(snd_seq_get_port_subscription(alsaSeq, subs) < 0)
                 {
@@ -178,6 +187,8 @@ QString MidiAlsaDevice::open()
               {  
                 snd_seq_port_subscribe_set_dest(subs, &musePort);
                       snd_seq_port_subscribe_set_sender(subs, &adr);
+                // REMOVE Tim. Persistent routes. Added.      
+                printf("MidiAlsaDevice::open Checking read subscription: adr: %d:%d\n", adr.client, adr.port);
                 // Not already subscribed (or error)? Then try subscribing.
                 if(snd_seq_get_port_subscription(alsaSeq, subs) < 0)
                 {
@@ -209,7 +220,7 @@ void MidiAlsaDevice::close()
       snd_seq_port_info_t *pinfo;
       snd_seq_port_subscribe_t* subs;
       // REMOVE Tim. Persistent routes. Added.
-      if(adr.client != 0 && adr.port != 0)
+      if(adr.client != SND_SEQ_ADDRESS_UNKNOWN && adr.port != SND_SEQ_ADDRESS_UNKNOWN)
       {
         
         snd_seq_port_info_alloca(&pinfo);
@@ -224,7 +235,7 @@ void MidiAlsaDevice::close()
       }
 
       // REMOVE Tim. Persistent routes. Added.      
-      if(adr.client == 0 || adr.port == 0)
+      if(adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
       {
         _readEnable = false;      
         _writeEnable = false;      
@@ -354,7 +365,7 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
             }
             
       // REMOVE Tim. Persistent routes. Added.      
-      if(adr.client == 0 || adr.port == 0)
+      if(adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN)
         return true;
       
       int chn = e.channel();
@@ -984,7 +995,7 @@ bool initMidiAlsa()
                   if (capability & inCap)
                         flags |= 2;
                   dev->setrwFlags(flags);
-                  if (MusEGlobal::debugMsg)
+//                   if (MusEGlobal::debugMsg) // REMOVE Tim. Persistent routes. Removed for test. Reinstate.
                         printf("ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
                            snd_seq_port_info_get_name(pinfo),
                            adr.client, adr.port,
@@ -1029,7 +1040,7 @@ bool initMidiAlsa()
                   dev->setrwFlags(flags);
                   if(is_thru)             // Don't auto-open Midi Through.
                     dev->setOpenFlags(0); 
-                  if (MusEGlobal::debugMsg)
+//                   if (MusEGlobal::debugMsg) // REMOVE Tim. Persistent routes. Removed for test. Reinstate.
                         printf("ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
                            snd_seq_port_info_get_name(pinfo),
                            adr.client, adr.port,
@@ -1176,6 +1187,7 @@ void alsaScanMidiPorts()
 #ifdef ALSA_DEBUG
     printf("alsa scan midi ports\n");
 #endif
+      fprintf(stderr, "alsaScanMidiPorts\n");  // REMOVE Tim. Persistent routes. Added.
       const int inCap  = SND_SEQ_PORT_CAP_SUBS_READ;
       const int outCap = SND_SEQ_PORT_CAP_SUBS_WRITE;
 
@@ -1223,8 +1235,8 @@ void alsaScanMidiPorts()
                   }
                   
             // REMOVE Tim. Persistent routes. Added.
-            // If either of the client or port are 0, don't delete
-//             if(d->adr.client == 0 || d->adr.port == 0)
+            // If either of the client or port are SND_SEQ_ADDRESS_UNKNOWN, don't delete
+//             if(d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN)
 //             {
 //               ++i;
 //               continue;
@@ -1239,9 +1251,9 @@ void alsaScanMidiPorts()
                   // REMOVE Tim. Persistent routes. Added.
                   // Search by name if either of the client or port are 0.
                   if(strcmp(k->name, d->name().toLatin1().constData()) == 0 &&
-                     ((d->adr.client == 0 && d->adr.port == 0) || 
-                      (d->adr.client == 0 && d->adr.port == k->adr.port) ||
-                      (d->adr.port == 0 && d->adr.client == k->adr.client)))
+                     ((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) || 
+                      (d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == k->adr.port) ||
+                      (d->adr.port == SND_SEQ_ADDRESS_UNKNOWN && d->adr.client == k->adr.client)))
                     break;
                   }
             if (k == portList.end()) {
@@ -1250,6 +1262,8 @@ void alsaScanMidiPorts()
                   iMidiDevice k = i;
 // printf("erase device\n");
                   ++i;
+                  fprintf(stderr, "alsaScanMidiPorts erasing:%s adr.client:%d adr.port:%d\n", 
+                          d->name().toLatin1().constData(), d->adr.client, d->adr.port);  // REMOVE Tim. Persistent routes. Added.
                   MusEGlobal::midiDevices.erase(k);
                   }
             else {
@@ -1272,23 +1286,23 @@ void alsaScanMidiPorts()
                         break;
                   
                   // REMOVE Tim. Persistent routes. Added.
-                  if((d->adr.client == 0 || d->adr.port == 0) && strcmp(k->name, d->name().toLatin1().constData()) == 0)
+                  if((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) && strcmp(k->name, d->name().toLatin1().constData()) == 0)
                   {
-                    if(d->adr.client != 0 && d->adr.client != k->adr.client)
+                    if(d->adr.client != SND_SEQ_ADDRESS_UNKNOWN && d->adr.client != k->adr.client)
                     {
                       // REMOVE Tim. Persistent routes. Added.
                       fprintf(stderr, "alsaScanMidiPorts: k->name:%s d->adr.client:%u != k->adr.client:%u", k->name, d->adr.client, k->adr.client);
                       //continue;
                     }
-                    if(d->adr.port != 0 && d->adr.port != k->adr.port)
+                    if(d->adr.port != SND_SEQ_ADDRESS_UNKNOWN && d->adr.port != k->adr.port)
                     {
                       // REMOVE Tim. Persistent routes. Added.
                       fprintf(stderr, "alsaScanMidiPorts: k->name:%s d->adr.port:%u != k->adr.port:%u", k->name, d->adr.port, k->adr.port);
                       //continue;
                     }
-                    //if(d->adr.client == 0)
+                    //if(d->adr.client == SND_SEQ_ADDRESS_UNKNOWN)
                       d->adr.client = k->adr.client;
-                    //if(d->adr.port == 0)
+                    //if(d->adr.port == SND_SEQ_ADDRESS_UNKNOWN)
                       d->adr.port = k->adr.port;
                     break;
                   }
@@ -1299,6 +1313,8 @@ void alsaScanMidiPorts()
                   MidiAlsaDevice* dev = new MidiAlsaDevice(k->adr,
                      QString(k->name));
                   dev->setrwFlags(k->flags);
+                  fprintf(stderr, "alsaScanMidiPorts erasing:%s adr.client:%d adr.port:%d\n", 
+                          dev->name().toLatin1().constData(), dev->adr.client, dev->adr.port);  // REMOVE Tim. Persistent routes. Added.
                   MusEGlobal::midiDevices.add(dev);
 // printf("add device\n");
                   }
