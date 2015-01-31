@@ -66,6 +66,7 @@
 #include "keyevent.h"
 #include <sys/wait.h>
 #include "tempo.h"
+#include "route.h"
 
 namespace MusEGlobal {
 MusECore::Song* song = 0;
@@ -1762,6 +1763,9 @@ void Song::processMsg(AudioMsg* msg)
             case SEQM_UPDATE_SOLO_STATES:
                   updateSoloStates();
                   break;
+            case SEQM_EXECUTE_PENDING_OPERATIONS:
+                  msg->pendingOps->executeRTStage();
+                  break;
             case SEQM_EXECUTE_OPERATION_GROUP:
                   executeOperationGroup2(*msg->operations);
                   break;
@@ -2118,6 +2122,11 @@ void Song::seqSignal(int fd)
                         break;
 
                   case 'R': // Registration changed
+                        if (MusEGlobal::audioDevice)
+                            MusEGlobal::audioDevice->registrationChanged();
+                        break;
+
+                  case 'J': // Port connections changed
                         if (MusEGlobal::audioDevice)
                             MusEGlobal::audioDevice->registrationChanged();
                         break;
@@ -2807,6 +2816,254 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
   }
 }
 
+// REMOVE Tim. Persistent routes. Added.
+//---------------------------------------------------------
+//   connectMidiPorts
+//---------------------------------------------------------
+
+void Song::connectMidiPorts()
+{
+  // Connect midi device ports to Jack ports...
+  for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
+  {
+    MidiDevice* md = *i;
+    if(md->deviceType() != MidiDevice::JACK_MIDI)
+      continue;
+    
+    // Midi outputs...
+    if(md->rwFlags() & 1)
+    {
+      void* our_port = md->outClientPort(); 
+      if(our_port)                           
+      {
+        const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
+        if(our_port_name)
+        {
+          RouteList* rl = md->outRoutes();
+          for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+          {  
+            if(ir->type != Route::JACK_ROUTE)  
+              continue;
+            const char* route_name = ir->persistentJackPortName;
+            if(!MusEGlobal::audioDevice->findPort(route_name))
+              continue;
+            //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+              MusEGlobal::audioDevice->connect(our_port_name, route_name);
+          }  
+        }
+      }    
+    }
+    
+    // Midi inputs...
+    if(md->rwFlags() & 2)
+    {  
+      void* our_port = md->inClientPort();  
+      if(our_port)                          
+      {
+        const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
+        if(our_port_name)
+        {
+          RouteList* rl = md->inRoutes();
+          for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+          {  
+            if(ir->type != Route::JACK_ROUTE)  
+              continue;
+            const char* route_name = ir->persistentJackPortName;
+            if(!MusEGlobal::audioDevice->findPort(route_name))
+              continue;
+            //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+              MusEGlobal::audioDevice->connect(route_name, our_port_name);
+          }
+        }
+      }
+    }  
+  }  
+}
+
+// REMOVE Tim. Persistent routes. Added.
+//---------------------------------------------------------
+//   connectAudioPorts
+//---------------------------------------------------------
+
+void Song::connectAudioPorts()
+{
+  if(!MusEGlobal::audioDevice)
+    return;
+  
+  // Connect audio output ports to Jack ports...
+  OutputList* ol = outputs();
+  for(iAudioOutput i = ol->begin(); i != ol->end(); ++i) 
+  {
+    AudioOutput* ao = *i;
+    int channel = ao->channels();
+    for(int ch = 0; ch < channel; ++ch) 
+    {
+      void* our_port = ao->jackPort(ch);
+      if(!our_port)
+        continue;
+      const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
+      if(!our_port_name)
+        continue;
+      RouteList* rl = ao->outRoutes();
+      for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+      {
+        if(ir->type != Route::JACK_ROUTE || ir->channel != ch)  
+          continue;
+        const char* route_name = ir->persistentJackPortName;
+        if(!MusEGlobal::audioDevice->findPort(route_name))
+          continue;
+        //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+          MusEGlobal::audioDevice->connect(our_port_name, route_name);
+      }
+    }
+  }
+  
+  // Connect Jack ports to audio input ports...
+  InputList* il = inputs();
+  for(iAudioInput i = il->begin(); i != il->end(); ++i) 
+  {
+    AudioInput* ai = *i;
+    int channel = ai->channels();
+    for(int ch = 0; ch < channel; ++ch) 
+    {
+      void* our_port = ai->jackPort(ch);
+      if(!our_port)
+        continue;
+      const char* our_port_name = MusEGlobal::audioDevice->canonicalPortName(our_port);
+      if(!our_port_name)
+        continue;
+      RouteList* rl = ai->inRoutes();
+      for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+      {
+        if(ir->type != Route::JACK_ROUTE || ir->channel != ch)  
+          continue;
+        const char* route_name = ir->persistentJackPortName;
+        if(!MusEGlobal::audioDevice->findPort(route_name))
+          continue;
+        //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
+          MusEGlobal::audioDevice->connect(route_name, our_port_name);
+      }
+    }
+  }
+}
+
+// REMOVE Tim. Persistent routes. Added.
+// //---------------------------------------------------------
+// //   scanJackRoutes
+// //---------------------------------------------------------
+// 
+// void Song::scanJackRoutes(RouteList* rl, void* jack_port, bool)
+// {
+//   PendingOperationList ops;
+//   for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+//         if(irl->type != Route::JACK_ROUTE)  
+//           continue;
+//         //if (irl->channel != channel)
+//         //      continue;
+//         QString name = irl->name();
+//         //name += QString(JACK_MIDI_OUT_PORT_SUFFIX);    
+//         QByteArray ba = name.toLatin1();
+//         const char* portName = ba.constData();
+//         bool found = false;
+//         const char** pn = ports;
+//         while (pn && *pn) {
+//               if (strcmp(*pn, portName) == 0) {
+//                     found = true;
+//                     break;
+//                     }
+//               ++pn;
+//               }
+//         if (!found) {
+//               Route route_change(*irl);
+//               route_change.jackPort = 0;
+//               ops.add(PendingOperationItem(&(*irl), &route_change, PendingOperationItem::ModifyRouteNode));
+//               }
+//               
+//               
+//         if(irl->jackPort == jack_port) {
+//               Route route_change(*irl);
+//               route_change.jackPort = 0;
+//               ops.add(PendingOperationItem(&(*irl), &route_change, PendingOperationItem::ModifyRouteNode));
+//               }
+//         }
+//   if(!ops.empty())
+//     MusEGlobal::audio->msgExecutePendingOperations(ops);
+// }
+// 
+// //---------------------------------------------------------
+// //   scanJackRoutes
+// //---------------------------------------------------------
+// 
+// void Song::scanJackRoutes(RouteList* rl, const char** ports)
+// {
+//   PendingOperationList ops;
+//   for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+//         if(irl->type != Route::JACK_ROUTE)  
+//           continue;
+//         //if (irl->channel != channel)
+//         //      continue;
+//         QString name = irl->name();
+//         //name += QString(JACK_MIDI_OUT_PORT_SUFFIX);    
+//         QByteArray ba = name.toLatin1();
+//         const char* portName = ba.constData();
+//         bool found = false;
+//         const char** pn = ports;
+//         while (pn && *pn) {
+//               if (strcmp(*pn, portName) == 0) {
+//                     found = true;
+//                     break;
+//                     }
+//               ++pn;
+//               }
+//         if (!found) {
+//               Route route_change(*irl);
+//               route_change.jackPort = 0;
+//               ops.add(PendingOperationItem(&(*irl), &route_change, PendingOperationItem::ModifyRouteNode));
+//               }
+//         }
+//   
+//   
+//   //---------------------------------------
+//   // check for connects
+//   //---------------------------------------
+// 
+// //   if (ports) 
+// //   {
+// //         const char** pn = ports;
+// //         while (*pn) {
+// //               bool found = false;
+// //               for (ciRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+// //                     if(irl->type != Route::JACK_ROUTE)  
+// //                       continue;
+// //                     //if (irl->channel != channel)
+// //                     //      continue;
+// //                     QString name = irl->name();
+// //                     QByteArray ba = name.toLatin1();
+// //                     const char* portName = ba.constData();
+// //                     if (strcmp(*pn, portName) == 0) {
+// //                           found = true;
+// //                           break;
+// //                           }
+// //                     }
+// //               if (!found) {
+// //                     MusEGlobal::audio->msgAddRoute1(
+// //                       //Route(it, channel),
+// //                       //Route(mjd),
+// //                       Route(md, -1),
+// //                       //Route(*pn, false, channel)
+// //                       //Route(*pn, false, -1)
+// //                       Route(*pn, false, -1, Route::JACK_ROUTE)
+// //                       );
+// //                     }
+// //               ++pn;
+// //               }
+// //   }
+//   
+//   if(!ops.empty())
+//     MusEGlobal::audio->msgExecutePendingOperations(ops);
+// }                      
+// 
+
 //---------------------------------------------------------
 //   insertTrack0
 //---------------------------------------------------------
@@ -3041,183 +3298,186 @@ void Song::insertTrackOperation(Track* track, int idx, PendingOperationList& ops
       // Routes are added in the PendingOperationItem::AddTrack section of PendingOperationItem::executeRTStage().
 }
 
-//---------------------------------------------------------
-//   removeTrack1
-//    non realtime part of removeTrack
-//---------------------------------------------------------
+// REMOVE Tim. Persistent routes.
+// //---------------------------------------------------------
+// //   removeTrack1
+// //    non realtime part of removeTrack
+// //---------------------------------------------------------
+// 
+// void Song::removeTrack1(Track* track)
+//       {
+//         switch(track->type())
+//         {
+//           case Track::WAVE:
+//           case Track::AUDIO_OUTPUT:
+//           case Track::AUDIO_INPUT:
+//           case Track::AUDIO_GROUP:
+//           case Track::AUDIO_AUX:
+//           case Track::AUDIO_SOFTSYNTH:
+//               ((AudioTrack*)track)->deleteAllEfxGuis();
+//               break;
+//           default:
+//               break;
+//         }
+// 
+//         switch(track->type())
+//         {
+//           case Track::AUDIO_OUTPUT:
+//           case Track::AUDIO_INPUT:
+//                 connectJackRoutes((AudioTrack*)track, true);
+//               break;
+//           case Track::AUDIO_SOFTSYNTH:
+//                 {
+//                 SynthI* si = (SynthI*)track;
+//                 if(si->hasGui())
+//                   si->showGui(false);
+//                 if(si->hasNativeGui())       
+//                   si->showNativeGui(false);
+//                 }
+//               break;
+//           default:
+//               break;
+//         }
+//       }
 
-void Song::removeTrack1(Track* track)
-      {
-        switch(track->type())
-        {
-          case Track::WAVE:
-          case Track::AUDIO_OUTPUT:
-          case Track::AUDIO_INPUT:
-          case Track::AUDIO_GROUP:
-          case Track::AUDIO_AUX:
-          case Track::AUDIO_SOFTSYNTH:
-              ((AudioTrack*)track)->deleteAllEfxGuis();
-              break;
-          default:
-              break;
-        }
+// REMOVE Tim. Persistent routes.
+// //---------------------------------------------------------
+// //   removeTrack
+// //    called from RT context
+// //---------------------------------------------------------
+// 
+// void Song::removeTrack2(Track* track)
+// {
+//       switch(track->type()) {
+//             case Track::MIDI:
+//             case Track::DRUM:
+//             case Track::NEW_DRUM:
+//                   removePortCtrlEvents(((MidiTrack*)track));
+//                   unchainTrackParts(track);
+//                   
+//                   _midis.erase(track);
+//                   break;
+//             case Track::WAVE:
+//                   unchainTrackParts(track);
+//                   
+//                   _waves.erase(track);
+//                   break;
+//             case Track::AUDIO_OUTPUT:
+//                   _outputs.erase(track);
+//                   break;
+//             case Track::AUDIO_INPUT:
+//                   _inputs.erase(track);
+//                   break;
+//             case Track::AUDIO_GROUP:
+//                   _groups.erase(track);
+//                   break;
+//             case Track::AUDIO_AUX:
+//                   _auxs.erase(track);
+//                   break;
+//             case Track::AUDIO_SOFTSYNTH:
+//                   {
+//                   SynthI* s = (SynthI*) track;
+//                   s->deactivate2();
+//                   _synthIs.erase(track);
+//                   }
+//                   break;
+//             }
+//       _tracks.erase(track);
+//       
+//       //  remove routes
+// 
+//       if (track->type() == Track::AUDIO_OUTPUT) 
+//       {
+//             const RouteList* rl = track->inRoutes();
+//             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+//             {
+//                   Route src(track, r->channel, r->channels);
+//                   src.remoteChannel = r->remoteChannel;
+//                   r->track->outRoutes()->removeRoute(src);
+//                   // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+//                   // Update the Audio Output track's aux ref count.     p4.0.37
+//                   if(r->track->auxRefCount())
+//                     track->updateAuxRoute( -r->track->auxRefCount(), NULL );
+//                   else if(r->track->type() == Track::AUDIO_AUX)
+//                     track->updateAuxRoute( -1, NULL );
+//             }      
+//       }
+//       else if (track->type() == Track::AUDIO_INPUT) 
+//       {
+//             const RouteList* rl = track->outRoutes();
+//             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+//             {
+//                   Route src(track, r->channel, r->channels);
+//                   src.remoteChannel = r->remoteChannel;
+//                   r->track->inRoutes()->removeRoute(src);
+//                   // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+//                   // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+//                   if(track->auxRefCount())
+//                     r->track->updateAuxRoute( -track->auxRefCount(), NULL );
+//                   else if(track->type() == Track::AUDIO_AUX)
+//                     r->track->updateAuxRoute( -1, NULL );
+//             }      
+//       }
+//       else if (track->isMidiTrack())          // p3.3.50
+//       {
+//             const RouteList* rl = track->inRoutes();
+//             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+//             {
+//                   Route src(track, r->channel);
+//                   MusEGlobal::midiPorts[r->midiPort].outRoutes()->removeRoute(src);
+//             }
+//             rl = track->outRoutes();
+//             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+//             {
+//                   Route src(track, r->channel);
+//                   MusEGlobal::midiPorts[r->midiPort].inRoutes()->removeRoute(src);
+//             }      
+//       }
+//       else 
+//       {
+//             const RouteList* rl = track->inRoutes();
+//             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+//             {
+//                   Route src(track, r->channel, r->channels);
+//                   src.remoteChannel = r->remoteChannel;
+//                   r->track->outRoutes()->removeRoute(src);
+//                   // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+//                   // Update this track's aux ref count.     p4.0.37
+//                   if(r->track->auxRefCount())
+//                     track->updateAuxRoute( -r->track->auxRefCount(), NULL );
+//                   else if(r->track->type() == Track::AUDIO_AUX)
+//                     track->updateAuxRoute( -1, NULL );
+//             }
+//             rl = track->outRoutes();
+//             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
+//             {
+//                   Route src(track, r->channel, r->channels);
+//                   src.remoteChannel = r->remoteChannel;
+//                   r->track->inRoutes()->removeRoute(src);
+//                   // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+//                   // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+//                   if(track->auxRefCount())
+//                     r->track->updateAuxRoute( -track->auxRefCount(), NULL );
+//                   else if(track->type() == Track::AUDIO_AUX)
+//                     r->track->updateAuxRoute( -1, NULL );
+//             }      
+//       }
+//       
+// }
 
-        switch(track->type())
-        {
-          case Track::AUDIO_OUTPUT:
-          case Track::AUDIO_INPUT:
-                connectJackRoutes((AudioTrack*)track, true);
-              break;
-          case Track::AUDIO_SOFTSYNTH:
-                {
-                SynthI* si = (SynthI*)track;
-                if(si->hasGui())
-                  si->showGui(false);
-                if(si->hasNativeGui())       
-                  si->showNativeGui(false);
-                }
-              break;
-          default:
-              break;
-        }
-      }
-
-//---------------------------------------------------------
-//   removeTrack
-//    called from RT context
-//---------------------------------------------------------
-
-void Song::removeTrack2(Track* track)
-{
-      switch(track->type()) {
-            case Track::MIDI:
-            case Track::DRUM:
-            case Track::NEW_DRUM:
-                  removePortCtrlEvents(((MidiTrack*)track));
-                  unchainTrackParts(track);
-                  
-                  _midis.erase(track);
-                  break;
-            case Track::WAVE:
-                  unchainTrackParts(track);
-                  
-                  _waves.erase(track);
-                  break;
-            case Track::AUDIO_OUTPUT:
-                  _outputs.erase(track);
-                  break;
-            case Track::AUDIO_INPUT:
-                  _inputs.erase(track);
-                  break;
-            case Track::AUDIO_GROUP:
-                  _groups.erase(track);
-                  break;
-            case Track::AUDIO_AUX:
-                  _auxs.erase(track);
-                  break;
-            case Track::AUDIO_SOFTSYNTH:
-                  {
-                  SynthI* s = (SynthI*) track;
-                  s->deactivate2();
-                  _synthIs.erase(track);
-                  }
-                  break;
-            }
-      _tracks.erase(track);
-      
-      //  remove routes
-
-      if (track->type() == Track::AUDIO_OUTPUT) 
-      {
-            const RouteList* rl = track->inRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
-            {
-                  Route src(track, r->channel, r->channels);
-                  src.remoteChannel = r->remoteChannel;
-                  r->track->outRoutes()->removeRoute(src);
-                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update the Audio Output track's aux ref count.     p4.0.37
-                  if(r->track->auxRefCount())
-                    track->updateAuxRoute( -r->track->auxRefCount(), NULL );
-                  else if(r->track->type() == Track::AUDIO_AUX)
-                    track->updateAuxRoute( -1, NULL );
-            }      
-      }
-      else if (track->type() == Track::AUDIO_INPUT) 
-      {
-            const RouteList* rl = track->outRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
-            {
-                  Route src(track, r->channel, r->channels);
-                  src.remoteChannel = r->remoteChannel;
-                  r->track->inRoutes()->removeRoute(src);
-                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
-                  if(track->auxRefCount())
-                    r->track->updateAuxRoute( -track->auxRefCount(), NULL );
-                  else if(track->type() == Track::AUDIO_AUX)
-                    r->track->updateAuxRoute( -1, NULL );
-            }      
-      }
-      else if (track->isMidiTrack())          // p3.3.50
-      {
-            const RouteList* rl = track->inRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
-            {
-                  Route src(track, r->channel);
-                  MusEGlobal::midiPorts[r->midiPort].outRoutes()->removeRoute(src);
-            }
-            rl = track->outRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
-            {
-                  Route src(track, r->channel);
-                  MusEGlobal::midiPorts[r->midiPort].inRoutes()->removeRoute(src);
-            }      
-      }
-      else 
-      {
-            const RouteList* rl = track->inRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
-            {
-                  Route src(track, r->channel, r->channels);
-                  src.remoteChannel = r->remoteChannel;
-                  r->track->outRoutes()->removeRoute(src);
-                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update this track's aux ref count.     p4.0.37
-                  if(r->track->auxRefCount())
-                    track->updateAuxRoute( -r->track->auxRefCount(), NULL );
-                  else if(r->track->type() == Track::AUDIO_AUX)
-                    track->updateAuxRoute( -1, NULL );
-            }
-            rl = track->outRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r)
-            {
-                  Route src(track, r->channel, r->channels);
-                  src.remoteChannel = r->remoteChannel;
-                  r->track->inRoutes()->removeRoute(src);
-                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
-                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
-                  if(track->auxRefCount())
-                    r->track->updateAuxRoute( -track->auxRefCount(), NULL );
-                  else if(track->type() == Track::AUDIO_AUX)
-                    r->track->updateAuxRoute( -1, NULL );
-            }      
-      }
-      
-}
-
-//---------------------------------------------------------
-//   removeTrack3
-//    non realtime part of removeTrack
-//---------------------------------------------------------
-
-//empty. gets executed after the realtime part
-void Song::removeTrack3(Track* /*track*/)//prevent of compiler warning: unused parameter
-{
-}
+// REMOVE Tim. Persistent routes.
+// //---------------------------------------------------------
+// //   removeTrack3
+// //    non realtime part of removeTrack
+// //---------------------------------------------------------
+// 
+// //empty. gets executed after the realtime part
+// void Song::removeTrack3(Track* /*track*/)//prevent of compiler warning: unused parameter
+// {
+// }
 
 
-void writeStringToFile(FILE *filePointer, char *writeString)
+void writeStringToFile(FILE *filePointer, const char *writeString)
 {
   if (MusEGlobal::debugMsg)
     std::cout << writeString;
@@ -3266,7 +3526,10 @@ void Song::removeTrackOperation(Track* track, PendingOperationList& ops)
                   
                   if(s->midiPort() != -1)
                     // synthi is attached
-                    ops.add(PendingOperationItem(&MusEGlobal::midiPorts[s->midiPort()], s, PendingOperationItem::SetMidiPortDevice));
+                    // REMOVE Tim. Persistent routes. Changed. Oops, hey this was wrong before, should have been zero.
+                    //ops.add(PendingOperationItem(&MusEGlobal::midiPorts[s->midiPort()], s, PendingOperationItem::SetMidiPortDevice));
+                    //MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[s->midiPort()], s);
+                    MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[s->midiPort()], 0);
                   
                   sec_track_list = &_synthIs;
             }

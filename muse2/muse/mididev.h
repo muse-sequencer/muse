@@ -97,7 +97,10 @@ class MidiDevice {
       bool noOutRoute() const  { return _outRoutes.empty(); }
       
       const QString& name() const      { return _name; }
+      // setName can be overloaded to do other things like setting port names, while setNameText just sets the text.
       virtual void setName(const QString& s)   { _name = s; }
+      // setNameText just sets the text, while setName can be overloaded to do other things like setting port names.
+      void setNameText(const QString& s)  { _name = s; }
       
       int midiPort() const             { return _port; }
       void setPort(int p);              

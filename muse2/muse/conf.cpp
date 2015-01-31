@@ -48,6 +48,7 @@
 #include "mididev.h"
 #include "driver/audiodev.h"
 #include "driver/jackmidi.h"
+#include "driver/alsamidi.h" // REMOVE Tim. Persistent routes. Added.
 #include "xml.h"
 #include "waveedit.h"
 #include "midi.h"
@@ -215,6 +216,155 @@ static void readPortChannel(Xml& xml, int midiPort)
             }
       }
 
+// REMOVE Tim. Persistent routes. Added.
+//---------------------------------------------------------
+//   readConfigMidiDevice
+//---------------------------------------------------------
+
+//static void readConfigMidiDevice(Xml& xml, bool onlyReadChannelState)
+static void readConfigMidiDevice(Xml& xml)
+      {
+//       int idx = 0;
+      QString device;
+              
+//       // Let's be bold. New users have been confused by generic midi not enabling any patches and controllers.
+//       // I had said this may cause HW problems by sending out GM sysEx when really the HW might not be GM.
+//       // But this really needs to be done, one way or another. 
+//       // FIXME: TODO: Make this user-configurable!
+//       QString instrument("GM"); 
+      
+      int rwFlags = 3;
+      int openFlags = 1;
+//       int dic = -1;   
+//       int doc = -1;
+      
+//       MidiSyncInfo tmpSi;
+      int type = MidiDevice::ALSA_MIDI;
+
+      for (;;) {
+            Xml::Token token = xml.parse();
+            if (token == Xml::Error || token == Xml::End)
+                  break;
+            QString tag = xml.s1();
+            switch (token) {
+                  case Xml::TagStart:
+                        
+//                         // onlyReadChannelState added so it doesn't overwrite midi ports.   p4.0.41 Tim.
+//                         // Try to keep the controller information. But, this may need to be moved below.  
+//                         // Also may want to try to keep sync info, but that's a bit risky, so let's not for now.
+//                         if (tag == "channel") {
+//                               readPortChannel(xml, idx);
+//                               break;
+//                               }
+//                         else if (onlyReadChannelState){
+//                               xml.skip(tag);
+//                               break;
+//                               }
+                              
+                        if (tag == "name")
+                              device = xml.parse1();
+                        else if (tag == "type")
+                              type = xml.parseInt();
+//                         else if (tag == "record") {         // old
+//                               bool f = xml.parseInt();
+//                               if (f)
+//                                     openFlags |= 2;
+//                               }
+                        else if (tag == "openFlags")
+                              openFlags = xml.parseInt();
+                        else if (tag == "rwFlags")             // Jack midi devs need this.   p4.0.41
+                              rwFlags = xml.parseInt();
+//                         else if (tag == "defaultInChans")
+//                               dic = xml.parseInt(); 
+//                         else if (tag == "defaultOutChans")
+//                               doc = xml.parseInt(); 
+//                         else if (tag == "midiSyncInfo")
+//                               tmpSi.read(xml);
+//                         else if (tag == "instrument") {
+//                               instrument = xml.parse1();
+//                               //MusEGlobal::midiPorts[idx].setInstrument(    // Moved below
+//                               //   registerMidiInstrument(instrument)
+//                               //   );
+//                               }
+//                         else if (tag == "midithru")
+//                               xml.parseInt(); // obsolete
+                        //else if (tag == "channel") {
+                        //      readPortChannel(xml, idx);   // Moved above
+                        //      }
+                        else
+                              xml.unknown("MidiDevice");
+                        break;
+                  case Xml::Attribut:
+//                         if (tag == "idx") {
+//                               idx = xml.s2().toInt();
+//                               }
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "mididevice") {
+                              
+//                               if(onlyReadChannelState)
+//                                 return;
+                              
+//                               if (idx < 0 || idx >= MIDI_PORTS) {
+//                                     fprintf(stderr, "bad midi port %d (>%d)\n",
+//                                        idx, MIDI_PORTS);
+//                                     idx = 0;
+//                                     }
+                              
+                              MidiDevice* dev = MusEGlobal::midiDevices.find(device, type);
+                              
+                              if(!dev)
+                              {
+                                if(type == MidiDevice::JACK_MIDI)
+                                {
+                                  if(MusEGlobal::debugMsg)
+                                    fprintf(stderr, "readConfigMidiDevice: creating jack midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
+                                  dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
+                                }
+                                else
+                                if(type == MidiDevice::ALSA_MIDI)
+                                {
+                                  if(MusEGlobal::debugMsg)
+                                    fprintf(stderr, "readConfigMidiDevice: creating ALSA midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
+                                  dev = MidiAlsaDevice::createAlsaMidiDevice(device, rwFlags);  
+                                }
+                              }                              
+                              
+//                               if(MusEGlobal::debugMsg && !dev) 
+                              if(!dev) // REMOVE Tim. Persistent routes. Changed. FOR TEST ONLY.
+                                fprintf(stderr, "readConfigMidiDevice: device not found %s\n", device.toLatin1().constData());
+                              
+//                               MidiPort* mp = &MusEGlobal::midiPorts[idx];
+// 
+//                               mp->setDefaultOutChannels(0); // reset output channel to take care of the case where no default is specified
+// 
+//                               mp->setInstrument(registerMidiInstrument(instrument));  
+//                               if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
+//                                 mp->setDefaultInChannels(dic);
+//                               if(doc != -1)
+//                                 // p4.0.17 Turn on if and when multiple output routes supported.
+//                                 #if 0
+//                                 mp->setDefaultOutChannels(doc);
+//                                 #else
+//                                 setPortExclusiveDefOutChan(idx, doc);
+//                                 #endif
+//                                 
+//                               mp->syncInfo().copyParams(tmpSi);
+//                               // p3.3.50 Indicate the port was found in the song file, even if no device is assigned to it.
+//                               mp->setFoundInSongFile(true);
+                              
+                              if (dev) {
+                                    dev->setOpenFlags(openFlags);
+//                                     MusEGlobal::midiSeq->msgSetMidiDevice(mp, dev);
+                                    }
+                              return;
+                              }
+                  default:
+                        break;
+                  }
+            }
+      }
+
 //---------------------------------------------------------
 //   readConfigMidiPort
 //---------------------------------------------------------
@@ -238,6 +388,9 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
       MidiSyncInfo tmpSi;
       int type = MidiDevice::ALSA_MIDI;
 
+      // REMOVE Tim. Persistent routes. Added.
+      bool pre_mididevice_ver_found = false;
+      
       for (;;) {
             Xml::Token token = xml.parse();
             if (token == Xml::Error || token == Xml::End)
@@ -261,16 +414,26 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                         if (tag == "name")
                               device = xml.parse1();
                         else if (tag == "type")
+                        {
+                              pre_mididevice_ver_found = true; // REMOVE Tim. Persistent routes. Added.
                               type = xml.parseInt();
+                        }
                         else if (tag == "record") {         // old
+                              pre_mididevice_ver_found = true; // REMOVE Tim. Persistent routes. Added.
                               bool f = xml.parseInt();
                               if (f)
                                     openFlags |= 2;
                               }
                         else if (tag == "openFlags")
+                        {
+                              pre_mididevice_ver_found = true; // REMOVE Tim. Persistent routes. Added.
                               openFlags = xml.parseInt();
+                        }
                         else if (tag == "rwFlags")             // Jack midi devs need this.   p4.0.41
+                        {
+                              pre_mididevice_ver_found = true; // REMOVE Tim. Persistent routes. Added.
                               rwFlags = xml.parseInt();
+                        }
                         else if (tag == "defaultInChans")
                               dic = xml.parseInt(); 
                         else if (tag == "defaultOutChans")
@@ -284,7 +447,10 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               //   );
                               }
                         else if (tag == "midithru")
+                        {
+                              pre_mididevice_ver_found = true; // REMOVE Tim. Persistent routes. Added.
                               xml.parseInt(); // obsolete
+                        }
                         //else if (tag == "channel") {
                         //      readPortChannel(xml, idx);   // Moved above
                         //      }
@@ -308,7 +474,9 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                                     idx = 0;
                                     }
                               
-                              MidiDevice* dev = MusEGlobal::midiDevices.find(device);
+                              // REMOVE Tim. Persistent routes. Changed.
+                              //MidiDevice* dev = MusEGlobal::midiDevices.find(device);
+                              MidiDevice* dev = MusEGlobal::midiDevices.find(device, pre_mididevice_ver_found ? type : -1);
                               
                               if(!dev && type == MidiDevice::JACK_MIDI)
                               {
@@ -340,7 +508,8 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               mp->setFoundInSongFile(true);
                               
                               if (dev) {
-                                    dev->setOpenFlags(openFlags);
+                                    if(pre_mididevice_ver_found) // REMOVE Tim. Persistent routes. Added.
+                                      dev->setOpenFlags(openFlags);
                                     MusEGlobal::midiSeq->msgSetMidiDevice(mp, dev);
                                     }
                               return;
@@ -441,6 +610,10 @@ static void readSeqConfiguration(Xml& xml, bool skipMidiPorts)
                   case Xml::TagStart:
                         if (tag == "metronom")
                               loadConfigMetronom(xml);
+                        // REMOVE Tim. Persistent routes. Added.
+                        else if (tag == "mididevice")
+                              readConfigMidiDevice(xml);
+                        
                         else if (tag == "midiport")
                               readConfigMidiPort(xml, skipMidiPorts);
                         else if (tag == "rcStop")
@@ -1182,6 +1355,31 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "rcSteprec",     MusEGlobal::rcSteprecNote);
 
       if (writePortInfo) {
+            // REMOVE Tim. Persistent routes. Added.
+            for(iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
+            {
+              MidiDevice* dev = *imd;
+              // TODO: For now, support only jack midi devices here. ALSA devices are different.
+              //if(dev->deviceType() != MidiDevice::JACK_MIDI)
+              if(dev->deviceType() != MidiDevice::JACK_MIDI && dev->deviceType() != MidiDevice::ALSA_MIDI)
+                continue;
+
+              xml.tag(level++, "mididevice");
+              xml.strTag(level, "name",   dev->name());
+              
+              if(dev->deviceType() != MidiDevice::ALSA_MIDI)
+                xml.intTag(level, "type", dev->deviceType());
+              
+              // Synths will not have been created yet when this is read! So, synthIs now store their own openFlags.
+              if(dev->openFlags() != 1)
+                xml.intTag(level, "openFlags", dev->openFlags());
+              
+              if(dev->deviceType() == MidiDevice::JACK_MIDI)
+                xml.intTag(level, "rwFlags", dev->rwFlags());   // Need this. Jack midi devs are created by app.   p4.0.41 
+              
+              xml.etag(level--, "mididevice");
+            }
+        
             //
             // write information about all midi ports, their assigned
             // instruments and all managed midi controllers
@@ -1233,13 +1431,14 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   if (dev) {
                         xml.strTag(level, "name",   dev->name());
                         
-                        if(dev->deviceType() != MidiDevice::ALSA_MIDI)
-                          xml.intTag(level, "type", dev->deviceType());
-                        
-                        xml.intTag(level, "openFlags", dev->openFlags());
-                        
-                        if(dev->deviceType() == MidiDevice::JACK_MIDI)
-                          xml.intTag(level, "rwFlags", dev->rwFlags());   // Need this. Jack midi devs are created by app.   p4.0.41 
+                        // REMOVE Tim. Persistent routes. Removed. (Moved into mididev section above)
+//                         if(dev->deviceType() != MidiDevice::ALSA_MIDI)
+//                           xml.intTag(level, "type", dev->deviceType());
+//                         
+//                         xml.intTag(level, "openFlags", dev->openFlags());
+//                         
+//                         if(dev->deviceType() == MidiDevice::JACK_MIDI)
+//                           xml.intTag(level, "rwFlags", dev->rwFlags());   // Need this. Jack midi devs are created by app.   p4.0.41 
                         }
                   mport->syncInfo().write(level, xml);
                   // write out registered controller for all channels

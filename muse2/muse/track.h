@@ -132,7 +132,10 @@ class Track {
       void clearRecAutomation(bool clearList);
       
       const QString& name() const     { return _name; }
+      // setName can be overloaded to do other things like setting port names, while setNameText just sets the text.
       virtual void setName(const QString& s)  { _name = s; }
+      // setNameText just sets the text, while setName can be overloaded to do other things like setting port names.
+      void setNameText(const QString& s)  { _name = s; }
 
       TrackType type() const          { return _type; }
       void setType(TrackType t)       { _type = t; }

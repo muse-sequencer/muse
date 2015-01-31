@@ -44,6 +44,7 @@
 #include "gconfig.h"
 #include "pos.h"
 #include "ticksynth.h"
+#include "operations.h"
 
 // Experimental for now - allow other Jack timebase masters to control our midi engine.
 // TODO: Be friendly to other apps and ask them to be kind to us by using jack_transport_reposition. 
@@ -77,6 +78,7 @@ extern double curTime();
 
 const char* seqMsgList[] = {
       "SEQM_REVERT_OPERATION_GROUP", "SEQM_EXECUTE_OPERATION_GROUP",
+      "SEQM_EXECUTE_PENDING_OPERATIONS", 
       "SEQM_RESET_DEVICES", "SEQM_INIT_DEVICES", "SEQM_PANIC",
       "SEQM_MIDI_LOCAL_OFF",
       "SEQM_PLAY_MIDI_EVENT",
@@ -100,7 +102,8 @@ const char* seqMsgList[] = {
       "AUDIO_SET_SOLO", "AUDIO_SET_SEND_METRONOME", 
       "AUDIO_START_MIDI_LEARN",
       "MS_PROCESS", "MS_STOP", "MS_SET_RTC", "MS_UPDATE_POLL_FD",
-      "SEQM_IDLE", "SEQM_SEEK"
+      "SEQM_IDLE", "SEQM_SEEK",
+      "AUDIO_WAIT"
       };
 
 const char* audioStates[] = {
@@ -229,9 +232,10 @@ bool Audio::start()
 
 void Audio::stop(bool)
       {
+      //_running = false; // Set before we stop to avoid error messages in process. // REMOVE Tim. Persistent routes. Added.
       if (MusEGlobal::audioDevice)
             MusEGlobal::audioDevice->stop();
-      _running = false;
+      _running = false;  // REMOVE Tim. Persistent routes. Removed.
       }
 
 //---------------------------------------------------------
@@ -728,6 +732,11 @@ void Audio::processMsg(AudioMsg* msg)
             case SEQM_IDLE:
                   idle = msg->a;
                   MusEGlobal::midiSeq->sendMsg(msg);
+                  break;
+
+            // REMOVE Tim. Persistent routes. Added.
+            case AUDIO_WAIT:
+                  // Do nothing.
                   break;
 
             default:

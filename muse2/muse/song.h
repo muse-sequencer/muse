@@ -60,6 +60,7 @@ class EventList;
 class MarkerList;
 class Marker;
 class SNode;
+class RouteList;
 
 struct AudioMsg;
 
@@ -337,9 +338,9 @@ class Song : public QObject {
       AuxList* auxs()           { return &_auxs;    }
       SynthIList* syntis()      { return &_synthIs; }
       
-      void removeTrack1(Track* track);
-      void removeTrack2(Track* track);
-      void removeTrack3(Track* track);
+      //void removeTrack1(Track* track); // REMOVE Tim. Persistent routes.
+      //void removeTrack2(Track* track); // REMOVE Tim. Persistent routes.
+      //void removeTrack3(Track* track); // REMOVE Tim. Persistent routes.
       MidiTrack* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
       void setRecordFlag(Track*, bool);
@@ -358,6 +359,10 @@ class Song : public QObject {
       int execAutomationCtlPopup(AudioTrack*, const QPoint&, int);
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
       void connectJackRoutes(AudioTrack* track, bool disconnect);
+      void connectAudioPorts(); // REMOVE Tim. Persistent routes. Added.
+      void connectMidiPorts(); // REMOVE Tim. Persistent routes. Added.
+      void connectAllPorts() { connectAudioPorts(); connectMidiPorts(); } // REMOVE Tim. Persistent routes. Added.
+      //void scanJackRoutes(RouteList* rl, const char** ports); // REMOVE Tim. Persistent routes. Added.
       void updateSoloStates();
 
       //-----------------------------------------

@@ -93,6 +93,7 @@ extern bool useLASH;
 extern bool loadLV2;
 extern bool useAlsaWithJack;
 extern bool noAutoStartJack;
+extern bool populateMidiPortsOnStart;
 
 extern bool realTimeScheduling;
 extern int realTimePriority;

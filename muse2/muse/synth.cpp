@@ -767,6 +767,10 @@ void SynthI::write(int level, Xml& xml) const
       // Added by Tim. p3.3.16
       xml.strTag(level, "label", synth()->name());
 
+      // REMOVE Tim. Persistent routes. Added.
+      if(openFlags() != 1)
+        xml.intTag(level, "openFlags", openFlags());
+            
       //---------------------------------------------
       // if soft synth is attached to a midi port,
       // write out port number
@@ -884,6 +888,8 @@ void SynthI::read(Xml& xml)
       bool startgui = false;
       bool startngui = false;
       QRect r, nr;
+      // REMOVE Tim. Persistent routes. Added.
+      int oflags = 1;
 
       for (;;) {
             Xml::Token token = xml.parse();
@@ -899,6 +905,10 @@ void SynthI::read(Xml& xml)
                               sclass = xml.parse1();
                         else if (tag == "label")
                               label  = xml.parse1();
+                        // REMOVE Tim. Persistent routes. Added.
+                        else if (tag == "openFlags")
+                              oflags = xml.parseInt();
+                        
                         else if (tag == "port")
                               port  = xml.parseInt();
                         else if (tag == "guiVisible")
@@ -943,6 +953,10 @@ void SynthI::read(Xml& xml)
                                     return;
                               if (initInstance(s, name()))
                                     return;
+                              // REMOVE Tim. Persistent routes. Added.
+                              //if(oflags != -1)
+                                setOpenFlags(oflags);
+                              
                               MusEGlobal::song->insertTrack0(this, -1);
 
                               if (port != -1 && port < MIDI_PORTS)

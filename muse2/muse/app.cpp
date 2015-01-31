@@ -1120,6 +1120,8 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
                         qApp->processEvents();
                   }
             seqStop();
+            // REMOVE Tim. Persistent routes. TESTING.
+            //MusEGlobal::audio->msgIdle(true);
             }
       microSleep(100000);
       progress->setValue(10);
@@ -1128,6 +1130,9 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       progress->setValue(90);
       if (restartSequencer)
             seqStart();
+        // REMOVE Tim. Persistent routes. TESTING.
+        //MusEGlobal::audio->msgIdle(false);
+      //MusEGlobal::song->connectPorts();
 
       arrangerView->updateVisibleTracksButtons();
       progress->setValue(100);
