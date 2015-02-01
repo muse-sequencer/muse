@@ -60,7 +60,7 @@ class EventList;
 class MarkerList;
 class Marker;
 class SNode;
-class RouteList;
+struct RouteList;
 
 struct AudioMsg;
 
