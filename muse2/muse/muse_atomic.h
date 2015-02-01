@@ -25,39 +25,30 @@
 namespace MusECore {
 
 // FIXME: Compiler knows this define but where is it? Is compiler recognizing it? __i386__ and __i386 work.
-#ifndef i386
-#include <pthread.h>
-typedef struct { pthread_mutex_t lock; int counter; } muse_atomic_t;
-#else
+// danvd: change i386 to more common __i386__ though boths are known to gcc and clang
+// danvd: replace pthreads calls with builtin atomic operations
+// danvd: turn on asm atomic operations for both i386 and x86_64
+
 typedef struct { int counter; } muse_atomic_t;
-#endif
 
 static inline int muse_atomic_read(muse_atomic_t *v) {
-#ifndef i386
-      int ret;
-      pthread_mutex_lock(&v->lock);
-      ret = v->counter;
-      pthread_mutex_unlock(&v->lock);
-      return ret;
+#ifndef __i386__
+      return __sync_fetch_and_add(&v->counter, 0);
 #else
       return v->counter;
 #endif
 }
 
 static inline void muse_atomic_set(muse_atomic_t *v, int i) {
-#ifndef i386
-      pthread_mutex_lock(&v->lock);
-      v->counter = i;
-      pthread_mutex_unlock(&v->lock);
+#ifndef __i386__
+      __sync_val_compare_and_swap(&v->counter, v->counter, i);
 #else
       v->counter = i;
 #endif
 }
 static inline void muse_atomic_inc(muse_atomic_t *v) {
-#ifndef i386
-      pthread_mutex_lock(&v->lock);
-      v->counter++;
-      pthread_mutex_unlock(&v->lock);
+#if !defined(__i386__) && !defined(__x86_64__)
+      __sync_fetch_and_add(&v->counter, 1);
 #else
         __asm__ __volatile__(
                 "lock ; " "incl %0"
@@ -66,10 +57,8 @@ static inline void muse_atomic_inc(muse_atomic_t *v) {
 #endif
 }
 static inline void muse_atomic_dec(muse_atomic_t *v) {
-#ifndef i386
-      pthread_mutex_lock(&v->lock);
-      v->counter--;
-      pthread_mutex_unlock(&v->lock);
+#if !defined(__i386__) && !defined(__x86_64__)
+      __sync_fetch_and_sub(&v->counter, 1);
 #else
         __asm__ __volatile__(
                 "lock ; " "decl %0"
@@ -77,21 +66,10 @@ static inline void muse_atomic_dec(muse_atomic_t *v) {
                 :"m" (v->counter));
 #endif
 }
-#ifndef i386
-static inline void muse_atomic_init(muse_atomic_t *v) {
-      pthread_mutex_init(&v->lock, NULL);
-      }
-#else
-static inline void muse_atomic_init(muse_atomic_t*) {}
-#endif
 
-#ifndef i386
-static inline void muse_atomic_destroy(muse_atomic_t *v) {
-      pthread_mutex_destroy(&v->lock);
-      }
-#else
+static inline void muse_atomic_init(muse_atomic_t*) {}
+
 static inline void muse_atomic_destroy(muse_atomic_t*) {}
-#endif
 
 } // namespace MusECore
 

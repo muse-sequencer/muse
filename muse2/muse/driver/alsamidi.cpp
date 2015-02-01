@@ -122,8 +122,8 @@ QString MidiAlsaDevice::open()
 {
       _openFlags &= _rwFlags; // restrict to available bits
 
-      snd_seq_port_info_t *pinfo;
-      snd_seq_port_subscribe_t* subs;
+      snd_seq_port_info_t *pinfo = NULL;
+      snd_seq_port_subscribe_t* subs = NULL;
 
       // REMOVE Tim. Persistent routes. Added.      
       printf("MidiAlsaDevice::open Getting port info: adr: %d:%d\n", adr.client, adr.port);

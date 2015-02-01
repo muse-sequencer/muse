@@ -1637,7 +1637,7 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
       #endif
       
       if (muse_atomic_read(&count) == nbuffer) {
-            printf("FIFO %p overrun... %d\n", this, count.counter);
+            printf("FIFO %p overrun... %d\n", this, muse_atomic_read(&count));
             return true;
             }
       FifoBuffer* b = buffer[widx];
@@ -1684,7 +1684,7 @@ bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
       #endif
       
       if (muse_atomic_read(&count) == 0) {
-            printf("FIFO %p underrun... %d\n", this,count.counter); //by willyfoobar: added count to output //see Fifo::put()
+            printf("FIFO %p underrun... %d\n", this, muse_atomic_read(&count)); //by willyfoobar: added count to output //see Fifo::put()
             return true;
             }
       FifoBuffer* b = buffer[ridx];
