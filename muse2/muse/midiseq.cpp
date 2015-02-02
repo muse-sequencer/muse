@@ -216,6 +216,7 @@ signed int MidiSeq::selectTimer()
                          "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available")));
     printf("No functional timer available!!!\n");
     exit(1);
+    return -1; // to satisfy compiler
     }
 
 //---------------------------------------------------------
@@ -225,12 +226,14 @@ signed int MidiSeq::selectTimer()
 
 void MidiSeq::threadStart(void*)
       {
+#ifdef _LINUX_TEST_
       int policy;
       if ((policy = sched_getscheduler (0)) < 0) {
             printf("Cannot get current client scheduler: %s\n", strerror(errno));
             }
       if (policy != SCHED_FIFO)
             printf("midi thread %d _NOT_ running SCHED_FIFO\n", getpid());
+#endif
       updatePollFd();
       }
 

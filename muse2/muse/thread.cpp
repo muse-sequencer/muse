@@ -46,12 +46,12 @@ Thread::~Thread()
 //   serverloop
 //---------------------------------------------------------
 
-static void* loop(void* mops)
-      {
-      Thread* t = (Thread*) mops;
-      t->loop();
-      return 0;
-      }
+//static void* loop(void* mops)
+//      {
+//      Thread* t = (Thread*) mops;
+//      t->loop();
+//      return 0;
+//      }
 
 //---------------------------------------------------------
 //   start
@@ -60,23 +60,11 @@ static void* loop(void* mops)
 void Thread::start(int prio, void* ptr)
       {
       userPtr = ptr;
-      pthread_attr_t* attributes = 0;
       _realTimePriority = prio;
     
-      /* DELETETHIS 14
-      attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
-      pthread_attr_init(attributes);
-      */
 
-//      pthread_mutexattr_t mutexattr;
-//      pthread_mutexattr_init(&mutexattr);
-//      pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_TIMED_NP);
-//      pthread_mutex_init(&lock, &mutexattr);
-//      pthread_cond_init(&ready, 0);
-
-//      pthread_mutex_lock(&lock);
-
-
+#ifdef _LINUX_TEST_
+      pthread_attr_t* attributes = 0;
       //if (_realTimePriority) {
       if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) {                        // p4.0.16
             attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
@@ -100,39 +88,30 @@ void Thread::start(int prio, void* ptr)
                      _realTimePriority, strerror(errno));
                   }
             }
+#endif
 
 
-      /* DELETETHIS 8
-      if (pthread_create(&thread, attributes, MusECore::loop, this))
-            perror("creating thread failed:");
-//      else
+//      int rv = pthread_create(&thread, attributes, MusECore::loop, this);
+//      if(rv)
 //      {
-//           pthread_cond_wait(&ready, &lock);
+//        // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
+//        // I cannot seem to find a reliable answer to the question of "are we RT or not".
+//        // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
+//        // So we'll just have to try again without attributes.
+//        if (MusEGlobal::realTimeScheduling && _realTimePriority > 0)
+//          rv = pthread_create(&thread, NULL, MusECore::loop, this);
 //      }
-//      pthread_mutex_unlock(&lock);
-      */
 
+//      if(rv)
+//          fprintf(stderr, "creating thread <%s> failed: %s\n", _name, strerror(rv));
 
-      int rv = pthread_create(&thread, attributes, MusECore::loop, this); 
-      if(rv)
-      {
-        // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
-        // I cannot seem to find a reliable answer to the question of "are we RT or not".
-        // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
-        // So we'll just have to try again without attributes.
-        if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) 
-          rv = pthread_create(&thread, NULL, MusECore::loop, this); 
-      }
+//      if (attributes)                      // p4.0.16
+//      {
+//        pthread_attr_destroy(attributes);
+//        free(attributes);
+//      }
 
-      if(rv)
-          fprintf(stderr, "creating thread <%s> failed: %s\n", _name, strerror(rv));
-
-      if (attributes)                      // p4.0.16
-      {
-        pthread_attr_destroy(attributes);
-        free(attributes);
-      }
-      
+      QThread::start(prio > 0 ? QThread::TimeCriticalPriority : QThread::InheritPriority);
       }
 
 //---------------------------------------------------------
@@ -141,18 +120,18 @@ void Thread::start(int prio, void* ptr)
 
 void Thread::stop(bool force)
       {
-      if (thread == 0)
-            return;
-      if (force) {
-            pthread_cancel(thread);
+//      if (thread == 0)
+//            return;
+
+  if (force) {
+//            pthread_cancel(thread);
             threadStop();
             }
       _running = false;
-      if (thread) {
-          if (pthread_join(thread, 0)) {
-                // perror("Failed to join sequencer thread"); DELETETHIS and the if around?
-                }
-          }
+//      if (thread) {
+//          if (pthread_join(thread, 0)) {
+//                }
+//          }
       }
 //---------------------------------------------------------
 //   Thread
@@ -170,7 +149,7 @@ Thread::Thread(const char* s)
       maxpfd           = 0;
       _running         = false;
       _pollWait        = -1;
-      thread           = 0;
+      //thread           = 0;
 
       // create message channels
       int filedes[2];         // 0 - reading   1 - writing
@@ -188,11 +167,6 @@ Thread::Thread(const char* s)
       fromThreadFdr = filedes[0];
       fromThreadFdw = filedes[1];
 
-//      pthread_mutexattr_t mutexattr; DELETETHIS 5
-//      pthread_mutexattr_init(&mutexattr);
-//      pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_TIMED_NP);
-//      pthread_mutex_init(&lock, &mutexattr);
-//      pthread_cond_init(&ready, 0);
       }
 
 //---------------------------------------------------------
@@ -248,26 +222,22 @@ void Thread::removePollFd(int fd, int action)
 //   loop
 //---------------------------------------------------------
 
-void Thread::loop()
+void Thread::run()
       {
       if (!MusEGlobal::debugMode) {
             if (mlockall(MCL_CURRENT | MCL_FUTURE))
                   perror("WARNING: Cannot lock memory:");
             }
-      
-#ifdef __APPLE__
-#define BIG_ENOUGH_STACK (1024*256*1)
-#else
+
+//      pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
+//      pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
+
+#ifdef _LINUX_TEST_
 #define BIG_ENOUGH_STACK (1024*1024*1)
-#endif
       char buf[BIG_ENOUGH_STACK];
       for (int i = 0; i < BIG_ENOUGH_STACK; i++)
             buf[i] = i;
 #undef BIG_ENOUGH_STACK
-
-      pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
-      pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
-
       int policy = buf[0]; // Initialize using buf[0] to keep the compiler from complaining about unused buf.
       policy = 0;          // Now set the true desired inital value.
       if ((policy = sched_getscheduler (0)) < 0) {
@@ -278,12 +248,9 @@ void Thread::loop()
             printf("Thread <%s, id %p> has %s priority %d\n",
                _name, (void *)pthread_self(), policy == SCHED_FIFO ? "SCHED_FIFO" : "SCHED_OTHER",
                 policy == SCHED_FIFO ? _realTimePriority : 0);
+#endif
 
-
-//      pthread_mutex_lock(&lock); DELETETHIS and below
       _running = true;
-//      pthread_cond_signal(&ready);
-//      pthread_mutex_unlock(&lock);
 
       threadStart(userPtr);
 
@@ -341,12 +308,6 @@ bool Thread::sendMsg(const ThreadMsg* m)
                   perror("Thread::sendMessage(): read pipe failed");
                   return true;
             }
-            //int c; DELETETHIS 6
-            //rv = read(fromThreadFdr, &c, sizeof(c));
-            //if (rv != sizeof(c)) {
-            //      perror("Thread::sendMessage(): read pipe failed");
-            //      return true;
-            //      }
       }
       else 
       {
@@ -389,10 +350,6 @@ void Thread::readMsg()
       int rv = write(fromThreadFdw, &c, 1);
       if (rv != 1)
             perror("Thread::readMessage(): write pipe failed");
-      //int c = p->serialNo; DELETETHIS 4
-      //int rv = write(fromThreadFdw, &c, sizeof(c));
-      //if (rv != sizeof(c))
-      //      perror("Thread::readMsg(): write pipe failed");
       }
 
 //---------------------------------------------------------

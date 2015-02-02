@@ -20,22 +20,26 @@
 //
 //=========================================================
 
+#include <QThread>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <errno.h>
 #include <stdarg.h>
+
+#ifdef _LINUX_TEST_
 #include <pthread.h>
+#endif
 #include <sys/poll.h>
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "alsatimer.h"
 #include "config.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "globals.h"
 #include "song.h"
-#include "driver/alsatimer.h"
 #include "pos.h"
 #include "gconfig.h"
 #include "utils.h"
@@ -64,8 +68,8 @@ struct Msg {
 };
 
 
-class DummyAudioDevice : public AudioDevice {
-      pthread_t dummyThread;
+class DummyAudioDevice : public AudioDevice, public QThread {
+//      pthread_t dummyThread;
       // Changed by Tim. p3.3.15
       //float buffer[1024];
       float* buffer;
@@ -221,6 +225,7 @@ class DummyAudioDevice : public AudioDevice {
             }
       virtual void setFreewheel(bool) {}
       void setRealTime() { realtimeFlag = true; }
+      virtual void run();
       };
 
 DummyAudioDevice* dummyAudio = 0;
@@ -243,7 +248,7 @@ DummyAudioDevice::DummyAudioDevice()
       else
         memset(buffer, 0, sizeof(float) * MusEGlobal::segmentSize);
 
-      dummyThread = 0;
+      //dummyThread = 0;
       realtimeFlag = false;
       seekflag = false;
       state = Audio::STOP;
@@ -312,15 +317,63 @@ std::list<QString> DummyAudioDevice::inputPorts(bool midi, int /*aliases*/)
 //   dummyLoop
 //---------------------------------------------------------
 
-static void* dummyLoop(void* ptr)
+void DummyAudioDevice::run()
       {
-      //unsigned int tickRate = 25;
-      
-      // p3.3.30
-      //MusEGlobal::sampleRate = 25600;
-      //MusEGlobal::segmentSize = dummyFrames;
-//       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
-#if 0      
+#ifdef _LINUX_TEST_
+      pthread_attr_t* attributes = 0;
+
+      if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) {
+            attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
+            pthread_attr_init(attributes);
+
+            if (pthread_attr_setschedpolicy(attributes, SCHED_FIFO)) {
+                  printf("cannot set FIFO scheduling class for dummy RT thread\n");
+                  }
+            if (pthread_attr_setscope (attributes, PTHREAD_SCOPE_SYSTEM)) {
+                  printf("Cannot set scheduling scope for dummy RT thread\n");
+                  }
+            // p4.0.16 Dummy was not running FIFO because this is needed.
+            if (pthread_attr_setinheritsched(attributes, PTHREAD_EXPLICIT_SCHED)) {
+                  printf("Cannot set setinheritsched for dummy RT thread\n");
+                  }
+
+            struct sched_param rt_param;
+            memset(&rt_param, 0, sizeof(rt_param));
+            rt_param.sched_priority = _realTimePriority;
+            if (pthread_attr_setschedparam (attributes, &rt_param)) {
+                  printf("Cannot set scheduling priority %d for dummy RT thread (%s)\n",
+                     priority, strerror(errno));
+                  }
+            }
+
+        if (sched_setscheduler(pthread_self(), SCHED_FIFO, &rt_param)) {
+             printf("Cannot set SCHED_FIFO for dummy RT thread (%s)\n",
+             priority, strerror(errno));
+          }
+
+//      int rv = pthread_create(&dummyThread, attributes, dummyLoop, this);
+//      if(rv)
+//      {
+//        // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
+//        // I cannot seem to find a reliable answer to the question of "are we RT or not".
+//        // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
+//        // So we'll just have to try again without attributes.
+//        if (MusEGlobal::realTimeScheduling && _realTimePriority > 0)
+//          rv = pthread_create(&dummyThread, NULL, dummyLoop, this);
+//      }
+
+//      if(rv)
+//          fprintf(stderr, "creating dummy audio thread failed: %s\n", strerror(rv));
+
+      if (attributes)                      // p4.0.16
+      {
+        pthread_attr_destroy(attributes);
+        free(attributes);
+      }
+#else
+    setPriority(QThread::TimeCriticalPriority);
+#endif
+
       //unsigned int tickRate = MusEGlobal::sampleRate / dummyFrames;
       unsigned int tickRate = MusEGlobal::sampleRate / MusEGlobal::segmentSize;
       
@@ -329,17 +382,15 @@ static void* dummyLoop(void* ptr)
       timer.setFindBestTimer(false);
       int fd = timer.initTimer();
       if (fd==-1) {
-      //  QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer for dummy audio driver!")),
-      //        /*tr*/(QString("No functional timer was available.\n"
-      //                   "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available")));
         fprintf(stderr, "Failed to start timer for dummy audio driver! No functional timer was available.\n" 
                          "Alsa timer not available, check if module snd_timer is available and /dev/snd/timer is available\n");
-        pthread_exit(0);
+        //pthread_exit(0);
+        return;
       }
 
       /* Depending on nature of the timer, the requested tickRate might not
        * be available.  The return value is the nearest available frequency,
-       * so use this to reset our dummpy MusEGlobal::sampleRate to keep everything 
+       * so use this to reset our dummy MusEGlobal::sampleRate to keep everything
        * consistent.
        */
       tickRate = timer.setTimerFreq( /*250*/ tickRate );
@@ -350,77 +401,40 @@ static void* dummyLoop(void* ptr)
         tickRate = timer.getTimerFreq();
         
       MusEGlobal::sampleRate = tickRate * MusEGlobal::segmentSize;
-      timer.startTimer();
-#endif        
+      timer.startTimer();     
 
-      DummyAudioDevice *drvPtr = (DummyAudioDevice *)ptr;
-
-      ///pollfd myPollFd;
-
-      ///myPollFd.fd = fd;
-      ///myPollFd.events = POLLIN;
-
-
-      /*
-      MusEGlobal::doSetuid();
-      struct sched_param rt_param;
-      int rv;
-      memset(&rt_param, 0, sizeof(sched_param));
-      int type;
-      rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
-      if (rv != 0)
-            perror("get scheduler parameter");
-      if (type != SCHED_FIFO) {
-            fprintf(stderr, "Driver thread not running SCHED_FIFO, trying to set...\n");
-
-            memset(&rt_param, 0, sizeof(sched_param));
-            //rt_param.sched_priority = 1;
-            rt_param.sched_priority = realtimePriority();
-            rv = pthread_setschedparam(pthread_self(), SCHED_FIFO, &rt_param);
-            if (rv != 0)
-                  perror("set realtime scheduler");
-            memset(&rt_param, 0, sizeof(sched_param));
-            rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
-            if (rv != 0)
-                  perror("get scheduler parameter");
-            if (type == SCHED_FIFO) {
-                  drvPtr->setRealTime();
-                  fprintf(stderr, "Thread succesfully set to SCHED_FIFO\n");
-                  }
-                  else {
-                  fprintf(stderr, "Unable to set thread to SCHED_FIFO\n");
-                  }
-            }
-      MusEGlobal::undoSetuid();
-      */
+      DummyAudioDevice *drvPtr = (DummyAudioDevice *)this;
       
 #ifndef __APPLE__
       MusEGlobal::doSetuid();
-      //if (realTimePriority) {
       if (MusEGlobal::realTimeScheduling) {
-            //
-            // check if we really got realtime priviledges
-            //
-            int policy;
-            if ((policy = sched_getscheduler (0)) < 0) {
-                printf("cannot get current client scheduler for audio dummy thread: %s!\n", strerror(errno));
-                }
-            else
-                {
-                if (policy != SCHED_FIFO)
-                          printf("audio dummy thread _NOT_ running SCHED_FIFO\n");
-                else if (MusEGlobal::debugMsg) {
-                        struct sched_param rt_param;
-                    memset(&rt_param, 0, sizeof(sched_param));
-                        int type;
-                    int rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
-                        if (rv == -1)
-                                perror("get scheduler parameter");
-                    printf("audio dummy thread running SCHED_FIFO priority %d\n",
-                             rt_param.sched_priority);
-                    }
-                }
-            }
+        //
+        // check if we really got realtime priviledges
+        //
+#ifdef _LINUX_TEST_
+        int policy;
+        if ((policy = sched_getscheduler (0)) < 0) {
+          printf("cannot get current client scheduler for audio dummy thread: %s!\n", strerror(errno));
+        }
+        else
+        {
+          if (policy != SCHED_FIFO) {
+            printf("audio dummy thread _NOT_ running SCHED_FIFO\n");
+          }
+          else if (MusEGlobal::debugMsg)
+          {
+
+            struct sched_param rt_param;
+            memset(&rt_param, 0, sizeof(sched_param));
+            int type;
+            int rv = pthread_getschedparam(pthread_self(), &type, &rt_param);
+            if (rv == -1)
+              perror("get scheduler parameter");
+            printf("audio dummy thread priority %d\n", p);
+          }
+        }
+#endif
+      }
       MusEGlobal::undoSetuid();
 #endif
       
@@ -477,6 +491,7 @@ static void* dummyLoop(void* ptr)
       // Adapted from muse_qt4_evolution. p4.0.20       
       for(;;) 
       {
+        printf("looping %d\n",playPos);
             //if(audioState == AUDIO_RUNNING)
             if(MusEGlobal::audio->isRunning())
               //MusEGlobal::audio->process(MusEGlobal::segmentSize, drvPtr->state);
@@ -486,6 +501,7 @@ static void* dummyLoop(void* ptr)
             //usleep(dummyFrames*1000000/AL::sampleRate);
             usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
             //if(dummyAudio->seekflag) 
+
             if(drvPtr->seekflag) 
             {
               //MusEGlobal::audio->sync(Audio::STOP, dummyAudio->pos);
@@ -505,65 +521,22 @@ static void* dummyLoop(void* ptr)
 #endif
             
       ///timer.stopTimer();
-      pthread_exit(0);
+      //pthread_exit(0);
       }
 
-//void DummyAudioDevice::start()
 void DummyAudioDevice::start(int priority)
 {
       _realTimePriority = priority;
-      pthread_attr_t* attributes = 0;
 
-      if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) {
-            attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
-            pthread_attr_init(attributes);
-
-            if (pthread_attr_setschedpolicy(attributes, SCHED_FIFO)) {
-                  printf("cannot set FIFO scheduling class for dummy RT thread\n");
-                  }
-            if (pthread_attr_setscope (attributes, PTHREAD_SCOPE_SYSTEM)) {
-                  printf("Cannot set scheduling scope for dummy RT thread\n");
-                  }
-            // p4.0.16 Dummy was not running FIFO because this is needed.
-            if (pthread_attr_setinheritsched(attributes, PTHREAD_EXPLICIT_SCHED)) {
-                  printf("Cannot set setinheritsched for dummy RT thread\n");
-                  }
-                  
-            struct sched_param rt_param;
-            memset(&rt_param, 0, sizeof(rt_param));
-            rt_param.sched_priority = priority;
-            if (pthread_attr_setschedparam (attributes, &rt_param)) {
-                  printf("Cannot set scheduling priority %d for dummy RT thread (%s)\n",
-                     priority, strerror(errno));
-                  }
-            }
-      
-      int rv = pthread_create(&dummyThread, attributes, dummyLoop, this); 
-      if(rv)
-      {  
-        // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
-        // I cannot seem to find a reliable answer to the question of "are we RT or not".
-        // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
-        // So we'll just have to try again without attributes.
-        if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) 
-          rv = pthread_create(&dummyThread, NULL, dummyLoop, this); 
-      }
-      
-      if(rv)
-          fprintf(stderr, "creating dummy audio thread failed: %s\n", strerror(rv));
-
-      if (attributes)                      // p4.0.16
-      {
-        pthread_attr_destroy(attributes);
-        free(attributes);
-      }
+      // start thread in Qt fashion
+      QThread::start(QThread::TimeCriticalPriority);
 }
 
 void DummyAudioDevice::stop ()
       {
-      pthread_cancel(dummyThread);
-      pthread_join(dummyThread, 0);
-      dummyThread = 0;
+//      pthread_cancel(dummyThread);
+//      pthread_join(dummyThread, 0);
+//      dummyThread = 0;
       }
 
 } // namespace MusECore

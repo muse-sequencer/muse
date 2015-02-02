@@ -470,6 +470,7 @@ JackAudioDevice::~JackAudioDevice()
 
 int JackAudioDevice::realtimePriority() const
       {
+#ifdef _LINUX_TEST_
       pthread_t t = jack_client_thread_id(_client);
       int policy;
       struct sched_param param;
@@ -484,6 +485,9 @@ int JackAudioDevice::realtimePriority() const
             return 0;
             }
       return param.sched_priority;
+#else
+      return QThread::currentThread()->priority() == QThread::TimeCriticalPriority ? 1 : 0; // return 1 if we are in realtime mode
+#endif
       }
 
 //---------------------------------------------------------

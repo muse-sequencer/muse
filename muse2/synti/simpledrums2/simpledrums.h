@@ -203,7 +203,7 @@ private:
 
 void resample(SS_Sample *origSmp, SS_Sample* newSample, double pitch);
 static void* loadSampleThread(void*);
-static pthread_mutex_t SS_LoaderMutex;
+//static pthread_mutex_t SS_LoaderMutex;
 static SS_State synth_state;
 static SimpleSynth* simplesynth_ptr;
 

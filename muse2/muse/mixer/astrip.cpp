@@ -651,7 +651,7 @@ void AudioStrip::updateChannels()
                   meter[cc] = new MusEGui::Meter(this);
                   //meter[cc]->setRange(MusEGlobal::config.minSlider, 10.0);
                   meter[cc]->setRange(MusEGlobal::config.minMeter, 10.0);
-                  meter[cc]->setFixedWidth(15);
+                  meter[cc]->setFixedWidth(12);
                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
                   sliderGrid->addWidget(meter[cc], 0, cc+1, Qt::AlignLeft);
                   sliderGrid->setColumnStretch(cc, 50);
@@ -898,7 +898,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       for (int i = 0; i < channel; ++i) {
             //meter[i]->setRange(MusEGlobal::config.minSlider, 10.0);
             meter[i]->setRange(MusEGlobal::config.minMeter, 10.0);
-            meter[i]->setFixedWidth(15);
+            meter[i]->setFixedWidth(12);
             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
             sliderGrid->addWidget(meter[i], 0, i+1, Qt::AlignHCenter);
             sliderGrid->setColumnStretch(i, 50);

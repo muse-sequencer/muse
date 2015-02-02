@@ -178,7 +178,6 @@ bool Organ::init(const char* name)
       {
       gui = new OrganGui;
       gui->setWindowTitle(QString(name));
-      gui->show();
 
       for (int i = 0; i < NUM_CONTROLLER; ++i)
             setController(0, synthCtrl[i].num, synthCtrl[i].val);

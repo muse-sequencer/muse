@@ -264,7 +264,7 @@ void* MessSynth::instantiate(const QString& instanceName)
       const char* path = ba.constData();
 
       // load Synti dll
-      void* handle = dlopen(path, RTLD_NOW);
+      void* handle = dlopen(path, RTLD_NOW |RTLD_GLOBAL);
       if (handle == 0) {
             fprintf(stderr, "Synth::instantiate: dlopen(%s) failed: %s\n",
                path, dlerror());

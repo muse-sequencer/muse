@@ -33,13 +33,12 @@
 #define __MUSE_FLUIDSYNTI_H__
 
 #include <fluidsynth.h>
-#include <pthread.h>
-#include <string>
 
+#include <QThread>
+#include <QMutex>
 #include "fluidsynthgui.h"
 #include "libsynti/mess.h"
 #include "muse/debug.h"
-//#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
 #include "muse/midictrl.h"
 #include "common_defs.h"
@@ -47,6 +46,16 @@
 #define FS_DEBUG_DATA 0 //Turn on/off debug print of midi data sent to fluidsynth
 
 typedef unsigned char byte;
+
+
+class FluidSynth;
+
+struct FS_Helper //Only used to pass parameters when calling the loading thread
+      {
+      FluidSynth* fptr;
+      std::string filename;
+      int id;
+      };
 
 struct FluidSoundFont
       {
@@ -87,18 +96,26 @@ static const int FS_PITCHWHEELSENS  = 0 + MusECore::CTRL_RPN_OFFSET;
 // can only have one soundfont, but one soundfont can have many channels)
 
 struct FluidChannel
-      {
+{
       byte font_extid, font_intid, preset, drumchannel;
       byte banknum; // hbank
-      //FluidSoundFont* font;
-      };
+};
 
-/*#include <string>
-#include <list>
-#include <map>
-*/
+class LoadFontWorker : public QObject
+{
+      Q_OBJECT
+  public:
+      LoadFontWorker() {}
+      void loadFont(void*);
+  signals:
+      void loadFontSignal(void*);
+
+  private slots:
+      void execLoadFont(void*);
+};
 
 class FluidSynth : public Mess {
+
    private:
       bool pushSoundfont (const char*, int);
       void sendSysex(int l, const unsigned char* d);
@@ -116,7 +133,8 @@ class FluidSynth : public Mess {
 
       FluidChannel channels[FS_MAX_NR_OF_CHANNELS];
       std::string lastdir;
-      pthread_t fontThread;
+      QThread fontLoadThread;
+      LoadFontWorker fontWorker;
       const MidiPatch * getFirstPatch (int channel) const;
       const MidiPatch* getNextPatch (int, const MidiPatch *) const;
 
@@ -126,7 +144,7 @@ class FluidSynth : public Mess {
       int cho_num, cho_type;
 
 public:
-      FluidSynth(int sr, pthread_mutex_t *_Globalsfloader_mutex);
+      FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex);
       virtual ~FluidSynth();
       bool init(const char*);
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
@@ -160,7 +178,7 @@ public:
 
       fluid_synth_t* fluidsynth;
       FluidSynthGui* gui;
-      pthread_mutex_t *_sfloader_mutex;
+      QMutex& _sfLoaderMutex;
       int currentlyLoadedFonts; //To know whether or not to run the init-parameters
       std::list<FluidSoundFont> stack;
       int nrOfSoundfonts;
@@ -171,12 +189,4 @@ public:
 
       };
 
-struct FS_Helper //Only used to pass parameters when calling the loading thread
-      {
-      FluidSynth* fptr;
-      std::string filename;
-      int id;
-      };
-
-// static void* fontLoadThread(void* t); // moved to the implementation file -Orcan
 #endif /* __MUSE_FLUIDSYNTI_H__ */

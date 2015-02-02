@@ -109,10 +109,6 @@ extern void exitMidiAlsa();
 namespace MusEGui {
 
 extern void deleteIcons();
-//extern void cacheJackRouteNames();
-
-static pthread_t watchdogThread;
-//ErrorHandler *error;
 
 #define PROJECT_LIST_LEN  6
 QStringList projectRecentList;
@@ -123,7 +119,6 @@ lash_client_t * lash_client = 0;
 #endif /* HAVE_LASH */
 
 int watchAudioPrefetch, watchMidi;
-pthread_t splashThread;
 
 
 
@@ -184,7 +179,7 @@ bool MusE::seqStart()
       
       // NOTE: MusEGlobal::realTimeScheduling can be true (gotten using jack_is_realtime()),
       //  while the determined MusEGlobal::realTimePriority can be 0.
-      // MusEGlobal::realTimePriority is gotten using pthread_getschedparam() on the client thread 
+      // MusEGlobal::realTimePriority is checked on the client thread
       //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
       if(MusEGlobal::realTimeScheduling) 
       {
@@ -240,8 +235,6 @@ void MusE::seqStop()
       MusEGlobal::midiSeq->stop(true);
       MusEGlobal::audio->stop(true);
       MusEGlobal::audioPrefetch->stop(true);
-      if (MusEGlobal::realTimeScheduling && watchdogThread)
-            pthread_cancel(watchdogThread);
       }
 
 //---------------------------------------------------------
@@ -310,7 +303,6 @@ MusE::MusE() : QMainWindow()
       //audioMixer            = 0;
       mixer1                = 0;
       mixer2                = 0;
-      watchdogThread        = 0;
       editInstrument        = 0;
       //routingPopupMenu      = 0;
       progress              = 0;

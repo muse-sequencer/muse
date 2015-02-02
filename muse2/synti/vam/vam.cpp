@@ -331,7 +331,6 @@ bool VAM::init(const char* name)
       {
       gui = new VAMGui;
       gui->setWindowTitle(QString(name));
-      gui->show();
 
       if (useCount == 0) {
           int i;
