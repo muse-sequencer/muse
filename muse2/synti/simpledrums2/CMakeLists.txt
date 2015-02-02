@@ -27,6 +27,7 @@
 QT5_WRAP_CPP ( simpledrums_mocs
       simpledrumsgui.h
       ssplugingui.h
+      simpledrums.h
       )
 
 ##

@@ -26,6 +26,7 @@
 #ifndef SIMPLESYNTH_H
 #define SIMPLESYNTH_H
 
+#include <QThread>
 #include <sndfile.h>
 #include "libsynti/mess.h"
 #include "common.h"
@@ -60,6 +61,19 @@ enum SS_SendFXState
       SS_SENDFX_OFF=0,
       SS_SENDFX_ON
    };
+
+class LoadSampleWorker : public QObject
+{
+      Q_OBJECT
+  public:
+      LoadSampleWorker() {}
+      void loadSample(void*);
+  signals:
+      void loadSampleSignal(void*);
+
+  private slots:
+      void execLoadSample(void*);
+};
 
 struct SS_SendFx
    {
@@ -164,6 +178,9 @@ class SimpleSynth : public Mess
 private:
       SimpleSynthGui* gui;
 
+      QThread sampleLoadThread;
+      LoadSampleWorker sampleWorker;
+
       byte* initBuffer;
       int initLen;
       void setupInitBuffer(int len);
@@ -202,9 +219,6 @@ private:
    };
 
 void resample(SS_Sample *origSmp, SS_Sample* newSample, double pitch);
-static void* loadSampleThread(void*);
-//static pthread_mutex_t SS_LoaderMutex;
-static SS_State synth_state;
-static SimpleSynth* simplesynth_ptr;
+
 
 #endif

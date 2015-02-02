@@ -33,6 +33,12 @@
 
 #include <samplerate.h>
 #include <QFileDialog>
+#include <QThread>
+#include <QMutexLocker>
+
+static QMutex SSLoaderMutex;
+static SS_State synth_state;
+static SimpleSynth* simplesynth_ptr;
 
 const char* SimpleSynth::synth_state_descr[] =
       {
@@ -253,7 +259,10 @@ SimpleSynth::SimpleSynth(int sr)
             i+=2;
             }
 
-      pthread_mutex_init(&SS_LoaderMutex, NULL);
+      QObject::connect(&sampleWorker,SIGNAL(loadSampleSignal(void*)),&sampleWorker,SLOT(execLoadSample(void*)));
+      sampleWorker.moveToThread(&sampleLoadThread);
+      sampleLoadThread.start();
+
       SS_TRACE_OUT
       }
 
@@ -263,6 +272,8 @@ SimpleSynth::SimpleSynth(int sr)
 SimpleSynth::~SimpleSynth()
       {
       SS_TRACE_IN
+
+      sampleLoadThread.exit();
 
       if(gui)        
         delete gui;  // p4.0.27
@@ -999,15 +1010,13 @@ void SimpleSynth::setupInitBuffer(int len)
         }
 }
 
-//---------------------------------------------------------
+
 /*!
     \fn SimpleSynth::getInitData
     \brief Data for reinitialization of SimpleSynth when loading project
     \param n - number of chars used in the data
     \param data - data that is sent as a sysex to the synth on reload of project
  */
-//---------------------------------------------------------
-//void SimpleSynth::getInitData(int* n, const unsigned char** data) const
 void SimpleSynth::getInitData(int* n, const unsigned char** data) 
       {
       SS_TRACE_IN
@@ -1445,19 +1454,8 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
           }
       }
 
+      sampleWorker.loadSample(loader);
 
-      pthread_t sampleThread;
-      pthread_attr_t* attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
-      pthread_attr_init(attributes);
-      pthread_attr_setdetachstate(attributes, PTHREAD_CREATE_DETACHED);
-      if (pthread_create(&sampleThread, attributes, ::loadSampleThread, (void*) loader)) {
-            perror("creating thread failed:");
-            pthread_attr_destroy(attributes);
-            delete loader;
-            return false;
-            }
-
-      pthread_attr_destroy(attributes);
       SS_TRACE_OUT
       return true;
       }
@@ -1504,14 +1502,22 @@ void resample(SS_Sample *origSample, SS_Sample* newSample, double pitch)
     }
 }
 
-/*!
-    \fn loadSampleThread(void* p)
-    \brief Since process needs to respond withing a certain time, loading of samples need to be done in a separate thread
- */
-static void* loadSampleThread(void* p)
+
+void LoadSampleWorker::loadSample(void* h)
+{
+  emit loadSampleSignal(h);
+}
+
+//---------------------------------------------------------
+//   execLoadSample
+//    helper function to load sample in the
+//    background.
+//    Since process needs to respond withing a certain time, loading of samples is done in a separate thread
+//---------------------------------------------------------
+void LoadSampleWorker::execLoadSample(void * p)
       {
       SS_TRACE_IN
-      pthread_mutex_lock(&SS_LoaderMutex);
+      QMutexLocker locker(&SSLoaderMutex);
 
       // Crit section:
       SS_State prevState = synth_state;
@@ -1539,9 +1545,8 @@ static void* loadSampleThread(void* p)
             simplesynth_ptr->guiSendSampleLoaded(false, loader->ch_no, filename);
             delete ch->sample; ch->sample = 0;
             delete loader;
-            pthread_mutex_unlock(&SS_LoaderMutex);
             SS_TRACE_OUT
-            pthread_exit(0);
+            return;
             }
 
       //Print some info:
@@ -1588,8 +1593,7 @@ static void* loadSampleThread(void* p)
                   SWITCH_SYNTH_STATE(prevState);
                   delete ch->sample; ch->sample = 0;
                   delete loader;
-                  pthread_mutex_unlock(&SS_LoaderMutex);
-                  pthread_exit(0);
+                  return;
                   SS_TRACE_OUT
                   }
 
@@ -1606,13 +1610,11 @@ static void* loadSampleThread(void* p)
       ch->sample->filename = loader->filename;
       simplesynth_ptr->guiSendSampleLoaded(true, ch_no, filename);
       delete loader;
-      pthread_mutex_unlock(&SS_LoaderMutex);
       SS_TRACE_OUT
-      pthread_exit(0);
+      return;
       }
 
 
-//static Mess* instantiate(int sr, const char* name)
 static Mess* instantiate(int sr, QWidget*, QString* /*projectPathPtr*/, const char* name)
       {
       printf("SimpleSynth sampleRate %d\n", sr);

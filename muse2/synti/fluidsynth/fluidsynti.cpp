@@ -1357,7 +1357,7 @@ void LoadFontWorker::execLoadFont(void * t)
          printf("execLoadFont() font name %s\n", filename);
 
       //Let only one loadThread have access to the fluidsynth-object at the time
-      QMutexLocker(&fptr->_sfLoaderMutex);
+      QMutexLocker ml(&fptr->_sfLoaderMutex);
       int rv = fluid_synth_sfload(fptr->fluidsynth, filename, 1);
 
       if (rv ==-1) {
