@@ -283,7 +283,7 @@ void MidiJackDevice::close()
   #endif  
   
   // REMOVE Tim. Persistent routes. Added.
-  printf("MidiJackDevice::close %s\n", name().toLatin1().constData());
+  DEBUG_PRST_ROUTES(stderr, "MidiJackDevice::close %s\n", name().toLatin1().constData());
   
   for(iRoute ir = _outRoutes.begin(); ir != _outRoutes.end(); ++ir)
   {
