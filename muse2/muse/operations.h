@@ -47,7 +47,8 @@ struct PendingOperationItem
   enum PendingOperationType { Uninitialized = 0,
                               ModifySongLength,
                               AddMidiInstrument, DeleteMidiInstrument,
-                              AddMidiDevice,     DeleteMidiDevice,
+                              AddMidiDevice,     DeleteMidiDevice,       
+                              ModifyMidiDeviceAddress,        ModifyMidiDeviceFlags,        ModifyMidiDeviceName,
                               AddTrack ,         DeleteTrack, MoveTrack,                    ModifyTrackName,
                               AddPart,           DeletePart,  MovePart,  ModifyPartLength,  ModifyPartName,
                               AddEvent,          DeleteEvent,
@@ -110,12 +111,17 @@ struct PendingOperationItem
     double _aux_send_value;
     int _insert_at;
     int _from_idx;
+    int _address_client;
+    int _rw_flags;
   };
   
   union {
     int _intB;
     int _to_idx;
+    int _address_port;
+    int _open_flags;
   };
+
 
   // TODO: Try to break this operation down so that only the actual operation is executed stage-2.
   PendingOperationItem(const Route& src_route, const Route& dst_route, PendingOperationType type) // Type is AddRoute or DeleteRoute.
@@ -145,6 +151,13 @@ struct PendingOperationItem
   PendingOperationItem(MidiDeviceList* mdl, const iMidiDevice& imd, PendingOperationType type = DeleteMidiDevice)
     { _type = type; _midi_device_list = mdl; _iMidiDevice = imd; }
 
+   // Type is ModifyMidiDeviceAddress or ModifyMidiDeviceFlags  
+  PendingOperationItem(MidiDevice* midi_device, int address_client_or_rw_flags, int address_port_or_open_flags, PendingOperationType type)
+    { _type = type; _midi_device = midi_device; _intA = address_client_or_rw_flags; _intB = address_port_or_open_flags; }
+    
+  PendingOperationItem(MidiDevice* midi_device, const char* new_name, PendingOperationType type = ModifyMidiDeviceName)
+    { _type = type; _midi_device = midi_device; _name = new_name; }
+    
   PendingOperationItem(TrackList* tl, Track* track, int insert_at, PendingOperationType type = AddTrack, void* sec_track_list = 0)
     { _type = type; _track_list = tl; _track = track; _insert_at = insert_at; _void_track_list = sec_track_list; }
     

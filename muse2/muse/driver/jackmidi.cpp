@@ -52,6 +52,9 @@
 // Turn on debug messages.
 //#define JACK_MIDI_DEBUG
 
+// REMOVE Tim. Persistent routes. Added.
+#define DEBUG_PRST_ROUTES(dev, format, args...) //fprintf(dev, format, ##args);
+
 namespace MusECore {
 
 //---------------------------------------------------------
@@ -151,7 +154,7 @@ QString MidiJackDevice::open()
       {
         s = name() + QString(JACK_MIDI_OUT_PORT_SUFFIX);
         const char* cs = s.toLatin1().constData();
-        fprintf(stderr, "MusE: MidiJackDevice::open creating output port name %s\n", cs); // REMOVE Tim. Midi devices. Test only.
+        DEBUG_PRST_ROUTES(stderr, "MusE: MidiJackDevice::open creating output port name %s\n", cs); // REMOVE Tim. Persistent routes. Added.
         _out_client_jackport = (jack_port_t*)MusEGlobal::audioDevice->registerOutPort(cs, true);   
         if(!_out_client_jackport)   
         {
@@ -184,7 +187,7 @@ QString MidiJackDevice::open()
   {
     if(_out_client_jackport)
     {
-      fprintf(stderr, "MusE: MidiJackDevice::open unregistering output port\n");  // REMOVE Tim. Midi devices. Test only.
+      DEBUG_PRST_ROUTES(stderr, "MusE: MidiJackDevice::open unregistering output port\n");  // REMOVE Tim. Persistent routes. Added.
       // We want to unregister the port (which will also disconnect it), AND remove Routes, and then NULL-ify _out_client_jackport.
       // We could let our graph change callback (the gui thread one) remove the Routes (which it would anyway).
       // But that happens later (gui thread) and it needs a valid  _out_client_jackport, 
@@ -221,7 +224,7 @@ QString MidiJackDevice::open()
       {
         s = name() + QString(JACK_MIDI_IN_PORT_SUFFIX);
         const char* cs = s.toLatin1().constData();
-        fprintf(stderr, "MusE: MidiJackDevice::open creating input port name %s\n", cs); // REMOVE Tim. Midi devices. Test only.
+        DEBUG_PRST_ROUTES(stderr, "MusE: MidiJackDevice::open creating input port name %s\n", cs); // REMOVE Tim. Persistent routes. Added.
         _in_client_jackport = (jack_port_t*)MusEGlobal::audioDevice->registerInPort(cs, true);   
         if(!_in_client_jackport)    
         {
@@ -254,7 +257,7 @@ QString MidiJackDevice::open()
   {
     if(_in_client_jackport)
     {
-      fprintf(stderr, "MusE: MidiJackDevice::open unregistering input port\n");  // REMOVE Tim. Midi devices. Test only.
+      DEBUG_PRST_ROUTES(stderr, "MusE: MidiJackDevice::open unregistering input port\n");  // REMOVE Tim. Persistent routes. Added.
       // REMOVE Tim. Persistent routes. Changed.
       //MusEGlobal::audio->msgRemoveRoutes(Route(), Route(this, 0));
       removeAllRoutes(Route(), Route(this, 0));

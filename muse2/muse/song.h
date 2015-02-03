@@ -386,7 +386,8 @@ class Song : public QObject {
 
       SynthI* createSynthI(const QString& sclass, const QString& label = QString(), Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
       
-      void rescanAlsaPorts();
+      // REMOVE Tim. Persistent routes. Removed.
+      //void rescanAlsaPorts();
 
       //-----------------------------------------
       //   Debug
@@ -451,7 +452,7 @@ class Song : public QObject {
       void clickChanged(bool);
       void quantizeChanged(bool);
       void markerChanged(int);
-      void midiPortsChanged();
+      //void midiPortsChanged();  // REMOVE Tim. Persistent routes. Removed.
       void midiNote(int pitch, int velo);  
       void controllerChanged(MusECore::Track*, int); 
       void newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);

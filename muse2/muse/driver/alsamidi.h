@@ -48,8 +48,6 @@ class MidiAlsaDevice : public MidiDevice {
       //MidiFifo playEventFifo;  
       //MidiFifo stuckNotesFifo;  
       
-      virtual QString open();
-      virtual void close();
       virtual void processInput()  {}
       virtual int selectRfd()      { return -1; }
       virtual int selectWfd();
@@ -64,6 +62,9 @@ class MidiAlsaDevice : public MidiDevice {
       // REMOVE Tim. Persistent routes. Added.
       static MidiDevice* createAlsaMidiDevice(QString name = "", int rwflags = 3); // 1:Writable 2: Readable 3: Writable + Readable 
       
+      virtual QString open();
+      virtual void close();
+      
       virtual void* inClientPort() { return (void*)&adr; }     // For ALSA midi, in/out client ports are the same.
       virtual void* outClientPort() { return (void*)&adr; }    // That is, ALSA midi client ports can be both r/w.
       
@@ -77,6 +78,9 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void processMidi();
       //virtual void handleStop();
       //virtual void handleSeek();
+
+      virtual void setAddressClient(int client) { adr.client = client; }
+      virtual void setAddressPort(int port) { adr.port = port; }
       };
 
 extern bool initMidiAlsa();
