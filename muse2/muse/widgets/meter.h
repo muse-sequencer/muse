@@ -28,11 +28,13 @@
 #define __METER_H__
 
 #include <QFrame>
+#include <QTimer>
 
 class QResizeEvent;
 class QMouseEvent;
 class QPainter;
 class QPainterPath;
+
 
 namespace MusEGui {
 
@@ -72,7 +74,7 @@ class Meter : public QFrame {
       QColor mask_center;
       QColor mask_edge;
 
-      QColor separator_color;;
+      QColor separator_color;
       QColor peak_color;
       int xrad, yrad;
 
@@ -84,19 +86,25 @@ class Meter : public QFrame {
       MeterType mtype;
       bool overflow;
       double val;
+      double targetVal;
+      double targetValStep;
       double maxVal;
+      double targetMaxVal;
       double minScale, maxScale;
       int yellowScale, redScale;
       int cur_yv, last_yv, cur_ymax, last_ymax;
 
       void drawVU(QPainter& p, const QRect&, const QPainterPath&, int);
 
+      QTimer fallingTimer;
+
    public slots:
       void resetPeaks();
       void setVal(double, double, bool);
+      void updateTargetMeterValue();
 
    signals:
-      void mousePress();
+      void mousePress();      
 
    public:
       Meter(QWidget* parent, MeterType type = DBMeter);
