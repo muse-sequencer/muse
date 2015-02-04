@@ -26,8 +26,14 @@
 
 #include "thread.h"
 #include "mpevent.h"
-#include "driver/alsatimer.h"
-#include "driver/rtctimer.h"
+#include <driver/timerdev.h> // this should be enough to get Timer definition
+//#ifdef ALSA_SUPPORT
+//#include "driver/alsatimer.h"
+//#endif // ALSA_SUPPORT
+
+//#ifdef _LINUX_TEST_
+//#include "driver/rtctimer.h"
+//#endif // _LINUX_TEST_
 #include "sync.h"
 
 namespace MusECore {

@@ -25,6 +25,7 @@
 #define __ALSAMIDI_H__
 
 #include <config.h>
+
 #include <alsa/asoundlib.h>
 
 #include "mpevent.h"

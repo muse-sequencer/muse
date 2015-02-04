@@ -35,7 +35,7 @@
 #include "midiport.h"
 #include "operations.h"
 #include "driver/jackmidi.h"
-#include "driver/alsamidi.h"
+//#include "driver/alsamidi.h"
 #include "libs/strntcpy.h"
 
 //#define ROUTE_DEBUG 

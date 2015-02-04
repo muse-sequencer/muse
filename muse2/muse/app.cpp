@@ -40,6 +40,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <errno.h>
 
 #include "app.h"
 #include "master/lmaster.h"
@@ -102,8 +103,12 @@
 namespace MusECore {
 extern void exitJackAudio();
 extern void exitDummyAudio();
+#ifdef OSC_SUPPORT
 extern void exitOSC();
+#endif
+#ifdef ALSA_SUPPORT
 extern void exitMidiAlsa();
+#endif // ALSA_SUPPORT
 }
 
 namespace MusEGui {
@@ -1526,7 +1531,9 @@ void MusE::closeEvent(QCloseEvent* event)
       // Give midi devices a chance to close first, above in cleanupForQuit.
       if(MusEGlobal::debugMsg)
         printf("Muse: Exiting ALSA midi\n");
+#ifdef ALSA_SUPPORT
       MusECore::exitMidiAlsa();
+#endif // ALSA_SUPPORT
 
       if(MusEGlobal::debugMsg)
         printf("Muse: Cleaning up temporary wavefiles + peakfiles\n");
@@ -1556,7 +1563,9 @@ void MusE::closeEvent(QCloseEvent* event)
       
       if(MusEGlobal::debugMsg)
         printf("MusE: Exiting OSC\n");
+#ifdef OSC_SUPPORT
       MusECore::exitOSC();
+#endif // OSC_SUPPORT
       
       delete MusEGlobal::audioPrefetch;
       delete MusEGlobal::audio;

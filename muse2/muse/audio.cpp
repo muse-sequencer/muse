@@ -24,13 +24,13 @@
 
 #include <cmath>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "app.h"
 #include "song.h"
 #include "node.h"
 #include "audiodev.h"
 #include "mididev.h"
-#include "alsamidi.h"
 #include "synth.h"
 #include "audioprefetch.h"
 #include "plugin.h"

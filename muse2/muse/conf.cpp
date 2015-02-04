@@ -48,7 +48,9 @@
 #include "mididev.h"
 #include "driver/audiodev.h"
 #include "driver/jackmidi.h"
+#ifdef ALSA_SUPPORT
 #include "driver/alsamidi.h" // REMOVE Tim. Persistent routes. Added.
+#endif // ALSA_SUPPORT
 #include "xml.h"
 #include "waveedit.h"
 #include "midi.h"
@@ -262,9 +264,11 @@ static void readConfigMidiDevice(Xml& xml)
                                 else
                                 if(type == MidiDevice::ALSA_MIDI)
                                 {
+#ifdef ALSA_SUPPORT
                                   if(MusEGlobal::debugMsg)
                                     fprintf(stderr, "readConfigMidiDevice: creating ALSA midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
                                   dev = MidiAlsaDevice::createAlsaMidiDevice(device, rwFlags);  
+#endif // ALSA_SUPPORT
                                 }
                               }                              
                               

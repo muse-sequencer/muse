@@ -38,7 +38,9 @@
 #include "sync.h"
 #include "audio.h"
 #include "mididev.h"
+#ifdef ALSA_SUPPORT
 #include "driver/alsamidi.h"
+#endif // ALSA_SUPPORT
 #include "driver/jackmidi.h"
 #include "wave.h"
 #include "synth.h"

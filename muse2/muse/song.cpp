@@ -40,7 +40,9 @@
 
 #include "app.h"
 #include "driver/jackmidi.h"
+#ifdef ALSA_SUPPORT
 #include "driver/alsamidi.h"
+#endif // ALSA_SUPPORT
 #include "song.h"
 #include "track.h"
 #include "undo.h"
@@ -1850,7 +1852,8 @@ void Song::clear(bool signal, bool clear_all)
               loop = true;
               break;
             }  
-          }  
+          }
+#ifdef ALSA_SUPPORT
           else if(dynamic_cast< MidiAlsaDevice* >(*imd))
           {
             // With alsa devices, we must not delete them (they're always in the list). But we must 
@@ -1858,6 +1861,7 @@ void Song::clear(bool signal, bool clear_all)
             (*imd)->inRoutes()->clear();
             (*imd)->outRoutes()->clear();
           }
+#endif // ALSA_SUPPORT
         }
       }  
       while (loop);

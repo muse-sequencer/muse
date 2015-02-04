@@ -1,12 +1,8 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: timerdev.h,v 1.1.2.3 2005/08/21 18:11:28 spamatica Exp $
 //
-//  Plenty of code borrowed from timer.c example in 
-//  alsalib 1.0.7
-//
-//  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
+//  (C) Copyright 2015 Robert Jonsson (spamatica@gmail.com)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -24,38 +20,42 @@
 //
 //=========================================================
 
-#ifndef __TIMERDEV_H__
-#define __TIMERDEV_H__
+#ifndef __SIMPLETIMER_H__
+#define __SIMPLETIMER_H__
 
-//#include "alsa/asoundlib.h"
+#include "timerdev.h"
 
-#ifndef TIMER_DEBUG
-#define TIMER_DEBUG 0
-#endif
+#include <QThread>
+
 namespace MusECore {
 
 //---------------------------------------------------------
 //   AlsaTimer
 //---------------------------------------------------------
 
-class Timer {
+class SimpleTimer : public Timer, public QThread {
     
-     public:
-       Timer() {};
-       virtual ~Timer() {};
+    unsigned long tickCount;
+    bool keepRunning;
+    public:
+       SimpleTimer();
+       virtual ~SimpleTimer();
        
-       virtual signed int initTimer() = 0;
-       virtual unsigned int setTimerResolution(unsigned int resolution) = 0;
-       virtual unsigned int getTimerResolution() = 0;
-       virtual unsigned int setTimerFreq(unsigned int freq) = 0;
-       virtual unsigned int getTimerFreq() = 0;
+       virtual signed int initTimer();
+       virtual unsigned int setTimerResolution(unsigned int resolution);
+       virtual unsigned int getTimerResolution();
+       virtual unsigned int setTimerFreq(unsigned int freq);
+       virtual unsigned int getTimerFreq();
+
+       virtual bool startTimer();
+       virtual bool stopTimer();
+       virtual unsigned int getTimerTicks(bool printTicks=false);
        
-       virtual bool startTimer() = 0;
-       virtual bool stopTimer() = 0;
-       virtual unsigned int getTimerTicks(bool printTicks = false) = 0;
-        
+       void setFindBestTimer(bool ) { }
+    private:
+       virtual void run();
 };
 
 } // namespace MusECore
 
-#endif //__TIMERDEV_H__
+#endif //__SIMPLETIMER_H__

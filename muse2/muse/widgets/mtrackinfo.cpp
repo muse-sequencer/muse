@@ -1113,11 +1113,12 @@ void MidiTrackInfo::patchPopup()
                --_blockHeartbeatCount;
             }
          }
+#ifdef LV2_SUPPORT
          else if(instr->isSynti() && act->data().canConvert<void *>())
          {
-            MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
-            MusECore::Synth *s = si->synth();
 
+           MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
+           MusECore::Synth *s = si->synth();
             //only for lv2 synths call applyPreset function.
             if(s && s->synthType() == MusECore::Synth::LV2_SYNTH)
             {
@@ -1134,8 +1135,8 @@ void MidiTrackInfo::patchPopup()
                   }
                }
             }
-
          }
+#endif // LV2_SUPPORT
       }
             
       delete pup;      

@@ -40,7 +40,9 @@
 #include "mididev.h"
 #include "midictrl.h"
 #include "audio.h"
+#ifdef ALSA_SUPPORT
 #include "driver/alsamidi.h"
+#endif // ALSA_SUPPORT
 #include "driver/jackmidi.h"
 #include "sync.h"
 #include "synth.h"
@@ -190,8 +192,9 @@ MidiSeq::~MidiSeq()
 
 signed int MidiSeq::selectTimer()
     {
-    int tmrFd;
-    
+//  int tmrFd;
+
+#ifdef _LINUX_TEST_
     printf("Trying RTC timer...\n");
     timer = new RtcTimer();
     tmrFd = timer->initTimer();
@@ -200,7 +203,8 @@ signed int MidiSeq::selectTimer()
         return tmrFd;
     }
     delete timer;
-    
+#endif // _LINUX_TEST_
+#ifdef ALSA_SUPPORT
     printf("Trying ALSA timer...\n");
     timer = new AlsaTimer();
     tmrFd = timer->initTimer();
@@ -209,6 +213,7 @@ signed int MidiSeq::selectTimer()
         return tmrFd;
     }
     delete timer;
+#endif // ALSA_SUPPORT
     timer=NULL;
     QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer!")),
               /*tr*/(QString("No functional timer was available.\n"
@@ -237,6 +242,7 @@ void MidiSeq::threadStart(void*)
       updatePollFd();
       }
 
+#ifdef ALSA_SUPPORT
 //---------------------------------------------------------
 //   alsaMidiRead
 //---------------------------------------------------------
@@ -246,6 +252,7 @@ static void alsaMidiRead(void*, void*)
       // calls itself midiDevice->recordEvent(MidiRecordEvent):
       alsaProcessMidiInput();
       }
+#endif // ALSA_SUPPORT
 
 //---------------------------------------------------------
 //   midiRead
@@ -302,11 +309,13 @@ void MidiSeq::updatePollFd()
             if (dev->bytesToWrite())
                   addPollFd(dev->selectWfd(), POLLOUT, MusECore::midiWrite, this, dev);
             }
+#ifdef ALSA_SUPPORT
       // special handling for alsa midi:
       // (one fd for all devices)
       //    this allows for processing of some alsa events
       //    even if no alsa driver is active (assigned to a port)
       addPollFd(alsaSelectRfd(), POLLIN, MusECore::alsaMidiRead, this, 0);
+#endif // ALSA_SUPPORT
       }
 
 //---------------------------------------------------------

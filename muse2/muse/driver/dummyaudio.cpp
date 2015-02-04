@@ -34,7 +34,11 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#ifdef ALSA_SUPPORT
 #include "alsatimer.h"
+#endif // ALSA_SUPPORT
+#include "simpletimer.h"
+
 #include "config.h"
 #include "audio.h"
 #include "audiodev.h"
@@ -377,7 +381,12 @@ void DummyAudioDevice::run()
       //unsigned int tickRate = MusEGlobal::sampleRate / dummyFrames;
       unsigned int tickRate = MusEGlobal::sampleRate / MusEGlobal::segmentSize;
       
+#ifdef ALSA_SUPPORT
       AlsaTimer timer;
+#else
+      SimpleTimer timer;
+#endif //ALSA_SUPPORT
+
       fprintf(stderr, "Get alsa timer for dummy driver:\n");
       timer.setFindBestTimer(false);
       int fd = timer.initTimer();

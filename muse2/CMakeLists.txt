@@ -136,6 +136,7 @@ else (GIT_FOUND)
 endif (GIT_FOUND)
 
 
+option ( ENABLE_ALSA        "Enable ALSA midi support"     ON)
 option ( ENABLE_LASH        "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
 option ( ENABLE_OSC         "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)
 option ( ENABLE_DSSI        "Enable Disposable Soft Synth Interface (dssi) (OSC also needed)" ON)
@@ -230,9 +231,13 @@ endif(NOT HAVE_LADSPA_H)
 
 if (APPLE)
 	message("Disabling ALSA support due to OS X build.")
-else (APPLE)
-PKG_CHECK_MODULES(ALSA REQUIRED alsa>=0.9.0)
-include_directories(${ALSA_INCLUDE_DIRS})
+elseif (ENABLE_ALSA)
+    PKG_CHECK_MODULES(ALSA alsa>=0.9.0)
+    if (ALSA_FOUND)
+        message("Enabling ALSA support")
+        include_directories(${ALSA_INCLUDE_DIRS})
+        SET(ALSA_SUPPORT ON)
+    endif (ALSA_FOUND)
 endif (APPLE)
 
 ##
@@ -524,7 +529,7 @@ add_custom_target(uninstall
 message("\n")
 
 if (NOT ALSA_FOUND)
-      message("** ERROR: alsa >= 0.9.0 is required, but development files were not found.")
+      message("** WARNING: alsa >= 0.9.0 was enabled, but development files were not found.")
 endif (NOT ALSA_FOUND)
 
 if (NOT SNDFILE_FOUND)
@@ -572,6 +577,7 @@ endif (ENABLE_LV2 AND (NOT LV2_FOUND))
 message("")
 
 ## Show a summary of what we got
+summary_add("ALSA support" ALSA_SUPPORT)
 summary_add("Lash support" HAVE_LASH)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
 summary_add("Python support" PYTHON_SUPPORT)

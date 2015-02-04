@@ -1513,9 +1513,16 @@ void Pipeline::showGui(int idx, bool flag)
 //   showNativeGui
 //---------------------------------------------------------
 
+#if defined(LV2_SUPPORT) || defined(OSC_SUPPORT) // to satisfy -Werror all
 void Pipeline::showNativeGui(int idx, bool flag)
+#else
+void Pipeline::showNativeGui(int, bool)
+#endif
       {
+#if defined(LV2_SUPPORT) || defined(OSC_SUPPORT) // to satisfy -Werror all
       PluginI* p = (*this)[idx];
+#endif
+
 #ifdef LV2_SUPPORT
          if(p && p->plugin()->isLV2Plugin())
          {
@@ -1524,11 +1531,11 @@ void Pipeline::showNativeGui(int idx, bool flag)
          }
 
 #endif
-      #ifdef OSC_SUPPORT
+#ifdef OSC_SUPPORT
 
       if (p)
             p->oscIF().oscShowGui(flag);
-      #endif
+#endif
       }
 
 //---------------------------------------------------------
@@ -1908,7 +1915,11 @@ float PluginI::defaultValue(unsigned long param) const
   return _plugin->defaultValue(controls[param].idx);
 }
 
+#ifdef LV2_SUPPORT
 void PluginI::setCustomData(const std::vector<QString> &customParams)
+#else
+void PluginI::setCustomData(const std::vector<QString> &)
+#endif //LV2_SUPPORT
 {
    if(_plugin == NULL)
       return;
@@ -2427,7 +2438,11 @@ void PluginI::showNativeGui()
   _showNativeGuiPending = false;
 }
 
+#if defined(LV2_SUPPORT) || defined(OSC_SUPPORT) // to satisfy -Werror all
 void PluginI::showNativeGui(bool flag)
+#else
+void PluginI::showNativeGui(bool )
+#endif
 {
 #ifdef LV2_SUPPORT
   if(plugin() && plugin()->isLV2Plugin())

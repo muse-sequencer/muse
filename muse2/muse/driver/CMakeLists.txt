@@ -25,14 +25,25 @@
 ## List of source files to compile
 ##
 file (GLOB driver_source_files
-       alsamidi.cpp
-       alsatimer.cpp
        dummyaudio.cpp
        jack.cpp
        jackmidi.cpp
-       rtctimer.cpp
+       simpletimer.cpp
        )
+if(ALSA_SUPPORT)
+    file (GLOB driver_source_files
+        ${driver_source_files}
+        alsamidi.cpp
+        alsatimer.cpp
+    )
+endif(ALSA_SUPPORT)
 
+if(_LINUX_TEST_)
+    file (GLOB driver_source_files
+        ${driver_source_files}
+       rtctimer.cpp
+    )
+endif(_LINUX_TEST_)
 ##
 ## Define target
 ##

@@ -1148,7 +1148,6 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
-        PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
         QMenu* p = new QMenu;
         QAction* gact = p->addAction(tr("show gui"));
         gact->setCheckable(true);
@@ -1161,7 +1160,8 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         nact->setChecked(synth->nativeGuiVisible());
 
 #ifdef LV2_SUPPORT
-        //show presets submenu for lv2 synths        
+        PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
+        //show presets submenu for lv2 synths
         if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
         {
            p->addMenu(mSubPresets);
@@ -1216,7 +1216,6 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
 
       QMenu* p = new QMenu;
-      PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
       QAction* gact = p->addAction(tr("show gui"));
       gact->setCheckable(true);
       gact->setEnabled(port->hasGui());
@@ -1228,10 +1227,10 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       nact->setChecked(port->nativeGuiVisible());
         
       // If it has a gui but we don't have OSC, disable the action.
-      MusECore::MidiDevice* dev = port->device();
       #ifndef OSC_SUPPORT
       #ifdef DSSI_SUPPORT      
-      if(dev && dev->isSynti()) 
+      MusECore::MidiDevice* dev = port->device();
+      if(dev && dev->isSynti())
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(dev);
         if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::DSSI_SYNTH)
@@ -1244,6 +1243,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       #endif
       
 #ifdef LV2_SUPPORT
+      PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
       if(dev && dev->isSynti())
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(dev);

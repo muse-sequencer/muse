@@ -65,12 +65,14 @@ class QTreeWidget;
 class QRect;
 class QByteArray;
 
+
 namespace MusEGui {
 class PluginGui;
 }
 
 
 namespace MusECore {
+class PluginI;
 class AudioTrack;
 class Xml;
 

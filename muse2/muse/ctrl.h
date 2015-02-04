@@ -31,7 +31,9 @@
 #include <list>
 #include <vector>
 #include <qcolor.h>
-#include <lo/lo_osc_types.h>
+#include <stdint.h>
+
+//#include <lo/lo_osc_types.h>
 
 #define AC_PLUGIN_CTL_BASE         0x1000
 #define AC_PLUGIN_CTL_BASE_POW     12

@@ -42,7 +42,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/mman.h>
-#include <alsa/asoundlib.h>
+//#include <alsa/asoundlib.h>
 
 #include "al/dsp.h"
 #include "app.h"
@@ -86,7 +86,7 @@ extern void initAudio();
 extern void initAudioPrefetch();   
 extern void initMidiSynth();
 
-extern snd_seq_t * alsaSeq;
+//extern snd_seq_t * alsaSeq;
 extern void setAlsaClientName(const char*);
 }
 

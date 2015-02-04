@@ -623,13 +623,14 @@ QMenu* populateAddSynth(QWidget* parent)
   {
     synth = *i;
     type = synth->synthType();
+#ifdef DSSI_SUPPORT
     if (type == MusECore::Synth::DSSI_SYNTH && ((MusECore::DssiSynth*)synth)->isDssiVst() ) // Place Wine VSTs in a separate sub menu
       type = MusECore::Synth::VST_SYNTH;
-
+#endif // DSSI_SUPPORT
 #ifdef LV2_SUPPORT
     if (type == MusECore::Synth::LV2_SYNTH && !((MusECore::LV2Synth*)synth)->isSynth() ) // Place LV2 effects in a separate sub menu
       type = MusECore::Synth::LV2_EFFECT;
-#endif
+#endif // LV2_SUPPORT
 
     if(type >= ntypes)
       continue; 

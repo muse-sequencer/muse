@@ -34,7 +34,7 @@
 #include "audio.h"
 #include "mididev.h"
 #include "audiodev.h"
-#include "alsamidi.h"
+//#include "alsamidi.h"
 #include "audio.h"
 #include "arranger.h"
 #include "plugin.h"

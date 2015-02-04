@@ -57,7 +57,9 @@ namespace MusECore {
 #ifdef MIDI_DRIVER_MIDI_SERIAL
 extern void initMidiSerial();
 #endif
+#ifdef ALSA_SUPPORT
 extern bool initMidiAlsa();
+#endif // ALSA_SUPPORT
 extern bool initMidiJack();
 
 extern void processMidiInputTransformPlugins(MEvent&);
@@ -72,6 +74,7 @@ void initMidiDevices()
 #ifdef MIDI_DRIVER_MIDI_SERIAL
       initMidiSerial();
 #endif
+#ifdef ALSA_SUPPORT
       if(MusEGlobal::useAlsaWithJack || MusEGlobal::audioDevice->deviceType() != AudioDevice::JACK_AUDIO)
       {
         if(initMidiAlsa())
@@ -82,6 +85,7 @@ void initMidiDevices()
           exit(-1);
           }
       }
+#endif // ALSA_SUPPORT
       
       if(initMidiJack())
           {
