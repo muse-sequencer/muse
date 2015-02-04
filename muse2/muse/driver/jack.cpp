@@ -31,6 +31,7 @@
 #include <jack/midiport.h>
 #include <string.h>
 #include <dlfcn.h>
+#include <sys/time.h>
 
 #include <QString>
 #include <QStringList>

@@ -1,0 +1,19 @@
+Making MusE portable TODO
+
+2015-02-04
+- Moved libuuid to QUuid
+- Test cloning with QUuid - seems OK
+
+2015-02-02
+- Moved fluidsynth to QThread and QMutexLocker
+- Moved simpledrums to QThread and QMutexLocker
+- Moved Thread to QThread
+- Moved DummyAudio to QThread
+
+TODO
+- Fixup _LINUX_TEST_ in Thread, it only shows that it works without these Linux/Posix optimizations right now
+- Fixup _LINUX_TEST_ in DummyAudio also
+- Make ALSA dependency optional
+
+
+

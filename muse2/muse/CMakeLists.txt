@@ -257,7 +257,6 @@ target_link_libraries(core
       ${QT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
-      ${UUID_LIBRARIES}
       ${REM_LIB}
       ${FST_LIB}
       dl
