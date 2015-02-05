@@ -933,6 +933,7 @@ void JackAudioDevice::graphChanged()
   // Reset this now.
   muse_atomic_set(&atomicGraphChangedPending, 0);
   
+  jackCallbackEvents.clear();
   // Find the last GraphChanged event, if any.
   // This is safe because the writer only increases the size.
   int cb_fifo_sz = jackCallbackFifo.getSize();
@@ -945,7 +946,7 @@ void JackAudioDevice::graphChanged()
           last_gc_idx = i;
     // Move the events into a list for processing, including the final GraphChanged event.
     // Leave any 'still in progress' ending events (without closing GraphChanged event) in the ring buffer.
-    jackCallbackEvents.clear();
+    //jackCallbackEvents.clear();
     for(int i = 0; i <= last_gc_idx; ++i)
       jackCallbackEvents.push_back(jackCallbackFifo.get());
   }
