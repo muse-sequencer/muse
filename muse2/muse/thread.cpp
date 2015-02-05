@@ -40,6 +40,7 @@ namespace MusECore {
 
 Thread::~Thread()
       {
+      exit(); // thread exit
       }
 
 //---------------------------------------------------------

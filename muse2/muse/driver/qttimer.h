@@ -20,26 +20,48 @@
 //
 //=========================================================
 
-#ifndef __SIMPLETIMER_H__
-#define __SIMPLETIMER_H__
+#ifndef __QTTIMER_H__
+#define __QTTIMER_H__
 
-#include "timerdev.h"
 
 #include <QThread>
+#include <QBasicTimer>
+#include <QTimerEvent>
+
+#include "timerdev.h"
 
 namespace MusECore {
 
 //---------------------------------------------------------
-//   AlsaTimer
+//   QtTimer
 //---------------------------------------------------------
 
-class SimpleTimer : public BaseTimer, public QThread {
+class InnerTimer : public QObject {
+  Q_OBJECT
+  int writePipe;
+  long int tickCount;
+  QBasicTimer timer;
+public:
+   void setupTimer(int fd, int timeoutms);
+   ~InnerTimer();
+   long int getTick();
+   bool isRunning() { return timer.isActive(); }
+
+protected:
+   void timerEvent(QTimerEvent *event);
+
+};
+
+class QtTimer : public BaseTimer, public QThread {
     
-    unsigned long tickCount;
+    int writePipe;
+    int readPipe;
     bool keepRunning;
+    InnerTimer *innerTimer;
+    int timeoutms;
     public:
-       SimpleTimer();
-       virtual ~SimpleTimer();
+       QtTimer();
+       virtual ~QtTimer();
        
        virtual signed int initTimer();
        virtual unsigned int setTimerResolution(unsigned int resolution);
@@ -58,4 +80,4 @@ class SimpleTimer : public BaseTimer, public QThread {
 
 } // namespace MusECore
 
-#endif //__SIMPLETIMER_H__
+#endif //__QTTIMER_H__

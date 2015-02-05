@@ -43,6 +43,7 @@
 #ifdef ALSA_SUPPORT
 #include "driver/alsamidi.h"
 #endif // ALSA_SUPPORT
+#include "driver/qttimer.h"
 #include "driver/jackmidi.h"
 #include "sync.h"
 #include "synth.h"
@@ -192,7 +193,7 @@ MidiSeq::~MidiSeq()
 
 signed int MidiSeq::selectTimer()
     {
-//  int tmrFd;
+  int tmrFd;
 
 #ifdef _LINUX_TEST_
     printf("Trying RTC timer...\n");
@@ -214,6 +215,15 @@ signed int MidiSeq::selectTimer()
     }
     delete timer;
 #endif // ALSA_SUPPORT
+    printf("Trying Qt timer...\n");
+    timer = new QtTimer();
+    tmrFd = timer->initTimer();
+    if ( tmrFd!= -1) { // ok!
+        printf("got timer = %d\n", tmrFd);
+        return tmrFd;
+    }
+    delete timer;
+
     timer=NULL;
     QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer!")),
               /*tr*/(QString("No functional timer was available.\n"
@@ -474,11 +484,11 @@ void MidiSeq::processTimerTick()
       //    read elapsed rtc timer ticks
       //---------------------------------------------------
 
-      // This is required otherwise it freezes.
+      // This is required otherwise it freezes for timers that actually write to the pipe, currently RTC and QtTimer
       unsigned long nn;
       if (timerFd != -1) {
             nn = timer->getTimerTicks();
-            nn >>= 8;
+            nn >>= 8; // should probably be removed, nn is never used.
             }
 
       if (idle)

@@ -1,5 +1,9 @@
 Making MusE portable TODO
 
+2015-02-05
+- Added new timers QtTimer and SimpleTimer to make muse work without Alsa or Rtc
+- Made ALSA optional
+
 2015-02-04
 - Moved libuuid to QUuid
 - Test cloning with QUuid - seems OK
@@ -13,7 +17,7 @@ Making MusE portable TODO
 TODO
 - Fixup _LINUX_TEST_ in Thread, it only shows that it works without these Linux/Posix optimizations right now
 - Fixup _LINUX_TEST_ in DummyAudio also
-- Make ALSA dependency optional
+
 
 
 

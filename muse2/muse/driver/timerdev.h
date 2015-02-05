@@ -27,22 +27,20 @@
 #ifndef __TIMERDEV_H__
 #define __TIMERDEV_H__
 
-//#include "alsa/asoundlib.h"
-
 #ifndef TIMER_DEBUG
 #define TIMER_DEBUG 0
 #endif
 namespace MusECore {
 
 //---------------------------------------------------------
-//   AlsaTimer
+//   BaseTimer
 //---------------------------------------------------------
 
-class Timer {
+class BaseTimer {
     
      public:
-       Timer() {};
-       virtual ~Timer() {};
+       BaseTimer() {};
+       virtual ~BaseTimer() {};
        
        virtual signed int initTimer() = 0;
        virtual unsigned int setTimerResolution(unsigned int resolution) = 0;

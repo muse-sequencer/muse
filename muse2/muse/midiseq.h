@@ -76,7 +76,7 @@ class MidiSeq : public Thread {
       void alignAllTicks(int frameOverride = 0);
 /* Testing */
 
-      Timer *timer;
+      BaseTimer *timer;
 
       signed int selectTimer();
       int setRtcTicks();

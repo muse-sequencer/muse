@@ -21,6 +21,11 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
+
+QT5_WRAP_CPP (driver_mocs
+      qttimer.h
+    )
+
 ##
 ## List of source files to compile
 ##
@@ -29,6 +34,7 @@ file (GLOB driver_source_files
        jack.cpp
        jackmidi.cpp
        simpletimer.cpp
+       qttimer.cpp
        )
 if(ALSA_SUPPORT)
     file (GLOB driver_source_files
@@ -49,6 +55,7 @@ endif(_LINUX_TEST_)
 ##
 add_library ( driver ${MODULES_BUILD}
        # ${PROJECT_BINARY_DIR}/all.h.pch
+       ${driver_mocs}
        ${driver_source_files}
        )
 
