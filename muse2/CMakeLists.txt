@@ -163,11 +163,10 @@ endif ( MODULES_BUILD_STATIC )
 ##
 if (APPLE)
 	message("OS X found.")
-else (APPLE)
-	if (UNIX)
+elseif (WIN32)
+	message("Windows found.")
+elseif (UNIX)
 		message("Unix (probably linux) found")
-	endif(UNIX)
-
 endif (APPLE)
 
 ##
@@ -220,17 +219,21 @@ SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRAR
 ## find ladspa.h
 ##
 
-CHECK_INCLUDE_FILE(ladspa.h HAVE_LADSPA_H)
-if(NOT HAVE_LADSPA_H)
-      message(FATAL_ERROR "** ERROR: header file ladspa.h is required, but was not found.")
-endif(NOT HAVE_LADSPA_H)
-
+if(WIN32)
+  include_directories(${PROJECT_SOURCE_DIR}/plugins/ladspa)   
+else (WIN32)
+	CHECK_INCLUDE_FILE(ladspa.h HAVE_LADSPA_H)
+	if(NOT HAVE_LADSPA_H)
+		  message("** WARNING: header file ladspa.h was not found, using internal")
+		  include_directories(${PROJECT_SOURCE_DIR}/plugins/ladspa)   
+	endif(NOT HAVE_LADSPA_H)
+endif(WIN32)
 ##
 ## alsa >= 0.9.0
 ##
 
-if (APPLE)
-	message("Disabling ALSA support due to OS X build.")
+if (APPLE OR WIN32)
+	message("Disabling ALSA support since this isn't a Linux build.")
 elseif (ENABLE_ALSA)
     PKG_CHECK_MODULES(ALSA alsa>=0.9.0)
     if (ALSA_FOUND)
@@ -238,28 +241,37 @@ elseif (ENABLE_ALSA)
         include_directories(${ALSA_INCLUDE_DIRS})
         SET(ALSA_SUPPORT ON)
     endif (ALSA_FOUND)
-endif (APPLE)
+endif (APPLE OR WIN32)
 
 ##
 ## find sndfile >= 1.0.0
 ##
-
-PKG_CHECK_MODULES(SNDFILE REQUIRED sndfile>=1.0.0)
-include_directories(${SNDFILE_INCLUDE_DIRS})
-
+if (WIN32)
+	include_directories("C:/Program Files (x86)/Mega-Nerd/libsndfile/include")
+else (WIN32)
+	PKG_CHECK_MODULES(SNDFILE REQUIRED sndfile>=1.0.0)
+	include_directories(${SNDFILE_INCLUDE_DIRS})
+endif (WIN32)
 ##
 ## find libsamplerate >= 0.1.0
 ##
 
-PKG_CHECK_MODULES(SAMPLERATE REQUIRED samplerate>=0.1.0)
-include_directories(${SAMPLERATE_INCLUDE_DIRS})
+if(WIN32)
+else(WIN32)
+	PKG_CHECK_MODULES(SAMPLERATE REQUIRED samplerate>=0.1.0)
+	include_directories(${SAMPLERATE_INCLUDE_DIRS})
+endif(WIN32)
 
 ##
 ## find jack >= 0.103.0
 ##
 
-PKG_CHECK_MODULES(JACK REQUIRED jack>=0.103)
-include_directories(${JACK_INCLUDE_DIRS})
+if(WIN32)
+        include_directories("C:\Program Files (x86)\Jack\includes"})
+else(WIN32)
+	PKG_CHECK_MODULES(JACK REQUIRED jack>=0.103)
+	include_directories(${JACK_INCLUDE_DIRS})
+endif(WIN32)
 
 ##
 ##   End MANDATORY packages.
@@ -273,16 +285,17 @@ include_directories(${JACK_INCLUDE_DIRS})
 ## find LASH
 ##
 
-if (ENABLE_LASH)
-      PKG_CHECK_MODULES(LASH lash-1.0>=0.2)
-      if (LASH_FOUND)
-            include_directories(${LASH_INCLUDE_DIRS})
-            set(HAVE_LASH ON)
-      endif (LASH_FOUND)
-else (ENABLE_LASH)
-      message("LASH disabled")
-endif (ENABLE_LASH)
-
+if(NOT WIN32)
+	if (ENABLE_LASH)
+		  PKG_CHECK_MODULES(LASH lash-1.0>=0.2)
+		  if (LASH_FOUND)
+				include_directories(${LASH_INCLUDE_DIRS})
+				set(HAVE_LASH ON)
+		  endif (LASH_FOUND)
+	else (ENABLE_LASH)
+		  message("LASH disabled")
+	endif (ENABLE_LASH)
+endif(NOT WIN32)
 ##
 ## check for python >= 2.4
 ##
@@ -309,25 +322,26 @@ endif (ENABLE_PYTHON)
 ## check for dssi >= 0.9.0 and liblo >= 0.23
 ##
 
-if (ENABLE_DSSI)
-      PKG_CHECK_MODULES(DSSI dssi>=0.9.0)
-      if (DSSI_FOUND)        
-          if (ENABLE_OSC)
-              PKG_CHECK_MODULES(LIBLO liblo>=0.23)
-              if (LIBLO_FOUND)
-                    include_directories(${LIBLO_INCLUDE_DIRS})
-                    set(OSC_SUPPORT ON)
-                    include_directories(${DSSI_INCLUDE_DIRS})
-                    set(DSSI_SUPPORT ON)
-              endif (LIBLO_FOUND)
-          else (ENABLE_OSC)
-              message("DSSI disabled")
-          endif (ENABLE_OSC)
-      endif (DSSI_FOUND)
-else (ENABLE_DSSI)
-      message("DSSI disabled")
-endif (ENABLE_DSSI)
-
+if (NOT WIN32)
+	if (ENABLE_DSSI)
+		  PKG_CHECK_MODULES(DSSI dssi>=0.9.0)
+		  if (DSSI_FOUND)        
+			  if (ENABLE_OSC)
+				  PKG_CHECK_MODULES(LIBLO liblo>=0.23)
+				  if (LIBLO_FOUND)
+						include_directories(${LIBLO_INCLUDE_DIRS})
+						set(OSC_SUPPORT ON)
+						include_directories(${DSSI_INCLUDE_DIRS})
+						set(DSSI_SUPPORT ON)
+				  endif (LIBLO_FOUND)
+			  else (ENABLE_OSC)
+				  message("DSSI disabled")
+			  endif (ENABLE_OSC)
+		  endif (DSSI_FOUND)
+	else (ENABLE_DSSI)
+		  message("DSSI disabled")
+	endif (ENABLE_DSSI)
+endif(NOT WIN32)
 ##
 ## Depricated FST-based VST support
 ##
@@ -370,14 +384,15 @@ else (ENABLE_VST_VESTIGE)
   SET (VST_VESTIGE_SUPPORT FALSE)
 endif (ENABLE_VST_VESTIGE)
 
-
-if (ENABLE_LV2)
-      set (LV2_FOUND ON)
-      set(LV2_SUPPORT ON)
-      PKG_CHECK_MODULES(PCRE libpcre)
-else (ENABLE_LV2)
-      message("LV2 disabled")
-endif (ENABLE_LV2)
+if (NOT WIN32)
+	if (ENABLE_LV2)
+		  set (LV2_FOUND ON)
+		  set(LV2_SUPPORT ON)
+		  PKG_CHECK_MODULES(PCRE libpcre)
+	else (ENABLE_LV2)
+		  message("LV2 disabled")
+	endif (ENABLE_LV2)
+endif (NOT WIN32)
 
 ##
 ## TODO
@@ -391,17 +406,19 @@ SET (USE_SSE false)
 ## check for fluidsynth
 ##
 
-if ( ENABLE_FLUID )
-      # Be careful with variable name here since we have a shared
-      #  synth library named 'fluid_synth' to be built later.
-      PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=0.9.0)
-      if (FLUIDSYN_FOUND)
-            include_directories(${FLUIDSYN_INCLUDE_DIRS})
-            set(HAVE_FLUIDSYNTH ON)
-      endif (FLUIDSYN_FOUND)
-else ( ENABLE_FLUID )
-      message("Fluidsynth disabled")
-endif ( ENABLE_FLUID )
+if(NOT WIN32)
+	if ( ENABLE_FLUID )
+		  # Be careful with variable name here since we have a shared
+		  #  synth library named 'fluid_synth' to be built later.
+		  PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=0.9.0)
+		  if (FLUIDSYN_FOUND)
+				include_directories(${FLUIDSYN_INCLUDE_DIRS})
+				set(HAVE_FLUIDSYNTH ON)
+		  endif (FLUIDSYN_FOUND)
+	else ( ENABLE_FLUID )
+		  message("Fluidsynth disabled")
+	endif ( ENABLE_FLUID )
+endif(NOT WIN32)
 
 ##
 ##   End OPTIONAL packages.
@@ -452,7 +469,7 @@ include_directories(
    ${PROJECT_BINARY_DIR}/muse/instruments
    ${PROJECT_BINARY_DIR}/muse/ctrl
    )
-
+ 
 # include (pch.txt)
 
 #
@@ -486,9 +503,13 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
-set(CMAKE_CXX_FLAGS         "-Werror=format-security -Wextra -Winvalid-pch -fno-exceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}")
+
+#set(CMAKE_CXX_FLAGS         "-Werror=format-security -Wextra -Winvalid-pch -fno-exceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}")
+#set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS         "-Werror=format-security -Wextra -Winvalid-pch -fno-exceptions -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -Wall -Wextra ${CMAKE_CXX_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0 -DQT_DEBUG  ${CMAKE_CXX_FLAGS_DEBUG}")
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale

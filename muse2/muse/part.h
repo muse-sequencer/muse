@@ -29,7 +29,9 @@
 #include <QUuid>
 
 #include "event.h"
+#ifdef USE_SAMPLERATE
 #include "audioconvert.h"
+#endif
 
 class QString;
 
@@ -158,7 +160,9 @@ class MidiPart : public Part {
 class WavePart : public Part {
 
       // p3.3.31
+#ifdef USE_SAMPLERATE
       AudioConvertMap _converters;
+#endif
 
    public:
       WavePart(WaveTrack* t);

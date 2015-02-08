@@ -25,6 +25,7 @@
 //
 //=========================================================
 
+#ifdef USE_SAMPLERATE
 #include <math.h>
 
 #include "wave.h"
@@ -887,3 +888,4 @@ off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, i
 #endif // RUBBERBAND_SUPPORT
 
 } // namespace MusECore
+#endif // USE_SAMPLERATE

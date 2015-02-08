@@ -69,7 +69,7 @@ inline void* Pool::alloc(size_t n)
             return 0;
       int idx = ((n + sizeof(unsigned long) - 1) / sizeof(unsigned long)) - 1;
       if (idx >= dimension) {
-            printf("panic: alloc %zd %d %d\n", n, idx, dimension);
+            printf("panic: alloc %d %d %d\n", n, idx, dimension);
             exit(-1);
             }
       if (head[idx] == 0)
@@ -89,7 +89,7 @@ inline void Pool::free(void* b, size_t n)
             return;
       int idx = ((n + sizeof(unsigned long) - 1) / sizeof(unsigned long)) - 1;
       if (idx >= dimension) {
-            printf("panic: free %zd %d %d\n", n, idx, dimension);
+            printf("panic: free %d %d %d\n", n, idx, dimension);
             exit(-1);
             }
       Verweis* p = static_cast<Verweis*>(b);

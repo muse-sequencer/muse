@@ -201,7 +201,11 @@ extern int trackHeight;
 #define JACK_MIDI_OUT_PORT_SUFFIX "_out"
 #define JACK_MIDI_IN_PORT_SUFFIX  "_in"
 
+#ifndef RTCAP
+#ifdef __linux__
 extern uid_t euid, ruid;
+#endif
+#endif
 extern void doSetuid();
 extern void undoSetuid();
 extern bool checkAudioDevice();

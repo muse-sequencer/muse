@@ -506,9 +506,7 @@ SimpleSynthGui::SimpleSynthGui()
       rbLayout->addWidget(aboutButton, 6, 1, Qt::AlignCenter | Qt::AlignVCenter);
 
       lastDir = "";
-      //Connect socketnotifier to fifo
-      QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
-      connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+      connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
       SS_TRACE_OUT
       }
 
@@ -524,9 +522,9 @@ SimpleSynthGui::~SimpleSynthGui()
       }
 
 /*!
-    \fn SimpleSynthGui::readMessage(int)
+    \fn SimpleSynthGui::readMessage()
  */
-void SimpleSynthGui::readMessage(int)
+void SimpleSynthGui::readMessage()
       {
       MessGui::readMessage();
       }

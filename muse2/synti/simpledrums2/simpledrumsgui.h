@@ -230,7 +230,7 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       void channelNoteOffIgnore(int channel, bool state);
       void masterVolChanged(int val);
       void loadSampleDialogue(int channel);
-      void readMessage(int);
+      void readMessage();
       void clearSample(int ch);
       void sendFxChanged(int ch, int fxid, int val);
       void openPluginButtonClicked();

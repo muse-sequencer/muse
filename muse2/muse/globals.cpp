@@ -307,6 +307,7 @@ bool midiSeqRunning = false;
 void doSetuid()
       {
 #ifndef RTCAP
+#ifdef __linux__
       int status;
 #ifdef _POSIX_SAVED_IDS
       status = seteuid (euid);
@@ -316,7 +317,8 @@ void doSetuid()
       if (status < 0) {
             perror("doSetuid: Couldn't set uid");
             }
-#endif
+#endif // __linux__
+#endif // RTCAP
       }
 
 //---------------------------------------------------------
@@ -327,7 +329,8 @@ void doSetuid()
 void undoSetuid()
       {
 #ifndef RTCAP
-      int status;
+#ifdef __linux__
+    int status;
 
 #ifdef _POSIX_SAVED_IDS
       status = seteuid (ruid);
@@ -339,6 +342,7 @@ void undoSetuid()
                euid, ruid, strerror(errno));
             exit (status);
             }
+#endif // __linux__
 #endif
       }
 
