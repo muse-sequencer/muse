@@ -36,7 +36,7 @@ namespace MusECore {
 //   AlsaTimer
 //---------------------------------------------------------
 
-class AlsaTimer : public Timer{
+class AlsaTimer : public BaseTimer{
     
     snd_timer_t *handle;
     snd_timer_id_t *id;

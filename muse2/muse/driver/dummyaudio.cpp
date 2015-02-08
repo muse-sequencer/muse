@@ -34,12 +34,13 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "config.h"
+
 #ifdef ALSA_SUPPORT
 #include "alsatimer.h"
 #endif // ALSA_SUPPORT
 #include "simpletimer.h"
 
-#include "config.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "globals.h"

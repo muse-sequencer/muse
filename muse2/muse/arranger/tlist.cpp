@@ -1243,6 +1243,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       #endif
       
 #ifdef LV2_SUPPORT
+      MusECore::MidiDevice* dev = port->device();
       PopupMenu *mSubPresets = new PopupMenu(tr("Presets"));
       if(dev && dev->isSynti())
       {

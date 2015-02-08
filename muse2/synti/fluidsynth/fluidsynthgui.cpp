@@ -71,10 +71,7 @@ FluidSynthGui::FluidSynthGui()
       ChorusType->setItemIcon(0, QIcon(*MusEGui::sineIcon));
       ChorusType->setItemIcon(1, QIcon(*MusEGui::sawIcon));
 
-      //Connect socketnotifier to fifo
-      QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
-      connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
-      connect (Push, SIGNAL (clicked()), SLOT(loadClicked()));
+      connect(this->getGuiSignal(),SIGNAL(wakeup()),this,SLOT(readMessage()));
 
       lastdir = "";
       

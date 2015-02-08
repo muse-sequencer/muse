@@ -42,6 +42,7 @@
 #include "audio.h"
 #ifdef ALSA_SUPPORT
 #include "driver/alsamidi.h"
+#include "driver/alsatimer.h"
 #endif // ALSA_SUPPORT
 #include "driver/qttimer.h"
 #include "driver/jackmidi.h"
