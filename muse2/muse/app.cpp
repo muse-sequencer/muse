@@ -1082,7 +1082,7 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
         progress = new QProgressDialog();
       QString label = "loading project "+QFileInfo(name).fileName();
         if (!songTemplate) {
-          switch (random()%10) {
+          switch (rand()%10) {
         case 0:
             label.append("\nThe best song in the world?");
           break;

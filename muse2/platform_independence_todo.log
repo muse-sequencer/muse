@@ -4,6 +4,7 @@ Making MusE portable TODO
 - Moved gui.cpp to use signals instead of a pipe, can't be an issue.
 - QProcess for launching external sound editor
 - removed mmap usage
+- changed lots of memory alignment code to alloc_align
 
 2015-02-05
 - Added new timers QtTimer and SimpleTimer to make muse work without Alsa or Rtc
@@ -23,13 +24,14 @@ TODO
 - Fixup _LINUX_TEST_ in Thread, it only shows that it works without these Linux/Posix optimizations right now
 - Fixup _LINUX_TEST_ in DummyAudio also
 - Fix all.h all-pic.h copying
-- Fix gui.cpp commented pipe
-- 2543 pcanvas.cpp exchange mmap trickery with QMimeData *mimeData =  MusECore::file_to_mimedata(tmp, mimeString );
-   and remove mmap implementation from it.
 - Fix QtTimer commented pipe
 - test process
+- Look out for more _LINUX_TEST_ with file descriptors that must be replaced
+- test drag&drop in canvas
 
+checkout QLibrary as replacement for dlsym etc..
 
-
-
-
+FIXED:
+- Fix gui.cpp commented pipe, implemented as signal
+- 2543 pcanvas.cpp exchange mmap trickery with QMimeData *mimeData =  MusECore::file_to_mimedata(tmp, mimeString );
+   and remove mmap implementation from it.

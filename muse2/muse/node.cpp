@@ -1643,20 +1643,24 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
       FifoBuffer* b = buffer[widx];
       int n         = segs * samples;
       if (b->maxSize < n) {
-            if (b->buffer)
-            {
-              free(b->buffer);
-              b->buffer = 0;
-            }     
-            int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
-            if(rv != 0 || !b->buffer)
-            {
-              printf("Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
-              return true;
-            }
+        if (b->buffer)
+        {
+          free(b->buffer);
+          b->buffer = 0;
+        }
+#if defined(WIN32)
+        b->buffer =  (float*)_aligned_malloc(sizeof(float) * n,16);
+#else
+        b->buffer =  (float*)aligned_alloc(16,sizeof(float) * n);
+#endif
+        if (b->buffer == NULL)
+        {
+            printf("Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+            return true;
+        }
             
-            b->maxSize = n;
-            }
+        b->maxSize = n;
+      }
       if(!b->buffer)
       {
         printf("Fifo::put no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);
@@ -1732,21 +1736,25 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
       FifoBuffer* b = buffer[widx];
       int n = segs * samples;
       if (b->maxSize < n) {
-            if (b->buffer)
-            {
-              free(b->buffer);
-              b->buffer = 0;
-            }
+        if (b->buffer)
+        {
+          free(b->buffer);
+          b->buffer = 0;
+        }
             
-            int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
-            if(rv != 0 || !b->buffer)
-            {
-              printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
-              return true;
-            }
+#if defined(WIN32)
+        b->buffer =  (float*)_aligned_malloc(sizeof(float) * n,16);
+#else
+        b->buffer =  (float*)aligned_alloc(16,sizeof(float) * n);
+#endif
+        if (b->buffer == NULL)
+        {
+            printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+            return true;
+        }
             
-            b->maxSize = n;
-            }
+        b->maxSize = n;
+      }
       if(!b->buffer)
       {
         printf("Fifo::getWriteBuffer no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);

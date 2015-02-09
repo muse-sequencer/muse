@@ -243,10 +243,12 @@ DummyAudioDevice::DummyAudioDevice()
       MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
 
+#if defined(WIN32)
+      buffer =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize,16);
+#else
       buffer =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
+#endif
       if (buffer == NULL)
-//      int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
-//      if(rv != 0)
       {
         fprintf(stderr, "ERROR: DummyAudioDevice ctor: _aligned_malloc returned NULL. Aborting!\n");
         abort();

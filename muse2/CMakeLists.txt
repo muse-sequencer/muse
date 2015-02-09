@@ -247,7 +247,7 @@ endif (APPLE OR WIN32)
 ## find sndfile >= 1.0.0
 ##
 if (WIN32)
-	include_directories("C:/Program Files (x86)/Mega-Nerd/libsndfile/include")
+        include_directories("C:/mingw/include")
 else (WIN32)
 	PKG_CHECK_MODULES(SNDFILE REQUIRED sndfile>=1.0.0)
 	include_directories(${SNDFILE_INCLUDE_DIRS})
@@ -267,7 +267,7 @@ endif(WIN32)
 ##
 
 if(WIN32)
-    include_directories("C:\Program Files (x86)\Jack\includes")
+    include_directories("C:/Program Files\ \(x86\)/Jack/includes")
 else(WIN32)
 	PKG_CHECK_MODULES(JACK REQUIRED jack>=0.103)
 	include_directories(${JACK_INCLUDE_DIRS})

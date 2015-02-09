@@ -22,7 +22,7 @@
 //=========================================================
 
 #include <list>
-#include <termios.h>
+//#include <termios.h>
 #include <iostream>
 #include <stdio.h>
 

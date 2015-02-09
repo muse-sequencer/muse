@@ -30,7 +30,7 @@
 #include <unistd.h>
 #include <jack/midiport.h>
 #include <string.h>
-#include <dlfcn.h>
+//#include <dlfcn.h>
 #include <sys/time.h>
 
 #include <QString>
@@ -503,7 +503,9 @@ bool initJackAudio()
       
       muse_atomic_init(&atomicGraphChangedPending);
       muse_atomic_set(&atomicGraphChangedPending, 0);
-      
+
+      jack_ver_maj=2; // default to jackd2, if we aren't on linux that is what is there anyway
+#ifdef _LINUX_TEST_
       jack_get_version_fp = reinterpret_cast<jack_get_version_type>(dlsym(RTLD_DEFAULT, "jack_get_version"));
       fprintf(stderr, "initJackAudio jack_get_version() address:%p \n", jack_get_version_fp);
       if(jack_get_version_fp) // ATM Only in Jack-2. Dlsym'd. Check for existence first.
@@ -515,7 +517,7 @@ bool initJackAudio()
         if(jack_ver_maj == 0 && jack_ver_min == 0 && jack_ver_micro == 0 && jack_ver_proto == 0)
           jack_ver_maj = 1;
       }
-
+#endif // _LINUX_TEST_
       if (MusEGlobal::debugMsg) {
             fprintf(stderr,"initJackAudio()\n");
             jack_set_error_function(jackError);

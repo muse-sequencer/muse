@@ -155,6 +155,7 @@ Audio::Audio()
       //---------------------------------------------------
 
       int filedes[2];         // 0 - reading   1 - writing
+#ifdef _LINUX_TEST_ // must fix!!!!
       if (pipe(filedes) == -1) {
             perror("creating pipe0");
             exit(-1);
@@ -169,6 +170,7 @@ Audio::Audio()
             perror("creating pipe1");
             exit(-1);
             }
+#endif // _LINUX_TEST_
       sigFd = filedes[1];
       sigFdr = filedes[0];
       }

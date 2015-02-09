@@ -295,8 +295,11 @@ int midiLearnPort = -1;
 int midiLearnChan = -1;
 int midiLearnCtrl = -1;
 
+#ifndef RTCAP
+#ifdef __linux__
 uid_t euid, ruid;  // effective user id, real user id
-
+#endif
+#endif
 bool midiSeqRunning = false;
 
 //---------------------------------------------------------

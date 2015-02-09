@@ -26,7 +26,7 @@
 #include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/mman.h>
+//#include <sys/mman.h>
 
 #include <QKeyEvent>
 #include <QDropEvent>

@@ -465,10 +465,13 @@ int main(int argc, char* argv[])
             
       argc -= optind;
       ++argc;
-        
+#ifndef RTCAP
+#ifdef __linux__
       MusEGlobal::ruid = getuid();
       MusEGlobal::euid = geteuid();
       MusEGlobal::undoSetuid();
+#endif
+#endif
       getCapabilities();
       if (MusEGlobal::debugMsg)
             printf("Start euid: %d ruid: %d, Now euid %d\n",
