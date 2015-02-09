@@ -46,7 +46,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/mman.h>
+//#include <sys/mman.h>
 #include <math.h>
 
 #include <QMimeData>
@@ -987,7 +987,7 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
         xml.etag(--level, "eventlist");
     }
 
-    QMimeData *mimeData =  file_to_mimedata(tmp, "text/x-muse-groupedeventlists" );
+    QMimeData *mimeData =  file_to_mimedata(xml, "text/x-muse-groupedeventlists" );
     fclose(tmp);
     return mimeData;
 }
@@ -1025,7 +1025,7 @@ QMimeData* parts_to_mime(const set<const Part*>& parts)
         mimeString = "text/x-muse-wavepartlist";
     else if (!wave)
         mimeString = "text/x-muse-midipartlist";
-    QMimeData *mimeData =  file_to_mimedata(tmp, mimeString );
+    QMimeData *mimeData =  file_to_mimedata(xml, mimeString );
     fclose(tmp);
     return mimeData;
 }
@@ -1033,29 +1033,28 @@ QMimeData* parts_to_mime(const set<const Part*>& parts)
 //---------------------------------------------------
 //    read datafile into mime Object
 //---------------------------------------------------
-QMimeData* file_to_mimedata(FILE *datafile, QString mimeType)
+QMimeData* file_to_mimedata(Xml &xml, QString mimeType)
 {
+//  fflush(datafile);
+//	struct stat f_stat;
+//  if (fstat(fileno(datafile), &f_stat) == -1)
+//	{
+//		fprintf(stderr, "copy_notes() fstat failed:<%s>\n",
+//		strerror(errno));
+//        fclose(datafile);
+//		return 0;
+//	}
+//	int n = f_stat.st_size;
+//	char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
+//    MAP_PRIVATE, fileno(datafile), 0);
+//	fbuf[n] = 0;
 
-    fflush(datafile);
-	struct stat f_stat;
-    if (fstat(fileno(datafile), &f_stat) == -1)
-	{
-		fprintf(stderr, "copy_notes() fstat failed:<%s>\n",
-		strerror(errno));
-        fclose(datafile);
-		return 0;
-	}
-	int n = f_stat.st_size;
-	char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
-    MAP_PRIVATE, fileno(datafile), 0);
-	fbuf[n] = 0;
+  QString xmlconf;
+  xml.dump(xmlconf);
+  QMimeData* md = new QMimeData();
 
-	QByteArray data(fbuf);
-
-    QMimeData* md = new QMimeData();
-    md->setData(mimeType, data);
-
-	munmap(fbuf, n);
+  QByteArray data(xmlconf.toLatin1().constData());
+  md->setData(mimeType, data);
 
 	return md;
 }

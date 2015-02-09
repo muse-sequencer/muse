@@ -42,6 +42,7 @@
 #include <QDir>
 #include <QLine>
 #include <QVector>
+#include <QProcess>
 
 #include <set>
 
@@ -49,7 +50,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
-//#include <sys/wait.h>
 #include <set>
 
 #include "app.h"
@@ -2416,74 +2416,58 @@ void WaveCanvas::applyGain(unsigned channels, float** data, unsigned length, dou
 //   editExternal
 //---------------------------------------------------------
 void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, unsigned file_channels, float** tmpdata, unsigned tmpdatalen)
-      {
-      // Create yet another tmp-file
-      QString exttmpFileName;
-      if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", exttmpFileName)) {
-            printf("Could not create temp file - aborting...\n");
-            return;
-            }
+{
+  // Create yet another tmp-file
+  QString exttmpFileName;
+  if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", exttmpFileName)) {
+    printf("Could not create temp file - aborting...\n");
+    return;
+  }
 
-      MusECore::SndFile exttmpFile(exttmpFileName);
-      exttmpFile.setFormat(file_format, file_channels, file_samplerate);
-      if (exttmpFile.openWrite()) {
-            printf("Could not open temporary file...\n");
-            return;
-            }
-      // Write out change-data to this file:
-      exttmpFile.write(file_channels, tmpdata, tmpdatalen);
-      exttmpFile.close();
+  MusECore::SndFile exttmpFile(exttmpFileName);
+  exttmpFile.setFormat(file_format, file_channels, file_samplerate);
+  if (exttmpFile.openWrite()) {
+    printf("Could not open temporary file...\n");
+    return;
+  }
+  // Write out change-data to this file:
+  exttmpFile.write(file_channels, tmpdata, tmpdatalen);
+  exttmpFile.close();
 
-      // Forkaborkabork
-      int pid = fork();
-      if (pid == 0) {
-            if (execlp(MusEGlobal::config.externalWavEditor.toLatin1().constData(), MusEGlobal::config.externalWavEditor.toLatin1().constData(), exttmpFileName.toLatin1().constData(), NULL) == -1) {
-                  perror("Failed to launch external editor");
-                  // Get out of here
-                  
-                   
-                  // cannot report error through gui, we are in another fork!
-                  //@!TODO: Handle unsuccessful attempts
-                  exit(99);
-                  }
-            exit(0);
-            }
-      else if (pid == -1) {
-            perror("fork failed");
-            }
-      else {
-            int status;
-            waitpid(pid, &status, 0);
-            //printf ("status=%d\n",status);
-            if( WEXITSTATUS(status) != 0 ){
-                   QMessageBox::warning(this, tr("MusE - external editor failed"),
+  QProcess *myProcess = new QProcess(this);
+  QStringList arguments;
+  arguments << exttmpFileName;
+  myProcess->start(MusEGlobal::config.externalWavEditor, arguments);
+  myProcess->waitForFinished(-1);
+
+  if (myProcess->error() == QProcess::FailedToStart) {
+    QMessageBox::warning(this, tr("MusE - external editor failed"),
                          tr("MusE was unable to launch the external editor\ncheck if the editor setting in:\n"
-                         "Global Settings->Audio:External Waveditor\nis set to a valid editor."));
-            }
-            
-            if (exttmpFile.openRead()) {
-                printf("Could not reopen temporary file!\n");
-                }
-            else {
-                // Re-read file again
-                exttmpFile.seek(0, 0);
-                size_t sz = exttmpFile.readWithHeap(file_channels, tmpdata, tmpdatalen);
-                if (sz != tmpdatalen) {
-                        // File must have been shrunken - not good. Alert user.
-                        QMessageBox::critical(this, tr("MusE - file size changed"),
-                            tr("When editing in external editor - you should not change the filesize\nsince it must fit the selected region.\n\nMissing data is muted"));
-                        for (unsigned i=0; i<file_channels; i++) {
-                            for (unsigned j=sz; j<tmpdatalen; j++) {
-                                    tmpdata[i][j] = 0;
-                                    }
-                            }
-                        }
-                }
-            QDir dir = exttmpFile.dirPath();
-            dir.remove(exttmpFileName);
-            dir.remove(exttmpFile.basename() + ".wca");
-            }
+                            "Global Settings->Audio:External Waveditor\nis set to a valid editor."));
+    delete myProcess;
+    return;
+  }
+
+  // Re-read file again
+  exttmpFile.seek(0, 0);
+  size_t sz = exttmpFile.readWithHeap(file_channels, tmpdata, tmpdatalen);
+  if (sz != tmpdatalen) {
+    // File must have been shrunken - not good. Alert user.
+    QMessageBox::critical(this, tr("MusE - file size changed"),
+                          tr("When editing in external editor - you should not change the filesize\nsince it must fit the selected region.\n\nMissing data is muted"));
+    for (unsigned i=0; i<file_channels; i++) {
+      for (unsigned j=sz; j<tmpdatalen; j++) {
+        tmpdata[i][j] = 0;
       }
+    }
+  }
+
+  QDir dir = exttmpFile.dirPath();
+  dir.remove(exttmpFileName);
+  dir.remove(exttmpFile.basename() + ".wca");
+  delete myProcess;
+}
+
 
       
       

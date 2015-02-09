@@ -25,7 +25,8 @@
 #include "gui.h"
 #include "muse/midi.h"
 
-#include <QSocketNotifier>
+//#include <QSocketNotifier>
+#include <QThread>
 #include <unistd.h>
 
 SignalGui::SignalGui()
@@ -34,26 +35,30 @@ SignalGui::SignalGui()
 }
 void SignalGui::create()
 {
-  int filedes[2];         // 0 - reading   1 - writing
+//  int filedes[2];         // 0 - reading   1 - writing
 //  if (pipe(filedes) == -1) {
 //        perror("thread:creating pipe4");
 //        exit(-1);
 //        }
-  readFd      = filedes[0];
-  writeFd     = filedes[1];
+//  readFd      = filedes[0];
+//  writeFd     = filedes[1];
 
-  QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
-  connect(s, SIGNAL(activated(int)), SIGNAL(wakeup()));
+//  QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
+//  connect(s, SIGNAL(activated(int)), SIGNAL(wakeup()));
 }
 
 void SignalGui::clearSignal()
 {
-  char c;
-  ::read(readFd, &c, 1);
+//  printf("clearSignal %d\n", (int)QThread::currentThreadId());
+
+//  char c;
+//  ::read(readFd, &c, 1);
 }
 void SignalGui::sendSignal()
 {
-  write(writeFd, "x", 1);  // wakeup GUI
+//  printf("emit wakeup() %d\n", (int)QThread::currentThreadId());
+  emit wakeup();
+//  write(writeFd, "x", 1);  // wakeup GUI
 }
 
 //---------------------------------------------------------

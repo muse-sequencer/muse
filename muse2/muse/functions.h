@@ -114,7 +114,7 @@ bool split_part(const Part* part, int tick);
 bool delete_selected_parts();
 
 // internal
-QMimeData* file_to_mimedata(FILE *datafile, QString mimeType);
+QMimeData* file_to_mimedata(Xml &xml, QString mimeType);
 
 } // namespace MusECore
 

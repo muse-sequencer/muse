@@ -2396,7 +2396,7 @@ void PartCanvas::copy(MusECore::PartList* pl)
           mimeString = "text/x-muse-wavepartlist";
       else if (!wave)
           mimeString = "text/x-muse-midipartlist";
-      QMimeData *mimeData =  MusECore::file_to_mimedata(tmp, mimeString );
+      QMimeData *mimeData =  MusECore::file_to_mimedata(xml, mimeString );
       QApplication::clipboard()->setMimeData(mimeData, QClipboard::Clipboard);
       fclose(tmp);
       }
@@ -2624,7 +2624,7 @@ void PartCanvas::startDrag(CItem* item, DragType t)
       //---------------------------------------------------
       //    read tmp file into QTextDrag Object
       //---------------------------------------------------
-      QMimeData* md = MusECore::file_to_mimedata(tmp, "text/x-muse-partlist");
+      QMimeData* md = MusECore::file_to_mimedata(xml, "text/x-muse-partlist");
       
       // "MusECore::Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 
       //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can 

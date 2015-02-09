@@ -243,7 +243,7 @@ DummyAudioDevice::DummyAudioDevice()
       MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
 
-      buffer =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize, 16);
+      buffer =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
       if (buffer == NULL)
 //      int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
 //      if(rv != 0)

@@ -1,5 +1,10 @@
 Making MusE portable TODO
 
+2015-02-09
+- Moved gui.cpp to use signals instead of a pipe, can't be an issue.
+- QProcess for launching external sound editor
+- removed mmap usage
+
 2015-02-05
 - Added new timers QtTimer and SimpleTimer to make muse work without Alsa or Rtc
 - Made ALSA optional
@@ -22,6 +27,7 @@ TODO
 - 2543 pcanvas.cpp exchange mmap trickery with QMimeData *mimeData =  MusECore::file_to_mimedata(tmp, mimeString );
    and remove mmap implementation from it.
 - Fix QtTimer commented pipe
+- test process
 
 
 
