@@ -35,10 +35,10 @@ SignalGui::SignalGui()
 void SignalGui::create()
 {
   int filedes[2];         // 0 - reading   1 - writing
-  if (pipe(filedes) == -1) {
-        perror("thread:creating pipe4");
-        exit(-1);
-        }
+//  if (pipe(filedes) == -1) {
+//        perror("thread:creating pipe4");
+//        exit(-1);
+//        }
   readFd      = filedes[0];
   writeFd     = filedes[1];
 

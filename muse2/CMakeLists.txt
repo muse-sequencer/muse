@@ -267,7 +267,7 @@ endif(WIN32)
 ##
 
 if(WIN32)
-        include_directories("C:\Program Files (x86)\Jack\includes"})
+    include_directories("C:\Program Files (x86)\Jack\includes")
 else(WIN32)
 	PKG_CHECK_MODULES(JACK REQUIRED jack>=0.103)
 	include_directories(${JACK_INCLUDE_DIRS})
@@ -439,21 +439,27 @@ configure_file (
 
 add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/all.h
+#if(NOT WIN32)
       COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all.h
+#endif(NOT WIN32)	  
       DEPENDS ${PROJECT_SOURCE_DIR}/all.h
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )
 
 add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h
+#if(NOT WIN32)
       COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h
+#endif(NOT WIN32)	
       DEPENDS ${PROJECT_SOURCE_DIR}/all.h
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )
 
 add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/all-pic-debug.h
+#if(NOT WIN32)
       COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h
+#endif(NOT WIN32)	
       DEPENDS ${PROJECT_SOURCE_DIR}/all.h
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )

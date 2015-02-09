@@ -36,3 +36,8 @@
 #define DOCDIR           "${MusE_DOC_DIR}"
 #define SHAREDIR         "${MusE_SHARE_DIR}"
 #define LIBDIR           "${MusE_LIB_DIR}"
+
+#if defined(__MINGW32__) && !defined(__MSVCRT_VERSION__)
+// Target MinGW headers to at least MSVC 7.0 runtime by default. This will enable some useful functions.
+#define __MSVCRT_VERSION__ 0x0700
+#endif

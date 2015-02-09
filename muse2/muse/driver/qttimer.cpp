@@ -56,18 +56,18 @@ namespace MusECore {
       printf("QtTimer::initTimer(this=%p)\n",this);
 
     int filedes[2];         // 0 - reading   1 - writing
-    if (pipe(filedes) == -1) {
-          perror("QtTimer - creating pipe failed");
-          exit(-1);
-          }
-    int rv = fcntl(filedes[1], F_SETFL, O_NONBLOCK);
-    if (rv == -1)
-          perror("set pipe O_NONBLOCK");
+//    if (pipe(filedes) == -1) {
+//          perror("QtTimer - creating pipe failed");
+//          exit(-1);
+//          }
+//    int rv = fcntl(filedes[1], F_SETFL, O_NONBLOCK);
+//    if (rv == -1)
+//          perror("set pipe O_NONBLOCK");
 
-    if (pipe(filedes) == -1) {
-          perror("QtTimer - creating pipe1");
-          exit(-1);
-          }
+//    if (pipe(filedes) == -1) {
+//          perror("QtTimer - creating pipe1");
+//          exit(-1);
+//          }
     writePipe = filedes[1];
     readPipe = filedes[0];
 

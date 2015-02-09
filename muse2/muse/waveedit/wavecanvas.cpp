@@ -49,7 +49,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <errno.h>
-#include <sys/wait.h>
+//#include <sys/wait.h>
 #include <set>
 
 #include "app.h"

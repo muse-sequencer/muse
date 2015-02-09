@@ -73,7 +73,7 @@ SpinBoxFP::SpinBoxFP(int minValue, int maxValue, int step, QWidget* parent)
 
 void SpinBoxFP::valueChange(double)
 {
-        double div = exp10(decimals());
+        double div = pow(10,decimals());
         emit valueChanged(int(value() * div));
 }
 
@@ -83,7 +83,7 @@ void SpinBoxFP::valueChange(double)
 
 void SpinBoxFP::setValue(int val)
       {
-        double div = exp10(decimals());
+        double div = pow(10,decimals());
         QDoubleSpinBox::setValue(double(val) /  div );
       }
 
@@ -93,7 +93,7 @@ void SpinBoxFP::setValue(int val)
 
 int SpinBoxFP::intValue()
       {
-        double div = exp10(decimals());
+        double div = pow(10,decimals());
         return int(value() * div);
       }
 
@@ -110,7 +110,7 @@ void SpinBoxFP::setDecimals(int val)
       //setValue(value());    // Try this. "setValue() will emit valueChanged() if the new value is different from the old one."
       
       QDoubleSpinBox::setDecimals(val);
-      double step = 1.0 / exp10(val);
+      double step = 1.0 / pow(10,val);
       setSingleStep(step);
       }
 

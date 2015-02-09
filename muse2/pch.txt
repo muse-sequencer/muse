@@ -18,16 +18,21 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+
 add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/all.h
+#if(NOT WIN32)
       COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all.h
+#endif(NOT WIN32)
       DEPENDS ${PROJECT_SOURCE_DIR}/all.h
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )
 
 add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h
+#if(NOT WIN32)
       COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h
+#endif(NOT WIN32)
       DEPENDS ${PROJECT_SOURCE_DIR}/all.h
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )

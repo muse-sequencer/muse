@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
+//#include <sys/mman.h>
 #include <errno.h>
 #include <limits.h>
 //#include <uuid/uuid.h>
@@ -2611,7 +2611,6 @@ void PartCanvas::startDrag(CItem* item, DragType t)
       //---------------------------------------------------
       //    write part as XML into tmp file
       //---------------------------------------------------
-
       FILE* tmp = tmpfile();
       if (tmp == 0) {
             fprintf(stderr, "PartCanvas::startDrag() fopen failed: %s\n",
@@ -2625,24 +2624,7 @@ void PartCanvas::startDrag(CItem* item, DragType t)
       //---------------------------------------------------
       //    read tmp file into QTextDrag Object
       //---------------------------------------------------
-
-      fflush(tmp);
-      struct stat f_stat;
-      if (fstat(fileno(tmp), &f_stat) == -1) {
-            fprintf(stderr, "PartCanvas::startDrag fstat failed:<%s>\n",
-               strerror(errno));
-            fclose(tmp);
-            return;
-            }
-      int n = f_stat.st_size + 1;
-      char* fbuf  = (char*)mmap(0, n, PROT_READ|PROT_WRITE,
-         MAP_PRIVATE, fileno(tmp), 0);
-      fbuf[n] = 0;
-      
-      QByteArray data(fbuf);
-      QMimeData* md = new QMimeData();
-      
-      md->setData("text/x-muse-partlist", data);
+      QMimeData* md = MusECore::file_to_mimedata(tmp, "text/x-muse-partlist");
       
       // "MusECore::Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 
       //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can 
@@ -2654,8 +2636,6 @@ void PartCanvas::startDrag(CItem* item, DragType t)
             drag->exec(Qt::CopyAction);
       else
             drag->exec(Qt::MoveAction);
-            
-      munmap(fbuf, n);
       fclose(tmp);
       }
 
@@ -3513,7 +3493,7 @@ double PartCanvas::valToLog(double inV, double min, double max)
     double linMax = 20.0*MusECore::fast_log10(max);
 
     double linVal = (inV * (linMax - linMin)) + linMin;
-    double outVal = exp10((linVal)/20.0);
+    double outVal = pow(10,(linVal)/20.0);
 
     //printf("::valToLog inV %f outVal %f linVal %f min %f max %f\n", inV, outVal, linVal, min, max);
     if (outVal > max) outVal = max;

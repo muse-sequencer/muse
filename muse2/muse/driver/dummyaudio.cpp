@@ -20,21 +20,24 @@
 //
 //=========================================================
 
+#include "config.h"
+
 #include <QThread>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdlib.h>
+#include <malloc.h>
 
 #ifdef _LINUX_TEST_
 #include <pthread.h>
 #endif
-#include <sys/poll.h>
+//#include <sys/poll.h>
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "config.h"
 
 #ifdef ALSA_SUPPORT
 #include "alsatimer.h"
@@ -239,10 +242,13 @@ DummyAudioDevice::DummyAudioDevice()
       {
       MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
-      int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
-      if(rv != 0)
+
+      buffer =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize, 16);
+      if (buffer == NULL)
+//      int rv = posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::segmentSize);
+//      if(rv != 0)
       {
-        fprintf(stderr, "ERROR: DummyAudioDevice ctor: posix_memalign returned error:%d. Aborting!\n", rv);
+        fprintf(stderr, "ERROR: DummyAudioDevice ctor: _aligned_malloc returned NULL. Aborting!\n");
         abort();
       }
       if(MusEGlobal::config.useDenormalBias)
