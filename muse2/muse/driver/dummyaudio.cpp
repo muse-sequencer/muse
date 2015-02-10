@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <malloc.h>
+#include <malloc/malloc.h>
 
 #ifdef _LINUX_TEST_
 #include <pthread.h>
@@ -38,7 +38,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-
+#include "helper.h"
 #ifdef ALSA_SUPPORT
 #include "alsatimer.h"
 #endif // ALSA_SUPPORT
@@ -243,12 +243,7 @@ DummyAudioDevice::DummyAudioDevice()
       MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
 
-#if defined(WIN32)
-      buffer =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize,16);
-#else
-      buffer =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
-#endif
-      if (buffer == NULL)
+      if (!MusECore::allocateAlignedMemory(buffer,16,sizeof(float) * MusEGlobal::segmentSize))
       {
         fprintf(stderr, "ERROR: DummyAudioDevice ctor: _aligned_malloc returned NULL. Aborting!\n");
         abort();

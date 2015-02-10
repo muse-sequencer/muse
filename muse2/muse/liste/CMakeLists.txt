@@ -63,6 +63,9 @@ set_target_properties( liste
 ##
 ## Linkage
 ##
+set_target_properties( liste
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( liste
       ${QT_LIBRARIES}
       awl

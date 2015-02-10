@@ -79,6 +79,9 @@ set_target_properties( driver
 ##
 ## Linkage
 ##
+set_target_properties( driver
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( driver
       ${ALSA_LIBRARIES}
       ${JACK_LIBRARIES}

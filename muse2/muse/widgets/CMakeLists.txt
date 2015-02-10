@@ -278,6 +278,9 @@ set_target_properties( widgets
 ##
 ## Linkage
 ##
+set_target_properties( widgets
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( widgets
       ${QT_LIBRARIES}
       icons

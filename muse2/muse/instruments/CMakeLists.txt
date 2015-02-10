@@ -76,6 +76,9 @@ set_target_properties( instruments
 ##
 ## Linkage
 ##
+set_target_properties( instruments
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( instruments
       ${QT_LIBRARIES}
       icons

@@ -21,9 +21,7 @@
 //
 //=========================================================
 
-#ifdef _LINUX_TEST_ // must fix!!!!
 #include <poll.h>
-#endif
 #include <stdio.h>
 #include <unistd.h>
 #include <limits.h>
@@ -88,9 +86,7 @@ static void readMsgP(void* p, void*)
 void AudioPrefetch::start(int priority, void *)
       {
       clearPollFd();
-#ifdef _LINUX_TEST_ // must fix!!!!
       addPollFd(toThreadFdr, POLLIN, MusECore::readMsgP, this, 0);
-#endif
       Thread::start(priority);
       }
 

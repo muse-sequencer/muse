@@ -1,5 +1,7 @@
 Making MusE portable TODO
 
+2015-02-10
+- MusE compiles on OSX!!
 2015-02-09
 - Moved gui.cpp to use signals instead of a pipe, can't be an issue.
 - QProcess for launching external sound editor
@@ -24,8 +26,6 @@ TODO
 - Fixup _LINUX_TEST_ in Thread, it only shows that it works without these Linux/Posix optimizations right now
 - Fixup _LINUX_TEST_ in DummyAudio also
 - Fix all.h all-pic.h copying
-- Fix QtTimer commented pipe
-- test process
 - Look out for more _LINUX_TEST_ with file descriptors that must be replaced
 - test drag&drop in canvas
 

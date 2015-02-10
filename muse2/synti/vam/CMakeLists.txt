@@ -78,6 +78,10 @@ set_target_properties ( vam
 ##
 ## Linkage
 ##
+set_target_properties( vam
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
+
 target_link_libraries(vam
       # al
       synti

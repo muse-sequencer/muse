@@ -31,6 +31,7 @@
 
 #include "config.h"
 
+#include "helper.h"
 #include "globaldefs.h"
 #include "track.h"
 #include "event.h"
@@ -112,12 +113,7 @@ void AudioTrack::initBuffers()
     outBuffers = new float*[chans];
     for(int i = 0; i < chans; ++i)
     {
-#if defined(__MINGW32__)
-      outBuffers[i] =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize,16);
-#else
-      outBuffers[i] =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
-#endif
-      if(outBuffers[i] == NULL)
+      if (!MusECore::allocateAlignedMemory(outBuffers[i],16,sizeof(float) * MusEGlobal::segmentSize))
       {
         fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc returned NULL. Aborting!\n");
         abort();
@@ -140,12 +136,7 @@ void AudioTrack::initBuffers()
     outBuffersExtraMix = new float*[MAX_CHANNELS];
     for(int i = 0; i < MAX_CHANNELS; ++i)
     {
-#if defined(WIN32)
-      outBuffersExtraMix[i] =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize,16);
-#else
-      outBuffersExtraMix[i] =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
-#endif
-      if (outBuffersExtraMix[i] == NULL)
+      if (!MusECore::allocateAlignedMemory(outBuffersExtraMix[i],16,sizeof(float) * MusEGlobal::segmentSize))
       {
         fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign outBuffersMonoMix returned NULL. Aborting!\n");
         abort();
@@ -165,12 +156,7 @@ void AudioTrack::initBuffers()
 
   if(!audioInSilenceBuf)
   {
-#if defined(WIN32)
-    audioInSilenceBuf =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize,16);
-#else
-    audioInSilenceBuf =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
-#endif
-    if (audioInSilenceBuf == NULL)
+    if (!MusECore::allocateAlignedMemory(audioInSilenceBuf,16,sizeof(float) * MusEGlobal::segmentSize))
     {
       fprintf(stderr, "ERROR: AudioTrack::init_buffers: posix_memalign returned NULL. Aborting!\n");
       abort();
@@ -187,12 +173,7 @@ void AudioTrack::initBuffers()
 
   if(!audioOutDummyBuf)
   {
-#if defined(WIN32)
-    audioOutDummyBuf =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize,16);
-#else
-    audioOutDummyBuf =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
-#endif
-    if (audioOutDummyBuf == NULL)
+    if (!MusECore::allocateAlignedMemory(audioOutDummyBuf,16,sizeof(float) * MusEGlobal::segmentSize))
     {
       fprintf(stderr, "ERROR: AudioTrack::init_buffers: aligned_alloc returned NULL. Aborting!\n");
       abort();
@@ -2049,12 +2030,7 @@ AudioAux::AudioAux()
       {
         if(i < channels())
         {
-#if defined(WIN32)
-          buffer[i] =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize,16);
-#else
-          buffer[i] =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
-#endif
-          if (buffer[i] == NULL)
+          if (!MusECore::allocateAlignedMemory(buffer[i],16,sizeof(float) * MusEGlobal::segmentSize))
           {
             fprintf(stderr, "ERROR: AudioAux ctor: posix_memalign returned NULL. Aborting!\n");
             abort();
@@ -2081,12 +2057,7 @@ AudioAux::AudioAux(const AudioAux& t, int flags)
       {
         if(i < channels())
         {
-#if defined(WIN32)
-          buffer[i] =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize,16);
-#else
-          buffer[i] =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
-#endif
-          if (buffer[i] == NULL)
+          if (!MusECore::allocateAlignedMemory(buffer[i],16,sizeof(float) * MusEGlobal::segmentSize))
           {
             fprintf(stderr, "ERROR: AudioAux ctor: aligned_alloc returned NULL. Aborting!\n");
             abort();
@@ -2192,12 +2163,7 @@ void AudioAux::setChannels(int n)
   {
     for(int i = channels(); i < n; ++i)
     {
-#if defined(WIN32)
-      buffer[i] =  (float*)_aligned_malloc(sizeof(float) * MusEGlobal::segmentSize,16);
-#else
-      buffer[i] =  (float*)aligned_alloc(16,sizeof(float) * MusEGlobal::segmentSize);
-#endif
-      if (buffer[i] == NULL)
+      if (!MusECore::allocateAlignedMemory(buffer[i],16,sizeof(float) * MusEGlobal::segmentSize))
       {
         fprintf(stderr, "ERROR: AudioAux::setChannels: _aligned_malloc returned NULL. Aborting!\n");
         abort();

@@ -91,6 +91,9 @@ set_target_properties( midiedit
 ##
 ## Linkage
 ##
+set_target_properties( midiedit
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( midiedit
       ${QT_LIBRARIES}
       al

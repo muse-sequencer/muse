@@ -90,6 +90,10 @@ set_target_properties ( simpledrums
 ##
 ## Linkage
 ##
+set_target_properties( simpledrums
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
+
 target_link_libraries(simpledrums
       synti
       ${QT_LIBRARIES}

@@ -74,6 +74,9 @@ set_target_properties( ctrl
 ##
 ## Linkage
 ##
+set_target_properties( ctrl
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( ctrl
       ${QT_LIBRARIES}
       widgets

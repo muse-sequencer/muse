@@ -120,6 +120,10 @@ set_target_properties( awl
 ##
 ## Linkage
 ##
+set_target_properties( awl
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
+
 target_link_libraries ( awl
       ${QT_LIBRARIES}
       al

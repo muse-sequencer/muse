@@ -29,6 +29,7 @@
 
 #include <QString>
 
+#include "helper.h"
 #include "node.h"
 #include "globals.h"
 #include "gconfig.h"
@@ -1648,12 +1649,8 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
           free(b->buffer);
           b->buffer = 0;
         }
-#if defined(WIN32)
-        b->buffer =  (float*)_aligned_malloc(sizeof(float) * n,16);
-#else
-        b->buffer =  (float*)aligned_alloc(16,sizeof(float) * n);
-#endif
-        if (b->buffer == NULL)
+
+        if (!MusECore::allocateAlignedMemory(b->buffer,16,sizeof(float) * n))
         {
             printf("Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
             return true;
@@ -1742,12 +1739,7 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
           b->buffer = 0;
         }
             
-#if defined(WIN32)
-        b->buffer =  (float*)_aligned_malloc(sizeof(float) * n,16);
-#else
-        b->buffer =  (float*)aligned_alloc(16,sizeof(float) * n);
-#endif
-        if (b->buffer == NULL)
+        if (!MusECore::allocateAlignedMemory(b->buffer,16,sizeof(float) * n))
         {
             printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
             return true;

@@ -78,6 +78,10 @@ set_target_properties ( organ
 ##
 ## Linkage
 ##
+set_target_properties( organ
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
+
 target_link_libraries(organ
       synti
       # awl

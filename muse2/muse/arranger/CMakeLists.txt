@@ -71,6 +71,9 @@ set_target_properties( arranger
 #
 # Linkage
 #
+set_target_properties( arranger
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( arranger
       ${QT_LIBRARIES}
       awl

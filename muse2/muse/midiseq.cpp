@@ -28,10 +28,8 @@
 
 #include <stdio.h>
 #include <fcntl.h>
-#ifdef _LINUX_TEST_ // TODO, wont work!
 #include <sys/ioctl.h>
 #include <poll.h>
-#endif
 #include <math.h>
 
 #include "app.h"
@@ -297,7 +295,6 @@ void MidiSeq::updatePollFd()
             return;
 
       clearPollFd();
-#ifdef _LINUX_TEST // must be fixed TODO!!!
       addPollFd(timerFd, POLLIN, midiTick, this, 0);
       if (timerFd == -1) {
             fprintf(stderr, "updatePollFd: no timer fd\n");
@@ -322,7 +319,6 @@ void MidiSeq::updatePollFd()
             if (dev->bytesToWrite())
                   addPollFd(dev->selectWfd(), POLLOUT, MusECore::midiWrite, this, dev);
             }
-#endif
 
 #ifdef ALSA_SUPPORT
       // special handling for alsa midi:

@@ -592,6 +592,22 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 	}
 }
 
+bool allocateAlignedMemory(void *buffer, size_t alignment, size_t size)
+{
+
+#if defined(WIN32)
+    buffer =  _aligned_malloc(size,alignment);
+    if (buffer == NULL)
+      return false;
+#else
+    int rv = posix_memalign((void**)&buffer, alignment, size);
+    if(rv != 0)
+    {
+      return false;
+    }
+#endif
+    return true;
+}
 
 } // namespace MusECore
 

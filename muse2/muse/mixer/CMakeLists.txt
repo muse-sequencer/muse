@@ -85,6 +85,9 @@ set_target_properties ( mixer
 ##
 ## Linkage
 ##
+set_target_properties( mixer
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( mixer
       ${QT_LIBRARIES}
       widgets

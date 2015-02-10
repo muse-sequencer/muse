@@ -69,6 +69,9 @@ set_target_properties( master
 ##
 ## Linkage
 ##
+set_target_properties( master
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( master
       ${QT_LIBRARIES}
       al

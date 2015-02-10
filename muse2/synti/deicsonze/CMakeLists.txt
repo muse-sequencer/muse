@@ -90,6 +90,10 @@ set_target_properties ( deicsonze
 ##
 ## Linkage
 ##
+set_target_properties( deicsonze
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
+
 target_link_libraries(deicsonze
       al
       awl

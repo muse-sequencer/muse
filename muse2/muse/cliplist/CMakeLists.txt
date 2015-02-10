@@ -63,6 +63,9 @@ set_target_properties( cliplist
 ##
 ## Linkage
 ##
+set_target_properties( cliplist
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( cliplist
       ${QT_LIBRARIES}
       awl

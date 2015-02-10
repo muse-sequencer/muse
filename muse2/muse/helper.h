@@ -64,6 +64,8 @@ QSet<Part*> parts_at_tick(unsigned tick, const QSet<Track*>& tracks);
 bool parse_range(const QString& str, int* from, int* to); // returns true if successful, false on error
 
 void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int val, MidiTrack* mt);
+
+bool allocateAlignedMemory(void *ptr, size_t alignment, size_t size);
 }
 
 namespace MusEGui {

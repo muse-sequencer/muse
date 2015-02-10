@@ -65,6 +65,9 @@ set_target_properties( marker
 ##
 ## Linkage
 ##
+set_target_properties( marker
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( marker
       ${QT_LIBRARIES}
       awl

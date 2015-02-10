@@ -102,6 +102,9 @@ set_target_properties( widgets_functiondialogs
 ##
 ## Linkage
 ##
+set_target_properties( widgets_functiondialogs
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries ( widgets_functiondialogs
       ${QT_LIBRARIES}
       icons

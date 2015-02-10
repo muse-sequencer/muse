@@ -21,8 +21,8 @@
 //
 //=========================================================
 
-#ifndef __MATH_H__
-#define __MATH_H__
+#ifndef __MUSEMATH_H__
+#define __MUSEMATH_H__
 
 #define LOG_MIN 1.0e-100
 #define LOG_MAX 1.0e100
@@ -92,5 +92,5 @@ T qwtLim(const T& x, const T& x1, const T& x2)
 
 }
 
-#endif
+#endif // __MUSEMATH_H__
 

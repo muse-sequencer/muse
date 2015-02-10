@@ -473,10 +473,13 @@ int main(int argc, char* argv[])
 #endif
 #endif
       getCapabilities();
+#ifndef RTCAP
+#ifdef __linux__
       if (MusEGlobal::debugMsg)
             printf("Start euid: %d ruid: %d, Now euid %d\n",
                   MusEGlobal::euid, MusEGlobal::ruid, geteuid());
-            
+#endif
+#endif
       srand(time(0));   // initialize random number generator
       //signal(SIGCHLD, catchSignal);  // interferes with initVST(). see also app.cpp, function catchSignal()
       

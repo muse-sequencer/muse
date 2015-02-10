@@ -97,6 +97,9 @@ set_target_properties ( mplugins
 ##
 ## Linkage
 ##
+set_target_properties( mplugins
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
 target_link_libraries( mplugins
       # midiplugin
       ${QT_LIBRARIES}
