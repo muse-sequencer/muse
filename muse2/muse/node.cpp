@@ -1650,7 +1650,7 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
           b->buffer = 0;
         }
 
-        if (!MusECore::allocateAlignedMemory(b->buffer,16,sizeof(float) * n))
+        if (!MusECore::allocateAlignedMemory(&b->buffer,16,sizeof(float) * n))
         {
             printf("Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
             return true;
@@ -1739,7 +1739,7 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
           b->buffer = 0;
         }
             
-        if (!MusECore::allocateAlignedMemory(b->buffer,16,sizeof(float) * n))
+        if (!MusECore::allocateAlignedMemory(&b->buffer,16,sizeof(float) * n))
         {
             printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
             return true;

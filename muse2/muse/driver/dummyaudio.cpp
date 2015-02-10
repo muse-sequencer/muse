@@ -243,7 +243,7 @@ DummyAudioDevice::DummyAudioDevice()
       MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
 
-      if (!MusECore::allocateAlignedMemory(buffer,16,sizeof(float) * MusEGlobal::segmentSize))
+      if (!MusECore::allocateAlignedMemory(&buffer,16,sizeof(float) * MusEGlobal::segmentSize))
       {
         fprintf(stderr, "ERROR: DummyAudioDevice ctor: _aligned_malloc returned NULL. Aborting!\n");
         abort();

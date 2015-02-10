@@ -600,7 +600,7 @@ bool allocateAlignedMemory(void *buffer, size_t alignment, size_t size)
     if (buffer == NULL)
       return false;
 #else
-    int rv = posix_memalign((void**)&buffer, alignment, size);
+    int rv = posix_memalign((void**)buffer, alignment, size);
     if(rv != 0)
     {
       return false;
