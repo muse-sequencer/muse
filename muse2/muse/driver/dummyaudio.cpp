@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#ifdef APPLE
+#ifdef __APPLE__ 
 #include <malloc/malloc.h>
 #else
 #include <malloc.h>
