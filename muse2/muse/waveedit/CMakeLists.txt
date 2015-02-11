@@ -77,9 +77,12 @@ set_target_properties( waveedit
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( waveedit
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
+
 target_link_libraries( waveedit
       ${QT_LIBRARIES}
       widgets

@@ -278,9 +278,12 @@ set_target_properties( widgets
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( widgets
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
+
 target_link_libraries ( widgets
       ${QT_LIBRARIES}
       icons

@@ -120,9 +120,11 @@ set_target_properties( awl
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( awl
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
 
 target_link_libraries ( awl
       ${QT_LIBRARIES}

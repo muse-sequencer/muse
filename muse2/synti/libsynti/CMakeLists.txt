@@ -65,9 +65,16 @@ set_target_properties( synti
       PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
       OUTPUT_NAME muse_synti
       )
+
+
+##
+## Link flags
+##
+if(APPLE)
 set_target_properties( synti
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
 
 ##
 ## Install location

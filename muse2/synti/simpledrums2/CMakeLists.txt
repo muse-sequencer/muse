@@ -90,9 +90,11 @@ set_target_properties ( simpledrums
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( simpledrums
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
 
 target_link_libraries(simpledrums
       synti

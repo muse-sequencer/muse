@@ -71,9 +71,12 @@ set_target_properties( arranger
 #
 # Linkage
 #
+if(APPLE)
 set_target_properties( arranger
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
+
 target_link_libraries ( arranger
       ${QT_LIBRARIES}
       awl

@@ -52,9 +52,6 @@ add_library(al ${MODULES_BUILD}
 ## Compilation flags and target name
 ##
 set_target_properties( al
-      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
-      )
-set_target_properties( al
       PROPERTIES OUTPUT_NAME muse_al
       )
 set_source_files_properties(
@@ -73,6 +70,12 @@ set_source_files_properties(
 ##
 ## Linkage
 ##
+if(APPLE)
+set_target_properties( al
+      PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
+      )
+endif(APPLE)
+
 target_link_libraries ( al
       ${QT_LIBRARIES}
       )

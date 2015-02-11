@@ -76,9 +76,12 @@ set_target_properties( instruments
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( instruments
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
+
 target_link_libraries ( instruments
       ${QT_LIBRARIES}
       icons

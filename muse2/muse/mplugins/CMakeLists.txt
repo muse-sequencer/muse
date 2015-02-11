@@ -97,9 +97,12 @@ set_target_properties ( mplugins
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( mplugins
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
+
 target_link_libraries( mplugins
       # midiplugin
       ${QT_LIBRARIES}

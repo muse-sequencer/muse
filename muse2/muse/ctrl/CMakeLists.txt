@@ -74,9 +74,12 @@ set_target_properties( ctrl
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( ctrl
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
+
 target_link_libraries ( ctrl
       ${QT_LIBRARIES}
       widgets

@@ -78,9 +78,11 @@ set_target_properties ( vam
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( vam
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
 
 target_link_libraries(vam
       # al

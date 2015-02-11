@@ -63,9 +63,12 @@ set_target_properties( cliplist
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( cliplist
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
+
 target_link_libraries ( cliplist
       ${QT_LIBRARIES}
       awl

@@ -79,9 +79,12 @@ set_target_properties( driver
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( driver
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
+
 target_link_libraries ( driver
       ${ALSA_LIBRARIES}
       ${JACK_LIBRARIES}

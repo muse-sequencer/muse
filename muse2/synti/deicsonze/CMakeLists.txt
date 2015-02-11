@@ -90,9 +90,11 @@ set_target_properties ( deicsonze
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( deicsonze
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
 
 target_link_libraries(deicsonze
       al

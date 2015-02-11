@@ -69,9 +69,12 @@ set_target_properties( master
 ##
 ## Linkage
 ##
+if(APPLE)
 set_target_properties( master
       PROPERTIES LINK_FLAGS "-undefined suppress -flat_namespace"
       )
+endif(APPLE)
+
 target_link_libraries ( master
       ${QT_LIBRARIES}
       al
