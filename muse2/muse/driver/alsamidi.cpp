@@ -39,14 +39,20 @@
 #include "part.h"
 #include "gconfig.h"
 #include "track.h"
+//#include "operations.h"  // REMOVE Tim. Persistent routes. Added.
+#include "song.h"  // REMOVE Tim. Persistent routes. Added.
+#include "muse_atomic.h"
 
 #include <QApplication>
 
 // Enable debugging:
 //#define ALSA_DEBUG 1  
 
+// REMOVE Tim. Persistent routes. Added.
+#define DEBUG_PRST_ROUTES(dev, format, args...) //fprintf(dev, format, ##args);
 
 namespace MusECore {
+muse_atomic_t atomicAlsaMidiScanPending; // REMOVE Tim. Persistent routes. Added.
 
 static int alsaSeqFdi = -1;
 static int alsaSeqFdo = -1;
@@ -126,18 +132,18 @@ QString MidiAlsaDevice::open()
       snd_seq_port_subscribe_t* subs = NULL;
 
       // REMOVE Tim. Persistent routes. Added.      
-      printf("MidiAlsaDevice::open Getting port info: adr: %d:%d\n", adr.client, adr.port);
+      DEBUG_PRST_ROUTES(stderr, "MidiAlsaDevice::open Getting port info: address: %d:%d\n", adr.client, adr.port);
       if(adr.client != SND_SEQ_ADDRESS_UNKNOWN && adr.port != SND_SEQ_ADDRESS_UNKNOWN)
       {
         snd_seq_port_info_alloca(&pinfo);
         int rv = snd_seq_get_any_port_info(alsaSeq, adr.client, adr.port, pinfo);
         if(rv < 0)
         {  
-          printf("MidiAlsaDevice::open Error getting port info: adr: %d:%d: %s\n", adr.client, adr.port, snd_strerror(rv));
+          fprintf(stderr, "MidiAlsaDevice::open Error getting port info: address: %d:%d: %s\n", adr.client, adr.port, snd_strerror(rv));
           return QString(snd_strerror(rv));
         }
         // REMOVE Tim. Persistent routes. Added.      
-        printf("MidiAlsaDevice::open: adr: %d:%d\n", adr.client, adr.port);
+        DEBUG_PRST_ROUTES(stderr, "MidiAlsaDevice::open: address: %d:%d\n", adr.client, adr.port);
         // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
         snd_seq_port_subscribe_alloca(&subs);
       }
@@ -153,7 +159,7 @@ QString MidiAlsaDevice::open()
         int cap = snd_seq_port_info_get_capability(pinfo);
 
 #ifdef ALSA_DEBUG
-        printf("MidiAlsaDevice::open cap:%d\n", cap);  
+        fprintf(stderr, "MidiAlsaDevice::open cap:%d\n", cap);  
 #endif
         
         // subscribe for writing
@@ -164,7 +170,7 @@ QString MidiAlsaDevice::open()
                 snd_seq_port_subscribe_set_sender(subs, &musePort);
                 snd_seq_port_subscribe_set_dest(subs, &adr);
                 // REMOVE Tim. Persistent routes. Added.      
-                printf("MidiAlsaDevice::open Checking write subscription: adr: %d:%d\n", adr.client, adr.port);
+                DEBUG_PRST_ROUTES(stderr, "MidiAlsaDevice::open Checking write subscription: address: %d:%d\n", adr.client, adr.port);
                 // Not already subscribed (or error)? Then try subscribing.
                 if(snd_seq_get_port_subscription(alsaSeq, subs) < 0)
                 {
@@ -188,7 +194,7 @@ QString MidiAlsaDevice::open()
                 snd_seq_port_subscribe_set_dest(subs, &musePort);
                       snd_seq_port_subscribe_set_sender(subs, &adr);
                 // REMOVE Tim. Persistent routes. Added.      
-                printf("MidiAlsaDevice::open Checking read subscription: adr: %d:%d\n", adr.client, adr.port);
+                DEBUG_PRST_ROUTES(stderr, "MidiAlsaDevice::open Checking read subscription: address: %d:%d\n", adr.client, adr.port);
                 // Not already subscribed (or error)? Then try subscribing.
                 if(snd_seq_get_port_subscription(alsaSeq, subs) < 0)
                 {
@@ -204,6 +210,8 @@ QString MidiAlsaDevice::open()
                 _readEnable = true;      
         }
       }
+      else
+        return QString("Unavailable");
 
       if(wer < 0 || rer < 0)
         return estr;
@@ -227,7 +235,7 @@ void MidiAlsaDevice::close()
         int rv = snd_seq_get_any_port_info(alsaSeq, adr.client, adr.port, pinfo);
         if(rv < 0)
         {  
-          printf("MidiAlsaDevice::close Error getting port info: adr: %d:%d: %s\n", adr.client, adr.port, snd_strerror(rv));
+          fprintf(stderr, "MidiAlsaDevice::close Error getting port info: adr: %d:%d: %s\n", adr.client, adr.port, snd_strerror(rv));
           return;
         }
         // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
@@ -249,7 +257,7 @@ void MidiAlsaDevice::close()
         int cap = snd_seq_port_info_get_capability(pinfo);
 
 #ifdef ALSA_DEBUG
-        printf("MidiAlsaDevice::close cap:%d\n", cap);  
+        fprintf(stderr, "MidiAlsaDevice::close cap:%d\n", cap);  
 #endif
 
         // This function appears to be called only by MidiPort::setMidiDevice(), 
@@ -284,7 +292,7 @@ void MidiAlsaDevice::close()
                   //  _writeEnable = false;      
                   //else
                   if(wer < 0)
-                    printf("MidiAlsaDevice::close Error unsubscribing alsa midi port %d:%d for writing: %s\n", adr.client, adr.port, snd_strerror(wer));
+                    fprintf(stderr, "MidiAlsaDevice::close Error unsubscribing alsa midi port %d:%d for writing: %s\n", adr.client, adr.port, snd_strerror(wer));
                 }   
                 //else
                   //_writeEnable = false;      
@@ -308,7 +316,7 @@ void MidiAlsaDevice::close()
                   //  _readEnable = false;      
                   //else  
                   if(rer < 0)
-                    printf("MidiAlsaDevice::close Error unsubscribing alsa midi port %d:%d for reading: %s\n", adr.client, adr.port, snd_strerror(rer));
+                    fprintf(stderr, "MidiAlsaDevice::close Error unsubscribing alsa midi port %d:%d for reading: %s\n", adr.client, adr.port, snd_strerror(rer));
                 }  
                 //else
                 //  _readEnable = false;      
@@ -460,7 +468,7 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                         event.type = SND_SEQ_EVENT_NONREGPARAM;
                         }
                   else {
-                        printf("putEvent: unknown controller type 0x%x\n", a);
+                        fprintf(stderr, "putEvent: unknown controller type 0x%x\n", a);
                         }
                   }
 #endif
@@ -510,7 +518,7 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                   break;
             default:
                   if(MusEGlobal::debugMsg)
-                    printf("MidiAlsaDevice::putEvent(): event type %d not implemented\n", e.type());
+                    fprintf(stderr, "MidiAlsaDevice::putEvent(): event type %d not implemented\n", e.type());
                   return true;
             }
       return putAlsaEvent(&event);
@@ -526,7 +534,7 @@ bool MidiAlsaDevice::putAlsaEvent(snd_seq_event_t* event)
       int error;
 
 #ifdef ALSA_DEBUG
-      printf("MidiAlsaDevice::putEvent\n");  
+      fprintf(stderr, "MidiAlsaDevice::putEvent\n");  
 #endif
 
       do {
@@ -947,8 +955,11 @@ void MidiAlsaDevice::handleSeek()
 
 bool initMidiAlsa()
       {
+      muse_atomic_init(&atomicAlsaMidiScanPending);
+      muse_atomic_set(&atomicAlsaMidiScanPending, 0);
+      
       if (MusEGlobal::debugMsg)
-            printf("initMidiAlsa\n");
+            fprintf(stderr, "initMidiAlsa\n");
       int error = snd_seq_open(&alsaSeq, "hw", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK);
       if (error < 0) {
             fprintf(stderr, "Could not open ALSA sequencer: %s\n",
@@ -965,7 +976,7 @@ bool initMidiAlsa()
 
       while (snd_seq_query_next_client(alsaSeq, cinfo) >= 0) {
             const char* cname = snd_seq_client_info_get_name(cinfo);
-            //printf( "ALSA client name: %s\n", cname);  
+            //fprintf(stderr, "ALSA client name: %s\n", cname);  
             
             // Put Midi Through and user clients after others. Insert other unwanted clients here:          // p4.0.41
             if(snd_seq_client_info_get_type(cinfo) == SND_SEQ_USER_CLIENT || strcmp("Midi Through", cname) == 0)                   
@@ -995,8 +1006,12 @@ bool initMidiAlsa()
                   if (capability & inCap)
                         flags |= 2;
                   dev->setrwFlags(flags);
-//                   if (MusEGlobal::debugMsg) // REMOVE Tim. Persistent routes. Removed for test. Reinstate.
-                        printf("ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
+                  if (MusEGlobal::debugMsg) 
+                        fprintf(stderr, "ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
+                           snd_seq_port_info_get_name(pinfo),
+                           adr.client, adr.port,
+                           flags, capability);
+                  DEBUG_PRST_ROUTES(stderr, "ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",  // REMOVE Tim. Persistent routes. Added.
                            snd_seq_port_info_get_name(pinfo),
                            adr.client, adr.port,
                            flags, capability);
@@ -1007,7 +1022,7 @@ bool initMidiAlsa()
       snd_seq_client_info_set_client(cinfo, -1);   // Reset
       while (snd_seq_query_next_client(alsaSeq, cinfo) >= 0) {
             const char* cname = snd_seq_client_info_get_name(cinfo);
-            //printf( "ALSA client name: %s\n", cname);  
+            //fprintf(stderr, "ALSA client name: %s\n", cname);  
             
             bool is_thru = (strcmp("Midi Through", cname) == 0);
             // Put Midi Through and user clients after others. Insert other unwanted clients here: // p4.0.41
@@ -1040,8 +1055,12 @@ bool initMidiAlsa()
                   dev->setrwFlags(flags);
                   if(is_thru)             // Don't auto-open Midi Through.
                     dev->setOpenFlags(0); 
-//                   if (MusEGlobal::debugMsg) // REMOVE Tim. Persistent routes. Removed for test. Reinstate.
-                        printf("ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
+                  if (MusEGlobal::debugMsg)
+                        fprintf(stderr, "ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
+                           snd_seq_port_info_get_name(pinfo),
+                           adr.client, adr.port,
+                           flags, capability);
+                        DEBUG_PRST_ROUTES(stderr, "ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",  // REMOVE Tim. Persistent routes. Added.
                            snd_seq_port_info_get_name(pinfo),
                            adr.client, adr.port,
                            flags, capability);
@@ -1053,7 +1072,7 @@ bool initMidiAlsa()
       //snd_seq_set_client_name(alsaSeq, "MusE Sequencer");
       error = snd_seq_set_client_name(alsaSeq, MusEGlobal::audioDevice->clientName());
       if (error < 0) {
-            printf("Alsa: Set client name failed: %s", snd_strerror(error));
+            fprintf(stderr, "Alsa: Set client name failed: %s", snd_strerror(error));
             return true;
             }
       
@@ -1061,7 +1080,7 @@ bool initMidiAlsa()
       int co = snd_seq_poll_descriptors_count(alsaSeq, POLLOUT);
 
       if (ci > 1 || co > 1) {
-            printf("ALSA midi: cannot handle more than one poll fd\n");
+            fprintf(stderr, "ALSA midi: cannot handle more than one poll fd\n");
             abort();
             }
 
@@ -1098,7 +1117,7 @@ bool initMidiAlsa()
       snd_seq_port_subscribe_set_sender(subs, &announce_adr);
       error = snd_seq_subscribe_port(alsaSeq, subs);
       if (error < 0) {
-            printf("Alsa: Subscribe System failed: %s", snd_strerror(error));
+            fprintf(stderr, "Alsa: Subscribe System failed: %s", snd_strerror(error));
             return true;
             }
       return false;
@@ -1131,7 +1150,7 @@ void exitMidiAlsa()
     {
       error = snd_seq_unsubscribe_port(alsaSeq, subs);
       if(error < 0)
-        printf("MusE: exitMidiAlsa: Error unsubscribing alsa midi Announce port %d:%d for reading: %s\n", announce_adr.client, announce_adr.port, snd_strerror(error));
+        fprintf(stderr, "MusE: exitMidiAlsa: Error unsubscribing alsa midi Announce port %d:%d for reading: %s\n", announce_adr.client, announce_adr.port, snd_strerror(error));
     }   
     
     error = snd_seq_delete_simple_port(alsaSeq, musePort.port);
@@ -1141,6 +1160,8 @@ void exitMidiAlsa()
     error = snd_seq_close(alsaSeq);  
     if(error < 0) 
       fprintf(stderr, "MusE: Could not close ALSA sequencer: %s\n", snd_strerror(error));
+    
+    muse_atomic_destroy(&atomicAlsaMidiScanPending);
   }  
 }
 
@@ -1152,7 +1173,7 @@ void exitMidiAlsa()
 void setAlsaClientName(const char* name)
 {
 #ifdef ALSA_DEBUG
-  printf("setAlsaClientName: %s  seq:%p\n", name, alsaSeq);
+  fprintf(stderr, "setAlsaClientName: %s  seq:%p\n", name, alsaSeq);
 #endif            
   
   if(!alsaSeq)
@@ -1160,7 +1181,7 @@ void setAlsaClientName(const char* name)
     
   int error = snd_seq_set_client_name(alsaSeq, name);
   if (error < 0) 
-    printf("setAlsaClientName: failed: %s", snd_strerror(error));
+    fprintf(stderr, "setAlsaClientName: failed: %s", snd_strerror(error));
 }
 
 struct AlsaPort {
@@ -1184,10 +1205,19 @@ static std::list<AlsaPort> portList;
 
 void alsaScanMidiPorts()
       {
+      if(!alsaSeq)
+      {
+        // Reset this now.
+        muse_atomic_set(&atomicAlsaMidiScanPending, 0);
+        return;
+      }
 #ifdef ALSA_DEBUG
-    printf("alsa scan midi ports\n");
+    fprintf(stderr, "alsa scan midi ports\n");
 #endif
-      fprintf(stderr, "alsaScanMidiPorts\n");  // REMOVE Tim. Persistent routes. Added.
+      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts\n");  // REMOVE Tim. Persistent routes. Added.
+      
+      bool idling = false;              // REMOVE Tim. Persistent routes. Added.
+      QString state; // REMOVE Tim. Persistent routes. Added.
       const int inCap  = SND_SEQ_PORT_CAP_SUBS_READ;
       const int outCap = SND_SEQ_PORT_CAP_SUBS_WRITE;
 
@@ -1220,35 +1250,77 @@ void alsaScanMidiPorts()
                         flags |= 1;
                   if (capability & inCap)
                         flags |= 2;
-// printf("ALSA port add: <%s>, flags %d\n", name, flags);
+// fprintf(stderr, "ALSA port add: <%s>, flags %d\n", name, flags);
                   portList.push_back(AlsaPort(adr, name, flags));
                   }
             }
+            
+// REMOVE Tim. Persistent routes. Removed.            
+//       //
+//       //  check for devices to delete
+//       //
+//       for (iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end();) {
+//             MidiAlsaDevice* d = dynamic_cast<MidiAlsaDevice*>(*i);
+//             if (d == 0) {
+//                   ++i;
+//                   continue;
+//                   }
+//                   
+//             // REMOVE Tim. Persistent routes. Added.
+//             // If either of the client or port are SND_SEQ_ADDRESS_UNKNOWN, don't delete
+// //             if(d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN)
+// //             {
+// //               ++i;
+// //               continue;
+// //             }
+//             
+//             std::list<AlsaPort>::iterator k = portList.begin();
+//             for (; k != portList.end(); ++k) {
+//                   if (k->adr.client == d->adr.client
+//                      && k->adr.port == d->adr.port) {
+//                         break;
+//                         }
+//                   // REMOVE Tim. Persistent routes. Added.
+//                   // Search by name if either of the client or port are 0.
+//                   if(strcmp(k->name, d->name().toLatin1().constData()) == 0 &&
+//                      ((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) || 
+//                       (d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == k->adr.port) ||
+//                       (d->adr.port == SND_SEQ_ADDRESS_UNKNOWN && d->adr.client == k->adr.client)))
+//                     break;
+//                   }
+//             if (k == portList.end()) {
+//                   if (d->midiPort() != -1)
+//                         MusEGlobal::midiPorts[d->midiPort()].setMidiDevice(0);
+//                   iMidiDevice k = i;
+// // fprintf(stderr, "erase device\n");
+//                   ++i;
+//                   fprintf(stderr, "alsaScanMidiPorts erasing:%s adr.client:%d adr.port:%d\n", 
+//                           d->name().toLatin1().constData(), d->adr.client, d->adr.port);  // REMOVE Tim. Persistent routes. Added.
+//                   MusEGlobal::midiDevices.erase(k);
+//                   }
+//             else {
+//                   ++i;
+//                   }
+//             }
+
+      // Reset this now.
+      muse_atomic_set(&atomicAlsaMidiScanPending, 0);
+            
+      // REMOVE Tim. Persistent routes. Added.
       //
       //  check for devices to delete
       //
-      for (iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end();) {
+      for (iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) {
             MidiAlsaDevice* d = dynamic_cast<MidiAlsaDevice*>(*i);
-            if (d == 0) {
-                  ++i;
+            if (d == 0) 
                   continue;
-                  }
                   
-            // REMOVE Tim. Persistent routes. Added.
-            // If either of the client or port are SND_SEQ_ADDRESS_UNKNOWN, don't delete
-//             if(d->adr.client == SND_SEQ_ADDRESS_UNKNOWN || d->adr.port == SND_SEQ_ADDRESS_UNKNOWN)
-//             {
-//               ++i;
-//               continue;
-//             }
-            
             std::list<AlsaPort>::iterator k = portList.begin();
             for (; k != portList.end(); ++k) {
                   if (k->adr.client == d->adr.client
                      && k->adr.port == d->adr.port) {
                         break;
                         }
-                  // REMOVE Tim. Persistent routes. Added.
                   // Search by name if either of the client or port are 0.
                   if(strcmp(k->name, d->name().toLatin1().constData()) == 0 &&
                      ((d->adr.client == SND_SEQ_ADDRESS_UNKNOWN && d->adr.port == SND_SEQ_ADDRESS_UNKNOWN) || 
@@ -1257,27 +1329,35 @@ void alsaScanMidiPorts()
                     break;
                   }
             if (k == portList.end()) {
-                  if (d->midiPort() != -1)
-                        MusEGlobal::midiPorts[d->midiPort()].setMidiDevice(0);
-                  iMidiDevice k = i;
-// printf("erase device\n");
-                  ++i;
-                  fprintf(stderr, "alsaScanMidiPorts erasing:%s adr.client:%d adr.port:%d\n", 
-                          d->name().toLatin1().constData(), d->adr.client, d->adr.port);  // REMOVE Tim. Persistent routes. Added.
-                  MusEGlobal::midiDevices.erase(k);
+                  DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts nulling adr op:ModifyMidiDeviceAddress device:%p %s\n", 
+                          d, d->name().toLatin1().constData());  // REMOVE Tim. Persistent routes. Added.
+                  if(!idling)
+                  {
+                    // Not much choice but to idle both the audio and midi threads since 
+                    //  midi does not idle while audio messages are being processed.
+                    MusEGlobal::audio->msgIdle(true);
+                    idling = true;
                   }
-            else {
-                  ++i;
+                  
+                  //operations.add(PendingOperationItem(d, SND_SEQ_ADDRESS_UNKNOWN, SND_SEQ_ADDRESS_UNKNOWN, PendingOperationItem::ModifyMidiDeviceAddress));
+                  d->adr.client = SND_SEQ_ADDRESS_UNKNOWN;
+                  d->adr.port = SND_SEQ_ADDRESS_UNKNOWN;
+                  // Close to reset some device members.
+                  d->close();
+                  // Update the port's state
+                  if(d->midiPort() != -1)
+                    MusEGlobal::midiPorts[d->midiPort()].setState("Unavailable");
                   }
             }
+            
+            
       //
       //  check for devices to add
       //
-      // TODO: Possibly auto-add them to available midi ports.    p4.0.41            
+      // TODO: Possibly auto-add them to available midi ports.
       //
       for (std::list<AlsaPort>::iterator k = portList.begin(); k != portList.end(); ++k) {
             iMidiDevice i = MusEGlobal::midiDevices.begin();
-// printf("ALSA port: <%s>\n", k->name);
             for (;i != MusEGlobal::midiDevices.end(); ++i) {
                   MidiAlsaDevice* d = dynamic_cast<MidiAlsaDevice*>(*i);
                   if (d == 0)
@@ -1291,36 +1371,80 @@ void alsaScanMidiPorts()
                     if(d->adr.client != SND_SEQ_ADDRESS_UNKNOWN && d->adr.client != k->adr.client)
                     {
                       // REMOVE Tim. Persistent routes. Added.
-                      fprintf(stderr, "alsaScanMidiPorts: k->name:%s d->adr.client:%u != k->adr.client:%u", k->name, d->adr.client, k->adr.client);
+                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.client:%u != k->adr.client:%u", k->name, d->adr.client, k->adr.client);
                       //continue;
                     }
                     if(d->adr.port != SND_SEQ_ADDRESS_UNKNOWN && d->adr.port != k->adr.port)
                     {
                       // REMOVE Tim. Persistent routes. Added.
-                      fprintf(stderr, "alsaScanMidiPorts: k->name:%s d->adr.port:%u != k->adr.port:%u", k->name, d->adr.port, k->adr.port);
+                      DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts: k->name:%s d->adr.port:%u != k->adr.port:%u", k->name, d->adr.port, k->adr.port);
                       //continue;
                     }
                     //if(d->adr.client == SND_SEQ_ADDRESS_UNKNOWN)
-                      d->adr.client = k->adr.client;
+//                       d->adr.client = k->adr.client;
                     //if(d->adr.port == SND_SEQ_ADDRESS_UNKNOWN)
-                      d->adr.port = k->adr.port;
+//                       d->adr.port = k->adr.port;
+                    DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts modifying adr op:ModifyMidiDeviceAddress device:%p %s client:%d port:%d\n", 
+                            d, d->name().toLatin1().constData(), k->adr.client, k->adr.port);  // REMOVE Tim. Persistent routes. Added.
+                    
+                    if(!idling)
+                    {
+                      MusEGlobal::audio->msgIdle(true);
+                      idling = true;
+                    }
+
+                    //operations.add(PendingOperationItem(d, k->adr.client, k->adr.port, PendingOperationItem::ModifyMidiDeviceAddress));
+                    // FIXME: Re-subscribe to any ports for now, need a time delay to implement unsubscribe-exit events
+                    //operations.add(PendingOperationItem(d, k->flags, k->flags, PendingOperationItem::ModifyMidiDeviceFlags));
+                    d->setAddressClient(k->adr.client);
+                    d->setAddressPort(k->adr.port);
+                    d->setrwFlags(k->flags);
+                    // FIXME: Re-subscribe to any ports for now, need a time delay to implement unsubscribe-exit events
+                    d->setOpenFlags(k->flags);
+                    if(d->midiPort() != -1)
+                      // Re-subscribe, and update the port's state
+                      MusEGlobal::midiPorts[d->midiPort()].setState(d->open());
                     break;
                   }
                   
                   }
             if (i == MusEGlobal::midiDevices.end()) {
+
+                  if(!idling)
+                  {
+                    MusEGlobal::audio->msgIdle(true);
+                    idling = true;
+                  }
+
                   // add device
-                  MidiAlsaDevice* dev = new MidiAlsaDevice(k->adr,
-                     QString(k->name));
+                  MidiAlsaDevice* dev = new MidiAlsaDevice(k->adr, QString(k->name));
                   dev->setrwFlags(k->flags);
-                  fprintf(stderr, "alsaScanMidiPorts erasing:%s adr.client:%d adr.port:%d\n", 
-                          dev->name().toLatin1().constData(), dev->adr.client, dev->adr.port);  // REMOVE Tim. Persistent routes. Added.
+                  DEBUG_PRST_ROUTES(stderr, "alsaScanMidiPorts op:AddMidiDevice adding:%p %s adr.client:%d adr.port:%d\n", 
+                          dev, dev->name().toLatin1().constData(), dev->adr.client, dev->adr.port);  // REMOVE Tim. Persistent routes. Added.
+
+                  //operations.add(PendingOperationItem(MusEGlobal::midiDevices, dev, PendingOperationItem::AddMidiDevice));
+                  //MusEGlobal::midiDevices.addOperation(dev, operations);
                   MusEGlobal::midiDevices.add(dev);
-// printf("add device\n");
+                  // Subscribe
+                  //dev->open();
                   }
             }
             
-            
+            //if(!operations.empty())
+            //{
+            //  if(!idling)
+            //    MusEGlobal::audio->msgIdle(true);
+            //  //MusEGlobal::audio->msgExecutePendingOperations(operations);
+            //  // Execute directly both stages
+            //  operations.executeNonRTStage();
+            //  operations.executeRTStage();
+              if(idling)
+              {
+                MusEGlobal::audio->msgIdle(false);
+                // Update the GUI.
+                MusEGlobal::song->update(SC_CONFIG);
+              }
+            //}
       }
 
 //---------------------------------------------------------
@@ -1347,33 +1471,148 @@ int alsaSelectWfd()
 
 void alsaProcessMidiInput()
 {
+      // REMOVE Tim. Persistent routes. Added.
+      DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput()\n");
+              
       MidiRecordEvent event;
       snd_seq_event_t* ev;
       
       for (;;) 
       {
             int rv = snd_seq_event_input(alsaSeq, &ev);
-// printf("AlsaInput %d\n", rv);
+// fprintf(stderr, "AlsaInput %d\n", rv);
             if (rv < 0) {
-//                  printf("AlsaMidi: read error %s\n", snd_strerror(rv));
+//                  fprintf(stderr, "AlsaMidi: read error %s\n", snd_strerror(rv));
                   return;
                   }
             switch(ev->type) {
                   case SND_SEQ_EVENT_PORT_SUBSCRIBED:
+                        DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput SND_SEQ_EVENT_PORT_SUBSCRIBED sender adr: %d:%d dest adr: %d:%d\n", 
+                                ev->data.connect.sender.client, ev->data.connect.sender.port,
+                                ev->data.connect.dest.client, ev->data.connect.dest.port);  // REMOVE Tim. Persistent routes. Added.
+//                         MusEGlobal::audio->midiPortsChanged();  // signal gui // REMOVE Tim. Persistent routes. Added.
+//                         snd_seq_free_event(ev); // REMOVE Tim. Persistent routes. Added.
+//                         return;
+                        if(muse_atomic_read(&atomicAlsaMidiScanPending) == 0)
+                        {
+                          muse_atomic_set(&atomicAlsaMidiScanPending, 1);
+                          MusEGlobal::audio->sendMsgToGui('P');
+                        }
+                        snd_seq_free_event(ev);
+                        if(rv == 0)
+                          return;
+                        continue;
+                        
                   case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
-                        return;
+                        DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput SND_SEQ_EVENT_PORT_UNSUBSCRIBED sender adr: %d:%d dest adr: %d:%d\n", 
+                                ev->data.connect.sender.client, ev->data.connect.sender.port,
+                                ev->data.connect.dest.client, ev->data.connect.dest.port);  // REMOVE Tim. Persistent routes. Added.
+//                         MusEGlobal::audio->midiPortsChanged();  // signal gui // REMOVE Tim. Persistent routes. Added.
+//                         snd_seq_free_event(ev); // REMOVE Tim. Persistent routes. Added.
+//                         return;
+                        if(muse_atomic_read(&atomicAlsaMidiScanPending) == 0)
+                        {
+                          muse_atomic_set(&atomicAlsaMidiScanPending, 1);
+                          MusEGlobal::audio->sendMsgToGui('P');
+                        }
+                        snd_seq_free_event(ev);
+                        if(rv == 0)
+                          return;
+                        continue;
+                        
                   case SND_SEQ_EVENT_CLIENT_START:
+                        DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput SND_SEQ_EVENT_CLIENT_START adr: %d:%d\n", 
+                                ev->data.addr.client, ev->data.addr.port);  // REMOVE Tim. Persistent routes. Added.
+                        
+                        // REMOVE Tim. Persistent routes. Added. Was fall-through before.
+                        //alsaScanMidiPorts();
+//                         MusEGlobal::audio->midiPortsChanged();  // signal gui
+//                         snd_seq_free_event(ev);
+//                         return;
+                        if(muse_atomic_read(&atomicAlsaMidiScanPending) == 0)
+                        {
+                          muse_atomic_set(&atomicAlsaMidiScanPending, 1);
+                          MusEGlobal::audio->sendMsgToGui('P');
+                        }
+                        snd_seq_free_event(ev);
+                        if(rv == 0)
+                          return;
+                        continue;
+                        
                   case SND_SEQ_EVENT_CLIENT_EXIT:
+                        DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput SND_SEQ_EVENT_CLIENT_EXIT adr: %d:%d\n", 
+                                ev->data.addr.client, ev->data.addr.port);  // REMOVE Tim. Persistent routes. Added.
+                        //snd_seq_free_event(ev); // REMOVE Tim. Persistent routes. Added.
                         // return;
                         // on first start of a software synthesizer we only
                         // get CLIENT_START event and no PORT_START, why?
 
-                  case SND_SEQ_EVENT_PORT_START:
-                  case SND_SEQ_EVENT_PORT_EXIT:
-                        alsaScanMidiPorts();
-                        MusEGlobal::audio->midiPortsChanged();  // signal gui
+                        // REMOVE Tim. Persistent routes. Added. Was fall-through before.
+                        //alsaScanMidiPorts();
+//                         MusEGlobal::audio->midiPortsChanged();  // signal gui
+//                         snd_seq_free_event(ev);
+//                         return;
+                        if(muse_atomic_read(&atomicAlsaMidiScanPending) == 0)
+                        {
+                          muse_atomic_set(&atomicAlsaMidiScanPending, 1);
+                          MusEGlobal::audio->sendMsgToGui('P');
+                        }
                         snd_seq_free_event(ev);
-                        return;
+                        if(rv == 0)
+                          return;
+                        continue;
+
+                  case SND_SEQ_EVENT_PORT_START:
+                        DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput SND_SEQ_EVENT_PORT_START adr: %d:%d\n", 
+                                ev->data.addr.client, ev->data.addr.port);  // REMOVE Tim. Persistent routes. Added.
+                        
+                        // REMOVE Tim. Persistent routes. Added. Was fall-through before.
+                        //alsaScanMidiPorts();
+//                         MusEGlobal::audio->midiPortsChanged();  // signal gui
+//                         snd_seq_free_event(ev);
+//                         return;
+                        if(muse_atomic_read(&atomicAlsaMidiScanPending) == 0)
+                        {
+                          muse_atomic_set(&atomicAlsaMidiScanPending, 1);
+                          MusEGlobal::audio->sendMsgToGui('P');
+                        }
+                        snd_seq_free_event(ev);
+                        if(rv == 0)
+                          return;
+                        continue;
+                        
+                  case SND_SEQ_EVENT_PORT_EXIT:
+                        DEBUG_PRST_ROUTES(stderr, "alsaProcessMidiInput SND_SEQ_EVENT_PORT_EXIT adr: %d:%d\n", 
+                                ev->data.addr.client, ev->data.addr.port);  // REMOVE Tim. Persistent routes. Added.
+                        //alsaScanMidiPorts();
+//                         MusEGlobal::audio->midiPortsChanged();  // signal gui
+//                         snd_seq_free_event(ev);
+//                         return;
+                        if(muse_atomic_read(&atomicAlsaMidiScanPending) == 0)
+                        {
+                          muse_atomic_set(&atomicAlsaMidiScanPending, 1);
+                          MusEGlobal::audio->sendMsgToGui('P');
+                        }
+                        snd_seq_free_event(ev);
+                        if(rv == 0)
+                          return;
+                        continue;
+                        
+//                   case SND_SEQ_EVENT_PORT_SUBSCRIBED:
+//                   case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
+//                   case SND_SEQ_EVENT_CLIENT_START:
+//                   case SND_SEQ_EVENT_CLIENT_EXIT:
+//                   case SND_SEQ_EVENT_PORT_START:
+//                   case SND_SEQ_EVENT_PORT_EXIT:
+//                         if(muse_atomic_read(&atomicAlsaMidiScanPending) == 0)
+//                         {
+//                           muse_atomic_set(&atomicAlsaMidiScanPending, 1);
+//                           MusEGlobal::audio->sendMsgToGui('P');
+//                         }
+//                         snd_seq_free_event(ev);
+//                         if(rv == 0)
+//                           return;
+//                         continue;
                   }
 
             int curPort = -1;
@@ -1396,7 +1635,10 @@ void alsaProcessMidiInput()
                            ev->source.client, ev->source.port);
                         }
                   snd_seq_free_event(ev);
-                  return;
+                  //return;
+                  if(rv == 0)
+                    return;
+                  continue;
                   }
             
             event.setType(0);      // mark as unused
@@ -1480,7 +1722,7 @@ void alsaProcessMidiInput()
                         if((*((unsigned char*)ev->data.ext.ptr) != ME_SYSEX) ||
                            (*(((unsigned char*)ev->data.ext.ptr) + ev->data.ext.len - 1) != ME_SYSEX_END))
                         {
-                          printf("MusE: alsaProcessMidiInput sysex chunks not supported!\n");
+                          fprintf(stderr, "MusE: alsaProcessMidiInput sysex chunks not supported!\n");
                           break;
                         }
                         
@@ -1518,7 +1760,7 @@ void alsaProcessMidiInput()
                   // case SND_SEQ_EVENT_NONREGPARAM:
                   // case SND_SEQ_EVENT_REGPARAM:
                   default:
-                        printf("ALSA Midi input: type %d not handled\n", ev->type);
+                        fprintf(stderr, "ALSA Midi input: type %d not handled\n", ev->type);
                         break;
             }
             if(event.type())

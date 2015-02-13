@@ -86,6 +86,10 @@ class MidiDevice {
       
       virtual void* inClientPort() { return 0; }
       virtual void* outClientPort() { return 0; }
+      // REMOVE Tim. Persistent routes. Added.
+      // These two are generally for ALSA.
+      virtual void setAddressClient(int) { }
+      virtual void setAddressPort(int) { }
       
       virtual QString open() = 0;
       virtual void close() = 0;

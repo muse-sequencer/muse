@@ -74,6 +74,9 @@ int PendingOperationItem::getIndex() const
     case PendingOperationItem::DeleteMidiInstrument:
     case PendingOperationItem::AddMidiDevice:
     case PendingOperationItem::DeleteMidiDevice:
+    case PendingOperationItem::ModifyMidiDeviceAddress:
+    case PendingOperationItem::ModifyMidiDeviceFlags:
+    case PendingOperationItem::ModifyMidiDeviceName:
     case PendingOperationItem::AddTrack:
     case PendingOperationItem::DeleteTrack:
     case PendingOperationItem::MoveTrack:
@@ -244,6 +247,30 @@ void PendingOperationItem::executeRTStage()
       fprintf(stderr, "PendingOperationItem::executeRTStage DeleteMidiDevice devicelist:%p device:%p\n", _midi_device_list, *_iMidiDevice);
 #endif      
       _midi_device_list->erase(_iMidiDevice);
+    break;
+    
+    case ModifyMidiDeviceAddress:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceAddress device:%p client:%d port:%d\n", _midiDevice, _address_client, _address_port);
+#endif      
+      _midi_device->setAddressClient(_address_client);
+      _midi_device->setAddressPort(_address_port);
+      _midi_device->setOpenFlags(_open_flags);
+    break;
+    
+    case ModifyMidiDeviceFlags:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceFlags device:%p rwFlags:%d openFlags:%d\n", _midiDevice, _rw_flags, _open_flags);
+#endif      
+      _midi_device->setrwFlags(_rw_flags);
+      _midi_device->setOpenFlags(_open_flags);
+    break;
+    
+    case ModifyMidiDeviceName:
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceName device:%p name:%s\n", _midiDevice, _name);
+#endif      
+      _midi_device->setName(_name);
     break;
     
     case AddTrack:
@@ -957,7 +984,34 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
         
+      case PendingOperationItem::ModifyMidiDeviceAddress:
+        if(poi._type == PendingOperationItem::ModifyMidiDeviceAddress && poi._midi_device == op._midi_device &&
+           poi._address_client == op._address_client && poi._address_port == op._address_port)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceAddress. Ignoring.\n");
+          return false;  
+        }
+      break;
+        
+      case PendingOperationItem::ModifyMidiDeviceFlags:
+        if(poi._type == PendingOperationItem::ModifyMidiDeviceFlags && poi._midi_device == op._midi_device &&
+           poi._rw_flags == op._rw_flags && poi._open_flags == op._open_flags)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceFlags. Ignoring.\n");
+          return false;  
+        }
+      break;
+        
+      case PendingOperationItem::ModifyMidiDeviceName:
+        if(poi._type == PendingOperationItem::ModifyMidiDeviceName && poi._midi_device == op._midi_device &&
+           strcmp(poi._name, op._name) == 0)
+        {
+          fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceName. Ignoring.\n");
+          return false;  
+        }
+      break;
 
+      
       case PendingOperationItem::AddTrack:
         if(poi._type == PendingOperationItem::AddTrack && poi._track_list == op._track_list && poi._track == op._track)  
         {
@@ -999,7 +1053,8 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
         
       case PendingOperationItem::ModifyTrackName:
-        if(poi._type == PendingOperationItem::ModifyTrackName && poi._track == op._track)  
+        if(poi._type == PendingOperationItem::ModifyTrackName && poi._track == op._track &&
+           strcmp(poi._name, op._name) == 0)
         {
           fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyTrackName. Ignoring.\n");
           return false;  
@@ -1049,7 +1104,8 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
       
       case PendingOperationItem::ModifyPartName:
-        if(poi._type == PendingOperationItem::ModifyPartName && poi._part == op._part)  
+        if(poi._type == PendingOperationItem::ModifyPartName && poi._part == op._part &&
+           strcmp(poi._name, op._name) == 0)
         {
           fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyPartName. Ignoring.\n");
           return false;  

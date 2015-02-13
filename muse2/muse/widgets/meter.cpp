@@ -62,7 +62,10 @@ Meter::Meter(QWidget* parent, MeterType type)
       cur_ymax    = 0;
       last_ymax   = 0;
       val         = 0.0;
+      targetVal   = 0.0;
+      targetValStep = 0.0;
       maxVal      = 0.0;
+      targetMaxVal = 0.0;
       minScale    = mtype == DBMeter ? MusEGlobal::config.minMeter : 0.0;      // min value in dB or int
       maxScale    = mtype == DBMeter ? 10.0 : 127.0;
       yellowScale = -10;
@@ -124,6 +127,8 @@ Meter::Meter(QWidget* parent, MeterType type)
       maskGrad.setColorAt(0.5, mask_center);
       maskGrad.setColorAt(1, mask_edge);
 
+      connect(&fallingTimer, SIGNAL(timeout()), this, SLOT(updateTargetMeterValue()));
+
       }
 
 //---------------------------------------------------------
@@ -138,65 +143,103 @@ void Meter::setVal(double v, double max, bool ovl)
       if(mtype == DBMeter)
       {
         double minScaleLin = pow(10.0, minScale/20.0);
-        if((v >= minScaleLin && val != v) || val >= minScaleLin)
+        if((v >= minScaleLin && targetVal != v) || targetVal >= minScaleLin)
         {
-          val = v;
+          targetVal = v;
           ud = true;
         }
       }
       else
       {
-        if(val != v)
+        if(targetVal != v)
         {
-          val = v;
+          targetVal = v;
           ud = true;
         }
-      }  
-      
-      double range = maxScale - minScale;
-      int fw = frameWidth();
-      int w  = width() - 2*fw;
-      int h  = height() - 2*fw;
-      QRect udRect;
-      bool udPeak = false;
-      
-      if(maxVal != max)
-      {
-        maxVal = max;
-        if(mtype == DBMeter)
-          cur_ymax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
-        else
-          cur_ymax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
-        if(cur_ymax > h) cur_ymax = h;
-        // Not using regions. Just lump them together.
-        udRect = QRect(fw, last_ymax, w, 1) | QRect(fw, cur_ymax, w, 1);
-        //printf("Meter::setVal peak cur_ymax:%d last_ymax:%d\n", cur_ymax, last_ymax); 
-        last_ymax = cur_ymax; 
-        ud = true;
-        udPeak = true;
       }
-      
-      if(ud)        
-      {
-        if(mtype == DBMeter)
-          cur_yv = val == 0 ? h : int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * h)/range);
-        else
-          cur_yv = val == 0 ? h : int(((maxScale - val) * h)/range);
-        if(cur_yv > h) cur_yv = h;
 
-        //printf("Meter::setVal cur_yv:%d last_yv:%d\n", cur_yv, last_yv); 
-        int y1, y2;
-        if(last_yv < cur_yv) { y1 = last_yv; y2 = cur_yv; } else { y1 = cur_yv; y2 = last_yv; }
-        last_yv = cur_yv;
-        
-        if(udPeak)
-          update(udRect | QRect(fw, y1, w, y2 - y1 + 1)); 
-          //repaint(udRect | QRect(fw, y1, w, y2 - y1 + 1)); 
-        else
-          update(QRect(fw, y1, w, y2 - y1 + 1)); 
-          //repaint(QRect(fw, y1, w, y2 - y1 + 1)); 
+      if(ud || (maxVal != max))
+      {
+         targetMaxVal = max;
+         if(!fallingTimer.isActive())
+         {
+            fallingTimer.start(MusEGlobal::config.guiRefresh);
+         }
       }
-    }
+      
+
+}
+
+void Meter::updateTargetMeterValue()
+{
+   double range = maxScale - minScale;
+   int fw = frameWidth();
+   int w  = width() - 2*fw;
+   int h  = height() - 2*fw;
+   QRect udRect;
+   bool udPeak = false;
+   bool ud = false;
+
+   if(targetVal > val)
+   {
+      val = targetVal;
+      targetValStep = 0;
+      ud = true;
+   }
+   else if(targetVal < val)
+   {
+      targetValStep = (val - targetVal) / (((double)MusEGlobal::config.guiRefresh + 1) / 7);
+      val -= targetValStep;
+      if(val < targetVal)
+      {
+         val = targetVal;
+      }
+      ud = true;
+   }
+
+   if(maxVal != targetMaxVal)
+   {
+     maxVal = targetMaxVal;
+     if(mtype == DBMeter)
+       cur_ymax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
+     else
+       cur_ymax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
+     if(cur_ymax > h) cur_ymax = h;
+     // Not using regions. Just lump them together.
+     udRect = QRect(fw, last_ymax, w, 1) | QRect(fw, cur_ymax, w, 1);
+     //printf("Meter::setVal peak cur_ymax:%d last_ymax:%d\n", cur_ymax, last_ymax);
+     last_ymax = cur_ymax;
+     ud = true;
+     udPeak = true;
+   }
+
+   if(ud)
+   {
+     if(mtype == DBMeter)
+       cur_yv = val == 0 ? h : int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * h)/range);
+     else
+       cur_yv = val == 0 ? h : int(((maxScale - val) * h)/range);
+     if(cur_yv > h) cur_yv = h;
+
+     //printf("Meter::setVal cur_yv:%d last_yv:%d\n", cur_yv, last_yv);
+     int y1, y2;
+     if(last_yv < cur_yv) { y1 = last_yv; y2 = cur_yv; } else { y1 = cur_yv; y2 = last_yv; }
+     last_yv = cur_yv;
+
+     if(udPeak)
+       update(udRect | QRect(fw, y1, w, y2 - y1 + 1));
+       //repaint(udRect | QRect(fw, y1, w, y2 - y1 + 1));
+     else
+       update(QRect(fw, y1, w, y2 - y1 + 1));
+       //repaint(QRect(fw, y1, w, y2 - y1 + 1));
+   }
+   if(!ud)
+   {
+      fallingTimer.stop();
+   }
+
+}
+
 
 //---------------------------------------------------------
 //   resetPeaks

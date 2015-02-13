@@ -1660,14 +1660,15 @@ void Song::setRecordFlag(Track* track, bool val)
 
       }
 
-//---------------------------------------------------------
-//   rescanAlsaPorts
-//---------------------------------------------------------
-
-void Song::rescanAlsaPorts()
-      {
-      emit midiPortsChanged();
-      }
+// REMOVE Tim. Persistent routes. Removed.
+// //---------------------------------------------------------
+// //   rescanAlsaPorts
+// //---------------------------------------------------------
+// 
+// void Song::rescanAlsaPorts()
+//       {
+//       emit midiPortsChanged();
+//       }
 
 //---------------------------------------------------------
 //   endMsgCmd
@@ -2062,7 +2063,9 @@ void Song::seqSignal(int fd)
                         abortRolling();
                         break;
                   case 'P':   // alsa ports changed
-                        rescanAlsaPorts();
+                        // REMOVE Tim. Persistent routes. Removed.
+                        //rescanAlsaPorts();
+                        alsaScanMidiPorts();
                         break;
                   case 'G':
                         clearRecAutomation(true);

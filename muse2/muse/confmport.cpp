@@ -828,7 +828,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         MusEGlobal::audio->msgRemoveRoute(MusECore::Route(no, allch), MusECore::Route(*it, allch));
                   #endif
                       
-                      // REMOVE Tim. Midi devices. Test only.
+                      // REMOVE Tim. Persistent routes. Added.
 //                       for(MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
 //                       {
 //                         MusECore::MidiDevice* md = *imd;
@@ -897,7 +897,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       MusEGlobal::song->update();
                     }  
                     
-                    // REMOVE Tim. Midi devices. Test only.
+                    // REMOVE Tim. Persistent routes. Added.
 //                     for(MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)
 //                     {
 //                       MusECore::MidiDevice* md = *imd;

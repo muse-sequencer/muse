@@ -1,3 +1,5 @@
+04.02.2015
+         - Added smooth transition from big to small meter value (danvd)
 31.01.2015
          - Load lv2 gtk2 ui helper on the first native gui call (danvd)
          - Removed lots of warnings, tested both on clang and gcc (danvd)
