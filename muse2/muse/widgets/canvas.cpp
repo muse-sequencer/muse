@@ -387,9 +387,12 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       //---------------------------------------------------
 
       if (drag == DRAG_LASSO) {
+            p.setWorldMatrixEnabled(false);
             p.setPen(Qt::blue);
             p.setBrush(Qt::NoBrush);
-            p.drawRect(lasso);
+            QRect _r(mapx(lasso.topLeft().x()), mapy(lasso.topLeft().y()), mapx(lasso.topRight().x()) - mapx(lasso.topLeft().x()), mapy(lasso.bottomLeft().y()) - mapy(lasso.topLeft().y()));
+            p.drawRect(_r);
+            p.setWorldMatrixEnabled(wmtxen);
             }
       
       //---------------------------------------------------
