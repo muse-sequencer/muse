@@ -1000,7 +1000,12 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                   }
                   else {
                       if (automation.controllerState != doNothing)
-                          automation.moveController=true;
+                          automation.moveController = true;
+//                          MusECore::Track * t = y2Track(event->pos().y());
+//                          if (t) {
+//                             checkAutomation(t, event->pos(), false);
+//                          }
+//                          automation.startMovePoint = event->pos();
                   }
                   return false;
                   break;
@@ -1033,8 +1038,10 @@ void PartCanvas::mouseMove(QMouseEvent* event)
       if (x < 0)
             x = 0;
 
-      if (_tool == AutomationTool)
-          processAutomationMovements(event->pos(), event->modifiers() & Qt::ShiftModifier);
+      if (_tool == AutomationTool) {
+        bool slowMotion = event->modifiers() & Qt::ShiftModifier;
+        processAutomationMovements(event->pos(), slowMotion);
+      }
 
       emit timeChanged(AL::sigmap.raster(x, *_raster));
       }
@@ -1063,17 +1070,7 @@ MusECore::Track* PartCanvas::y2Track(int y) const
 void PartCanvas::keyPress(QKeyEvent* event)
       {
       int key = event->key();
-// DELETETHIS 10
-//      if (_tool == AutomationTool) { // can't get the cursor pos to work right, skipping for now
-//        // clear all the automation parameters
-//        automation.moveController=false;
-//        automation.controllerState = doNothing;
-//        automation.currentCtrl=0;
-//        automation.currentTrack=0;
-//        automation.currentCtrlList=0;
-//
-//        processAutomationMovements(mapDev(QCursor::pos()),event->key()& Qt::Key_Control);
-//      }
+
       if (editMode)
             {
             // this will probably never happen, as edit mode has been set
@@ -3158,13 +3155,14 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
             if (xpixel > rr.right())
               break;
 
-            // draw a square around the point
-            pen2.setColor((automation.currentCtrlValid && automation.currentCtrlList == cl && 
-                           automation.currentCtrlFrameList.contains(ic->second.frame)) ?
-                          Qt::white : cl->color());  
+            // draw a square around the point, use WHITE if it's selected
+            bool pointIsSelected = automation.currentCtrlValid && automation.currentCtrlList == cl && automation.currentCtrlFrameList.contains(ic->second.frame);
+            pen2.setColor(pointIsSelected ? Qt::white : cl->color());
             
             p.setPen(pen2);
             p.drawRect(xpixel-2, ypixel-2, 5, 5);
+            if (pointIsSelected)
+              p.drawRect(xpixel-3, ypixel-3, 7, 7);
             oldX = xpixel;
             oldY = ypixel;
             if (automation.currentCtrlValid && automation.currentCtrlList == cl &&
@@ -3374,22 +3372,35 @@ void PartCanvas::controllerChanged(MusECore::Track* t, int)
   redraw((QRect(0, mapy(t->y()), width(), rmapy(t->height()))));  // TODO Check this - correct?
 }
 
-void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
+void PartCanvas::processAutomationMovements(QPoint inPos, bool slowMotion)
 {
 
   if (_tool == AutomationTool) {
 
-      if (!automation.moveController) { // currently nothing going lets's check for some action.
-          MusECore::Track * t = y2Track(pos.y());
-          if (t) {
-             checkAutomation(t, pos, addPoint);
-          }
-          return;
-      }
+    if (!automation.moveController) { // currently nothing going lets's check for some action.
+        MusECore::Track * t = y2Track(inPos.y());
+        if (t) {
+           checkAutomation(t, inPos, false);
+        }
+        automation.startMovePoint = inPos;
+        return;
+    }
 
     // automation.moveController is set, lets rock.
     int prevFrame = 0;
     int nextFrame = -1;
+
+    QPoint pos;
+    if (slowMotion) {
+      int relX = (inPos.x()-automation.startMovePoint.x())/3;
+      pos.setX(automation.startMovePoint.x()+relX);
+      float relY = (inPos.y()-automation.startMovePoint.y())/3;
+      pos.setY(automation.startMovePoint.y()+relY);
+
+    }
+    else {
+      pos = inPos;
+    }
 
     if (automation.controllerState == addNewController)
     {

@@ -77,6 +77,7 @@ class NPart : public CItem {
 
 enum ControllerVals { doNothing, movingController, addNewController };
 struct AutomationObject {
+  QPoint startMovePoint;
   QList<int> currentCtrlFrameList;
   bool currentCtrlValid;
   MusECore::CtrlList *currentCtrlList;
@@ -151,7 +152,7 @@ class PartCanvas : public Canvas {
       void drawTopItem(QPainter& p, const QRect& rect);
 
       void checkAutomation(MusECore::Track * t, const QPoint& pointer, bool addNewCtrl);
-      void processAutomationMovements(QPoint pos, bool addPoint);
+      void processAutomationMovements(QPoint pos, bool slowMotion);
       double logToVal(double inLog, double min, double max);
       double valToLog(double inV, double min, double max);
 
