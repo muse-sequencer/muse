@@ -107,7 +107,7 @@ struct PendingOperationItem
   
   union {
     int _intA;
-    const char* _name; 
+    const QString *_name;
     double _aux_send_value;
     int _insert_at;
     int _from_idx;
@@ -155,7 +155,7 @@ struct PendingOperationItem
   PendingOperationItem(MidiDevice* midi_device, int address_client_or_rw_flags, int address_port_or_open_flags, PendingOperationType type)
     { _type = type; _midi_device = midi_device; _intA = address_client_or_rw_flags; _intB = address_port_or_open_flags; }
     
-  PendingOperationItem(MidiDevice* midi_device, const char* new_name, PendingOperationType type = ModifyMidiDeviceName)
+  PendingOperationItem(MidiDevice* midi_device, const QString* new_name, PendingOperationType type = ModifyMidiDeviceName)
     { _type = type; _midi_device = midi_device; _name = new_name; }
     
   PendingOperationItem(TrackList* tl, Track* track, int insert_at, PendingOperationType type = AddTrack, void* sec_track_list = 0)
@@ -167,11 +167,11 @@ struct PendingOperationItem
   PendingOperationItem(TrackList* tl, int from_idx, int to_idx, PendingOperationType type = MoveTrack)
     { _type = type; _track_list = tl; _from_idx = from_idx; _to_idx = to_idx; }
 
-  PendingOperationItem(Track* track, const char* new_name, PendingOperationType type = ModifyTrackName)
+  PendingOperationItem(Track* track, const QString* new_name, PendingOperationType type = ModifyTrackName)
     { _type = type; _track = track; _name = new_name; }
     
     
-  PendingOperationItem(Part* part, const char* new_name, PendingOperationType type = ModifyPartName)
+  PendingOperationItem(Part* part, const QString* new_name, PendingOperationType type = ModifyPartName)
     { _type = type; _part = part; _name = new_name; }
     
   // new_len must already be in the part's time domain (ticks or frames).

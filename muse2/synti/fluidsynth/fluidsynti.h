@@ -50,8 +50,8 @@ typedef unsigned char byte;
 
 struct FluidSoundFont
       {
-      std::string filename;
-      std::string name;
+      QString file_name;
+      QString name;
       byte extid, intid;
       };
 
@@ -174,7 +174,7 @@ public:
 struct FS_Helper //Only used to pass parameters when calling the loading thread
       {
       FluidSynth* fptr;
-      std::string filename;
+      QString file_name;
       int id;
       };
 

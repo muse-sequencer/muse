@@ -610,8 +610,8 @@ void TList::returnPressed()
                       
                 MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackName, 
                                                           editTrack, 
-                                                          editTrack->name().toLatin1().constData(), 
-                                                          editor->text().toLatin1().constData()));
+                                                          editTrack->name(),
+                                                          editor->text()));
                 }
         }    
         

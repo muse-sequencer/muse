@@ -37,6 +37,7 @@
 #include <QSocketNotifier>  
 #include <QString>
 #include <QStyleFactory>
+#include <QTextStream>
 
 #include <iostream>
 #include <algorithm>
@@ -927,23 +928,20 @@ MusE::MusE() : QMainWindow()
 
       QString prjPath(MusEGlobal::configPath);
       prjPath += QString("/projects");
-      FILE* f = fopen(prjPath.toLatin1().constData(), "r");
-      if (f == 0) {
+      QFile projFile(prjPath);
+      if (!projFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         perror("open projectfile");
         projectRecentList.clear();
       }
-      else {
+      else
+      {
         for (int i = 0; i < PROJECT_LIST_LEN; ++i)
         {
-          char buffer[256];
-          if (fgets(buffer, 256, f))
-          {
-            projectRecentList.append(QString(buffer).simplified());
-          }
-          else
+          if (projFile.atEnd()) {
             break;
+          }
+          projectRecentList.append(projFile.readLine().simplified());
         }
-          fclose(f);
       }
 
       arrangerView->populateAddTrack();
@@ -1182,7 +1180,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             QDir::setCurrent(QDir::homePath());
             }
       else {
-            printf("Setting project path to %s\n", fi.absolutePath().toLatin1().constData());
+            printf("Setting project path to %s\n", fi.absolutePath().toLocal8Bit().constData());
             MusEGlobal::museProject = fi.absolutePath();
             project.setFile(name);
             QDir::setCurrent(MusEGlobal::museProject);
@@ -1417,14 +1415,18 @@ bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
       {
       QString backupCommand;
 
+      QFile currentName(name);
       if (QFile::exists(name)) {
-            backupCommand.sprintf("cp \"%s\" \"%s.backup\"", name.toLatin1().constData(), name.toLatin1().constData());
+            currentName.copy(name+".backup");
+            //backupCommand.sprintf("cp \"%s\" \"%s.backup\"", name.toLatin1().constData(), name.toLatin1().constData());
             }
       else if (QFile::exists(name + QString(".med"))) {
-            backupCommand.sprintf("cp \"%s.med\" \"%s.med.backup\"", name.toLatin1().constData(), name.toLatin1().constData());
+            QString currentName2(name+".med");
+            currentName.copy(name+".med.backup");
+            //backupCommand.sprintf("cp \"%s.med\" \"%s.med.backup\"", name.toLatin1().constData(), name.toLatin1().constData());
             }
-      if (!backupCommand.isEmpty())
-            system(backupCommand.toLatin1().constData());
+//      if (!backupCommand.isEmpty())
+//            system(backupCommand.toLatin1().constData());
 
       bool popenFlag;
       FILE* f = MusEGui::fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
@@ -1512,13 +1514,14 @@ void MusE::closeEvent(QCloseEvent* event)
       // save "Open Recent" list
       QString prjPath(MusEGlobal::configPath);
       prjPath += "/projects";
-      FILE* f = fopen(prjPath.toLatin1().constData(), "w");
-      if (f) {
-            for (int i = 0; i < projectRecentList.size(); ++i) {
-                  fprintf(f, "%s\n", projectRecentList[i].toLatin1().constData());
-                  }
-            fclose(f);
-            }
+      QFile f(prjPath);
+      f.open(QIODevice::WriteOnly | QIODevice::Text);
+      if (f.exists()) {
+        QTextStream out(&f);
+        for (int i = 0; i < projectRecentList.size(); ++i) {
+           out << projectRecentList[i] << "\n";
+        }
+      }
       if(MusEGlobal::debugMsg)
         printf("MusE: Exiting JackAudio\n");
       MusECore::exitJackAudio();
@@ -2060,18 +2063,11 @@ void MusE::openRecentMenu()
   openRecent->clear();
   for (int i = 0; i < projectRecentList.size(); ++i)
   {
-    QByteArray ba = projectRecentList[i].toLatin1();
-    const char* path = ba.constData();
-
-    if (!QFileInfo(path).exists())
+    if (!QFileInfo(projectRecentList[i]).exists())
         continue;
 
-    const char* p = strrchr(path, '/');
-    if (p == 0)
-          p = path;
-    else
-          ++p;
-    QAction *act = openRecent->addAction(QString(p));
+    QString fileName = QFileInfo(projectRecentList[i]).fileName();
+    QAction *act = openRecent->addAction(fileName);
     act->setData(i);
   }
 }

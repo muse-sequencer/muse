@@ -268,9 +268,9 @@ void PendingOperationItem::executeRTStage()
     
     case ModifyMidiDeviceName:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceName device:%p name:%s\n", _midiDevice, _name);
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiDeviceName device:%p name:%s\n", _midiDevice, _name->toLocal8Bit().data());
 #endif      
-      _midi_device->setName(_name);
+      _midi_device->setName(*_name);
     break;
     
     case AddTrack:
@@ -584,9 +584,9 @@ void PendingOperationItem::executeRTStage()
     
     case ModifyTrackName:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyTrackName track:%p new_val:%s\n", _track, _name);
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyTrackName track:%p new_val:%s\n", _track, _name->toLocal8Bit().data());
 #endif      
-      _track->setName(_name);
+      _track->setName(*_name);
     break;
     
 
@@ -646,9 +646,9 @@ void PendingOperationItem::executeRTStage()
 
     case ModifyPartName:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartName part:%p new_val:%s\n", _part, _name);
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyPartName part:%p new_val:%s\n", _part, _name->toLocal8Bit().data());
 #endif      
-      _part->setName(_name);
+      _part->setName(*_name);
     break;
     
     
@@ -1004,7 +1004,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         
       case PendingOperationItem::ModifyMidiDeviceName:
         if(poi._type == PendingOperationItem::ModifyMidiDeviceName && poi._midi_device == op._midi_device &&
-           strcmp(poi._name, op._name) == 0)
+           poi._name == op._name)
         {
           fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyMidiDeviceName. Ignoring.\n");
           return false;  
@@ -1054,7 +1054,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         
       case PendingOperationItem::ModifyTrackName:
         if(poi._type == PendingOperationItem::ModifyTrackName && poi._track == op._track &&
-           strcmp(poi._name, op._name) == 0)
+           poi._name == op._name)
         {
           fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyTrackName. Ignoring.\n");
           return false;  
@@ -1105,7 +1105,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       
       case PendingOperationItem::ModifyPartName:
         if(poi._type == PendingOperationItem::ModifyPartName && poi._part == op._part &&
-           strcmp(poi._name, op._name) == 0)
+           poi._name == op._name)
         {
           fprintf(stderr, "MusE error: PendingOperationList::add(): Double ModifyPartName. Ignoring.\n");
           return false;  

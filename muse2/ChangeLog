@@ -1,3 +1,11 @@
+15.03.2015:
+         - Changed string handling to allow international characters in fluid synth
+           as well as wave tracks, this has affected several parts of muse, not the
+           least undo/redo. Internally handling of strings have been changed to QString 
+           instead of char * in several places. This to minimize conversions as this
+           is a big source of errors. String conversions from .toLatin1 have been changed
+           to toLocal8Bit and QString::fromLocal8Bit in many places. I think this is 
+           right way but it needs more testing. Fixes bug #361 (rj)
 02.03.2015:
          - Slow motion moving of editing of automation with shift key (rj)
 04.02.2015

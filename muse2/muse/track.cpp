@@ -1226,7 +1226,7 @@ void Track::writeRouting(int level, Xml& xml) const
           xml.tag(level++, s.toLatin1().constData());
           
           // Allow for a regular mono or stereo track to feed a multi-channel synti. 
-          xml.tag(level, "source name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
+          xml.tag(level, "source name=\"%s\"/", Xml::xmlString(name()).toLocal8Bit().constData());
           
           s = "dest";
           

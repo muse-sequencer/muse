@@ -97,7 +97,7 @@ void UndoOp::dump()
                         part->dump(5);
                   break;
             case ModifyTrackName:
-                  printf("<%s>-<%s>\n", _oldName, _newName);
+                  printf("<%s>-<%s>\n", _oldName->toLocal8Bit().data(), _newName->toLocal8Bit().data());
                   break;
             case ModifyTrackChannel:
                   printf("<%d>-<%d>\n", _oldPropValue, _newPropValue);
@@ -141,9 +141,9 @@ void UndoList::clearDelete()
             case UndoOp::ModifyPartName:
             case UndoOp::ModifyTrackName:
                   if (i->_oldName)
-                    delete [] i->_oldName;
+                    delete i->_oldName;
                   if (i->_newName)
-                    delete [] i->_newName;
+                    delete i->_newName;
                   break;
             
             default:
@@ -178,9 +178,9 @@ void UndoList::clearDelete()
             case UndoOp::ModifyPartName:
             case UndoOp::ModifyTrackName:
                   if (i->_oldName)
-                    delete [] i->_oldName;
+                    delete i->_oldName;
                   if (i->_newName)
-                    delete [] i->_newName;
+                    delete i->_newName;
                   break;
             
             default:
@@ -1248,45 +1248,45 @@ UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_)
       copyMarker  = copyMarker_;
       }
 
-UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, int startframe_, int endframe_)
+UndoOp::UndoOp(UndoType type_, const QString& changedFile, const QString& changeData, int startframe_, int endframe_)
       {
       assert(type_==ModifyClip);
       
       type = type_;
-      filename   = changedFile;
-      tmpwavfile = changeData;
+      filename   = new QString(changedFile);
+      tmpwavfile = new QString(changeData);
       startframe = startframe_;
       endframe   = endframe_;
       }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const char* old_name, const char* new_name)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Part* part_, const QString& old_name, const QString& new_name)
 {
     assert(type_==ModifyPartName);
     assert(part_);
-    assert(old_name);
-    assert(new_name);
+//    assert(old_name);
+//    assert(new_name);
     
     type=type_;
     part=part_;
-    _oldName = new char[strlen(old_name) + 1];
-    _newName = new char[strlen(new_name) + 1];
-    strcpy(_oldName, old_name);
-    strcpy(_newName, new_name);
+    _oldName = new QString(old_name);
+    _newName = new QString(new_name);
+    //strcpy(_oldName, old_name);
+    //strcpy(_newName, new_name);
 }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const char* old_name, const char* new_name)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, const QString& old_name, const QString& new_name)
 {
   assert(type_==ModifyTrackName);
   assert(track_);
-  assert(old_name);
-  assert(new_name);    
+//  assert(old_name);
+//  assert(new_name);
     
   type = type_;
   track = track_;
-  _oldName = new char[strlen(old_name) + 1];
-  _newName = new char[strlen(new_name) + 1];
-  strcpy(_oldName, old_name);
-  strcpy(_newName, new_name);
+  _oldName = new QString(old_name);
+  _newName = new QString(new_name);
+//  strcpy(_oldName, old_name);
+//  strcpy(_newName, new_name);
 }
 
 UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int old_chan, int new_chan)
@@ -1310,7 +1310,7 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Route& route_from_, const Route& ro
       }
 #pragma GCC diagnostic pop
 
-void Song::undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe)
+void Song::undoOp(UndoOp::UndoType type, const QString& changedFile, const QString& changeData, int startframe, int endframe)
       {
       addUndo(UndoOp(type,changedFile,changeData,startframe,endframe));
       temporaryWavFiles.push_back(QString(changeData));
@@ -1496,12 +1496,6 @@ void Song::revertOperationGroup1(Undo& operations)
                                 MusEGlobal::audio->msgIdle(true);
                                 mt->setOutChanAndUpdate(i->_oldPropValue);
                                 MusEGlobal::audio->msgIdle(false);
-                                // DELETETHIS 6
-                                //if (mt->type() == MusECore::MidiTrack::DRUM) {//Change channel on all drum instruments
-                                //      for (int i=0; i<DRUM_MAPSIZE; i++)
-                                //            MusEGlobal::drumMap[i].channel = i->_oldPropValue;
-                                //      }
-                                //updateFlags |= SC_CHANNELS;
                                 MusEGlobal::audio->msgUpdateSoloStates();                   
                                 updateFlags |= SC_MIDI_TRACK_PROP;               
                           }

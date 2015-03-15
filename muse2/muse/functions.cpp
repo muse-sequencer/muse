@@ -1359,7 +1359,7 @@ void schedule_resize_all_same_len_clone_parts(const Part* part, unsigned new_len
 	
 	for (Undo::iterator op_it=operations.begin(); op_it!=operations.end();op_it++)
 		if (op_it->type==UndoOp::DeletePart)
-			already_done.insert(op_it->part);
+      already_done.insert(op_it->part);
 			
 	unsigned old_len = part->lenValue();
 	if (old_len!=new_len)

@@ -125,7 +125,7 @@ PluginDialog::PluginDialog(QWidget* parent)
       for (int i=0; i < ui.pluginType->count(); i++) {
         if (selectedPlugType == ui.pluginType->itemData(i).toInt()) {
           ui.pluginType->setCurrentIndex(i);
-          printf("set current index to %d\n",i);
+          //printf("set current index to %d\n",i);
           break;
         }
       }

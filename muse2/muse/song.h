@@ -368,7 +368,7 @@ class Song : public QObject {
       void startUndo();
       void endUndo(MusECore::SongChangedFlags_t);
 
-	  void undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
+    void undoOp(UndoOp::UndoType type, const QString& changedFile, const QString& changeData, int startframe, int endframe); // FIXME FINDMICHJETZT what's that?! remove it!
 
       void executeOperationGroup1(Undo& operations);
       void executeOperationGroup2(Undo& operations);

@@ -74,7 +74,7 @@ class SndFile {
       int getRefCount() { return refCount; }
 
       static SndFileList sndFiles;
-      static void applyUndoFile(const QString& original, const QString& tmpfile, unsigned sx, unsigned ex);
+      static void applyUndoFile(const QString* original, const QString* tmpfile, unsigned sx, unsigned ex);
 
       void readCache(const QString& path, bool progress);
 

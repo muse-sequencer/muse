@@ -102,9 +102,9 @@ bool SndFile::openRead(bool createCache)
             }
       QString p = path();
       sfinfo.format = 0;
-      sf = sf_open(p.toLatin1().constData(), SFM_READ, &sfinfo);
+      sf = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
       sfinfo.format = 0;
-      sfUI = sf_open(p.toLatin1().constData(), SFM_READ, &sfinfo);
+      sfUI = sf_open(p.toLocal8Bit().constData(), SFM_READ, &sfinfo);
       if (sf == 0 || sfUI == 0)
             return true;
             
@@ -129,9 +129,9 @@ void SndFile::update()
       // force recreation of wca data
       QString cacheName = finfo->absolutePath() +
          QString("/") + finfo->completeBaseName() + QString(".wca");
-      ::remove(cacheName.toLatin1().constData());
+      ::remove(cacheName.toLocal8Bit().constData());
       if (openRead()) {
-            printf("SndFile::update openRead(%s) failed: %s\n", path().toLatin1().constData(), strerror().toLatin1().constData());
+            printf("SndFile::update openRead(%s) failed: %s\n", path().toLocal8Bit().constData(), strerror().toLocal8Bit().constData());
             }
       }
 
@@ -219,7 +219,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
 
 void SndFile::writeCache(const QString& path)
       {
-      FILE* cfile = fopen(path.toLatin1().constData(), "w");
+      FILE* cfile = fopen(path.toLocal8Bit().constData(), "w");
       if (cfile == 0)
             return;
       for (unsigned ch = 0; ch < channels(); ++ch)
@@ -653,7 +653,7 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
       if (f == 0) {
             if (!QFile::exists(name)) {
                   fprintf(stderr, "wave file <%s> not found\n",
-                     name.toLatin1().constData());
+                     name.toLocal8Bit().constData());
                   return NULL;
                   }
             f = new SndFile(name);
@@ -677,9 +677,9 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
               }
               if (error) {
                     fprintf(stderr, "open wave file(%s) for %s failed: %s\n",
-                      name.toLatin1().constData(),
+                      name.toLocal8Bit().constData(),
                       readOnlyFlag ? "writing" : "reading",
-                      f->strerror().toLatin1().constData());
+                      f->strerror().toLocal8Bit().constData());
                       if(showErrorBox) 
                         QMessageBox::critical(NULL, "MusE import error.", 
                                         "MusE failed to import the file.\n"
@@ -719,7 +719,7 @@ SndFileR getWave(const QString& inName, bool readOnlyFlag, bool openFlag, bool s
 //---------------------------------------------------------
 //   applyUndoFile
 //---------------------------------------------------------
-void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, unsigned startframe, unsigned endframe)
+void SndFile::applyUndoFile(const QString* original, const QString* tmpfile, unsigned startframe, unsigned endframe)
       {
       // This one is called on both undo and redo of a wavfile
       // For redo to be called, undo must have been called first, and we don't store both the original data and the modified data in separate
@@ -731,23 +731,23 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       // put in the tmpfile, and when redo is eventually called the data is switched again (causing the muted data to be written to the "original"
       // file. The data is merely switched.
 
-      SndFile* orig = sndFiles.search(original);
-      SndFile tmp  = SndFile(tmpfile);
+      SndFile* orig = sndFiles.search(*original);
+      SndFile tmp  = SndFile(*tmpfile);
       if (!orig) {
-            printf("Internal error: could not find original file: %s in filelist - Aborting\n", original.toLatin1().constData());
+            printf("Internal error: could not find original file: %s in filelist - Aborting\n", original->toLocal8Bit().constData());
             return;
             }
 
       if (!orig->isOpen()) {
             if (orig->openRead()) {
-                  printf("Cannot open original file %s for reading - cannot undo! Aborting\n", original.toLatin1().constData());
+                  printf("Cannot open original file %s for reading - cannot undo! Aborting\n", original->toLocal8Bit().constData());
                   return;
                   }
             }
 
       if (!tmp.isOpen()) {
             if (tmp.openRead()) {
-                  printf("Could not open temporary file %s for writing - cannot undo! Aborting\n", tmpfile.toLatin1().constData());
+                  printf("Could not open temporary file %s for writing - cannot undo! Aborting\n", tmpfile->toLocal8Bit().constData());
                   return;
                   }
             }
@@ -875,7 +875,7 @@ ClipBase::ClipBase(const SndFileR& file, int start, int l)
       {
       refCount = 0;
       for (int i = 1; true; ++i) {
-            _name.sprintf("%s.%d", f.basename().toLatin1().constData(), i);
+            _name.sprintf("%s.%d", f.basename().toLocal8Bit().constData(), i);
             ciClip ic = waveClips->begin();
             for (; ic != waveClips->end(); ++ic) {
                   if ((*ic)->name() == _name)
@@ -1001,7 +1001,7 @@ Clip ClipList::search(const QString& name) const
             if ((*i)->name() == name)
                   return Clip(*i);
       fprintf(stderr, "ClipList: clip <%s> not found\n",
-         name.toLatin1().constData());
+         name.toLocal8Bit().constData());
       return Clip();
       }
 
@@ -1047,7 +1047,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       MusECore::SndFileR f = track->recFile();
       if (f.isNull()) {
             printf("cmdAddRecordedWave: no snd file for track <%s>\n",
-               track->name().toLatin1().constData());
+               track->name().toLocal8Bit().constData());
             return;
             }
       
@@ -1081,9 +1081,9 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
         // The function which calls this function already does this immediately after. But do it here anyway.
         track->setRecFile(NULL); // upon "return", f is removed from the stack, the WaveTrack::_recFile's
                                  // counter has dropped by 2 and _recFile will probably deleted then
-        remove(st.toLatin1().constData());
+        remove(st.toLocal8Bit().constData());
         if(MusEGlobal::debugMsg)
-          printf("Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLatin1().constData(), s.frame(), e.frame());  
+          printf("Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n", st.toLocal8Bit().constData(), s.frame(), e.frame());
       
         // Restore master flag. 
         if(MusEGlobal::extSyncFlag.value() && !master_was_on)
@@ -1140,11 +1140,12 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
 //---------------------------------------------------------
 void Song::cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex)
       {
-      char* original_charstr = new char[original.length() + 1];
-      char* tmpfile_charstr = new char[tmpfile.length() + 1];
-      strcpy(original_charstr, original.toLatin1().constData());
-      strcpy(tmpfile_charstr, tmpfile.toLatin1().constData());
-      MusEGlobal::song->undoOp(UndoOp::ModifyClip, original_charstr, tmpfile_charstr, sx, ex);
+//      char* original_charstr = new char[original.length() + 1];
+//      char* tmpfile_charstr = new char[tmpfile.length() + 1];
+//      strcpy(original_charstr, original.toLatin1().constData());
+//      strcpy(tmpfile_charstr, tmpfile.toLatin1().constData());
+//      MusEGlobal::song->undoOp(UndoOp::ModifyClip, original_charstr, tmpfile_charstr, sx, ex);
+      MusEGlobal::song->undoOp(UndoOp::ModifyClip, original, tmpfile, sx, ex);
       }
 
 //---------------------------------------------------------
