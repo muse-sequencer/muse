@@ -1,3 +1,5 @@
+03.04.2015:
+         - Made raster colors in midi editor editable and section dividers in track list (rj)
 15.03.2015:
          - Changed string handling to allow international characters in fluid synth
            as well as wave tracks, this has affected several parts of muse, not the
