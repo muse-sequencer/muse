@@ -530,7 +530,7 @@ void TList::paint(const QRect& r)
 
       int n = header->count();
       int xpos = 0;
-      p.setPen(Qt::gray);
+      p.setPen(MusEGlobal::config.trackSectionDividerColor);
       for (int index = 0; index < n; index++) {
             int section = header->logicalIndex(index);
             xpos += header->sectionSize(section);

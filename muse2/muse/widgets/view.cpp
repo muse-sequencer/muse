@@ -22,6 +22,7 @@
 //=========================================================
 
 #include "view.h"
+#include "gconfig.h"
 #include <cmath>
 #include <stdio.h>
 #include <QPainter>
@@ -625,7 +626,7 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
             ///unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
             unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
             int xt = mapx(xb);
-            p.setPen(Qt::black);
+            p.setPen(MusEGlobal::config.midiCanvasBarColor);
             ///p.drawLine(x, y, x, y2);
             p.drawLine(xt, my, xt, y2);
             int z, n;
@@ -638,7 +639,7 @@ void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
             //if (q < 8)        // grid too dense
             if (rmapx(raster) < 8)        // grid too dense
                   qq *= 2;
-            p.setPen(Qt::lightGray);
+            p.setPen(MusEGlobal::config.midiCanvasBeatColor);
             if (raster>=4) {
                         ///int xx = x + qq;
                         //int xx = mapx(xb + qq);

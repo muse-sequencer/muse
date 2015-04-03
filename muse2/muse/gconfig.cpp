@@ -100,6 +100,7 @@ GlobalConfigValues config = {
       QColor(84, 97, 114),          // trackBg;
       QColor(109, 174, 178),        // selected track Bg;
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
+      Qt::gray,                     // trackSectionDividerColor;
       
       QColor(74, 150, 194),         // midiTrackLabelBg;   // Med blue
       QColor(150, 177, 189),        // drumTrackLabelBg;   // Pale pastel blue
@@ -131,6 +132,8 @@ GlobalConfigValues config = {
       QColor(255, 255, 255),        // midiControllerViewBg
       QColor(255, 255, 255),        // drumListBg
       QColor(255, 255, 255),        // rulerCurrent
+      Qt::gray,                     // midiCanvasBeatColor
+      Qt::lightGray,                // midiCanvasBarColor
 
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor

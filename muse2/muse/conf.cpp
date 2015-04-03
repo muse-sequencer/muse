@@ -859,7 +859,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.selectTrackBg = readColor(xml);
                         else if (tag == "selectTrackFg")
                               MusEGlobal::config.selectTrackFg = readColor(xml);
-                        
+                        else if (tag == "trackSectionDividerColor")
+                              MusEGlobal::config.trackSectionDividerColor = readColor(xml);
                         else if (tag == "mixerBg")
                               MusEGlobal::config.mixerBg = readColor(xml);
                         else if (tag == "midiTrackLabelBg")
@@ -988,6 +989,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 
                         else if (tag == "midiCanvasBackgroundColor")
                               MusEGlobal::config.midiCanvasBg = readColor(xml);
+                        else if (tag == "midiCanvasBeatColor")
+                              MusEGlobal::config.midiCanvasBeatColor = readColor(xml);
+                        else if (tag == "midiCanvasBarColor")
+                              MusEGlobal::config.midiCanvasBarColor = readColor(xml);
                         else if (tag == "midiControllerViewBackgroundColor")
                               MusEGlobal::config.midiControllerViewBg = readColor(xml);
                         else if (tag == "drumListBackgroundColor")
@@ -1513,7 +1518,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "trackBg",       MusEGlobal::config.trackBg);
       xml.colorTag(level, "selectTrackBg", MusEGlobal::config.selectTrackBg);
       xml.colorTag(level, "selectTrackFg", MusEGlobal::config.selectTrackFg);
-      
+      xml.colorTag(level, "trackSectionDividerColor", MusEGlobal::config.trackSectionDividerColor);
+
       xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
       xml.colorTag(level, "midiTrackLabelBg",   MusEGlobal::config.midiTrackLabelBg);
       xml.colorTag(level, "drumTrackLabelBg2",  MusEGlobal::config.drumTrackLabelBg);
@@ -1581,6 +1587,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "partMidiLightEventColor", MusEGlobal::config.partMidiLightEventColor);
 
       xml.colorTag(level, "midiCanvasBackgroundColor", MusEGlobal::config.midiCanvasBg);
+      xml.colorTag(level, "midiCanvasBeatColor", MusEGlobal::config.midiCanvasBeatColor);
+      xml.colorTag(level, "midiCanvasBarColor", MusEGlobal::config.midiCanvasBarColor);
+
       xml.colorTag(level, "midiControllerViewBackgroundColor", MusEGlobal::config.midiControllerViewBg);
       xml.colorTag(level, "drumListBackgroundColor", MusEGlobal::config.drumListBg);
 
