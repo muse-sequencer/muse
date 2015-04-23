@@ -1,3 +1,5 @@
+15.04.2015:
+         - Fixed bug #363, Len not initializing correctly when importing midi files (rj)
 03.04.2015:
          - Made raster colors in midi editor editable and section dividers in track list (rj)
 15.03.2015:
