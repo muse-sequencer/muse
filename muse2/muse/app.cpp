@@ -3226,8 +3226,11 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
       else
         printf("  subwin contains NULL\n");
     }
-    if(qApp->activeWindow())                                                   
-      printf(" activeWindow type: %s\n", typeid(*qApp->activeWindow()).name());  
+    if(qApp->activeWindow())
+    {
+       const char *strTid = typeid(qApp->activeWindow()).name();
+       printf(" activeWindow type: %s\n", strTid);
+    }
     printf("\n");   
   }
   
