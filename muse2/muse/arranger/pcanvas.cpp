@@ -201,7 +201,7 @@ void PartCanvas::returnPressed()
           // Indicate do undo, and do port controller values but not clone parts. 
           
           Undo operations;
-          operations.push_back(UndoOp(UndoOp::ModifyPartName,part, part->name().toUtf8().data(), lineEditor->text().toUtf8().data())); // FIXME char sucks, better use QString directly.
+          operations.push_back(UndoOp(UndoOp::ModifyPartName,part, part->name(), lineEditor->text()));
           MusEGlobal::song->applyOperationGroup(operations);
           
           editMode = false;
