@@ -2636,11 +2636,12 @@ void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelecte
   p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
   p.addAction(QIcon(*addtrack_drumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
   p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("New style drum"))->setData(MusECore::Track::NEW_DRUM);
-  QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
-  int n = act->data().toInt();
+  QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);  
 
   if (!act)
     return;
+
+  int n = act->data().toInt();
 
   if (!allSelected) {
     changeTrackToType(tIn,MusECore::Track::TrackType(n));
