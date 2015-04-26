@@ -243,9 +243,12 @@ void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsign
         ops.add(PendingOperationItem(mcvl, imcv, val, PendingOperationItem::ModifyMidiCtrlVal));
         return;
       }
+    }    
+    //assert(mcvl != NULL); //FIXME: Can this happen? (danvd). UPDATE: Yes, it can (danvd)
+    if(mcvl != NULL)
+    {
+      ops.add(PendingOperationItem(mcvl, part, tck, val, PendingOperationItem::AddMidiCtrlVal));
     }
-    assert(mcvl != NULL); //FIXME: Can this happen? (danvd)
-    ops.add(PendingOperationItem(mcvl, part, tck, val, PendingOperationItem::AddMidiCtrlVal));
   }
 }
 
