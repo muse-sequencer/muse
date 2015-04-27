@@ -134,6 +134,8 @@ class JackAudioDevice : public AudioDevice {
       bool timebaseQuery(unsigned frames, unsigned* bar, unsigned* beat, unsigned* tick, unsigned* curr_abs_tick, unsigned* next_ticks);
       void graphChanged();
       virtual bool portConnectedTo(void* our_port, const char* port) { return jack_port_connected_to((jack_port_t*)our_port, port); }
+      virtual bool portsConnected(const char*, const char*);
+      virtual bool portsCanConnect(const char*, const char*);
       
       virtual int setMaster(bool f);
 

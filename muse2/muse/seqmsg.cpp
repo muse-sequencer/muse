@@ -97,42 +97,70 @@ bool Audio::sendMessage(AudioMsg* m, bool doUndo)
 
 void Audio::msgRemoveRoute(Route src, Route dst)
 {
-      // REMOVE Tim. Persistent routes. Added.
-      fprintf(stderr, "Audio::msgRemoveRoute:\n");
-      
-      msgRemoveRoute1(src, dst);
-      if(!MusEGlobal::checkAudioDevice()) 
-        return;
-      if(src.type == Route::JACK_ROUTE)
+  // REMOVE Tim. Persistent routes. Added.
+  fprintf(stderr, "Audio::msgRemoveRoute:\n");
+  
+  msgRemoveRoute1(src, dst);
+  if(!MusEGlobal::checkAudioDevice())
+    return;
+  
+  switch(src.type)
+  {
+    case Route::JACK_ROUTE:
+      switch(dst.type)
       {
-          if(dst.type == Route::MIDI_DEVICE_ROUTE)  
+        case Route::JACK_ROUTE:
+          MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, dst.persistentJackPortName);
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+          if(dst.device && dst.device->deviceType() == MidiDevice::JACK_MIDI && dst.device->inClientPort())
+            MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(dst.device->inClientPort()));
+        break;
+        case Route::TRACK_ROUTE:
+          if(dst.track && dst.track->type() == Track::AUDIO_INPUT && dst.channel >= 0)
           {
-            if(dst.device)
-            {
-              if(dst.device->deviceType() == MidiDevice::JACK_MIDI)
-                MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, 
-                                    MusEGlobal::audioDevice->canonicalPortName(dst.device->inClientPort()));
-            }
+            AudioInput* ai = static_cast<AudioInput*>(dst.track);
+            if(ai->jackPort(dst.channel))
+              MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(ai->jackPort(dst.channel)));
           }
-          else  
-            MusEGlobal::audioDevice->disconnect(src.persistentJackPortName, 
-                                MusEGlobal::audioDevice->canonicalPortName(((AudioInput*)dst.track)->jackPort(dst.channel)));
+        break;
+        case Route::MIDI_PORT_ROUTE:
+        break;
       }
-      else if (dst.type == Route::JACK_ROUTE)
+    break;
+    case Route::MIDI_DEVICE_ROUTE:
+      switch(dst.type)
       {
-          if(src.type == Route::MIDI_DEVICE_ROUTE)  
-          {
-            if(src.device)
-            {
-              if(src.device->deviceType() == MidiDevice::JACK_MIDI)
-                MusEGlobal::audioDevice->disconnect(MusEGlobal::audioDevice->canonicalPortName(src.device->outClientPort()), 
-                                                                    dst.persistentJackPortName);
-            }  
-          }
-          else  
-            MusEGlobal::audioDevice->disconnect(MusEGlobal::audioDevice->canonicalPortName(((AudioOutput*)src.track)->jackPort(src.channel)), 
-                                                                dst.persistentJackPortName);
+        case Route::JACK_ROUTE:
+          if(src.device && src.device->deviceType() == MidiDevice::JACK_MIDI && src.device->outClientPort())
+            MusEGlobal::audioDevice->disconnect(MusEGlobal::audioDevice->canonicalPortName(src.device->outClientPort()), dst.persistentJackPortName);
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+        case Route::TRACK_ROUTE:
+        case Route::MIDI_PORT_ROUTE:
+        break;
       }
+    break;
+    case Route::TRACK_ROUTE:
+      switch(dst.type)
+      {
+        case Route::JACK_ROUTE:
+          if(src.track && src.track->type() == Track::AUDIO_OUTPUT && src.channel >= 0)
+          {
+            AudioOutput* ao = static_cast<AudioOutput*>(src.track);
+            if(ao->jackPort(src.channel))
+            MusEGlobal::audioDevice->disconnect(MusEGlobal::audioDevice->canonicalPortName(ao->jackPort(src.channel)), dst.persistentJackPortName);
+          }
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+        case Route::TRACK_ROUTE:
+        case Route::MIDI_PORT_ROUTE:
+        break;
+      }
+    break;
+    case Route::MIDI_PORT_ROUTE:
+    break;
+  }
 }
 
 //---------------------------------------------------------
@@ -161,29 +189,63 @@ void Audio::msgAddRoute(Route src, Route dst)
   
   if(!MusEGlobal::checkAudioDevice() || !isRunning()) 
     return;
-  if(src.type == Route::JACK_ROUTE) 
+
+  switch(src.type)
   {
-    if(dst.type == Route::MIDI_DEVICE_ROUTE)  
-    {
-      if(dst.device && dst.device->deviceType() == MidiDevice::JACK_MIDI)  
-        MusEGlobal::audioDevice->connect(src.persistentJackPortName, 
-                          MusEGlobal::audioDevice->canonicalPortName(dst.device->inClientPort()));    
-    }
-    else  
-      MusEGlobal::audioDevice->connect(src.persistentJackPortName, 
-                        MusEGlobal::audioDevice->canonicalPortName(((AudioInput*)dst.track)->jackPort(dst.channel)));
-  }
-  else if (dst.type == Route::JACK_ROUTE) 
-  {
-    if(src.type == Route::MIDI_DEVICE_ROUTE)  
-    {
-      if(src.device && src.device->deviceType() == MidiDevice::JACK_MIDI)  
-        MusEGlobal::audioDevice->connect(MusEGlobal::audioDevice->canonicalPortName(src.device->outClientPort()), 
-                                                          dst.persistentJackPortName);      
-    }
-    else  
-      MusEGlobal::audioDevice->connect(MusEGlobal::audioDevice->canonicalPortName(((AudioOutput*)src.track)->jackPort(dst.channel)), 
-                                                        dst.persistentJackPortName);
+    case Route::JACK_ROUTE:
+      switch(dst.type)
+      {
+        case Route::JACK_ROUTE:
+          MusEGlobal::audioDevice->connect(src.persistentJackPortName, dst.persistentJackPortName);
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+          if(dst.device && dst.device->deviceType() == MidiDevice::JACK_MIDI && dst.device->inClientPort())
+            MusEGlobal::audioDevice->connect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(dst.device->inClientPort()));
+        break;
+        case Route::TRACK_ROUTE:
+          if(dst.track && dst.track->type() == Track::AUDIO_INPUT && dst.channel >= 0)
+          {
+            AudioInput* ai = static_cast<AudioInput*>(dst.track);
+            if(ai->jackPort(dst.channel))
+              MusEGlobal::audioDevice->connect(src.persistentJackPortName, MusEGlobal::audioDevice->canonicalPortName(ai->jackPort(dst.channel)));
+          }
+        break;
+        case Route::MIDI_PORT_ROUTE:
+        break;
+      }
+    break;
+    case Route::MIDI_DEVICE_ROUTE:
+      switch(dst.type)
+      {
+        case Route::JACK_ROUTE:
+          if(src.device && src.device->deviceType() == MidiDevice::JACK_MIDI && src.device->outClientPort())
+            MusEGlobal::audioDevice->connect(MusEGlobal::audioDevice->canonicalPortName(src.device->outClientPort()), dst.persistentJackPortName);
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+        case Route::TRACK_ROUTE:
+        case Route::MIDI_PORT_ROUTE:
+        break;
+      }
+    break;
+    case Route::TRACK_ROUTE:
+      switch(dst.type)
+      {
+        case Route::JACK_ROUTE:
+          if(src.track && src.track->type() == Track::AUDIO_OUTPUT && src.channel >= 0)
+          {
+            AudioOutput* ao = static_cast<AudioOutput*>(src.track);
+            if(ao->jackPort(src.channel))
+              MusEGlobal::audioDevice->connect(MusEGlobal::audioDevice->canonicalPortName(ao->jackPort(src.channel)), dst.persistentJackPortName);
+          }
+        break;
+        case Route::MIDI_DEVICE_ROUTE:
+        case Route::TRACK_ROUTE:
+        case Route::MIDI_PORT_ROUTE:
+        break;
+      }
+    break;
+    case Route::MIDI_PORT_ROUTE:
+    break;
   }
 }
 

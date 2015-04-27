@@ -39,7 +39,8 @@ class Splitter : public QSplitter {
       Q_OBJECT
 
    public:
-      Splitter(Qt::Orientation o, QWidget* parent, const char* name);
+      Splitter(QWidget* parent, const char* name = 0);
+      Splitter(Qt::Orientation o, QWidget* parent, const char* name = 0);
       void writeStatus(int level, MusECore::Xml&);
       void readStatus(MusECore::Xml&);
       };

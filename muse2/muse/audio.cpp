@@ -583,7 +583,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
           //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
-          track->copyData(samplePos, channels, -1, -1, frames, buffer);
+          track->copyData(samplePos, -1, channels, -1, -1, frames, buffer);
         }
       }      
       
@@ -612,7 +612,7 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
           //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1()); DELETETHIS
-          track->copyData(samplePos, channels, -1, -1, frames, buffer);
+          track->copyData(samplePos, -1, channels, -1, -1, frames, buffer);
         }
       }      
     }

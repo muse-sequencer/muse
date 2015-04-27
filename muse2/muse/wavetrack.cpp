@@ -245,8 +245,13 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
               if(i->track->isMidiTrack())
                 continue;
 
-              ((AudioTrack*)i->track)->copyData(framePos, channels,
-                                               i->channel,
+              // REMOVE Tim. Persistent routes. Changed.
+//               ((AudioTrack*)i->track)->copyData(framePos, channels,
+//                                                i->channel,
+//                                                i->channels,
+//                                                nframe, bp, have_data);
+              ((AudioTrack*)i->track)->copyData(framePos, i->channel, channels,
+                                               i->remoteChannel,
                                                i->channels,
                                                nframe, bp, have_data);
               have_data = true;

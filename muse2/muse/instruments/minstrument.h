@@ -229,13 +229,14 @@ class MidiInstrument {
       void setNullSendValue(int v) { _nullvalue = v; }
 
       void readMidiState(Xml& xml);
-      virtual bool guiVisible() const   { return false; }
-      virtual void showGui(bool)        {}
-      virtual bool hasGui() const       { return false; }
-      virtual bool nativeGuiVisible() const   { return false; }
-      virtual void showNativeGui(bool)        {}
-      virtual bool hasNativeGui() const       { return false; }
-      virtual void writeToGui(const MidiPlayEvent&) {}
+      // REMOVE Tim. Persistent routes. Removed.
+//       virtual bool guiVisible() const   { return false; }
+//       virtual void showGui(bool)        {}
+//       virtual bool hasGui() const       { return false; }
+//       virtual bool nativeGuiVisible() const   { return false; }
+//       virtual void showNativeGui(bool)        {}
+//       virtual bool hasNativeGui() const       { return false; }
+//       virtual void writeToGui(const MidiPlayEvent&) {}
 
       virtual void reset(int); 
       virtual QString getPatchName(int,int,bool) const;

@@ -1197,7 +1197,12 @@ void Arranger::switchInfo(int n)
             AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
             if (w == 0 || selected != w->getTrack()) {
                   if (w)
-                        delete w;
+                  {
+                        // REMOVE Tim. Persistent routes. Added.
+                        fprintf(stderr, "Arranger::switchInfo deleting strip\n");
+                        //delete w;
+                        w->deleteLater();
+                  }
                   w = new AudioStrip(trackInfo, (MusECore::AudioTrack*)selected);
                   //w->setFocusPolicy(Qt::TabFocus);
                   connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedFlags_t)), w, SLOT(songChanged(MusECore::SongChangedFlags_t)));

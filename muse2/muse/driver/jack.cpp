@@ -1324,6 +1324,74 @@ void JackAudioDevice::disconnect(const char* src, const char* dst)
 }
 
 //---------------------------------------------------------
+//   portsConnected
+//---------------------------------------------------------
+
+bool JackAudioDevice::portsConnected(const char* port1, const char* port2)
+{
+  if(!_client)
+    return false;
+  jack_port_t* jp1 = jack_port_by_name(_client, port1);
+  if(!jp1)
+    return false;
+  jack_port_t* jp2 = jack_port_by_name(_client, port2);
+  if(!jp2)
+    return false;
+  
+  const char** ports = jack_port_get_all_connections(_client, jp1);
+  if(!ports)
+    return false;
+
+  bool rv = false;  
+  for(const char** p = ports; p && *p; ++p) 
+  {
+    jack_port_t* jp = jack_port_by_name(_client, *p);
+    if(jp == jp2)
+    {
+      rv = true;
+      break;
+    }
+  }
+  
+  jack_free(ports);
+  return rv;
+}
+
+//---------------------------------------------------------
+//   portsCanConnect
+//---------------------------------------------------------
+
+bool JackAudioDevice::portsCanConnect(const char* port1, const char* port2)
+{ 
+  if(!_client)
+    return false;
+  jack_port_t* jp1 = jack_port_by_name(_client, port1);
+  if(!jp1)
+    return false;
+  jack_port_t* jp2 = jack_port_by_name(_client, port2);
+  if(!jp2)
+    return false;
+  
+  const char** ports = jack_port_get_all_connections(_client, jp1);
+  if(!ports)
+    return true;
+
+  bool rv = true;  
+  for(const char** p = ports; p && *p; ++p) 
+  {
+    jack_port_t* jp = jack_port_by_name(_client, *p);
+    if(jp == jp2)
+    {
+      rv = false;
+      break;
+    }
+  }
+  
+  jack_free(ports);
+  return rv;
+}
+
+//---------------------------------------------------------
 //   start
 //---------------------------------------------------------
 

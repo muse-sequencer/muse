@@ -32,10 +32,19 @@ namespace MusEGui {
 //   Splitter
 //---------------------------------------------------------
 
+Splitter::Splitter(QWidget* parent, const char* name)
+   : QSplitter(parent)
+      {
+      if(name)
+        setObjectName(name);
+      setOpaqueResize(true);
+      }
+
 Splitter::Splitter(Qt::Orientation o, QWidget* parent, const char* name)
    : QSplitter(o, parent)
       {
-      setObjectName(name);
+      if(name)
+        setObjectName(name);
       setOpaqueResize(true);
       }
 

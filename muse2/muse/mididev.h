@@ -76,13 +76,14 @@ class MidiDevice {
       virtual void processStuckNotes();
 
    public:
-      enum { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2 };
+      enum MidiDeviceType { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2 };
       
       MidiDevice();
       MidiDevice(const QString& name);
       virtual ~MidiDevice() {}
 
-      virtual int deviceType() const = 0;
+      virtual MidiDeviceType deviceType() const = 0;
+      virtual QString deviceTypeString();
       
       virtual void* inClientPort() { return 0; }
       virtual void* outClientPort() { return 0; }
@@ -114,6 +115,19 @@ class MidiDevice {
       void setOpenFlags(int val)       { _openFlags = val; }
       void setrwFlags(int val)         { _rwFlags = val; }
 
+      // REMOVE Tim. Persistent routes. Added.
+      virtual bool guiVisible() const { return false; }
+      virtual void showGui(bool)    { }
+      virtual bool hasGui() const     { return false; }
+      virtual bool nativeGuiVisible() const { return false; }
+      virtual void showNativeGui(bool)    { }
+      virtual bool hasNativeGui() const     { return false; }
+      virtual void getGeometry(int* x, int* y, int* w, int* h) const { *x = 0; *y = 0; *w = 0; *h = 0; }
+      virtual void setGeometry(int /*x*/, int /*y*/, int /*w*/, int /*h*/) { }
+      virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const { *x = 0; *y = 0; *w = 0; *h = 0; }
+      virtual void setNativeGeometry(int /*x*/, int /*y*/, int /*w*/, int /*h*/) { }
+
+      
       virtual bool isSynti() const     { return false; }
       virtual int selectRfd()          { return -1; }
       virtual int selectWfd()          { return -1; }

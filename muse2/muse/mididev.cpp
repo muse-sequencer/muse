@@ -135,6 +135,26 @@ MidiDevice::MidiDevice(const QString& n)
       init();
       }
 
+QString MidiDevice::deviceTypeString()
+{
+  switch(deviceType())
+  {
+    case ALSA_MIDI:
+        return "ALSA";
+    case JACK_MIDI:
+        return "JACK";
+    case SYNTH_MIDI:
+    {
+      SynthI* s = dynamic_cast<SynthI*>(this);
+      if(s && s->synth())
+        return MusECore::synthType2String(s->synth()->synthType());
+      else
+        return "SYNTH";
+    }
+  }
+  return "UNKNOWN";
+}
+      
 void MidiDevice::setPort(int p)
 {
   _port = p; 

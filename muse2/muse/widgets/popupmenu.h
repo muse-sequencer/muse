@@ -38,9 +38,12 @@
 
 //#include <QMouseEvent>
 //#include <QColumnView>
+#include <QPointer>
 
 class QWidget;
 class QMouseEvent;
+class QContextMenuEvent;
+class QHideEvent;
 class QVariant;
 class QAction;
 class QEvent;
@@ -63,28 +66,45 @@ Q_OBJECT
     int _cur_item_width;
     int _cur_col_count;
 
+    QMenu* _contextMenu;
+    QAction* _lastHoveredAction;
+    QPointer<QAction> _highlightedAction;
+    
     void init();
+    void showContextMenu(const QPoint&);
     // Auto-breakup a too-wide menu.
     PopupMenu* getMenu();
     
   private slots:
-    #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
     void popHovered(QAction*);
+    #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
     void timerHandler();
     #endif
   
   protected:
-    void mouseReleaseEvent(QMouseEvent *);
-    bool event(QEvent*);   
-  
+    virtual void mouseReleaseEvent(QMouseEvent*);
+    virtual void mousePressEvent(QMouseEvent*);
+    virtual void contextMenuEvent(QContextMenuEvent*);
+    virtual void hideEvent(QHideEvent*);    
+    virtual bool event(QEvent*);
+
+  public: signals:
+    void aboutToShowContextMenu(PopupMenu* menu, QAction* menuAction, QMenu* ctxMenu);
+    
   public:
     PopupMenu(bool stayOpen);
     PopupMenu(QWidget* parent=0, bool stayOpen = false);
     PopupMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false);
+    ~PopupMenu();
     //void clear();
     QAction* findActionFromData(const QVariant&) const;
     bool stayOpen() const { return _stayOpen; }
     void clearAllChecks() const;
+    
+    QMenu* contextMenu();
+    void hideContextMenu();
+    static PopupMenu* contextMenuFocus();
+    static QAction* contextMenuFocusAction();
 
     // Need to catch these to auto-breakup a too-big menu.
     QAction* addAction(const QString& text);
@@ -94,7 +114,24 @@ Q_OBJECT
     void     addAction(QAction* action);
 };
 
-
+// A handy structure for use with PopupMenu context menu action data.
+// The variant holds the ORIGINAL data as set by the programmer.
+class PopupMenuContextData {
+  private:
+    PopupMenu* _menu;
+    QAction* _action;
+    QVariant _variant;
+    
+  public:
+    PopupMenuContextData() : _menu(0), _action(0), _variant(0) { }
+    PopupMenuContextData(const PopupMenuContextData& o) : _menu(o._menu), _action(o._action), _variant(o._variant) { }
+    PopupMenuContextData(PopupMenu* menu, QAction* action, QVariant var) : _menu(menu), _action(action), _variant(var) { }
+  
+    inline PopupMenu* menu() const { return _menu; }
+    inline QAction* action() const { return _action; }
+    inline QVariant varValue() const { return _variant; }
+};
+  
 /*
 class PopupView : public QColumnView
 {
@@ -114,6 +151,8 @@ class PopupView : public QColumnView
 */
 
 } // namespace MusEGui
+
+Q_DECLARE_METATYPE(MusEGui::PopupMenuContextData)
 
 #endif
 

@@ -117,8 +117,20 @@ MidiPort::~MidiPort()
 
 bool MidiPort::guiVisible() const
       {
-      return _instrument ? _instrument->guiVisible() : false;
+      // REMOVE Tim. Persistent routes. Changed.
+      //return _instrument ? _instrument->guiVisible() : false;
+      return _device ? _device->guiVisible() : false;
       }
+
+//---------------------------------------------------------
+//   showGui
+//---------------------------------------------------------
+
+void MidiPort::showGui(bool v)
+{
+  if(_device) 
+    _device->showGui(v);
+}
 
 //---------------------------------------------------------
 //   hasGui
@@ -126,7 +138,9 @@ bool MidiPort::guiVisible() const
 
 bool MidiPort::hasGui() const
       {
-      return _instrument ? _instrument->hasGui() : false;
+      // REMOVE Tim. Persistent routes. Changed.
+      //return _instrument ? _instrument->hasGui() : false;
+      return _device ? _device->hasGui() : false;
       }
 
 //---------------------------------------------------------
@@ -135,8 +149,20 @@ bool MidiPort::hasGui() const
 
 bool MidiPort::nativeGuiVisible() const
       {
-      return _instrument ? _instrument->nativeGuiVisible() : false;
+      // REMOVE Tim. Persistent routes. Changed.
+      //return _instrument ? _instrument->nativeGuiVisible() : false;
+      return _device ? _device->nativeGuiVisible() : false;
       }
+
+//---------------------------------------------------------
+//   showNativeGui
+//---------------------------------------------------------
+
+void MidiPort::showNativeGui(bool v)
+{
+  if(_device) 
+    _device->showNativeGui(v);
+}
 
 //---------------------------------------------------------
 //   hasNativeGui
@@ -144,7 +170,9 @@ bool MidiPort::nativeGuiVisible() const
 
 bool MidiPort::hasNativeGui() const
       {
-      return _instrument ? _instrument->hasNativeGui() : false;
+      // REMOVE Tim. Persistent routes. Changed.
+      //return _instrument ? _instrument->hasNativeGui() : false;
+      return _device ? _device->hasNativeGui() : false;
       }
 
 //---------------------------------------------------------

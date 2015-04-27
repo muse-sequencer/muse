@@ -89,8 +89,10 @@ class MidiPort {
       void addDefaultControllers();
       
       bool guiVisible() const;
+      void showGui(bool); 
       bool hasGui() const;
       bool nativeGuiVisible() const;
+      void showNativeGui(bool);
       bool hasNativeGui() const;
 
       int portno() const;

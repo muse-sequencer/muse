@@ -4,6 +4,7 @@
 //  $Id: confmport.h,v 1.3 2004/01/25 11:20:31 wschweer Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2015 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -61,15 +62,22 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
 
    private slots:
       void rbClicked(QTableWidgetItem*);
-      void mdevViewItemRenamed(QTableWidgetItem*);
+      void DeviceItemRenamed(QTableWidgetItem*);
       void songChanged(MusECore::SongChangedFlags_t);
       void selectionChanged();
+      void deviceSelectionChanged();
+      void addJackDeviceClicked();
+      void addAlsaDeviceClicked();
       void addInstanceClicked();
       void removeInstanceClicked();
+      //void deviceItemClicked(QTreeWidgetItem*, int);
+      void deviceItemClicked(QTableWidgetItem* item);
       void changeDefInputRoutes(QAction* act);
       void changeDefOutputRoutes(QAction* act);
       void apply();
       void okClicked();
+      void beforeDeviceContextShow(PopupMenu* menu, QAction* menuAction, QMenu* ctxMenu);
+      void deviceContextTriggered(QAction*);
       
    public slots:
       void closeEvent(QCloseEvent*e);

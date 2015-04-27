@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //  $Id: alsamidi.h,v 1.2 2004/01/14 09:06:43 wschweer Exp $
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011, 2015 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -69,7 +69,7 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void* outClientPort() { return (void*)&adr; }    // That is, ALSA midi client ports can be both r/w.
       
       virtual void writeRouting(int, Xml&) const;
-      virtual inline int deviceType() const { return ALSA_MIDI; } 
+      virtual inline MidiDeviceType deviceType() const { return ALSA_MIDI; } 
       // Schedule an event for playback. Returns false if event cannot be delivered.
       //virtual bool addScheduledEvent(const MidiPlayEvent& ev) { return !playEventFifo.put(ev); }
       // Add a stuck note. Returns false if event cannot be delivered.

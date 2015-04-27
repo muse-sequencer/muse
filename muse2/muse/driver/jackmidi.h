@@ -77,7 +77,7 @@ class MidiJackDevice : public MidiDevice {
       virtual ~MidiJackDevice(); 
       
       static MidiDevice* createJackMidiDevice(QString name = "", int rwflags = 3); // 1:Writable 2: Readable 3: Writable + Readable
-      virtual inline int deviceType() const { return JACK_MIDI; } 
+      virtual inline MidiDeviceType deviceType() const { return JACK_MIDI; } 
       virtual void setName(const QString&);
       
       //virtual void handleStop();  

@@ -133,6 +133,8 @@ class DummyAudioDevice : public AudioDevice {
       virtual void disconnect(const char*, const char*) {}
       virtual int connections(void* /*clientPort*/) { return 0; }
       virtual bool portConnectedTo(void*, const char*) { return false; }
+      virtual bool portsConnected(const char*, const char*) { return false; }
+      virtual bool portsCanConnect(const char*, const char*) { return false; }
       virtual void setPortName(void*, const char*) {}
       virtual void* findPort(const char*) { return 0;}
       virtual char*  portName(void*, char* str, int str_size) { if(str_size == 0) return 0; str[0] = '\0'; return str; }

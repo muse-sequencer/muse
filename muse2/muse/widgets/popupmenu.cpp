@@ -28,8 +28,11 @@
 #include <QHoverEvent>
 #include <QAction>
 #include <QPoint>
+#include <QList>
+#include <QVariant>
 #include <QDesktopWidget>
 #include <QApplication>
+//#include <QMetaMethod>
 
 #include "popupmenu.h"
 #include "gconfig.h"
@@ -62,6 +65,9 @@ PopupMenu::PopupMenu(const QString& title, QWidget* parent, bool stayOpen)
 
 void PopupMenu::init()
 {
+   _contextMenu = 0;
+   _lastHoveredAction = 0;
+   _highlightedAction = 0;
    if(MusEGlobal::config.scrollableSubMenus)
    {
       setStyleSheet("QMenu { menu-scrollable: 1; }");
@@ -78,13 +84,21 @@ void PopupMenu::init()
    //_stayOpen = false;
    moveDelta = 0;
 
+   connect(this, SIGNAL(hovered(QAction*)), SLOT(popHovered(QAction*)));
+   
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL
    timer = new QTimer(this);
    timer->setInterval(100);
    timer->setSingleShot(false);
-   connect(this, SIGNAL(hovered(QAction*)), SLOT(popHovered(QAction*)));
    connect(timer, SIGNAL(timeout()), SLOT(timerHandler()));
 #endif   // POPUP_MENU_DISABLE_AUTO_SCROLL
+}
+
+PopupMenu::~PopupMenu()
+{
+   if(_contextMenu)
+     delete _contextMenu;
+   _contextMenu = 0;
 }
 
 // NOTE: Tested all RoutePopupMenu and PopupMenu dtors and a couple of action dtors from our 
@@ -285,9 +299,13 @@ void PopupMenu::timerHandler()
 
    move(nx, y());
 }
+#endif    // POPUP_MENU_DISABLE_AUTO_SCROLL
 
 void PopupMenu::popHovered(QAction* action)
 {  
+   _lastHoveredAction = action;
+   hideContextMenu();  
+#ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
    if(action)
    {
       int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
@@ -298,14 +316,24 @@ void PopupMenu::popHovered(QAction* action)
          if(r.x() + r.width() + x() > dw)
             move(dw - r.x() - r.width(), y());
    }
-}
 #endif    // POPUP_MENU_DISABLE_AUTO_SCROLL
+}
+
+void PopupMenu::mousePressEvent(QMouseEvent* e)
+{
+  if (_contextMenu && _contextMenu->isVisible())
+    _contextMenu->hide();
+  QMenu::mousePressEvent(e);
+}
 
 void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
 {
+   if(_contextMenu && _contextMenu->isVisible())
+     return;
+     
    if(MusEGlobal::config.scrollableSubMenus)
    {
-      return QMenu::mouseReleaseEvent(e);
+     return QMenu::mouseReleaseEvent(e);
    }
    QAction* action = actionAt(e->pos());
    if (!(action && action == activeAction() && !action->isSeparator() && action->isEnabled()))
@@ -458,6 +486,122 @@ void PopupMenu::addAction(QAction* action)
    int c = _cur_menu->columnCount();
    if(c > _cur_col_count)
       _cur_col_count = c;
+}
+
+//----------------
+// Context menu
+//----------------
+
+// PopupMenuContextData::PopupMenuContextData()
+// : _menu(0L), _action(0L)
+// {
+// }
+// 
+// PopupMenuContextData::PopupMenuContextData(const PopupMenuContextData& o)
+// : _menu(o._menu), _action(o._action)
+// {
+// }
+// 
+// PopupMenuContextData::PopupMenuContextData(QPointer<PopupMenu> menu,QPointer<QAction> action)
+// : _menu(menu), _action(action)
+// {
+// }
+
+static void PopupMenuSetActionData(QMenu *context_menu, PopupMenu* menu, QAction* menuAction) 
+{
+  const QList<QAction*>actions = context_menu->actions();
+  for(int i = 0; i < actions.count(); i++)
+  {
+    QVariant e = actions[i]->data();
+    // If it's already a PopupMenuContextData, just update the values.
+    if(e.canConvert<PopupMenuContextData>())
+      actions[i]->setData(QVariant::fromValue(PopupMenuContextData(menu, menuAction, e.value<PopupMenuContextData>().varValue())));
+    // Otherwise bring in the ORIGINAL supplied variant data.
+    else
+      actions[i]->setData(QVariant::fromValue(PopupMenuContextData(menu, menuAction, e)));
+  }
+}
+
+QMenu* PopupMenu::contextMenu()
+{
+  if(!_contextMenu)
+    _contextMenu = new QMenu(this);
+  return _contextMenu;
+}
+
+void PopupMenu::hideContextMenu()
+{
+  if(!_contextMenu || !_contextMenu->isVisible())
+    return;
+  _contextMenu->hide();
+}
+
+void PopupMenu::showContextMenu(const QPoint &pos)
+{
+  _highlightedAction = activeAction();
+  if(!_highlightedAction)
+  {
+    PopupMenuSetActionData(_contextMenu, 0, 0);
+    return;
+  }
+  emit aboutToShowContextMenu(this, _highlightedAction, _contextMenu);
+  PopupMenuSetActionData(_contextMenu, this, _highlightedAction);
+  if(QMenu* subMenu = _highlightedAction->menu())
+    QTimer::singleShot(100, subMenu, SLOT(hide()));
+  _contextMenu->popup(mapToGlobal(pos));
+}
+
+PopupMenu* PopupMenu::contextMenuFocus()
+{
+  return qobject_cast<PopupMenu*>(QApplication::activePopupWidget());
+}
+
+QAction* PopupMenu::contextMenuFocusAction()
+{
+  if(PopupMenu* menu = qobject_cast<PopupMenu*>(QApplication::activePopupWidget())) 
+  {
+    if(!menu->_lastHoveredAction) 
+      return 0;
+    QVariant var = menu->_lastHoveredAction->data();
+    PopupMenuContextData ctx = var.value<PopupMenuContextData>();
+    Q_ASSERT(ctx.menu() == menu);
+    return ctx.action();
+  }
+  return 0;
+}
+
+void PopupMenu::contextMenuEvent(QContextMenuEvent* e)
+{
+  if(_contextMenu)
+  {
+    if(e->reason() == QContextMenuEvent::Mouse)
+      showContextMenu(e->pos());
+    else if(activeAction())
+      showContextMenu(actionGeometry(activeAction()).center());
+
+    e->accept();
+    return;
+  }
+  QMenu::contextMenuEvent(e);
+}
+
+void PopupMenu::hideEvent(QHideEvent *e)
+{
+  if(_contextMenu && _contextMenu->isVisible())
+  {
+    // we need to block signals here when the ctxMenu is showing
+    // to prevent the QPopupMenu::activated(int) signal from emitting
+    // when hiding with a context menu, the user doesn't expect the
+    // menu to actually do anything.
+    // since hideEvent gets called very late in the process of hiding
+    // (deep within QWidget::hide) the activated(int) signal is the
+    // last signal to be emitted, even after things like aboutToHide()
+    // AJS
+    bool blocked = blockSignals(true);
+    _contextMenu->hide();
+    blockSignals(blocked);
+  }
+  QMenu::hideEvent(e);
 }
 
 /*

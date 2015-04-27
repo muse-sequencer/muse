@@ -72,7 +72,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
   
   r.remoteChannel = isOutput ? bch : ach;
   
-  act->setData(qVariantFromValue(r));   
+  act->setData(QVariant::fromValue(r));   
   
   for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
   {
@@ -246,7 +246,7 @@ int RoutePopupMenu::addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id
                 MusECore::Route rt(track, (t->type() != MusECore::Track::AUDIO_SOFTSYNTH || isOutput) ? ach : bch, tchans);
                 rt.remoteChannel = (t->type() != MusECore::Track::AUDIO_SOFTSYNTH || isOutput) ? bch : ach;
                 
-                act->setData(qVariantFromValue(rt));   
+                act->setData(QVariant::fromValue(rt));   
                 
                 for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
                 {
@@ -517,7 +517,7 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
                 
                 rt.remoteChannel = isOutput ? ach : bch;
                 
-                act->setData(qVariantFromValue(rt));   
+                act->setData(QVariant::fromValue(rt));   
                 
                 for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
                 {
@@ -578,7 +578,7 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
                   
                   rt.remoteChannel = isOutput ? ach : bch;
                   
-                  act->setData(qVariantFromValue(rt));   
+                  act->setData(QVariant::fromValue(rt));   
                   
                   for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
                   {
@@ -682,7 +682,7 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
                                                                   redLedIcon, darkRedLedIcon,MIDI_CHANNELS, chanmask, pup);
     MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
     //wa->setData(id++);   
-    wa->setData(qVariantFromValue(srcRoute));   
+    wa->setData(QVariant::fromValue(srcRoute));   
     pup->addAction(wa);  
     ++id;
 
@@ -699,7 +699,7 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
       int chbit = 1 << ch;
       MusECore::Route srcRoute(i, chbit);    // In accordance with channel mask, use the bit position.
       
-      act->setData(qVariantFromValue(srcRoute));   
+      act->setData(QVariant::fromValue(srcRoute));   
       
       if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
         act->setChecked(true);
@@ -711,7 +711,7 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
     act = subp->addAction(QString("Toggle all"));
     //act->setCheckable(true);
     MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
-    act->setData(qVariantFromValue(togRoute));   
+    act->setData(QVariant::fromValue(togRoute));   
     ++id;
     
     pup->addMenu(subp);
@@ -793,7 +793,7 @@ void RoutePopupMenu::updateRouteMenus()
             {
               MusECore::Route r(ir->track, chbits);
               //printf("RoutePopupMenu::updateRouteMenus MusECore::MidiPort to AudioInput chbits:%d\n", chbits);  // 
-              QAction* act = findActionFromData(qVariantFromValue(r));  
+              QAction* act = findActionFromData(QVariant::fromValue(r));  
               if(act)
               {  
                 //printf("  ... Found\n");  // 
@@ -817,7 +817,7 @@ void RoutePopupMenu::updateRouteMenus()
       
       // Widget action handles channels. Look for route with channels ignored and set to zero. 
       MusECore::Route r(irl->midiPort, 0);
-      QAction* act = findActionFromData(qVariantFromValue(r));  
+      QAction* act = findActionFromData(QVariant::fromValue(r));  
       if(act)
       {  
         //printf("RoutePopupMenu::updateRouteMenus found MidiTrack to MidiPort irl type:%d\n", irl->type);  // 
@@ -840,7 +840,7 @@ void RoutePopupMenu::updateRouteMenus()
           MusECore::Route r(irl->midiPort, chbits);
           //printf("RoutePopupMenu::updateRouteMenus MidiTrack to MidiPort irl type:%d\n", irl->type);  // 
           // If act is a PixmapButtonsWidgetAction, route channel is ignored and is zero.
-          QAction* act = findActionFromData(qVariantFromValue(r));  
+          QAction* act = findActionFromData(QVariant::fromValue(r));  
           if(act)
           {  
             //printf("  ... Found\n");  // 
@@ -862,7 +862,7 @@ void RoutePopupMenu::updateRouteMenus()
       {
         // Widget action handles channels. Look for route with channels ignored and set to zero. 
         MusECore::Route r(irl->track, 0);
-        QAction* act = findActionFromData(qVariantFromValue(r));  
+        QAction* act = findActionFromData(QVariant::fromValue(r));  
         if(act)
         {  
           // Check for custom widget actions first.
@@ -1256,7 +1256,7 @@ void RoutePopupMenu::prepare()
             act = subp->addAction(s);
             act->setCheckable(true);
             MusECore::Route r(t, chbits);
-            act->setData(qVariantFromValue(r));   
+            act->setData(QVariant::fromValue(r));   
             for(MusECore::ciRoute ir = mprl->begin(); ir != mprl->end(); ++ir) 
             {
               if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == t && (ir->channel & chbits))
@@ -1342,8 +1342,17 @@ void RoutePopupMenu::prepare()
                                                                       redLedIcon, darkRedLedIcon, MIDI_CHANNELS, chanmask, this);
         MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
         //wa->setData(id++);   
-        wa->setData(qVariantFromValue(srcRoute));   
+        wa->setData(QVariant::fromValue(srcRoute));   
         addAction(wa);  
+        
+        
+        // REMOVE Tim. Persistent routes. Added. TESTING
+        //PopupMenu* subp = new PopupMenu(this, true);
+        //subp->setTitle("TEST"); 
+        //subp->addAction("Testing");
+        //wa->(subp);
+        
+        
         ++gid;
 
 #else    
@@ -1357,7 +1366,7 @@ void RoutePopupMenu::prepare()
           act->setCheckable(true);
           int chbit = 1 << ch;
           MusECore::Route srcRoute(i, chbit);    // In accordance with channel mask, use the bit position.
-          act->setData(qVariantFromValue(srcRoute));   
+          act->setData(QVariant::fromValue(srcRoute));   
           if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
             act->setChecked(true);
           ++gid;  
@@ -1366,7 +1375,7 @@ void RoutePopupMenu::prepare()
         act = subp->addAction(tr("Toggle all"));
         //act->setCheckable(true);
         MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
-        act->setData(qVariantFromValue(togRoute));   
+        act->setData(QVariant::fromValue(togRoute));   
         ++gid;
         addMenu(subp);
         
@@ -1476,7 +1485,7 @@ void RoutePopupMenu::prepare()
               }
               MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, i, -1, -1, port_name);
               
-              act->setData(qVariantFromValue(dst));   
+              act->setData(QVariant::fromValue(dst));   
               ++gid;
               for(MusECore::ciRoute ir = orl->begin(); ir != orl->end(); ++ir) 
               {
@@ -1571,7 +1580,7 @@ void RoutePopupMenu::prepare()
               }
               MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, i, -1, -1, port_name);
               
-              act->setData(qVariantFromValue(dst));   
+              act->setData(QVariant::fromValue(dst));   
               ++gid;
               for(MusECore::ciRoute ir = irl->begin(); ir != irl->end(); ++ir) 
               {

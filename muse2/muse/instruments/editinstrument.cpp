@@ -236,8 +236,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
               continue;
               
             QListWidgetItem* item = new QListWidgetItem((*i)->iname());
-            QVariant v = qVariantFromValue((void*)(*i));
-            item->setData(Qt::UserRole, v);
+            item->setData(Qt::UserRole, QVariant::fromValue((void*)(*i)));
             instrumentList->addItem(item);
             }
       instrumentList->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -740,8 +739,7 @@ void EditInstrument::fileNew()
                   
                   workingInstrument->assign( *ni );
 
-                  QVariant v = qVariantFromValue((void*)(ni));
-                  item->setData(Qt::UserRole, v);
+                  item->setData(Qt::UserRole, QVariant::fromValue((void*)(ni)));
                   instrumentList->addItem(item);
                   
                   oldMidiInstrument = 0;
@@ -1081,8 +1079,7 @@ void EditInstrument::fileSaveAs()
           
           workingInstrument->assign( *ni );
 
-          QVariant v = qVariantFromValue((void*)(ni));
-          item->setData(Qt::UserRole, v);
+          item->setData(Qt::UserRole, QVariant::fromValue((void*)(ni)));
           instrumentList->addItem(item);
           
           oldMidiInstrument = 0;
@@ -1274,8 +1271,7 @@ void EditInstrument::changeInstrument()
           QTreeWidgetItem* item = new QTreeWidgetItem(patchView);
           
           item->setText(0, pgp->name);
-          QVariant v = qVariantFromValue((void*)(pgp));
-          item->setData(0, Qt::UserRole, v);
+          item->setData(0, Qt::UserRole, QVariant::fromValue((void*)(pgp)));
           
           for (MusECore::ciPatch p = pgp->patches.begin(); p != pgp->patches.end(); ++p) 
           {
@@ -1284,8 +1280,7 @@ void EditInstrument::changeInstrument()
             {
               QTreeWidgetItem* sitem = new QTreeWidgetItem(item);
               sitem->setText(0, patch->name);
-              QVariant v = QVariant::fromValue((void*)patch);
-              sitem->setData(0, Qt::UserRole, v);
+              sitem->setData(0, Qt::UserRole, QVariant::fromValue((void*)patch));
             }  
           }  
         }
@@ -1828,8 +1823,7 @@ QTreeWidgetItem* EditInstrument::addControllerToView(MusECore::MidiController* m
       ci->setTextAlignment(1, Qt::AlignLeft | Qt::AlignVCenter);
       for(int i = 2; i < 9; ++i)
         ci->setTextAlignment(i, Qt::AlignRight | Qt::AlignVCenter);
-      QVariant v = qVariantFromValue((void*)(mctrl));
-      ci->setData(0, Qt::UserRole, v);
+      ci->setData(0, Qt::UserRole, QVariant::fromValue((void*)(mctrl)));
       
       return ci;
 }
@@ -2976,8 +2970,7 @@ void EditInstrument::newPatchClicked()
       
       patchNameEdit->setText(patchName);
       
-      QVariant v = qVariantFromValue((void*)(patch));
-      sitem->setData(0, Qt::UserRole, v);
+      sitem->setData(0, Qt::UserRole, QVariant::fromValue((void*)(patch)));
       
       // May cause patchChanged call.
       patchView->blockSignals(true);
@@ -3044,8 +3037,7 @@ void EditInstrument::newGroupClicked()
       patchNameEdit->setText(groupName);
       
       // Set the list view item's data. 
-      QVariant v = qVariantFromValue((void*)(group));
-      sitem->setData(0, Qt::UserRole, v);
+      sitem->setData(0, Qt::UserRole, QVariant::fromValue((void*)(group)));
       //sitem->setAuxData((void*)pgp);
       
       // May cause patchChanged call.

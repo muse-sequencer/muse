@@ -4,7 +4,7 @@
 //  $Id: route.h,v 1.5.2.1 2008/05/21 00:28:52 terminator356 Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2011, 2015 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -80,16 +80,22 @@ struct Route {
       
       Route(void* t, int ch=-1);
       Route(Track* t, int ch = -1, int chans = -1);
-      Route(MidiDevice* d, int ch);  
-      Route(int port, int ch);         
+      Route(MidiDevice* d, int ch = -1);  
+      Route(int port, int ch = -1);         
       Route(const QString&, bool dst, int ch, int rtype = -1);
       Route();
       Route(const Route&); // Copy constructor
       // Useful for generic complete construction.
       Route(RouteType type_, int midi_port_num_, void* void_pointer_, int channel_, int channels_, int remote_channel_, const char* name_);
       
+      // Create string name representation.
       QString name() const;
+      // Fill and return str char name representation.
+      char* name(char* str, int str_size) const;
       bool operator==(const Route&) const;
+      // If the routes support channels, if the given route's channel is -1 meaning all channels, compare matches ONLY if this channel == -1, 
+      //  and if the given route's channel is >= 0, compare matches on ANY channel. Useful for example finding router treeview items.
+      bool compare(const Route&) const;
       Route& operator=(const Route&);
       bool isValid() const {
             return ((type == TRACK_ROUTE) && (track != 0)) || 
@@ -117,7 +123,10 @@ extern void addRoute(Route, Route);
 extern void removeRoute(Route, Route);
 extern void removeAllRoutes(Route, Route);
 extern Route name2route(const QString&, bool dst, int rtype = -1);
-extern bool checkRoute(const QString&, const QString&);
+// REMOVE Tim. Persistent routes. Removed.
+//extern bool checkRoute(const QString&, const QString&);
+extern bool routeCanConnect(const Route&, const Route&);
+extern bool routeCanDisconnect(const Route&, const Route&);
 
 } // namespace MusECore
 

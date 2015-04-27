@@ -1262,12 +1262,16 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
 #endif
       QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), 0);
       if (ract == gact) {
-            bool show = !port->guiVisible();
-            port->instrument()->showGui(show);
+            // REMOVE Tim. Persistent routes. Changed.
+            //bool show = !port->guiVisible();
+            //port->instrument()->showGui(show);
+            port->showGui(!port->guiVisible());
             }
       else if (ract == nact) {
-            bool show = !port->nativeGuiVisible();
-            port->instrument()->showNativeGui(show);
+            // REMOVE Tim. Persistent routes. Changed.
+            //bool show = !port->nativeGuiVisible();
+            //port->instrument()->showNativeGui(show);
+            port->showNativeGui(!port->nativeGuiVisible());
             }
 #ifdef LV2_SUPPORT
         else if (mSubPresets != NULL && ract != NULL) {

@@ -75,6 +75,8 @@ class AudioDevice {
       virtual void disconnect(const char*, const char*) = 0;
       virtual int connections(void* /*clientPort*/) = 0; 
       virtual bool portConnectedTo(void* our_port, const char* port) = 0;
+      virtual bool portsConnected(const char*, const char*) = 0;
+      virtual bool portsCanConnect(const char*, const char*) = 0;
       virtual void setPortName(void* p, const char* n) = 0;
       virtual void* findPort(const char* name) = 0;
       virtual char* portName(void* port, char* str, int str_size) = 0;

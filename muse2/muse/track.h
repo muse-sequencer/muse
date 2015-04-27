@@ -469,8 +469,8 @@ class AudioTrack : public Track {
       void readVolume(Xml& xml);
 
       virtual void preProcessAlways() { _processed = false; }
-      virtual void  addData(unsigned samplePos, int channels, int srcStartChan, int srcChannels, unsigned frames, float** buffer);
-      virtual void copyData(unsigned samplePos, int channels, int srcStartChan, int srcChannels, unsigned frames, float** buffer, bool add=false);
+      virtual void  addData(unsigned samplePos, int dstStartChan, int dstChannels, int srcStartChan, int srcChannels, unsigned frames, float** buffer);
+      virtual void copyData(unsigned samplePos, int dstStartChan, int dstChannels, int srcStartChan, int srcChannels, unsigned frames, float** buffer, bool add=false);
       virtual bool hasAuxSend() const { return false; }
       
       // automation
