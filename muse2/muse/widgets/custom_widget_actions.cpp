@@ -24,6 +24,7 @@
 #include <QSignalMapper>
 #include <QPainter>
 #include <QPaintEvent>
+#include <QString>
 
 #include "icons.h"
 #include "pixmap_button.h"
@@ -92,7 +93,7 @@ void PixmapButtonsHeaderWidgetAction::chanClickMap(int /*idx*/)
 {
   // TODO: Toggle vertical columns...   p4.0.42 
   
-  trigger();
+  //trigger();  // REMOVE Tim. Persistent routes. Removed. Already triggered by widget, causes double activation!
 }
 
   
@@ -100,12 +101,11 @@ void PixmapButtonsHeaderWidgetAction::chanClickMap(int /*idx*/)
 //   PixmapButtonsWidgetAction
 //---------------------------------------------------------
 
-PixmapButtonsWidgetAction::PixmapButtonsWidgetAction(const QString& text, QPixmap* on_pixmap, QPixmap* off_pixmap, int channels, int initial, QWidget* parent)
+PixmapButtonsWidgetAction::PixmapButtonsWidgetAction(const QString& text, QPixmap* on_pixmap, QPixmap* off_pixmap, const QBitArray& initial, QWidget* parent)
   : QWidgetAction(parent)
       {
         _onPixmap = on_pixmap;
         _offPixmap = off_pixmap;
-        _channels = channels;
         _current = initial;
         _text = text;
         // Just to be safe, set to -1 instead of default 0.
@@ -114,6 +114,7 @@ PixmapButtonsWidgetAction::PixmapButtonsWidgetAction(const QString& text, QPixma
 
 QWidget* PixmapButtonsWidgetAction::createWidget(QWidget *parent)
 {
+  const int channels = _current.size();
   QWidget* lw = new QWidget(parent);
   QHBoxLayout* layout = new QHBoxLayout(lw);
 
@@ -134,14 +135,14 @@ QWidget* PixmapButtonsWidgetAction::createWidget(QWidget *parent)
   QSignalMapper* mapper = new QSignalMapper(this);
 
   PixmapButton* pb = new PixmapButton(toggle_small_Icon, toggle_small_Icon, 2, lw);  // Margin  = 2
-  mapper->setMapping(pb, _channels);  // Set to one past end.
+  mapper->setMapping(pb, channels);  // Set to one past end.
   layout->addWidget(pb); 
   layout->addSpacing(6);
   connect(pb, SIGNAL(pressed()), mapper, SLOT(map()));
   
-  for(int i = 0; i < _channels; ++i)
+  for(int i = 0; i < channels; ++i)
   {
-    bool set = _current & (1 << i);
+    bool set = _current.at(i);
     PixmapButton* b = new PixmapButton(_onPixmap, _offPixmap, 2, lw);  // Margin  = 2
     _chan_buttons.append(b);
     b->setCheckable(true);
@@ -160,37 +161,59 @@ QWidget* PixmapButtonsWidgetAction::createWidget(QWidget *parent)
 
 void PixmapButtonsWidgetAction::chanClickMap(int idx)
 {
-  if(idx == _channels)  // One past end = Toggle all button.
+  const int channels = _current.size();
+  const int buttons_sz = _chan_buttons.size();
+  if(idx == channels)  // One past end = Toggle all button.
   {
-    int allch = (1 << _channels) - 1;
-    if((_current & allch) == allch)  
-      _current = 0;
-    else 
-      _current  = allch;
+    int allch = 0;
+    for(; allch < channels; ++allch)
+    {
+      if(!_current.at(allch))
+        break;
+    }
+    if(allch == channels)
+    {
+      fprintf(stderr, "PixmapButtonsWidgetAction::chanClickMap: filling bit array with false\n"); // REMOVE Tim. Persistent routes. Added. 
+      _current.fill(false);
+    }
+    else
+    {
+      fprintf(stderr, "PixmapButtonsWidgetAction::chanClickMap: filling bit array with true\n"); // REMOVE Tim. Persistent routes. Added. 
+      _current.fill(true);
+    }
+    
     // Set and redraw the buttons.
-    for(int i = 0; i < _channels; ++i)
-      _chan_buttons.at(i)->setDown(_current != 0);
+    for(int i = 0; i < buttons_sz; ++i)
+      _chan_buttons.at(i)->setDown(allch != channels);
   }
   else
   {
-    int c = 0;
-    for(int i = 0; i < _channels; ++i)
+    for(int i = 0; i < channels && i < buttons_sz; ++i)
     {
       if(_chan_buttons.at(i)->isChecked())
-        c |= (1 << i);
+      {
+        fprintf(stderr, "PixmapButtonsWidgetAction::chanClickMap: setting bit:%d\n", i); // REMOVE Tim. Persistent routes. Added. 
+        _current.setBit(i);
+      }
+      else
+      {
+        fprintf(stderr, "PixmapButtonsWidgetAction::chanClickMap: clearing bit:%d\n", i); // REMOVE Tim. Persistent routes. Added. 
+        _current.clearBit(i);
+      }
     }
-    _current = c;
   }
   
-  trigger();
+  //trigger();  // REMOVE Tim. Persistent routes. Removed. Already triggered by widget, causes double activation!
 }
 
-void PixmapButtonsWidgetAction::setCurrentState(int state)
+void PixmapButtonsWidgetAction::setCurrentState(const QBitArray& state)
 {
     _current = state;
+    const int channels = _current.size();
+    const int buttons_sz = _chan_buttons.size();
     // Set and redraw the buttons.
-    for(int i = 0; i < _channels; ++i)
-      _chan_buttons.at(i)->setDown((_current & (1 << i)) != 0);
+    for(int i = 0; i < channels && i < buttons_sz; ++i)
+      _chan_buttons.at(i)->setDown(_current.at(i));
 }
 
 } // namespace MusEGui

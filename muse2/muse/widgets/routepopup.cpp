@@ -20,6 +20,8 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
+#include <QBitArray>
+
 #include "app.h"
 #include "routepopup.h"
 #include "midiport.h"
@@ -678,8 +680,14 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
     
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
 
+    QBitArray ba(MIDI_CHANNELS); 
+    for(int mch = 0; mch < MIDI_CHANNELS; ++mch)
+    {  
+      if(chanmask & (1 << mch))
+        ba.setBit(mch);
+    }
     PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + (md ? md->name() : tr("<none>")), 
-                                                                  redLedIcon, darkRedLedIcon,MIDI_CHANNELS, chanmask, pup);
+                                                                  redLedIcon, darkRedLedIcon, ba, pup);
     MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
     //wa->setData(id++);   
     wa->setData(QVariant::fromValue(srcRoute));   
@@ -894,6 +902,11 @@ void RoutePopupMenu::popupActivated(QAction* action)
       if(!action || !_track || actions().isEmpty())
         return;
         
+      // REMOVE Tim. Persistent routes. Added.
+      fprintf(stderr, "RoutePopupMenu::popupActivated: action text:%s checked:%d name:%s\n", 
+              action->text().toLatin1().constData(), action->isChecked(), 
+              action->objectName().toLatin1().constData());
+      
       if(_track->isMidiTrack())
       {
         MusECore::RouteList* rl = _isOutMenu ? _track->outRoutes() : _track->inRoutes();
@@ -965,7 +978,21 @@ void RoutePopupMenu::popupActivated(QAction* action)
             if(cs_wa)
             {
               MusECore::Route aRoute = action->data().value<MusECore::Route>();
-              int chbits = cs_wa->currentState();
+              const QBitArray ba = cs_wa->currentState();
+              const int ba_sz = ba.size();
+              int chbits = 0;
+              for(int mch = 0; mch < MIDI_CHANNELS && mch < ba_sz; ++mch)
+              {
+                fprintf(stderr, "RoutePopupMenu::popupActivated: mch:%d", mch); // REMOVE Tim. Persistent routes. Added. 
+                if(ba.at(mch))
+                {
+                  fprintf(stderr, " bit is set"); // REMOVE Tim. Persistent routes. Added. 
+                  chbits |= (1 << mch);
+                }
+                fprintf(stderr, "\n"); // REMOVE Tim. Persistent routes. Added. 
+              }
+              fprintf(stderr, " chbits:%d\n", chbits); // REMOVE Tim. Persistent routes. Added. 
+                
               aRoute.channel = chbits;  // Restore the desired route channels from the custom widget action state.
               
               int mdidx = aRoute.midiPort;
@@ -1113,7 +1140,15 @@ void RoutePopupMenu::popupActivated(QAction* action)
             PixmapButtonsWidgetAction* cs_wa = dynamic_cast<PixmapButtonsWidgetAction*>(action);
             if(cs_wa)
             {
-              int chbits = cs_wa->currentState();
+              const QBitArray ba = cs_wa->currentState();
+              const int ba_sz = ba.size();
+              int chbits = 0;
+              for(int mch = 0; mch < MIDI_CHANNELS && mch < ba_sz; ++mch)
+              {
+                if(ba.at(mch))
+                  chbits |= (1 << mch);
+              }
+
               srcRoute.channel = chbits;  // Restore the desired route channels from the custom widget action state.
               int mdidx = srcRoute.midiPort;
 
@@ -1337,9 +1372,16 @@ void RoutePopupMenu::prepare()
           continue;
         
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
+        
+        QBitArray ba(MIDI_CHANNELS); 
+        for(int mch = 0; mch < MIDI_CHANNELS; ++mch)
+        {  
+          if(chanmask & (1 << mch))
+            ba.setBit(mch);
+        }
 
         PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + (md ? md->name() : tr("<none>")), 
-                                                                      redLedIcon, darkRedLedIcon, MIDI_CHANNELS, chanmask, this);
+                                                                      redLedIcon, darkRedLedIcon, ba, this);
         MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
         //wa->setData(id++);   
         wa->setData(QVariant::fromValue(srcRoute));   

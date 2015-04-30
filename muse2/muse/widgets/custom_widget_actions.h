@@ -25,10 +25,12 @@
 
 #include <QWidgetAction>
 #include <QList>
+#include <QBitArray>
 
 class QMouseEvent;
 class QPaintEvent;
 class QPixmap;
+class QString;
 
 namespace MusEGui {
 
@@ -62,8 +64,7 @@ class PixmapButtonsWidgetAction : public QWidgetAction {
    private:
       
       QString _text;
-      int _channels;
-      int _current;
+      QBitArray _current;
       QPixmap* _onPixmap;
       QPixmap* _offPixmap;
       QList<PixmapButton*> _chan_buttons;
@@ -74,12 +75,12 @@ class PixmapButtonsWidgetAction : public QWidgetAction {
    public:
       PixmapButtonsWidgetAction(const QString& text, 
                               QPixmap* on_pixmap, QPixmap* off_pixmap, 
-                              int channels, int initial, 
+                              const QBitArray& initial,
                               QWidget* parent = 0);
       
       QWidget* createWidget(QWidget* parent);
-      int currentState() const { return _current; }
-      void setCurrentState(int state); 
+      QBitArray currentState() const { return _current; }
+      void setCurrentState(const QBitArray& state); 
       };
 
 } // namespace MusEGui
