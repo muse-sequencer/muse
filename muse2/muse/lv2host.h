@@ -51,6 +51,7 @@
 #include "lv2/lv2plug.in/ns/ext/atom/forge.h"
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
+#include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
 
@@ -811,7 +812,7 @@ private:
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
     std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.    
     void doSelectProgram(unsigned char channel, int bank, int prog);
-    bool processEvent ( const MidiPlayEvent &, snd_seq_event_t * );
+    bool processEvent (const MidiPlayEvent &, snd_seq_event_t *, unsigned long *nevts);
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
     float midi2Lv2Value ( unsigned long port, int ctlnum, int val );
     LV2PluginWrapper_State *_uiState;    

@@ -3311,12 +3311,14 @@ int LV2SynthIF::getControllerInfo(int id, const char **name, int *ctrl, int *min
 
 
 
-bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
+bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event, unsigned long *nevts)
 {
 
    int chn = e.channel();
    int a   = e.dataA();
    int b   = e.dataB();
+
+   *nevts = 1;
 
    int len = e.len();
    char ca[len + 2];
@@ -3339,7 +3341,7 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
 #endif
 
       snd_seq_ev_clear(event);
-      event->queue = SND_SEQ_QUEUE_DIRECT;
+      event->queue = SND_SEQ_QUEUE_DIRECT;      
 
       if(b)
       {
@@ -3502,7 +3504,34 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
       {
          int ctlnum = a;
 
-         if(midiControllerType(a) != MidiController::Controller7)
+         if(midiControllerType(a) == MidiController::NRPN14)
+         {
+            //send full nrpn control sequence (4 values):
+            // 99 + ((a & 0xff00) >> 8) - first byte
+            // 98 + (a & 0xff) - second byte
+            // 38 + ((b & 0x3f80) >> 7) - third byte
+            // 6 + (b & 0x7f) - fourth byte
+
+            snd_seq_ev_clear(event);
+            event->queue = SND_SEQ_QUEUE_DIRECT;
+            snd_seq_ev_set_controller(event, chn, 99, ((a & 0xff00) >> 8));
+            event++;
+            snd_seq_ev_clear(event);
+            event->queue = SND_SEQ_QUEUE_DIRECT;
+            snd_seq_ev_set_controller(event, chn, 98, (a & 0xff));
+            event++;
+            snd_seq_ev_clear(event);
+            event->queue = SND_SEQ_QUEUE_DIRECT;
+            snd_seq_ev_set_controller(event, chn, 6, ((b & 0x3f80) >> 7));
+            event++;
+            snd_seq_ev_clear(event);
+            event->queue = SND_SEQ_QUEUE_DIRECT;
+            snd_seq_ev_set_controller(event, chn, 38, (b & 0x7f));
+            *nevts = 4;
+            return true;
+
+         }
+         else if(midiControllerType(a) != MidiController::Controller7)
          {
             return false;   // Event pointer not filled. Return false.
          }
@@ -3999,7 +4028,8 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                }
 
                // Returns false if the event was not filled. It was handled, but some other way.
-               if(processEvent(*start_event, &events[nevents]))
+               unsigned long nevts = 0;
+               if(processEvent(*start_event, &events[nevents], &nevts))
                {
                   // Time-stamp the event.
                   int ft = start_event->time() - frameOffset - pos - sample;
@@ -4021,9 +4051,11 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
                   // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
                   //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-                  events[nevents].time.tick = ft;
-
-                  ++nevents;
+                  nevts += nevents;
+                  for(; nevents < nevts; nevents++)
+                  {
+                     events[nevents].time.tick = ft;
+                  }
                }
             }
          }
@@ -4046,8 +4078,10 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
             if(ports != 0)  // Don't bother if not 'running'.
             {
+
                // Returns false if the event was not filled. It was handled, but some other way.
-               if(processEvent(e, &events[nevents]))
+               unsigned long nevts = 0;
+               if(processEvent(e, &events[nevents], &nevts))
                {
                   // Time-stamp the event.
                   int ft = e.time() - frameOffset - pos  - sample;
@@ -4062,12 +4096,13 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                      fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
                      ft = nsamp - 1;
                   }
-
                   // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
                   //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-                  events[nevents].time.tick = ft;
-
-                  ++nevents;
+                  nevts += nevents;
+                  for(; nevents < nevts; nevents++)
+                  {
+                     events[nevents].time.tick = ft;
+                  }
                }
             }
          }
