@@ -3512,13 +3512,14 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_
       {
          int ctlnum = a;
 
-         if(midiControllerType(a) == MidiController::NRPN14)
+         if(midiControllerType(a) == MidiController::NRPN14
+            || midiControllerType(a) == MidiController::NRPN)
          {
             //send full nrpn control sequence (4 values):
             // 99 + ((a & 0xff00) >> 8) - first byte
             // 98 + (a & 0xff) - second byte
-            // 38 + ((b & 0x3f80) >> 7) - third byte
-            // 6 + (b & 0x7f) - fourth byte
+            // 6 + ((b & 0x3f80) >> 7) - third byte
+            // 38 + (b & 0x7f) - fourth byte
 
 
             snd_seq_ev_clear(&event);
