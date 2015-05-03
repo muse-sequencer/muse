@@ -34,6 +34,7 @@
 //#include <QFileInfo>
 #include <QGroupBox>
 #include <QHeaderView>
+#include <QComboBox>
 
 #include "libsynti/gui.h"
 #include "ui_simpledrumsguibase.h"
@@ -178,6 +179,7 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       virtual void processEvent(const MusECore::MidiPlayEvent& ev);
       void setChannelVolume(int channel, int volume);
       void setChannelPitch(int channel, int volume);
+      void setChannelRoute(int channel, int route);
       void displayPluginGui();
       QGroupBox* channelButtonGroups[SS_NR_OF_CHANNELS];
       QGroupBox*           masterButtonGroup;
@@ -204,6 +206,8 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       QPushButton*            aboutButton;
       QPushButton*            loadButton;
       QPushButton*            saveButton;
+
+      QComboBox*              chnRoutingCb[SS_NR_OF_CHANNELS];
 
 
       QString lastDir;
@@ -237,6 +241,7 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       void aboutButtonClicked();
       void loadSetup();
       void saveSetup();
+      void routeChanged(int index);
 
    };
 
