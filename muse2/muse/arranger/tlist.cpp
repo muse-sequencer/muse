@@ -835,6 +835,10 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       }
       
       MusECore::Track* t = y2Track(ev->y() + ypos);
+      if(t == NULL)
+      {
+         return;
+      }
 
       int colx = header->sectionPosition(section);
       int colw = header->sectionSize(section);
