@@ -35,6 +35,7 @@
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QComboBox>
+#include <widgets/meter.h>
 
 #include "libsynti/gui.h"
 #include "ui_simpledrumsguibase.h"
@@ -208,6 +209,9 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       QPushButton*            saveButton;
 
       QComboBox*              chnRoutingCb[SS_NR_OF_CHANNELS];
+      MusEGui::Meter*         chnMeter[SS_NR_OF_CHANNELS];
+      double                  meterVal[SS_NR_OF_CHANNELS];
+      double                  peakVal[SS_NR_OF_CHANNELS];
 
 
       QString lastDir;
@@ -242,6 +246,10 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       void loadSetup();
       void saveSetup();
       void routeChanged(int index);
+   protected slots:
+      virtual void heartBeat();
+
+      friend class SimpleSynth;
 
    };
 

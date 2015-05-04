@@ -132,7 +132,8 @@ double rangeToPitch(int value)
 //   SimpleSynth
 //---------------------------------------------------------
 SimpleSynth::SimpleSynth(int sr)
-   : Mess(SS_AUDIO_CHANNELS)
+   : Mess(SS_AUDIO_CHANNELS),
+   gui(0)
 {
    SS_TRACE_IN
          SS_samplerate = sr;
@@ -265,8 +266,11 @@ SimpleSynth::~SimpleSynth()
 {
    SS_TRACE_IN
 
-         if(gui)
-         delete gui;  // p4.0.27
+   if(gui){
+      SimpleSynthGui *tmpGui = gui;
+      gui = 0;
+      delete tmpGui;  // p4.0.27
+   }
 
    // Cleanup channels and samples:
    SS_DBG("Cleaning up sample data");
@@ -867,6 +871,9 @@ void SimpleSynth::process(unsigned /*pos*/, float** out, int offset, int len)
       for (int ch=0; ch < SS_NR_OF_CHANNELS; ch++) {
          memset(out[2 + ch*2] + offset, 0, len * sizeof(float));
          memset(out[2 + ch*2 + 1] + offset, 0, len * sizeof(float));
+         if(gui){
+            gui->meterVal [ch] = 0.0;
+         }
 
          // If channels is turned off, skip:
          if (channels[ch].channel_on == false)
@@ -940,6 +947,17 @@ void SimpleSynth::process(unsigned /*pos*/, float** out, int offset, int len)
                out[2 + ch*2][i+offset] = processBuffer[0][i];
                out[2 + ch*2 + 1][i+offset] = processBuffer[1][i];
 
+               if(gui){
+                  const double f = fabs((processBuffer[0][i] + processBuffer[1][i])/2); // If the track is mono pan has no effect on meters.
+                  if(f > gui->meterVal[ch]){
+                     gui->meterVal[ch] = f;
+                  }
+               }
+            }
+            if(gui){
+               if(gui->meterVal[ch] > gui->peakVal[ch]){
+                  gui->peakVal[ch] = gui->meterVal[ch];
+               }
             }
          }
       }

@@ -6,6 +6,7 @@
 //
 // Author: Mathias Lundgren <lunar_shuttle@users.sf.net>, (C) 2004
 //  Contributer: (C) Copyright 2011 Tim E. Real (terminator356 at users.sourceforge.net)
+//  Multi-channel support and metering - Andrew Deryabin, 2015
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -32,6 +33,9 @@
 #include <QToolTip>
 #include <QLineEdit>
 #include <QMessageBox>
+
+#include <muse/globals.h>
+#include <muse/gconfig.h>
 
 #include "common_defs.h"
 #include "simpledrumsgui.h"
@@ -331,6 +335,8 @@ SimpleSynthGui::SimpleSynthGui()
 
       ///volumeSliders[i] = new QInvertedChannelSlider(Qt::Vertical, i, channelButtonGroups[i]);
       // By Tim. p4.0.27 Inverted was not correct type. Maybe was work in progress, rest of code was not converted yet?
+      QHBoxLayout *volLayout = new QHBoxLayout(channelButtonGroups[i]);
+
       volumeSliders[i] = new QChannelSlider(Qt::Vertical, i, channelButtonGroups[i]);
 
       volumeSliders[i]->setMinimum(SS_VOLUME_MIN_VALUE);
@@ -342,7 +348,18 @@ SimpleSynthGui::SimpleSynthGui()
       //            volumeSliders[i]->setMinimumSize(SS_VOLSLDR_WIDTH, SS_VOLSLDR_LENGTH);
       volumeSliders[i]->setToolTip("Volume, channel " + QString::number(i + 1));
       //            setMinimumSize(SS_VOLSLDR_WIDTH, SS_VOLSLDR_LENGTH);
-      inchnlLayout->addWidget(volumeSliders[i]);
+      volLayout->addWidget(volumeSliders[i]);
+
+      chnMeter[i] = new MusEGui::Meter(channelButtonGroups[i]);
+      chnMeter[i]->setFixedWidth(9);
+      chnMeter[i]->setVal(0.0, 0.0, false);
+      meterVal[i] = peakVal[i] = 0.0;
+      chnMeter[i]->setRange(MusEGlobal::config.minMeter, 10.0);
+      chnMeter[i]->show();
+      volLayout->addWidget(chnMeter[i]);
+
+      inchnlLayout->addLayout(volLayout);
+      //inchnlLayout->addWidget(volumeSliders[i]);
       connect(volumeSliders[i], SIGNAL(valueChanged(int, int)), SLOT(volumeChanged(int, int)));
 
       pitchKnobs[i] = new QChannelDial(channelButtonGroups[i], i, 0);
@@ -522,6 +539,10 @@ SimpleSynthGui::SimpleSynthGui()
    //Connect socketnotifier to fifo
    QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
    connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+
+   //connect heartBeat timer (for channel meters)
+   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+
    SS_TRACE_OUT
 }
 
@@ -1134,5 +1155,13 @@ void SimpleSynthGui::routeChanged(int index)
 
    setChannelRoute(ch, index);
 
+}
+
+void SimpleSynthGui::heartBeat()
+{
+   for(int i = 0; i < SS_NR_OF_CHANNELS; i++){
+      chnMeter[i]->setVal(meterVal[i], peakVal[i], false);
+      //chnMeter[i]->update();
+   }
 }
 
