@@ -43,6 +43,7 @@
 #include "muse/mpevent.h"   
 #include "muse/midi.h"
 #include "ssplugingui.h"
+#include "wavepreview.h"
 
 #define SS_VOLUME_MIN_VALUE                     0
 #define SS_VOLUME_MAX_VALUE                   127
@@ -893,18 +894,39 @@ void SimpleSynthGui::setChannelRoute(int channel, int route)
    sendController(0, SS_CHANNEL_ROUTE_CONTROLLER(channel), (int)route);
 }
 
+
 /*!
     \fn SimpleSynthGui::loadSampleDialogue(int channel)
  */
 void SimpleSynthGui::loadSampleDialogue(int channel)
 {
+   MusECore::AudioPreviewDialog dlg(this);
+   dlg.setWindowTitle(tr("Load sample dialog"));
+   dlg.setDirectory(lastDir);
+   dlg.setNameFilter(QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
+   if(dlg.exec() == QFileDialog::Rejected)
+   {
+      return;
+   }
+
+   QStringList filenames = dlg.selectedFiles();
+   if(filenames.size() < 1)
+   {
+      return;
+   }
+   QString filename = filenames [0];
+   /*dlg.getOpenFileName(this,
+                       tr("Load sample dialog"),
+                       lastDir,
+                       QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
+
    QString filename =
          QFileDialog::getOpenFileName(
             this,
             tr("Load sample dialog"),
             lastDir,
             QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
-
+*/
    if (filename != QString::null) {
       QFileInfo fi(filename);
       lastDir = fi.path();

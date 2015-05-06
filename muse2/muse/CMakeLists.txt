@@ -73,6 +73,7 @@ QT5_WRAP_CPP ( muse_moc_headers
       value.h
       steprec.h
       lv2host.h
+      wavepreview.h
       )
 
 ##
@@ -151,6 +152,7 @@ file (GLOB core_source_files
       wavetrack.cpp
       xml.cpp
       steprec.cpp
+      wavepreview.cpp
       )
 file (GLOB main_source_files
       main.cpp
