@@ -13,8 +13,8 @@ namespace MusECore
 
 WavePreview::WavePreview():
    sf(0),
-   isPlaying(false),
-   src(0)
+   src(0),
+   isPlaying(false)   
 {
    segSize = MusEGlobal::segmentSize * 10;
    tmpbuffer = new float [segSize];
@@ -43,6 +43,7 @@ void WavePreview::play(QString path)
          p2 = srcbuffer;      
          f1 = 0;
          f2 = 0;
+         nread = 0;
          sd.src_ratio = ((double)MusEGlobal::sampleRate) / (double)sfi.samplerate;
          isPlaying = true;      
       }
@@ -74,24 +75,18 @@ void WavePreview::stop()
 void WavePreview::addData(int channels, int nframes, float *buffer[])
 {
    if(sf && isPlaying)
-   {
-      sf_count_t nread = sf_readf_float(sf, tmpbuffer, nframes);
-      if(nread <= 0)
-      {
-         isPlaying = false;
-         return;
-      }
+   {     
       memset(srcbuffer, 0, sizeof(segSize) * sizeof(float));
-      p2 = 0;
-      f2 = 0;      
+      p2 = srcbuffer;
+      f2 = 0; 
       
       while(true)
-      {
-         if(f1 >= nframes)
+      {         
+         if(nread <= 0)
          {
             f1 = 0;
             p1 = tmpbuffer;
-            sf_count_t nread = sf_readf_float(sf, tmpbuffer, nframes);
+            nread = sf_readf_float(sf, tmpbuffer, nframes);
 
             if(nread <= 0)
             {
@@ -114,22 +109,26 @@ void WavePreview::addData(int channels, int nframes, float *buffer[])
          p2 += sd.output_frames_gen * sfi.channels * sizeof(float);
          f1 += sd.input_frames_used;
          f2 += sd.output_frames_gen;
-         
+         nread -= sd.input_frames_used;
+         if(f2 >= nframes)
+         {
+            break;
+         }         
       }
       
       int chns = std::min(channels, sfi.channels);
       for(int i = 0; i < chns; i++)
       {
-         for(int k = 0; k < nread; k++)
+         for(int k = 0; k < nframes; k++)
          {
-            buffer [i] [k] += tmpbuffer [(k + i)*sfi.channels];
+            buffer [i] [k] += srcbuffer [(k + i)*sfi.channels];
          }
       }
       for(int i = chns; i < channels; i++)
       {
-         for(int k = 0; k < nread; k++)
+         for(int k = 0; k < nframes; k++)
          {
-            buffer [i] [k] += tmpbuffer [(k + i)*sfi.channels];
+            buffer [i] [k] += srcbuffer [(k + i)*sfi.channels];
          }
       }
    }

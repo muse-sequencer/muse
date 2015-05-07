@@ -23,9 +23,10 @@ private:
    int segSize;
    float *p1;
    float *p2;      
-   int f1 = 0;
-   int f2 = 0;
+   int f1;
+   int f2;
    SRC_DATA sd;
+   sf_count_t nread;
 public:
    WavePreview();
    virtual ~WavePreview();
