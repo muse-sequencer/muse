@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <sndfile.h>
+#include <samplerate.h>
 #include <QString>
 #include <QFileDialog>
 #include <QComboBox>
@@ -15,8 +16,16 @@ class WavePreview
 private:
    SNDFILE *sf;
    SF_INFO sfi;
+   SRC_STATE *src;
    bool isPlaying;
    float *tmpbuffer;
+   float *srcbuffer;
+   int segSize;
+   float *p1;
+   float *p2;      
+   int f1 = 0;
+   int f2 = 0;
+   SRC_DATA sd;
 public:
    WavePreview();
    virtual ~WavePreview();

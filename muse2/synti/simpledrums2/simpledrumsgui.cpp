@@ -903,7 +903,6 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
    MusECore::AudioPreviewDialog dlg(this);
    dlg.setWindowTitle(tr("Load sample dialog"));
    dlg.setDirectory(lastDir);
-   dlg.setNameFilter(QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
    if(dlg.exec() == QFileDialog::Rejected)
    {
       return;
