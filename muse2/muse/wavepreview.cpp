@@ -14,7 +14,8 @@ namespace MusECore
 WavePreview::WavePreview():
    sf(0),
    src(0),
-   isPlaying(false)   
+   isPlaying(false),
+   sem(0)
 {
    segSize = MusEGlobal::segmentSize * 10;
    tmpbuffer = new float [segSize];
@@ -28,6 +29,14 @@ WavePreview::~WavePreview()
    delete srcbuffer;
 }
 
+long WavePreview::static_srcCallback (void *cb_data, float **data)
+{
+   MusECore::WavePreview *wp = (MusECore::WavePreview *)cb_data;
+   wp->nread = sf_readf_float(wp->sf, wp->tmpbuffer, 1);
+   *data = wp->tmpbuffer;
+   return wp->nread;
+}
+
 void WavePreview::play(QString path)
 {
    stop();
@@ -36,7 +45,8 @@ void WavePreview::play(QString path)
    if(sf)
    {
       int err = 0;
-      src = src_new(SRC_SINC_BEST_QUALITY, sfi.channels, &err);
+      //src = src_new(SRC_SINC_BEST_QUALITY, sfi.channels, &err);
+      src = src_callback_new(static_srcCallback, SRC_SINC_BEST_QUALITY, sfi.channels, &err, this);
       if(src)
       {
          p1 = tmpbuffer;
@@ -77,7 +87,7 @@ void WavePreview::addData(int channels, int nframes, float *buffer[])
    if(sf && isPlaying)
    {     
       memset(srcbuffer, 0, sizeof(segSize) * sizeof(float));
-      p2 = srcbuffer;
+      /*p2 = srcbuffer;
       f2 = 0; 
       
       while(true)
@@ -105,15 +115,26 @@ void WavePreview::addData(int channels, int nframes, float *buffer[])
          {
             break;
          }
-         p1 += sd.input_frames_used * sfi.channels * sizeof(float);
-         p2 += sd.output_frames_gen * sfi.channels * sizeof(float);
+         p1 += sd.input_frames_used * sfi.channels;
+         p2 += sd.output_frames_gen * sfi.channels;
          f1 += sd.input_frames_used;
          f2 += sd.output_frames_gen;
          nread -= sd.input_frames_used;
-         if(f2 >= nframes)
+         if((f2 >= nframes) || sd.end_of_input)
          {
             break;
          }         
+      }*/
+      
+      int rd = src_callback_read(src, sd.src_ratio, nframes, srcbuffer);
+      if(rd < nframes)
+      {
+         isPlaying = false;
+      }
+
+      if(rd == 0)
+      {
+         return;
       }
       
       int chns = std::min(channels, sfi.channels);

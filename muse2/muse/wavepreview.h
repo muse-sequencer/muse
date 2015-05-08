@@ -7,6 +7,7 @@
 #include <QString>
 #include <QFileDialog>
 #include <QComboBox>
+#include <QSemaphore>
 
 namespace MusECore
 {
@@ -27,6 +28,8 @@ private:
    int f2;
    SRC_DATA sd;
    sf_count_t nread;
+   QSemaphore sem;
+   static long static_srcCallback (void *cb_data, float **data);
 public:
    WavePreview();
    virtual ~WavePreview();
