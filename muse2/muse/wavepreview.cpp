@@ -1,6 +1,7 @@
 #include "wavepreview.h"
 #include "globals.h"
 #include <QPushButton>
+#include <QLayout>
 
 
 namespace MusEGlobal
@@ -15,7 +16,7 @@ WavePreview::WavePreview():
    sf(0),
    src(0),
    isPlaying(false),
-   sem(0)
+   sem(1)
 {
    segSize = MusEGlobal::segmentSize * 10;
    tmpbuffer = new float [segSize];
@@ -46,7 +47,7 @@ void WavePreview::play(QString path)
    {
       int err = 0;
       //src = src_new(SRC_SINC_BEST_QUALITY, sfi.channels, &err);
-      src = src_callback_new(static_srcCallback, SRC_SINC_BEST_QUALITY, sfi.channels, &err, this);
+      src = src_callback_new(static_srcCallback, SRC_SINC_MEDIUM_QUALITY, sfi.channels, &err, this);
       if(src)
       {
          p1 = tmpbuffer;
@@ -70,6 +71,7 @@ void WavePreview::play(QString path)
 void WavePreview::stop()
 {
    isPlaying = false;
+   sem.acquire();
    if(sf)
    {
       sf_close(sf);
@@ -80,12 +82,14 @@ void WavePreview::stop()
       src_delete(src);
       src = 0;           
    }
+   sem.release();
 }
 
 void WavePreview::addData(int channels, int nframes, float *buffer[])
-{
+{   
    if(sf && isPlaying)
    {     
+      sem.acquire();
       memset(srcbuffer, 0, sizeof(segSize) * sizeof(float));
       /*p2 = srcbuffer;
       f2 = 0; 
@@ -152,6 +156,7 @@ void WavePreview::addData(int channels, int nframes, float *buffer[])
             buffer [i] [k] += srcbuffer [(k + i)*sfi.channels];
          }
       }
+      sem.release();
    }
 }
 
@@ -174,7 +179,10 @@ void AudioPreviewDialog::urlChanged(const QString &str)
    if(fi.isDir()){
       return;
    }
-   MusEGlobal::wavePreview->play(str);
+   if(chAutoPlay->isChecked())
+   {
+      MusEGlobal::wavePreview->play(str);
+   }
 }
 
 void AudioPreviewDialog::stopWave()
@@ -187,12 +195,16 @@ AudioPreviewDialog::AudioPreviewDialog(QWidget *parent)
 {
     setOption(QFileDialog::DontUseNativeDialog);
     setNameFilter(QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
-    cb = new QComboBox;
-    cb->setEditable(false);
+    //cb = new QComboBox;
+    //cb->setEditable(false);
     //cb->addItems(list_ports());
-    cb->setCurrentIndex(cb->count() - 1);
+    //cb->setCurrentIndex(cb->count() - 1);
 
-    QPushButton *btnStop = new QPushButton("Stop");
+    chAutoPlay = new QCheckBox(this);
+    chAutoPlay->setText(tr("Auto play"));
+
+
+    QPushButton *btnStop = new QPushButton(tr("Stop"));
     connect(btnStop, SIGNAL(clicked()), this, SLOT(stopWave()));
 
 
@@ -200,7 +212,9 @@ AudioPreviewDialog::AudioPreviewDialog(QWidget *parent)
     QObject::connect(this, SIGNAL(currentChanged(const QString&)), this, SLOT(urlChanged(const QString&)));
     //this->layout()->addWidget(new QLabel("Midi device: "));
     //this->layout()->addWidget(cb);
-    //this->layout()->addWidget(btnStop);
+    this->layout()->addWidget(chAutoPlay);
+    this->layout()->addWidget(btnStop);
+
 }
 
 AudioPreviewDialog::~AudioPreviewDialog()

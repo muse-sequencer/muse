@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QComboBox>
 #include <QSemaphore>
+#include <QCheckBox>
 
 namespace MusECore
 {
@@ -42,7 +43,7 @@ public:
 class AudioPreviewDialog : public QFileDialog{
    Q_OBJECT
 private:
-    QComboBox *cb;
+    QCheckBox *chAutoPlay;
 private slots:
     void urlChanged(const QString &str);
     void stopWave();
