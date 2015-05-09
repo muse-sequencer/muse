@@ -1,6 +1,5 @@
 #include "wavepreview.h"
 #include "globals.h"
-#include <QPushButton>
 #include <QLayout>
 
 
@@ -149,13 +148,6 @@ void WavePreview::addData(int channels, int nframes, float *buffer[])
             buffer [i] [k] += srcbuffer [(k + i)*sfi.channels];
          }
       }
-      for(int i = chns; i < channels; i++)
-      {
-         for(int k = 0; k < nframes; k++)
-         {
-            buffer [i] [k] += srcbuffer [(k + i)*sfi.channels];
-         }
-      }
       sem.release();
    }
 }
@@ -185,13 +177,31 @@ void AudioPreviewDialog::urlChanged(const QString &str)
    }
 }
 
-void AudioPreviewDialog::stopWave()
+void AudioPreviewDialog::startStopWave()
 {
-   MusEGlobal::wavePreview->stop();
+   if(MusEGlobal::wavePreview->getIsPlaying())
+   {
+      MusEGlobal::wavePreview->stop();
+   }
+   else
+   {
+      QStringList files = selectedFiles();
+      if(files.size() > 0)
+      {
+         QString file = files [0];
+         QFileInfo fi(file);
+         if(fi.isFile())
+         {
+            MusEGlobal::wavePreview->play(file);
+         }
+      }
+
+   }
 }
 
 AudioPreviewDialog::AudioPreviewDialog(QWidget *parent)
-   :QFileDialog(parent)
+   :QFileDialog(parent),
+   lastIsPlaying(false)
 {
     setOption(QFileDialog::DontUseNativeDialog);
     setNameFilter(QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
@@ -202,10 +212,11 @@ AudioPreviewDialog::AudioPreviewDialog(QWidget *parent)
 
     chAutoPlay = new QCheckBox(this);
     chAutoPlay->setText(tr("Auto play"));
+    chAutoPlay->setChecked(true);
 
 
-    QPushButton *btnStop = new QPushButton(tr("Stop"));
-    connect(btnStop, SIGNAL(clicked()), this, SLOT(stopWave()));
+    btnStop = new QPushButton(tr("Stop"));
+    connect(btnStop, SIGNAL(clicked()), this, SLOT(startStopWave()));
 
 
     //QListView *v = this->findChild<QListView *>("listView", Qt::FindChildrenRecursively);
@@ -214,6 +225,7 @@ AudioPreviewDialog::AudioPreviewDialog(QWidget *parent)
     //this->layout()->addWidget(cb);
     this->layout()->addWidget(chAutoPlay);
     this->layout()->addWidget(btnStop);
+    startTimer(30);
 
 }
 
@@ -221,5 +233,17 @@ AudioPreviewDialog::~AudioPreviewDialog()
 {
    MusEGlobal::wavePreview->stop();
 }
+
+void AudioPreviewDialog::timerEvent(QTimerEvent *)
+{
+   if(lastIsPlaying != MusEGlobal::wavePreview->getIsPlaying())
+   {
+      lastIsPlaying = MusEGlobal::wavePreview->getIsPlaying();
+      btnStop->setText(lastIsPlaying ? tr("Stop") : tr("Play"));
+   }
+
+}
+
+
 
 }

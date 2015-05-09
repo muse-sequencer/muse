@@ -9,6 +9,7 @@
 #include <QComboBox>
 #include <QSemaphore>
 #include <QCheckBox>
+#include <QPushButton>
 
 namespace MusECore
 {
@@ -37,6 +38,7 @@ public:
    void play(QString path);
    void stop();
    void addData(int channels, int nframes, float *buffer []);
+   bool getIsPlaying() { return isPlaying; }
 
 };
 
@@ -44,25 +46,28 @@ class AudioPreviewDialog : public QFileDialog{
    Q_OBJECT
 private:
     QCheckBox *chAutoPlay;
+    QPushButton *btnStop;
+    bool lastIsPlaying;
 private slots:
     void urlChanged(const QString &str);
-    void stopWave();
+    void startStopWave();
 public:
    AudioPreviewDialog(QWidget *parent);
    ~AudioPreviewDialog();
+   void timerEvent(QTimerEvent *);
 };
 
 
 extern void initWavePreview();
 extern void exitWavePreview();
 
-};
+}
 
 
 
 namespace MusEGlobal
 {
 extern MusECore::WavePreview *wavePreview;
-};
+}
 
 #endif
