@@ -41,6 +41,7 @@
 #include "wave.h"
 #include "utils.h"      //debug
 #include "ticksynth.h"  // metronome
+#include "wavepreview.h"
 #include "al/dsp.h"
 
 // Turn on debugging messages
@@ -2062,6 +2063,8 @@ void AudioOutput::processWrite()
 //             metronome->addData(MusEGlobal::audio->pos().frame(), _channels, -1, -1, _nframes, buffer);
             metronome->addData(MusEGlobal::audio->pos().frame(), -1, _channels, -1, -1, _nframes, buffer);
             }
+
+            MusEGlobal::wavePreview->addData(_channels, _nframes, buffer);
       }
 //---------------------------------------------------------
 //   setName

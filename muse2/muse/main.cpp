@@ -60,6 +60,7 @@
 #include "midiport.h"
 #include "mididev.h"
 #include "plugin.h"
+#include "wavepreview.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -712,7 +713,9 @@ int main(int argc, char* argv[])
       
       MusECore::initOSC();
       
-      MusECore::initMetronome();
+      MusECore::initMetronome();      
+
+      MusECore::initWavePreview();
 
       MusECore::enumerateJackMidiDevices();
       
@@ -773,6 +776,9 @@ int main(int argc, char* argv[])
          for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i)
             delete (*i);
       }
+
+      MusECore::exitWavePreview();
+
 #ifdef LV2_SUPPORT
       if(MusEGlobal::loadLV2)
             MusECore::deinitLV2();

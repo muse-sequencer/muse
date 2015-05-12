@@ -1,3 +1,7 @@
+05.05.2015
+         - Added multichannel support for SimpleDrums (+routing ability) (danvd)
+         - Added channel meters for SimpleDrums (danvd)
+         - Updated SimpleDrums config to version 3 (added routing config saving/restoring) (danvd)
 15.04.2015:
          - Fixed bug #363, Len not initializing correctly when importing midi files (rj)
 03.04.2015:

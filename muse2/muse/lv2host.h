@@ -51,6 +51,7 @@
 #include "lv2/lv2plug.in/ns/ext/atom/forge.h"
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
+#include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
 
@@ -757,7 +758,7 @@ public:
     static void lv2state_FreeState(LV2PluginWrapper_State *state);
     static void lv2audio_SendTransport(LV2PluginWrapper_State *state, LV2EvBuf *buffer, LV2EvBuf::LV2_Evbuf_Iterator &iter);
     static void lv2state_InitMidiPorts ( LV2PluginWrapper_State *state );
-    static void inline lv2audio_preProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp, const snd_seq_event_t *events = NULL, unsigned long nevents = 0);
+    static void inline lv2audio_preProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp, const std::vector<snd_seq_event_t> *events = NULL);
     static void inline lv2audio_postProcessMidiPorts (LV2PluginWrapper_State *state, unsigned long nsamp);
     static const void *lv2state_stateRetreive ( LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags );
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
@@ -811,7 +812,7 @@ private:
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
     std::vector<unsigned long> _iUsedIdx;  // During process, tells whether an audio input port was used by any input routes.    
     void doSelectProgram(unsigned char channel, int bank, int prog);
-    bool processEvent ( const MidiPlayEvent &, snd_seq_event_t * );
+    bool processEvent (const MidiPlayEvent &, std::vector<snd_seq_event_t> &, unsigned long *nevts);
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
     float midi2Lv2Value ( unsigned long port, int ctlnum, int val );
     LV2PluginWrapper_State *_uiState;    
