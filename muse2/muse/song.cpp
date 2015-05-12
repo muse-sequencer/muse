@@ -191,6 +191,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
       if(!si)
         return 0;
+      
       if (MusEGlobal::config.unhideTracks) SynthI::setVisible(true);
 
       // Add instance last in midi device list.
@@ -386,6 +387,10 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
                         // REMOVE Tim. Persistent routes. Changed.
                         //MusEGlobal::audio->msgAddRoute(Route((AudioTrack*)track, -1), Route(ao, -1));
                         //updateFlags |= SC_ROUTE;
+                    
+                        // REMOVE Tim. Persistent routes. Added. Moved here from Song::createSynthI().
+                        printf("Song::addTrack(): WAVE or AUDIO_AUX type:%d name:%s pushing default route to master\n", track->type(), track->name().toLatin1().constData());  
+                        
                         track->outRoutes()->push_back(Route(ao));
                         break;
                   // It should actually never get here now, but just in case.

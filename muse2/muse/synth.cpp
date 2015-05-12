@@ -431,6 +431,27 @@ void SynthI::setName(const QString& s)
       }
 
 //---------------------------------------------------------
+//   totalRoutableInputs
+//   Number of routable inputs.
+//---------------------------------------------------------
+
+int SynthI::totalRoutableInputs(Route::RouteType type) const 
+{ 
+  switch(type)
+  {
+    case Route::TRACK_ROUTE:
+      return totalInChannels();
+    break;
+    case Route::JACK_ROUTE:
+    case Route::MIDI_DEVICE_ROUTE:
+    case Route::MIDI_PORT_ROUTE:
+      return 0;
+    break;
+  }
+  return 0;
+}
+
+//---------------------------------------------------------
 //   currentProg
 //---------------------------------------------------------
 
@@ -729,17 +750,30 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& label, Synth::T
 
       int idx = insertAt ? _tracks.index(insertAt) : -1;
 
-      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTrack, idx, si));
-
+      // REMOVE Tim. Persistent routes. Added. Moved here and modified from below.
       OutputList* ol = MusEGlobal::song->outputs();
-      // add default route to master (first audio output)
+      // Add an omnibus default route to master (first audio output)
       if (!ol->empty()) {
             AudioOutput* ao = ol->front();
-            // Make sure the route channel and channels are valid.
-            MusEGlobal::audio->msgAddRoute(Route((AudioTrack*)si, 0, ((AudioTrack*)si)->channels()), Route(ao, 0, ((AudioTrack*)si)->channels()));
-
-            MusEGlobal::audio->msgUpdateSoloStates();
+            // AddTrack operation 'mirrors' the route.
+            static_cast<Track*>(si)->outRoutes()->push_back(Route(ao));
             }
+      
+      MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddTrack, idx, si));
+
+      // REMOVE Tim. Persistent routes. Added. Moved here and modified from below.
+      MusEGlobal::audio->msgUpdateSoloStates();
+      
+// REMOVE Tim. Persistent routes. Removed. Moved into Song::addNewTrack().
+//       OutputList* ol = MusEGlobal::song->outputs();
+//       // add default route to master (first audio output)
+//       if (!ol->empty()) {
+//             AudioOutput* ao = ol->front();
+//             // Make sure the route channel and channels are valid.
+//             MusEGlobal::audio->msgAddRoute(Route((AudioTrack*)si, 0, ((AudioTrack*)si)->channels()), Route(ao, 0, ((AudioTrack*)si)->channels()));
+// 
+//             MusEGlobal::audio->msgUpdateSoloStates();
+//             }
 
       // DELETETHIS 5
       // Now that the track has been added to the lists in insertTrack2(),

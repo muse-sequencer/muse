@@ -215,7 +215,9 @@ void addRoute(Route src, Route dst)
                   fprintf(stderr, "addRoute: source is jack, dest:%s is track but not audio input\n", dst.track->name().toLatin1().constData());
                   return;
               }
+              // REMOVE Tim. Persistent routes. Changed.
               if (dst.channel < 0) 
+              //if (dst.channel < -1)   // -1 is valid and means 'omni' (n track channels to the first n Jack ports found).
               {
                   fprintf(stderr, "addRoute: source is jack, dest:%s is track but invalid channel:%d\n", dst.track->name().toLatin1().constData(), dst.channel);
                   return;
@@ -280,7 +282,9 @@ void addRoute(Route src, Route dst)
                     fprintf(stderr, "addRoute: destination is jack, source is track but not audio output\n");
                     return;
               }
+              // REMOVE Tim. Persistent routes. Changed.
               if (src.channel < 0) 
+              //if (src.channel < -1)   // -1 is valid and means 'omni' (n track channels to the first n Jack ports found).
               {
                     fprintf(stderr, "addRoute: destination is jack, source:%s is track but invalid channel:%d\n", src.track->name().toLatin1().constData(), src.channel);
                     return;
@@ -507,20 +511,20 @@ void addRoute(Route src, Route dst)
         
         RouteList* outRoutes = src.track->outRoutes();
         
-        //
-        // Must enforce to ensure channel and channels are valid if defaults of -1 passed.
-        //
-        if(src.track->type() == Track::AUDIO_SOFTSYNTH)
-        {
-          if(src.channel == -1)
-            src.channel = 0;
-          if(src.channels == -1)
-            src.channels = src.track->channels();  
-//           dst.channel = src.channel;
-//           dst.channels = src.channels;
-//           dst.remoteChannel = src.remoteChannel;
-          
-        }
+// REMOVE Tim. Persistent routes. Removed.
+//         //
+//         // Must enforce to ensure channel and channels are valid if defaults of -1 passed.
+//         //
+//         if(src.track->type() == Track::AUDIO_SOFTSYNTH)
+//         {
+//           if(src.channel == -1)
+//             src.channel = 0;
+//           if(src.channels == -1)
+//             src.channels = src.track->channels();  
+// //           dst.channel = src.channel;
+// //           dst.channels = src.channels;
+// //           dst.remoteChannel = src.remoteChannel;
+//         }
         
         if((src.channel == -1 && dst.channel != -1) || (dst.channel == -1 && src.channel != -1))
         {

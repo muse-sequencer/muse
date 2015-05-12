@@ -46,7 +46,8 @@ namespace MusEGui {
 //   addMenuItem
 //---------------------------------------------------------
 
-int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* route_track, PopupMenu* lb, int id, int channel, int channels, bool isOutput)
+int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* route_track, MusEGui::PopupMenu* lb, 
+                                int id, int channel, int /*channels*/, bool isOutput)
 {
   // totalInChannels is only used by syntis.
   //int toch = ((MusECore::AudioTrack*)track)->totalOutChannels();
@@ -58,43 +59,180 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
   //if(route_track->channels() > 1 && (channel+1 == chans))
   //  return id;
     
+  // REMOVE Tim. Persistent routes. Added.
+  if(route_track->isMidiTrack())
+    return ++id;
+  
   MusECore::RouteList* rl = isOutput ? track->outRoutes() : track->inRoutes();
   
-  QAction* act;
+  // REMOVE Tim. Persistent routes. Removed.
+  //QAction* act;
   
-  QString s(route_track->name());
+  // REMOVE Tim. Persistent routes. Removed.
+  //QString s(route_track->name());
+
+
+  // REMOVE Tim. Persistent routes. Added.
+  const bool circ_route = (isOutput ? track : route_track)->isCircularRoute(isOutput ? route_track : track);
+  const int t_chans = isOutput ? track->totalRoutableOutputs(MusECore::Route::TRACK_ROUTE) : track->totalRoutableInputs(MusECore::Route::TRACK_ROUTE);
+  const int rt_chans = isOutput ? route_track->totalRoutableInputs(MusECore::Route::TRACK_ROUTE) : route_track->totalRoutableOutputs(MusECore::Route::TRACK_ROUTE);
+  if(isOutput && track->type() == MusECore::Track::AUDIO_OUTPUT && route_track->type() == MusECore::Track::AUDIO_INPUT)
+  {
+    // Only support omnibus routes for now.
+    if(channel != -1 || track->totalRoutableOutputs(MusECore::Route::JACK_ROUTE) <= 0 || route_track->totalRoutableInputs(MusECore::Route::JACK_ROUTE) <= 0)
+      return ++id;
+  }
+  else
+  if(!isOutput && track->type() == MusECore::Track::AUDIO_INPUT && route_track->type() == MusECore::Track::AUDIO_OUTPUT)
+  {
+    // Only support omnibus routes for now.
+    if(channel != -1 || track->totalRoutableInputs(MusECore::Route::JACK_ROUTE) <= 0 || route_track->totalRoutableOutputs(MusECore::Route::JACK_ROUTE) <= 0)
+      return ++id;
+  }
+  else
+  {
+    if(t_chans <= 0)
+      return ++id;
+    if(rt_chans <= 0)
+      return ++id;
+  }
+  // Is it an omnibus route?
+  if(channel == -1)
+  {
+    //if((isOutput && track->type() == MusECore::Track::AUDIO_OUTPUT && route_track->type() == MusECore::Track::AUDIO_INPUT &&
+    //   (track->totalRoutableOutputs(MusECore::Route::JACK_ROUTE) <= 0 || route_track->totalRoutableInputs(MusECore::Route::JACK_ROUTE) <= 0)) ||
+    //   (!isOutput && track->type() == MusECore::Track::AUDIO_INPUT && route_track->type() == MusECore::Track::AUDIO_OUTPUT &&
+    //   (track->totalRoutableInputs(MusECore::Route::JACK_ROUTE) <= 0 || route_track->totalRoutableOutputs(MusECore::Route::JACK_ROUTE) <= 0)))
+    //  return ++id;
+      
+    QAction* act = lb->addAction(route_track->name());
+    act->setCheckable(true);
+    MusECore::Route r(route_track, -1);
+    act->setData(QVariant::fromValue(r));   
+    for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+    {
+      if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == route_track && 
+          ir->remoteChannel == r.channel && 
+          ir->channel == r.remoteChannel && 
+          ir->channels == r.channels)
+      {
+        act->setChecked(true);
+        break;
+      }  
+    }
+    if(!act->isChecked() && circ_route)  // If circular route exists, allow user to break it, otherwise forbidden.
+      act->setEnabled(false);
+  }
+  else
+  {
+    
+#ifdef _USE_CUSTOM_WIDGET_ACTIONS_
+        
+    QBitArray ba(rt_chans); 
+    for(int i = 0; i < rt_chans; ++i)
+    {  
+      MusECore::Route r(route_track, i, 1);
+      for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+      {
+        if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == route_track && 
+            ir->remoteChannel == r.channel && 
+            ir->channel == r.remoteChannel && 
+            ir->channels == r.channels)
+        {
+          ba.setBit(i);
+          break;
+        }  
+      }
+    }
+    PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(route_track->name(), redLedIcon, darkRedLedIcon, ba, this);
+    MusECore::Route r(route_track, 0, 1); // Ignore the routing channels - our action holds the channels.   
+    wa->setData(QVariant::fromValue(r));   
+    lb->addAction(wa);  
+
+#else
+    
+    // It's not an omnibus route. Add the individual channels...
+    PopupMenu* subp = new PopupMenu(this, true);
+    subp->setTitle(route_track->name());
+    subp->addAction(new MenuTitleItem(tr("Channels"), this));
+    for(int i = 0; i < rt_chans; ++i)
+    {
+      QAction* act = subp->addAction(QString::number(i + 1));
+      act->setCheckable(true);
+      MusECore::Route r(route_track, i, 1);
+      r.remoteChannel = channel;
+      act->setData(QVariant::fromValue(r));
+      
+      for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+      {
+        if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == route_track && 
+            ir->remoteChannel == r.channel && 
+            ir->channel == r.remoteChannel && 
+            ir->channels == r.channels)
+        {
+          act->setChecked(true);
+          break;
+        }  
+      }
+      if(!act->isChecked() && circ_route)  // If circular route exists, allow user to break it, otherwise forbidden.
+        act->setEnabled(false);
+    }
+    lb->addMenu(subp);
+#endif
+    
+  }
   
-  act = lb->addAction(s);
+  return ++id;
+}  
+  
+// REMOVE Tim. Persistent routes. Removed.
+/*  
+  // REMOVE Tim. Persistent routes. Changed.
+  //act = lb->addAction(s);
+  QAction* act = lb->addAction(route_track->name());
+
   act->setCheckable(true);
   
-  int ach = channel;
-  int bch = -1;
+// REMOVE Tim. Persistent routes. Removed.
+//   int ach = channel;
+//   int bch = -1;
   
-  MusECore::Route r(route_track, isOutput ? ach : bch, channels);
+  // REMOVE Tim. Persistent routes. Changed.
+  //MusECore::Route r(route_track, isOutput ? ach : bch, channels);
+  MusECore::Route r(route_track, channel, channels);
   
-  r.remoteChannel = isOutput ? bch : ach;
+  // REMOVE Tim. Persistent routes. Changed.
+  //r.remoteChannel = isOutput ? bch : ach;
+  r.remoteChannel = remote_channel;
   
   act->setData(QVariant::fromValue(r));   
   
   for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
   {
-    if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == route_track && ir->remoteChannel == r.remoteChannel)
+    // REMOVE Tim. Persistent routes. Changed.
+    //if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == route_track && ir->remoteChannel == r.remoteChannel)
+    if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == route_track && 
+       ir->remoteChannel == r.channel && 
+       ir->channel == r.remoteChannel && 
+       ir->channels == r.channels)
     {
-      int tcompch = r.channel;
-      if(tcompch == -1)
-        tcompch = 0;
-      int tcompchs = r.channels;
-      if(tcompchs == -1)
-        tcompchs = isOutput ? track->channels() : route_track->channels();
       
-      int compch = ir->channel;
-      if(compch == -1)
-        compch = 0;
-      int compchs = ir->channels;
-      if(compchs == -1)
-        compchs = isOutput ? track->channels() : ir->track->channels();
-      
-      if(compch == tcompch && compchs == tcompchs) 
+// REMOVE Tim. Persistent routes. Changed.
+//       int tcompch = r.channel;
+//       if(tcompch == -1)
+//         tcompch = 0;
+//       int tcompchs = r.channels;
+//       if(tcompchs == -1)
+//         tcompchs = isOutput ? track->channels() : route_track->channels();
+//       
+//       int compch = ir->channel;
+//       if(compch == -1)
+//         compch = 0;
+//       int compchs = ir->channels;
+//       if(compchs == -1)
+//         compchs = isOutput ? track->channels() : ir->track->channels();
+//       
+//       if(compch == tcompch && compchs == tcompchs) 
       {
         act->setChecked(true);
         break;
@@ -109,7 +247,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
   }
 
   return ++id;      
-}
+}*/
 
 //---------------------------------------------------------
 //   addAuxPorts
@@ -730,6 +868,22 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
   return id;      
 }
 
+// REMOVE Tim. Persistent routes. Added.
+//---------------------------------------------------------
+//   addSynthPorts
+//---------------------------------------------------------
+
+int RoutePopupMenu::addSynthPorts(MusECore::AudioTrack* t, MusEGui::PopupMenu* lb, int id, int channel, int channels, bool isOutput)
+{
+      MusECore::SynthIList* al = MusEGlobal::song->syntis();
+      for (MusECore::iSynthI i = al->begin(); i != al->end(); ++i) {
+            MusECore::Track* track = *i;
+            if (t == track)
+                  continue;
+            id = addMenuItem(t, track, lb, id, channel, channels, isOutput);
+            }
+      return id;      
+}
 
 //======================
 // RoutePopupMenu
@@ -1108,9 +1262,13 @@ void RoutePopupMenu::popupActivated(QAction* action)
           
         if(_isOutMenu)
         {  
-          MusECore::Route dstRoute = action->data().value<MusECore::Route>();             
-          MusECore::Route srcRoute(t, dstRoute.channel, dstRoute.channels);    
-          srcRoute.remoteChannel = dstRoute.remoteChannel;
+          MusECore::Route dstRoute = action->data().value<MusECore::Route>();
+          
+          // REMOVE Tim. Persistent routes. Changed.
+          //MusECore::Route srcRoute(t, dstRoute.channel, dstRoute.channels);    
+          //srcRoute.remoteChannel = dstRoute.remoteChannel;
+          MusECore::Route srcRoute(t, dstRoute.remoteChannel, dstRoute.channels);    
+          srcRoute.remoteChannel = dstRoute.channel;
   
           // check if route src->dst exists:
           MusECore::ciRoute irl = rl->begin();
@@ -1213,8 +1371,11 @@ void RoutePopupMenu::popupActivated(QAction* action)
             }  
           }
           
-          MusECore::Route dstRoute(t, srcRoute.channel, srcRoute.channels);     
-          dstRoute.remoteChannel = srcRoute.remoteChannel;
+          // REMOVE Tim. Persistent routes. Changed.
+          //MusECore::Route dstRoute(t, srcRoute.channel, srcRoute.channels);     
+          //dstRoute.remoteChannel = srcRoute.remoteChannel;
+          MusECore::Route dstRoute(t, srcRoute.remoteChannel, srcRoute.channels);     
+          dstRoute.remoteChannel = srcRoute.channel;
   
           MusECore::ciRoute irl = rl->begin();
           for (; irl != rl->end(); ++irl) {
@@ -1249,6 +1410,12 @@ void RoutePopupMenu::prepare()
     return;
    
   connect(this, SIGNAL(triggered(QAction*)), SLOT(popupActivated(QAction*)));
+  
+  if(_isOutMenu)
+    addAction(new MenuTitleItem(tr("Output routes:"), this));
+  else
+    addAction(new MenuTitleItem(tr("Input routes:"), this));
+  addSeparator();
   
   if(_track->isMidiTrack())
   {
@@ -1485,9 +1652,13 @@ void RoutePopupMenu::prepare()
   else
   {
     MusECore::AudioTrack* t = (MusECore::AudioTrack*)_track;
-    int channel = t->channels();
+    //int chans = t->channels();
     if(_isOutMenu)   
     {
+      // REMOVE Tim. Persistent routes. Added.
+      const int t_ochs = t->totalRoutableOutputs(MusECore::Route::TRACK_ROUTE);
+      const int t_jochs = t->totalRoutableOutputs(MusECore::Route::JACK_ROUTE);
+    
       MusECore::RouteList* orl = t->outRoutes();
 
       QAction* act = 0;
@@ -1498,7 +1669,9 @@ void RoutePopupMenu::prepare()
       {
         case MusECore::Track::AUDIO_OUTPUT:
         {
-          for(int i = 0; i < channel; ++i) 
+          // REMOVE Tim. Persistent routes. Changed.
+          //for(int i = 0; i < chans; ++i) 
+          for(int i = 0; i < t_jochs; ++i) 
           {
             //char buffer[128];
             //snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
@@ -1538,7 +1711,9 @@ void RoutePopupMenu::prepare()
                 }
               }
             }
-            if(i+1 != channel)
+            // REMOVE Tim. Persistent routes. Changed.
+            //if(i+1 != chans)
+            if(i+1 != t_ochs)
               addSeparator();
           }      
           
@@ -1560,22 +1735,71 @@ void RoutePopupMenu::prepare()
           //gid = addInPorts(t, this, gid, -1, -1, true);  
         }
         break;
-        case MusECore::Track::AUDIO_SOFTSYNTH:
-              gid = addMultiChannelPorts(t, this, gid, true);
-        break;
         
+        
+        // REMOVE Tim. Persistent routes. Changed.
+//         case MusECore::Track::AUDIO_SOFTSYNTH:
+//               gid = addMultiChannelPorts(t, this, gid, true);
+//         break;
+//         
+//         case MusECore::Track::AUDIO_INPUT:
+//         case MusECore::Track::WAVE:
+//         case MusECore::Track::AUDIO_GROUP:
+//         case MusECore::Track::AUDIO_AUX:
+//               gid = addWavePorts(        t, this, gid, -1, -1, true);  
+//               gid = addOutPorts(         t, this, gid, -1, -1, true);
+//               gid = addGroupPorts(       t, this, gid, -1, -1, true);
+//               gid = nonSyntiTrackAddSyntis(t, this, gid, true);
+//         break;
         case MusECore::Track::AUDIO_INPUT:
         case MusECore::Track::WAVE:
         case MusECore::Track::AUDIO_GROUP:
         case MusECore::Track::AUDIO_AUX:
-              gid = addWavePorts(        t, this, gid, -1, -1, true);  
-              gid = addOutPorts(         t, this, gid, -1, -1, true);
-              gid = addGroupPorts(       t, this, gid, -1, -1, true);
-              gid = nonSyntiTrackAddSyntis(t, this, gid, true);
+        case MusECore::Track::AUDIO_SOFTSYNTH:
+          if(t_ochs > 0)
+          {
+            addAction(new MenuTitleItem(tr("Omni"), this)); 
+            gid = addWavePorts(        t, this, gid, -1, -1, true);  
+            gid = addOutPorts(         t, this, gid, -1, -1, true);
+            gid = addGroupPorts(       t, this, gid, -1, -1, true);
+            gid = addSynthPorts(       t, this, gid, -1, -1, true);
+          }
         break;
+        
         default:
-              clear();
-              return;
+          clear();
+          return;
+        break;
+      }
+      
+      // REMOVE Tim. Persistent routes. Added.
+      switch(_track->type()) 
+      {
+        case MusECore::Track::AUDIO_INPUT:
+        case MusECore::Track::WAVE:
+        case MusECore::Track::AUDIO_GROUP:
+        case MusECore::Track::AUDIO_AUX:
+        case MusECore::Track::AUDIO_SOFTSYNTH:
+          if(t_ochs > 0)
+          {
+            addSeparator();
+            addAction(new MenuTitleItem(tr("Channels"), this));
+            for(int i = 0; i < t_ochs; ++i)
+            {
+              PopupMenu* subp = new PopupMenu(this, true);
+              subp->setTitle(QString::number(i + 1)); 
+              subp->addAction(new MenuTitleItem(tr("Destinations:"), this));
+              addMenu(subp);
+              gid = addWavePorts( t, subp, gid, i, 1, true);  
+              gid = addOutPorts(  t, subp, gid, i, 1, true);
+              gid = addGroupPorts(t, subp, gid, i, 1, true);
+              gid = addSynthPorts(t, subp, gid, i, 1, true);
+            }
+          }
+        break;
+
+        default:
+        break;
       }
     }
     else
@@ -1583,6 +1807,10 @@ void RoutePopupMenu::prepare()
       if(_track->type() == MusECore::Track::AUDIO_AUX)
         return;
         
+      // REMOVE Tim. Persistent routes. Added.
+      const int t_ichs = t->totalRoutableInputs(MusECore::Route::TRACK_ROUTE);
+      const int t_jichs = t->totalRoutableInputs(MusECore::Route::JACK_ROUTE);
+      
       MusECore::RouteList* irl = t->inRoutes();
   
       QAction* act = 0;
@@ -1593,7 +1821,9 @@ void RoutePopupMenu::prepare()
       {
         case MusECore::Track::AUDIO_INPUT:
         {
-          for(int i = 0; i < channel; ++i) 
+          // REMOVE Tim. Persistent routes. Changed.
+          //for(int i = 0; i < chans; ++i) 
+          for(int i = 0; i < t_jichs; ++i) 
           {
             //char buffer[128];
             //snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
@@ -1633,7 +1863,9 @@ void RoutePopupMenu::prepare()
                 }
               }
             }
-            if(i+1 != channel)
+            // REMOVE Tim. Persistent routes. Changed.
+            //if(i+1 != chans)
+            if(i+1 != t_ichs)
               addSeparator();
           }
           
@@ -1660,35 +1892,83 @@ void RoutePopupMenu::prepare()
           //addMidiPorts(t, this, gid, false);
         }
         break;
-        case MusECore::Track::AUDIO_OUTPUT:
-              gid = addWavePorts( t, this, gid, -1, -1, false);
-              gid = addInPorts(   t, this, gid, -1, -1, false);
-              gid = addGroupPorts(t, this, gid, -1, -1, false);
-              gid = addAuxPorts(  t, this, gid, -1, -1, false);
-              gid = nonSyntiTrackAddSyntis(t, this, gid, false);
-              break;
-        case MusECore::Track::WAVE:
-              gid = addWavePorts( t, this, gid, -1, -1, false);  
-              gid = addInPorts(   t, this, gid, -1, -1, false);
-              gid = addGroupPorts(t, this, gid, -1, -1, false);  
-              gid = addAuxPorts(  t, this, gid, -1, -1, false);  
-              gid = nonSyntiTrackAddSyntis(t, this, gid, false); 
-              break;
-        case MusECore::Track::AUDIO_GROUP:
-              gid = addWavePorts( t, this, gid, -1, -1, false);
-              gid = addInPorts(   t, this, gid, -1, -1, false);
-              gid = addGroupPorts(t, this, gid, -1, -1, false);
-              gid = addAuxPorts(  t, this, gid, -1, -1, false);  
-              gid = nonSyntiTrackAddSyntis(t, this, gid, false);
-              break;
         
+        // REMOVE Tim. Persistent routes. Changed.
+//         case MusECore::Track::AUDIO_OUTPUT:
+//               gid = addWavePorts( t, this, gid, -1, -1, false);
+//               gid = addInPorts(   t, this, gid, -1, -1, false);
+//               gid = addGroupPorts(t, this, gid, -1, -1, false);
+//               gid = addAuxPorts(  t, this, gid, -1, -1, false);
+//               gid = nonSyntiTrackAddSyntis(t, this, gid, false);
+//               break;
+//         case MusECore::Track::WAVE:
+//               gid = addWavePorts( t, this, gid, -1, -1, false);  
+//               gid = addInPorts(   t, this, gid, -1, -1, false);
+//               gid = addGroupPorts(t, this, gid, -1, -1, false);  
+//               gid = addAuxPorts(  t, this, gid, -1, -1, false);  
+//               gid = nonSyntiTrackAddSyntis(t, this, gid, false); 
+//               break;
+//         case MusECore::Track::AUDIO_GROUP:
+//               gid = addWavePorts( t, this, gid, -1, -1, false);
+//               gid = addInPorts(   t, this, gid, -1, -1, false);
+//               gid = addGroupPorts(t, this, gid, -1, -1, false);
+//               gid = addAuxPorts(  t, this, gid, -1, -1, false);  
+//               gid = nonSyntiTrackAddSyntis(t, this, gid, false);
+//               break;
+//         
+//         case MusECore::Track::AUDIO_SOFTSYNTH:
+//               gid = addMultiChannelPorts(t, this, gid, false);
+//               break;
+        case MusECore::Track::AUDIO_OUTPUT:
+        case MusECore::Track::WAVE:
+        case MusECore::Track::AUDIO_GROUP:
         case MusECore::Track::AUDIO_SOFTSYNTH:
-              gid = addMultiChannelPorts(t, this, gid, false);
-              break;
+          if(t_ichs > 0)
+          {
+            addAction(new MenuTitleItem(tr("Omni"), this)); 
+            gid = addWavePorts( t, this, gid, -1, -1, false);
+            gid = addInPorts(   t, this, gid, -1, -1, false);
+            gid = addGroupPorts(t, this, gid, -1, -1, false);
+            gid = addAuxPorts(  t, this, gid, -1, -1, false);  
+            gid = addSynthPorts(t, this, gid, -1, -1, false);  
+          }
+        break;
+              
         default:
-              clear();
-              return;
+          clear();
+          return;
+        break;  
       }  
+      
+      // REMOVE Tim. Persistent routes. Added.
+      switch(_track->type()) 
+      {
+        case MusECore::Track::AUDIO_OUTPUT:
+        case MusECore::Track::WAVE:
+        case MusECore::Track::AUDIO_GROUP:
+        case MusECore::Track::AUDIO_SOFTSYNTH:
+          if(t_ichs > 0)
+          {
+            addSeparator();
+            addAction(new MenuTitleItem(tr("Channels"), this));
+            for(int i = 0; i < t_ichs; ++i)
+            {
+              PopupMenu* subp = new PopupMenu(this, true);
+              subp->setTitle(QString::number(i + 1)); 
+              subp->addAction(new MenuTitleItem(tr("Sources:"), this));
+              addMenu(subp);
+              gid = addWavePorts( t, subp, gid, i, 1, false);  
+              gid = addInPorts(   t, subp, gid, i, 1, false);
+              gid = addGroupPorts(t, subp, gid, i, 1, false);
+              gid = addAuxPorts(  t, subp, gid, i, 1, false);  
+              gid = addSynthPorts(t, subp, gid, i, 1, false);
+            }
+          }
+        break;
+
+        default:
+        break;
+      }
     }  
   }
 }

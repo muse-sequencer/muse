@@ -62,9 +62,13 @@ class RoutePopupMenu : public PopupMenu
     int addGroupPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     int addWavePorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     int addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
+    
     int addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
     int nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* lb, int id, bool isOutput);
     int addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
+    
+    // REMOVE Tim. Persistent routes. Added.
+    int addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     
   private slots:
     void popupActivated(QAction*);

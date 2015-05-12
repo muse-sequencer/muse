@@ -150,6 +150,10 @@ class Track {
       bool isCircularRoute(Track* dst);   
       int auxRefCount() const { return _auxRouteCount; }  // Number of Aux Tracks with routing paths to this track. 
       void updateAuxRoute(int refInc, Track* dst);  // Internal use. 
+      // Number of routable inputs.
+      virtual int totalRoutableInputs(Route::RouteType) const;
+      // Number of routable outputs.
+      virtual int totalRoutableOutputs(Route::RouteType) const;
       
       PartList* parts()               { return &_parts; }
       const PartList* cparts() const  { return &_parts; }
@@ -422,9 +426,13 @@ class AudioTrack : public Track {
 
       virtual void setChannels(int n);
       virtual void setTotalOutChannels(int num);
-      virtual int totalOutChannels() { return _totalOutChannels; }
+      virtual int totalOutChannels() const { return _totalOutChannels; }
       virtual void setTotalInChannels(int num);
-      virtual int totalInChannels() { return _totalInChannels; }
+      virtual int totalInChannels() const { return _totalInChannels; }
+      // Number of routable inputs.
+      virtual int totalRoutableInputs(Route::RouteType) const;
+      // Number of routable outputs.
+      virtual int totalRoutableOutputs(Route::RouteType) const;
 
       virtual bool isMute() const;
       virtual void setSolo(bool val);
@@ -521,6 +529,8 @@ class AudioInput : public AudioTrack {
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
       virtual void setChannels(int n);
       virtual bool hasAuxSend() const { return true; }
+      // Number of routable inputs.
+      virtual int totalRoutableInputs(Route::RouteType) const;
       static void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
       static bool visible() { return _isVisible; }
@@ -552,6 +562,8 @@ class AudioOutput : public AudioTrack {
       void* jackPort(int channel) { return jackPorts[channel]; }
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
       virtual void setChannels(int n);
+      // Number of routable outputs.
+      virtual int totalRoutableOutputs(Route::RouteType) const;
       void processInit(unsigned);
       void process(unsigned pos, unsigned offset, unsigned);
       void processWrite();
@@ -602,6 +614,8 @@ class AudioAux : public AudioTrack {
       virtual void write(int, Xml&) const;
       virtual bool getData(unsigned, int, unsigned, float**);
       virtual void setChannels(int n);
+      // Number of routable inputs.
+      virtual int totalRoutableInputs(Route::RouteType) const { return 0; }
       float** sendBuffer() { return buffer; }
       static  void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;

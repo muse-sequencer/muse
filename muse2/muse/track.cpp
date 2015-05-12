@@ -474,6 +474,49 @@ bool Track::isCircularRoute(Track* dst)
 }
 
 //---------------------------------------------------------
+//   totalRoutableInputs
+//   Number of routable inputs.
+//---------------------------------------------------------
+
+int Track::totalRoutableInputs(Route::RouteType type) const 
+{ 
+  switch(type)
+  {
+    case Route::TRACK_ROUTE:
+      return _channels;
+    break;
+    case Route::JACK_ROUTE:
+    case Route::MIDI_DEVICE_ROUTE:
+    case Route::MIDI_PORT_ROUTE:
+      return 0;
+    break;
+  }
+  return 0;
+}
+
+//---------------------------------------------------------
+//   totalRoutableOutputs
+//   Number of routable outputs.
+//---------------------------------------------------------
+
+int Track::totalRoutableOutputs(Route::RouteType type) const 
+{ 
+  switch(type)
+  {
+    case Route::TRACK_ROUTE:
+      return _channels;
+    break;
+    case Route::JACK_ROUTE:
+    case Route::MIDI_DEVICE_ROUTE:
+    case Route::MIDI_PORT_ROUTE:
+      return 0;
+    break;
+  }
+  return 0;
+}
+
+
+//---------------------------------------------------------
 //   MidiTrack
 //---------------------------------------------------------
 

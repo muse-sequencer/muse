@@ -1718,6 +1718,49 @@ void AudioTrack::mapRackPluginsToControllers()
 }
 
 //---------------------------------------------------------
+//   totalRoutableInputs
+//   Number of routable inputs.
+//---------------------------------------------------------
+
+int AudioTrack::totalRoutableInputs(Route::RouteType type) const 
+{ 
+  switch(type)
+  {
+    case Route::TRACK_ROUTE: 
+      return channels() == 1 ? 1 : totalOutChannels();
+    break;
+    case Route::JACK_ROUTE:
+    case Route::MIDI_DEVICE_ROUTE:
+    case Route::MIDI_PORT_ROUTE:
+      return 0;
+    break;
+  }
+  return 0;
+}
+
+//---------------------------------------------------------
+//   totalRoutableOutputs
+//   Number of routable outputs.
+//---------------------------------------------------------
+
+int AudioTrack::totalRoutableOutputs(Route::RouteType type) const 
+{ 
+  switch(type)
+  {
+    case Route::TRACK_ROUTE:
+      return channels() == 1 ? 1 : totalOutChannels();
+    break;
+    case Route::JACK_ROUTE:
+    case Route::MIDI_DEVICE_ROUTE:
+    case Route::MIDI_PORT_ROUTE:
+      return 0;
+    break;
+  }
+  return 0;
+}
+
+
+//---------------------------------------------------------
 //   AudioInput
 //---------------------------------------------------------
 
@@ -1831,6 +1874,30 @@ void AudioInput::read(Xml& xml)
       }
 
 //---------------------------------------------------------
+//   totalRoutableInputs
+//   Number of routable inputs.
+//---------------------------------------------------------
+
+int AudioInput::totalRoutableInputs(Route::RouteType type) const 
+{ 
+  switch(type)
+  {
+    case Route::TRACK_ROUTE:
+      return 0;
+    break;
+    case Route::JACK_ROUTE:
+      return channels() == 1 ? 1 : totalOutChannels();
+    break;
+    case Route::MIDI_DEVICE_ROUTE:
+    case Route::MIDI_PORT_ROUTE:
+      return 0;
+    break;
+  }
+  return 0;
+}
+
+
+//---------------------------------------------------------
 //   AudioOutput
 //---------------------------------------------------------
 
@@ -1942,6 +2009,30 @@ void AudioOutput::read(Xml& xml)
             }
       }
 
+//---------------------------------------------------------
+//   totalRoutableOutputs
+//   Number of routable outputs.
+//---------------------------------------------------------
+
+int AudioOutput::totalRoutableOutputs(Route::RouteType type) const 
+{ 
+  switch(type)
+  {
+    case Route::TRACK_ROUTE:
+      return 0;
+    break;
+    case Route::JACK_ROUTE:
+      return channels() == 1 ? 1 : totalOutChannels();
+    break;
+    case Route::MIDI_DEVICE_ROUTE:
+    case Route::MIDI_PORT_ROUTE:
+      return 0;
+    break;
+  }
+  return 0;
+}
+      
+      
 //---------------------------------------------------------
 //   write
 //---------------------------------------------------------
