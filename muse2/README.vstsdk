@@ -1,0 +1,18 @@
+=============================================================
+      Short instructions for compiling MusE
+      with native Steinberg VST SDK
+=============================================================
+
+By default MusE utilizes the VESTIGE compatibility headers for VST support, it is however
+possible to compile with Steinbergs SDK for increased compatibility (notably vst chunks are
+then supported)
+
+To fullfill the requirements for this follow these steps:
+1. download and extract vstsdk
+2. find the folder containing aeffect.h (usually it's under <sdk>/pluginterfaces/vst2.x/
+3. Configure MusE to disable VESTIGE and point to the SDK HEADERS
+   For instance with adding these arguments to the cmake commandline.
+   cmake -DENABLE_VST_VESTIGE=OFF -DVST_HEADER_PATH<pathtosdk>/pluginterfaces/vst2.x/
+   Note that by default the sdk extracts into a folder with spaces, this may work badly,
+   safest to rewrite the path without spaces.
+

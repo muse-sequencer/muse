@@ -42,6 +42,10 @@ class VstNativeSynthIF;
 
 typedef class VstNativeSynthIF VSTPlugin;
 
+#ifdef VST_SDK_QUIRK
+#define __cdecl
+#endif
+
 #include "aeffectx.h"
 
 #ifdef VST_VESTIGE_SUPPORT

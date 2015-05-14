@@ -211,6 +211,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   return 0;
                   
 #ifdef VST_FORCE_DEPRECATED
+#ifndef VST_2_4_EXTENSIONS // deprecated in 2.4
 
             case audioMasterGetSpeakerArrangement:
                   // (long)input in <value>, output in <ptr>
@@ -280,7 +281,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
             case audioMasterCloseWindow:
                   // close window, platform specific handle in <ptr>
                   return 0;
-                  
+#endif
 #endif
                   
             default:
@@ -1189,7 +1190,8 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
 #endif
 
 #ifdef VST_FORCE_DEPRECATED
-                  
+#ifndef VST_2_4_EXTENSIONS // deprecated in 2.4
+
             case audioMasterGetSpeakerArrangement:
                   // (long)input in <value>, output in <ptr>
                   return 0;
@@ -1258,6 +1260,7 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
             case audioMasterCloseWindow:
                   // close window, platform specific handle in <ptr>
                   return 0;
+#endif
 #endif
 
                   
@@ -1897,7 +1900,7 @@ void VstNativeSynthIF::write(int level, Xml& xml) const
     }
   }
 #else
-  fprintf(stderr, "support for vst chunks not compiled in!\n");
+  fprintf(stderr, "support for vst chunks not compiled in1!\n");
 #endif
 
   //---------------------------------------------
@@ -2184,7 +2187,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
                       dispatch(effSetChunk, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
                     }
 #else
-                    fprintf(stderr, "support for vst chunks not compiled in!\n");
+                    fprintf(stderr, "support for vst chunks not compiled in2!\n");
 #endif
                   }
                   // Event not filled.
