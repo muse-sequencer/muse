@@ -1900,7 +1900,7 @@ void VstNativeSynthIF::write(int level, Xml& xml) const
     }
   }
 #else
-  fprintf(stderr, "support for vst chunks not compiled in1!\n");
+  fprintf(stderr, "support for vst chunks not compiled in!\n");
 #endif
 
   //---------------------------------------------
@@ -2187,7 +2187,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
                       dispatch(effSetChunk, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
                     }
 #else
-                    fprintf(stderr, "support for vst chunks not compiled in2!\n");
+                    fprintf(stderr, "support for vst chunks not compiled in!\n");
 #endif
                   }
                   // Event not filled.
@@ -2824,6 +2824,9 @@ void VstNativeSynthIF::enableAllControllers(bool v)
 void VstNativeSynthIF::updateControllers() { }
 void VstNativeSynthIF::activate()
 {
+  // Set some default properties
+  dispatch(effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
+  dispatch(effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
   //for (unsigned short i = 0; i < instances(); ++i) {
   //        dispatch(i, effMainsChanged, 0, 1, NULL, 0.0f);
   dispatch(effMainsChanged, 0, 1, NULL, 0.0f);
