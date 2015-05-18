@@ -707,7 +707,7 @@ void Xml::qrectTag(int level, const char* name, const QRect& r)
 
 void Xml::strTag(int level, const char* name, const QString& val)
       {
-      strTag(level, name, val.toLatin1().constData());
+      strTag(level, name, val.toLocal8Bit().constData());
       }
 
 //---------------------------------------------------------

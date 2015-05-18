@@ -50,17 +50,10 @@ typedef unsigned char byte;
 
 class FluidSynth;
 
-struct FS_Helper //Only used to pass parameters when calling the loading thread
-      {
-      FluidSynth* fptr;
-      std::string filename;
-      int id;
-      };
-
 struct FluidSoundFont
       {
-      std::string filename;
-      std::string name;
+      QString file_name;
+      QString name;
       byte extid, intid;
       };
 
@@ -189,4 +182,12 @@ public:
 
       };
 
+struct FS_Helper //Only used to pass parameters when calling the loading thread
+      {
+      FluidSynth* fptr;
+      QString file_name;
+      int id;
+      };
+
+// static void* fontLoadThread(void* t); // moved to the implementation file -Orcan
 #endif /* __MUSE_FLUIDSYNTI_H__ */

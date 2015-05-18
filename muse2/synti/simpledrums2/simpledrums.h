@@ -43,24 +43,24 @@
 #define SS_SENDFX_BUFFER_SIZE  SS_PROCESS_BUFFER_SIZE
 
 enum SS_ChannelState
-   {
-      SS_CHANNEL_INACTIVE=0,
-      SS_SAMPLE_PLAYING
-   };
+{
+   SS_CHANNEL_INACTIVE=0,
+   SS_SAMPLE_PLAYING
+};
 
 enum SS_State
-   {
-      SS_INITIALIZING=0,
-      SS_LOADING_SAMPLE,
-      SS_CLEARING_SAMPLE,
-      SS_RUNNING
-   };
+{
+   SS_INITIALIZING=0,
+   SS_LOADING_SAMPLE,
+   SS_CLEARING_SAMPLE,
+   SS_RUNNING
+};
 
 enum SS_SendFXState
-   {
-      SS_SENDFX_OFF=0,
-      SS_SENDFX_ON
-   };
+{
+   SS_SENDFX_OFF=0,
+   SS_SENDFX_ON
+};
 
 class LoadSampleWorker : public QObject
 {
@@ -76,104 +76,112 @@ class LoadSampleWorker : public QObject
 };
 
 struct SS_SendFx
-   {
-      SS_SendFXState state;
-      LadspaPlugin*  plugin;
-      int            inputs;
-      int            outputs;
-      int            retgain_ctrlval;
-      double         retgain;
-      int            nrofparameters;
-   };
+{
+   SS_SendFXState state;
+   LadspaPlugin*  plugin;
+   int            inputs;
+   int            outputs;
+   int            retgain_ctrlval;
+   double         retgain;
+   int            nrofparameters;
+};
 
 struct SS_Sample
-   {
-      SS_Sample() { data = 0; }
-      float*      data;
-      int         samplerate;
-      //int         bits;
-      std::string filename;
-      long        samples;
-      long        frames;
-      int         channels;
-      //SF_INFO     sfinfo;
-   };
+{
+   SS_Sample() { data = 0; }
+   float*      data;
+   int         samplerate;
+   //int         bits;
+   std::string filename;
+   long        samples;
+   long        frames;
+   int         channels;
+   //SF_INFO     sfinfo;
+};
+
+enum SS_ChannelRoute
+{
+   SS_CHN_ROUTE_MIX = 0,
+   SS_CHN_ROUTE_CHN,
+};
 
 struct SS_Channel
-   {
-      SS_ChannelState state;
-      const char*     name;
-      SS_Sample*      sample;
-      SS_Sample*      originalSample;
-      int             playoffset;
-      bool            noteoff_ignore;
+{
+   SS_ChannelState state;
+   const char*     name;
+   SS_Sample*      sample;
+   SS_Sample*      originalSample;
+   int             playoffset;
+   bool            noteoff_ignore;
 
-      double          volume;
-      int             volume_ctrlval;
+   double          volume;
+   int             volume_ctrlval;
 
-      double          cur_velo;
-      double          gain_factor;
+   double          cur_velo;
+   double          gain_factor;
 
-      int             pan;
-      double          balanceFactorL;
-      double          balanceFactorR;
-      int             pitchInt;
+   int             pan;
+   double          balanceFactorL;
+   double          balanceFactorR;
+   int             pitchInt;
 
-      bool            channel_on;
+   bool            channel_on;
 
-      //Send fx:
-      double          sendfxlevel[SS_NR_OF_SENDEFFECTS];
-   };
+   SS_ChannelRoute route;
+
+   //Send fx:
+   double          sendfxlevel[SS_NR_OF_SENDEFFECTS];
+};
 
 struct SS_Controller
-   {
-      std::string name;
-      int num;
-      int min, max;
-   };
+{
+   std::string name;
+   int num;
+   int min, max;
+};
 
 struct SS_SampleLoader
-   {
-      SS_Channel*  channel;
-      std::string  filename;
-      int          ch_no;
-   };
+{
+   SS_Channel*  channel;
+   std::string  filename;
+   int          ch_no;
+};
 
 double rangeToPitch(int value);
 //int pitchToRange(double pitch);
 
 class SimpleSynth : public Mess
-   {
-   public:
-      SimpleSynth(int);
+{
+public:
+   SimpleSynth(int);
 
-      virtual ~SimpleSynth();
+   virtual ~SimpleSynth();
 
-      //virtual bool guiVisible() const;
-      //virtual bool hasGui() const;
-      virtual bool nativeGuiVisible() const;
-      virtual bool hasNativeGui() const;
-      virtual bool playNote(int arg1, int arg2, int arg3);
-      virtual bool processEvent(const MusECore::MidiPlayEvent& arg1);
-      virtual bool setController(int arg1, int arg2, int arg3);
-      virtual bool sysex(int arg1, const unsigned char* arg2);
-      virtual QString getPatchName(int arg1, int arg2, bool arg3) const; 
-      virtual const MidiPatch* getPatchInfo(int arg1, const MidiPatch* arg2) const;
-      virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
-      virtual void processMessages();
-      virtual void process(unsigned pos, float** data, int offset, int len);
-      //virtual void showGui(bool arg1);
-      virtual void showNativeGui(bool arg1);
-      ///virtual void getInitData(int*, const unsigned char**) const;
-      virtual void getInitData(int*, const unsigned char**);
-      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
-      virtual int oldMidiStateHeader(const unsigned char** data) const;
-      bool init(const char* name);
-      void guiSendSampleLoaded(bool success, int ch, const char* filename);
-      void guiSendError(const char* errorstring);
+   //virtual bool guiVisible() const;
+   //virtual bool hasGui() const;
+   virtual bool nativeGuiVisible() const;
+   virtual bool hasNativeGui() const;
+   virtual bool playNote(int arg1, int arg2, int arg3);
+   virtual bool processEvent(const MusECore::MidiPlayEvent& arg1);
+   virtual bool setController(int arg1, int arg2, int arg3);
+   virtual bool sysex(int arg1, const unsigned char* arg2);
+   virtual QString getPatchName(int arg1, int arg2, bool arg3) const;
+   virtual const MidiPatch* getPatchInfo(int arg1, const MidiPatch* arg2) const;
+   virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
+   virtual void processMessages();
+   virtual void process(unsigned pos, float** data, int offset, int len);
+   //virtual void showGui(bool arg1);
+   virtual void showNativeGui(bool arg1);
+   ///virtual void getInitData(int*, const unsigned char**) const;
+   virtual void getInitData(int*, const unsigned char**);
+   // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+   virtual int oldMidiStateHeader(const unsigned char** data) const;
+   bool init(const char* name);
+   void guiSendSampleLoaded(bool success, int ch, const char* filename);
+   void guiSendError(const char* errorstring);
 
-      static const char* synth_state_descr[];
-      static const char* channel_state_descr[];
+   static const char* synth_state_descr[];
+   static const char* channel_state_descr[];
 
 private:
       SimpleSynthGui* gui;
@@ -196,6 +204,7 @@ private:
       void guiNotifySampleCleared(int ch);
       void guiUpdateBalance(int ch, int bal);
       void guiUpdatePitch(int ch, int bal);
+      void guiUpdateRoute(int ch, int val);
       void guiUpdateVolume(int ch, int val);
       void guiUpdateNoff(int ch, bool b);
       void guiUpdateChoff(int ch, bool b);
@@ -217,6 +226,7 @@ private:
       float* sendFxReturn[SS_NR_OF_SENDEFFECTS][2];  //stereo inputs, from LADSPA plugins, sent from LADSPA -> SS and added to the mix
       double* processBuffer[2];
    };
+
 
 void resample(SS_Sample *origSmp, SS_Sample* newSample, double pitch);
 

@@ -22,3 +22,4 @@ Parts can be copied and deleted using the standard cut/copy/paste<br>but it is a
 
 When using the dark theme, make sure to select Qt theme plastique<br>or the theme will not be consistent.
 
+If it's hard to be precise while moving automation points with the mouse, trying holding the SHIFT key, the movement will be slower.

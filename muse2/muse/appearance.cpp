@@ -198,6 +198,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x419, id, "synth background");
            new IdListViewItem(0x41a, id, "selected track background");
            new IdListViewItem(0x41b, id, "selected track foreground");
+           new IdListViewItem(0x42b, id, "section dividers");
            //   0x41c - 0x420 is already used (see above)
       id = new IdListViewItem(0, itemList, "BigTime");
            new IdListViewItem(0x100, id, "background");
@@ -209,6 +210,9 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x423, id, "controller graph background");
            new IdListViewItem(0x421, id, "background");
            new IdListViewItem(0x422, id, "drum list");
+           new IdListViewItem(0x429, id, "raster beat");
+           new IdListViewItem(0x42a, id, "raster bar");
+
 
       id = new IdListViewItem(0, itemList, "Wave Editor");
            new IdListViewItem(0x300, id, "Background");
@@ -797,6 +801,7 @@ void Appearance::colorItemSelectionChanged()
             case 0x419: color = &config->synthTrackBg;  break;
             case 0x41a: color = &config->selectTrackBg;  break;
             case 0x41b: color = &config->selectTrackFg;  break;
+
             case 0x41c: color = &config->partCanvasBg; break;
             case 0x41d: color = &config->ctrlGraphFg; break;
 
@@ -812,6 +817,11 @@ void Appearance::colorItemSelectionChanged()
             case 0x426: color = &config->partWaveColorRms; break;
             case 0x427: color = &config->partMidiDarkEventColor; break;
             case 0x428: color = &config->partMidiLightEventColor; break;
+            case 0x429: color = &config->midiCanvasBeatColor; break;
+            case 0x42a: color = &config->midiCanvasBarColor; break;
+            case 0x42b: color = &config->trackSectionDividerColor; break;
+
+
 
             case 0x500: color = &config->mixerBg;   break;
             case 0x501: color = &config->midiTrackLabelBg;   break;

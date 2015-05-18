@@ -109,6 +109,7 @@ struct GlobalConfigValues {
       QColor trackBg;
       QColor selectTrackBg;
       QColor selectTrackFg;
+      QColor trackSectionDividerColor;
       
       QColor midiTrackLabelBg;
       QColor drumTrackLabelBg;
@@ -140,6 +141,8 @@ struct GlobalConfigValues {
       QColor midiControllerViewBg;
       QColor drumListBg;
       QColor rulerCurrent;
+      QColor midiCanvasBeatColor;
+      QColor midiCanvasBarColor;
 
       QColor waveNonselectedPart;
       QColor wavePeakColor;

@@ -294,7 +294,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
             unsigned pos;
             if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
                   printf("WaveTrack::getData(%s) fifo underrun\n",
-                      name().toLatin1().constData());
+                      name().toLocal8Bit().constData());
                   return false;
                   }
             if (pos != framePos) {
@@ -304,7 +304,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                   while (pos < framePos) {
                         if (_prefetchFifo.get(channels, nframe, bp, &pos)) {
                               printf("WaveTrack::getData(%s) fifo underrun\n",
-                                  name().toLatin1().constData());
+                                  name().toLocal8Bit().constData());
                               return false;
                               }
                         }

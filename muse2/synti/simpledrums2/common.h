@@ -51,12 +51,13 @@
 #define SS_DBG_LADSPA(string1) if (SS_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1);
 #define SS_DBG_LADSPA2(string1, string2) if (SS_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1, string2);
 
-#define SS_SYSEX_INIT_DATA_VERSION           2
+#define SS_SYSEX_INIT_DATA_VERSION           3
 // version 2 added pitching support
+// version 3 added multi-channel routing support (danvd)
 #define SS_SYSEX_EFFECT_INIT_DATA_VERSION    2   // Added Jun 15 2011. Original value was SS_SYSEX_INIT_DATA_VERSION (1). p4.0.27 Tim. 
 
 #define SS_NR_OF_CHANNELS                   16
-#define SS_AUDIO_CHANNELS                    2
+#define SS_AUDIO_CHANNELS                    (2 + SS_NR_OF_CHANNELS*2)
 #define SS_NR_OF_SENDEFFECTS                 4
 
 // Controller-related:
@@ -69,12 +70,13 @@
 #define SS_CHANNEL_SENDFX3     6
 #define SS_CHANNEL_SENDFX4     7
 #define SS_CHANNEL_CTRL_PITCH  8
+#define SS_CHANNEL_CTRL_ROUTE  9
 
 #define SS_PLUGIN_RETURN       0
 #define SS_PLUGIN_ONOFF        1
 
 #define SS_NR_OF_MASTER_CONTROLLERS          1
-#define SS_NR_OF_CHANNEL_CONTROLLERS         9
+#define SS_NR_OF_CHANNEL_CONTROLLERS         10
 #define SS_NR_OF_PLUGIN_CONTROLLERS          2
 
 #define SS_NR_OF_CONTROLLERS                 (SS_NR_OF_MASTER_CONTROLLERS + (SS_NR_OF_CHANNELS * SS_NR_OF_CHANNEL_CONTROLLERS) + (SS_NR_OF_PLUGIN_CONTROLLERS*SS_NR_OF_SENDEFFECTS))
@@ -90,6 +92,7 @@
 
 #define SS_CHANNEL_VOLUME_CONTROLLER(int)    (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_VOLUME)
 #define SS_CHANNEL_PITCH_CONTROLLER(int)    (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_PITCH)
+#define SS_CHANNEL_ROUTE_CONTROLLER(int)    (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_ROUTE)
 
 #define SS_CHANNEL_PAN_CONTROLLER(int)       (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_PAN)
 #define SS_CHANNEL_NOFF_CONTROLLER(int)      (SS_FIRST_CHANNEL_CONTROLLER + (SS_NR_OF_CHANNEL_CONTROLLERS * int) + SS_CHANNEL_CTRL_NOFF)

@@ -931,7 +931,7 @@ void LV2Synth::lv2state_InitMidiPorts(LV2PluginWrapper_State *state)
 
 }
 
-void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsigned long nsamp, const snd_seq_event_t *events, unsigned long nevents )
+void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsigned long nsamp, const std::vector<snd_seq_event_t> *events)
 {
    LV2Synth *synth = state->synth;
    size_t inp = state->midiInPorts.size();
@@ -959,15 +959,16 @@ void LV2Synth::lv2audio_preProcessMidiPorts(LV2PluginWrapper_State *state, unsig
 
       if(events != NULL)
       {
-
          //convert snd_seq_event_t[] to raw midi data
          snd_midi_event_reset_decode(state->midiEvent);
          uint8_t resMidi [1024];
 
-         for(unsigned long i = 0; i < nevents; i++)
+         std::vector<snd_seq_event_t>::const_iterator it;
+
+         for(it = events->begin(); it != events->end(); ++it)
          {
-            uint32_t stamp = events[i].time.tick;
-            uint32_t size = snd_midi_event_decode(state->midiEvent, resMidi, sizeof(resMidi), &events [i]);
+            uint32_t stamp = it->time.tick;
+            uint32_t size = snd_midi_event_decode(state->midiEvent, resMidi, sizeof(resMidi), &(*it));
             rawMidiBuffer->lv2_evbuf_write(iter,
                                            stamp,
                                            0,
@@ -3311,12 +3312,13 @@ int LV2SynthIF::getControllerInfo(int id, const char **name, int *ctrl, int *min
 
 
 
-bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
+bool LV2SynthIF::processEvent(const MidiPlayEvent &e, std::vector<snd_seq_event_t> &events, unsigned long *nevts)
 {
-
    int chn = e.channel();
    int a   = e.dataA();
    int b   = e.dataB();
+
+   *nevts = 1;
 
    int len = e.len();
    char ca[len + 2];
@@ -3326,6 +3328,8 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
    ca[len + 1] = 0xF7;
 
    len += 2;
+
+   snd_seq_event_t event;
 
 #ifdef LV2_DEBUG
    fprintf(stderr, "LV2SynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", e.type(), chn, a, b);
@@ -3338,17 +3342,19 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEON\n");
 #endif
 
-      snd_seq_ev_clear(event);
-      event->queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_clear(&event);
+      event.queue = SND_SEQ_QUEUE_DIRECT;
 
       if(b)
       {
-         snd_seq_ev_set_noteon(event, chn, a, b);
+         snd_seq_ev_set_noteon(&event, chn, a, b);
       }
       else
       {
-         snd_seq_ev_set_noteoff(event, chn, a, 0);
+         snd_seq_ev_set_noteoff(&event, chn, a, 0);
       }
+
+      events.push_back(event);
 
       break;
 
@@ -3357,9 +3363,10 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
       fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_NOTEOFF\n");
 #endif
 
-      snd_seq_ev_clear(event);
-      event->queue = SND_SEQ_QUEUE_DIRECT;
-      snd_seq_ev_set_noteoff(event, chn, a, 0);
+      snd_seq_ev_clear(&event);
+      event.queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_set_noteoff(&event, chn, a, 0);
+      events.push_back(event);
       break;
 
    case ME_PROGRAM:
@@ -3460,9 +3467,10 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_PITCH\n");
 #endif
 
-         snd_seq_ev_clear(event);
-         event->queue = SND_SEQ_QUEUE_DIRECT;
-         snd_seq_ev_set_pitchbend(event, chn, b);
+         snd_seq_ev_clear(&event);
+         event.queue = SND_SEQ_QUEUE_DIRECT;
+         snd_seq_ev_set_pitchbend(&event, chn, b);
+         events.push_back(event);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3473,9 +3481,10 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_AFTERTOUCH\n");
 #endif
 
-         snd_seq_ev_clear(event);
-         event->queue = SND_SEQ_QUEUE_DIRECT;
-         snd_seq_ev_set_chanpress(event, chn, b);
+         snd_seq_ev_clear(&event);
+         event.queue = SND_SEQ_QUEUE_DIRECT;
+         snd_seq_ev_set_chanpress(&event, chn, b);
+         events.push_back(event);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3486,9 +3495,10 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
          fprintf(stderr, "LV2SynthIF::processEvent midi event is ME_CONTROLLER, dataA is CTRL_POLYAFTER\n");
 #endif
 
-         snd_seq_ev_clear(event);
-         event->queue = SND_SEQ_QUEUE_DIRECT;
-         snd_seq_ev_set_keypress(event, chn, a & 0x7f, b & 0x7f);
+         snd_seq_ev_clear(&event);
+         event.queue = SND_SEQ_QUEUE_DIRECT;
+         snd_seq_ev_set_keypress(&event, chn, a & 0x7f, b & 0x7f);
+         events.push_back(event);
          // Event pointer filled. Return true.
          return true;
       }
@@ -3502,7 +3512,37 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
       {
          int ctlnum = a;
 
-         if(midiControllerType(a) != MidiController::Controller7)
+         if(midiControllerType(a) == MidiController::NRPN14
+            || midiControllerType(a) == MidiController::NRPN)
+         {
+            //send full nrpn control sequence (4 values):
+            // 99 + ((a & 0xff00) >> 8) - first byte
+            // 98 + (a & 0xff) - second byte
+            // 6 + ((b & 0x3f80) >> 7) - third byte
+            // 38 + (b & 0x7f) - fourth byte
+
+
+            snd_seq_ev_clear(&event);
+            event.queue = SND_SEQ_QUEUE_DIRECT;
+            snd_seq_ev_set_controller(&event, chn, 99, ((a & 0xff00) >> 8));
+            events.push_back(event);
+            snd_seq_ev_clear(&event);
+            event.queue = SND_SEQ_QUEUE_DIRECT;
+            snd_seq_ev_set_controller(&event, chn, 98, (a & 0xff));
+            events.push_back(event);
+            snd_seq_ev_clear(&event);
+            event.queue = SND_SEQ_QUEUE_DIRECT;
+            snd_seq_ev_set_controller(&event, chn, 6, ((b & 0x3f80) >> 7));
+            events.push_back(event);
+            snd_seq_ev_clear(&event);
+            event.queue = SND_SEQ_QUEUE_DIRECT;
+            snd_seq_ev_set_controller(&event, chn, 38, (b & 0x7f));
+            events.push_back(event);
+            *nevts = 4;
+            return true;
+
+         }
+         else if(midiControllerType(a) != MidiController::Controller7)
          {
             return false;   // Event pointer not filled. Return false.
          }
@@ -3519,9 +3559,10 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
 #ifdef LV2_DEBUG
          printf("LV2SynthIF::processEvent non-ladspa filling midi event chn:%d dataA:%d dataB:%d\n", chn, a, b);
 #endif
-         snd_seq_ev_clear(event);
-         event->queue = SND_SEQ_QUEUE_DIRECT;
-         snd_seq_ev_set_controller(event, chn, a, b);
+         snd_seq_ev_clear(&event);
+         event.queue = SND_SEQ_QUEUE_DIRECT;
+         snd_seq_ev_set_controller(&event, chn, a, b);
+         events.push_back(event);
          return true;
       }
 
@@ -3564,21 +3605,24 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
    break;
 
    case ME_PITCHBEND:
-      snd_seq_ev_clear(event);
-      event->queue = SND_SEQ_QUEUE_DIRECT;
-      snd_seq_ev_set_pitchbend(event, chn, a);
+      snd_seq_ev_clear(&event);
+      event.queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_set_pitchbend(&event, chn, a);
+      events.push_back(event);
       break;
 
    case ME_AFTERTOUCH:
-      snd_seq_ev_clear(event);
-      event->queue = SND_SEQ_QUEUE_DIRECT;
-      snd_seq_ev_set_chanpress(event, chn, a);
+      snd_seq_ev_clear(&event);
+      event.queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_set_chanpress(&event, chn, a);
+      events.push_back(event);
       break;
 
    case ME_POLYAFTER:
-      snd_seq_ev_clear(event);
-      event->queue = SND_SEQ_QUEUE_DIRECT;
-      snd_seq_ev_set_keypress(event, chn, a & 0x7f, b & 0x7f);
+      snd_seq_ev_clear(&event);
+      event.queue = SND_SEQ_QUEUE_DIRECT;
+      snd_seq_ev_set_keypress(&event, chn, a & 0x7f, b & 0x7f);
+      events.push_back(event);
       break;
 
    default:
@@ -3600,8 +3644,12 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, snd_seq_event_t *event)
 iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event, unsigned int pos, int ports, unsigned int nframes, float **buffer)
 {
    // We may not be using ev_buf_sz all at once - this will be just the maximum.
-   const unsigned long ev_buf_sz = el->size() + synti->eventFifo.getSize();
-   snd_seq_event_t events[ev_buf_sz];
+   //unsigned long prop_buf_sz = el->size() + synti->eventFifo.getSize();
+   //const unsigned long ev_buf_sz = (prop_buf_sz == 0) ? 1024 : prop_buf_sz;
+
+   //snd_seq_event_t events[ev_buf_sz];
+   std::vector<snd_seq_event_t> events;
+   //events.reserve(ev_buf_sz);
 
    const int frameOffset = MusEGlobal::audio->getFrameOffset();
    const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
@@ -3999,7 +4047,8 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                }
 
                // Returns false if the event was not filled. It was handled, but some other way.
-               if(processEvent(*start_event, &events[nevents]))
+               unsigned long nevts = 0;
+               if(processEvent(*start_event, events, &nevts))
                {
                   // Time-stamp the event.
                   int ft = start_event->time() - frameOffset - pos - sample;
@@ -4021,9 +4070,11 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
                   // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
                   //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-                  events[nevents].time.tick = ft;
-
-                  ++nevents;
+                  nevts += nevents;
+                  for(; nevents < nevts; nevents++)
+                  {
+                     events[nevents].time.tick = ft;
+                  }
                }
             }
          }
@@ -4046,8 +4097,10 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 
             if(ports != 0)  // Don't bother if not 'running'.
             {
+
                // Returns false if the event was not filled. It was handled, but some other way.
-               if(processEvent(e, &events[nevents]))
+               unsigned long nevts = 0;
+               if(processEvent(e, events, &nevts))
                {
                   // Time-stamp the event.
                   int ft = e.time() - frameOffset - pos  - sample;
@@ -4062,19 +4115,20 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                      fprintf(stderr, "LV2SynthIF::getData: eventFifo event time:%u out of range. pos:%u offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
                      ft = nsamp - 1;
                   }
-
                   // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
                   //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-                  events[nevents].time.tick = ft;
-
-                  ++nevents;
+                  nevts += nevents;
+                  for(; nevents < nevts; nevents++)
+                  {
+                     events[nevents].time.tick = ft;
+                  }
                }
             }
          }
 
          if(ports != 0)  // Don't bother if not 'running'.
          {
-            LV2Synth::lv2audio_preProcessMidiPorts(_uiState, nsamp, events, nevents);
+            LV2Synth::lv2audio_preProcessMidiPorts(_uiState, nsamp, &events);
 
             //connect ports
             for(size_t j = 0; j < _inports; ++j)

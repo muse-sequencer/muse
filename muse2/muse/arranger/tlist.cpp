@@ -530,7 +530,7 @@ void TList::paint(const QRect& r)
 
       int n = header->count();
       int xpos = 0;
-      p.setPen(Qt::gray);
+      p.setPen(MusEGlobal::config.trackSectionDividerColor);
       for (int index = 0; index < n; index++) {
             int section = header->logicalIndex(index);
             xpos += header->sectionSize(section);
@@ -610,8 +610,8 @@ void TList::returnPressed()
                       
                 MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackName, 
                                                           editTrack, 
-                                                          editTrack->name().toLatin1().constData(), 
-                                                          editor->text().toLatin1().constData()));
+                                                          editTrack->name(),
+                                                          editor->text()));
                 }
         }    
         
@@ -835,6 +835,10 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       }
       
       MusECore::Track* t = y2Track(ev->y() + ypos);
+      if(t == NULL)
+      {
+         return;
+      }
 
       int colx = header->sectionPosition(section);
       int colw = header->sectionSize(section);
@@ -2637,11 +2641,12 @@ void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelecte
   p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
   p.addAction(QIcon(*addtrack_drumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
   p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("New style drum"))->setData(MusECore::Track::NEW_DRUM);
-  QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
-  int n = act->data().toInt();
+  QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);  
 
   if (!act)
     return;
+
+  int n = act->data().toInt();
 
   if (!allSelected) {
     changeTrackToType(tIn,MusECore::Track::TrackType(n));

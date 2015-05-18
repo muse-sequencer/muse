@@ -211,6 +211,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   return 0;
                   
 #ifdef VST_FORCE_DEPRECATED
+#ifndef VST_2_4_EXTENSIONS // deprecated in 2.4
 
             case audioMasterGetSpeakerArrangement:
                   // (long)input in <value>, output in <ptr>
@@ -280,7 +281,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
             case audioMasterCloseWindow:
                   // close window, platform specific handle in <ptr>
                   return 0;
-                  
+#endif
 #endif
                   
             default:
@@ -1189,7 +1190,8 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
 #endif
 
 #ifdef VST_FORCE_DEPRECATED
-                  
+#ifndef VST_2_4_EXTENSIONS // deprecated in 2.4
+
             case audioMasterGetSpeakerArrangement:
                   // (long)input in <value>, output in <ptr>
                   return 0;
@@ -1258,6 +1260,7 @@ VstIntPtr VstNativeSynthIF::hostCallback(VstInt32 opcode, VstInt32 index, VstInt
             case audioMasterCloseWindow:
                   // close window, platform specific handle in <ptr>
                   return 0;
+#endif
 #endif
 
                   
@@ -2821,6 +2824,9 @@ void VstNativeSynthIF::enableAllControllers(bool v)
 void VstNativeSynthIF::updateControllers() { }
 void VstNativeSynthIF::activate()
 {
+  // Set some default properties
+  dispatch(effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
+  dispatch(effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
   //for (unsigned short i = 0; i < instances(); ++i) {
   //        dispatch(i, effMainsChanged, 0, 1, NULL, 0.0f);
   dispatch(effMainsChanged, 0, 1, NULL, 0.0f);

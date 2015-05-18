@@ -73,6 +73,7 @@ QT5_WRAP_CPP ( muse_moc_headers
       value.h
       steprec.h
       lv2host.h
+      wavepreview.h
       )
 
 ##
@@ -151,6 +152,7 @@ file (GLOB core_source_files
       wavetrack.cpp
       xml.cpp
       steprec.cpp
+      wavepreview.cpp
       )
 file (GLOB main_source_files
       main.cpp
@@ -220,7 +222,7 @@ set_target_properties( core
       # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
       # PROPERTIES COMPILE_FLAGS "${REM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
-      PROPERTIES COMPILE_FLAGS "${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK} ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_core
       )
 set_target_properties( muse

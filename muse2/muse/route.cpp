@@ -1161,7 +1161,7 @@ void Route::read(Xml& xml)
                               }
                             }
                             if(i == tl->end())
-                              printf("Route::read(): track <%s> not found\n", s.toLatin1().constData());
+                              printf("Route::read(): track <%s> not found\n", s.toLocal8Bit().constData());
                           }
                           else
                           if(rtype == JACK_ROUTE) 
@@ -1383,7 +1383,7 @@ void Route::dump() const
       if (type == TRACK_ROUTE)
       {
         if(track)
-          printf("Route dump: track <%s> channel %d channels %d\n", track->name().toLatin1().constData(), channel, channels);
+          printf("Route dump: track <%s> channel %d channels %d\n", track->name().toLocal8Bit().constData(), channel, channels);
       }      
       else 
       if (type == JACK_ROUTE)
