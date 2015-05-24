@@ -138,67 +138,60 @@ class RouteChannelArrayHeader : public RouteChannelArray {
     virtual int itemIndex(int row, int col) const { if(row == -1) return col; return _cols + row; }
 };
 
+class RoutingMatrixWidgetAction;
 class RoutingMatrixWidget : public QWidget {
       Q_OBJECT
   private:
-      RouteChannelArrayHeader _header;
-      RouteChannelArray _current;
-      QPixmap* _onPixmap;
-      QPixmap* _offPixmap;
-      QFont _cellFont;
-      QRect _cellGeometry;
-
-      void updateChannelArray();
-      
+    RoutingMatrixWidgetAction* _action;
+    
   protected:
     virtual QSize sizeHint() const;
     virtual void drawGrid(QPainter&);
     virtual void paintEvent(QPaintEvent*);
+    virtual void mousePressEvent(QMouseEvent*);
     
   public:
-    RoutingMatrixWidget(int rows, int cols, QPixmap* onPixmap, QPixmap* offPixmap, QWidget* parent = 0);
-    void setSize(int rows, int cols) { _header.setSize(rows, cols); _current.setSize(rows, cols); updateChannelArray(); }
-    bool value(int row, int col) const { return _current.value(row, col); }
-    void setValue(int row, int col, bool value) { _current.setValue(row, col, value); }
-
-    static const int margin;
-    static const int itemHSpacing;
-    static const int itemVSpacing;
-    static const int groupSpacing;
-    static const int itemsPerGroup;
+    RoutingMatrixWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
 };
       
 class RoutingMatrixWidgetAction : public QWidgetAction { 
       Q_OBJECT
    private:
       
-      //RouteChannelArray _current;
-      //QString _text;
-      //QBitArray _current;
-      int _cols;
-      int _rows;
-      RoutingMatrixWidget* _widget;
+      RouteChannelArrayHeader _header;
+      RouteChannelArray _array;
       QPixmap* _onPixmap;
       QPixmap* _offPixmap;
-      //QList<PixmapButton*> _chan_buttons;
+      QFont _cellFont;
+      QRect _cellGeometry;
       
-   //private slots:
-   //  void chanClickMap(int);
+      void updateChannelArray();
+      
+   protected:
+      virtual QWidget* createWidget(QWidget* parent);
+      virtual void deleteWidget(QWidget* widget);
      
    public:
-      RoutingMatrixWidgetAction(//const QString& text, 
-                              int rows, int cols,  
-                              QPixmap* on_pixmap, QPixmap* off_pixmap, 
-                              //const RouteChannelArray& initial,
-                              QWidget* parent = 0);
+      static const int margin;
+      static const int itemHSpacing;
+      static const int itemVSpacing;
+      static const int groupSpacing;
+      static const int itemsPerGroup;
       
-      QWidget* createWidget(QWidget* parent);
-      //RouteChannelArray currentState() const { return _current; }
-      //void setCurrentState(const QBitArray& state); 
-      void setSize(int rows, int cols) { _rows = rows; _cols = cols; }
-      bool value(int row, int col) const { return _widget->value(row, col); }
-      void setValue(int row, int col, bool value) const { _widget->setValue(row, col, value); }
+      RoutingMatrixWidgetAction(int rows, int cols,  
+                                QPixmap* on_pixmap, QPixmap* off_pixmap, 
+                                QWidget* parent = 0);
+
+      RouteChannelArrayHeader* header() { return &_header; }
+      RouteChannelArray* array() { return &_array; }
+
+      QFont cellFont() const { return _cellFont; }
+      QRect cellGeometry() const { return _cellGeometry; }
+
+      QPixmap* onPixmap() const { return _onPixmap; }
+      QPixmap* offPixmap() const { return _offPixmap; }
       };
 
 } // namespace MusEGui
+
 #endif  // __CUSTOM_WIDGET_ACTIONS_H__

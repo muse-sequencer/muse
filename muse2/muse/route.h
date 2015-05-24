@@ -113,7 +113,9 @@ struct Route {
 
 struct RouteList : public std::vector<Route> {
       void removeRoute(const Route& r);
+      bool exists(const Route& r) const;
       iterator find(const Route& r);
+      const_iterator find(const Route& r) const;
       };
 
 typedef RouteList::iterator iRoute;
