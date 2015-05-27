@@ -1142,10 +1142,18 @@ void AudioTrack::copyData(unsigned pos, int dstStartChan, int dstChannels, int s
   if(dstStartChan == -1)
     dstStartChan = 0;
     
+  // Only the destination knows how many destination channels there are, 
+  //  while only the source (this track) knows how many source channels there are.
+  // So take care of the source channels here, and let the caller handle the destination channels.
   const int trackChans = channels();
-  int srcChans = (srcChannels == -1) ? trackChans : srcChannels;
-  const int dstChans = (srcChannels == -1) ? dstChannels : srcChans;
-  const int srcTotalOutChans = (channels() == 1) ? 1 : totalOutChannels();
+  //const int srcTotalOutChans = (channels() == 1) ? 1 : totalOutChannels();
+  const int srcTotalOutChans = totalRoutableOutputs(Route::TRACK_ROUTE);
+  //int srcChans = (srcChannels == -1) ? trackChans : srcChannels;
+  int srcChans = (srcChannels == -1) ? srcTotalOutChans : srcChannels;
+  if((srcStartChan + srcChans) > srcTotalOutChans)
+    srcChans = srcTotalOutChans - srcStartChan;
+  //const int dstChans = (srcChannels == -1) ? dstChannels : srcChans;
+  const int dstChans = dstChannels;
   
   // Special consideration for metronome: It is not part of the track list,
   //  and it has no in or out routes, yet multiple output tracks may call addData on it!

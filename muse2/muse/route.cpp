@@ -1268,14 +1268,14 @@ bool routeCanConnect(const Route& src, const Route& dst)
                 return false;
               if(src.channel < 0) 
                 return false;
-              const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, dst.channel, dst.persistentJackPortName);
+              const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, -1, dst.persistentJackPortName);
               return !src.track->outRoutes()->exists(v_dst);
             }
             else if(src.type == Route::MIDI_DEVICE_ROUTE) 
             {
               if(src.device->deviceType() == MidiDevice::JACK_MIDI)
               {
-                const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, dst.channel, dst.persistentJackPortName);
+                const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, -1, dst.persistentJackPortName);
                 return !src.device->outRoutes()->exists(v_dst);
               }
               else  
@@ -1586,7 +1586,7 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
             {
               if(dst.track->type() != Track::AUDIO_INPUT) 
                 return false;
-              const Route v_src(src.type, src.midiPort, src.voidPointer, dst.channel, src.channels, src.channel, src.persistentJackPortName);
+              const Route v_src(src.type, src.midiPort, src.voidPointer, dst.channel, src.channels, -1, src.persistentJackPortName);
               return dst.track->inRoutes()->exists(v_src);
             }  
             else if(dst.type == Route::MIDI_DEVICE_ROUTE) 
@@ -1610,7 +1610,7 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
             {
               if(src.track->type() != Track::AUDIO_OUTPUT) 
                     return false;
-              const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, dst.channel, dst.persistentJackPortName);
+              const Route v_dst(dst.type, dst.midiPort, dst.voidPointer, src.channel, dst.channels, -1, dst.persistentJackPortName);
               return src.track->outRoutes()->exists(v_dst);
             }  
             else if(src.type == Route::MIDI_DEVICE_ROUTE) 

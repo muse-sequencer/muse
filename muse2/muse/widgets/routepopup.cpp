@@ -1598,32 +1598,32 @@ void RoutePopupMenu::popupActivated(QAction* action)
         
         MusECore::Route this_route(t, rem_route.channel, rem_route.channels);
         this_route.remoteChannel = rem_route.remoteChannel;
-        switch(rem_route.type)
-        {
-          case MusECore::Route::JACK_ROUTE:
-            // Clear the information.
-            rem_route.channel = -1;
-            rem_route.remoteChannel = -1;
-            rem_route.channels = -1;
-          break;
-          
-          case MusECore::Route::TRACK_ROUTE:
-          case MusECore::Route::MIDI_DEVICE_ROUTE:
-          case MusECore::Route::MIDI_PORT_ROUTE:
-          break;
-        }
+//         switch(rem_route.type)
+//         {
+//           case MusECore::Route::JACK_ROUTE:
+//             // Clear the information.
+//             rem_route.channel = -1;
+//             rem_route.remoteChannel = -1;
+//             rem_route.channels = -1;
+//           break;
+//           
+//           case MusECore::Route::TRACK_ROUTE:
+//           case MusECore::Route::MIDI_DEVICE_ROUTE:
+//           case MusECore::Route::MIDI_PORT_ROUTE:
+//           break;
+//         }
 
         const MusECore::Route& src = _isOutMenu ? this_route : rem_route;
         const MusECore::Route& dst = _isOutMenu ? rem_route : this_route;
         
         // Connect if route does not exist. Allow it to reconnect a partial route.
-        if(action->isChecked() && MusECore::routeCanConnect(this_route, rem_route))
+        if(action->isChecked() && MusECore::routeCanConnect(src, dst))
         {
           fprintf(stderr, "RoutePopupMenu::popupActivated: Route: adding AddRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
           operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::AddRoute));
         }
         // Disconnect if route exists. Allow it to reconnect a partial route.
-        else if(!action->isChecked() && MusECore::routeCanDisconnect(this_route, dst))
+        else if(!action->isChecked() && MusECore::routeCanDisconnect(src, dst))
         {
           fprintf(stderr, "RoutePopupMenu::popupActivated: Route: adding DeleteRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
           operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::DeleteRoute));

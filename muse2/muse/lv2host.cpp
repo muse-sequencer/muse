@@ -3689,12 +3689,10 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
          {
             if(!i->track->isMidiTrack())
             {
-               const int ch     = i->channel       == -1 ? 0 : i->channel;
-               const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-               const int chs    = i->channels      == -1 ? 0 : i->channels;
-               
-               
 // REMOVE Tim. Persistent routes. Changed.
+//                const int ch     = i->channel       == -1 ? 0 : i->channel;
+//                const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
+//                const int chs    = i->channels      == -1 ? 0 : i->channels;
 //                assert((unsigned)remch <= _inports);
 // 
 //                if((unsigned)ch < _inports && (unsigned)(ch + chs) <= _inports)
@@ -3754,79 +3752,69 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
 //                   }
 //                }
 
-               assert((unsigned)ch <= _inports);
+//                 const int total_ins = atrack->totalRoutableInputs(Route::TRACK_ROUTE);
+//                 const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
+//                 int ch           = i->channel       == -1 ? 0 : i->channel;
+//                 int chs          = i->channels      == -1 ? total_ins : i->channels;
+//                 if(ch > total_ins)
+//                 if((ch + chs) > total_ins)
+//                   chs = total_ins - ch;
+                
+                //const int total_ins = atrack->totalRoutableInputs(Route::TRACK_ROUTE);
+                const int src_ch = i->remoteChannel == -1 ? 0 : i->remoteChannel;
+                const int dst_ch = i->channel       == -1 ? 0 : i->channel;
+                const int src_chs = i->channels;
 
-               if((unsigned)ch < _inports && (unsigned)(ch + chs) <= _inports)
-               {
-                  const bool u1 = _iUsedIdx[ch];
+                //assert((unsigned)ch <= _inports);
+                assert((unsigned)dst_ch < _inports);
+                
+                if(dst_ch < _inports)
+                {
+                  // Only this synth knows how many destination channels there are, 
+                  //  while only the track knows how many source channels there are.
+                  // So take care of the destination channels here, and let the track handle the source channels.
+                  int dst_chs = i->channels == -1 ? _inports : i->channels;
+                  if((dst_ch + dst_chs) > _inports)
+                    dst_chs = _inports - dst_ch;
 
-                  if(chs >= 2)
+                  if(_iUsedIdx[dst_ch])
                   {
-                     const bool u2 = _iUsedIdx[ch + 1];
-
-                     if(u1 && u2)
-                     {
-                        //((AudioTrack *)i->track)->addData(pos, ch, chs, remch, -1, nframes, &_audioInBuffers[ch]);
-                        ((AudioTrack *)i->track)->addData(pos, ch, chs, remch, -1, nframes, &_audioInBuffers[0]);
-                     }
-                     else if(!u1 && !u2)
-                     {
-                        //((AudioTrack *)i->track)->copyData(pos, ch, chs, remch, -1, nframes, &_audioInBuffers[ch]);
-                        ((AudioTrack *)i->track)->copyData(pos, ch, chs, remch, -1, nframes, &_audioInBuffers[0]);
-                     }
-                     else
-                     {
-                        if(u1)
-                        {
-                           //((AudioTrack *)i->track)->addData(pos, ch, 1, remch, 1, nframes, &_audioInBuffers[ch]);
-                           ((AudioTrack *)i->track)->addData(pos, ch, 1, remch, 1, nframes, &_audioInBuffers[0]);
-                        }
-                        else
-                        {
-                           //((AudioTrack *)i->track)->copyData(pos, ch, 1, remch, 1, nframes, &_audioInBuffers[ch]);
-                           ((AudioTrack *)i->track)->copyData(pos, ch, 1, remch, 1, nframes, &_audioInBuffers[0]);
-                        }
-
-                        if(u2)
-                        {
-                           //((AudioTrack *)i->track)->addData(pos, ch + 1, 1, remch + 1, 1, nframes, &_audioInBuffers[ch + 1]);
-                           ((AudioTrack *)i->track)->addData(pos, ch + 1, 1, remch + 1, 1, nframes, &_audioInBuffers[0]);
-                        }
-                        else
-                        {
-                           //((AudioTrack *)i->track)->copyData(pos, ch + 1, 1, remch + 1, 1, nframes, &_audioInBuffers[ch + 1]);
-                           ((AudioTrack *)i->track)->copyData(pos, ch + 1, 1, remch + 1, 1, nframes, &_audioInBuffers[0]);
-                        }
-                     }
+                    //((AudioTrack *)i->track)->addData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
+                    ((AudioTrack *)i->track)->addData(pos, dst_ch, dst_chs, src_ch, src_chs, nframes, &_audioInBuffers[0]);
                   }
                   else
                   {
-                     if(u1)
-                     {
-                        //((AudioTrack *)i->track)->addData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
-                        ((AudioTrack *)i->track)->addData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[0]);
-                     }
-                     else
-                     {
-                        //((AudioTrack *)i->track)->copyData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
-                        ((AudioTrack *)i->track)->copyData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[0]);
-                     }
+                    //((AudioTrack *)i->track)->copyData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
+                    ((AudioTrack *)i->track)->copyData(pos, dst_ch, dst_chs, src_ch, src_chs, nframes, &_audioInBuffers[0]);
+                    //_iUsedIdx[i] = true;
                   }
-
-                  const int h = ch + chs;
-
-                  for(int j = ch; j < h; ++j)
-                  {
-                     _iUsedIdx[j] = true;
-                  }
-               }
-               
-               
-            }
+                  const int nxt_ch = dst_ch + dst_chs;
+                  for(int ch = dst_ch; ch < nxt_ch; ++ch)
+                    _iUsedIdx[ch] = true;
+                }
+                
+                
+//                 for(unsigned i = ch; i < (unsigned)nxt_ch; ++i)
+//                 {
+//                   if(_iUsedIdx[ch])
+//                   {
+//                     //((AudioTrack *)i->track)->addData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
+//                     ((AudioTrack *)i->track)->addData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[0]);
+//                   }
+//                   else
+//                   {
+//                     //((AudioTrack *)i->track)->copyData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
+//                     ((AudioTrack *)i->track)->copyData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[0]);
+//                     _iUsedIdx[i] = true;
+//                   }
+//                 }
+//                 for(int j = ch; j < nxt_ch; ++j)
+//                 {
+//                     _iUsedIdx[j] = true;
+//                 }
+             }
          }
       }
-
-
    }
 
 
