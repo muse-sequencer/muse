@@ -1,3 +1,10 @@
+30.05.2015:
+         - Patch from Michele Ballabio to compile muse without LV2 enabled added (rj)
+15.05.2015
+         - Added some missing initializations for native VST synths (rj)
+         - Added some instructions for compiling with Steinberg VST SDK instead
+           of the bundled Vestige header (rj)
+
 05.05.2015
          - Added multichannel support for SimpleDrums (+routing ability) (danvd)
          - Added channel meters for SimpleDrums (danvd)
