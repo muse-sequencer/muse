@@ -1727,7 +1727,7 @@ int AudioTrack::totalRoutableInputs(Route::RouteType type) const
   switch(type)
   {
     case Route::TRACK_ROUTE: 
-      return channels() == 1 ? 1 : totalOutChannels();
+      return totalProcessBuffers();
     break;
     case Route::JACK_ROUTE:
     case Route::MIDI_DEVICE_ROUTE:
@@ -1748,7 +1748,7 @@ int AudioTrack::totalRoutableOutputs(Route::RouteType type) const
   switch(type)
   {
     case Route::TRACK_ROUTE:
-      return channels() == 1 ? 1 : totalOutChannels();
+      return totalProcessBuffers();
     break;
     case Route::JACK_ROUTE:
     case Route::MIDI_DEVICE_ROUTE:
@@ -1886,7 +1886,7 @@ int AudioInput::totalRoutableInputs(Route::RouteType type) const
       return 0;
     break;
     case Route::JACK_ROUTE:
-      return channels() == 1 ? 1 : totalOutChannels();
+      return totalProcessBuffers();
     break;
     case Route::MIDI_DEVICE_ROUTE:
     case Route::MIDI_PORT_ROUTE:
@@ -2022,7 +2022,7 @@ int AudioOutput::totalRoutableOutputs(Route::RouteType type) const
       return 0;
     break;
     case Route::JACK_ROUTE:
-      return channels() == 1 ? 1 : totalOutChannels();
+      return totalProcessBuffers();
     break;
     case Route::MIDI_DEVICE_ROUTE:
     case Route::MIDI_PORT_ROUTE:

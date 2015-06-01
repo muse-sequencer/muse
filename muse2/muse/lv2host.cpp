@@ -3768,13 +3768,13 @@ iMPEvent LV2SynthIF::getData(MidiPort *, MPEventList *el, iMPEvent  start_event,
                 //assert((unsigned)ch <= _inports);
                 assert((unsigned)dst_ch < _inports);
                 
-                if(dst_ch < _inports)
+                if((unsigned)dst_ch < _inports)
                 {
                   // Only this synth knows how many destination channels there are, 
                   //  while only the track knows how many source channels there are.
                   // So take care of the destination channels here, and let the track handle the source channels.
                   int dst_chs = i->channels == -1 ? _inports : i->channels;
-                  if((dst_ch + dst_chs) > _inports)
+                  if(unsigned(dst_ch + dst_chs) > _inports)
                     dst_chs = _inports - dst_ch;
 
                   if(_iUsedIdx[dst_ch])

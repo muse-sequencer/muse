@@ -433,6 +433,8 @@ class AudioTrack : public Track {
       virtual int totalRoutableInputs(Route::RouteType) const;
       // Number of routable outputs.
       virtual int totalRoutableOutputs(Route::RouteType) const;
+      // Number of required processing buffers.
+      virtual int totalProcessBuffers() const { return (channels() == 1) ? 1 : totalOutChannels(); }
 
       virtual bool isMute() const;
       virtual void setSolo(bool val);
