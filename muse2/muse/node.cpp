@@ -2200,6 +2200,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 
       //++ir;  // REMOVE Tim. Persistent routes. Removed.
       //for (; ir != rl->end(); ++ir) { // REMOVE Tim. Persistent routes. Changed.
+      bool have_data = false;
       bool used_chan_array[channels];
       for(int i = 0; i < channels; ++i)
         used_chan_array[i] = false;
@@ -2223,7 +2224,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
             const int src_chs = ir->channels;
             // Only this track knows how many destination channels there are, 
             //  while only the route track knows how many source channels there are.
-            // So take care of the destination channels here, and let the track handle the source channels.
+            // So take care of the destination channels here, and let the route track handle the source channels.
             //int dst_chs = ir->channels == -1 ? _inports : i->channels;
             int dst_chs = ir->channels == -1 ? channels : ir->channels;
             //if(unsigned(dst_ch + dst_chs) > _inports)
@@ -2241,23 +2242,25 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
             for(int i = dst_ch; i < next_chan; ++i)
               used_chan_array[i] = true;
             //is_first = false;
+            have_data = true;
             }
+      // REMOVE Tim. Persistent routes. Added.
       for(int i = 0; i < channels; ++i)
       {
-        if(!used_chan_array[i])
+        if(used_chan_array[i])
+          continue;
+        // Channel is unused. Zero the supplied buffer.
+        if(MusEGlobal::config.useDenormalBias) 
         {
-          // Channel is unused. Zero the supplied buffer.
-          if(MusEGlobal::config.useDenormalBias) 
-          {
-            for(unsigned int q = 0; q < nframes; ++q)
-              buffer[i][q] = MusEGlobal::denormalBias;
-          } 
-          else
-            memset(buffer[i], 0, sizeof(float) * nframes);
-        }
+          for(unsigned int q = 0; q < nframes; ++q)
+            buffer[i][q] = MusEGlobal::denormalBias;
+        } 
+        else
+          memset(buffer[i], 0, sizeof(float) * nframes);
       }
       
-      return true;
+      //return true;
+      return have_data;
       }
 
 //---------------------------------------------------------
