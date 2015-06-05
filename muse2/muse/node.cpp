@@ -863,7 +863,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
         }
 
 #ifdef NODE_DEBUG_PROCESS
-        fprintf(stderr, "AudioTrack::processTrackCtrls k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, ci.eFrame, nsamp);
+        fprintf(stderr, "AudioTrack::processTrackCtrls k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, slice_frame, ci.eFrame, nsamp);
 #endif
       }
     }
@@ -1033,7 +1033,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
               }
             }
             
-            const unsigned long next_smp = sample + k + nsamp;
+            const unsigned long next_smp = sample + nsamp;
             for(unsigned long smp = sample + k; smp < next_smp; ++smp)
             {
               for(int ch = start_ch; ch < trackChans; ++ch)
@@ -1179,9 +1179,17 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
         }
       }
 
+#ifdef NODE_DEBUG_PROCESS
+      fprintf(stderr, "AudioTrack::processTrackCtrls end of sample:%lu nsamp:%lu\n", sample, nsamp);
+#endif
+      
       sample += nsamp;
     }  
 
+#ifdef NODE_DEBUG_PROCESS
+    fprintf(stderr, "AudioTrack::processTrackCtrls end of cur_slice:%d\n", cur_slice);
+#endif
+      
     ++cur_slice; // Slice is done. Moving on to any next slice now...
   }
 }
@@ -2172,7 +2180,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       RouteList* rl = inRoutes();
       
       #ifdef NODE_DEBUG_PROCESS
-      printf("AudioTrack::getData name:%s inRoutes:%lu\n", name().toLatin1().constData(), rl->size());
+      printf("AudioTrack::getData name:%s inRoutes:%u\n", name().toLatin1().constData(), rl->size());
       #endif
 
 // REMOVE Tim. Persistent routes. Removed.      
