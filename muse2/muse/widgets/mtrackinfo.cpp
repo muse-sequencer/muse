@@ -1121,7 +1121,7 @@ void MidiTrackInfo::patchPopup()
          {
             MusECore::SynthI *si = static_cast<MusECore::SynthI *>(instr);
             MusECore::Synth *s = si->synth();
-
+#ifdef LV2_SUPPORT
             //only for lv2 synths call applyPreset function.
             if(s && s->synthType() == MusECore::Synth::LV2_SYNTH)
             {
@@ -1138,7 +1138,7 @@ void MidiTrackInfo::patchPopup()
                   }
                }
             }
-
+#endif
          }
       }
             

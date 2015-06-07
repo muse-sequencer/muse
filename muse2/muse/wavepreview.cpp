@@ -85,10 +85,17 @@ void WavePreview::stop()
 }
 
 void WavePreview::addData(int channels, int nframes, float *buffer[])
-{   
+{
    if(sf && isPlaying)
    {     
       sem.acquire();
+
+      if(!isPlaying)
+      {
+         sem.release();
+         return;
+      }
+
       memset(srcbuffer, 0, sizeof(segSize) * sizeof(float));
       /*p2 = srcbuffer;
       f2 = 0; 
@@ -146,6 +153,11 @@ void WavePreview::addData(int channels, int nframes, float *buffer[])
          for(int k = 0; k < nframes; k++)
          {
             buffer [i] [k] += srcbuffer [(k + i)*sfi.channels];
+            if((channels > 1) && (sfi.channels == 1))
+            {
+               buffer [1] [k] += srcbuffer [(k + i)*sfi.channels];
+            }
+
          }
       }
       sem.release();
