@@ -89,9 +89,11 @@ struct Route {
       Route(RouteType type_, int midi_port_num_, void* void_pointer_, int channel_, int channels_, int remote_channel_, const char* name_);
       
       // Create string name representation.
-      QString name() const;
+      // preferred_name_or_alias (mainly for Jack routes): -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
+      QString name(int preferred_name_or_alias = -1) const;
       // Fill and return str char name representation.
-      char* name(char* str, int str_size) const;
+      // preferred_name_or_alias (mainly for Jack routes): -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
+      char* name(char* str, int str_size, int preferred_name_or_alias = -1) const;
       bool operator==(const Route&) const;
       // If the routes support channels, if the given route's channel is -1 meaning all channels, compare matches ONLY if this channel == -1, 
       //  and if the given route's channel is >= 0, compare matches on ANY channel. Useful for example finding router treeview items.

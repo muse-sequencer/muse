@@ -1739,15 +1739,17 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
 //    such as "system:", whether to pick the name or 
 //    one of the aliases, whichever does NOT contain 
 //    the blacklist names.
+//   preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
 //---------------------------------------------------------
 
-char* JackAudioDevice::portName(void* port, char* str, int str_size)
+char* JackAudioDevice::portName(void* port, char* str, int str_size, int preferred_name_or_alias)
 {
   bool A = false, B = false, C = false;
   const char* p_name = jack_port_name((jack_port_t*)port);
   if(p_name && p_name[0] != '\0')
   {
-    if(strncmp(p_name, "system:", 7) != 0)              // TODO: Make this a user editable blacklist of client names!
+    // TODO: Make this a user editable blacklist of client names!
+    if((strncmp(p_name, "system:", 7) != 0 && preferred_name_or_alias == -1) || preferred_name_or_alias == 0)
       return MusELib::strntcpy(str, p_name, str_size);
     A = true;
   }
@@ -1762,14 +1764,14 @@ char* JackAudioDevice::portName(void* port, char* str, int str_size)
   int na = jack_port_get_aliases((jack_port_t*)port, al);
   if(na >= 1 && al[0] != '\0')
   {
-    if(strncmp(al[0], "system:", 7) != 0)               //
+    if((strncmp(al[0], "system:", 7) != 0 && preferred_name_or_alias == -1) || preferred_name_or_alias == 1)
       return MusELib::strntcpy(str, al[0], str_size);
     B = true;
   }
 
   if(na >= 2 && al[1] != '\0')
   {
-    if(strncmp(al[1], "system:", 7) != 0)               //
+    if((strncmp(al[1], "system:", 7) != 0 && preferred_name_or_alias == -1) || preferred_name_or_alias == 2)
       return MusELib::strntcpy(str, al[1], str_size);
     C = true;
   }

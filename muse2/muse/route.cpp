@@ -926,7 +926,7 @@ static QString track2name(const Track* n)
 //    create string name representation for audio node
 //---------------------------------------------------------
 
-QString Route::name() const
+QString Route::name(int preferred_name_or_alias) const
 {
       if(type == MIDI_DEVICE_ROUTE) 
       {
@@ -940,7 +940,7 @@ QString Route::name() const
         if(MusEGlobal::checkAudioDevice() && jackPort)
         {
           char s[ROUTE_PERSISTENT_NAME_SIZE];
-          return QString(MusEGlobal::audioDevice->portName(jackPort, s, ROUTE_PERSISTENT_NAME_SIZE));
+          return QString(MusEGlobal::audioDevice->portName(jackPort, s, ROUTE_PERSISTENT_NAME_SIZE, preferred_name_or_alias));
         }
         return QString(persistentJackPortName);
         
@@ -959,7 +959,7 @@ QString Route::name() const
 //   name
 //    fill and return str char name representation for audio node
 //---------------------------------------------------------
-char* Route::name(char* str, int str_size) const
+char* Route::name(char* str, int str_size, int preferred_name_or_alias) const
 {
       if(type == MIDI_DEVICE_ROUTE) 
         return MusELib::strntcpy(str, device ? device->name().toLatin1().constData() : 0, str_size);
@@ -967,7 +967,7 @@ char* Route::name(char* str, int str_size) const
       if(type == JACK_ROUTE) 
       {
         if(MusEGlobal::checkAudioDevice() && jackPort)
-          return MusEGlobal::audioDevice->portName(jackPort, str, str_size);
+          return MusEGlobal::audioDevice->portName(jackPort, str, str_size, preferred_name_or_alias);
         return MusELib::strntcpy(str, persistentJackPortName, str_size);
       }
       else

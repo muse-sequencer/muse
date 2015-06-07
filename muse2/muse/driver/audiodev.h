@@ -79,7 +79,8 @@ class AudioDevice {
       virtual bool portsCanConnect(const char*, const char*) = 0;
       virtual void setPortName(void* p, const char* n) = 0;
       virtual void* findPort(const char* name) = 0;
-      virtual char* portName(void* port, char* str, int str_size) = 0;
+      // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
+      virtual char* portName(void* port, char* str, int str_size, int preferred_name_or_alias = -1) = 0;
       virtual const char* canonicalPortName(void*) = 0;
       virtual unsigned int portLatency(void* port, bool capture) const = 0;
       virtual int getState() = 0;

@@ -612,7 +612,9 @@ void MidiTrackInfo::inRoutesPressed()
     return;
   
   RoutePopupMenu* pup = new RoutePopupMenu();
-  pup->exec(QCursor::pos(), selected, false);
+  // REMOVE Tim. Persistent routes. Changed.
+  //pup->exec(QCursor::pos(), selected, false);
+  pup->exec(QCursor::pos(), MusECore::Route(selected), false);
   delete pup;
   iRButton->setDown(false);     
 }
@@ -629,7 +631,9 @@ void MidiTrackInfo::outRoutesPressed()
     return;
   
   RoutePopupMenu* pup = new RoutePopupMenu();
-  pup->exec(QCursor::pos(), selected, true);
+  // REMOVE Tim. Persistent routes. Changed.
+  //pup->exec(QCursor::pos(), selected, true);
+  pup->exec(QCursor::pos(), MusECore::Route(selected), true);
   delete pup;
   oRButton->setDown(false);     
 }

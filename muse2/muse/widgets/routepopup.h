@@ -25,6 +25,7 @@
 
 //#include <QObject>
 #include "type_defs.h"
+#include "route.h"
 #include "popupmenu.h"
 
 namespace MusECore {
@@ -36,6 +37,7 @@ class QWidget;
 class QString;
 class QAction;
 class QPoint;
+class QResizeEvent;
 
 namespace MusEGui {
 
@@ -47,12 +49,17 @@ class RoutePopupMenu : public PopupMenu
   Q_OBJECT
   
     //PopupMenu* _pup;
-    MusECore::Track* _track;
+    // REMOVE Tim. Persistent routes. Removed.
+    //MusECore::Track* _track;
+    MusECore::Route  _route;  // REMOVE Tim. Persistent routes. Added.
     // Whether the route popup was shown by clicking the output routes button, or input routes button.
     bool _isOutMenu;
     
     void init();
     void prepare();
+    // REMOVE Tim. Persistent routes. Added.
+    // Recursive. Returns true if any text was changed.
+    bool updateItemTexts(PopupMenu* menu = 0); 
     
     int addMenuItem(MusECore::AudioTrack* track, MusECore::Track* route_track, PopupMenu* lb, int id, int channel, 
                     int channels, bool isOutput);
@@ -61,10 +68,13 @@ class RoutePopupMenu : public PopupMenu
     int addOutPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     int addGroupPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     int addWavePorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    int addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
+    // REMOVE Tim. Persistent routes. Removed.
+    //int addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
     
-    int addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
-    int nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* lb, int id, bool isOutput);
+    // REMOVE Tim. Persistent routes. Removed.
+    //int addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
+    // REMOVE Tim. Persistent routes. Removed.
+    //int nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* lb, int id, bool isOutput);
     int addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
     
     // REMOVE Tim. Persistent routes. Added.
@@ -74,14 +84,26 @@ class RoutePopupMenu : public PopupMenu
     void popupActivated(QAction*);
     void songChanged(MusECore::SongChangedFlags_t);
   
+  protected:  
+    virtual void resizeEvent(QResizeEvent* e);
+    
   public:
-    RoutePopupMenu(QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
-    RoutePopupMenu(const QString& title, QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
+    // REMOVE Tim. Persistent routes. Changed.
+    //RoutePopupMenu(QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
+    //RoutePopupMenu(const QString& title, QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
+    RoutePopupMenu(QWidget* parent = 0, bool isOutput = false);
+    RoutePopupMenu(const MusECore::Route& route, QWidget* parent = 0, bool isOutput = false);
+    RoutePopupMenu(const MusECore::Route& route, const QString& title, QWidget* parent = 0, bool isOutput = false);
     
     void updateRouteMenus();
-    void exec(MusECore::Track* track = 0, bool isOutput = false);
-    void exec(const QPoint& p, MusECore::Track* track = 0, bool isOutput = false);
-    void popup(const QPoint& p, MusECore::Track* track = 0, bool isOutput = false);
+    
+    // REMOVE Tim. Persistent routes. Changed.
+    //void exec(MusECore::Track* track = 0, bool isOutput = false);
+    //void exec(const QPoint& p, MusECore::Track* track = 0, bool isOutput = false);
+    //void popup(const QPoint& p, MusECore::Track* track = 0, bool isOutput = false);
+    void exec(const MusECore::Route& route, bool isOutput = false);
+    void exec(const QPoint& p, const MusECore::Route& route, bool isOutput = false);
+    void popup(const QPoint& p, const MusECore::Route& route, bool isOutput = false);
 };
 
 }

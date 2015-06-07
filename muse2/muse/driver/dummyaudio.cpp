@@ -137,7 +137,8 @@ class DummyAudioDevice : public AudioDevice {
       virtual bool portsCanConnect(const char*, const char*) { return false; }
       virtual void setPortName(void*, const char*) {}
       virtual void* findPort(const char*) { return 0;}
-      virtual char*  portName(void*, char* str, int str_size) { if(str_size == 0) return 0; str[0] = '\0'; return str; }
+      // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
+      virtual char*  portName(void*, char* str, int str_size, int /*preferred_name_or_alias*/ = -1) { if(str_size == 0) return 0; str[0] = '\0'; return str; }
       virtual const char* canonicalPortName(void*) { return 0; }
       virtual unsigned int portLatency(void* /*port*/, bool /*capture*/) const { return 0; }
       virtual int getState() { 

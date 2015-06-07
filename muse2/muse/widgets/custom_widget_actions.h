@@ -33,6 +33,7 @@ class QPainter;
 class QPaintEvent;
 class QPixmap;
 class QString;
+class QResizeEvent;
 
 namespace MusEGui {
 
@@ -94,6 +95,7 @@ class PixmapButtonsWidgetAction : public QWidgetAction {
 struct RouteChannelArrayItem
 {
   QRect _rect;
+  QString _text;
   bool _value;
   RouteChannelArrayItem() { _value = false; }
 };
@@ -103,6 +105,11 @@ class RouteChannelArray
   protected:
     int _cols;
     int _rows;
+    int _visible_cols;
+    int _visible_rows;
+    bool _rowsExclusive;
+    bool _colsExclusive;
+    bool _exclusiveToggle;
     RouteChannelArrayItem* _array;
     
     virtual void init();
@@ -119,14 +126,33 @@ class RouteChannelArray
     int rows() const { return _rows; }
     void setSize(int rows, int cols);
 
+    virtual void setValues(int row, int col, bool value, bool exclusive_rows = false, bool exclusive_cols = false, bool exclusive_toggle = false);
+    
     bool value(int row, int col) const                  
       { if(invalidIndex(row, col)) return false; return _array[itemIndex(row, col)]._value; }
-    void setValue(int row, int col, bool value)
-      { if(invalidIndex(row, col)) return; _array[itemIndex(row, col)]._value = value; }
+    void setValue(int row, int col, bool value);
+    //void setValue(int row, int col, bool value)
+    //  { if(invalidIndex(row, col)) return; _array[itemIndex(row, col)]._value = value; }
     QRect rect(int row, int col) const                  
       { if(invalidIndex(row, col)) return QRect(); return _array[itemIndex(row, col)]._rect; }
-    void setRect(int row, int col, const QRect r)
+    void setRect(int row, int col, const QRect& r)
       { if(invalidIndex(row, col)) return; _array[itemIndex(row, col)]._rect = r; }
+    QString text(int row, int col) const                  
+      { if(invalidIndex(row, col)) return QString(); return _array[itemIndex(row, col)]._text; }
+    void setText(int row, int col, const QString& s)
+      { if(invalidIndex(row, col)) return; _array[itemIndex(row, col)]._text = s; }
+      
+    int visibleColumns() const { return _visible_cols; }
+    int visibleRows() const { return _visible_rows; }
+    void setVisibleColums(int cols) { _visible_cols = (cols > _cols) ? _cols : cols; }
+    void setVisibleRows(int rows) { _visible_rows = (rows > _rows) ? _rows : rows; }
+    
+    bool rowsExclusive() const       { return _rowsExclusive; }
+    bool columnsExclusive() const    { return _colsExclusive; }
+    void setRowsExclusive(bool v)    { _rowsExclusive = v; }
+    void setColumnsExclusive(bool v) { _colsExclusive = v; }
+    bool exclusiveToggle() const     { return _exclusiveToggle; }
+    void setExclusiveToggle(bool v)  { _exclusiveToggle = v; }
 };
 
 class RouteChannelArrayHeader : public RouteChannelArray {
@@ -136,6 +162,9 @@ class RouteChannelArrayHeader : public RouteChannelArray {
     virtual bool invalidIndex(int row, int col) const;
     // Row and col must be valid. Row or col can be -1, but not both.
     virtual int itemIndex(int row, int col) const { if(row == -1) return col; return _cols + row; }
+    
+  public:
+    virtual void setValues(int row, int col, bool value, bool exclusive_rows = false, bool exclusive_cols = false, bool exclusive_toggle = false);
 };
 
 class RoutingMatrixWidgetAction;
@@ -149,6 +178,7 @@ class RoutingMatrixWidget : public QWidget {
     virtual void drawGrid(QPainter&);
     virtual void paintEvent(QPaintEvent*);
     virtual void mousePressEvent(QMouseEvent*);
+    virtual void resizeEvent(QResizeEvent* e);
     
   public:
     RoutingMatrixWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
@@ -165,8 +195,6 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       QFont _cellFont;
       QRect _cellGeometry;
       
-      void updateChannelArray();
-      
    protected:
       virtual QWidget* createWidget(QWidget* parent);
       virtual void deleteWidget(QWidget* widget);
@@ -180,15 +208,18 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       
       RoutingMatrixWidgetAction(int rows, int cols,  
                                 QPixmap* on_pixmap, QPixmap* off_pixmap, 
-                                QWidget* parent = 0);
+                                QWidget* parent = 0,
+                                int visible_rows = -1, int visible_cols = -1);
 
+      void updateChannelArray();
+      
       RouteChannelArrayHeader* header() { return &_header; }
-      RouteChannelArray* array() { return &_array; }
+      RouteChannelArray* array()        { return &_array; }
 
-      QFont cellFont() const { return _cellFont; }
+      QFont cellFont() const     { return _cellFont; }
       QRect cellGeometry() const { return _cellGeometry; }
 
-      QPixmap* onPixmap() const { return _onPixmap; }
+      QPixmap* onPixmap() const  { return _onPixmap; }
       QPixmap* offPixmap() const { return _offPixmap; }
       };
 
