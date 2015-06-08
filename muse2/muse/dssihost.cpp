@@ -1566,74 +1566,36 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent start_
 //     }
 //   }
 
-  // Handle inputs...
-  if(ports != 0)  // Don't bother if not 'running'.
+  if(ports != 0)
   {
+    const unsigned long in_ports = _synth->inPorts();
     if(!atrack->noInRoute())
     {
-      RouteList* irl = atrack->inRoutes();
-      iRoute i = irl->begin();
-      if(!i->track->isMidiTrack())
+      RouteList *irl = atrack->inRoutes();
+      for(ciRoute i = irl->begin(); i != irl->end(); ++i)
       {
-        const int ch     = i->channel       == -1 ? 0 : i->channel;
-        const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-        const int chs    = i->channels      == -1 ? 0 : i->channels;
-
-        if((unsigned)ch < _synth->inPorts() && (unsigned)(ch + chs) <= _synth->inPorts())
+        if(!i->track->isMidiTrack())
         {
-          const int h = ch + chs;
-          for(int j = ch; j < h; ++j)
-            _iUsedIdx[j] = true;
+          //const int total_ins = atrack->totalRoutableInputs(Route::TRACK_ROUTE);
+          const int src_ch = i->remoteChannel == -1 ? 0 : i->remoteChannel;
+          const int dst_ch = i->channel       == -1 ? 0 : i->channel;
+          const int src_chs = i->channels;
 
-          ((AudioTrack*)i->track)->copyData(pos, ch, chs, remch, -1, nframes, &_audioInBuffers[ch]);
-        }
-      }
-
-      ++i;
-      for(; i != irl->end(); ++i)
-      {
-        if(i->track->isMidiTrack())
-          continue;
-
-        const int ch     = i->channel       == -1 ? 0 : i->channel;
-        const int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-        const int chs    = i->channels      == -1 ? 0 : i->channels;
-
-        if((unsigned)ch < _synth->inPorts() && (unsigned)(ch + chs) <= _synth->inPorts())
-        {
-          const bool u1 = _iUsedIdx[ch];
-          if(chs >= 2)
+          if((unsigned)dst_ch < in_ports)
           {
-            const bool u2 = _iUsedIdx[ch + 1];
-            if(u1 && u2)
-              ((AudioTrack*)i->track)->addData(pos, ch, chs, remch, -1, nframes, &_audioInBuffers[ch]);
-            else
-            if(!u1 && !u2)
-              ((AudioTrack*)i->track)->copyData(pos, ch, chs, remch, -1, nframes, &_audioInBuffers[ch]);
-            else
-            {
-              if(u1)
-                ((AudioTrack*)i->track)->addData(pos, ch, 1, remch, 1, nframes, &_audioInBuffers[ch]);
-              else
-                ((AudioTrack*)i->track)->copyData(pos, ch, 1, remch, 1, nframes, &_audioInBuffers[ch]);
+            AudioTrack* t = static_cast<AudioTrack*>(i->track);
+            // Only this synth knows how many destination channels there are, 
+            //  while only the track knows how many source channels there are.
+            // So take care of the destination channels here, and let the track handle the source channels.
+            int dst_chs = i->channels == -1 ? in_ports : i->channels;
+            if(unsigned(dst_ch + dst_chs) > in_ports)
+              dst_chs = in_ports - dst_ch;
 
-              if(u2)
-                ((AudioTrack*)i->track)->addData(pos, ch + 1, 1, remch + 1, 1, nframes, &_audioInBuffers[ch + 1]);
-              else
-                ((AudioTrack*)i->track)->copyData(pos, ch + 1, 1, remch + 1, 1, nframes, &_audioInBuffers[ch + 1]);
-            }
+            t->copyData(pos, dst_ch, dst_chs, src_ch, src_chs, nframes, &_audioInBuffers[0], _iUsedIdx[dst_ch]);
+            const int nxt_ch = dst_ch + dst_chs;
+            for(int ch = dst_ch; ch < nxt_ch; ++ch)
+              _iUsedIdx[ch] = true;
           }
-          else
-          {
-              if(u1)
-                ((AudioTrack*)i->track)->addData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
-              else
-                ((AudioTrack*)i->track)->copyData(pos, ch, 1, remch, -1, nframes, &_audioInBuffers[ch]);
-          }
-
-          const int h = ch + chs;
-          for(int j = ch; j < h; ++j)
-            _iUsedIdx[j] = true;
         }
       }
     }
