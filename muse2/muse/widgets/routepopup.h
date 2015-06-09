@@ -79,6 +79,7 @@ class RoutePopupMenu : public PopupMenu
     
     // REMOVE Tim. Persistent routes. Added.
     int addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
+    void addJackPorts();
     
   private slots:
     void popupActivated(QAction*);
