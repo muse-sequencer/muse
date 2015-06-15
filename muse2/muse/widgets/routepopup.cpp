@@ -46,10 +46,14 @@
 
 #define _USE_CUSTOM_WIDGET_ACTIONS_ 
 
+// Undefine if and when multiple output routes are added to midi tracks.
+#define _USE_MIDI_TRACK_SINGLE_PORT_CHAN_
+
 #define _SHOW_CANONICAL_NAMES_ 0x1000
 #define _SHOW_FIRST_ALIASES_  0x1001
 #define _SHOW_SECOND_ALIASES_ 0x1002
 #define _ALIASES_WIDGET_ACTION_ 0x2000
+#define _OPEN_MIDI_CONFIG_ 0x2001
 #define _PREFER_CANONICAL_NAMES_ 0
 #define _PREFER_FIRST_ALIASES_ 1
 #define _PREFER_SECOND_ALIASES_ 2
@@ -309,6 +313,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
       subp->addAction(new MenuTitleItem(tr("Channels"), this));
       act->setMenu(subp);
       RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(rt_chans, t_chans, redLedIcon, darkRedLedIcon, this);
+      //wa->array()->setArrayTitle(tr("Channels"));
       wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
       for(int row = 0; row < rt_chans; ++row)
       {
@@ -327,6 +332,8 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
           }
         }
       }
+      // Must rebuild array after text changes.
+      wa->updateChannelArray();
       subp->addAction(wa);
     }
     
@@ -951,28 +958,282 @@ int RoutePopupMenu::addWavePorts(MusECore::AudioTrack* t, PopupMenu* lb, int id,
 //       return id;      
 // }
 
+
 //---------------------------------------------------------
 //   addMidiPorts
 //---------------------------------------------------------
 
-int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput)
+// REMOVE Tim. Persistent routes. Changed.
+// int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput)
+// {
+// 
+// #ifndef _USE_CUSTOM_WIDGET_ACTIONS_
+// 
+//   QAction* act;
+//   
+// #endif
+//   
+// #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
+// 
+//         PixmapButtonsHeaderWidgetAction* wa_hdr = new PixmapButtonsHeaderWidgetAction("Output port/device", darkRedLedIcon, MIDI_CHANNELS, pup);
+//         pup->addAction(wa_hdr);  
+//         ++id;
+// #else   
+//       pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup)); 
+// #endif
+//         
+//   for(int i = 0; i < MIDI_PORTS; ++i)
+//   {
+//     MusECore::MidiPort* mp = &MusEGlobal::midiPorts[i];
+//     MusECore::MidiDevice* md = mp->device();
+//     
+//     // This is desirable, but could lead to 'hidden' routes unless we add more support
+//     //  such as removing the existing routes when user changes flags.
+//     // So for now, just list all valid ports whether read or write.
+//     //if(!md)
+//     //  continue;
+//     if(!md || !(md->rwFlags() & (isOutput ? 2 : 1)))  // If this is an input click we are looking for midi outputs here.
+//       continue;
+//           
+//     // Do not list synth devices!
+//     if(md->isSynti())
+//       continue;
+//           
+//     MusECore::RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
+//     
+//     int chanmask = 0;
+//     // To reduce number of routes required, from one per channel to just one containing a channel mask. 
+//     // Look for the first route to this midi port. There should always be only a single route for each midi port, now.
+//     for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)   
+//     {
+//       if(ir->type == MusECore::Route::MIDI_PORT_ROUTE && ir->midiPort == i) 
+//       {
+//         // We have a route to the midi port. Grab the channel mask.
+//         chanmask = ir->channel;
+//         break;
+//       }
+//     }
+//     
+// #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
+// 
+//     QBitArray ba(MIDI_CHANNELS); 
+//     for(int mch = 0; mch < MIDI_CHANNELS; ++mch)
+//     {  
+//       if(chanmask & (1 << mch))
+//         ba.setBit(mch);
+//     }
+//     PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + (md ? md->name() : tr("<none>")), 
+//                                                                   redLedIcon, darkRedLedIcon, ba, pup);
+//     MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
+//     //wa->setData(id++);   
+//     wa->setData(QVariant::fromValue(srcRoute));   
+//     pup->addAction(wa);  
+//     ++id;
+// 
+// #else    
+// 
+//     PopupMenu* subp = new PopupMenu(pup, true);
+//     subp->setTitle(md->name()); 
+//     
+//     for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+//     {
+//       act = subp->addAction(QString("Channel %1").arg(ch+1));
+//       act->setCheckable(true);
+//       
+//       int chbit = 1 << ch;
+//       MusECore::Route srcRoute(i, chbit);    // In accordance with channel mask, use the bit position.
+//       
+//       act->setData(QVariant::fromValue(srcRoute));   
+//       
+//       if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
+//         act->setChecked(true);
+//       
+//       ++id;
+//     }
+//     
+//     //gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
+//     act = subp->addAction(QString("Toggle all"));
+//     //act->setCheckable(true);
+//     MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
+//     act->setData(QVariant::fromValue(togRoute));   
+//     ++id;
+//     
+//     pup->addMenu(subp);
+//     
+// #endif // _USE_CUSTOM_WIDGET_ACTIONS_    
+//     
+//   }    
+//   return id;      
+// }
+void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOutput, bool show_synths)
 {
 
-#ifndef _USE_CUSTOM_WIDGET_ACTIONS_
-
-  QAction* act;
-  
-#endif
-  
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
 
-        PixmapButtonsHeaderWidgetAction* wa_hdr = new PixmapButtonsHeaderWidgetAction("Output port/device", darkRedLedIcon, MIDI_CHANNELS, pup);
-        pup->addAction(wa_hdr);  
-        ++id;
-#else   
-      pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup)); 
+  const MusECore::RouteList* const rl = isOutput ? t->outRoutes() : t->inRoutes();
+  const MusECore::MidiDevice* md;
+  
+  // Currently only midi port output to midi track input supports 'Omni' routes.
+  if(isOutput)
+  {
+    // Count the number of required rows. 
+    int rows = 0;
+    for(int i = 0; i < MIDI_PORTS; ++i)
+    {
+      md = MusEGlobal::midiPorts[i].device();
+      // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
+      // So for now, just list all valid ports whether read or write.
+      //if(!md)
+      //  continue;
+      if(!md || !(md->rwFlags() & (isOutput ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
+        continue;
+      // Do not list synth devices!
+      if(!show_synths && md->isSynti())
+        continue;
+      ++rows;      
+    }
+
+    if(rows == 0)
+      return;
+    RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(rows, MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this);
+    wa->array()->setArrayTitle(tr("Channels"));
+    wa->array()->headerSetTitle(tr("Midi ports/devices"));
+    wa->setData(QVariant::fromValue(MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, NULL, -1, -1, -1, NULL)));
+    int row = 0;
+    for(int i = 0; i < MIDI_PORTS && row < rows; ++i)
+    {
+      md = MusEGlobal::midiPorts[i].device();
+      // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
+      // So for now, just list all valid ports whether read or write.
+      //if(!md)
+      //  continue;
+      if(!md || !(md->rwFlags() & (isOutput ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
+        continue;
+      // Do not list synth devices!
+      if(!show_synths && md->isSynti())
+        continue;
+      
+      wa->array()->headerSetText(row, -1, QString("%1:%2").arg(i + 1).arg(md->name()));
+      // Ignore the routing channels - our action holds the channels.
+      //wa->array()->headerSetRoute(row, -1, MusECore::Route(MusECore::Route::MIDI_PORT_ROUTE, i, NULL, -1, -1, -1, NULL));
+      wa->array()->headerSetRoute(row, -1, MusECore::Route(i)); // Midi port route.
+      
+#ifdef _USE_MIDI_TRACK_SINGLE_PORT_CHAN_
+      wa->array()->setRowsExclusive(true);
+      wa->array()->setColumnsExclusive(true);
+      MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(t);
+      if(i == mt->outPort())
+        wa->array()->setValue(row, mt->outChannel(), true);
+#else      
+      int chans = 0;
+      // Is there already a route?
+      for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+      {
+        switch(ir->type)
+        {
+          case MusECore::Route::MIDI_PORT_ROUTE:
+            if(ir->midiPort == i)
+              chans = ir->channel; // Grab the channels.
+          break;  
+          case MusECore::Route::TRACK_ROUTE:
+          case MusECore::Route::JACK_ROUTE:
+          case MusECore::Route::MIDI_DEVICE_ROUTE:
+          break;  
+        }
+        if(chans != 0)
+          break;
+      }
+      if(chans != 0 && chans != -1)
+      {
+        for(int col = 0; col < MIDI_CHANNELS; ++col)
+        {
+          if(chans & (1 << col))
+            wa->array()->setValue(row, col, true);
+        }
+      }
 #endif
+      
+      ++row;
+    }
+    // Must rebuild array after text changes.
+    wa->updateChannelArray();
+    pup->addAction(wa);
+  }
+  else 
+  {
+    // It's an input. Allow 'Omni' routes'...
+    pup->addAction(new MenuTitleItem(tr("Omnis"), this)); 
+    for(int i = 0; i < MIDI_PORTS; ++i)
+    {
+      md = MusEGlobal::midiPorts[i].device();
+      // This is desirable, but could lead to 'hidden' routes unless we add more support such as removing the existing routes when user changes flags.
+      // So for now, just list all valid ports whether read or write.
+      //if(!md)
+      //  continue;
+      if(!md || !(md->rwFlags() & (isOutput ? 1 : 2)))  // If this is an output click we are looking for midi writeable here.
+        continue;
+      // Do not list synth devices!
+      if(!show_synths && md->isSynti())
+        continue;
+      
+      QAction* act = pup->addAction(QString("%1:%2").arg(i + 1).arg(md->name()));
+      act->setCheckable(true);
+      const MusECore::Route r(i, -1);
+      act->setData(QVariant::fromValue(r));   
+  //     for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+  //     {
+  //       if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == t && 
+  //           ir->remoteChannel == -1 && ir->channel == -1 && ir->channels == -1)
+  //       {
+  //         act->setChecked(true);
+  //         break;
+  //       }  
+  //     }
+      if(rl->exists(r))
+        act->setChecked(true);
+      
+      PopupMenu* subp = new PopupMenu(this, true);
+      subp->addAction(new MenuTitleItem(tr("Channels"), this));
+      act->setMenu(subp);
+      RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(1, MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this);
+      //wa->array()->setArrayTitle(tr("Channels"));
+      wa->setData(QVariant::fromValue(r)); // Ignore the routing channel and channels - our action holds the channels.
+      int chans = 0;
+      // Is there already a route?
+      for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+      {
+        switch(ir->type)
+        {
+          case MusECore::Route::MIDI_PORT_ROUTE:
+            if(ir->midiPort == i)
+              chans = ir->channel; // Grab the channels.
+          break;  
+          case MusECore::Route::TRACK_ROUTE:
+          case MusECore::Route::JACK_ROUTE:
+          case MusECore::Route::MIDI_DEVICE_ROUTE:
+          break;  
+        }
+        if(chans != 0)
+          break;
+      }
+      if(chans != 0 && chans != -1)
+      {
+        for(int col = 0; col < MIDI_CHANNELS; ++col)
+        {
+          if(chans & (1 << col))
+            wa->array()->setValue(0, col, true);
+        }
+      }
+      // Must rebuild array after text changes.
+      wa->updateChannelArray();
+      subp->addAction(wa);
+      pup->addAction(act);  
+    }
+  }
         
+#else   
+        
+  pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup)); 
   for(int i = 0; i < MIDI_PORTS; ++i)
   {
     MusECore::MidiPort* mp = &MusEGlobal::midiPorts[i];
@@ -987,7 +1248,7 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
       continue;
           
     // Do not list synth devices!
-    if(md->isSynti())
+    if(!show_synths && md->isSynti())
       continue;
           
     MusECore::RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
@@ -1005,26 +1266,9 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
       }
     }
     
-#ifdef _USE_CUSTOM_WIDGET_ACTIONS_
-
-    QBitArray ba(MIDI_CHANNELS); 
-    for(int mch = 0; mch < MIDI_CHANNELS; ++mch)
-    {  
-      if(chanmask & (1 << mch))
-        ba.setBit(mch);
-    }
-    PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + (md ? md->name() : tr("<none>")), 
-                                                                  redLedIcon, darkRedLedIcon, ba, pup);
-    MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
-    //wa->setData(id++);   
-    wa->setData(QVariant::fromValue(srcRoute));   
-    pup->addAction(wa);  
-    ++id;
-
-#else    
-
     PopupMenu* subp = new PopupMenu(pup, true);
     subp->setTitle(md->name()); 
+    QAction* act;
     
     for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
     {
@@ -1038,24 +1282,19 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
       
       if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
         act->setChecked(true);
-      
-      ++id;
     }
-    
-    //gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
     act = subp->addAction(QString("Toggle all"));
     //act->setCheckable(true);
     MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
     act->setData(QVariant::fromValue(togRoute));   
-    ++id;
-    
     pup->addMenu(subp);
-    
+  }    
+  
 #endif // _USE_CUSTOM_WIDGET_ACTIONS_    
     
-  }    
-  return id;      
+  return;
 }
+
 
 // REMOVE Tim. Persistent routes. Added.
 //---------------------------------------------------------
@@ -1078,24 +1317,26 @@ int RoutePopupMenu::addSynthPorts(MusECore::AudioTrack* t, MusEGui::PopupMenu* l
 //   addJackPorts
 //---------------------------------------------------------
 
-void RoutePopupMenu::addJackPorts()
+void RoutePopupMenu::addJackPorts(PopupMenu* lb)
 {
   if(!MusEGlobal::checkAudioDevice())
     return;
 
   MusECore::RouteList* rl;
-  int channels;
+  int channels = -1;
+  std::list<QString> ol;
   switch(_route.type)
   {
     case MusECore::Route::TRACK_ROUTE:
+      ol = _isOutMenu ? MusEGlobal::audioDevice->inputPorts() : MusEGlobal::audioDevice->outputPorts();      
       rl = _isOutMenu ? _route.track->outRoutes() : _route.track->inRoutes();
       channels = _isOutMenu ? _route.track->totalRoutableOutputs(MusECore::Route::JACK_ROUTE) : 
                               _route.track->totalRoutableInputs(MusECore::Route::JACK_ROUTE);
     break;
     
     case MusECore::Route::MIDI_DEVICE_ROUTE:
+      ol = _isOutMenu ? MusEGlobal::audioDevice->inputPorts(true) : MusEGlobal::audioDevice->outputPorts(true);
       rl = _isOutMenu ? _route.device->outRoutes() : _route.device->inRoutes();
-      channels = 1;
     break;
     
     case MusECore::Route::JACK_ROUTE:
@@ -1104,7 +1345,6 @@ void RoutePopupMenu::addJackPorts()
     break;
   }
   
-  std::list<QString> ol = _isOutMenu ? MusEGlobal::audioDevice->inputPorts() : MusEGlobal::audioDevice->outputPorts();
   const int sz = ol.size();
   if(sz != 0)
   {
@@ -1115,17 +1355,17 @@ void RoutePopupMenu::addJackPorts()
     name_wa->array()->setRowsExclusive(true);
     name_wa->array()->setColumnsExclusive(true);
     name_wa->array()->setExclusiveToggle(true);
-    name_wa->header()->setText(0, -1, tr("Show alias:"));
-    name_wa->header()->setText(-1, 0, tr("1 "));
-    name_wa->header()->setText(-1, 1, tr("2"));
+    name_wa->array()->headerSetText(0, -1, tr("Show aliases:"));
+    name_wa->array()->headerSetText(-1, 0, tr("First "));
+    name_wa->array()->headerSetText(-1, 1, tr("Second"));
     if(preferredRouteNameOrAlias == 1)
       name_wa->array()->setValue(0, 0, true);
     else if(preferredRouteNameOrAlias == 2)
       name_wa->array()->setValue(0, 1, true);
     // Must rebuild array after text changes.
     name_wa->updateChannelArray();
-    addAction(name_wa);
-    addSeparator();
+    lb->addAction(name_wa);
+    lb->addSeparator();
 #else
     QActionGroup* act_grp = new QActionGroup(this);
     act_grp->setExclusive(true);
@@ -1144,19 +1384,22 @@ void RoutePopupMenu::addJackPorts()
     act->setData(_SHOW_SECOND_ALIASES_);
     if(preferredRouteNameOrAlias == 2)
       act->setChecked(true); 
-    addActions(act_grp->actions());
-    addSeparator();
+    lb->addActions(act_grp->actions());
+    lb->addSeparator();
 #endif                
     
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
     
-    RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(sz, channels, redLedIcon, darkRedLedIcon, this);
+    RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(sz, channels == -1 ? 1 : channels, redLedIcon, darkRedLedIcon, this);
+    wa->array()->setArrayTitle(tr("Channels"));
+    wa->array()->headerSetTitle(tr("Jack ports"));
     wa->setData(QVariant::fromValue(MusECore::Route(MusECore::Route::JACK_ROUTE, -1, NULL, -1, -1, -1, NULL)));   
 
     int row = 0;
     for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip, ++row)
     {
       const char* port_name = (*ip).toLatin1().constData();
+      const char* const port_name_orig = port_name;
       char good_name[ROUTE_PERSISTENT_NAME_SIZE];
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
@@ -1164,28 +1407,35 @@ void RoutePopupMenu::addJackPorts()
         MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE, preferredRouteNameOrAlias);
         port_name = good_name;
       //}
-        wa->header()->setText(row, -1, port_name);
-        for(int i = 0; i < channels; ++i) 
+        //wa->header()->setText(row, -1, port_name);
+        wa->array()->headerSetText(row, -1, port_name);
+        MusECore::Route r(MusECore::Route::JACK_ROUTE, -1, port, -1, -1, -1, port_name_orig);
+        wa->array()->headerSetRoute(row, -1, r);
+        if(channels == -1)
         {
-          const MusECore::Route r(MusECore::Route::JACK_ROUTE, -1, port, i, -1, -1, NULL);
           if(rl->exists(r))
-            wa->array()->setValue(row, i, true);
+            wa->array()->setValue(row, 0, true);
+        }
+        else
+        {
+          for(int i = 0; i < channels; ++i) 
+          {
+            r.channel = i;
+            if(rl->exists(r))
+              wa->array()->setValue(row, i, true);
+          }
         }
       }
     }  
     // Must rebuild array after text changes.
     wa->updateChannelArray();
-    addAction(wa);
+    lb->addAction(wa);
 
 #else
     
     QAction* act = 0;
-    for(int i = 0; i < channels; ++i) 
+    if(channels == -1)
     {
-      QString chBuffer = tr("Channel") + QString(" ") + QString::number(i + 1);
-      MenuTitleItem* titel = new MenuTitleItem(chBuffer, this);
-      addAction(titel); 
-
       if(!MusEGlobal::checkAudioDevice())
       { 
         clear();
@@ -1193,7 +1443,7 @@ void RoutePopupMenu::addJackPorts()
       }
       for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
       {
-        act = addAction(*ip);
+        act = lb->addAction(*ip);
         act->setCheckable(true);
         
         const char* port_name = (*ip).toLatin1().constData();
@@ -1204,43 +1454,58 @@ void RoutePopupMenu::addJackPorts()
           MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
           port_name = good_name;
         }
-        MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, i, -1, -1, port_name);
+        MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, -1, -1, -1, port_name);
         
         act->setData(QVariant::fromValue(dst));   
-        ++gid;
-        for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+        if(rl->exists(r))
+          act->setChecked(true);
+      }      
+    }
+    else
+    {
+      for(int i = 0; i < channels; ++i) 
+      {
+        QString chBuffer = tr("Channel") + QString(" ") + QString::number(i + 1);
+        MenuTitleItem* titel = new MenuTitleItem(chBuffer, this);
+        lb->addAction(titel); 
+
+        if(!MusEGlobal::checkAudioDevice())
+        { 
+          clear();
+          return;
+        }
+        for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
         {
-          if(*ir == dst) 
+          act = lb->addAction(*ip);
+          act->setCheckable(true);
+          
+          const char* port_name = (*ip).toLatin1().constData();
+          char good_name[ROUTE_PERSISTENT_NAME_SIZE];
+          void* const port = MusEGlobal::audioDevice->findPort(port_name);
+          if(port)
           {
-            act->setChecked(true);
-            break;
+            MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
+            port_name = good_name;
+          }
+          MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, i, -1, -1, port_name);
+          
+          act->setData(QVariant::fromValue(dst));   
+          for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+          {
+            if(*ir == dst) 
+            {
+              act->setChecked(true);
+              break;
+            }
           }
         }
+        if(i+1 != channels)
+          lb->addSeparator();
       }
-      if(i+1 != channels)
-        addSeparator();
-    }    
+    }
 #endif                
 
   }
-    
-  
-//   //
-//   // Display using separate menu for audio inputs:
-//   //
-//   addSeparator();
-//   addAction(new MenuTitleItem(tr("Soloing chain"), this)); 
-//   PopupMenu* subp = new PopupMenu(this, true);
-//   subp->setTitle(tr("Audio returns")); 
-//   addMenu(subp);
-//   addInPorts(t, subp, 0, -1, -1, true);  
-//   //
-//   // Display all in the same menu:
-//   //
-//   //addSeparator();
-//   //MenuTitleItem* title = new MenuTitleItem(tr("Audio returns"), this);
-//   //addAction(title); 
-//   //gid = addInPorts(t, this, gid, -1, -1, true);  
 }
 
 //======================
@@ -1323,10 +1588,12 @@ bool RoutePopupMenu::updateItemTexts(PopupMenu* menu)
             if(MusEGlobal::checkAudioDevice())
             {
               char good_name[ROUTE_PERSISTENT_NAME_SIZE];
-              const int h_rows = wa->header()->rows();
+              //const int h_rows = wa->header()->rows();
+              const int h_rows = wa->array()->rows();
               for(int row = 0; row < h_rows; ++row)
               {
-                const QString str = wa->header()->text(row, -1);
+                //const QString str = wa->header()->text(row, -1);
+                const QString str = wa->array()->headerText(row, -1);
                 const char* port_name = str.toLatin1().constData();
                 void* const port = MusEGlobal::audioDevice->findPort(port_name);
                 if(port)
@@ -1335,7 +1602,8 @@ bool RoutePopupMenu::updateItemTexts(PopupMenu* menu)
                   port_name = good_name;
                   if(str != port_name)
                   {
-                    wa->header()->setText(row, -1, port_name);
+                    //wa->header()->setText(row, -1, port_name);
+                    wa->array()->headerSetText(row, -1, port_name);
                     // REMOVE Tim. Persistent routes. Changed. JUST FOR TEST.
                     //wa->header()->setText(row, -1, "GRNIGDMIGDMIDG<HD<P>PSF<PSFMPFAMPADODOP{F{DFD{SD{FF{F{R{R{R{REPORIERIRIOWIEOERIOERIOWRIOIEWRIOWIROIWRJFDSFKJSFDKJ");
                     changed = true;
@@ -2081,11 +2349,463 @@ void RoutePopupMenu::updateRouteMenus()
 // }
 // 
 
+void RoutePopupMenu::trackRouteActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations)
+{
+  // Check for custom routing matrix action.
+  RoutingMatrixWidgetAction* matrix_wa = dynamic_cast<RoutingMatrixWidgetAction*>(action);
+  if(!matrix_wa)
+    return;
+  
+  switch(rem_route.type)
+  {
+    case MusECore::Route::TRACK_ROUTE:
+    {
+      // Make sure the track still exists.
+      if(MusEGlobal::song->tracks()->find(rem_route.track) == MusEGlobal::song->tracks()->end())
+        return;
+      
+      fprintf(stderr, "RoutePopupMenu::trackRouteActivated:\n"); // REMOVE Tim. Persistent routes. Added. 
+
+      MusECore::Track* track = _route.track;
+      const int rows = matrix_wa->array()->rows();
+      const int cols = matrix_wa->array()->columns();
+      for(int row = 0; row < rows; ++row)
+      {
+        for(int col = 0; col < cols; ++col)
+        {
+          MusECore::Route this_route(track, col, 1);
+          //this_route.remoteChannel = row;
+          rem_route.channel = row;
+          rem_route.channels = 1;
+          
+          const MusECore::Route& src = _isOutMenu ? this_route : rem_route;
+          const MusECore::Route& dst = _isOutMenu ? rem_route : this_route;
+          
+          fprintf(stderr, "RoutePopupMenu::trackRouteActivated: checking operations\n"); // REMOVE Tim. Persistent routes. Added. 
+          const bool val = matrix_wa->array()->value(row, col);
+          // Connect if route does not exist. Allow it to reconnect a partial route.
+          if(val && MusECore::routeCanConnect(src, dst))
+          {
+            fprintf(stderr, "RoutePopupMenu::trackRouteActivated: adding AddRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
+            operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::AddRoute));
+          }
+          // Disconnect if route exists. Allow it to reconnect a partial route.
+          else if(!val && MusECore::routeCanDisconnect(src, dst))
+          {
+            fprintf(stderr, "RoutePopupMenu::trackRouteActivated: adding DeleteRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
+            operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::DeleteRoute));
+          }
+        }
+      }
+    } 
+    break;  
+    
+    case MusECore::Route::JACK_ROUTE:
+    case MusECore::Route::MIDI_DEVICE_ROUTE:
+    case MusECore::Route::MIDI_PORT_ROUTE:
+      return;
+    break;  
+  }
+}
+
+void RoutePopupMenu::jackRouteActivated(QAction* action, MusECore::PendingOperationList& operations)
+{
+  // Check for custom routing matrix action.
+  RoutingMatrixWidgetAction* matrix_wa = dynamic_cast<RoutingMatrixWidgetAction*>(action);
+  if(!matrix_wa)
+    return;
+  
+  if(!MusEGlobal::checkAudioDevice())
+    return;
+
+  fprintf(stderr, "RoutePopupMenu::jackRouteActivated: Matrix\n"); // REMOVE Tim. Persistent routes. Added. 
+
+  const int rows = matrix_wa->array()->rows();
+  const int cols = matrix_wa->array()->columns();
+  
+  //char good_name[ROUTE_PERSISTENT_NAME_SIZE];
+  for(int row = 0; row < rows; ++row)
+  {
+    //const QString str = matrix_wa->header()->text(row, -1);
+    //const QString str = matrix_wa->array()->headerText(row, -1);
+    //if(!str.isEmpty())
+    //const MusECore::Route r_route = matrix_wa->array()->headerRoute(row, -1);
+    //if(r_route.isValid())
+    //{
+      //const char* port_name = str.toLatin1().constData();
+      //const char* const port_name = r_route.persistentJackPortName;
+      const char* const port_name = matrix_wa->array()->headerRoute(row, -1).persistentJackPortName;
+      void* const port = MusEGlobal::audioDevice->findPort(port_name);
+      if(port)
+      {
+        //MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
+        //port_name = good_name;
+      //}
+        for(int col = 0; col < cols; ++col)
+        {
+          MusECore::Route this_route(_route);
+          switch(_route.type)
+          {
+            case MusECore::Route::MIDI_DEVICE_ROUTE:
+              this_route.channel = -1;
+            break;
+            case MusECore::Route::TRACK_ROUTE:
+              this_route.channel = col;
+            break;
+            case MusECore::Route::MIDI_PORT_ROUTE:
+            case MusECore::Route::JACK_ROUTE:
+            break;
+          }
+          
+          const MusECore::Route r_route(port);
+          const MusECore::Route& src = _isOutMenu ? this_route : r_route;
+          const MusECore::Route& dst = _isOutMenu ? r_route : this_route;
+          
+          fprintf(stderr, "RoutePopupMenu::jackRouteActivated: checking operations\n"); // REMOVE Tim. Persistent routes. Added. 
+          const bool val = matrix_wa->array()->value(row, col);
+          // Connect if route does not exist. Allow it to reconnect a partial route.
+          if(val && MusECore::routeCanConnect(src, dst))
+          {
+            fprintf(stderr, "RoutePopupMenu::jackRouteActivated: adding AddRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
+            operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::AddRoute));
+          }
+          // Disconnect if route exists. Allow it to reconnect a partial route.
+          else if(!val && MusECore::routeCanDisconnect(src, dst))
+          {
+            fprintf(stderr, "RoutePopupMenu::jackRouteActivated: adding DeleteRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
+            operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::DeleteRoute));
+          }
+        }
+      }
+    //}
+  }
+}
+
+void RoutePopupMenu::audioTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations)
+{
+  // REMOVE Tim. Persistent routes. Added.
+  fprintf(stderr, "RoutePopupMenu::audioTrackPopupActivated: action text:%s checked:%d name:%s\n", 
+          action->text().toLatin1().constData(), action->isChecked(), 
+          action->objectName().toLatin1().constData());
+  
+  MusECore::Track* track = _route.track;
+  // Check for custom routing matrix action.
+  RoutingMatrixWidgetAction* matrix_wa = dynamic_cast<RoutingMatrixWidgetAction*>(action);
+  if(matrix_wa)
+  {
+    fprintf(stderr, "RoutePopupMenu::audioTrackPopupActivated: Matrix\n"); // REMOVE Tim. Persistent routes. Added. 
+    
+    switch(rem_route.type)
+    {
+      case MusECore::Route::JACK_ROUTE:
+        jackRouteActivated(action, operations);
+      break;
+      
+      case MusECore::Route::TRACK_ROUTE:
+        trackRouteActivated(action, rem_route, operations);
+      break;
+      
+      case MusECore::Route::MIDI_DEVICE_ROUTE:
+      break;  
+      case MusECore::Route::MIDI_PORT_ROUTE:
+      break;  
+    }
+  }
+  // Support Midi Port to Audio Input routes. 
+  else if(!_isOutMenu && track->type() == MusECore::Track::AUDIO_INPUT && rem_route.type == MusECore::Route::MIDI_PORT_ROUTE)
+  {
+    MusECore::RouteList* rl = _isOutMenu ? track->outRoutes() : track->inRoutes();
+    // Check for custom midi channel select action.
+    PixmapButtonsWidgetAction* cs_wa = dynamic_cast<PixmapButtonsWidgetAction*>(action);
+    if(cs_wa)
+    {
+      const QBitArray ba = cs_wa->currentState();
+      const int ba_sz = ba.size();
+      int chbits = 0;
+      for(int mch = 0; mch < MIDI_CHANNELS && mch < ba_sz; ++mch)
+      {
+        if(ba.at(mch))
+          chbits |= (1 << mch);
+      }
+
+      rem_route.channel = chbits;  // Restore the desired route channels from the custom widget action state.
+      int mdidx = rem_route.midiPort;
+
+      int chmask = 0;                   
+      MusECore::ciRoute iir = rl->begin();
+      for (; iir != rl->end(); ++iir) 
+        if(iir->type == MusECore::Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx) {   // Is there already a route to this port?
+          chmask = iir->channel;  // Grab the channel mask.
+          break;
+        }      
+      
+      // Only if something changed...
+      if(chmask != chbits)
+      {
+        if(chmask != 0)
+        {
+          // Disconnect all existing channels.
+          MusECore::Route dstRoute(track, chmask);
+          operations.add(MusECore::PendingOperationItem(*iir, dstRoute, MusECore::PendingOperationItem::DeleteRoute));
+        }
+        if(chbits != 0)
+        {
+          // Connect desired channels.
+          MusECore::Route dstRoute(track, chbits);
+          operations.add(MusECore::PendingOperationItem(rem_route, dstRoute, MusECore::PendingOperationItem::AddRoute));
+        }
+      }  
+    }
+    else  
+    {
+      int chbit = rem_route.channel;
+      MusECore::Route dstRoute(track, chbit);
+      int mdidx = rem_route.midiPort;
+      int chmask = 0;                   
+      MusECore::ciRoute iir = rl->begin();
+      for (; iir != rl->end(); ++iir) 
+      {
+        if(iir->type == MusECore::Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx)    // Is there already a route to this port?
+        {
+          chmask = iir->channel;  // Grab the channel mask.
+          break;
+        }      
+      }
+      
+      if ((chmask & chbit) == chbit)             // Is the channel's bit(s) set?
+      {
+        //printf("routingPopupMenuActivated: removing src route ch:%d dst route ch:%d\n", srcRoute.channel, dstRoute.channel); 
+        operations.add(MusECore::PendingOperationItem(rem_route, dstRoute, MusECore::PendingOperationItem::DeleteRoute));
+      }
+      else 
+      {
+        //printf("routingPopupMenuActivated: adding src route ch:%d dst route ch:%d\n", srcRoute.channel, dstRoute.channel); 
+        operations.add(MusECore::PendingOperationItem(rem_route, dstRoute, MusECore::PendingOperationItem::AddRoute));
+      }
+    }  
+  }
+  else
+  {
+    // Make sure the track still exists.
+    if(MusEGlobal::song->tracks()->find(rem_route.track) == MusEGlobal::song->tracks()->end())
+      return;
+    
+    MusECore::Route this_route(track, rem_route.channel, rem_route.channels);
+    this_route.remoteChannel = rem_route.remoteChannel;
+
+    const MusECore::Route& src = _isOutMenu ? this_route : rem_route;
+    const MusECore::Route& dst = _isOutMenu ? rem_route : this_route;
+    
+    // Connect if route does not exist. Allow it to reconnect a partial route.
+    if(action->isChecked() && MusECore::routeCanConnect(src, dst))
+    {
+      fprintf(stderr, "RoutePopupMenu::audioTrackPopupActivated: Route: adding AddRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
+      operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::AddRoute));
+    }
+    // Disconnect if route exists. Allow it to reconnect a partial route.
+    else if(!action->isChecked() && MusECore::routeCanDisconnect(src, dst))
+    {
+      fprintf(stderr, "RoutePopupMenu::audioTrackPopupActivated: Route: adding DeleteRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
+      operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::DeleteRoute));
+    }
+  }
+}
+
+void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations)
+{
+  // REMOVE Tim. Persistent routes. Added.
+  fprintf(stderr, "RoutePopupMenu::midiTrackPopupActivated: action text:%s checked:%d name:%s\n", 
+          action->text().toLatin1().constData(), action->isChecked(), 
+          action->objectName().toLatin1().constData());
+  
+  MusECore::Track* track = _route.track;
+  MusECore::RouteList* rl = _isOutMenu ? track->outRoutes() : track->inRoutes();
+  // Support Midi Port to Audio Input track routes. 
+  if(rem_route.type == MusECore::Route::TRACK_ROUTE && rem_route.track && 
+    // Make sure the track still exists.
+    MusEGlobal::song->tracks()->find(rem_route.track) != MusEGlobal::song->tracks()->end() &&
+    rem_route.track->type() == MusECore::Track::AUDIO_INPUT)
+  {
+    int chbit = rem_route.channel;
+    int port = ((MusECore::MidiTrack*)track)->outPort();
+    if(port < 0 || port >= MIDI_PORTS)
+      return;
+    
+    MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+    //MusECore::MidiDevice* md = mp->device();
+    
+    // This is desirable, but could lead to 'hidden' routes unless we add more support
+    //  such as removing the existing routes when user changes flags.
+    // So for now, just list all valid ports whether read or write.
+    //if(!md)
+    //  return;
+    //if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
+    //  return;
+    
+    MusECore::Route bRoute(port, chbit);
+    
+    int chmask = 0;                   
+    MusECore::RouteList* mprl = _isOutMenu ? mp->outRoutes() : mp->inRoutes();
+    MusECore::ciRoute ir = mprl->begin();
+    for (; ir != mprl->end(); ++ir) 
+      if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == rem_route.track) {   // Is there already a route to this port?
+        chmask = ir->channel;  // Grab the channel mask.
+        break;
+      }      
+    if ((chmask & chbit) == chbit)             // Is the channel's bit(s) set?
+    {
+      // disconnect
+      if(_isOutMenu)
+        operations.add(MusECore::PendingOperationItem(bRoute, rem_route, MusECore::PendingOperationItem::DeleteRoute));
+      else
+        operations.add(MusECore::PendingOperationItem(rem_route, bRoute, MusECore::PendingOperationItem::DeleteRoute));
+    }
+    else 
+    {
+      // connect
+      if(_isOutMenu)
+        operations.add(MusECore::PendingOperationItem(bRoute, rem_route, MusECore::PendingOperationItem::AddRoute));
+      else
+        operations.add(MusECore::PendingOperationItem(rem_route, bRoute, MusECore::PendingOperationItem::AddRoute));
+    }
+  }
+  // Support Audio Input track to Midi Port routes. 
+  else if(rem_route.type == MusECore::Route::MIDI_PORT_ROUTE)
+  {
+    // Check for custom midi channel select action.
+    PixmapButtonsWidgetAction* cs_wa = dynamic_cast<PixmapButtonsWidgetAction*>(action);
+    if(cs_wa)
+    {
+      const QBitArray ba = cs_wa->currentState();
+      const int ba_sz = ba.size();
+      int chbits = 0;
+      for(int mch = 0; mch < MIDI_CHANNELS && mch < ba_sz; ++mch)
+      {
+        fprintf(stderr, "RoutePopupMenu::midiTrackPopupActivated: mch:%d", mch); // REMOVE Tim. Persistent routes. Added. 
+        if(ba.at(mch))
+        {
+          fprintf(stderr, " bit is set"); // REMOVE Tim. Persistent routes. Added. 
+          chbits |= (1 << mch);
+        }
+        fprintf(stderr, "\n"); // REMOVE Tim. Persistent routes. Added. 
+      }
+      fprintf(stderr, " chbits:%d\n", chbits); // REMOVE Tim. Persistent routes. Added. 
+        
+      rem_route.channel = chbits;  // Restore the desired route channels from the custom widget action state.
+      
+      int mdidx = rem_route.midiPort;
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mdidx];
+
+      MusECore::MidiDevice* md = mp->device();
+      //if(!md)    // Rem. Allow connections to ports with no device.
+      //  return;
+      
+      //if(!(md->rwFlags() & 2))
+      //if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
+      if(md && !(md->rwFlags() & (_isOutMenu ? 1 : 2)))   
+          return;
+      
+      int chmask = 0;                   
+      MusECore::ciRoute iir = rl->begin();
+      for (; iir != rl->end(); ++iir) 
+        if(iir->type == MusECore::Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx) {   // Is there already a route to this port?
+          chmask = iir->channel;  // Grab the channel mask.
+          break;  
+        }      
+      
+      // Only if something changed...
+      if(chmask != chbits)
+      {
+        if(chmask != 0)
+        {
+          MusECore::Route bRoute(track, chmask);
+          // Disconnect all existing channels.
+          if(_isOutMenu)
+            operations.add(MusECore::PendingOperationItem(bRoute, *iir, MusECore::PendingOperationItem::DeleteRoute));
+          else
+            operations.add(MusECore::PendingOperationItem(*iir, bRoute, MusECore::PendingOperationItem::DeleteRoute));
+        }  
+        if(chbits != 0)
+        {
+          // Connect desired channels.
+          MusECore::Route bRoute(track, chbits);
+          if(_isOutMenu)
+            operations.add(MusECore::PendingOperationItem(bRoute, rem_route, MusECore::PendingOperationItem::AddRoute));
+          else
+            operations.add(MusECore::PendingOperationItem(rem_route, bRoute, MusECore::PendingOperationItem::AddRoute));
+        }
+      }  
+    }
+    else
+    {
+      int chbit = rem_route.channel;
+      MusECore::Route bRoute(track, chbit);
+      int mdidx = rem_route.midiPort;
+
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mdidx];
+      MusECore::MidiDevice* md = mp->device();
+      //if(!md)    // Rem. Allow connections to ports with no device.
+      //  return;
+      
+      //if(!(md->rwFlags() & 2))
+      //if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
+      if(md && !(md->rwFlags() & (_isOutMenu ? 1 : 2)))   
+          return;
+      
+      int chmask = 0;                   
+      MusECore::ciRoute iir = rl->begin();
+      for (; iir != rl->end(); ++iir) 
+      {
+        if(iir->type == MusECore::Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx)    // Is there already a route to this port?
+        {
+              chmask = iir->channel;  // Grab the channel mask.
+              break;
+        }      
+      }
+      if ((chmask & chbit) == chbit)             // Is the channel's bit(s) set?
+      {
+        // disconnect
+        if(_isOutMenu)
+          operations.add(MusECore::PendingOperationItem(bRoute, rem_route, MusECore::PendingOperationItem::DeleteRoute));
+        else
+          operations.add(MusECore::PendingOperationItem(rem_route, bRoute, MusECore::PendingOperationItem::DeleteRoute));
+      }
+      else 
+      {
+        // connect
+        if(_isOutMenu)
+          operations.add(MusECore::PendingOperationItem(bRoute, rem_route, MusECore::PendingOperationItem::AddRoute));
+        else
+          operations.add(MusECore::PendingOperationItem(rem_route, bRoute, MusECore::PendingOperationItem::AddRoute));
+      }
+    }
+  }  
+}
+
+void RoutePopupMenu::trackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations)
+{
+  // REMOVE Tim. Persistent routes. Added.
+  fprintf(stderr, "RoutePopupMenu::trackPopupActivated: action text:%s checked:%d name:%s\n", 
+          action->text().toLatin1().constData(), action->isChecked(), 
+          action->objectName().toLatin1().constData());
+  
+  MusECore::Track* track = _route.track;
+  // Make sure the track still exists.
+  if(MusEGlobal::song->tracks()->find(track) == MusEGlobal::song->tracks()->end())
+    return;
+  
+  if(track->isMidiTrack())
+    midiTrackPopupActivated(action, rem_route, operations);
+  else
+    audioTrackPopupActivated(action, rem_route, operations);
+}
+
 void RoutePopupMenu::popupActivated(QAction* action)
 {
   if(!action || !_route.isValid() || actions().isEmpty())
     return;
 
+  MusECore::PendingOperationList operations;
   
   // Handle any non-route items.
   if(!action->data().canConvert<MusECore::Route>())
@@ -2096,6 +2816,9 @@ void RoutePopupMenu::popupActivated(QAction* action)
     {
       switch(n)
       {
+        case _OPEN_MIDI_CONFIG_:
+          MusEGlobal::muse->configMidiPorts();
+        break;  
         
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
         case _ALIASES_WIDGET_ACTION_:
@@ -2164,417 +2887,22 @@ void RoutePopupMenu::popupActivated(QAction* action)
     return;
   }
   
-  MusECore::PendingOperationList operations;
+  fprintf(stderr, "RoutePopupMenu::popupActivated: action data is a Route\n"); // REMOVE Tim. Persistent routes. Added. 
+  MusECore::Route rem_route = action->data().value<MusECore::Route>();
       
   switch(_route.type)
   {
     case MusECore::Route::TRACK_ROUTE:
-    {
-      MusECore::Track* track = _route.track;
-      // Make sure the track still exists.
-      if(MusEGlobal::song->tracks()->find(track) == MusEGlobal::song->tracks()->end())
-        return;
-      
-      // REMOVE Tim. Persistent routes. Added.
-      fprintf(stderr, "RoutePopupMenu::popupActivated: action text:%s checked:%d name:%s\n", 
-              action->text().toLatin1().constData(), action->isChecked(), 
-              action->objectName().toLatin1().constData());
-      
-      if(track->isMidiTrack())
-      {
-        MusECore::RouteList* rl = _isOutMenu ? track->outRoutes() : track->inRoutes();
-        
-        // Take care of Route data items first... 
-        if(action->data().canConvert<MusECore::Route>())
-        {
-          MusECore::Route aRoute = action->data().value<MusECore::Route>();
-          
-          // Support Midi Port to Audio Input track routes. 
-          if(aRoute.type == MusECore::Route::TRACK_ROUTE && aRoute.track && 
-            // Make sure the track still exists.
-            MusEGlobal::song->tracks()->find(aRoute.track) != MusEGlobal::song->tracks()->end() &&
-            aRoute.track->type() == MusECore::Track::AUDIO_INPUT)
-          {
-            int chbit = aRoute.channel;
-            int port = ((MusECore::MidiTrack*)track)->outPort();
-            if(port < 0 || port >= MIDI_PORTS)
-              return;
-            
-            MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-            //MusECore::MidiDevice* md = mp->device();
-            
-            // This is desirable, but could lead to 'hidden' routes unless we add more support
-            //  such as removing the existing routes when user changes flags.
-            // So for now, just list all valid ports whether read or write.
-            //if(!md)
-            //  return;
-            //if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
-            //  return;
-            
-            MusECore::Route bRoute(port, chbit);
-            
-            int chmask = 0;                   
-            MusECore::RouteList* mprl = _isOutMenu ? mp->outRoutes() : mp->inRoutes();
-            MusECore::ciRoute ir = mprl->begin();
-            for (; ir != mprl->end(); ++ir) 
-              if(ir->type == MusECore::Route::TRACK_ROUTE && ir->track == aRoute.track) {   // Is there already a route to this port?
-                chmask = ir->channel;  // Grab the channel mask.
-                break;
-              }      
-            if ((chmask & chbit) == chbit)             // Is the channel's bit(s) set?
-            {
-              // disconnect
-              if(_isOutMenu)
-                operations.add(MusECore::PendingOperationItem(bRoute, aRoute, MusECore::PendingOperationItem::DeleteRoute));
-              else
-                operations.add(MusECore::PendingOperationItem(aRoute, bRoute, MusECore::PendingOperationItem::DeleteRoute));
-            }
-            else 
-            {
-              // connect
-              if(_isOutMenu)
-                operations.add(MusECore::PendingOperationItem(bRoute, aRoute, MusECore::PendingOperationItem::AddRoute));
-              else
-                operations.add(MusECore::PendingOperationItem(aRoute, bRoute, MusECore::PendingOperationItem::AddRoute));
-            }
-          }
-          // Support Audio Input track to Midi Port routes. 
-          else if(aRoute.type == MusECore::Route::MIDI_PORT_ROUTE)
-          {
-            // Check for custom midi channel select action.
-            PixmapButtonsWidgetAction* cs_wa = dynamic_cast<PixmapButtonsWidgetAction*>(action);
-            if(cs_wa)
-            {
-              const QBitArray ba = cs_wa->currentState();
-              const int ba_sz = ba.size();
-              int chbits = 0;
-              for(int mch = 0; mch < MIDI_CHANNELS && mch < ba_sz; ++mch)
-              {
-                fprintf(stderr, "RoutePopupMenu::popupActivated: mch:%d", mch); // REMOVE Tim. Persistent routes. Added. 
-                if(ba.at(mch))
-                {
-                  fprintf(stderr, " bit is set"); // REMOVE Tim. Persistent routes. Added. 
-                  chbits |= (1 << mch);
-                }
-                fprintf(stderr, "\n"); // REMOVE Tim. Persistent routes. Added. 
-              }
-              fprintf(stderr, " chbits:%d\n", chbits); // REMOVE Tim. Persistent routes. Added. 
-                
-              aRoute.channel = chbits;  // Restore the desired route channels from the custom widget action state.
-              
-              int mdidx = aRoute.midiPort;
-              MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mdidx];
-      
-              MusECore::MidiDevice* md = mp->device();
-              //if(!md)    // Rem. Allow connections to ports with no device.
-              //  return;
-              
-              //if(!(md->rwFlags() & 2))
-              //if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
-              if(md && !(md->rwFlags() & (_isOutMenu ? 1 : 2)))   
-                  return;
-              
-              int chmask = 0;                   
-              MusECore::ciRoute iir = rl->begin();
-              for (; iir != rl->end(); ++iir) 
-                if(iir->type == MusECore::Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx) {   // Is there already a route to this port?
-                  chmask = iir->channel;  // Grab the channel mask.
-                  break;  
-                }      
-              
-              // Only if something changed...
-              if(chmask != chbits)
-              {
-                if(chmask != 0)
-                {
-                  MusECore::Route bRoute(track, chmask);
-                  // Disconnect all existing channels.
-                  if(_isOutMenu)
-                    operations.add(MusECore::PendingOperationItem(bRoute, *iir, MusECore::PendingOperationItem::DeleteRoute));
-                  else
-                    operations.add(MusECore::PendingOperationItem(*iir, bRoute, MusECore::PendingOperationItem::DeleteRoute));
-                }  
-                if(chbits != 0)
-                {
-                  // Connect desired channels.
-                  MusECore::Route bRoute(track, chbits);
-                  if(_isOutMenu)
-                    operations.add(MusECore::PendingOperationItem(bRoute, aRoute, MusECore::PendingOperationItem::AddRoute));
-                  else
-                    operations.add(MusECore::PendingOperationItem(aRoute, bRoute, MusECore::PendingOperationItem::AddRoute));
-                }
-              }  
-            }
-            else
-            {
-              int chbit = aRoute.channel;
-              MusECore::Route bRoute(track, chbit);
-              int mdidx = aRoute.midiPort;
-      
-              MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mdidx];
-              MusECore::MidiDevice* md = mp->device();
-              //if(!md)    // Rem. Allow connections to ports with no device.
-              //  return;
-              
-              //if(!(md->rwFlags() & 2))
-              //if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
-              if(md && !(md->rwFlags() & (_isOutMenu ? 1 : 2)))   
-                  return;
-              
-              int chmask = 0;                   
-              MusECore::ciRoute iir = rl->begin();
-              for (; iir != rl->end(); ++iir) 
-              {
-                if(iir->type == MusECore::Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx)    // Is there already a route to this port?
-                {
-                      chmask = iir->channel;  // Grab the channel mask.
-                      break;
-                }      
-              }
-              if ((chmask & chbit) == chbit)             // Is the channel's bit(s) set?
-              {
-                // disconnect
-                if(_isOutMenu)
-                  operations.add(MusECore::PendingOperationItem(bRoute, aRoute, MusECore::PendingOperationItem::DeleteRoute));
-                else
-                  operations.add(MusECore::PendingOperationItem(aRoute, bRoute, MusECore::PendingOperationItem::DeleteRoute));
-              }
-              else 
-              {
-                // connect
-                if(_isOutMenu)
-                  operations.add(MusECore::PendingOperationItem(bRoute, aRoute, MusECore::PendingOperationItem::AddRoute));
-                else
-                  operations.add(MusECore::PendingOperationItem(aRoute, bRoute, MusECore::PendingOperationItem::AddRoute));
-              }
-            }
-          }  
-        }  
-        // ... now take care of integer data items.
-        else if(action->data().canConvert<int>())
-        {
-          const int n = action->data().value<int>();
-          if(!_isOutMenu && n == 0)
-            MusEGlobal::muse->configMidiPorts();
-          return;  
-        }
-      }
-      else
-      {
-        MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
-        MusECore::RouteList* rl = _isOutMenu ? t->outRoutes() : t->inRoutes();
-        
-        // Take care of Route data items first... 
-        if(action->data().canConvert<MusECore::Route>())
-        {  
-          fprintf(stderr, "RoutePopupMenu::popupActivated: action data is a Route\n"); // REMOVE Tim. Persistent routes. Added. 
-          MusECore::Route rem_route = action->data().value<MusECore::Route>();
-          // Check for custom routing matrix action.
-          RoutingMatrixWidgetAction* matrix_wa = dynamic_cast<RoutingMatrixWidgetAction*>(action);
-          if(matrix_wa)
-          {
-            fprintf(stderr, "RoutePopupMenu::popupActivated: Matrix\n"); // REMOVE Tim. Persistent routes. Added. 
-            const int rows = matrix_wa->array()->rows();
-            const int cols = matrix_wa->array()->columns();
-            
-            switch(rem_route.type)
-            {
-              case MusECore::Route::JACK_ROUTE:
-              {
-                if(MusEGlobal::checkAudioDevice())
-                {
-                  //char good_name[ROUTE_PERSISTENT_NAME_SIZE];
-                  for(int row = 0; row < rows; ++row)
-                  {
-                    const QString str = matrix_wa->header()->text(row, -1);
-                    if(!str.isEmpty())
-                    {
-                      const char* port_name = str.toLatin1().constData();
-                      void* const port = MusEGlobal::audioDevice->findPort(port_name);
-                      if(port)
-                      {
-                        //MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
-                        //port_name = good_name;
-                      //}
-                      
-                        for(int col = 0; col < cols; ++col)
-                        {
-                          const MusECore::Route this_route(t, col, 1);
-                          const MusECore::Route r_route(port);
-                          
-                          const MusECore::Route& src = _isOutMenu ? this_route : r_route;
-                          const MusECore::Route& dst = _isOutMenu ? r_route : this_route;
-                          
-                          fprintf(stderr, "RoutePopupMenu::popupActivated: Jack: Matrix: checking operations\n"); // REMOVE Tim. Persistent routes. Added. 
-                          const bool val = matrix_wa->array()->value(row, col);
-                          // Connect if route does not exist. Allow it to reconnect a partial route.
-                          if(val && MusECore::routeCanConnect(src, dst))
-                          {
-                            fprintf(stderr, "RoutePopupMenu::popupActivated: Jack: Matrix: adding AddRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
-                            operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::AddRoute));
-                          }
-                          // Disconnect if route exists. Allow it to reconnect a partial route.
-                          else if(!val && MusECore::routeCanDisconnect(src, dst))
-                          {
-                            fprintf(stderr, "RoutePopupMenu::popupActivated: Jack: Matrix: adding DeleteRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
-                            operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::DeleteRoute));
-                          }
-                        }
-                      }
-                    }
-                  }                
-                }
-              }
-              break;  
-              
-              case MusECore::Route::TRACK_ROUTE:
-              {
-                // Make sure the track still exists.
-                if(MusEGlobal::song->tracks()->find(rem_route.track) != MusEGlobal::song->tracks()->end())
-                {
-                  for(int row = 0; row < rows; ++row)
-                  {
-                    for(int col = 0; col < cols; ++col)
-                    {
-                      MusECore::Route this_route(t, col, 1);
-                      //this_route.remoteChannel = row;
-                      rem_route.channel = row;
-                      rem_route.channels = 1;
-                      
-                      const MusECore::Route& src = _isOutMenu ? this_route : rem_route;
-                      const MusECore::Route& dst = _isOutMenu ? rem_route : this_route;
-                      
-                      fprintf(stderr, "RoutePopupMenu::popupActivated: Matrix: checking operations\n"); // REMOVE Tim. Persistent routes. Added. 
-                      const bool val = matrix_wa->array()->value(row, col);
-                      // Connect if route does not exist. Allow it to reconnect a partial route.
-                      if(val && MusECore::routeCanConnect(src, dst))
-                      {
-                        fprintf(stderr, "RoutePopupMenu::popupActivated: Matrix: adding AddRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
-                        operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::AddRoute));
-                      }
-                      // Disconnect if route exists. Allow it to reconnect a partial route.
-                      else if(!val && MusECore::routeCanDisconnect(src, dst))
-                      {
-                        fprintf(stderr, "RoutePopupMenu::popupActivated: Matrix: adding DeleteRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
-                        operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::DeleteRoute));
-                      }
-                    }
-                  }                  
-                }
-              } 
-              break;  
-              case MusECore::Route::MIDI_DEVICE_ROUTE:
-              break;  
-              case MusECore::Route::MIDI_PORT_ROUTE:
-              break;  
-            }
-          }
-          // Support Midi Port to Audio Input routes. 
-          else if(!_isOutMenu && track->type() == MusECore::Track::AUDIO_INPUT && rem_route.type == MusECore::Route::MIDI_PORT_ROUTE)
-          {
-            // Check for custom midi channel select action.
-            PixmapButtonsWidgetAction* cs_wa = dynamic_cast<PixmapButtonsWidgetAction*>(action);
-            if(cs_wa)
-            {
-              const QBitArray ba = cs_wa->currentState();
-              const int ba_sz = ba.size();
-              int chbits = 0;
-              for(int mch = 0; mch < MIDI_CHANNELS && mch < ba_sz; ++mch)
-              {
-                if(ba.at(mch))
-                  chbits |= (1 << mch);
-              }
-
-              rem_route.channel = chbits;  // Restore the desired route channels from the custom widget action state.
-              int mdidx = rem_route.midiPort;
-
-              int chmask = 0;                   
-              MusECore::ciRoute iir = rl->begin();
-              for (; iir != rl->end(); ++iir) 
-                if(iir->type == MusECore::Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx) {   // Is there already a route to this port?
-                  chmask = iir->channel;  // Grab the channel mask.
-                  break;
-                }      
-              
-              // Only if something changed...
-              if(chmask != chbits)
-              {
-                if(chmask != 0)
-                {
-                  // Disconnect all existing channels.
-                  MusECore::Route dstRoute(t, chmask);
-                  operations.add(MusECore::PendingOperationItem(*iir, dstRoute, MusECore::PendingOperationItem::DeleteRoute));
-                }
-                if(chbits != 0)
-                {
-                  // Connect desired channels.
-                  MusECore::Route dstRoute(t, chbits);
-                  operations.add(MusECore::PendingOperationItem(rem_route, dstRoute, MusECore::PendingOperationItem::AddRoute));
-                }
-              }  
-            }
-            else  
-            {
-              int chbit = rem_route.channel;
-              MusECore::Route dstRoute(t, chbit);
-              int mdidx = rem_route.midiPort;
-              int chmask = 0;                   
-              MusECore::ciRoute iir = rl->begin();
-              for (; iir != rl->end(); ++iir) 
-              {
-                if(iir->type == MusECore::Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx)    // Is there already a route to this port?
-                {
-                  chmask = iir->channel;  // Grab the channel mask.
-                  break;
-                }      
-              }
-              
-              if ((chmask & chbit) == chbit)             // Is the channel's bit(s) set?
-              {
-                //printf("routingPopupMenuActivated: removing src route ch:%d dst route ch:%d\n", srcRoute.channel, dstRoute.channel); 
-                operations.add(MusECore::PendingOperationItem(rem_route, dstRoute, MusECore::PendingOperationItem::DeleteRoute));
-              }
-              else 
-              {
-                //printf("routingPopupMenuActivated: adding src route ch:%d dst route ch:%d\n", srcRoute.channel, dstRoute.channel); 
-                operations.add(MusECore::PendingOperationItem(rem_route, dstRoute, MusECore::PendingOperationItem::AddRoute));
-              }
-            }  
-          }
-          else
-          {
-            // Make sure the track still exists.
-            if(MusEGlobal::song->tracks()->find(rem_route.track) == MusEGlobal::song->tracks()->end())
-              return;
-            
-            MusECore::Route this_route(t, rem_route.channel, rem_route.channels);
-            this_route.remoteChannel = rem_route.remoteChannel;
-
-            const MusECore::Route& src = _isOutMenu ? this_route : rem_route;
-            const MusECore::Route& dst = _isOutMenu ? rem_route : this_route;
-            
-            // Connect if route does not exist. Allow it to reconnect a partial route.
-            if(action->isChecked() && MusECore::routeCanConnect(src, dst))
-            {
-              fprintf(stderr, "RoutePopupMenu::popupActivated: Route: adding AddRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
-              operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::AddRoute));
-            }
-            // Disconnect if route exists. Allow it to reconnect a partial route.
-            else if(!action->isChecked() && MusECore::routeCanDisconnect(src, dst))
-            {
-              fprintf(stderr, "RoutePopupMenu::popupActivated: Route: adding DeleteRoute operation\n"); // REMOVE Tim. Persistent routes. Added. 
-              operations.add(MusECore::PendingOperationItem(src, dst, MusECore::PendingOperationItem::DeleteRoute));
-            }
-          }
-        }
-      }
-    }
+      trackPopupActivated(action, rem_route, operations);
     break;
     
     case MusECore::Route::JACK_ROUTE:
     break;
+    
     case MusECore::Route::MIDI_DEVICE_ROUTE:
+      jackRouteActivated(action, operations);
     break;
+    
     case MusECore::Route::MIDI_PORT_ROUTE:
     break;
     
@@ -3196,10 +3524,30 @@ void RoutePopupMenu::prepare()
       MusECore::Track* const track = _route.track;
       if(track->isMidiTrack())
       {
-        const MusECore::RouteList* const rl = _isOutMenu ? track->outRoutes() : track->inRoutes();
-        
-        int gid = 0;
         QAction* act = 0;
+        // Warn if no devices available. Add an item to open midi config. 
+        int pi = 0;
+        for( ; pi < MIDI_PORTS; ++pi)
+        {
+          MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
+          if(md && !md->isSynti() && (md->rwFlags() & 2))
+          //if(md && (md->rwFlags() & 2 || md->isSynti()) )  // p4.0.27 Reverted p4.0.35 
+            break;
+        }
+        if(pi == MIDI_PORTS)
+        {
+          act = addAction(tr("Warning: No input devices!"));
+          act->setCheckable(false);
+          act->setData(-1);
+          addSeparator();
+        }
+        act = addAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open midi config..."));
+        act->setCheckable(false);
+        //act->setData(gid);
+        act->setData(_OPEN_MIDI_CONFIG_);
+        addSeparator();
+        
+        addMidiPorts(track, this, _isOutMenu, true);
         
         if(_isOutMenu)   
         {
@@ -3244,121 +3592,116 @@ void RoutePopupMenu::prepare()
                     break;
                   }  
                 }
-                ++gid;      
               }
             }     
           }  
         }
         else
         {
-          // Warn if no devices available. Add an item to open midi config. 
-          int pi = 0;
-          for( ; pi < MIDI_PORTS; ++pi)
-          {
-            MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
-            if(md && !md->isSynti() && (md->rwFlags() & 2))
-            //if(md && (md->rwFlags() & 2 || md->isSynti()) )  // p4.0.27 Reverted p4.0.35 
-              break;
-          }
-          if(pi == MIDI_PORTS)
-          {
-            act = addAction(tr("Warning: No input devices!"));
-            act->setCheckable(false);
-            act->setData(-1);
-            addSeparator();
-          }
-          act = addAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open midi config..."));
-          act->setCheckable(false);
-          act->setData(gid);
-          addSeparator();
-          ++gid;
+//           // Warn if no devices available. Add an item to open midi config. 
+//           int pi = 0;
+//           for( ; pi < MIDI_PORTS; ++pi)
+//           {
+//             MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
+//             if(md && !md->isSynti() && (md->rwFlags() & 2))
+//             //if(md && (md->rwFlags() & 2 || md->isSynti()) )  // p4.0.27 Reverted p4.0.35 
+//               break;
+//           }
+//           if(pi == MIDI_PORTS)
+//           {
+//             act = addAction(tr("Warning: No input devices!"));
+//             act->setCheckable(false);
+//             act->setData(-1);
+//             addSeparator();
+//           }
+//           act = addAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open midi config..."));
+//           act->setCheckable(false);
+//           //act->setData(gid);
+//           act->setData(_OPEN_MIDI_CONFIG_);
+//           addSeparator();
           
-    #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
-
-            PixmapButtonsHeaderWidgetAction* wa_hdr = new PixmapButtonsHeaderWidgetAction("Input port/device", darkRedLedIcon, MIDI_CHANNELS, this);
-            addAction(wa_hdr);  
-            ++gid;
-    #else   
-          addAction(new MenuTitleItem("Input port/device", this)); 
-    #endif
-            
-          for(int i = 0; i < MIDI_PORTS; ++i)
-          {
-            // NOTE: Could possibly list all devices, bypassing ports, but no, let's stick with ports.
-            MusECore::MidiPort* mp = &MusEGlobal::midiPorts[i];
-            MusECore::MidiDevice* md = mp->device();
-            //if(!md)
-            //  continue;
-            
-            // Do not list synth devices!
-            if( md && (!(md->rwFlags() & 2) || md->isSynti()) )
-            // p4.0.27 Go ahead. Synths esp MESS send out stuff. Reverted p4.0.35 
-            //if( md && !(md->rwFlags() & 2) && !md->isSynti() )
-              continue;
-              
-            //printf("MusE::prepareRoutingPopupMenu adding submenu portnum:%d\n", i);
-            
-            int chanmask = 0;
-            // To reduce number of routes required, from one per channel to just one containing a channel mask. 
-            // Look for the first route to this midi port. There should always be only a single route for each midi port, now.
-            MusECore::ciRoute ir = rl->begin();
-            for( ; ir != rl->end(); ++ir)   
-            {
-              if(ir->type == MusECore::Route::MIDI_PORT_ROUTE && ir->midiPort == i) 
-              {
-                // We have a route to the midi port. Grab the channel mask.
-                chanmask = ir->channel;
-                break;
-              }
-            }
-            // List ports with no device, but with routes to this track, in the main popup.
-            if(!md && ir == rl->end())
-              continue;
-            
-    #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
-            
-            QBitArray ba(MIDI_CHANNELS); 
-            for(int mch = 0; mch < MIDI_CHANNELS; ++mch)
-            {  
-              if(chanmask & (1 << mch))
-                ba.setBit(mch);
-            }
-
-            PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + (md ? md->name() : tr("<none>")), 
-                                                                          redLedIcon, darkRedLedIcon, ba, this);
-            MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
-            wa->setData(QVariant::fromValue(srcRoute));   
-            addAction(wa);  
-            
-            ++gid;
-
-    #else    
-
-            PopupMenu* subp = new PopupMenu(this, true);
-            subp->setTitle(QString("%1:").arg(i+1) + (md ? md->name() : tr("<none>"))); 
-            
-            for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
-            {
-              act = subp->addAction(QString("Channel %1").arg(ch+1));
-              act->setCheckable(true);
-              int chbit = 1 << ch;
-              MusECore::Route srcRoute(i, chbit);    // In accordance with channel mask, use the bit position.
-              act->setData(QVariant::fromValue(srcRoute));   
-              if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
-                act->setChecked(true);
-              ++gid;  
-            }
-            //gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
-            act = subp->addAction(tr("Toggle all"));
-            //act->setCheckable(true);
-            MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
-            act->setData(QVariant::fromValue(togRoute));   
-            ++gid;
-            addMenu(subp);
-            
-    #endif // _USE_CUSTOM_WIDGET_ACTIONS_
-            
-          }
+//     #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
+// 
+//             PixmapButtonsHeaderWidgetAction* wa_hdr = new PixmapButtonsHeaderWidgetAction("Input port/device", darkRedLedIcon, MIDI_CHANNELS, this);
+//             addAction(wa_hdr);  
+//     #else   
+//           addAction(new MenuTitleItem("Input port/device", this)); 
+//     #endif
+//             
+//           for(int i = 0; i < MIDI_PORTS; ++i)
+//           {
+//             // NOTE: Could possibly list all devices, bypassing ports, but no, let's stick with ports.
+//             MusECore::MidiPort* mp = &MusEGlobal::midiPorts[i];
+//             MusECore::MidiDevice* md = mp->device();
+//             //if(!md)
+//             //  continue;
+//             
+//             // Do not list synth devices!
+//             if( md && (!(md->rwFlags() & 2) || md->isSynti()) )
+//             // p4.0.27 Go ahead. Synths esp MESS send out stuff. Reverted p4.0.35 
+//             //if( md && !(md->rwFlags() & 2) && !md->isSynti() )
+//               continue;
+//               
+//             //printf("MusE::prepareRoutingPopupMenu adding submenu portnum:%d\n", i);
+//             
+//             int chanmask = 0;
+//             // To reduce number of routes required, from one per channel to just one containing a channel mask. 
+//             // Look for the first route to this midi port. There should always be only a single route for each midi port, now.
+//             MusECore::ciRoute ir = rl->begin();
+//             for( ; ir != rl->end(); ++ir)   
+//             {
+//               if(ir->type == MusECore::Route::MIDI_PORT_ROUTE && ir->midiPort == i) 
+//               {
+//                 // We have a route to the midi port. Grab the channel mask.
+//                 chanmask = ir->channel;
+//                 break;
+//               }
+//             }
+//             // List ports with no device, but with routes to this track, in the main popup.
+//             if(!md && ir == rl->end())
+//               continue;
+//             
+//     #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
+//             
+//             QBitArray ba(MIDI_CHANNELS); 
+//             for(int mch = 0; mch < MIDI_CHANNELS; ++mch)
+//             {  
+//               if(chanmask & (1 << mch))
+//                 ba.setBit(mch);
+//             }
+// 
+//             PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + (md ? md->name() : tr("<none>")), 
+//                                                                           redLedIcon, darkRedLedIcon, ba, this);
+//             MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
+//             wa->setData(QVariant::fromValue(srcRoute));   
+//             addAction(wa);  
+//             
+//     #else    
+// 
+//             PopupMenu* subp = new PopupMenu(this, true);
+//             subp->setTitle(QString("%1:").arg(i+1) + (md ? md->name() : tr("<none>"))); 
+//             
+//             for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+//             {
+//               act = subp->addAction(QString("Channel %1").arg(ch+1));
+//               act->setCheckable(true);
+//               int chbit = 1 << ch;
+//               MusECore::Route srcRoute(i, chbit);    // In accordance with channel mask, use the bit position.
+//               act->setData(QVariant::fromValue(srcRoute));   
+//               if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
+//                 act->setChecked(true);
+//               ++gid;  
+//             }
+//             //gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
+//             act = subp->addAction(tr("Toggle all"));
+//             //act->setCheckable(true);
+//             MusECore::Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
+//             act->setData(QVariant::fromValue(togRoute));   
+//             addMenu(subp);
+//             
+//     #endif // _USE_CUSTOM_WIDGET_ACTIONS_
+//             
+//           }
           
           #if 0
           // p4.0.17 List ports with no device and no in routes, in a separate popup.
@@ -3429,7 +3772,7 @@ void RoutePopupMenu::prepare()
           {
             case MusECore::Track::AUDIO_OUTPUT:
             {
-              addJackPorts();
+              addJackPorts(this);
               
               //
               // Display using separate menu for audio inputs:
@@ -3515,7 +3858,7 @@ void RoutePopupMenu::prepare()
           {
             case MusECore::Track::AUDIO_INPUT:
             {
-              addJackPorts();
+              addJackPorts(this);
               
               //
               // Display using separate menus for midi ports and audio outputs:
@@ -3529,7 +3872,8 @@ void RoutePopupMenu::prepare()
               subp = new PopupMenu(this, true);
               subp->setTitle(tr("Midi port sends")); 
               addMenu(subp);
-              addMidiPorts(t, subp, gid, false);
+              //addMidiPorts(t, subp, gid, false);
+              addMidiPorts(t, subp, false, false);
               //
               // Display all in the same menu:
               //
@@ -3600,10 +3944,11 @@ void RoutePopupMenu::prepare()
     }
     break;
     
-    case MusECore::Route::JACK_ROUTE:
-    break;
     case MusECore::Route::MIDI_DEVICE_ROUTE:
+      addJackPorts(this);
     break;
+
+    case MusECore::Route::JACK_ROUTE:
     case MusECore::Route::MIDI_PORT_ROUTE:
     break;
   

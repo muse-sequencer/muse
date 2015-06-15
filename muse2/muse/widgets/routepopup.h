@@ -31,6 +31,7 @@
 namespace MusECore {
 class AudioTrack;
 class Track;
+class PendingOperationList;
 }
 
 class QWidget;
@@ -42,6 +43,7 @@ class QResizeEvent;
 namespace MusEGui {
 
 //class PopupMenu;
+class RoutingMatrixWidgetAction;
 
 //class RoutePopupMenu : public QObject
 class RoutePopupMenu : public PopupMenu
@@ -75,11 +77,18 @@ class RoutePopupMenu : public PopupMenu
     //int addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
     // REMOVE Tim. Persistent routes. Removed.
     //int nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* lb, int id, bool isOutput);
-    int addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
+    // REMOVE Tim. Persistent routes. Changed.
+    //int addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
+    void addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOutput, bool show_synths);
     
     // REMOVE Tim. Persistent routes. Added.
     int addSynthPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    void addJackPorts();
+    void addJackPorts(PopupMenu* lb);
+    void jackRouteActivated(QAction* action, MusECore::PendingOperationList& operations);
+    void trackRouteActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
+    void audioTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
+    void midiTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
+    void trackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations);
     
   private slots:
     void popupActivated(QAction*);

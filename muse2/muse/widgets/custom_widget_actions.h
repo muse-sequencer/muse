@@ -28,6 +28,8 @@
 #include <QList>
 #include <QBitArray>
 
+#include "route.h"
+
 class QMouseEvent;
 class QPainter;
 class QPaintEvent;
@@ -100,23 +102,40 @@ struct RouteChannelArrayItem
   RouteChannelArrayItem() { _value = false; }
 };
 
+struct RouteChannelArrayHeaderItem
+{
+  QRect _rect;
+  QString _text;
+  bool _value;
+  MusECore::Route _route;
+  RouteChannelArrayHeaderItem() { _value = false; }
+};
+
 class RouteChannelArray
 {
   protected:
     int _cols;
     int _rows;
-    int _visible_cols;
-    int _visible_rows;
+    //int _visible_cols;
+    //int _visible_rows;
     bool _rowsExclusive;
     bool _colsExclusive;
     bool _exclusiveToggle;
     RouteChannelArrayItem* _array;
+    RouteChannelArrayHeaderItem* _header;
+    RouteChannelArrayItem _arrayTitleItem;
+    RouteChannelArrayItem _headerTitleItem;
     
     virtual void init();
     virtual int itemCount() const { return _rows * _cols; }
     virtual bool invalidIndex(int row, int col) const { return col >= _cols || row >= _rows; }
     // Row and col must be valid.
     virtual int itemIndex(int row, int col) const { return _cols * row + col; }
+
+    virtual int headerItemCount() const { return _rows + _cols; }
+    virtual bool headerInvalidIndex(int row, int col) const;
+    // Row and col must be valid. Row or col can be -1, but not both.
+    virtual int headerItemIndex(int row, int col) const { if(row == -1) return col; return _cols + row; }
     
   public:
     RouteChannelArray(int rows = 0, int cols = 0);
@@ -127,25 +146,58 @@ class RouteChannelArray
     void setSize(int rows, int cols);
 
     virtual void setValues(int row, int col, bool value, bool exclusive_rows = false, bool exclusive_cols = false, bool exclusive_toggle = false);
+    virtual void headerSetValues(int row, int col, bool value, bool exclusive_rows = false, bool exclusive_cols = false, bool exclusive_toggle = false);
     
-    bool value(int row, int col) const                  
+    bool value(int row, int col) const
       { if(invalidIndex(row, col)) return false; return _array[itemIndex(row, col)]._value; }
-    void setValue(int row, int col, bool value);
-    //void setValue(int row, int col, bool value)
-    //  { if(invalidIndex(row, col)) return; _array[itemIndex(row, col)]._value = value; }
-    QRect rect(int row, int col) const                  
+    void setValue(int row, int col, bool value)
+      { setValues(row, col, value, _rowsExclusive, _colsExclusive, _exclusiveToggle); }
+    QRect rect(int row, int col) const
       { if(invalidIndex(row, col)) return QRect(); return _array[itemIndex(row, col)]._rect; }
     void setRect(int row, int col, const QRect& r)
       { if(invalidIndex(row, col)) return; _array[itemIndex(row, col)]._rect = r; }
-    QString text(int row, int col) const                  
+    QString text(int row, int col) const
       { if(invalidIndex(row, col)) return QString(); return _array[itemIndex(row, col)]._text; }
     void setText(int row, int col, const QString& s)
       { if(invalidIndex(row, col)) return; _array[itemIndex(row, col)]._text = s; }
+    QString arrayTitle() const
+      { return _arrayTitleItem._text; }
+    void setArrayTitle(const QString& str)
+      { _arrayTitleItem._text = str; }
+    QRect arrayTitleRect() const
+      { return _arrayTitleItem._rect; }
+    void setArrayTitleRect(const QRect& r)
+      { _arrayTitleItem._rect = r; }
       
-    int visibleColumns() const { return _visible_cols; }
-    int visibleRows() const { return _visible_rows; }
-    void setVisibleColums(int cols) { _visible_cols = (cols > _cols) ? _cols : cols; }
-    void setVisibleRows(int rows) { _visible_rows = (rows > _rows) ? _rows : rows; }
+    bool headerValue(int row, int col) const
+      { if(headerInvalidIndex(row, col)) return false; return _header[headerItemIndex(row, col)]._value; }
+    void headerSetValue(int row, int col, bool value)
+      { headerSetValues(row, col, value, _rowsExclusive, _colsExclusive, _exclusiveToggle); }
+    QRect headerRect(int row, int col) const
+      { if(headerInvalidIndex(row, col)) return QRect(); return _header[headerItemIndex(row, col)]._rect; }
+    void headerSetRect(int row, int col, const QRect& rect)
+      { if(headerInvalidIndex(row, col)) return; _header[headerItemIndex(row, col)]._rect = rect; }
+    QString headerText(int row, int col) const
+      { if(headerInvalidIndex(row, col)) return QString(); return _header[headerItemIndex(row, col)]._text; }
+    void headerSetText(int row, int col, const QString& str)
+      { if(headerInvalidIndex(row, col)) return; _header[headerItemIndex(row, col)]._text = str; }
+    MusECore::Route headerRoute(int row, int col) const
+      { if(headerInvalidIndex(row, col)) return MusECore::Route(); return _header[headerItemIndex(row, col)]._route; }
+    void headerSetRoute(int row, int col, const MusECore::Route& route)
+      { if(headerInvalidIndex(row, col)) return; _header[headerItemIndex(row, col)]._route = route; }
+    QString headerTitle() const
+      { return _headerTitleItem._text; }
+    void headerSetTitle(const QString& str)
+      { _headerTitleItem._text = str; }
+    QRect headerTitleRect() const
+      { return _headerTitleItem._rect; }
+    void headerSetTitleRect(const QRect& r)
+      { _headerTitleItem._rect = r; }
+      
+    //int visibleColumns() const { return _visible_cols; }
+    //int visibleRows() const { return _visible_rows; }
+    //void setVisibleColums(int cols) { _visible_cols = (cols > _cols) ? _cols : cols; }
+    //void setVisibleRows(int rows) { _visible_rows = (rows > _rows) ? _rows : rows; }
     
     bool rowsExclusive() const       { return _rowsExclusive; }
     bool columnsExclusive() const    { return _colsExclusive; }
@@ -155,17 +207,17 @@ class RouteChannelArray
     void setExclusiveToggle(bool v)  { _exclusiveToggle = v; }
 };
 
-class RouteChannelArrayHeader : public RouteChannelArray {
-  protected:
-    virtual void init();
-    virtual int itemCount() const { return _rows + _cols; }
-    virtual bool invalidIndex(int row, int col) const;
-    // Row and col must be valid. Row or col can be -1, but not both.
-    virtual int itemIndex(int row, int col) const { if(row == -1) return col; return _cols + row; }
-    
-  public:
-    virtual void setValues(int row, int col, bool value, bool exclusive_rows = false, bool exclusive_cols = false, bool exclusive_toggle = false);
-};
+// class RouteChannelArrayHeader : public RouteChannelArray {
+//   protected:
+//     virtual void init();
+//     virtual int itemCount() const { return _rows + _cols; }
+//     virtual bool invalidIndex(int row, int col) const;
+//     // Row and col must be valid. Row or col can be -1, but not both.
+//     virtual int itemIndex(int row, int col) const { if(row == -1) return col; return _cols + row; }
+//     
+//   public:
+//     virtual void setValues(int row, int col, bool value, bool exclusive_rows = false, bool exclusive_cols = false, bool exclusive_toggle = false);
+// };
 
 class RoutingMatrixWidgetAction;
 class RoutingMatrixWidget : public QWidget {
@@ -188,12 +240,12 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       Q_OBJECT
    private:
       
-      RouteChannelArrayHeader _header;
+      //RouteChannelArrayHeader _header;
       RouteChannelArray _array;
       QPixmap* _onPixmap;
       QPixmap* _offPixmap;
-      QFont _cellFont;
-      QRect _cellGeometry;
+      QFont _smallFont;
+      QRect _maxPixmapGeometry;
       
    protected:
       virtual QWidget* createWidget(QWidget* parent);
@@ -208,16 +260,16 @@ class RoutingMatrixWidgetAction : public QWidgetAction {
       
       RoutingMatrixWidgetAction(int rows, int cols,  
                                 QPixmap* on_pixmap, QPixmap* off_pixmap, 
-                                QWidget* parent = 0,
-                                int visible_rows = -1, int visible_cols = -1);
+                                QWidget* parent = 0);
+                                //int visible_rows = -1, int visible_cols = -1);
 
       void updateChannelArray();
       
-      RouteChannelArrayHeader* header() { return &_header; }
+      //RouteChannelArrayHeader* header() { return &_header; }
       RouteChannelArray* array()        { return &_array; }
 
-      QFont cellFont() const     { return _cellFont; }
-      QRect cellGeometry() const { return _cellGeometry; }
+      QFont smallFont() const     { return _smallFont; }
+      QRect maxPixmapGeometry() const { return _maxPixmapGeometry; }
 
       QPixmap* onPixmap() const  { return _onPixmap; }
       QPixmap* offPixmap() const { return _offPixmap; }

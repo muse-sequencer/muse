@@ -288,6 +288,8 @@ int RouteTreeWidgetItem::groupsPerChannels(int c) const
 
 int RouteTreeWidgetItem::barsPerColChannels(int cc) const
 {
+  if(cc == 0)
+    return 0;
   const int chans = _channels.size();
   int bars = chans / cc;
   if(chans % cc)

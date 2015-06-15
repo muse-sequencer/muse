@@ -57,6 +57,7 @@
 #include "menutitleitem.h"
 #include "utils.h"
 #include "popupmenu.h"
+#include "routepopup.h"
 
 namespace MusEGlobal {
 extern std::vector<MusECore::Synth*> synthis;
@@ -435,6 +436,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         item->setIcon(port->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
                   return;
+            break;                    
                   
             case DEVCOL_REC:
                   if (dev == 0 || !(rwFlags & 2))
@@ -458,6 +460,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     }  
                   }
                   return;
+            break;                    
                   
             case DEVCOL_PLAY:
                   if (dev == 0 || !(rwFlags & 1))
@@ -481,6 +484,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     }
                   }
                   return;
+            break;                    
                   
             case DEVCOL_INROUTES:  
             case DEVCOL_OUTROUTES:
@@ -501,124 +505,134 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     if(!(dev->openFlags() & ((col == DEVCOL_OUTROUTES) ? 1 : 2)))    
                       return;
                       
-                    MusECore::RouteList* rl = (col == DEVCOL_OUTROUTES) ? dev->outRoutes() : dev->inRoutes();   
-                    QMenu* pup = 0;
-                    int gid = 0;
-                    std::list<QString> sl;
-                    pup = new QMenu(this);
-                    
-        _redisplay:
-                    pup->clear();
-                    gid = 0;
-                    
-                    // Jack input ports if device is writable, and jack output ports if device is readable.
-                    sl = (col == DEVCOL_OUTROUTES) ? MusEGlobal::audioDevice->inputPorts(true, _showAliases) : MusEGlobal::audioDevice->outputPorts(true, _showAliases);
-                    
-                    QAction* act;
-                    
-                    act = pup->addAction(tr("Show first aliases"));
-                    act->setData(gid);
-                    act->setCheckable(true);
-                    act->setChecked(_showAliases == 0);
-                    ++gid;
-                    
-                    act = pup->addAction(tr("Show second aliases"));
-                    act->setData(gid);
-                    act->setCheckable(true);
-                    act->setChecked(_showAliases == 1);
-                    ++gid;
-                    
-                    pup->addSeparator();
-                    for(std::list<QString>::iterator ip = sl.begin(); ip != sl.end(); ++ip) 
-                    {
-                      act = pup->addAction(*ip);
-                      act->setData(gid);
-                      act->setCheckable(true);
-                      
-                      MusECore::Route rt(*ip, (col == DEVCOL_OUTROUTES), -1, MusECore::Route::JACK_ROUTE);   
-                      for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
-                      {
-                        if (*ir == rt) 
-                        {
-                          act->setChecked(true);
-                          break;
-                        }
-                      }
-                      ++gid;
-                    }
-                    
-                    act = pup->exec(ppt);
-                    if(act)
-                    {
-                      n = act->data().toInt();
-                      if(n == 0) // Show first aliases
-                      {
-                        if(_showAliases == 0)
-                          _showAliases = -1;
-                        else  
-                          _showAliases = 0;
-                        goto _redisplay;   // Go back
-                      }
-                      else
-                      if(n == 1) // Show second aliases
-                      {
-                        if(_showAliases == 1)
-                          _showAliases = -1;
-                        else  
-                          _showAliases = 1;
-                        goto _redisplay;   // Go back
-                      }
-                      
-                      QString s(act->text());
-                      
-                      if(col == DEVCOL_OUTROUTES) // Writeable  
-                      {
-                        MusECore::Route srcRoute(dev, -1);
-                        MusECore::Route dstRoute(s, true, -1, MusECore::Route::JACK_ROUTE);
-            
-                        MusECore::ciRoute iir = rl->begin();
-                        for(; iir != rl->end(); ++iir) 
-                        {
-                          if(*iir == dstRoute)
-                            break;
-                        }
-                        if(iir != rl->end()) 
-                          // disconnect
-                          MusEGlobal::audio->msgRemoveRoute(srcRoute, dstRoute);
-                        else 
-                          // connect
-                          MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
-                      }
-                      else
-                      {
-                        MusECore::Route srcRoute(s, false, -1, MusECore::Route::JACK_ROUTE);
-                        MusECore::Route dstRoute(dev, -1);
-            
-                        MusECore::ciRoute iir = rl->begin();
-                        for(; iir != rl->end(); ++iir) 
-                        {
-                          if(*iir == srcRoute)
-                            break;
-                        }
-                        if(iir != rl->end()) 
-                          // disconnect
-                          MusEGlobal::audio->msgRemoveRoute(srcRoute, dstRoute);
-                        else 
-                          // connect
-                          MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
-                      }  
-                      
-                      MusEGlobal::audio->msgUpdateSoloStates();
-                      MusEGlobal::song->update(SC_ROUTE);
-                      
-                      // FIXME:
-                      // Routes can't be re-read until the message sent from msgAddRoute1() 
-                      //  has had time to be sent and actually affected the routes.
-                      //goto _redisplay;   // Go back
-                    }  
+                    // REMOVE Tim. Persistent routes. Added.
+                    RoutePopupMenu* pup = new RoutePopupMenu();
+                    pup->exec(QCursor::pos(), dev, col == DEVCOL_OUTROUTES);
                     delete pup;
                   }
                   return;
+            break;                    
+                    
+                    
+// REMOVE Tim. Persistent routes. Removed.
+//                     MusECore::RouteList* rl = (col == DEVCOL_OUTROUTES) ? dev->outRoutes() : dev->inRoutes();   
+//                     QMenu* pup = 0;
+//                     int gid = 0;
+//                     std::list<QString> sl;
+//                     pup = new QMenu(this);
+//                     
+//         _redisplay:
+//                     pup->clear();
+//                     gid = 0;
+//                     
+//                     // Jack input ports if device is writable, and jack output ports if device is readable.
+//                     sl = (col == DEVCOL_OUTROUTES) ? MusEGlobal::audioDevice->inputPorts(true, _showAliases) : MusEGlobal::audioDevice->outputPorts(true, _showAliases);
+//                     
+//                     QAction* act;
+//                     
+//                     act = pup->addAction(tr("Show first aliases"));
+//                     act->setData(gid);
+//                     act->setCheckable(true);
+//                     act->setChecked(_showAliases == 0);
+//                     ++gid;
+//                     
+//                     act = pup->addAction(tr("Show second aliases"));
+//                     act->setData(gid);
+//                     act->setCheckable(true);
+//                     act->setChecked(_showAliases == 1);
+//                     ++gid;
+//                     
+//                     pup->addSeparator();
+//                     for(std::list<QString>::iterator ip = sl.begin(); ip != sl.end(); ++ip) 
+//                     {
+//                       act = pup->addAction(*ip);
+//                       act->setData(gid);
+//                       act->setCheckable(true);
+//                       
+//                       MusECore::Route rt(*ip, (col == DEVCOL_OUTROUTES), -1, MusECore::Route::JACK_ROUTE);   
+//                       for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+//                       {
+//                         if (*ir == rt) 
+//                         {
+//                           act->setChecked(true);
+//                           break;
+//                         }
+//                       }
+//                       ++gid;
+//                     }
+//                     
+//                     act = pup->exec(ppt);
+//                     if(act)
+//                     {
+//                       n = act->data().toInt();
+//                       if(n == 0) // Show first aliases
+//                       {
+//                         if(_showAliases == 0)
+//                           _showAliases = -1;
+//                         else  
+//                           _showAliases = 0;
+//                         goto _redisplay;   // Go back
+//                       }
+//                       else
+//                       if(n == 1) // Show second aliases
+//                       {
+//                         if(_showAliases == 1)
+//                           _showAliases = -1;
+//                         else  
+//                           _showAliases = 1;
+//                         goto _redisplay;   // Go back
+//                       }
+//                       
+//                       QString s(act->text());
+//                       
+//                       if(col == DEVCOL_OUTROUTES) // Writeable  
+//                       {
+//                         MusECore::Route srcRoute(dev, -1);
+//                         MusECore::Route dstRoute(s, true, -1, MusECore::Route::JACK_ROUTE);
+//             
+//                         MusECore::ciRoute iir = rl->begin();
+//                         for(; iir != rl->end(); ++iir) 
+//                         {
+//                           if(*iir == dstRoute)
+//                             break;
+//                         }
+//                         if(iir != rl->end()) 
+//                           // disconnect
+//                           MusEGlobal::audio->msgRemoveRoute(srcRoute, dstRoute);
+//                         else 
+//                           // connect
+//                           MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
+//                       }
+//                       else
+//                       {
+//                         MusECore::Route srcRoute(s, false, -1, MusECore::Route::JACK_ROUTE);
+//                         MusECore::Route dstRoute(dev, -1);
+//             
+//                         MusECore::ciRoute iir = rl->begin();
+//                         for(; iir != rl->end(); ++iir) 
+//                         {
+//                           if(*iir == srcRoute)
+//                             break;
+//                         }
+//                         if(iir != rl->end()) 
+//                           // disconnect
+//                           MusEGlobal::audio->msgRemoveRoute(srcRoute, dstRoute);
+//                         else 
+//                           // connect
+//                           MusEGlobal::audio->msgAddRoute(srcRoute, dstRoute);
+//                       }  
+//                       
+//                       MusEGlobal::audio->msgUpdateSoloStates();
+//                       MusEGlobal::song->update(SC_ROUTE);
+//                       
+//                       // FIXME:
+//                       // Routes can't be re-read until the message sent from msgAddRoute1() 
+//                       //  has had time to be sent and actually affected the routes.
+//                       //goto _redisplay;   // Go back
+//                     }  
+//                     delete pup;
+//                   }
+//                   return;
                   
             case DEVCOL_DEF_IN_CHANS:
                   {
@@ -650,6 +664,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     defpup = 0;
                   }
                   return;                  
+            break;                    
                   
             case DEVCOL_DEF_OUT_CHANS:
                   {
@@ -684,6 +699,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     defpup = 0;
                   }
                   return;
+            break;                    
                   
             case DEVCOL_NAME:
                   {
@@ -987,6 +1003,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     
                   }
                   return;
+            break;                    
 
             case DEVCOL_INSTR:
                   {
@@ -1011,6 +1028,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   MusEGlobal::song->update();
                   }
                   return;
+            break;                    
             }
       }
 
